@@ -151,6 +151,7 @@
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="InputManager.cpp" />
+    <ClCompile Include="MainMenuState.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="StateManager.cpp" />
     <ClCompile Include="WinMain.cpp" />
@@ -159,6 +160,7 @@
     <ClInclude Include="Core.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="InputManager.h" />
+    <ClInclude Include="MainMenuState.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="StateManager.h" />
   </ItemGroup>

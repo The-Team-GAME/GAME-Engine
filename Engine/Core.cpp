@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include "StateManager.h"
 #include "BasicState.h"
+#include "MainMenuState.h"
 #include "InputManager.h"
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
@@ -81,11 +82,22 @@ namespace Engine
       StateManager::GetCurrentState()->Update();
       StateManager::GetCurrentState()->Draw();
 
+
+      // TODO: move all the ImGui code to a separate function/class
       ImGui_ImplOpenGL3_NewFrame();
       ImGui_ImplGlfw_NewFrame();
       ImGui::NewFrame();
 
-      ImGui::Begin("simple window");
+      ImGui::Begin("State Manager");
+
+      ImGui::Text("Current State: %s", typeid(*StateManager::GetCurrentState()).name());
+      if (ImGui::Button("BasicState")) {
+        StateManager::ChangeState(BasicState::Get());
+      }
+      if (ImGui::Button("MainMenuState")) {
+        StateManager::ChangeState(MainMenuState::Get());
+      }
+
       ImGui::End();
 
       ImGui::Render();
