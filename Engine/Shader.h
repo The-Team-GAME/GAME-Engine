@@ -1,14 +1,15 @@
 #pragma once
 #include <GL/glew.h>
 #include <glm/fwd.hpp>
+#include <string>
 
 class Shader {
 private:
   GLuint m_id;
 
 public:
-  Shader(const char* vertexPath, const char* fragmentPath);
-  ~Shader();
+  Shader() = default;
+
 
   Shader(Shader const& other) = delete;
   Shader(Shader&& other) = delete;
@@ -16,9 +17,11 @@ public:
   Shader& operator=(Shader&& other) = delete;
 
 
-  GLuint getId() const;
 
+  void init(const char* vertexPath, const char* fragmentPath);
+  void destroy();
   void use() const;
+  GLuint getId() const;
 
   // utility uniform functions
   void setBool(const std::string& name, bool value) const;

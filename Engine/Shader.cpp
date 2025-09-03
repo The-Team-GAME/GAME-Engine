@@ -1,8 +1,7 @@
 #include <string>
 #include <sstream>
 #include <fstream>
-#include <iostream>
-#include <string>
+#include <iostream> 
 
 #include <gl/glew.h>
 #include <glm/glm.hpp>
@@ -11,7 +10,7 @@
 
 #include "Shader.h"
 
-Shader::Shader(const char* vertexPath, const char* fragmentPath)
+void Shader::init(const char* vertexPath, const char* fragmentPath)
 {
   // 1. retrieve the vertex/fragment source code from filePath
   std::string vertexCode;
@@ -85,13 +84,19 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
   glDeleteShader(fragment);
 }
 
-Shader::~Shader() {
+void Shader::destroy()
+{
   glDeleteProgram(m_id);
 }
 
 void Shader::use() const {
   glUseProgram(m_id);
 }
+
+GLuint Shader::getId() const {
+  return m_id;
+}
+
 
 void Shader::setBool(const std::string& name, bool const value) const {
   glUniform1i(glGetUniformLocation(m_id, name.c_str()), static_cast<int>(value));
@@ -107,7 +112,6 @@ void Shader::setFloat(const std::string& name, float const value) const {
 
 void Shader::setMatrix(const std::string& name, const glm::mat4x4& matrix, bool transpose) const {
   glUniformMatrix4fv(glGetUniformLocation(m_id, name.c_str()), 1, transpose, glm::value_ptr(matrix));
-
 }
 
 void Shader::setVec3(const std::string& name, glm::vec3 const& list) const {
@@ -116,8 +120,4 @@ void Shader::setVec3(const std::string& name, glm::vec3 const& list) const {
 
 void Shader::setVec3(const std::string& name, float x, float y, float z) const {
   glUniform3f(glGetUniformLocation(m_id, name.c_str()), x, y, z);
-}
-
-GLuint Shader::getId() const {
-  return m_id;
 }
