@@ -2,46 +2,53 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include "Shader.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
-static unsigned int compileShader(unsigned int type, const std::string& source)
+
+unsigned int quadVAO;
+
+void setup_rectangle()
 {
-  unsigned int id = glCreateShader(type);
-  const char* src = source.c_str();
-  glShaderSource(id, 1, &src, nullptr);
-  glCompileShader(id);
+  float vertices[] = {
+    // pos
+    0.0f, 1.0f,
+    1.0f, 0.0f,
+    0.0f, 0.0f,
 
-  int result;
-  glGetShaderiv(id, GL_COMPILE_STATUS, &result);
-  if (result == GL_FALSE)
-  {
-    int length;
-    glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
-    char* message = (char*)alloca(length * sizeof(char));
-    glGetShaderInfoLog(id, length, &length, message);
-    std::cout << message << std::endl;
-    glDeleteShader(id);
+    0.0f, 1.0f,
+    1.0f, 1.0f,
+    1.0f, 0.0f };
 
-    return 0;
-  }
+  glGenVertexArrays(1, &quadVAO);
+  unsigned int vbo;
+  glGenBuffers(1, &vbo);
 
-  return id;
+  glBindVertexArray(quadVAO);
+
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindVertexArray(0);
 }
 
-static int createShader(const std::string& vertexShader, const std::string& fragmmentShader)
+void drawRect(Shader& shader, float x, float y, float width, float height, glm::vec3 color)
 {
-  unsigned int program = glCreateProgram();
-  unsigned int vs = compileShader(GL_VERTEX_SHADER, vertexShader);
-  unsigned int fs = compileShader(GL_FRAGMENT_SHADER, fragmmentShader);
+  shader.use();
+  glm::mat4 model = glm::mat4(1.0f);
+  model = glm::translate(model, glm::vec3(x, y, 0.0f));
+  model = glm::scale(model, glm::vec3(width, height, 1.0f));
 
-  glAttachShader(program, vs);
-  glAttachShader(program, fs);
-  glLinkProgram(program);
-  glValidateProgram(program);
+  shader.setMatrix("model", model);
+  shader.setVec3("uColor", color);
 
-  glDeleteShader(vs);
-  glDeleteShader(fs);
-
-  return program;
+  glBindVertexArray(quadVAO);
+  glDrawArrays(GL_TRIANGLES, 0, 6);
+  glBindVertexArray(0);
 }
 
 int main(void)
@@ -53,7 +60,9 @@ int main(void)
     return -1;
 
   /* Create a windowed mode window and its OpenGL context */
-  window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+  int windowWidth = 800;
+  int windowHeight = 600;
+  window = glfwCreateWindow(windowWidth, windowHeight, "Rectangle Drawer", NULL, NULL);
   if (!window)
   {
     std::cout << "Failed to create GLFW window" << std::endl;
@@ -71,32 +80,25 @@ int main(void)
 
   std::cout << glGetString(GL_VERSION) << std::endl;
 
-  float positions[] = {
-      -0.5f, -0.5f,
-      0.0f, 0.5f,
-      0.5f, -0.5f };
+  setup_rectangle();
 
-  unsigned int buffer;
-  glGenBuffers(1, &buffer);
-  glBindBuffer(GL_ARRAY_BUFFER, buffer);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_DYNAMIC_DRAW);
-  // glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions, GL_STATIC_DRAW);
+  Shader basicShader("basic.vert", "basic.frag");
 
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
-
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-  Shader basicShader = { "basic.vert", "basic.frag" };
+  glm::mat4 projection = glm::ortho(0.0f, (float)windowWidth, (float)windowHeight, 0.0f, -1.0f, 1.0f);
   basicShader.use();
+  basicShader.setMatrix("projection", projection);
 
   /* Loop until the user closes the window */
   while (!glfwWindowShouldClose(window))
   {
     /* Render here */
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    // Draw rectangles of different sizes and colors
+    drawRect(basicShader, 100.0f, 100.0f, 200.0f, 50.0f, glm::vec3(1.0f, 0.0f, 0.0f));  // Red
+    drawRect(basicShader, 350.0f, 200.0f, 100.0f, 150.0f, glm::vec3(0.0f, 1.0f, 0.0f)); // Green
+    drawRect(basicShader, 50.0f, 400.0f, 75.0f, 75.0f, glm::vec3(0.0f, 0.0f, 1.0f));    // Blue
 
     /* Swap front and back buffers */
     glfwSwapBuffers(window);
