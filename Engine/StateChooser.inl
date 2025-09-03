@@ -10,6 +10,7 @@ inline void StateChooser()
   ImGui::Begin("State Chooser");
 
   ImGui::Text("Current State: %s", typeid(*Engine::StateManager::GetCurrentState()).name());
+
   if (ImGui::Button("BasicState"))
   {
     Engine::StateManager::ChangeState(BasicState::Get());
