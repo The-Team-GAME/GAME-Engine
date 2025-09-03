@@ -4,6 +4,7 @@
 #include "StateManager.h"
 #include "BasicState.h"
 #include "MainMenuState.h"
+#include "EcsState.h"
 
 inline void StateChooser()
 {
@@ -17,6 +18,10 @@ inline void StateChooser()
   if (ImGui::Button("MainMenuState"))
   {
     Engine::StateManager::ChangeState(MainMenuState::Get());
+  }
+  if (ImGui::Button("EcsState"))
+  {
+    Engine::StateManager::ChangeState(EcsState::Get());
   }
 
   ImGui::End();
