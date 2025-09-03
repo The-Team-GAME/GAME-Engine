@@ -17,7 +17,7 @@ namespace Engine
     ~Core();
 
     int init();
-    void gameLoop();
+    void run();
     void exit();
   };
 

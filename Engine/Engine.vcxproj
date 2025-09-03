@@ -139,6 +139,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BasicState.cpp" />
+    <ClCompile Include="BasicState.h" />
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="Shader.cpp" />

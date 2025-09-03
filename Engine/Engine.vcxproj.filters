@@ -25,6 +25,9 @@
     <Filter Include="Source Files\Shaders">
       <UniqueIdentifier>{dca7a92a-4cb4-4b9d-8342-a5ab4ad1b884}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\GameStates">
+      <UniqueIdentifier>{05409f99-6b97-4466-bb82-3c53ddba7d13}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinMain.cpp">
@@ -41,6 +44,12 @@
     </ClCompile>
     <ClCompile Include="Core.cpp">
       <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="BasicState.h">
+      <Filter>Source Files\GameStates</Filter>
+    </ClCompile>
+    <ClCompile Include="BasicState.cpp">
+      <Filter>Source Files\GameStates</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

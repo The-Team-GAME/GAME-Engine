@@ -3,11 +3,12 @@
 #include <iostream>
 #include "Graphics.h"
 #include <glm/glm.hpp>
+#include "StateManager.h"
 
 namespace Engine
 {
 
-  Core *CORE;
+  Core* CORE;
 
   Core::Core()
   {
@@ -52,18 +53,19 @@ namespace Engine
     Graphics::init();
   }
 
-  void Core::gameLoop()
+  void Core::run()
   {
+
+
     while (!glfwWindowShouldClose(window) && isRunning)
     {
       /* Render here */
-      glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-      glClear(GL_COLOR_BUFFER_BIT);
+      /*glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+      glClear(GL_COLOR_BUFFER_BIT);*/
 
-      // Draw rectangles of different sizes and colors
-      Graphics::drawRect(100.0f, 100.0f, 200.0f, 50.0f, glm::vec3(1.0f, 0.0f, 0.0f));  // Red
-      Graphics::drawRect(350.0f, 200.0f, 100.0f, 150.0f, glm::vec3(0.0f, 1.0f, 0.0f)); // Green
-      Graphics::drawRect(50.0f, 400.0f, 75.0f, 75.0f, glm::vec3(0.0f, 0.0f, 1.0f));    // Blue
+
+      StateManager::GetCurrentState()->Update();
+      StateManager::GetCurrentState()->Draw();
 
       /* Swap front and back buffers */
       glfwSwapBuffers(window);
