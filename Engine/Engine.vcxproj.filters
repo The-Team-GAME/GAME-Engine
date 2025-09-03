@@ -28,6 +28,12 @@
     <Filter Include="Source Files\GameStates">
       <UniqueIdentifier>{05409f99-6b97-4466-bb82-3c53ddba7d13}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Dependencies">
+      <UniqueIdentifier>{d0a0f96e-ce41-427d-b7d8-994c198d9d15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Dependencies\ImGui">
+      <UniqueIdentifier>{92ca82bf-e755-413f-bf44-663e6fdc2bb1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinMain.cpp">
@@ -53,6 +59,27 @@
     </ClCompile>
     <ClCompile Include="InputManager.cpp">
       <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Dependencies\ImGui\imgui.cpp">
+      <Filter>Source Files\Dependencies\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Dependencies\ImGui\imgui_demo.cpp">
+      <Filter>Source Files\Dependencies\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Dependencies\ImGui\imgui_draw.cpp">
+      <Filter>Source Files\Dependencies\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Dependencies\ImGui\imgui_tables.cpp">
+      <Filter>Source Files\Dependencies\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Dependencies\ImGui\imgui_widgets.cpp">
+      <Filter>Source Files\Dependencies\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Dependencies\ImGui\backends\imgui_impl_glfw.cpp">
+      <Filter>Source Files\Dependencies\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Dependencies\ImGui\backends\imgui_impl_opengl3.cpp">
+      <Filter>Source Files\Dependencies\ImGui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

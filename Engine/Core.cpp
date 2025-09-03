@@ -6,6 +6,9 @@
 #include "StateManager.h"
 #include "BasicState.h"
 #include "InputManager.h"
+#include <imgui.h>
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_opengl3.h>
 
 namespace Engine
 {
@@ -54,6 +57,13 @@ namespace Engine
 
     std::cout << glGetString(GL_VERSION) << std::endl;
 
+    ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    ImGui::StyleColorsDark();
+
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init();
+
     StateManager::Init(BasicState::Get());
 
     Graphics::init();
@@ -63,17 +73,26 @@ namespace Engine
   {
 
     while (!glfwWindowShouldClose(window) && isRunning)
-    { 
+    {
+      glfwPollEvents();
+
       Input::Update();
 
       StateManager::GetCurrentState()->Update();
       StateManager::GetCurrentState()->Draw();
 
+      ImGui_ImplOpenGL3_NewFrame();
+      ImGui_ImplGlfw_NewFrame();
+      ImGui::NewFrame();
+
+      ImGui::Begin("simple window");
+      ImGui::End();
+
+      ImGui::Render();
+      ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
       /* Swap front and back buffers */
       glfwSwapBuffers(window);
-
-      /* Poll for and process events */
-      glfwPollEvents();
     }
   }
 
