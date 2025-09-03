@@ -3,14 +3,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "Shader.h"
 
-
-namespace {
+namespace
+{
 
   unsigned int quadVAO;
 
   Shader basicShader;
   glm::mat4 projection = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f, -1.0f, 1.0f); // TODO: window size should not be hardcoded
-
 
   void setupRectangle()
   {
@@ -41,15 +40,18 @@ namespace {
   }
 }
 
-
 namespace Graphics
 {
-  void init() {
+  void init()
+  {
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     basicShader.init("basic.vert", "basic.frag");
     setupRectangle();
   }
 
-  void drawRect(float x, float y, float width, float height, glm::vec3 color)
+  void drawRect(float x, float y, float width, float height, glm::vec4 color)
   {
     basicShader.use();
     basicShader.setMatrix("projection", projection);
@@ -58,19 +60,21 @@ namespace Graphics
     model = glm::scale(model, glm::vec3(width, height, 1.0f));
 
     basicShader.setMatrix("model", model);
-    basicShader.setVec3("uColor", color);
+    basicShader.setVec4("uColor", color);
 
     glBindVertexArray(quadVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
   }
 
-  void exit() {
+  void exit()
+  {
     basicShader.destroy();
     glDeleteVertexArrays(1, &quadVAO);
   }
 
-  void clearScreen(float r, float g, float b, float a) {
+  void clearScreen(float r, float g, float b, float a)
+  {
     glClearColor(r, g, b, a);
     glClear(GL_COLOR_BUFFER_BIT);
   }

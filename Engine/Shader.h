@@ -29,5 +29,7 @@ public:
   void setFloat(const std::string& name, float value) const;
   void setVec3(const std::string& name, glm::vec3 const& list) const;
   void setVec3(const std::string& name, float x, float y, float z) const;
+  void setVec4(const std::string& name, glm::vec4 const& list) const;
+  void setVec4(const std::string& name, float a, float b, float c, float d) const;
   void setMatrix(const std::string& name, const glm::mat4x4& matrix, bool transpose = false) const;
 };
