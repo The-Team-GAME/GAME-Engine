@@ -141,12 +141,6 @@ namespace Engine
     }
   }
 
-  void StateManager::Run(GameStateBase* initialState)
-  {
-
-
-  }
-
   GameStateBase* StateManager::GetCurrentState()
   {
     return stateStack.back();

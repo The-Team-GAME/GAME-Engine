@@ -62,11 +62,7 @@ namespace Engine
   {
 
     while (!glfwWindowShouldClose(window) && isRunning)
-    {
-      /* Render here */
-      /*glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-      glClear(GL_COLOR_BUFFER_BIT);*/
-
+    { 
       Input::Update();
 
       StateManager::GetCurrentState()->Update();

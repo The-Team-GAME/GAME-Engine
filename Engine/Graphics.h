@@ -8,4 +8,6 @@ namespace Graphics
   void drawRect(float x, float y, float width, float height, glm::vec3 color);
 
   void exit();
+
+  void clearScreen(float r, float g, float b, float a);
 }
