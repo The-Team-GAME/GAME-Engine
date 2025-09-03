@@ -10,9 +10,6 @@ int main(void)
 {
   Engine::Core* engine = new Engine::Core();
 
-
-  Engine::StateManager::PushState(BasicState::Get());
-
   engine->init();
   engine->run();
   engine->exit();

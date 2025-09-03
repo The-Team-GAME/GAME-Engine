@@ -28,12 +28,12 @@ namespace Engine
       state->Free();
       state->Unload();
       stateStack.pop_back();
-      stateDataStack.pop_back();
+      //stateDataStack.pop_back();
     }
 
     // Add the new state
     stateStack.push_back(newState);
-    stateDataStack.push_back(data);
+    //stateDataStack.push_back(data);
     newState->Load();
     newState->Init();
   }
@@ -41,14 +41,15 @@ namespace Engine
   void StateManager::PushState(GameStateBase* newState, std::any data)
   {
     stateStack.push_back(newState);
-    stateDataStack.push_back(data);
+    //stateDataStack.push_back(data);
     GetCurrentState()->Load();
     GetCurrentState()->Init();
   }
 
   bool StateManager::PopState()
   {
-    if (stateStack.empty() || stateDataStack.empty())
+    //if (stateStack.empty() || stateDataStack.empty())
+    if (stateStack.empty())
     {
       // No state to pop
       return false;
@@ -58,7 +59,7 @@ namespace Engine
     GetCurrentState()->Free();
     GetCurrentState()->Unload();
     stateStack.pop_back();
-    stateDataStack.pop_back();
+    //stateDataStack.pop_back();
 
     // If we still have states, initialize the new top state
     if (!stateStack.empty())
@@ -77,7 +78,8 @@ namespace Engine
 
   bool StateManager::PopState(std::any data)
   {
-    if (stateStack.empty() || stateDataStack.empty())
+    //if (stateStack.empty() || stateDataStack.empty())
+    if (stateStack.empty())
     {
       // No state to pop
       return false;
@@ -87,13 +89,13 @@ namespace Engine
     GetCurrentState()->Free();
     GetCurrentState()->Unload();
     stateStack.pop_back();
-    stateDataStack.pop_back();
+    //stateDataStack.pop_back();
 
     // If we still have states, initialize the new top state with the new data
     if (!stateStack.empty())
     {
       // Replace the data for the new current state
-      stateDataStack.back() = data;
+      //stateDataStack.back() = data;
 
       GetCurrentState()->Init();
       return true;
@@ -120,42 +122,28 @@ namespace Engine
     //running = false;
   }
 
+  void StateManager::Init(GameStateBase* initialState)
+  {
+    stateStack.push_back(initialState);
+    GetCurrentState()->Load();
+    GetCurrentState()->Init();
+  }
+
+  void StateManager::Exit()
+  {
+    // Clean up all states in the stack
+    while (!stateStack.empty())
+    {
+      GetCurrentState()->Free();
+      GetCurrentState()->Unload();
+      stateStack.pop_back();
+      //stateDataStack.pop_back();
+    }
+  }
+
   void StateManager::Run(GameStateBase* initialState)
   {
 
-    //// Start with the initial state
-    //stateStack.push_back(initialState);
-    //stateDataStack.push_back(std::any()); // Empty data for initial state 
-
-    //GetCurrentState()->Load();
-    //GetCurrentState()->Init();
-
-    //while (running && !stateStack.empty())
-    //{
-    //  /*AESysFrameStart();
-    //  dt = (float)AEFrameRateControllerGetFrameTime();*/
-
-
-    //  /*if (AESysDoesWindowExist() == 0)
-    //    StateManager::Stop();*/
-
-
-    //    // Get current state from top of stack
-    //  GetCurrentState()->Update();
-    //  GetCurrentState()->Draw();
-
-
-    //  //AESysFrameEnd();
-    //}
-
-    //// Clean up all states in the stack
-    //while (!stateStack.empty())
-    //{
-    //  GetCurrentState()->Free();
-    //  GetCurrentState()->Unload();
-    //  stateStack.pop_back();
-    //  stateDataStack.pop_back();
-    //}
 
   }
 
@@ -164,10 +152,10 @@ namespace Engine
     return stateStack.back();
   }
 
-  std::any& StateManager::GetStateData()
+  /*std::any& StateManager::GetStateData()
   {
-    return stateDataStack.back();
-  }
+     return stateDataStack.back();
+  }*/
 
 
 }

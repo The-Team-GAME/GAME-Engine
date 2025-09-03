@@ -3,7 +3,8 @@
 #include <iostream>
 #include "Graphics.h"
 #include <glm/glm.hpp>
-#include "StateManager.h"
+#include "StateManager.h" 
+#include "BasicState.h"
 
 namespace Engine
 {
@@ -50,6 +51,8 @@ namespace Engine
 
     std::cout << glGetString(GL_VERSION) << std::endl;
 
+    StateManager::Init(BasicState::Get());
+
     Graphics::init();
   }
 
@@ -77,6 +80,7 @@ namespace Engine
 
   void Core::exit()
   {
+    StateManager::Exit();
     Graphics::exit();
     glfwDestroyWindow(window);
     glfwTerminate();

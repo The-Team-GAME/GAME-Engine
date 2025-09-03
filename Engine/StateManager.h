@@ -203,6 +203,10 @@ namespace Engine
      */
     static void Stop();
 
+    static void Init(GameStateBase* initialState);
+
+    static void Exit();
+
     /**
      * @brief Runs the game loop with the initial game state.
      *
@@ -220,7 +224,7 @@ namespace Engine
      *
      * @return Reference to the current state's data.
      */
-    static std::any& GetStateData();
+    //static std::any& GetStateData();
 
     /**
      * @brief Gets the current state.
@@ -236,7 +240,7 @@ namespace Engine
 
   private:
     inline static std::vector<GameStateBase*> stateStack;
-    inline static std::vector<std::any> stateDataStack;
+    //inline static std::vector<std::any> stateDataStack;
   };
 
   //inline DevConsole console; // this allows all states to access the console
