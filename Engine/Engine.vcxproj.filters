@@ -57,6 +57,9 @@
     <ClCompile Include="BasicState.h">
       <Filter>Source Files\GameStates</Filter>
     </ClCompile>
+    <ClCompile Include="BasicState.cpp">
+      <Filter>Source Files\GameStates</Filter>
+    </ClCompile>
     <ClCompile Include="InputManager.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
@@ -80,6 +83,9 @@
     </ClCompile>
     <ClCompile Include="..\Dependencies\ImGui\backends\imgui_impl_opengl3.cpp">
       <Filter>Source Files\Dependencies\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="MainMenuState.cpp">
+      <Filter>Source Files\GameStates</Filter>
     </ClCompile>
     <ClCompile Include="ImGuiManager.cpp">
       <Filter>Source Files\Engine</Filter>

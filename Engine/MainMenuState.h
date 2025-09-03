@@ -1,55 +1,39 @@
 #pragma once
 
-#include "StateManager.h"
-#include "Graphics.h"
-#include "InputManager.h"
-#include <glm/glm.hpp>
-#include <iostream>
-#include <GLFW/glfw3.h>
+#include "StateManager.h" 
 
 class MainMenuState : public Engine::GameState<MainMenuState>
 {
+private:
+
 public:
   /*!
    * @brief Loads resources needed by the main menu state.
    */
-  void Load() override
-  {
-  }
+  void Load();
 
   /*!
    * @brief Initializes the main menu state.
    */
-  void Init() override
-  {
-  }
+  void Init();
 
   /*!
    * @brief Updates the main menu state logic.
    */
-  void Update() override
-  {
-  }
+  void Update();
 
   /*!
    * @brief Renders the main menu interface.
    */
-  void Draw() override
-  {
-    Graphics::clearScreen(0.1f, 0.1f, 0.1f, 1.0f); // Dark gray background
-  }
+  void Draw();
 
   /*!
    * @brief Frees runtime resources used by the main menu state.
    */
-  void Free() override
-  {
-  }
+  void Free();
 
   /*!
    * @brief Unloads resources used by the main menu state.
    */
-  void Unload() override
-  {
-  }
+  void Unload();
 };
