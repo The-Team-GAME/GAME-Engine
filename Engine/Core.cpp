@@ -33,6 +33,7 @@ namespace Engine
       return -1;
 
     /* Create a windowed mode window and its OpenGL context */
+    // TODO: window size should not be hardcoded
     int windowWidth = 800;
     int windowHeight = 600;
     window = glfwCreateWindow(windowWidth, windowHeight, "Rectangle Drawer", NULL, NULL);
