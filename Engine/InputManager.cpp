@@ -1,0 +1,84 @@
+#include "InputManager.h"
+#include "Core.h"
+#include <GLFW/glfw3.h>
+#include <array>
+#include <glm/glm.hpp>
+
+namespace
+{
+  // Keyboard state
+  std::array<bool, GLFW_KEY_LAST + 1> currentKeys;
+  std::array<bool, GLFW_KEY_LAST + 1> previousKeys;
+
+  // Mouse button state
+  std::array<bool, GLFW_MOUSE_BUTTON_LAST + 1> currentMouseButtons;
+  std::array<bool, GLFW_MOUSE_BUTTON_LAST + 1> previousMouseButtons;
+
+  // Mouse position
+  glm::vec2 mousePosition;
+}
+
+namespace Engine
+{
+  void Input::Update()
+  {
+    GLFWwindow* window = Engine::CORE->getWindow();
+
+    // Update previous states
+    previousKeys = currentKeys;
+    previousMouseButtons = currentMouseButtons;
+
+    // Update current keyboard state
+    for (int key = 0; key <= GLFW_KEY_LAST; ++key)
+    {
+      currentKeys[key] = (glfwGetKey(window, key) == GLFW_PRESS);
+    }
+
+    // Update current mouse button state
+    for (int button = 0; button <= GLFW_MOUSE_BUTTON_LAST; ++button)
+    {
+      currentMouseButtons[button] = (glfwGetMouseButton(window, button) == GLFW_PRESS);
+    }
+
+    // Update mouse position
+    double xpos, ypos;
+    glfwGetCursorPos(window, &xpos, &ypos);
+    mousePosition.x = static_cast<float>(xpos);
+    mousePosition.y = static_cast<float>(ypos);
+  }
+
+  bool Input::IsKeyPressed(int key)
+  {
+    return currentKeys[key] && !previousKeys[key];
+  }
+
+  bool Input::IsKeyReleased(int key)
+  {
+    return !currentKeys[key] && previousKeys[key];
+  }
+
+  bool Input::IsKeyHeld(int key)
+  {
+    return currentKeys[key];
+  }
+
+  bool Input::IsMouseButtonPressed(int button)
+  {
+    return currentMouseButtons[button] && !previousMouseButtons[button];
+  }
+
+  bool Input::IsMouseButtonReleased(int button)
+  {
+    return !currentMouseButtons[button] && previousMouseButtons[button];
+  }
+
+  bool Input::IsMouseButtonHeld(int button)
+  {
+    return currentMouseButtons[button];
+  }
+
+  glm::vec2 Input::GetMousePosition()
+  {
+    return mousePosition;
+  }
+}

@@ -19,6 +19,7 @@ namespace Engine
     int init();
     void run();
     void exit();
+    GLFWwindow *getWindow() const;
   };
 
   // Global pointer to the instance of the core

@@ -143,6 +143,7 @@
     <ClCompile Include="BasicState.h" />
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="Graphics.cpp" />
+    <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="StateManager.cpp" />
     <ClCompile Include="WinMain.cpp" />
@@ -150,6 +151,7 @@
   <ItemGroup>
     <ClInclude Include="Core.h" />
     <ClInclude Include="Graphics.h" />
+    <ClInclude Include="InputManager.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="StateManager.h" />
   </ItemGroup>

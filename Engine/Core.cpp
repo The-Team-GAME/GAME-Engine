@@ -3,18 +3,20 @@
 #include <iostream>
 #include "Graphics.h"
 #include <glm/glm.hpp>
-#include "StateManager.h" 
+#include "StateManager.h"
 #include "BasicState.h"
+#include "InputManager.h"
 
 namespace Engine
 {
 
-  Core* CORE;
+  Core *CORE;
 
   Core::Core()
   {
     lastTime = 0;
     isRunning = true;
+    window = nullptr;
     CORE = this; // Set the global pointer
   }
 
@@ -59,13 +61,13 @@ namespace Engine
   void Core::run()
   {
 
-
     while (!glfwWindowShouldClose(window) && isRunning)
     {
       /* Render here */
       /*glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT);*/
 
+      Input::Update();
 
       StateManager::GetCurrentState()->Update();
       StateManager::GetCurrentState()->Draw();
@@ -84,6 +86,11 @@ namespace Engine
     Graphics::exit();
     glfwDestroyWindow(window);
     glfwTerminate();
+  }
+
+  GLFWwindow *Core::getWindow() const
+  {
+    return window;
   }
 
 }
