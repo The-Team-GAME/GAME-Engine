@@ -6,15 +6,14 @@
 #include "StateManager.h"
 #include "BasicState.h"
 #include "MainMenuState.h"
-#include "InputManager.h"
-#include <imgui.h>
-#include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_opengl3.h>
+#include "InputManager.h" 
+#include "ImGuiManager.h"
+#include "StateChooser.h"  
 
 namespace Engine
 {
 
-  Core *CORE;
+  Core* CORE;
 
   Core::Core()
   {
@@ -58,16 +57,15 @@ namespace Engine
 
     std::cout << glGetString(GL_VERSION) << std::endl;
 
-    ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
-    ImGui::StyleColorsDark();
-
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init();
 
     StateManager::Init(BasicState::Get());
 
+    ImGuiManager::init();
+    ImGuiManager::addPanel(StateChooser);
+
     Graphics::init();
+
+    return 0;
   }
 
   void Core::run()
@@ -82,26 +80,8 @@ namespace Engine
       StateManager::GetCurrentState()->Update();
       StateManager::GetCurrentState()->Draw();
 
+      ImGuiManager::update();
 
-      // TODO: move all the ImGui code to a separate function/class
-      ImGui_ImplOpenGL3_NewFrame();
-      ImGui_ImplGlfw_NewFrame();
-      ImGui::NewFrame();
-
-      ImGui::Begin("State Manager");
-
-      ImGui::Text("Current State: %s", typeid(*StateManager::GetCurrentState()).name());
-      if (ImGui::Button("BasicState")) {
-        StateManager::ChangeState(BasicState::Get());
-      }
-      if (ImGui::Button("MainMenuState")) {
-        StateManager::ChangeState(MainMenuState::Get());
-      }
-
-      ImGui::End();
-
-      ImGui::Render();
-      ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
       /* Swap front and back buffers */
       glfwSwapBuffers(window);
@@ -116,7 +96,7 @@ namespace Engine
     glfwTerminate();
   }
 
-  GLFWwindow *Core::getWindow() const
+  GLFWwindow* Core::getWindow() const
   {
     return window;
   }

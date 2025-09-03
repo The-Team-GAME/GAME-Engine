@@ -34,6 +34,9 @@
     <Filter Include="Source Files\Dependencies\ImGui">
       <UniqueIdentifier>{92ca82bf-e755-413f-bf44-663e6fdc2bb1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Engine\ImGuiPanels">
+      <UniqueIdentifier>{4b4c6b24-6f4c-4f29-807d-b702c77f6dec}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinMain.cpp">
@@ -84,6 +87,12 @@
     <ClCompile Include="MainMenuState.cpp">
       <Filter>Source Files\GameStates</Filter>
     </ClCompile>
+    <ClCompile Include="ImGuiManager.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="StateChooser.cpp">
+      <Filter>Source Files\Engine\ImGuiPanels</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
@@ -103,6 +112,12 @@
     </ClInclude>
     <ClInclude Include="MainMenuState.h">
       <Filter>Source Files\GameStates</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGuiManager.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="StateChooser.h">
+      <Filter>Source Files\Engine\ImGuiPanels</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
