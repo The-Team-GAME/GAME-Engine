@@ -1,5 +1,6 @@
 #pragma once
 #include <GL/glew.h>
+#include <glm/fwd.hpp>
 
 class Shader {
 private:
@@ -26,5 +27,4 @@ public:
   void setVec3(const std::string& name, glm::vec3 const& list) const;
   void setVec3(const std::string& name, float x, float y, float z) const;
   void setMatrix(const std::string& name, const glm::mat4x4& matrix, bool transpose = false) const;
-
 };
