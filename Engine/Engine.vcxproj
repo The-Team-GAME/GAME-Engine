@@ -154,7 +154,6 @@
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="MainMenuState.cpp" />
     <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="StateChooser.cpp" />
     <ClCompile Include="StateManager.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
@@ -165,7 +164,7 @@
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="MainMenuState.h" />
     <ClInclude Include="Shader.h" />
-    <ClInclude Include="StateChooser.h" />
+    <ClInclude Include="StateChooser.inl" />
     <ClInclude Include="StateManager.h" />
   </ItemGroup>
   <ItemGroup>

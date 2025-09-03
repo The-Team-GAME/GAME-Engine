@@ -8,7 +8,7 @@
 #include "MainMenuState.h"
 #include "InputManager.h" 
 #include "ImGuiManager.h"
-#include "StateChooser.h"  
+#include "StateChooser.inl"  
 
 namespace Engine
 {

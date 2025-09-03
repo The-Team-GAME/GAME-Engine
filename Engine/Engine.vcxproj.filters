@@ -90,9 +90,6 @@
     <ClCompile Include="ImGuiManager.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="StateChooser.cpp">
-      <Filter>Source Files\Engine\ImGuiPanels</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
@@ -116,7 +113,7 @@
     <ClInclude Include="ImGuiManager.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
-    <ClInclude Include="StateChooser.h">
+    <ClInclude Include="StateChooser.inl">
       <Filter>Source Files\Engine\ImGuiPanels</Filter>
     </ClInclude>
   </ItemGroup>

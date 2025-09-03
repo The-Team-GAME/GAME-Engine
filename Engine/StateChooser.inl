@@ -1,9 +1,11 @@
+#pragma once
+
 #include "imgui.h."
 #include "StateManager.h"
 #include "BasicState.h"
 #include "MainMenuState.h"
 
-void StateChooser()
+inline void StateChooser()
 {
   ImGui::Begin("State Chooser");
 
