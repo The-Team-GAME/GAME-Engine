@@ -6,13 +6,13 @@
 
 namespace Math {
 
-	namespace Vector {
+	namespace Vector2D {
 
 		class Vec2D {
 		private:
 			f64 x, y;
 		public:
-			Vec2D(f64 x_vec = 0, f64 y_vec = 0); //(default)ctor
+			Vec2D(f64 x_vec = 0, f64 y_vec = 0) : x{ x_vec }, y{ y_vec } {}; //(default)ctor
 			Vec2D(Vec2D const&) = default; //copy constructor
 
 			// Acessors
