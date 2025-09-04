@@ -35,9 +35,14 @@ public:
 	void Update();
 
 	/*!
-	 * @brief Renders the main menu interface.
+	 * @brief Renders any miscellanous objects.
 	 */
 	void Draw();
+
+	/*!
+	 * @brief Renders the sprite manager interface.
+	 */
+	void DrawManager();
 
 	/*!
 	 * @brief Frees runtime resources used by the main menu state.
