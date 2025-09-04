@@ -38,7 +38,7 @@ namespace Math {
 		Vec3D normalise_vector(Vec3D const& vect);
 		Vec3D scale_vector(Vec3D const& vect, f64 scale);
 		f64 dot_product(Vec3D const& lhs, Vec3D const& rhs);
-		f64 cross_product(Vec3D const& lhs, Vec3D const& rhs);
+		Vec3D cross_product(Vec3D const& lhs, Vec3D const& rhs);
 
 		// Non-member operator overloads
 		Vec3D operator+(Vec3D const& vect1, Vec3D const& vect2);

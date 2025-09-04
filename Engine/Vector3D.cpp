@@ -73,11 +73,15 @@ namespace Math {
 					lhs.Z() * rhs.Z();
 		}
 
-		// NEED CHANGE
-		f64 cross_product(Vec3D const& lhs, Vec3D const& rhs)
+		Vec3D cross_product(Vec3D const& lhs, Vec3D const& rhs)
 		{
-			f64 result = lhs.X() * rhs.Y() - lhs.Y() * rhs.X();
-			return result < 0 ? -result : result;
+			Vec3D tmp
+			{
+				lhs.Y() * rhs.Z() - lhs.Z() * rhs.Y(),
+				lhs.Z() * rhs.X() - lhs.X() * rhs.Z(),
+				lhs.X() * rhs.Y() - lhs.Y() * rhs.X()
+			};
+			return tmp;
 		}
 
 		// Non Member Operator Overloads
