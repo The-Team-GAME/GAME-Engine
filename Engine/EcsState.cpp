@@ -32,10 +32,12 @@ void EcsState::Init()
 {
   std::cout << "Initializing EcsState...\n";
   Engine::ImGuiManager::addPanel(StateChooserLOL);
-  
-  EntityComponentSystem::world ecs;
-      
+
+  EntityComponentSystem::world& ecs =
+      EntityComponentSystem::ECSManager::GetInstance().GetWorld();
   GameObjSpawner spawner(ecs);
+
+
   spawner.registerSystems();
   spawner.spawnGameObject(10.0f, 10.0f, 50.0f, 50.0f, { 0.0f, 1.0f, 0.0f, 1.0f }, 1.0f, 0.0f);
     
@@ -69,8 +71,8 @@ void EcsState::Update()
 {
   Graphics::clearScreen(0.1f, 0.1f, 0.1f, 1.0f);
   //ecs.progress();
-      //EntityComponentSystem::ECSManager::GetInstance().GetWorld();
-  ECS->progress();
+  EntityComponentSystem::ECSManager::GetInstance().GetWorld().progress();
+  
 }
 
 void EcsState::Draw()
