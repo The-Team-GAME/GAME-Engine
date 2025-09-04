@@ -156,6 +156,7 @@
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="JsonState.cpp" />
     <ClCompile Include="MainMenuState.cpp" />
+    <ClCompile Include="RectEditor.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="StateManager.cpp" />
     <ClCompile Include="WinMain.cpp" />
@@ -168,6 +169,7 @@
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="JsonState.h" />
     <ClInclude Include="MainMenuState.h" />
+    <ClInclude Include="RectEditor.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="StateChooser.inl" />
     <ClInclude Include="StateManager.h" />

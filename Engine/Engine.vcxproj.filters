@@ -99,6 +99,12 @@
     <ClCompile Include="EcsState.cpp">
       <Filter>Source Files\GameStates</Filter>
     </ClCompile>
+    <ClCompile Include="JsonState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RectEditor.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
@@ -128,6 +134,12 @@
     <ClInclude Include="EcsState.h">
       <Filter>Source Files\GameStates</Filter>
     </ClInclude>
+    <ClInclude Include="JsonState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RectEditor.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="basic.frag">
@@ -136,5 +148,6 @@
     <None Include="basic.vert">
       <Filter>Source Files\Shaders</Filter>
     </None>
+    <None Include="example.json" />
   </ItemGroup>
 </Project>
