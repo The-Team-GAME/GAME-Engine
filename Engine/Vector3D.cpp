@@ -102,6 +102,7 @@ namespace Math {
 			Vec3D tmp{ vect };
 			tmp.X(vect.X() / divisor);
 			tmp.Y(vect.Y() / divisor);
+			tmp.Z(vect.Z() / divisor);
 			return tmp;
 		}
 		Vec3D operator*(Vec3D const& vect, f64 scalar)
@@ -109,6 +110,7 @@ namespace Math {
 			Vec3D tmp{ vect };
 			tmp.X(vect.X() * scalar);
 			tmp.Y(vect.Y() * scalar);
+			tmp.Z(vect.Z() * scalar);
 			return tmp;
 		}
 
