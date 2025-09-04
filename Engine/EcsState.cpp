@@ -2,6 +2,7 @@
 #include "Graphics.h"
 #include <iostream>
 #include <glm/glm.hpp>
+#include "Core.h"
 
 // Define your components
 struct Position
@@ -29,7 +30,7 @@ void EcsState::Init()
   std::cout << "Initializing EcsState...\n";
 
   // Create a system that updates position based on velocity
-  ecs.system<Position, const Velocity>()
+  Engine::CORE_ECS->system<Position, const Velocity>()
     .each([](Position& p, const Velocity& v) {
     p.x += v.x;
     p.y += v.y;
@@ -37,12 +38,12 @@ void EcsState::Init()
       });
 
   // Create a drawing system
-  ecs.system<const Position, const DrawableRect>()
+  Engine::CORE_ECS->system<const Position, const DrawableRect>()
     .each([](const Position& p, const DrawableRect& r)
       { Graphics::drawRect(p.x, p.y, r.width, r.height, r.color); });
 
   // Create an entity with Position, Velocity, and a DrawableRect
-  auto e = ecs.entity()
+  auto e = Engine::CORE_ECS->entity()
     .insert([](Position& p, Velocity& v, DrawableRect& r)
       {
         p = { 10.0f, 20.0f };
@@ -53,7 +54,6 @@ void EcsState::Init()
 void EcsState::Update()
 {
   Graphics::clearScreen(0.1f, 0.1f, 0.1f, 1.0f);
-  ecs.progress();
 }
 
 void EcsState::Draw()

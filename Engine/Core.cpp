@@ -14,6 +14,7 @@ namespace Engine
 {
 
   Core* CORE;
+  ECS::world* CORE_ECS;
 
   Core::Core()
   {
@@ -21,6 +22,7 @@ namespace Engine
     isRunning = true;
     window = nullptr;
     CORE = this; // Set the global pointer
+    CORE_ECS = new ECS::world();
   }
 
   Core::~Core()
@@ -79,6 +81,8 @@ namespace Engine
 
       StateManager::GetCurrentState()->Update();
       StateManager::GetCurrentState()->Draw();
+
+      CORE_ECS->progress();
 
       ImGuiManager::update();
 

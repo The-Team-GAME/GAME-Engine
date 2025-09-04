@@ -6,7 +6,6 @@
 class EcsState : public Engine::GameState<EcsState>
 {
 private:
-  ECS::world ecs;
 
 public:
   void Load();
