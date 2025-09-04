@@ -2,6 +2,18 @@
 
 #include "StateManager.h" 
 
+struct Sprite {
+	bool isAnimated = false;
+	int frames = 0;
+	int speed = 100;
+	int currentFrame = 0;
+	float animationTimer = 0.0f;
+	int columns = 1;
+	int rows = 1;
+	int width = 0;
+	int height = 0;
+};
+
 class SpriteState : public Engine::GameState<SpriteState>
 {
 private:
