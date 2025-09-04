@@ -2,7 +2,7 @@
 
 #include "StateManager.h" 
 
-class SpriteMGR : public Engine::GameState<SpriteMGR>
+class SpriteState : public Engine::GameState<SpriteState>
 {
 private:
 

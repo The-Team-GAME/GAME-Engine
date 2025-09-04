@@ -157,7 +157,7 @@
     <ClCompile Include="JsonState.cpp" />
     <ClCompile Include="MainMenuState.cpp" />
     <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="SpriteManager.cpp" />
+    <ClCompile Include="SpriteState.cpp" />
     <ClCompile Include="StateManager.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
@@ -170,7 +170,7 @@
     <ClInclude Include="JsonState.h" />
     <ClInclude Include="MainMenuState.h" />
     <ClInclude Include="Shader.h" />
-    <ClInclude Include="SpriteManager.h" />
+    <ClInclude Include="SpriteState.h" />
     <ClInclude Include="StateChooser.inl" />
     <ClInclude Include="StateManager.h" />
   </ItemGroup>

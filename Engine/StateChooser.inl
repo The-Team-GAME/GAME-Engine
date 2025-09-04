@@ -6,6 +6,7 @@
 #include "MainMenuState.h"
 #include "EcsState.h"
 #include "JsonState.h"
+#include "SpriteState.h"
 
 inline void StateChooser()
 {
@@ -28,6 +29,10 @@ inline void StateChooser()
   if (ImGui::Button("JsonState"))
   {
     Engine::StateManager::ChangeState(JsonState::Get());
+  }
+  if (ImGui::Button("SpriteManager"))
+  {
+      Engine::StateManager::ChangeState(SpriteState::Get());
   }
 
   ImGui::End();
