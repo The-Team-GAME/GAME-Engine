@@ -61,6 +61,16 @@ namespace Math {
 			return tmp * scale;
 		}
 
+		f64 dot_product(Vec2D const& lhs, Vec2D const& rhs)
+		{
+			return lhs.X() * rhs.X() + lhs.Y() * rhs.Y();
+		}
+		f64 cross_product(Vec2D const& lhs, Vec2D const& rhs)
+		{
+			f64 result = lhs.X() * rhs.Y() - lhs.Y() * rhs.X();
+			return result < 0 ? -result : result;
+		}
+
 		// Non Member Operator Overloads
 		Vec2D operator+(Vec2D const& vect1, Vec2D const& vect2)
 		{

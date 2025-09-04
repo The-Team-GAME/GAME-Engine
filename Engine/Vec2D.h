@@ -36,8 +36,10 @@ namespace Math {
 		// Non-member functions
 		Vec2D normalise_vector(Vec2D const& vect);
 		Vec2D scale_vector(Vec2D const& vect, f64 scale);
-		Vec2D dot_product(Vec2D const& vec1, Vec2D const& vec2);
-		Vec2D cross_product(Vec2D const& vec1, Vec2D const& vec2);
+		f64 dot_product(Vec2D const& lhs, Vec2D const& rhs);
+		// This one not really cross product, more like finding area of //gram formed
+		f64 cross_product(Vec2D const& lhs, Vec2D const& rhs); 
+
 		// Non-member operator overloads
 		Vec2D operator+(Vec2D const& vect1, Vec2D const& vect2);
 		Vec2D operator-(Vec2D const& vect1, Vec2D const& vect2);
