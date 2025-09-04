@@ -25,9 +25,6 @@
     <Filter Include="Source Files\Shaders">
       <UniqueIdentifier>{dca7a92a-4cb4-4b9d-8342-a5ab4ad1b884}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\GameStates">
-      <UniqueIdentifier>{05409f99-6b97-4466-bb82-3c53ddba7d13}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Dependencies">
       <UniqueIdentifier>{d0a0f96e-ce41-427d-b7d8-994c198d9d15}</UniqueIdentifier>
     </Filter>
@@ -39,6 +36,12 @@
     </Filter>
     <Filter Include="Source Files\ECS">
       <UniqueIdentifier>{44f5bfe5-51ab-4ae6-85b7-5cad4f898c7d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GameStates">
+      <UniqueIdentifier>{05409f99-6b97-4466-bb82-3c53ddba7d13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GameObj">
+      <UniqueIdentifier>{e1ed4431-993b-4120-8b7d-90f459d84ed5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -99,6 +102,12 @@
     <ClCompile Include="EcsState.cpp">
       <Filter>Source Files\GameStates</Filter>
     </ClCompile>
+    <ClCompile Include="JsonState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObjSpawner.cpp">
+      <Filter>Source Files\GameObj</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
@@ -128,6 +137,12 @@
     <ClInclude Include="EcsState.h">
       <Filter>Source Files\GameStates</Filter>
     </ClInclude>
+    <ClInclude Include="JsonState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjSpawner.h">
+      <Filter>Source Files\GameObj</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="basic.frag">
@@ -136,5 +151,6 @@
     <None Include="basic.vert">
       <Filter>Source Files\Shaders</Filter>
     </None>
+    <None Include="example.json" />
   </ItemGroup>
 </Project>

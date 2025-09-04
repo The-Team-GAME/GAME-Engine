@@ -151,6 +151,7 @@
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="ECS.h" />
     <ClCompile Include="EcsState.cpp" />
+    <ClCompile Include="GameObjSpawner.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="ImGuiManager.cpp" />
     <ClCompile Include="InputManager.cpp" />
@@ -164,6 +165,7 @@
     <ClInclude Include="Core.h" />
     <ClInclude Include="EcsState.h" />
     <ClInclude Include="Graphics.h" />
+    <ClInclude Include="GameObjSpawner.h" />
     <ClInclude Include="ImGuiManager.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="JsonState.h" />

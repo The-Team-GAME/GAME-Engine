@@ -1,12 +1,11 @@
 #pragma once
 
 #include "StateManager.h"
-#include "ECS.h"
 
 class EcsState : public Engine::GameState<EcsState>
 {
 private:
-  ECS::world ecs;
+  //ECS::world ecs;
 
 public:
   void Load();

@@ -7,12 +7,17 @@
 #include <tuple>
 #include <any>
 
-namespace ECS
+namespace EntityComponentSystem
 {
 
   // Forward declarations
   class world;
+
   class entity_handle;
+  class ECSManager;
+
+  inline world* World = nullptr;  // pointer is fine
+
 
   // Component storage base class
   class component_storage_base
@@ -282,5 +287,30 @@ namespace ECS
 
     return *this;
   }
+
+  //class ECSManager
+  //{
+  //public:
+  //    // Access the singleton instance
+  //    static ECSManager& GetInstance()
+  //    {
+  //        static ECSManager instance; // created once, lazy-initialized
+  //        return instance;
+  //    }
+
+  //    // Access the ECS world
+  //    world& GetWorld() { return ecs; }
+
+  //private:
+  //    world ecs; // actual ECS world
+
+  //    // Prevent construction / copy / assignment
+  //    ECSManager() = default;
+  //    ~ECSManager() = default;
+  //    ECSManager(const ECSManager&) = delete;
+  //    ECSManager& operator=(const ECSManager&) = delete;
+  //};
+
+
 
 } // namespace ECS
