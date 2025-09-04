@@ -2,7 +2,7 @@
 
 namespace Math {
 
-	namespace Vector {
+	namespace Vector2D {
 		// Constructor
 		// Vec2D(f64 x_vec, f64 y_vec) : x{ x_vec }, y{ y_vec } {}
 		// Acessors
