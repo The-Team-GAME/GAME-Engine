@@ -156,6 +156,7 @@
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="JsonState.cpp" />
     <ClCompile Include="MainMenuState.cpp" />
+    <ClCompile Include="Vec2D.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="StateManager.cpp" />
     <ClCompile Include="WinMain.cpp" />
@@ -168,9 +169,11 @@
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="JsonState.h" />
     <ClInclude Include="MainMenuState.h" />
+    <ClInclude Include="Vec2D.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="StateChooser.inl" />
     <ClInclude Include="StateManager.h" />
+    <ClInclude Include="TypeDef.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="basic.frag" />
