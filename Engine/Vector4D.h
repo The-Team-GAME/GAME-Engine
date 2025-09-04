@@ -10,7 +10,7 @@ namespace Math {
 		private:
 			f64 x, y, z, w;
 		public:
-			Vec4D(f64 x_vec = 0, f64 y_vec = 0, f64 z_vec = 0, f64 w_vec) 
+			Vec4D(f64 x_vec = 0, f64 y_vec = 0, f64 z_vec = 0, f64 w_vec = 0) 
 				: x{ x_vec }, y{ y_vec }, z{ z_vec }, w{ w_vec } {}; //(default)ctor
 			Vec4D(Vec4D const&) = default; //copy constructor
 
