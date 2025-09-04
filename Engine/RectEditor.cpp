@@ -181,7 +181,6 @@ ImGui::SameLine();
 if (ImGui::Button("Save (TODO)"))
 {
 // TODO: Serialize s_rects to a file (JSON or binary) when serialization system is ready.
-// Why: required by later feature; kept here to fix UI workflow early.
 }
 ImGui::SameLine();
 if (ImGui::Button("Load (TODO)"))
