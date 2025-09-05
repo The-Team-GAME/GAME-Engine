@@ -3,6 +3,10 @@
 #include <iostream>
 #include <glm/glm.hpp>
 #include "Core.h"
+#include "Components/BasicComponents.h"
+#include "Systems/MovementSystem.h"
+#include "Systems/HealthSystem.h"
+#include "Systems/RenderSystem.h"
 
 // Define your components
 struct Position
@@ -27,28 +31,28 @@ void EcsState::Load()
 
 void EcsState::Init()
 {
-  std::cout << "Initializing EcsState...\n";
+  Engine::CORE_ECS->registerComponent<Components::Position>();
+  Engine::CORE_ECS->registerComponent<Components::Velocity>();
+  Engine::CORE_ECS->registerComponent<Components::Health>();
+  Engine::CORE_ECS->registerComponent<Components::Renderable>();
 
-  // Create a system that updates position based on velocity
-  Engine::CORE_ECS->system<Position, const Velocity>()
-    .each([](Position& p, const Velocity& v) {
-    p.x += v.x;
-    p.y += v.y;
-    std::cout << "Position: (" << p.x << ", " << p.y << ")\n";
-      });
+  // Create player entity
+  auto player = Engine::CORE_ECS->createEntity()
+    .addComponent<Components::Position>(10.0f, 20.0f)
+    .addComponent<Components::Velocity>(1.0f, 0.0f)
+    .addComponent<Components::Health>(100, 100)
+    .addComponent<Components::Renderable>();
 
-  // Create a drawing system
-  Engine::CORE_ECS->system<const Position, const DrawableRect>()
-    .each([](const Position& p, const DrawableRect& r)
-      { Graphics::drawRect(p.x, p.y, r.width, r.height, r.color); });
+  // Create enemy entity
+  auto enemy = Engine::CORE_ECS->createEntity()
+    .addComponent<Components::Position>(50.0f, 30.0f)
+    .addComponent<Components::Health>(50, 50)
+    .addComponent<Components::Renderable>();
 
-  // Create an entity with Position, Velocity, and a DrawableRect
-  auto e = Engine::CORE_ECS->entity()
-    .insert([](Position& p, Velocity& v, DrawableRect& r)
-      {
-        p = { 10.0f, 20.0f };
-        v = { 1.0f, 0.0f };
-        r = { 50.0f, 50.0f, {1.0f, 0.0f, 0.0f, 1.0f} }; });
+  // Add systems
+  Engine::CORE_ECS->addSystem<MovementSystem>();
+  Engine::CORE_ECS->addSystem<HealthSystem>();
+  Engine::CORE_ECS->addSystem<RenderSystem>();
 }
 
 void EcsState::Update()
