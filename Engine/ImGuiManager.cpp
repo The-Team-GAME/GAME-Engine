@@ -8,6 +8,8 @@ void Engine::ImGuiManager::init()
 {
   ImGui::CreateContext();
   ImGuiIO& io = ImGui::GetIO();
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+  //io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
   ImGui::StyleColorsDark();
 
   ImGui_ImplGlfw_InitForOpenGL(Engine::CORE->getWindow(), true);

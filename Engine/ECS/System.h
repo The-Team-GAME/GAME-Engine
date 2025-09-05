@@ -33,11 +33,11 @@ namespace ECS {
     }
 
     // Override for per-entity logic
-    virtual void updateEntity(EntityID entity, float deltaTime) {}
+    virtual void updateEntity([[maybe_unused]] EntityID entity, [[maybe_unused]] float deltaTime) {}
 
     // Override for entity lifecycle events
-    virtual void onEntityAdded(EntityID entity) {}
-    virtual void onEntityRemoved(EntityID entity) {}
+    virtual void onEntityAdded([[maybe_unused]] EntityID entity) {}
+    virtual void onEntityRemoved([[maybe_unused]] EntityID entity) {}
 
     // Internal methods
     void addEntity(EntityID entity) {

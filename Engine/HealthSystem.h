@@ -2,16 +2,21 @@
 #include "ECS/System.h"
 #include "BasicComponents.h"
 
-class HealthSystem : public ECS::System {
+class HealthSystem : public ECS::System
+{
 public:
-  HealthSystem() {
+  HealthSystem()
+  {
     requireComponents<Components::Health>();
   }
 
-  void updateEntity(ECS::EntityID entityId, float deltaTime) override {
-    auto* health = world->getComponent<Components::Health>(entityId);
+  void updateEntity(ECS::EntityID entityId, float /*dt*/) override
+  {
 
-    if (health->isDead()) {
+    auto *health = world->getComponent<Components::Health>(entityId);
+
+    if (health->isDead())
+    {
       world->getEntity(entityId).destroy();
     }
   }

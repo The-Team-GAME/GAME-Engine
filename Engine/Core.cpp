@@ -13,14 +13,15 @@
 namespace Engine
 {
 
-  Core *CORE;
-  ECS::World *WORLD;
+  Core* CORE;
+  ECS::World* WORLD;
 
   Core::Core()
   {
     lastTime = 0;
     isRunning = true;
     window = nullptr;
+    dt = 0.0f;
     CORE = this; // Set the global pointer
     WORLD = new ECS::World();
   }
@@ -74,7 +75,7 @@ namespace Engine
 
     while (!glfwWindowShouldClose(window) && isRunning)
     {
-      float currenttime = glfwGetTime() * 1000.0;
+      float currenttime = static_cast<float>(glfwGetTime()) * 1000.0f;
       dt = (currenttime - lastTime) / 1000.0f;
       lastTime = currenttime;
 
@@ -105,7 +106,7 @@ namespace Engine
     glfwTerminate();
   }
 
-  GLFWwindow *Core::getWindow() const
+  GLFWwindow* Core::getWindow() const
   {
     return window;
   }
