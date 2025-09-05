@@ -3,10 +3,10 @@
 #include <iostream>
 #include <glm/glm.hpp>
 #include "Core.h"
-#include "Components/BasicComponents.h"
-#include "Systems/MovementSystem.h"
-#include "Systems/HealthSystem.h"
-#include "Systems/RenderSystem.h"
+#include "BasicComponents.h"
+#include "MovementSystem.h"
+#include "HealthSystem.h"
+#include "RenderSystem.h"
 
 // Define your components
 struct Position

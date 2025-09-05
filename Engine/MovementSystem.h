@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../ECS/System.h"
-#include "../Components/BasicComponents.h"
+#include "ECS/System.h"
+#include "BasicComponents.h"
 
 class MovementSystem : public ECS::System {
 public:
