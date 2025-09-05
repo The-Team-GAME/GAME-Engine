@@ -6,15 +6,15 @@
 #include "StateManager.h"
 #include "BasicState.h"
 #include "MainMenuState.h"
-#include "InputManager.h" 
+#include "InputManager.h"
 #include "ImGuiManager.h"
-#include "StateChooser.inl"  
+#include "StateChooser.inl"
 
 namespace Engine
 {
 
-  Core* CORE;
-  ECS::World* CORE_ECS;
+  Core *CORE;
+  ECS::World *CORE_ECS;
 
   Core::Core()
   {
@@ -59,7 +59,6 @@ namespace Engine
 
     std::cout << glGetString(GL_VERSION) << std::endl;
 
-
     StateManager::Init(BasicState::Get());
 
     ImGuiManager::init();
@@ -72,9 +71,14 @@ namespace Engine
 
   void Core::run()
   {
+    lastTime = static_cast<float>(glfwGetTime());
 
     while (!glfwWindowShouldClose(window) && isRunning)
     {
+      float currenttime = glfwGetTime() * 1000.0;
+      dt = (currenttime - lastTime) / 1000.0f;
+      lastTime = currenttime;
+
       glfwPollEvents();
 
       Input::Update();
@@ -82,10 +86,9 @@ namespace Engine
       StateManager::GetCurrentState()->Update();
       StateManager::GetCurrentState()->Draw();
 
-      CORE_ECS->update(1.0f); // change to delta time
+      CORE_ECS->update(dt);
 
       ImGuiManager::update();
-
 
       /* Swap front and back buffers */
       glfwSwapBuffers(window);
@@ -100,7 +103,7 @@ namespace Engine
     glfwTerminate();
   }
 
-  GLFWwindow* Core::getWindow() const
+  GLFWwindow *Core::getWindow() const
   {
     return window;
   }

@@ -10,8 +10,9 @@ namespace Engine
   {
   private:
     bool isRunning;
-    unsigned lastTime;
+    float lastTime;
     GLFWwindow *window;
+    float dt;
 
   public:
     Core();
@@ -25,5 +26,5 @@ namespace Engine
 
   // Global pointer to the instance of the core
   extern Core *CORE;
-  extern ECS::World* CORE_ECS;
+  extern ECS::World *CORE_ECS;
 }
