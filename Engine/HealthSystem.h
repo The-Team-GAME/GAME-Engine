@@ -1,6 +1,6 @@
 #pragma once
-#include "../ECS/System.h"
-#include "../Components/BasicComponents.h"
+#include "ECS/System.h"
+#include "BasicComponents.h"
 
 class HealthSystem : public ECS::System {
 public:
