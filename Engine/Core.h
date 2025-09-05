@@ -2,7 +2,7 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include "ECS.h"
+#include "ECS/ECS.h"
 
 namespace Engine
 {
@@ -25,5 +25,5 @@ namespace Engine
 
   // Global pointer to the instance of the core
   extern Core *CORE;
-  extern ECS::world* CORE_ECS;
+  extern ECS::World* CORE_ECS;
 }

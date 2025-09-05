@@ -14,7 +14,7 @@ namespace Engine
 {
 
   Core* CORE;
-  ECS::world* CORE_ECS;
+  ECS::World* CORE_ECS;
 
   Core::Core()
   {
@@ -22,7 +22,7 @@ namespace Engine
     isRunning = true;
     window = nullptr;
     CORE = this; // Set the global pointer
-    CORE_ECS = new ECS::world();
+    CORE_ECS = new ECS::World();
   }
 
   Core::~Core()
@@ -82,7 +82,7 @@ namespace Engine
       StateManager::GetCurrentState()->Update();
       StateManager::GetCurrentState()->Draw();
 
-      CORE_ECS->progress();
+      CORE_ECS->update(1.0f); // change to delta time
 
       ImGuiManager::update();
 

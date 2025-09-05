@@ -1,7 +1,6 @@
 #pragma once
 
 #include "StateManager.h"
-#include "ECS.h"
 
 class EcsState : public Engine::GameState<EcsState>
 {

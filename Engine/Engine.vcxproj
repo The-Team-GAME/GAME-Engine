@@ -149,8 +149,9 @@
     <ClCompile Include="BasicState.cpp" />
     <ClCompile Include="BasicState.h" />
     <ClCompile Include="Core.cpp" />
-    <ClCompile Include="ECS.h" />
     <ClCompile Include="EcsState.cpp" />
+    <ClCompile Include="ECS\ComponentManager.cpp" />
+    <ClCompile Include="ECS\Entity.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="ImGuiManager.cpp" />
     <ClCompile Include="InputManager.cpp" />
@@ -165,14 +166,25 @@
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Components\BasicComponents.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="EcsState.h" />
+    <ClInclude Include="ECS\ComponentArray.h" />
+    <ClInclude Include="ECS\ComponentManager.h" />
+    <ClInclude Include="ECS\ECS.h" />
+    <ClInclude Include="ECS\Entity.h" />
+    <ClInclude Include="ECS\System.h" />
+    <ClInclude Include="ECS\Types.h" />
+    <ClInclude Include="ECS\World.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="ImGuiManager.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="JsonState.h" />
     <ClInclude Include="MainMenuState.h" />
     <ClInclude Include="Matrix3x3.h" />
+    <ClInclude Include="Systems\HealthSystem.h" />
+    <ClInclude Include="Systems\MovementSystem.h" />
+    <ClInclude Include="Systems\RenderSystem.h" />
     <ClInclude Include="Vector2D.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="StateChooser.inl" />
@@ -184,6 +196,7 @@
   <ItemGroup>
     <None Include="basic.frag" />
     <None Include="basic.vert" />
+    <None Include="ECS\Entity.inl" />
     <None Include="example.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
