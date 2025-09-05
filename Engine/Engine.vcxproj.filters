@@ -40,6 +40,15 @@
     <Filter Include="Source Files\ECS">
       <UniqueIdentifier>{44f5bfe5-51ab-4ae6-85b7-5cad4f898c7d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\ECS\Backend">
+      <UniqueIdentifier>{f0b782ed-0693-46e1-89b0-d2acc6882697}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ECS\Components">
+      <UniqueIdentifier>{bce9375b-1c70-4222-9fda-82cbc75a7fd5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ECS\Systems">
+      <UniqueIdentifier>{9da84014-8217-49db-a30d-3286f6078382}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinMain.cpp">
@@ -93,11 +102,29 @@
     <ClCompile Include="ImGuiManager.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="ECS.h">
-      <Filter>Source Files\ECS</Filter>
-    </ClCompile>
     <ClCompile Include="EcsState.cpp">
       <Filter>Source Files\GameStates</Filter>
+    </ClCompile>
+    <ClCompile Include="JsonState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Matrix3x3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector2D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector3D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector4D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ECS\ComponentManager.cpp">
+      <Filter>Source Files\ECS\Backend</Filter>
+    </ClCompile>
+    <ClCompile Include="ECS\Entity.cpp">
+      <Filter>Source Files\ECS\Backend</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -128,6 +155,57 @@
     <ClInclude Include="EcsState.h">
       <Filter>Source Files\GameStates</Filter>
     </ClInclude>
+    <ClInclude Include="JsonState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrix3x3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TypeDef.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector3D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector4D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ECS\ComponentArray.h">
+      <Filter>Source Files\ECS\Backend</Filter>
+    </ClInclude>
+    <ClInclude Include="ECS\ComponentManager.h">
+      <Filter>Source Files\ECS\Backend</Filter>
+    </ClInclude>
+    <ClInclude Include="ECS\ECS.h">
+      <Filter>Source Files\ECS\Backend</Filter>
+    </ClInclude>
+    <ClInclude Include="ECS\Entity.h">
+      <Filter>Source Files\ECS\Backend</Filter>
+    </ClInclude>
+    <ClInclude Include="ECS\System.h">
+      <Filter>Source Files\ECS\Backend</Filter>
+    </ClInclude>
+    <ClInclude Include="ECS\Types.h">
+      <Filter>Source Files\ECS\Backend</Filter>
+    </ClInclude>
+    <ClInclude Include="ECS\World.h">
+      <Filter>Source Files\ECS\Backend</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicComponents.h">
+      <Filter>Source Files\ECS\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="HealthSystem.h">
+      <Filter>Source Files\ECS\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="MovementSystem.h">
+      <Filter>Source Files\ECS\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderSystem.h">
+      <Filter>Source Files\ECS\Systems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="basic.frag">
@@ -135,6 +213,10 @@
     </None>
     <None Include="basic.vert">
       <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="example.json" />
+    <None Include="ECS\Entity.inl">
+      <Filter>Source Files\ECS\Backend</Filter>
     </None>
   </ItemGroup>
 </Project>
