@@ -1,6 +1,17 @@
 #pragma once
 
+template<size_t N>
+struct fixed_string {
+  constexpr fixed_string(const char(&str)[N]) {
+    std::copy_n(str, N, value);
+  }
+  char value[N];
+};
+
+
 namespace Components {
+  template <fixed_string id>
+  struct Tag {};
 
   struct Position {
     float x, y;

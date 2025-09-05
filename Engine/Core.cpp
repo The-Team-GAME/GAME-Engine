@@ -14,7 +14,7 @@ namespace Engine
 {
 
   Core *CORE;
-  ECS::World *CORE_ECS;
+  ECS::World *WORLD;
 
   Core::Core()
   {
@@ -22,7 +22,7 @@ namespace Engine
     isRunning = true;
     window = nullptr;
     CORE = this; // Set the global pointer
-    CORE_ECS = new ECS::World();
+    WORLD = new ECS::World();
   }
 
   Core::~Core()
@@ -86,7 +86,7 @@ namespace Engine
       StateManager::GetCurrentState()->Update();
       StateManager::GetCurrentState()->Draw();
 
-      CORE_ECS->update(dt);
+      WORLD->update(dt);
 
       StateChooserPanel();
 

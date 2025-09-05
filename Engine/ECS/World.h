@@ -12,10 +12,12 @@
 #include <algorithm>
 #include <cassert>
 
-namespace ECS {
+namespace ECS
+{
 
   // Main ECS World
-  class World {
+  class World
+  {
   private:
     EntityID nextEntityId = 1;
     std::unordered_set<EntityID> activeEntities;
@@ -27,20 +29,26 @@ namespace ECS {
     std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> componentArrays;
     std::vector<std::unique_ptr<System>> systems;
 
-    template<typename T>
-    ComponentArray<T>* getComponentArray() {
+    template <typename T>
+    ComponentArray<T>* getComponentArray()
+    {
       ComponentTypeID typeId = ComponentTypeManager::getTypeId<T>();
       auto it = componentArrays.find(typeId);
-      if (it != componentArrays.end()) {
-        return static_cast<ComponentArray<T>*>(it->second.get());
+      if (it != componentArrays.end())
+      {
+        return static_cast<ComponentArray<T> *>(it->second.get());
       }
-      return nullptr;
+
+      // If it doesn't exist, create and register it automatically.
+      registerComponent<T>();
+      return static_cast<ComponentArray<T> *>(componentArrays[typeId].get());
     }
 
   public:
     // Component registration
-    template<typename T>
-    void registerComponent() {
+    template <typename T>
+    void registerComponent()
+    {
       ComponentTypeID typeId = ComponentTypeManager::getTypeId<T>();
       assert(componentArrays.find(typeId) == componentArrays.end() &&
         "Component already registered");
@@ -48,85 +56,101 @@ namespace ECS {
     }
 
     // Entity management
-    Entity createEntity() {
+    Entity createEntity()
+    {
       EntityID id = nextEntityId++;
       activeEntities.insert(id);
       entitySignatures[id] = ComponentSignature{}; // Initialize empty signature
       return Entity(id, this);
     }
 
-    Entity getEntity(EntityID id) {
-      if (activeEntities.find(id) != activeEntities.end()) {
+    Entity getEntity(EntityID id)
+    {
+      if (activeEntities.find(id) != activeEntities.end())
+      {
         return Entity(id, this);
       }
       return Entity(INVALID_ENTITY, this);
     }
 
-    void destroyEntity(EntityID id) {
+    void destroyEntity(EntityID id)
+    {
       entitiesToDestroy.insert(id);
     }
 
-    bool isEntityActive(EntityID id) const {
+    bool isEntityActive(EntityID id) const
+    {
       return activeEntities.find(id) != activeEntities.end();
     }
 
     // Component management
-    template<typename T, typename... Args>
-    void addComponent(EntityID entity, Args&&... args) {
+    template <typename T, typename... Args>
+    void addComponent(EntityID entity, Args &&...args)
+    {
       ComponentTypeID typeId = ComponentTypeManager::getTypeId<T>();
       auto* array = getComponentArray<T>();
-      assert(array && "Component not registered");
+      // The assert is no longer strictly necessary as getComponentArray now ensures creation.
+      // assert(array && "Component not registered");
 
       array->addComponent(entity, T{ std::forward<Args>(args)... });
       entitySignatures[entity].set(typeId);
       entityComponentChanged(entity);
     }
 
-    template<typename T>
-    void removeComponent(EntityID entity) {
+    template <typename T>
+    void removeComponent(EntityID entity)
+    {
       ComponentTypeID typeId = ComponentTypeManager::getTypeId<T>();
       auto* array = getComponentArray<T>();
-      if (array) {
+      if (array)
+      {
         array->removeComponent(entity);
         entitySignatures[entity].reset(typeId);
         entityComponentChanged(entity);
       }
     }
 
-    template<typename T>
-    T* getComponent(EntityID entity) {
+    template <typename T>
+    T* getComponent(EntityID entity)
+    {
       auto* array = getComponentArray<T>();
       return array ? array->getComponent(entity) : nullptr;
     }
 
-    template<typename T>
-    const T* getComponent(EntityID entity) const {
+    template <typename T>
+    const T* getComponent(EntityID entity) const
+    {
       auto* array = const_cast<World*>(this)->getComponentArray<T>();
       return array ? array->getComponent(entity) : nullptr;
     }
 
-    template<typename T>
-    bool hasComponent(EntityID entity) const {
+    template <typename T>
+    bool hasComponent(EntityID entity) const
+    {
       ComponentTypeID typeId = ComponentTypeManager::getTypeId<T>();
       auto it = entitySignatures.find(entity);
       return it != entitySignatures.end() && it->second.test(typeId);
     }
 
-    template<typename... T>
-    bool hasComponents(EntityID entity) const {
+    template <typename... T>
+    bool hasComponents(EntityID entity) const
+    {
       return (hasComponent<T>(entity) && ...);
     }
 
     // System management
-    template<typename T, typename... Args>
-    T* addSystem(Args&&... args) {
+    template <typename T, typename... Args>
+    T* addSystem(Args &&...args)
+    {
       auto system = std::make_unique<T>(std::forward<Args>(args)...);
       T* ptr = system.get();
       system->setWorld(this);
 
       // Add existing matching entities to the system
-      for (EntityID entity : activeEntities) {
-        if (systemMatchesEntity(*system, entity)) {
+      for (EntityID entity : activeEntities)
+      {
+        if (systemMatchesEntity(*system, entity))
+        {
           system->addEntity(entity);
         }
       }
@@ -135,29 +159,35 @@ namespace ECS {
       return ptr;
     }
 
-    template<typename T>
-    void removeSystem() {
+    template <typename T>
+    void removeSystem()
+    {
       systems.erase(
         std::remove_if(systems.begin(), systems.end(),
-          [](const std::unique_ptr<System>& system) {
+          [](const std::unique_ptr<System>& system)
+          {
             return dynamic_cast<T*>(system.get()) != nullptr;
           }),
-        systems.end()
-      );
+        systems.end());
     }
 
     // Main update loop
-    void update(float deltaTime) {
+    void update(float deltaTime)
+    {
       // Update all systems
-      for (auto& system : systems) {
+      for (auto& system : systems)
+      {
         system->update(deltaTime);
       }
 
       // Clean up destroyed entities
-      for (EntityID entityId : entitiesToDestroy) {
-        if (activeEntities.erase(entityId)) {
+      for (EntityID entityId : entitiesToDestroy)
+      {
+        if (activeEntities.erase(entityId))
+        {
           // Remove from all component arrays
-          for (auto& [typeId, array] : componentArrays) {
+          for (auto& [typeId, array] : componentArrays)
+          {
             array->removeEntity(entityId);
           }
 
@@ -165,7 +195,8 @@ namespace ECS {
           entitySignatures.erase(entityId);
 
           // Remove from all systems
-          for (auto& system : systems) {
+          for (auto& system : systems)
+          {
             system->removeEntity(entityId);
           }
         }
@@ -174,58 +205,74 @@ namespace ECS {
     }
 
     // Query methods
-    template<typename... T>
-    std::vector<EntityID> getEntitiesWith() const {
+    template <typename... T>
+    std::vector<EntityID> getEntitiesWith() const
+    {
       std::vector<EntityID> result;
-      for (EntityID entity : activeEntities) {
-        if (hasComponents<T...>(entity)) {
+      for (EntityID entity : activeEntities)
+      {
+        if (hasComponents<T...>(entity))
+        {
           result.push_back(entity);
         }
       }
       return result;
     }
 
-    template<typename... T>
-    EntityID getFirstEntityWith() const {
-      for (EntityID entity : activeEntities) {
-        if (hasComponents<T...>(entity)) {
+    template <typename... T>
+    EntityID getFirstEntityWith() const
+    {
+      for (EntityID entity : activeEntities)
+      {
+        if (hasComponents<T...>(entity))
+        {
           return entity;
         }
       }
       return INVALID_ENTITY;
     }
 
-    std::vector<EntityID> getAllEntities() const {
+    std::vector<EntityID> getAllEntities() const
+    {
       return std::vector<EntityID>(activeEntities.begin(), activeEntities.end());
     }
 
-    size_t getEntityCount() const {
+    size_t getEntityCount() const
+    {
       return activeEntities.size();
     }
 
-    template<typename T>
-    size_t getComponentCount() const {
+    template <typename T>
+    size_t getComponentCount() const
+    {
       auto* array = const_cast<World*>(this)->getComponentArray<T>();
       return array ? array->size() : 0;
     }
 
   private:
-    void entityComponentChanged(EntityID entity) {
-      for (auto& system : systems) {
-        if (systemMatchesEntity(*system, entity)) {
+    void entityComponentChanged(EntityID entity)
+    {
+      for (auto& system : systems)
+      {
+        if (systemMatchesEntity(*system, entity))
+        {
           system->addEntity(entity);
         }
-        else {
+        else
+        {
           system->removeEntity(entity);
         }
       }
     }
 
-    bool systemMatchesEntity(const System& system, EntityID entity) const {
-      if (!isEntityActive(entity)) return false;
+    bool systemMatchesEntity(const System& system, EntityID entity) const
+    {
+      if (!isEntityActive(entity))
+        return false;
 
       auto it = entitySignatures.find(entity);
-      if (it == entitySignatures.end()) return false;
+      if (it == entitySignatures.end())
+        return false;
 
       const auto& requiredSignature = system.getRequiredSignature();
       const auto& entitySignature = it->second;
