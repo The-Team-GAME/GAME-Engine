@@ -1,13 +1,46 @@
 #pragma once
-#include <glm/fwd.hpp>
 
-namespace Graphics
+#include <vector>
+#include <glm/glm.hpp>
+#include "Shader.h"
+
+
+class Graphics
 {
-  void init();
+public:
 
-  void drawRect(float x, float y, float width, float height, glm::vec4 color);
+  struct Texture
+  {
+    unsigned int id;
+    int width;
+    int height;
+  };
 
-  void exit();
+  enum class Filter
+  {
+    Nearest,
+    Linear
+  };
 
-  void clearScreen(float r, float g, float b, float a);
-}
+private:
+  inline static unsigned int quadVAO;
+  inline static std::vector<Texture> textures;
+
+  inline static Shader basicShader;
+  inline static Shader textureShader;
+  inline static glm::mat4 projection;
+
+  static void setupRectangle();
+
+public:
+  static void init();
+  static void exit();
+
+  static void drawRect(float x, float y, float width, float height, glm::vec4 color);
+
+  static int loadImage(const char* filepath, Filter min_filter = Filter::Linear);
+  static void drawImage(int imageId, float x, float y, float width, float height);
+
+
+  static void clearScreen(float r, float g, float b, float a);
+};
