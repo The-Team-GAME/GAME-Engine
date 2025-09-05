@@ -210,7 +210,6 @@
     <None Include="..\Assets\shaders\texture.frag" />
     <None Include="..\Assets\shaders\texture.vert" />
     <None Include="ECS\Entity.inl" />
-    <None Include="example.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

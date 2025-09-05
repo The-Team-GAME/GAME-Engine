@@ -203,17 +203,25 @@
     <ClInclude Include="Vector3D.h">
       <Filter>Source Files\Math</Filter>
     </ClInclude>
+    <ClInclude Include="SpriteState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="basic.frag">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
-    <None Include="basic.vert">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
-    <None Include="example.json" />
     <None Include="ECS\Entity.inl">
       <Filter>Source Files\ECS\Backend</Filter>
+    </None>
+    <None Include="..\Assets\shaders\basic.frag">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="..\Assets\shaders\basic.vert">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="..\Assets\shaders\texture.frag">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="..\Assets\shaders\texture.vert">
+      <Filter>Source Files\Shaders</Filter>
     </None>
   </ItemGroup>
 </Project>
