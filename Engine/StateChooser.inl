@@ -8,7 +8,7 @@
 #include "JsonState.h"
 #include "SpriteState.h"
 
-inline void StateChooser()
+inline void StateChooserPanel()
 {
   ImGui::Begin("State Chooser");
 

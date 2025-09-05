@@ -62,7 +62,6 @@ namespace Engine
     StateManager::Init(BasicState::Get());
 
     ImGuiManager::init();
-    ImGuiManager::addPanel(StateChooser);
 
     Graphics::init();
 
@@ -80,6 +79,7 @@ namespace Engine
       lastTime = currenttime;
 
       glfwPollEvents();
+      ImGuiManager::begin();
 
       Input::Update();
 
@@ -88,7 +88,9 @@ namespace Engine
 
       CORE_ECS->update(dt);
 
-      ImGuiManager::update();
+      StateChooserPanel();
+
+      ImGuiManager::end();
 
       /* Swap front and back buffers */
       glfwSwapBuffers(window);
