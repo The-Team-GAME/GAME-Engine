@@ -215,6 +215,9 @@
     <ClInclude Include="ObjectFactory.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
+    <ClInclude Include="GameObjectState.h">
+      <Filter>Source Files\GameStates</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ECS\Entity.inl">

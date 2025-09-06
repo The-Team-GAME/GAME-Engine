@@ -1,14 +1,14 @@
 #pragma once
+
 #include <vector>
 #include "ECS/ECS.h"
 
 namespace Engine
 {
-  ECS::World* m_world;
-
   class ObjectFactory
   {
   private:
+    ECS::World* m_world;
     std::vector<ECS::Entity> objectList;
   public:
     ObjectFactory(ECS::World* world);

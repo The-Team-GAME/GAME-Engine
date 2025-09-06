@@ -2,12 +2,12 @@
 #include "nlohmann/json.hpp"
 #include <fstream>
 #include "BasicComponents.h"
+#include "ECS/World.h"
 
 using json = nlohmann::json;
 
-Engine::ObjectFactory::ObjectFactory(ECS::World* world)
+Engine::ObjectFactory::ObjectFactory(ECS::World* world) : m_world(world)
 {
-  m_world = world;
 }
 
 int Engine::ObjectFactory::fromJson(std::string jsonText)

@@ -13,16 +13,19 @@
 namespace Engine
 {
 
-  Core *CORE;
-  ECS::World *WORLD;
+  Core* CORE;
+  ECS::World* WORLD;
+  ObjectFactory* FACTORY;
 
   Core::Core()
   {
-    lastTime = 0;
+    lastTime = 0.0f;
+    dt = 0.0f;
     isRunning = true;
     window = nullptr;
     CORE = this; // Set the global pointer
     WORLD = new ECS::World();
+    FACTORY = new ObjectFactory(WORLD);
   }
 
   Core::~Core()
@@ -105,7 +108,7 @@ namespace Engine
     glfwTerminate();
   }
 
-  GLFWwindow *Core::getWindow() const
+  GLFWwindow* Core::getWindow() const
   {
     return window;
   }

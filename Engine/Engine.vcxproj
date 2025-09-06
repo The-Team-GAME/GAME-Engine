@@ -188,6 +188,7 @@
     <ClInclude Include="ECS\System.h" />
     <ClInclude Include="ECS\Types.h" />
     <ClInclude Include="ECS\World.h" />
+    <ClInclude Include="GameObjectState.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="HealthSystem.h" />
     <ClInclude Include="ImGuiManager.h" />
