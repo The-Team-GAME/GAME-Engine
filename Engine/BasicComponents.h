@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Vector2D.h"
+
 template<size_t N>
 struct fixed_string {
   constexpr fixed_string(const char(&str)[N]) {
@@ -13,14 +15,12 @@ namespace Components {
   template <fixed_string id>
   struct Tag {};
 
-  struct Position {
-    float x, y;
-    Position(float x = 0.0f, float y = 0.0f) : x(x), y(y) {}
+  struct Position : Math::Vec2D {
+    using Math::Vec2D::Vec2D;
   };
 
-  struct Velocity {
-    float x, y;
-    Velocity(float x = 0.0f, float y = 0.0f) : x(x), y(y) {}
+  struct Velocity : Math::Vec2D {
+    using Math::Vec2D::Vec2D;
   };
 
   struct Health {
