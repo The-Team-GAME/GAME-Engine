@@ -23,6 +23,7 @@ namespace Engine
     dt = 0.0f;
     isRunning = true;
     window = nullptr;
+    dt = 0.0f;
     CORE = this; // Set the global pointer
     WORLD = new ECS::World();
     FACTORY = new ObjectFactory(WORLD);
@@ -77,7 +78,7 @@ namespace Engine
 
     while (!glfwWindowShouldClose(window) && isRunning)
     {
-      float currenttime = glfwGetTime() * 1000.0;
+      float currenttime = static_cast<float>(glfwGetTime()) * 1000.0f;
       dt = (currenttime - lastTime) / 1000.0f;
       lastTime = currenttime;
 

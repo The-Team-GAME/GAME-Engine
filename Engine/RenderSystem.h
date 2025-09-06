@@ -9,9 +9,9 @@ public:
     requireComponents<Components::Position, Components::Renderable>();
   }
 
-  void updateEntity(ECS::EntityID entityId, float deltaTime) override {
+  void updateEntity(ECS::EntityID entityId, float /*dt*/) override {
     auto* pos = world->getComponent<Components::Position>(entityId);
-    auto* render = world->getComponent<Components::Renderable>(entityId);
+    //auto* render = world->getComponent<Components::Renderable>(entityId);
 
     /*std::cout << "Rendering sprite " << render->spriteId
       << " at (" << pos->x << ", " << pos->y
