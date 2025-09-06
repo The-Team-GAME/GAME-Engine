@@ -52,6 +52,9 @@
     <Filter Include="Source Files\Math">
       <UniqueIdentifier>{fb55182b-ff4d-48c7-b71a-e9567ed04d09}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\GameObjects">
+      <UniqueIdentifier>{633d352a-9345-4f2a-9ac0-8bf737b42176}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinMain.cpp">
@@ -125,6 +128,9 @@
     </ClCompile>
     <ClCompile Include="Vector3D.cpp">
       <Filter>Source Files\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectFactory.cpp">
+      <Filter>Source Files\Engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -204,7 +210,13 @@
       <Filter>Source Files\Math</Filter>
     </ClInclude>
     <ClInclude Include="SpriteState.h">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files\GameStates</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectFactory.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjectState.h">
+      <Filter>Source Files\GameStates</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -222,6 +234,9 @@
     </None>
     <None Include="..\Assets\shaders\texture.vert">
       <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="..\Assets\objects\enemy.json">
+      <Filter>Source Files\GameObjects</Filter>
     </None>
   </ItemGroup>
 </Project>

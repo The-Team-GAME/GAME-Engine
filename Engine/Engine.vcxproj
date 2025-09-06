@@ -169,6 +169,7 @@
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="JsonState.cpp" />
     <ClCompile Include="MainMenuState.cpp" />
+    <ClCompile Include="ObjectFactory.cpp" />
     <ClCompile Include="Vector2D.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="StateManager.cpp" />
@@ -187,6 +188,7 @@
     <ClInclude Include="ECS\System.h" />
     <ClInclude Include="ECS\Types.h" />
     <ClInclude Include="ECS\World.h" />
+    <ClInclude Include="GameObjectState.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="HealthSystem.h" />
     <ClInclude Include="ImGuiManager.h" />
@@ -194,6 +196,7 @@
     <ClInclude Include="JsonState.h" />
     <ClInclude Include="MainMenuState.h" />
     <ClInclude Include="MovementSystem.h" />
+    <ClInclude Include="ObjectFactory.h" />
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="SpriteState.h" />
     <ClInclude Include="Vector2D.h" />
@@ -205,6 +208,7 @@
     <ClInclude Include="Vector4D.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Assets\objects\enemy.json" />
     <None Include="..\Assets\shaders\basic.frag" />
     <None Include="..\Assets\shaders\basic.vert" />
     <None Include="..\Assets\shaders\texture.frag" />

@@ -15,15 +15,18 @@ namespace Engine
 
   Core* CORE;
   ECS::World* WORLD;
+  ObjectFactory* FACTORY;
 
   Core::Core()
   {
-    lastTime = 0;
+    lastTime = 0.0f;
+    dt = 0.0f;
     isRunning = true;
     window = nullptr;
     dt = 0.0f;
     CORE = this; // Set the global pointer
     WORLD = new ECS::World();
+    FACTORY = new ObjectFactory(WORLD);
   }
 
   Core::~Core()

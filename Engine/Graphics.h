@@ -16,7 +16,7 @@ public:
     int height;
   };
 
-  enum class Filter
+  enum class MinifyingFilter
   {
     Nearest,
     Linear
@@ -38,7 +38,7 @@ public:
 
   static void drawRect(float x, float y, float width, float height, glm::vec4 color);
 
-  static int loadImage(const char* filepath, Filter min_filter = Filter::Linear);
+  static unsigned int loadImage(const char* filepath, MinifyingFilter min_filter = MinifyingFilter::Linear);
   static void drawImage(int imageId, float x, float y, float width, float height);
 
 
