@@ -22,6 +22,10 @@ int Engine::ObjectFactory::fromJsonFile(std::string filePath)
 
   auto entity = m_world->createEntity();
 
+  // We just want a prefab entity
+  entity.addComponent<Components::Inactive>();
+
+
   if (data.contains("position")) {
     entity.addComponent<Components::Position>(data["position"]["x"], data["position"]["y"]);
   }
@@ -38,17 +42,15 @@ int Engine::ObjectFactory::fromJsonFile(std::string filePath)
     entity.addComponent<Components::Rotation>(data["rotation"]);
   }
 
-  if (data.contains("sprite")) {
-    entity.addComponent<Components::Renderable>(
-      data["sprite"]["sprite"],
-      data["sprite"]["spriteType"],
-      data["sprite"]["width"],
-      data["sprite"]["height"]
-    );
+  if (data.contains("staticSprite")) {
+    entity.addComponent<Components::StaticSprite>(data["staticSprite"]["texturePath"]);
   }
+
+  return 0;
 }
 
 ECS::Entity& Engine::ObjectFactory::createObject(int id)
 {
   // TODO: insert return statement here
+  return objectList[id];
 }

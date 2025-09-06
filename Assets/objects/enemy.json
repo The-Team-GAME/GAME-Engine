@@ -1,9 +1,6 @@
 {
-  "sprite": {
-    "spriteType": "static",
-    "sprite": "Assets/images/monkey.png",
-    "width": 64,
-    "height": 64
+  "staticSprite": {
+    "texturePath": "Assets/images/monkey.png"
   },
   "position": {
     "x": 100,

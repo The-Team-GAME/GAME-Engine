@@ -84,7 +84,7 @@ void Graphics::drawRect(float x, float y, float width, float height, glm::vec4 c
   glBindVertexArray(0);
 }
 
-int Graphics::loadImage(const char* filepath, Filter min_filter)
+unsigned int Graphics::loadImage(const char* filepath, Filter min_filter)
 {
   // std::cout << "Current working directory: " << std::filesystem::current_path() << std::endl;
   // std::cout << "Attempting to load image: " << filepath << std::endl;

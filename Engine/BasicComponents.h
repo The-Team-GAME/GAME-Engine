@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vector2D.h"
+#include "Graphics.h"
 
 template<size_t N>
 struct fixed_string {
@@ -15,12 +16,24 @@ namespace Components {
   template <fixed_string id>
   struct Tag {};
 
+  struct Inactive {};
+
   struct Position : Math::Vec2D {
     using Math::Vec2D::Vec2D;
   };
 
   struct Velocity : Math::Vec2D {
     using Math::Vec2D::Vec2D;
+  };
+
+  struct Size {
+    float width, height;
+    Size(float width = 0.0f, float height = 0.0f) : width(width), height(height) {}
+  };
+
+  struct Rotation {
+    float angle; // in degrees
+    Rotation(float angle = 0.0f) : angle(angle) {}
   };
 
   struct Health {
@@ -40,10 +53,14 @@ namespace Components {
     }
   };
 
-  struct Renderable {
-    /*int spriteId;
-    float scale;
-    Renderable(int id = 0, float s = 1.0f) : spriteId(id), scale(s) {}*/
-  };
+  struct Renderable {};
+
+  struct StaticSprite {
+    unsigned int textureId;
+    StaticSprite(std::string texturePath = "")
+    {
+      textureId = Graphics::loadImage(texturePath.c_str());
+    }
+  };;
 
 } // namespace Components
