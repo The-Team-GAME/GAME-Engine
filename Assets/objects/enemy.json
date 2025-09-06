@@ -1,0 +1,21 @@
+{
+  "sprite": {
+    "spriteType": "static",
+    "sprite": "Assets/images/monkey.png",
+    "width": 64,
+    "height": 64
+  },
+  "position": {
+    "x": 100,
+    "y": 150
+  },
+  "velocity": {
+    "x": 0,
+    "y": 0
+  },
+  "size": {
+    "width": 64,
+    "height": 64
+  },
+  "rotation": 0
+}
