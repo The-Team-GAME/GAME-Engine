@@ -15,7 +15,7 @@ public:
 
   void Init()
   {
-    int enemyPrefab = Engine::FACTORY->fromJsonFile("Assets\\objects\\enemy.json");
+    int enemyPrefab = Engine::FACTORY->fromJsonFile("Assets/objects/enemy.json");
 
     Engine::FACTORY->createObject(enemyPrefab);
 
