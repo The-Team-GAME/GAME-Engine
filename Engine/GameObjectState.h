@@ -17,8 +17,11 @@ public:
   {
     int enemyPrefab = Engine::FACTORY->fromJsonFile("Assets/objects/enemy.json");
 
-    Engine::FACTORY->createObject(enemyPrefab);
+    auto enemy1 = Engine::FACTORY->createObject(enemyPrefab);
+    auto enemy2 = Engine::FACTORY->createObject(enemyPrefab);
 
+    enemy1.getComponent<Components::Position>()->x = 100.0f;
+    enemy2.getComponent<Components::Position>()->x = 300.0f;
 
     Engine::WORLD->addSystem<MovementSystem>();
     Engine::WORLD->addSystem<GameObjectRenderSystem>();
