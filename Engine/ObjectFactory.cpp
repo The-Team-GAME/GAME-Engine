@@ -43,7 +43,19 @@ int Engine::ObjectFactory::fromJsonFile(std::string filePath)
   }
 
   if (data.contains("staticSprite")) {
-    entity.addComponent<Components::StaticSprite>(data["staticSprite"]["texturePath"]);
+    if (data["staticSprite"].contains("minifyingFilter")) {
+      std::string filterStr = data["staticSprite"]["minifyingFilter"];
+
+      Graphics::Filter filter = Graphics::Filter::Linear;
+      if (filterStr == "Nearest") {
+        filter = Graphics::Filter::Nearest;
+      }
+
+      entity.addComponent<Components::StaticSprite>(data["staticSprite"]["texturePath"], filter);
+    }
+    else {
+      entity.addComponent<Components::StaticSprite>(data["staticSprite"]["texturePath"]);
+    }
   }
 
   return entity.getId();

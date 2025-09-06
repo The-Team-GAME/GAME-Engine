@@ -1,6 +1,7 @@
 {
   "staticSprite": {
-    "texturePath": "Assets/images/monkey.png"
+    "texturePath": "Assets/images/monkey.png",
+    "minifyingFilter": "Nearest"
   },
   "position": {
     "x": 100,
@@ -11,8 +12,8 @@
     "y": 0
   },
   "size": {
-    "width": 64,
-    "height": 64
+    "width": 150,
+    "height": 210
   },
   "rotation": 0
 }
