@@ -23,7 +23,7 @@ namespace ECS {
 
   public:
     void addComponent(EntityID entity, T component) {
-      components[entity] = std::move(component);
+      components.emplace(entity, std::move(component));
     }
 
     void removeComponent(EntityID entity) {
@@ -33,7 +33,7 @@ namespace ECS {
     void cloneComponent(EntityID source, EntityID destination) override {
       auto it = components.find(source);
       if (it != components.end()) {
-        components[destination] = it->second; // Assumes T is copy-assignable
+        components.emplace(destination, it->second); // Assumes T is copy-constructible
       }
     }
 

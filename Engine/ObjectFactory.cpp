@@ -43,7 +43,7 @@ int Engine::ObjectFactory::fromJsonFile(std::string filePath)
   }
 
   if (data.contains("staticSprite")) {
-    entity.addComponent<Components::StaticSprite>(data["staticSprite"]["texturePath"]);
+    entity.addComponent<Components::StaticSprite>(to_string(data["staticSprite"]["texturePath"]));
   }
 
   return entity.getId();
