@@ -1,6 +1,7 @@
 #pragma once
 
 #include "StateManager.h" 
+#include <vector>
 
 struct Sprite {
 	bool isAnimated = false;
@@ -17,6 +18,20 @@ struct Sprite {
 class SpriteState : public Engine::GameState<SpriteState>
 {
 private:
+	static std::vector<Sprite> sprites;//sprites
+
+
+	static bool dropdown; //dropdown menu
+	static bool edit; //edit
+	static bool dragndrop; //dragndrop
+
+
+	static int s_selectedIndex; // -1 if none
+
+
+	//static glm::vec2 s_start;
+	//static glm::vec2 s_curr;
+
 
 public:
 	/*!
