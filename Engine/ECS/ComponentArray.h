@@ -12,6 +12,7 @@ namespace ECS {
     virtual ~IComponentArray() = default;
     virtual void removeEntity(EntityID entity) = 0;
     virtual size_t size() const = 0;
+    virtual void cloneComponent(EntityID source, EntityID destination) = 0;
   };
 
   // Type-safe component storage
@@ -27,6 +28,13 @@ namespace ECS {
 
     void removeComponent(EntityID entity) {
       components.erase(entity);
+    }
+
+    void cloneComponent(EntityID source, EntityID destination) override {
+      auto it = components.find(source);
+      if (it != components.end()) {
+        components[destination] = it->second; // Assumes T is copy-assignable
+      }
     }
 
     T* getComponent(EntityID entity) {

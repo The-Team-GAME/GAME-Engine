@@ -73,6 +73,34 @@ namespace ECS
       return Entity(INVALID_ENTITY, this);
     }
 
+    Entity cloneEntity(EntityID sourceId)
+    {
+      if (!isEntityActive(sourceId))
+      {
+        return Entity(INVALID_ENTITY, this); // Source entity doesn't exist or is inactive
+      }
+
+      Entity newEntity = createEntity();
+
+      // Copy signature from source to new entity
+      const auto& sourceSignature = entitySignatures.at(sourceId);
+      entitySignatures[newEntity.getId()] = sourceSignature;
+
+      // Copy all components using the signature
+      for (auto const& [typeId, componentArray] : componentArrays)
+      {
+        if (sourceSignature.test(typeId))
+        {
+          componentArray->cloneComponent(sourceId, newEntity.getId());
+        }
+      }
+
+      // Notify systems about the new entity
+      entityComponentChanged(newEntity.getId());
+
+      return newEntity;
+    }
+
     void destroyEntity(EntityID id)
     {
       entitiesToDestroy.insert(id);
