@@ -208,11 +208,11 @@
     <ClInclude Include="Vector4D.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Assets\objects\enemy.json" />
     <None Include="..\Assets\shaders\basic.frag" />
     <None Include="..\Assets\shaders\basic.vert" />
     <None Include="..\Assets\shaders\texture.frag" />
     <None Include="..\Assets\shaders\texture.vert" />
+    <None Include="Assets\objects\enemy.json" />
     <None Include="ECS\Entity.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
