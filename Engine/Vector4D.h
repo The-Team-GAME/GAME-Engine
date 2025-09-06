@@ -6,9 +6,9 @@ namespace Math {
 
 
   class Vec4D {
-  private:
-    float x, y, z, w;
   public:
+    float x, y, z, w;
+
     Vec4D(float x_vec = 0, float y_vec = 0, float z_vec = 0, float w_vec = 0)
       : x{ x_vec }, y{ y_vec }, z{ z_vec }, w{ w_vec } {
     }; //(default)ctor

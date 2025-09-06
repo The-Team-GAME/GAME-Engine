@@ -7,9 +7,9 @@ namespace Math {
 
 
   class Vec3D {
-  private:
-    float x, y, z;
   public:
+    float x, y, z;
+
     Vec3D(float x_vec = 0, float y_vec = 0, float z_vec = 0) : x{ x_vec }, y{ y_vec }, z{ z_vec } {}; //(default)ctor
     Vec3D(Vec3D const&) = default; //copy constructor
 

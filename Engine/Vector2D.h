@@ -8,9 +8,9 @@ namespace Math {
 
 
   class Vec2D {
-  private:
-    float x, y;
   public:
+    float x, y;
+
     Vec2D(float x_vec = 0, float y_vec = 0) : x{ x_vec }, y{ y_vec } {}; //(default)ctor
     Vec2D(Vec2D const&) = default; //copy constructor
 
