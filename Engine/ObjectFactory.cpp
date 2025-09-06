@@ -46,11 +46,12 @@ int Engine::ObjectFactory::fromJsonFile(std::string filePath)
     entity.addComponent<Components::StaticSprite>(data["staticSprite"]["texturePath"]);
   }
 
-  return 0;
+  return entity.getId();
 }
 
-ECS::Entity& Engine::ObjectFactory::createObject(int id)
+ECS::Entity Engine::ObjectFactory::createObject(int id)
 {
-  // TODO: insert return statement here
-  return objectList[id];
+  auto newEntity = m_world->cloneEntity(id);
+  newEntity.removeComponent<Components::Inactive>();
+  return newEntity;
 }

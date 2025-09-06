@@ -16,6 +16,6 @@ namespace Engine
     int fromJson(std::string jsonText);
     int fromJsonFile(std::string filePath);
 
-    ECS::Entity& createObject(int id);
+    ECS::Entity createObject(int id);
   };
 }
