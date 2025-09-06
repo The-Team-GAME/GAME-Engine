@@ -15,7 +15,7 @@ public:
   void Init()
   {
     linearMonkeyImageId = Graphics::loadImage("Assets/images/monkey.png");
-    nearestMonkeyImageId = Graphics::loadImage("Assets/images/monkey.png", Graphics::Filter::Nearest); // when loading pixel art, use nearest filter to avoid blurriness
+    nearestMonkeyImageId = Graphics::loadImage("Assets/images/monkey.png", Graphics::MinifyingFilter::Nearest); // when loading pixel art, use nearest filter to avoid blurriness
   };
 
   void Update() {};

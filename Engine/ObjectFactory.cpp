@@ -46,9 +46,9 @@ int Engine::ObjectFactory::fromJsonFile(std::string filePath)
     if (data["staticSprite"].contains("minifyingFilter")) {
       std::string filterStr = data["staticSprite"]["minifyingFilter"];
 
-      Graphics::Filter filter = Graphics::Filter::Linear;
+      Graphics::MinifyingFilter filter = Graphics::MinifyingFilter::Linear;
       if (filterStr == "Nearest") {
-        filter = Graphics::Filter::Nearest;
+        filter = Graphics::MinifyingFilter::Nearest;
       }
 
       entity.addComponent<Components::StaticSprite>(data["staticSprite"]["texturePath"], filter);

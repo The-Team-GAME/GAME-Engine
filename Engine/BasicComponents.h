@@ -57,7 +57,7 @@ namespace Components {
 
   struct StaticSprite {
     unsigned int textureId;
-    StaticSprite(std::string texturePath, Graphics::Filter minifyingFilter = Graphics::Filter::Linear)
+    StaticSprite(std::string texturePath, Graphics::MinifyingFilter minifyingFilter = Graphics::MinifyingFilter::Linear)
     {
       textureId = Graphics::loadImage(texturePath.c_str(), minifyingFilter);
     }
