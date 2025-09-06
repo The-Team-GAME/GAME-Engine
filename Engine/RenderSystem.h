@@ -20,3 +20,24 @@ public:
     Graphics::drawRect(pos->x, pos->y, 10.0f, 10.0f, { 1.0f, 1.0f, 1.0f, 1.0f }); // TODO: allow changing color
   }
 };
+
+class GameObjectRenderSystem : public ECS::System {
+public:
+  GameObjectRenderSystem() {
+    requireComponents<Components::StaticSprite, Components::Position, Components::Size, Components::Rotation>();
+  }
+
+  void updateEntity(ECS::EntityID entityId, float deltaTime) override {
+    auto* sprite = world->getComponent<Components::StaticSprite>(entityId);
+    auto* pos = world->getComponent<Components::Position>(entityId);
+    auto* size = world->getComponent<Components::Size>(entityId);
+    auto* rotation = world->getComponent<Components::Rotation>(entityId);
+
+    /*std::cout << "Rendering sprite " << render->spriteId
+      << " at (" << pos->x << ", " << pos->y
+      << ") scale=" << render->scale << "\n";*/
+
+    //Graphics::drawRect(pos->x, pos->y, 10.0f, 10.0f, { 1.0f, 1.0f, 1.0f, 1.0f }); // TODO: allow changing color
+    Graphics::drawImage(sprite->textureId, pos->x, pos->y, size->width, size->height);
+  }
+};

@@ -3,6 +3,8 @@
 #include "StateManager.h"
 #include "Graphics.h"
 #include "ObjectFactory.h"
+#include "MovementSystem.h"
+#include "RenderSystem.h"
 
 class GameObjectState : public Engine::GameState<GameObjectState>
 {
@@ -16,6 +18,10 @@ public:
     int enemyPrefab = Engine::FACTORY->fromJsonFile("Assets\\objects\\enemy.json");
 
     Engine::FACTORY->createObject(enemyPrefab);
+
+
+    Engine::WORLD->addSystem<MovementSystem>();
+    Engine::WORLD->addSystem<GameObjectRenderSystem>();
   };
 
   void Update() {};
