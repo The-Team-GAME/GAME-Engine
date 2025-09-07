@@ -19,9 +19,6 @@
     <Filter Include="Source Files\Main">
       <UniqueIdentifier>{385697f6-5874-4478-84bb-4bcd65262c76}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Graphics">
-      <UniqueIdentifier>{255d30ac-8561-46c9-8c8b-a6606e3c9ad2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Shaders">
       <UniqueIdentifier>{dca7a92a-4cb4-4b9d-8342-a5ab4ad1b884}</UniqueIdentifier>
     </Filter>
@@ -62,9 +59,6 @@
     </ClCompile>
     <ClCompile Include="Shader.cpp">
       <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphics.cpp">
-      <Filter>Source Files\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="StateManager.cpp">
       <Filter>Source Files\Engine</Filter>
@@ -132,6 +126,9 @@
     <ClCompile Include="ObjectFactory.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
@@ -145,9 +142,6 @@
     </ClInclude>
     <ClInclude Include="InputManager.h">
       <Filter>Source Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphics.h">
-      <Filter>Source Files\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="MainMenuState.h">
       <Filter>Source Files\GameStates</Filter>
@@ -217,6 +211,9 @@
     </ClInclude>
     <ClInclude Include="GameObjectState.h">
       <Filter>Source Files\GameStates</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics.h">
+      <Filter>Source Files\Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
