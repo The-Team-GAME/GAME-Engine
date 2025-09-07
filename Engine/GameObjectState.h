@@ -36,11 +36,7 @@ public:
 
   void Free() {
     Engine::FACTORY->unregisterObject(enemyPrefab);
-
-    auto entities = Engine::WORLD->getEntitiesWith<Components::Tag<"GameObjectState">>();
-    for (auto entityId : entities) {
-      Engine::WORLD->destroyEntity(entityId);
-    }
+    Engine::WORLD->destroyEntitiesWith<Components::Tag<"GameObjectState">>();
   };
 
   void Unload() {};
