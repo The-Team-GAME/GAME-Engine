@@ -17,7 +17,7 @@ public:
       << " at (" << pos->x << ", " << pos->y
       << ") scale=" << render->scale << "\n";*/
 
-    Graphics::drawRect(pos->x, pos->y, 10.0f, 10.0f, { 1.0f, 1.0f, 1.0f, 1.0f }); // TODO: allow changing color
+     Engine::GRAPHICS->drawRect(pos->x, pos->y, 10.0f, 10.0f, { 1.0f, 1.0f, 1.0f, 1.0f }); // TODO: allow changing color
   }
 };
 
@@ -37,7 +37,7 @@ public:
       << " at (" << pos->x << ", " << pos->y
       << ") scale=" << render->scale << "\n";*/
 
-    //Graphics::drawRect(pos->x, pos->y, 10.0f, 10.0f, { 1.0f, 1.0f, 1.0f, 1.0f }); // TODO: allow changing color
-    Graphics::drawImage(sprite->textureId, pos->x, pos->y, size->width, size->height);
+    // Engine::GRAPHICS->drawRect(pos->x, pos->y, 10.0f, 10.0f, { 1.0f, 1.0f, 1.0f, 1.0f }); // TODO: allow changing color
+     Engine::GRAPHICS->drawImage(sprite->textureId, pos->x, pos->y, size->width, size->height);
   }
 };

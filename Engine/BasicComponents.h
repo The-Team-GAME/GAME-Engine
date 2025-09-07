@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Vector2D.h"
-#include "Graphics.h"
+#include "core.h"
 
 template<size_t N>
 struct fixed_string {
@@ -59,7 +59,7 @@ namespace Components {
     unsigned int textureId;
     StaticSprite(std::string texturePath, Graphics::MinifyingFilter minifyingFilter = Graphics::MinifyingFilter::Linear)
     {
-      textureId = Graphics::loadImage(texturePath.c_str(), minifyingFilter);
+      textureId = Engine::GRAPHICS->loadImage(texturePath.c_str(), minifyingFilter);
     }
   };;
 

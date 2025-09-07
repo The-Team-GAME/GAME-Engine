@@ -16,6 +16,7 @@ namespace Engine
   Core* CORE;
   ECS::World* WORLD;
   ObjectFactory* FACTORY;
+  Graphics* GRAPHICS;
 
   Core::Core()
   {
@@ -24,9 +25,10 @@ namespace Engine
     isRunning = true;
     window = nullptr;
     dt = 0.0f;
-    CORE = this; // Set the global pointer
-    WORLD = new ECS::World();
+    CORE = this;
+    WORLD = new ECS::World(); // TODO: check memory leak
     FACTORY = new ObjectFactory(WORLD);
+    GRAPHICS = new Graphics();
   }
 
   Core::~Core()
@@ -67,7 +69,7 @@ namespace Engine
 
     ImGuiManager::init();
 
-    Graphics::init();
+    Engine::GRAPHICS->init();
 
     return 0;
   }
@@ -104,7 +106,7 @@ namespace Engine
   void Core::exit()
   {
     StateManager::Exit();
-    Graphics::exit();
+    Engine::GRAPHICS->exit();
     glfwDestroyWindow(window);
     glfwTerminate();
   }

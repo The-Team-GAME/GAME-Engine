@@ -52,7 +52,7 @@ void EcsState::Init()
 
 void EcsState::Update()
 {
-  Graphics::clearScreen(0.1f, 0.1f, 0.1f, 1.0f);
+  Engine::GRAPHICS->clearScreen(0.1f, 0.1f, 0.1f, 1.0f);
 }
 
 void EcsState::Draw()

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Graphics.h"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "ECS/ECS.h"
@@ -29,4 +30,5 @@ namespace Engine
   extern Core* CORE;
   extern ECS::World* WORLD;
   extern ObjectFactory* FACTORY;
+  extern Graphics* GRAPHICS;
 }
