@@ -23,24 +23,24 @@ public:
   };
 
 private:
-  unsigned int quadVAO;
-  std::vector<Texture> textures;
+  inline static unsigned int quadVAO;
+  inline static std::vector<Texture> textures;
 
-  Shader basicShader;
-  Shader textureShader;
-  glm::mat4 projection;
+  inline static Shader basicShader;
+  inline static Shader textureShader;
+  inline static glm::mat4 projection;
 
-  void setupRectangle();
+  static void setupRectangle();
 
 public:
-  void init();
-  void exit();
+  static void init();
+  static void exit();
 
-  void drawRect(float x, float y, float width, float height, glm::vec4 color);
+  static void drawRect(float x, float y, float width, float height, glm::vec4 color);
 
-  unsigned int loadImage(const char* filepath, MinifyingFilter min_filter = MinifyingFilter::Linear);
-  void drawImage(int imageId, float x, float y, float width, float height);
+  static unsigned int loadTexture(const char* filepath, MinifyingFilter min_filter = MinifyingFilter::Linear);
+  static void drawTexture(int imageId, float x, float y, float width, float height);
+  static void drawTextureRegion(int imageId, float destX, float destY, float destWidth, float destHeight, float srcX, float srcY, float srcWidth, float srcHeight);
 
-
-  void clearScreen(float r, float g, float b, float a);
+  static void clearScreen(float r, float g, float b, float a);
 };

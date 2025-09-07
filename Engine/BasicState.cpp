@@ -20,11 +20,11 @@ void BasicState::Update()
     std::cout << "Spacebar was pressed!\n";
   }
 
-  if (Engine::Input::IsMouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT))
+  /*if (Engine::Input::IsMouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT))
   {
     glm::vec2 mousePos = Engine::Input::GetMousePosition();
     std::cout << "Left mouse button held at: " << mousePos.x << ", " << mousePos.y << "\n";
-  }
+  }*/
 }
 
 void BasicState::Draw()

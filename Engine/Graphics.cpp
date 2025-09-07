@@ -84,7 +84,7 @@ void Graphics::drawRect(float x, float y, float width, float height, glm::vec4 c
   glBindVertexArray(0);
 }
 
-unsigned int Graphics::loadImage(const char* filepath, MinifyingFilter min_filter)
+unsigned int Graphics::loadTexture(const char* filepath, MinifyingFilter min_filter)
 {
   // std::cout << "Current working directory: " << std::filesystem::current_path() << std::endl;
   // std::cout << "Attempting to load image: " << filepath << std::endl;
@@ -127,7 +127,8 @@ unsigned int Graphics::loadImage(const char* filepath, MinifyingFilter min_filte
   return static_cast<int>(textures.size() - 1);
 }
 
-void Graphics::drawImage(int imageId, float x, float y, float width, float height)
+
+void Graphics::drawTexture(int imageId, float x, float y, float width, float height)
 {
   if (imageId < 0 || imageId >= static_cast<int>(textures.size()))
   {
@@ -143,6 +144,7 @@ void Graphics::drawImage(int imageId, float x, float y, float width, float heigh
   model = glm::scale(model, glm::vec3(width, height, 1.0f));
 
   textureShader.setMatrix("model", model);
+  textureShader.setBool("useSprite", false);
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, textures[imageId].id);
@@ -150,6 +152,38 @@ void Graphics::drawImage(int imageId, float x, float y, float width, float heigh
   glBindVertexArray(quadVAO);
   glDrawArrays(GL_TRIANGLES, 0, 6);
   glBindVertexArray(0);
+}
+
+void Graphics::drawTextureRegion(int imageId, float destX, float destY, float destWidth, float destHeight, float srcX, float srcY, float srcWidth, float srcHeight)
+{
+  if (imageId < 0 || imageId >= static_cast<int>(textures.size()))
+  {
+    std::cout << "Invalid image ID: " << imageId << std::endl;
+    return;
+  }
+
+  textureShader.use();
+  textureShader.setMatrix("projection", projection);
+
+  glm::mat4 model = glm::mat4(1.0f);
+  model = glm::translate(model, glm::vec3(destX, destY, 0.0f));
+  model = glm::scale(model, glm::vec3(destWidth, destHeight, 1.0f));
+
+  textureShader.setMatrix("model", model);
+
+  const auto& tex = textures[imageId];
+  glm::vec4 spriteCoords(srcX / tex.width, srcY / tex.height, srcWidth / tex.width, srcHeight / tex.height);
+  textureShader.setVec4("spriteCoords", spriteCoords);
+  textureShader.setBool("useSprite", true);
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, tex.id);
+
+  glBindVertexArray(quadVAO);
+  glDrawArrays(GL_TRIANGLES, 0, 6);
+  glBindVertexArray(0);
+
+  textureShader.setBool("useSprite", false);
 }
 
 void Graphics::clearScreen(float r, float g, float b, float a)

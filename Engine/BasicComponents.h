@@ -59,7 +59,7 @@ namespace Components {
     unsigned int textureId;
     StaticSprite(std::string texturePath, Graphics::MinifyingFilter minifyingFilter = Graphics::MinifyingFilter::Linear)
     {
-      textureId = Engine::GRAPHICS->loadImage(texturePath.c_str(), minifyingFilter);
+      textureId = Engine::GRAPHICS->loadTexture(texturePath.c_str(), minifyingFilter);
     }
   };;
 
