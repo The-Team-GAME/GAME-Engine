@@ -18,7 +18,7 @@ namespace Math {
   // Member Functions
   float Vec4D::get_magnitude_sq() const
   {
-    return pow(x, 2) + pow(y, 2) + pow(z, 2) + pow(w, 2);
+    return powf(x, 2) + powf(y, 2) + powf(z, 2) + powf(w, 2);
   }
 
   float Vec4D::get_magnitude() const
