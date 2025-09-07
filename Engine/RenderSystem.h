@@ -18,7 +18,7 @@ public:
       << " at (" << pos->x << ", " << pos->y
       << ") scale=" << render->scale << "\n";*/
 
-     Engine::GRAPHICS->drawRect(pos->x, pos->y, 10.0f, 10.0f, { 1.0f, 1.0f, 1.0f, 1.0f }); // TODO: allow changing color
+    Engine::GRAPHICS->drawRect(pos->x, pos->y, 10.0f, 10.0f, { 1.0f, 1.0f, 1.0f, 1.0f }); // TODO: allow changing color
   }
 };
 
@@ -28,17 +28,12 @@ public:
     requireComponents<Components::StaticSprite, Components::Position, Components::Size, Components::Rotation>();
   }
 
-  void updateEntity(ECS::EntityID entityId, float deltaTime) override {
+  void updateEntity(ECS::EntityID entityId, float /*dt*/) override {
     auto* sprite = world->getComponent<Components::StaticSprite>(entityId);
     auto* pos = world->getComponent<Components::Position>(entityId);
     auto* size = world->getComponent<Components::Size>(entityId);
     auto* rotation = world->getComponent<Components::Rotation>(entityId);
 
-    /*std::cout << "Rendering sprite " << render->spriteId
-      << " at (" << pos->x << ", " << pos->y
-      << ") scale=" << render->scale << "\n";*/
-
-    // Engine::GRAPHICS->drawRect(pos->x, pos->y, 10.0f, 10.0f, { 1.0f, 1.0f, 1.0f, 1.0f }); // TODO: allow changing color
-     Engine::GRAPHICS->drawTexture(sprite->textureId, pos->x, pos->y, size->width, size->height);
+    Engine::GRAPHICS->drawTexture(sprite->textureId, pos->x, pos->y, size->width, size->height, rotation->angle);
   }
 };

@@ -38,9 +38,9 @@ public:
 
   void drawRect(float x, float y, float width, float height, glm::vec4 color);
 
-  unsigned int loadTexture(const char* filepath, MinifyingFilter min_filter = MinifyingFilter::Linear);
-  void drawTexture(int imageId, float x, float y, float width, float height);
-  void drawTextureRegion(int imageId, float destX, float destY, float destWidth, float destHeight, float srcX, float srcY, float srcWidth, float srcHeight);
+  int loadTexture(const char* filepath, MinifyingFilter min_filter = MinifyingFilter::Linear);
+  void drawTexture(int imageId, float x, float y, float width, float height, float rotation = 0.0f);
+  void drawTextureRegion(int imageId, float destX, float destY, float destWidth, float destHeight, float srcX, float srcY, float srcWidth, float srcHeight, float rotation = 0.0f);
 
   void clearScreen(float r, float g, float b, float a);
 };

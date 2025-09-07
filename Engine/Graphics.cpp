@@ -84,7 +84,7 @@ void Graphics::drawRect(float x, float y, float width, float height, glm::vec4 c
   glBindVertexArray(0);
 }
 
-unsigned int Graphics::loadTexture(const char* filepath, MinifyingFilter min_filter)
+int Graphics::loadTexture(const char* filepath, MinifyingFilter min_filter)
 {
   // std::cout << "Current working directory: " << std::filesystem::current_path() << std::endl;
   // std::cout << "Attempting to load image: " << filepath << std::endl;
@@ -128,7 +128,7 @@ unsigned int Graphics::loadTexture(const char* filepath, MinifyingFilter min_fil
 }
 
 
-void Graphics::drawTexture(int imageId, float x, float y, float width, float height)
+void Graphics::drawTexture(int imageId, float x, float y, float width, float height, float rotation)
 {
   if (imageId < 0 || imageId >= static_cast<int>(textures.size()))
   {
@@ -140,7 +140,15 @@ void Graphics::drawTexture(int imageId, float x, float y, float width, float hei
   textureShader.setMatrix("projection", projection);
 
   glm::mat4 model = glm::mat4(1.0f);
+  // First translate (transformations are: scale happens first, then rotation, and then final translation happens; reversed order)
   model = glm::translate(model, glm::vec3(x, y, 0.0f));
+  // Move origin of rotation to center of the quad
+  model = glm::translate(model, glm::vec3(0.5f * width, 0.5f * height, 0.0f));
+  // Then rotate
+  model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+  // Move origin back
+  model = glm::translate(model, glm::vec3(-0.5f * width, -0.5f * height, 0.0f));
+  // Then scale
   model = glm::scale(model, glm::vec3(width, height, 1.0f));
 
   textureShader.setMatrix("model", model);
@@ -154,7 +162,7 @@ void Graphics::drawTexture(int imageId, float x, float y, float width, float hei
   glBindVertexArray(0);
 }
 
-void Graphics::drawTextureRegion(int imageId, float destX, float destY, float destWidth, float destHeight, float srcX, float srcY, float srcWidth, float srcHeight)
+void Graphics::drawTextureRegion(int imageId, float destX, float destY, float destWidth, float destHeight, float srcX, float srcY, float srcWidth, float srcHeight, float rotation)
 {
   if (imageId < 0 || imageId >= static_cast<int>(textures.size()))
   {
@@ -166,7 +174,15 @@ void Graphics::drawTextureRegion(int imageId, float destX, float destY, float de
   textureShader.setMatrix("projection", projection);
 
   glm::mat4 model = glm::mat4(1.0f);
+  // First translate (transformations are: scale happens first, then rotation, and then final translation happens; reversed order)
   model = glm::translate(model, glm::vec3(destX, destY, 0.0f));
+  // Move origin of rotation to center of the quad
+  model = glm::translate(model, glm::vec3(0.5f * destWidth, 0.5f * destHeight, 0.0f));
+  // Then rotate
+  model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+  // Move origin back
+  model = glm::translate(model, glm::vec3(-0.5f * destWidth, -0.5f * destHeight, 0.0f));
+  // Then scale
   model = glm::scale(model, glm::vec3(destWidth, destHeight, 1.0f));
 
   textureShader.setMatrix("model", model);
