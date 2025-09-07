@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Vector2D.h"
-#include "core.h"
+#include "Graphics.h"
 
 template<size_t N>
 struct fixed_string {
@@ -16,7 +16,6 @@ namespace Components {
   template <fixed_string id>
   struct Tag {};
 
-  struct Inactive {};
 
   struct Position : Math::Vec2D {
     using Math::Vec2D::Vec2D;
@@ -57,10 +56,8 @@ namespace Components {
 
   struct StaticSprite {
     unsigned int textureId;
-    StaticSprite(std::string texturePath, Graphics::MinifyingFilter minifyingFilter = Graphics::MinifyingFilter::Linear)
-    {
-      textureId = Engine::GRAPHICS->loadTexture(texturePath.c_str(), minifyingFilter);
-    }
-  };;
+    StaticSprite(std::string texturePath, Graphics::MinifyingFilter minifyingFilter = Graphics::MinifyingFilter::Linear);
+    StaticSprite(const StaticSprite& other);
+  };
 
 } // namespace Components
