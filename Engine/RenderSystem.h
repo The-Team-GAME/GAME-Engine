@@ -3,6 +3,7 @@
 #include "BasicComponents.h"
 #include <iostream>
 
+// TODO: to be removed, replaced by GameObjectRenderSystem
 class RenderSystem : public ECS::System {
 public:
   RenderSystem() {

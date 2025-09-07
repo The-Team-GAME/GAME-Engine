@@ -15,14 +15,20 @@ public:
 
   void Init()
   {
+    // Load the enemy prefab from a JSON file
     enemyPrefab = Engine::FACTORY->registerObject("Assets/objects/enemy.json");
 
-    auto enemy1 = Engine::FACTORY->createObject(enemyPrefab).addComponent<Components::Tag<"GameObjectState">>();
-    auto enemy2 = Engine::FACTORY->createObject(enemyPrefab).addComponent<Components::Tag<"GameObjectState">>();
+    // Create two enemy instances from the prefab
+    auto enemy1 = Engine::FACTORY->createObject(enemyPrefab)
+      .addComponent<Components::Tag<"GameObjectState">>();
+    auto enemy2 = Engine::FACTORY->createObject(enemyPrefab)
+      .addComponent<Components::Tag<"GameObjectState">>();
 
+    // Position them differently
     enemy1.getComponent<Components::Position>()->x = 100.0f;
     enemy2.getComponent<Components::Position>()->x = 300.0f;
 
+    // Add systems to the world
     Engine::WORLD->addSystem<MovementSystem>();
     Engine::WORLD->addSystem<GameObjectRenderSystem>();
   };
