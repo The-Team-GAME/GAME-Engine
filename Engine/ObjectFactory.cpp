@@ -10,12 +10,7 @@ Engine::ObjectFactory::ObjectFactory(ECS::World* world) : m_world(world)
 {
 }
 
-int Engine::ObjectFactory::fromJson(std::string jsonText)
-{
-  return 0;
-}
-
-int Engine::ObjectFactory::fromJsonFile(std::string filePath)
+int Engine::ObjectFactory::registerObject(std::string filePath)
 {
   std::ifstream f(filePath);
   json data = json::parse(f);
@@ -59,6 +54,15 @@ int Engine::ObjectFactory::fromJsonFile(std::string filePath)
   nextObjectId++;
 
   return id;
+}
+
+void Engine::ObjectFactory::unregisterObject(int id)
+{
+  if (id < 0 || id >= static_cast<int>(objectList.size())) {
+    return; // Invalid ID
+  }
+  objectList.erase(objectList.begin() + id);
+  nextObjectId--;
 }
 
 ECS::Entity Engine::ObjectFactory::createObject(int id)

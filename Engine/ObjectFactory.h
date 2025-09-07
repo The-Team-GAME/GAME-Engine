@@ -28,8 +28,8 @@ namespace Engine
   public:
     ObjectFactory(ECS::World* world);
 
-    int fromJson(std::string jsonText);
-    int fromJsonFile(std::string filePath);
+    int registerObject(std::string filePath);
+    void unregisterObject(int id);
 
     ECS::Entity createObject(int id);
   };

@@ -9,16 +9,16 @@
 class GameObjectState : public Engine::GameState<GameObjectState>
 {
 private:
-
+  int enemyPrefab;
 public:
   void Load() {};
 
   void Init()
   {
-    int enemyPrefab = Engine::FACTORY->fromJsonFile("Assets/objects/enemy.json");
+    enemyPrefab = Engine::FACTORY->registerObject("Assets/objects/enemy.json");
 
-    auto enemy1 = Engine::FACTORY->createObject(enemyPrefab);
-    auto enemy2 = Engine::FACTORY->createObject(enemyPrefab);
+    auto enemy1 = Engine::FACTORY->createObject(enemyPrefab).addComponent<Components::Tag<"GameObjectState">>();
+    auto enemy2 = Engine::FACTORY->createObject(enemyPrefab).addComponent<Components::Tag<"GameObjectState">>();
 
     enemy1.getComponent<Components::Position>()->x = 100.0f;
     enemy2.getComponent<Components::Position>()->x = 300.0f;
@@ -34,7 +34,14 @@ public:
     Engine::GRAPHICS->clearScreen(0.1f, 0.1f, 0.1f, 1.0f); // Dark gray background
   };
 
-  void Free() {};
+  void Free() {
+    Engine::FACTORY->unregisterObject(enemyPrefab);
+
+    auto entities = Engine::WORLD->getEntitiesWith<Components::Tag<"GameObjectState">>();
+    for (auto entityId : entities) {
+      Engine::WORLD->destroyEntity(entityId);
+    }
+  };
 
   void Unload() {};
 };
