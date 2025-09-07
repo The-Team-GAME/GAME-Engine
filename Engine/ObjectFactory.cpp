@@ -20,26 +20,22 @@ int Engine::ObjectFactory::fromJsonFile(std::string filePath)
   std::ifstream f(filePath);
   json data = json::parse(f);
 
-  auto entity = m_world->createEntity();
-
-  // We just want a prefab entity
-  entity.addComponent<Components::Inactive>();
-
+  ObjectPrefab newObject;
 
   if (data.contains("position")) {
-    entity.addComponent<Components::Position>(data["position"]["x"], data["position"]["y"]);
+    newObject.position = Components::Position(data["position"]["x"], data["position"]["y"]);
   }
 
   if (data.contains("velocity")) {
-    entity.addComponent<Components::Velocity>(data["velocity"]["x"], data["velocity"]["y"]);
+    newObject.velocity = Components::Velocity(data["velocity"]["x"], data["velocity"]["y"]);
   }
 
   if (data.contains("size")) {
-    entity.addComponent<Components::Size>(data["size"]["width"], data["size"]["height"]);
+    newObject.size = Components::Size(data["size"]["width"], data["size"]["height"]);
   }
 
   if (data.contains("rotation")) {
-    entity.addComponent<Components::Rotation>(data["rotation"]);
+    newObject.rotation = Components::Rotation(data["rotation"]);
   }
 
   if (data.contains("staticSprite")) {
@@ -51,19 +47,33 @@ int Engine::ObjectFactory::fromJsonFile(std::string filePath)
         filter = Graphics::MinifyingFilter::Nearest;
       }
 
-      entity.addComponent<Components::StaticSprite>(data["staticSprite"]["texturePath"], filter);
+      newObject.staticSprite = Components::StaticSprite(data["staticSprite"]["texturePath"], filter);
     }
     else {
-      entity.addComponent<Components::StaticSprite>(data["staticSprite"]["texturePath"]);
+      newObject.staticSprite = Components::StaticSprite(data["staticSprite"]["texturePath"]);
     }
   }
 
-  return entity.getId();
+  objectList.push_back(newObject);
+  int id = nextObjectId;
+  nextObjectId++;
+
+  return id;
 }
 
 ECS::Entity Engine::ObjectFactory::createObject(int id)
 {
-  auto newEntity = m_world->cloneEntity(id);
-  newEntity.removeComponent<Components::Inactive>();
-  return newEntity;
+  ObjectPrefab& objectPrefab = objectList[id];
+
+  ECS::Entity entity = m_world->createEntity()
+    .addComponent<Components::Position>(objectPrefab.position)
+    .addComponent<Components::Velocity>(objectPrefab.velocity)
+    .addComponent<Components::Rotation>(objectPrefab.rotation)
+    .addComponent<Components::Size>(objectPrefab.size);
+
+  if (objectPrefab.staticSprite.has_value()) {
+    entity.addComponent<Components::StaticSprite>(objectPrefab.staticSprite.value());
+  }
+
+  return entity;
 }
