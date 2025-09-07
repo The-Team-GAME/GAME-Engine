@@ -106,6 +106,18 @@ namespace ECS
       entitiesToDestroy.insert(id);
     }
 
+    template <typename... T>
+    void destroyEntitiesWith()
+    {
+      for (EntityID entity : activeEntities)
+      {
+        if (hasComponents<T...>(entity))
+        {
+          destroyEntity(entity);
+        }
+      }
+    }
+
     bool isEntityActive(EntityID id) const
     {
       return activeEntities.find(id) != activeEntities.end();
