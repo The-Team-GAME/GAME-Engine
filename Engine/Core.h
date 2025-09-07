@@ -23,6 +23,8 @@ namespace Engine
     int init();
     void run();
     void exit();
+
+    float getDt() const;
     GLFWwindow* getWindow() const;
   };
 

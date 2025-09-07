@@ -111,6 +111,11 @@ namespace Engine
     glfwTerminate();
   }
 
+  float Core::getDt() const
+  {
+    return dt;
+  }
+
   GLFWwindow* Core::getWindow() const
   {
     return window;
