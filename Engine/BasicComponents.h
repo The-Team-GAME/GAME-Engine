@@ -3,6 +3,7 @@
 #include "Vector2D.h"
 #include "Vector4D.h"
 #include "Graphics.h"
+#include <string>
 
 template<size_t N>
 struct fixed_string {
@@ -17,9 +18,22 @@ namespace Components {
   template <fixed_string id>
   struct Tag {};
 
+  struct ObjectId : std::basic_string<char> {
+    using std::basic_string<char>::basic_string;
+  };
 
+  // Translate
   struct Position : Math::Vec2D {
     using Math::Vec2D::Vec2D;
+  };
+
+  struct Scale : Math::Vec2D {
+    using Math::Vec2D::Vec2D;
+  };
+
+  struct Rotation {
+    float angle; // in degrees
+    Rotation(float angle = 0.0f) : angle(angle) {}
   };
 
   struct Velocity : Math::Vec2D {
@@ -33,11 +47,6 @@ namespace Components {
 
   struct Color : Math::Vec4D {
     using Math::Vec4D::Vec4D;
-  };
-
-  struct Rotation {
-    float angle; // in degrees
-    Rotation(float angle = 0.0f) : angle(angle) {}
   };
 
   struct Health {
