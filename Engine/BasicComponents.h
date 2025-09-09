@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vector2D.h"
+#include "Vector4D.h"
 #include "Graphics.h"
 
 template<size_t N>
@@ -28,6 +29,10 @@ namespace Components {
   struct Size {
     float width, height;
     Size(float width = 0.0f, float height = 0.0f) : width(width), height(height) {}
+  };
+
+  struct Color : Math::Vec4D {
+    using Math::Vec4D::Vec4D;
   };
 
   struct Rotation {

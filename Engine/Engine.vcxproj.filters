@@ -218,6 +218,9 @@
     <ClInclude Include="Graphics.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
+    <ClInclude Include="BackgroundSystem.h">
+      <Filter>Source Files\ECS\Systems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ECS\Entity.inl">

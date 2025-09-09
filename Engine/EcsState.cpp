@@ -7,6 +7,7 @@
 #include "MovementSystem.h"
 #include "HealthSystem.h"
 #include "RenderSystem.h"
+#include "BackgroundSystem.h"
 
 void EcsState::Load()
 {
@@ -44,7 +45,13 @@ void EcsState::Init()
   }
   // --- End of Demonstration ---
 
-  // Add systems
+  // Entity to clear background
+  auto background = Engine::WORLD->createEntity()
+    .addComponent<Components::Tag<"GameObjectState">>()
+    .addComponent<Components::Color>(0.1f, 0.1f, 0.1f, 1.0f); // Dark gray background
+
+  // Add systems to the world
+  Engine::WORLD->addSystem<BackgroundSystem>(); // Background system should be first
   Engine::WORLD->addSystem<MovementSystem>();
   Engine::WORLD->addSystem<HealthSystem>();
   Engine::WORLD->addSystem<RenderSystem>();
@@ -52,7 +59,6 @@ void EcsState::Init()
 
 void EcsState::Update()
 {
-  Engine::GRAPHICS->clearScreen(0.1f, 0.1f, 0.1f, 1.0f);
 }
 
 void EcsState::Draw()

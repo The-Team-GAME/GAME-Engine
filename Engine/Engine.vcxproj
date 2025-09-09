@@ -179,6 +179,7 @@
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BackgroundSystem.h" />
     <ClInclude Include="BasicComponents.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="EcsState.h" />
