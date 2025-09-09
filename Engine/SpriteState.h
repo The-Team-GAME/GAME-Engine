@@ -1,71 +1,49 @@
 #pragma once
 
-#include "StateManager.h" 
-#include <vector>
-
-struct Sprite {
-	bool isAnimated = false;
-	int frames = 0;
-	int speed = 100;
-	int currentFrame = 0;
-	float animationTimer = 0.0f;
-	int columns = 1;
-	int rows = 1;
-	int width = 0;
-	int height = 0;
-};
+#include "StateManager.h"
+#include "core.h"
 
 class SpriteState : public Engine::GameState<SpriteState>
 {
 private:
-	static std::vector<Sprite> sprites;//sprites
+  int linearMonkeyImageId = -1;
+  int nearestMonkeyImageId = -1;
 
-
-	static bool dropdown; //dropdown menu
-	static bool edit; //edit
-	static bool dragndrop; //dragndrop
-
-
-	static int s_selectedIndex; // -1 if none
-
-
-	//static glm::vec2 s_start;
-	//static glm::vec2 s_curr;
-
+  float spritePosX = 0.0f;
 
 public:
-	/*!
-	 * @brief Loads resources needed by the main menu state.
-	 */
-	void Load();
+  void Load() {};
 
-	/*!
-	 * @brief Initializes the main menu state.
-	 */
-	void Init();
+  void Init()
+  {
+    linearMonkeyImageId = Engine::GRAPHICS->loadTexture("Assets/images/monkey.png");
+    nearestMonkeyImageId = Engine::GRAPHICS->loadTexture("Assets/images/monkey.png", Graphics::MinifyingFilter::Nearest); // when loading pixel art, use nearest filter to avoid blurriness
+  };
 
-	/*!
-	 * @brief Updates the main menu state logic.
-	 */
-	void Update();
+  void Update() {};
 
-	/*!
-	 * @brief Renders any miscellanous objects.
-	 */
-	void Draw();
+  void Draw()
+  {
+    Engine::GRAPHICS->clearScreen(0.1f, 0.1f, 0.1f, 1.0f); // Dark gray background
 
-	/*!
-	 * @brief Renders the sprite manager interface.
-	 */
-	void DrawManager();
+    Engine::GRAPHICS->drawTexture(linearMonkeyImageId, 200.0f, 150.0f, 150.0f, 210.0f);
+    Engine::GRAPHICS->drawTexture(nearestMonkeyImageId, 400.0f, 150.0f, 150.0f, 210.0f);
 
-	/*!
-	 * @brief Frees runtime resources used by the main menu state.
-	 */
-	void Free();
+    // Draw a portion of the texture (sprite)
+    Engine::GRAPHICS->drawTextureRegion(
+      nearestMonkeyImageId,
+      600.0f, // destX
+      150.0f, // destY
+      150.0f, // destWidth
+      210.0f, // destHeight
+      spritePosX += Engine::CORE->getDt() * 10.0f, // srcX
+      0.0f, // srcY
+      15.0f, // srcWidth
+      21.0f // srcHeight
+    );
+  };
 
-	/*!
-	 * @brief Unloads resources used by the main menu state.
-	 */
-	void Unload();
+  void Free() {};
+
+  void Unload() {};
 };

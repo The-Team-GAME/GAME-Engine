@@ -19,9 +19,6 @@
     <Filter Include="Source Files\Main">
       <UniqueIdentifier>{385697f6-5874-4478-84bb-4bcd65262c76}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Graphics">
-      <UniqueIdentifier>{255d30ac-8561-46c9-8c8b-a6606e3c9ad2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Shaders">
       <UniqueIdentifier>{dca7a92a-4cb4-4b9d-8342-a5ab4ad1b884}</UniqueIdentifier>
     </Filter>
@@ -40,6 +37,21 @@
     <Filter Include="Source Files\ECS">
       <UniqueIdentifier>{44f5bfe5-51ab-4ae6-85b7-5cad4f898c7d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\ECS\Backend">
+      <UniqueIdentifier>{f0b782ed-0693-46e1-89b0-d2acc6882697}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ECS\Components">
+      <UniqueIdentifier>{bce9375b-1c70-4222-9fda-82cbc75a7fd5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ECS\Systems">
+      <UniqueIdentifier>{9da84014-8217-49db-a30d-3286f6078382}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Math">
+      <UniqueIdentifier>{fb55182b-ff4d-48c7-b71a-e9567ed04d09}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GameObjects">
+      <UniqueIdentifier>{633d352a-9345-4f2a-9ac0-8bf737b42176}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinMain.cpp">
@@ -47,9 +59,6 @@
     </ClCompile>
     <ClCompile Include="Shader.cpp">
       <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphics.cpp">
-      <Filter>Source Files\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="StateManager.cpp">
       <Filter>Source Files\Engine</Filter>
@@ -93,17 +102,35 @@
     <ClCompile Include="ImGuiManager.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="ECS.h">
-      <Filter>Source Files\ECS</Filter>
-    </ClCompile>
     <ClCompile Include="EcsState.cpp">
       <Filter>Source Files\GameStates</Filter>
     </ClCompile>
-    <ClCompile Include="JsonState.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="ECS\ComponentManager.cpp">
+      <Filter>Source Files\ECS\Backend</Filter>
     </ClCompile>
-    <ClCompile Include="SpriteManager.cpp">
+    <ClCompile Include="ECS\Entity.cpp">
+      <Filter>Source Files\ECS\Backend</Filter>
+    </ClCompile>
+    <ClCompile Include="JsonState.cpp">
+      <Filter>Source Files\GameStates</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector4D.cpp">
+      <Filter>Source Files\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector2D.cpp">
+      <Filter>Source Files\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector3D.cpp">
+      <Filter>Source Files\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectFactory.cpp">
       <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="BasicComponents.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -119,9 +146,6 @@
     <ClInclude Include="InputManager.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
-    <ClInclude Include="Graphics.h">
-      <Filter>Source Files\Graphics</Filter>
-    </ClInclude>
     <ClInclude Include="MainMenuState.h">
       <Filter>Source Files\GameStates</Filter>
     </ClInclude>
@@ -134,20 +158,85 @@
     <ClInclude Include="EcsState.h">
       <Filter>Source Files\GameStates</Filter>
     </ClInclude>
-    <ClInclude Include="JsonState.h">
+    <ClInclude Include="TypeDef.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SpriteManager.h">
+    <ClInclude Include="ECS\ComponentArray.h">
+      <Filter>Source Files\ECS\Backend</Filter>
+    </ClInclude>
+    <ClInclude Include="ECS\ComponentManager.h">
+      <Filter>Source Files\ECS\Backend</Filter>
+    </ClInclude>
+    <ClInclude Include="ECS\ECS.h">
+      <Filter>Source Files\ECS\Backend</Filter>
+    </ClInclude>
+    <ClInclude Include="ECS\Entity.h">
+      <Filter>Source Files\ECS\Backend</Filter>
+    </ClInclude>
+    <ClInclude Include="ECS\System.h">
+      <Filter>Source Files\ECS\Backend</Filter>
+    </ClInclude>
+    <ClInclude Include="ECS\Types.h">
+      <Filter>Source Files\ECS\Backend</Filter>
+    </ClInclude>
+    <ClInclude Include="ECS\World.h">
+      <Filter>Source Files\ECS\Backend</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicComponents.h">
+      <Filter>Source Files\ECS\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="HealthSystem.h">
+      <Filter>Source Files\ECS\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="MovementSystem.h">
+      <Filter>Source Files\ECS\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderSystem.h">
+      <Filter>Source Files\ECS\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="JsonState.h">
+      <Filter>Source Files\GameStates</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector4D.h">
+      <Filter>Source Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector2D.h">
+      <Filter>Source Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector3D.h">
+      <Filter>Source Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteState.h">
+      <Filter>Source Files\GameStates</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectFactory.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjectState.h">
+      <Filter>Source Files\GameStates</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="basic.frag">
+    <None Include="ECS\Entity.inl">
+      <Filter>Source Files\ECS\Backend</Filter>
+    </None>
+    <None Include="..\..\GAME\Engine\Assets\objects\enemy.json">
+      <Filter>Source Files\GameObjects</Filter>
+    </None>
+    <None Include="Assets\shaders\texture.vert">
       <Filter>Source Files\Shaders</Filter>
     </None>
-    <None Include="basic.vert">
+    <None Include="Assets\shaders\basic.frag">
       <Filter>Source Files\Shaders</Filter>
     </None>
-    <None Include="example.json" />
+    <None Include="Assets\shaders\basic.vert">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="Assets\shaders\texture.frag">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
