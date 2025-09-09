@@ -9,7 +9,7 @@ namespace
 {
   struct ObjectPrefab
   {
-    Components::ObjectId objectId;
+    Components::ObjectId objectId; // so that level data can reference to these objects
     Components::Size size;
     std::optional<Components::StaticSprite> staticSprite;
   };
