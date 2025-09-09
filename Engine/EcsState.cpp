@@ -18,14 +18,16 @@ void EcsState::Init()
   // Create player entity
   auto player = Engine::WORLD->createEntity()
     .addComponent<Components::Tag<"Player">>()
+    .addComponent<Components::Tag<"GameObjectState">>()
     .addComponent<Components::Position>(10.0f, 20.0f)
-    .addComponent<Components::Velocity>(1.0f, 0.0f)
+    .addComponent<Components::Velocity>(100.0f, 0.0f)
     .addComponent<Components::Health>(100, 100)
     .addComponent<Components::Renderable>();
 
   // Create an enemy entity to act as a template
   auto enemy = Engine::WORLD->createEntity()
     .addComponent<Components::Tag<"Enemy">>()
+    .addComponent<Components::Tag<"GameObjectState">>()
     .addComponent<Components::Position>(50.0f, 30.0f)
     .addComponent<Components::Health>(50, 50)
     .addComponent<Components::Renderable>();
@@ -67,13 +69,7 @@ void EcsState::Draw()
 
 void EcsState::Free()
 {
-
-  Engine::WORLD->destroyEntity(Engine::WORLD->getFirstEntityWith<Components::Tag<"Player">>());
-
-  auto enemies = Engine::WORLD->getEntitiesWith<Components::Tag<"Enemy">>();
-  for (auto enemyId : enemies) {
-    Engine::WORLD->destroyEntity(enemyId);
-  }
+  Engine::WORLD->destroyEntitiesWith<Components::Tag<"GameObjectState">>();
 }
 
 void EcsState::Unload()
