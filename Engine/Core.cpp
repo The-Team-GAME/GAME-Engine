@@ -6,21 +6,29 @@
 #include "StateManager.h"
 #include "BasicState.h"
 #include "MainMenuState.h"
-#include "InputManager.h" 
+#include "InputManager.h"
 #include "ImGuiManager.h"
-#include "StateChooser.inl"  
+#include "StateChooser.inl"
 
 namespace Engine
 {
 
   Core* CORE;
+  ECS::World* WORLD;
+  ObjectFactory* FACTORY;
+  Graphics* GRAPHICS;
 
   Core::Core()
   {
-    lastTime = 0;
+    lastTime = 0.0f;
+    dt = 0.0f;
     isRunning = true;
     window = nullptr;
-    CORE = this; // Set the global pointer
+    dt = 0.0f;
+    CORE = this;
+    WORLD = new ECS::World(); // TODO: check memory leak
+    FACTORY = new ObjectFactory(WORLD);
+    GRAPHICS = new Graphics();
   }
 
   Core::~Core()
@@ -57,31 +65,38 @@ namespace Engine
 
     std::cout << glGetString(GL_VERSION) << std::endl;
 
-
     StateManager::Init(BasicState::Get());
 
     ImGuiManager::init();
-    ImGuiManager::addPanel(StateChooser);
 
-    Graphics::init();
+    Engine::GRAPHICS->init();
 
     return 0;
   }
 
   void Core::run()
   {
+    lastTime = static_cast<float>(glfwGetTime());
 
     while (!glfwWindowShouldClose(window) && isRunning)
     {
+      float currenttime = static_cast<float>(glfwGetTime()) * 1000.0f;
+      dt = (currenttime - lastTime) / 1000.0f;
+      lastTime = currenttime;
+
       glfwPollEvents();
+      ImGuiManager::begin();
 
       Input::Update();
 
       StateManager::GetCurrentState()->Update();
       StateManager::GetCurrentState()->Draw();
 
-      ImGuiManager::update();
+      WORLD->update(dt);
 
+      StateChooserPanel();
+
+      ImGuiManager::end();
 
       /* Swap front and back buffers */
       glfwSwapBuffers(window);
@@ -91,9 +106,14 @@ namespace Engine
   void Core::exit()
   {
     StateManager::Exit();
-    Graphics::exit();
+    Engine::GRAPHICS->exit();
     glfwDestroyWindow(window);
     glfwTerminate();
+  }
+
+  float Core::getDt() const
+  {
+    return dt;
   }
 
   GLFWwindow* Core::getWindow() const

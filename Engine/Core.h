@@ -1,7 +1,10 @@
 #pragma once
 
+#include "Graphics.h"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include "ECS/ECS.h"
+#include "ObjectFactory.h"
 
 namespace Engine
 {
@@ -9,8 +12,9 @@ namespace Engine
   {
   private:
     bool isRunning;
-    unsigned lastTime;
-    GLFWwindow *window;
+    float lastTime;
+    GLFWwindow* window;
+    float dt;
 
   public:
     Core();
@@ -19,9 +23,14 @@ namespace Engine
     int init();
     void run();
     void exit();
-    GLFWwindow *getWindow() const;
+
+    float getDt() const;
+    GLFWwindow* getWindow() const;
   };
 
   // Global pointer to the instance of the core
-  extern Core *CORE;
+  extern Core* CORE;
+  extern ECS::World* WORLD;
+  extern ObjectFactory* FACTORY;
+  extern Graphics* GRAPHICS;
 }
