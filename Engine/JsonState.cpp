@@ -27,6 +27,7 @@ void JsonState::Update()
 void JsonState::Draw()
 {
   Engine::GRAPHICS->clearScreen(0.1f, 0.1f, 0.1f, 1.0f); // Dark gray background
+
 }
 
 void JsonState::Free()
