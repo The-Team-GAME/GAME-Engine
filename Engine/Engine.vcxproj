@@ -210,7 +210,7 @@
     <ClInclude Include="Vector4D.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\GAME\Engine\Assets\objects\enemy.json" />
+    <None Include="Assets\objects\enemy.json" />
     <None Include="Assets\shaders\basic.frag" />
     <None Include="Assets\shaders\basic.vert" />
     <None Include="Assets\shaders\texture.frag" />

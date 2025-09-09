@@ -17,20 +17,14 @@ int Engine::ObjectFactory::registerObject(std::string filePath)
 
   ObjectPrefab newObject;
 
-  if (data.contains("position")) {
-    newObject.position = Components::Position(data["position"]["x"], data["position"]["y"]);
-  }
+  // TODO: check if data contains in debug mode only
 
-  if (data.contains("velocity")) {
-    newObject.velocity = Components::Velocity(data["velocity"]["x"], data["velocity"]["y"]);
+  if (data.contains("id")) {
+    newObject.objectId = Components::ObjectId(data["id"]);
   }
 
   if (data.contains("size")) {
     newObject.size = Components::Size(data["size"]["width"], data["size"]["height"]);
-  }
-
-  if (data.contains("rotation")) {
-    newObject.rotation = Components::Rotation(data["rotation"]);
   }
 
   if (data.contains("staticSprite")) {
@@ -70,9 +64,7 @@ ECS::Entity Engine::ObjectFactory::createObject(int id)
   ObjectPrefab& objectPrefab = objectList[id];
 
   ECS::Entity entity = m_world->createEntity()
-    .addComponent<Components::Position>(objectPrefab.position)
-    .addComponent<Components::Velocity>(objectPrefab.velocity)
-    .addComponent<Components::Rotation>(objectPrefab.rotation)
+    .addComponent<Components::ObjectId>(objectPrefab.objectId)
     .addComponent<Components::Size>(objectPrefab.size);
 
   if (objectPrefab.staticSprite.has_value()) {
@@ -81,3 +73,60 @@ ECS::Entity Engine::ObjectFactory::createObject(int id)
 
   return entity;
 }
+
+
+
+
+
+
+
+
+
+// This was code that was previously written, but objects should not have attributes such as
+// velocity, size, rotation, etc. by default. They should be added as needed after creation.
+// Keeping this here for when we load level data where we want to load the above attributes.
+//int Engine::ObjectFactory::registerObject(std::string filePath)
+//{
+//  std::ifstream f(filePath);
+//  json data = json::parse(f);
+//
+//  ObjectPrefab newObject;
+//
+//  if (data.contains("position")) {
+//    newObject.position = Components::Position(data["position"]["x"], data["position"]["y"]);
+//  }
+//
+//  if (data.contains("velocity")) {
+//    newObject.velocity = Components::Velocity(data["velocity"]["x"], data["velocity"]["y"]);
+//  }
+//
+//  if (data.contains("size")) {
+//    newObject.size = Components::Size(data["size"]["width"], data["size"]["height"]);
+//  }
+//
+//  if (data.contains("rotation")) {
+//    newObject.rotation = Components::Rotation(data["rotation"]);
+//  }
+//
+//  if (data.contains("staticSprite")) {
+//    if (data["staticSprite"].contains("minifyingFilter")) {
+//      std::string filterStr = data["staticSprite"]["minifyingFilter"];
+//
+//      Graphics::MinifyingFilter filter = Graphics::MinifyingFilter::Linear;
+//      if (filterStr == "Nearest") {
+//        filter = Graphics::MinifyingFilter::Nearest;
+//      }
+//
+//      newObject.staticSprite = Components::StaticSprite(data["staticSprite"]["texturePath"], filter);
+//    }
+//    else {
+//      newObject.staticSprite = Components::StaticSprite(data["staticSprite"]["texturePath"]);
+//    }
+//  }
+//
+//  objectList.push_back(newObject);
+//  int id = nextObjectId;
+//  nextObjectId++;
+//
+//  return id;
+//}

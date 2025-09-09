@@ -130,7 +130,7 @@
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
     <ClCompile Include="BasicComponents.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\ECS\Components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -226,9 +226,6 @@
     <None Include="ECS\Entity.inl">
       <Filter>Source Files\ECS\Backend</Filter>
     </None>
-    <None Include="..\..\GAME\Engine\Assets\objects\enemy.json">
-      <Filter>Source Files\GameObjects</Filter>
-    </None>
     <None Include="Assets\shaders\texture.vert">
       <Filter>Source Files\Shaders</Filter>
     </None>
@@ -240,6 +237,9 @@
     </None>
     <None Include="Assets\shaders\texture.frag">
       <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="Assets\objects\enemy.json">
+      <Filter>Source Files\GameObjects</Filter>
     </None>
   </ItemGroup>
 </Project>
