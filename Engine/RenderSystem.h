@@ -33,12 +33,15 @@ public:
     auto* size = world->getComponent<Components::Size>(entityId);
     auto* pos = world->getComponent<Components::Position>(entityId);
     auto* rotation = world->getComponent<Components::Rotation>(entityId);
+    auto* scale = world->getComponent<Components::Scale>(entityId);
 
     // Default values if components are missing
     float x = pos ? pos->x : 0.0f;
     float y = pos ? pos->y : 0.0f;
     float angle = rotation ? rotation->angle : 0.0f;
+    float scaleX = scale ? scale->x : 1.0f;
+    float scaleY = scale ? scale->y : 1.0f;
 
-    Engine::GRAPHICS->drawTexture(sprite->textureId, x, y, size->width, size->height, angle);
+    Engine::GRAPHICS->drawTexture(sprite->textureId, x, y, size->width * scaleX, size->height * scaleY, angle);
   }
 };
