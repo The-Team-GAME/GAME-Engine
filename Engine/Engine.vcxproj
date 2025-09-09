@@ -167,6 +167,7 @@
     <ClCompile Include="ECS\Entity.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="ImGuiManager.cpp" />
+    <ClCompile Include="ImGuiState.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="JsonState.cpp" />
     <ClCompile Include="MainMenuState.cpp" />
@@ -193,6 +194,7 @@
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="HealthSystem.h" />
     <ClInclude Include="ImGuiManager.h" />
+    <ClInclude Include="ImGuiState.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="JsonState.h" />
     <ClInclude Include="MainMenuState.h" />

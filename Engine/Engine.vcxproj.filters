@@ -132,6 +132,9 @@
     <ClCompile Include="BasicComponents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ImGuiState.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
@@ -216,6 +219,9 @@
       <Filter>Source Files\GameStates</Filter>
     </ClInclude>
     <ClInclude Include="Graphics.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGuiState.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
   </ItemGroup>

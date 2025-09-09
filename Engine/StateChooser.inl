@@ -8,6 +8,7 @@
 #include "JsonState.h"
 #include "SpriteState.h"
 #include "GameObjectState.h"
+#include "ImGuiState.h"
 
 inline void StateChooserPanel()
 {
@@ -38,6 +39,10 @@ inline void StateChooserPanel()
   if (ImGui::Button("GameObjectState"))
   {
     Engine::StateManager::ChangeState(GameObjectState::Get());
+  }
+  if (ImGui::Button("ImGui Rect Painter"))
+  {
+    Engine::StateManager::ChangeState(ImGuiState::Get());
   }
 
   ImGui::End();
