@@ -129,6 +129,9 @@
     <ClCompile Include="Graphics.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
+    <ClCompile Include="BasicComponents.cpp">
+      <Filter>Source Files\ECS\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
@@ -215,25 +218,28 @@
     <ClInclude Include="Graphics.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
+    <ClInclude Include="BackgroundSystem.h">
+      <Filter>Source Files\ECS\Systems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ECS\Entity.inl">
       <Filter>Source Files\ECS\Backend</Filter>
     </None>
-    <None Include="..\..\GAME\Engine\Assets\objects\enemy.json">
+    <None Include="Assets\shaders\texture.vert">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="Assets\shaders\basic.frag">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="Assets\shaders\basic.vert">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="Assets\shaders\texture.frag">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="Assets\objects\enemy.json">
       <Filter>Source Files\GameObjects</Filter>
-    </None>
-    <None Include="..\..\GAME\Engine\Assets\shaders\basic.frag">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
-    <None Include="..\..\GAME\Engine\Assets\shaders\basic.vert">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
-    <None Include="..\..\GAME\Engine\Assets\shaders\texture.frag">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
-    <None Include="..\..\GAME\Engine\Assets\shaders\texture.vert">
-      <Filter>Source Files\Shaders</Filter>
     </None>
   </ItemGroup>
 </Project>

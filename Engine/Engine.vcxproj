@@ -179,6 +179,7 @@
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BackgroundSystem.h" />
     <ClInclude Include="BasicComponents.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="EcsState.h" />
@@ -209,11 +210,11 @@
     <ClInclude Include="Vector4D.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\GAME\Engine\Assets\objects\enemy.json" />
-    <None Include="..\..\GAME\Engine\Assets\shaders\basic.frag" />
-    <None Include="..\..\GAME\Engine\Assets\shaders\basic.vert" />
-    <None Include="..\..\GAME\Engine\Assets\shaders\texture.frag" />
-    <None Include="..\..\GAME\Engine\Assets\shaders\texture.vert" />
+    <None Include="Assets\objects\enemy.json" />
+    <None Include="Assets\shaders\basic.frag" />
+    <None Include="Assets\shaders\basic.vert" />
+    <None Include="Assets\shaders\texture.frag" />
+    <None Include="Assets\shaders\texture.vert" />
     <None Include="ECS\Entity.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

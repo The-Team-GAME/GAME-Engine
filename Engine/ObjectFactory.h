@@ -9,10 +9,8 @@ namespace
 {
   struct ObjectPrefab
   {
-    Components::Position position;
-    Components::Velocity velocity;
+    Components::ObjectId objectId; // so that level data can reference to these objects
     Components::Size size;
-    Components::Rotation rotation;
     std::optional<Components::StaticSprite> staticSprite;
   };
 }
