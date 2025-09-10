@@ -18,6 +18,7 @@ namespace
   glm::vec2 mousePosition;
 }
 
+// TODO: Dont use GLFW enums directly in the Input class
 namespace Engine
 {
   void Input::Update()
