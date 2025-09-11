@@ -27,8 +27,12 @@ private:
   // Drag state
   bool isDrawing_ = false;
   bool prevLeftHeld_ = false;
+  bool passedThreshold_ = false;
   glm::vec2 dragStart_ = { 0.0f, 0.0f };
   glm::vec2 dragEnd_ = { 0.0f, 0.0f };
+
+  float startDragThresholdPx_ = 6.0f;
+  float minRectSizePx_ = 8.0f;
 
   // UI state
   glm::vec4 currentColor_{ 1.0f, 1.0f, 1.0f, 0.25f };

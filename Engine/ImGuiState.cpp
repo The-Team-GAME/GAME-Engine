@@ -28,7 +28,7 @@ void ImGuiState::Draw()
     Engine::GRAPHICS->drawRect(r.pos.x, r.pos.y, r.size.x, r.size.y, r.color);
 
   // Draw preview while dragging
-  if (isDrawing_)
+  if (isDrawing_ && passedThreshold_)
   {
     Rect preview = MakeRect(dragStart_, dragEnd_, currentColor_);
     ClampRectMinSize(preview);
@@ -44,7 +44,8 @@ void ImGuiState::handleMouse()
   if (io.WantCaptureMouse)
   {
     prevLeftHeld_ = false;
-    if (isDrawing_) isDrawing_ = false;
+    isDrawing_ = false;
+    passedThreshold_ = false;
     return;
   }
 
@@ -55,22 +56,33 @@ void ImGuiState::handleMouse()
   if (!prevLeftHeld_ && leftHeld && !isDrawing_)
   {
     isDrawing_ = true;
-    dragStart_ = mousePos;
-    dragEnd_ = mousePos;
+    passedThreshold_ = false;
+    dragStart_ = dragEnd_ = mousePos;
   }
 
   // Update drag
   if (isDrawing_ && leftHeld)
+  {
     dragEnd_ = mousePos;
+    if (!passedThreshold_)
+    {
+      const float moved = glm::length(dragEnd_ - dragStart_);
+      if (moved >= startDragThresholdPx_)
+        passedThreshold_ = true;
+    }
+  }
 
   // End drag -> commit
   if (isDrawing_ && prevLeftHeld_ && !leftHeld)
   {
-    Rect r = MakeRect(dragStart_, dragEnd_, currentColor_);
-    ClampRectMinSize(r);
-    if (r.size.x >= 1.0f && r.size.y >= 1.0f)
-      rects_.push_back(r);
+    if (passedThreshold_)
+    {
+      Rect r = MakeRect(dragStart_, dragEnd_, currentColor_);
+      if (r.size.x >= minRectSizePx_ && r.size.y >= minRectSizePx_)
+        rects_.push_back(r);
+    }
     isDrawing_ = false;
+    passedThreshold_ = false;
   }
 
   prevLeftHeld_ = leftHeld;
