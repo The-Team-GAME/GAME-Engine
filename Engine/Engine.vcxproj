@@ -180,6 +180,7 @@
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BackgroundSystem.h" />
     <ClInclude Include="BasicComponents.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="EcsState.h" />
@@ -204,6 +205,7 @@
     <ClInclude Include="SpriteState.h" />
     <ClInclude Include="Vector2D.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="SpriteState.h" />
     <ClInclude Include="StateChooser.inl" />
     <ClInclude Include="StateManager.h" />
     <ClInclude Include="TypeDef.h" />
@@ -211,7 +213,7 @@
     <ClInclude Include="Vector4D.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\GAME\Engine\Assets\objects\enemy.json" />
+    <None Include="Assets\objects\enemy.json" />
     <None Include="Assets\shaders\basic.frag" />
     <None Include="Assets\shaders\basic.vert" />
     <None Include="Assets\shaders\texture.frag" />

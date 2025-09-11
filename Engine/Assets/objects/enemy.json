@@ -1,19 +1,11 @@
 {
-  "staticSprite": {
-    "texturePath": "Assets/images/monkey.png",
-    "minifyingFilter": "Nearest"
-  },
-  "position": {
-    "x": 100,
-    "y": 150
-  },
-  "velocity": {
-    "x": 0,
-    "y": 0
-  },
+  "id": "enemy",
   "size": {
     "width": 150,
     "height": 210
   },
-  "rotation": 0
+  "staticSprite": {
+    "texturePath": "Assets/images/monkey.png",
+    "minifyingFilter": "Nearest"
+  }
 }

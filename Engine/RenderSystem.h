@@ -25,15 +25,23 @@ public:
 class GameObjectRenderSystem : public ECS::System {
 public:
   GameObjectRenderSystem() {
-    requireComponents<Components::StaticSprite, Components::Position, Components::Size, Components::Rotation>();
+    requireComponents<Components::StaticSprite, Components::Size>();
   }
 
   void updateEntity(ECS::EntityID entityId, float /*dt*/) override {
     auto* sprite = world->getComponent<Components::StaticSprite>(entityId);
-    auto* pos = world->getComponent<Components::Position>(entityId);
     auto* size = world->getComponent<Components::Size>(entityId);
+    auto* pos = world->getComponent<Components::Position>(entityId);
     auto* rotation = world->getComponent<Components::Rotation>(entityId);
+    auto* scale = world->getComponent<Components::Scale>(entityId);
 
-    Engine::GRAPHICS->drawTexture(sprite->textureId, pos->x, pos->y, size->width, size->height, rotation->angle);
+    // Default values if components are missing
+    float x = pos ? pos->x : 0.0f;
+    float y = pos ? pos->y : 0.0f;
+    float angle = rotation ? rotation->angle : 0.0f;
+    float scaleX = scale ? scale->x : 1.0f;
+    float scaleY = scale ? scale->y : 1.0f;
+
+    Engine::GRAPHICS->drawTexture(sprite->textureId, x, y, size->width * scaleX, size->height * scaleY, angle);
   }
 };
