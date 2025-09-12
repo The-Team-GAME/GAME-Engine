@@ -171,6 +171,7 @@
     <ClCompile Include="JsonState.cpp" />
     <ClCompile Include="MainMenuState.cpp" />
     <ClCompile Include="ObjectFactory.cpp" />
+    <ClCompile Include="Time.cpp" />
     <ClCompile Include="Vector2D.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="StateManager.cpp" />
@@ -201,6 +202,7 @@
     <ClInclude Include="ObjectFactory.h" />
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="SpriteState.h" />
+    <ClInclude Include="Time.h" />
     <ClInclude Include="Vector2D.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="SpriteState.h" />
