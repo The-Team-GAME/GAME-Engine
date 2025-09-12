@@ -22,12 +22,11 @@ void Graphics::setupRectangle()
     1.0f, 0.0f, 1.0f, 0.0f };
 
   glGenVertexArrays(1, &quadVAO);
-  unsigned int vbo;
-  glGenBuffers(1, &vbo);
+  glGenBuffers(1, &quadVBO);  // Store VBO
 
   glBindVertexArray(quadVAO);
 
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, quadVBO);  // Use stored VBO
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
   // Position attribute
@@ -42,21 +41,65 @@ void Graphics::setupRectangle()
   glBindVertexArray(0);
 }
 
+void Graphics::updateViewMatrix() {
+  view = glm::mat4(1.0f);
+  // Translate to camera position
+  view = glm::translate(view, glm::vec3(camera.position.x, camera.position.y, 0.0f));
+  // Translate to center of viewport for proper pivoting
+  view = glm::translate(view, glm::vec3(viewportWidth / 2.0f, viewportHeight / 2.0f, 0.0f));
+  // Rotate around center
+  view = glm::rotate(view, glm::radians(camera.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+  // Scale (zoom)
+  view = glm::scale(view, glm::vec3(camera.zoom, camera.zoom, 1.0f));
+  // Translate back
+  view = glm::translate(view, glm::vec3(-viewportWidth / 2.0f, -viewportHeight / 2.0f, 0.0f));
+  view = glm::inverse(view);
+}
+
 void Graphics::init()
 {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  basicShader.init("Assets\\shaders\\basic.vert", "Assets\\shaders\\basic.frag");
+  // basicShader.init("Assets\\shaders\\basic.vert", "Assets\\shaders\\basic.frag");
   textureShader.init("Assets\\shaders\\texture.vert", "Assets\\shaders\\texture.frag");
   setupRectangle();
 
-  projection = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f, -1.0f, 1.0f); // TODO: window size should not be hardcoded
+  updateViewMatrix();
+
+  // Set initial viewport and projection
+  setViewport(800, 600); // TODO: hardcoded
+}
+
+void Graphics::beginFrame()
+{
+  // This is the ideal place to update shader uniforms that change per-frame, like the view matrix.
+  textureShader.use();
+  textureShader.setMatrix("view", view);
+  glUseProgram(0);
+}
+
+// TODO: implement this into the engine once event system is in place
+void Graphics::setViewport(int width, int height)
+{
+  viewportWidth = width;
+  viewportHeight = height;
+
+  // Update the viewport
+  glViewport(0, 0, width, height);
+
+  // Update the projection matrix
+  projection = glm::ortho(0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, -1.0f, 1.0f);
+
+  // Update the projection matrix in the shader
+  textureShader.use();
+  textureShader.setMatrix("projection", projection);
+  glUseProgram(0); // Unbind shader program
 }
 
 void Graphics::exit()
 {
-  basicShader.destroy();
+  // basicShader.destroy();
   textureShader.destroy();
 
   for (const auto& texture : textures)
@@ -65,25 +108,39 @@ void Graphics::exit()
   }
   textures.clear();
 
-  glDeleteVertexArrays(1, &quadVAO);
+  if (quadVAO != 0) glDeleteVertexArrays(1, &quadVAO);
+  if (quadVBO != 0) glDeleteBuffers(1, &quadVBO);
 }
 
-void Graphics::drawRect(float x, float y, float width, float height, glm::vec4 color)
+void Graphics::setCameraPosition(float x, float y)
 {
-  basicShader.use();
-  basicShader.setMatrix("projection", projection);
+  camera.position = { x, y };
+  updateViewMatrix();
+}
+
+void Graphics::setCameraZoom(float zoom)
+{
+  camera.zoom = zoom;
+  updateViewMatrix();
+}
+
+void Graphics::setCameraRotation(float degrees)
+{
+  camera.rotation = degrees;
+  updateViewMatrix();
+}
+
+void Graphics::drawRect(float x, float y, float width, float height, glm::vec4 color, float rotation) {
+  textureShader.use();
   glm::mat4 model = glm::mat4(1.0f);
-  model = glm::translate(model, glm::vec3(x, y, 0.0f));
-  model = glm::scale(model, glm::vec3(width, height, 1.0f));
-
-  basicShader.setMatrix("model", model);
-  basicShader.setVec4("uColor", color);
-
+  applyModelTransform(model, x, y, width, height, rotation);  // Now supports rotation
+  textureShader.setMatrix("model", model);
+  textureShader.setVec4("uColor", color);
+  textureShader.setBool("useTexture", false);
   glBindVertexArray(quadVAO);
   glDrawArrays(GL_TRIANGLES, 0, 6);
   glBindVertexArray(0);
 }
-
 int Graphics::loadTexture(const char* filepath, MinifyingFilter min_filter)
 {
   // std::cout << "Current working directory: " << std::filesystem::current_path() << std::endl;
@@ -128,6 +185,15 @@ int Graphics::loadTexture(const char* filepath, MinifyingFilter min_filter)
 }
 
 
+void Graphics::applyModelTransform(glm::mat4& model, float x, float y, float width, float height, float rotation)
+{
+  model = glm::translate(model, glm::vec3(x, y, 0.0f));
+  model = glm::translate(model, glm::vec3(0.5f * width, 0.5f * height, 0.0f));
+  model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+  model = glm::translate(model, glm::vec3(-0.5f * width, -0.5f * height, 0.0f));
+  model = glm::scale(model, glm::vec3(width, height, 1.0f));
+}
+
 void Graphics::drawTexture(int imageId, float x, float y, float width, float height, float rotation)
 {
   if (imageId < 0 || imageId >= static_cast<int>(textures.size()))
@@ -137,22 +203,12 @@ void Graphics::drawTexture(int imageId, float x, float y, float width, float hei
   }
 
   textureShader.use();
-  textureShader.setMatrix("projection", projection);
 
   glm::mat4 model = glm::mat4(1.0f);
-  // First translate (transformations are: scale happens first, then rotation, and then final translation happens; reversed order)
-  model = glm::translate(model, glm::vec3(x, y, 0.0f));
-  // Move origin of rotation to center of the quad
-  model = glm::translate(model, glm::vec3(0.5f * width, 0.5f * height, 0.0f));
-  // Then rotate
-  model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-  // Move origin back
-  model = glm::translate(model, glm::vec3(-0.5f * width, -0.5f * height, 0.0f));
-  // Then scale
-  model = glm::scale(model, glm::vec3(width, height, 1.0f));
+  applyModelTransform(model, x, y, width, height, rotation);  // Use helper
 
   textureShader.setMatrix("model", model);
-  textureShader.setBool("useSprite", false);
+  textureShader.setBool("useTexture", true);
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, textures[imageId].id);
@@ -171,26 +227,17 @@ void Graphics::drawTextureRegion(int imageId, float destX, float destY, float de
   }
 
   textureShader.use();
-  textureShader.setMatrix("projection", projection);
 
   glm::mat4 model = glm::mat4(1.0f);
-  // First translate (transformations are: scale happens first, then rotation, and then final translation happens; reversed order)
-  model = glm::translate(model, glm::vec3(destX, destY, 0.0f));
-  // Move origin of rotation to center of the quad
-  model = glm::translate(model, glm::vec3(0.5f * destWidth, 0.5f * destHeight, 0.0f));
-  // Then rotate
-  model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-  // Move origin back
-  model = glm::translate(model, glm::vec3(-0.5f * destWidth, -0.5f * destHeight, 0.0f));
-  // Then scale
-  model = glm::scale(model, glm::vec3(destWidth, destHeight, 1.0f));
+  applyModelTransform(model, destX, destY, destWidth, destHeight, rotation);  // Use helper
 
   textureShader.setMatrix("model", model);
+  textureShader.setBool("useTexture", true);
 
   const auto& tex = textures[imageId];
   glm::vec4 spriteCoords(srcX / tex.width, srcY / tex.height, srcWidth / tex.width, srcHeight / tex.height);
   textureShader.setVec4("spriteCoords", spriteCoords);
-  textureShader.setBool("useSprite", true);
+  textureShader.setBool("useTextureRegion", true);
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, tex.id);
@@ -199,7 +246,7 @@ void Graphics::drawTextureRegion(int imageId, float destX, float destY, float de
   glDrawArrays(GL_TRIANGLES, 0, 6);
   glBindVertexArray(0);
 
-  textureShader.setBool("useSprite", false);
+  textureShader.setBool("useTextureRegion", false);
 }
 
 void Graphics::clearScreen(float r, float g, float b, float a)

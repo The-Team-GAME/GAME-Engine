@@ -87,6 +87,9 @@ namespace Engine
       glfwPollEvents();
       ImGuiManager::begin();
 
+      // TODO: move this to graphics when batched rendering is implemented
+      GRAPHICS->beginFrame();
+
       Input::Update();
 
       StateManager::GetCurrentState()->Update();
