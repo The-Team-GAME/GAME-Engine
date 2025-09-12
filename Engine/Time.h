@@ -8,11 +8,11 @@ namespace Engine {
 		void update_time(void);
 
 		// Returns the delta time to be used during calculations
-		f64 get_fixed_dt(void);
+		f64 get_dt(void);
 
 		// Returns the delta time per game loop
 		// Only to be used to accumulator in the loop
-		f64 gameloop_dt(void);
+		f64 get_gameloop_dt(void);
 
 	}
 }

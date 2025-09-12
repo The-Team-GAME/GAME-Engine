@@ -5,7 +5,9 @@ namespace chrono = std::chrono;
 
 namespace { //consider making it microseconds
 	chrono::milliseconds curr_time = chrono::duration_cast<chrono::milliseconds>((chrono::steady_clock::now()).time_since_epoch());
+
 	f64 delta_time{}; // in seconds
+	s32 frame_rate{ 144 };
 }
 
 namespace Engine {
@@ -17,9 +19,14 @@ namespace Engine {
 			curr_time = new_time;
 		}
 
-		f64 g_delta_time(void) //need to fix also
+		f64 get_dt(void)
 		{
-			return delta_time > 1 / 60.0 ? 1 / 60.0 : delta_time;
+			return 1.0 / frame_rate;
+		}
+
+		f64 get_gameloop_dt(void)
+		{
+			return delta_time;
 		}
 	}
 };
