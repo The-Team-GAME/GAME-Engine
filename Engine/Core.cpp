@@ -161,7 +161,7 @@ namespace Engine
 
   float Core::getDt() const
   {
-    return dt;
+    return Time::get_dt();
   }
 
   GLFWwindow* Core::getWindow() const
