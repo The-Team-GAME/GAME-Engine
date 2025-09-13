@@ -20,19 +20,14 @@ namespace Engine {
     }
 
     // This calculates the fixed dt based on the set framerate
-    f64 get_dt(void)
-    {
-      return 1.0 / frame_rate;
-    }
-
     f64 get_fixed_dt(void)
     {
       return 1.0 / frame_rate;
-    }
+    } 
 
     // Returns the delta time per game loop
     // Only to be used to accumulator in the loop
-    f32 get_gameloop_dt(void)
+    f32 get_internal_dt(void)
     {
       return static_cast<f32>(delta_time);
     }

@@ -93,12 +93,10 @@ namespace Engine
     {
       //Updating of the accumulator
       Time::update_time();
-      accumulator += Time::get_gameloop_dt();
-
-      std::cout << accumulator << std::endl;
+      accumulator += Time::get_internal_dt();
 
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
-      if (accumulator < Time::get_dt())
+      if (accumulator < Time::get_fixed_dt())
         continue;
 
       // Main gameloop here
@@ -110,7 +108,7 @@ namespace Engine
       StateManager::GetCurrentState()->Update();
       StateManager::GetCurrentState()->Draw();
 
-      WORLD->update(static_cast<float>(Time::get_dt()));
+      WORLD->update(static_cast<float>(Time::get_fixed_dt()));
 
       StateChooserPanel();
       PerformanceViewerPanel();
@@ -136,7 +134,7 @@ namespace Engine
 
   float Core::getDt() const // TODO remove eventually?
   {
-    return Time::get_dt();
+    return Time::get_fixed_dt();
   }
 
   GLFWwindow* Core::getWindow() const
