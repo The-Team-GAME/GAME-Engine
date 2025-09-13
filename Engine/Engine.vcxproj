@@ -201,6 +201,7 @@
     <ClInclude Include="MainMenuState.h" />
     <ClInclude Include="MovementSystem.h" />
     <ClInclude Include="ObjectFactory.h" />
+    <ClInclude Include="PerformanceViewer.h" />
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="Serialisation.h" />
     <ClInclude Include="SpriteState.h" />

@@ -10,6 +10,7 @@
 #include "ImGuiManager.h"
 #include "StateChooser.inl"
 #include "Time.h"
+#include "PerformanceViewer.h"
 
 namespace {
   // just local variables
@@ -103,6 +104,7 @@ namespace Engine
       WORLD->update(dt);
 
       StateChooserPanel();
+      PerformanceViewerPanel();
 
       ImGuiManager::end();
 
