@@ -92,6 +92,7 @@ namespace Engine
 
     // static std::chrono::milliseconds curr_time = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::steady_clock::now()).time_since_epoch());
 
+    // static float curr_time = static_cast<float>(glfwGetTime());
 
     while (!glfwWindowShouldClose(window) && isRunning)
     {
@@ -129,6 +130,10 @@ namespace Engine
       /*std::chrono::milliseconds new_time = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::steady_clock::now()).time_since_epoch());
       dt = static_cast<f64>((new_time - curr_time).count()) / 1000.0;
       curr_time = new_time;*/
+
+      /*float new_time = static_cast<float>(glfwGetTime()) * 1000.0f;
+      dt = (new_time - curr_time) / 1000.0f;
+      curr_time = new_time;*/
     }
   }
 
@@ -142,8 +147,8 @@ namespace Engine
 
   float Core::getDt() const // TODO remove eventually?
   {
-    return Time::get_fixed_dt();
-    //return dt;
+    //return Time::get_fixed_dt();
+    return dt;
   }
 
   GLFWwindow* Core::getWindow() const
