@@ -46,6 +46,9 @@ namespace Engine
 
   int Core::init()
   {
+    // For game loop
+    accumulator = 0;
+
 
     /* Initialize the library */
     if (!glfwInit())
@@ -90,7 +93,7 @@ namespace Engine
 
     while (!glfwWindowShouldClose(window) && isRunning)
     {
-      #if 1
+      #if 0
       float currenttime = static_cast<float>(glfwGetTime()) * 1000.0f;
       dt = (currenttime - lastTime) / 1000.0f;
       lastTime = currenttime;
@@ -114,13 +117,14 @@ namespace Engine
       glfwSwapBuffers(window);
       #endif
       // Gona try my own version of the discussed gameloop here
-      #if 0
+      #if 1
       //Updating of the accumulator
       Time::update_time();
       accumulator += Time::get_gameloop_dt();
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
       for (s32 loops{}; accumulator >= Time::get_dt() && loops < loop_cap; ++loops)
       {
+        std::cout << "loop running\n";
         // Main gameloop here
         glfwPollEvents();
         ImGuiManager::begin();
@@ -133,12 +137,15 @@ namespace Engine
         WORLD->update(static_cast<float>(Time::get_dt()));
 
         StateChooserPanel();
+        PerformanceViewerPanel();
 
         ImGuiManager::end();
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
         // End of gameloop
+        // To decrement the accumulator when each gameloop runs
+        accumulator -= Time::get_dt();
       }
       #endif 
     }
