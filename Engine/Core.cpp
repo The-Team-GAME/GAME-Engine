@@ -15,7 +15,7 @@
 namespace {
   // just local variables
   f64 accumulator;
-  s32 loop_cap{ 5 };
+  s32 loop_cap{ 50 };
 }
 
 namespace Engine
@@ -122,9 +122,9 @@ namespace Engine
       Time::update_time();
       accumulator += Time::get_gameloop_dt();
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
-      for (s32 loops{}; accumulator >= Time::get_dt() && loops < loop_cap; ++loops)
+      //for (s32 loops{}; accumulator >= Time::get_dt() && loops < loop_cap; ++loops)
+      while (accumulator >= Time::get_dt())
       {
-        std::cout << "loop running\n";
         // Main gameloop here
         glfwPollEvents();
         ImGuiManager::begin();
@@ -159,7 +159,7 @@ namespace Engine
     glfwTerminate();
   }
 
-  float Core::getDt() const
+  float Core::getDt() const // TODO remove eventually?
   {
     return Time::get_dt();
   }

@@ -7,7 +7,7 @@ namespace { //consider making it microseconds
 	chrono::milliseconds curr_time = chrono::duration_cast<chrono::milliseconds>((chrono::steady_clock::now()).time_since_epoch());
 
 	f64 delta_time{}; // in seconds
-	s32 frame_rate{ 1000 };
+	s32 frame_rate{ 600 };
 }
 
 namespace Engine {
@@ -27,9 +27,9 @@ namespace Engine {
 
 		// Returns the delta time per game loop
 		// Only to be used to accumulator in the loop
-		f64 get_gameloop_dt(void)
+		f32 get_gameloop_dt(void)
 		{
-			return delta_time;
+			return static_cast<f32>(delta_time);
 		}
 	}
 };
