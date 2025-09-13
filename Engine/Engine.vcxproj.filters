@@ -132,6 +132,9 @@
     <ClCompile Include="BasicComponents.cpp">
       <Filter>Source Files\ECS\Components</Filter>
     </ClCompile>
+    <ClCompile Include="Time.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
@@ -223,6 +226,12 @@
     </ClInclude>
     <ClInclude Include="PerformanceViewer.h">
       <Filter>Source Files\Engine\ImGuiPanels</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Time.h">
+      <Filter>Source Files\Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
