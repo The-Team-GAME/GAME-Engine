@@ -221,6 +221,9 @@
     <ClInclude Include="BackgroundSystem.h">
       <Filter>Source Files\ECS\Systems</Filter>
     </ClInclude>
+    <ClInclude Include="PerformanceViewer.h">
+      <Filter>Source Files\Engine\ImGuiPanels</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ECS\Entity.inl">
