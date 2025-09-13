@@ -28,7 +28,6 @@ namespace Engine
 
   Core::Core()
   {
-    lastTime = 0.0f;
     dt = 0.0f;
     isRunning = true;
     window = nullptr;
@@ -89,15 +88,18 @@ namespace Engine
 
   void Core::run()
   {
-    lastTime = static_cast<float>(glfwGetTime());
 
     while (!glfwWindowShouldClose(window) && isRunning)
     {
-      #if 0
-      float currenttime = static_cast<float>(glfwGetTime()) * 1000.0f;
-      dt = (currenttime - lastTime) / 1000.0f;
-      lastTime = currenttime;
+      //Updating of the accumulator
+      Time::update_time();
+      accumulator += Time::get_internal_dt();
 
+      // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
+      if (accumulator < Time::get_fixed_dt())
+        continue;
+
+      // Main gameloop here
       glfwPollEvents();
       ImGuiManager::begin();
 
@@ -106,7 +108,7 @@ namespace Engine
       StateManager::GetCurrentState()->Update();
       StateManager::GetCurrentState()->Draw();
 
-      WORLD->update(dt);
+      WORLD->update(static_cast<float>(Time::get_fixed_dt()));
 
       StateChooserPanel();
       PerformanceViewerPanel();
@@ -115,39 +117,10 @@ namespace Engine
 
       /* Swap front and back buffers */
       glfwSwapBuffers(window);
-      #endif
-      // Gona try my own version of the discussed gameloop here
-      #if 1
-      //Updating of the accumulator
-      Time::update_time();
-      accumulator += Time::get_gameloop_dt();
-      // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
-      for (s32 loops{}; accumulator >= Time::get_dt() && loops < loop_cap; ++loops)
-      //while (accumulator >= Time::get_dt())
-      {
-        // Main gameloop here
-        glfwPollEvents();
-        ImGuiManager::begin();
 
-        Input::Update();
-
-        StateManager::GetCurrentState()->Update();
-        StateManager::GetCurrentState()->Draw();
-
-        WORLD->update(static_cast<float>(Time::get_dt()));
-
-        StateChooserPanel();
-        PerformanceViewerPanel();
-
-        ImGuiManager::end();
-
-        /* Swap front and back buffers */
-        glfwSwapBuffers(window);
-        // End of gameloop
-        // To decrement the accumulator when each gameloop runs
-        accumulator -= Time::get_dt();
-      }
-      #endif 
+      // End of gameloop
+      // Reset accumulator
+      accumulator = 0.0;
     }
   }
 
@@ -161,7 +134,7 @@ namespace Engine
 
   float Core::getDt() const // TODO remove eventually?
   {
-    return Time::get_dt();
+    return Time::get_fixed_dt();
   }
 
   GLFWwindow* Core::getWindow() const

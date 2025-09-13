@@ -12,7 +12,6 @@ namespace Engine
   {
   private:
     bool isRunning;
-    float lastTime;
     GLFWwindow* window;
     float dt;
 
