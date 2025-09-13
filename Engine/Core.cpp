@@ -122,8 +122,8 @@ namespace Engine
       Time::update_time();
       accumulator += Time::get_gameloop_dt();
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
-      //for (s32 loops{}; accumulator >= Time::get_dt() && loops < loop_cap; ++loops)
-      while (accumulator >= Time::get_dt())
+      for (s32 loops{}; accumulator >= Time::get_dt() && loops < loop_cap; ++loops)
+      //while (accumulator >= Time::get_dt())
       {
         // Main gameloop here
         glfwPollEvents();
