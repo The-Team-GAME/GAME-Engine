@@ -118,9 +118,9 @@ namespace Engine
       /* Swap front and back buffers */
       glfwSwapBuffers(window);
 
-      // End of gameloop
       // Reset accumulator
-      accumulator = 0.0;
+      // (The reason wqe don't just set it to zero is because if the frame took longer than the fixed dt, we want to keep the extra time for the next frame)
+      accumulator -= Time::get_fixed_dt();
     }
   }
 
