@@ -4,10 +4,9 @@
 namespace Engine {
 	namespace Time {
 
-		static f64 fixed_dt = 1000 / framerate;
 		void update_time(void);
 
-		// Returns the delta time to be used during calculations
+		// Returns the delta time to be used during calculations (fixed_dt)
 		f64 get_dt(void);
 
 		// Returns the delta time per game loop

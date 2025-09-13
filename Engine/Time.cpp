@@ -15,13 +15,14 @@ namespace Engine {
 		void update_time(void)
 		{
 			chrono::milliseconds new_time = chrono::duration_cast<chrono::milliseconds>((chrono::steady_clock::now()).time_since_epoch());
-			delta_time = static_cast<f64>((new_time - curr_time).count()) / 1000.0;
+			delta_time = static_cast<f64>((new_time - curr_time).count());
 			curr_time = new_time;
 		}
 
+		// This calculates the fixed dt
 		f64 get_dt(void)
 		{
-			return 1.0 / frame_rate;
+			return 1000.0 / frame_rate;
 		}
 
 		f64 get_gameloop_dt(void)
