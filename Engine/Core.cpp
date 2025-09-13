@@ -15,7 +15,7 @@
 namespace {
   // just local variables
   f64 accumulator;
-  s32 loop_cap{ 5 };
+  s32 loop_cap{ 50 };
 }
 
 namespace Engine
@@ -46,6 +46,9 @@ namespace Engine
 
   int Core::init()
   {
+    // For game loop
+    accumulator = 0;
+
 
     /* Initialize the library */
     if (!glfwInit())
@@ -66,7 +69,6 @@ namespace Engine
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
 
-    // Disable VSync
     glfwSwapInterval(0);
 
     if (glewInit() != GLEW_OK)
@@ -91,7 +93,7 @@ namespace Engine
 
     while (!glfwWindowShouldClose(window) && isRunning)
     {
-      #if 1
+      #if 0
       float currenttime = static_cast<float>(glfwGetTime()) * 1000.0f;
       dt = (currenttime - lastTime) / 1000.0f;
       lastTime = currenttime;
@@ -119,12 +121,13 @@ namespace Engine
       glfwSwapBuffers(window);
       #endif
       // Gona try my own version of the discussed gameloop here
-      #if 0
+      #if 1
       //Updating of the accumulator
       Time::update_time();
       accumulator += Time::get_gameloop_dt();
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
       for (s32 loops{}; accumulator >= Time::get_dt() && loops < loop_cap; ++loops)
+      //while (accumulator >= Time::get_dt())
       {
         // Main gameloop here
         glfwPollEvents();
@@ -138,12 +141,15 @@ namespace Engine
         WORLD->update(static_cast<float>(Time::get_dt()));
 
         StateChooserPanel();
+        PerformanceViewerPanel();
 
         ImGuiManager::end();
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
         // End of gameloop
+        // To decrement the accumulator when each gameloop runs
+        accumulator -= Time::get_dt();
       }
       #endif 
     }
@@ -157,9 +163,9 @@ namespace Engine
     glfwTerminate();
   }
 
-  float Core::getDt() const
+  float Core::getDt() const // TODO remove eventually?
   {
-    return dt;
+    return Time::get_dt();
   }
 
   GLFWwindow* Core::getWindow() const

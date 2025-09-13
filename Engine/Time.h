@@ -11,7 +11,7 @@ namespace Engine {
 
 		// Returns the delta time per game loop
 		// Only to be used to accumulator in the loop
-		f64 get_gameloop_dt(void);
+		f32 get_gameloop_dt(void);
 
 	}
 }
