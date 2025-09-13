@@ -11,6 +11,7 @@
 #include "StateChooser.inl"
 #include "Time.h"
 #include "PerformanceViewer.h"
+#include <chrono>
 
 namespace {
   // just local variables
@@ -89,6 +90,9 @@ namespace Engine
   void Core::run()
   {
 
+    // static std::chrono::milliseconds curr_time = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::steady_clock::now()).time_since_epoch());
+
+
     while (!glfwWindowShouldClose(window) && isRunning)
     {
       //Updating of the accumulator
@@ -121,6 +125,10 @@ namespace Engine
       // Reset accumulator
       // (The reason wqe don't just set it to zero is because if the frame took longer than the fixed dt, we want to keep the extra time for the next frame)
       accumulator -= Time::get_fixed_dt();
+
+      /*std::chrono::milliseconds new_time = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::steady_clock::now()).time_since_epoch());
+      dt = static_cast<f64>((new_time - curr_time).count()) / 1000.0;
+      curr_time = new_time;*/
     }
   }
 
@@ -135,6 +143,7 @@ namespace Engine
   float Core::getDt() const // TODO remove eventually?
   {
     return Time::get_fixed_dt();
+    //return dt;
   }
 
   GLFWwindow* Core::getWindow() const
