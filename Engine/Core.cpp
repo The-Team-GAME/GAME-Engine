@@ -59,6 +59,9 @@ namespace Engine
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
 
+    // Disable VSync
+    glfwSwapInterval(0);
+
     if (glewInit() != GLEW_OK)
     {
       std::cout << "GLEW Initialization failed.\n";
