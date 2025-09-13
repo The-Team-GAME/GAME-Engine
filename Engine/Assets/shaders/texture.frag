@@ -2,19 +2,20 @@
 
 out vec4 FragColor;
 
-in vec2 TexCoord;
+in vec4 v_Color;
+in vec2 v_TexCoord;
+in float v_TexId;
 
-uniform sampler2D ourTexture;
-uniform vec4 uColor;
-uniform bool useTexture;
+uniform sampler2D u_Textures[32];
 
 void main() {
-    if (useTexture)
+    if (v_TexId > -1.0)
     {
-        FragColor = texture(ourTexture, TexCoord);
+        int id = int(v_TexId);
+        FragColor = texture(u_Textures[id], v_TexCoord) * v_Color;
     }
     else
     {
-        FragColor = uColor;
+        FragColor = v_Color;
     }
 }

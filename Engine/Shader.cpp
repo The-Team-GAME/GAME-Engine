@@ -129,3 +129,7 @@ void Shader::setVec4(const std::string& name, glm::vec4 const& list) const {
 void Shader::setVec4(const std::string& name, float a, float b, float c, float d) const {
   glUniform4f(glGetUniformLocation(m_id, name.c_str()), a, b, c, d);
 }
+
+void Shader::setIntArray(const std::string& name, int count, const int* value) const {
+  glUniform1iv(glGetUniformLocation(m_id, name.c_str()), count, value);
+}
