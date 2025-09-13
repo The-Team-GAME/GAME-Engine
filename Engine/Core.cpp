@@ -9,7 +9,14 @@
 #include "InputManager.h"
 #include "ImGuiManager.h"
 #include "StateChooser.inl"
+#include "Time.h"
 #include "PerformanceViewer.h"
+
+namespace {
+  // just local variables
+  f64 accumulator;
+  s32 loop_cap{ 5 };
+}
 
 namespace Engine
 {
@@ -84,6 +91,7 @@ namespace Engine
 
     while (!glfwWindowShouldClose(window) && isRunning)
     {
+      #if 1
       float currenttime = static_cast<float>(glfwGetTime()) * 1000.0f;
       dt = (currenttime - lastTime) / 1000.0f;
       lastTime = currenttime;
@@ -109,6 +117,35 @@ namespace Engine
 
       /* Swap front and back buffers */
       glfwSwapBuffers(window);
+      #endif
+      // Gona try my own version of the discussed gameloop here
+      #if 0
+      //Updating of the accumulator
+      Time::update_time();
+      accumulator += Time::get_gameloop_dt();
+      // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
+      for (s32 loops{}; accumulator >= Time::get_dt() && loops < loop_cap; ++loops)
+      {
+        // Main gameloop here
+        glfwPollEvents();
+        ImGuiManager::begin();
+
+        Input::Update();
+
+        StateManager::GetCurrentState()->Update();
+        StateManager::GetCurrentState()->Draw();
+
+        WORLD->update(static_cast<float>(Time::get_dt()));
+
+        StateChooserPanel();
+
+        ImGuiManager::end();
+
+        /* Swap front and back buffers */
+        glfwSwapBuffers(window);
+        // End of gameloop
+      }
+      #endif 
     }
   }
 
