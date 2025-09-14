@@ -12,7 +12,7 @@ namespace Engine {
 
 		// Returns the delta time per game loop
 		// Only to be used to accumulator in the loop
-		f32 get_internal_dt(void);
+		f64 get_internal_dt(void);
 
 		bool should_update(void); // checks if accumulator >= fixed_dt
 	}

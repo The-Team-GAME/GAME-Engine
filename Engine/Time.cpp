@@ -33,9 +33,9 @@ namespace Engine {
 
     // Returns the delta time per game loop
     // Only to be used to accumulator in the loop
-    f32 get_internal_dt(void)
+    f64 get_internal_dt(void)
     {
-      return static_cast<f32>(delta_time);
+      return delta_time;
     }
 
     bool should_update(void)
