@@ -8,6 +8,7 @@ namespace { //consider making it microseconds
 
   f64 delta_time{}; // in seconds
   s32 frame_rate{ 60 };
+  f64 accumulator = 0.0;
 }
 
 namespace Engine {
@@ -23,13 +24,34 @@ namespace Engine {
     f64 get_fixed_dt(void)
     {
       return 1.0 / frame_rate;
-    } 
+    }
 
     // Returns the delta time per game loop
     // Only to be used to accumulator in the loop
     f32 get_internal_dt(void)
     {
       return static_cast<f32>(delta_time);
+    }
+
+    // New implementations
+    void reset_accumulator(void)
+    {
+      accumulator = 0.0;
+    }
+
+    void update_accumulator(void)
+    {
+      accumulator += get_internal_dt();
+    }
+
+    bool should_update(void)
+    {
+      return accumulator >= get_fixed_dt();
+    }
+
+    void subtract_fixed_dt(void)
+    {
+      accumulator -= get_fixed_dt();
     }
   }
 };

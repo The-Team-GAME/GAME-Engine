@@ -13,6 +13,11 @@ namespace Engine {
 		// Only to be used to accumulator in the loop
 		f32 get_internal_dt(void);
 
+		void reset_accumulator(void);
+		void update_accumulator(void);
+		bool should_update(void);
+		void subtract_fixed_dt(void);
+
 	}
 }
 

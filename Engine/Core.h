@@ -13,7 +13,6 @@ namespace Engine
   private:
     bool isRunning;
     GLFWwindow* window;
-    float dt;
 
   public:
     Core();
