@@ -79,13 +79,14 @@ namespace Engine
   {
     while (!glfwWindowShouldClose(window) && isRunning)
     {
+      // Everything inside this loop is runned every frame, ignoring fixed timestep
 
       Time::begin();
 
-      // Only runs the main gameloop if the accumulator is more than the fixed dt
       while (Time::should_update())
       {
-        // Main gameloop here
+        // Everything inside this loop is runned at a fixed timestep
+
         glfwPollEvents();
         ImGuiManager::begin();
 

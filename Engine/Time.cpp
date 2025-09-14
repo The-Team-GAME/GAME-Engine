@@ -6,7 +6,7 @@ namespace chrono = std::chrono;
 namespace { //consider making it microseconds
   chrono::milliseconds curr_time = chrono::duration_cast<chrono::milliseconds>((chrono::steady_clock::now()).time_since_epoch());
 
-  f64 delta_time{}; // in seconds
+  f64 internal_delta_time{}; // in seconds
   s32 frame_rate{ 60 };
   f64 accumulator = 0.0;
 
@@ -19,7 +19,7 @@ namespace Engine {
     void begin(void)
     {
       chrono::milliseconds new_time = chrono::duration_cast<chrono::milliseconds>((chrono::steady_clock::now()).time_since_epoch());
-      delta_time = static_cast<f64>((new_time - curr_time).count()) / 1000.0;
+      internal_delta_time = static_cast<f64>((new_time - curr_time).count()) / 1000.0;
       curr_time = new_time;
       accumulator += get_internal_dt();
       loop_count = 0;
@@ -35,7 +35,7 @@ namespace Engine {
     // Only to be used to accumulator in the loop
     f64 get_internal_dt(void)
     {
-      return delta_time;
+      return internal_delta_time;
     }
 
     bool should_update(void)
