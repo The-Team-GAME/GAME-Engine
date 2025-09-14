@@ -38,9 +38,6 @@ namespace Engine
 
   int Core::init()
   {
-    // Initialize accumulator
-    Time::reset_accumulator();
-
     /* Initialize the library */
     if (!glfwInit())
       return -1;
@@ -83,7 +80,7 @@ namespace Engine
     while (!glfwWindowShouldClose(window) && isRunning)
     {
 
-      Time::update_time();
+      Time::begin();
 
       // Only runs the main gameloop if the accumulator is more than the fixed dt
       if (!Time::should_update())
@@ -108,8 +105,7 @@ namespace Engine
       /* Swap front and back buffers */
       glfwSwapBuffers(window);
 
-      // Reset accumulator (moved to Time)
-      Time::subtract_fixed_dt();
+      Time::end();
     }
   }
 

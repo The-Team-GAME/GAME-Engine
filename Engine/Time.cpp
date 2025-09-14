@@ -13,7 +13,7 @@ namespace { //consider making it microseconds
 
 namespace Engine {
   namespace Time {
-    void update_time(void)
+    void begin(void)
     {
       chrono::milliseconds new_time = chrono::duration_cast<chrono::milliseconds>((chrono::steady_clock::now()).time_since_epoch());
       delta_time = static_cast<f64>((new_time - curr_time).count()) / 1000.0;
@@ -34,18 +34,12 @@ namespace Engine {
       return static_cast<f32>(delta_time);
     }
 
-    // New implementations
-    void reset_accumulator(void)
-    {
-      accumulator = 0.0;
-    }
-
     bool should_update(void)
     {
       return accumulator >= get_fixed_dt();
     }
 
-    void subtract_fixed_dt(void)
+    void end(void)
     {
       accumulator -= get_fixed_dt();
     }
