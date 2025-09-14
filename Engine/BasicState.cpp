@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <iostream> 
 #include <GLFW/glfw3.h>
+#include <imgui.h>
 
 void BasicState::Load()
 {
@@ -19,7 +20,7 @@ void BasicState::Update()
   {
     std::cout << "Spacebar was pressed!\n";
   }
-
+   
   /*if (Engine::Input::IsMouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT))
   {
     glm::vec2 mousePos = Engine::Input::GetMousePosition();
@@ -29,12 +30,27 @@ void BasicState::Update()
 
 void BasicState::Draw()
 {
+  static float x = 0.0f;
+  static float y = 0.0f;
+
+  ImGui::Begin("Camera");
+  if (ImGui::Button("Reset")) {
+    x = 0.0f;
+    y = 0.0f;
+  }
+  ImGui::SliderFloat("X", &x, -800.0f, 800.0f);
+  //Reset button
+  ImGui::SliderFloat("Y", &y, -800.0f, 800.0f);
+  ImGui::End();
+
+  Engine::GRAPHICS->setCameraPosition(x, y);
+
   Engine::GRAPHICS->clearScreen(0.1f, 0.1f, 0.1f, 1.0f); // Dark gray background
 
-  Engine::GRAPHICS->drawRect(100.0f, 100.0f, 200.0f, 50.0f, { 1.0f, 0.0f, 0.0f, 1.0f });  // Red
-  Engine::GRAPHICS->drawRect(350.0f, 200.0f, 100.0f, 150.0f, { 0.0f, 1.0f, 0.0f, 1.0f }); // Green
-  Engine::GRAPHICS->drawRect(50.0f, 400.0f, 75.0f, 75.0f, { 0.0f, 0.0f, 1.0f, 1.0f });    // Blue
-  Engine::GRAPHICS->drawRect(70.0f, 400.0f, 75.0f, 75.0f, { 1.0f, 1.0f, 1.0f, 0.2f });    // Transparent White
+  Engine::GRAPHICS->drawRect(0.0f, 0.0f, 50.0f, 50.0f, { 1.0f, 0.0f, 0.0f, 1.0f });       // Top left, Red
+  Engine::GRAPHICS->drawRect(800.0f, 600.0f, 50.0f, 50.0f, { 0.0f, 1.0f, 0.0f, 1.0f });   // Bottom right, Green
+  Engine::GRAPHICS->drawRect(0.0f, 600.0f, 50.0f, 50.0f, { 0.0f, 0.0f, 1.0f, 1.0f });     // Bottom left, Blue
+  Engine::GRAPHICS->drawRect(800.0f, 0.0f, 50.0f, 50.0f, { 1.0f, 1.0f, 0.0f, 1.0f });     // Top right, Yellow
 }
 
 void BasicState::Free()
