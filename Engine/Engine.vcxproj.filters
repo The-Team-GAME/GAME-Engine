@@ -227,8 +227,6 @@
     <ClInclude Include="PerformanceViewer.h">
       <Filter>Source Files\Engine\ImGuiPanels</Filter>
     </ClInclude>
-    <ClInclude Include="SpriteState.h">
-      <Filter>Header Files</Filter>
     <ClInclude Include="Time.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>

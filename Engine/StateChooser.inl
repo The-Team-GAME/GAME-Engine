@@ -8,6 +8,7 @@
 #include "JsonState.h"
 #include "SpriteState.h"
 #include "GameObjectState.h"
+#include "DevManySpritesState.h"
 
 inline void StateChooserPanel()
 {
@@ -38,6 +39,10 @@ inline void StateChooserPanel()
   if (ImGui::Button("GameObjectState"))
   {
     Engine::StateManager::ChangeState(GameObjectState::Get());
+  }
+  if (ImGui::Button("DevManySpritesState"))
+  {
+    Engine::StateManager::ChangeState(DevManySpritesState::Get());
   }
 
   ImGui::End();
