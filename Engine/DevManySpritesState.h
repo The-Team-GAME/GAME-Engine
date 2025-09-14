@@ -27,6 +27,7 @@ public:
 
     auto background = Engine::WORLD->createEntity()
       .addComponent<Components::Tag<"GameObjectState">>()
+      .addComponent<Components::Background>()
       .addComponent<Components::Color>(0.2f, 0.3f, 0.4f, 1.0f); // Dark blue background
 
     // Add systems to the world
