@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include "Shader.h"
 #include <array>
+#include <memory>  // Already added for smart pointers
 
 
 class Graphics
@@ -58,8 +59,8 @@ private:
   unsigned int quadIBO;
 
   uint32_t quadIndexCount = 0;
-  Vertex* quadVertexBufferBase = nullptr;
-  Vertex* quadVertexBufferPtr = nullptr;
+  std::vector<Vertex> quadVertexBufferBase;
+  uint32_t vertexIndex = 0;
 
   std::vector<Texture> textures;
   std::array<unsigned int, MaxTextureSlots> textureSlots;

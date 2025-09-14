@@ -51,7 +51,7 @@ void Graphics::init(int windowWidth, int windowHeight)
 
   textureShader.init("Assets\\shaders\\texture.vert", "Assets\\shaders\\texture.frag");
 
-  quadVertexBufferBase = new Vertex[MaxVertices];
+  quadVertexBufferBase.resize(MaxVertices);  // Allocate via vector resize
 
   glGenVertexArrays(1, &quadVAO);
   glBindVertexArray(quadVAO);
@@ -125,7 +125,7 @@ void Graphics::endFrame()
 void Graphics::startBatch()
 {
   quadIndexCount = 0;
-  quadVertexBufferPtr = quadVertexBufferBase;
+  vertexIndex = 0;  // Reset index to start of vector
   textureSlotIndex = 1;
 }
 
@@ -140,9 +140,9 @@ void Graphics::flush()
   if (quadIndexCount == 0)
     return;
 
-  uint32_t dataSize = (uint32_t)((uint8_t*)quadVertexBufferPtr - (uint8_t*)quadVertexBufferBase);
+  uint32_t dataSize = vertexIndex * sizeof(Vertex);  // Calculate size using index
   glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-  glBufferSubData(GL_ARRAY_BUFFER, 0, dataSize, quadVertexBufferBase);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, dataSize, quadVertexBufferBase.data());
 
   textureShader.use();
   textureShader.setMatrix("u_ViewProjection", viewProjectionMatrix);
@@ -193,7 +193,7 @@ void Graphics::exit()
   glDeleteBuffers(1, &quadVBO);
   glDeleteBuffers(1, &quadIBO);
 
-  delete[] quadVertexBufferBase;
+  // No need to delete quadVertexBufferBase; vector handles it automatically
 
   // Delete all loaded textures to prevent leaks
   for (const auto& tex : textures)
@@ -240,11 +240,11 @@ void Graphics::drawRect(const glm::vec4& color, float x, float y, float width, f
 
   for (size_t i = 0; i < 4; i++)
   {
-    quadVertexBufferPtr->Position = transform * QuadVertexPositions[i];
-    quadVertexBufferPtr->Color = color;
-    quadVertexBufferPtr->TexCoords = TextureCoords[i];
-    quadVertexBufferPtr->TexID = -1.0f; // Use -1 for solid color
-    quadVertexBufferPtr++;
+    quadVertexBufferBase[vertexIndex].Position = transform * QuadVertexPositions[i];  // Use index
+    quadVertexBufferBase[vertexIndex].Color = color;
+    quadVertexBufferBase[vertexIndex].TexCoords = TextureCoords[i];
+    quadVertexBufferBase[vertexIndex].TexID = -1.0f; // Use -1 for solid color
+    vertexIndex++;  // Increment index
   }
 
   quadIndexCount += 6;
@@ -357,11 +357,11 @@ void Graphics::drawTextureRegion(int imageId, float destX, float destY, float de
 
   for (size_t i = 0; i < 4; i++)
   {
-    quadVertexBufferPtr->Position = transform * QuadVertexPositions[i];
-    quadVertexBufferPtr->Color = tintColor;
-    quadVertexBufferPtr->TexCoords = texCoords[i];
-    quadVertexBufferPtr->TexID = textureIndex;
-    quadVertexBufferPtr++;
+    quadVertexBufferBase[vertexIndex].Position = transform * QuadVertexPositions[i];  // Use index
+    quadVertexBufferBase[vertexIndex].Color = tintColor;
+    quadVertexBufferBase[vertexIndex].TexCoords = TextureCoords[i];
+    quadVertexBufferBase[vertexIndex].TexID = textureIndex;
+    vertexIndex++;  // Increment index
   }
 
   quadIndexCount += 6;
