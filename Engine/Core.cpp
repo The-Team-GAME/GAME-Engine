@@ -82,9 +82,8 @@ namespace Engine
   {
     while (!glfwWindowShouldClose(window) && isRunning)
     {
-      // Updating of the accumulator (moved to Time)
+
       Time::update_time();
-      Time::update_accumulator();
 
       // Only runs the main gameloop if the accumulator is more than the fixed dt
       if (!Time::should_update())

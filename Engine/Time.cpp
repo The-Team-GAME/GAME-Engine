@@ -18,6 +18,7 @@ namespace Engine {
       chrono::milliseconds new_time = chrono::duration_cast<chrono::milliseconds>((chrono::steady_clock::now()).time_since_epoch());
       delta_time = static_cast<f64>((new_time - curr_time).count()) / 1000.0;
       curr_time = new_time;
+      accumulator += get_internal_dt();
     }
 
     // This calculates the fixed dt based on the set framerate
@@ -37,11 +38,6 @@ namespace Engine {
     void reset_accumulator(void)
     {
       accumulator = 0.0;
-    }
-
-    void update_accumulator(void)
-    {
-      accumulator += get_internal_dt();
     }
 
     bool should_update(void)
