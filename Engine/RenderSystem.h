@@ -3,60 +3,37 @@
 #include "BasicComponents.h"
 #include <iostream>
 
-// TODO: to be removed, replaced by StaticSpriteRenderSystem
-class RenderSystem : public ECS::System {
-public:
-  RenderSystem() {
-    requireComponents<Components::Position, Components::Renderable>();
-  }
-
-  void updateEntity(ECS::EntityID entityId, float /*dt*/) override {
-    auto* pos = world->getComponent<Components::Position>(entityId);
-    //auto* render = world->getComponent<Components::Renderable>(entityId);
-
-    /*std::cout << "Rendering sprite " << render->spriteId
-      << " at (" << pos->x << ", " << pos->y
-      << ") scale=" << render->scale << "\n";*/
-
-    Engine::GRAPHICS->drawRect({ 1.0f, 1.0f, 1.0f, 1.0f }, pos->x, pos->y, 10.0f, 10.0f); // TODO: allow changing color
-  }
-};
-
 class RectRenderSystem : public ECS::System {
 public:
   RectRenderSystem() {
     requireComponents<Components::Color, Components::Position, Components::Size>();
   }
-  void updateEntity(ECS::EntityID entityId, float /*dt*/) override {
+  void updateEntity(ECS::EntityID entityId) override {
+    auto* color = world->getComponent<Components::Color>(entityId);
     auto* pos = world->getComponent<Components::Position>(entityId);
     auto* size = world->getComponent<Components::Size>(entityId);
-    auto* color = world->getComponent<Components::Color>(entityId);
-    Engine::GRAPHICS->drawRect({ color->x, color->y, color->z, color->w }, pos->x, pos->y, size->width, size->height);
+
+    auto rotation = world->hasComponent<Components::Rotation>(entityId) ? *world->getComponent<Components::Rotation>(entityId) : Components::Rotation{ 0.0f };
+
+    Engine::GRAPHICS->drawRect({ color->x, color->y, color->z, color->w }, pos->x, pos->y, size->width, size->height, rotation.angle, Graphics::Origin::Center);
   }
 };
 
 class StaticSpriteRenderSystem : public ECS::System {
 public:
   StaticSpriteRenderSystem() {
-    requireComponents<Components::StaticSprite, Components::Size>();
+    requireComponents<Components::StaticSprite, Components::Position, Components::Size>();
   }
 
-  void updateEntity(ECS::EntityID entityId, float /*dt*/) override {
+  void updateEntity(ECS::EntityID entityId) override {
     auto* sprite = world->getComponent<Components::StaticSprite>(entityId);
     auto* size = world->getComponent<Components::Size>(entityId);
     auto* pos = world->getComponent<Components::Position>(entityId);
-    auto* rotation = world->getComponent<Components::Rotation>(entityId);
-    auto* scale = world->getComponent<Components::Scale>(entityId);
 
-    // Default values if components are missing
-    float x = pos ? pos->x : 0.0f;
-    float y = pos ? pos->y : 0.0f;
-    float angle = rotation ? rotation->angle : 0.0f;
-    float scaleX = scale ? scale->x : 1.0f;
-    float scaleY = scale ? scale->y : 1.0f;
+    auto rotation = world->hasComponent<Components::Rotation>(entityId) ? *world->getComponent<Components::Rotation>(entityId) : Components::Rotation{ 0.0f };
+    auto scale = world->hasComponent<Components::Scale>(entityId) ? *world->getComponent<Components::Scale>(entityId) : Components::Scale{ 1.0f, 1.0f };
+    auto color = world->hasComponent<Components::Color>(entityId) ? *world->getComponent<Components::Color>(entityId) : Components::Color{ 1.0f, 1.0f, 1.0f, 1.0f };
 
-    // TODO: allow changing origin
-    // TODO: allow changing color
-    Engine::GRAPHICS->drawTexture(sprite->textureId, x, y, size->width * scaleX, size->height * scaleY, angle, Graphics::Origin::Center, { 1.0f, 1.0f, 1.0f, 1.0f });
+    Engine::GRAPHICS->drawTexture(sprite->textureId, pos->x, pos->y, size->width * scale.x, size->height * scale.y, rotation.angle, Graphics::Origin::Center, { color.x, color.y, color.z, color.w });
   }
 };

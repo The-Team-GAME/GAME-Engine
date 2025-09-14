@@ -99,7 +99,7 @@ namespace Engine
         StateManager::GetCurrentState()->Update();
         StateManager::GetCurrentState()->Draw();
 
-        WORLD->update(static_cast<float>(getDt()));
+        WORLD->update();
 
         StateChooserPanel();
         PerformanceViewerPanel(time_manager.target_fps);

@@ -50,13 +50,13 @@ void EcsState::Init()
   // Entity to clear background
   auto background = Engine::WORLD->createEntity()
     .addComponent<Components::Tag<"GameObjectState">>()
+    .addComponent<Components::Background>()
     .addComponent<Components::Color>(0.1f, 0.1f, 0.1f, 1.0f); // Dark gray background
 
   // Add systems to the world
   Engine::WORLD->addSystem<BackgroundSystem>(); // Background system should be first
   Engine::WORLD->addSystem<MovementSystem>();
   Engine::WORLD->addSystem<HealthSystem>();
-  Engine::WORLD->addSystem<RenderSystem>();
 }
 
 void EcsState::Update()
@@ -76,7 +76,6 @@ void EcsState::Free()
   Engine::WORLD->removeSystem<BackgroundSystem>();
   Engine::WORLD->removeSystem<MovementSystem>();
   Engine::WORLD->removeSystem<HealthSystem>();
-  Engine::WORLD->removeSystem<RenderSystem>();
 }
 
 void EcsState::Unload()

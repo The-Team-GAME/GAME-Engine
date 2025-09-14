@@ -1,9 +1,6 @@
 #pragma once
 
 #include "StateManager.h"
-#include "Graphics.h"
-#include "ObjectFactory.h"
-#include "MovementSystem.h"
 #include "RenderSystem.h"
 #include "BackgroundSystem.h"
 #include "Core.h"
@@ -17,7 +14,7 @@ public:
   void Init()
   {
     auto background = Engine::WORLD->createEntity()
-      .addComponent<Components::Tag<"GameObjectState">>()
+      .addComponent<Components::Tag<"Rubric2500Particles">>()
       .addComponent<Components::Background>()
       .addComponent<Components::Color>(0.2f, 0.3f, 0.4f, 1.0f); // Dark blue background
 
@@ -26,12 +23,18 @@ public:
       float y = static_cast<float>(rand() % 600); // Random y position within window height
       float size = static_cast<float>((rand() % 20) + 5); // Random size between 5 and 25
       float rotation = static_cast<float>(rand() % 360); // Random rotation angle
+      Components::Color color = Components::Color(
+        static_cast<float>(rand() % 256) / 255.0f,
+        static_cast<float>(rand() % 256) / 255.0f,
+        static_cast<float>(rand() % 256) / 255.0f,
+        1.0f
+      );
 
       Engine::WORLD->createEntity()
-        .addComponent<Components::Tag<"GameObjectState">>()
+        .addComponent<Components::Tag<"Rubric2500Particles">>()
         .addComponent<Components::Position>(x, y)
         .addComponent<Components::Size>(size, size)
-        .addComponent<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)  // White color
+        .addComponent<Components::Color>(color)
         .addComponent<Components::Rotation>(rotation);
     }
 
@@ -48,11 +51,11 @@ public:
   };
 
   void Free() {
-    Engine::WORLD->destroyEntitiesWith<Components::Tag<"GameObjectState">>();
+    Engine::WORLD->destroyEntitiesWith<Components::Tag<"Rubric2500Particles">>();
 
     // Remove systems
     Engine::WORLD->removeSystem<BackgroundSystem>();
-    Engine::WORLD->removeSystem<StaticSpriteRenderSystem>();
+    Engine::WORLD->removeSystem<RectRenderSystem>();
   };
 
   void Unload() {};

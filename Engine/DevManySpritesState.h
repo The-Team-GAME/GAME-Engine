@@ -21,12 +21,12 @@ public:
       float x = static_cast<float>(rand() % 800); // Random x position within window width
       float y = static_cast<float>(rand() % 600); // Random y position within window height
       Engine::FACTORY->createObject(enemyPrefab)
-        .addComponent<Components::Tag<"GameObjectState">>()
+        .addComponent<Components::Tag<"DevManySpritesState">>()
         .addComponent<Components::Position>(x, y);
     }
 
     auto background = Engine::WORLD->createEntity()
-      .addComponent<Components::Tag<"GameObjectState">>()
+      .addComponent<Components::Tag<"DevManySpritesState">>()
       .addComponent<Components::Background>()
       .addComponent<Components::Color>(0.2f, 0.3f, 0.4f, 1.0f); // Dark blue background
 
@@ -43,7 +43,7 @@ public:
 
   void Free() {
     Engine::FACTORY->unregisterObject(enemyPrefab);
-    Engine::WORLD->destroyEntitiesWith<Components::Tag<"GameObjectState">>();
+    Engine::WORLD->destroyEntitiesWith<Components::Tag<"DevManySpritesState">>();
 
     // Remove systems
     Engine::WORLD->removeSystem<BackgroundSystem>();

@@ -127,6 +127,7 @@ namespace ECS
     template <typename T, typename... Args>
     void addComponent(EntityID entity, Args &&...args)
     {
+      assert(!hasComponent<T>(entity) && "Entity already has this component");
       ComponentTypeID typeId = ComponentTypeManager::getTypeId<T>();
       auto* array = getComponentArray<T>();
       // The assert is no longer strictly necessary as getComponentArray now ensures creation.
@@ -140,6 +141,7 @@ namespace ECS
     template <typename T>
     void removeComponent(EntityID entity)
     {
+      assert(hasComponent<T>(entity) && "Entity does not have this component");
       ComponentTypeID typeId = ComponentTypeManager::getTypeId<T>();
       auto* array = getComponentArray<T>();
       if (array)
@@ -153,6 +155,7 @@ namespace ECS
     template <typename T>
     T* getComponent(EntityID entity)
     {
+      assert(hasComponent<T>(entity) && "Entity does not have this component");
       auto* array = getComponentArray<T>();
       return array ? array->getComponent(entity) : nullptr;
     }
@@ -160,6 +163,7 @@ namespace ECS
     template <typename T>
     const T* getComponent(EntityID entity) const
     {
+      assert(hasComponent<T>(entity) && "Entity does not have this component");
       auto* array = const_cast<World*>(this)->getComponentArray<T>();
       return array ? array->getComponent(entity) : nullptr;
     }
@@ -212,12 +216,12 @@ namespace ECS
     }
 
     // Main update loop
-    void update(float deltaTime)
+    void update()
     {
       // Update all systems
       for (auto& system : systems)
       {
-        system->update(deltaTime);
+        system->update();
       }
 
       // Clean up destroyed entities
