@@ -2,7 +2,7 @@
 #include <imgui.h>
 #include "Core.h"
 
-inline void PerformanceViewerPanel()
+inline void PerformanceViewerPanel(float& target_fps)
 {
   ImGui::Begin("Performance Viewer");
 
@@ -28,6 +28,8 @@ inline void PerformanceViewerPanel()
     }
 
     ImGui::Text("FPS: %.1f", lastFPS);
+
+    ImGui::SliderFloat("Target FPS", &target_fps, 10.0f, 3000.0f);
   }
 
   ImGui::End();
