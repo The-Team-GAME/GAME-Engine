@@ -66,10 +66,11 @@ namespace Engine
 
   Core::~Core()
   {
-    StateManager::Exit();
     Engine::GRAPHICS->exit();
+    StateManager::Exit();
     glfwDestroyWindow(window);
     glfwTerminate();
+    Engine::FACTORY->unregisterAllObjects();
 
     delete GRAPHICS;
     delete FACTORY;
