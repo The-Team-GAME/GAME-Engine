@@ -69,12 +69,10 @@ namespace Engine
 
     ImGuiManager::init();
 
-    Engine::GRAPHICS->init();
+    Engine::GRAPHICS->init(windowWidth, windowHeight);
 
     return 0;
   }
-
-  std::chrono::time_point<std::chrono::high_resolution_clock>  last_time = std::chrono::high_resolution_clock::now();
 
   void Core::run()
   {
@@ -95,6 +93,9 @@ namespace Engine
 
         Input::Update();
 
+        GRAPHICS->beginFrame();
+
+
         StateManager::GetCurrentState()->Update();
         StateManager::GetCurrentState()->Draw();
 
@@ -102,6 +103,8 @@ namespace Engine
 
         StateChooserPanel();
         PerformanceViewerPanel(time_manager.target_fps);
+
+        GRAPHICS->endFrame();
 
         ImGuiManager::end();
 

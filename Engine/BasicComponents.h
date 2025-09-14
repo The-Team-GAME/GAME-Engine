@@ -71,7 +71,7 @@ namespace Components {
   struct Renderable {};
 
   struct StaticSprite {
-    unsigned int textureId;
+    int textureId;
     StaticSprite(std::string texturePath, Graphics::MinifyingFilter minifyingFilter = Graphics::MinifyingFilter::Linear);
     StaticSprite(const StaticSprite& other);
   };

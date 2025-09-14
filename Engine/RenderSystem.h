@@ -18,7 +18,7 @@ public:
       << " at (" << pos->x << ", " << pos->y
       << ") scale=" << render->scale << "\n";*/
 
-    Engine::GRAPHICS->drawRect(pos->x, pos->y, 10.0f, 10.0f, { 1.0f, 1.0f, 1.0f, 1.0f }); // TODO: allow changing color
+    Engine::GRAPHICS->drawRect({ 1.0f, 1.0f, 1.0f, 1.0f }, pos->x, pos->y, 10.0f, 10.0f); // TODO: allow changing color
   }
 };
 
@@ -31,7 +31,7 @@ public:
     auto* pos = world->getComponent<Components::Position>(entityId);
     auto* size = world->getComponent<Components::Size>(entityId);
     auto* color = world->getComponent<Components::Color>(entityId);
-    Engine::GRAPHICS->drawRect(pos->x, pos->y, size->width, size->height, { color->x, color->y, color->z, color->w });
+    Engine::GRAPHICS->drawRect({ color->x, color->y, color->z, color->w }, pos->x, pos->y, size->width, size->height);
   }
 };
 
@@ -55,6 +55,8 @@ public:
     float scaleX = scale ? scale->x : 1.0f;
     float scaleY = scale ? scale->y : 1.0f;
 
-    Engine::GRAPHICS->drawTexture(sprite->textureId, x, y, size->width * scaleX, size->height * scaleY, angle);
+    // TODO: allow changing origin
+    // TODO: allow changing color
+    Engine::GRAPHICS->drawTexture(sprite->textureId, x, y, size->width * scaleX, size->height * scaleY, angle, Graphics::Origin::Center, { 1.0f, 1.0f, 1.0f, 1.0f });
   }
 };

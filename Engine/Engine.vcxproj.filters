@@ -224,6 +224,9 @@
     <ClInclude Include="BackgroundSystem.h">
       <Filter>Source Files\ECS\Systems</Filter>
     </ClInclude>
+    <ClInclude Include="PerformanceViewer.h">
+      <Filter>Source Files\Engine\ImGuiPanels</Filter>
+    </ClInclude>
     <ClInclude Include="Time.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
