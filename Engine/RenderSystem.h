@@ -3,7 +3,7 @@
 #include "BasicComponents.h"
 #include <iostream>
 
-// TODO: to be removed, replaced by GameObjectRenderSystem
+// TODO: to be removed, replaced by StaticSpriteRenderSystem
 class RenderSystem : public ECS::System {
 public:
   RenderSystem() {
@@ -22,9 +22,22 @@ public:
   }
 };
 
-class GameObjectRenderSystem : public ECS::System {
+class RectRenderSystem : public ECS::System {
 public:
-  GameObjectRenderSystem() {
+  RectRenderSystem() {
+    requireComponents<Components::Color, Components::Position, Components::Size>();
+  }
+  void updateEntity(ECS::EntityID entityId, float /*dt*/) override {
+    auto* pos = world->getComponent<Components::Position>(entityId);
+    auto* size = world->getComponent<Components::Size>(entityId);
+    auto* color = world->getComponent<Components::Color>(entityId);
+    Engine::GRAPHICS->drawRect(pos->x, pos->y, size->width, size->height, { color->x, color->y, color->z, color->w });
+  }
+};
+
+class StaticSpriteRenderSystem : public ECS::System {
+public:
+  StaticSpriteRenderSystem() {
     requireComponents<Components::StaticSprite, Components::Size>();
   }
 

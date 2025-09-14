@@ -32,7 +32,7 @@ public:
 
     // Add systems to the world
     Engine::WORLD->addSystem<BackgroundSystem>(); // Background system should be first
-    Engine::WORLD->addSystem<GameObjectRenderSystem>();
+    Engine::WORLD->addSystem<StaticSpriteRenderSystem>();
   }
 
   void Init() {}
@@ -47,7 +47,7 @@ public:
 
     // Remove systems
     Engine::WORLD->removeSystem<BackgroundSystem>();
-    Engine::WORLD->removeSystem<GameObjectRenderSystem>();
+    Engine::WORLD->removeSystem<StaticSpriteRenderSystem>();
   }
 
   void Unload() {}
