@@ -239,6 +239,9 @@
     <ClInclude Include="PerformanceViewer.h">
       <Filter>Source Files\Engine\ImGuiPanels</Filter>
     </ClInclude>
+    <ClInclude Include="DevManySpritesState.h">
+      <Filter>Source Files\GameStates</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ECS\Entity.inl">
