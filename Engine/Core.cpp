@@ -11,13 +11,6 @@
 #include "StateChooser.inl"
 #include "Time.h"
 #include "PerformanceViewer.h"
-#include <chrono>
-
-namespace {
-  // just local variables
-  f64 accumulator;
-  s32 loop_cap{ 50 };
-}
 
 namespace Engine
 {
@@ -29,10 +22,8 @@ namespace Engine
 
   Core::Core()
   {
-    dt = 0.0f;
     isRunning = true;
     window = nullptr;
-    dt = 0.0f;
     CORE = this;
     WORLD = new ECS::World(); // TODO: check memory leak
     FACTORY = new ObjectFactory(WORLD);
@@ -46,10 +37,6 @@ namespace Engine
 
   int Core::init()
   {
-    // For game loop
-    accumulator = 0;
-
-
     /* Initialize the library */
     if (!glfwInit())
       return -1;
@@ -87,53 +74,40 @@ namespace Engine
     return 0;
   }
 
+  std::chrono::time_point<std::chrono::high_resolution_clock>  last_time = std::chrono::high_resolution_clock::now();
+
   void Core::run()
   {
-
-    // static std::chrono::milliseconds curr_time = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::steady_clock::now()).time_since_epoch());
-
-    // static float curr_time = static_cast<float>(glfwGetTime());
-
     while (!glfwWindowShouldClose(window) && isRunning)
     {
-      //Updating of the accumulator
-      Time::update_time();
-      accumulator += Time::get_internal_dt();
+      // Everything inside this loop ignores fixed timestep
 
-      // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
-      if (accumulator < Time::get_fixed_dt())
-        continue;
+      time_manager.accumulate_time();
 
-      // Main gameloop here
-      glfwPollEvents();
-      ImGuiManager::begin();
+      while (time_manager.should_update())
+      {
+        // Everything inside this loop is runned at a fixed timestep
 
-      Input::Update();
+        time_manager.update_fixed_step();
 
-      StateManager::GetCurrentState()->Update();
-      StateManager::GetCurrentState()->Draw();
+        glfwPollEvents();
+        ImGuiManager::begin();
 
-      WORLD->update(static_cast<float>(Time::get_fixed_dt()));
+        Input::Update();
 
-      StateChooserPanel();
-      PerformanceViewerPanel();
+        StateManager::GetCurrentState()->Update();
+        StateManager::GetCurrentState()->Draw();
 
-      ImGuiManager::end();
+        WORLD->update(static_cast<float>(getDt()));
 
-      /* Swap front and back buffers */
-      glfwSwapBuffers(window);
+        StateChooserPanel();
+        PerformanceViewerPanel(time_manager.target_fps);
 
-      // Reset accumulator
-      // (The reason wqe don't just set it to zero is because if the frame took longer than the fixed dt, we want to keep the extra time for the next frame)
-      accumulator -= Time::get_fixed_dt();
+        ImGuiManager::end();
 
-      /*std::chrono::milliseconds new_time = std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::steady_clock::now()).time_since_epoch());
-      dt = static_cast<f64>((new_time - curr_time).count()) / 1000.0;
-      curr_time = new_time;*/
-
-      /*float new_time = static_cast<float>(glfwGetTime()) * 1000.0f;
-      dt = (new_time - curr_time) / 1000.0f;
-      curr_time = new_time;*/
+        /* Swap front and back buffers */
+        glfwSwapBuffers(window);
+      }
     }
   }
 
@@ -145,10 +119,9 @@ namespace Engine
     glfwTerminate();
   }
 
-  float Core::getDt() const // TODO remove eventually?
+  float Core::getDt() const
   {
-    //return Time::get_fixed_dt();
-    return dt;
+    return static_cast<float>(time_manager.get_frame_dt());
   }
 
   GLFWwindow* Core::getWindow() const
