@@ -16,9 +16,7 @@ INT WINAPI WinMain(
 
   Engine::Core* engine = new Engine::Core();
 
-  engine->init();
   engine->run();
-  engine->exit();
 
   delete engine;
 
