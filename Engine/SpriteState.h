@@ -276,12 +276,12 @@ public:
 
     Engine::GRAPHICS->clearScreen(0.1f, 0.1f, 0.1f, 1.0f);
 
-    Engine::GRAPHICS->drawTexture({ linearMonkeyImageId, 200.0f, 150.0f, 150.0f, 210.0f });
-    Engine::GRAPHICS->drawTexture({ nearestMonkeyImageId, 400.0f, 150.0f, 150.0f, 210.0f });
+    Engine::GRAPHICS->drawTexture(linearMonkeyImageId, 200.0f, 150.0f, 150.0f, 210.0f);
+    Engine::GRAPHICS->drawTexture(nearestMonkeyImageId, 400.0f, 150.0f, 150.0f, 210.0f);
 
 
     Engine::GRAPHICS->drawTextureRegion(
-      { nearestMonkeyImageId, 600.0f, 150.0f, 150.0f, 210.0f, spritePosX += Engine::CORE->getDt() * 10.0f, 0.0f, 15.0f, 21.0f }
+      nearestMonkeyImageId, 600.0f, 150.0f, 150.0f, 210.0f, spritePosX += Engine::CORE->getDt() * 10.0f, 0.0f, 15.0f, 21.0f
     );
 
 

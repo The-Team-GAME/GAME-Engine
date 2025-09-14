@@ -50,22 +50,11 @@ void BasicState::Draw()
   static float rotation = 0.0f;
   rotation += 45.0f * static_cast<float>(Engine::CORE->getDt());
 
-  Engine::GRAPHICS->drawRect({ { 1.0f, 0.0f, 0.0f, 1.0f }, 0.0f, 0.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center });       // Top left, Red
-  Engine::GRAPHICS->drawRect({ { 0.0f, 1.0f, 0.0f, 1.0f }, 800.0f, 600.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center });   // Bottom right, Green
-  Engine::GRAPHICS->drawRect({ { 0.0f, 0.0f, 1.0f, 1.0f }, 0.0f, 600.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center });     // Bottom left, Blue
-  Engine::GRAPHICS->drawRect({ { 1.0f, 1.0f, 0.0f, 1.0f }, 800.0f, 0.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center });     // Top right, Yellow
-
-  // alternative syntax using designated initializers (C++20)
-  Engine::GRAPHICS->drawRect({
-    .color = { 1.0f, 0.0f, 1.0f, 1.0f },
-    .x = 400.0f,
-    .y = 300.0f,
-    .width = 50.0f,
-    .height = 50.0f,
-    .rotation = rotation,
-    .origin = Graphics::Origin::Center }
-    ); // Center, Magenta
-
+  Engine::GRAPHICS->drawRect({ 1.0f, 0.0f, 0.0f, 1.0f }, 0.0f, 0.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center);       // Top left, Red
+  Engine::GRAPHICS->drawRect({ 0.0f, 1.0f, 0.0f, 1.0f }, 800.0f, 600.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center);   // Bottom right, Green
+  Engine::GRAPHICS->drawRect({ 0.0f, 0.0f, 1.0f, 1.0f }, 0.0f, 600.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center);     // Bottom left, Blue
+  Engine::GRAPHICS->drawRect({ 1.0f, 1.0f, 0.0f, 1.0f }, 800.0f, 0.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center);     // Top right, Yellow
+  Engine::GRAPHICS->drawRect({ 1.0f, 0.0f, 1.0f, 1.0f }, 400.0f, 300.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center);// Center, Magenta
 }
 
 void BasicState::Free()

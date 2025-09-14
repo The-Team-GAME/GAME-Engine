@@ -18,7 +18,7 @@ public:
       << " at (" << pos->x << ", " << pos->y
       << ") scale=" << render->scale << "\n";*/
 
-    Engine::GRAPHICS->drawRect({ { 1.0f, 1.0f, 1.0f, 1.0f }, pos->x, pos->y, 10.0f, 10.0f }); // TODO: allow changing color
+    Engine::GRAPHICS->drawRect({ 1.0f, 1.0f, 1.0f, 1.0f }, pos->x, pos->y, 10.0f, 10.0f); // TODO: allow changing color
   }
 };
 
@@ -42,6 +42,6 @@ public:
     float scaleX = scale ? scale->x : 1.0f;
     float scaleY = scale ? scale->y : 1.0f;
 
-    Engine::GRAPHICS->drawTexture({ sprite->textureId, x, y, size->width * scaleX, size->height * scaleY, angle });
+    Engine::GRAPHICS->drawTexture(sprite->textureId, x, y, size->width * scaleX, size->height * scaleY, angle);
   }
 };

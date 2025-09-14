@@ -39,34 +39,6 @@ public:
     BottomRight
   };
 
-  // TODO: color should use our own math 
-  struct DrawRectParams
-  {
-    glm::vec4 color;
-    float x, y, width, height;
-    float rotation = 0.0f;
-    Origin origin = Origin::Center;
-  };
-
-  struct DrawTextureParams
-  {
-    int imageId;
-    float x, y, width, height;
-    float rotation = 0.0f;
-    Origin origin = Origin::Center;
-    glm::vec4 tintColor = glm::vec4(1.0f);
-  };
-
-  struct DrawTextureRegionParams
-  {
-    int imageId;
-    float destX, destY, destWidth, destHeight;
-    float srcX, srcY, srcWidth, srcHeight;
-    float rotation = 0.0f;
-    Origin origin = Origin::Center;
-    glm::vec4 tintColor = glm::vec4(1.0f);
-  };
-
 private:
   struct Vertex
   {
@@ -119,9 +91,9 @@ public:
   void setCameraRotation(float degrees);
   const Camera2D& getCamera() const { return camera; }
 
-  void drawRect(const DrawRectParams& params);
-  void drawTexture(const DrawTextureParams& params);
-  void drawTextureRegion(const DrawTextureRegionParams& params);
+  void drawRect(const glm::vec4& color, float x, float y, float width, float height, float rotation = 0.0f, Origin origin = Origin::Center);
+  void drawTexture(int imageId, float x, float y, float width, float height, float rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& tintColor = glm::vec4(1.0f));
+  void drawTextureRegion(int imageId, float destX, float destY, float destWidth, float destHeight, float srcX, float srcY, float srcWidth, float srcHeight, float rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& tintColor = glm::vec4(1.0f));
 
   int loadTexture(const char* filepath, MinifyingFilter min_filter = MinifyingFilter::Linear);
   void clearScreen(float r, float g, float b, float a);
