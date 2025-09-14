@@ -50,6 +50,11 @@ public:
   void Free() {
     Engine::FACTORY->unregisterObject(enemyPrefab);
     Engine::WORLD->destroyEntitiesWith<Components::Tag<"GameObjectState">>();
+
+    // Remove systems
+    Engine::WORLD->removeSystem<BackgroundSystem>();
+    Engine::WORLD->removeSystem<MovementSystem>();
+    Engine::WORLD->removeSystem<GameObjectRenderSystem>();
   };
 
   void Unload() {};

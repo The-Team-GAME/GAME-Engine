@@ -132,6 +132,12 @@
     <ClCompile Include="BasicComponents.cpp">
       <Filter>Source Files\ECS\Components</Filter>
     </ClCompile>
+    <ClCompile Include="Time.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Serialisation.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
@@ -206,9 +212,6 @@
     <ClInclude Include="Vector3D.h">
       <Filter>Source Files\Math</Filter>
     </ClInclude>
-    <ClInclude Include="SpriteState.h">
-      <Filter>Source Files\GameStates</Filter>
-    </ClInclude>
     <ClInclude Include="ObjectFactory.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
@@ -220,6 +223,18 @@
     </ClInclude>
     <ClInclude Include="BackgroundSystem.h">
       <Filter>Source Files\ECS\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Time.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Serialisation.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteState.h">
+      <Filter>Source Files\GameStates</Filter>
+    </ClInclude>
+    <ClInclude Include="PerformanceViewer.h">
+      <Filter>Source Files\Engine\ImGuiPanels</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
