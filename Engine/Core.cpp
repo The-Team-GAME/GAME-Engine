@@ -28,18 +28,10 @@ namespace Engine
     WORLD = new ECS::World(); // TODO: check memory leak
     FACTORY = new ObjectFactory(WORLD);
     GRAPHICS = new Graphics();
-  }
 
-  Core::~Core()
-  {
-    // Nothing for now
-  }
-
-  int Core::init()
-  {
     /* Initialize the library */
     if (!glfwInit())
-      return -1;
+      return;
 
     /* Create a windowed mode window and its OpenGL context */
     // TODO: window size should not be hardcoded
@@ -50,7 +42,7 @@ namespace Engine
     {
       std::cout << "Failed to create GLFW window" << std::endl;
       glfwTerminate();
-      return -1;
+      return;
     }
 
     /* Make the window's context current */
@@ -70,8 +62,19 @@ namespace Engine
     ImGuiManager::init();
 
     Engine::GRAPHICS->init(windowWidth, windowHeight);
+  }
 
-    return 0;
+  Core::~Core()
+  {
+    Engine::GRAPHICS->exit();
+    StateManager::Exit();
+    glfwDestroyWindow(window);
+    glfwTerminate();
+    Engine::FACTORY->unregisterAllObjects();
+
+    delete GRAPHICS;
+    delete FACTORY;
+    delete WORLD;
   }
 
   void Core::run()
@@ -112,14 +115,6 @@ namespace Engine
         glfwSwapBuffers(window);
       }
     }
-  }
-
-  void Core::exit()
-  {
-    StateManager::Exit();
-    Engine::GRAPHICS->exit();
-    glfwDestroyWindow(window);
-    glfwTerminate();
   }
 
   float Core::getDt() const

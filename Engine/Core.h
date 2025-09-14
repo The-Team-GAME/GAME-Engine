@@ -20,9 +20,7 @@ namespace Engine
     Core();
     ~Core();
 
-    int init();
     void run();
-    void exit();
 
     float getDt() const;
     GLFWwindow* getWindow() const;

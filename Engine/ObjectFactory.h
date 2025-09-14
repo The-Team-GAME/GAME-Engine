@@ -54,6 +54,11 @@ namespace Engine
     void unregisterObject(int id);
 
     /**
+     * @brief Unregisters all object prefabs.
+     */
+    void unregisterAllObjects();
+
+    /**
      * @brief Creates a unique entity in the world from a registered object prefab.
      *
      * @param id The ID of the object prefab to instantiate.
