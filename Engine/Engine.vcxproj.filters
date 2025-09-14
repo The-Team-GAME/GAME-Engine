@@ -224,14 +224,8 @@
     <ClInclude Include="BackgroundSystem.h">
       <Filter>Source Files\ECS\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="SpriteState.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Time.h">
       <Filter>Source Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="SpriteState.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Serialisation.h">
       <Filter>Source Files\Engine</Filter>
