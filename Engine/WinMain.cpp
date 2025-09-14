@@ -1,13 +1,19 @@
-#include <iostream> 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include "Graphics.h"
 #include "Core.h"
-#include "StateManager.h"
-#include "BasicState.h"
+#include <Windows.h>
 
-int main(void)
+
+INT WINAPI WinMain(
+  _In_ HINSTANCE hInst,
+  _In_opt_ HINSTANCE hPrevInstance,
+  _In_ LPSTR lpCmdLine,
+  _In_ INT nCmdShow)
 {
+  int tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+  tmpDbgFlag |= _CRTDBG_LEAK_CHECK_DF;
+  _CrtSetDbgFlag(tmpDbgFlag);
+
+  _CrtSetBreakAlloc(-1);
+
   Engine::Core* engine = new Engine::Core();
 
   engine->init();
@@ -16,3 +22,5 @@ int main(void)
 
   return 0;
 }
+
+#pragma warning(pop)
