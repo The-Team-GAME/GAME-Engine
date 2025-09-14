@@ -93,6 +93,9 @@ namespace Engine
 
         Input::Update();
 
+        GRAPHICS->beginFrame();
+
+
         StateManager::GetCurrentState()->Update();
         StateManager::GetCurrentState()->Draw();
 
@@ -100,6 +103,8 @@ namespace Engine
 
         StateChooserPanel();
         PerformanceViewerPanel(time_manager.target_fps);
+
+        GRAPHICS->endFrame();
 
         ImGuiManager::end();
 
