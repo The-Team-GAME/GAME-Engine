@@ -83,29 +83,29 @@ namespace Engine
       Time::begin();
 
       // Only runs the main gameloop if the accumulator is more than the fixed dt
-      if (!Time::should_update())
-        continue;
+      while (Time::should_update())
+      {
+        // Main gameloop here
+        glfwPollEvents();
+        ImGuiManager::begin();
 
-      // Main gameloop here
-      glfwPollEvents();
-      ImGuiManager::begin();
+        Input::Update();
 
-      Input::Update();
+        StateManager::GetCurrentState()->Update();
+        StateManager::GetCurrentState()->Draw();
 
-      StateManager::GetCurrentState()->Update();
-      StateManager::GetCurrentState()->Draw();
+        WORLD->update(static_cast<float>(Time::get_fixed_dt()));
 
-      WORLD->update(static_cast<float>(Time::get_fixed_dt()));
+        StateChooserPanel();
+        PerformanceViewerPanel();
 
-      StateChooserPanel();
-      PerformanceViewerPanel();
+        ImGuiManager::end();
 
-      ImGuiManager::end();
+        /* Swap front and back buffers */
+        glfwSwapBuffers(window);
 
-      /* Swap front and back buffers */
-      glfwSwapBuffers(window);
-
-      Time::end();
+        Time::end();
+      }
     }
   }
 

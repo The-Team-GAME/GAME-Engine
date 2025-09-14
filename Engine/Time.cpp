@@ -9,6 +9,9 @@ namespace { //consider making it microseconds
   f64 delta_time{}; // in seconds
   s32 frame_rate{ 60 };
   f64 accumulator = 0.0;
+
+  s16 loop_count = 0;
+  s16 loop_cap = 50; // to prevent spiral of death
 }
 
 namespace Engine {
@@ -19,6 +22,7 @@ namespace Engine {
       delta_time = static_cast<f64>((new_time - curr_time).count()) / 1000.0;
       curr_time = new_time;
       accumulator += get_internal_dt();
+      loop_count = 0;
     }
 
     // This calculates the fixed dt based on the set framerate
@@ -36,12 +40,13 @@ namespace Engine {
 
     bool should_update(void)
     {
-      return accumulator >= get_fixed_dt();
+      return accumulator >= get_fixed_dt() && loop_count < loop_cap;
     }
 
     void end(void)
     {
       accumulator -= get_fixed_dt();
+      loop_count++;
     }
   }
 };
