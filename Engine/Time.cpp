@@ -20,7 +20,7 @@ namespace Engine {
   }
 
   f64 Time::get_fixed_dt(void)const {
-    return 1.0 / TARGET_FPS;
+    return 1.0 / target_fps;
   }
 
   f64 Time::get_internal_dt(void) const {
@@ -32,6 +32,6 @@ namespace Engine {
   }
 
   bool Time::should_update(void)const {
-    return accumulator >= get_fixed_dt() && loop_count < MAX_UPDATES_PER_FRAME;
+    return accumulator >= get_fixed_dt() && loop_count < loop_cap;
   }
 }

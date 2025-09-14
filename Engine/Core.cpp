@@ -101,7 +101,7 @@ namespace Engine
         WORLD->update(static_cast<float>(getDt()));
 
         StateChooserPanel();
-        PerformanceViewerPanel();
+        PerformanceViewerPanel(time_manager.target_fps);
 
         ImGuiManager::end();
 

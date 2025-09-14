@@ -4,13 +4,13 @@
 
 namespace Engine {
   class Time {
-  private:
+  public:
     using clock = std::chrono::high_resolution_clock;
     using time_point = std::chrono::time_point<clock>;
     using duration = std::chrono::duration<f64>;
 
-    const f64 TARGET_FPS = 10000.0;
-    const u32 MAX_UPDATES_PER_FRAME = 10; // loop cap to avoid spiral of death
+    f32 target_fps = 3000.0f;
+    u32 loop_cap = 10; // avoid spiral of death
 
     time_point last_time;
     f64 accumulator;
@@ -20,7 +20,6 @@ namespace Engine {
     time_point frame_last_time;
     f64 frame_dt;
 
-  public:
     Time()
       : last_time(clock::now()), accumulator(0.0), internal_dt(0.0), loop_count(0),
       frame_last_time(clock::now()), frame_dt(0.0) {
@@ -49,7 +48,7 @@ namespace Engine {
      * Fixed dt will not return the accurate delta time if the target FPS is too high for the system to handle,
      * as such, it should not be used for logic.
      *
-     * @return The fixed delta time in seconds, calculated as 1 / TARGET_FPS.
+     * @return The fixed delta time in seconds, calculated as 1 / target_fps.
      */
     f64 get_fixed_dt(void) const;
 
