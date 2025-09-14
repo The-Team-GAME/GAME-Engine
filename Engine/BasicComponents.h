@@ -49,6 +49,8 @@ namespace Components {
     using Math::Vec4D::Vec4D;
   };
 
+  struct Background {};
+
   struct Health {
     int value, max;
     Health(int value = 100, int max = 100) : value(value), max(max) {}

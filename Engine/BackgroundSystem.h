@@ -7,7 +7,7 @@
 class BackgroundSystem : public ECS::System {
 public:
   BackgroundSystem() {
-    requireComponents<Components::Color>();
+    requireComponents<Components::Color, Components::Background>();
   }
 
   void updateEntity(ECS::EntityID entityId, float deltaTime) override {

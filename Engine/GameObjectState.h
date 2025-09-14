@@ -33,12 +33,13 @@ public:
 
     auto background = Engine::WORLD->createEntity()
       .addComponent<Components::Tag<"GameObjectState">>()
+      .addComponent<Components::Background>()
       .addComponent<Components::Color>(0.2f, 0.3f, 0.4f, 1.0f); // Dark blue background
 
     // Add systems to the world
     Engine::WORLD->addSystem<BackgroundSystem>(); // Background system should be first
     Engine::WORLD->addSystem<MovementSystem>();
-    Engine::WORLD->addSystem<GameObjectRenderSystem>();
+    Engine::WORLD->addSystem<StaticSpriteRenderSystem>();
   };
 
   void Update() {};
@@ -54,7 +55,7 @@ public:
     // Remove systems
     Engine::WORLD->removeSystem<BackgroundSystem>();
     Engine::WORLD->removeSystem<MovementSystem>();
-    Engine::WORLD->removeSystem<GameObjectRenderSystem>();
+    Engine::WORLD->removeSystem<StaticSpriteRenderSystem>();
   };
 
   void Unload() {};
