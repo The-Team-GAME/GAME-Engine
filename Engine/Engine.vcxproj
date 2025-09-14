@@ -205,7 +205,6 @@
     <ClInclude Include="PerformanceViewer.h" />
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="Serialisation.h" />
-    <ClInclude Include="SpriteState.h" />
     <ClInclude Include="Time.h" />
     <ClInclude Include="Vector2D.h" />
     <ClInclude Include="Shader.h" />
