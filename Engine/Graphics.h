@@ -102,4 +102,5 @@ private:
   void startBatch();
   void nextBatch();
   void flush();
+  glm::vec2 calculateOriginOffset(float width, float height, Origin origin) const;
 };

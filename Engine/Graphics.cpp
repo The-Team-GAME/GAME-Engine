@@ -159,6 +159,18 @@ void Graphics::flush()
   glDrawElements(GL_TRIANGLES, quadIndexCount, GL_UNSIGNED_INT, nullptr);
 }
 
+glm::vec2 Graphics::calculateOriginOffset(float width, float height, Origin origin) const
+{
+  switch (origin)
+  {
+  case Origin::TopLeft: return { width / 2.0f, -height / 2.0f };
+  case Origin::TopRight: return { -width / 2.0f, -height / 2.0f };
+  case Origin::BottomLeft: return { width / 2.0f, height / 2.0f };
+  case Origin::BottomRight: return { -width / 2.0f, height / 2.0f };
+  default: return { 0.0f, 0.0f }; // Center
+  }
+}
+
 // TODO: implement this into the engine once event system is in place
 void Graphics::setViewport(int width, int height)
 {
@@ -183,6 +195,13 @@ void Graphics::exit()
 
   delete[] quadVertexBufferBase;
 
+  // Delete all loaded textures to prevent leaks
+  for (const auto& tex : textures)
+  {
+    glDeleteTextures(1, &tex.id);
+  }
+
+  // Delete textures in slots (may overlap with loaded textures, but safe)
   for (const auto& texture : textureSlots)
   {
     if (texture != 0) glDeleteTextures(1, &texture);
@@ -213,20 +232,7 @@ void Graphics::drawRect(const glm::vec4& color, float x, float y, float width, f
     nextBatch();
   }
 
-  // Calculate offset based on origin
-  glm::vec2 offset = { 0.0f, 0.0f };
-  if (origin == Origin::TopLeft) {
-    offset = { width / 2.0f, -height / 2.0f };
-  }
-  else if (origin == Origin::TopRight) {
-    offset = { -width / 2.0f, -height / 2.0f };
-  }
-  else if (origin == Origin::BottomLeft) {
-    offset = { width / 2.0f, height / 2.0f };
-  }
-  else if (origin == Origin::BottomRight) {
-    offset = { -width / 2.0f, height / 2.0f };
-  } // Center: no offset
+  glm::vec2 offset = calculateOriginOffset(width, height, origin);
 
   glm::mat4 transform = glm::translate(glm::mat4(1.0f), { x + offset.x, y + offset.y, 0.0f })
     * glm::rotate(glm::mat4(1.0f), glm::radians(rotation), { 0.0f, 0.0f, 1.0f })
@@ -336,20 +342,7 @@ void Graphics::drawTextureRegion(int imageId, float destX, float destY, float de
     textureSlotIndex++;
   }
 
-  // Calculate offset based on origin
-  glm::vec2 offset = { 0.0f, 0.0f };
-  if (origin == Origin::TopLeft) {
-    offset = { destWidth / 2.0f, -destHeight / 2.0f };
-  }
-  else if (origin == Origin::TopRight) {
-    offset = { -destWidth / 2.0f, -destHeight / 2.0f };
-  }
-  else if (origin == Origin::BottomLeft) {
-    offset = { destWidth / 2.0f, destHeight / 2.0f };
-  }
-  else if (origin == Origin::BottomRight) {
-    offset = { -destWidth / 2.0f, destHeight / 2.0f };
-  } // Center: no offset
+  glm::vec2 offset = calculateOriginOffset(destWidth, destHeight, origin);
 
   glm::mat4 transform = glm::translate(glm::mat4(1.0f), { destX + offset.x, destY + offset.y, 0.0f })
     * glm::rotate(glm::mat4(1.0f), glm::radians(rotation), { 0.0f, 0.0f, 1.0f })
