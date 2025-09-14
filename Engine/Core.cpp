@@ -21,6 +21,8 @@ namespace Engine
   ObjectFactory* FACTORY;
   Graphics* GRAPHICS;
 
+  f64 dt = 0.0;
+
   Core::Core()
   {
     isRunning = true;
@@ -77,15 +79,25 @@ namespace Engine
 
   void Core::run()
   {
+
+    using clock = std::chrono::high_resolution_clock;
+    using time_point = std::chrono::time_point<clock>;
+    using duration = std::chrono::duration<f64>;
+
+
     while (!glfwWindowShouldClose(window) && isRunning)
     {
       // Everything inside this loop is runned every frame, ignoring fixed timestep
+
+
 
       Time::begin();
 
       while (Time::should_update())
       {
         // Everything inside this loop is runned at a fixed timestep
+
+        static time_point last_time = clock::now();
 
         glfwPollEvents();
         ImGuiManager::begin();
@@ -106,6 +118,10 @@ namespace Engine
         glfwSwapBuffers(window);
 
         Time::end();
+
+        time_point current_time = clock::now();
+        dt = duration(current_time - last_time).count();
+        last_time = current_time;
       }
     }
   }
@@ -120,7 +136,7 @@ namespace Engine
 
   float Core::getDt() const
   {
-    return Time::get_fixed_dt();
+    return dt;
   }
 
   GLFWwindow* Core::getWindow() const

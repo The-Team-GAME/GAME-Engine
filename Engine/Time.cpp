@@ -1,14 +1,13 @@
 #include "Time.h"
 #include <chrono>
 
-namespace chrono = std::chrono;
 
 namespace {
-  using clock = chrono::high_resolution_clock;
-  using time_point = chrono::time_point<clock>;
-  using duration = chrono::duration<f64>;
+  using clock = std::chrono::high_resolution_clock;
+  using time_point = std::chrono::time_point<clock>;
+  using duration = std::chrono::duration<f64>;
 
-  constexpr f64 TARGET_FPS = 60.0;
+  constexpr f64 TARGET_FPS = 6000.0;
   constexpr u32 MAX_UPDATES_PER_FRAME = 10; // loop cap to avoid spiral of death
 
   time_point last_time = clock::now();
