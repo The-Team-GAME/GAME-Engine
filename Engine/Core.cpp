@@ -82,13 +82,13 @@ namespace Engine
     {
       // Everything inside this loop ignores fixed timestep
 
-      Time::accumulate_time();
+      time_manager.accumulate_time();
 
-      while (Time::should_update())
+      while (time_manager.should_update())
       {
         // Everything inside this loop is runned at a fixed timestep
 
-        Time::update_fixed_step();
+        time_manager.update_fixed_step();
 
         glfwPollEvents();
         ImGuiManager::begin();
@@ -98,7 +98,7 @@ namespace Engine
         StateManager::GetCurrentState()->Update();
         StateManager::GetCurrentState()->Draw();
 
-        WORLD->update(static_cast<float>(Time::get_fixed_dt()));
+        WORLD->update(static_cast<float>(time_manager.get_fixed_dt()));
 
         StateChooserPanel();
         PerformanceViewerPanel();
@@ -121,7 +121,7 @@ namespace Engine
 
   float Core::getDt() const
   {
-    return Time::get_frame_dt();
+    return static_cast<float>(time_manager.get_frame_dt());
   }
 
   GLFWwindow* Core::getWindow() const
