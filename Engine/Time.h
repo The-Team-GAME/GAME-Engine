@@ -16,7 +16,9 @@ namespace Engine {
 		 *
 		 * This function decrements the accumulator by the fixed delta time and increments the loop count.
 		 */
-		void end(void);
+		void end_frame(void);
+
+		void begin_frame(void);
 
 		/**
 		 * @brief Returns the fixed delta time used for calculations.
@@ -35,6 +37,8 @@ namespace Engine {
 		 * @return The internal delta time in seconds.
 		 */
 		f64 get_internal_dt(void);
+
+		f64 get_frame_dt(void);
 
 		/**
 		 * @brief Checks if a fixed update should occur.

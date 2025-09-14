@@ -11,7 +11,6 @@
 #include "StateChooser.inl"
 #include "Time.h"
 #include "PerformanceViewer.h"
-#include <chrono>
 
 namespace Engine
 {
@@ -20,8 +19,6 @@ namespace Engine
   ECS::World* WORLD;
   ObjectFactory* FACTORY;
   Graphics* GRAPHICS;
-
-  f64 dt = 0.0;
 
   Core::Core()
   {
@@ -98,9 +95,8 @@ namespace Engine
       while (Time::should_update())
       {
         // Everything inside this loop is runned at a fixed timestep
-        time_point current_time = clock::now();
-        dt = duration(current_time - last_time).count();
-        last_time = current_time;
+
+        Time::begin_frame();
 
         glfwPollEvents();
         ImGuiManager::begin();
@@ -120,7 +116,7 @@ namespace Engine
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
 
-        Time::end();
+        Time::end_frame();
       }
     }
   }
@@ -135,7 +131,7 @@ namespace Engine
 
   float Core::getDt() const
   {
-    return dt;
+    return Time::get_frame_dt();
   }
 
   GLFWwindow* Core::getWindow() const
