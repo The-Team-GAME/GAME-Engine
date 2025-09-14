@@ -77,6 +77,8 @@ namespace Engine
     return 0;
   }
 
+  std::chrono::time_point<std::chrono::high_resolution_clock>  last_time = std::chrono::high_resolution_clock::now();
+
   void Core::run()
   {
 
@@ -96,8 +98,9 @@ namespace Engine
       while (Time::should_update())
       {
         // Everything inside this loop is runned at a fixed timestep
-
-        static time_point last_time = clock::now();
+        time_point current_time = clock::now();
+        dt = duration(current_time - last_time).count();
+        last_time = current_time;
 
         glfwPollEvents();
         ImGuiManager::begin();
@@ -118,10 +121,6 @@ namespace Engine
         glfwSwapBuffers(window);
 
         Time::end();
-
-        time_point current_time = clock::now();
-        dt = duration(current_time - last_time).count();
-        last_time = current_time;
       }
     }
   }
