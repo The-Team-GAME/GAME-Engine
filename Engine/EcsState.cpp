@@ -70,13 +70,6 @@ void EcsState::Draw()
 void EcsState::Free()
 {
   Engine::WORLD->destroyEntitiesWith<Components::Tag<"GameObjectState">>();
-
-  // Remove systems
-  // TODO: make a function to remove all systems at once
-  Engine::WORLD->removeSystem<BackgroundSystem>();
-  Engine::WORLD->removeSystem<MovementSystem>();
-  Engine::WORLD->removeSystem<HealthSystem>();
-  Engine::WORLD->removeSystem<RenderSystem>();
 }
 
 void EcsState::Unload()

@@ -235,6 +235,9 @@ namespace Engine
      */
     static GameStateBase* GetCurrentState();
 
+    // Getters
+    static float GetDt();
+
   private:
     inline static std::vector<GameStateBase*> stateStack;
     //inline static std::vector<std::any> stateDataStack;

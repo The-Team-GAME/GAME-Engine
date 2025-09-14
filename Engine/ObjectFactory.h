@@ -39,7 +39,7 @@ namespace Engine
     ObjectFactory(ECS::World* world);
 
     /**
-     * @brief Registers an object prefab from a JSON file. An object prefab is akin to the entity type.
+     * @brief Registers an object prefab from a JSON file.
      *
      * @param filePath The path to the JSON file describing the object's components.
      * @return int An ID for the newly registered object prefab.
@@ -54,7 +54,7 @@ namespace Engine
     void unregisterObject(int id);
 
     /**
-     * @brief Creates a unique entity in the world from a registered object prefab.
+     * @brief Creates an entity in the world from a registered object prefab.
      *
      * @param id The ID of the object prefab to instantiate.
      * @return ECS::Entity The newly created entity with components from the prefab.

@@ -5,7 +5,6 @@
 #include <GLFW/glfw3.h>
 #include "ECS/ECS.h"
 #include "ObjectFactory.h"
-#include "Time.h"
 
 namespace Engine
 {
@@ -13,8 +12,9 @@ namespace Engine
   {
   private:
     bool isRunning;
+    float lastTime;
     GLFWwindow* window;
-    Time time_manager{};
+    float dt;
 
   public:
     Core();

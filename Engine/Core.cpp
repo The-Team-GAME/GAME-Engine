@@ -9,8 +9,6 @@
 #include "InputManager.h"
 #include "ImGuiManager.h"
 #include "StateChooser.inl"
-#include "Time.h"
-#include "PerformanceViewer.h"
 
 namespace Engine
 {
@@ -22,8 +20,11 @@ namespace Engine
 
   Core::Core()
   {
+    lastTime = 0.0f;
+    dt = 0.0f;
     isRunning = true;
     window = nullptr;
+    dt = 0.0f;
     CORE = this;
     WORLD = new ECS::World(); // TODO: check memory leak
     FACTORY = new ObjectFactory(WORLD);
@@ -37,6 +38,7 @@ namespace Engine
 
   int Core::init()
   {
+
     /* Initialize the library */
     if (!glfwInit())
       return -1;
@@ -56,8 +58,6 @@ namespace Engine
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
 
-    glfwSwapInterval(0);
-
     if (glewInit() != GLEW_OK)
     {
       std::cout << "GLEW Initialization failed.\n";
@@ -74,40 +74,32 @@ namespace Engine
     return 0;
   }
 
-  std::chrono::time_point<std::chrono::high_resolution_clock>  last_time = std::chrono::high_resolution_clock::now();
-
   void Core::run()
   {
+    lastTime = static_cast<float>(glfwGetTime());
+
     while (!glfwWindowShouldClose(window) && isRunning)
     {
-      // Everything inside this loop ignores fixed timestep
+      float currenttime = static_cast<float>(glfwGetTime()) * 1000.0f;
+      dt = (currenttime - lastTime) / 1000.0f;
+      lastTime = currenttime;
 
-      time_manager.accumulate_time();
+      glfwPollEvents();
+      ImGuiManager::begin();
 
-      while (time_manager.should_update())
-      {
-        // Everything inside this loop is runned at a fixed timestep
+      Input::Update();
 
-        time_manager.update_fixed_step();
+      StateManager::GetCurrentState()->Update();
+      StateManager::GetCurrentState()->Draw();
 
-        glfwPollEvents();
-        ImGuiManager::begin();
+      WORLD->update(dt);
 
-        Input::Update();
+      StateChooserPanel();
 
-        StateManager::GetCurrentState()->Update();
-        StateManager::GetCurrentState()->Draw();
+      ImGuiManager::end();
 
-        WORLD->update(static_cast<float>(getDt()));
-
-        StateChooserPanel();
-        PerformanceViewerPanel(time_manager.target_fps);
-
-        ImGuiManager::end();
-
-        /* Swap front and back buffers */
-        glfwSwapBuffers(window);
-      }
+      /* Swap front and back buffers */
+      glfwSwapBuffers(window);
     }
   }
 
@@ -121,7 +113,7 @@ namespace Engine
 
   float Core::getDt() const
   {
-    return static_cast<float>(time_manager.get_frame_dt());
+    return dt;
   }
 
   GLFWwindow* Core::getWindow() const
