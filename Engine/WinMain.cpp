@@ -20,6 +20,8 @@ INT WINAPI WinMain(
   engine->run();
   engine->exit();
 
+  delete engine;
+
   return 0;
 }
 

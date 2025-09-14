@@ -33,6 +33,9 @@ namespace Engine
   Core::~Core()
   {
     // Nothing for now
+    delete WORLD;
+    delete FACTORY;
+    delete GRAPHICS;
   }
 
   int Core::init()
