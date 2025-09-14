@@ -207,7 +207,7 @@ void Graphics::setCameraRotation(float degrees)
   updateViewMatrix();
 }
 
-void Graphics::drawRect(float x, float y, float width, float height, glm::vec4 color, float rotation, Origin origin) {
+void Graphics::drawRect(const DrawRectParams& params) {
   if (quadIndexCount >= MaxIndices)
   {
     nextBatch();
@@ -215,27 +215,27 @@ void Graphics::drawRect(float x, float y, float width, float height, glm::vec4 c
 
   // Calculate offset based on origin
   glm::vec2 offset = { 0.0f, 0.0f };
-  if (origin == Origin::TopLeft) {
-    offset = { width / 2.0f, -height / 2.0f };
+  if (params.origin == Origin::TopLeft) {
+    offset = { params.width / 2.0f, -params.height / 2.0f };
   }
-  else if (origin == Origin::TopRight) {
-    offset = { -width / 2.0f, -height / 2.0f };
+  else if (params.origin == Origin::TopRight) {
+    offset = { -params.width / 2.0f, -params.height / 2.0f };
   }
-  else if (origin == Origin::BottomLeft) {
-    offset = { width / 2.0f, height / 2.0f };
+  else if (params.origin == Origin::BottomLeft) {
+    offset = { params.width / 2.0f, params.height / 2.0f };
   }
-  else if (origin == Origin::BottomRight) {
-    offset = { -width / 2.0f, height / 2.0f };
+  else if (params.origin == Origin::BottomRight) {
+    offset = { -params.width / 2.0f, params.height / 2.0f };
   } // Center: no offset
 
-  glm::mat4 transform = glm::translate(glm::mat4(1.0f), { x + offset.x, y + offset.y, 0.0f })
-    * glm::rotate(glm::mat4(1.0f), glm::radians(rotation), { 0.0f, 0.0f, 1.0f })
-    * glm::scale(glm::mat4(1.0f), { width, height, 1.0f });
+  glm::mat4 transform = glm::translate(glm::mat4(1.0f), { params.x + offset.x, params.y + offset.y, 0.0f })
+    * glm::rotate(glm::mat4(1.0f), glm::radians(params.rotation), { 0.0f, 0.0f, 1.0f })
+    * glm::scale(glm::mat4(1.0f), { params.width, params.height, 1.0f });
 
   for (size_t i = 0; i < 4; i++)
   {
     quadVertexBufferPtr->Position = transform * QuadVertexPositions[i];
-    quadVertexBufferPtr->Color = color;
+    quadVertexBufferPtr->Color = params.color;
     quadVertexBufferPtr->TexCoords = TextureCoords[i];
     quadVertexBufferPtr->TexID = -1.0f; // Use -1 for solid color
     quadVertexBufferPtr++;
@@ -243,6 +243,7 @@ void Graphics::drawRect(float x, float y, float width, float height, glm::vec4 c
 
   quadIndexCount += 6;
 }
+
 int Graphics::loadTexture(const char* filepath, MinifyingFilter min_filter)
 {
   // std::cout << "Current working directory: " << std::filesystem::current_path() << std::endl;
@@ -286,21 +287,30 @@ int Graphics::loadTexture(const char* filepath, MinifyingFilter min_filter)
   return static_cast<int>(textures.size() - 1);
 }
 
-void Graphics::drawTexture(int imageId, float x, float y, float width, float height, float rotation, glm::vec4 tintColor, Origin origin)
+void Graphics::drawTexture(const DrawTextureParams& params)
 {
-  if (imageId < 0 || imageId >= static_cast<int>(textures.size()))
+  if (params.imageId < 0 || params.imageId >= static_cast<int>(textures.size()))
   {
-    std::cout << "Invalid image ID: " << imageId << std::endl;
+    std::cout << "Invalid image ID: " << params.imageId << std::endl;
     return;
   }
-  drawTextureRegion(imageId, x, y, width, height, 0, 0, textures[imageId].width, textures[imageId].height, rotation, tintColor, origin);
+  drawTextureRegion(
+    {
+    params.imageId,
+    params.x, params.y, params.width, params.height,
+    0, 0, static_cast<float>(textures[params.imageId].width), static_cast<float>(textures[params.imageId].height),
+    params.rotation,
+    params.tintColor,
+    params.origin
+    }
+  );
 }
 
-void Graphics::drawTextureRegion(int imageId, float destX, float destY, float destWidth, float destHeight, float srcX, float srcY, float srcWidth, float srcHeight, float rotation, glm::vec4 tintColor, Origin origin)
+void Graphics::drawTextureRegion(const DrawTextureRegionParams& params)
 {
-  if (imageId < 0 || imageId >= static_cast<int>(textures.size()))
+  if (params.imageId < 0 || params.imageId >= static_cast<int>(textures.size()))
   {
-    std::cout << "Invalid image ID: " << imageId << std::endl;
+    std::cout << "Invalid image ID: " << params.imageId << std::endl;
     return;
   }
 
@@ -310,7 +320,7 @@ void Graphics::drawTextureRegion(int imageId, float destX, float destY, float de
   }
 
   float textureIndex = 0.0f;
-  const auto& tex = textures[imageId];
+  const auto& tex = textures[params.imageId];
 
   for (uint32_t i = 1; i < textureSlotIndex; i++)
   {
@@ -330,34 +340,34 @@ void Graphics::drawTextureRegion(int imageId, float destX, float destY, float de
 
   // Calculate offset based on origin
   glm::vec2 offset = { 0.0f, 0.0f };
-  if (origin == Origin::TopLeft) {
-    offset = { destWidth / 2.0f, -destHeight / 2.0f };
+  if (params.origin == Origin::TopLeft) {
+    offset = { params.destWidth / 2.0f, -params.destHeight / 2.0f };
   }
-  else if (origin == Origin::TopRight) {
-    offset = { -destWidth / 2.0f, -destHeight / 2.0f };
+  else if (params.origin == Origin::TopRight) {
+    offset = { -params.destWidth / 2.0f, -params.destHeight / 2.0f };
   }
-  else if (origin == Origin::BottomLeft) {
-    offset = { destWidth / 2.0f, destHeight / 2.0f };
+  else if (params.origin == Origin::BottomLeft) {
+    offset = { params.destWidth / 2.0f, params.destHeight / 2.0f };
   }
-  else if (origin == Origin::BottomRight) {
-    offset = { -destWidth / 2.0f, destHeight / 2.0f };
+  else if (params.origin == Origin::BottomRight) {
+    offset = { -params.destWidth / 2.0f, params.destHeight / 2.0f };
   } // Center: no offset
 
-  glm::mat4 transform = glm::translate(glm::mat4(1.0f), { destX + offset.x, destY + offset.y, 0.0f })
-    * glm::rotate(glm::mat4(1.0f), glm::radians(rotation), { 0.0f, 0.0f, 1.0f })
-    * glm::scale(glm::mat4(1.0f), { destWidth, destHeight, 1.0f });
+  glm::mat4 transform = glm::translate(glm::mat4(1.0f), { params.destX + offset.x, params.destY + offset.y, 0.0f })
+    * glm::rotate(glm::mat4(1.0f), glm::radians(params.rotation), { 0.0f, 0.0f, 1.0f })
+    * glm::scale(glm::mat4(1.0f), { params.destWidth, params.destHeight, 1.0f });
 
   glm::vec2 texCoords[] = {
-      { srcX / tex.width, srcY / tex.height },
-      { (srcX + srcWidth) / tex.width, srcY / tex.height },
-      { (srcX + srcWidth) / tex.width, (srcY + srcHeight) / tex.height },
-      { srcX / tex.width, (srcY + srcHeight) / tex.height }
+      { params.srcX / tex.width, params.srcY / tex.height },
+      { (params.srcX + params.srcWidth) / tex.width, params.srcY / tex.height },
+      { (params.srcX + params.srcWidth) / tex.width, (params.srcY + params.srcHeight) / tex.height },
+      { params.srcX / tex.width, (params.srcY + params.srcHeight) / tex.height }
   };
 
   for (size_t i = 0; i < 4; i++)
   {
     quadVertexBufferPtr->Position = transform * QuadVertexPositions[i];
-    quadVertexBufferPtr->Color = tintColor;
+    quadVertexBufferPtr->Color = params.tintColor;
     quadVertexBufferPtr->TexCoords = texCoords[i];
     quadVertexBufferPtr->TexID = textureIndex;
     quadVertexBufferPtr++;

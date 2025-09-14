@@ -30,198 +30,198 @@ static std::string root_path;
 // My file explorer function :>
 void FileExplorer(bool* p_open, bool is_directory_selection_mode = false) {
 
-	static fs::path current_path;
-	static bool first_run = true;
-	static std::stack<fs::path> history;
+  static fs::path current_path;
+  static bool first_run = true;
+  static std::stack<fs::path> history;
 
 
-	if (first_run) {
-		first_run = false;
-		fs::path home_path;
+  if (first_run) {
+    first_run = false;
+    fs::path home_path;
 
 #ifdef _WIN32
 
-		char* user_profile = nullptr;
-		size_t size = 0;
+    char* user_profile = nullptr;
+    size_t size = 0;
 
-		if (_dupenv_s(&user_profile, &size, "USERPROFILE") == 0 && user_profile != nullptr) {
-			home_path = fs::path(user_profile) /fs::current_path();
-			free(user_profile);
-		}
+    if (_dupenv_s(&user_profile, &size, "USERPROFILE") == 0 && user_profile != nullptr) {
+      home_path = fs::path(user_profile) / fs::current_path();
+      free(user_profile);
+    }
 
 #else
-		const char* home_dir = getenv("HOME");
-		if (home_dir) {
-			home_path = fs::path(home_dir) / "Downloads";
-		}
+    const char* home_dir = getenv("HOME");
+    if (home_dir) {
+      home_path = fs::path(home_dir) / "Downloads";
+    }
 
 #endif
 
-		if (home_path.empty()) {
-			current_path = fs::current_path();
-		}
+    if (home_path.empty()) {
+      current_path = fs::current_path();
+    }
 
-		else {
+    else {
 
-			current_path = home_path;
+      current_path = home_path;
 
-		}
+    }
 
-	}
+  }
 
 
 
-	if (ImGui::Begin("File Explorer", p_open)) {
+  if (ImGui::Begin("File Explorer", p_open)) {
 
-		if (!history.empty() && ImGui::Button("Back")) {
+    if (!history.empty() && ImGui::Button("Back")) {
 
-			current_path = history.top();
+      current_path = history.top();
 
-			history.pop();
+      history.pop();
 
-		}
+    }
 
-		ImGui::SameLine();
+    ImGui::SameLine();
 
 
-		//goes to desktop
-		if (ImGui::Button("..")) {
+    //goes to desktop
+    if (ImGui::Button("..")) {
 
-			if (current_path.has_parent_path()) {
+      if (current_path.has_parent_path()) {
 
-				history.push(current_path);
+        history.push(current_path);
 
-				current_path = current_path.parent_path();
+        current_path = current_path.parent_path();
 
-			}
+      }
 
-		}
+    }
 
 
 
-		ImGui::Separator();
+    ImGui::Separator();
 
 
 
-		if (is_directory_selection_mode) {
+    if (is_directory_selection_mode) {
 
-			ImGui::Text("Select a folder:");
+      ImGui::Text("Select a folder:");
 
-			//selects current folder
-			if (ImGui::Button("Select This Folder")) {
+      //selects current folder
+      if (ImGui::Button("Select This Folder")) {
 
-				root_path = current_path.string();
+        root_path = current_path.string();
 
-				*p_open = false;
+        *p_open = false;
 
-			}
+      }
 
-		}
+    }
 
-		else {
+    else {
 
-			ImGui::Text("Select an image file:");
+      ImGui::Text("Select an image file:");
 
-		}
+    }
 
 
 
-		ImGui::Text("Current Path: %s", current_path.string().c_str());
+    ImGui::Text("Current Path: %s", current_path.string().c_str());
 
 
 
-		if (!fs::exists(current_path) || !fs::is_directory(current_path)) {
+    if (!fs::exists(current_path) || !fs::is_directory(current_path)) {
 
-			ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Error: Invalid directory path!");
+      ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Error: Invalid directory path!");
 
-			ImGui::End();
+      ImGui::End();
 
-			return;
+      return;
 
-		}
+    }
 
 
-		// checks pathways if files are .jpg .png .jpeg
-		std::vector<fs::directory_entry> entries;
-		for (const auto& entry : fs::directory_iterator(current_path)) {
+    // checks pathways if files are .jpg .png .jpeg
+    std::vector<fs::directory_entry> entries;
+    for (const auto& entry : fs::directory_iterator(current_path)) {
 
-			if (fs::is_directory(entry.path())) {
+      if (fs::is_directory(entry.path())) {
 
-				entries.push_back(entry);
+        entries.push_back(entry);
 
-			}
+      }
 
-			else if (!is_directory_selection_mode) {
+      else if (!is_directory_selection_mode) {
 
-				std::string extension = entry.path().extension().string();
+        std::string extension = entry.path().extension().string();
 
-				std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+        std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 
-				if (extension == ".jpg" || extension == ".png" || extension == ".jpeg") {
+        if (extension == ".jpg" || extension == ".png" || extension == ".jpeg") {
 
-					entries.push_back(entry);
+          entries.push_back(entry);
 
-				}
+        }
 
-			}
+      }
 
-		}
+    }
 
 
-		//sorts pathways
-		std::sort(entries.begin(), entries.end(), [](const fs::directory_entry& a, const fs::directory_entry& b) {
+    //sorts pathways
+    std::sort(entries.begin(), entries.end(), [](const fs::directory_entry& a, const fs::directory_entry& b) {
 
-			bool a_is_dir = fs::is_directory(a.path());
+      bool a_is_dir = fs::is_directory(a.path());
 
-			bool b_is_dir = fs::is_directory(b.path());
+      bool b_is_dir = fs::is_directory(b.path());
 
-			if (a_is_dir && !b_is_dir) { return true; }
+      if (a_is_dir && !b_is_dir) { return true; }
 
-			if (!a_is_dir && b_is_dir) { return false; }
+      if (!a_is_dir && b_is_dir) { return false; }
 
-			return a.path().filename().string() < b.path().filename().string();
+      return a.path().filename().string() < b.path().filename().string();
 
-			});
+      });
 
 
 
-		for (const auto& entry : entries) {
+    for (const auto& entry : entries) {
 
-			bool is_directory = fs::is_directory(entry.path());
+      bool is_directory = fs::is_directory(entry.path());
 
-			const char* icon = is_directory ? "[DIR]" : "[FILE]";
+      const char* icon = is_directory ? "[DIR]" : "[FILE]";
 
 
 
-			if (ImGui::Selectable((icon + std::string(" ") + entry.path().filename().string()).c_str(), false, 0, ImVec2(0, 20))) {
+      if (ImGui::Selectable((icon + std::string(" ") + entry.path().filename().string()).c_str(), false, 0, ImVec2(0, 20))) {
 
-				if (is_directory) {
+        if (is_directory) {
 
-					history.push(current_path);
+          history.push(current_path);
 
-					current_path /= entry.path().filename();
+          current_path /= entry.path().filename();
 
-				}
+        }
 
-				else {
+        else {
 
-					if (!is_directory_selection_mode) {
+          if (!is_directory_selection_mode) {
 
-						selected_file_path = entry.path().string();
+            selected_file_path = entry.path().string();
 
-						*p_open = false;
+            *p_open = false;
 
-					}
+          }
 
-				}
+        }
 
-			}
+      }
 
-		}
+    }
 
-	}
+  }
 
-	ImGui::End();
+  ImGui::End();
 
 }
 
@@ -230,220 +230,220 @@ void FileExplorer(bool* p_open, bool is_directory_selection_mode = false) {
 class SpriteState : public Engine::GameState<SpriteState> {
 
 private:
-	int linearMonkeyImageId = -1;
-	int nearestMonkeyImageId = -1;
-	bool showFileExplorerSource = false;
-	bool showFileExplorerDest = false;
-	bool fileCopied = false;
+  int linearMonkeyImageId = -1;
+  int nearestMonkeyImageId = -1;
+  bool showFileExplorerSource = false;
+  bool showFileExplorerDest = false;
+  bool fileCopied = false;
 
 
-	struct ImageData {
-		unsigned int texture_id;
-		const char* name;
-	};
+  struct ImageData {
+    unsigned int texture_id;
+    const char* name;
+  };
 
-	std::vector<ImageData> ImageAspectRatio;
+  std::vector<ImageData> ImageAspectRatio;
 
-	float spritePosX = 0.0f;
+  float spritePosX = 0.0f;
 
 public:
 
 
-	void Load() {};
+  void Load() {};
 
 
 
-	void Init() {
+  void Init() {
 
-		linearMonkeyImageId = Engine::GRAPHICS->loadTexture("Assets/images/monkey.png");
-		nearestMonkeyImageId = Engine::GRAPHICS->loadTexture("Assets/images/monkey.png", Graphics::MinifyingFilter::Nearest);
+    linearMonkeyImageId = Engine::GRAPHICS->loadTexture("Assets/images/monkey.png");
+    nearestMonkeyImageId = Engine::GRAPHICS->loadTexture("Assets/images/monkey.png", Graphics::MinifyingFilter::Nearest);
 
 
-		std::cout << "Current path is " << std::filesystem::current_path() << std::endl;
+    std::cout << "Current path is " << std::filesystem::current_path() << std::endl;
 
 
-	};
+  };
 
 
 
-	void Update() {};
+  void Update() {};
 
 
 
-	void Draw() {
+  void Draw() {
 
-		//image stuff
+    //image stuff
 
-		Engine::GRAPHICS->clearScreen(0.1f, 0.1f, 0.1f, 1.0f);
+    Engine::GRAPHICS->clearScreen(0.1f, 0.1f, 0.1f, 1.0f);
 
-		Engine::GRAPHICS->drawTexture(linearMonkeyImageId, 200.0f, 150.0f, 150.0f, 210.0f);
-		Engine::GRAPHICS->drawTexture(nearestMonkeyImageId, 400.0f, 150.0f, 150.0f, 210.0f);
+    Engine::GRAPHICS->drawTexture({ linearMonkeyImageId, 200.0f, 150.0f, 150.0f, 210.0f });
+    Engine::GRAPHICS->drawTexture({ nearestMonkeyImageId, 400.0f, 150.0f, 150.0f, 210.0f });
 
 
-		Engine::GRAPHICS->drawTextureRegion(
-			nearestMonkeyImageId, 600.0f, 150.0f, 150.0f, 210.0f, spritePosX += Engine::CORE->getDt() * 10.0f, 0.0f, 15.0f, 21.0f
-		);
+    Engine::GRAPHICS->drawTextureRegion(
+      { nearestMonkeyImageId, 600.0f, 150.0f, 150.0f, 210.0f, spritePosX += Engine::CORE->getDt() * 10.0f, 0.0f, 15.0f, 21.0f }
+    );
 
 
 
-		//image menu
+    //image menu
 
-		ImGui::Begin("Image Menu");
+    ImGui::Begin("Image Menu");
 
-		//root
+    //root
 
-		ImGui::Text("Project Root: %s", root_path.empty() ? "Not Set" : root_path.c_str());
+    ImGui::Text("Project Root: %s", root_path.empty() ? "Not Set" : root_path.c_str());
 
-		if (ImGui::Button("Set Project Root")) {
+    if (ImGui::Button("Set Project Root")) {
 
-			showFileExplorerDest = true;
-			fileCopied = false;
-		}
+      showFileExplorerDest = true;
+      fileCopied = false;
+    }
 
 
 
-		ImGui::Separator();
+    ImGui::Separator();
 
 
 
-		//image browser
+    //image browser
 
-		ImGui::Begin("Image Menu");
+    ImGui::Begin("Image Menu");
 
 
 
-		// The button that triggers the popup
+    // The button that triggers the popup
 
-		if (ImGui::Button("Browse for Image")) {
+    if (ImGui::Button("Browse for Image")) {
 
-			if (root_path.empty()) {
+      if (root_path.empty()) {
 
-				// Open the popup when this button is clicked and the project path isn't set.
+        // Open the popup when this button is clicked and the project path isn't set.
 
-				ImGui::OpenPopup("No Root File Selected");
+        ImGui::OpenPopup("No Root File Selected");
 
-			}
+      }
 
-			else {
+      else {
 
-				showFileExplorerSource = true;
+        showFileExplorerSource = true;
 
-				fileCopied = false;
+        fileCopied = false;
 
-				selected_file_path.clear();
+        selected_file_path.clear();
 
-			}
+      }
 
-		}
+    }
 
-		ImGui::End();
+    ImGui::End();
 
 
 
-		// The popup window definition must be placed here, outside the button's logic.
+    // The popup window definition must be placed here, outside the button's logic.
 
-		// ImGui::BeginPopupModal checks if the popup is open and renders its contents.
+    // ImGui::BeginPopupModal checks if the popup is open and renders its contents.
 
-		if (ImGui::BeginPopupModal("No Root File Selected", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+    if (ImGui::BeginPopupModal("No Root File Selected", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
 
-			ImGui::Text("Please set the project root directory first.");
+      ImGui::Text("Please set the project root directory first.");
 
-			ImGui::Separator();
+      ImGui::Separator();
 
 
 
-			// This button closes the current popup.
+      // This button closes the current popup.
 
-			if (ImGui::Button("Okay", ImVec2(120, 0))) {
+      if (ImGui::Button("Okay", ImVec2(120, 0))) {
 
-				ImGui::CloseCurrentPopup();
+        ImGui::CloseCurrentPopup();
 
-			}
+      }
 
-			ImGui::EndPopup();
+      ImGui::EndPopup();
 
-		}
+    }
 
 
 
-		if (showFileExplorerSource) {
+    if (showFileExplorerSource) {
 
-			FileExplorer(&showFileExplorerSource);
+      FileExplorer(&showFileExplorerSource);
 
-		}
+    }
 
-		if (showFileExplorerDest) {
+    if (showFileExplorerDest) {
 
-			FileExplorer(&showFileExplorerDest, true);
+      FileExplorer(&showFileExplorerDest, true);
 
-		}
+    }
 
 
 
-		// Logic to copy the file after both paths are set
+    // Logic to copy the file after both paths are set
 
-		if (!showFileExplorerSource && !showFileExplorerDest && !selected_file_path.empty() && !root_path.empty() && !fileCopied) {
+    if (!showFileExplorerSource && !showFileExplorerDest && !selected_file_path.empty() && !root_path.empty() && !fileCopied) {
 
-			try {
+      try {
 
-				//setting root to the pathway of github to add any images to the 
+        //setting root to the pathway of github to add any images to the 
 
-				fs::path source_path(selected_file_path);
+        fs::path source_path(selected_file_path);
 
-				fs::path destination_dir = fs::path(root_path) / "Engine" / "Assets" / "images";
+        fs::path destination_dir = fs::path(root_path) / "Engine" / "Assets" / "images";
 
-				fs::path destination_path = destination_dir / source_path.filename();
+        fs::path destination_path = destination_dir / source_path.filename();
 
 
 
-				fs::create_directories(destination_dir);
+        fs::create_directories(destination_dir);
 
-				fs::copy(source_path, destination_path, fs::copy_options::overwrite_existing);
+        fs::copy(source_path, destination_path, fs::copy_options::overwrite_existing);
 
 
 
-				std::cout << "File copied successfully to: " << destination_path << std::endl;
+        std::cout << "File copied successfully to: " << destination_path << std::endl;
 
 
 
-				selected_file_path.clear();
+        selected_file_path.clear();
 
-				fileCopied = true;
+        fileCopied = true;
 
-			}
+      }
 
-			catch (const fs::filesystem_error& e) {
+      catch (const fs::filesystem_error& e) {
 
-				fprintf(stderr, "Filesystem error: %s\n", e.what());
+        fprintf(stderr, "Filesystem error: %s\n", e.what());
 
-			}
+      }
 
-		}
+    }
 
-		ImGui::End();
+    ImGui::End();
 
 
 
-		//sprite dropper
+    //sprite dropper
 
-		ImGui::Begin("Sprite Dropper");
+    ImGui::Begin("Sprite Dropper");
 
-		ImGui::Text("Current State: %s", typeid(*Engine::StateManager::GetCurrentState()).name());
+    ImGui::Text("Current State: %s", typeid(*Engine::StateManager::GetCurrentState()).name());
 
-		if (ImGui::Button("Cool")) { Engine::StateManager::ChangeState(BasicState::Get()); }
+    if (ImGui::Button("Cool")) { Engine::StateManager::ChangeState(BasicState::Get()); }
 
-		if (ImGui::Button("Huh")) { Engine::StateManager::ChangeState(BasicState::Get()); }
+    if (ImGui::Button("Huh")) { Engine::StateManager::ChangeState(BasicState::Get()); }
 
-		if (ImGui::Button("Fweh")) { Engine::StateManager::ChangeState(BasicState::Get()); }
+    if (ImGui::Button("Fweh")) { Engine::StateManager::ChangeState(BasicState::Get()); }
 
-		ImGui::End();
+    ImGui::End();
 
-	};
+  };
 
 
 
-	void Free() {};
+  void Free() {};
 
-	void Unload() {};
+  void Unload() {};
 
 };
