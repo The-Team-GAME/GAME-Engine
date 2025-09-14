@@ -78,17 +78,9 @@ namespace Engine
 
   void Core::run()
   {
-
-    using clock = std::chrono::high_resolution_clock;
-    using time_point = std::chrono::time_point<clock>;
-    using duration = std::chrono::duration<f64>;
-
-
     while (!glfwWindowShouldClose(window) && isRunning)
     {
-      // Everything inside this loop is runned every frame, ignoring fixed timestep
-
-
+      // Everything inside this loop ignores fixed timestep
 
       Time::begin();
 
@@ -115,8 +107,6 @@ namespace Engine
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
-
-        Time::end_frame();
       }
     }
   }

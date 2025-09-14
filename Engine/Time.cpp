@@ -7,7 +7,7 @@ namespace {
   using time_point = std::chrono::time_point<clock>;
   using duration = std::chrono::duration<f64>;
 
-  constexpr f64 TARGET_FPS = 10000.0;
+  constexpr f64 TARGET_FPS = 10.0;
   constexpr u32 MAX_UPDATES_PER_FRAME = 10; // loop cap to avoid spiral of death
 
   time_point last_time = clock::now();
@@ -31,19 +31,16 @@ namespace Engine {
       loop_count = 0;
     }
 
-    void end_frame(void)
-    {
-      accumulator -= get_fixed_dt();
-      ++loop_count;
-    }
-
     void begin_frame(void)
     {
       time_point frame_current_time = clock::now();
       frame_dt = duration(frame_current_time - frame_last_time).count();
       frame_last_time = frame_current_time;
-    }
 
+      accumulator -= get_fixed_dt();
+      ++loop_count;
+    }
+    
     f64 get_fixed_dt(void)
     {
       return 1.0 / TARGET_FPS;
