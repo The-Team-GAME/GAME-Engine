@@ -44,7 +44,7 @@ void Graphics::updateViewMatrix() {
   viewProjectionMatrix = projection * view;
 }
 
-void Graphics::init()
+void Graphics::init(int windowWidth, int windowHeight)
 {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -107,7 +107,7 @@ void Graphics::init()
     textureSlots[i] = 0;
 
   // Set initial viewport and projection
-  setViewport(800, 600); // TODO: hardcoded
+  setViewport(windowWidth, windowHeight);
   updateViewMatrix();
 }
 

@@ -69,7 +69,7 @@ namespace Engine
 
     ImGuiManager::init();
 
-    Engine::GRAPHICS->init();
+    Engine::GRAPHICS->init(windowWidth, windowHeight);
 
     return 0;
   }

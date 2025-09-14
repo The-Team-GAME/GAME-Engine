@@ -77,7 +77,7 @@ private:
   void updateViewMatrix();
 
 public:
-  void init();
+  void init(int windowWidth, int windowHeight);
   void exit();
 
   void beginFrame();
