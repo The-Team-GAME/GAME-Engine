@@ -21,7 +21,7 @@ namespace {
 
 namespace Engine {
   namespace Time {
-    void begin(void)
+    void accumulate_time(void)
     {
       time_point current_time = clock::now();
       internal_dt = duration(current_time - last_time).count();
@@ -31,7 +31,7 @@ namespace Engine {
       loop_count = 0;
     }
 
-    void begin_frame(void)
+    void update_fixed_step(void)
     {
       time_point frame_current_time = clock::now();
       frame_dt = duration(frame_current_time - frame_last_time).count();
@@ -40,7 +40,7 @@ namespace Engine {
       accumulator -= get_fixed_dt();
       ++loop_count;
     }
-    
+
     f64 get_fixed_dt(void)
     {
       return 1.0 / TARGET_FPS;

@@ -82,13 +82,13 @@ namespace Engine
     {
       // Everything inside this loop ignores fixed timestep
 
-      Time::begin();
+      Time::accumulate_time();
 
       while (Time::should_update())
       {
         // Everything inside this loop is runned at a fixed timestep
 
-        Time::begin_frame();
+        Time::update_fixed_step();
 
         glfwPollEvents();
         ImGuiManager::begin();
