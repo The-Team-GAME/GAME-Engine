@@ -67,6 +67,7 @@ namespace Engine
   Core::~Core()
   {
     Engine::GRAPHICS->exit();
+    Engine::ImGuiManager::exit();
     StateManager::Exit();
     glfwDestroyWindow(window);
     glfwTerminate();

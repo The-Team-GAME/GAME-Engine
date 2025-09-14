@@ -28,3 +28,10 @@ void Engine::ImGuiManager::end()
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
+
+void Engine::ImGuiManager::exit()
+{
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
+}

@@ -11,5 +11,6 @@ namespace Engine
     static void init();
     static void begin();
     static void end();
+    static void exit();
   };
 }
