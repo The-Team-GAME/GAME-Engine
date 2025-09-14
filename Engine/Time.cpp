@@ -3,50 +3,51 @@
 
 namespace chrono = std::chrono;
 
-namespace { //consider making it microseconds
-  chrono::milliseconds curr_time = chrono::duration_cast<chrono::milliseconds>((chrono::steady_clock::now()).time_since_epoch());
+namespace {
+  using clock = chrono::high_resolution_clock;
+  using time_point = chrono::time_point<clock>;
+  using duration = chrono::duration<f64>;
 
-  f64 internal_delta_time{}; // in seconds
-  s32 frame_rate{ 60 };
+  constexpr f64 TARGET_FPS = 60.0;
+  constexpr u32 MAX_UPDATES_PER_FRAME = 10; // loop cap to avoid spiral of death
+
+  time_point last_time = clock::now();
   f64 accumulator = 0.0;
-
-  s16 loop_count = 0;
-  s16 loop_cap = 50; // to prevent spiral of death
+  f64 internal_dt = 0.0;
+  u32 loop_count = 0;
 }
 
 namespace Engine {
   namespace Time {
     void begin(void)
     {
-      chrono::milliseconds new_time = chrono::duration_cast<chrono::milliseconds>((chrono::steady_clock::now()).time_since_epoch());
-      internal_delta_time = static_cast<f64>((new_time - curr_time).count()) / 1000.0;
-      curr_time = new_time;
-      accumulator += get_internal_dt();
+      time_point current_time = clock::now();
+      internal_dt = duration(current_time - last_time).count();
+      last_time = current_time;
+
+      accumulator += internal_dt;
       loop_count = 0;
     }
 
-    // This calculates the fixed dt based on the set framerate
     f64 get_fixed_dt(void)
     {
-      return 1.0 / frame_rate;
+      return 1.0 / TARGET_FPS;
     }
 
-    // Returns the delta time per game loop
-    // Only to be used to accumulator in the loop
     f64 get_internal_dt(void)
     {
-      return internal_delta_time;
+      return internal_dt;
     }
 
     bool should_update(void)
     {
-      return accumulator >= get_fixed_dt() && loop_count < loop_cap;
+      return accumulator >= get_fixed_dt() && loop_count < MAX_UPDATES_PER_FRAME;
     }
 
     void end(void)
     {
       accumulator -= get_fixed_dt();
-      loop_count++;
+      ++loop_count;
     }
   }
 };
