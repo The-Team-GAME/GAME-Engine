@@ -98,7 +98,7 @@ namespace Engine
         StateManager::GetCurrentState()->Update();
         StateManager::GetCurrentState()->Draw();
 
-        WORLD->update(static_cast<float>(time_manager.get_fixed_dt()));
+        WORLD->update(static_cast<float>(getDt()));
 
         StateChooserPanel();
         PerformanceViewerPanel();
