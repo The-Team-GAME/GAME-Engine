@@ -42,6 +42,8 @@ public:
     float scaleX = scale ? scale->x : 1.0f;
     float scaleY = scale ? scale->y : 1.0f;
 
-    Engine::GRAPHICS->drawTexture(sprite->textureId, x, y, size->width * scaleX, size->height * scaleY, angle);
+    // TODO: allow changing origin
+    // TODO: allow changing color
+    Engine::GRAPHICS->drawTexture(sprite->textureId, x, y, size->width * scaleX, size->height * scaleY, angle, Graphics::Origin::Center, { 1.0f, 1.0f, 1.0f, 1.0f });
   }
 };
