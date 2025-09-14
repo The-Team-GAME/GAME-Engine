@@ -34,7 +34,6 @@ void FileExplorer(bool* p_open, bool is_directory_selection_mode = false) {
 	static bool first_run = true;
 	static std::stack<fs::path> history;
 
-
 	if (first_run) {
 		first_run = false;
 		fs::path home_path;
@@ -69,8 +68,6 @@ void FileExplorer(bool* p_open, bool is_directory_selection_mode = false) {
 
 	}
 
-
-
 	if (ImGui::Begin("File Explorer", p_open)) {
 
 		if (!history.empty() && ImGui::Button("Back")) {
@@ -82,7 +79,6 @@ void FileExplorer(bool* p_open, bool is_directory_selection_mode = false) {
 		}
 
 		ImGui::SameLine();
-
 
 		//goes to desktop
 		if (ImGui::Button("..")) {
@@ -97,11 +93,7 @@ void FileExplorer(bool* p_open, bool is_directory_selection_mode = false) {
 
 		}
 
-
-
 		ImGui::Separator();
-
-
 
 		if (is_directory_selection_mode) {
 
@@ -279,7 +271,7 @@ public:
 		Engine::GRAPHICS->drawTexture(linearMonkeyImageId, 200.0f, 150.0f, 150.0f, 210.0f);
 		Engine::GRAPHICS->drawTexture(nearestMonkeyImageId, 400.0f, 150.0f, 150.0f, 210.0f);
 
-
+		//limits the image to a set space
 		Engine::GRAPHICS->drawTextureRegion(
 			nearestMonkeyImageId, 600.0f, 150.0f, 150.0f, 210.0f, spritePosX += Engine::CORE->getDt() * 10.0f, 0.0f, 15.0f, 21.0f
 		);
@@ -310,8 +302,6 @@ public:
 
 		ImGui::Begin("Image Menu");
 
-
-
 		// The button that triggers the popup
 
 		if (ImGui::Button("Browse for Image")) {
@@ -327,11 +317,8 @@ public:
 			else {
 
 				showFileExplorerSource = true;
-
 				fileCopied = false;
-
 				selected_file_path.clear();
-
 			}
 
 		}
@@ -339,8 +326,6 @@ public:
 		ImGui::End();
 
 
-
-		// The popup window definition must be placed here, outside the button's logic.
 
 		// ImGui::BeginPopupModal checks if the popup is open and renders its contents.
 
@@ -351,34 +336,23 @@ public:
 			ImGui::Separator();
 
 
-
 			// This button closes the current popup.
 
 			if (ImGui::Button("Okay", ImVec2(120, 0))) {
-
 				ImGui::CloseCurrentPopup();
-
 			}
 
 			ImGui::EndPopup();
 
 		}
 
-
-
 		if (showFileExplorerSource) {
-
 			FileExplorer(&showFileExplorerSource);
-
 		}
 
 		if (showFileExplorerDest) {
-
 			FileExplorer(&showFileExplorerDest, true);
-
 		}
-
-
 
 		// Logic to copy the file after both paths are set
 
@@ -386,38 +360,28 @@ public:
 
 			try {
 
-				//setting root to the pathway of github to add any images to the 
+				//setting root to the pathway of github to add any images to the directory
 
 				fs::path source_path(selected_file_path);
-
 				fs::path destination_dir = fs::path(root_path) / "Engine" / "Assets" / "images";
-
 				fs::path destination_path = destination_dir / source_path.filename();
 
-
-
+				//sets the directory
 				fs::create_directories(destination_dir);
 
+				//copying original file into set directory
 				fs::copy(source_path, destination_path, fs::copy_options::overwrite_existing);
 
-
-
 				std::cout << "File copied successfully to: " << destination_path << std::endl;
-
-
 
 				selected_file_path.clear();
 
 				fileCopied = true;
-
 			}
 
 			catch (const fs::filesystem_error& e) {
-
 				fprintf(stderr, "Filesystem error: %s\n", e.what());
-
 			}
-
 		}
 
 		ImGui::End();
@@ -427,14 +391,16 @@ public:
 		//sprite dropper
 
 		ImGui::Begin("Sprite Dropper");
-
 		ImGui::Text("Current State: %s", typeid(*Engine::StateManager::GetCurrentState()).name());
+		
+		//put images into the drop space;
 
-		if (ImGui::Button("Cool")) { Engine::StateManager::ChangeState(BasicState::Get()); }
+		Engine::GRAPHICS->drawTexture(linearMonkeyImageId, 200.0f, 150.0f, 150.0f, 210.0f);
+		//ImGui::Image(linearMonkeyImageId, 20.0f, 15.0f, );
 
-		if (ImGui::Button("Huh")) { Engine::StateManager::ChangeState(BasicState::Get()); }
-
-		if (ImGui::Button("Fweh")) { Engine::StateManager::ChangeState(BasicState::Get()); }
+		//if (ImGui::Button("Cool")) { Engine::StateManager::ChangeState(BasicState::Get()); }
+		//if (ImGui::Button("Huh")) { Engine::StateManager::ChangeState(BasicState::Get()); }
+		//if (ImGui::Button("Fweh")) { Engine::StateManager::ChangeState(BasicState::Get()); }
 
 		ImGui::End();
 
