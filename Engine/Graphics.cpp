@@ -294,16 +294,14 @@ void Graphics::drawTexture(const DrawTextureParams& params)
     std::cout << "Invalid image ID: " << params.imageId << std::endl;
     return;
   }
-  drawTextureRegion(
-    {
+  drawTextureRegion({
     params.imageId,
     params.x, params.y, params.width, params.height,
     0, 0, static_cast<float>(textures[params.imageId].width), static_cast<float>(textures[params.imageId].height),
     params.rotation,
+    params.origin,
     params.tintColor,
-    params.origin
-    }
-  );
+    });
 }
 
 void Graphics::drawTextureRegion(const DrawTextureRegionParams& params)

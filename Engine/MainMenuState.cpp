@@ -21,7 +21,7 @@ void MainMenuState::Draw()
 {
   Engine::GRAPHICS->clearScreen(0.1f, 0.1f, 0.1f, 1.0f); // Dark gray background
 
-  Engine::GRAPHICS->drawRect({ 100.0f, 100.0f, 200.0f, 50.0f, { 1.0f, 0.0f, 0.0f, 1.0f } });  // Red
+  Engine::GRAPHICS->drawRect({ { 1.0f, 0.0f, 0.0f, 1.0f }, 100.0f, 100.0f, 200.0f, 50.0f });  // Red
 }
 
 void MainMenuState::Free()

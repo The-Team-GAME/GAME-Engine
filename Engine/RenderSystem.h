@@ -18,7 +18,7 @@ public:
       << " at (" << pos->x << ", " << pos->y
       << ") scale=" << render->scale << "\n";*/
 
-    Engine::GRAPHICS->drawRect({ pos->x, pos->y, 10.0f, 10.0f, { 1.0f, 1.0f, 1.0f, 1.0f } }); // TODO: allow changing color
+    Engine::GRAPHICS->drawRect({ { 1.0f, 1.0f, 1.0f, 1.0f }, pos->x, pos->y, 10.0f, 10.0f }); // TODO: allow changing color
   }
 };
 

@@ -39,11 +39,11 @@ public:
     BottomRight
   };
 
-  // New structs for drawing parameters
+  // TODO: color should use our own math 
   struct DrawRectParams
   {
-    float x, y, width, height;
     glm::vec4 color;
+    float x, y, width, height;
     float rotation = 0.0f;
     Origin origin = Origin::Center;
   };
@@ -53,8 +53,8 @@ public:
     int imageId;
     float x, y, width, height;
     float rotation = 0.0f;
-    glm::vec4 tintColor = glm::vec4(1.0f);
     Origin origin = Origin::Center;
+    glm::vec4 tintColor = glm::vec4(1.0f);
   };
 
   struct DrawTextureRegionParams
@@ -63,8 +63,8 @@ public:
     float destX, destY, destWidth, destHeight;
     float srcX, srcY, srcWidth, srcHeight;
     float rotation = 0.0f;
-    glm::vec4 tintColor = glm::vec4(1.0f);
     Origin origin = Origin::Center;
+    glm::vec4 tintColor = glm::vec4(1.0f);
   };
 
 private:
@@ -119,8 +119,6 @@ public:
   void setCameraRotation(float degrees);
   const Camera2D& getCamera() const { return camera; }
 
-  // TODO: change color to be first parameter
-  // TODO: color should use our own math lib
   void drawRect(const DrawRectParams& params);
   void drawTexture(const DrawTextureParams& params);
   void drawTextureRegion(const DrawTextureRegionParams& params);
