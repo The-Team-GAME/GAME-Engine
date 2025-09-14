@@ -20,7 +20,7 @@ void BasicState::Update()
   {
     std::cout << "Spacebar was pressed!\n";
   }
-   
+
   /*if (Engine::Input::IsMouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT))
   {
     glm::vec2 mousePos = Engine::Input::GetMousePosition();
@@ -47,10 +47,13 @@ void BasicState::Draw()
 
   Engine::GRAPHICS->clearScreen(0.1f, 0.1f, 0.1f, 1.0f); // Dark gray background
 
-  Engine::GRAPHICS->drawRect(0.0f, 0.0f, 50.0f, 50.0f, { 1.0f, 0.0f, 0.0f, 1.0f });       // Top left, Red
-  Engine::GRAPHICS->drawRect(800.0f, 600.0f, 50.0f, 50.0f, { 0.0f, 1.0f, 0.0f, 1.0f });   // Bottom right, Green
-  Engine::GRAPHICS->drawRect(0.0f, 600.0f, 50.0f, 50.0f, { 0.0f, 0.0f, 1.0f, 1.0f });     // Bottom left, Blue
-  Engine::GRAPHICS->drawRect(800.0f, 0.0f, 50.0f, 50.0f, { 1.0f, 1.0f, 0.0f, 1.0f });     // Top right, Yellow
+  static float rotation = 0.0f;
+  rotation += 45.0f * static_cast<float>(Engine::CORE->getDt());
+
+  Engine::GRAPHICS->drawRect(0.0f, 0.0f, 50.0f, 50.0f, { 1.0f, 0.0f, 0.0f, 1.0f }, rotation, Graphics::Origin::Center);       // Top left, Red
+  Engine::GRAPHICS->drawRect(800.0f, 600.0f, 50.0f, 50.0f, { 0.0f, 1.0f, 0.0f, 1.0f }, rotation, Graphics::Origin::Center);   // Bottom right, Green
+  Engine::GRAPHICS->drawRect(0.0f, 600.0f, 50.0f, 50.0f, { 0.0f, 0.0f, 1.0f, 1.0f }, rotation, Graphics::Origin::Center);     // Bottom left, Blue
+  Engine::GRAPHICS->drawRect(800.0f, 0.0f, 50.0f, 50.0f, { 1.0f, 1.0f, 0.0f, 1.0f }, rotation, Graphics::Origin::Center);     // Top right, Yellow
 }
 
 void BasicState::Free()

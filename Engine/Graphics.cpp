@@ -207,13 +207,28 @@ void Graphics::setCameraRotation(float degrees)
   updateViewMatrix();
 }
 
-void Graphics::drawRect(float x, float y, float width, float height, glm::vec4 color, float rotation) {
+void Graphics::drawRect(float x, float y, float width, float height, glm::vec4 color, float rotation, Origin origin) {
   if (quadIndexCount >= MaxIndices)
   {
     nextBatch();
   }
 
-  glm::mat4 transform = glm::translate(glm::mat4(1.0f), { x, y, 0.0f })
+  // Calculate offset based on origin
+  glm::vec2 offset = { 0.0f, 0.0f };
+  if (origin == Origin::TopLeft) {
+    offset = { width / 2.0f, -height / 2.0f };
+  }
+  else if (origin == Origin::TopRight) {
+    offset = { -width / 2.0f, -height / 2.0f };
+  }
+  else if (origin == Origin::BottomLeft) {
+    offset = { width / 2.0f, height / 2.0f };
+  }
+  else if (origin == Origin::BottomRight) {
+    offset = { -width / 2.0f, height / 2.0f };
+  } // Center: no offset
+
+  glm::mat4 transform = glm::translate(glm::mat4(1.0f), { x + offset.x, y + offset.y, 0.0f })
     * glm::rotate(glm::mat4(1.0f), glm::radians(rotation), { 0.0f, 0.0f, 1.0f })
     * glm::scale(glm::mat4(1.0f), { width, height, 1.0f });
 
@@ -271,17 +286,17 @@ int Graphics::loadTexture(const char* filepath, MinifyingFilter min_filter)
   return static_cast<int>(textures.size() - 1);
 }
 
-void Graphics::drawTexture(int imageId, float x, float y, float width, float height, float rotation, glm::vec4 tintColor)
+void Graphics::drawTexture(int imageId, float x, float y, float width, float height, float rotation, glm::vec4 tintColor, Origin origin)
 {
   if (imageId < 0 || imageId >= static_cast<int>(textures.size()))
   {
     std::cout << "Invalid image ID: " << imageId << std::endl;
     return;
   }
-  drawTextureRegion(imageId, x, y, width, height, 0, 0, textures[imageId].width, textures[imageId].height, rotation, tintColor);
+  drawTextureRegion(imageId, x, y, width, height, 0, 0, textures[imageId].width, textures[imageId].height, rotation, tintColor, origin);
 }
 
-void Graphics::drawTextureRegion(int imageId, float destX, float destY, float destWidth, float destHeight, float srcX, float srcY, float srcWidth, float srcHeight, float rotation, glm::vec4 tintColor)
+void Graphics::drawTextureRegion(int imageId, float destX, float destY, float destWidth, float destHeight, float srcX, float srcY, float srcWidth, float srcHeight, float rotation, glm::vec4 tintColor, Origin origin)
 {
   if (imageId < 0 || imageId >= static_cast<int>(textures.size()))
   {
@@ -313,7 +328,22 @@ void Graphics::drawTextureRegion(int imageId, float destX, float destY, float de
     textureSlotIndex++;
   }
 
-  glm::mat4 transform = glm::translate(glm::mat4(1.0f), { destX + destWidth * 0.5f, destY + destHeight * 0.5f, 0.0f })
+  // Calculate offset based on origin
+  glm::vec2 offset = { 0.0f, 0.0f };
+  if (origin == Origin::TopLeft) {
+    offset = { destWidth / 2.0f, -destHeight / 2.0f };
+  }
+  else if (origin == Origin::TopRight) {
+    offset = { -destWidth / 2.0f, -destHeight / 2.0f };
+  }
+  else if (origin == Origin::BottomLeft) {
+    offset = { destWidth / 2.0f, destHeight / 2.0f };
+  }
+  else if (origin == Origin::BottomRight) {
+    offset = { -destWidth / 2.0f, destHeight / 2.0f };
+  } // Center: no offset
+
+  glm::mat4 transform = glm::translate(glm::mat4(1.0f), { destX + offset.x, destY + offset.y, 0.0f })
     * glm::rotate(glm::mat4(1.0f), glm::radians(rotation), { 0.0f, 0.0f, 1.0f })
     * glm::scale(glm::mat4(1.0f), { destWidth, destHeight, 1.0f });
 

@@ -30,6 +30,15 @@ public:
     Linear
   };
 
+  enum class Origin
+  {
+    Center,
+    TopLeft,
+    TopRight,
+    BottomLeft,
+    BottomRight
+  };
+
 private:
   struct Vertex
   {
@@ -84,11 +93,11 @@ public:
 
   // TODO: change color to be first parameter
   // TODO: color should use our own math lib
-  void drawRect(float x, float y, float width, float height, glm::vec4 color, float rotation = 0.0f);
+  void drawRect(float x, float y, float width, float height, glm::vec4 color, float rotation = 0.0f, Origin origin = Origin::Center);
 
   int loadTexture(const char* filepath, MinifyingFilter min_filter = MinifyingFilter::Linear);
-  void drawTexture(int imageId, float x, float y, float width, float height, float rotation = 0.0f, glm::vec4 tintColor = glm::vec4(1.0f));
-  void drawTextureRegion(int imageId, float destX, float destY, float destWidth, float destHeight, float srcX, float srcY, float srcWidth, float srcHeight, float rotation = 0.0f, glm::vec4 tintColor = glm::vec4(1.0f));
+  void drawTexture(int imageId, float x, float y, float width, float height, float rotation = 0.0f, glm::vec4 tintColor = glm::vec4(1.0f), Origin origin = Origin::Center);
+  void drawTextureRegion(int imageId, float destX, float destY, float destWidth, float destHeight, float srcX, float srcY, float srcWidth, float srcHeight, float rotation = 0.0f, glm::vec4 tintColor = glm::vec4(1.0f), Origin origin = Origin::Center);
 
   void clearScreen(float r, float g, float b, float a);
 
