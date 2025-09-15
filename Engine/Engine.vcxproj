@@ -204,6 +204,7 @@
     <ClInclude Include="ObjectFactory.h" />
     <ClInclude Include="PerformanceViewer.h" />
     <ClInclude Include="RenderSystem.h" />
+    <ClInclude Include="RotationSystem.h" />
     <ClInclude Include="Rubric2500Particles.h" />
     <ClInclude Include="Serialisation.h" />
     <ClInclude Include="Time.h" />
@@ -217,6 +218,7 @@
     <ClInclude Include="Vector4D.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\objects\banana.json" />
     <None Include="Assets\objects\enemy.json" />
     <None Include="Assets\shaders\basic.frag" />
     <None Include="Assets\shaders\basic.vert" />

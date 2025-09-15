@@ -36,6 +36,11 @@ namespace Components {
     Rotation(float angle = 0.0f) : angle(angle) {}
   };
 
+  struct RotationSpeed {
+    float degreesPerSecond;
+    RotationSpeed(float degreesPerSecond = 0.0f) : degreesPerSecond(degreesPerSecond) {}
+  };
+
   struct Velocity : Math::Vec2D {
     using Math::Vec2D::Vec2D;
   };
