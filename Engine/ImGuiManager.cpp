@@ -4,7 +4,7 @@
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
 
-void Engine::ImGuiManager::init()
+Engine::ImGuiManager::ImGuiManager()
 {
   ImGui::CreateContext();
   ImGuiIO& io = ImGui::GetIO();
@@ -14,6 +14,13 @@ void Engine::ImGuiManager::init()
 
   ImGui_ImplGlfw_InitForOpenGL(Engine::CORE->getWindow(), true);
   ImGui_ImplOpenGL3_Init();
+}
+
+Engine::ImGuiManager::~ImGuiManager()
+{
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
 }
 
 void Engine::ImGuiManager::begin()
@@ -27,11 +34,4 @@ void Engine::ImGuiManager::end()
 {
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-}
-
-void Engine::ImGuiManager::exit()
-{
-  ImGui_ImplOpenGL3_Shutdown();
-  ImGui_ImplGlfw_Shutdown();
-  ImGui::DestroyContext();
 }

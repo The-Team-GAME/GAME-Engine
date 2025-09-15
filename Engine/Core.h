@@ -6,6 +6,7 @@
 #include "ECS/ECS.h"
 #include "ObjectFactory.h"
 #include "Time.h"
+#include "ImGuiManager.h"
 
 namespace Engine
 {
@@ -31,4 +32,5 @@ namespace Engine
   extern ECS::World* WORLD;
   extern ObjectFactory* FACTORY;
   extern Graphics* GRAPHICS;
+  extern ImGuiManager* IMGUI;
 }

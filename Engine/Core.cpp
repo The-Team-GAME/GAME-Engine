@@ -19,6 +19,7 @@ namespace Engine
   ECS::World* WORLD;
   ObjectFactory* FACTORY;
   Graphics* GRAPHICS;
+  ImGuiManager* IMGUI;
 
   Core::Core()
   {
@@ -28,6 +29,7 @@ namespace Engine
     WORLD = new ECS::World(); // TODO: check memory leak
     FACTORY = new ObjectFactory(WORLD);
     GRAPHICS = new Graphics();
+    IMGUI = new ImGuiManager();
 
     /* Initialize the library */
     if (!glfwInit())
@@ -59,20 +61,18 @@ namespace Engine
 
     StateManager::Init(BasicState::Get());
 
-    ImGuiManager::init();
-
     Engine::GRAPHICS->init(windowWidth, windowHeight);
   }
 
   Core::~Core()
   {
     Engine::GRAPHICS->exit();
-    Engine::ImGuiManager::exit();
     StateManager::Exit();
     glfwDestroyWindow(window);
     glfwTerminate();
     Engine::FACTORY->unregisterAllObjects();
 
+    delete IMGUI;
     delete GRAPHICS;
     delete FACTORY;
     delete WORLD;
@@ -93,7 +93,8 @@ namespace Engine
         time_manager.update_fixed_step();
 
         glfwPollEvents();
-        ImGuiManager::begin();
+
+        IMGUI->begin();
 
         Input::Update();
 
@@ -110,7 +111,7 @@ namespace Engine
 
         GRAPHICS->endFrame();
 
-        ImGuiManager::end();
+        IMGUI->end();
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
