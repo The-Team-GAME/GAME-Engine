@@ -255,8 +255,8 @@ public:
 
   void Init() {
 
-    linearMonkeyImageId = Engine::GRAPHICS->loadTexture("Assets/images/monkey.png");
-    nearestMonkeyImageId = Engine::GRAPHICS->loadTexture("Assets/images/monkey.png", Graphics::MinifyingFilter::Nearest);
+    linearMonkeyImageId = Engine::GRAPHICS.loadTexture("Assets/images/monkey.png");
+    nearestMonkeyImageId = Engine::GRAPHICS.loadTexture("Assets/images/monkey.png", Graphics::MinifyingFilter::Nearest);
 
 
     std::cout << "Current path is " << std::filesystem::current_path() << std::endl;
@@ -274,13 +274,13 @@ public:
 
     //image stuff
 
-    Engine::GRAPHICS->clearScreen(0.1f, 0.1f, 0.1f, 1.0f);
+    Engine::GRAPHICS.clearScreen(0.1f, 0.1f, 0.1f, 1.0f);
 
-    Engine::GRAPHICS->drawTexture(linearMonkeyImageId, 200.0f, 150.0f, 150.0f, 210.0f);
-    Engine::GRAPHICS->drawTexture(nearestMonkeyImageId, 400.0f, 150.0f, 150.0f, 210.0f);
+    Engine::GRAPHICS.drawTexture(linearMonkeyImageId, 200.0f, 150.0f, 150.0f, 210.0f);
+    Engine::GRAPHICS.drawTexture(nearestMonkeyImageId, 400.0f, 150.0f, 150.0f, 210.0f);
 
 
-    Engine::GRAPHICS->drawTextureRegion(
+    Engine::GRAPHICS.drawTextureRegion(
       nearestMonkeyImageId, 600.0f, 150.0f, 150.0f, 210.0f, spritePosX += Engine::CORE->getDt() * 10.0f, 0.0f, 15.0f, 21.0f
     );
 

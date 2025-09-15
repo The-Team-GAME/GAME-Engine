@@ -12,7 +12,7 @@ Engine::ImGuiManager::ImGuiManager()
   //io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
   ImGui::StyleColorsDark();
 
-  ImGui_ImplGlfw_InitForOpenGL(Engine::WINDOW->getWindow(), true); // TODO: pass window as parameter
+  ImGui_ImplGlfw_InitForOpenGL(Engine::WINDOW.getWindow(), true); // TODO: pass window as parameter
   ImGui_ImplOpenGL3_Init();
 }
 

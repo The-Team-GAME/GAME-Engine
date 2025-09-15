@@ -15,46 +15,36 @@
 
 namespace Engine
 {
+  // TODO: window size should not be hardcoded
+  int windowWidth = 800;
+  int windowHeight = 600;
 
   Core* CORE;
-  ECS::World* WORLD;
-  ObjectFactory* FACTORY;
-  Graphics* GRAPHICS;
-  ImGuiManager* IMGUI;
-  WindowManager* WINDOW;
+  ECS::World WORLD{};
+  ObjectFactory FACTORY{ &WORLD };
+  WindowManager WINDOW{ windowWidth, windowHeight, "Monkey Stole My GPA" };
+  Graphics GRAPHICS{ windowWidth, windowHeight };
+  ImGuiManager IMGUI{};
 
   Core::Core()
   {
-    // TODO: window size should not be hardcoded
-    int windowWidth = 800;
-    int windowHeight = 600;
+    
 
     isRunning = true;
-    CORE = this;
-    WORLD = new ECS::World();
-    FACTORY = new ObjectFactory(WORLD);
-    WINDOW = new WindowManager(windowWidth, windowHeight, "Monkey Stole My GPA");
-    GRAPHICS = new Graphics(windowWidth, windowHeight);
-    IMGUI = new ImGuiManager();
 
+    CORE = this;
 
     StateManager::Init(BasicState::Get()); // TODO: to be removed
   }
 
   Core::~Core()
   {
-    StateManager::Exit(); // TODO: to be removed
-
-    delete IMGUI;
-    delete GRAPHICS;
-    delete WINDOW;
-    delete FACTORY;
-    delete WORLD;
+    StateManager::Exit(); // TODO: to be removed 
   }
 
   void Core::run()
   {
-    while (!glfwWindowShouldClose(WINDOW->getWindow()) && isRunning)
+    while (!glfwWindowShouldClose(WINDOW.getWindow()) && isRunning)
     {
       // Everything inside this loop ignores fixed timestep
 
@@ -68,27 +58,27 @@ namespace Engine
 
         glfwPollEvents();
 
-        IMGUI->begin();
+        IMGUI.begin();
 
         Input::Update();
 
-        GRAPHICS->beginFrame();
+        GRAPHICS.beginFrame();
 
 
         StateManager::GetCurrentState()->Update();
         StateManager::GetCurrentState()->Draw();
 
-        WORLD->update();
+        WORLD.update();
 
         StateChooserPanel();
         PerformanceViewerPanel(time_manager.target_fps);
 
-        GRAPHICS->endFrame();
+        GRAPHICS.endFrame();
 
-        IMGUI->end();
+        IMGUI.end();
 
         /* Swap front and back buffers */
-        glfwSwapBuffers(WINDOW->getWindow());
+        glfwSwapBuffers(WINDOW.getWindow());
       }
     }
   }

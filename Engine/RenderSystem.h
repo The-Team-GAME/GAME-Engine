@@ -15,7 +15,7 @@ public:
 
     auto rotation = world->hasComponent<Components::Rotation>(entityId) ? *world->getComponent<Components::Rotation>(entityId) : Components::Rotation{ 0.0f };
 
-    Engine::GRAPHICS->drawRect({ color->x, color->y, color->z, color->w }, pos->x, pos->y, size->width, size->height, rotation.angle, Graphics::Origin::Center);
+    Engine::GRAPHICS.drawRect({ color->x, color->y, color->z, color->w }, pos->x, pos->y, size->width, size->height, rotation.angle, Graphics::Origin::Center);
   }
 };
 
@@ -34,6 +34,6 @@ public:
     auto scale = world->hasComponent<Components::Scale>(entityId) ? *world->getComponent<Components::Scale>(entityId) : Components::Scale{ 1.0f, 1.0f };
     auto color = world->hasComponent<Components::Color>(entityId) ? *world->getComponent<Components::Color>(entityId) : Components::Color{ 1.0f, 1.0f, 1.0f, 1.0f };
 
-    Engine::GRAPHICS->drawTexture(sprite->textureId, pos->x, pos->y, size->width * scale.x, size->height * scale.y, rotation.angle, Graphics::Origin::Center, { color.x, color.y, color.z, color.w });
+    Engine::GRAPHICS.drawTexture(sprite->textureId, pos->x, pos->y, size->width * scale.x, size->height * scale.y, rotation.angle, Graphics::Origin::Center, { color.x, color.y, color.z, color.w });
   }
 };

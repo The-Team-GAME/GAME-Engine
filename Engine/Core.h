@@ -28,9 +28,9 @@ namespace Engine
 
   // Global pointer to the instance of the core
   extern Core* CORE;
-  extern ECS::World* WORLD;
-  extern ObjectFactory* FACTORY;
-  extern Graphics* GRAPHICS;
-  extern ImGuiManager* IMGUI;
-  extern WindowManager* WINDOW;
+  extern ECS::World WORLD;
+  extern ObjectFactory FACTORY;
+  extern Graphics GRAPHICS;
+  extern ImGuiManager IMGUI;
+  extern WindowManager WINDOW;
 }

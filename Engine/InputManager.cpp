@@ -23,7 +23,7 @@ namespace Engine
 {
   void Input::Update()
   {
-    GLFWwindow* window = Engine::WINDOW->getWindow(); //TODO: pass window as parameter in constructor
+    GLFWwindow* window = Engine::WINDOW.getWindow(); //TODO: pass window as parameter in constructor
 
     // Update previous states
     previousKeys = currentKeys;

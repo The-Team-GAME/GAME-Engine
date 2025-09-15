@@ -13,7 +13,7 @@ public:
 
   void Init()
   {
-    auto background = Engine::WORLD->createEntity()
+    auto background = Engine::WORLD.createEntity()
       .addComponent<Components::Tag<"Rubric2500Particles">>()
       .addComponent<Components::Background>()
       .addComponent<Components::Color>(0.0f, 0.0f, 0.0f, 0.0f);
@@ -31,7 +31,7 @@ public:
       );
       float rotationSpeed = 30.0f + static_cast<float>(rand() % 90); // Random rotation speed between 30 and 120 degrees per second
 
-      Engine::WORLD->createEntity()
+      Engine::WORLD.createEntity()
         .addComponent<Components::Tag<"Rubric2500Particles">>()
         .addComponent<Components::Position>(x, y)
         .addComponent<Components::Size>(size, size)
@@ -42,9 +42,9 @@ public:
 
 
     // Add systems to the world
-    Engine::WORLD->addSystem<BackgroundSystem>(); // Background system should be first
-    Engine::WORLD->addSystem<RotationSystem>();
-    Engine::WORLD->addSystem<RectRenderSystem>();
+    Engine::WORLD.addSystem<BackgroundSystem>(); // Background system should be first
+    Engine::WORLD.addSystem<RotationSystem>();
+    Engine::WORLD.addSystem<RectRenderSystem>();
 
   };
 
@@ -55,12 +55,12 @@ public:
   };
 
   void Free() {
-    Engine::WORLD->destroyEntitiesWith<Components::Tag<"Rubric2500Particles">>();
+    Engine::WORLD.destroyEntitiesWith<Components::Tag<"Rubric2500Particles">>();
 
     // Remove systems
-    Engine::WORLD->removeSystem<BackgroundSystem>();
-    Engine::WORLD->removeSystem<RotationSystem>();
-    Engine::WORLD->removeSystem<RectRenderSystem>();
+    Engine::WORLD.removeSystem<BackgroundSystem>();
+    Engine::WORLD.removeSystem<RotationSystem>();
+    Engine::WORLD.removeSystem<RectRenderSystem>();
   };
 
   void Unload() {};
