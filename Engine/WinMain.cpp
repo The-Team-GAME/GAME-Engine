@@ -8,6 +8,11 @@ INT WINAPI WinMain(
   _In_ LPSTR lpCmdLine,
   _In_ INT nCmdShow)
 {
+  UNREFERENCED_PARAMETER(hInst);
+  UNREFERENCED_PARAMETER(hPrevInstance);
+  UNREFERENCED_PARAMETER(lpCmdLine);
+  UNREFERENCED_PARAMETER(nCmdShow);
+
   AllocConsole();
 
   // Redirect stdout to the console
@@ -33,5 +38,3 @@ INT WINAPI WinMain(
 
   return 0;
 }
-
-#pragma warning(pop)

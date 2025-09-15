@@ -11,8 +11,8 @@
 class DevManySpritesState : public Engine::GameState<DevManySpritesState>
 {
 private:
-  int enemyPrefab;
-  int bananaPrefab;
+  int enemyPrefab = -1;
+  int bananaPrefab = -1;
 
 public:
   void Load() {
