@@ -55,9 +55,8 @@ void Graphics::updateViewMatrix() {
 }
 
 // Initializes the graphics system, shaders, and buffers.
-void Graphics::init(int windowWidth, int windowHeight)
-{
-  // Enable alpha blending.
+Graphics::Graphics(int windowWidth, int windowHeight)
+{// Enable alpha blending.
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -136,6 +135,28 @@ void Graphics::init(int windowWidth, int windowHeight)
   // Set initial viewport and projection matrix.
   setViewport(windowWidth, windowHeight);
   updateViewMatrix();
+}
+
+// Cleans up OpenGL objects and resources.
+Graphics::~Graphics()
+{
+  textureShader.destroy();
+
+  glDeleteVertexArrays(1, &quadVAO);
+  glDeleteBuffers(1, &quadVBO);
+  glDeleteBuffers(1, &quadIBO);
+
+  // Delete all loaded textures to prevent memory leaks.
+  for (const auto& tex : textures)
+  {
+    glDeleteTextures(1, &tex.id);
+  }
+
+  // Delete the white texture and any others that might be in the slots.
+  for (const auto& texture : textureSlots)
+  {
+    if (texture != 0) glDeleteTextures(1, &texture);
+  }
 }
 
 // Called at the beginning of a frame to prepare for drawing.
@@ -224,28 +245,6 @@ void Graphics::setViewport(int width, int height)
   // Update the orthographic projection matrix to match the new dimensions.
   projection = glm::ortho(0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, -1.0f, 1.0f);
   updateViewMatrix(); // Recalculate the combined matrix.
-}
-
-// Cleans up OpenGL objects and resources.
-void Graphics::exit()
-{
-  textureShader.destroy();
-
-  glDeleteVertexArrays(1, &quadVAO);
-  glDeleteBuffers(1, &quadVBO);
-  glDeleteBuffers(1, &quadIBO);
-
-  // Delete all loaded textures to prevent memory leaks.
-  for (const auto& tex : textures)
-  {
-    glDeleteTextures(1, &tex.id);
-  }
-
-  // Delete the white texture and any others that might be in the slots.
-  for (const auto& texture : textureSlots)
-  {
-    if (texture != 0) glDeleteTextures(1, &texture);
-  }
 }
 
 // Sets the camera's world position.

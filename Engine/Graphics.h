@@ -78,8 +78,8 @@ private:
   void updateViewMatrix();
 
 public:
-  void init(int windowWidth, int windowHeight);
-  void exit();
+  Graphics(int windowWidth, int windowHeight);
+  ~Graphics();
 
   void beginFrame();
   void endFrame(); // New function to draw the batch

@@ -23,12 +23,16 @@ namespace Engine
 
   Core::Core()
   {
+    // TODO: window size should not be hardcoded
+    int windowWidth = 800;
+    int windowHeight = 600;
+
     isRunning = true;
     window = nullptr;
     CORE = this;
-    WORLD = new ECS::World(); // TODO: check memory leak
+    WORLD = new ECS::World();
     FACTORY = new ObjectFactory(WORLD);
-    GRAPHICS = new Graphics();
+    GRAPHICS = new Graphics(windowWidth, windowHeight);
     IMGUI = new ImGuiManager();
 
     /* Initialize the library */
@@ -36,10 +40,7 @@ namespace Engine
       return;
 
     /* Create a windowed mode window and its OpenGL context */
-    // TODO: window size should not be hardcoded
-    int windowWidth = 800;
-    int windowHeight = 600;
-    window = glfwCreateWindow(windowWidth, windowHeight, "Rectangle Drawer", NULL, NULL);
+    window = glfwCreateWindow(windowWidth, windowHeight, "Monkey Stole My GPA", NULL, NULL);
     if (!window)
     {
       std::cout << "Failed to create GLFW window" << std::endl;
@@ -60,13 +61,10 @@ namespace Engine
     std::cout << glGetString(GL_VERSION) << std::endl;
 
     StateManager::Init(BasicState::Get());
-
-    Engine::GRAPHICS->init(windowWidth, windowHeight);
   }
 
   Core::~Core()
   {
-    Engine::GRAPHICS->exit();
     StateManager::Exit();
     glfwDestroyWindow(window);
     glfwTerminate();
