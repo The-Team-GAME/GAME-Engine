@@ -19,21 +19,16 @@ namespace Engine
   int windowWidth = 800;
   int windowHeight = 600;
 
-  Core* CORE;
   ECS::World WORLD{};
   ObjectFactory FACTORY{ &WORLD };
   WindowManager WINDOW{ windowWidth, windowHeight, "Monkey Stole My GPA" };
   Graphics GRAPHICS{ windowWidth, windowHeight };
   ImGuiManager IMGUI{};
+  Time TIME{};
 
   Core::Core()
   {
-    
-
     isRunning = true;
-
-    CORE = this;
-
     StateManager::Init(BasicState::Get()); // TODO: to be removed
   }
 
@@ -48,13 +43,13 @@ namespace Engine
     {
       // Everything inside this loop ignores fixed timestep
 
-      time_manager.accumulate_time();
+      TIME.accumulate_time();
 
-      while (time_manager.should_update())
+      while (TIME.should_update())
       {
         // Everything inside this loop is runned at a fixed timestep
 
-        time_manager.update_fixed_step();
+        TIME.update_fixed_step();
 
         glfwPollEvents();
 
@@ -71,7 +66,7 @@ namespace Engine
         WORLD.update();
 
         StateChooserPanel();
-        PerformanceViewerPanel(time_manager.target_fps);
+        PerformanceViewerPanel(TIME.target_fps);
 
         GRAPHICS.endFrame();
 
@@ -81,10 +76,5 @@ namespace Engine
         glfwSwapBuffers(WINDOW.getWindow());
       }
     }
-  }
-
-  float Core::getDt() const
-  {
-    return static_cast<float>(time_manager.get_frame_dt());
   }
 }

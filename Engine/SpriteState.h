@@ -281,7 +281,7 @@ public:
 
 
     Engine::GRAPHICS.drawTextureRegion(
-      nearestMonkeyImageId, 600.0f, 150.0f, 150.0f, 210.0f, spritePosX += Engine::CORE->getDt() * 10.0f, 0.0f, 15.0f, 21.0f
+      nearestMonkeyImageId, 600.0f, 150.0f, 150.0f, 210.0f, spritePosX += Engine::TIME.get_dt() * 10.0f, 0.0f, 15.0f, 21.0f
     );
 
 

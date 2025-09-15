@@ -15,22 +15,18 @@ namespace Engine
   {
   private:
     bool isRunning;
-    Time time_manager{};
 
   public:
     Core();
     ~Core();
 
     void run();
-
-    float getDt() const;
   };
 
-  // Global pointer to the instance of the core
-  extern Core* CORE;
   extern ECS::World WORLD;
   extern ObjectFactory FACTORY;
   extern Graphics GRAPHICS;
   extern ImGuiManager IMGUI;
   extern WindowManager WINDOW;
+  extern Time TIME;
 }

@@ -31,6 +31,11 @@ namespace Engine {
     return frame_dt;
   }
 
+  f32 Time::get_dt(void) const
+  {
+    return static_cast<f32>(get_frame_dt());
+  }
+
   bool Time::should_update(void)const {
     return accumulator >= get_fixed_dt() && loop_count < loop_cap;
   }

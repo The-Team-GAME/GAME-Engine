@@ -13,7 +13,7 @@ public:
     auto* pos = world->getComponent<Components::Position>(entityId);
     auto* vel = world->getComponent<Components::Velocity>(entityId);
 
-    pos->x += vel->x * Engine::CORE->getDt();
-    pos->y += vel->y * Engine::CORE->getDt();
+    pos->x += vel->x * Engine::TIME.get_dt();
+    pos->y += vel->y * Engine::TIME.get_dt();
   }
 };
