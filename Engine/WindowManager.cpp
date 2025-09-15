@@ -21,7 +21,7 @@ namespace Engine
     }
 
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(0);  // Disable VSync; adjust as needed
+    glfwSwapInterval(0);  // Disable VSync
 
     if (glewInit() != GLEW_OK)
     {

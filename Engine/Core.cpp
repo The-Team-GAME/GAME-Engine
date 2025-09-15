@@ -43,12 +43,11 @@ namespace Engine
 
   Core::~Core()
   {
-    StateManager::Exit();
-    glfwTerminate();
-    Engine::FACTORY->unregisterAllObjects();
+    StateManager::Exit(); // TODO: to be removed
 
     delete IMGUI;
     delete GRAPHICS;
+    delete WINDOW;
     delete FACTORY;
     delete WORLD;
   }
