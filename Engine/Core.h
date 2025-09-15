@@ -7,6 +7,7 @@
 #include "ObjectFactory.h"
 #include "Time.h"
 #include "ImGuiManager.h"
+#include "WindowManager.h"
 
 namespace Engine
 {
@@ -14,7 +15,6 @@ namespace Engine
   {
   private:
     bool isRunning;
-    GLFWwindow* window;
     Time time_manager{};
 
   public:
@@ -24,7 +24,6 @@ namespace Engine
     void run();
 
     float getDt() const;
-    GLFWwindow* getWindow() const;
   };
 
   // Global pointer to the instance of the core
@@ -33,4 +32,5 @@ namespace Engine
   extern ObjectFactory* FACTORY;
   extern Graphics* GRAPHICS;
   extern ImGuiManager* IMGUI;
+  extern WindowManager* WINDOW;
 }

@@ -11,6 +11,7 @@
 #include "StateChooser.inl"
 #include "Time.h"
 #include "PerformanceViewer.h"
+#include "WindowManager.h"
 
 namespace Engine
 {
@@ -20,6 +21,7 @@ namespace Engine
   ObjectFactory* FACTORY;
   Graphics* GRAPHICS;
   ImGuiManager* IMGUI;
+  WindowManager* WINDOW;
 
   Core::Core()
   {
@@ -28,45 +30,20 @@ namespace Engine
     int windowHeight = 600;
 
     isRunning = true;
-    window = nullptr;
     CORE = this;
     WORLD = new ECS::World();
     FACTORY = new ObjectFactory(WORLD);
+    WINDOW = new WindowManager(windowWidth, windowHeight, "Monkey Stole My GPA");
     GRAPHICS = new Graphics(windowWidth, windowHeight);
     IMGUI = new ImGuiManager();
 
-    /* Initialize the library */
-    if (!glfwInit())
-      return;
 
-    /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(windowWidth, windowHeight, "Monkey Stole My GPA", NULL, NULL);
-    if (!window)
-    {
-      std::cout << "Failed to create GLFW window" << std::endl;
-      glfwTerminate();
-      return;
-    }
-
-    /* Make the window's context current */
-    glfwMakeContextCurrent(window);
-
-    glfwSwapInterval(0);
-
-    if (glewInit() != GLEW_OK)
-    {
-      std::cout << "GLEW Initialization failed.\n";
-    }
-
-    std::cout << glGetString(GL_VERSION) << std::endl;
-
-    StateManager::Init(BasicState::Get());
+    StateManager::Init(BasicState::Get()); // TODO: to be removed
   }
 
   Core::~Core()
   {
     StateManager::Exit();
-    glfwDestroyWindow(window);
     glfwTerminate();
     Engine::FACTORY->unregisterAllObjects();
 
@@ -78,7 +55,7 @@ namespace Engine
 
   void Core::run()
   {
-    while (!glfwWindowShouldClose(window) && isRunning)
+    while (!glfwWindowShouldClose(WINDOW->getWindow()) && isRunning)
     {
       // Everything inside this loop ignores fixed timestep
 
@@ -112,7 +89,7 @@ namespace Engine
         IMGUI->end();
 
         /* Swap front and back buffers */
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(WINDOW->getWindow());
       }
     }
   }
@@ -121,10 +98,4 @@ namespace Engine
   {
     return static_cast<float>(time_manager.get_frame_dt());
   }
-
-  GLFWwindow* Core::getWindow() const
-  {
-    return window;
-  }
-
 }
