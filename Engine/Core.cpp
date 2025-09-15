@@ -19,6 +19,8 @@ namespace Engine
   int windowWidth = 800;
   int windowHeight = 600;
 
+  // These are global instances of the core engine systems.
+  // They are defined here and declared extern in Core.h for use throughout the engine.
   ECS::World WORLD{};
   ObjectFactory FACTORY{ &WORLD };
   WindowManager WINDOW{ windowWidth, windowHeight, "Monkey Stole My GPA" };
