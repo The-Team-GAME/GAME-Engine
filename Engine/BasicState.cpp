@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <iostream> 
 #include <GLFW/glfw3.h>
+#include <imgui.h>
 
 void BasicState::Load()
 {
@@ -29,12 +30,31 @@ void BasicState::Update()
 
 void BasicState::Draw()
 {
-  Engine::GRAPHICS->clearScreen(0.1f, 0.1f, 0.1f, 1.0f); // Dark gray background
+  static float x = 0.0f;
+  static float y = 0.0f;
 
-  Engine::GRAPHICS->drawRect(100.0f, 100.0f, 200.0f, 50.0f, { 1.0f, 0.0f, 0.0f, 1.0f });  // Red
-  Engine::GRAPHICS->drawRect(350.0f, 200.0f, 100.0f, 150.0f, { 0.0f, 1.0f, 0.0f, 1.0f }); // Green
-  Engine::GRAPHICS->drawRect(50.0f, 400.0f, 75.0f, 75.0f, { 0.0f, 0.0f, 1.0f, 1.0f });    // Blue
-  Engine::GRAPHICS->drawRect(70.0f, 400.0f, 75.0f, 75.0f, { 1.0f, 1.0f, 1.0f, 0.2f });    // Transparent White
+  ImGui::Begin("Camera");
+  if (ImGui::Button("Reset")) {
+    x = 0.0f;
+    y = 0.0f;
+  }
+  ImGui::SliderFloat("X", &x, -800.0f, 800.0f);
+  //Reset button
+  ImGui::SliderFloat("Y", &y, -800.0f, 800.0f);
+  ImGui::End();
+
+  Engine::GRAPHICS.setCameraPosition(x, y);
+
+  Engine::GRAPHICS.clearScreen(0.1f, 0.1f, 0.1f, 1.0f); // Dark gray background
+
+  static float rotation = 0.0f;
+  rotation += 45.0f * static_cast<float>(Engine::TIME.get_dt());
+
+  Engine::GRAPHICS.drawRect({ 1.0f, 0.0f, 0.0f, 1.0f }, 0.0f, 0.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center);       // Top left, Red
+  Engine::GRAPHICS.drawRect({ 0.0f, 1.0f, 0.0f, 1.0f }, 800.0f, 600.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center);   // Bottom right, Green
+  Engine::GRAPHICS.drawRect({ 0.0f, 0.0f, 1.0f, 1.0f }, 0.0f, 600.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center);     // Bottom left, Blue
+  Engine::GRAPHICS.drawRect({ 1.0f, 1.0f, 0.0f, 1.0f }, 800.0f, 0.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center);     // Top right, Yellow
+  Engine::GRAPHICS.drawRect({ 1.0f, 0.0f, 1.0f, 1.0f }, 400.0f, 300.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center);   // Center, Magenta
 }
 
 void BasicState::Free()

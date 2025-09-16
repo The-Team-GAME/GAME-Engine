@@ -9,116 +9,74 @@
 #include "InputManager.h"
 #include "ImGuiManager.h"
 #include "StateChooser.inl"
+#include "Time.h"
+#include "PerformanceViewer.h"
+#include "WindowManager.h"
 
 namespace Engine
 {
+  // TODO: window size should not be hardcoded
+  int windowWidth = 800;
+  int windowHeight = 600;
 
-  Core* CORE;
-  ECS::World* WORLD;
-  ObjectFactory* FACTORY;
-  Graphics* GRAPHICS;
+  // These are global instances of the core engine systems.
+  // They are defined here and declared extern in Core.h for use throughout the engine.
+  ECS::World WORLD{};
+  ObjectFactory FACTORY{ &WORLD };
+  WindowManager WINDOW{ windowWidth, windowHeight, "Monkey Stole My GPA" };
+  Graphics GRAPHICS{ windowWidth, windowHeight };
+  ImGuiManager IMGUI{};
+  Time TIME{};
 
   Core::Core()
   {
-    lastTime = 0.0f;
-    dt = 0.0f;
     isRunning = true;
-    window = nullptr;
-    dt = 0.0f;
-    CORE = this;
-    WORLD = new ECS::World(); // TODO: check memory leak
-    FACTORY = new ObjectFactory(WORLD);
-    GRAPHICS = new Graphics();
+    StateManager::Init(BasicState::Get()); // TODO: to be removed
   }
 
   Core::~Core()
   {
-    // Nothing for now
-  }
-
-  int Core::init()
-  {
-
-    /* Initialize the library */
-    if (!glfwInit())
-      return -1;
-
-    /* Create a windowed mode window and its OpenGL context */
-    // TODO: window size should not be hardcoded
-    int windowWidth = 800;
-    int windowHeight = 600;
-    window = glfwCreateWindow(windowWidth, windowHeight, "Rectangle Drawer", NULL, NULL);
-    if (!window)
-    {
-      std::cout << "Failed to create GLFW window" << std::endl;
-      glfwTerminate();
-      return -1;
-    }
-
-    /* Make the window's context current */
-    glfwMakeContextCurrent(window);
-
-    if (glewInit() != GLEW_OK)
-    {
-      std::cout << "GLEW Initialization failed.\n";
-    }
-
-    std::cout << glGetString(GL_VERSION) << std::endl;
-
-    StateManager::Init(BasicState::Get());
-
-    ImGuiManager::init();
-
-    Engine::GRAPHICS->init();
-
-    return 0;
+    StateManager::Exit(); // TODO: to be removed 
   }
 
   void Core::run()
   {
-    lastTime = static_cast<float>(glfwGetTime());
-
-    while (!glfwWindowShouldClose(window) && isRunning)
+    while (!glfwWindowShouldClose(WINDOW.getWindow()) && isRunning)
     {
-      float currenttime = static_cast<float>(glfwGetTime()) * 1000.0f;
-      dt = (currenttime - lastTime) / 1000.0f;
-      lastTime = currenttime;
+      // Everything inside this loop ignores fixed timestep
 
-      glfwPollEvents();
-      ImGuiManager::begin();
+      TIME.accumulate_time();
 
-      Input::Update();
+      while (TIME.should_update())
+      {
+        // Everything inside this loop is runned at a fixed timestep
 
-      StateManager::GetCurrentState()->Update();
-      StateManager::GetCurrentState()->Draw();
+        TIME.update_fixed_step();
 
-      WORLD->update(dt);
+        glfwPollEvents();
 
-      StateChooserPanel();
+        IMGUI.begin();
 
-      ImGuiManager::end();
+        Input::Update();
 
-      /* Swap front and back buffers */
-      glfwSwapBuffers(window);
+        GRAPHICS.beginFrame();
+
+
+        StateManager::GetCurrentState()->Update();
+        StateManager::GetCurrentState()->Draw();
+
+        WORLD.update();
+
+        StateChooserPanel();
+        PerformanceViewerPanel(TIME.target_fps);
+
+        GRAPHICS.endFrame();
+
+        IMGUI.end();
+
+        /* Swap front and back buffers */
+        glfwSwapBuffers(WINDOW.getWindow());
+      }
     }
   }
-
-  void Core::exit()
-  {
-    StateManager::Exit();
-    Engine::GRAPHICS->exit();
-    glfwDestroyWindow(window);
-    glfwTerminate();
-  }
-
-  float Core::getDt() const
-  {
-    return dt;
-  }
-
-  GLFWwindow* Core::getWindow() const
-  {
-    return window;
-  }
-
 }

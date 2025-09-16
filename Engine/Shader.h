@@ -32,4 +32,5 @@ public:
   void setVec4(const std::string& name, glm::vec4 const& list) const;
   void setVec4(const std::string& name, float a, float b, float c, float d) const;
   void setMatrix(const std::string& name, const glm::mat4x4& matrix, bool transpose = false) const;
+  void setIntArray(const std::string& name, int count, const int* value) const;
 };

@@ -3,45 +3,37 @@
 #include "BasicComponents.h"
 #include <iostream>
 
-// TODO: to be removed, replaced by GameObjectRenderSystem
-class RenderSystem : public ECS::System {
+class RectRenderSystem : public ECS::System {
 public:
-  RenderSystem() {
-    requireComponents<Components::Position, Components::Renderable>();
+  RectRenderSystem() {
+    requireComponents<Components::Color, Components::Position, Components::Size>();
   }
-
-  void updateEntity(ECS::EntityID entityId, float /*dt*/) override {
+  void updateEntity(ECS::EntityID entityId) override {
+    auto* color = world->getComponent<Components::Color>(entityId);
     auto* pos = world->getComponent<Components::Position>(entityId);
-    //auto* render = world->getComponent<Components::Renderable>(entityId);
+    auto* size = world->getComponent<Components::Size>(entityId);
 
-    /*std::cout << "Rendering sprite " << render->spriteId
-      << " at (" << pos->x << ", " << pos->y
-      << ") scale=" << render->scale << "\n";*/
+    auto rotation = world->hasComponent<Components::Rotation>(entityId) ? *world->getComponent<Components::Rotation>(entityId) : Components::Rotation{ 0.0f };
 
-    Engine::GRAPHICS->drawRect(pos->x, pos->y, 10.0f, 10.0f, { 1.0f, 1.0f, 1.0f, 1.0f }); // TODO: allow changing color
+    Engine::GRAPHICS.drawRect({ color->x, color->y, color->z, color->w }, pos->x, pos->y, size->width, size->height, rotation.angle, Graphics::Origin::Center);
   }
 };
 
-class GameObjectRenderSystem : public ECS::System {
+class StaticSpriteRenderSystem : public ECS::System {
 public:
-  GameObjectRenderSystem() {
-    requireComponents<Components::StaticSprite, Components::Size>();
+  StaticSpriteRenderSystem() {
+    requireComponents<Components::StaticSprite, Components::Position, Components::Size>();
   }
 
-  void updateEntity(ECS::EntityID entityId, float /*dt*/) override {
+  void updateEntity(ECS::EntityID entityId) override {
     auto* sprite = world->getComponent<Components::StaticSprite>(entityId);
     auto* size = world->getComponent<Components::Size>(entityId);
     auto* pos = world->getComponent<Components::Position>(entityId);
-    auto* rotation = world->getComponent<Components::Rotation>(entityId);
-    auto* scale = world->getComponent<Components::Scale>(entityId);
 
-    // Default values if components are missing
-    float x = pos ? pos->x : 0.0f;
-    float y = pos ? pos->y : 0.0f;
-    float angle = rotation ? rotation->angle : 0.0f;
-    float scaleX = scale ? scale->x : 1.0f;
-    float scaleY = scale ? scale->y : 1.0f;
+    auto rotation = world->hasComponent<Components::Rotation>(entityId) ? *world->getComponent<Components::Rotation>(entityId) : Components::Rotation{ 0.0f };
+    auto scale = world->hasComponent<Components::Scale>(entityId) ? *world->getComponent<Components::Scale>(entityId) : Components::Scale{ 1.0f, 1.0f };
+    auto color = world->hasComponent<Components::Color>(entityId) ? *world->getComponent<Components::Color>(entityId) : Components::Color{ 1.0f, 1.0f, 1.0f, 1.0f };
 
-    Engine::GRAPHICS->drawTexture(sprite->textureId, x, y, size->width * scaleX, size->height * scaleY, angle);
+    Engine::GRAPHICS.drawTexture(sprite->textureId, pos->x, pos->y, size->width * scale.x, size->height * scale.y, rotation.angle, Graphics::Origin::Center, { color.x, color.y, color.z, color.w });
   }
 };

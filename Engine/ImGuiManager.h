@@ -8,8 +8,10 @@ namespace Engine
   class ImGuiManager
   {
   public:
-    static void init();
-    static void begin();
-    static void end();
+    ImGuiManager();
+    ~ImGuiManager();
+
+    void begin();
+    void end();
   };
 }

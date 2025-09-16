@@ -4,7 +4,7 @@
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
 
-void Engine::ImGuiManager::init()
+Engine::ImGuiManager::ImGuiManager()
 {
   ImGui::CreateContext();
   ImGuiIO& io = ImGui::GetIO();
@@ -12,8 +12,15 @@ void Engine::ImGuiManager::init()
   //io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
   ImGui::StyleColorsDark();
 
-  ImGui_ImplGlfw_InitForOpenGL(Engine::CORE->getWindow(), true);
+  ImGui_ImplGlfw_InitForOpenGL(Engine::WINDOW.getWindow(), true); // TODO: pass window as parameter
   ImGui_ImplOpenGL3_Init();
+}
+
+Engine::ImGuiManager::~ImGuiManager()
+{
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
 }
 
 void Engine::ImGuiManager::begin()

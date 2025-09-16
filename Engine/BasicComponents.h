@@ -36,6 +36,11 @@ namespace Components {
     Rotation(float angle = 0.0f) : angle(angle) {}
   };
 
+  struct RotationSpeed {
+    float degreesPerSecond;
+    RotationSpeed(float degreesPerSecond = 0.0f) : degreesPerSecond(degreesPerSecond) {}
+  };
+
   struct Velocity : Math::Vec2D {
     using Math::Vec2D::Vec2D;
   };
@@ -48,6 +53,8 @@ namespace Components {
   struct Color : Math::Vec4D {
     using Math::Vec4D::Vec4D;
   };
+
+  struct Background {};
 
   struct Health {
     int value, max;
@@ -69,7 +76,7 @@ namespace Components {
   struct Renderable {};
 
   struct StaticSprite {
-    unsigned int textureId;
+    int textureId;
     StaticSprite(std::string texturePath, Graphics::MinifyingFilter minifyingFilter = Graphics::MinifyingFilter::Linear);
     StaticSprite(const StaticSprite& other);
   };

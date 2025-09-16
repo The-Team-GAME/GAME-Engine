@@ -1,6 +1,6 @@
 #pragma once
 
-#include "imgui.h."
+#include "imgui.h"
 #include "StateManager.h"
 #include "BasicState.h"
 #include "MainMenuState.h"
@@ -8,6 +8,8 @@
 #include "JsonState.h"
 #include "SpriteState.h"
 #include "GameObjectState.h"
+#include "DevManySpritesState.h"
+#include "Rubric2500Particles.h"
 #include "ImGuiState.h"
 
 inline void StateChooserPanel()
@@ -39,6 +41,14 @@ inline void StateChooserPanel()
   if (ImGui::Button("GameObjectState"))
   {
     Engine::StateManager::ChangeState(GameObjectState::Get());
+  }
+  if (ImGui::Button("DevManySpritesState"))
+  {
+    Engine::StateManager::ChangeState(DevManySpritesState::Get());
+  }
+  if (ImGui::Button("Rubric2500Particles"))
+  {
+    Engine::StateManager::ChangeState(Rubric2500Particles::Get());
   }
   if (ImGui::Button("ImGui Rect Painter"))
   {

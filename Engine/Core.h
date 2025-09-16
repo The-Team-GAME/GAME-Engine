@@ -5,6 +5,9 @@
 #include <GLFW/glfw3.h>
 #include "ECS/ECS.h"
 #include "ObjectFactory.h"
+#include "Time.h"
+#include "ImGuiManager.h"
+#include "WindowManager.h"
 
 namespace Engine
 {
@@ -12,25 +15,18 @@ namespace Engine
   {
   private:
     bool isRunning;
-    float lastTime;
-    GLFWwindow* window;
-    float dt;
 
   public:
     Core();
     ~Core();
 
-    int init();
     void run();
-    void exit();
-
-    float getDt() const;
-    GLFWwindow* getWindow() const;
   };
 
-  // Global pointer to the instance of the core
-  extern Core* CORE;
-  extern ECS::World* WORLD;
-  extern ObjectFactory* FACTORY;
-  extern Graphics* GRAPHICS;
+  extern ECS::World WORLD;
+  extern ObjectFactory FACTORY;
+  extern Graphics GRAPHICS;
+  extern ImGuiManager IMGUI;
+  extern WindowManager WINDOW;
+  extern Time TIME;
 }

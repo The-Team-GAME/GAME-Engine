@@ -38,7 +38,7 @@ namespace Engine
     newState->Init();
   }
 
-  void StateManager::PushState(GameStateBase* newState, std::any data)
+  void StateManager::PushState(GameStateBase* newState, std::any /*data*/)
   {
     stateStack.push_back(newState);
     //stateDataStack.push_back(data);

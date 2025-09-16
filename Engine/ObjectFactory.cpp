@@ -59,6 +59,12 @@ void Engine::ObjectFactory::unregisterObject(int id)
   nextObjectId--;
 }
 
+void Engine::ObjectFactory::unregisterAllObjects()
+{
+  objectList.clear();
+  nextObjectId = 0;
+}
+
 ECS::Entity Engine::ObjectFactory::createObject(int id)
 {
   ObjectPrefab& objectPrefab = objectList[id];
