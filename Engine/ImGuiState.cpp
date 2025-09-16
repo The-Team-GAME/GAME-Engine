@@ -21,18 +21,18 @@ void ImGuiState::Update()
 void ImGuiState::Draw()
 {
   // Background
-  Engine::GRAPHICS->clearScreen(0.08f, 0.08f, 0.10f, 1.0f);
+  Engine::GRAPHICS.clearScreen(0.08f, 0.08f, 0.10f, 1.0f);
 
   // Draw committed rects
   for (const Rect& r : rects_)
-    Engine::GRAPHICS->drawRect(r.pos.x, r.pos.y, r.size.x, r.size.y, r.color);
+    Engine::GRAPHICS.drawRect(r.color, r.pos.x, r.pos.y, r.size.x, r.size.y);
 
   // Draw preview while dragging
   if (isDrawing_ && passedThreshold_)
   {
     Rect preview = MakeRect(dragStart_, dragEnd_, currentColor_);
     ClampRectMinSize(preview);
-    Engine::GRAPHICS->drawRect(preview.pos.x, preview.pos.y, preview.size.x, preview.size.y, preview.color);
+    Engine::GRAPHICS.drawRect(preview.color, preview.pos.x, preview.pos.y, preview.size.x, preview.size.y);
   }
 
   drawImGui();
