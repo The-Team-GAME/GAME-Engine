@@ -1,15 +1,7 @@
 #pragma once
 
-
-
-
-
-
-
 #include "StateManager.h"
-
 #include "core.h"
-
 #include "ObjectFactory.h"
 #include <string>
 #include <vector>
@@ -366,19 +358,19 @@ public:
 			ImGui::SameLine(); // Places images on a same line
 
 
-			if (ImGui::BeginDragDropTarget()) {
+			//if (ImGui::BeginDragDropTarget()) {
 
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SPRITEDROP_ID")) {
-					int droppedImageId = *(const int*)payload->Data;
-					ImVec2 dropPos = ImGui::GetMousePos();
+			//	if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SPRITEDROP_ID")) {
+			//		int droppedImageId = *(const int*)payload->Data;
+			//		ImVec2 dropPos = ImGui::GetMousePos();
 
-					// Create a new DroppedImage instance and add it to the vector
-					droppedImages.push_back({ droppedImageId, dropPos });
+			//		// Create a new DroppedImage instance and add it to the vector
+			//		droppedImages.push_back({ droppedImageId, dropPos });
 
-					std::cout << "Dropped image with ID: " << droppedImageId << " at position (" << dropPos.x << ", " << dropPos.y << ")" << std::endl;
-				}
-				ImGui::EndDragDropTarget();
-			}
+			//		std::cout << "Dropped image with ID: " << droppedImageId << " at position (" << dropPos.x << ", " << dropPos.y << ")" << std::endl;
+			//	}
+			//	ImGui::EndDragDropTarget();
+			//}
 		}
 
 
