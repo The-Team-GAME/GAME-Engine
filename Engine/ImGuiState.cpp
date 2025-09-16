@@ -25,14 +25,15 @@ void ImGuiState::Draw()
 
   // Draw committed rects
   for (const Rect& r : rects_)
-    Engine::GRAPHICS.drawRect(r.color, r.pos.x, r.pos.y, r.size.x, r.size.y);
+    Engine::GRAPHICS.drawRect(r.color, r.pos.x, r.pos.y, r.size.x, r.size.y, 0.0f, Graphics::Origin::BottomLeft); 
+  // Bottom Left because we are using screen coordinates for this (TODO: check if we should use world coordinates for this (sy))
 
   // Draw preview while dragging
   if (isDrawing_ && passedThreshold_)
   {
     Rect preview = MakeRect(dragStart_, dragEnd_, currentColor_);
     ClampRectMinSize(preview);
-    Engine::GRAPHICS.drawRect(preview.color, preview.pos.x, preview.pos.y, preview.size.x, preview.size.y);
+    Engine::GRAPHICS.drawRect(preview.color, preview.pos.x, preview.pos.y, preview.size.x, preview.size.y, 0.0f, Graphics::Origin::BottomLeft);
   }
 
   drawImGui();
