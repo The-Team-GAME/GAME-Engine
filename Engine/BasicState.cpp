@@ -69,8 +69,8 @@ void BasicState::Draw()
   Engine::GRAPHICS.drawRect({ 1.0f, 0.0f, 1.0f, 1.0f }, 400.0f, 300.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center);   // Center, Magenta
 
   // Draw some text using the loaded font
-  Engine::GRAPHICS.drawText(fontId1, "Hello, FreeType!", 250.0f, 250.0f, 1.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
-  Engine::GRAPHICS.drawText(fontId2, "Hello, FreeType!", 250.0f, 300.0f, 1.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+  Engine::GRAPHICS.drawText(fontId1, "Hello", 250.0f, 250.0f, 1.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+  Engine::GRAPHICS.drawText(fontId2, "Hello", 250.0f, 300.0f, 1.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
 }
 
 void BasicState::Free()
