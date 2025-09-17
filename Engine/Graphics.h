@@ -122,6 +122,7 @@ private:
   struct Font {
     std::unordered_map<char, Character> Characters;
     unsigned int fontSize;
+    float baseline; // Add baseline for consistent alignment
   };
 
   // Font data

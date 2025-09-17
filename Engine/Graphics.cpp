@@ -335,6 +335,7 @@ int Graphics::loadFont(const char* filepath, unsigned int size)
 
   Font font;
   font.fontSize = size;
+  font.baseline = 0.0f; // Will be calculated below
 
   // Load first 128 ASCII characters
   for (unsigned char c = 0; c < 128; c++)
@@ -376,6 +377,9 @@ int Graphics::loadFont(const char* filepath, unsigned int size)
       static_cast<unsigned int>(face->glyph->advance.x)
     };
     font.Characters.insert(std::pair<char, Character>(c, character));
+
+    // Update baseline to the maximum bearing.y
+    font.baseline = std::max(font.baseline, static_cast<float>(character.Bearing.y));
   }
 
   // Clean up FreeType face
@@ -401,14 +405,6 @@ void Graphics::drawText(int fontId, const std::string& text, float x, float y, f
   const Font& font = fonts[fontId];
   float currentX = x;
 
-  // Calculate the baseline offset for consistent vertical alignment
-  // Find the maximum bearing.y (ascender) for this font size
-  float maxBearingY = 0.0f;
-  for (const auto& pair : font.Characters)
-  {
-    maxBearingY = std::max(maxBearingY, static_cast<float>(pair.second.Bearing.y));
-  }
-
   // Iterate through all characters
   for (auto c = text.begin(); c != text.end(); c++)
   {
@@ -421,8 +417,8 @@ void Graphics::drawText(int fontId, const std::string& text, float x, float y, f
     const Character& ch = it->second;
 
     float xpos = currentX + ch.Bearing.x * scale;
-    // Use maxBearingY to align all characters to the same baseline
-    float ypos = y + (maxBearingY - ch.Bearing.y) * scale;
+    // Use pre-calculated baseline for consistent alignment
+    float ypos = y + (font.baseline - ch.Bearing.y) * scale;
 
     float w = ch.Size.x * scale;
     float h = ch.Size.y * scale;
