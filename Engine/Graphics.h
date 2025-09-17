@@ -1,11 +1,12 @@
 #pragma once
 
-#include <vector>
 #include <glm/glm.hpp>
-#include "Shader.h"
+#include <vector>
+#include <unordered_map>
+#include <ft2build.h>
 #include <array>
-#include <memory>  // Already added for smart pointers
-
+#include "Shader.h"
+#include FT_FREETYPE_H
 
 class Graphics
 {
@@ -17,12 +18,22 @@ public:
     int width;
     int height;
   };
-
   struct Camera2D
   {
     glm::vec2 position = { 0.0f, 0.0f };
     float zoom = 1.0f;
     float rotation = 0.0f;
+  };
+
+  struct Character {
+    int textureID;      // The ID of the texture containing the glyph
+    glm::ivec2 size;    // Size of glyph
+    glm::ivec2 bearing; // Offset from baseline to left/top of glyph
+    unsigned int advance; // Horizontal offset to advance to next glyph
+  };
+
+  struct Font {
+    std::unordered_map<char, Character> characters;
   };
 
   enum class MinifyingFilter
@@ -62,9 +73,14 @@ private:
   std::vector<Vertex> quadVertexBufferBase;
   uint32_t vertexIndex = 0;
 
+  // Rendering Data
   std::vector<Texture> textures;
   std::array<unsigned int, MaxTextureSlots> textureSlots;
   uint32_t textureSlotIndex = 1; // 0 = white texture
+
+  // FreeType
+  FT_Library ft;
+  std::vector<Font> fonts;
 
   Shader textureShader;
   glm::mat4 projection;
@@ -90,7 +106,10 @@ public:
   void setCameraPosition(float x, float y);
   void setCameraZoom(float zoom);
   void setCameraRotation(float degrees);
-  const Camera2D& getCamera() const { return camera; }
+
+  // Font and Text
+  int loadFont(const char* filepath, unsigned int size);
+  void drawText(int fontId, const std::string& text, float x, float y, float scale, const glm::vec4& color);
 
   void drawRect(const glm::vec4& color, float x, float y, float width, float height, float rotation = 0.0f, Origin origin = Origin::Center);
   void drawTexture(int imageId, float x, float y, float width, float height, float rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& tintColor = glm::vec4(1.0f));

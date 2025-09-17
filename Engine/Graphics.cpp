@@ -56,7 +56,14 @@ void Graphics::updateViewMatrix() {
 
 // Initializes the graphics system, shaders, and buffers.
 Graphics::Graphics(int windowWidth, int windowHeight)
-{// Enable alpha blending.
+{
+  // Initialize FreeType
+  if (FT_Init_FreeType(&ft))
+  {
+    std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+  }
+
+  // Enable alpha blending.
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -157,6 +164,9 @@ Graphics::~Graphics()
   {
     if (texture != 0) glDeleteTextures(1, &texture);
   }
+
+  // Clean up FreeType
+  FT_Done_FreeType(ft);
 }
 
 // Called at the beginning of a frame to prepare for drawing.
@@ -295,6 +305,118 @@ void Graphics::drawRect(const glm::vec4& color, float x, float y, float width, f
 
   // Increment the index count for the two triangles that make up the quad.
   quadIndexCount += 6;
+}
+
+// Loads a font from a file and prepares it for rendering.
+int Graphics::loadFont(const char* filepath, unsigned int size)
+{
+  FT_Face face;
+  if (FT_New_Face(ft, filepath, 0, &face)) {
+    std::cout << "ERROR::FREETYPE: Failed to load font: " << filepath << std::endl;
+    return -1;
+  }
+
+  FT_Set_Pixel_Sizes(face, 0, size);
+
+  // Disable byte-alignment restriction
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+  Font font;
+
+  // Pre-load ASCII characters
+  for (unsigned char c = 0; c < 128; c++)
+  {
+    // Load character glyph
+    if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+    {
+      std::cout << "ERROR::FREETYTPE: Failed to load Glyph: " << c << std::endl;
+      continue;
+    }
+
+    // Generate texture
+    unsigned int texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(
+      GL_TEXTURE_2D,
+      0,
+      GL_RED,
+      face->glyph->bitmap.width,
+      face->glyph->bitmap.rows,
+      0,
+      GL_RED,
+      GL_UNSIGNED_BYTE,
+      face->glyph->bitmap.buffer
+    );
+
+    // Set texture options
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Store texture info
+    Texture tex = { texture, (int)face->glyph->bitmap.width, (int)face->glyph->bitmap.rows };
+    textures.push_back(tex);
+    int textureId = static_cast<int>(textures.size() - 1);
+
+    // Now store character for later use
+    Character character = {
+        textureId,
+        glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+        glm::ivec2(face->glyph->metrics.horiBearingX / 64, face->glyph->metrics.horiBearingY / 64),
+        static_cast<unsigned int>(face->glyph->advance.x)
+    };
+    font.characters.insert(std::pair<char, Character>(c, character));
+  }
+
+  // Restore default byte-alignment
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+
+  // Clean up FreeType resources
+  FT_Done_Face(face);
+
+  fonts.push_back(font);
+  return static_cast<int>(fonts.size() - 1);
+}
+
+// Draws text on the screen.
+void Graphics::drawText(int fontId, const std::string& text, float x, float y, float scale, const glm::vec4& color)
+{
+  if (fontId < 0 || fontId >= static_cast<int>(fonts.size()))
+  {
+    std::cout << "Invalid font ID: " << fontId << std::endl;
+    return;
+  }
+
+  const auto& font = fonts[fontId];
+
+  // Iterate through all characters
+  for (const auto& c : text)
+  {
+    if (font.characters.find(c) == font.characters.end())
+    {
+      std::cout << "Character not found in font: " << c << std::endl;
+      continue;
+    }
+
+    Character ch = font.characters.at(c);
+
+    float xpos = x + ch.bearing.x * scale;
+    float ypos = y + (font.characters.at('H').bearing.y - ch.bearing.y) * scale; // Align to baseline
+
+    float w = ch.size.x * scale;
+    float h = ch.size.y * scale;
+
+    // Render glyph texture over quad
+    if (ch.textureID != -1)
+    {
+      drawTexture(ch.textureID, xpos, ypos, w, h, 0.0f, Origin::TopLeft, color);
+    }
+
+    // Now advance cursors for next glyph (note that advance is 1/64 pixels)
+    x += (ch.advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64)
+  }
 }
 
 // Loads a texture from a file and returns an ID for it.
