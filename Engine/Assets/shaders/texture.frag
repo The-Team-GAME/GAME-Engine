@@ -12,7 +12,19 @@ void main() {
     if (v_TexId > -1.0)
     {
         int id = int(v_TexId);
-        FragColor = texture(u_Textures[id], v_TexCoord) * v_Color;
+        vec4 sampled = texture(u_Textures[id], v_TexCoord);
+        
+        // Check if this is likely a font texture (single channel)
+        if (sampled.g == 0.0 && sampled.b == 0.0 && sampled.a == 1.0)
+        {
+            // Font rendering: use red channel as alpha
+            FragColor = vec4(v_Color.rgb, v_Color.a * sampled.r);
+        }
+        else
+        {
+            // Regular texture rendering
+            FragColor = sampled * v_Color;
+        }
     }
     else
     {

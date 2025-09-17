@@ -3,9 +3,9 @@
 #include <glm/glm.hpp>
 #include <vector>
 #include <unordered_map>
-#include <ft2build.h>
 #include <array>
 #include "Shader.h"
+#include <ft2build.h>
 #include FT_FREETYPE_H
 
 class Graphics
@@ -25,16 +25,6 @@ public:
     float rotation = 0.0f;
   };
 
-  struct Character {
-    int textureID;      // The ID of the texture containing the glyph
-    glm::ivec2 size;    // Size of glyph
-    glm::ivec2 bearing; // Offset from baseline to left/top of glyph
-    unsigned int advance; // Horizontal offset to advance to next glyph
-  };
-
-  struct Font {
-    std::unordered_map<char, Character> characters;
-  };
 
   enum class MinifyingFilter
   {
@@ -78,9 +68,6 @@ private:
   std::array<unsigned int, MaxTextureSlots> textureSlots;
   uint32_t textureSlotIndex = 1; // 0 = white texture
 
-  // FreeType
-  FT_Library ft;
-  std::vector<Font> fonts;
 
   Shader textureShader;
   glm::mat4 projection;
@@ -123,4 +110,21 @@ private:
   void nextBatch();
   void flush();
   glm::vec2 calculateOriginOffset(float width, float height, Origin origin) const;
+
+  // Font rendering structures
+  struct Character {
+    unsigned int TextureID;  // ID handle of the glyph texture
+    glm::ivec2   Size;       // Size of glyph
+    glm::ivec2   Bearing;    // Offset from baseline to left/top of glyph
+    unsigned int Advance;    // Offset to advance to next glyph
+  };
+
+  struct Font {
+    std::unordered_map<char, Character> Characters;
+    unsigned int fontSize;
+  };
+
+  // Font data
+  FT_Library ft;
+  std::vector<Font> fonts;
 };

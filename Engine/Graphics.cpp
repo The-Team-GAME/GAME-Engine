@@ -159,6 +159,15 @@ Graphics::~Graphics()
     glDeleteTextures(1, &tex.id);
   }
 
+  // Delete font character textures
+  for (const auto& font : fonts)
+  {
+    for (const auto& pair : font.Characters)
+    {
+      glDeleteTextures(1, &pair.second.TextureID);
+    }
+  }
+
   // Delete the white texture and any others that might be in the slots.
   for (const auto& texture : textureSlots)
   {
@@ -310,26 +319,30 @@ void Graphics::drawRect(const glm::vec4& color, float x, float y, float width, f
 // Loads a font from a file and prepares it for rendering.
 int Graphics::loadFont(const char* filepath, unsigned int size)
 {
+  // Load font face
   FT_Face face;
-  if (FT_New_Face(ft, filepath, 0, &face)) {
+  if (FT_New_Face(ft, filepath, 0, &face))
+  {
     std::cout << "ERROR::FREETYPE: Failed to load font: " << filepath << std::endl;
     return -1;
   }
 
+  // Set size to load glyphs (width=0 means dynamically calculated)
   FT_Set_Pixel_Sizes(face, 0, size);
 
   // Disable byte-alignment restriction
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
   Font font;
+  font.fontSize = size;
 
-  // Pre-load ASCII characters
+  // Load first 128 ASCII characters
   for (unsigned char c = 0; c < 128; c++)
   {
-    // Load character glyph
+    // Load character glyph 
     if (FT_Load_Char(face, c, FT_LOAD_RENDER))
     {
-      std::cout << "ERROR::FREETYTPE: Failed to load Glyph: " << c << std::endl;
+      std::cout << "ERROR::FREETYPE: Failed to load Glyph for character: " << c << std::endl;
       continue;
     }
 
@@ -355,27 +368,23 @@ int Graphics::loadFont(const char* filepath, unsigned int size)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    // Store texture info
-    Texture tex = { texture, (int)face->glyph->bitmap.width, (int)face->glyph->bitmap.rows };
-    textures.push_back(tex);
-    int textureId = static_cast<int>(textures.size() - 1);
-
-    // Now store character for later use
+    // Store character for later use
     Character character = {
-        textureId,
-        glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
-        glm::ivec2(face->glyph->metrics.horiBearingX / 64, face->glyph->metrics.horiBearingY / 64),
-        static_cast<unsigned int>(face->glyph->advance.x)
+      texture,
+      glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+      glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+      static_cast<unsigned int>(face->glyph->advance.x)
     };
-    font.characters.insert(std::pair<char, Character>(c, character));
+    font.Characters.insert(std::pair<char, Character>(c, character));
   }
 
-  // Restore default byte-alignment
-  glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-
-  // Clean up FreeType resources
+  // Clean up FreeType face
   FT_Done_Face(face);
 
+  // Restore default alignment
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+
+  // Store font and return its ID
   fonts.push_back(font);
   return static_cast<int>(fonts.size() - 1);
 }
@@ -389,33 +398,73 @@ void Graphics::drawText(int fontId, const std::string& text, float x, float y, f
     return;
   }
 
-  const auto& font = fonts[fontId];
+  const Font& font = fonts[fontId];
+  float currentX = x;
+
+  // Calculate the baseline offset for consistent vertical alignment
+  // Find the maximum bearing.y (ascender) for this font size
+  float maxBearingY = 0.0f;
+  for (const auto& pair : font.Characters)
+  {
+    maxBearingY = std::max(maxBearingY, static_cast<float>(pair.second.Bearing.y));
+  }
 
   // Iterate through all characters
-  for (const auto& c : text)
+  for (auto c = text.begin(); c != text.end(); c++)
   {
-    if (font.characters.find(c) == font.characters.end())
+    auto it = font.Characters.find(*c);
+    if (it == font.Characters.end())
     {
-      std::cout << "Character not found in font: " << c << std::endl;
-      continue;
+      continue; // Skip unknown characters
     }
 
-    Character ch = font.characters.at(c);
+    const Character& ch = it->second;
 
-    float xpos = x + ch.bearing.x * scale;
-    float ypos = y + (font.characters.at('H').bearing.y - ch.bearing.y) * scale; // Align to baseline
+    float xpos = currentX + ch.Bearing.x * scale;
+    // Use maxBearingY to align all characters to the same baseline
+    float ypos = y + (maxBearingY - ch.Bearing.y) * scale;
 
-    float w = ch.size.x * scale;
-    float h = ch.size.y * scale;
+    float w = ch.Size.x * scale;
+    float h = ch.Size.y * scale;
 
-    // Render glyph texture over quad
-    if (ch.textureID != -1)
+    // Skip rendering if character has no size (like space)
+    if (w > 0 && h > 0)
     {
-      drawTexture(ch.textureID, xpos, ypos, w, h, 0.0f, Origin::TopLeft, color);
+      // If the batch is full, start a new one
+      if (quadIndexCount >= MaxIndices || textureSlotIndex >= MaxTextureSlots)
+      {
+        nextBatch();
+      }
+
+      // Find or add the character texture to a slot
+      float textureIndex = 0.0f;
+      auto texIt = std::find(textureSlots.begin() + 1, textureSlots.begin() + textureSlotIndex, ch.TextureID);
+      if (texIt != textureSlots.begin() + textureSlotIndex)
+      {
+        textureIndex = static_cast<float>(std::distance(textureSlots.begin(), texIt));
+      }
+      else
+      {
+        textureIndex = static_cast<float>(textureSlotIndex);
+        textureSlots[textureSlotIndex] = ch.TextureID;
+        textureSlotIndex++;
+      }
+
+      // Create transformation matrix for the character quad
+      glm::mat4 transform = glm::translate(glm::mat4(1.0f), { xpos + w / 2.0f, ypos + h / 2.0f, 0.0f })
+        * glm::scale(glm::mat4(1.0f), { w, h, 1.0f });
+
+      // Add the 4 vertices of the character quad to the vertex buffer
+      quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[0], color, {0.0f, 0.0f}, textureIndex };
+      quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[1], color, {1.0f, 0.0f}, textureIndex };
+      quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[2], color, {1.0f, 1.0f}, textureIndex };
+      quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[3], color, {0.0f, 1.0f}, textureIndex };
+
+      quadIndexCount += 6;
     }
 
-    // Now advance cursors for next glyph (note that advance is 1/64 pixels)
-    x += (ch.advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64)
+    // Advance cursor for next glyph (advance is in 1/64 pixels)
+    currentX += (ch.Advance >> 6) * scale;
   }
 }
 
