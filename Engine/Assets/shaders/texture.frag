@@ -14,15 +14,13 @@ void main() {
         int id = int(v_TexId);
         vec4 sampled = texture(u_Textures[id], v_TexCoord);
         
-        // Check if this is likely a font texture (single channel)
-        if (sampled.g == 0.0 && sampled.b == 0.0 && sampled.a == 1.0)
+        // If it's a single-channel texture, treat as font
+        if (sampled.g == 0.0 && sampled.b == 0.0)
         {
-            // Font rendering: use red channel as alpha
             FragColor = vec4(v_Color.rgb, v_Color.a * sampled.r);
         }
         else
         {
-            // Regular texture rendering
             FragColor = sampled * v_Color;
         }
     }

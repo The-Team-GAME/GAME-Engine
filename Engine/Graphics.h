@@ -113,16 +113,18 @@ private:
 
   // Font rendering structures
   struct Character {
-    unsigned int TextureID;  // ID handle of the glyph texture
-    glm::ivec2   Size;       // Size of glyph
-    glm::ivec2   Bearing;    // Offset from baseline to left/top of glyph
-    unsigned int Advance;    // Offset to advance to next glyph
+    glm::vec2 texCoords[4];  // UV coordinates in the atlas
+    glm::ivec2 Size;
+    glm::ivec2 Bearing;
+    unsigned int Advance;
   };
 
   struct Font {
     std::unordered_map<char, Character> Characters;
+    unsigned int atlasTexture;  // Single texture for all characters
     unsigned int fontSize;
-    float baseline; // Add baseline for consistent alignment
+    float baseline;
+    int atlasWidth, atlasHeight;
   };
 
   // Font data
