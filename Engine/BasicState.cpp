@@ -20,10 +20,18 @@ void BasicState::Load()
   {
     std::cout << "Failed to load font for BasicState.\n";
   }
+
+  // Load sound using the AudioManager and store the ID
+  moveSoundId = Engine::AUDIO.loadSound("Assets/sounds/move1.wav");
+  if (moveSoundId == -1)
+  {
+    std::cout << "Failed to load move sound for BasicState.\n";
+  }
 }
 
 void BasicState::Init()
 {
+
 }
 
 void BasicState::Update()
@@ -31,6 +39,15 @@ void BasicState::Update()
   if (Engine::Input::IsKeyPressed(GLFW_KEY_SPACE))
   {
     std::cout << "Spacebar was pressed!\n";
+  }
+
+  if (Engine::Input::IsKeyPressed(GLFW_KEY_P))
+  {
+    if (moveSoundId != -1)
+    {
+      Engine::AUDIO.playSound(moveSoundId);
+      std::cout << "P key was pressed! Playing sound.\n";
+    }
   }
 
   /*if (Engine::Input::IsMouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT))
@@ -71,12 +88,29 @@ void BasicState::Draw()
   // Draw some text using the loaded font
   Engine::GRAPHICS.drawText(fontId1, "Hello", 250.0f, 250.0f, 1.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
   Engine::GRAPHICS.drawText(fontId2, "Hello", 250.0f, 300.0f, 1.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+  Engine::GRAPHICS.drawText(fontId1, "Press 'P' to play sound", 250.0f, 350.0f, 0.5f, { 1.0f, 1.0f, 0.0f, 1.0f });
 }
 
 void BasicState::Free()
 {
+
 }
 
 void BasicState::Unload()
 {
+  // Unload fonts
+  if (fontId1 != -1)
+  {
+    Engine::GRAPHICS.unloadFont(fontId1);
+  }
+  if (fontId2 != -1)
+  {
+    Engine::GRAPHICS.unloadFont(fontId2);
+  }
+
+  // Unload sounds
+  if (moveSoundId != -1)
+  {
+    Engine::AUDIO.unloadSound(moveSoundId);
+  }
 }

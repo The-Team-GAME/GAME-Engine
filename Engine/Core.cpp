@@ -27,10 +27,18 @@ namespace Engine
   Graphics GRAPHICS{ windowWidth, windowHeight };
   ImGuiManager IMGUI{};
   Time TIME{};
+  AudioManager AUDIO{};
 
   Core::Core()
   {
     isRunning = true;
+
+    // Initialize audio system
+    if (!AUDIO.initialize())
+    {
+      std::cout << "Failed to initialize audio system!" << std::endl;
+    }
+
     StateManager::Init(BasicState::Get()); // TODO: to be removed
   }
 
@@ -61,11 +69,13 @@ namespace Engine
 
         GRAPHICS.beginFrame();
 
-
         StateManager::GetCurrentState()->Update();
         StateManager::GetCurrentState()->Draw();
 
         WORLD.update();
+
+        // Update audio system
+        AUDIO.update();
 
         StateChooserPanel();
         PerformanceViewerPanel(TIME.target_fps);
