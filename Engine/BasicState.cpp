@@ -98,6 +98,17 @@ void BasicState::Free()
 
 void BasicState::Unload()
 {
+  // Unload fonts
+  if (fontId1 != -1)
+  {
+    Engine::GRAPHICS.unloadFont(fontId1);
+  }
+  if (fontId2 != -1)
+  {
+    Engine::GRAPHICS.unloadFont(fontId2);
+  }
+
+  // Unload sounds
   if (moveSoundId != -1)
   {
     Engine::AUDIO.unloadSound(moveSoundId);

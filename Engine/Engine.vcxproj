@@ -160,6 +160,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\x64\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClCompile Include="..\Dependencies\ImGui\imgui_draw.cpp" />
     <ClCompile Include="..\Dependencies\ImGui\imgui_tables.cpp" />
     <ClCompile Include="..\Dependencies\ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="AudioManager.cpp" />
     <ClCompile Include="BasicComponents.cpp" />
     <ClCompile Include="BasicState.cpp" />
     <ClCompile Include="BasicState.h" />
@@ -184,6 +185,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\x64\fmod.dll" "$(OutDir)" /s /r /y /q
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AudioManager.h" />
     <ClInclude Include="BackgroundSystem.h" />
     <ClInclude Include="BasicComponents.h" />
     <ClInclude Include="Core.h" />
