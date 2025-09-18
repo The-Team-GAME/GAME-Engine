@@ -315,6 +315,7 @@ public:
 		// --- Sprite Dropper ---
 		ImGui::Begin("Sprite Dropper");
 		ImGui::Text("Drop Images:");
+		int dropped = 0;
 
 		for (int imageId : loadedImageIds) { //loads all of my images within the file
 
@@ -344,11 +345,18 @@ public:
 				ImGui::Image(reinterpret_cast<void*>(static_cast<intptr_t>(imageId)), ImVec2(50, 50));
 				ImGui::Text("Dragging Image...");
 				ImGui::EndDragDropSource();
+				dropped = 1;
 			}
 
 			// Placing a button on top of the image
 			ImVec2 min = ImGui::GetItemRectMin();
 			ImVec2 max = ImGui::GetItemRectMax();
+
+			//drops the image onto the space
+			if (dropped == 1) {
+				ImVec2 mousepos = ImGui::GetMousePos();
+				Engine::GRAPHICS->drawTexture((static_cast<intptr_t>(imageId)), mousepos.x, mousepos.y, 150.0f, 210.0f);
+			}
 
 			ImGui::GetWindowDrawList()->AddImage( reinterpret_cast<void*>(static_cast<intptr_t>(imageId)), min, max, ImVec2(0, 0), ImVec2(1, 1), ImGui::GetColorU32(ImVec4(1, 1, 1, 1))
 			);
