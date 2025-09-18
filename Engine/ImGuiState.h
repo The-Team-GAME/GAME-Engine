@@ -39,6 +39,7 @@ private:
   // UI
   glm::vec4 currentColor_{ 1.0f, 1.0f, 1.0f, 0.25f };
   int selectedIndex_ = -1;
+  bool spawnWithCollider_ = false;
 
   // ECS rectangles
   std::vector<ECS::EntityID> rects_{};
@@ -47,6 +48,7 @@ private:
   void handleMouse();
   void drawImGui();
   void drawSelectionGizmo();
+  void runCollisionPass();
 
   // Picking / geometry
   static void computeCenterAndSize(const glm::vec2& a, const glm::vec2& b,
@@ -55,6 +57,11 @@ private:
 
   bool getBounds(ECS::EntityID id, glm::vec2& minP, glm::vec2& maxP) const;
   static bool pointInRect(const glm::vec2& p, const glm::vec2& minP, const glm::vec2& maxP);
+  
+  static bool aabbOverlap(const glm::vec2& aMin, const glm::vec2& aMax,
+    const glm::vec2& bMin, const glm::vec2& bMax);
+  struct HitInfo { bool colliding = false; };
+  
   ResizeMask hitHandle(const glm::vec2& p, const glm::vec2& minP, const glm::vec2& maxP) const;
   int pickTopmostRect(const glm::vec2& p) const;
 

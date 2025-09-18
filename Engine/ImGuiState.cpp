@@ -10,8 +10,16 @@
 #include <algorithm>
 #include <cstdio>
 #include <cmath>
+#include <unordered_map>
 
 using ECS::EntityID;
+
+namespace Components {
+  struct Collider {
+    bool enabled = true;
+    bool isTrigger = false;
+  };
+}
 
 void ImGuiState::Load() {}
 void ImGuiState::Init()
@@ -19,7 +27,8 @@ void ImGuiState::Init()
   Engine::WORLD.createEntity()
     .addComponent<Components::Tag<"RectPainter">>()
     .addComponent<Components::Background>()
-    .addComponent<Components::Color>(0.08f, 0.08f, 0.10f, 1.0f);
+    .addComponent<Components::Color>(0.08f, 0.08f, 0.10f, 1.0f)
+    .addComponent<Components::Collider>(false, false);
 
   Engine::WORLD.addSystem<BackgroundSystem>();
   Engine::WORLD.addSystem<RectRenderSystem>();
@@ -28,6 +37,7 @@ void ImGuiState::Init()
   selectedIndex_ = -1;
   dragMode_ = DragMode::None;
   passedThreshold_ = false;
+
 }
 
 void ImGuiState::Free()
@@ -59,6 +69,7 @@ void ImGuiState::Draw()
     Engine::GRAPHICS.drawRect(currentColor_, center.x, center.y, size.x, size.y, 0.0f, Graphics::Origin::Center);
   }
 
+  runCollisionPass();
   drawSelectionGizmo();
   drawImGui();
 }
@@ -66,7 +77,7 @@ void ImGuiState::Draw()
 void ImGuiState::handleMouse()
 {
   ImGuiIO& io = ImGui::GetIO();
-  if (io.WantCaptureMouse) { // let ImGui consume it
+  if (io.WantCaptureMouse) {
     prevMouse_ = Engine::Input::GetMousePosition();
     return;
   }
@@ -179,7 +190,8 @@ void ImGuiState::handleMouse()
           .addComponent<Components::Tag<"RectPainter">>()
           .addComponent<Components::Position>(center.x, center.y)
           .addComponent<Components::Size>(size.x, size.y)
-          .addComponent<Components::Color>(currentColor_.x, currentColor_.y, currentColor_.z, currentColor_.w);
+          .addComponent<Components::Color>(currentColor_.x, currentColor_.y, currentColor_.z, currentColor_.w)
+          .addComponent<Components::Collider>(true, false);
         rects_.push_back(entity.getId());
         selectedIndex_ = (int)rects_.size() - 1;
       }
@@ -189,6 +201,47 @@ void ImGuiState::handleMouse()
   }
 
   prevMouse_ = mouse;
+}
+
+void ImGuiState::runCollisionPass()
+{
+  // transient per-frame collision flags
+  static std::unordered_map<EntityID, HitInfo> hits;
+  hits.clear();
+
+  // Brute-force AABB among collider-enabled rects
+  for (size_t i = 0; i < rects_.size(); ++i) {
+    auto idA = rects_[i];
+    auto* colA = Engine::WORLD.getComponent<Components::Collider>(idA);
+    if (!colA || !colA->enabled) continue;
+
+    glm::vec2 aMin, aMax;
+    if (!getBounds(idA, aMin, aMax)) continue;
+
+    for (size_t j = i + 1; j < rects_.size(); ++j) {
+      auto idB = rects_[j];
+      auto* colB = Engine::WORLD.getComponent<Components::Collider>(idB);
+      if (!colB || !colB->enabled) continue;
+
+      glm::vec2 bMin, bMax;
+      if (!getBounds(idB, bMin, bMax)) continue;
+
+      if (aabbOverlap(aMin, aMax, bMin, bMax)) {
+        hits[idA].colliding = true;
+        hits[idB].colliding = true;
+      }
+    }
+  }
+
+  // Debug overlay (red)
+  for (auto id : rects_) {
+    if (!hits[id].colliding) continue;
+    glm::vec2 minP, maxP;
+    if (!getBounds(id, minP, maxP)) continue;
+    glm::vec2 c{ (minP.x + maxP.x) * 0.5f, (minP.y + maxP.y) * 0.5f };
+    glm::vec2 s{ std::max(1.0f, maxP.x - minP.x), std::max(1.0f, maxP.y - minP.y) };
+    Engine::GRAPHICS.drawRect(glm::vec4{ 1,0,0,0.20f }, c.x, c.y, s.x + 6.0f, s.y + 6.0f, 0.0f, Graphics::Origin::Center);
+  }
 }
 
 /* Overlay */
@@ -314,17 +367,36 @@ void ImGuiState::drawImGui()
       auto* pos = Engine::WORLD.getComponent<Components::Position>(id);
       auto* size = Engine::WORLD.getComponent<Components::Size>(id);
       auto* color = Engine::WORLD.getComponent<Components::Color>(id);
+      auto* col = Engine::WORLD.getComponent<Components::Collider>(id);
+
       if (pos && size && color) {
         ImGui::DragFloat2("Position (center)", &pos->x, 1.0f);
         ImGui::DragFloat2("Size", &size->width, 1.0f, minRectSizePx_, 10000.0f);
         ImGui::ColorEdit4("Color", &color->x, ImGuiColorEditFlags_AlphaBar);
 
-        // why: keep size invariant even if user drags below min
+        // Keep size invariant even if user drags below min
         glm::vec2 s{ size->width, size->height };
         clampMinSize(s, minRectSizePx_);
         size->width = s.x;
         size->height = s.y;
 
+        // Collider controls
+        bool hasCollider = (col != nullptr);
+        if (!hasCollider) {
+          if (ImGui::Button("Add Collider")) {
+            Engine::WORLD.addComponent<Components::Collider>(id, Components::Collider{ true,false });
+            col = Engine::WORLD.getComponent<Components::Collider>(id);
+          }
+        }
+        else {
+          ImGui::Checkbox("Collider Enabled", &col->enabled);
+          ImGui::Checkbox("Is Trigger", &col->isTrigger);
+          if (ImGui::Button("Remove Collider")) {
+            col->enabled = false; col->isTrigger = false;
+          }
+        }
+
+        ImGui::SameLine();
         if (ImGui::Button("Apply Default Color")) {
           color->x = currentColor_.x;
           color->y = currentColor_.y;
@@ -354,6 +426,12 @@ void ImGuiState::clampMinSize(glm::vec2& size, float minSize)
 {
   size.x = std::max(size.x, minSize);
   size.y = std::max(size.y, minSize);
+}
+
+bool ImGuiState::aabbOverlap(const glm::vec2& aMin, const glm::vec2& aMax,
+  const glm::vec2& bMin, const glm::vec2& bMax)
+{
+  return !(aMax.x < bMin.x || bMax.x < aMin.x || aMax.y < bMin.y || bMax.y < aMin.y);
 }
 
 /* Serialization stubs */
