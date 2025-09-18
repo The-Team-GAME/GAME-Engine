@@ -5,29 +5,9 @@
 #include <iostream> 
 #include <GLFW/glfw3.h>
 #include <imgui.h>
-#include <fmod.hpp>
-#include <fmod_errors.h>
-
-// FMOD system and sound objects
-static FMOD::System* fmodSystem = nullptr;
-static FMOD::Sound* testSound = nullptr;
 
 void BasicState::Load()
 {
-  // Initialize FMOD system first
-  FMOD_RESULT result;
-  result = FMOD::System_Create(&fmodSystem);
-  if (result != FMOD_OK) {
-    std::cout << "FMOD error! (" << result << ") " << FMOD_ErrorString(result) << std::endl;
-    return;
-  }
-
-  result = fmodSystem->init(512, FMOD_INIT_NORMAL, 0);
-  if (result != FMOD_OK) {
-    std::cout << "FMOD error! (" << result << ") " << FMOD_ErrorString(result) << std::endl;
-    return;
-  }
-
   // Load a font and store its ID.
   // Make sure you have a font file at this path.
   fontId1 = Engine::GRAPHICS.loadFont("Assets/fonts/Roboto-Regular.ttf", 48);
@@ -40,16 +20,18 @@ void BasicState::Load()
   {
     std::cout << "Failed to load font for BasicState.\n";
   }
+
+  // Load sound using the AudioManager and store the ID
+  moveSoundId = Engine::AUDIO.loadSound("Assets/sounds/move1.wav");
+  if (moveSoundId == -1)
+  {
+    std::cout << "Failed to load move sound for BasicState.\n";
+  }
 }
 
 void BasicState::Init()
 {
-  // Make sure you have a sound file at this path.
-  FMOD_RESULT result = fmodSystem->createSound("Assets/sounds/move1.wav", FMOD_DEFAULT, 0, &testSound);
-  if (result != FMOD_OK)
-  {
-    std::cout << "FMOD error! (" << result << ") " << FMOD_ErrorString(result) << std::endl;
-  }
+
 }
 
 void BasicState::Update()
@@ -61,18 +43,11 @@ void BasicState::Update()
 
   if (Engine::Input::IsKeyPressed(GLFW_KEY_P))
   {
-    FMOD::Channel* channel = nullptr;
-    FMOD_RESULT result = fmodSystem->playSound(testSound, 0, false, &channel);
-    if (result != FMOD_OK)
+    if (moveSoundId != -1)
     {
-      std::cout << "FMOD error! (" << result << ") " << FMOD_ErrorString(result) << std::endl;
+      Engine::AUDIO.playSound(moveSoundId);
+      std::cout << "P key was pressed! Playing sound.\n";
     }
-    std::cout << "P key was pressed! Playing sound.\n";
-  }
-
-  if (fmodSystem)
-  {
-    fmodSystem->update();
   }
 
   /*if (Engine::Input::IsMouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT))
@@ -118,17 +93,13 @@ void BasicState::Draw()
 
 void BasicState::Free()
 {
-  if (testSound)
-  {
-    testSound->release();
-  }
+
 }
 
 void BasicState::Unload()
 {
-  if (fmodSystem)
+  if (moveSoundId != -1)
   {
-    fmodSystem->close();
-    fmodSystem->release();
+    Engine::AUDIO.unloadSound(moveSoundId);
   }
 }
