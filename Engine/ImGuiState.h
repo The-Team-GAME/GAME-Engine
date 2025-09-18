@@ -3,6 +3,8 @@
 #include "StateManager.h"
 #include <vector>
 #include <glm/glm.hpp>
+#include "ECS/System.h"
+
 
 class ImGuiState : public Engine::GameState<ImGuiState>
 {
@@ -15,37 +17,48 @@ public:
   void Unload();
 
 private:
-  struct Rect
-  {
-    glm::vec2 pos{ 0.0f };   // top-left
-    glm::vec2 size{ 0.0f };  // width/height (>= 0)
-    glm::vec4 color{ 1.0f };
-  };
 
-  std::vector<Rect> rects_{};
+  enum class DragMode { None, Drawing, Moving, Resizing };
 
-  // Drag state
-  bool isDrawing_ = false;
-  bool prevLeftHeld_ = false;
+
+  // Interaction state
+  DragMode dragMode_ = DragMode::None;
   bool passedThreshold_ = false;
-  glm::vec2 dragStart_ = { 0.0f, 0.0f };
-  glm::vec2 dragEnd_ = { 0.0f, 0.0f };
+  glm::vec2 dragStart_{ 0.0f };     // for drawing/resizing
+  glm::vec2 prevMouse_{ 0.0f };
+  glm::vec2 moveGrabOffset_{ 0.0f };
 
+  struct ResizeMask { bool l = false, r = false, t = false, b = false; } resize_;
+
+  // Thresholds
   float startDragThresholdPx_ = 6.0f;
   float minRectSizePx_ = 8.0f;
+  float handlePx_ = 8.0f;
+  float handleHoverInflate_ = 4.0f;
 
-  // UI state
+  // UI
   glm::vec4 currentColor_{ 1.0f, 1.0f, 1.0f, 0.25f };
   int selectedIndex_ = -1;
 
-  // Helpers
-  static Rect MakeRect(const glm::vec2& a, const glm::vec2& b, const glm::vec4& color);
-  static void ClampRectMinSize(Rect& r, float minSize = 1.0f);
+  // ECS rectangles
+  std::vector<ECS::EntityID> rects_{};
 
+  // Core
   void handleMouse();
   void drawImGui();
+  void drawSelectionGizmo();
 
-  // Serialization stubs (intentionally unimplemented for now)
+  // Picking / geometry
+  static void computeCenterAndSize(const glm::vec2& a, const glm::vec2& b,
+    glm::vec2& outCenter, glm::vec2& outSize);
+  static void clampMinSize(glm::vec2& size, float minSize = 1.0f);
+
+  bool getBounds(ECS::EntityID id, glm::vec2& minP, glm::vec2& maxP) const;
+  static bool pointInRect(const glm::vec2& p, const glm::vec2& minP, const glm::vec2& maxP);
+  ResizeMask hitHandle(const glm::vec2& p, const glm::vec2& minP, const glm::vec2& maxP) const;
+  int pickTopmostRect(const glm::vec2& p) const;
+
+  // Serialization stubs
   bool SaveToFile(const char* path) const;
   bool LoadFromFile(const char* path);
 };
