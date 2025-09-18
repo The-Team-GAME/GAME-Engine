@@ -14,6 +14,20 @@ static FMOD::Sound* testSound = nullptr;
 
 void BasicState::Load()
 {
+  // Initialize FMOD system first
+  FMOD_RESULT result;
+  result = FMOD::System_Create(&fmodSystem);
+  if (result != FMOD_OK) {
+    std::cout << "FMOD error! (" << result << ") " << FMOD_ErrorString(result) << std::endl;
+    return;
+  }
+
+  result = fmodSystem->init(512, FMOD_INIT_NORMAL, 0);
+  if (result != FMOD_OK) {
+    std::cout << "FMOD error! (" << result << ") " << FMOD_ErrorString(result) << std::endl;
+    return;
+  }
+
   // Load a font and store its ID.
   // Make sure you have a font file at this path.
   fontId1 = Engine::GRAPHICS.loadFont("Assets/fonts/Roboto-Regular.ttf", 48);
@@ -26,28 +40,15 @@ void BasicState::Load()
   {
     std::cout << "Failed to load font for BasicState.\n";
   }
+}
 
+void BasicState::Init()
+{
   // Make sure you have a sound file at this path.
   FMOD_RESULT result = fmodSystem->createSound("Assets/sounds/move1.wav", FMOD_DEFAULT, 0, &testSound);
   if (result != FMOD_OK)
   {
     std::cout << "FMOD error! (" << result << ") " << FMOD_ErrorString(result) << std::endl;
-  }
-}
-
-void BasicState::Init()
-{
-  FMOD_RESULT result;
-  result = FMOD::System_Create(&fmodSystem);
-  if (result != FMOD_OK) {
-    std::cout << "FMOD error! (" << result << ") " << FMOD_ErrorString(result) << std::endl;
-    return;
-  }
-
-  result = fmodSystem->init(512, FMOD_INIT_NORMAL, 0);
-  if (result != FMOD_OK) {
-    std::cout << "FMOD error! (" << result << ") " << FMOD_ErrorString(result) << std::endl;
-    return;
   }
 }
 
