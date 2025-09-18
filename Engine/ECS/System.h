@@ -29,7 +29,9 @@ namespace ECS {
     virtual void update() {
       for (EntityID entityId : entities) {
         updateEntity(entityId);
+				//std::cout << "Updating entity " << entityId << " in system.\n";
       }
+      //std::cout << "Updating entity "; // << entityId << " in system.\n";
     }
 
     // Override for per-entity logic

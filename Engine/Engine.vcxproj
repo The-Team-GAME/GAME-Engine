@@ -118,6 +118,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\rapidjson;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\json;$(SolutionDir)Dependencies\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -139,6 +140,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\rapidjson;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\json;$(SolutionDir)Dependencies\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -161,6 +163,7 @@
     <ClCompile Include="BasicComponents.cpp" />
     <ClCompile Include="BasicState.cpp" />
     <ClCompile Include="BasicState.h" />
+    <ClCompile Include="ComponentSelector.cpp" />
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="EcsState.cpp" />
     <ClCompile Include="ECS\ComponentManager.cpp" />
@@ -184,6 +187,7 @@
   <ItemGroup>
     <ClInclude Include="BackgroundSystem.h" />
     <ClInclude Include="BasicComponents.h" />
+    <ClInclude Include="ComponentSelector.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="DevManySpritesState.h" />
     <ClInclude Include="EcsState.h" />
@@ -196,6 +200,7 @@
     <ClInclude Include="ECS\World.h" />
     <ClInclude Include="GameObjectState.h" />
     <ClInclude Include="Graphics.h" />
+    <ClInclude Include="PlayerControllerSystem.h" />
     <ClInclude Include="HealthSystem.h" />
     <ClInclude Include="ImGuiManager.h" />
     <ClInclude Include="InputManager.h" />

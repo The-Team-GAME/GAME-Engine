@@ -75,6 +75,13 @@ namespace Components {
 
   struct Renderable {};
 
+
+  struct PlayerController {
+  
+  };
+   
+  
+
   struct StaticSprite {
     int textureId;
     StaticSprite(std::string texturePath, Graphics::MinifyingFilter minifyingFilter = Graphics::MinifyingFilter::Linear);
