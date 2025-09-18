@@ -5,6 +5,12 @@
 #include <iostream> 
 #include <GLFW/glfw3.h>
 #include <imgui.h>
+#include <fmod.hpp>
+#include <fmod_errors.h>
+
+// FMOD system and sound objects
+static FMOD::System* fmodSystem = nullptr;
+static FMOD::Sound* testSound = nullptr;
 
 void BasicState::Load()
 {
@@ -20,10 +26,29 @@ void BasicState::Load()
   {
     std::cout << "Failed to load font for BasicState.\n";
   }
+
+  // Make sure you have a sound file at this path.
+  FMOD_RESULT result = fmodSystem->createSound("Assets/sounds/move1.wav", FMOD_DEFAULT, 0, &testSound);
+  if (result != FMOD_OK)
+  {
+    std::cout << "FMOD error! (" << result << ") " << FMOD_ErrorString(result) << std::endl;
+  }
 }
 
 void BasicState::Init()
 {
+  FMOD_RESULT result;
+  result = FMOD::System_Create(&fmodSystem);
+  if (result != FMOD_OK) {
+    std::cout << "FMOD error! (" << result << ") " << FMOD_ErrorString(result) << std::endl;
+    return;
+  }
+
+  result = fmodSystem->init(512, FMOD_INIT_NORMAL, 0);
+  if (result != FMOD_OK) {
+    std::cout << "FMOD error! (" << result << ") " << FMOD_ErrorString(result) << std::endl;
+    return;
+  }
 }
 
 void BasicState::Update()
@@ -31,6 +56,22 @@ void BasicState::Update()
   if (Engine::Input::IsKeyPressed(GLFW_KEY_SPACE))
   {
     std::cout << "Spacebar was pressed!\n";
+  }
+
+  if (Engine::Input::IsKeyPressed(GLFW_KEY_P))
+  {
+    FMOD::Channel* channel = nullptr;
+    FMOD_RESULT result = fmodSystem->playSound(testSound, 0, false, &channel);
+    if (result != FMOD_OK)
+    {
+      std::cout << "FMOD error! (" << result << ") " << FMOD_ErrorString(result) << std::endl;
+    }
+    std::cout << "P key was pressed! Playing sound.\n";
+  }
+
+  if (fmodSystem)
+  {
+    fmodSystem->update();
   }
 
   /*if (Engine::Input::IsMouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT))
@@ -71,12 +112,22 @@ void BasicState::Draw()
   // Draw some text using the loaded font
   Engine::GRAPHICS.drawText(fontId1, "Hello", 250.0f, 250.0f, 1.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
   Engine::GRAPHICS.drawText(fontId2, "Hello", 250.0f, 300.0f, 1.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+  Engine::GRAPHICS.drawText(fontId1, "Press 'P' to play sound", 250.0f, 350.0f, 0.5f, { 1.0f, 1.0f, 0.0f, 1.0f });
 }
 
 void BasicState::Free()
 {
+  if (testSound)
+  {
+    testSound->release();
+  }
 }
 
 void BasicState::Unload()
 {
+  if (fmodSystem)
+  {
+    fmodSystem->close();
+    fmodSystem->release();
+  }
 }
