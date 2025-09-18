@@ -22,7 +22,9 @@ public:
     // Create two enemy instances from the prefab
     auto enemy1 = Engine::FACTORY.createObject(enemyPrefab)
       .addComponent<Components::Tag<"GameObjectState">>()
-      .addComponent<Components::Position>(100.0f, 100.0f); // Position the first enemy left
+      .addComponent<Components::Position>(100.0f, 100.0f) // Position the first enemy left
+      .addComponent<Components::Velocity>(0.0f, 0.0f)
+      .addComponent<Components::PlayerController>();
     auto enemy2 = Engine::FACTORY.createObject(enemyPrefab)
       .addComponent<Components::Tag<"GameObjectState">>()
       .addComponent<Components::Position>(300.0f, 100.0f) // Position the second enemy right
@@ -40,6 +42,8 @@ public:
     Engine::WORLD.addSystem<BackgroundSystem>(); // Background system should be first
     Engine::WORLD.addSystem<MovementSystem>();
     Engine::WORLD.addSystem<StaticSpriteRenderSystem>();
+    Engine::WORLD.addSystem<PlayerControllerSystem>();
+
   };
 
   void Update() {};
