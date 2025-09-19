@@ -18,10 +18,6 @@ namespace Engine
     AudioManager();
     ~AudioManager();
 
-    // Initialize and cleanup
-    bool initialize();
-    void shutdown();
-
     // Sound loading and management
     int loadSound(const std::string& filepath);
     void unloadSound(int soundId);

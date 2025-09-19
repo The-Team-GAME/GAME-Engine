@@ -32,13 +32,6 @@ namespace Engine
   Core::Core()
   {
     isRunning = true;
-
-    // Initialize audio system
-    if (!AUDIO.initialize())
-    {
-      std::cout << "Failed to initialize audio system!" << std::endl;
-    }
-
     StateManager::Init(BasicState::Get()); // TODO: to be removed
   }
 

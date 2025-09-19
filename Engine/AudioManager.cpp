@@ -6,15 +6,6 @@ namespace Engine
 {
   AudioManager::AudioManager() : fmodSystem(nullptr), nextSoundId(1)
   {
-  }
-
-  AudioManager::~AudioManager()
-  {
-    shutdown();
-  }
-
-  bool AudioManager::initialize()
-  {
     FMOD_RESULT result;
 
     // Create FMOD system
@@ -22,7 +13,6 @@ namespace Engine
     if (result != FMOD_OK)
     {
       std::cout << "AudioManager: Failed to create FMOD system! " << FMOD_ErrorString(result) << std::endl;
-      return false;
     }
 
     // Initialize FMOD system
@@ -30,14 +20,12 @@ namespace Engine
     if (result != FMOD_OK)
     {
       std::cout << "AudioManager: Failed to initialize FMOD system! " << FMOD_ErrorString(result) << std::endl;
-      return false;
     }
 
     std::cout << "AudioManager: Successfully initialized FMOD system" << std::endl;
-    return true;
   }
 
-  void AudioManager::shutdown()
+  AudioManager::~AudioManager()
   {
     // Stop all sounds
     stopAllSounds();
