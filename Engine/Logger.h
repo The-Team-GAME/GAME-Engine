@@ -9,7 +9,7 @@ namespace Log {
 		// Stuff to log file TODO
 
 		// Stuff to cout in the console
-		std::cout << "Warning>> " << "text" << std::endl;
+		std::cout << "Warning>> " << text << std::endl;
 	}
 
 	void Info(std::string text)
@@ -17,7 +17,7 @@ namespace Log {
 		// Stuff to log file TODO
 
 		// Stuff to cout in the console
-		std::cout << "Info>> " << "text" << std::endl;
+		std::cout << "Info>> " << text << std::endl;
 	}
 }
 
