@@ -141,6 +141,9 @@
     <ClCompile Include="WindowManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FileExplorer.cpp">
+      <Filter>Source Files\Engine\ImGuiPanels</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
@@ -253,6 +256,9 @@
     </ClInclude>
     <ClInclude Include="WindowManager.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FileExplorer.h">
+      <Filter>Source Files\Engine\ImGuiPanels</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
