@@ -46,21 +46,25 @@ namespace Engine
   {
     while (!glfwWindowShouldClose(WINDOW.getWindow()) && isRunning)
     {
-      //Updating of the real_dt and accumulator
+      // START OF TIME UPDATES ==============================================
+      // Updates the real_dt and increments the accumulator
       Time::update_time();
-
-      if (accumulator < Time::get_fixed_dt() * 5)
-      { // Caps the accumulator so each gameloop will only go through 5 loops max
+      if (accumulator < Time::get_fixed_dt() * 3)
+      { 
+        // Caps the accumulator so each gameloop will only go through 5 loops max
         accumulator += Time::get_real_dt();
       }
-      
+      std::cout << Time::get_real_dt() << std::endl;
+      // END OF TIME UPDATES ================================================
 
       glfwPollEvents();
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
       while(accumulator >= Time::get_fixed_dt())
-      {
-        // Main gameloop here
+      {        
+        // To decrement the accumulator when each gameloop runs
+        accumulator -= Time::get_fixed_dt();
         
+        // Main gameloop here
         IMGUI.begin();
         Input::Update();
         GRAPHICS.beginFrame();
@@ -83,8 +87,7 @@ namespace Engine
         /* Swap front and back buffers */
 
         // End of gameloop
-        // To decrement the accumulator when each gameloop runs
-        accumulator -= Time::get_fixed_dt();
+
       }
       glfwSwapBuffers(WINDOW.getWindow());
 

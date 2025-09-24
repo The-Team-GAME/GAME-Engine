@@ -1,7 +1,7 @@
 #pragma once
 #include <imgui.h>
 #include "Core.h"
-
+#include "Time.h"
 inline void PerformanceViewerPanel(f32& target_fps)
 {
   ImGui::Begin("Performance Viewer");

@@ -1,12 +1,11 @@
 #include "Time.h"
 #include <chrono>
-
 namespace chrono = std::chrono;
 
 namespace { //consider making it microseconds
 	chrono::milliseconds curr_time = chrono::duration_cast<chrono::milliseconds>((chrono::steady_clock::now()).time_since_epoch());
 
-	f64 delta_time{}; // in seconds
+	f32 delta_time{}; // in seconds
 	f32 frame_cap{ 144 };
 }
 
@@ -15,7 +14,7 @@ namespace Engine {
 		void update_time(void)
 		{
 			chrono::milliseconds new_time = chrono::duration_cast<chrono::milliseconds>((chrono::steady_clock::now()).time_since_epoch());
-			delta_time = static_cast<f64>((new_time - curr_time).count()) / 1000.0;
+			delta_time = static_cast<f32>((new_time - curr_time).count()) / 1000.0;
 			curr_time = new_time;
 		}
 
@@ -33,7 +32,7 @@ namespace Engine {
 		// Only to be used to accumulator in the loop
 		f32 get_real_dt(void)
 		{
-			return static_cast<f32>(delta_time);
+			return delta_time;
 		}
 	}
 };
