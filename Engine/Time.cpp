@@ -34,5 +34,14 @@ namespace Engine {
 		{
 			return delta_time;
 		}
+
+		f32 calc_fps(f32 dt)
+		{
+			if (dt == 0.f)
+			{
+				return 1.f / 1000; // 1000 cuz mili seconds so max fps that we can calculate accurately is 1k
+			}
+			return 1.f / dt;
+		}
 	}
 };

@@ -2,6 +2,7 @@
 #include <imgui.h>
 #include "Core.h"
 #include "Time.h"
+
 inline void PerformanceViewerPanel(f32& target_fps)
 {
   ImGui::Begin("Performance Viewer");
@@ -25,7 +26,7 @@ inline void PerformanceViewerPanel(f32& target_fps)
     }
   }
 
-  ImGui::Text("FPS: %.1f", lastFPS);
+  ImGui::Text("FPS: %.1f", Engine::Time::calc_fps(Engine::Time::get_real_dt()));
 
   ImGui::SliderFloat("Target FPS", &target_fps, 10.0f, 3000.0f);
 

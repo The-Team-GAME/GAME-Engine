@@ -15,5 +15,6 @@ namespace Engine {
 		// Only to be used to accumulator in the loop
 		f32 get_real_dt(void);
 
+		f32 calc_fps(f32 dt);
 	}
 }
