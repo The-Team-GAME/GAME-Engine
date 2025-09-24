@@ -367,3 +367,4 @@ FodyWeavers.xsd
 
 # Project
 /Engine/imgui.ini
+/Engine/GameObjectState.h
