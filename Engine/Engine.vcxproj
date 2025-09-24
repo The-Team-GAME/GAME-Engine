@@ -175,6 +175,7 @@
     <ClCompile Include="Serialisation.cpp" />
     <ClCompile Include="SpriteDropper.cpp" />
     <ClCompile Include="Time.cpp" />
+    <ClCompile Include="Timeline.cpp" />
     <ClCompile Include="Vector2D.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="StateManager.cpp" />
@@ -213,6 +214,7 @@
     <ClInclude Include="Serialisation.h" />
     <ClInclude Include="SpriteDropper.h" />
     <ClInclude Include="Time.h" />
+    <ClInclude Include="Timeline.h" />
     <ClInclude Include="Vector2D.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="SpriteState.h" />

@@ -10,21 +10,31 @@
 #include <cstdlib>
 #include <stack>
 #include <iostream>
-
 #include "FileExplorer.h"
-#include "SpriteDropper.h" // Add the new header
+#include "SpriteDropper.h"
+#include "Timeline.h"
+
+
 
 namespace fs = std::filesystem;
 
-// The file path of the image that was selected
-extern std::string selected_file_path;
+// images selection pathway(currently unused)
+//extern std::string selected_file_path;
+
 // The directory where the project is located, selected by the user
 extern std::string root_path;
+
+
+
+
 
 
 class SpriteState : public Engine::GameState<SpriteState> {
 
 private:
+
+	Timeline timeline;  // adds timeline class to file
+
 	int linearMonkeyImageId = -1;
 	int nearestMonkeyImageId = -1;
 	std::vector<int> loadedImageIds;
@@ -41,6 +51,8 @@ private:
 	std::vector<ImageData> ImageAspectRatio;
 	float spritePosX = 0.0f;
 
+
+	//loads my images accordingly into the sprite manager
 	void LoadAllAssets() {
 		loadedImageIds.clear();
 		fs::path assets_path = fs::current_path() / "Engine" / "Assets" / "images";
@@ -62,8 +74,16 @@ private:
 		}
 	}
 
+
+
+
 public:
+
+
 	void Load() {};
+
+
+
 	void Init() {
 		linearMonkeyImageId = Engine::GRAPHICS.loadTexture("Assets/images/monkey.png");
 		nearestMonkeyImageId = Engine::GRAPHICS.loadTexture("Assets/images/monkey.png", Graphics::MinifyingFilter::Nearest);
@@ -71,7 +91,10 @@ public:
 		std::cout << "Current path is " << std::filesystem::current_path() << std::endl;
 	};
 
+
 	void Update() {};
+
+
 
 	void Draw() {
 		// Main scene texture drawing
@@ -119,8 +142,12 @@ public:
 		}
 		ImGui::End();
 
-		// Now, call the new SpriteDropper function
+
+		//calls the sprite dropper function :>
 		SpriteDropper(loadedImageIds, droppedImages);
+
+		timeline.Draw();
+
 	};
 
 	void Free() {};

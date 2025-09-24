@@ -3,7 +3,7 @@
 
 
 
-//my <3 sprite dropper allows you to drag and drop the images onto a space
+//ryans <3 sprite dropper allows you to drag and drop the images onto a space(currently only drag)
 void SpriteDropper(std::vector<int>& loadedImageIds, std::vector<DroppedImage>& droppedImages) {
     // --- Sprite Dropper ---
     ImGui::Begin("Sprite Dropper");

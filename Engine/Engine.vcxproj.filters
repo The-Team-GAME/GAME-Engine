@@ -147,6 +147,9 @@
     <ClCompile Include="SpriteDropper.cpp">
       <Filter>Source Files\Engine\ImGuiPanels</Filter>
     </ClCompile>
+    <ClCompile Include="Timeline.cpp">
+      <Filter>Source Files\Engine\ImGuiPanels</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
@@ -264,6 +267,9 @@
       <Filter>Source Files\Engine\ImGuiPanels</Filter>
     </ClInclude>
     <ClInclude Include="SpriteDropper.h">
+      <Filter>Source Files\Engine\ImGuiPanels</Filter>
+    </ClInclude>
+    <ClInclude Include="Timeline.h">
       <Filter>Source Files\Engine\ImGuiPanels</Filter>
     </ClInclude>
   </ItemGroup>
