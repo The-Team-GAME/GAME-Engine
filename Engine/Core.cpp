@@ -15,6 +15,7 @@
 
 namespace {
   f64 accumulator{};
+  s32 step_limit = 3;
 }
 namespace Engine
 {
@@ -49,10 +50,11 @@ namespace Engine
       // START OF TIME UPDATES ==============================================
       // Updates the real_dt and increments the accumulator
       Time::update_time();
-      if (accumulator < Time::get_fixed_dt() * 3)
+      accumulator += Time::get_real_dt();
+      if (accumulator > Time::get_fixed_dt() * step_limit)
       { 
         // Caps the accumulator so each gameloop will only go through 5 loops max
-        accumulator += Time::get_real_dt();
+        accumulator = Time::get_fixed_dt() * step_limit;
       }
       std::cout << Time::get_real_dt() << std::endl;
       // END OF TIME UPDATES ================================================
