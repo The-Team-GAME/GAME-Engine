@@ -29,6 +29,5 @@ namespace Engine
   extern Graphics GRAPHICS;
   extern ImGuiManager IMGUI;
   extern WindowManager WINDOW;
-  extern Time TIME;
   extern AudioManager AUDIO;
 }

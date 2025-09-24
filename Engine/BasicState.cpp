@@ -77,7 +77,7 @@ void BasicState::Draw()
   Engine::GRAPHICS.clearScreen(0.1f, 0.1f, 0.1f, 1.0f); // Dark gray background
 
   static float rotation = 0.0f;
-  rotation += 45.0f * static_cast<float>(Engine::TIME.get_dt());
+  rotation += 45.0f * static_cast<float>(Engine::Time::get_fixed_dt());
 
   Engine::GRAPHICS.drawRect({ 1.0f, 0.0f, 0.0f, 1.0f }, 0.0f, 0.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center);       // Top left, Red
   Engine::GRAPHICS.drawRect({ 0.0f, 1.0f, 0.0f, 1.0f }, 800.0f, 600.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center);   // Bottom right, Green
