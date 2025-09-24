@@ -39,7 +39,8 @@ namespace Engine {
 		{
 			if (dt == 0.f)
 			{
-				return 1.f / 1000; // 1000 cuz mili seconds so max fps that we can calculate accurately is 1k
+				// 1000 cuz mili seconds so max fps that we can calculate accurately is 1k
+				return 1.f / 1000; 
 			}
 			return 1.f / dt;
 		}
