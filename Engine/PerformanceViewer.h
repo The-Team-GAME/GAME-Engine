@@ -2,7 +2,7 @@
 #include <imgui.h>
 #include "Core.h"
 
-inline void PerformanceViewerPanel(float& target_fps)
+inline void PerformanceViewerPanel(f32& target_fps)
 {
   ImGui::Begin("Performance Viewer");
 
@@ -11,7 +11,7 @@ inline void PerformanceViewerPanel(float& target_fps)
   static float lastFPS = 0.0f;
   const float updateInterval = 0.5f; // Update FPS display every 0.5 seconds
 
-  float dt = Engine::TIME.get_dt();
+  float dt = Engine::Time::get_fixed_dt();
   if (dt > 0.0f)
   {
     frameTimeAccumulator += dt;

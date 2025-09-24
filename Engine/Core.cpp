@@ -13,6 +13,9 @@
 #include "PerformanceViewer.h"
 #include "WindowManager.h"
 
+namespace {
+  f64 accumulator{};
+}
 namespace Engine
 {
   // TODO: window size should not be hardcoded
@@ -26,7 +29,6 @@ namespace Engine
   WindowManager WINDOW{ windowWidth, windowHeight, "Monkey Stole My GPA" };
   Graphics GRAPHICS{ windowWidth, windowHeight };
   ImGuiManager IMGUI{};
-  Time TIME{};
   AudioManager AUDIO{};
 
   Core::Core()
@@ -44,22 +46,23 @@ namespace Engine
   {
     while (!glfwWindowShouldClose(WINDOW.getWindow()) && isRunning)
     {
-      // Everything inside this loop ignores fixed timestep
+      //Updating of the real_dt and accumulator
+      Time::update_time();
 
-      TIME.accumulate_time();
+      if (accumulator < Time::get_fixed_dt() * 5)
+      { // Caps the accumulator so each gameloop will only go through 5 loops max
+        accumulator += Time::get_real_dt();
+      }
+      
 
-      while (TIME.should_update())
+      glfwPollEvents();
+      // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
+      while(accumulator >= Time::get_fixed_dt())
       {
-        // Everything inside this loop is runned at a fixed timestep
-
-        TIME.update_fixed_step();
-
-        glfwPollEvents();
-
+        // Main gameloop here
+        
         IMGUI.begin();
-
         Input::Update();
-
         GRAPHICS.beginFrame();
 
         StateManager::GetCurrentState()->Update();
@@ -71,15 +74,20 @@ namespace Engine
         AUDIO.update();
 
         StateChooserPanel();
-        PerformanceViewerPanel(TIME.target_fps);
+        PerformanceViewerPanel(Time::get_frame_cap());
 
         GRAPHICS.endFrame();
 
         IMGUI.end();
 
         /* Swap front and back buffers */
-        glfwSwapBuffers(WINDOW.getWindow());
+
+        // End of gameloop
+        // To decrement the accumulator when each gameloop runs
+        accumulator -= Time::get_fixed_dt();
       }
+      glfwSwapBuffers(WINDOW.getWindow());
+
     }
   }
 }

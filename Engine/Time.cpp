@@ -1,42 +1,39 @@
 #include "Time.h"
+#include <chrono>
+
+namespace chrono = std::chrono;
+
+namespace { //consider making it microseconds
+	chrono::milliseconds curr_time = chrono::duration_cast<chrono::milliseconds>((chrono::steady_clock::now()).time_since_epoch());
+
+	f64 delta_time{}; // in seconds
+	f32 frame_cap{ 144 };
+}
 
 namespace Engine {
-  void Time::accumulate_time(void) {
-    time_point current_time = clock::now();
-    internal_dt = duration(current_time - last_time).count();
-    last_time = current_time;
+	namespace Time {
+		void update_time(void)
+		{
+			chrono::milliseconds new_time = chrono::duration_cast<chrono::milliseconds>((chrono::steady_clock::now()).time_since_epoch());
+			delta_time = static_cast<f64>((new_time - curr_time).count()) / 1000.0;
+			curr_time = new_time;
+		}
 
-    accumulator += internal_dt;
-    loop_count = 0;
-  }
+		f32& get_frame_cap()
+		{
+			return frame_cap;
+		}
+		// This calculates the fixed dt based on the set framerate
+		f32 get_fixed_dt(void)
+		{
+			return 1.f / frame_cap;
+		}
 
-  void Time::update_fixed_step(void) {
-    time_point frame_current_time = clock::now();
-    frame_dt = duration(frame_current_time - frame_last_time).count();
-    frame_last_time = frame_current_time;
-
-    accumulator -= get_fixed_dt();
-    ++loop_count;
-  }
-
-  f64 Time::get_fixed_dt(void)const {
-    return 1.0 / target_fps;
-  }
-
-  f64 Time::get_internal_dt(void) const {
-    return internal_dt;
-  }
-
-  f64 Time::get_frame_dt(void) const {
-    return frame_dt;
-  }
-
-  f32 Time::get_dt(void) const
-  {
-    return static_cast<f32>(get_frame_dt());
-  }
-
-  bool Time::should_update(void)const {
-    return accumulator >= get_fixed_dt() && loop_count < loop_cap;
-  }
-}
+		// Returns the delta time per game loop
+		// Only to be used to accumulator in the loop
+		f32 get_real_dt(void)
+		{
+			return static_cast<f32>(delta_time);
+		}
+	}
+};
