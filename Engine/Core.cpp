@@ -56,7 +56,7 @@ namespace Engine
         // Caps the accumulator so each gameloop will only go through 5 loops max
         accumulator = Time::get_fixed_dt() * step_limit;
       }
-      std::cout << Time::get_real_dt() << std::endl;
+      std::cout << Time::calc_fps(Time::get_real_dt()) << std::endl;
       // END OF TIME UPDATES ================================================
 
       glfwPollEvents();
