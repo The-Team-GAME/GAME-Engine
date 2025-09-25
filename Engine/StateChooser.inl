@@ -10,6 +10,7 @@
 #include "GameObjectState.h"
 #include "DevManySpritesState.h"
 #include "Rubric2500Particles.h"
+#include "ImGuiState.h"
 
 inline void StateChooserPanel()
 {
@@ -48,6 +49,10 @@ inline void StateChooserPanel()
   if (ImGui::Button("Rubric2500Particles"))
   {
     Engine::StateManager::ChangeState(Rubric2500Particles::Get());
+  }
+  if (ImGui::Button("ImGui Rect Painter"))
+  {
+    Engine::StateManager::ChangeState(ImGuiState::Get());
   }
 
   ImGui::End();
