@@ -1,11 +1,12 @@
 #pragma once
 
-#include <vector>
 #include <glm/glm.hpp>
-#include "Shader.h"
+#include <vector>
+#include <unordered_map>
 #include <array>
-#include <memory>  // Already added for smart pointers
-
+#include "Shader.h"
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 class Graphics
 {
@@ -17,13 +18,13 @@ public:
     int width;
     int height;
   };
-
   struct Camera2D
   {
     glm::vec2 position = { 0.0f, 0.0f };
     float zoom = 1.0f;
     float rotation = 0.0f;
   };
+
 
   enum class MinifyingFilter
   {
@@ -62,9 +63,11 @@ private:
   std::vector<Vertex> quadVertexBufferBase;
   uint32_t vertexIndex = 0;
 
+  // Rendering Data
   std::vector<Texture> textures;
   std::array<unsigned int, MaxTextureSlots> textureSlots;
   uint32_t textureSlotIndex = 1; // 0 = white texture
+
 
   Shader textureShader;
   glm::mat4 projection;
@@ -90,7 +93,12 @@ public:
   void setCameraPosition(float x, float y);
   void setCameraZoom(float zoom);
   void setCameraRotation(float degrees);
-  const Camera2D& getCamera() const { return camera; }
+
+  // Font and Text
+  int loadFont(const char* filepath, unsigned int size);
+  void unloadFont(int fontId);
+  void unloadAllFonts();
+  void drawText(int fontId, const std::string& text, float x, float y, float scale, const glm::vec4& color);
 
   void drawRect(const glm::vec4& color, float x, float y, float width, float height, float rotation = 0.0f, Origin origin = Origin::Center);
   void drawTexture(int imageId, float x, float y, float width, float height, float rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& tintColor = glm::vec4(1.0f));
@@ -104,4 +112,25 @@ private:
   void nextBatch();
   void flush();
   glm::vec2 calculateOriginOffset(float width, float height, Origin origin) const;
+
+  // Font rendering structures
+  struct Character {
+    glm::vec2 texCoords[4];  // UV coordinates in the atlas
+    glm::ivec2 Size;
+    glm::ivec2 Bearing;
+    unsigned int Advance;
+  };
+
+  struct Font {
+    std::unordered_map<char, Character> Characters;
+    unsigned int atlasTexture;  // Single texture for all characters
+    unsigned int fontSize;
+    float baseline;
+    int atlasWidth, atlasHeight;
+    bool isValid = true;  // Track if font is still valid
+  };
+
+  // Font data
+  FT_Library ft;
+  std::vector<Font> fonts;
 };
