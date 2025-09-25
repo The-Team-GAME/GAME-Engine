@@ -6,7 +6,7 @@ namespace { //consider making it microseconds
 	chrono::milliseconds curr_time = chrono::duration_cast<chrono::milliseconds>((chrono::steady_clock::now()).time_since_epoch());
 
 	f32 delta_time{}; // in seconds
-	f32 frame_cap{ 144 };
+	f32 tick_rate{ 144.f };
 }
 
 namespace Engine {
@@ -18,14 +18,14 @@ namespace Engine {
 			curr_time = new_time;
 		}
 
-		f32& get_frame_cap()
+		f32& get_tick_rate()
 		{
-			return frame_cap;
+			return tick_rate;
 		}
 		// This calculates the fixed dt based on the set framerate
 		f32 get_fixed_dt(void)
 		{
-			return 1.f / frame_cap;
+			return 1.f / tick_rate;
 		}
 
 		// Returns the delta time per game loop

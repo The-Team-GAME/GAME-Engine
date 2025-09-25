@@ -57,7 +57,7 @@ namespace Engine
         accumulator = Time::get_fixed_dt() * step_limit;
         std::cout << "nyo" << std::endl;
       }
-      //std::cout << Time::calc_fps(Time::get_real_dt()) << std::endl;
+      std::cout << Time::calc_fps(Time::get_real_dt()) << std::endl;
       // END OF TIME UPDATES ================================================
 
       glfwPollEvents();
@@ -72,30 +72,22 @@ namespace Engine
         accumulator -= Time::get_fixed_dt();
         
         // Main gameloop here
-
-
         StateManager::GetCurrentState()->Update();
-
         WORLD.update();
-
         // Update audio system
         AUDIO.update();
 
-
-
-        /* Swap front and back buffers */
-
         // End of gameloop
-
       }
-        StateChooserPanel();
-        PerformanceViewerPanel(Time::get_frame_cap());
 
+      // Rendering Start ========================================
+      StateChooserPanel();
+      PerformanceViewerPanel(Time::get_tick_rate());
       StateManager::GetCurrentState()->Draw();
       GRAPHICS.endFrame();
       IMGUI.end();
       glfwSwapBuffers(WINDOW.getWindow());
-
+      // Rendering End ==========================================
     }
   }
 }
