@@ -13,10 +13,6 @@
 #include "PerformanceViewer.h"
 #include "WindowManager.h"
 
-namespace {
-  f64 accumulator{};
-  s32 step_limit = 3;
-}
 namespace Engine
 {
   // TODO: window size should not be hardcoded
@@ -30,7 +26,7 @@ namespace Engine
   WindowManager WINDOW{ windowWidth, windowHeight, "Monkey Stole My GPA" };
   Graphics GRAPHICS{ windowWidth, windowHeight };
   ImGuiManager IMGUI{};
-  AudioManager AUDIO{};
+  Time TIME{};
 
   Core::Core()
   {
@@ -47,52 +43,40 @@ namespace Engine
   {
     while (!glfwWindowShouldClose(WINDOW.getWindow()) && isRunning)
     {
-      // START OF TIME UPDATES ==============================================
-      // Updates the real_dt and increments the accumulator
-      Time::update_time();
-      accumulator += Time::get_real_dt();
-      if (accumulator > Time::get_fixed_dt() * step_limit)
-      { 
-        // Caps the accumulator so each gameloop will only go through 5 loops max
-        accumulator = Time::get_fixed_dt() * step_limit;
-      }
-      std::cout << Time::calc_fps(Time::get_real_dt()) << std::endl;
-      // END OF TIME UPDATES ================================================
+      // Everything inside this loop ignores fixed timestep
 
-      glfwPollEvents();
-      // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
-      while(accumulator >= Time::get_fixed_dt())
-      {        
-        // To decrement the accumulator when each gameloop runs
-        accumulator -= Time::get_fixed_dt();
-        
-        // Main gameloop here
+      TIME.accumulate_time();
+
+      while (TIME.should_update())
+      {
+        // Everything inside this loop is runned at a fixed timestep
+
+        TIME.update_fixed_step();
+
+        glfwPollEvents();
+
         IMGUI.begin();
+
         Input::Update();
+
         GRAPHICS.beginFrame();
+
 
         StateManager::GetCurrentState()->Update();
         StateManager::GetCurrentState()->Draw();
 
         WORLD.update();
 
-        // Update audio system
-        AUDIO.update();
-
         StateChooserPanel();
-        PerformanceViewerPanel(Time::get_frame_cap());
+        PerformanceViewerPanel(TIME.target_fps);
 
         GRAPHICS.endFrame();
 
         IMGUI.end();
 
         /* Swap front and back buffers */
-
-        // End of gameloop
-
+        glfwSwapBuffers(WINDOW.getWindow());
       }
-      glfwSwapBuffers(WINDOW.getWindow());
-
     }
   }
 }

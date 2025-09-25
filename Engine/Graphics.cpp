@@ -147,29 +147,28 @@ Graphics::Graphics(int windowWidth, int windowHeight)
 // Cleans up OpenGL objects and resources.
 Graphics::~Graphics()
 {
-  textureShader.destroy();
+    textureShader.destroy();
 
-  glDeleteVertexArrays(1, &quadVAO);
-  glDeleteBuffers(1, &quadVBO);
-  glDeleteBuffers(1, &quadIBO);
+    glDeleteVertexArrays(1, &quadVAO);
+    glDeleteBuffers(1, &quadVBO);
+    glDeleteBuffers(1, &quadIBO);
 
-  for (const auto& tex : textures)
-  {
-    glDeleteTextures(1, &tex.id);
-  }
+    for (const auto& tex : textures)
+    {
+        glDeleteTextures(1, &tex.id);
+    }
 
-  // Clean up all remaining fonts
-  for (const auto& font : fonts)
-  {
-    glDeleteTextures(1, &font.atlasTexture);
-  }
+    for (const auto& font : fonts)
+    {
+        glDeleteTextures(1, &font.atlasTexture);
+    }
 
-  for (const auto& texture : textureSlots)
-  {
-    if (texture != 0) glDeleteTextures(1, &texture);
-  }
+    for (const auto& texture : textureSlots)
+    {
+        if (texture != 0) glDeleteTextures(1, &texture);
+    }
 
-  FT_Done_FreeType(ft);
+    FT_Done_FreeType(ft);
 }
 
 // Called at the beginning of a frame to prepare for drawing.
@@ -313,188 +312,152 @@ void Graphics::drawRect(const glm::vec4& color, float x, float y, float width, f
 // Loads a font from a file and prepares it for rendering.
 int Graphics::loadFont(const char* filepath, unsigned int size)
 {
-  FT_Face face;
-  if (FT_New_Face(ft, filepath, 0, &face))
-  {
-    std::cout << "ERROR::FREETYPE: Failed to load font: " << filepath << std::endl;
-    return -1;
-  }
-
-  FT_Set_Pixel_Sizes(face, 0, size);
-
-  // Calculate atlas dimensions
-  int atlasWidth = 0, atlasHeight = 0;
-
-  // First pass: calculate required atlas size
-  for (unsigned char c = 0; c < 128; c++)
-  {
-    if (FT_Load_Char(face, c, FT_LOAD_RENDER))
-      continue;
-
-    atlasWidth += face->glyph->bitmap.width + 1; // +1 for padding
-    atlasHeight = std::max(atlasHeight, static_cast<int>(face->glyph->bitmap.rows));
-  }
-
-  // Create atlas texture
-  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-  unsigned int atlasTexture;
-  glGenTextures(1, &atlasTexture);
-  glBindTexture(GL_TEXTURE_2D, atlasTexture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, atlasWidth, atlasHeight, 0, GL_RED, GL_UNSIGNED_BYTE, nullptr);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  Font font;
-  font.fontSize = size;
-  font.baseline = 0.0f;
-  font.atlasTexture = atlasTexture;
-  font.atlasWidth = atlasWidth;
-  font.atlasHeight = atlasHeight;
-  font.isValid = true; // Mark the font as valid
-
-  // Second pass: pack characters into atlas
-  int currentX = 0;
-  for (unsigned char c = 0; c < 128; c++)
-  {
-    if (FT_Load_Char(face, c, FT_LOAD_RENDER))
-      continue;
-
-    // Upload glyph to atlas
-    if (face->glyph->bitmap.width > 0 && face->glyph->bitmap.rows > 0)
+    FT_Face face;
+    if (FT_New_Face(ft, filepath, 0, &face))
     {
-      glTexSubImage2D(GL_TEXTURE_2D, 0, currentX, 0,
-        face->glyph->bitmap.width, face->glyph->bitmap.rows,
-        GL_RED, GL_UNSIGNED_BYTE, face->glyph->bitmap.buffer);
+        std::cout << "ERROR::FREETYPE: Failed to load font: " << filepath << std::endl;
+        return -1;
     }
 
-    // Calculate UV coordinates
-    float x0 = static_cast<float>(currentX) / atlasWidth;
-    float x1 = static_cast<float>(currentX + face->glyph->bitmap.width) / atlasWidth;
-    float y0 = 0.0f;
-    float y1 = static_cast<float>(face->glyph->bitmap.rows) / atlasHeight;
+    FT_Set_Pixel_Sizes(face, 0, size);
 
-    Character character = {
-        { {x0, y0}, {x1, y0}, {x1, y1}, {x0, y1} }, // UV coords
-        glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
-        glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-        static_cast<unsigned int>(face->glyph->advance.x)
-    };
-
-    font.Characters.insert(std::pair<char, Character>(c, character));
-    font.baseline = std::max(font.baseline, static_cast<float>(character.Bearing.y));
-
-    currentX += face->glyph->bitmap.width + 1; // +1 for padding
-  }
-
-  FT_Done_Face(face);
-  glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-
-  fonts.push_back(font);
-  return static_cast<int>(fonts.size() - 1);
-}
-
-// Unloads a font by its ID
-void Graphics::unloadFont(int fontId)
-{
-  if (fontId < 0 || fontId >= static_cast<int>(fonts.size()))
-  {
-    std::cout << "Graphics: Invalid font ID: " << fontId << std::endl;
-    return;
-  }
-
-  Font& font = fonts[fontId];
-
-  // Delete the atlas texture
-  glDeleteTextures(1, &font.atlasTexture);
-
-  fonts.erase(fonts.begin() + fontId);
-
-  std::cout << "Graphics: Unloaded font with ID " << fontId << std::endl;
-}
-
-// Unloads all fonts
-void Graphics::unloadAllFonts()
-{
-  for (int i = 0; i < static_cast<int>(fonts.size()); ++i)
-  {
-    if (fonts[i].isValid)
+    // Calculate atlas dimensions
+    int atlasWidth = 0, atlasHeight = 0;
+    
+    // First pass: calculate required atlas size
+    for (unsigned char c = 0; c < 128; c++)
     {
-      unloadFont(i);
+        if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+            continue;
+            
+        atlasWidth += face->glyph->bitmap.width + 1; // +1 for padding
+        atlasHeight = std::max(atlasHeight, static_cast<int>(face->glyph->bitmap.rows));
     }
-  }
-  std::cout << "Graphics: Unloaded all fonts" << std::endl;
+
+    // Create atlas texture
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    unsigned int atlasTexture;
+    glGenTextures(1, &atlasTexture);
+    glBindTexture(GL_TEXTURE_2D, atlasTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, atlasWidth, atlasHeight, 0, GL_RED, GL_UNSIGNED_BYTE, nullptr);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    Font font;
+    font.fontSize = size;
+    font.baseline = 0.0f;
+    font.atlasTexture = atlasTexture;
+    font.atlasWidth = atlasWidth;
+    font.atlasHeight = atlasHeight;
+
+    // Second pass: pack characters into atlas
+    int currentX = 0;
+    for (unsigned char c = 0; c < 128; c++)
+    {
+        if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+            continue;
+
+        // Upload glyph to atlas
+        if (face->glyph->bitmap.width > 0 && face->glyph->bitmap.rows > 0)
+        {
+            glTexSubImage2D(GL_TEXTURE_2D, 0, currentX, 0, 
+                face->glyph->bitmap.width, face->glyph->bitmap.rows,
+                GL_RED, GL_UNSIGNED_BYTE, face->glyph->bitmap.buffer);
+        }
+
+        // Calculate UV coordinates
+        float x0 = static_cast<float>(currentX) / atlasWidth;
+        float x1 = static_cast<float>(currentX + face->glyph->bitmap.width) / atlasWidth;
+        float y0 = 0.0f;
+        float y1 = static_cast<float>(face->glyph->bitmap.rows) / atlasHeight;
+
+        Character character = {
+            { {x0, y0}, {x1, y0}, {x1, y1}, {x0, y1} }, // UV coords
+            glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+            glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+            static_cast<unsigned int>(face->glyph->advance.x)
+        };
+
+        font.Characters.insert(std::pair<char, Character>(c, character));
+        font.baseline = std::max(font.baseline, static_cast<float>(character.Bearing.y));
+
+        currentX += face->glyph->bitmap.width + 1; // +1 for padding
+    }
+
+    FT_Done_Face(face);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+
+    fonts.push_back(font);
+    return static_cast<int>(fonts.size() - 1);
 }
 
 // Draws text on the screen.
 void Graphics::drawText(int fontId, const std::string& text, float x, float y, float scale, const glm::vec4& color)
 {
-  if (fontId < 0 || fontId >= static_cast<int>(fonts.size()))
-  {
-    std::cout << "Graphics: Invalid font ID: " << fontId << std::endl;
-    return;
-  }
+    if (fontId < 0 || fontId >= static_cast<int>(fonts.size()))
+        return;
 
-  const Font& font = fonts[fontId];
-
-  // Find or add font atlas to texture slots
-  float textureIndex = 0.0f;
-  auto texIt = std::find(textureSlots.begin() + 1, textureSlots.begin() + textureSlotIndex, font.atlasTexture);
-  if (texIt != textureSlots.begin() + textureSlotIndex)
-  {
-    textureIndex = static_cast<float>(std::distance(textureSlots.begin(), texIt));
-  }
-  else
-  {
-    if (textureSlotIndex >= MaxTextureSlots)
+    const Font& font = fonts[fontId];
+    
+    // Find or add font atlas to texture slots
+    float textureIndex = 0.0f;
+    auto texIt = std::find(textureSlots.begin() + 1, textureSlots.begin() + textureSlotIndex, font.atlasTexture);
+    if (texIt != textureSlots.begin() + textureSlotIndex)
     {
-      nextBatch();
-      textureIndex = 1.0f;
+        textureIndex = static_cast<float>(std::distance(textureSlots.begin(), texIt));
     }
     else
     {
-      textureIndex = static_cast<float>(textureSlotIndex);
+        if (textureSlotIndex >= MaxTextureSlots)
+        {
+            nextBatch();
+            textureIndex = 1.0f;
+        }
+        else
+        {
+            textureIndex = static_cast<float>(textureSlotIndex);
+        }
+        textureSlots[static_cast<int>(textureIndex)] = font.atlasTexture;
+        if (textureSlotIndex < MaxTextureSlots) textureSlotIndex++;
     }
-    textureSlots[static_cast<int>(textureIndex)] = font.atlasTexture;
-    if (textureSlotIndex < MaxTextureSlots) textureSlotIndex++;
-  }
 
-  float currentX = x;
+    float currentX = x;
 
-  for (char c : text)
-  {
-    auto it = font.Characters.find(c);
-    if (it == font.Characters.end())
-      continue;
-
-    const Character& ch = it->second;
-
-    if (ch.Size.x > 0 && ch.Size.y > 0)
+    for (char c : text)
     {
-      if (quadIndexCount >= MaxIndices)
-        nextBatch();
+        auto it = font.Characters.find(c);
+        if (it == font.Characters.end())
+            continue;
 
-      float xpos = currentX + ch.Bearing.x * scale;
-      float ypos = y + (font.baseline - ch.Bearing.y) * scale;
-      float w = ch.Size.x * scale;
-      float h = ch.Size.y * scale;
+        const Character& ch = it->second;
 
-      glm::mat4 transform = glm::translate(glm::mat4(1.0f), { xpos + w / 2.0f, ypos + h / 2.0f, 0.0f })
-        * glm::scale(glm::mat4(1.0f), { w, h, 1.0f });
+        if (ch.Size.x > 0 && ch.Size.y > 0)
+        {
+            if (quadIndexCount >= MaxIndices)
+                nextBatch();
 
-      // Use pre-calculated UV coordinates
-      quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[0], color, ch.texCoords[0], textureIndex };
-      quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[1], color, ch.texCoords[1], textureIndex };
-      quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[2], color, ch.texCoords[2], textureIndex };
-      quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[3], color, ch.texCoords[3], textureIndex };
+            float xpos = currentX + ch.Bearing.x * scale;
+            float ypos = y + (font.baseline - ch.Bearing.y) * scale;
+            float w = ch.Size.x * scale;
+            float h = ch.Size.y * scale;
 
-      quadIndexCount += 6;
+            glm::mat4 transform = glm::translate(glm::mat4(1.0f), { xpos + w / 2.0f, ypos + h / 2.0f, 0.0f })
+                * glm::scale(glm::mat4(1.0f), { w, h, 1.0f });
+
+            // Use pre-calculated UV coordinates
+            quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[0], color, ch.texCoords[0], textureIndex };
+            quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[1], color, ch.texCoords[1], textureIndex };
+            quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[2], color, ch.texCoords[2], textureIndex };
+            quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[3], color, ch.texCoords[3], textureIndex };
+
+            quadIndexCount += 6;
+        }
+
+        currentX += (ch.Advance >> 6) * scale;
     }
-
-    currentX += (ch.Advance >> 6) * scale;
-  }
 }
 
 // Loads a texture from a file and returns an ID for it.

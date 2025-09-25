@@ -8,7 +8,6 @@
 #include "Time.h"
 #include "ImGuiManager.h"
 #include "WindowManager.h"
-#include "AudioManager.h"
 
 namespace Engine
 {
@@ -29,5 +28,5 @@ namespace Engine
   extern Graphics GRAPHICS;
   extern ImGuiManager IMGUI;
   extern WindowManager WINDOW;
-  extern AudioManager AUDIO;
+  extern Time TIME;
 }

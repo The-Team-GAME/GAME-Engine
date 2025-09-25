@@ -141,8 +141,14 @@
     <ClCompile Include="WindowManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AudioManager.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="FileExplorer.cpp">
+      <Filter>Source Files\Engine\ImGuiPanels</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteDropper.cpp">
+      <Filter>Source Files\Engine\ImGuiPanels</Filter>
+    </ClCompile>
+    <ClCompile Include="Timeline.cpp">
+      <Filter>Source Files\Engine\ImGuiPanels</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -257,8 +263,14 @@
     <ClInclude Include="WindowManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AudioManager.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="FileExplorer.h">
+      <Filter>Source Files\Engine\ImGuiPanels</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteDropper.h">
+      <Filter>Source Files\Engine\ImGuiPanels</Filter>
+    </ClInclude>
+    <ClInclude Include="Timeline.h">
+      <Filter>Source Files\Engine\ImGuiPanels</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
