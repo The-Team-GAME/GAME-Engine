@@ -179,6 +179,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="JsonState.cpp" />
     <ClCompile Include="MainMenuState.cpp" />
     <ClCompile Include="ObjectFactory.cpp" />
+    <ClCompile Include="Perf.cpp" />
     <ClCompile Include="Serialisation.cpp" />
     <ClCompile Include="Time.cpp" />
     <ClCompile Include="Vector2D.cpp" />
