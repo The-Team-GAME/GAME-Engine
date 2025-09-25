@@ -172,6 +172,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="EcsState.cpp" />
     <ClCompile Include="ECS\ComponentManager.cpp" />
     <ClCompile Include="ECS\Entity.cpp" />
+    <ClCompile Include="FileExplorer.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="ImGuiManager.cpp" />
     <ClCompile Include="ImGuiState.cpp" />
@@ -180,7 +181,9 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="MainMenuState.cpp" />
     <ClCompile Include="ObjectFactory.cpp" />
     <ClCompile Include="Serialisation.cpp" />
+    <ClCompile Include="SpriteDropper.cpp" />
     <ClCompile Include="Time.cpp" />
+    <ClCompile Include="Timeline.cpp" />
     <ClCompile Include="Vector2D.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="StateManager.cpp" />
@@ -203,6 +206,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="ECS\System.h" />
     <ClInclude Include="ECS\Types.h" />
     <ClInclude Include="ECS\World.h" />
+    <ClInclude Include="FileExplorer.h" />
     <ClInclude Include="GameObjectState.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="HealthSystem.h" />
@@ -218,7 +222,9 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="RotationSystem.h" />
     <ClInclude Include="Rubric2500Particles.h" />
     <ClInclude Include="Serialisation.h" />
+    <ClInclude Include="SpriteDropper.h" />
     <ClInclude Include="Time.h" />
+    <ClInclude Include="Timeline.h" />
     <ClInclude Include="Vector2D.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="SpriteState.h" />
