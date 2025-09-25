@@ -9,7 +9,6 @@
 #include <GLFW/glfw3.h>
 #include <algorithm>
 #include <cstdio>
-#include <cmath>
 #include <unordered_map>
 
 using ECS::EntityID;
