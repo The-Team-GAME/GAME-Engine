@@ -23,6 +23,9 @@ namespace Engine
 {
   void Input::Update()
   {
+    PERFORMANCE.start("Input");
+
+
     GLFWwindow* window = Engine::WINDOW.getWindow(); //TODO: pass window as parameter in constructor
 
     // Update previous states
@@ -46,6 +49,8 @@ namespace Engine
     glfwGetCursorPos(window, &xpos, &ypos);
     mousePosition.x = static_cast<float>(xpos);
     mousePosition.y = static_cast<float>(ypos);
+
+    PERFORMANCE.stop("Input");
   }
 
   bool Input::IsKeyPressed(int key)
