@@ -10,7 +10,7 @@ namespace Engine
   {
   private:
     std::unordered_map<std::string, std::chrono::high_resolution_clock::time_point> start_time_map;
-    std::unordered_map<std::string, f32> elapsed_time_map; // Use double for better precision
+    std::unordered_map<std::string, f64> elapsed_time_map;
 
   public:
     void start(const std::string& label)
@@ -34,17 +34,20 @@ namespace Engine
       return elapsed;
     }
 
-    void get_all_elapsed() const
+    const auto& get_elapsed_time_map() const
     {
+      return elapsed_time_map;
+    }
+
+    const f64 get_total_time() const
+    {
+      f64 total = 0.0;
       for (const auto& pair : elapsed_time_map)
       {
-        std::cout << pair.first << ": " << pair.second << " seconds (" << (pair.second * 1000.0) << " ms)" << std::endl;
+        total += pair.second;
       }
-		}
-
-    void get_all_elapsed_percentage()
-    {
-
+      return total;
     }
+
   };
 }

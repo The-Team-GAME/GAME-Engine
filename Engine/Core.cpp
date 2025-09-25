@@ -100,7 +100,6 @@ namespace Engine
         Engine::PERFORMANCE.get_elapsed("Draw");
         Engine::PERFORMANCE.get_elapsed("Audio");*/
 
-				Engine::PERFORMANCE.get_all_elapsed();
 
         GRAPHICS.endFrame();
 

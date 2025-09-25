@@ -26,9 +26,15 @@ inline void PerformanceViewerPanel(f32& target_fps)
     }
   }
 
-  ImGui::Text("FPS: %.1f", lastFPS );
+  ImGui::Text("FPS: %.1f", lastFPS);
 
   ImGui::SliderFloat("Tick Rate", &target_fps, 10.0f, 3000.0f);
+
+
+  auto total_time = Engine::PERFORMANCE.get_total_time();
+  for (const auto& [label, time] : Engine::PERFORMANCE.get_elapsed_time_map()) {
+    ImGui::Text((label + ": " + std::to_string((time / total_time) * 100.0)).c_str());
+  }
 
   ImGui::End();
 }
