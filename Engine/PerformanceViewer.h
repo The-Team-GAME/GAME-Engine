@@ -28,7 +28,7 @@ inline void PerformanceViewerPanel(f32& target_fps)
 
   ImGui::Text("FPS: %.1f", lastFPS );
 
-  ImGui::SliderFloat("Tick Rate", &target_fps, 10.0f, 3000.0f);
+  ImGui::SliderFloat("Tick Rate", &target_fps, 10.0f, 144.0f);
 
   ImGui::End();
 }

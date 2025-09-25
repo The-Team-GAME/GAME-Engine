@@ -27,7 +27,7 @@ public:
         .addComponent<Components::Tag<"DevManySpritesState">>()
         .addComponent<Components::Position>(x, y)
         .addComponent<Components::Rotation>(0.0f)
-        .addComponent<Components::RotationSpeed>(30.0f + static_cast<float>(rand() % 90)); // Random rotation speed between 30 and 120 degrees per second
+        .addComponent<Components::RotationSpeed>(1.0f); // Random rotation speed between 30 and 120 degrees per second
     }
 
     auto background = Engine::WORLD.createEntity()

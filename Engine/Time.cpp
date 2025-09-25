@@ -6,7 +6,7 @@ namespace { //consider making it microseconds
 	chrono::milliseconds curr_time = chrono::duration_cast<chrono::milliseconds>((chrono::steady_clock::now()).time_since_epoch());
 
 	f32 delta_time{}; // in seconds
-	f32 frame_cap{ 60 };
+	f32 frame_cap{ 144 };
 }
 
 namespace Engine {

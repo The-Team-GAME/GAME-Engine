@@ -55,11 +55,16 @@ namespace Engine
       { 
         // Caps the accumulator so each gameloop will only go through 5 loops max
         accumulator = Time::get_fixed_dt() * step_limit;
+        std::cout << "nyo" << std::endl;
       }
-      std::cout << Time::calc_fps(Time::get_real_dt()) << std::endl;
+      //std::cout << Time::calc_fps(Time::get_real_dt()) << std::endl;
       // END OF TIME UPDATES ================================================
 
       glfwPollEvents();
+      IMGUI.begin();
+      Input::Update();
+      GRAPHICS.beginFrame();
+      
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
       while(accumulator >= Time::get_fixed_dt())
       {        
@@ -67,30 +72,28 @@ namespace Engine
         accumulator -= Time::get_fixed_dt();
         
         // Main gameloop here
-        IMGUI.begin();
-        Input::Update();
-        GRAPHICS.beginFrame();
+
 
         StateManager::GetCurrentState()->Update();
-        StateManager::GetCurrentState()->Draw();
 
         WORLD.update();
 
         // Update audio system
         AUDIO.update();
 
-        StateChooserPanel();
-        PerformanceViewerPanel(Time::get_frame_cap());
 
-        GRAPHICS.endFrame();
-
-        IMGUI.end();
 
         /* Swap front and back buffers */
 
         // End of gameloop
 
       }
+        StateChooserPanel();
+        PerformanceViewerPanel(Time::get_frame_cap());
+
+      StateManager::GetCurrentState()->Draw();
+      GRAPHICS.endFrame();
+      IMGUI.end();
       glfwSwapBuffers(WINDOW.getWindow());
 
     }
