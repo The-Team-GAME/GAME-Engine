@@ -640,6 +640,67 @@ void Graphics::drawTextureRegion(int imageId, float destX, float destY, float de
   quadIndexCount += 6;
 }
 
+// Loads a sprite sheet from a file and returns an ID for it.
+int Graphics::loadSpriteSheet(const char* filepath, int frameWidth, int frameHeight, int totalFrames, float animationSpeed, MinifyingFilter min_filter)
+{
+  // Load the texture using existing loadTexture function
+  int textureId = loadTexture(filepath, min_filter);
+
+  if (textureId == -1)
+  {
+    std::cout << "Failed to load sprite sheet: " << filepath << std::endl;
+    return -1;
+  }
+
+  // Create sprite sheet data
+  SpriteSheet spriteSheet = {
+    static_cast<unsigned int>(textureId),
+    frameWidth,
+    frameHeight,
+    totalFrames,
+    animationSpeed
+  };
+
+  spriteSheets.push_back(spriteSheet);
+  return static_cast<int>(spriteSheets.size() - 1);
+}
+
+// Draws an animated sprite from a sprite sheet.
+void Graphics::drawAnimatedSprite(int spriteSheetId, float x, float y, float width, float height, float time, float rotation, Origin origin, const glm::vec4& tintColor)
+{
+  if (spriteSheetId < 0 || spriteSheetId >= static_cast<int>(spriteSheets.size()))
+  {
+    std::cout << "Invalid sprite sheet ID: " << spriteSheetId << std::endl;
+    return;
+  }
+
+  const SpriteSheet& spriteSheet = spriteSheets[spriteSheetId];
+
+  // Calculate current frame based on time and animation speed
+  int currentFrame = static_cast<int>(time * spriteSheet.animationSpeed) % spriteSheet.totalFrames;
+
+  // Get texture dimensions to calculate frames per row
+  const Texture& texture = textures[spriteSheet.textureId];
+  int framesPerRow = texture.width / spriteSheet.frameWidth;
+
+  // Calculate source coordinates for current frame
+  int frameX = currentFrame % framesPerRow;
+  int frameY = currentFrame / framesPerRow;
+
+  float srcX = static_cast<float>(frameX * spriteSheet.frameWidth);
+  float srcY = static_cast<float>(frameY * spriteSheet.frameHeight);
+
+  // Use drawTextureRegion to render the specific frame
+  drawTextureRegion(
+    spriteSheet.textureId,
+    x, y, width, height,
+    srcX, srcY, static_cast<float>(spriteSheet.frameWidth), static_cast<float>(spriteSheet.frameHeight),
+    rotation,
+    origin,
+    tintColor
+  );
+}
+
 // Clears the screen with a specified color.
 void Graphics::clearScreen(float r, float g, float b, float a)
 {

@@ -18,34 +18,33 @@
 class DevSpriteAnimationState : public Engine::GameState<DevSpriteAnimationState> {
 
 private:
-  int marioImageId = -1;
+  int marioSpriteSheetId = -1;
+  float animationTime = 0.0f;
 
 public:
   void Load() {};
 
   void Init() {
-    marioImageId = Engine::GRAPHICS.loadTexture("Assets/images/mario.png", Graphics::MinifyingFilter::Nearest);
+    marioSpriteSheetId = Engine::GRAPHICS.loadSpriteSheet(
+      "Assets/images/mario.png",
+      96 / 3, // frame width
+      32, // frame height
+      3, // total frames
+      8.0f, // frames per second
+      Graphics::MinifyingFilter::Nearest
+    );
   };
 
-
-
-  void Update() {};
-
-
+  void Update() {
+    animationTime += 0.016f;
+  };
 
   void Draw() {
-
-    //image stuff
-
     Engine::GRAPHICS.clearScreen(0.1f, 0.1f, 0.1f, 1.0f);
 
-    Engine::GRAPHICS.drawTexture(marioImageId, 200.0f, 150.0f, 96.0f, 32.0f);
-
-
-
+    // Draw animated sprite
+    Engine::GRAPHICS.drawAnimatedSprite(marioSpriteSheetId, 200.0f, 150.0f, 96.0f, 96.0f, animationTime);
   };
-
-
 
   void Free() {};
 
