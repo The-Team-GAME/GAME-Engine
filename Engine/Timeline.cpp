@@ -3,13 +3,15 @@
 
 Timeline::Timeline()
   : currentFrame(0),
-  numFrames(100),             // start with 100 frames (expandable later)
-  zoom(1.0f),                 //how zoomed in is the timeline onto the frames
-  cellSize(ImVec2(60, 40))    // size per frame box
-
+  numFrames(100),           //total frames
+  zoom(1.0f),               //zooms the x axis of the grid
+  cellSize(ImVec2(100, 90)), //
+  isPlaying(false),         // Start in a paused state
+  playbackSpeed(30.0f),     // Default speed of 30 frames per second
+  lastFrameTime(0.0)        // Initialize time to zero
 {
   // Start with 2 layers
-  for ( ; currentFrame < 2; ++currentFrame)
+  for ( ; currentFrame < 1; ++currentFrame)
     layers.push_back(currentFrame);
 }
 
@@ -18,6 +20,7 @@ void Timeline::Draw() {
   if (ImGui::Begin("Timeline"))
   {
     ImVec2 timelineSize(cellSize.x * numFrames, cellSize.y * (int)layers.size());
+    ImVec2 incrementchange(5,5);
 
     // --- Control buttons ---
     if (ImGui::Button("Add")) { //adds layer
@@ -27,24 +30,37 @@ void Timeline::Draw() {
     if (ImGui::Button("Remove") && !layers.empty() && layers.size() != 1) { //removes layer
       layers.pop_back();
     }
-    // Add the zoom buttons
-    ImGui::SameLine();
-    if (ImGui::Button("+")) { //zooms in timeline
-      zoom += 0.5f;
-      // You can clamp the max zoom level if needed
-      if (zoom > 5.0f) zoom = 5.0f;
-    }
-    
-    //Add the zoom slider
-    ImGui::SameLine();
 
 
+
+    // zoom button and slider
     ImGui::SameLine();
     if (ImGui::Button("-")) { //zooms out timeline
       zoom -= 0.5f;
       // Clamp the min zoom level
       if (zoom < 0.2f) zoom = 0.2f;
     }
+    ImGui::SameLine(); 
+    ImGui::SetNextItemWidth(200);
+    ImGui::SliderFloat(" ", &zoom, 0.05f, 3.0f, "%.1fx"); //zoom slider
+    
+    ImGui::SameLine();
+    if (ImGui::Button("+")) { //zooms in timeline
+      zoom += 0.5f;
+      // You can clamp the max zoom level if needed
+      if (zoom > 5.0f) zoom = 5.0f;
+    }
+
+    // Add play/pause button
+    ImGui::SameLine();
+    if (ImGui::Button(isPlaying ? "Pause" : "Play")) {
+      isPlaying = !isPlaying;
+      // When playback starts, reset the last frame time
+      if (isPlaying) {
+        lastFrameTime = ImGui::GetTime();
+      }
+    }
+
 
 
     // --- Timeline region ---
@@ -71,14 +87,37 @@ void Timeline::Draw() {
           currentCellSize))
         {
           currentFrame = frame;
+          isPlaying = false; // Pause playback on manual selection
         }
       }
     }
 
-    // Draw playhead
-    ImVec2 headMin = ImVec2(p.x + currentFrame * cellSize.x, p.y);
-    ImVec2 headMax = ImVec2(headMin.x + 2, p.y + timelineSize.y);
+    // Draw playhead to place marker
+    ImVec2 headMin = ImVec2(p.x + currentFrame * currentCellSize.x, p.y);
+    ImVec2 headMax = ImVec2(headMin.x + 2, p.y + (int)layers.size() * currentCellSize.y);
     draw_list->AddRectFilled(headMin, headMax, IM_COL32(255, 0, 0, 255));
+
+    // Update playhead position if playing
+    if (isPlaying) {
+      // Get the current time and calculate the time elapsed since the last frame
+      double currentTime = ImGui::GetTime();
+      float deltaTime = (float)(currentTime - lastFrameTime);
+
+      // Advance the current frame based on the playback speed and delta time
+      currentFrame += playbackSpeed * deltaTime;
+
+      // Check if the marker has reached or passed the end of the timeline
+      if (currentFrame >= numFrames) {
+        // Stop playback by setting isPlaying to false
+        isPlaying = false;
+        currentFrame = numFrames - 1; //clamp to current frame
+      }
+
+      // Update the last frame time for the next iteration
+      lastFrameTime = currentTime;
+    }
+
+
 
     ImGui::EndChild();
   }

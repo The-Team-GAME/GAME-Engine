@@ -20,6 +20,11 @@ private:
   int currentFrame;
   int numFrames;            // can be dynamic later
   float zoom;
-
   ImVec2 cellSize;
+
+
+  // New members for playback
+  bool isPlaying;
+  float playbackSpeed;
+  double lastFrameTime;
 };
