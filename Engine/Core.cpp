@@ -52,7 +52,7 @@ namespace Engine
       Time::update_time();
       accumulator += Time::get_real_dt();
       if (accumulator > Time::get_fixed_dt() * step_limit)
-      { 
+      {
         // Caps the accumulator so each gameloop will only go through 5 loops max
         accumulator = Time::get_fixed_dt() * step_limit;
         std::cout << "nyo" << std::endl;
@@ -64,13 +64,13 @@ namespace Engine
       IMGUI.begin();
       Input::Update();
       GRAPHICS.beginFrame();
-      
+
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
-      while(accumulator >= Time::get_fixed_dt())
-      {        
+      while (accumulator >= Time::get_fixed_dt())
+      {
         // To decrement the accumulator when each gameloop runs
         accumulator -= Time::get_fixed_dt();
-        
+
         // Main gameloop here
         StateManager::GetCurrentState()->Update();
         WORLD.update();
@@ -84,6 +84,7 @@ namespace Engine
       StateChooserPanel();
       PerformanceViewerPanel(Time::get_tick_rate());
       StateManager::GetCurrentState()->Draw();
+      WORLD.draw();
       GRAPHICS.endFrame();
       IMGUI.end();
       glfwSwapBuffers(WINDOW.getWindow());
