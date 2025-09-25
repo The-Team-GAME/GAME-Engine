@@ -150,6 +150,9 @@
     <ClCompile Include="Timeline.cpp">
       <Filter>Source Files\Engine\ImGuiPanels</Filter>
     </ClCompile>
+    <ClCompile Include="ImGuiState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
@@ -271,6 +274,9 @@
     </ClInclude>
     <ClInclude Include="Timeline.h">
       <Filter>Source Files\Engine\ImGuiPanels</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGuiState.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
