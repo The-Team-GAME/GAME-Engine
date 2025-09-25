@@ -4,6 +4,7 @@
 #include "BasicComponents.h"
 #include "BackgroundSystem.h"
 #include "RenderSystem.h"
+#include "CollisionSystem.h"
 
 #include <imgui.h>
 #include <GLFW/glfw3.h>
@@ -13,24 +14,26 @@
 
 using ECS::EntityID;
 
-namespace Components {
-  struct Collider {
-    bool enabled = true;
-    bool isTrigger = false;
-  };
-}
+//namespace Components {
+//  struct Collider {
+//    bool enabled = true;
+//    bool isTrigger = false;
+//  };
+//}
 
 void ImGuiState::Load() {}
 void ImGuiState::Init()
 {
   Engine::WORLD.createEntity()
     .addComponent<Components::Tag<"RectPainter">>()
+    .addComponent<Components::Position>(0.0f, 0.0f)
     .addComponent<Components::Background>()
     .addComponent<Components::Color>(0.08f, 0.08f, 0.10f, 1.0f)
-    .addComponent<Components::Collider>(false, false);
+    .addComponent<Components::Collider>(0.0f,0.0f,false);
 
   Engine::WORLD.addSystem<BackgroundSystem>();
   Engine::WORLD.addSystem<RectRenderSystem>();
+	Engine::WORLD.addSystem<CollisionSystem>();
 
   rects_.clear();
   selectedIndex_ = -1;
@@ -190,7 +193,7 @@ void ImGuiState::handleMouse()
           .addComponent<Components::Position>(center.x, center.y)
           .addComponent<Components::Size>(size.x, size.y)
           .addComponent<Components::Color>(currentColor_.x, currentColor_.y, currentColor_.z, currentColor_.w)
-          .addComponent<Components::Collider>(true, false);
+          .addComponent<Components::Collider>(0.0f,0.0f, false);
         rects_.push_back(entity.getId());
         selectedIndex_ = (int)rects_.size() - 1;
       }
@@ -212,7 +215,7 @@ void ImGuiState::runCollisionPass()
   for (size_t i = 0; i < rects_.size(); ++i) {
     auto idA = rects_[i];
     auto* colA = Engine::WORLD.getComponent<Components::Collider>(idA);
-    if (!colA || !colA->enabled) continue;
+    if (!colA) continue;
 
     glm::vec2 aMin, aMax;
     if (!getBounds(idA, aMin, aMax)) continue;
@@ -220,7 +223,7 @@ void ImGuiState::runCollisionPass()
     for (size_t j = i + 1; j < rects_.size(); ++j) {
       auto idB = rects_[j];
       auto* colB = Engine::WORLD.getComponent<Components::Collider>(idB);
-      if (!colB || !colB->enabled) continue;
+      if (!colB) continue;
 
       glm::vec2 bMin, bMax;
       if (!getBounds(idB, bMin, bMax)) continue;
@@ -388,10 +391,9 @@ void ImGuiState::drawImGui()
           }
         }
         else {
-          ImGui::Checkbox("Collider Enabled", &col->enabled);
           ImGui::Checkbox("Is Trigger", &col->isTrigger);
           if (ImGui::Button("Remove Collider")) {
-            col->enabled = false; col->isTrigger = false;
+            col->isTrigger = false;
           }
         }
 

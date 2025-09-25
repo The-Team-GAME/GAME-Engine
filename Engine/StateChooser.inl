@@ -7,7 +7,7 @@
 #include "EcsState.h"
 #include "JsonState.h"
 #include "SpriteState.h"
-#include "GameObjectState.h"
+//#include "GameObjectState.h"
 #include "DevManySpritesState.h"
 #include "Rubric2500Particles.h"
 #include "ImGuiState.h"
@@ -40,7 +40,7 @@ inline void StateChooserPanel()
   }
   if (ImGui::Button("GameObjectState"))
   {
-    Engine::StateManager::ChangeState(GameObjectState::Get());
+    //Engine::StateManager::ChangeState(GameObjectState::Get());
   }
   if (ImGui::Button("DevManySpritesState"))
   {

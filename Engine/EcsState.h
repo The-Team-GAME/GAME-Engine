@@ -8,6 +8,7 @@
 #include "ComponentSelector.h"
 #include "BackgroundSystem.h"
 #include "PlayerControllerSystem.h"
+#include "CollisionSystem.h"
 
 class EcsState : public Engine::GameState<EcsState>
 {
@@ -26,7 +27,17 @@ public:
       .addComponent<Components::Tag<"GameObjectState">>()
       .addComponent<Components::Position>(100.0f, 100.0f)
       .addComponent<Components::Velocity>(0.0f, 0.0f)
+      .addComponent<Components::Collider>(20.0f, 20.0f, false)
       .addComponent<Components::PlayerController>();
+
+    // Create two enemy instances from the prefab
+    auto enemy2 = Engine::FACTORY.createObject(enemyPrefab)
+      .addComponent<Components::Tag<"GameObjectState">>()
+      .addComponent<Components::Position>(100.0f, 100.0f)
+      .addComponent<Components::Velocity>(0.0f, 0.0f)
+      .addComponent<Components::Collider>(50.0f, 50.0f, false);
+      
+
 
     // You can modify components like this too
     //enemy2.getComponent<Components::Position>()->x = 300.0f;
@@ -40,6 +51,7 @@ public:
     Engine::WORLD.addSystem<BackgroundSystem>(); // Background system should be first
 		Engine::WORLD.addSystem<PlayerControllerSystem>();
     Engine::WORLD.addSystem<MovementSystem>();
+		Engine::WORLD.addSystem<CollisionSystem>();
     Engine::WORLD.addSystem<StaticSpriteRenderSystem>();
   };
 

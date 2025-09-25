@@ -80,7 +80,14 @@ namespace Components {
   
   };
    
-  
+  struct Collider {
+    float halfWidth, halfHeight;
+    bool isTrigger; //Chcek if collider is triggered
+
+    Collider(float width = 1.0f, float height = 1.0f, bool isTrigger = false)
+      : halfWidth(width * 0.5f), halfHeight(height * 0.5f), isTrigger(isTrigger) {
+    }
+  };
 
   struct StaticSprite {
     int textureId;
