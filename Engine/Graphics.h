@@ -96,6 +96,8 @@ public:
 
   // Font and Text
   int loadFont(const char* filepath, unsigned int size);
+  void unloadFont(int fontId);
+  void unloadAllFonts();
   void drawText(int fontId, const std::string& text, float x, float y, float scale, const glm::vec4& color);
 
   void drawRect(const glm::vec4& color, float x, float y, float width, float height, float rotation = 0.0f, Origin origin = Origin::Center);
@@ -125,6 +127,7 @@ private:
     unsigned int fontSize;
     float baseline;
     int atlasWidth, atlasHeight;
+    bool isValid = true;  // Track if font is still valid
   };
 
   // Font data
