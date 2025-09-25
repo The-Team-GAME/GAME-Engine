@@ -31,6 +31,7 @@ namespace Engine
   Graphics GRAPHICS{ windowWidth, windowHeight };
   ImGuiManager IMGUI{};
   AudioManager AUDIO{};
+	Perf PERFORMANCE{};
 
   Core::Core()
   {
@@ -56,7 +57,7 @@ namespace Engine
         // Caps the accumulator so each gameloop will only go through 5 loops max
         accumulator = Time::get_fixed_dt() * step_limit;
       }
-      std::cout << Time::calc_fps(Time::get_real_dt()) << std::endl;
+      //std::cout << Time::calc_fps(Time::get_real_dt()) << std::endl;
       // END OF TIME UPDATES ================================================
 
       glfwPollEvents();
@@ -68,19 +69,38 @@ namespace Engine
         
         // Main gameloop here
         IMGUI.begin();
+
+        PERFORMANCE.start("Input");
         Input::Update();
+				PERFORMANCE.stop("Input");
+
         GRAPHICS.beginFrame();
 
+        PERFORMANCE.start("Update");
         StateManager::GetCurrentState()->Update();
+        PERFORMANCE.stop("Update");
+
+        PERFORMANCE.start("Draw");
         StateManager::GetCurrentState()->Draw();
+        PERFORMANCE.stop("Draw");
+
 
         WORLD.update();
 
         // Update audio system
+        PERFORMANCE.start("Audio");
         AUDIO.update();
+        PERFORMANCE.stop("Audio");
 
         StateChooserPanel();
         PerformanceViewerPanel(Time::get_frame_cap());
+
+        /*Engine::PERFORMANCE.get_elapsed("Input");
+        Engine::PERFORMANCE.get_elapsed("Update");
+        Engine::PERFORMANCE.get_elapsed("Draw");
+        Engine::PERFORMANCE.get_elapsed("Audio");*/
+
+				Engine::PERFORMANCE.get_all_elapsed();
 
         GRAPHICS.endFrame();
 

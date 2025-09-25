@@ -9,6 +9,8 @@
 #include "ImGuiManager.h"
 #include "WindowManager.h"
 #include "AudioManager.h"
+#include "Perf.h"
+
 
 namespace Engine
 {
@@ -30,4 +32,5 @@ namespace Engine
   extern ImGuiManager IMGUI;
   extern WindowManager WINDOW;
   extern AudioManager AUDIO;
+	extern Perf PERFORMANCE;
 }

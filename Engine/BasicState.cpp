@@ -89,6 +89,8 @@ void BasicState::Draw()
   Engine::GRAPHICS.drawText(fontId1, "Hello", 250.0f, 250.0f, 1.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
   Engine::GRAPHICS.drawText(fontId2, "Hello", 250.0f, 300.0f, 1.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
   Engine::GRAPHICS.drawText(fontId1, "Press 'P' to play sound", 250.0f, 350.0f, 0.5f, { 1.0f, 1.0f, 0.0f, 1.0f });
+
+  //Engine::GRAPHICS.drawText(fontId1, std::to_string(Engine::PERFORMANCE.get_elapsed("Draw")), 250.0f, 400.0f, 0.5f, {1.0f, 1.0f, 0.0f, 1.0f});
 }
 
 void BasicState::Free()
