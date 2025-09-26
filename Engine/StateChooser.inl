@@ -11,6 +11,7 @@
 #include "DevManySpritesState.h"
 #include "Rubric2500Particles.h"
 #include "ImGuiState.h"
+#include "DevSpriteAnimationState.h"
 
 inline void StateChooserPanel()
 {
@@ -54,6 +55,16 @@ inline void StateChooserPanel()
   {
     Engine::StateManager::ChangeState(ImGuiState::Get());
   }
+  if(ImGui::Button("DevSpriteAnimationState"))
+  {
+     Engine::StateManager::ChangeState(DevSpriteAnimationState::Get());
+  }
+  if (ImGui::Button("Exit Game"))
+  {
+    Engine::StateManager::Stop();
+  }
+
+
 
   ImGui::End();
 }
