@@ -19,15 +19,6 @@ void EcsState::Load()
 
 void EcsState::Init()
 {
-
-
-  auto enemy1 = Engine::FACTORY.createObject(enemyPrefab)
-    .addComponent<Components::Tag<"Player">>()
-    .addComponent<Components::Tag<"GameObjectState">>()
-    .addComponent<Components::Position>(10.0f, 20.0f)
-    .addComponent<Components::Velocity>(100.0f, 0.0f);
-
-
   // Create player entity
   auto player = Engine::WORLD.createEntity()
     .addComponent<Components::Tag<"Player">>()
@@ -35,7 +26,8 @@ void EcsState::Init()
     .addComponent<Components::Position>(10.0f, 20.0f)
     .addComponent<Components::Velocity>(100.0f, 0.0f)
     .addComponent<Components::Health>(100, 100)
-    .addComponent<Components::Size>(10.0f, 10.0f);
+    .addComponent<Components::Size>(10.0f, 10.0f)
+    .addComponent<Components::Color>(0.0f, 1.0f, 0.0f, 1.0f);
 
   // Create an enemy entity to act as a template
   auto enemy = Engine::WORLD.createEntity()
@@ -43,7 +35,8 @@ void EcsState::Init()
     .addComponent<Components::Tag<"GameObjectState">>()
     .addComponent<Components::Position>(50.0f, 30.0f)
     .addComponent<Components::Health>(50, 50)
-    .addComponent<Components::Size>(10.0f, 10.0f);
+    .addComponent<Components::Size>(10.0f, 10.0f)
+    .addComponent<Components::Color>(0.0f, 1.0f, 0.0f, 1.0f);
 
   // --- Cloning Demonstration ---
   // Create a new enemy by cloning the first one
@@ -70,6 +63,7 @@ void EcsState::Init()
   Engine::WORLD.addSystem<BackgroundSystem>(); // Background system should be first
   Engine::WORLD.addSystem<MovementSystem>();
   Engine::WORLD.addSystem<HealthSystem>();
+  Engine::WORLD.addSystem<RectRenderSystem>();
 }
 
 void EcsState::Update()
