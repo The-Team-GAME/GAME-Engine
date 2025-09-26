@@ -2,8 +2,8 @@
 #include <chrono>
 namespace chrono = std::chrono;
 
-namespace { //consider making it microseconds
-	chrono::milliseconds curr_time = chrono::duration_cast<chrono::milliseconds>((chrono::steady_clock::now()).time_since_epoch());
+namespace {
+	chrono::nanoseconds curr_time = chrono::duration_cast<chrono::nanoseconds>((chrono::steady_clock::now()).time_since_epoch());
 
 	f32 delta_time{}; // in seconds
 	f32 tick_rate{ 144.f };
@@ -13,8 +13,9 @@ namespace Engine {
 	namespace Time {
 		void update_time(void)
 		{
-			chrono::milliseconds new_time = chrono::duration_cast<chrono::milliseconds>((chrono::steady_clock::now()).time_since_epoch());
-			delta_time = static_cast<f32>((new_time - curr_time).count()) / 1000.0;
+			chrono::nanoseconds new_time = chrono::duration_cast<chrono::nanoseconds>((chrono::steady_clock::now()).time_since_epoch());
+			// Convert nanoseconds to seconds
+			delta_time = static_cast<f32>((new_time - curr_time).count()) / 1000000000.0f;
 			curr_time = new_time;
 		}
 
@@ -37,11 +38,6 @@ namespace Engine {
 
 		f32 calc_fps(f32 dt)
 		{
-			if (dt == 0.f)
-			{
-				// 1000 cuz mili seconds so max fps that we can calculate accurately is 1k
-				return 1.f / 0.001; 
-			}
 			return 1.f / dt;
 		}
 	}
