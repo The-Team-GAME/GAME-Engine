@@ -176,7 +176,6 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="ImGuiManager.cpp" />
     <ClCompile Include="ImGuiState.cpp" />
     <ClCompile Include="InputManager.cpp" />
-    <ClCompile Include="JsonState.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="MainMenuState.cpp" />
     <ClCompile Include="ObjectFactory.cpp" />
@@ -211,7 +210,6 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="ImGuiManager.h" />
     <ClInclude Include="ImGuiState.h" />
     <ClInclude Include="InputManager.h" />
-    <ClInclude Include="JsonState.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="MainMenuState.h" />
     <ClInclude Include="MovementSystem.h" />

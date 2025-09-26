@@ -5,7 +5,6 @@
 #include "BasicState.h"
 #include "MainMenuState.h"
 #include "EcsState.h"
-#include "JsonState.h"
 #include "SpriteState.h"
 #include "GameObjectState.h"
 #include "DevManySpritesState.h"
@@ -30,10 +29,6 @@ inline void StateChooserPanel()
   if (ImGui::Button("EcsState"))
   {
     Engine::StateManager::ChangeState(EcsState::Get());
-  }
-  if (ImGui::Button("JsonState"))
-  {
-    Engine::StateManager::ChangeState(JsonState::Get());
   }
   if (ImGui::Button("SpriteState"))
   {
