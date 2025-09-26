@@ -33,8 +33,6 @@ public:
       if (damageEvent->target == entity) {
         auto* health = world->getComponent<Components::Health>(entity);
         health->damage(damageEvent->amount);
-        std::cout << "Entity " << entity << " took " << damageEvent->amount
-          << " damage. Current health: " << health->value << std::endl;
       }
     }
   }
@@ -68,7 +66,7 @@ void EcsState::Init()
     .addComponent<Components::Tag<"Enemy">>()
     .addComponent<Components::Tag<"GameObjectState">>()
     .addComponent<Components::Position>(50.0f, 30.0f)
-    .addComponent<Components::Health>(50, 50)
+    .addComponent<Components::Health>(100, 100)
     .addComponent<Components::Size>(10.0f, 10.0f)
     .addComponent<Components::Color>(0.0f, 1.0f, 0.0f, 1.0f);
 
@@ -106,7 +104,12 @@ void EcsState::Update()
   if (Engine::Input::IsKeyPressed(GLFW_KEY_SPACE))
   {
     Engine::WORLD.sendEvent<DamageEvent>(playerID, 10);
-    std::cout << "Spacebar was pressed!\n";
+    // Print the health of all entities with Health component  
+    for (const auto& e : Engine::WORLD.getEntitiesWith<Components::Health>()) {
+      auto* health = Engine::WORLD.getComponent<Components::Health>(e);
+      std::cout << "Entity " << e << " has health: " << health->value << "\n";
+    }
+    std::cout << "\n";
   }
 }
 
