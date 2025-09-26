@@ -1,11 +1,9 @@
 {
+  "entity": {
     "id": "banana",
-    "size": {
-        "width": 200,
-        "height": 120
-    },
-    "staticSprite": {
-        "texturePath": "Assets/images/banana.png",
-        "minifyingFilter": "Nearest"
-    }
+    "width": 200,
+    "height": 120,
+    "texturePath": "Assets/images/banana.png",
+    "minifyingFilter": 0
+  }
 }
