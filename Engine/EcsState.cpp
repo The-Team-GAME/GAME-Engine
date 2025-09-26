@@ -27,12 +27,13 @@ public:
     requireComponents<Components::Health>();
   }
 
-  void onEvent(const ECS::Event& event) override {
+  void onEvent(const ECS::Event& event, ECS::EntityID entity) override {
     if (const auto* damageEvent = event.get<DamageEvent>()) {
-      auto* health = world->getComponent<Components::Health>(damageEvent->target);
-      if (health) {
+      // The event is for a specific target, only process if it matches the entity this system is currently processing
+      if (damageEvent->target == entity) {
+        auto* health = world->getComponent<Components::Health>(entity);
         health->damage(damageEvent->amount);
-        std::cout << "Entity " << damageEvent->target << " took " << damageEvent->amount
+        std::cout << "Entity " << entity << " took " << damageEvent->amount
           << " damage. Current health: " << health->value << std::endl;
       }
     }

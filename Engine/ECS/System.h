@@ -48,8 +48,8 @@ namespace ECS {
       }
     }
 
-    // Override for handling a specific event
-    virtual void onEvent([[maybe_unused]] const Event& event) {}
+    // Override for handling a specific event for a specific entity
+    virtual void onEvent([[maybe_unused]] const Event& event, [[maybe_unused]] EntityID entity) {}
 
     // Override for per-entity logic
     virtual void updateEntity([[maybe_unused]] EntityID entity) {}

@@ -235,7 +235,10 @@ namespace ECS
           const auto& systemEventSignature = system->getEventSignature();
           if (systemEventSignature.test(event.typeId))
           {
-            system->onEvent(event);
+            // Call onEvent for each entity the system manages
+            for (EntityID entity : system->getEntities()) {
+              system->onEvent(event, entity);
+            }
           }
         }
       }
