@@ -5,6 +5,7 @@
 #include "ComponentArray.h"
 #include "Entity.h"
 #include "System.h"
+#include "EventManager.h"
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
@@ -28,6 +29,7 @@ namespace ECS
 
     std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> componentArrays;
     std::vector<std::unique_ptr<System>> systems;
+    std::vector<Event> eventQueue;
 
     template <typename T>
     ComponentArray<T>* getComponentArray()
@@ -215,9 +217,30 @@ namespace ECS
         systems.end());
     }
 
+    // Event management
+    template <typename T, typename... Args>
+    void sendEvent(Args&&... args)
+    {
+      eventQueue.emplace_back(T{ std::forward<Args>(args)... });
+    }
+
     // Main update loop
     void update()
     {
+      // Dispatch all queued events
+      for (const auto& event : eventQueue)
+      {
+        for (auto& system : systems)
+        {
+          const auto& systemEventSignature = system->getEventSignature();
+          if (systemEventSignature.test(event.typeId))
+          {
+            system->onEvent(event);
+          }
+        }
+      }
+      eventQueue.clear();
+
       // Update all systems
       for (auto& system : systems)
       {

@@ -2,6 +2,7 @@
 
 #include "Types.h"
 #include "ComponentManager.h"
+#include "EventManager.h"
 #include <unordered_set>
 
 namespace ECS {
@@ -14,6 +15,7 @@ namespace ECS {
     World* world = nullptr;
     std::unordered_set<EntityID> entities;
     ComponentSignature requiredSignature;
+    EventSignature eventSignature;
 
   public:
     virtual ~System() = default;
@@ -23,6 +25,13 @@ namespace ECS {
     void requireComponents() {
       requiredSignature.reset();
       ((requiredSignature.set(ComponentTypeManager::getTypeId<Components>())), ...);
+    }
+
+    // Clean way to specify listened-to events!
+    template<typename... Events>
+    void listenToEvents() {
+      eventSignature.reset();
+      ((eventSignature.set(EventTypeManager::getTypeId<Events>())), ...);
     }
 
     // Override for system logic
@@ -38,6 +47,9 @@ namespace ECS {
         drawEntity(entityId);
       }
     }
+
+    // Override for handling a specific event
+    virtual void onEvent([[maybe_unused]] const Event& event) {}
 
     // Override for per-entity logic
     virtual void updateEntity([[maybe_unused]] EntityID entity) {}
@@ -64,6 +76,7 @@ namespace ECS {
 
     const std::unordered_set<EntityID>& getEntities() const { return entities; }
     const ComponentSignature& getRequiredSignature() const { return requiredSignature; }
+    const EventSignature& getEventSignature() const { return eventSignature; }
 
   private:
     friend class World;
