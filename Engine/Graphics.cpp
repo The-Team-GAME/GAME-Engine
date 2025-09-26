@@ -335,12 +335,14 @@ int Graphics::loadFont(const char* filepath, unsigned int size)
     atlasHeight = std::max(atlasHeight, static_cast<int>(face->glyph->bitmap.rows));
   }
 
+  // Create RGBA atlas data
+  std::vector<unsigned char> atlasData(atlasWidth * atlasHeight * 4, 0);
+
   // Create atlas texture
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   unsigned int atlasTexture;
   glGenTextures(1, &atlasTexture);
   glBindTexture(GL_TEXTURE_2D, atlasTexture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, atlasWidth, atlasHeight, 0, GL_RED, GL_UNSIGNED_BYTE, nullptr);
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -353,7 +355,7 @@ int Graphics::loadFont(const char* filepath, unsigned int size)
   font.atlasTexture = atlasTexture;
   font.atlasWidth = atlasWidth;
   font.atlasHeight = atlasHeight;
-  font.isValid = true; // Mark the font as valid
+  font.isValid = true;
 
   // Second pass: pack characters into atlas
   int currentX = 0;
@@ -362,12 +364,25 @@ int Graphics::loadFont(const char* filepath, unsigned int size)
     if (FT_Load_Char(face, c, FT_LOAD_RENDER))
       continue;
 
-    // Upload glyph to atlas
+    // Copy glyph data to RGBA atlas
     if (face->glyph->bitmap.width > 0 && face->glyph->bitmap.rows > 0)
     {
-      glTexSubImage2D(GL_TEXTURE_2D, 0, currentX, 0,
-        face->glyph->bitmap.width, face->glyph->bitmap.rows,
-        GL_RED, GL_UNSIGNED_BYTE, face->glyph->bitmap.buffer);
+      for (int y = 0; y < face->glyph->bitmap.rows; y++)
+      {
+        for (int x = 0; x < face->glyph->bitmap.width; x++)
+        {
+          int atlasIndex = ((y * atlasWidth) + (currentX + x)) * 4;
+          int glyphIndex = y * face->glyph->bitmap.width + x;
+
+          unsigned char alpha = face->glyph->bitmap.buffer[glyphIndex];
+
+          // Set RGBA: white color with glyph alpha
+          atlasData[atlasIndex + 0] = 255; // R
+          atlasData[atlasIndex + 1] = 255; // G  
+          atlasData[atlasIndex + 2] = 255; // B
+          atlasData[atlasIndex + 3] = alpha; // A
+        }
+      }
     }
 
     // Calculate UV coordinates
@@ -388,6 +403,9 @@ int Graphics::loadFont(const char* filepath, unsigned int size)
 
     currentX += face->glyph->bitmap.width + 1; // +1 for padding
   }
+
+  // Upload the complete RGBA atlas to GPU
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, atlasWidth, atlasHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, atlasData.data());
 
   FT_Done_Face(face);
   glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
@@ -620,6 +638,67 @@ void Graphics::drawTextureRegion(int imageId, float destX, float destY, float de
   quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[3], tintColor, texCoords[3], textureIndex };
 
   quadIndexCount += 6;
+}
+
+// Loads a sprite sheet from a file and returns an ID for it.
+int Graphics::loadSpriteSheet(const char* filepath, int frameWidth, int frameHeight, int totalFrames, float animationSpeed, MinifyingFilter min_filter)
+{
+  // Load the texture using existing loadTexture function
+  int textureId = loadTexture(filepath, min_filter);
+
+  if (textureId == -1)
+  {
+    std::cout << "Failed to load sprite sheet: " << filepath << std::endl;
+    return -1;
+  }
+
+  // Create sprite sheet data
+  SpriteSheet spriteSheet = {
+    static_cast<unsigned int>(textureId),
+    frameWidth,
+    frameHeight,
+    totalFrames,
+    animationSpeed
+  };
+
+  spriteSheets.push_back(spriteSheet);
+  return static_cast<int>(spriteSheets.size() - 1);
+}
+
+// Draws an animated sprite from a sprite sheet.
+void Graphics::drawAnimatedSprite(int spriteSheetId, float x, float y, float width, float height, float time, float rotation, Origin origin, const glm::vec4& tintColor)
+{
+  if (spriteSheetId < 0 || spriteSheetId >= static_cast<int>(spriteSheets.size()))
+  {
+    std::cout << "Invalid sprite sheet ID: " << spriteSheetId << std::endl;
+    return;
+  }
+
+  const SpriteSheet& spriteSheet = spriteSheets[spriteSheetId];
+
+  // Calculate current frame based on time and animation speed
+  int currentFrame = static_cast<int>(time * spriteSheet.animationSpeed) % spriteSheet.totalFrames;
+
+  // Get texture dimensions to calculate frames per row
+  const Texture& texture = textures[spriteSheet.textureId];
+  int framesPerRow = texture.width / spriteSheet.frameWidth;
+
+  // Calculate source coordinates for current frame
+  int frameX = currentFrame % framesPerRow;
+  int frameY = currentFrame / framesPerRow;
+
+  float srcX = static_cast<float>(frameX * spriteSheet.frameWidth);
+  float srcY = static_cast<float>(frameY * spriteSheet.frameHeight);
+
+  // Use drawTextureRegion to render the specific frame
+  drawTextureRegion(
+    spriteSheet.textureId,
+    x, y, width, height,
+    srcX, srcY, static_cast<float>(spriteSheet.frameWidth), static_cast<float>(spriteSheet.frameHeight),
+    rotation,
+    origin,
+    tintColor
+  );
 }
 
 // Clears the screen with a specified color.

@@ -13,7 +13,7 @@ public:
   void updateEntity(ECS::EntityID entityId) override {
     auto* rot = world->getComponent<Components::Rotation>(entityId);
     auto* speed = world->getComponent<Components::RotationSpeed>(entityId);
-     
+
     rot->angle += speed->degreesPerSecond * Engine::Time::get_fixed_dt();
   }
 };

@@ -8,6 +8,7 @@ private:
   int fontId1 = -1;
   int fontId2 = -1;
   int moveSoundId = -1;
+  float rotation = 0.0f;
 
 public:
   /*!
