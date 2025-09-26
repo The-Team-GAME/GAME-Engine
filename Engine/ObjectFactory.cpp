@@ -4,7 +4,6 @@
 #include "ECS/World.h"
 #include "FileHandler.h"
 
-using json = nlohmann::json;
 namespace fh = FileHandler;
 
 Engine::ObjectFactory::ObjectFactory(ECS::World* world) : m_world(world)
