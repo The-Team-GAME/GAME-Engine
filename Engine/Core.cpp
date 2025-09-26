@@ -63,7 +63,6 @@ namespace Engine
       glfwPollEvents();
       AUDIO.update();
       IMGUI.begin();
-      Input::Update();
       GRAPHICS.beginFrame();
 
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
@@ -71,6 +70,10 @@ namespace Engine
       {
         // To decrement the accumulator when each gameloop runs
         accumulator -= Time::get_fixed_dt();
+
+        // Update input right before the main gameloop. This needs to be here because if it is out side the while loop,
+        // WORLD.update() won't have a chance to react before the input state is cleared on the next frame. 
+        Input::Update();
 
         // Main gameloop here
         StateManager::GetCurrentState()->Update();
