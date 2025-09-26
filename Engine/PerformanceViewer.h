@@ -3,7 +3,7 @@
 #include "Core.h"
 #include "Time.h"
 
-inline void PerformanceViewerPanel(f32& target_fps)
+inline void PerformanceViewerPanel()
 {
   ImGui::Begin("Performance Viewer");
 
@@ -28,7 +28,11 @@ inline void PerformanceViewerPanel(f32& target_fps)
 
   ImGui::Text("FPS: %.1f", lastFPS);
 
-  ImGui::SliderFloat("Tick Rate", &target_fps, 10.0f, 144.0f);
+  float tick_rate_input = Engine::Time::get_tick_rate();
+
+  ImGui::SliderFloat("Tick Rate", &tick_rate_input, 10.0f, 144.0f);
+
+  Engine::Time::set_tick_rate(tick_rate_input);
 
   ImGui::End();
 }

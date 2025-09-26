@@ -7,6 +7,7 @@ namespace {
 
 	f32 delta_time{}; // in seconds
 	f32 tick_rate{ 144.f };
+	f32 fixed_dt{ 1.f / tick_rate }; // precalulate fixed_dt so we dont have to do it every time get_tick_rate is called
 }
 
 namespace Engine {
@@ -15,18 +16,26 @@ namespace Engine {
 		{
 			chrono::nanoseconds new_time = chrono::duration_cast<chrono::nanoseconds>((chrono::steady_clock::now()).time_since_epoch());
 			// Convert nanoseconds to seconds
-			delta_time = static_cast<f32>((new_time - curr_time).count()) / 1000000000.0f;
+			delta_time = static_cast<f32>((new_time - curr_time).count()) * 1e-9f; // multiply instead of divide because division is veryyy slow
 			curr_time = new_time;
 		}
 
-		f32& get_tick_rate()
+		void set_tick_rate(f32 new_tick_rate)
+		{
+			tick_rate = new_tick_rate;
+			fixed_dt = 1.f / tick_rate;
+		}
+
+		// we dont want to allow the user to change the tick rate directly because we also need to recalculate the fixed dt
+		f32 get_tick_rate()
 		{
 			return tick_rate;
 		}
-		// This calculates the fixed dt based on the set framerate
+
+		// This returns the fixed dt based on the set framerate
 		f32 get_fixed_dt(void)
 		{
-			return 1.f / tick_rate;
+			return fixed_dt;
 		}
 
 		// Returns the delta time per game loop

@@ -81,7 +81,7 @@ namespace Engine
 
       // Rendering Start ========================================
       StateChooserPanel();
-      PerformanceViewerPanel(Time::get_tick_rate());
+      PerformanceViewerPanel();
       StateManager::GetCurrentState()->Draw();
       WORLD.draw();
       GRAPHICS.endFrame();
