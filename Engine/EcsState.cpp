@@ -8,14 +8,45 @@
 #include "HealthSystem.h"
 #include "RenderSystem.h"
 #include "BackgroundSystem.h"
+#include "InputManager.h"
 
 int enemyPrefab;
+
+// --- Event System Test ---
+// 1. Define an event struct
+struct DamageEvent {
+  ECS::EntityID target;
+  int amount;
+};
+
+// 2. Define a system that listens for the event
+class DamageSystem : public ECS::System {
+public:
+  DamageSystem() {
+    listenToEvents<DamageEvent>();
+    requireComponents<Components::Health>();
+  }
+
+  void onEvent(const ECS::Event& event) override {
+    if (const auto* damageEvent = event.get<DamageEvent>()) {
+      auto* health = world->getComponent<Components::Health>(damageEvent->target);
+      if (health) {
+        health->damage(damageEvent->amount);
+        std::cout << "Entity " << damageEvent->target << " took " << damageEvent->amount
+          << " damage. Current health: " << health->value << std::endl;
+      }
+    }
+  }
+};
+// --- End of Event System Test ---
 
 void EcsState::Load()
 {
   enemyPrefab = Engine::FACTORY.registerObject("Assets/objects/enemy.json");
 
 }
+
+ECS::EntityID playerID; // Store player ID for the test
 
 void EcsState::Init()
 {
@@ -28,6 +59,8 @@ void EcsState::Init()
     .addComponent<Components::Health>(100, 100)
     .addComponent<Components::Size>(10.0f, 10.0f)
     .addComponent<Components::Color>(0.0f, 1.0f, 0.0f, 1.0f);
+
+  playerID = player.getId(); // Save player ID
 
   // Create an enemy entity to act as a template
   auto enemy = Engine::WORLD.createEntity()
@@ -64,10 +97,16 @@ void EcsState::Init()
   Engine::WORLD.addSystem<MovementSystem>();
   Engine::WORLD.addSystem<HealthSystem>();
   Engine::WORLD.addSystem<RectRenderSystem>();
+  Engine::WORLD.addSystem<DamageSystem>(); // Add the new system
 }
 
 void EcsState::Update()
 {
+  if (Engine::Input::IsKeyPressed(GLFW_KEY_SPACE))
+  {
+    Engine::WORLD.sendEvent<DamageEvent>(playerID, 10);
+    std::cout << "Spacebar was pressed!\n";
+  }
 }
 
 void EcsState::Draw()
@@ -83,6 +122,7 @@ void EcsState::Free()
   Engine::WORLD.removeSystem<BackgroundSystem>();
   Engine::WORLD.removeSystem<MovementSystem>();
   Engine::WORLD.removeSystem<HealthSystem>();
+  Engine::WORLD.removeSystem<DamageSystem>();
 }
 
 void EcsState::Unload()
