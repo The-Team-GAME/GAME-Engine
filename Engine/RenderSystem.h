@@ -8,7 +8,7 @@ public:
   RectRenderSystem() {
     requireComponents<Components::Color, Components::Position, Components::Size>();
   }
-  void updateEntity(ECS::EntityID entityId) override {
+  void drawEntity(ECS::EntityID entityId) override {
     auto* color = world->getComponent<Components::Color>(entityId);
     auto* pos = world->getComponent<Components::Position>(entityId);
     auto* size = world->getComponent<Components::Size>(entityId);
@@ -25,7 +25,7 @@ public:
     requireComponents<Components::StaticSprite, Components::Position, Components::Size>();
   }
 
-  void updateEntity(ECS::EntityID entityId) override {
+  void drawEntity(ECS::EntityID entityId) override {
     auto* sprite = world->getComponent<Components::StaticSprite>(entityId);
     auto* size = world->getComponent<Components::Size>(entityId);
     auto* pos = world->getComponent<Components::Position>(entityId);
