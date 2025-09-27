@@ -12,7 +12,7 @@ namespace ECS {
     World* world;
 
   public:
-    Entity(EntityID id, World* world) : id(id), world(world) {}
+    Entity(EntityID id = INVALID_ENTITY, World* world = nullptr) : id(id), world(world) {}
 
     EntityID getId() const { return id; }
     bool isValid() const { return id != INVALID_ENTITY; }

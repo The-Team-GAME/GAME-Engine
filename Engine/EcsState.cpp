@@ -45,21 +45,19 @@ void EcsState::Load()
 
 }
 
-ECS::EntityID playerID; // Store player ID for the test
+ECS::Entity player;
 
 void EcsState::Init()
 {
   // Create player entity
-  auto player = Engine::WORLD.createEntity()
+  player = Engine::WORLD.createEntity()
     .addComponent<Components::Tag<"Player">>()
     .addComponent<Components::Tag<"GameObjectState">>()
     .addComponent<Components::Position>(10.0f, 20.0f)
-    .addComponent<Components::Velocity>(100.0f, 0.0f)
+    .addComponent<Components::Velocity>(100.0f, 0.0f) // Make player move
     .addComponent<Components::Health>(100, 100)
     .addComponent<Components::Size>(10.0f, 10.0f)
-    .addComponent<Components::Color>(0.0f, 1.0f, 0.0f, 1.0f);
-
-  playerID = player.getId(); // Save player ID
+    .addComponent<Components::Color>(0.0f, 1.0f, 1.0f, 1.0f); // Make player cyan
 
   // Create an enemy entity to act as a template
   auto enemy = Engine::WORLD.createEntity()
@@ -103,7 +101,7 @@ void EcsState::Update()
 {
   if (Engine::Input::IsKeyPressed(GLFW_KEY_SPACE))
   {
-    Engine::WORLD.sendEvent<DamageEvent>(playerID, 10);
+    Engine::WORLD.sendEvent<DamageEvent>(player.getId(), 10);
     // Print the health of all entities with Health component  
     for (const auto& e : Engine::WORLD.getEntitiesWith<Components::Health>()) {
       auto* health = Engine::WORLD.getComponent<Components::Health>(e);
@@ -111,15 +109,10 @@ void EcsState::Update()
     }
     std::cout << "\n";
 
-    auto bg = Engine::WORLD.getEntity(Engine::WORLD.getFirstEntityWith<Components::Background>());
-    auto player = Engine::WORLD.getEntity(playerID);
+    auto bg_color = Engine::WORLD.getComponent<Components::Color>(Engine::WORLD.getFirstEntityWith<Components::Background>());
 
-
-    // Make background color darker as player health decreases
-    if (bg.hasComponent<Components::Color>() == false || player.hasComponent<Components::Health>() == false)
+    if (!player.hasComponent<Components::Health>())
       return;
-
-    auto bg_color = bg.getComponent<Components::Color>();
 
     *bg_color = Components::Color{
       player.getComponent<Components::Health>()->value / 100.0f,
