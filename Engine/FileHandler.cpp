@@ -1,13 +1,13 @@
-#include "../Dependencies/rapidjson/document.h"
-#include "../Dependencies/rapidjson/filereadstream.h"
-#include "../Dependencies/rapidjson/istreamwrapper.h"
+#include "rapidjson/document.h"
+#include "rapidjson/filereadstream.h"
+#include "rapidjson/istreamwrapper.h"
 #include "Logger.h" // contains string and iostream already
 #include "TypeDef.h"
 #include <cstdio>
 #include <fstream>
 #include <iostream>
-namespace rj = rapidjson;
 
+namespace rj = rapidjson;
 
 const f32 default_f32 = 0.f;
 const s32 default_s32 = -1;
@@ -15,7 +15,7 @@ const std::string default_string = "";
 
 const char* container = "entity";
 rj::Document m_document;
-
+ 
 namespace FileHandler {
 	f32 d_f32()							{ return default_f32; }
 	s32 d_s32()							{ return default_s32; }
