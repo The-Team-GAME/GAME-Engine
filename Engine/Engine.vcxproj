@@ -198,6 +198,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="BasicEvents.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="DamageSystem.h" />
+    <ClInclude Include="DevECSMessageState.h" />
     <ClInclude Include="DevManySpritesState.h" />
     <ClInclude Include="DevSpriteAnimationState.h" />
     <ClInclude Include="EcsState.h" />
