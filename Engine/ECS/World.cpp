@@ -58,11 +58,25 @@ namespace ECS
     return activeEntities.find(id) != activeEntities.end();
   }
 
+  void World::removeEventListener(EventTypeID eventType)
+  {
+    eventHandlers.erase(eventType);
+  }
+
   void World::update()
   {
     // Dispatch all queued events
     for (const auto& event : eventQueue)
     {
+      // Call direct event handlers first
+      auto handlerIt = eventHandlers.find(event.typeId);
+      if (handlerIt != eventHandlers.end()) {
+        for (const auto& handler : handlerIt->second) {
+          handler(event);
+        }
+      }
+
+      // Then call system event handlers
       for (auto& system : systems)
       {
         const auto& systemEventSignature = system->getEventSignature();

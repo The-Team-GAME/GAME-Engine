@@ -12,6 +12,7 @@
 #include <memory>
 #include <algorithm>
 #include <cassert>
+#include <functional>
 
 namespace ECS
 {
@@ -30,6 +31,9 @@ namespace ECS
     std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> componentArrays;
     std::vector<std::unique_ptr<System>> systems;
     std::vector<Event> eventQueue;
+
+    // Direct event handlers - map from event type to list of handlers
+    std::unordered_map<EventTypeID, std::vector<std::function<void(const Event&)>>> eventHandlers;
 
     template <typename T>
     ComponentArray<T>* getComponentArray();
@@ -79,6 +83,18 @@ namespace ECS
     // Event management
     template <typename T, typename... Args>
     void sendEvent(Args&&... args);
+
+    // Direct event handling without systems
+    template <typename T>
+    void addEventListener(std::function<void(const T&)> handler);
+
+    template <typename T>
+    void addEventListener(std::function<void(const Event&)> handler);
+
+    void removeEventListener(EventTypeID eventType);
+
+    template <typename T>
+    void removeEventListener();
 
     // Main update loop
     void update();

@@ -136,6 +136,31 @@ namespace ECS
     eventQueue.emplace_back(T{ std::forward<Args>(args)... });
   }
 
+  template <typename T>
+  void World::addEventListener(std::function<void(const T&)> handler)
+  {
+    EventTypeID eventType = EventTypeManager::getTypeId<T>();
+    eventHandlers[eventType].emplace_back([handler](const Event& event) {
+      if (const T* eventData = event.get<T>()) {
+        handler(*eventData);
+      }
+      });
+  }
+
+  template <typename T>
+  void World::addEventListener(std::function<void(const Event&)> handler)
+  {
+    EventTypeID eventType = EventTypeManager::getTypeId<T>();
+    eventHandlers[eventType].emplace_back(handler);
+  }
+
+  template <typename T>
+  void World::removeEventListener()
+  {
+    EventTypeID eventType = EventTypeManager::getTypeId<T>();
+    removeEventListener(eventType);
+  }
+
   template <typename... T>
   std::vector<Entity> World::getEntitiesWith() const
   {
