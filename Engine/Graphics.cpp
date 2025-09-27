@@ -704,3 +704,11 @@ void Graphics::clearScreen(float r, float g, float b, float a)
   glClearColor(r, g, b, a);
   glClear(GL_COLOR_BUFFER_BIT);
 }
+
+glm::vec2 Graphics::screenToVirtual(float screenX, float screenY) const
+{
+  return {
+    (screenX / viewportWidth) * VIRTUAL_WIDTH,
+    (screenY / viewportHeight) * VIRTUAL_HEIGHT
+  };
+}

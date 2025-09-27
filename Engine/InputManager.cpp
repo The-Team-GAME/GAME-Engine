@@ -44,8 +44,11 @@ namespace Engine
     // Update mouse position
     double xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
-    mousePosition.x = static_cast<float>(xpos);
-    mousePosition.y = static_cast<float>(ypos);
+
+    // Convert from window coordinates to virtual coordinates using Graphics system
+    mousePosition = Engine::GRAPHICS.screenToVirtual(static_cast<float>(xpos), static_cast<float>(ypos));
+
+    //std::cout << "Mouse Position: (" << mousePosition.x << ", " << mousePosition.y << ")\n";
   }
 
   bool Input::IsKeyPressed(int key)

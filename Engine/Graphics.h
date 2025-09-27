@@ -10,12 +10,10 @@
 
 class Graphics
 {
-private:
+public:
   // Add these for consistent virtual resolution
   static constexpr float VIRTUAL_WIDTH = 1600.0f;
   static constexpr float VIRTUAL_HEIGHT = 900.0f;
-  
-public:
 
   struct Texture
   {
@@ -151,4 +149,7 @@ private:
   FT_Library ft;
   std::vector<Font> fonts;
   std::vector<SpriteSheet> spriteSheets;
+
+public:
+  glm::vec2 screenToVirtual(float screenX, float screenY) const;
 };
