@@ -80,13 +80,14 @@ public:
     {
       Engine::WORLD.sendEvent<DamageEvent>(player.getId(), 10);
       // Print the health of all entities with Health component  
-      for (const auto& e : Engine::WORLD.getEntitiesWith<Components::Health>()) {
-        auto* health = Engine::WORLD.getComponent<Components::Health>(e);
-        std::cout << "Entity " << e << " has health: " << health->value << "\n";
+      for (const auto& entity : Engine::WORLD.getEntitiesWith<Components::Health>()) {
+        auto* health = entity.getComponent<Components::Health>();
+        std::cout << "Entity " << entity.getId() << " has health: " << health->value << "\n";
       }
       std::cout << "\n";
 
-      auto bg_color = Engine::WORLD.getComponent<Components::Color>(Engine::WORLD.getFirstEntityWith<Components::Background>());
+      auto bgEntity = Engine::WORLD.getFirstEntityWith<Components::Background>();
+      auto* bg_color = bgEntity.getComponent<Components::Color>();
 
       if (!player.hasComponent<Components::Health>())
         return;

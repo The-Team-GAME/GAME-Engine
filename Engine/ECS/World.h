@@ -284,37 +284,43 @@ namespace ECS
       }
     }
 
-    // Query methods
+    // Query methods - return Entity instead of EntityID
     template <typename... T>
-    std::vector<EntityID> getEntitiesWith() const
+    std::vector<Entity> getEntitiesWith() const
     {
-      std::vector<EntityID> result;
-      for (EntityID entity : activeEntities)
+      std::vector<Entity> result;
+      for (EntityID entityId : activeEntities)
       {
-        if (hasComponents<T...>(entity))
+        if (hasComponents<T...>(entityId))
         {
-          result.push_back(entity);
+          result.emplace_back(entityId, const_cast<World*>(this));
         }
       }
       return result;
     }
 
     template <typename... T>
-    EntityID getFirstEntityWith() const
+    Entity getFirstEntityWith() const
     {
-      for (EntityID entity : activeEntities)
+      for (EntityID entityId : activeEntities)
       {
-        if (hasComponents<T...>(entity))
+        if (hasComponents<T...>(entityId))
         {
-          return entity;
+          return Entity(entityId, const_cast<World*>(this));
         }
       }
-      return INVALID_ENTITY;
+      return Entity(INVALID_ENTITY, const_cast<World*>(this));
     }
 
-    std::vector<EntityID> getAllEntities() const
+    std::vector<Entity> getAllEntities() const
     {
-      return std::vector<EntityID>(activeEntities.begin(), activeEntities.end());
+      std::vector<Entity> result;
+      result.reserve(activeEntities.size());
+      for (EntityID entityId : activeEntities)
+      {
+        result.emplace_back(entityId, const_cast<World*>(this));
+      }
+      return result;
     }
 
     size_t getEntityCount() const
