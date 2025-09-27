@@ -4,11 +4,11 @@
 #include "ComponentManager.h"
 #include "EventManager.h"
 #include <unordered_set>
-#include "Entity.h"
 
 namespace ECS {
 
   class World; // Forward declaration
+  class Entity; // Forward declaration
 
   // System base class with clean required components specification
   class System {
@@ -19,7 +19,7 @@ namespace ECS {
     EventSignature eventSignature;
 
   public:
-    virtual ~System() = default;
+    virtual ~System();
 
     // Clean way to specify required components!
     template<typename... Components>
@@ -36,54 +36,35 @@ namespace ECS {
     }
 
     // System logic
-    void update() {
-      for (EntityID entityId : entities) {
-        Entity entity(entityId, world);
-        updateEntity(entity);
-      }
-    }
+    void update();
 
     // Drawing/rendering logic
-    void draw() {
-      for (EntityID entityId : entities) {
-        Entity entity(entityId, world);
-        drawEntity(entity);
-      }
-    }
+    void draw();
 
     // Override for handling a specific event for a specific entity
-    virtual void onEvent([[maybe_unused]] const Event& event, [[maybe_unused]] EntityID entity) {}
+    virtual void onEvent(const Event& event, EntityID entity);
 
     // Override for per-entity logic
-    virtual void updateEntity([[maybe_unused]] Entity& entity) {}
+    virtual void updateEntity(Entity& entity);
 
     // Override for per-entity drawing logic (const reference because rendering shouldn't modify entities)
-    virtual void drawEntity([[maybe_unused]] const Entity& entity) {}
+    virtual void drawEntity(const Entity& entity);
 
     // Override for entity lifecycle events
-    virtual void onEntityAdded([[maybe_unused]] const Entity& entity) {}
-    virtual void onEntityRemoved([[maybe_unused]] const Entity& entity) {}
+    virtual void onEntityAdded(const Entity& entity);
+    virtual void onEntityRemoved(const Entity& entity);
 
     // Internal methods
-    void addEntity(EntityID entity) {
-      if (entities.insert(entity).second) {
-        onEntityAdded(entity);
-      }
-    }
+    void addEntity(EntityID entity);
+    void removeEntity(EntityID entity);
 
-    void removeEntity(EntityID entity) {
-      if (entities.erase(entity)) {
-        onEntityRemoved(entity);
-      }
-    }
-
-    const std::unordered_set<EntityID>& getEntities() const { return entities; }
-    const ComponentSignature& getRequiredSignature() const { return requiredSignature; }
-    const EventSignature& getEventSignature() const { return eventSignature; }
+    const std::unordered_set<EntityID>& getEntities() const;
+    const ComponentSignature& getRequiredSignature() const;
+    const EventSignature& getEventSignature() const;
 
   private:
     friend class World;
-    void setWorld(World* w) { world = w; }
+    void setWorld(World* w);
   };
 
 } // namespace ECS

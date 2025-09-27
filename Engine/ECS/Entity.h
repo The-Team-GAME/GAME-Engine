@@ -12,10 +12,10 @@ namespace ECS {
     World* world;
 
   public:
-    Entity(EntityID id = INVALID_ENTITY, World* world = nullptr) : id(id), world(world) {}
+    Entity(EntityID id = INVALID_ENTITY, World* world = nullptr);
 
-    EntityID getId() const { return id; }
-    bool isValid() const { return id != INVALID_ENTITY; }
+    EntityID getId() const;
+    bool isValid() const;
 
     template<typename T, typename... Args>
     Entity& addComponent(Args&&... args);
@@ -37,8 +37,8 @@ namespace ECS {
 
     void destroy();
 
-    bool operator==(const Entity& other) const { return id == other.id; }
-    bool operator!=(const Entity& other) const { return id != other.id; }
+    bool operator==(const Entity& other) const;
+    bool operator!=(const Entity& other) const;
   };
 
 } // namespace ECS
