@@ -384,7 +384,7 @@ void ImGuiState::drawImGui()
 
         // Collider controls
         bool hasCollider = (col != nullptr);
-        if (!hasCollider) {
+       /* if (!hasCollider) {
           if (ImGui::Button("Add Collider")) {
             Engine::WORLD.addComponent<Components::Collider>(id, Components::Collider{ true,false });
             col = Engine::WORLD.getComponent<Components::Collider>(id);
@@ -395,7 +395,7 @@ void ImGuiState::drawImGui()
           if (ImGui::Button("Remove Collider")) {
             col->isTrigger = false;
           }
-        }
+        }*/
 
         ImGui::SameLine();
         if (ImGui::Button("Apply Default Color")) {

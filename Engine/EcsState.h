@@ -26,12 +26,12 @@ public:
     // Create two enemy instances from the prefab
     auto enemy1 = Engine::WORLD.createEntity()
       .addComponent<Components::Tag<"GameObjectState">>()
-      .addComponent<Components::Position>(100.0f, 100.0f)
+      .addComponent<Components::Position>(200.0f, 200.0f)
 			.addComponent<Components::Color>(0.2f,1.0f,0.2f,1.0f)
       .addComponent<Components::Size>(20.0f, 20.0f)
       .addComponent<Components::Velocity>(0.0f, 0.0f)
-      .addComponent<Components::RigidBody>(1.0f, false) 
-      .addComponent<Components::Collider>(20.0f, 20.0f, false)
+			.addComponent<Components::RigidBody>(1.0f, false) // mass=1.0, not static
+      .addComponent<Components::Collider>(20.0f, 20.0f)
       .addComponent<Components::PlayerController>();
 
     // Create two enemy instances from the prefab
@@ -41,8 +41,8 @@ public:
       .addComponent<Components::Color>(1.0f, 0.2f, 0.2f, 1.0f)
 			.addComponent<Components::Size>(50.0f, 50.0f)
       .addComponent<Components::Velocity>(0.0f, 0.0f)
-      .addComponent<Components::RigidBody>(1.0f, false)
-      .addComponent<Components::Collider>(50.0f, 50.0f, false);
+			.addComponent<Components::RigidBody>(1.0f, false) // mass=1.0, not static
+      .addComponent<Components::Collider>(50.0f, 50.0f);
       
 
 
@@ -58,9 +58,9 @@ public:
     Engine::WORLD.addSystem<BackgroundSystem>(); // Background system should be first
 		Engine::WORLD.addSystem<PlayerControllerSystem>();
     Engine::WORLD.addSystem<RectRenderSystem>();
-	  Engine::WORLD.addSystem<PhysicsSystem>();
     Engine::WORLD.addSystem<MovementSystem>();
 		Engine::WORLD.addSystem<CollisionSystem>();
+    Engine::WORLD.addSystem<PhysicsSystem>();
     Engine::WORLD.addSystem<StaticSpriteRenderSystem>();
   };
 
@@ -81,9 +81,9 @@ public:
     Engine::WORLD.removeSystem<BackgroundSystem>();
     Engine::WORLD.removeSystem<PlayerControllerSystem>();
     Engine::WORLD.removeSystem<RectRenderSystem>();
-    Engine::WORLD.removeSystem<PhysicsSystem>();
     Engine::WORLD.removeSystem<MovementSystem>();
     Engine::WORLD.removeSystem<CollisionSystem>();
+    Engine::WORLD.removeSystem<PhysicsSystem>();
     Engine::WORLD.removeSystem<StaticSpriteRenderSystem>();
   };
 

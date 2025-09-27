@@ -1,14 +1,11 @@
 ﻿#pragma once
 
-
 #include "ECS/System.h"
 #include "BasicComponents.h"
-#include "Core.h"
-#include "Vector2D.h"
+#include <iostream>
 
 class CollisionSystem : public ECS::System {
 public:
-
   CollisionSystem() {
     requireComponents<Components::Collider, Components::Position>();
   }
@@ -18,8 +15,11 @@ public:
     auto* colA = world->getComponent<Components::Collider>(entityId);
     if (!posA || !colA) return;
 
-    for (auto otherId : world->getEntitiesWith<Components::Collider>()) {
-      if (otherId <= entityId) continue; // Avoid duplicates/self
+    // Clear previous penetration
+    colA->penetration = { 0.0f, 0.0f };
+
+    for (ECS::EntityID otherId : world->getEntitiesWith<Components::Collider>()) {
+      if (otherId <= entityId) continue; // skip self + duplicates
 
       auto* posB = world->getComponent<Components::Position>(otherId);
       auto* colB = world->getComponent<Components::Collider>(otherId);
@@ -27,12 +27,12 @@ public:
 
       Math::Vec2D overlap;
       if (checkAABBCollision(*posA, *colA, *posB, *colB, overlap)) {
-        // Store collision in the queue
-				std::cout << "Collision detected between Entity " << entityId << " and Entity " << otherId << "\n";
-      }
-      else
-      {
-        std::cout << "No collision between Entity " << entityId << " and Entity " << otherId << "\n";
+       /* std::cout << "Collision detected between Entity "
+          << entityId << " and Entity " << otherId << "\n";*/
+
+        // Set penetration vectors
+        colA->penetration = -overlap;
+        colB->penetration = overlap;
       }
     }
   }
@@ -42,7 +42,8 @@ private:
     const Components::Collider& aCol,
     const Components::Position& bPos,
     const Components::Collider& bCol,
-    Math::Vec2D& outOverlap) {
+    Math::Vec2D& outOverlap)
+  {
     float dx = bPos.x - aPos.x;
     float px = (aCol.halfWidth + bCol.halfWidth) - std::abs(dx);
     if (px <= 0) return false;
@@ -51,9 +52,13 @@ private:
     float py = (aCol.halfHeight + bCol.halfHeight) - std::abs(dy);
     if (py <= 0) return false;
 
-    // Overlap vector points from A to B
-    outOverlap.x = (dx > 0) ? px : -px;
-    outOverlap.y = (dy > 0) ? py : -py;
+    // Resolve along shallowest axis to prevent diagonal tunneling
+    if (px < py) {
+      outOverlap = { (dx > 0) ? px : -px, 0.0f };
+    }
+    else {
+      outOverlap = { 0.0f, (dy > 0) ? py : -py };
+    }
 
     return true;
   }

@@ -81,11 +81,12 @@ namespace Components {
   };
    
   struct Collider {
-    f32 halfWidth, halfHeight;
-    bool isTrigger; //Chcek if collider is triggered
+    float halfWidth, halfHeight;
+    Math::Vec2D penetration = { 0.0f, 0.0f }; // penetration from last collision
+    bool isTrigger = false;                   // optional: whether this collider is a trigger
 
-    Collider(float width = 1.0f, float height = 1.0f, bool isTrigger = false)
-      : halfWidth(width * 0.5f), halfHeight(height * 0.5f), isTrigger(isTrigger) {
+    Collider(float width = 1.0f, float height = 1.0f, bool trigger = false)
+      : halfWidth(width * 0.5f), halfHeight(height * 0.5f), isTrigger(trigger) {
     }
   };
 

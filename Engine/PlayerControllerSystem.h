@@ -6,23 +6,22 @@
 class PlayerControllerSystem : public ECS::System {
 public:
   PlayerControllerSystem() {
-    requireComponents<Components::PlayerController, Components::Velocity>();
+    requireComponents<Components::PlayerController, Components::RigidBody>();
   }
 
   void updateEntity(ECS::EntityID entityId) override {
-    auto* vel = world->getComponent<Components::Velocity>(entityId);
-    auto* ctrl = world->getComponent<Components::PlayerController>(entityId);
+    auto* rb = world->getComponent<Components::RigidBody>(entityId);
+    if (!rb || rb->isStatic) return; // skip static objects
 
-    // Reset velocity each frame
-    vel->x = 0.0f;
-    vel->y = 0.0f;
+    const float accelAmount = 500.0f; // acceleration per second
 
-    const float speed = 100.0f;
+    // Reset acceleration is optional here; PhysicsSystem also resets it each frame
+    // rb->acceleration = {0.0f, 0.0f};
 
-    // Movement mapping
-    if (Engine::Input::IsKeyHeld(GLFW_KEY_W)) vel->y -= speed;  // Up
-    if (Engine::Input::IsKeyHeld(GLFW_KEY_S)) vel->y += speed;  // Down
-    if (Engine::Input::IsKeyHeld(GLFW_KEY_A)) vel->x -= speed;  // Left
-    if (Engine::Input::IsKeyHeld(GLFW_KEY_D)) vel->x += speed;  // Right
+    // Apply player input as acceleration
+    if (Engine::Input::IsKeyHeld(GLFW_KEY_W)) rb->acceleration.y -= accelAmount;
+    if (Engine::Input::IsKeyHeld(GLFW_KEY_S)) rb->acceleration.y += accelAmount;
+    if (Engine::Input::IsKeyHeld(GLFW_KEY_A)) rb->acceleration.x -= accelAmount;
+    if (Engine::Input::IsKeyHeld(GLFW_KEY_D)) rb->acceleration.x += accelAmount;
   }
 };
