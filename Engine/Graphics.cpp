@@ -133,6 +133,10 @@ Graphics::Graphics(int windowWidth, int windowHeight)
 
   // Set initial viewport and projection matrix.
   setViewport(windowWidth, windowHeight);
+
+  // Use consistent virtual resolution
+  projection = glm::ortho(0.0f, VIRTUAL_WIDTH, VIRTUAL_HEIGHT, 0.0f, -1.0f, 1.0f);
+
   updateViewMatrix();
 }
 
@@ -247,8 +251,8 @@ void Graphics::setViewport(int width, int height)
   // Tell OpenGL the size of the rendering window.
   glViewport(0, 0, width, height);
 
-  // Use consistent virtual resolution
-  projection = glm::ortho(0.0f, VIRTUAL_WIDTH, VIRTUAL_HEIGHT, 0.0f, -1.0f, 1.0f);
+  // Update the orthographic projection matrix to match the new dimensions.
+  // projection = glm::ortho(0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, -1.0f, 1.0f);
 
   updateViewMatrix(); // Recalculate the combined matrix.
 }
