@@ -12,7 +12,7 @@
 #include "StateChooser.inl"
 #include "Time.h"
 #include "PerformanceViewer.h"
-#include "WindowManager.h"
+#include "WindowManager.h" 
 
 namespace {
   f64 accumulator{};
@@ -21,8 +21,8 @@ namespace {
 namespace Engine
 {
   // TODO: window size should not be hardcoded
-  int windowWidth = 800;
-  int windowHeight = 600;
+  int windowWidth = 1600;
+  int windowHeight = 900;
 
   // These are global instances of the core engine systems.
   // They are defined here and declared extern in Core.h for use throughout the engine.
@@ -37,6 +37,13 @@ namespace Engine
   {
     FileHandler::parse_file("Assets/objects/enemy.json");
     isRunning = true;
+
+    // Register the graphics resize system
+    WORLD.addEventListener<WindowResizeEvent>([](const WindowResizeEvent& event) {
+      GRAPHICS.setViewport(event.width, event.height);
+      }
+    );
+
     StateManager::Init(BasicState::Get()); // TODO: to be removed
   }
 
@@ -44,6 +51,8 @@ namespace Engine
   {
     FileHandler::clear_json();
     StateManager::Exit(); // TODO: to be removed 
+
+    WORLD.removeEventListener<WindowResizeEvent>();
   }
 
   void Core::run()

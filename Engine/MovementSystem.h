@@ -9,9 +9,9 @@ public:
     requireComponents<Components::Position, Components::Velocity>();
   }
 
-  void updateEntity(ECS::EntityID entityId) override {
-    auto* pos = world->getComponent<Components::Position>(entityId);
-    auto* vel = world->getComponent<Components::Velocity>(entityId);
+  void updateEntity(ECS::Entity& entity) override {
+    auto* pos = entity.getComponent<Components::Position>();
+    auto* vel = entity.getComponent<Components::Velocity>();
 
     pos->x += vel->x * Engine::Time::get_fixed_dt();
     pos->y += vel->y * Engine::Time::get_fixed_dt();

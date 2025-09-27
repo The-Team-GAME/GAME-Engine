@@ -147,6 +147,9 @@
     <ClCompile Include="FileHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ECS\EventManager.cpp">
+      <Filter>Source Files\ECS\Backend</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
@@ -268,6 +271,9 @@
     </ClInclude>
     <ClInclude Include="FileHandler.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ECS\EventManager.h">
+      <Filter>Source Files\ECS\Backend</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

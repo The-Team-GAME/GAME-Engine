@@ -10,9 +10,9 @@ public:
     requireComponents<Components::Rotation, Components::RotationSpeed>();
   }
 
-  void updateEntity(ECS::EntityID entityId) override {
-    auto* rot = world->getComponent<Components::Rotation>(entityId);
-    auto* speed = world->getComponent<Components::RotationSpeed>(entityId);
+  void updateEntity(ECS::Entity& entity) override {
+    auto* rot = entity.getComponent<Components::Rotation>();
+    auto* speed = entity.getComponent<Components::RotationSpeed>();
 
     rot->angle += speed->degreesPerSecond * Engine::Time::get_fixed_dt();
   }

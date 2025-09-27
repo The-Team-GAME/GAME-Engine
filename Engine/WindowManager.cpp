@@ -1,4 +1,6 @@
 #include "WindowManager.h"
+#include "Core.h"
+#include "BasicEvents.h"
 #include <iostream>
 
 namespace Engine
@@ -30,6 +32,13 @@ namespace Engine
     }
 
     std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
+
+    // Set aspect ratio constraint (16:9)
+    glfwSetWindowAspectRatio(window, 16, 9);
+
+    // Set up the resize callback - this handles both window and framebuffer resize
+    glfwSetWindowUserPointer(window, this);
+    glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
   }
 
   WindowManager::~WindowManager()
@@ -40,5 +49,19 @@ namespace Engine
       window = nullptr;
     }
     glfwTerminate();
+  }
+
+  void WindowManager::framebufferSizeCallback(GLFWwindow* window, int width, int height) {
+    // Get the WindowManager instance from the user pointer
+    WindowManager* windowManager = static_cast<WindowManager*>(glfwGetWindowUserPointer(window));
+
+    if (windowManager) {
+      // Update the stored dimensions
+      windowManager->width = width;
+      windowManager->height = height;
+
+      // Send resize event to engine (this will update Graphics viewport)
+      Engine::WORLD.sendEvent<WindowResizeEvent>(width, height);
+    }
   }
 }

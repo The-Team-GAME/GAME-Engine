@@ -22,42 +22,24 @@ namespace ECS {
     std::unordered_map<EntityID, T> components;
 
   public:
-    void addComponent(EntityID entity, T component) {
-      components.emplace(entity, std::move(component));
-    }
+    void addComponent(EntityID entity, T component);
 
-    void removeComponent(EntityID entity) {
-      components.erase(entity);
-    }
+    void removeComponent(EntityID entity);
 
-    void cloneComponent(EntityID source, EntityID destination) override {
-      auto it = components.find(source);
-      if (it != components.end()) {
-        components.emplace(destination, it->second); // Assumes T is copy-constructible
-      }
-    }
+    void cloneComponent(EntityID source, EntityID destination) override;
 
-    T* getComponent(EntityID entity) {
-      auto it = components.find(entity);
-      return it != components.end() ? &it->second : nullptr;
-    }
+    T* getComponent(EntityID entity);
 
-    bool hasComponent(EntityID entity) const {
-      return components.find(entity) != components.end();
-    }
+    bool hasComponent(EntityID entity) const;
 
-    void removeEntity(EntityID entity) override {
-      removeComponent(entity);
-    }
+    void removeEntity(EntityID entity) override;
 
-    size_t size() const override {
-      return components.size();
-    }
+    size_t size() const override;
 
-    auto begin() { return components.begin(); }
-    auto end() { return components.end(); }
-    auto begin() const { return components.begin(); }
-    auto end() const { return components.end(); }
+    auto begin();
+    auto end();
+    auto begin() const;
+    auto end() const;
   };
 
 } // namespace ECS
