@@ -27,6 +27,8 @@ void BasicState::Load()
   {
     std::cout << "Failed to load move sound for BasicState.\n";
   }
+
+
 }
 
 void BasicState::Init()
@@ -55,6 +57,10 @@ void BasicState::Update()
     glm::vec2 mousePos = Engine::Input::GetMousePosition();
     std::cout << "Left mouse button held at: " << mousePos.x << ", " << mousePos.y << "\n";
   }*/
+
+
+  rotation += 45.0f * Engine::Time::get_fixed_dt();
+
 }
 
 void BasicState::Draw()
@@ -76,8 +82,6 @@ void BasicState::Draw()
 
   Engine::GRAPHICS.clearScreen(0.1f, 0.1f, 0.1f, 1.0f); // Dark gray background
 
-  static float rotation = 0.0f;
-  rotation += 45.0f * static_cast<float>(Engine::Time::get_fixed_dt());
 
   Engine::GRAPHICS.drawRect({ 1.0f, 0.0f, 0.0f, 1.0f }, 0.0f, 0.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center);       // Top left, Red
   Engine::GRAPHICS.drawRect({ 0.0f, 1.0f, 0.0f, 1.0f }, 800.0f, 600.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center);   // Bottom right, Green

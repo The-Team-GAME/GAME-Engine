@@ -5,12 +5,12 @@
 #include "BasicState.h"
 #include "MainMenuState.h"
 #include "EcsState.h"
-#include "JsonState.h"
 #include "SpriteState.h"
 #include "GameObjectState.h"
 #include "DevManySpritesState.h"
 #include "Rubric2500Particles.h"
 #include "ImGuiState.h"
+#include "DevSpriteAnimationState.h"
 
 inline void StateChooserPanel()
 {
@@ -29,10 +29,6 @@ inline void StateChooserPanel()
   if (ImGui::Button("EcsState"))
   {
     Engine::StateManager::ChangeState(EcsState::Get());
-  }
-  if (ImGui::Button("JsonState"))
-  {
-    Engine::StateManager::ChangeState(JsonState::Get());
   }
   if (ImGui::Button("SpriteState"))
   {
@@ -54,6 +50,16 @@ inline void StateChooserPanel()
   {
     Engine::StateManager::ChangeState(ImGuiState::Get());
   }
+  if(ImGui::Button("DevSpriteAnimationState"))
+  {
+     Engine::StateManager::ChangeState(DevSpriteAnimationState::Get());
+  }
+  if (ImGui::Button("Exit Game"))
+  {
+    Engine::StateManager::Stop();
+  }
+
+
 
   ImGui::End();
 }

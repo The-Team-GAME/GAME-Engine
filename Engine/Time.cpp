@@ -2,30 +2,40 @@
 #include <chrono>
 namespace chrono = std::chrono;
 
-namespace { //consider making it microseconds
-	chrono::milliseconds curr_time = chrono::duration_cast<chrono::milliseconds>((chrono::steady_clock::now()).time_since_epoch());
+namespace {
+	chrono::nanoseconds curr_time = chrono::duration_cast<chrono::nanoseconds>((chrono::steady_clock::now()).time_since_epoch());
 
 	f32 delta_time{}; // in seconds
-	f32 frame_cap{ 60 };
+	f32 tick_rate{ 144.f };
+	f32 fixed_dt{ 1.f / tick_rate }; // precalulate fixed_dt so we dont have to do it every time get_tick_rate is called
 }
 
 namespace Engine {
 	namespace Time {
 		void update_time(void)
 		{
-			chrono::milliseconds new_time = chrono::duration_cast<chrono::milliseconds>((chrono::steady_clock::now()).time_since_epoch());
-			delta_time = static_cast<f32>((new_time - curr_time).count()) / 1000.0;
+			chrono::nanoseconds new_time = chrono::duration_cast<chrono::nanoseconds>((chrono::steady_clock::now()).time_since_epoch());
+			// Convert nanoseconds to seconds
+			delta_time = static_cast<f32>((new_time - curr_time).count()) * 1e-9f; // multiply instead of divide because division is veryyy slow
 			curr_time = new_time;
 		}
 
-		f32& get_frame_cap()
+		void set_tick_rate(f32 new_tick_rate)
 		{
-			return frame_cap;
+			tick_rate = new_tick_rate;
+			fixed_dt = 1.f / tick_rate;
 		}
-		// This calculates the fixed dt based on the set framerate
+
+		// we dont want to allow the user to change the tick rate directly because we also need to recalculate the fixed dt
+		f32 get_tick_rate()
+		{
+			return tick_rate;
+		}
+
+		// This returns the fixed dt based on the set framerate
 		f32 get_fixed_dt(void)
 		{
-			return 1.f / frame_cap;
+			return fixed_dt;
 		}
 
 		// Returns the delta time per game loop
@@ -37,11 +47,6 @@ namespace Engine {
 
 		f32 calc_fps(f32 dt)
 		{
-			if (dt == 0.f)
-			{
-				// 1000 cuz mili seconds so max fps that we can calculate accurately is 1k
-				return 1.f / 0.001; 
-			}
 			return 1.f / dt;
 		}
 	}

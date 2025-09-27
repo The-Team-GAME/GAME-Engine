@@ -9,12 +9,25 @@
 #include "RenderSystem.h"
 #include "BackgroundSystem.h"
 
+int enemyPrefab;
+
 void EcsState::Load()
 {
+  enemyPrefab = Engine::FACTORY.registerObject("Assets/objects/enemy.json");
+
 }
 
 void EcsState::Init()
 {
+
+
+  auto enemy1 = Engine::FACTORY.createObject(enemyPrefab)
+    .addComponent<Components::Tag<"Player">>()
+    .addComponent<Components::Tag<"GameObjectState">>()
+    .addComponent<Components::Position>(10.0f, 20.0f)
+    .addComponent<Components::Velocity>(100.0f, 0.0f);
+
+
   // Create player entity
   auto player = Engine::WORLD.createEntity()
     .addComponent<Components::Tag<"Player">>()
@@ -22,7 +35,7 @@ void EcsState::Init()
     .addComponent<Components::Position>(10.0f, 20.0f)
     .addComponent<Components::Velocity>(100.0f, 0.0f)
     .addComponent<Components::Health>(100, 100)
-    .addComponent<Components::Renderable>();
+    .addComponent<Components::Size>(10.0f, 10.0f);
 
   // Create an enemy entity to act as a template
   auto enemy = Engine::WORLD.createEntity()
@@ -30,7 +43,7 @@ void EcsState::Init()
     .addComponent<Components::Tag<"GameObjectState">>()
     .addComponent<Components::Position>(50.0f, 30.0f)
     .addComponent<Components::Health>(50, 50)
-    .addComponent<Components::Renderable>();
+    .addComponent<Components::Size>(10.0f, 10.0f);
 
   // --- Cloning Demonstration ---
   // Create a new enemy by cloning the first one

@@ -116,7 +116,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\rapidjson;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\json;$(SolutionDir)Dependencies\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\RapidJSON;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\json;$(SolutionDir)Dependencies\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -140,7 +140,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\rapidjson;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\json;$(SolutionDir)Dependencies\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\RapidJSON;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\json;$(SolutionDir)Dependencies\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -172,18 +172,15 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="EcsState.cpp" />
     <ClCompile Include="ECS\ComponentManager.cpp" />
     <ClCompile Include="ECS\Entity.cpp" />
-    <ClCompile Include="FileExplorer.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="ImGuiManager.cpp" />
     <ClCompile Include="ImGuiState.cpp" />
     <ClCompile Include="InputManager.cpp" />
-    <ClCompile Include="JsonState.cpp" />
+    <ClCompile Include="Logger.cpp" />
     <ClCompile Include="MainMenuState.cpp" />
     <ClCompile Include="ObjectFactory.cpp" />
-    <ClCompile Include="Serialisation.cpp" />
-    <ClCompile Include="SpriteDropper.cpp" />
+    <ClCompile Include="FileHandler.cpp" />
     <ClCompile Include="Time.cpp" />
-    <ClCompile Include="Timeline.cpp" />
     <ClCompile Include="Vector2D.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="StateManager.cpp" />
@@ -198,6 +195,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="BasicComponents.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="DevManySpritesState.h" />
+    <ClInclude Include="DevSpriteAnimationState.h" />
     <ClInclude Include="EcsState.h" />
     <ClInclude Include="ECS\ComponentArray.h" />
     <ClInclude Include="ECS\ComponentManager.h" />
@@ -206,14 +204,13 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="ECS\System.h" />
     <ClInclude Include="ECS\Types.h" />
     <ClInclude Include="ECS\World.h" />
-    <ClInclude Include="FileExplorer.h" />
     <ClInclude Include="GameObjectState.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="HealthSystem.h" />
     <ClInclude Include="ImGuiManager.h" />
     <ClInclude Include="ImGuiState.h" />
     <ClInclude Include="InputManager.h" />
-    <ClInclude Include="JsonState.h" />
+    <ClInclude Include="Logger.h" />
     <ClInclude Include="MainMenuState.h" />
     <ClInclude Include="MovementSystem.h" />
     <ClInclude Include="ObjectFactory.h" />
@@ -221,10 +218,8 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="RotationSystem.h" />
     <ClInclude Include="Rubric2500Particles.h" />
-    <ClInclude Include="Serialisation.h" />
-    <ClInclude Include="SpriteDropper.h" />
+    <ClInclude Include="FileHandler.h" />
     <ClInclude Include="Time.h" />
-    <ClInclude Include="Timeline.h" />
     <ClInclude Include="Vector2D.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="SpriteState.h" />
