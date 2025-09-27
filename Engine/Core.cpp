@@ -12,8 +12,7 @@
 #include "StateChooser.inl"
 #include "Time.h"
 #include "PerformanceViewer.h"
-#include "WindowManager.h"
-#include "GraphicsResizeSystem.h"
+#include "WindowManager.h" 
 
 namespace {
   f64 accumulator{};
@@ -40,7 +39,9 @@ namespace Engine
     isRunning = true;
 
     // Register the graphics resize system
-    WORLD.addSystem<GraphicsResizeSystem>();
+    WORLD.addEventListener<WindowResizeEvent>([](const WindowResizeEvent& event) {
+      GRAPHICS.setViewport(event.width, event.height);
+      });
 
     StateManager::Init(BasicState::Get()); // TODO: to be removed
   }
@@ -49,6 +50,8 @@ namespace Engine
   {
     FileHandler::clear_json();
     StateManager::Exit(); // TODO: to be removed 
+
+    WORLD.removeEventListener<WindowResizeEvent>();
   }
 
   void Core::run()
