@@ -35,22 +35,14 @@ namespace
 
 // Recalculates the view matrix based on the camera's current position, rotation, and zoom.
 void Graphics::updateViewMatrix() {
-  view = glm::mat4(1.0f); // Start with an identity matrix
-  // The transformations are applied in reverse order of how they appear.
-  // We want to move the world, not the camera, so we apply the inverse of the camera's transform.
-  // 1. Translate to the camera's position.
+  view = glm::mat4(1.0f);
   view = glm::translate(view, glm::vec3(camera.position.x, camera.position.y, 0.0f));
-  // 2. Translate to the center of the screen to rotate around the center.
-  view = glm::translate(view, glm::vec3(viewportWidth / 2.0f, viewportHeight / 2.0f, 0.0f));
-  // 3. Apply rotation.
+  // Use virtual resolution for consistent camera behavior
+  view = glm::translate(view, glm::vec3(VIRTUAL_WIDTH / 2.0f, VIRTUAL_HEIGHT / 2.0f, 0.0f));
   view = glm::rotate(view, glm::radians(camera.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-  // 4. Apply zoom (scaling).
   view = glm::scale(view, glm::vec3(camera.zoom, camera.zoom, 1.0f));
-  // 5. Translate back from the center.
-  view = glm::translate(view, glm::vec3(-viewportWidth / 2.0f, -viewportHeight / 2.0f, 0.0f));
-  // 6. Invert the matrix to get the final view matrix.
+  view = glm::translate(view, glm::vec3(-VIRTUAL_WIDTH / 2.0f, -VIRTUAL_HEIGHT / 2.0f, 0.0f));
   view = glm::inverse(view);
-  // Pre-calculate the combined view-projection matrix for the shader.
   viewProjectionMatrix = projection * view;
 }
 
@@ -255,11 +247,8 @@ void Graphics::setViewport(int width, int height)
   // Tell OpenGL the size of the rendering window.
   glViewport(0, 0, width, height);
 
-  // Update the orthographic projection matrix to match the new dimensions.
-  //projection = glm::ortho(0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, -1.0f, 1.0f);
-
-  // Fixed resolution projection
-  projection = glm::ortho(0.0f, 1600.0f, 900.0f, 0.0f, -1.0f, 1.0f);
+  // Use consistent virtual resolution
+  projection = glm::ortho(0.0f, VIRTUAL_WIDTH, VIRTUAL_HEIGHT, 0.0f, -1.0f, 1.0f);
 
   updateViewMatrix(); // Recalculate the combined matrix.
 }

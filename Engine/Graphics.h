@@ -10,6 +10,11 @@
 
 class Graphics
 {
+private:
+  // Add these for consistent virtual resolution
+  static constexpr float VIRTUAL_WIDTH = 1600.0f;
+  static constexpr float VIRTUAL_HEIGHT = 900.0f;
+  
 public:
 
   struct Texture
