@@ -32,18 +32,8 @@ namespace ECS {
       }
     }
 
-    // Override for drawing/rendering logic
-    virtual void draw() {
-      for (EntityID entityId : entities) {
-        drawEntity(entityId);
-      }
-    }
-
     // Override for per-entity logic
     virtual void updateEntity([[maybe_unused]] EntityID entity) {}
-
-    // Override for per-entity drawing logic
-    virtual void drawEntity([[maybe_unused]] EntityID entity) {}
 
     // Override for entity lifecycle events
     virtual void onEntityAdded([[maybe_unused]] EntityID entity) {}

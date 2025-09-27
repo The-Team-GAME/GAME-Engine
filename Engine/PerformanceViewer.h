@@ -3,7 +3,7 @@
 #include "Core.h"
 #include "Time.h"
 
-inline void PerformanceViewerPanel()
+inline void PerformanceViewerPanel(f32& target_fps)
 {
   ImGui::Begin("Performance Viewer");
 
@@ -12,7 +12,7 @@ inline void PerformanceViewerPanel()
   static float lastFPS = 0.0f;
   const float updateInterval = 0.1f; // Update FPS display every 0.5 seconds
 
-  float dt = Engine::Time::get_real_dt();
+  float dt = Engine::Time::get_fixed_dt();
   if (dt > 0.0f)
   {
     frameTimeAccumulator += dt;
@@ -26,13 +26,9 @@ inline void PerformanceViewerPanel()
     }
   }
 
-  ImGui::Text("FPS: %.1f", lastFPS);
+  ImGui::Text("FPS: %.1f", lastFPS );
 
-  float tick_rate_input = Engine::Time::get_tick_rate();
-
-  ImGui::SliderFloat("Tick Rate", &tick_rate_input, 10.0f, 144.0f);
-
-  Engine::Time::set_tick_rate(tick_rate_input);
+  ImGui::SliderFloat("Tick Rate", &target_fps, 10.0f, 3000.0f);
 
   ImGui::End();
 }

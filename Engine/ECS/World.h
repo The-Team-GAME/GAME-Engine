@@ -248,16 +248,6 @@ namespace ECS
       entitiesToDestroy.clear();
     }
 
-    // Main draw loop
-    void draw()
-    {
-      // Draw all systems
-      for (auto& system : systems)
-      {
-        system->draw();
-      }
-    }
-
     // Query methods
     template <typename... T>
     std::vector<EntityID> getEntitiesWith() const

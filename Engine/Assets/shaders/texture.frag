@@ -13,7 +13,16 @@ void main() {
     {
         int id = int(v_TexId);
         vec4 sampled = texture(u_Textures[id], v_TexCoord);
-        FragColor = sampled * v_Color;
+        
+        // If it's a single-channel texture, treat as font
+        if (sampled.g == 0.0 && sampled.b == 0.0)
+        {
+            FragColor = vec4(v_Color.rgb, v_Color.a * sampled.r);
+        }
+        else
+        {
+            FragColor = sampled * v_Color;
+        }
     }
     else
     {

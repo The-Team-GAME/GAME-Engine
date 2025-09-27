@@ -1,9 +1,11 @@
 {
-  "entity": {
-    "id": "enemy",
+  "id": "enemy",
+  "size": {
     "width": 150,
-    "height": 210,
+    "height": 210
+  },
+  "staticSprite": {
     "texturePath": "Assets/images/monkey.png",
-    "minifyingFilter": 0
+    "minifyingFilter": "Nearest"
   }
 }

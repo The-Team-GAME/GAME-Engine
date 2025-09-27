@@ -6,9 +6,7 @@ namespace Engine {
 
 		void update_time(void);
 
-		void set_tick_rate(f32 new_tick_rate);
-
-		f32 get_tick_rate();
+		f32& get_frame_cap();
 
 		// Returns the delta time to be used during calculations (fixed_dt)
 		f32 get_fixed_dt(void);

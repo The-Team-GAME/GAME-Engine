@@ -107,18 +107,6 @@ public:
   int loadTexture(const char* filepath, MinifyingFilter min_filter = MinifyingFilter::Linear);
   void clearScreen(float r, float g, float b, float a);
 
-  struct SpriteSheet
-  {
-    unsigned int textureId;
-    int frameWidth;
-    int frameHeight;
-    int totalFrames;
-    float animationSpeed; // Frames per second
-  };
-
-  int loadSpriteSheet(const char* filepath, int frameWidth, int frameHeight, int totalFrames, float animationSpeed, MinifyingFilter min_filter = MinifyingFilter::Linear);
-  void drawAnimatedSprite(int spriteSheetId, float x, float y, float width, float height, float time, float rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& tintColor = glm::vec4(1.0f));
-
 private:
   void startBatch();
   void nextBatch();
@@ -145,5 +133,4 @@ private:
   // Font data
   FT_Library ft;
   std::vector<Font> fonts;
-  std::vector<SpriteSheet> spriteSheets;
 };

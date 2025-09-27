@@ -1,10 +1,10 @@
 #include "ObjectFactory.h"
-#include "Logger.h" // contains string and iostream already
+#include "nlohmann/json.hpp"
+#include <fstream>
 #include "BasicComponents.h"
 #include "ECS/World.h"
-#include "FileHandler.h"
 
-namespace fh = FileHandler;
+using json = nlohmann::json;
 
 Engine::ObjectFactory::ObjectFactory(ECS::World* world) : m_world(world)
 {
@@ -12,60 +12,40 @@ Engine::ObjectFactory::ObjectFactory(ECS::World* world) : m_world(world)
 
 int Engine::ObjectFactory::registerObject(std::string filePath)
 {
-  fh::parse_file(filePath);
+  std::ifstream f(filePath);
+  json data = json::parse(f);
 
   ObjectPrefab newObject;
 
   // TODO: check if data contains in debug mode only
 
-  if (fh::has_key("id")) 
-  {
-    if (fh::get_string("id") != fh::d_string())
-    {
-      newObject.objectId = Components::ObjectId(fh::get_string("id").c_str());
-    }
-    else{ Log::warning("Key: id does not contain a value."); }
+  if (data.contains("id")) {
+    newObject.objectId = Components::ObjectId(data["id"]);
   }
-  else{ Log::warning("Key: id does not exist."); }
 
-
-  if (fh::has_key("width") && fh::has_key("height"))
-  {
-    if (fh::get_f32("width")  != fh::d_f32()
-     && fh::get_f32("height") != fh::d_f32())
-    {
-      newObject.size = Components::Size(fh::get_f32("width"), fh::get_f32("height"));
-    }
-    else { Log::warning("Key: width/height does not contain a value."); }
+  if (data.contains("size")) {
+    newObject.size = Components::Size(data["size"]["width"], data["size"]["height"]);
   }
-  else { Log::warning("Key: width/height does not exist."); }
 
+  if (data.contains("staticSprite")) {
+    if (data["staticSprite"].contains("minifyingFilter")) {
+      std::string filterStr = data["staticSprite"]["minifyingFilter"];
 
-  if (fh::has_key("texturePath")) // Seems that magnifying filter is optional so i wont check for it
-  {
-    std::string texture = fh::get_string("texturePath");
-    if (texture != fh::d_string() )
-    {
-      if (fh::get_s32("minifyingFilter") != fh::d_s32())
-      {
-        // Just static casting it cuz Graphics::MinifyingFilter is an enum
-        Graphics::MinifyingFilter filter = static_cast<Graphics::MinifyingFilter>(fh::get_s32("minifyingFilter"));
-        newObject.staticSprite = Components::StaticSprite(texture, filter);
+      Graphics::MinifyingFilter filter = Graphics::MinifyingFilter::Linear;
+      if (filterStr == "Nearest") {
+        filter = Graphics::MinifyingFilter::Nearest;
       }
-      else
-      {
-        newObject.staticSprite = Components::StaticSprite(texture);
-      }
+
+      newObject.staticSprite = Components::StaticSprite(data["staticSprite"]["texturePath"], filter);
     }
-    else { Log::warning("Key: texturePath does not contain a value."); }
+    else {
+      newObject.staticSprite = Components::StaticSprite(data["staticSprite"]["texturePath"]);
+    }
   }
-  else { Log::warning("Key: texturePath does not exist."); }
 
   objectList.push_back(newObject);
   int id = nextObjectId;
   nextObjectId++;
-
-  fh::clear_json();
 
   return id;
 }
