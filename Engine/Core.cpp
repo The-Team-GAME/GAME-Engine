@@ -13,6 +13,7 @@
 #include "Time.h"
 #include "PerformanceViewer.h"
 #include "WindowManager.h"
+#include "GraphicsResizeSystem.h"
 
 namespace {
   f64 accumulator{};
@@ -37,6 +38,10 @@ namespace Engine
   {
     FileHandler::parse_file("Assets/objects/enemy.json");
     isRunning = true;
+
+    // Register the graphics resize system
+    WORLD.addSystem<GraphicsResizeSystem>();
+
     StateManager::Init(BasicState::Get()); // TODO: to be removed
   }
 

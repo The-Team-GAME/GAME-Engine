@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <string>
+#include <functional>
 
 namespace Engine
 {
@@ -14,6 +15,9 @@ namespace Engine
     int height;
     std::string title;
 
+    // Static callback function for GLFW
+    static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
+
   public:
     WindowManager(int w, int h, const std::string& t);
     ~WindowManager();
@@ -22,6 +26,7 @@ namespace Engine
     int getWidth() const { return width; }
     int getHeight() const { return height; }
 
-    // Add more methods as needed, e.g., for resizing or fullscreen
+    // Set the resize callback
+    void setResizeCallback();
   };
 }
