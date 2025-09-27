@@ -35,7 +35,7 @@ namespace Engine
 
   Core::Core()
   {
-    FileHandler::load_file("Assets/objects/enemy.json");
+    FileHandler::parse_file("Assets/objects/enemy.json");
     isRunning = true;
     StateManager::Init(BasicState::Get()); // TODO: to be removed
   }
