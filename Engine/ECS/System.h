@@ -23,17 +23,11 @@ namespace ECS {
 
     // Clean way to specify required components!
     template<typename... Components>
-    void requireComponents() {
-      requiredSignature.reset();
-      ((requiredSignature.set(ComponentTypeManager::getTypeId<Components>())), ...);
-    }
+    void requireComponents();
 
     // Clean way to specify listened-to events!
     template<typename... Events>
-    void listenToEvents() {
-      eventSignature.reset();
-      ((eventSignature.set(EventTypeManager::getTypeId<Events>())), ...);
-    }
+    void listenToEvents();
 
     // System logic
     void update();
@@ -68,3 +62,4 @@ namespace ECS {
   };
 
 } // namespace ECS
+

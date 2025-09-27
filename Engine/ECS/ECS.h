@@ -8,3 +8,8 @@
 #include "System.h"
 #include "World.h"
 #include "Entity.inl"
+#include "World.inl"
+#include "System.inl"
+#include "EventManager.inl"
+#include "ComponentManager.inl"
+#include "ComponentArray.inl"

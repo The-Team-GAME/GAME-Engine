@@ -1,6 +1,6 @@
 #pragma once
 #include "Entity.h"
-#include "World.h"
+#include "World.h" // Add this include
 
 namespace ECS {
 

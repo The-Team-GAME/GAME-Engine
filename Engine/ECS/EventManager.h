@@ -17,11 +17,7 @@ namespace ECS
 
   public:
     template <typename T>
-    static EventTypeID getTypeId()
-    {
-      static EventTypeID typeId = ++nextTypeId;
-      return typeId;
-    }
+    static EventTypeID getTypeId();
   };
 
   // A wrapper for a specific event instance
@@ -31,17 +27,11 @@ namespace ECS
     std::any data;
 
     template <typename T>
-    Event(T&& eventData) : typeId(EventTypeManager::getTypeId<T>()), data(std::forward<T>(eventData)) {}
+    Event(T&& eventData);
 
     template <typename T>
-    const T* get() const
-    {
-      if (EventTypeManager::getTypeId<T>() == typeId)
-      {
-        return std::any_cast<T>(&data);
-      }
-      return nullptr;
-    }
+    const T* get() const;
   };
 
 } // namespace ECS
+
