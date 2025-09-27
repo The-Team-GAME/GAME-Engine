@@ -10,14 +10,13 @@ public:
     requireComponents<Components::Health>();
   }
 
-  void updateEntity(ECS::EntityID entityId) override
+  void updateEntity(ECS::Entity& entity) override
   {
-
-    auto* health = world->getComponent<Components::Health>(entityId);
+    auto health = entity.getComponent<Components::Health>();
 
     if (health->isDead())
     {
-      world->getEntity(entityId).destroy();
+      entity.destroy();
     }
   }
 };

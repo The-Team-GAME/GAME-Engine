@@ -4,6 +4,7 @@
 #include "ComponentManager.h"
 #include "EventManager.h"
 #include <unordered_set>
+#include "Entity.h"
 
 namespace ECS {
 
@@ -34,17 +35,19 @@ namespace ECS {
       ((eventSignature.set(EventTypeManager::getTypeId<Events>())), ...);
     }
 
-    // Override for system logic
-    virtual void update() {
+    // System logic
+    void update() {
       for (EntityID entityId : entities) {
-        updateEntity(entityId);
+        Entity entity(entityId, world);
+        updateEntity(entity);
       }
     }
 
-    // Override for drawing/rendering logic
-    virtual void draw() {
+    // Drawing/rendering logic
+    void draw() {
       for (EntityID entityId : entities) {
-        drawEntity(entityId);
+        Entity entity(entityId, world);
+        drawEntity(entity);
       }
     }
 
@@ -52,14 +55,14 @@ namespace ECS {
     virtual void onEvent([[maybe_unused]] const Event& event, [[maybe_unused]] EntityID entity) {}
 
     // Override for per-entity logic
-    virtual void updateEntity([[maybe_unused]] EntityID entity) {}
+    virtual void updateEntity([[maybe_unused]] Entity& entity) {}
 
-    // Override for per-entity drawing logic
-    virtual void drawEntity([[maybe_unused]] EntityID entity) {}
+    // Override for per-entity drawing logic (const reference because rendering shouldn't modify entities)
+    virtual void drawEntity([[maybe_unused]] const Entity& entity) {}
 
     // Override for entity lifecycle events
-    virtual void onEntityAdded([[maybe_unused]] EntityID entity) {}
-    virtual void onEntityRemoved([[maybe_unused]] EntityID entity) {}
+    virtual void onEntityAdded([[maybe_unused]] const Entity& entity) {}
+    virtual void onEntityRemoved([[maybe_unused]] const Entity& entity) {}
 
     // Internal methods
     void addEntity(EntityID entity) {
