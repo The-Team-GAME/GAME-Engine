@@ -1,6 +1,7 @@
 #include "Core.h"
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include "FileHandler.h"
 #include "Graphics.h"
 #include <glm/glm.hpp>
 #include "StateManager.h"
@@ -34,12 +35,14 @@ namespace Engine
 
   Core::Core()
   {
+    FileHandler::parse_file("Assets/objects/enemy.json");
     isRunning = true;
     StateManager::Init(BasicState::Get()); // TODO: to be removed
   }
 
   Core::~Core()
   {
+    FileHandler::clear_json();
     StateManager::Exit(); // TODO: to be removed 
   }
 

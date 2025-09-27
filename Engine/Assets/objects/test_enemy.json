@@ -1,0 +1,9 @@
+{
+  "entity": {
+    "id": "enemy",
+    "width": 150,
+    "height": 210,
+    "texturePath": "Assets/images/monkey.png",
+    "minifyingFilter": "Nearest"
+  }
+}

@@ -111,9 +111,6 @@
     <ClCompile Include="ECS\Entity.cpp">
       <Filter>Source Files\ECS\Backend</Filter>
     </ClCompile>
-    <ClCompile Include="JsonState.cpp">
-      <Filter>Source Files\GameStates</Filter>
-    </ClCompile>
     <ClCompile Include="Vector4D.cpp">
       <Filter>Source Files\Math</Filter>
     </ClCompile>
@@ -135,9 +132,6 @@
     <ClCompile Include="Time.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Serialisation.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
     <ClCompile Include="WindowManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -145,6 +139,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ImGuiState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Logger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FileHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ECS\EventManager.cpp">
@@ -212,9 +212,6 @@
     <ClInclude Include="RenderSystem.h">
       <Filter>Source Files\ECS\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="JsonState.h">
-      <Filter>Source Files\GameStates</Filter>
-    </ClInclude>
     <ClInclude Include="Vector4D.h">
       <Filter>Source Files\Math</Filter>
     </ClInclude>
@@ -242,9 +239,6 @@
     <ClInclude Include="Time.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
-    <ClInclude Include="Serialisation.h">
-      <Filter>Source Files\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="SpriteState.h">
       <Filter>Source Files\GameStates</Filter>
     </ClInclude>
@@ -270,6 +264,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DevSpriteAnimationState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Logger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FileHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ECS\EventManager.h">
