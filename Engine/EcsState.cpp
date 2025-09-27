@@ -89,7 +89,7 @@ void EcsState::Init()
   auto background = Engine::WORLD.createEntity()
     .addComponent<Components::Tag<"GameObjectState">>()
     .addComponent<Components::Background>()
-    .addComponent<Components::Color>(0.1f, 0.1f, 0.1f, 1.0f); // Dark gray background
+    .addComponent<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f); // White background
 
   // Add systems to the world
   Engine::WORLD.addSystem<BackgroundSystem>(); // Background system should be first
@@ -110,6 +110,23 @@ void EcsState::Update()
       std::cout << "Entity " << e << " has health: " << health->value << "\n";
     }
     std::cout << "\n";
+
+    auto bg = Engine::WORLD.getEntity(Engine::WORLD.getFirstEntityWith<Components::Background>());
+    auto player = Engine::WORLD.getEntity(playerID);
+
+
+    // Make background color darker as player health decreases
+    if (bg.hasComponent<Components::Color>() == false || player.hasComponent<Components::Health>() == false)
+      return;
+
+    auto bg_color = bg.getComponent<Components::Color>();
+
+    *bg_color = Components::Color{
+      player.getComponent<Components::Health>()->value / 100.0f,
+      player.getComponent<Components::Health>()->value / 100.0f,
+      player.getComponent<Components::Health>()->value / 100.0f,
+      1.0f
+    };
   }
 }
 
