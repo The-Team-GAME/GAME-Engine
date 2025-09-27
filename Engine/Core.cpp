@@ -13,6 +13,7 @@
 #include "Time.h"
 #include "PerformanceViewer.h"
 #include "WindowManager.h" 
+#include "BasicEvents.h"
 
 namespace {
   f64 accumulator{};
@@ -32,6 +33,7 @@ namespace Engine
   Graphics GRAPHICS{ windowWidth, windowHeight };
   ImGuiManager IMGUI{};
   AudioManager AUDIO{};
+	Perf PERFORMANCE{};
 
   Core::Core()
   {

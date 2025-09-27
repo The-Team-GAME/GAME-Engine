@@ -75,6 +75,38 @@ namespace Components {
 
   struct Renderable {};
 
+
+  struct PlayerController {
+  
+  };
+   
+  struct Collider {
+    float halfWidth, halfHeight;
+    Math::Vec2D penetration = { 0.0f, 0.0f }; // penetration from last collision
+    bool isTrigger = false;                   // optional: whether this collider is a trigger
+
+    Collider(float width = 1.0f, float height = 1.0f, bool trigger = false)
+      : halfWidth(width * 0.5f), halfHeight(height * 0.5f), isTrigger(trigger) {
+    }
+  };
+
+  struct RigidBody {
+    f32 mass = 1.0f;             // How heavy the body is
+    f32 inverseMass = 1.0f;      // For faster physics (1/mass, 0 if immovable)
+    f32 restitution = 0.2f;      // Bounciness (0 = no bounce, 1 = perfectly elastic)
+    f32 friction = 0.5f;         // Surface friction
+    Math::Vec2D velocity = { 0.0f, 0.0f };   // Current movement speed
+    Math::Vec2D acceleration = { 0.0f, 0.0f }; // For applying forces
+    bool isStatic = false;         // If true, object doesn’t move
+    bool useGravity = true;        // Whether gravity affects it
+
+    RigidBody(f32 m = 1.0f, bool staticBody = false)
+      : mass(m), isStatic(staticBody)
+    {
+      inverseMass = (isStatic || mass == 0.0f) ? 0.0f : 1.0f / mass;
+    }
+  };
+
   struct StaticSprite {
     int textureId;
     StaticSprite(std::string texturePath, Graphics::MinifyingFilter minifyingFilter = Graphics::MinifyingFilter::Linear);

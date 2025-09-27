@@ -141,6 +141,12 @@
     <ClCompile Include="ImGuiState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ComponentSelector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Perf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Logger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -248,9 +254,6 @@
     <ClInclude Include="DevManySpritesState.h">
       <Filter>Source Files\GameStates</Filter>
     </ClInclude>
-    <ClInclude Include="RotationSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Rubric2500Particles.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -271,6 +274,24 @@
     </ClInclude>
     <ClInclude Include="FileHandler.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentSelector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Perf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerControllerSystem.h">
+      <Filter>Source Files\ECS\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsSystem.h">
+      <Filter>Source Files\ECS\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="RotationSystem.h">
+      <Filter>Source Files\ECS\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionSystem.h">
+      <Filter>Source Files\ECS\Systems</Filter>
     </ClInclude>
     <ClInclude Include="ECS\EventManager.h">
       <Filter>Source Files\ECS\Backend</Filter>

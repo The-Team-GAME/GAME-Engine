@@ -23,6 +23,9 @@ namespace Engine
 {
   void Input::Update()
   {
+    PERFORMANCE.start("Input");
+
+
     GLFWwindow* window = Engine::WINDOW.getWindow(); //TODO: pass window as parameter in constructor
 
     // Update previous states
