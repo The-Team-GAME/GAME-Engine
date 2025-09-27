@@ -34,7 +34,8 @@ namespace Engine
     std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
 
     // Set up the resize callback
-    setResizeCallback();
+    glfwSetWindowUserPointer(window, this);
+    glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
   }
 
   WindowManager::~WindowManager()
@@ -45,11 +46,6 @@ namespace Engine
       window = nullptr;
     }
     glfwTerminate();
-  }
-
-  void WindowManager::setResizeCallback() {
-    glfwSetWindowUserPointer(window, this);
-    glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
   }
 
   void WindowManager::framebufferSizeCallback(GLFWwindow* window, int width, int height) {

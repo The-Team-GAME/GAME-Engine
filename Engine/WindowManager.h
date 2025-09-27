@@ -26,7 +26,5 @@ namespace Engine
     int getWidth() const { return width; }
     int getHeight() const { return height; }
 
-    // Set the resize callback
-    void setResizeCallback();
   };
 }
