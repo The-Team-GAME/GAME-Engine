@@ -33,7 +33,10 @@ namespace Engine
 
     std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
 
-    // Set up the resize callback
+    // Set aspect ratio constraint (16:9)
+    glfwSetWindowAspectRatio(window, 16, 9);
+
+    // Set up the resize callback - this handles both window and framebuffer resize
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
   }
@@ -57,11 +60,8 @@ namespace Engine
       windowManager->width = width;
       windowManager->height = height;
 
-      // Send the resize event through the ECS system
+      // Send resize event to engine (this will update Graphics viewport)
       Engine::WORLD.sendEvent<WindowResizeEvent>(width, height);
-
-      // Update the OpenGL viewport immediately
-      glViewport(0, 0, width, height);
     }
   }
 }

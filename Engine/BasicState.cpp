@@ -83,11 +83,11 @@ void BasicState::Draw()
   Engine::GRAPHICS.clearScreen(0.1f, 0.1f, 0.1f, 1.0f); // Dark gray background
 
 
-  Engine::GRAPHICS.drawRect({ 1.0f, 0.0f, 0.0f, 1.0f }, 0.0f, 0.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center);       // Top left, Red
-  Engine::GRAPHICS.drawRect({ 0.0f, 1.0f, 0.0f, 1.0f }, 800.0f, 600.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center);   // Bottom right, Green
-  Engine::GRAPHICS.drawRect({ 0.0f, 0.0f, 1.0f, 1.0f }, 0.0f, 600.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center);     // Bottom left, Blue
-  Engine::GRAPHICS.drawRect({ 1.0f, 1.0f, 0.0f, 1.0f }, 800.0f, 0.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center);     // Top right, Yellow
-  Engine::GRAPHICS.drawRect({ 1.0f, 0.0f, 1.0f, 1.0f }, 400.0f, 300.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center);   // Center, Magenta
+  Engine::GRAPHICS.drawRect({ 1.0f, 0.0f, 0.0f, 1.0f }, 0.0f, 0.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center);        // Top left, Red
+  Engine::GRAPHICS.drawRect({ 0.0f, 1.0f, 0.0f, 1.0f }, 1600.0f, 900.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center);   // Bottom right, Green
+  Engine::GRAPHICS.drawRect({ 0.0f, 0.0f, 1.0f, 1.0f }, 0.0f, 900.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center);      // Bottom left, Blue
+  Engine::GRAPHICS.drawRect({ 1.0f, 1.0f, 0.0f, 1.0f }, 1600.0f, 0.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center);     // Top right, Yellow
+  Engine::GRAPHICS.drawRect({ 1.0f, 0.0f, 1.0f, 1.0f }, 800.0f, 450.0f, 50.0f, 50.0f, rotation, Graphics::Origin::Center);    // Center, Magenta
 
   // Draw some text using the loaded font
   Engine::GRAPHICS.drawText(fontId1, "Hello", 250.0f, 250.0f, 1.0f, { 1.0f, 1.0f, 1.0f, 1.0f });

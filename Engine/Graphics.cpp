@@ -256,11 +256,12 @@ void Graphics::setViewport(int width, int height)
   glViewport(0, 0, width, height);
 
   // Update the orthographic projection matrix to match the new dimensions.
-  projection = glm::ortho(0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, -1.0f, 1.0f);
+  //projection = glm::ortho(0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, -1.0f, 1.0f);
+
+  // Fixed resolution projection
+  projection = glm::ortho(0.0f, 1600.0f, 900.0f, 0.0f, -1.0f, 1.0f);
+
   updateViewMatrix(); // Recalculate the combined matrix.
-
-  std::cout << "Window resized to " << width << "x" << height << std::endl;
-
 }
 
 // Sets the camera's world position.

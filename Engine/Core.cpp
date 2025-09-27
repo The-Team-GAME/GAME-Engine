@@ -21,8 +21,8 @@ namespace {
 namespace Engine
 {
   // TODO: window size should not be hardcoded
-  int windowWidth = 800;
-  int windowHeight = 600;
+  int windowWidth = 1600;
+  int windowHeight = 900;
 
   // These are global instances of the core engine systems.
   // They are defined here and declared extern in Core.h for use throughout the engine.
@@ -41,7 +41,8 @@ namespace Engine
     // Register the graphics resize system
     WORLD.addEventListener<WindowResizeEvent>([](const WindowResizeEvent& event) {
       GRAPHICS.setViewport(event.width, event.height);
-      });
+      }
+    );
 
     StateManager::Init(BasicState::Get()); // TODO: to be removed
   }
