@@ -11,7 +11,6 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <fmod.hpp>
-#include <fmod_errors.h> 
 
 #include <ft2build.h>
 #include FT_FREETYPE_H

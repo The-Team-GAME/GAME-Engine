@@ -44,6 +44,7 @@ public:
     BottomRight
   };
 
+ 
 private:
   struct Vertex
   {
@@ -51,6 +52,32 @@ private:
     glm::vec4 Color;
     glm::vec2 TexCoords;
     float TexID;
+  };
+
+  struct SpriteSheet
+  {
+    unsigned int textureId;
+    int frameWidth;
+    int frameHeight;
+    int totalFrames;
+    float animationSpeed; // Frames per second
+  };
+
+  // Font rendering structures
+  struct Character {
+    glm::vec2 texCoords[4];  // UV coordinates in the atlas
+    glm::ivec2 Size;
+    glm::ivec2 Bearing;
+    unsigned int Advance;
+  };
+
+  struct Font {
+    std::unordered_map<char, Character> Characters;
+    unsigned int atlasTexture;  // Single texture for all characters
+    unsigned int fontSize;
+    float baseline;
+    int atlasWidth, atlasHeight;
+    bool isValid = true;  // Track if font is still valid
   };
 
   static const uint32_t MaxQuads = 10000;
@@ -110,14 +137,7 @@ public:
   int loadTexture(const char* filepath, MinifyingFilter min_filter = MinifyingFilter::Linear);
   void clearScreen(float r, float g, float b, float a);
 
-  struct SpriteSheet
-  {
-    unsigned int textureId;
-    int frameWidth;
-    int frameHeight;
-    int totalFrames;
-    float animationSpeed; // Frames per second
-  };
+
 
   int loadSpriteSheet(const char* filepath, int frameWidth, int frameHeight, int totalFrames, float animationSpeed, MinifyingFilter min_filter = MinifyingFilter::Linear);
   void drawAnimatedSprite(int spriteSheetId, float x, float y, float width, float height, float time, float rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& tintColor = glm::vec4(1.0f));
@@ -128,22 +148,6 @@ private:
   void flush();
   glm::vec2 calculateOriginOffset(float width, float height, Origin origin) const;
 
-  // Font rendering structures
-  struct Character {
-    glm::vec2 texCoords[4];  // UV coordinates in the atlas
-    glm::ivec2 Size;
-    glm::ivec2 Bearing;
-    unsigned int Advance;
-  };
-
-  struct Font {
-    std::unordered_map<char, Character> Characters;
-    unsigned int atlasTexture;  // Single texture for all characters
-    unsigned int fontSize;
-    float baseline;
-    int atlasWidth, atlasHeight;
-    bool isValid = true;  // Track if font is still valid
-  };
 
   // Font data
   FT_Library ft;
