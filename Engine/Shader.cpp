@@ -1,12 +1,10 @@
+#include "Precompiled.h"
 #include <string>
 #include <sstream>
 #include <fstream>
 #include <iostream> 
 
-#include <gl/glew.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+
 
 #include "Shader.h"
 

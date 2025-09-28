@@ -1,8 +1,7 @@
 #pragma once
 
+#include "Precompiled.h"
 #include "Graphics.h"
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
 #include "ECS/ECS.h"
 #include "ObjectFactory.h"
 #include "Time.h"
