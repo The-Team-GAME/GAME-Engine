@@ -1,11 +1,8 @@
+#include "Precompiled.h"
 #include <GL/glew.h>
-#include <glm/fwd.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 #include <iostream>
 #include <numeric>
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 #include "Shader.h"
 #include <filesystem>
 #include "Graphics.h"

@@ -1,6 +1,6 @@
 #pragma once
-#include <GL/glew.h>
-#include <glm/fwd.hpp>
+
+#include "Precompiled.h"
 #include <string>
 
 class Shader {
