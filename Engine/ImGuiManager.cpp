@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
+#include "InputManager.h"
 
 Engine::ImGuiManager::ImGuiManager()
 {
@@ -33,5 +34,17 @@ void Engine::ImGuiManager::begin()
 void Engine::ImGuiManager::end()
 {
   ImGui::Render();
-  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+  if (guiEnabled)
+  {
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+  }
+}
+
+void Engine::ImGuiManager::update()
+{
+  // Toggle ImGui with F1 key
+  if (Input::IsKeyPressed(GLFW_KEY_F1))
+  {
+    guiEnabled = !guiEnabled;
+  }
 }
