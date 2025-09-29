@@ -96,6 +96,31 @@ public:
 
 	void Update() {
 
+	
+
+	};
+
+
+
+	void Draw() {
+		// Main scene texture drawing
+		Engine::GRAPHICS.clearScreen(0.1f, 0.1f, 0.1f, 1.0f);
+		Engine::GRAPHICS.drawTexture(linearMonkeyImageId, 200.0f, 150.0f, 150.0f, 210.0f);
+		Engine::GRAPHICS.drawTexture(nearestMonkeyImageId, 400.0f, 150.0f, 150.0f, 210.0f);
+		Engine::GRAPHICS.drawTextureRegion(
+			nearestMonkeyImageId, 600.0f, 150.0f, 150.0f, 210.0f, spritePosX += Engine::Time::get_fixed_dt() * 10.0f, 0.0f, 15.0f, 21.0f
+		);
+
+
+
+		// This loop draws the dropped images at their final position
+		for (const auto& droppedImage : droppedImages) {
+			//Engine::GRAPHICS.drawTexture(droppedImage.textureId, droppedImage.position.x, droppedImage.position.y, 150.0f, 210.0f);
+			Engine::GRAPHICS.drawTexture(droppedImage.textureId, 600.f, 500.f, 150.0f, 210.0f);
+		}
+
+		timeline.Draw();
+
 		// --- Image Menu ---
 		ImGui::Begin("Image Menu");
 		ImGui::Text("Project Root: %s", fs::current_path().string().c_str());
@@ -130,29 +155,6 @@ public:
 
 		//calls the sprite dropper function :>
 		SpriteDropper(loadedImageIds, droppedImages);
-
-	};
-
-
-
-	void Draw() {
-		// Main scene texture drawing
-		Engine::GRAPHICS.clearScreen(0.1f, 0.1f, 0.1f, 1.0f);
-		Engine::GRAPHICS.drawTexture(linearMonkeyImageId, 200.0f, 150.0f, 150.0f, 210.0f);
-		Engine::GRAPHICS.drawTexture(nearestMonkeyImageId, 400.0f, 150.0f, 150.0f, 210.0f);
-		Engine::GRAPHICS.drawTextureRegion(
-			nearestMonkeyImageId, 600.0f, 150.0f, 150.0f, 210.0f, spritePosX += Engine::Time::get_fixed_dt() * 10.0f, 0.0f, 15.0f, 21.0f
-		);
-
-
-
-		// This loop draws the dropped images at their final position
-		for (const auto& droppedImage : droppedImages) {
-			//Engine::GRAPHICS.drawTexture(droppedImage.textureId, droppedImage.position.x, droppedImage.position.y, 150.0f, 210.0f);
-			Engine::GRAPHICS.drawTexture(droppedImage.textureId, 600.f, 500.f, 150.0f, 210.0f);
-		}
-
-		timeline.Draw();
 
 	};
 
