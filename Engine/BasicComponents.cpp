@@ -5,7 +5,16 @@ namespace Components
 {
   StaticSprite::StaticSprite(std::string texturePath, Graphics::MinifyingFilter minifyingFilter)
   {
-    textureId = Engine::GRAPHICS.loadTexture(texturePath.c_str(), minifyingFilter);
+    // Generate a resource name from the texture path
+    std::string resourceName = "texture_" + texturePath;
+
+    // Replace path separators with underscores to create a valid resource name
+    std::replace(resourceName.begin(), resourceName.end(), '/', '_');
+    std::replace(resourceName.begin(), resourceName.end(), '\\', '_');
+    std::replace(resourceName.begin(), resourceName.end(), '.', '_');
+
+    // Load texture using ResourceManager
+    textureId = Engine::RESOURCES.load_texture(resourceName, texturePath, minifyingFilter);
   }
 
   StaticSprite::StaticSprite(const StaticSprite& other) : textureId(other.textureId) {}

@@ -183,6 +183,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="ObjectFactory.cpp" />
     <ClCompile Include="FileHandler.cpp" />
     <ClCompile Include="Precompiled.cpp" />
+    <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="Time.cpp" />
     <ClCompile Include="Vector2D.cpp" />
     <ClCompile Include="Shader.cpp" />
@@ -224,6 +225,8 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="PerformanceViewer.h" />
     <ClInclude Include="Precompiled.h" />
     <ClInclude Include="RenderSystem.h" />
+    <ClInclude Include="ResourceManager.h" />
+    <ClInclude Include="ResourceManagerPanel.h" />
     <ClInclude Include="RotationSystem.h" />
     <ClInclude Include="Rubric2500Particles.h" />
     <ClInclude Include="FileHandler.h" />

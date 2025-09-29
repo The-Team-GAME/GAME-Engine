@@ -8,21 +8,21 @@
 
 void BasicState::Load()
 {
-  // Load a font and store its ID.
-  // Make sure you have a font file at this path.
-  fontId1 = Engine::GRAPHICS.loadFont("Assets/fonts/Roboto-Regular.ttf", 48);
+  // Load fonts using ResourceManager
+  fontId1 = Engine::RESOURCES.load_font("roboto", "Assets/fonts/Roboto-Regular.ttf", 48);
   if (fontId1 == -1)
   {
-    std::cout << "Failed to load font for BasicState.\n";
-  }
-  fontId2 = Engine::GRAPHICS.loadFont("Assets/fonts/PlayfairDisplay-VariableFont_wght.ttf", 48);
-  if (fontId2 == -1)
-  {
-    std::cout << "Failed to load font for BasicState.\n";
+    std::cout << "Failed to load roboto font for BasicState.\n";
   }
 
-  // Load sound using the AudioManager and store the ID
-  moveSoundId = Engine::AUDIO.loadSound("Assets/sounds/move1.wav");
+  fontId2 = Engine::RESOURCES.load_font("playfair", "Assets/fonts/PlayfairDisplay-VariableFont_wght.ttf", 48);
+  if (fontId2 == -1)
+  {
+    std::cout << "Failed to load playfair font for BasicState.\n";
+  }
+
+  // Load sound using ResourceManager
+  moveSoundId = Engine::RESOURCES.load_sound("move_sound", "Assets/sounds/move1.wav");
   if (moveSoundId == -1)
   {
     std::cout << "Failed to load move sound for BasicState.\n";
@@ -51,13 +51,6 @@ void BasicState::Update()
       std::cout << "P key was pressed! Playing sound.\n";
     }
   }
-
-  /*if (Engine::Input::IsMouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT))
-  {
-    glm::vec2 mousePos = Engine::Input::GetMousePosition();
-    std::cout << "Left mouse button held at: " << mousePos.x << ", " << mousePos.y << "\n";
-  }*/
-
 
   rotation += 45.0f * Engine::Time::get_fixed_dt();
 
@@ -102,19 +95,8 @@ void BasicState::Free()
 
 void BasicState::Unload()
 {
-  // Unload fonts
-  if (fontId1 != -1)
-  {
-    Engine::GRAPHICS.unloadFont(fontId1);
-  }
-  if (fontId2 != -1)
-  {
-    Engine::GRAPHICS.unloadFont(fontId2);
-  }
-
-  // Unload sounds
-  if (moveSoundId != -1)
-  {
-    Engine::AUDIO.unloadSound(moveSoundId);
-  }
+  // Unload resources using ResourceManager
+  Engine::RESOURCES.unload_font("roboto");
+  Engine::RESOURCES.unload_font("playfair");
+  Engine::RESOURCES.unload_sound("move_sound");
 }

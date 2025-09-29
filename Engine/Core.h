@@ -8,6 +8,7 @@
 #include "ImGuiManager.h"
 #include "WindowManager.h"
 #include "AudioManager.h"
+#include "ResourceManager.h"
 
 namespace Engine
 {
@@ -29,4 +30,5 @@ namespace Engine
   extern ImGuiManager IMGUI;
   extern WindowManager WINDOW;
   extern AudioManager AUDIO;
+  extern ResourceManager RESOURCES;
 }

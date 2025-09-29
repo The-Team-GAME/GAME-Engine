@@ -115,5 +115,7 @@ public:
     Engine::WORLD.removeSystem<DamageSystem>();
   }
 
-  void Unload() {}
+  void Unload() {
+    Engine::FACTORY.unregisterObject(enemyPrefab);
+  }
 };
