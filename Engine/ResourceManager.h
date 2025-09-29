@@ -16,9 +16,11 @@ namespace Engine
     void load_texture(std::string name, std::string path);
     int get_texture(std::string name);
     void unload_texture(std::string name);
+    size_t get_texture_count();
 
     void load_sound(std::string name, std::string path);
     int get_sound(std::string name);
     void unload_sound(std::string name);
+    size_t get_sound_count();
   };
 }

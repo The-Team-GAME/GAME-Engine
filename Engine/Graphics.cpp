@@ -721,7 +721,7 @@ void Graphics::unloadTexture(int textureId)
 
   // Delete the OpenGL texture object
   glDeleteTextures(1, &textures[textureId].id);
-  
+
   // Remove from the textures vector
   textures.erase(textures.begin() + textureId);
 
@@ -744,17 +744,17 @@ void Graphics::unloadAllTextures()
   {
     glDeleteTextures(1, &texture.id);
   }
-  
+
   textures.clear();
-  
+
   // Clear all texture slots except the white texture (slot 0)
   for (uint32_t i = 1; i < MaxTextureSlots; i++)
   {
     textureSlots[i] = 0;
   }
-  
+
   textureSlotIndex = 1; // Reset to 1 (slot 0 is reserved for white texture)
-  
+
   std::cout << "Graphics: Unloaded all textures" << std::endl;
 }
 
@@ -771,9 +771,9 @@ void Graphics::unloadSpriteSheet(int spriteSheetId)
   // by the textures vector. The sprite sheet just references a texture ID.
   // If you want to delete the underlying texture as well, you would call:
   // unloadTexture(spriteSheets[spriteSheetId].textureId);
-  
+
   spriteSheets.erase(spriteSheets.begin() + spriteSheetId);
-  
+
   std::cout << "Graphics: Unloaded sprite sheet with ID " << spriteSheetId << std::endl;
 }
 
@@ -781,4 +781,10 @@ void Graphics::unloadSpriteSheet(int spriteSheetId)
 void Graphics::unloadAllSpriteSheets()
 {
   spriteSheets.clear();
+}
+
+// Add this method implementation
+size_t Graphics::getTextureCount() const
+{
+  return textures.size();
 }

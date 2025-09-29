@@ -20,6 +20,11 @@ void Engine::ResourceManager::unload_texture(std::string name)
   textures.erase(name);
 }
 
+size_t Engine::ResourceManager::get_texture_count()
+{
+  return Engine::GRAPHICS.getTextureCount();
+}
+
 void Engine::ResourceManager::load_sound(std::string name, std::string path)
 {
   sounds[name] = Engine::AUDIO.loadSound(path.c_str());
@@ -37,4 +42,9 @@ void Engine::ResourceManager::unload_sound(std::string name)
 {
   Engine::AUDIO.unloadSound(sounds[name]);
   sounds.erase(name);
+}
+
+size_t Engine::ResourceManager::get_sound_count()
+{
+  return Engine::AUDIO.getSoundCount(); // Assuming similar method exists for audio
 }

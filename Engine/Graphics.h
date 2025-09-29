@@ -44,7 +44,7 @@ public:
     BottomRight
   };
 
- 
+
 private:
   struct Vertex
   {
@@ -161,4 +161,7 @@ private:
 
 public:
   glm::vec2 screenToVirtual(float screenX, float screenY) const;
+
+  // Add this method declaration in the public section
+  size_t getTextureCount() const;
 };

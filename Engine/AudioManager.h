@@ -38,5 +38,6 @@ namespace Engine
 
     // Utility
     bool isPlaying(const std::string& channelName);
+    size_t getSoundCount() const;  // Add this method
   };
 }
