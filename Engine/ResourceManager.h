@@ -3,6 +3,9 @@
 #include <string>
 #include "Graphics.h"
 
+// Forward declaration for ObjectPrefab
+struct ObjectPrefab;
+
 namespace Engine
 {
   class ResourceManager
@@ -12,6 +15,7 @@ namespace Engine
     std::unordered_map<std::string, int> sounds;
     std::unordered_map<std::string, int> fonts;
     std::unordered_map<std::string, int> spriteSheets;
+    std::unordered_map<std::string, int> objectPrefabs;
 
   public:
     // TODO: dont pass string as value
@@ -35,5 +39,11 @@ namespace Engine
     int get_sprite_sheet(std::string name);
     void unload_sprite_sheet(std::string name);
     size_t get_sprite_sheet_count();
+
+    // Object prefab management
+    int load_object_prefab(std::string name, std::string path);
+    int get_object_prefab(std::string name);
+    void unload_object_prefab(std::string name);
+    size_t get_object_prefab_count();
   };
 }

@@ -1,5 +1,6 @@
 #include "ResourceManager.h"
 #include "Core.h"
+#include "ObjectFactory.h"
 #include <iostream>
 
 int Engine::ResourceManager::load_texture(std::string name, std::string path, Graphics::MinifyingFilter minifyingFilter)
@@ -236,4 +237,63 @@ void Engine::ResourceManager::unload_sprite_sheet(std::string name)
 size_t Engine::ResourceManager::get_sprite_sheet_count()
 {
   return spriteSheets.size();
+}
+
+int Engine::ResourceManager::load_object_prefab(std::string name, std::string path)
+{
+  // Check if object prefab with this name already exists
+  if (objectPrefabs.find(name) != objectPrefabs.end())
+  {
+    std::cout << "ResourceManager: Object prefab '" << name << "' already loaded (ID: " << objectPrefabs[name] << "), skipping duplicate load.\n";
+    return objectPrefabs[name];
+  }
+
+  // Load the object prefab through the factory
+  int prefabId = Engine::FACTORY.registerObject(path);
+  if (prefabId != -1)
+  {
+    objectPrefabs[name] = prefabId;
+    std::cout << "ResourceManager: Successfully loaded object prefab '" << name << "' from '" << path << "' (ID: " << prefabId << ").\n";
+    return prefabId;
+  }
+  else
+  {
+    std::cout << "ResourceManager: Failed to load object prefab '" << name << "' from '" << path << "'.\n";
+    return -1;
+  }
+}
+
+int Engine::ResourceManager::get_object_prefab(std::string name)
+{
+  auto it = objectPrefabs.find(name);
+  if (it != objectPrefabs.end())
+  {
+    return it->second;
+  }
+  else
+  {
+    std::cout << "ResourceManager: Object prefab '" << name << "' not found.\n";
+    return -1;
+  }
+}
+
+void Engine::ResourceManager::unload_object_prefab(std::string name)
+{
+  auto it = objectPrefabs.find(name);
+  if (it != objectPrefabs.end())
+  {
+    std::cout << "ResourceManager: Attempting to unload object prefab '" << name << "' (ID: " << it->second << ").\n";
+    Engine::FACTORY.unregisterObject(it->second);
+    objectPrefabs.erase(it);
+    std::cout << "ResourceManager: Unloaded object prefab '" << name << "'.\n";
+  }
+  else
+  {
+    std::cout << "ResourceManager: Cannot unload object prefab '" << name << "' - not found in registry.\n";
+  }
+}
+
+size_t Engine::ResourceManager::get_object_prefab_count()
+{
+  return objectPrefabs.size();
 }

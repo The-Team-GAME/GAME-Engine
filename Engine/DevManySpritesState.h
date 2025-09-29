@@ -16,11 +16,11 @@ private:
 
 public:
   void Load() {
-    // Load the enemy prefab from a JSON file
-    enemyPrefab = Engine::FACTORY.registerObject("Assets/objects/enemy.json");
-    bananaPrefab = Engine::FACTORY.registerObject("Assets/objects/banana.json");
+    // Load object prefabs through ResourceManager  
+    enemyPrefab = Engine::RESOURCES.load_object_prefab("enemy", "Assets/objects/enemy.json");
+    bananaPrefab = Engine::RESOURCES.load_object_prefab("banana", "Assets/objects/banana.json");
 
-    for (int i = 0; i < 2500; ++i) { // Create 1000 enemies
+    for (int i = 0; i < 2500; ++i) { // Create 2500 bananas
       float x = static_cast<float>(rand() % 800); // Random x position within window width
       float y = static_cast<float>(rand() % 600); // Random y position within window height
       Engine::FACTORY.createObject(bananaPrefab)
@@ -48,7 +48,10 @@ public:
   void Draw() {}
 
   void Free() {
-    Engine::FACTORY.unregisterObject(enemyPrefab);
+    // Unload through ResourceManager (new approach)
+    Engine::RESOURCES.unload_object_prefab("enemy");
+    Engine::RESOURCES.unload_object_prefab("banana");
+
     Engine::WORLD.destroyEntitiesWith<Components::Tag<"DevManySpritesState">>();
 
     // Remove systems
