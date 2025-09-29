@@ -241,9 +241,4 @@ namespace Engine
     }
     return false;
   }
-
-  size_t AudioManager::getSoundCount() const
-  {
-    return sounds.size();
-  }
 }
