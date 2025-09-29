@@ -12,7 +12,7 @@ void Engine::ResourceManager::load_texture(std::string name, std::string path)
   }
 
   // Load the texture
-  int textureId = Engine::GRAPHICS.loadTexture(path.c_str());
+  int textureId = Engine::GRAPHICS.loadTexture(path.c_str(), Graphics::MinifyingFilter::Nearest);
   if (textureId != -1)
   {
     textures[name] = textureId;
@@ -183,7 +183,7 @@ void Engine::ResourceManager::load_sprite_sheet(std::string name, std::string pa
   }
 
   // Load the sprite sheet
-  int spriteSheetId = Engine::GRAPHICS.loadSpriteSheet(path.c_str(), frameWidth, frameHeight, totalFrames, animationSpeed);
+  int spriteSheetId = Engine::GRAPHICS.loadSpriteSheet(path.c_str(), frameWidth, frameHeight, totalFrames, animationSpeed, Graphics::MinifyingFilter::Nearest);
   if (spriteSheetId != -1)
   {
     spriteSheets[name] = spriteSheetId;
