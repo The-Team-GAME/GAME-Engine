@@ -37,7 +37,7 @@ void Graphics::updateViewMatrix() {
   // Use virtual resolution for consistent camera behavior
   view = glm::translate(view, glm::vec3(VIRTUAL_WIDTH / 2.0f, VIRTUAL_HEIGHT / 2.0f, 0.0f));
   view = glm::rotate(view, glm::radians(camera.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-  view = glm::scale(view, glm::vec3(camera.zoom, camera.zoom, 1.0f));
+  view = glm::scale(view, glm::vec3(1.0f / camera.zoom, 1.0f / camera.zoom, 1.0f)); // Changed: invert the zoom
   view = glm::translate(view, glm::vec3(-VIRTUAL_WIDTH / 2.0f, -VIRTUAL_HEIGHT / 2.0f, 0.0f));
   view = glm::inverse(view);
   viewProjectionMatrix = projection * view;
