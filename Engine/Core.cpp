@@ -15,6 +15,7 @@
 #include "WindowManager.h"
 #include "ResourceManagerPanel.h"
 #include "EntityEditorPanel.h"
+#include "CameraPanel.h" // Add this line
 
 namespace {
   f64 accumulator{};
@@ -102,6 +103,7 @@ namespace Engine
       PerformanceViewerPanel();
       ResourceManagerPanel();
       EntityEditorPanel();
+      CameraPanel(); // Add this line
       StateManager::GetCurrentState()->Draw();
       WORLD.draw();
       GRAPHICS.endFrame();
