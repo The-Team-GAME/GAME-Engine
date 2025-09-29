@@ -709,3 +709,76 @@ glm::vec2 Graphics::screenToVirtual(float screenX, float screenY) const
     (screenY / viewportHeight) * VIRTUAL_HEIGHT
   };
 }
+
+// Unloads a texture by its ID
+void Graphics::unloadTexture(int textureId)
+{
+  if (textureId < 0 || textureId >= static_cast<int>(textures.size()))
+  {
+    std::cout << "Graphics: Invalid texture ID: " << textureId << std::endl;
+    return;
+  }
+
+  // Delete the OpenGL texture object
+  glDeleteTextures(1, &textures[textureId].id);
+  
+  // Remove from the textures vector
+  textures.erase(textures.begin() + textureId);
+
+  // Clear the texture from any active texture slots
+  for (uint32_t i = 0; i < MaxTextureSlots; i++)
+  {
+    if (textureSlots[i] == textures[textureId].id)
+    {
+      textureSlots[i] = 0;
+    }
+  }
+
+  std::cout << "Graphics: Unloaded texture with ID " << textureId << std::endl;
+}
+
+// Unloads all textures
+void Graphics::unloadAllTextures()
+{
+  for (const auto& texture : textures)
+  {
+    glDeleteTextures(1, &texture.id);
+  }
+  
+  textures.clear();
+  
+  // Clear all texture slots except the white texture (slot 0)
+  for (uint32_t i = 1; i < MaxTextureSlots; i++)
+  {
+    textureSlots[i] = 0;
+  }
+  
+  textureSlotIndex = 1; // Reset to 1 (slot 0 is reserved for white texture)
+  
+  std::cout << "Graphics: Unloaded all textures" << std::endl;
+}
+
+// Unloads a sprite sheet by its ID
+void Graphics::unloadSpriteSheet(int spriteSheetId)
+{
+  if (spriteSheetId < 0 || spriteSheetId >= static_cast<int>(spriteSheets.size()))
+  {
+    std::cout << "Graphics: Invalid sprite sheet ID: " << spriteSheetId << std::endl;
+    return;
+  }
+
+  // Note: We don't delete the underlying texture here because it's managed
+  // by the textures vector. The sprite sheet just references a texture ID.
+  // If you want to delete the underlying texture as well, you would call:
+  // unloadTexture(spriteSheets[spriteSheetId].textureId);
+  
+  spriteSheets.erase(spriteSheets.begin() + spriteSheetId);
+  
+  std::cout << "Graphics: Unloaded sprite sheet with ID " << spriteSheetId << std::endl;
+}
+
+// Unloads all sprite sheets
+void Graphics::unloadAllSpriteSheets()
+{
+  spriteSheets.clear();
+}

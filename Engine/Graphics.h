@@ -135,11 +135,16 @@ public:
   void drawTextureRegion(int imageId, float destX, float destY, float destWidth, float destHeight, float srcX, float srcY, float srcWidth, float srcHeight, float rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& tintColor = glm::vec4(1.0f));
 
   int loadTexture(const char* filepath, MinifyingFilter min_filter = MinifyingFilter::Linear);
+  void unloadTexture(int textureId);
+  void unloadAllTextures();
+
   void clearScreen(float r, float g, float b, float a);
 
 
 
   int loadSpriteSheet(const char* filepath, int frameWidth, int frameHeight, int totalFrames, float animationSpeed, MinifyingFilter min_filter = MinifyingFilter::Linear);
+  void unloadSpriteSheet(int spriteSheetId);
+  void unloadAllSpriteSheets();
   void drawAnimatedSprite(int spriteSheetId, float x, float y, float width, float height, float time, float rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& tintColor = glm::vec4(1.0f));
 
 private:
