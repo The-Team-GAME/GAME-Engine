@@ -9,6 +9,7 @@
 #include "BackgroundSystem.h"
 #include "PlayerControllerSystem.h"
 #include "PhysicsSystem.h"
+#include "GravitySystem.h"
 #include "CollisionSystem.h"
 
 class EcsState : public Engine::GameState<EcsState>
@@ -30,19 +31,20 @@ public:
 			.addComponent<Components::Color>(0.2f,1.0f,0.2f,1.0f)
       .addComponent<Components::Size>(20.0f, 20.0f)
       .addComponent<Components::Velocity>(0.0f, 0.0f)
+			.addComponent<Components::Gravity>()
 			.addComponent<Components::RigidBody>(1.0f, false) // mass=1.0, not static
       .addComponent<Components::Collider>(20.0f, 20.0f)
       .addComponent<Components::PlayerController>();
 
     // Create two enemy instances from the prefab
     auto enemy2 = Engine::WORLD.createEntity()
-      .addComponent<Components::Tag<"GameObjectState">>()
-      .addComponent<Components::Position>(100.0f, 100.0f)
+      .addComponent<Components::Tag<"Floor">>()
+      .addComponent<Components::Position>(500.0f, 500.0f)
       .addComponent<Components::Color>(1.0f, 0.2f, 0.2f, 1.0f)
-			.addComponent<Components::Size>(50.0f, 50.0f)
+			.addComponent<Components::Size>(4000.0f, 50.0f)
       .addComponent<Components::Velocity>(0.0f, 0.0f)
 			.addComponent<Components::RigidBody>(1.0f, false) // mass=1.0, not static
-      .addComponent<Components::Collider>(50.0f, 50.0f);
+      .addComponent<Components::Collider>(4000.0f, 50.0f);
       
 
 
@@ -56,11 +58,12 @@ public:
 
     // Add systems to the world
     Engine::WORLD.addSystem<BackgroundSystem>(); // Background system should be first
+    Engine::WORLD.addSystem<GravitySystem>();
 		Engine::WORLD.addSystem<PlayerControllerSystem>();
     Engine::WORLD.addSystem<RectRenderSystem>();
     Engine::WORLD.addSystem<MovementSystem>();
-		Engine::WORLD.addSystem<CollisionSystem>();
     Engine::WORLD.addSystem<PhysicsSystem>();
+    Engine::WORLD.addSystem<CollisionSystem>();
     Engine::WORLD.addSystem<StaticSpriteRenderSystem>();
   };
 

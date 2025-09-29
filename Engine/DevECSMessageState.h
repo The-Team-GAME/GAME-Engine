@@ -33,6 +33,7 @@ public:
       .addComponent<Components::Tag<"GameObjectState">>()
       .addComponent<Components::Position>(10.0f, 20.0f)
       .addComponent<Components::Velocity>(100.0f, 0.0f) // Make player move
+			.addComponent<Components::RigidBody>(1.0f, false) // mass=1.0, not static
       .addComponent<Components::Health>(100, 100)
       .addComponent<Components::Size>(10.0f, 10.0f)
       .addComponent<Components::Color>(0.0f, 1.0f, 1.0f, 1.0f); // Make player cyan
@@ -70,6 +71,7 @@ public:
     // Add systems to the world
     Engine::WORLD.addSystem<BackgroundSystem>(); // Background system should be first
     Engine::WORLD.addSystem<MovementSystem>();
+		Engine::WORLD.addSystem<PhysicsSystem>();
     Engine::WORLD.addSystem<HealthSystem>();
     Engine::WORLD.addSystem<RectRenderSystem>();
     Engine::WORLD.addSystem<DamageSystem>(); // Add the new system

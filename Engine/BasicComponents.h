@@ -77,7 +77,9 @@ namespace Components {
 
 
   struct PlayerController {
-  
+		//bool isGrounded = false; // Whether the player is on the ground
+    PlayerController(/*bool isgrounded = false*/)
+     /* : isGrounded(isgrounded)*/ {}
   };
    
   struct Collider {
@@ -87,18 +89,24 @@ namespace Components {
 
     Collider(float width = 1.0f, float height = 1.0f, bool trigger = false)
       : halfWidth(width * 0.5f), halfHeight(height * 0.5f), isTrigger(trigger) {
-    }
+    } 
+  };
+
+  struct Gravity {
+    float strength = 9.81f; // default gravity
+    Gravity(float g = 9.81f) : strength(g) {}
   };
 
   struct RigidBody {
     f32 mass = 1.0f;             // How heavy the body is
     f32 inverseMass = 1.0f;      // For faster physics (1/mass, 0 if immovable)
     f32 restitution = 0.2f;      // Bounciness (0 = no bounce, 1 = perfectly elastic)
-    f32 friction = 0.5f;         // Surface friction
+    f32 friction = 7.5f;         // Surface friction
     Math::Vec2D velocity = { 0.0f, 0.0f };   // Current movement speed
     Math::Vec2D acceleration = { 0.0f, 0.0f }; // For applying forces
     bool isStatic = false;         // If true, object doesn’t move
     bool useGravity = true;        // Whether gravity affects it
+		bool isGrounded = false;     // Whether the body is on the ground
 
     RigidBody(f32 m = 1.0f, bool staticBody = false)
       : mass(m), isStatic(staticBody)

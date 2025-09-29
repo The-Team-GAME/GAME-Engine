@@ -22,21 +22,6 @@ public:
 
     float dt = Engine::Time::get_fixed_dt();
 
-    // --- 1. Integrate acceleration into velocity ---
-    //if (rb->useGravity) {
-    //  rb->acceleration.y += -9.81f * dt; // simple gravity
-    //}
-    rb->velocity.x += rb->acceleration.x * dt;
-    rb->velocity.y += rb->acceleration.y * dt;
-
-    // --- 2. Integrate velocity into position ---
-    rb->velocity.x += rb->acceleration.x * dt;
-    rb->velocity.y += rb->acceleration.y * dt;
-
-    // --- 3. Integrate velocity into position ---
-    pos->x += rb->velocity.x * dt;
-    pos->y += rb->velocity.y * dt;
-
     // --- 4. Collision resolution (can use mass here for realistic collisions) ---
     if (col->penetration.x != 0.0f || col->penetration.y != 0.0f) {
       // Push entity out of overlap
