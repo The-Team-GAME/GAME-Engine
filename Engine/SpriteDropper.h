@@ -7,6 +7,7 @@
 struct DroppedImage {
 	int textureId;
 	ImVec2 position;
+	bool isDropped = false;
 };
 
 // Function to render the Sprite Dropper UI.

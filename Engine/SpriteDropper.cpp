@@ -5,6 +5,7 @@
 
 //ryans <3 sprite dropper allows you to drag and drop the images onto a space(currently only drag)
 void SpriteDropper(std::vector<int>& loadedImageIds, std::vector<DroppedImage>& droppedImages) {
+  
     // --- Sprite Dropper ---
     ImGui::Begin("Sprite Dropper");
     ImGui::Text("Drop Images:");
@@ -25,14 +26,21 @@ void SpriteDropper(std::vector<int>& loadedImageIds, std::vector<DroppedImage>& 
 
         // Check if the button is being dragged.
         if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
-            // Set the payload with the image ID
+            
+
             ImGui::SetDragDropPayload("SPRITEDROP_ID", &imageId, sizeof(int));
 
             // Draw the drag preview
             ImGui::Image(reinterpret_cast<void*>(static_cast<intptr_t>(imageId)), ImVec2(50, 50));
             ImGui::Text("Dragging Image...");
+
+
             ImGui::EndDragDropSource();
+            
+            
         }
+
+       
 
         // Placing a button on top of the image
         ImVec2 min = ImGui::GetItemRectMin();
@@ -42,7 +50,8 @@ void SpriteDropper(std::vector<int>& loadedImageIds, std::vector<DroppedImage>& 
 
         ImGui::PopID(); // Remove the unique ID from the stack
         ImGui::SameLine(); // Places images on a same line
+
     }
     ImGui::End();
-
+    
 }
