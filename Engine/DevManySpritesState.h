@@ -21,13 +21,13 @@ public:
     bananaPrefab = Engine::RESOURCES.load_object_prefab("banana", "Assets/objects/banana.json");
 
     for (int i = 0; i < 2500; ++i) { // Create 2500 bananas
-      float x = static_cast<float>(rand() % 800); // Random x position within window width
-      float y = static_cast<float>(rand() % 600); // Random y position within window height
+      float x = static_cast<float>(rand() % 1600); // Random x position within window width
+      float y = static_cast<float>(rand() % 900); // Random y position within window height
       Engine::FACTORY.createObject(bananaPrefab)
         .addComponent<Components::Tag<"DevManySpritesState">>()
         .addComponent<Components::Position>(x, y)
         .addComponent<Components::Rotation>(0.0f)
-        .addComponent<Components::RotationSpeed>(1.0f);
+        .addComponent<Components::RotationSpeed>(45.0f);
     }
 
     auto background = Engine::WORLD.createEntity()
