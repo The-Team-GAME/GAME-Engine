@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <stack>
 #include <iostream>
+#include "Graphics.h"
 
 class DevSpriteAnimationState : public Engine::GameState<DevSpriteAnimationState> {
 private:
@@ -21,15 +22,15 @@ public:
 
   void Init() {
     // Load sprite sheet using ResourceManager
-    Engine::RESOURCES.load_sprite_sheet(
+    marioSpriteSheetId = Engine::RESOURCES.load_sprite_sheet(
       "mario_sprite",
       "Assets/images/mario.png",
       96 / 3, // frame width
       32, // frame height
       3, // total frames
-      8.0f // frames per second
+      8.0f, // frames per second
+      Graphics::MinifyingFilter::Nearest
     );
-    marioSpriteSheetId = Engine::RESOURCES.get_sprite_sheet("mario_sprite");
   };
 
   void Update() {

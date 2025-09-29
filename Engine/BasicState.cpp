@@ -9,23 +9,20 @@
 void BasicState::Load()
 {
   // Load fonts using ResourceManager
-  Engine::RESOURCES.load_font("roboto", "Assets/fonts/Roboto-Regular.ttf", 48);
-  fontId1 = Engine::RESOURCES.get_font("roboto");
+  fontId1 = Engine::RESOURCES.load_font("roboto", "Assets/fonts/Roboto-Regular.ttf", 48);
   if (fontId1 == -1)
   {
     std::cout << "Failed to load roboto font for BasicState.\n";
   }
 
-  Engine::RESOURCES.load_font("playfair", "Assets/fonts/PlayfairDisplay-VariableFont_wght.ttf", 48);
-  fontId2 = Engine::RESOURCES.get_font("playfair");
+  fontId2 = Engine::RESOURCES.load_font("playfair", "Assets/fonts/PlayfairDisplay-VariableFont_wght.ttf", 48);
   if (fontId2 == -1)
   {
     std::cout << "Failed to load playfair font for BasicState.\n";
   }
 
   // Load sound using ResourceManager
-  Engine::RESOURCES.load_sound("move_sound", "Assets/sounds/move1.wav");
-  moveSoundId = Engine::RESOURCES.get_sound("move_sound");
+  moveSoundId = Engine::RESOURCES.load_sound("move_sound", "Assets/sounds/move1.wav");
   if (moveSoundId == -1)
   {
     std::cout << "Failed to load move sound for BasicState.\n";

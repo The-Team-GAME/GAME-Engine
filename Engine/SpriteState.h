@@ -246,11 +246,9 @@ public:
 
   void Init() {
     // Load textures using ResourceManager
-    Engine::RESOURCES.load_texture("monkey_linear", "Assets/images/monkey.png");
-    linearMonkeyImageId = Engine::RESOURCES.get_texture("monkey_linear");
+    linearMonkeyImageId = Engine::RESOURCES.load_texture("monkey_linear", "Assets/images/monkey.png", Graphics::MinifyingFilter::Linear);
 
-    Engine::RESOURCES.load_texture("monkey_nearest", "Assets/images/monkey.png");
-    nearestMonkeyImageId = Engine::RESOURCES.get_texture("monkey_nearest");
+    nearestMonkeyImageId = Engine::RESOURCES.load_texture("monkey_nearest", "Assets/images/monkey.png", Graphics::MinifyingFilter::Nearest);
 
     std::cout << "Current path is " << std::filesystem::current_path() << std::endl;
   };
@@ -369,7 +367,7 @@ public:
 
       try {
 
-        //setting root to the pathway of github to add any images to the 
+        //setting root to the pathway of github to add any images to theï¿½
 
         fs::path source_path(selected_file_path);
 
