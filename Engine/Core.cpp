@@ -33,7 +33,7 @@ namespace Engine
   Graphics GRAPHICS{ windowWidth, windowHeight };
   ImGuiManager IMGUI{};
   AudioManager AUDIO{};
-  ResourceManager RESOURCE{};
+  ResourceManager RESOURCES{};
 
   Core::Core()
   {

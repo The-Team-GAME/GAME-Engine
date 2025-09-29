@@ -9,14 +9,9 @@
 #include <algorithm>
 #include <cstdlib>
 #include <stack>
-#include <iostream> // For debugging output
-
-
-
-
+#include <iostream>
 
 class DevSpriteAnimationState : public Engine::GameState<DevSpriteAnimationState> {
-
 private:
   int marioSpriteSheetId = -1;
   float animationTime = 0.0f;
@@ -25,14 +20,16 @@ public:
   void Load() {};
 
   void Init() {
-    marioSpriteSheetId = Engine::GRAPHICS.loadSpriteSheet(
+    // Load sprite sheet using ResourceManager
+    Engine::RESOURCES.load_sprite_sheet(
+      "mario_sprite",
       "Assets/images/mario.png",
       96 / 3, // frame width
       32, // frame height
       3, // total frames
-      8.0f, // frames per second
-      Graphics::MinifyingFilter::Nearest
+      8.0f // frames per second
     );
+    marioSpriteSheetId = Engine::RESOURCES.get_sprite_sheet("mario_sprite");
   };
 
   void Update() {
@@ -48,6 +45,8 @@ public:
 
   void Free() {};
 
-  void Unload() {};
-
+  void Unload() {
+    // Unload sprite sheet using ResourceManager
+    Engine::RESOURCES.unload_sprite_sheet("mario_sprite");
+  };
 };

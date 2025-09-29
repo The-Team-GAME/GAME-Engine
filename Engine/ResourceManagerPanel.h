@@ -7,10 +7,10 @@ inline void ResourceManagerPanel()
   if (ImGui::Begin("Resource Manager"))
   {
     // Get counts from the resource manager
-    size_t textureCount = Engine::RESOURCE.get_texture_count();
-    size_t soundCount = Engine::RESOURCE.get_sound_count();
-    size_t fontCount = Engine::RESOURCE.get_font_count();
-    size_t spriteSheetCount = Engine::RESOURCE.get_sprite_sheet_count();
+    size_t textureCount = Engine::RESOURCES.get_texture_count();
+    size_t soundCount = Engine::RESOURCES.get_sound_count();
+    size_t fontCount = Engine::RESOURCES.get_font_count();
+    size_t spriteSheetCount = Engine::RESOURCES.get_sprite_sheet_count();
 
     // Display overview
     if (ImGui::CollapsingHeader("Overview", ImGuiTreeNodeFlags_DefaultOpen))

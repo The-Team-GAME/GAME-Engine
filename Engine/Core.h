@@ -30,5 +30,5 @@ namespace Engine
   extern ImGuiManager IMGUI;
   extern WindowManager WINDOW;
   extern AudioManager AUDIO;
-  extern ResourceManager RESOURCE;
+  extern ResourceManager RESOURCES;
 }

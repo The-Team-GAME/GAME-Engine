@@ -225,10 +225,7 @@ void FileExplorer(bool* p_open, bool is_directory_selection_mode = false) {
 
 }
 
-
-
 class SpriteState : public Engine::GameState<SpriteState> {
-
 private:
   int linearMonkeyImageId = -1;
   int nearestMonkeyImageId = -1;
@@ -236,49 +233,35 @@ private:
   bool showFileExplorerDest = false;
   bool fileCopied = false;
 
-
   struct ImageData {
     unsigned int texture_id;
     const char* name;
   };
 
   std::vector<ImageData> ImageAspectRatio;
-
   float spritePosX = 0.0f;
 
 public:
-
-
   void Load() {};
 
-
-
   void Init() {
+    // Load textures using ResourceManager
+    Engine::RESOURCES.load_texture("monkey_linear", "Assets/images/monkey.png");
+    linearMonkeyImageId = Engine::RESOURCES.get_texture("monkey_linear");
 
-    linearMonkeyImageId = Engine::GRAPHICS.loadTexture("Assets/images/monkey.png");
-    nearestMonkeyImageId = Engine::GRAPHICS.loadTexture("Assets/images/monkey.png", Graphics::MinifyingFilter::Nearest);
-
+    Engine::RESOURCES.load_texture("monkey_nearest", "Assets/images/monkey.png");
+    nearestMonkeyImageId = Engine::RESOURCES.get_texture("monkey_nearest");
 
     std::cout << "Current path is " << std::filesystem::current_path() << std::endl;
-
-
   };
-
-
 
   void Update() {};
 
-
-
   void Draw() {
-
-    //image stuff
-
     Engine::GRAPHICS.clearScreen(0.1f, 0.1f, 0.1f, 1.0f);
 
     Engine::GRAPHICS.drawTexture(linearMonkeyImageId, 200.0f, 150.0f, 150.0f, 210.0f);
     Engine::GRAPHICS.drawTexture(nearestMonkeyImageId, 400.0f, 150.0f, 150.0f, 210.0f);
-
 
     Engine::GRAPHICS.drawTextureRegion(
       nearestMonkeyImageId, 600.0f, 150.0f, 150.0f, 210.0f, spritePosX += Engine::Time::get_fixed_dt() * 10.0f, 0.0f, 15.0f, 21.0f
@@ -444,6 +427,9 @@ public:
 
   void Free() {};
 
-  void Unload() {};
-
+  void Unload() {
+    // Unload textures using ResourceManager
+    Engine::RESOURCES.unload_texture("monkey_linear");
+    Engine::RESOURCES.unload_texture("monkey_nearest");
+  };
 };
