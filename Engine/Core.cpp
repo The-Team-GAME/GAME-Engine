@@ -12,7 +12,8 @@
 #include "StateChooser.inl"
 #include "Time.h"
 #include "PerformanceViewer.h"
-#include "WindowManager.h" 
+#include "WindowManager.h"
+#include "ResourceManagerPanel.h"
 
 namespace {
   f64 accumulator{};
@@ -32,6 +33,7 @@ namespace Engine
   Graphics GRAPHICS{ windowWidth, windowHeight };
   ImGuiManager IMGUI{};
   AudioManager AUDIO{};
+  ResourceManager RESOURCE{};
 
   Core::Core()
   {
@@ -97,6 +99,7 @@ namespace Engine
       // Rendering Start ========================================
       StateChooserPanel();
       PerformanceViewerPanel();
+      ResourceManagerPanel();
       StateManager::GetCurrentState()->Draw();
       WORLD.draw();
       GRAPHICS.endFrame();
