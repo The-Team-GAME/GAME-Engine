@@ -788,3 +788,13 @@ size_t Graphics::getTextureCount() const
 {
   return textures.size();
 }
+
+size_t Graphics::getFontCount() const
+{
+  return fonts.size();
+}
+
+size_t Graphics::getSpriteSheetCount() const
+{
+  return spriteSheets.size();
+}

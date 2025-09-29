@@ -164,4 +164,6 @@ public:
 
   // Add this method declaration in the public section
   size_t getTextureCount() const;
+  size_t getFontCount() const;
+  size_t getSpriteSheetCount() const;
 };
