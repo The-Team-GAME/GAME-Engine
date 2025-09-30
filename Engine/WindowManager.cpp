@@ -5,6 +5,8 @@
 
 namespace Engine
 {
+
+
   WindowManager::WindowManager(int w, int h, const std::string& t)
     : width(w), height(h), title(t), window(nullptr)
   {
@@ -39,6 +41,9 @@ namespace Engine
     // Set up the resize callback - this handles both window and framebuffer resize
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+
+    // Set up file drop callback
+    glfwSetDropCallback(window, fileDropCallback);
   }
 
   WindowManager::~WindowManager()
@@ -63,5 +68,16 @@ namespace Engine
       // Send resize event to engine (this will update Graphics viewport)
       Engine::WORLD.sendEvent<WindowResizeEvent>(width, height);
     }
+  }
+
+  void WindowManager::fileDropCallback(GLFWwindow* window, int count, const char** paths)
+  {
+    std::vector<std::string> filePaths;
+    for (int i = 0; i < count; ++i)
+    {
+      filePaths.push_back(paths[i]);
+    }
+
+    Engine::WORLD.sendEvent<FileDropEvent>(filePaths);
   }
 }

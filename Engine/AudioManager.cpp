@@ -67,6 +67,9 @@ namespace Engine
 
   void AudioManager::unloadSound(int soundId)
   {
+    // Stop the sound if it's playing
+    stopSound(soundId);
+
     auto it = sounds.find(soundId);
     if (it != sounds.end())
     {
@@ -83,10 +86,11 @@ namespace Engine
       pair.second->release();
     }
     sounds.clear();
+    channels.clear();
     std::cout << "AudioManager: Unloaded all sounds" << std::endl;
   }
 
-  bool AudioManager::playSound(int soundId, const std::string& channelName)
+  bool AudioManager::playSound(int soundId)
   {
     if (!fmodSystem)
     {
@@ -100,6 +104,9 @@ namespace Engine
       std::cout << "AudioManager: Sound with ID " << soundId << " not found!" << std::endl;
       return false;
     }
+
+    // Stop existing channel if sound is already playing
+    stopSound(soundId);
 
     FMOD::Channel* channel = nullptr;
     FMOD_RESULT result = fmodSystem->playSound(it->second, 0, false, &channel);
@@ -111,15 +118,12 @@ namespace Engine
     }
 
     // Store channel for later control
-    if (!channelName.empty())
-    {
-      channels[channelName] = channel;
-    }
+    channels[soundId] = channel;
 
     return true;
   }
 
-  bool AudioManager::playSoundLooped(int soundId, const std::string& channelName)
+  bool AudioManager::playSoundLooped(int soundId)
   {
     if (!fmodSystem)
     {
@@ -133,6 +137,9 @@ namespace Engine
       std::cout << "AudioManager: Sound with ID " << soundId << " not found!" << std::endl;
       return false;
     }
+
+    // Stop existing channel if sound is already playing
+    stopSound(soundId);
 
     // Set sound to loop
     it->second->setMode(FMOD_LOOP_NORMAL);
@@ -147,17 +154,14 @@ namespace Engine
     }
 
     // Store channel for later control
-    if (!channelName.empty())
-    {
-      channels[channelName] = channel;
-    }
+    channels[soundId] = channel;
 
     return true;
   }
 
-  void AudioManager::stopSound(const std::string& channelName)
+  void AudioManager::stopSound(int soundId)
   {
-    auto it = channels.find(channelName);
+    auto it = channels.find(soundId);
     if (it != channels.end())
     {
       bool isPlaying = false;
@@ -184,9 +188,9 @@ namespace Engine
     channels.clear();
   }
 
-  void AudioManager::setVolume(const std::string& channelName, float volume)
+  void AudioManager::setVolume(int soundId, float volume)
   {
-    auto it = channels.find(channelName);
+    auto it = channels.find(soundId);
     if (it != channels.end())
     {
       it->second->setVolume(volume);
@@ -230,9 +234,9 @@ namespace Engine
     }
   }
 
-  bool AudioManager::isPlaying(const std::string& channelName)
+  bool AudioManager::isPlaying(int soundId)
   {
-    auto it = channels.find(channelName);
+    auto it = channels.find(soundId);
     if (it != channels.end())
     {
       bool isPlaying = false;

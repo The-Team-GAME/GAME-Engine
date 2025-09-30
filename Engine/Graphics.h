@@ -93,8 +93,16 @@ private:
   std::vector<Vertex> quadVertexBufferBase;
   uint32_t vertexIndex = 0;
 
-  // Rendering Data
-  std::vector<Texture> textures;
+  // Rendering Data - Changed to unordered_map
+  std::unordered_map<int, Texture> textures;
+  std::unordered_map<int, Font> fonts;
+  std::unordered_map<int, SpriteSheet> spriteSheets;
+
+  // ID counters for generating unique IDs
+  int nextTextureId = 0;
+  int nextFontId = 0;
+  int nextSpriteSheetId = 0;
+
   std::array<unsigned int, MaxTextureSlots> textureSlots;
   uint32_t textureSlotIndex = 1; // 0 = white texture
 
@@ -137,6 +145,8 @@ public:
   int loadTexture(const char* filepath, MinifyingFilter min_filter = MinifyingFilter::Linear);
   void unloadTexture(int textureId);
   void unloadAllTextures();
+  void getTextureDimensions(int textureId, int& width, int& height) const;
+  unsigned int getTextureHandle(int textureId) const; // Add this method
 
   void clearScreen(float r, float g, float b, float a);
 
@@ -156,8 +166,6 @@ private:
 
   // Font data
   FT_Library ft;
-  std::vector<Font> fonts;
-  std::vector<SpriteSheet> spriteSheets;
 
 public:
   glm::vec2 screenToVirtual(float screenX, float screenY) const;
