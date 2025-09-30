@@ -2,6 +2,8 @@
 #include "Core.h"
 #include "ObjectFactory.h"
 #include <iostream>
+#include <algorithm>
+#include <cctype>
 
 int Engine::ResourceManager::load_texture(std::string name, std::string path, Graphics::MinifyingFilter minifyingFilter)
 {
@@ -296,4 +298,62 @@ void Engine::ResourceManager::unload_object_prefab(std::string name)
 size_t Engine::ResourceManager::get_object_prefab_count()
 {
   return objectPrefabs.size();
+}
+
+std::string Engine::ResourceManager::get_file_extension(const std::string& path)
+{
+  size_t dotPos = path.find_last_of('.');
+  if (dotPos == std::string::npos)
+  {
+    return "";
+  }
+
+  std::string extension = path.substr(dotPos + 1);
+
+  // Convert to lowercase for case-insensitive comparison
+  std::transform(extension.begin(), extension.end(), extension.begin(),
+    [](unsigned char c) { return std::tolower(c); });
+
+  return extension;
+}
+
+int Engine::ResourceManager::load(std::string name, std::string path)
+{
+  std::string extension = get_file_extension(path);
+
+  // Image formats
+  if (extension == "png" || extension == "jpg" || extension == "jpeg" ||
+    extension == "bmp" || extension == "tga")
+  {
+    std::cout << "ResourceManager: Loading texture '" << name << "' from '" << path << "'\n";
+    return load_texture(name, path, Graphics::MinifyingFilter::Linear);
+  }
+
+  // Audio formats
+  else if (extension == "wav" || extension == "mp3" || extension == "ogg")
+  {
+    std::cout << "ResourceManager: Loading sound '" << name << "' from '" << path << "'\n";
+    return load_sound(name, path);
+  }
+
+  // Font formats
+  else if (extension == "ttf" || extension == "otf")
+  {
+    std::cout << "ResourceManager: Loading font '" << name << "' from '" << path << "' with default size 48\n";
+    return load_font(name, path, 48); // Default font size
+  }
+
+  // Object prefab format
+  else if (extension == "json")
+  {
+    std::cout << "ResourceManager: Loading object prefab '" << name << "' from '" << path << "'\n";
+    return load_object_prefab(name, path);
+  }
+
+  // Unknown format
+  else
+  {
+    std::cout << "ResourceManager: Unknown file extension '" << extension << "' for file '" << path << "'\n";
+    return -1;
+  }
 }

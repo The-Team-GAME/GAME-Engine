@@ -1,9 +1,18 @@
 #pragma once
 #include "imgui.h"
 #include "Core.h"
+#include "BasicEvents.h"
+#include <filesystem>
+#include <algorithm>
+#include <string>
+#include <vector>
 
 inline void ResourceManagerPanel()
 {
+  static bool showLoadConfirmation = false;
+  static std::string lastLoadedFile = "";
+  static std::string lastLoadError = "";
+
   if (ImGui::Begin("Resource Manager"))
   {
     // Get counts from the resource manager
@@ -12,6 +21,48 @@ inline void ResourceManagerPanel()
     size_t fontCount = Engine::RESOURCES.get_font_count();
     size_t spriteSheetCount = Engine::RESOURCES.get_sprite_sheet_count();
     size_t objectPrefabCount = Engine::RESOURCES.get_object_prefab_count();
+
+    // Drag and Drop Zone
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.2f, 0.2f, 0.3f, 0.5f));
+    ImGui::BeginChild("DropZone", ImVec2(0, 80), true, ImGuiWindowFlags_NoScrollbar);
+
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.7f, 0.7f, 0.9f, 1.0f));
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 15);
+    ImGui::TextWrapped("Drag and drop files here to load them");
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5);
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.6f, 1.0f));
+    ImGui::TextWrapped("Supported: .png, .jpg, .wav, .ttf, .json");
+    ImGui::PopStyleColor(2);
+
+    ImGui::EndChild();
+    ImGui::PopStyleColor();
+
+    ImGui::Separator();
+
+    // Display confirmation/error messages
+    if (showLoadConfirmation)
+    {
+      if (!lastLoadError.empty())
+      {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.3f, 0.3f, 1.0f));
+        ImGui::TextWrapped("Error: %s", lastLoadError.c_str());
+        ImGui::PopStyleColor();
+      }
+      else if (!lastLoadedFile.empty())
+      {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.3f, 1.0f, 0.3f, 1.0f));
+        ImGui::TextWrapped("Loaded: %s", lastLoadedFile.c_str());
+        ImGui::PopStyleColor();
+      }
+
+      if (ImGui::Button("Clear Message"))
+      {
+        showLoadConfirmation = false;
+        lastLoadedFile = "";
+        lastLoadError = "";
+      }
+      ImGui::Separator();
+    }
 
     // Display overview
     if (ImGui::CollapsingHeader("Overview", ImGuiTreeNodeFlags_DefaultOpen))
@@ -24,12 +75,45 @@ inline void ResourceManagerPanel()
       ImGui::Separator();
     }
 
-    // Textures section
+    // Textures section with previews
     if (ImGui::CollapsingHeader("Textures"))
     {
       if (textureCount > 0)
       {
-        ImGui::Text("Total Textures: %zu", textureCount);
+        auto& textureMap = Engine::RESOURCES.get_all_textures();
+
+        for (const auto& [name, textureId] : textureMap)
+        {
+          ImGui::PushID(name.c_str());
+
+          // Get texture dimensions
+          int width = 0, height = 0;
+          Engine::GRAPHICS.getTextureDimensions(textureId, width, height);
+
+          // Display texture name
+          ImGui::Text("%s", name.c_str());
+          ImGui::SameLine();
+          ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "(ID: %d, %dx%d)", textureId, width, height);
+
+          // Display texture preview
+          float previewSize = 64.0f;
+          float aspectRatio = width > 0 ? (float)height / (float)width : 1.0f;
+          ImVec2 imageSize(previewSize, previewSize * aspectRatio);
+
+          // Get the OpenGL texture handle for ImGui
+          unsigned int textureHandle = Engine::GRAPHICS.getTextureHandle(textureId);
+          ImGui::Image((ImTextureID)(intptr_t)textureHandle, imageSize);
+
+          // Unload button
+          ImGui::SameLine();
+          if (ImGui::Button("Unload"))
+          {
+            Engine::RESOURCES.unload_texture(name);
+          }
+
+          ImGui::Separator();
+          ImGui::PopID();
+        }
       }
       else
       {
@@ -37,12 +121,46 @@ inline void ResourceManagerPanel()
       }
     }
 
-    // Sounds section
+    // Sounds section with playback controls
     if (ImGui::CollapsingHeader("Sounds"))
     {
       if (soundCount > 0)
       {
-        ImGui::Text("Total Sounds: %zu", soundCount);
+        auto& soundMap = Engine::RESOURCES.get_all_sounds();
+
+        for (const auto& [name, soundId] : soundMap)
+        {
+          ImGui::PushID(name.c_str());
+
+          // Display sound name
+          ImGui::Text("%s", name.c_str());
+          ImGui::SameLine();
+          ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "(ID: %d)", soundId);
+
+          // Play button
+          ImGui::SameLine();
+          if (ImGui::Button("Play"))
+          {
+            Engine::AUDIO.playSound(soundId);
+          }
+
+          // Stop button
+          ImGui::SameLine();
+          if (ImGui::Button("Stop"))
+          {
+            Engine::AUDIO.stopSound(soundId);
+          }
+
+          // Unload button
+          ImGui::SameLine();
+          if (ImGui::Button("Unload"))
+          {
+            Engine::RESOURCES.unload_sound(name);
+          }
+
+          ImGui::Separator();
+          ImGui::PopID();
+        }
       }
       else
       {
@@ -55,7 +173,25 @@ inline void ResourceManagerPanel()
     {
       if (fontCount > 0)
       {
-        ImGui::Text("Total Fonts: %zu", fontCount);
+        auto& fontMap = Engine::RESOURCES.get_all_fonts();
+
+        for (const auto& [name, fontId] : fontMap)
+        {
+          ImGui::PushID(name.c_str());
+
+          ImGui::Text("%s", name.c_str());
+          ImGui::SameLine();
+          ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "(ID: %d)", fontId);
+
+          ImGui::SameLine();
+          if (ImGui::Button("Unload"))
+          {
+            Engine::RESOURCES.unload_font(name);
+          }
+
+          ImGui::Separator();
+          ImGui::PopID();
+        }
       }
       else
       {
@@ -68,7 +204,25 @@ inline void ResourceManagerPanel()
     {
       if (spriteSheetCount > 0)
       {
-        ImGui::Text("Total Sprite Sheets: %zu", spriteSheetCount);
+        auto& spriteSheetMap = Engine::RESOURCES.get_all_sprite_sheets();
+
+        for (const auto& [name, spriteSheetId] : spriteSheetMap)
+        {
+          ImGui::PushID(name.c_str());
+
+          ImGui::Text("%s", name.c_str());
+          ImGui::SameLine();
+          ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "(ID: %d)", spriteSheetId);
+
+          ImGui::SameLine();
+          if (ImGui::Button("Unload"))
+          {
+            Engine::RESOURCES.unload_sprite_sheet(name);
+          }
+
+          ImGui::Separator();
+          ImGui::PopID();
+        }
       }
       else
       {
@@ -81,7 +235,25 @@ inline void ResourceManagerPanel()
     {
       if (objectPrefabCount > 0)
       {
-        ImGui::Text("Total Object Prefabs: %zu", objectPrefabCount);
+        auto& objectPrefabMap = Engine::RESOURCES.get_all_object_prefabs();
+
+        for (const auto& [name, prefabId] : objectPrefabMap)
+        {
+          ImGui::PushID(name.c_str());
+
+          ImGui::Text("%s", name.c_str());
+          ImGui::SameLine();
+          ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "(ID: %d)", prefabId);
+
+          ImGui::SameLine();
+          if (ImGui::Button("Unload"))
+          {
+            Engine::RESOURCES.unload_object_prefab(name);
+          }
+
+          ImGui::Separator();
+          ImGui::PopID();
+        }
       }
       else
       {
@@ -90,4 +262,34 @@ inline void ResourceManagerPanel()
     }
   }
   ImGui::End();
+
+  // Listen for file drop events
+  static bool eventListenerRegistered = false;
+  if (!eventListenerRegistered)
+  {
+    Engine::WORLD.addEventListener<FileDropEvent>([&](const FileDropEvent& event) {
+      for (const auto& filePath : event.filePaths)
+      {
+        std::filesystem::path path(filePath);
+        std::string filename = path.stem().string();
+
+        // Use the generic load function
+        int result = Engine::RESOURCES.load(filename, filePath);
+
+        if (result != -1)
+        {
+          lastLoadedFile = filename + " (" + path.extension().string() + ")";
+          lastLoadError = "";
+        }
+        else
+        {
+          lastLoadError = "Failed to load: " + filename;
+        }
+
+        showLoadConfirmation = true;
+      }
+      });
+
+    eventListenerRegistered = true;
+  }
 }

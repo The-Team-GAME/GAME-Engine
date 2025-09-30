@@ -16,6 +16,7 @@ namespace Engine
 
     // Static callback function for GLFW
     static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
+    static void fileDropCallback(GLFWwindow* window, int count, const char** paths);
 
   public:
     WindowManager(int w, int h, const std::string& t);
