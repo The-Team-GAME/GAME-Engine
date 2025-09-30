@@ -31,6 +31,7 @@ namespace Engine
   // They are defined here and declared extern in Core.h for use throughout the engine.
   ECS::World WORLD{};
   ObjectFactory FACTORY{ &WORLD };
+  LevelLoader LEVEL_LOADER{ &WORLD, &FACTORY };
   WindowManager WINDOW{ windowWidth, windowHeight, "Monkey Stole My GPA" };
   Graphics GRAPHICS{ windowWidth, windowHeight };
   ImGuiManager IMGUI{};
