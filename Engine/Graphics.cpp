@@ -430,13 +430,12 @@ void Graphics::unloadFont(int fontId)
 // Unloads all fonts
 void Graphics::unloadAllFonts()
 {
-  for (int i = 0; i < static_cast<int>(fonts.size()); ++i)
+  // Delete all atlas textures
+  for (auto& font : fonts)
   {
-    if (fonts[i].isValid)
-    {
-      unloadFont(i);
-    }
+    glDeleteTextures(1, &font.atlasTexture);
   }
+  fonts.clear();
   std::cout << "Graphics: Unloaded all fonts" << std::endl;
 }
 
@@ -719,20 +718,23 @@ void Graphics::unloadTexture(int textureId)
     return;
   }
 
-  // Delete the OpenGL texture object
-  glDeleteTextures(1, &textures[textureId].id);
+  // Save the texture ID before erasing
+  unsigned int glTextureId = textures[textureId].id;
 
-  // Remove from the textures vector
-  textures.erase(textures.begin() + textureId);
+  // Delete the OpenGL texture object
+  glDeleteTextures(1, &glTextureId);
 
   // Clear the texture from any active texture slots
   for (uint32_t i = 0; i < MaxTextureSlots; i++)
   {
-    if (textureSlots[i] == textures[textureId].id)
+    if (textureSlots[i] == glTextureId)
     {
       textureSlots[i] = 0;
     }
   }
+
+  // Remove from the textures vector
+  textures.erase(textures.begin() + textureId);
 
   std::cout << "Graphics: Unloaded texture with ID " << textureId << std::endl;
 }
