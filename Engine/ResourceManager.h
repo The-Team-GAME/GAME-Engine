@@ -18,6 +18,9 @@ namespace Engine
     std::unordered_map<std::string, int> objectPrefabs;
 
   public:
+    // Generic load function based on file extension
+    int load(std::string name, std::string path);
+
     // TODO: dont pass string as value
 
     int load_texture(std::string name, std::string path, Graphics::MinifyingFilter minifyingFilter);
@@ -45,5 +48,8 @@ namespace Engine
     int get_object_prefab(std::string name);
     void unload_object_prefab(std::string name);
     size_t get_object_prefab_count();
+
+  private:
+    std::string get_file_extension(const std::string& path);
   };
 }
