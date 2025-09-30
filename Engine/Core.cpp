@@ -19,6 +19,7 @@
 namespace {
   f64 accumulator{};
   s32 step_limit = 3;
+  bool physicsStepMode = false;  // Toggle for step-by-step physics
 }
 namespace Engine
 {
@@ -65,7 +66,17 @@ namespace Engine
       // START OF TIME UPDATES ==============================================
       // Updates the real_dt and increments the accumulator
       Time::update_time();
-      accumulator += Time::get_real_dt();
+
+      if (!physicsStepMode)
+      {
+        // In normal mode, accumulate real delta time
+        accumulator += Time::get_real_dt();
+      }
+      else {
+        // In step mode, always allow at least one iteration to check input
+        accumulator = Time::get_fixed_dt();
+      }
+
       if (accumulator > Time::get_fixed_dt() * step_limit)
       {
         // Caps the accumulator so each gameloop will only go through 5 loops max
@@ -80,6 +91,7 @@ namespace Engine
       IMGUI.begin();
       GRAPHICS.beginFrame();
 
+
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
       while (accumulator >= Time::get_fixed_dt())
       {
@@ -90,10 +102,6 @@ namespace Engine
         // WORLD.update() won't have a chance to react before the input state is cleared on the next frame. 
         Input::Update();
 
-        // Main gameloop here
-        StateManager::GetCurrentState()->Update();
-        WORLD.update();
-
         if (Engine::Input::IsKeyPressed(GLFW_KEY_ESCAPE))
         {
           isRunning = false;
@@ -103,6 +111,21 @@ namespace Engine
         if (Engine::Input::IsKeyPressed(GLFW_KEY_F11))
         {
           throw std::runtime_error("F11 was pressed");
+        }
+
+        if (Engine::Input::IsKeyPressed(GLFW_KEY_P))
+        {
+          physicsStepMode = !physicsStepMode;
+          std::cout << "Physics Step Mode: " << (physicsStepMode ? "ON" : "OFF") << std::endl;
+        }
+
+        bool shouldRunPhysics = !physicsStepMode || Engine::Input::IsKeyPressed(GLFW_KEY_RIGHT_BRACKET);
+
+        if (shouldRunPhysics)
+        {
+          // Main gameloop here
+          StateManager::GetCurrentState()->Update();
+          WORLD.update();
         }
 
         IMGUI.update();
