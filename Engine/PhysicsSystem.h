@@ -30,12 +30,11 @@ public:
 
       // For more realistic collision response, you could factor in mass:
       // Lighter objects bounce more, heavier objects less
-      float restitution = 0.0f; // 0 = no bounce, 1 = perfect bounce
       if (col->penetration.x != 0.0f) {
-        rb->velocity.x = -rb->velocity.x * restitution / rb->mass;
+        rb->velocity.x = -rb->velocity.x * rb->restitution / rb->mass;
       }
       if (col->penetration.y != 0.0f) {
-        rb->velocity.y = -rb->velocity.y * restitution / rb->mass;
+        rb->velocity.y = -rb->velocity.y * rb->restitution / rb->mass;
       }
 
       col->penetration = { 0.0f, 0.0f };
