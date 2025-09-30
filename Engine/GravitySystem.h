@@ -19,7 +19,6 @@ public:
     float dt = Engine::Time::get_fixed_dt();
 
     // Apply downward acceleration
-		if (rb->isGrounded) return; // No gravity if grounded
-    rb->acceleration.y += g->strength * 12000 * dt;
+    rb->acceleration.y += g->strength * 100;
   }
 };

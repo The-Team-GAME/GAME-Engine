@@ -38,8 +38,6 @@ public:
       .addComponent<Components::Size>(10.0f, 10.0f)
       .addComponent<Components::Color>(0.0f, 1.0f, 1.0f, 1.0f); // Make player cyan
 
-		player.getComponent<Components::RigidBody>()->velocity.x = 100.0f; // Give the player an initial horizontal velocity
-
     // Create an enemy entity to act as a template
     auto enemy = Engine::WORLD.createEntity()
       .addComponent<Components::Tag<"Enemy">>()

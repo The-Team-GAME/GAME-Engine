@@ -42,7 +42,7 @@ public:
     integrateAcceleration(rb, dt);
 
     // 2. Apply friction only when grounded
-    if (isGrounded) {
+    if (isGrounded && !hasHorizontalInput) {
       applyFriction(rb, dt);
     }
 
@@ -71,7 +71,7 @@ private:
   void applyFriction(Components::RigidBody* rb, float dt) {
     // Only apply friction when no horizontal input (acceleration is 0)
     if (rb->acceleration.x == 0.0f) {
-      float frictionForce = rb->friction * dt;
+      float frictionForce = rb->friction;
 
       if (rb->velocity.x > 0.0f) {
         rb->velocity.x = std::max(0.0f, rb->velocity.x - frictionForce);

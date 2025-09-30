@@ -96,8 +96,8 @@ namespace Components {
   struct RigidBody {
     f32 mass = 1.0f;             // How heavy the body is
     f32 inverseMass = 1.0f;      // For faster physics (1/mass, 0 if immovable)
-    f32 restitution = 0.0f;      // Bounciness (0 = no bounce, 1 = perfectly elastic)
-    f32 friction = 1000000.0f;         // Surface friction
+    f32 restitution = 0.2f;      // Bounciness (0 = no bounce, 1 = perfectly elastic)
+    f32 friction = 7.5f;         // Surface friction
     Math::Vec2D velocity = { 0.0f, 0.0f };   // Current movement speed
     Math::Vec2D acceleration = { 0.0f, 0.0f }; // For applying forces
     bool isStatic = false;         // If true, object doesn’t move
