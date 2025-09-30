@@ -20,7 +20,6 @@ public:
 
     if (!pos || !rb || !col || rb->isStatic) return;
 
-    float dt = Engine::Time::get_fixed_dt();
 
     // --- 4. Collision resolution (can use mass here for realistic collisions) ---
     if (col->penetration.x != 0.0f || col->penetration.y != 0.0f) {
