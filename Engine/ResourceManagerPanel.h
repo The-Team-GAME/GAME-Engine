@@ -148,69 +148,19 @@ inline void ResourceManagerPanel()
       for (const auto& filePath : event.filePaths)
       {
         std::filesystem::path path(filePath);
-        std::string extension = path.extension().string();
         std::string filename = path.stem().string();
 
-        // Convert extension to lowercase for comparison
-        std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+        // Use the generic load function
+        int result = Engine::RESOURCES.load(filename, filePath);
 
-        int result = -1;
-
-        if (extension == ".png" || extension == ".jpg" || extension == ".jpeg")
+        if (result != -1)
         {
-          result = Engine::RESOURCES.load_texture(filename, filePath, Graphics::MinifyingFilter::Nearest);
-          if (result != -1)
-          {
-            lastLoadedFile = "Texture: " + filename;
-            lastLoadError = "";
-          }
-          else
-          {
-            lastLoadError = "Failed to load texture: " + filename;
-          }
-        }
-        else if (extension == ".wav")
-        {
-          result = Engine::RESOURCES.load_sound(filename, filePath);
-          if (result != -1)
-          {
-            lastLoadedFile = "Sound: " + filename;
-            lastLoadError = "";
-          }
-          else
-          {
-            lastLoadError = "Failed to load sound: " + filename;
-          }
-        }
-        else if (extension == ".ttf")
-        {
-          result = Engine::RESOURCES.load_font(filename, filePath, 48);
-          if (result != -1)
-          {
-            lastLoadedFile = "Font: " + filename;
-            lastLoadError = "";
-          }
-          else
-          {
-            lastLoadError = "Failed to load font: " + filename;
-          }
-        }
-        else if (extension == ".json")
-        {
-          result = Engine::RESOURCES.load_object_prefab(filename, filePath);
-          if (result != -1)
-          {
-            lastLoadedFile = "Object Prefab: " + filename;
-            lastLoadError = "";
-          }
-          else
-          {
-            lastLoadError = "Failed to load object prefab: " + filename;
-          }
+          lastLoadedFile = filename + " (" + path.extension().string() + ")";
+          lastLoadError = "";
         }
         else
         {
-          lastLoadError = "Unsupported file type: " + extension;
+          lastLoadError = "Failed to load: " + filename;
         }
 
         showLoadConfirmation = true;

@@ -5,17 +5,7 @@
 
 namespace Engine
 {
-  // Static callback for file drops
-  static void fileDropCallback(GLFWwindow* window, int count, const char** paths)
-  {
-    std::vector<std::string> filePaths;
-    for (int i = 0; i < count; ++i)
-    {
-      filePaths.push_back(paths[i]);
-    }
 
-    Engine::WORLD.sendEvent<FileDropEvent>(filePaths);
-  }
 
   WindowManager::WindowManager(int w, int h, const std::string& t)
     : width(w), height(h), title(t), window(nullptr)
@@ -78,5 +68,16 @@ namespace Engine
       // Send resize event to engine (this will update Graphics viewport)
       Engine::WORLD.sendEvent<WindowResizeEvent>(width, height);
     }
+  }
+
+  void WindowManager::fileDropCallback(GLFWwindow* window, int count, const char** paths)
+  {
+    std::vector<std::string> filePaths;
+    for (int i = 0; i < count; ++i)
+    {
+      filePaths.push_back(paths[i]);
+    }
+
+    Engine::WORLD.sendEvent<FileDropEvent>(filePaths);
   }
 }
