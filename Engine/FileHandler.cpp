@@ -11,7 +11,8 @@ const f32 default_f32 = 0.f;
 const s32 default_s32 = -1;
 const std::string default_string = "";
 
-const constexpr char* container = "entity";
+std::string container = "";
+
 rj::Document m_document;
  
 namespace FileHandler {
@@ -21,6 +22,7 @@ namespace FileHandler {
 
 	void parse_file(std::string filepath)
 	{
+		//clear_json();
 		std::ifstream ifs(filepath);
 		if (!ifs.is_open())
 		{
@@ -37,7 +39,7 @@ namespace FileHandler {
 		}
 
 		// Ensure the JSON container exists and is an object.
-		if (!m_document.HasMember(container) || !m_document[container].IsObject())
+		if (!m_document.HasMember(container.c_str()) || !m_document[container.c_str()].IsObject())
 		{
 			Log::warning("Container is either missing or incomplete.");
 		}
@@ -53,21 +55,27 @@ namespace FileHandler {
 		Log::info("Json Document Cleared");
 	}
 
+	void set_container(std::string str)
+	{
+		container = str;
+		return;
+	}
+
 	bool has_key(std::string const& key)
 	{
 		// Check that our container exists first.
-		if (!m_document.HasMember(container))
+		if (!m_document.HasMember(container.c_str()))
 		{
 			return false;
 		}
-		return m_document[container].HasMember(key.c_str());
+		return m_document[container.c_str()].HasMember(key.c_str());
 	}
 
 	void delete_key(std::string const& key)
 	{
-		if (m_document.HasMember(container) && m_document[container].HasMember(key.c_str()))
+		if (m_document.HasMember(container.c_str()) && m_document[container.c_str()].HasMember(key.c_str()))
 		{
-			m_document[container].RemoveMember(key.c_str());
+			m_document[container.c_str()].RemoveMember(key.c_str());
 		}
 		else
 		{
@@ -79,19 +87,19 @@ namespace FileHandler {
 	// to make a new type just for one value
 	f32 get_f32(const std::string& key)
 	{
-		return has_key(key) ? m_document[container][key.c_str()].GetFloat() 
+		return has_key(key) ? m_document[container.c_str()][key.c_str()].GetFloat() 
 												: default_f32;
 	}
 
-	f32 get_s32(const std::string& key)
+	s32 get_s32(const std::string& key)
 	{
-		return has_key(key) ? m_document[container][key.c_str()].GetInt()
+		return has_key(key) ? m_document[container.c_str()][key.c_str()].GetInt()
 			: default_s32;
 	}
 
 	std::string get_string(const std::string& key)
 	{
-		return has_key(key) ? m_document[container][key.c_str()].GetString() 
+		return has_key(key) ? m_document[container.c_str()][key.c_str()].GetString() 
 												: default_string;
 	}
 

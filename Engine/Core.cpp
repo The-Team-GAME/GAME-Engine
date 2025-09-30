@@ -15,30 +15,35 @@
 #include "ResourceManagerPanel.h"
 #include "EntityEditorPanel.h"
 #include "CameraPanel.h"
+#include "Config.h"
 
 namespace {
   f64 accumulator{};
   s32 step_limit = 3;
+  bool render = false;
 }
 namespace Engine
 {
-  // TODO: window size should not be hardcoded
-  int windowWidth = 1600;
-  int windowHeight = 900;
+
 
   // These are global instances of the core engine systems.
   // They are defined here and declared extern in Core.h for use throughout the engine.
   ECS::World WORLD{};
   ObjectFactory FACTORY{ &WORLD };
-  WindowManager WINDOW{ windowWidth, windowHeight, "Monkey Stole My GPA" };
-  Graphics GRAPHICS{ windowWidth, windowHeight };
+  WindowManager WINDOW{};
+  Graphics GRAPHICS{ win_width, win_height };
   ImGuiManager IMGUI{};
   AudioManager AUDIO{};
   ResourceManager RESOURCES{};
 
   Core::Core()
   {
-    //FileHandler::parse_file("Assets/objects/enemy.json");
+    Config::load_config();
+    int win_width = Config::get_win_width();
+    int win_height = Config::get_win_height();
+
+    WINDOW.set_param(win_width, win_height, "Monkey Stole My GPA");
+    WINDOW.window_init();
     isRunning = true;
 
     // Register the graphics resize system
