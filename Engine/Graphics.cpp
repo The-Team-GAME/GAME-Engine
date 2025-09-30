@@ -796,3 +796,14 @@ void Graphics::getTextureDimensions(int textureId, int& width, int& height) cons
   width = textures[textureId].width;
   height = textures[textureId].height;
 }
+
+// Gets the OpenGL texture handle by texture ID
+unsigned int Graphics::getTextureHandle(int textureId) const
+{
+  if (textureId < 0 || textureId >= static_cast<int>(textures.size()))
+  {
+    return 0;
+  }
+
+  return textures[textureId].id;
+}

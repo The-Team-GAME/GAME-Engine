@@ -100,7 +100,9 @@ inline void ResourceManagerPanel()
           float aspectRatio = width > 0 ? (float)height / (float)width : 1.0f;
           ImVec2 imageSize(previewSize, previewSize * aspectRatio);
 
-          ImGui::Image((ImTextureID)(intptr_t)textureId, imageSize);
+          // Get the OpenGL texture handle for ImGui
+          unsigned int textureHandle = Engine::GRAPHICS.getTextureHandle(textureId);
+          ImGui::Image((ImTextureID)(intptr_t)textureHandle, imageSize);
 
           // Unload button
           ImGui::SameLine();

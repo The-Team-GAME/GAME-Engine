@@ -138,6 +138,7 @@ public:
   void unloadTexture(int textureId);
   void unloadAllTextures();
   void getTextureDimensions(int textureId, int& width, int& height) const;
+  unsigned int getTextureHandle(int textureId) const; // Add this method
 
   void clearScreen(float r, float g, float b, float a);
 
