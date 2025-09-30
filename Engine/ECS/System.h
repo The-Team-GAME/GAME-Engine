@@ -30,10 +30,10 @@ namespace ECS {
     void listenToEvents();
 
     // System logic
-    void update();
+    virtual void update();
 
     // Drawing/rendering logic
-    void draw();
+    virtual void draw();
 
     // Override for handling a specific event for a specific entity
     virtual void onEvent(const Event& event, EntityID entity);
