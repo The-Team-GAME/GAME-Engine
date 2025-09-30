@@ -2,6 +2,8 @@
 #include "ObjectFactory.h"
 #include "imgui.h"
 
+// TODO: remove
+
 namespace EditorUI
 {
   void ComponentSelector::DrawAddComponentButtons(ECS::EntityID entity)
@@ -10,7 +12,7 @@ namespace EditorUI
     {
       ImGui::OpenPopup("AddComponentPopup");
     }
-     
+
 
     if (ImGui::BeginPopup("AddComponentPopup"))
     {

@@ -2,6 +2,8 @@
 #include "Core.h"
 
 
+// TODO: remove
+
 namespace EditorUI {
 	class ComponentSelector
 	{
