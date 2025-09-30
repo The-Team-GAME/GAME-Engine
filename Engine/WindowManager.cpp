@@ -10,7 +10,7 @@ WindowManager::WindowManager()
   // Empty by design
 }
 
-void WindowManager::set_param(s32 w, s32 h, std::string win_name)
+void WindowManager::set_params(s32 w, s32 h, std::string win_name)
 {
   width = w;
   height = h;

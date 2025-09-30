@@ -30,8 +30,8 @@ namespace Engine
   // They are defined here and declared extern in Core.h for use throughout the engine.
   ECS::World WORLD{};
   ObjectFactory FACTORY{ &WORLD };
-  WindowManager WINDOW{};
-  Graphics GRAPHICS{ win_width, win_height };
+  WindowManager WINDOW;
+  Graphics GRAPHICS;
   ImGuiManager IMGUI{};
   AudioManager AUDIO{};
   ResourceManager RESOURCES{};
@@ -42,8 +42,11 @@ namespace Engine
     int win_width = Config::get_win_width();
     int win_height = Config::get_win_height();
 
-    WINDOW.set_param(win_width, win_height, "Monkey Stole My GPA");
+    WINDOW.set_params(win_width, win_height, "Monkey Stole My GPA");
     WINDOW.window_init();
+
+    GRAPHICS.set_params(win_width, win_height);
+    GRAPHICS.init_graphics();
     isRunning = true;
 
     // Register the graphics resize system

@@ -10,6 +10,8 @@
 
 class Graphics
 {
+  int win_width;
+  int win_height;
 public:
   // Add these for consistent virtual resolution
   static constexpr float VIRTUAL_WIDTH = 1600.0f;
@@ -111,7 +113,9 @@ private:
   void updateViewMatrix();
 
 public:
-  Graphics(int windowWidth, int windowHeight);
+  Graphics();
+  void set_params(int win_width, int win_height);
+  void init_graphics();
   ~Graphics();
 
   void beginFrame();

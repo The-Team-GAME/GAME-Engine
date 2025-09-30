@@ -44,7 +44,19 @@ void Graphics::updateViewMatrix() {
 }
 
 // Initializes the graphics system, shaders, and buffers.
-Graphics::Graphics(int windowWidth, int windowHeight)
+Graphics::Graphics()
+{
+  // empoty by design
+}
+
+
+void Graphics::set_params(int width, int height)
+{
+  win_width = width;
+  win_height = height;
+}
+
+void Graphics::init_graphics()
 {
   // Initialize FreeType
   if (FT_Init_FreeType(&ft))
@@ -129,7 +141,7 @@ Graphics::Graphics(int windowWidth, int windowHeight)
     textureSlots[i] = 0;
 
   // Set initial viewport and projection matrix.
-  setViewport(windowWidth, windowHeight);
+  setViewport(win_width, win_height);
 
   // Use consistent virtual resolution
   projection = glm::ortho(0.0f, VIRTUAL_WIDTH, VIRTUAL_HEIGHT, 0.0f, -1.0f, 1.0f);

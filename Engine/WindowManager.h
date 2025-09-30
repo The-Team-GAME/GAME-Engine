@@ -19,7 +19,7 @@ private:
 public:
   WindowManager();
   void window_init();
-  void set_param(s32 width, s32 height, std::string win_name);
+  void set_params(s32 width, s32 height, std::string win_name);
   ~WindowManager();
 
   GLFWwindow* getWindow() const { return window; }
