@@ -47,10 +47,13 @@ void WindowManager::set_params(s32 w, s32 h, std::string win_name)
   // Set aspect ratio constras32 (16:9)
   glfwSetWindowAspectRatio(window, 16, 9);
 
-  // Set up the resize callback - this handles both window and framebuffer resize
-  glfwSetWindowUserPointer(window, this);
-  glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
-}
+    // Set up the resize callback - this handles both window and framebuffer resize
+    glfwSetWindowUserPointer(window, this);
+    glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+
+    // Set up file drop callback
+    glfwSetDropCallback(window, fileDropCallback);
+  }
 
 WindowManager::~WindowManager()
 {
@@ -71,7 +74,19 @@ void WindowManager::framebufferSizeCallback(GLFWwindow* window, s32 width, s32 h
     windowManager->width = width;
     windowManager->height = height;
 
-    // Send resize event to engine (this will update Graphics viewport)
-    Engine::WORLD.sendEvent<WindowResizeEvent>(width, height);
+      // Send resize event to engine (this will update Graphics viewport)
+      Engine::WORLD.sendEvent<WindowResizeEvent>(width, height);
+    }
+  }
+
+  void WindowManager::fileDropCallback(GLFWwindow* window, int count, const char** paths)
+  {
+    std::vector<std::string> filePaths;
+    for (int i = 0; i < count; ++i)
+    {
+      filePaths.push_back(paths[i]);
+    }
+
+    Engine::WORLD.sendEvent<FileDropEvent>(filePaths);
   }
 }

@@ -1,7 +1,7 @@
 #include "rapidjson/document.h"
 #include "rapidjson/filereadstream.h"
 #include "rapidjson/istreamwrapper.h"
-#include "Logger.h" // contains string and iostream already
+#include "Logger.h"
 #include "TypeDef.h"
 #include <fstream>
 
@@ -14,11 +14,11 @@ const std::string default_string = "";
 std::string container = "";
 
 rj::Document m_document;
- 
+
 namespace FileHandler {
-	f32 d_f32()							{ return default_f32; }
-	s32 d_s32()							{ return default_s32; }
-	std::string d_string()	{ return default_string; }
+  f32 d_f32() { return default_f32; }
+  s32 d_s32() { return default_s32; }
+  std::string d_string() { return default_string; }
 
 	void parse_file(std::string filepath)
 	{
@@ -30,13 +30,13 @@ namespace FileHandler {
 			return;
 		}
 
-		rj::IStreamWrapper isw(ifs);
-		m_document.ParseStream(isw);
-		if (m_document.HasParseError())
-		{
-			Log::warning("Failed to parse json file.");
-			return;
-		}
+    rj::IStreamWrapper isw(ifs);
+    m_document.ParseStream(isw);
+    if (m_document.HasParseError())
+    {
+      Log::warning("Failed to parse json file.");
+      return;
+    }
 
 		// Ensure the JSON container exists and is an object.
 		if (!m_document.HasMember(container.c_str()) || !m_document[container.c_str()].IsObject())
@@ -44,16 +44,16 @@ namespace FileHandler {
 			Log::warning("Container is either missing or incomplete.");
 		}
 
-		// At this point the filestream has been successfully opened and the json has been parsed
-		ifs.close();
-		Log::info("File successfully loaded from " + filepath);
-	}
+    // At this point the filestream has been successfully opened and the json has been parsed
+    ifs.close();
+    Log::info("File successfully loaded from " + filepath);
+  }
 
-	void clear_json() // clears the json document so more things can be parsed in
-	{
-		m_document.RemoveAllMembers();
-		Log::info("Json Document Cleared");
-	}
+  void clear_json() // clears the json document so more things can be parsed in
+  {
+    m_document.RemoveAllMembers();
+    Log::info("Json Document Cleared");
+  }
 
 	void set_container(std::string str)
 	{
@@ -103,5 +103,131 @@ namespace FileHandler {
 												: default_string;
 	}
 
+  // Array support
+  bool is_array(const std::string& key)
+  {
+    if (!has_key(key)) return false;
+
+    const rj::Value& entity = m_document[container];
+    return entity[key.c_str()].IsArray();
+  }
+
+  s32 get_array_size(const std::string& key)
+  {
+    if (!is_array(key)) return 0;
+
+    const rj::Value& entity = m_document[container];
+    return static_cast<s32>(entity[key.c_str()].Size());
+  }
+
+  std::string get_string_from_array(const std::string& key, s32 index)
+  {
+    if (!is_array(key)) return default_string;
+
+    const rj::Value& entity = m_document[container];
+    const rj::Value& array = entity[key.c_str()];
+
+    if (index < 0 || index >= static_cast<s32>(array.Size())) {
+      return default_string;
+    }
+
+    if (array[index].IsString()) {
+      return array[index].GetString();
+    }
+    return default_string;
+  }
+
+  f32 get_f32_from_array(const std::string& key, s32 index)
+  {
+    if (!is_array(key)) return default_f32;
+
+    const rj::Value& entity = m_document[container];
+    const rj::Value& array = entity[key.c_str()];
+
+    if (index < 0 || index >= static_cast<s32>(array.Size())) {
+      return default_f32;
+    }
+
+    if (array[index].IsNumber()) {
+      return static_cast<f32>(array[index].GetFloat());
+    }
+    return default_f32;
+  }
+
+  s32 get_s32_from_array(const std::string& key, s32 index)
+  {
+    if (!is_array(key)) return default_s32;
+
+    const rj::Value& entity = m_document[container];
+    const rj::Value& array = entity[key.c_str()];
+
+    if (index < 0 || index >= static_cast<s32>(array.Size())) {
+      return default_s32;
+    }
+
+    if (array[index].IsInt()) {
+      return array[index].GetInt();
+    }
+    return default_s32;
+  }
+
+  bool has_key_in_array_object(const std::string& arrayKey, s32 index, const std::string& objectKey)
+  {
+    if (!is_array(arrayKey)) return false;
+
+    const rj::Value& entity = m_document[container];
+    const rj::Value& array = entity[arrayKey.c_str()];
+
+    if (index < 0 || index >= static_cast<s32>(array.Size())) {
+      return false;
+    }
+
+    if (array[index].IsObject()) {
+      return array[index].HasMember(objectKey.c_str());
+    }
+    return false;
+  }
+
+  std::string get_string_from_array_object(const std::string& arrayKey, s32 index, const std::string& objectKey)
+  {
+    if (!has_key_in_array_object(arrayKey, index, objectKey)) return default_string;
+
+    const rj::Value& entity = m_document[container];
+    const rj::Value& array = entity[arrayKey.c_str()];
+    const rj::Value& value = array[index][objectKey.c_str()];
+
+    if (value.IsString()) {
+      return value.GetString();
+    }
+    return default_string;
+  }
+
+  f32 get_f32_from_array_object(const std::string& arrayKey, s32 index, const std::string& objectKey)
+  {
+    if (!has_key_in_array_object(arrayKey, index, objectKey)) return default_f32;
+
+    const rj::Value& entity = m_document[container];
+    const rj::Value& array = entity[arrayKey.c_str()];
+    const rj::Value& value = array[index][objectKey.c_str()];
+
+    if (value.IsNumber()) {
+      return static_cast<f32>(value.GetFloat());
+    }
+    return default_f32;
+  }
+
+  s32 get_s32_from_array_object(const std::string& arrayKey, s32 index, const std::string& objectKey)
+  {
+    if (!has_key_in_array_object(arrayKey, index, objectKey)) return default_s32;
+
+    const rj::Value& entity = m_document[container];
+    const rj::Value& array = entity[arrayKey.c_str()];
+    const rj::Value& value = array[index][objectKey.c_str()];
+
+    if (value.IsInt()) {
+      return value.GetInt();
+    }
+    return default_s32;
+  }
 }
 

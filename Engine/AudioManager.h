@@ -11,7 +11,7 @@ namespace Engine
   private:
     FMOD::System* fmodSystem;
     std::unordered_map<int, FMOD::Sound*> sounds;
-    std::unordered_map<std::string, FMOD::Channel*> channels;
+    std::unordered_map<int, FMOD::Channel*> channels;
     int nextSoundId;
 
   public:
@@ -24,19 +24,19 @@ namespace Engine
     void unloadAllSounds();
 
     // Playback control
-    bool playSound(int soundId, const std::string& channelName = "");
-    bool playSoundLooped(int soundId, const std::string& channelName = "");
-    void stopSound(const std::string& channelName);
+    bool playSound(int soundId);
+    bool playSoundLooped(int soundId);
+    void stopSound(int soundId);
     void stopAllSounds();
 
     // Volume control
-    void setVolume(const std::string& channelName, float volume);
+    void setVolume(int soundId, float volume);
     void setMasterVolume(float volume);
 
     // Update (call this every frame)
     void update();
 
     // Utility
-    bool isPlaying(const std::string& channelName);
+    bool isPlaying(int soundId);
   };
 }

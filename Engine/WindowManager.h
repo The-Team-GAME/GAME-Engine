@@ -13,8 +13,9 @@ private:
   s32 height;
   std::string title;
 
-  // Static callback function for GLFW
-  static void framebufferSizeCallback(GLFWwindow* window, s32 width, s32 height);
+    // Static callback function for GLFW
+    static void framebufferSizeCallback(GLFWwindow* window, s32 width, s32 height);
+    static void fileDropCallback(GLFWwindow* window, int count, const char** paths);
 
 public:
   WindowManager();

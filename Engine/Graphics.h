@@ -95,8 +95,16 @@ private:
   std::vector<Vertex> quadVertexBufferBase;
   uint32_t vertexIndex = 0;
 
-  // Rendering Data
-  std::vector<Texture> textures;
+  // Rendering Data - Changed to unordered_map
+  std::unordered_map<int, Texture> textures;
+  std::unordered_map<int, Font> fonts;
+  std::unordered_map<int, SpriteSheet> spriteSheets;
+
+  // ID counters for generating unique IDs
+  int nextTextureId = 0;
+  int nextFontId = 0;
+  int nextSpriteSheetId = 0;
+
   std::array<unsigned int, MaxTextureSlots> textureSlots;
   uint32_t textureSlotIndex = 1; // 0 = white texture
 
@@ -135,12 +143,16 @@ public:
   void drawText(int fontId, const std::string& text, float x, float y, float scale, const glm::vec4& color);
 
   void drawRect(const glm::vec4& color, float x, float y, float width, float height, float rotation = 0.0f, Origin origin = Origin::Center);
+  void drawCircle(const glm::vec4& color, float x, float y, float radius, int segments = 32);
+  void drawLine(const glm::vec4& color, float x1, float y1, float x2, float y2, float thickness = 2.0f);
   void drawTexture(int imageId, float x, float y, float width, float height, float rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& tintColor = glm::vec4(1.0f));
   void drawTextureRegion(int imageId, float destX, float destY, float destWidth, float destHeight, float srcX, float srcY, float srcWidth, float srcHeight, float rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& tintColor = glm::vec4(1.0f));
 
   int loadTexture(const char* filepath, MinifyingFilter min_filter = MinifyingFilter::Linear);
   void unloadTexture(int textureId);
   void unloadAllTextures();
+  void getTextureDimensions(int textureId, int& width, int& height) const;
+  unsigned int getTextureHandle(int textureId) const; // Add this method
 
   void clearScreen(float r, float g, float b, float a);
 
@@ -160,8 +172,6 @@ private:
 
   // Font data
   FT_Library ft;
-  std::vector<Font> fonts;
-  std::vector<SpriteSheet> spriteSheets;
 
 public:
   glm::vec2 screenToVirtual(float screenX, float screenY) const;
