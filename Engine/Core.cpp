@@ -94,6 +94,16 @@ namespace Engine
         StateManager::GetCurrentState()->Update();
         WORLD.update();
 
+        if (Engine::Input::IsKeyPressed(GLFW_KEY_ESCAPE))
+        {
+          isRunning = false;
+        }
+
+        // Demonstrate error catching is working
+        if (Engine::Input::IsKeyPressed(GLFW_KEY_F11))
+        {
+          throw std::runtime_error("F11 was pressed");
+        }
 
         IMGUI.update();
 
