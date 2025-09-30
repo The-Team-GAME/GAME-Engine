@@ -6,5 +6,7 @@ namespace Log {
 	void warning(std::string text);
 
 	void info(std::string text);
+
+	void crash(std::string text);
 }
 
