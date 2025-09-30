@@ -11,11 +11,9 @@ int main()
   _CrtSetBreakAlloc(-1);
 
   // Start the engine
-  Engine::Core* engine = new Engine::Core();
-  engine->run();
+  Engine::Core engine{};
+  engine.run();
 
-  // Cleanup
-  delete engine;
 
   return 0;
 }
