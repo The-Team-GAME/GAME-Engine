@@ -1,9 +1,16 @@
 #pragma once
 #include "imgui.h"
 #include "Core.h"
+#include "BasicEvents.h"
+#include <filesystem>
+#include <algorithm>
 
 inline void ResourceManagerPanel()
 {
+  static bool showLoadConfirmation = false;
+  static std::string lastLoadedFile = "";
+  static std::string lastLoadError = "";
+
   if (ImGui::Begin("Resource Manager"))
   {
     // Get counts from the resource manager
@@ -12,6 +19,48 @@ inline void ResourceManagerPanel()
     size_t fontCount = Engine::RESOURCES.get_font_count();
     size_t spriteSheetCount = Engine::RESOURCES.get_sprite_sheet_count();
     size_t objectPrefabCount = Engine::RESOURCES.get_object_prefab_count();
+
+    // Drag and Drop Zone
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.2f, 0.2f, 0.3f, 0.5f));
+    ImGui::BeginChild("DropZone", ImVec2(0, 80), true, ImGuiWindowFlags_NoScrollbar);
+
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.7f, 0.7f, 0.9f, 1.0f));
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 15);
+    ImGui::TextWrapped("Drag and drop files here to load them");
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5);
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.6f, 1.0f));
+    ImGui::TextWrapped("Supported: .png, .jpg, .wav, .ttf, .json");
+    ImGui::PopStyleColor(2);
+
+    ImGui::EndChild();
+    ImGui::PopStyleColor();
+
+    ImGui::Separator();
+
+    // Display confirmation/error messages
+    if (showLoadConfirmation)
+    {
+      if (!lastLoadError.empty())
+      {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.3f, 0.3f, 1.0f));
+        ImGui::TextWrapped("Error: %s", lastLoadError.c_str());
+        ImGui::PopStyleColor();
+      }
+      else if (!lastLoadedFile.empty())
+      {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.3f, 1.0f, 0.3f, 1.0f));
+        ImGui::TextWrapped("Loaded: %s", lastLoadedFile.c_str());
+        ImGui::PopStyleColor();
+      }
+
+      if (ImGui::Button("Clear Message"))
+      {
+        showLoadConfirmation = false;
+        lastLoadedFile = "";
+        lastLoadError = "";
+      }
+      ImGui::Separator();
+    }
 
     // Display overview
     if (ImGui::CollapsingHeader("Overview", ImGuiTreeNodeFlags_DefaultOpen))
@@ -90,4 +139,84 @@ inline void ResourceManagerPanel()
     }
   }
   ImGui::End();
+
+  // Listen for file drop events
+  static bool eventListenerRegistered = false;
+  if (!eventListenerRegistered)
+  {
+    Engine::WORLD.addEventListener<FileDropEvent>([&](const FileDropEvent& event) {
+      for (const auto& filePath : event.filePaths)
+      {
+        std::filesystem::path path(filePath);
+        std::string extension = path.extension().string();
+        std::string filename = path.stem().string();
+
+        // Convert extension to lowercase for comparison
+        std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+
+        int result = -1;
+
+        if (extension == ".png" || extension == ".jpg" || extension == ".jpeg")
+        {
+          result = Engine::RESOURCES.load_texture(filename, filePath, Graphics::MinifyingFilter::Nearest);
+          if (result != -1)
+          {
+            lastLoadedFile = "Texture: " + filename;
+            lastLoadError = "";
+          }
+          else
+          {
+            lastLoadError = "Failed to load texture: " + filename;
+          }
+        }
+        else if (extension == ".wav")
+        {
+          result = Engine::RESOURCES.load_sound(filename, filePath);
+          if (result != -1)
+          {
+            lastLoadedFile = "Sound: " + filename;
+            lastLoadError = "";
+          }
+          else
+          {
+            lastLoadError = "Failed to load sound: " + filename;
+          }
+        }
+        else if (extension == ".ttf")
+        {
+          result = Engine::RESOURCES.load_font(filename, filePath, 48);
+          if (result != -1)
+          {
+            lastLoadedFile = "Font: " + filename;
+            lastLoadError = "";
+          }
+          else
+          {
+            lastLoadError = "Failed to load font: " + filename;
+          }
+        }
+        else if (extension == ".json")
+        {
+          result = Engine::RESOURCES.load_object_prefab(filename, filePath);
+          if (result != -1)
+          {
+            lastLoadedFile = "Object Prefab: " + filename;
+            lastLoadError = "";
+          }
+          else
+          {
+            lastLoadError = "Failed to load object prefab: " + filename;
+          }
+        }
+        else
+        {
+          lastLoadError = "Unsupported file type: " + extension;
+        }
+
+        showLoadConfirmation = true;
+      }
+      });
+
+    eventListenerRegistered = true;
+  }
 }
