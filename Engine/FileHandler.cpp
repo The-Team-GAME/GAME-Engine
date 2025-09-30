@@ -3,9 +3,7 @@
 #include "rapidjson/istreamwrapper.h"
 #include "Logger.h" // contains string and iostream already
 #include "TypeDef.h"
-#include <cstdio>
 #include <fstream>
-#include <iostream>
 
 namespace rj = rapidjson;
 
@@ -13,7 +11,7 @@ const f32 default_f32 = 0.f;
 const s32 default_s32 = -1;
 const std::string default_string = "";
 
-const char* container = "entity";
+const constexpr char* container = "entity";
 rj::Document m_document;
  
 namespace FileHandler {
@@ -38,7 +36,6 @@ namespace FileHandler {
 			return;
 		}
 
-		// TODO: Give the json container a name and check that it exists
 		// Ensure the JSON container exists and is an object.
 		if (!m_document.HasMember(container) || !m_document[container].IsObject())
 		{
