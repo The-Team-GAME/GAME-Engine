@@ -5,7 +5,6 @@
 #include "ObjectFactory.h"
 #include "MovementSystem.h"
 #include "RenderSystem.h"
-#include "ComponentSelector.h"
 #include "BackgroundSystem.h"
 #include "PlayerControllerSystem.h"
 #include "PhysicsSystem.h"
@@ -71,7 +70,6 @@ public:
 
   void Draw()
   {
-    EditorUI::ComponentSelector::DrawAddComponentButtons(1); // Example entity ID
   };
 
   void Free() {
