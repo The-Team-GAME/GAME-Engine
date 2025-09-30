@@ -18,7 +18,7 @@ public:
     auto* rb = entity.getComponent<Components::RigidBody>();
     auto* col = entity.getComponent<Components::Collider>();
 
-    if (!pos || !rb || !col || rb->isStatic) return;
+    if (!pos || !rb || !col) return;
 
     float dt = Engine::Time::get_fixed_dt();
 
@@ -37,10 +37,9 @@ public:
         rb->velocity.y = -rb->velocity.y * rb->restitution / rb->mass;
       }
 
-      col->penetration = { 0.0f, 0.0f };
-    }
 
-    // --- 5. Reset acceleration ---
-    rb->acceleration = { 0.0f, 0.0f };
+      col->penetration = { 0.0f, 0.0f };
+      return;
+    }
   }
 };

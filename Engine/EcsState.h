@@ -31,8 +31,8 @@ public:
 			.addComponent<Components::Color>(0.2f,1.0f,0.2f,1.0f)
       .addComponent<Components::Size>(20.0f, 20.0f)
 			.addComponent<Components::Gravity>()
-			.addComponent<Components::RigidBody>(1.0f, false) // mass=1.0, not static
-      .addComponent<Components::Collider>(20.0f, 20.0f)
+			.addComponent<Components::RigidBody>(1.0f) // mass=1.0, 
+      .addComponent<Components::Collider>(20.0f, 20.0f, true)
       .addComponent<Components::PlayerController>();
 
     // Create two enemy instances from the prefab
@@ -41,9 +41,18 @@ public:
       .addComponent<Components::Position>(500.0f, 500.0f)
       .addComponent<Components::Color>(1.0f, 0.2f, 0.2f, 1.0f)
 			.addComponent<Components::Size>(4000.0f, 50.0f)
-			.addComponent<Components::RigidBody>(1.0f, false) // mass=1.0, not static
-      .addComponent<Components::Collider>(4000.0f, 50.0f);
+			.addComponent<Components::RigidBody>(1.0f) // mass=1.0,
+      .addComponent<Components::Collider>(4000.0f, 50.0f, false);
       
+
+    auto enemy3 = Engine::WORLD.createEntity()
+      .addComponent<Components::Tag<"GameObjectState">>()
+      .addComponent<Components::Position>(500.0f, 300.0f)
+      .addComponent<Components::Color>(1.0f, 0.2f, 0.2f, 1.0f)
+      .addComponent<Components::Size>(100.0f, 50.0f)
+      .addComponent<Components::RigidBody>(1.0f) // mass=1.0,
+      .addComponent<Components::Collider>(100.0f, 50.0f, false);
+
 
 
     // You can modify components like this too

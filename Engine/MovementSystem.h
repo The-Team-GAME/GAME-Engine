@@ -16,7 +16,7 @@ public:
     auto* rb = entity.getComponent<Components::RigidBody>();
     auto* col = entity.getComponent<Components::Collider>();
 
-    if (!pos || !rb || rb->isStatic) return;
+    if (!pos || !rb) return;
 
     float dt = Engine::Time::get_fixed_dt();
 
@@ -28,7 +28,7 @@ public:
 
     // Check if grounded based on collision (downward penetration)
     bool isGrounded = false;
-    if (col && col->penetration.y < -0.01f) { // Negative Y penetration = ground below
+    if (col && col->penetration.y < -0.02f) { // Negative Y penetration = ground below
       isGrounded = true;
       if (rb) {
         rb->isGrounded = true;
@@ -43,8 +43,10 @@ public:
 
     // 2. Apply friction only when grounded
     if (isGrounded) {
-      applyFriction(rb, dt);
+      //applyFriction(rb, dt);
     }
+
+    applyFriction(rb, dt);
 
     // 3. Apply air drag (always)
     applyAirDrag(rb, airDrag);

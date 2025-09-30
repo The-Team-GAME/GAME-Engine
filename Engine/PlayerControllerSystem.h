@@ -6,14 +6,14 @@
 class PlayerControllerSystem : public ECS::System {
 public:
   PlayerControllerSystem() {
-    requireComponents<Components::PlayerController, Components::RigidBody>();
+    requireComponents<Components::PlayerController, Components::RigidBody, Components::Collider>();
   }
 
   void updateEntity(ECS::Entity& entity) override {
     auto* rb = entity.getComponent<Components::RigidBody>();
     auto* controller = entity.getComponent<Components::PlayerController>();
-
-    if (!rb || rb->isStatic) return;
+    auto* col = entity.getComponent<Components::Collider>();
+    if (!rb) return;
 
     // Physics constants
     const float moveAccel = 2000.0f;      // Horizontal acceleration

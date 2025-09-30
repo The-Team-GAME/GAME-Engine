@@ -7,19 +7,20 @@
 class GravitySystem : public ECS::System {
 public:
   GravitySystem() {
-    requireComponents<Components::RigidBody, Components::Gravity>();
+    requireComponents<Components::RigidBody, Components::Gravity, Components::Collider>();
   }
 
   void updateEntity(ECS::Entity& entity) override {
     auto* rb = entity.getComponent<Components::RigidBody>();
     auto* g = entity.getComponent<Components::Gravity>();
+    auto* col = entity.getComponent<Components::Collider>();
 
-    if (!rb || !g || rb->isStatic) return;
+    if (!rb || !g) return;
 
     float dt = Engine::Time::get_fixed_dt();
 
     // Apply downward acceleration
-		if (rb->isGrounded) return; // No gravity if grounded
+    if (rb->isGrounded) return; // No gravity if grounded
     rb->acceleration.y += g->strength * 12000 * dt;
   }
 };
