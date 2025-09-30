@@ -11,6 +11,7 @@ inline void ResourceManagerPanel()
     size_t soundCount = Engine::RESOURCES.get_sound_count();
     size_t fontCount = Engine::RESOURCES.get_font_count();
     size_t spriteSheetCount = Engine::RESOURCES.get_sprite_sheet_count();
+    size_t objectPrefabCount = Engine::RESOURCES.get_object_prefab_count();
 
     // Display overview
     if (ImGui::CollapsingHeader("Overview", ImGuiTreeNodeFlags_DefaultOpen))
@@ -19,6 +20,7 @@ inline void ResourceManagerPanel()
       ImGui::Text("Sounds: %zu", soundCount);
       ImGui::Text("Fonts: %zu", fontCount);
       ImGui::Text("Sprite Sheets: %zu", spriteSheetCount);
+      ImGui::Text("Object Prefabs: %zu", objectPrefabCount);
       ImGui::Separator();
     }
 
@@ -71,6 +73,19 @@ inline void ResourceManagerPanel()
       else
       {
         ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "No sprite sheets loaded");
+      }
+    }
+
+    // Object Prefabs section
+    if (ImGui::CollapsingHeader("Object Prefabs"))
+    {
+      if (objectPrefabCount > 0)
+      {
+        ImGui::Text("Total Object Prefabs: %zu", objectPrefabCount);
+      }
+      else
+      {
+        ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "No object prefabs loaded");
       }
     }
   }

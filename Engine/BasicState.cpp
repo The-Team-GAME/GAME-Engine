@@ -58,21 +58,6 @@ void BasicState::Update()
 
 void BasicState::Draw()
 {
-  static float x = 0.0f;
-  static float y = 0.0f;
-
-  ImGui::Begin("Camera");
-  if (ImGui::Button("Reset")) {
-    x = 0.0f;
-    y = 0.0f;
-  }
-  ImGui::SliderFloat("X", &x, -800.0f, 800.0f);
-  //Reset button
-  ImGui::SliderFloat("Y", &y, -800.0f, 800.0f);
-  ImGui::End();
-
-  Engine::GRAPHICS.setCameraPosition(x, y);
-
   Engine::GRAPHICS.clearScreen(0.1f, 0.1f, 0.1f, 1.0f); // Dark gray background
 
 

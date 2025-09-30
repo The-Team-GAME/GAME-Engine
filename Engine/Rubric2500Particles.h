@@ -19,8 +19,8 @@ public:
       .addComponent<Components::Color>(0.0f, 0.0f, 0.0f, 0.0f);
 
     for (int i = 0; i < 2500; ++i) {
-      float x = static_cast<float>(rand() % 800); // Random x position within window width
-      float y = static_cast<float>(rand() % 600); // Random y position within window height
+      float x = static_cast<float>(rand() % 1600); // Random x position within window width
+      float y = static_cast<float>(rand() % 900); // Random y position within window height
       float size = static_cast<float>((rand() % 20) + 5); // Random size between 5 and 25
       float rotation = static_cast<float>(rand() % 360); // Random rotation angle
       Components::Color color = Components::Color(

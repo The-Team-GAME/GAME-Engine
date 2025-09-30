@@ -7,13 +7,14 @@
 #include "StateManager.h"
 #include "BasicState.h"
 #include "MainMenuState.h"
-#include "InputManager.h"
 #include "ImGuiManager.h"
 #include "StateChooser.inl"
 #include "Time.h"
 #include "PerformanceViewer.h"
 #include "WindowManager.h"
 #include "ResourceManagerPanel.h"
+#include "EntityEditorPanel.h"
+#include "CameraPanel.h"
 
 namespace {
   f64 accumulator{};
@@ -93,6 +94,9 @@ namespace Engine
         StateManager::GetCurrentState()->Update();
         WORLD.update();
 
+
+        IMGUI.update();
+
         // End of gameloop
       }
 
@@ -100,6 +104,8 @@ namespace Engine
       StateChooserPanel();
       PerformanceViewerPanel();
       ResourceManagerPanel();
+      EntityEditorPanel();
+      CameraPanel();
       StateManager::GetCurrentState()->Draw();
       WORLD.draw();
       GRAPHICS.endFrame();
