@@ -27,7 +27,6 @@ namespace Engine
   extern ECS::World WORLD;
   extern ObjectFactory FACTORY;
   extern Graphics GRAPHICS;
-  extern ImGuiManager IMGUI;
   extern WindowManager WINDOW;
   extern AudioManager AUDIO;
   extern ResourceManager RESOURCES;

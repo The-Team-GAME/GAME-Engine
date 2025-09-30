@@ -30,10 +30,13 @@ namespace Engine
   // They are defined here and declared extern in Core.h for use throughout the engine.
   ECS::World WORLD{};
   ObjectFactory FACTORY{ &WORLD };
+
   WindowManager WINDOW;
+
   Graphics GRAPHICS;
-  ImGuiManager IMGUI{};
+
   AudioManager AUDIO{};
+
   ResourceManager RESOURCES{};
 
   Core::Core()
@@ -44,6 +47,8 @@ namespace Engine
 
     WINDOW.set_params(win_width, win_height, "Monkey Stole My GPA");
     WINDOW.window_init();
+
+    ImguiMgr::imgui_init();
 
     GRAPHICS.set_params(win_width, win_height);
     GRAPHICS.init_graphics();
@@ -61,6 +66,9 @@ namespace Engine
   Core::~Core()
   {
     FileHandler::clear_json();
+
+    ImguiMgr::imgui_exit();
+
     StateManager::Exit(); // TODO: to be removed 
 
     WORLD.removeEventListener<WindowResizeEvent>();
@@ -85,7 +93,7 @@ namespace Engine
 
       glfwPollEvents();
       AUDIO.update();
-      IMGUI.begin();
+      ImguiMgr::begin();
       GRAPHICS.beginFrame();
 
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
@@ -103,7 +111,7 @@ namespace Engine
         WORLD.update();
 
 
-        IMGUI.update();
+        ImguiMgr::update();
 
         // End of gameloop
       }
@@ -114,10 +122,12 @@ namespace Engine
       ResourceManagerPanel();
       EntityEditorPanel();
       CameraPanel();
+      // start of draw stuff
       StateManager::GetCurrentState()->Draw();
       WORLD.draw();
       GRAPHICS.endFrame();
-      IMGUI.end();
+      // end of draw stuff
+      ImguiMgr::end();
       glfwSwapBuffers(WINDOW.getWindow());
       // Rendering End ==========================================
     }
