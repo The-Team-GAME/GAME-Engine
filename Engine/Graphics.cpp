@@ -782,3 +782,17 @@ void Graphics::unloadAllSpriteSheets()
 {
   spriteSheets.clear();
 }
+
+// Gets the dimensions of a texture by its ID
+void Graphics::getTextureDimensions(int textureId, int& width, int& height) const
+{
+  if (textureId < 0 || textureId >= static_cast<int>(textures.size()))
+  {
+    width = 0;
+    height = 0;
+    return;
+  }
+
+  width = textures[textureId].width;
+  height = textures[textureId].height;
+}

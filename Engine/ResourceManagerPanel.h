@@ -4,6 +4,8 @@
 #include "BasicEvents.h"
 #include <filesystem>
 #include <algorithm>
+#include <string>
+#include <vector>
 
 inline void ResourceManagerPanel()
 {
@@ -73,12 +75,43 @@ inline void ResourceManagerPanel()
       ImGui::Separator();
     }
 
-    // Textures section
+    // Textures section with previews
     if (ImGui::CollapsingHeader("Textures"))
     {
       if (textureCount > 0)
       {
-        ImGui::Text("Total Textures: %zu", textureCount);
+        auto& textureMap = Engine::RESOURCES.get_all_textures();
+
+        for (const auto& [name, textureId] : textureMap)
+        {
+          ImGui::PushID(name.c_str());
+
+          // Get texture dimensions
+          int width = 0, height = 0;
+          Engine::GRAPHICS.getTextureDimensions(textureId, width, height);
+
+          // Display texture name
+          ImGui::Text("%s", name.c_str());
+          ImGui::SameLine();
+          ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "(ID: %d, %dx%d)", textureId, width, height);
+
+          // Display texture preview
+          float previewSize = 64.0f;
+          float aspectRatio = width > 0 ? (float)height / (float)width : 1.0f;
+          ImVec2 imageSize(previewSize, previewSize * aspectRatio);
+
+          ImGui::Image((ImTextureID)(intptr_t)textureId, imageSize);
+
+          // Unload button
+          ImGui::SameLine();
+          if (ImGui::Button("Unload"))
+          {
+            Engine::RESOURCES.unload_texture(name);
+          }
+
+          ImGui::Separator();
+          ImGui::PopID();
+        }
       }
       else
       {
@@ -86,12 +119,46 @@ inline void ResourceManagerPanel()
       }
     }
 
-    // Sounds section
+    // Sounds section with playback controls
     if (ImGui::CollapsingHeader("Sounds"))
     {
       if (soundCount > 0)
       {
-        ImGui::Text("Total Sounds: %zu", soundCount);
+        auto& soundMap = Engine::RESOURCES.get_all_sounds();
+
+        for (const auto& [name, soundId] : soundMap)
+        {
+          ImGui::PushID(name.c_str());
+
+          // Display sound name
+          ImGui::Text("%s", name.c_str());
+          ImGui::SameLine();
+          ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "(ID: %d)", soundId);
+
+          // Play button
+          ImGui::SameLine();
+          if (ImGui::Button("Play"))
+          {
+            Engine::AUDIO.playSound(soundId);
+          }
+
+          // Stop button
+          ImGui::SameLine();
+          if (ImGui::Button("Stop"))
+          {
+            Engine::AUDIO.stopSound(soundId);
+          }
+
+          // Unload button
+          ImGui::SameLine();
+          if (ImGui::Button("Unload"))
+          {
+            Engine::RESOURCES.unload_sound(name);
+          }
+
+          ImGui::Separator();
+          ImGui::PopID();
+        }
       }
       else
       {
@@ -104,7 +171,25 @@ inline void ResourceManagerPanel()
     {
       if (fontCount > 0)
       {
-        ImGui::Text("Total Fonts: %zu", fontCount);
+        auto& fontMap = Engine::RESOURCES.get_all_fonts();
+
+        for (const auto& [name, fontId] : fontMap)
+        {
+          ImGui::PushID(name.c_str());
+
+          ImGui::Text("%s", name.c_str());
+          ImGui::SameLine();
+          ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "(ID: %d)", fontId);
+
+          ImGui::SameLine();
+          if (ImGui::Button("Unload"))
+          {
+            Engine::RESOURCES.unload_font(name);
+          }
+
+          ImGui::Separator();
+          ImGui::PopID();
+        }
       }
       else
       {
@@ -117,7 +202,25 @@ inline void ResourceManagerPanel()
     {
       if (spriteSheetCount > 0)
       {
-        ImGui::Text("Total Sprite Sheets: %zu", spriteSheetCount);
+        auto& spriteSheetMap = Engine::RESOURCES.get_all_sprite_sheets();
+
+        for (const auto& [name, spriteSheetId] : spriteSheetMap)
+        {
+          ImGui::PushID(name.c_str());
+
+          ImGui::Text("%s", name.c_str());
+          ImGui::SameLine();
+          ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "(ID: %d)", spriteSheetId);
+
+          ImGui::SameLine();
+          if (ImGui::Button("Unload"))
+          {
+            Engine::RESOURCES.unload_sprite_sheet(name);
+          }
+
+          ImGui::Separator();
+          ImGui::PopID();
+        }
       }
       else
       {
@@ -130,7 +233,25 @@ inline void ResourceManagerPanel()
     {
       if (objectPrefabCount > 0)
       {
-        ImGui::Text("Total Object Prefabs: %zu", objectPrefabCount);
+        auto& objectPrefabMap = Engine::RESOURCES.get_all_object_prefabs();
+
+        for (const auto& [name, prefabId] : objectPrefabMap)
+        {
+          ImGui::PushID(name.c_str());
+
+          ImGui::Text("%s", name.c_str());
+          ImGui::SameLine();
+          ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "(ID: %d)", prefabId);
+
+          ImGui::SameLine();
+          if (ImGui::Button("Unload"))
+          {
+            Engine::RESOURCES.unload_object_prefab(name);
+          }
+
+          ImGui::Separator();
+          ImGui::PopID();
+        }
       }
       else
       {

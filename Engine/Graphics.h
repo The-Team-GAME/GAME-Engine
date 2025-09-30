@@ -137,6 +137,7 @@ public:
   int loadTexture(const char* filepath, MinifyingFilter min_filter = MinifyingFilter::Linear);
   void unloadTexture(int textureId);
   void unloadAllTextures();
+  void getTextureDimensions(int textureId, int& width, int& height) const;
 
   void clearScreen(float r, float g, float b, float a);
 
