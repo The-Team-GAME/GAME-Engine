@@ -7,37 +7,55 @@
 #include "StateManager.h"
 #include "BasicState.h"
 #include "MainMenuState.h"
-#include "InputManager.h"
 #include "ImGuiManager.h"
 #include "StateChooser.inl"
 #include "Time.h"
 #include "PerformanceViewer.h"
-#include "WindowManager.h" 
-#include "BasicEvents.h"
+#include "WindowManager.h"
+#include "ResourceManagerPanel.h"
+#include "EntityEditorPanel.h"
+#include "CameraPanel.h"
+#include "Config.h"
 
 namespace {
   f64 accumulator{};
   s32 step_limit = 3;
+  bool render = false;
+  bool physicsStepMode = false;  // Toggle for step-by-step physics
 }
 namespace Engine
 {
-  // TODO: window size should not be hardcoded
-  int windowWidth = 1600;
-  int windowHeight = 900;
+
 
   // These are global instances of the core engine systems.
   // They are defined here and declared extern in Core.h for use throughout the engine.
   ECS::World WORLD{};
   ObjectFactory FACTORY{ &WORLD };
-  WindowManager WINDOW{ windowWidth, windowHeight, "Monkey Stole My GPA" };
-  Graphics GRAPHICS{ windowWidth, windowHeight };
-  ImGuiManager IMGUI{};
+
+  WindowManager WINDOW;
+
+  Graphics GRAPHICS;
+
+  LevelLoader LEVEL_LOADER{ &WORLD, &FACTORY };
+
   AudioManager AUDIO{};
 	Perf PERFORMANCE{};
 
+  ResourceManager RESOURCES{};
+
   Core::Core()
   {
-    FileHandler::parse_file("Assets/objects/enemy.json");
+    Config::load_config();
+    int win_width = Config::get_win_width();
+    int win_height = Config::get_win_height();
+
+    WINDOW.set_params(win_width, win_height, "Monkey Stole My GPA");
+    WINDOW.window_init();
+
+    ImguiMgr::imgui_init();
+
+    GRAPHICS.set_params(win_width, win_height);
+    GRAPHICS.init_graphics();
     isRunning = true;
 
     // Register the graphics resize system
@@ -52,6 +70,9 @@ namespace Engine
   Core::~Core()
   {
     FileHandler::clear_json();
+
+    ImguiMgr::imgui_exit();
+
     StateManager::Exit(); // TODO: to be removed 
 
     WORLD.removeEventListener<WindowResizeEvent>();
@@ -64,7 +85,17 @@ namespace Engine
       // START OF TIME UPDATES ==============================================
       // Updates the real_dt and increments the accumulator
       Time::update_time();
-      accumulator += Time::get_real_dt();
+
+      if (!physicsStepMode)
+      {
+        // In normal mode, accumulate real delta time
+        accumulator += Time::get_real_dt();
+      }
+      else {
+        // In step mode, always allow at least one iteration to check input
+        accumulator = Time::get_fixed_dt();
+      }
+
       if (accumulator > Time::get_fixed_dt() * step_limit)
       {
         // Caps the accumulator so each gameloop will only go through 5 loops max
@@ -76,8 +107,9 @@ namespace Engine
 
       glfwPollEvents();
       AUDIO.update();
-      IMGUI.begin();
+      ImguiMgr::begin();
       GRAPHICS.beginFrame();
+
 
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
       while (accumulator >= Time::get_fixed_dt())
@@ -89,9 +121,33 @@ namespace Engine
         // WORLD.update() won't have a chance to react before the input state is cleared on the next frame. 
         Input::Update();
 
-        // Main gameloop here
-        StateManager::GetCurrentState()->Update();
-        WORLD.update();
+        if (Engine::Input::IsKeyPressed(GLFW_KEY_ESCAPE))
+        {
+          isRunning = false;
+        }
+
+        // Demonstrate error catching is working
+        if (Engine::Input::IsKeyPressed(GLFW_KEY_F11))
+        {
+          throw std::runtime_error("F11 was pressed");
+        }
+
+        if (Engine::Input::IsKeyPressed(GLFW_KEY_P))
+        {
+          physicsStepMode = !physicsStepMode;
+          std::cout << "Physics Step Mode: " << (physicsStepMode ? "ON" : "OFF") << std::endl;
+        }
+
+        bool shouldRunPhysics = !physicsStepMode || Engine::Input::IsKeyPressed(GLFW_KEY_RIGHT_BRACKET);
+
+        if (shouldRunPhysics)
+        {
+          // Main gameloop here
+          StateManager::GetCurrentState()->Update();
+          WORLD.update();
+        }
+
+        ImguiMgr::update();
 
         // End of gameloop
       }
@@ -99,10 +155,15 @@ namespace Engine
       // Rendering Start ========================================
       StateChooserPanel();
       PerformanceViewerPanel();
+      ResourceManagerPanel();
+      EntityEditorPanel();
+      CameraPanel();
+      // start of draw stuff
       StateManager::GetCurrentState()->Draw();
       WORLD.draw();
       GRAPHICS.endFrame();
-      IMGUI.end();
+      // end of draw stuff
+      ImguiMgr::end();
       glfwSwapBuffers(WINDOW.getWindow());
       // Rendering End ==========================================
     }

@@ -1,14 +1,15 @@
 #pragma once
 
+#include "Precompiled.h"
 #include "Graphics.h"
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
 #include "ECS/ECS.h"
 #include "ObjectFactory.h"
+#include "LevelLoader.h"
 #include "Time.h"
 #include "ImGuiManager.h"
 #include "WindowManager.h"
 #include "AudioManager.h"
+#include "ResourceManager.h"
 #include "Perf.h"
 
 
@@ -28,9 +29,10 @@ namespace Engine
 
   extern ECS::World WORLD;
   extern ObjectFactory FACTORY;
+  extern LevelLoader LEVEL_LOADER;
   extern Graphics GRAPHICS;
-  extern ImGuiManager IMGUI;
   extern WindowManager WINDOW;
   extern AudioManager AUDIO;
+  extern ResourceManager RESOURCES;
 	extern Perf PERFORMANCE;
 }

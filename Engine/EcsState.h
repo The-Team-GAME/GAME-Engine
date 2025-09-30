@@ -89,5 +89,7 @@ public:
     Engine::WORLD.removeSystem<StaticSpriteRenderSystem>();
   };
 
-  void Unload() {};
+  void Unload() {
+    Engine::FACTORY.unregisterObject(enemyPrefab);
+  }
 };

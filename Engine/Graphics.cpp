@@ -1,11 +1,8 @@
+#include "Precompiled.h"
 #include <GL/glew.h>
-#include <glm/fwd.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 #include <iostream>
 #include <numeric>
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 #include "Shader.h"
 #include <filesystem>
 #include "Graphics.h"
@@ -41,14 +38,26 @@ void Graphics::updateViewMatrix() {
   // Use virtual resolution for consistent camera behavior
   view = glm::translate(view, glm::vec3(VIRTUAL_WIDTH / 2.0f, VIRTUAL_HEIGHT / 2.0f, 0.0f));
   view = glm::rotate(view, glm::radians(camera.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-  view = glm::scale(view, glm::vec3(camera.zoom, camera.zoom, 1.0f));
+  view = glm::scale(view, glm::vec3(1.0f / camera.zoom, 1.0f / camera.zoom, 1.0f)); // Changed: invert the zoom
   view = glm::translate(view, glm::vec3(-VIRTUAL_WIDTH / 2.0f, -VIRTUAL_HEIGHT / 2.0f, 0.0f));
   view = glm::inverse(view);
   viewProjectionMatrix = projection * view;
 }
 
 // Initializes the graphics system, shaders, and buffers.
-Graphics::Graphics(int windowWidth, int windowHeight)
+Graphics::Graphics()
+{
+  // empoty by design
+}
+
+
+void Graphics::set_params(int width, int height)
+{
+  win_width = width;
+  win_height = height;
+}
+
+void Graphics::init_graphics()
 {
   // Initialize FreeType
   if (FT_Init_FreeType(&ft))
@@ -133,7 +142,7 @@ Graphics::Graphics(int windowWidth, int windowHeight)
     textureSlots[i] = 0;
 
   // Set initial viewport and projection matrix.
-  setViewport(windowWidth, windowHeight);
+  setViewport(win_width, win_height);
 
   // Use consistent virtual resolution
   projection = glm::ortho(0.0f, VIRTUAL_WIDTH, VIRTUAL_HEIGHT, 0.0f, -1.0f, 1.0f);
@@ -150,15 +159,15 @@ Graphics::~Graphics()
   glDeleteBuffers(1, &quadVBO);
   glDeleteBuffers(1, &quadIBO);
 
-  for (const auto& tex : textures)
+  for (const auto& pair : textures)
   {
-    glDeleteTextures(1, &tex.id);
+    glDeleteTextures(1, &pair.second.id);
   }
 
   // Clean up all remaining fonts
-  for (const auto& font : fonts)
+  for (const auto& pair : fonts)
   {
-    glDeleteTextures(1, &font.atlasTexture);
+    glDeleteTextures(1, &pair.second.atlasTexture);
   }
 
   for (const auto& texture : textureSlots)
@@ -312,6 +321,81 @@ void Graphics::drawRect(const glm::vec4& color, float x, float y, float width, f
   quadIndexCount += 6;
 }
 
+// Draws a filled circle using a triangle fan approach (batched as quads approximation)
+void Graphics::drawCircle(const glm::vec4& color, float x, float y, float radius, int segments)
+{
+  // Clamp segments to reasonable values
+  segments = std::max(8, std::min(segments, 64));
+
+  // We'll approximate the circle using triangular quads
+  // Each quad represents a slice of the circle
+  constexpr float texID = 0.0f; // Use white texture
+
+  float angleStep = 2.0f * 3.14159265359f / segments;
+
+  for (int i = 0; i < segments; i++)
+  {
+    if (quadIndexCount >= MaxIndices)
+    {
+      nextBatch();
+    }
+
+    float angle1 = i * angleStep;
+    float angle2 = (i + 1) * angleStep;
+
+    // Create a triangle as a degenerate quad (center + 2 edge points + duplicate)
+    glm::vec3 center = { x, y, 0.0f };
+    glm::vec3 p1 = { x + radius * cosf(angle1), y + radius * sinf(angle1), 0.0f };
+    glm::vec3 p2 = { x + radius * cosf(angle2), y + radius * sinf(angle2), 0.0f };
+
+    quadVertexBufferBase[vertexIndex++] = { center, color, {0.5f, 0.5f}, texID };
+    quadVertexBufferBase[vertexIndex++] = { p1, color, {0.5f, 0.5f}, texID };
+    quadVertexBufferBase[vertexIndex++] = { p2, color, {0.5f, 0.5f}, texID };
+    quadVertexBufferBase[vertexIndex++] = { p2, color, {0.5f, 0.5f}, texID }; // Duplicate to form quad
+
+    quadIndexCount += 6;
+  }
+}
+
+// Draws a line between two points with specified thickness
+void Graphics::drawLine(const glm::vec4& color, float x1, float y1, float x2, float y2, float thickness)
+{
+  if (quadIndexCount >= MaxIndices)
+  {
+    nextBatch();
+  }
+
+  // Calculate the line direction and perpendicular offset
+  float dx = x2 - x1;
+  float dy = y2 - y1;
+  float length = sqrtf(dx * dx + dy * dy);
+
+  if (length < 0.001f) return; // Don't draw zero-length lines
+
+  // Normalize direction
+  dx /= length;
+  dy /= length;
+
+  // Perpendicular vector for thickness
+  float perpX = -dy * thickness * 0.5f;
+  float perpY = dx * thickness * 0.5f;
+
+  constexpr float texID = 0.0f; // Use white texture
+
+  // Create a quad representing the line
+  glm::vec3 v0 = { x1 + perpX, y1 + perpY, 0.0f };
+  glm::vec3 v1 = { x2 + perpX, y2 + perpY, 0.0f };
+  glm::vec3 v2 = { x2 - perpX, y2 - perpY, 0.0f };
+  glm::vec3 v3 = { x1 - perpX, y1 - perpY, 0.0f };
+
+  quadVertexBufferBase[vertexIndex++] = { v0, color, {0.0f, 0.0f}, texID };
+  quadVertexBufferBase[vertexIndex++] = { v1, color, {1.0f, 0.0f}, texID };
+  quadVertexBufferBase[vertexIndex++] = { v2, color, {1.0f, 1.0f}, texID };
+  quadVertexBufferBase[vertexIndex++] = { v3, color, {0.0f, 1.0f}, texID };
+
+  quadIndexCount += 6;
+}
+
 // Loads a font from a file and prepares it for rendering.
 int Graphics::loadFont(const char* filepath, unsigned int size)
 {
@@ -412,25 +496,27 @@ int Graphics::loadFont(const char* filepath, unsigned int size)
   FT_Done_Face(face);
   glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
-  fonts.push_back(font);
-  return static_cast<int>(fonts.size() - 1);
+  int fontId = nextFontId++;
+  fonts[fontId] = font;
+  return fontId;
 }
 
 // Unloads a font by its ID
 void Graphics::unloadFont(int fontId)
 {
-  if (fontId < 0 || fontId >= static_cast<int>(fonts.size()))
+  auto it = fonts.find(fontId);
+  if (it == fonts.end())
   {
     std::cout << "Graphics: Invalid font ID: " << fontId << std::endl;
     return;
   }
 
-  Font& font = fonts[fontId];
-
   // Delete the atlas texture
-  glDeleteTextures(1, &font.atlasTexture);
+  glDeleteTextures(1, &it->second.atlasTexture);
 
-  fonts.erase(fonts.begin() + fontId);
+  fonts.erase(it);
+
+  nextFontId--;
 
   std::cout << "Graphics: Unloaded font with ID " << fontId << std::endl;
 }
@@ -438,26 +524,30 @@ void Graphics::unloadFont(int fontId)
 // Unloads all fonts
 void Graphics::unloadAllFonts()
 {
-  for (int i = 0; i < static_cast<int>(fonts.size()); ++i)
+  // Delete all atlas textures
+  for (auto& pair : fonts)
   {
-    if (fonts[i].isValid)
-    {
-      unloadFont(i);
-    }
+    glDeleteTextures(1, &pair.second.atlasTexture);
   }
+  fonts.clear();
+
+  // Reset the counter
+  nextFontId = 0;
+
   std::cout << "Graphics: Unloaded all fonts" << std::endl;
 }
 
 // Draws text on the screen.
 void Graphics::drawText(int fontId, const std::string& text, float x, float y, float scale, const glm::vec4& color)
 {
-  if (fontId < 0 || fontId >= static_cast<int>(fonts.size()))
+  auto it = fonts.find(fontId);
+  if (it == fonts.end())
   {
     std::cout << "Graphics: Invalid font ID: " << fontId << std::endl;
     return;
   }
 
-  const Font& font = fonts[fontId];
+  const Font& font = it->second;
 
   // Find or add font atlas to texture slots
   float textureIndex = 0.0f;
@@ -485,11 +575,11 @@ void Graphics::drawText(int fontId, const std::string& text, float x, float y, f
 
   for (char c : text)
   {
-    auto it = font.Characters.find(c);
-    if (it == font.Characters.end())
+    auto charIt = font.Characters.find(c);
+    if (charIt == font.Characters.end())
       continue;
 
-    const Character& ch = it->second;
+    const Character& ch = charIt->second;
 
     if (ch.Size.x > 0 && ch.Size.y > 0)
     {
@@ -558,17 +648,19 @@ int Graphics::loadTexture(const char* filepath, MinifyingFilter min_filter)
   // Free the CPU-side image data.
   stbi_image_free(data);
 
-  // Store the texture info and return its ID (index in the vector).
+  // Store the texture info and return its ID
   Texture tex = { texture, width, height };
-  textures.push_back(tex);
+  int textureId = nextTextureId++;
+  textures[textureId] = tex;
 
-  return static_cast<int>(textures.size() - 1);
+  return textureId;
 }
 
 // A convenience function to draw a full texture.
 void Graphics::drawTexture(int imageId, float x, float y, float width, float height, float rotation, Origin origin, const glm::vec4& tintColor)
 {
-  if (imageId < 0 || imageId >= static_cast<int>(textures.size()))
+  auto it = textures.find(imageId);
+  if (it == textures.end())
   {
     std::cout << "Invalid image ID: " << imageId << std::endl;
     return;
@@ -577,7 +669,7 @@ void Graphics::drawTexture(int imageId, float x, float y, float width, float hei
   drawTextureRegion(
     imageId,
     x, y, width, height,
-    0, 0, static_cast<float>(textures[imageId].width), static_cast<float>(textures[imageId].height),
+    0, 0, static_cast<float>(it->second.width), static_cast<float>(it->second.height),
     rotation,
     origin,
     tintColor
@@ -587,7 +679,8 @@ void Graphics::drawTexture(int imageId, float x, float y, float width, float hei
 // Adds a region of a texture to the current drawing batch.
 void Graphics::drawTextureRegion(int imageId, float destX, float destY, float destWidth, float destHeight, float srcX, float srcY, float srcWidth, float srcHeight, float rotation, Origin origin, const glm::vec4& tintColor)
 {
-  if (imageId < 0 || imageId >= static_cast<int>(textures.size()))
+  auto it = textures.find(imageId);
+  if (it == textures.end())
   {
     std::cout << "Invalid image ID: " << imageId << std::endl;
     return;
@@ -600,14 +693,14 @@ void Graphics::drawTextureRegion(int imageId, float destX, float destY, float de
   }
 
   float textureIndex = 0.0f;
-  const auto& tex = textures[imageId];
+  const auto& tex = it->second;
 
   // Find if the texture is already in one of the active slots for this batch.
-  auto it = std::find(textureSlots.begin() + 1, textureSlots.begin() + textureSlotIndex, tex.id);
-  if (it != textureSlots.begin() + textureSlotIndex)
+  auto texSlotIt = std::find(textureSlots.begin() + 1, textureSlots.begin() + textureSlotIndex, tex.id);
+  if (texSlotIt != textureSlots.begin() + textureSlotIndex)
   {
     // If found, get its index.
-    textureIndex = static_cast<float>(std::distance(textureSlots.begin(), it));
+    textureIndex = static_cast<float>(std::distance(textureSlots.begin(), texSlotIt));
   }
   else
   {
@@ -663,26 +756,35 @@ int Graphics::loadSpriteSheet(const char* filepath, int frameWidth, int frameHei
     animationSpeed
   };
 
-  spriteSheets.push_back(spriteSheet);
-  return static_cast<int>(spriteSheets.size() - 1);
+  int spriteSheetId = nextSpriteSheetId++;
+  spriteSheets[spriteSheetId] = spriteSheet;
+  return spriteSheetId;
 }
 
 // Draws an animated sprite from a sprite sheet.
 void Graphics::drawAnimatedSprite(int spriteSheetId, float x, float y, float width, float height, float time, float rotation, Origin origin, const glm::vec4& tintColor)
 {
-  if (spriteSheetId < 0 || spriteSheetId >= static_cast<int>(spriteSheets.size()))
+  auto it = spriteSheets.find(spriteSheetId);
+  if (it == spriteSheets.end())
   {
     std::cout << "Invalid sprite sheet ID: " << spriteSheetId << std::endl;
     return;
   }
 
-  const SpriteSheet& spriteSheet = spriteSheets[spriteSheetId];
+  const SpriteSheet& spriteSheet = it->second;
 
   // Calculate current frame based on time and animation speed
   int currentFrame = static_cast<int>(time * spriteSheet.animationSpeed) % spriteSheet.totalFrames;
 
   // Get texture dimensions to calculate frames per row
-  const Texture& texture = textures[spriteSheet.textureId];
+  auto texIt = textures.find(spriteSheet.textureId);
+  if (texIt == textures.end())
+  {
+    std::cout << "Invalid texture ID in sprite sheet: " << spriteSheet.textureId << std::endl;
+    return;
+  }
+  const Texture& texture = texIt->second;
+
   int framesPerRow = texture.width / spriteSheet.frameWidth;
 
   // Calculate source coordinates for current frame
@@ -716,4 +818,120 @@ glm::vec2 Graphics::screenToVirtual(float screenX, float screenY) const
     (screenX / viewportWidth) * VIRTUAL_WIDTH,
     (screenY / viewportHeight) * VIRTUAL_HEIGHT
   };
+}
+
+// Unloads a texture by its ID
+void Graphics::unloadTexture(int textureId)
+{
+  auto it = textures.find(textureId);
+  if (it == textures.end())
+  {
+    std::cout << "Graphics: Invalid texture ID: " << textureId << std::endl;
+    return;
+  }
+
+  // Save the texture ID before erasing
+  unsigned int glTextureId = it->second.id;
+
+  // Delete the OpenGL texture object
+  glDeleteTextures(1, &glTextureId);
+
+  // Clear the texture from any active texture slots
+  for (uint32_t i = 0; i < MaxTextureSlots; i++)
+  {
+    if (textureSlots[i] == glTextureId)
+    {
+      textureSlots[i] = 0;
+    }
+  }
+
+  // Remove from the textures map
+  textures.erase(it);
+
+  nextTextureId--;
+
+  std::cout << "Graphics: Unloaded texture with ID " << textureId << std::endl;
+}
+
+// Unloads all textures
+void Graphics::unloadAllTextures()
+{
+  for (const auto& pair : textures)
+  {
+    glDeleteTextures(1, &pair.second.id);
+  }
+
+  textures.clear();
+
+  // Clear all texture slots except the white texture (slot 0)
+  for (uint32_t i = 1; i < MaxTextureSlots; i++)
+  {
+    textureSlots[i] = 0;
+  }
+
+  textureSlotIndex = 1; // Reset to 1 (slot 0 is reserved for white texture)
+
+  // Reset the counter
+  nextTextureId = 0;
+
+  std::cout << "Graphics: Unloaded all textures" << std::endl;
+}
+
+// Unloads a sprite sheet by its ID
+void Graphics::unloadSpriteSheet(int spriteSheetId)
+{
+  auto it = spriteSheets.find(spriteSheetId);
+  if (it == spriteSheets.end())
+  {
+    std::cout << "Graphics: Invalid sprite sheet ID: " << spriteSheetId << std::endl;
+    return;
+  }
+
+  // Note: We don't delete the underlying texture here because it's managed
+  // by the textures map. The sprite sheet just references a texture ID.
+  // If you want to delete the underlying texture as well, you would call:
+  // unloadTexture(spriteSheets[spriteSheetId].textureId);
+
+  spriteSheets.erase(it);
+
+  // If this was the last allocated sprite sheet, decrement the counter
+  nextSpriteSheetId--;
+
+  std::cout << "Graphics: Unloaded sprite sheet with ID " << spriteSheetId << std::endl;
+}
+
+// Unloads all sprite sheets
+void Graphics::unloadAllSpriteSheets()
+{
+  spriteSheets.clear();
+
+  // Reset the counter
+  nextSpriteSheetId = 0;
+}
+
+// Gets the dimensions of a texture by its ID
+void Graphics::getTextureDimensions(int textureId, int& width, int& height) const
+{
+  auto it = textures.find(textureId);
+  if (it == textures.end())
+  {
+    width = 0;
+    height = 0;
+    return;
+  }
+
+  width = it->second.width;
+  height = it->second.height;
+}
+
+// Gets the OpenGL texture handle by texture ID
+unsigned int Graphics::getTextureHandle(int textureId) const
+{
+  auto it = textures.find(textureId);
+  if (it == textures.end())
+  {
+    return 0;
+  }
+
+  return it->second.id;
 }

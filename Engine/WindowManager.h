@@ -1,30 +1,31 @@
 #pragma once
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include "Precompiled.h"
 #include <string>
 #include <functional>
+#include "TypeDef.h"
 
-namespace Engine
+class WindowManager
 {
-  class WindowManager
-  {
-  private:
-    GLFWwindow* window;
-    int width;
-    int height;
-    std::string title;
+private:
+  GLFWwindow* window;
+  s32 width;
+  s32 height;
+  std::string title;
 
     // Static callback function for GLFW
-    static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
+    static void framebufferSizeCallback(GLFWwindow* window, s32 width, s32 height);
+    static void fileDropCallback(GLFWwindow* window, int count, const char** paths);
 
-  public:
-    WindowManager(int w, int h, const std::string& t);
-    ~WindowManager();
+public:
+  WindowManager();
+  void window_init();
+  void set_params(s32 width, s32 height, std::string win_name);
+  ~WindowManager();
 
-    GLFWwindow* getWindow() const { return window; }
-    int getWidth() const { return width; }
-    int getHeight() const { return height; }
+  GLFWwindow* getWindow() const { return window; }
+  s32 getWidth() const { return width; }
+  s32 getHeight() const { return height; }
 
-  };
-}
+};
+
