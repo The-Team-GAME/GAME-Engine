@@ -11,7 +11,7 @@ public:
 
   void updateEntity(ECS::Entity& entity) override {
     auto* rb = entity.getComponent<Components::RigidBody>();
-    auto* controller = entity.getComponent<Components::PlayerController>();
+    //auto* controller = entity.getComponent<Components::PlayerController>();
 
     if (!rb || rb->isStatic) return;
 

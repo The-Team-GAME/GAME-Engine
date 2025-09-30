@@ -36,7 +36,7 @@ public:
     }
 
     // Track horizontal input before integration
-    bool hasHorizontalInput = (rb->acceleration.x != 0.0f);
+    //bool hasHorizontalInput = (rb->acceleration.x != 0.0f);
 
     // 1. Integrate acceleration into velocity
     integrateAcceleration(rb, dt);
