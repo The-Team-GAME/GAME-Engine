@@ -108,7 +108,7 @@ namespace FileHandler {
   {
     if (!has_key(key)) return false;
 
-    const rj::Value& entity = m_document[container];
+    const rj::Value& entity = m_document[container.c_str()];
     return entity[key.c_str()].IsArray();
   }
 
@@ -116,7 +116,7 @@ namespace FileHandler {
   {
     if (!is_array(key)) return 0;
 
-    const rj::Value& entity = m_document[container];
+    const rj::Value& entity = m_document[container.c_str()];
     return static_cast<s32>(entity[key.c_str()].Size());
   }
 
@@ -124,7 +124,7 @@ namespace FileHandler {
   {
     if (!is_array(key)) return default_string;
 
-    const rj::Value& entity = m_document[container];
+    const rj::Value& entity = m_document[container.c_str()];
     const rj::Value& array = entity[key.c_str()];
 
     if (index < 0 || index >= static_cast<s32>(array.Size())) {
@@ -141,7 +141,7 @@ namespace FileHandler {
   {
     if (!is_array(key)) return default_f32;
 
-    const rj::Value& entity = m_document[container];
+    const rj::Value& entity = m_document[container.c_str()];
     const rj::Value& array = entity[key.c_str()];
 
     if (index < 0 || index >= static_cast<s32>(array.Size())) {
@@ -158,7 +158,7 @@ namespace FileHandler {
   {
     if (!is_array(key)) return default_s32;
 
-    const rj::Value& entity = m_document[container];
+    const rj::Value& entity = m_document[container.c_str()];
     const rj::Value& array = entity[key.c_str()];
 
     if (index < 0 || index >= static_cast<s32>(array.Size())) {
@@ -175,7 +175,7 @@ namespace FileHandler {
   {
     if (!is_array(arrayKey)) return false;
 
-    const rj::Value& entity = m_document[container];
+    const rj::Value& entity = m_document[container.c_str()];
     const rj::Value& array = entity[arrayKey.c_str()];
 
     if (index < 0 || index >= static_cast<s32>(array.Size())) {
@@ -192,7 +192,7 @@ namespace FileHandler {
   {
     if (!has_key_in_array_object(arrayKey, index, objectKey)) return default_string;
 
-    const rj::Value& entity = m_document[container];
+    const rj::Value& entity = m_document[container.c_str()];
     const rj::Value& array = entity[arrayKey.c_str()];
     const rj::Value& value = array[index][objectKey.c_str()];
 
@@ -206,7 +206,7 @@ namespace FileHandler {
   {
     if (!has_key_in_array_object(arrayKey, index, objectKey)) return default_f32;
 
-    const rj::Value& entity = m_document[container];
+    const rj::Value& entity = m_document[container.c_str()];
     const rj::Value& array = entity[arrayKey.c_str()];
     const rj::Value& value = array[index][objectKey.c_str()];
 
@@ -220,7 +220,7 @@ namespace FileHandler {
   {
     if (!has_key_in_array_object(arrayKey, index, objectKey)) return default_s32;
 
-    const rj::Value& entity = m_document[container];
+    const rj::Value& entity = m_document[container.c_str()];
     const rj::Value& array = entity[arrayKey.c_str()];
     const rj::Value& value = array[index][objectKey.c_str()];
 
