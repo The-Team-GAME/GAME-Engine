@@ -30,7 +30,6 @@ public:
       .addComponent<Components::Position>(200.0f, 200.0f)
 			.addComponent<Components::Color>(0.2f,1.0f,0.2f,1.0f)
       .addComponent<Components::Size>(20.0f, 20.0f)
-      .addComponent<Components::Velocity>(0.0f, 0.0f)
 			.addComponent<Components::Gravity>()
 			.addComponent<Components::RigidBody>(1.0f, false) // mass=1.0, not static
       .addComponent<Components::Collider>(20.0f, 20.0f)
@@ -42,7 +41,6 @@ public:
       .addComponent<Components::Position>(500.0f, 500.0f)
       .addComponent<Components::Color>(1.0f, 0.2f, 0.2f, 1.0f)
 			.addComponent<Components::Size>(4000.0f, 50.0f)
-      .addComponent<Components::Velocity>(0.0f, 0.0f)
 			.addComponent<Components::RigidBody>(1.0f, false) // mass=1.0, not static
       .addComponent<Components::Collider>(4000.0f, 50.0f);
       
@@ -79,14 +77,15 @@ public:
   void Free() {
     Engine::FACTORY.unregisterObject(enemyPrefab);
     Engine::WORLD.destroyEntitiesWith<Components::Tag<"GameObjectState">>();
-
+    Engine::WORLD.destroyEntitiesWith<Components::Tag<"Floor">>();
     // Remove systems
-    Engine::WORLD.removeSystem<BackgroundSystem>();
+    Engine::WORLD.removeSystem<BackgroundSystem>(); // Background system should be first
+    Engine::WORLD.removeSystem<GravitySystem>();
     Engine::WORLD.removeSystem<PlayerControllerSystem>();
     Engine::WORLD.removeSystem<RectRenderSystem>();
     Engine::WORLD.removeSystem<MovementSystem>();
-    Engine::WORLD.removeSystem<CollisionSystem>();
     Engine::WORLD.removeSystem<PhysicsSystem>();
+    Engine::WORLD.removeSystem<CollisionSystem>();
     Engine::WORLD.removeSystem<StaticSpriteRenderSystem>();
   };
 

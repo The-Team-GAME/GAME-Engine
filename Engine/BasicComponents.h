@@ -41,10 +41,6 @@ namespace Components {
     RotationSpeed(float degreesPerSecond = 0.0f) : degreesPerSecond(degreesPerSecond) {}
   };
 
-  struct Velocity : Math::Vec2D {
-    using Math::Vec2D::Vec2D;
-  };
-
   struct Size {
     float width, height;
     Size(float width = 0.0f, float height = 0.0f) : width(width), height(height) {}

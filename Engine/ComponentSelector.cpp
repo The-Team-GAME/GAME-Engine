@@ -21,7 +21,7 @@ namespace EditorUI
       }
       if (ImGui::MenuItem("Velocity"))
       {
-        Engine::WORLD.addComponent<Components::Velocity>(entity, 0.0f, 0.0f);
+        //Engine::WORLD.addComponent<Components::Velocity>(entity, 0.0f, 0.0f);
       }
       if (ImGui::MenuItem("Scale"))
       {
