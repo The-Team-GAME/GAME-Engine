@@ -43,7 +43,6 @@ private:
 
   // Audio
   s32 walkSoundId = -1;
-  s32 collectSoundId = -1;
 
   // Fonts
   s32 titleFontId = -1;
@@ -54,6 +53,7 @@ private:
 
   // Player state
   bool isWalking = false;
+  bool facingRight = true;  // Add this to track facing direction
   s32 bananaCollected = 0;
 
 public:
@@ -78,7 +78,7 @@ public:
       1152 / 12,  // frame width
       64,         // frame height
       12,         // total frames
-      12.0f,      // frames per second
+      24.0f,      // frames per second
       Graphics::MinifyingFilter::Nearest
     );
 
@@ -94,11 +94,10 @@ public:
 
     // Load audio
     walkSoundId = Engine::RESOURCES.load_sound("walk_sound", "Assets/sounds/move1.wav");
-    collectSoundId = Engine::RESOURCES.load_sound("collect_sound", "Assets/sounds/move1.wav");
 
     // Load fonts
-    titleFontId = Engine::RESOURCES.load_font("title_font", "Assets/fonts/PlayfairDisplay-VariableFont_wght.ttf", 48);
-    infoFontId = Engine::RESOURCES.load_font("info_font", "Assets/fonts/Roboto-Regular.ttf", 24);
+    titleFontId = Engine::RESOURCES.load_font("title_font", "Assets/fonts/PlayfairDisplay-VariableFont_wght.ttf", 82);
+    infoFontId = Engine::RESOURCES.load_font("info_font", "Assets/fonts/Roboto-Regular.ttf", 48);
 
     // Load texture background
     backgroundTextureId = Engine::RESOURCES.load_texture(
@@ -163,6 +162,8 @@ public:
 
       // Play attack animation
       if (event.attacker == player.getId()) {
+        Engine::AUDIO.stopSound(walkSoundId); // Stop walking sound if playing
+
         auto* playerSprite = player.get_component<Components::AnimatedSprite>();
         if (playerSprite) {
           playerSprite->spriteSheetId = playerPunchSpriteSheetId;
@@ -205,11 +206,6 @@ public:
       std::cout << "Collect event! Entity " << event.collector
         << " collected Entity " << event.collected
         << " for " << event.points << " points!\n";
-
-      // Play collection sound
-      if (collectSoundId != -1) {
-        Engine::AUDIO.playSound(collectSoundId);
-      }
 
       // Update score
       if (event.collector == player.getId()) {
@@ -270,6 +266,21 @@ public:
       newVelX = speed;
     }
 
+    // Update facing direction based on horizontal movement
+    if (newVelX > 0.0f) {
+      facingRight = true;
+    }
+    else if (newVelX < 0.0f) {
+      facingRight = false;
+    }
+
+    // Apply scale to flip sprite horizontally
+    auto* scale = player.get_component<Components::Scale>();
+    if (scale) {
+      scale->X() = facingRight ? 2.0f : -2.0f;
+      scale->Y() = 2.0f;
+    }
+
     playerVel->X() = newVelX;
     playerVel->Y() = newVelY;
 
@@ -325,30 +336,30 @@ public:
       Engine::GRAPHICS.draw_text(
         infoFontId,
         "WASD: Move | E: Attack | C: Collect",
-        50.0f, 120.0f,
+        50.0f, 140.0f,
         0.6f,
-        { 0.8f, 0.8f, 0.8f, 1.0f } // Light gray
+        { 1.0f, 1.0f, 1.0f, 1.0f } // Light gray
       );
 
       Engine::GRAPHICS.draw_text(
         infoFontId,
         "Bananas: " + std::to_string(bananaCollected),
-        50.0f, 160.0f,
+        50.0f, 200.0f,
         0.7f,
         { 1.0f, 1.0f, 0.0f, 1.0f } // Yellow
       );
 
-      // Show player health
-      if (player.isValid() && player.has_component<Components::Health>()) {
-        auto* health = player.get_component<Components::Health>();
-        Engine::GRAPHICS.draw_text(
-          infoFontId,
-          "Player HP: " + std::to_string(health->value) + "/" + std::to_string(health->max),
-          50.0f, 200.0f,
-          0.7f,
-          { 0.0f, 1.0f, 0.0f, 1.0f } // Green
-        );
-      }
+      //// Show player health
+      //if (player.isValid() && player.has_component<Components::Health>()) {
+      //  auto* health = player.get_component<Components::Health>();
+      //  Engine::GRAPHICS.draw_text(
+      //    infoFontId,
+      //    "Player HP: " + std::to_string(health->value) + "/" + std::to_string(health->max),
+      //    50.0f, 260.0f,
+      //    0.7f,
+      //    { 0.0f, 1.0f, 0.0f, 1.0f } // Green
+      //  );
+      //}
 
       // Show enemy health
       if (enemy.isValid() && enemy.has_component<Components::Health>()) {
@@ -388,7 +399,6 @@ public:
 
     // Unload audio
     Engine::RESOURCES.unload_sound("walk_sound");
-    Engine::RESOURCES.unload_sound("collect_sound");
 
     // Unload fonts
     Engine::RESOURCES.unload_font("title_font");
