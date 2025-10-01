@@ -27,8 +27,7 @@ void ImGuiState::Init()
   Engine::WORLD.create_entity()
     .add_component<Components::Tag<"RectPainter">>()
     .add_component<Components::Background>()
-    .add_component<Components::Color>(0.08f, 0.08f, 0.10f, 1.0f)
-    .add_component<Components::Collider>(false, false);
+    .add_component<Components::Color>(0.08f, 0.08f, 0.10f, 1.0f);
 
   Engine::WORLD.add_system<BackgroundSystem>();
   Engine::WORLD.add_system<RectRenderSystem>();
@@ -190,8 +189,7 @@ void ImGuiState::handleMouse()
           .add_component<Components::Tag<"RectPainter">>()
           .add_component<Components::Position>(center.x, center.y)
           .add_component<Components::Size>(size.x, size.y)
-          .add_component<Components::Color>(currentColor_.x, currentColor_.y, currentColor_.z, currentColor_.w)
-          .add_component<Components::Collider>(true, false);
+          .add_component<Components::Color>(currentColor_.x, currentColor_.y, currentColor_.z, currentColor_.w);
         rects_.push_back(entity.getId());
         selectedIndex_ = (int)rects_.size() - 1;
       }
@@ -381,7 +379,7 @@ void ImGuiState::drawImGui()
         size->height = s.y;
 
         // Collider controls
-        bool hasCollider = (col != nullptr);
+        //bool hasCollider = (col != nullptr);
        /* if (!hasCollider) {
           if (ImGui::Button("Add Collider")) {
             Engine::WORLD.add_component<Components::Collider>(id, Components::Collider{ true,false });

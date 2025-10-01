@@ -7,13 +7,13 @@
 class PlayerControllerSystem : public ECS::System {
 public:
   PlayerControllerSystem() {
-    requireComponents<Components::PlayerController, Components::RigidBody, Components::Collider>();
+    require_components<Components::PlayerController, Components::RigidBody, Components::Collider>();
   }
 
   void updateEntity(ECS::Entity& entity) override {
-    auto* rb = entity.getComponent<Components::RigidBody>();
-    auto* controller = entity.getComponent<Components::PlayerController>();
-    auto* col = entity.getComponent<Components::Collider>();
+    auto* rb = entity.get_component<Components::RigidBody>();
+    //auto* controller = entity.get_component<Components::PlayerController>();
+    //auto* col = entity.get_component<Components::Collider>();
     if (!rb) return;
 
     // Physics constants
@@ -34,20 +34,20 @@ public:
 private:
   void handleHorizontalMovement(Components::RigidBody* rb, f32 accel) {
     if (Engine::Input::IsKeyHeld(GLFW_KEY_A)) {
-      rb->acceleration.x -= accel;
+      rb->acceleration.X() -= accel;
     }
     if (Engine::Input::IsKeyHeld(GLFW_KEY_D)) {
-      rb->acceleration.x += accel;
+      rb->acceleration.X() += accel;
     }
   }
 
   void handleJump(Components::RigidBody* rb, f32 jumpVel) {
     // Only jump if grounded and space is pressed
-		/*if (rb->isGrounded) std::cout << "Grounded\n";
-		else std::cout << "Airborne\n";*/
+		if (rb->isGrounded) std::cout << "Grounded\n";
+		else std::cout << "Airborne\n";
     if (Engine::Input::IsKeyPressed(GLFW_KEY_SPACE) && rb->isGrounded) {
 			std::cout << "Jump!\n";
-      rb->velocity.y = -jumpVel;  // Negative if +Y is down
+      rb->velocity.Y() = -jumpVel;  // Negative if +Y is down
       //rb->isGrounded = false;
     }
   }

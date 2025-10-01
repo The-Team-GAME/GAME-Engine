@@ -8,13 +8,13 @@
 class PhysicsSystem : public ECS::System {
 public:
   PhysicsSystem() {
-    requireComponents<Components::Position, Components::RigidBody, Components::Collider>();
+    require_components<Components::Position, Components::RigidBody, Components::Collider>();
   }
 
   void updateEntity(ECS::Entity& entity) override {
-    auto* pos = entity.getComponent<Components::Position>();
-    auto* rb = entity.getComponent<Components::RigidBody>();
-    auto* col = entity.getComponent<Components::Collider>();
+    auto* pos = entity.get_component<Components::Position>();
+    auto* rb = entity.get_component<Components::RigidBody>();
+    auto* col = entity.get_component<Components::Collider>();
 
     if (!pos || !rb || !col) return;
     if (col->isStatic) return; // Static bodies don't move
@@ -22,58 +22,58 @@ public:
     float dt = Engine::Time::get_fixed_dt();
 
     // --- Handle Dynamic Collisions (Swept AABB) ---
-    if (col->dynamicCollisionTime >= 0.0f && col->dynamicCollisionTime <= dt) {
-      Math::Vec2D normal = col->dynamicNormal;
-      float dotProduct = rb->velocity.x * normal.x + rb->velocity.y * normal.y;
+    //if (col->dynamicCollisionTime >= 0.0f && col->dynamicCollisionTime <= dt) {
+    //  Math::Vec2D normal = col->dynamicNormal;
+    //  float dotProduct = rb->velocity.X() * normal.X() + rb->velocity.Y() * normal.Y();
 
-      // Only resolve if moving into the collision
-      if (dotProduct < 0.0f) {
-        // CRITICAL: Rewind position to collision point
-        // MovementSystem already moved us the full dt, so we need to undo that
-        // and move only to the collision time
-        float overshoot = dt - col->dynamicCollisionTime;
-        pos->x -= rb->velocity.x * overshoot;
-        pos->y -= rb->velocity.y * overshoot;
+    //  // Only resolve if moving into the collision
+    //  if (dotProduct < 0.0f) {
+    //    // CRITICAL: Rewind position to collision point
+    //    // MovementSystem already moved us the full dt, so we need to undo that
+    //    // and move only to the collision time
+    //    float overshoot = dt - col->dynamicCollisionTime;
+    //    pos->X() -= rb->velocity.X() * overshoot;
+    //    pos->Y() -= rb->velocity.Y() * overshoot;
 
-        // Add small separation to prevent sinking
-        const float SEPARATION_BIAS = 0.1f;
-        pos->x += normal.x * SEPARATION_BIAS;
-        pos->y += normal.y * SEPARATION_BIAS;
+    //    // Add small separation to prevent sinking
+    //    const float SEPARATION_BIAS = 0.1f;
+    //    pos->X() += normal.X() * SEPARATION_BIAS;
+    //    pos->Y() += normal.Y() * SEPARATION_BIAS;
 
-        // Reflect velocity along collision normal (with restitution)
-        rb->velocity.x -= (1.0f + rb->restitution) * dotProduct * normal.x;
-        rb->velocity.y -= (1.0f + rb->restitution) * dotProduct * normal.y;
+    //    // Reflect velocity along collision normal (with restitution)
+    //    rb->velocity.X() -= (1.0f + rb->restitution) * dotProduct * normal.X();
+    //    rb->velocity.Y() -= (1.0f + rb->restitution) * dotProduct * normal.Y();
 
-        // Apply friction on tangent
-        Math::Vec2D tangent = { -normal.y, normal.x };
-        float tangentVel = rb->velocity.x * tangent.x + rb->velocity.y * tangent.y;
-        rb->velocity.x -= tangentVel * rb->friction * tangent.x;
-        rb->velocity.y -= tangentVel * rb->friction * tangent.y;
-      }
+    //    // Apply friction on tangent
+    //    Math::Vec2D tangent = { -normal.Y(), normal.X() };
+    //    float tangentVel = rb->velocity.X() * tangent.X() + rb->velocity.Y() * tangent.Y();
+    //    rb->velocity.X() -= tangentVel * rb->friction * tangent.X();
+    //    rb->velocity.Y() -= tangentVel * rb->friction * tangent.Y();
+    //  }
 
-      // Reset collision data
-      col->dynamicCollisionTime = -1.0f;
-      col->dynamicNormal = { 0.0f, 0.0f };
+    //  // Reset collision data
+    //  col->dynamicCollisionTime = -1.0f;
+    //  col->dynamicNormal = { 0.0f, 0.0f };
 
-      return;
-    }
+    //  return;
+    //}
 
     // --- Handle Static Collisions (Penetration Resolution) ---
-    if (col->penetration.x != 0.0f || col->penetration.y != 0.0f) {
+    if (col->penetration.X() != 0.0f || col->penetration.Y() != 0.0f) {
       // Ignore very small overlaps
-      col->penetration.x = (fabs(col->penetration.x) < 0.1f) ? 0.0f : col->penetration.x;
-      col->penetration.y = (fabs(col->penetration.y) < 0.1f) ? 0.0f : col->penetration.y;
+      col->penetration.X() = (fabs(col->penetration.X()) < 3.f) ? 0.0f : col->penetration.X();
+      col->penetration.Y() = (fabs(col->penetration.Y()) < 3.f) ? 0.0f : col->penetration.Y();
 
       // Push entity out of overlap
-      pos->x += col->penetration.x;
-      pos->y += col->penetration.y;
+      pos->X() += col->penetration.X();
+      pos->Y() += col->penetration.Y();
 
       // Bounce velocity based on penetration direction
-      if (col->penetration.x != 0.0f) {
-        rb->velocity.x = -rb->velocity.x * rb->restitution;
+      if (col->penetration.X() != 0.0f) {
+        rb->velocity.X() = -rb->velocity.X() * rb->restitution;
       }
-      if (col->penetration.y != 0.0f) {
-        rb->velocity.y = -rb->velocity.y * rb->restitution;
+      if (col->penetration.Y() != 0.0f) {
+        rb->velocity.Y() = -rb->velocity.Y() * rb->restitution;
       }
 
       col->penetration = { 0.0f, 0.0f };

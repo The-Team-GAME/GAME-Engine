@@ -26,34 +26,34 @@ public:
 
 
     // Create two enemy instances from the prefab
-    auto enemy1 = Engine::WORLD.createEntity()
-      .addComponent<Components::Tag<"GameObjectState">>()
-      .addComponent<Components::Position>(200.0f, 200.0f)
-      .addComponent<Components::Color>(0.2f, 1.0f, 0.2f, 1.0f)
-      .addComponent<Components::Size>(20.0f, 20.0f)
-      .addComponent<Components::Gravity>()
-      .addComponent<Components::RigidBody>(1.0f) // mass=1.0, 
-      .addComponent<Components::Collider>(20.0f, 20.0f, false) // x, y, isStatic
-      .addComponent<Components::PlayerController>();
+    auto enemy1 = Engine::WORLD.create_entity()
+      .add_component<Components::Tag<"GameObjectState">>()
+      .add_component<Components::Position>(200.0f, 200.0f)
+      .add_component<Components::Color>(0.2f, 1.0f, 0.2f, 1.0f)
+      .add_component<Components::Size>(20.0f, 20.0f)
+      .add_component<Components::Gravity>()
+      .add_component<Components::RigidBody>(1.0f) // mass=1.0, 
+      .add_component<Components::Collider>(20.0f, 20.0f, false) // x, y, isStatic
+      .add_component<Components::PlayerController>();
 
-    auto enemy3 = Engine::WORLD.createEntity()
-      .addComponent<Components::Tag<"GameObjectState">>()
-      .addComponent<Components::Position>(500.0f, 300.0f)
-      .addComponent<Components::Color>(1.0f, 0.2f, 0.2f, 1.0f)
-      .addComponent<Components::Size>(100.0f, 50.0f)
-      .addComponent<Components::RigidBody>(1.0f) // mass=1.0,
-      .addComponent<Components::Gravity>()
-      .addComponent<Components::Collider>(100.0f, 50.0f, true); // x, y, isStatic
+    auto enemy3 = Engine::WORLD.create_entity()
+      .add_component<Components::Tag<"GameObjectState">>()
+      .add_component<Components::Position>(500.0f, 300.0f)
+      .add_component<Components::Color>(1.0f, 0.2f, 0.2f, 1.0f)
+      .add_component<Components::Size>(100.0f, 50.0f)
+      .add_component<Components::RigidBody>(1.0f) // mass=1.0,
+      .add_component<Components::Gravity>()
+      .add_component<Components::Collider>(100.0f, 50.0f, true); // x, y, isStatic
    
 
     // Create two enemy instances from the prefab
-    auto enemy2 = Engine::WORLD.createEntity()
-      .addComponent<Components::Tag<"Floor">>()
-      .addComponent<Components::Position>(500.0f, 500.0f)
-      .addComponent<Components::Color>(1.0f, 0.2f, 0.2f, 1.0f)
-			.addComponent<Components::Size>(4000.0f, 50.0f)
-			.addComponent<Components::RigidBody>(10000000.0f) // mass=1.0,
-			.addComponent<Components::Collider>(4000.0f, 50.0f, true); // x, y, isStatic
+    auto enemy2 = Engine::WORLD.create_entity()
+      .add_component<Components::Tag<"Floor">>()
+      .add_component<Components::Position>(500.0f, 500.0f)
+      .add_component<Components::Color>(1.0f, 0.2f, 0.2f, 1.0f)
+			.add_component<Components::Size>(4000.0f, 50.0f)
+			.add_component<Components::RigidBody>(10000000.0f) // mass=1.0,
+			.add_component<Components::Collider>(4000.0f, 50.0f, true); // x, y, isStatic
       
 
     
@@ -62,24 +62,24 @@ public:
     // You can modify components like this too
     //enemy2.getComponent<Components::Position>()->x = 300.0f;
 
-    auto background = Engine::WORLD.createEntity()
-      .addComponent<Components::Tag<"GameObjectState">>()
-      .addComponent<Components::Background>()
-      .addComponent<Components::Color>(0.2f, 0.3f, 0.4f, 1.0f); // Dark blue background
+    auto background = Engine::WORLD.create_entity()
+      .add_component<Components::Tag<"GameObjectState">>()
+      .add_component<Components::Background>()
+      .add_component<Components::Color>(0.2f, 0.3f, 0.4f, 1.0f); // Dark blue background
 
     // Add systems to the world
-    Engine::WORLD.addSystem<BackgroundSystem>(); // Background system should be first
-    Engine::WORLD.addSystem<GravitySystem>();
+    Engine::WORLD.add_system<BackgroundSystem>(); // Background system should be first
+    Engine::WORLD.add_system<GravitySystem>();
 
-		Engine::WORLD.addSystem<PlayerControllerSystem>();
+		Engine::WORLD.add_system<PlayerControllerSystem>();
 
     
-    Engine::WORLD.addSystem<MovementSystem>();
-    Engine::WORLD.addSystem<PhysicsSystem>();
-    Engine::WORLD.addSystem<CollisionSystem>();
+    Engine::WORLD.add_system<MovementSystem>();
+    Engine::WORLD.add_system<PhysicsSystem>();
+    Engine::WORLD.add_system<CollisionSystem>();
 
-    Engine::WORLD.addSystem<RectRenderSystem>();
-    Engine::WORLD.addSystem<StaticSpriteRenderSystem>();
+    Engine::WORLD.add_system<RectRenderSystem>();
+    Engine::WORLD.add_system<StaticSpriteRenderSystem>();
   };
 
   void Update() {
@@ -93,17 +93,17 @@ public:
 
   void Free() {
     Engine::FACTORY.unregisterObject(enemyPrefab);
-    Engine::WORLD.destroyEntitiesWith<Components::Tag<"GameObjectState">>();
-    Engine::WORLD.destroyEntitiesWith<Components::Tag<"Floor">>();
+    Engine::WORLD.destory_entities_with<Components::Tag<"GameObjectState">>();
+    Engine::WORLD.destory_entities_with<Components::Tag<"Floor">>();
     // Remove systems
-    Engine::WORLD.removeSystem<BackgroundSystem>(); // Background system should be first
-    Engine::WORLD.removeSystem<GravitySystem>();
-    Engine::WORLD.removeSystem<PlayerControllerSystem>();
-    Engine::WORLD.removeSystem<RectRenderSystem>();
-    Engine::WORLD.removeSystem<MovementSystem>();
-    Engine::WORLD.removeSystem<PhysicsSystem>();
-    Engine::WORLD.removeSystem<CollisionSystem>();
-    Engine::WORLD.removeSystem<StaticSpriteRenderSystem>();
+    Engine::WORLD.remove_system<BackgroundSystem>(); // Background system should be first
+    Engine::WORLD.remove_system<GravitySystem>();
+    Engine::WORLD.remove_system<PlayerControllerSystem>();
+    Engine::WORLD.remove_system<RectRenderSystem>();
+    Engine::WORLD.remove_system<MovementSystem>();
+    Engine::WORLD.remove_system<PhysicsSystem>();
+    Engine::WORLD.remove_system<CollisionSystem>();
+    Engine::WORLD.remove_system<StaticSpriteRenderSystem>();
   };
 
   void Unload() {

@@ -84,7 +84,7 @@ namespace Components {
     Math::Vec2D penetration = { 0.0f, 0.0f }; // penetration from last collision
 		Math::Vec2D dynamicNormal = { 0.0f, 0.0f }; // normal of last dynamic collision
     f32 dynamicCollisionTime = 0.0f; // cooldown timer to prevent repeated dynamic collisions
-    
+		bool enabled = true;              // optional: whether this collider is active
     bool isStatic = false;                   // optional: whether this collider is a trigger
 
     Collider(float width = 1.0f, float height = 1.0f, bool isstatic = false)

@@ -5,7 +5,7 @@
 #include "BasicComponents.h"
 #include <optional>
 
-namespace
+namespace Engine
 {
   struct ObjectPrefab
   {
@@ -13,10 +13,6 @@ namespace
     Components::Size size;
     std::optional<Components::StaticSprite> staticSprite;
   };
-}
-
-namespace Engine
-{
   /**
    * @class ObjectFactory
    * @brief A factory for creating game objects (entities) from prefabs.

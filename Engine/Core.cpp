@@ -44,8 +44,6 @@ namespace Engine
 
   ResourceManager RESOURCES{};
 
-  Perf PERFORMANCE{};
-
   Core::Core()
   {
     Config::load_config();

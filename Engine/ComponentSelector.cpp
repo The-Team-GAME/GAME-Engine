@@ -17,7 +17,7 @@ namespace EditorUI
       // Example: list of attachable components
       if (ImGui::MenuItem("Position"))
       {
-        Engine::WORLD.addComponent<Components::Position>(entity, 0.0f, 0.0f);
+        Engine::WORLD.add_component<Components::Position>(entity, 0.0f, 0.0f);
       }
       if (ImGui::MenuItem("Velocity"))
       {
@@ -25,11 +25,11 @@ namespace EditorUI
       }
       if (ImGui::MenuItem("Scale"))
       {
-        Engine::WORLD.addComponent<Components::Scale>(entity, 1.0f, 1.0f);
+        Engine::WORLD.add_component<Components::Scale>(entity, 1.0f, 1.0f);
       }
       if (ImGui::MenuItem("Tag<GameObjectState>"))
       {
-        Engine::WORLD.addComponent<Components::Tag<"GameObjectState">>(entity);
+        Engine::WORLD.add_component<Components::Tag<"GameObjectState">>(entity);
       }
 
       ImGui::EndPopup();

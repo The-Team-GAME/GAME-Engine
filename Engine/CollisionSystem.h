@@ -1,6 +1,7 @@
 ﻿#pragma once
 
-#include "ECS/System.h"
+
+#include "ECS/System.h" 
 #include "BasicComponents.h"
 #include <iostream>
 #include <algorithm>
@@ -8,27 +9,27 @@
 class CollisionSystem : public ECS::System {
 public:
   CollisionSystem() {
-    requireComponents<Components::Collider, Components::Position, Components::RigidBody>();
+    require_components<Components::Collider, Components::Position, Components::RigidBody>();
   }
 
   void updateEntity(ECS::Entity& entity) override {
-    auto* posA = entity.getComponent<Components::Position>();
-    auto* colA = entity.getComponent<Components::Collider>();
-    auto* rbA = entity.getComponent<Components::RigidBody>();
+    auto* posA = entity.get_component<Components::Position>();
+    auto* colA = entity.get_component<Components::Collider>();
+    auto* rbA = entity.get_component<Components::RigidBody>();
 
     if (!posA || !colA || !rbA) return;
 
     const float dt = Engine::Time::get_fixed_dt();
     float footOffset = 0.01f;
-    Math::Vec2D footPos = { posA->x, posA->y - colA->halfHeight - footOffset };
+    Math::Vec2D footPos = { posA->X(), posA->Y() - colA->halfHeight - footOffset};
 
     for (ECS::Entity otherEntity : world->getEntitiesWith<Components::Collider>()) {
       auto otherId = otherEntity.getId();
       if (otherId <= entity.getId()) continue; // Skip self + duplicates
 
-      auto* posB = world->getComponent<Components::Position>(otherId);
-      auto* colB = world->getComponent<Components::Collider>(otherId);
-      auto* rbB = world->getComponent<Components::RigidBody>(otherId); // nullptr if static
+      auto* posB = world->get_component<Components::Position>(otherId);
+      auto* colB = world->get_component<Components::Collider>(otherId);
+      auto* rbB = world->get_component<Components::RigidBody>(otherId); // nullptr if static
 
       if (!posB || !colB) continue;
 
@@ -46,8 +47,8 @@ public:
             colB->dynamicCollisionTime = tFirst;
             colB->dynamicNormal = -normal;
 
-            std::cout << "Dynamic collision between " << entity.getId() << " and " << otherEntity.getId()
-              << " normal=(" << normal.x << ", " << normal.y << ")\n";
+            /*std::cout << "Dynamic collision between " << entity.getId() << " and " << otherEntity.getId()
+              << " normal=(" << normal.x << ", " << normal.y << ")\n";*/
 
             handledDynamic = true;
           }
@@ -69,11 +70,11 @@ private:
     const Components::Position& bPos, const Components::Collider& bCol,
     Math::Vec2D& outOverlap)
   {
-    float dx = bPos.x - aPos.x;
+    float dx = bPos.X() - aPos.X();
     float px = (aCol.halfWidth + bCol.halfWidth) - std::abs(dx);
     if (px <= 0) return false;
 
-    float dy = bPos.y - aPos.y;
+    float dy = bPos.Y() - aPos.Y();
     float py = (aCol.halfHeight + bCol.halfHeight) - std::abs(dy);
     if (py <= 0) return false;
 
@@ -97,8 +98,8 @@ private:
     const Components::Position& bPos, const Math::Vec2D& bVel, const Components::Collider& bCol,
     float dt, float& firstTimeOfCollision, Math::Vec2D& normal)
   {
-    float vx = aRb.velocity.x - bVel.x;
-    float vy = aRb.velocity.y - bVel.y;
+    float vx = aRb.velocity.X() - bVel.X();
+    float vy = aRb.velocity.Y() - bVel.Y();
 
     float tFirst = 0.0f;
     float tLast = dt;
@@ -120,16 +121,16 @@ private:
       return true;
       };
 
-    if (!processAxis(aPos.x - aCol.halfWidth, aPos.x + aCol.halfWidth, bPos.x - bCol.halfWidth, bPos.x + bCol.halfWidth, vx))
+    if (!processAxis(aPos.X() - aCol.halfWidth, aPos.X() + aCol.halfWidth, bPos.X() - bCol.halfWidth, bPos.X() + bCol.halfWidth, vx))
       return false;
-    if (!processAxis(aPos.y - aCol.halfHeight, aPos.y + aCol.halfHeight, bPos.y - bCol.halfHeight, bPos.y + bCol.halfHeight, vy))
+    if (!processAxis(aPos.Y() - aCol.halfHeight, aPos.Y() + aCol.halfHeight, bPos.Y() - bCol.halfHeight, bPos.Y() + bCol.halfHeight, vy))
       return false;
 
     firstTimeOfCollision = tFirst;
     if (tFirst > tLast) return false;
 
-    float xEntry = (vx != 0) ? ((vx > 0 ? (bPos.x - bCol.halfWidth - (aPos.x + aCol.halfWidth)) : (bPos.x + bCol.halfWidth - (aPos.x - aCol.halfWidth))) / vx) : -INFINITY;
-    float yEntry = (vy != 0) ? ((vy > 0 ? (bPos.y - bCol.halfHeight - (aPos.y + aCol.halfHeight)) : (bPos.y + bCol.halfHeight - (aPos.y - aCol.halfHeight))) / vy) : -INFINITY;
+    float xEntry = (vx != 0) ? ((vx > 0 ? (bPos.X() - bCol.halfWidth - (aPos.X() + aCol.halfWidth)) : (bPos.X() + bCol.halfWidth - (aPos.X() - aCol.halfWidth))) / vx) : -INFINITY;
+    float yEntry = (vy != 0) ? ((vy > 0 ? (bPos.Y() - bCol.halfHeight - (aPos.Y() + aCol.halfHeight)) : (bPos.Y() + bCol.halfHeight - (aPos.Y() - aCol.halfHeight))) / vy) : -INFINITY;
 
     normal = (xEntry > yEntry) ? (vx > 0 ? Math::Vec2D{ -1, 0 } : Math::Vec2D{ 1, 0 })
       : (vy > 0 ? Math::Vec2D{ 0, -1 } : Math::Vec2D{ 0, 1 });

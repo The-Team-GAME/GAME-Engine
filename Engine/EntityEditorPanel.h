@@ -146,7 +146,6 @@ inline void EntityEditorPanel()
       }
 
       // Velocity Component
-      if (entity.has_component<Components::Velocity>())
       /*if (entity.hasComponent<Components::Velocity>())
       {
         if (ImGui::TreeNode("Velocity"))

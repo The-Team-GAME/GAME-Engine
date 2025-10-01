@@ -28,17 +28,17 @@ public:
 
   void Init() {
     // Create player entity
-    player = Engine::WORLD.createEntity()
-      .addComponent<Components::Tag<"Player">>()
-      .addComponent<Components::Tag<"GameObjectState">>()
-      .addComponent<Components::Position>(10.0f, 20.0f)
-			.addComponent<Components::Collider>(10.0f, 10.0f)
-			.addComponent<Components::RigidBody>(1.0f, false) // mass=1.0, not static
-      .addComponent<Components::Health>(100, 100)
-      .addComponent<Components::Size>(10.0f, 10.0f)
-      .addComponent<Components::Color>(0.0f, 1.0f, 1.0f, 1.0f); // Make player cyan
+    player = Engine::WORLD.create_entity()
+      .add_component<Components::Tag<"Player">>()
+      .add_component<Components::Tag<"GameObjectState">>()
+      .add_component<Components::Position>(10.0f, 20.0f)
+			.add_component<Components::Collider>(10.0f, 10.0f)
+			.add_component<Components::RigidBody>(1.0f, false) // mass=1.0, not static
+      .add_component<Components::Health>(100, 100)
+      .add_component<Components::Size>(10.0f, 10.0f)
+      .add_component<Components::Color>(0.0f, 1.0f, 1.0f, 1.0f); // Make player cyan
 
-		player.getComponent<Components::RigidBody>()->velocity.x = 100.0f; // Give the player an initial horizontal velocity
+		player.get_component<Components::RigidBody>()->velocity.X() = 100.0f; // Give the player an initial horizontal velocity
 
     // Create an enemy entity to act as a template
     auto enemy = Engine::WORLD.create_entity()
@@ -71,18 +71,18 @@ public:
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f); // White background
 
     // Add systems to the world
-    Engine::WORLD.addSystem<BackgroundSystem>(); // Background system should be first
-    Engine::WORLD.addSystem<GravitySystem>();
-    Engine::WORLD.addSystem<PlayerControllerSystem>();
-    Engine::WORLD.addSystem<RectRenderSystem>();
-    Engine::WORLD.addSystem<MovementSystem>();
-    Engine::WORLD.addSystem<PhysicsSystem>();
-    Engine::WORLD.addSystem<CollisionSystem>();
-    Engine::WORLD.addSystem<StaticSpriteRenderSystem>();
-    Engine::WORLD.addSystem<HealthSystem>();
+    Engine::WORLD.add_system<BackgroundSystem>(); // Background system should be first
+    Engine::WORLD.add_system<GravitySystem>();
+    Engine::WORLD.add_system<PlayerControllerSystem>();
+    Engine::WORLD.add_system<RectRenderSystem>();
+    Engine::WORLD.add_system<MovementSystem>();
+    Engine::WORLD.add_system<PhysicsSystem>();
+    Engine::WORLD.add_system<CollisionSystem>();
+    Engine::WORLD.add_system<StaticSpriteRenderSystem>();
+    Engine::WORLD.add_system<HealthSystem>();
 
 
-    Engine::WORLD.addSystem<DamageSystem>(); // Add the new system
+    Engine::WORLD.add_system<DamageSystem>(); // Add the new system
   }
 
   void Update() {
@@ -118,17 +118,17 @@ public:
 
     // Remove systems
     // TODO: make a function to remove all systems at once
-    Engine::WORLD.removeSystem<BackgroundSystem>(); // Background system should be first
-    Engine::WORLD.removeSystem<GravitySystem>();
-    Engine::WORLD.removeSystem<PlayerControllerSystem>();
-    Engine::WORLD.removeSystem<MovementSystem>();
-    Engine::WORLD.removeSystem<PhysicsSystem>();
-    Engine::WORLD.removeSystem<CollisionSystem>();
-    Engine::WORLD.removeSystem<StaticSpriteRenderSystem>();
-    Engine::WORLD.removeSystem<HealthSystem>();
-    Engine::WORLD.removeSystem<RectRenderSystem>();
+    Engine::WORLD.remove_system<BackgroundSystem>(); // Background system should be first
+    Engine::WORLD.remove_system<GravitySystem>();
+    Engine::WORLD.remove_system<PlayerControllerSystem>();
+    Engine::WORLD.remove_system<MovementSystem>();
+    Engine::WORLD.remove_system<PhysicsSystem>();
+    Engine::WORLD.remove_system<CollisionSystem>();
+    Engine::WORLD.remove_system<StaticSpriteRenderSystem>();
+    Engine::WORLD.remove_system<HealthSystem>();
+    Engine::WORLD.remove_system<RectRenderSystem>();
 
-    Engine::WORLD.removeSystem<DamageSystem>(); // Add the new system
+    Engine::WORLD.remove_system<DamageSystem>(); // Add the new system
   }
 
   void Unload() {}

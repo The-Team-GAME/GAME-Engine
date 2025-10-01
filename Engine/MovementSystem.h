@@ -8,13 +8,13 @@
 class MovementSystem : public ECS::System {
 public:
   MovementSystem() {
-    requireComponents<Components::Position, Components::RigidBody>();
+    require_components<Components::Position, Components::RigidBody>();
   }
 
   void updateEntity(ECS::Entity& entity) override {
-    auto* pos = entity.getComponent<Components::Position>();
-    auto* rb = entity.getComponent<Components::RigidBody>();
-    auto* col = entity.getComponent<Components::Collider>();
+    auto* pos = entity.get_component<Components::Position>();
+    auto* rb = entity.get_component<Components::RigidBody>();
+    auto* col = entity.get_component<Components::Collider>();
 
     if (!pos || !rb) return;
 
@@ -32,8 +32,8 @@ public:
     stopTinyVelocities(rb);
 
     // Update position
-    pos->x += rb->velocity.x * dt;
-    pos->y += rb->velocity.y * dt;
+    pos->X() += rb->velocity.X() * dt;
+    pos->Y() += rb->velocity.Y() * dt;
 
     // Reset acceleration for next frame
     rb->acceleration = { 0.0f, 0.0f };
@@ -50,42 +50,42 @@ private:
   void updateGroundedState(Components::RigidBody* rb, Components::Collider* col) {
     // Negative Y penetration = ground pushing entity upward (ground below)
 
-    if (rb->velocity.y < -100.0f) {
+    if (rb->velocity.Y() < -100.0f) {
       rb->isGrounded = false;
       return;
     }
-    rb->isGrounded = (col && col->penetration.y < -GROUND_CHECK_THRESHOLD);
+    rb->isGrounded = (col && col->penetration.Y() < -GROUND_CHECK_THRESHOLD);
   }
 
   void integrateAcceleration(Components::RigidBody* rb, f32 dt) {
-    rb->velocity.x += rb->acceleration.x * dt;
-    rb->velocity.y += rb->acceleration.y * dt;
+    rb->velocity.X() += rb->acceleration.X() * dt;
+    rb->velocity.Y() += rb->acceleration.Y() * dt;
   }
 
   void applyDrag(Components::RigidBody* rb, f32 dt) {
     // Horizontal friction (only when grounded and no input)
-    if (rb->isGrounded && rb->acceleration.x == 0.0f) {
+    if (rb->isGrounded && rb->acceleration.X() == 0.0f) {
       f32 frictionForce = rb->friction * dt;
 
-      if (rb->velocity.x > 0.0f) {
-        rb->velocity.x = std::max(0.0f, rb->velocity.x - frictionForce);
+      if (rb->velocity.X() > 0.0f) {
+        rb->velocity.X() = std::max(0.0f, rb->velocity.X() - frictionForce);
       }
-      else if (rb->velocity.x < 0.0f) {
-        rb->velocity.x = std::min(0.0f, rb->velocity.x + frictionForce);
+      else if (rb->velocity.X() < 0.0f) {
+        rb->velocity.X() = std::min(0.0f, rb->velocity.X() + frictionForce);
       }
     }
 
     // Vertical air drag (always applied)
-    rb->velocity.y *= AIR_DRAG;
+    rb->velocity.Y() *= AIR_DRAG;
   }
 
   void clampVelocity(Components::RigidBody* rb) {
-    rb->velocity.x = std::clamp(rb->velocity.x, -MAX_HORIZONTAL_SPEED, MAX_HORIZONTAL_SPEED);
-    rb->velocity.y = std::clamp(rb->velocity.y, -MAX_VERTICAL_SPEED, MAX_VERTICAL_SPEED);
+    rb->velocity.X() = std::clamp(rb->velocity.X(), -MAX_HORIZONTAL_SPEED, MAX_HORIZONTAL_SPEED);
+    rb->velocity.Y() = std::clamp(rb->velocity.Y(), -MAX_VERTICAL_SPEED, MAX_VERTICAL_SPEED);
   }
 
   void stopTinyVelocities(Components::RigidBody* rb) {
-    if (std::abs(rb->velocity.x) < VELOCITY_THRESHOLD) rb->velocity.x = 0.0f;
-    if (std::abs(rb->velocity.y) < VELOCITY_THRESHOLD) rb->velocity.y = 0.0f;
+    if (std::abs(rb->velocity.X()) < VELOCITY_THRESHOLD) rb->velocity.X() = 0.0f;
+    if (std::abs(rb->velocity.Y()) < VELOCITY_THRESHOLD) rb->velocity.Y() = 0.0f;
   }
 };
