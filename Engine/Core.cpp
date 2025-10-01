@@ -1,9 +1,9 @@
+
 #include "Core.h"
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include "FileHandler.h"
 #include "Graphics.h"
-#include <glm/glm.hpp>
 #include "StateManager.h"
 #include "BasicState.h"
 #include "MainMenuState.h"
@@ -16,11 +16,12 @@
 #include "EntityEditorPanel.h"
 #include "CameraPanel.h"
 #include "Config.h"
+#include "Perf.h"
 
 namespace {
   f64 accumulator{};
   s32 step_limit = 3;
-  bool render = false;
+  bool do_render = false;
   bool physicsStepMode = false;  // Toggle for step-by-step physics
 }
 namespace Engine
@@ -43,11 +44,13 @@ namespace Engine
 
   ResourceManager RESOURCES{};
 
+  Perf PERFORMANCE{};
+
   Core::Core()
   {
     Config::load_config();
-    int win_width = Config::get_win_width();
-    int win_height = Config::get_win_height();
+    s32 win_width = Config::get_win_width();
+    s32 win_height = Config::get_win_height();
 
     WINDOW.set_params(win_width, win_height, "Monkey Stole My GPA");
     WINDOW.window_init();
@@ -59,23 +62,12 @@ namespace Engine
     isRunning = true;
 
     // Register the graphics resize system
-    WORLD.addEventListener<WindowResizeEvent>([](const WindowResizeEvent& event) {
-      GRAPHICS.setViewport(event.width, event.height);
+    WORLD.add_event_listener<WindowResizeEvent>([](const WindowResizeEvent& event) {
+      GRAPHICS.set_viewport(event.width, event.height);
       }
     );
 
     StateManager::Init(BasicState::Get()); // TODO: to be removed
-  }
-
-  Core::~Core()
-  {
-    FileHandler::clear_json();
-
-    ImguiMgr::imgui_exit();
-
-    StateManager::Exit(); // TODO: to be removed 
-
-    WORLD.removeEventListener<WindowResizeEvent>();
   }
 
   void Core::run()
@@ -98,9 +90,8 @@ namespace Engine
 
       if (accumulator > Time::get_fixed_dt() * step_limit)
       {
-        // Caps the accumulator so each gameloop will only go through 5 loops max
+        // Caps the accumulator so each gameloop will only go through 3 loops max
         accumulator = Time::get_fixed_dt() * step_limit;
-        //std::cout << "nyo" << std::endl; // Should probably warn the user if this happens
       }
       //std::cout << "DT: " << Time::get_real_dt() << " FPS: " << Time::calc_fps(Time::get_real_dt()) << std::endl;
       // END OF TIME UPDATES ================================================
@@ -108,8 +99,7 @@ namespace Engine
       glfwPollEvents();
       AUDIO.update();
       ImguiMgr::begin();
-      GRAPHICS.beginFrame();
-
+      GRAPHICS.begin_frame();
 
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
       while (accumulator >= Time::get_fixed_dt())
@@ -161,11 +151,23 @@ namespace Engine
       // start of draw stuff
       StateManager::GetCurrentState()->Draw();
       WORLD.draw();
-      GRAPHICS.endFrame();
+      GRAPHICS.end_frame();
+
       // end of draw stuff
       ImguiMgr::end();
       glfwSwapBuffers(WINDOW.getWindow());
       // Rendering End ==========================================
     }
+  }
+
+  Core::~Core()
+  {
+    FileHandler::clear_json();
+
+    ImguiMgr::imgui_exit();
+
+    StateManager::Exit(); // TODO: to be removed 
+
+    WORLD.remove_event_listener<WindowResizeEvent>();
   }
 }

@@ -23,14 +23,14 @@ public:
   void Init()
   {
     // Create background
-    auto bg = Engine::WORLD.createEntity();
-    bg.addComponent<Components::Background>();
-    bg.addComponent<Components::Color>(0.2f, 0.2f, 0.3f, 1.0f);
+    auto bg = Engine::WORLD.create_entity();
+    bg.add_component<Components::Background>();
+    bg.add_component<Components::Color>(0.2f, 0.2f, 0.3f, 1.0f);
     backgroundEntityId = bg.getId();
 
     // Add rendering systems
-    Engine::WORLD.addSystem<BackgroundSystem>();
-    Engine::WORLD.addSystem<StaticSpriteRenderSystem>();
+    Engine::WORLD.add_system<BackgroundSystem>();
+    Engine::WORLD.add_system<StaticSpriteRenderSystem>();
 
     // Load the test level
     currentLevelId = Engine::LEVEL_LOADER.loadLevel("Assets/levels/test_level.json");
@@ -140,11 +140,11 @@ public:
     }
 
     // Destroy background entity
-    Engine::WORLD.destroyEntity(backgroundEntityId);
+    Engine::WORLD.destory_entity(backgroundEntityId);
 
     // Remove systems
-    Engine::WORLD.removeSystem<BackgroundSystem>();
-    Engine::WORLD.removeSystem<StaticSpriteRenderSystem>();
+    Engine::WORLD.remove_system<BackgroundSystem>();
+    Engine::WORLD.remove_system<StaticSpriteRenderSystem>();
   }
 
   void Unload()

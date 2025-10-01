@@ -14,8 +14,8 @@
 
 class DevSpriteAnimationState : public Engine::GameState<DevSpriteAnimationState> {
 private:
-  int marioSpriteSheetId = -1;
-  float animationTime = 0.0f;
+  s32 marioSpriteSheetId = -1;
+  f32 animationTime = 0.0f;
 
 public:
   void Load() {};
@@ -38,10 +38,10 @@ public:
   };
 
   void Draw() {
-    Engine::GRAPHICS.clearScreen(0.1f, 0.1f, 0.1f, 1.0f);
+    Engine::GRAPHICS.clear_screen(0.1f, 0.1f, 0.1f, 1.0f);
 
     // Draw animated sprite
-    Engine::GRAPHICS.drawAnimatedSprite(marioSpriteSheetId, 200.0f, 150.0f, 96.0f, 96.0f, animationTime);
+    Engine::GRAPHICS.draw_animated_sprite(marioSpriteSheetId, 200.0f, 150.0f, 96.0f, 96.0f, animationTime);
   };
 
   void Free() {};

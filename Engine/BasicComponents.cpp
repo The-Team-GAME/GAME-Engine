@@ -14,8 +14,8 @@ namespace Components
     std::replace(resourceName.begin(), resourceName.end(), '.', '_');
 
     // Load texture using ResourceManager
-    textureId = Engine::RESOURCES.load_texture(resourceName, texturePath, minifyingFilter);
+    texture_id = Engine::RESOURCES.load_texture(resourceName, texturePath, minifyingFilter);
   }
 
-  StaticSprite::StaticSprite(const StaticSprite& other) : textureId(other.textureId) {}
+  StaticSprite::StaticSprite(const StaticSprite& other) : texture_id(other.texture_id) {}
 }

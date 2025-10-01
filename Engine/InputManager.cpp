@@ -23,8 +23,7 @@ namespace Engine
 {
   void Input::Update()
   {
-    PERFORMANCE.start("Input");
-
+    Engine::PERFORMANCE.start("Input");
 
     GLFWwindow* window = Engine::WINDOW.getWindow(); //TODO: pass window as parameter in constructor
 
@@ -49,9 +48,11 @@ namespace Engine
     glfwGetCursorPos(window, &xpos, &ypos);
 
     // Convert from window coordinates to virtual coordinates using Graphics system
-    mousePosition = Engine::GRAPHICS.screenToVirtual(static_cast<float>(xpos), static_cast<float>(ypos));
+    mousePosition = Engine::GRAPHICS.screen_to_virtual(static_cast<f32>(xpos), static_cast<f32>(ypos));
 
     //std::cout << "Mouse Position: (" << mousePosition.x << ", " << mousePosition.y << ")\n";
+
+    Engine::PERFORMANCE.stop("Input");
   }
 
   bool Input::IsKeyPressed(int key)

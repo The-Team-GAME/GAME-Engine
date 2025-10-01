@@ -7,14 +7,14 @@
 class RotationSystem : public ECS::System {
 public:
   RotationSystem() {
-    requireComponents<Components::Rotation, Components::RotationSpeed>();
+    require_components<Components::Rotation, Components::RotationSpeed>();
   }
 
   void updateEntity(ECS::Entity& entity) override {
-    auto* rot = entity.getComponent<Components::Rotation>();
-    auto* speed = entity.getComponent<Components::RotationSpeed>();
+    auto* rot = entity.get_component<Components::Rotation>();
+    auto* speed = entity.get_component<Components::RotationSpeed>();
 
-    rot->angle += speed->degreesPerSecond * Engine::Time::get_fixed_dt();
+    rot->angle += speed->degrees_per_second * Engine::Time::get_fixed_dt();
   }
 };
 

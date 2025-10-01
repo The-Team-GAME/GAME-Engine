@@ -95,7 +95,7 @@ namespace Engine
     // Load all object prefabs
     for (const auto& prefabPath : level.objectPrefabPaths)
     {
-      int prefabId = m_factory->registerObject(prefabPath);
+      s32 prefabId = m_factory->registerObject(prefabPath);
       if (prefabId != -1)
       {
         level.loadedPrefabIds.push_back(prefabId);
@@ -128,7 +128,7 @@ namespace Engine
     // Clear any previously spawned entities
     for (auto entityId : level.spawnedEntities)
     {
-      m_world->destroyEntity(entityId);
+      m_world->destory_entity(entityId);
     }
     level.spawnedEntities.clear();
 
@@ -136,12 +136,12 @@ namespace Engine
     for (const auto& entityData : level.entities)
     {
       // Find the prefab ID by matching the prefab's object ID
-      int prefabIdToUse = -1;
+      s32 prefabIdToUse = -1;
       for (int prefabId : level.loadedPrefabIds)
       {
         // Create a temporary entity to check its ObjectId
         auto tempEntity = m_factory->createObject(prefabId);
-        auto* objectId = tempEntity.getComponent<Components::ObjectId>();
+        auto* objectId = tempEntity.get_component<Components::ObjectId>();
 
         if (objectId && *objectId == entityData.prefabId)
         {
@@ -162,7 +162,7 @@ namespace Engine
       auto entity = m_factory->createObject(prefabIdToUse);
 
       // Set position
-      entity.addComponent<Components::Position>(entityData.x, entityData.y);
+      entity.add_component<Components::Position>(entityData.x, entityData.y);
 
       // Track spawned entity
       level.spawnedEntities.push_back(entity.getId());
@@ -189,7 +189,7 @@ namespace Engine
     // Destroy all spawned entities
     for (auto entityId : level.spawnedEntities)
     {
-      m_world->destroyEntity(entityId);
+      m_world->destory_entity(entityId);
     }
     level.spawnedEntities.clear();
 

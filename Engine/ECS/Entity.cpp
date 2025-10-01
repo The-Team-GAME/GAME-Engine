@@ -14,7 +14,7 @@ namespace ECS {
   }
 
   void Entity::destroy() {
-    world->destroyEntity(id);
+    world->destory_entity(id);
   }
 
   bool Entity::operator==(const Entity& other) const {

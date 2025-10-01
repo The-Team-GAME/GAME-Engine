@@ -23,17 +23,17 @@ namespace ECS {
 
     // Clean way to specify required components!
     template<typename... Components>
-    void requireComponents();
+    void require_components();
 
     // Clean way to specify listened-to events!
     template<typename... Events>
-    void listenToEvents();
+    void listen_to_events();
 
     // System logic
-    void update();
+    virtual void update();
 
     // Drawing/rendering logic
-    void draw();
+    virtual void draw();
 
     // Override for handling a specific event for a specific entity
     virtual void onEvent(const Event& event, EntityID entity);
@@ -42,7 +42,7 @@ namespace ECS {
     virtual void updateEntity(Entity& entity);
 
     // Override for per-entity drawing logic (const reference because rendering shouldn't modify entities)
-    virtual void drawEntity(const Entity& entity);
+    virtual void draw_entity(const Entity& entity);
 
     // Override for entity lifecycle events
     virtual void onEntityAdded(const Entity& entity);

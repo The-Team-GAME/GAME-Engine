@@ -32,18 +32,18 @@ namespace Components {
   };
 
   struct Rotation {
-    float angle; // in degrees
-    Rotation(float angle = 0.0f) : angle(angle) {}
+    f32 angle; // in degrees
+    Rotation(f32 angle = 0.0f) : angle(angle) {}
   };
 
   struct RotationSpeed {
-    float degreesPerSecond;
-    RotationSpeed(float degreesPerSecond = 0.0f) : degreesPerSecond(degreesPerSecond) {}
+    f32 degrees_per_second;
+    RotationSpeed(f32 degrees_per_second = 0.0f) : degrees_per_second(degrees_per_second) {}
   };
 
   struct Size {
-    float width, height;
-    Size(float width = 0.0f, float height = 0.0f) : width(width), height(height) {}
+    f32 width, height;
+    Size(f32 width = 0.0f, f32 height = 0.0f) : width(width), height(height) {}
   };
 
   struct Color : Math::Vec4D {
@@ -53,8 +53,8 @@ namespace Components {
   struct Background {};
 
   struct Health {
-    int value, max;
-    Health(int value = 100, int max = 100) : value(value), max(max) {}
+    s32 value, max;
+    Health(int value = 100, s32 max = 100) : value(value), max(max) {}
 
     void heal(int amount) {
       value = std::min(value + amount, max);
@@ -112,7 +112,7 @@ namespace Components {
   };
 
   struct StaticSprite {
-    int textureId;
+    s32 texture_id;
     StaticSprite(std::string texturePath, Graphics::MinifyingFilter minifyingFilter = Graphics::MinifyingFilter::Linear);
     StaticSprite(const StaticSprite& other);
   };

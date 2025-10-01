@@ -1,19 +1,27 @@
-#include "rapidjson/document.h"
-#include "rapidjson/filereadstream.h"
-#include "rapidjson/istreamwrapper.h"
+//-----------------------------------------------------------------------------------
+// file:    Config.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Cheng Ming Xian (100%)
+//          Primary author
+//
+// email:   c.mingxian@digipen.edu
+//
+// brief:   This file uses the functions in FileHandler.cpp to load, deserialise and
+//					parse the values in the config file into our game engine
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "Logger.h" // contains string and iostream already
 #include "FileHandler.h"
 #include "TypeDef.h"
-#include <fstream>
 
-namespace rj = rapidjson;
 namespace fh = FileHandler;
 
 namespace { // Annonymous/ local namespcae
 	const constexpr char* filepath = "Assets/config/";
 	const constexpr char* filename = "config.json";
 	const constexpr char* container = "config";
-	rj::Document m_document;
 
 
 	// Config values to be stored

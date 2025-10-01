@@ -12,7 +12,6 @@
 #include "ResourceManager.h"
 #include "Perf.h"
 
-
 namespace Engine
 {
   class Core
@@ -34,5 +33,5 @@ namespace Engine
   extern WindowManager WINDOW;
   extern AudioManager AUDIO;
   extern ResourceManager RESOURCES;
-	extern Perf PERFORMANCE;
+  extern Perf PERFORMANCE;
 }

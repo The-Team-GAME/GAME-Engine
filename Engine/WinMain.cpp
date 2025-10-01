@@ -8,7 +8,7 @@
 int main()
 {
   // Enable memory leak detection
-  int tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+  s32 tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
   tmpDbgFlag |= _CRTDBG_LEAK_CHECK_DF;
   _CrtSetDbgFlag(tmpDbgFlag);
   _CrtSetBreakAlloc(-1);

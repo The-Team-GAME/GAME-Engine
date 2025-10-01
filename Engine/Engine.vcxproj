@@ -186,6 +186,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="ObjectFactory.cpp" />
     <ClCompile Include="Perf.cpp" />
     <ClCompile Include="FileHandler.cpp" />
+    <ClCompile Include="Perf.cpp" />
     <ClCompile Include="Precompiled.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="Time.cpp" />
@@ -237,6 +238,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="MainMenuState.h" />
     <ClInclude Include="MovementSystem.h" />
     <ClInclude Include="ObjectFactory.h" />
+    <ClInclude Include="Perf.h" />
     <ClInclude Include="PerformanceViewer.h" />
     <ClInclude Include="Precompiled.h" />
     <ClInclude Include="RenderSystem.h" />

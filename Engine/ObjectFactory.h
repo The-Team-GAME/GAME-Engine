@@ -29,7 +29,7 @@ namespace Engine
   private:
     ECS::World* m_world;
     std::vector<ObjectPrefab> objectList;
-    int nextObjectId = 0;
+    s32 nextObjectId = 0;
   public:
     /**
      * @brief Construct a new Object Factory object.
@@ -42,9 +42,9 @@ namespace Engine
      * @brief Registers an object prefab from a JSON file. An object prefab is akin to the entity type.
      *
      * @param filePath The path to the JSON file describing the object's components.
-     * @return int An ID for the newly registered object prefab.
+     * @return s32 An ID for the newly registered object prefab.
      */
-    int registerObject(std::string filePath);
+    s32 registerObject(std::string filePath);
 
     /**
      * @brief Unregisters an object prefab using its ID.

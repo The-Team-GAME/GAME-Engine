@@ -6,19 +6,19 @@
 class RectRenderSystem : public ECS::System {
 public:
   RectRenderSystem() {
-    requireComponents<Components::Color, Components::Position, Components::Size>();
+    require_components<Components::Color, Components::Position, Components::Size>();
   }
 
-  void drawEntity(const ECS::Entity& entity) override {
-    auto* color = entity.getComponent<Components::Color>();
-    auto* pos = entity.getComponent<Components::Position>();
-    auto* size = entity.getComponent<Components::Size>();
+  void draw_entity(const ECS::Entity& entity) override {
+    auto* color = entity.get_component<Components::Color>();
+    auto* pos = entity.get_component<Components::Position>();
+    auto* size = entity.get_component<Components::Size>();
 
-    auto rotation = entity.hasComponent<Components::Rotation>() ?
-      *entity.getComponent<Components::Rotation>() : Components::Rotation{ 0.0f };
+    auto rotation = entity.has_component<Components::Rotation>() ?
+      *entity.get_component<Components::Rotation>() : Components::Rotation{ 0.0f };
 
-    Engine::GRAPHICS.drawRect({ color->x, color->y, color->z, color->w },
-      pos->x, pos->y, size->width, size->height,
+    Engine::GRAPHICS.draw_rect({ color->X(), color->Y(), color->Z(), color->W()},
+      pos->X(), pos->Y(), size->width, size->height,
       rotation.angle, Graphics::Origin::Center);
   }
 };
@@ -26,24 +26,24 @@ public:
 class StaticSpriteRenderSystem : public ECS::System {
 public:
   StaticSpriteRenderSystem() {
-    requireComponents<Components::StaticSprite, Components::Position, Components::Size>();
+    require_components<Components::StaticSprite, Components::Position, Components::Size>();
   }
 
-  void drawEntity(const ECS::Entity& entity) override {
-    auto* sprite = entity.getComponent<Components::StaticSprite>();
-    auto* size = entity.getComponent<Components::Size>();
-    auto* pos = entity.getComponent<Components::Position>();
+  void draw_entity(const ECS::Entity& entity) override {
+    auto* sprite = entity.get_component<Components::StaticSprite>();
+    auto* size = entity.get_component<Components::Size>();
+    auto* pos = entity.get_component<Components::Position>();
 
-    auto rotation = entity.hasComponent<Components::Rotation>() ?
-      *entity.getComponent<Components::Rotation>() : Components::Rotation{ 0.0f };
-    auto scale = entity.hasComponent<Components::Scale>() ?
-      *entity.getComponent<Components::Scale>() : Components::Scale{ 1.0f, 1.0f };
-    auto color = entity.hasComponent<Components::Color>() ?
-      *entity.getComponent<Components::Color>() : Components::Color{ 1.0f, 1.0f, 1.0f, 1.0f };
+    auto rotation = entity.has_component<Components::Rotation>() ?
+      *entity.get_component<Components::Rotation>() : Components::Rotation{ 0.0f };
+    auto scale = entity.has_component<Components::Scale>() ?
+      *entity.get_component<Components::Scale>() : Components::Scale{ 1.0f, 1.0f };
+    auto color = entity.has_component<Components::Color>() ?
+      *entity.get_component<Components::Color>() : Components::Color{ 1.0f, 1.0f, 1.0f, 1.0f };
 
-    Engine::GRAPHICS.drawTexture(sprite->textureId, pos->x, pos->y,
-      size->width * scale.x, size->height * scale.y,
+    Engine::GRAPHICS.draw_texture(sprite->texture_id, pos->X(), pos->Y(),
+      size->width * scale.X(), size->height * scale.Y(),
       rotation.angle, Graphics::Origin::Center,
-      { color.x, color.y, color.z, color.w });
+      { color.X(), color.Y(), color.Z(), color.W() });
   }
 };

@@ -7,12 +7,12 @@ class HealthSystem : public ECS::System
 public:
   HealthSystem()
   {
-    requireComponents<Components::Health>();
+    require_components<Components::Health>();
   }
 
   void updateEntity(ECS::Entity& entity) override
   {
-    auto health = entity.getComponent<Components::Health>();
+    auto health = entity.get_component<Components::Health>();
 
     if (health->isDead())
     {

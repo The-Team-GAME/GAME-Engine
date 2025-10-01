@@ -15,12 +15,12 @@ int Engine::ResourceManager::load_texture(std::string name, std::string path, Gr
   }
 
   // Load the texture
-  int textureId = Engine::GRAPHICS.loadTexture(path.c_str(), minifyingFilter);
-  if (textureId != -1)
+  s32 texture_id = Engine::GRAPHICS.load_texture(path.c_str(), minifyingFilter);
+  if (texture_id != -1)
   {
-    textures[name] = textureId;
-    std::cout << "ResourceManager: Successfully loaded texture '" << name << "' from '" << path << "' (ID: " << textureId << ").\n";
-    return textureId;
+    textures[name] = texture_id;
+    std::cout << "ResourceManager: Successfully loaded texture '" << name << "' from '" << path << "' (ID: " << texture_id << ").\n";
+    return texture_id;
   }
   else
   {
@@ -49,7 +49,7 @@ void Engine::ResourceManager::unload_texture(std::string name)
   if (it != textures.end())
   {
     std::cout << "ResourceManager: Attempting to unload texture '" << name << "' (ID: " << it->second << ").\n";
-    Engine::GRAPHICS.unloadTexture(it->second);
+    Engine::GRAPHICS.unload_texture(it->second);
     textures.erase(it);
     std::cout << "ResourceManager: Unloaded texture '" << name << "'.\n";
   }
@@ -74,7 +74,7 @@ int Engine::ResourceManager::load_sound(std::string name, std::string path)
   }
 
   // Load the sound
-  int soundId = Engine::AUDIO.loadSound(path);
+  s32 soundId = Engine::AUDIO.loadSound(path);
   if (soundId != -1)
   {
     sounds[name] = soundId;
@@ -123,7 +123,7 @@ size_t Engine::ResourceManager::get_sound_count()
   return sounds.size();
 }
 
-int Engine::ResourceManager::load_font(std::string name, std::string path, unsigned int size)
+int Engine::ResourceManager::load_font(std::string name, std::string path, u32 size)
 {
   // Check if font with this name already exists
   if (fonts.find(name) != fonts.end())
@@ -133,7 +133,7 @@ int Engine::ResourceManager::load_font(std::string name, std::string path, unsig
   }
 
   // Load the font
-  int fontId = Engine::GRAPHICS.loadFont(path.c_str(), size);
+  s32 fontId = Engine::GRAPHICS.load_font(path.c_str(), size);
   if (fontId != -1)
   {
     fonts[name] = fontId;
@@ -167,7 +167,7 @@ void Engine::ResourceManager::unload_font(std::string name)
   if (it != fonts.end())
   {
     std::cout << "ResourceManager: Attempting to unload font '" << name << "' (ID: " << it->second << ").\n";
-    Engine::GRAPHICS.unloadFont(it->second);
+    Engine::GRAPHICS.unload_font(it->second);
     fonts.erase(it);
     std::cout << "ResourceManager: Unloaded font '" << name << "'.\n";
   }
@@ -182,7 +182,7 @@ size_t Engine::ResourceManager::get_font_count()
   return fonts.size();
 }
 
-int Engine::ResourceManager::load_sprite_sheet(std::string name, std::string path, int frameWidth, int frameHeight, int totalFrames, float animationSpeed, Graphics::MinifyingFilter minifyingFilter)
+int Engine::ResourceManager::load_sprite_sheet(std::string name, std::string path, s32 frameWidth, s32 frameHeight, s32 totalFrames, f32 animationSpeed, Graphics::MinifyingFilter minifyingFilter)
 {
   // Check if sprite sheet with this name already exists
   if (spriteSheets.find(name) != spriteSheets.end())
@@ -192,7 +192,7 @@ int Engine::ResourceManager::load_sprite_sheet(std::string name, std::string pat
   }
 
   // Load the sprite sheet
-  int spriteSheetId = Engine::GRAPHICS.loadSpriteSheet(path.c_str(), frameWidth, frameHeight, totalFrames, animationSpeed, minifyingFilter);
+  s32 spriteSheetId = Engine::GRAPHICS.load_sprite_sheet(path.c_str(), frameWidth, frameHeight, totalFrames, animationSpeed, minifyingFilter);
   if (spriteSheetId != -1)
   {
     spriteSheets[name] = spriteSheetId;
@@ -226,7 +226,7 @@ void Engine::ResourceManager::unload_sprite_sheet(std::string name)
   if (it != spriteSheets.end())
   {
     std::cout << "ResourceManager: Attempting to unload sprite sheet '" << name << "' (ID: " << it->second << ").\n";
-    Engine::GRAPHICS.unloadSpriteSheet(it->second);
+    Engine::GRAPHICS.unload_sprite_sheet(it->second);
     spriteSheets.erase(it);
     std::cout << "ResourceManager: Unloaded sprite sheet '" << name << "'.\n";
   }
@@ -251,7 +251,7 @@ int Engine::ResourceManager::load_object_prefab(std::string name, std::string pa
   }
 
   // Load the object prefab through the factory
-  int prefabId = Engine::FACTORY.registerObject(path);
+  s32 prefabId = Engine::FACTORY.registerObject(path);
   if (prefabId != -1)
   {
     objectPrefabs[name] = prefabId;
