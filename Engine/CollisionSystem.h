@@ -25,7 +25,7 @@ public:
 
     for (ECS::Entity otherEntity : world->getEntitiesWith<Components::Collider>()) {
       auto otherId = otherEntity.getId();
-      if (otherId <= entity.getId()) continue; // skip self + duplicates
+      if (otherId == entity.getId()) continue; // skip self + duplicates
 
       auto* posB = world->getComponent<Components::Position>(otherId);
       auto* colB = world->getComponent<Components::Collider>(otherId);
@@ -34,55 +34,49 @@ public:
 
       if (!posB || !colB) continue;
 
-      if (colA->isStatic || colB->isStatic) {
-        // Static collision (simple overlap)
-        Math::Vec2D overlap;
-        if (checkAABBCollision(*posA, *colA, *posB, *colB, overlap)) {
+      // Try dynamic collision first (if both have rigidbodies and neither is static)
+      bool dynamicCollisionHandled = false;
 
-          // If overlap is very small, ignore it
-       //   const float epsilon = 0.000000001f; // tweak threshold depending on your scale
-       //   if (fabs(overlap.x) > epsilon && fabs(overlap.y) > epsilon) {
-       //     std::cout << "Ignoring tiny overlap between "
-       //       << entity.getId() << " and " << otherEntity.getId()
-							//<< " overlap=(" << overlap.x << ", " << overlap.y << ")\n";
-       //     return; // too little overlap, ignore
-       //   }
-					// Separate along penetration vector
-					
-					// Set penetration for potential use by other systems (e.g. grounding)
-					// Set grounded if collision is below feet
-
-      //    std::cout << "Static collision between "
-      //      << entity.getId() << " and " << otherEntity.getId()
-						//<< " overlap=(" << overlap.x << ", " << overlap.y << ")\n";
-          colA->penetration = -overlap;
-          colB->penetration = overlap;
-        }
-     //   else {
-					//rbA->isGrounded = false;
-					//rbB->isGrounded = false;
-     //     
-     //   }
-      }
-      else if (rbA && rbB) {
-        // Treat static objects as zero velocity
-        Math::Vec2D velB = rbB ? rbB->velocity : Math::Vec2D{ 0.0f, 0.0f };
+      if (!colA->isStatic && !colB->isStatic && rbA && rbB) {
+        // Dynamic vs Dynamic collision
+        Math::Vec2D velB = rbB->velocity;
         Math::Vec2D normal;
         float t = sweptAABB(*posA, *rbA, *colA, *posB, velB, *colB, normal);
 
-        if (t < 0.022f) {
-          // Move to time of impact
-          posA->x -= rbA->velocity.x * t;
-          posA->y -= rbA->velocity.y * t;
-
+        if (t < 0.01666666666f) {
           // Stop velocity along collision normal
           if (normal.x != 0) rbA->velocity.x = 0;
           if (normal.y != 0) rbA->velocity.y = 0;
 
-          // Debug
           std::cout << "Dynamic collision between "
             << entity.getId() << " and " << otherEntity.getId()
             << " normal=(" << normal.x << ", " << normal.y << ")\n";
+
+          dynamicCollisionHandled = true;
+        }
+      }
+
+      // Fall back to static collision check if no dynamic collision occurred
+      if (!dynamicCollisionHandled) {
+        Math::Vec2D overlap;
+        if (checkAABBCollision(*posA, *colA, *posB, *colB, overlap)) {
+    /*      std::cout << "Static collision between "
+            << entity.getId() << " and " << otherEntity.getId()
+            << " overlap=(" << overlap.x << ", " << overlap.y << ")\n";*/
+
+          // Store penetration based on which entity is static
+          if (colA->isStatic) {
+            colB->penetration = overlap;
+          }
+          if (colB->isStatic) {
+            colA->penetration = -overlap;
+          }
+
+          // If both are dynamic (no static collision occurred above), store for both
+          if (!colA->isStatic && !colB->isStatic) {
+            colA->penetration = -overlap;
+            colB->penetration = overlap;
+          }
         }
       }
     }

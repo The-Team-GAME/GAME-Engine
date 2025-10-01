@@ -16,6 +16,7 @@ public:
     auto* col = entity.getComponent<Components::Collider>();
 
     if (!rb || !g) return;
+		if (col->isStatic) return; // Static bodies don't move
 
     float dt = Engine::Time::get_fixed_dt();
 

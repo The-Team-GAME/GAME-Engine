@@ -24,26 +24,17 @@ public:
     // Load the enemy prefab from a JSON file
     enemyPrefab = Engine::FACTORY.registerObject("Assets/objects/enemy.json");
 
+
     // Create two enemy instances from the prefab
     auto enemy1 = Engine::WORLD.createEntity()
       .addComponent<Components::Tag<"GameObjectState">>()
       .addComponent<Components::Position>(200.0f, 200.0f)
-			.addComponent<Components::Color>(0.2f,1.0f,0.2f,1.0f)
+      .addComponent<Components::Color>(0.2f, 1.0f, 0.2f, 1.0f)
       .addComponent<Components::Size>(20.0f, 20.0f)
-			.addComponent<Components::Gravity>()
-			.addComponent<Components::RigidBody>(1.0f) // mass=1.0, 
-      .addComponent<Components::Collider>(20.0f, 20.0f, true)
+      .addComponent<Components::Gravity>()
+      .addComponent<Components::RigidBody>(1.0f) // mass=1.0, 
+      .addComponent<Components::Collider>(20.0f, 20.0f, false) // x, y, isStatic
       .addComponent<Components::PlayerController>();
-
-    // Create two enemy instances from the prefab
-    auto enemy2 = Engine::WORLD.createEntity()
-      .addComponent<Components::Tag<"Floor">>()
-      .addComponent<Components::Position>(500.0f, 500.0f)
-      .addComponent<Components::Color>(1.0f, 0.2f, 0.2f, 1.0f)
-			.addComponent<Components::Size>(4000.0f, 50.0f)
-			.addComponent<Components::RigidBody>(1.0f) // mass=1.0,
-      .addComponent<Components::Collider>(4000.0f, 50.0f, false);
-      
 
     auto enemy3 = Engine::WORLD.createEntity()
       .addComponent<Components::Tag<"GameObjectState">>()
@@ -51,8 +42,21 @@ public:
       .addComponent<Components::Color>(1.0f, 0.2f, 0.2f, 1.0f)
       .addComponent<Components::Size>(100.0f, 50.0f)
       .addComponent<Components::RigidBody>(1.0f) // mass=1.0,
-      .addComponent<Components::Collider>(100.0f, 50.0f, false);
+      .addComponent<Components::Gravity>()
+      .addComponent<Components::Collider>(100.0f, 50.0f, true); // x, y, isStatic
+   
 
+    // Create two enemy instances from the prefab
+    auto enemy2 = Engine::WORLD.createEntity()
+      .addComponent<Components::Tag<"Floor">>()
+      .addComponent<Components::Position>(500.0f, 500.0f)
+      .addComponent<Components::Color>(1.0f, 0.2f, 0.2f, 1.0f)
+			.addComponent<Components::Size>(4000.0f, 50.0f)
+			.addComponent<Components::RigidBody>(10000000.0f) // mass=1.0,
+			.addComponent<Components::Collider>(4000.0f, 50.0f, true); // x, y, isStatic
+      
+
+    
 
 
     // You can modify components like this too
@@ -66,11 +70,15 @@ public:
     // Add systems to the world
     Engine::WORLD.addSystem<BackgroundSystem>(); // Background system should be first
     Engine::WORLD.addSystem<GravitySystem>();
+
 		Engine::WORLD.addSystem<PlayerControllerSystem>();
-    Engine::WORLD.addSystem<RectRenderSystem>();
+
+    
     Engine::WORLD.addSystem<MovementSystem>();
     Engine::WORLD.addSystem<PhysicsSystem>();
     Engine::WORLD.addSystem<CollisionSystem>();
+
+    Engine::WORLD.addSystem<RectRenderSystem>();
     Engine::WORLD.addSystem<StaticSpriteRenderSystem>();
   };
 

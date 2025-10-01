@@ -18,6 +18,8 @@ public:
 
     if (!pos || !rb) return;
 
+		if (col->isStatic) return; // Static bodies don't move
+
     float dt = Engine::Time::get_fixed_dt();
 
     // Update grounded state based on collision penetration
@@ -47,6 +49,11 @@ private:
 
   void updateGroundedState(Components::RigidBody* rb, Components::Collider* col) {
     // Negative Y penetration = ground pushing entity upward (ground below)
+
+    if (rb->velocity.y < -100.0f) {
+      rb->isGrounded = false;
+      return;
+    }
     rb->isGrounded = (col && col->penetration.y < -GROUND_CHECK_THRESHOLD);
   }
 

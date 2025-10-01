@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "ECS/System.h"
 #include "BasicComponents.h"
+#include "Time.h"
 #include "InputManager.h"
 
 class PlayerControllerSystem : public ECS::System {
@@ -17,7 +18,7 @@ public:
 
     // Physics constants
     const float moveAccel = 2000.0f;      // Horizontal acceleration
-    const float jumpVelocity = 2000.0f;    // Initial jump velocity
+    const float jumpVelocity = 3000.0f;    // Initial jump velocity
     //const float gravity = 2000.0f;        // Gravity acceleration
 
     // Apply gravity constantly
@@ -42,11 +43,11 @@ private:
 
   void handleJump(Components::RigidBody* rb, float jumpVel) {
     // Only jump if grounded and space is pressed
-		if (rb->isGrounded) std::cout << "Grounded\n";
+		//if (rb->isGrounded) std::cout << "Grounded\n";
     if (Engine::Input::IsKeyPressed(GLFW_KEY_SPACE) && rb->isGrounded) {
 			std::cout << "Jump!\n";
       rb->velocity.y = -jumpVel;  // Negative if +Y is down
-      rb->isGrounded = false;
+      //rb->isGrounded = false;
     }
   }
 };

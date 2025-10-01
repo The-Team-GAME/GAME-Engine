@@ -100,15 +100,14 @@ namespace Components {
     f32 restitution = 0.0f;      // Bounciness (0 = no bounce, 1 = perfectly elastic)
     f32 friction = 100000.0f;         // Surface friction
     Math::Vec2D velocity = { 0.0f, 0.0f };   // Current movement speed
-    Math::Vec2D acceleration = { 0.0f, 0.0f }; // For applying forces
-    bool isStatic = false;         // If true, object doesn�t move
+    Math::Vec2D acceleration = { 0.0f, 0.0f }; // For applying force
     bool useGravity = true;        // Whether gravity affects it
     bool isGrounded = false;     // Whether the body is on the ground
 
     RigidBody(f32 m = 1.0f, bool staticBody = false)
-      : mass(m), isStatic(staticBody)
+      : mass(m)
     {
-      inverseMass = (isStatic || mass == 0.0f) ? 0.0f : 1.0f / mass;
+      //inverseMass = (mass == 0.0f) ? 0.0f : 1.0f / mass;
     }
   };
 
