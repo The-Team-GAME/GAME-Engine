@@ -28,7 +28,7 @@ static std::string root_path;
 
 
 // My file explorer function :>
-void FileExplorer(bool* p_open, bool is_directory_selection_mode = false) {
+void file_explorer(bool* p_open, bool is_directory_selection_mode = false) {
 
   static fs::path current_path;
   static bool first_run = true;
@@ -227,11 +227,11 @@ void FileExplorer(bool* p_open, bool is_directory_selection_mode = false) {
 
 class SpriteState : public Engine::GameState<SpriteState> {
 private:
-  s32 linearMonkeyImageId = -1;
-  s32 nearestMonkeyImageId = -1;
-  bool showFileExplorerSource = false;
-  bool showFileExplorerDest = false;
-  bool fileCopied = false;
+  s32 linear_monkey_image_id = -1;
+  s32 nearest_monkey_image_id = -1;
+  bool show_file_explorer_source = false;
+  bool show_file_explorer_dest = false;
+  bool file_copied = false;
 
   struct ImageData {
     u32 texture_id;
@@ -246,9 +246,9 @@ public:
 
   void Init() {
     // Load textures using ResourceManager
-    linearMonkeyImageId = Engine::RESOURCES.load_texture("monkey_linear", "Assets/images/monkey.png", Graphics::MinifyingFilter::Linear);
+    linear_monkey_image_id = Engine::RESOURCES.load_texture("monkey_linear", "Assets/images/monkey.png", Graphics::MinifyingFilter::Linear);
 
-    nearestMonkeyImageId = Engine::RESOURCES.load_texture("monkey_nearest", "Assets/images/monkey.png", Graphics::MinifyingFilter::Nearest);
+    nearest_monkey_image_id = Engine::RESOURCES.load_texture("monkey_nearest", "Assets/images/monkey.png", Graphics::MinifyingFilter::Nearest);
 
     std::cout << "Current path is " << std::filesystem::current_path() << std::endl;
   };
@@ -258,11 +258,11 @@ public:
   void Draw() {
     Engine::GRAPHICS.clearScreen(0.1f, 0.1f, 0.1f, 1.0f);
 
-    Engine::GRAPHICS.drawTexture(linearMonkeyImageId, 200.0f, 150.0f, 150.0f, 210.0f);
-    Engine::GRAPHICS.drawTexture(nearestMonkeyImageId, 400.0f, 150.0f, 150.0f, 210.0f);
+    Engine::GRAPHICS.drawTexture(linear_monkey_image_id, 200.0f, 150.0f, 150.0f, 210.0f);
+    Engine::GRAPHICS.drawTexture(nearest_monkey_image_id, 400.0f, 150.0f, 150.0f, 210.0f);
 
     Engine::GRAPHICS.drawTextureRegion(
-      nearestMonkeyImageId, 600.0f, 150.0f, 150.0f, 210.0f, spritePosX += Engine::Time::get_fixed_dt() * 10.0f, 0.0f, 15.0f, 21.0f
+      nearest_monkey_image_id, 600.0f, 150.0f, 150.0f, 210.0f, spritePosX += Engine::Time::get_fixed_dt() * 10.0f, 0.0f, 15.0f, 21.0f
     );
 
 
@@ -277,8 +277,8 @@ public:
 
     if (ImGui::Button("Set Project Root")) {
 
-      showFileExplorerDest = true;
-      fileCopied = false;
+      show_file_explorer_dest = true;
+      file_copied = false;
     }
 
 
@@ -307,9 +307,9 @@ public:
 
       else {
 
-        showFileExplorerSource = true;
+        show_file_explorer_source = true;
 
-        fileCopied = false;
+        file_copied = false;
 
         selected_file_path.clear();
 
@@ -347,15 +347,15 @@ public:
 
 
 
-    if (showFileExplorerSource) {
+    if (show_file_explorer_source) {
 
-      FileExplorer(&showFileExplorerSource);
+      file_explorer(&show_file_explorer_source);
 
     }
 
-    if (showFileExplorerDest) {
+    if (show_file_explorer_dest) {
 
-      FileExplorer(&showFileExplorerDest, true);
+      file_explorer(&show_file_explorer_dest, true);
 
     }
 
@@ -363,7 +363,7 @@ public:
 
     // Logic to copy the file after both paths are set
 
-    if (!showFileExplorerSource && !showFileExplorerDest && !selected_file_path.empty() && !root_path.empty() && !fileCopied) {
+    if (!show_file_explorer_source && !show_file_explorer_dest && !selected_file_path.empty() && !root_path.empty() && !file_copied) {
 
       try {
 
@@ -389,7 +389,7 @@ public:
 
         selected_file_path.clear();
 
-        fileCopied = true;
+        file_copied = true;
 
       }
 

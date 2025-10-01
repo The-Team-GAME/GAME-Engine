@@ -52,7 +52,7 @@ void WindowManager::set_params(s32 w, s32 h, std::string win_name)
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
     // Set up file drop callback
-    glfwSetDropCallback(window, fileDropCallback);
+    glfwSetDropCallback(window, file_drop_callback);
   }
 
 WindowManager::~WindowManager()
@@ -79,7 +79,7 @@ void WindowManager::framebufferSizeCallback(GLFWwindow* window, s32 width, s32 h
   }
 }
 
-void WindowManager::fileDropCallback([[maybe_unused]] GLFWwindow* window, s32 count, const char** paths)
+void WindowManager::file_drop_callback([[maybe_unused]] GLFWwindow* window, s32 count, const char** paths)
 {
 
   std::vector<std::string> filePaths;
