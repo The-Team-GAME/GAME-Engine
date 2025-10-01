@@ -77,8 +77,7 @@ namespace Components {
 
   struct StaticSprite {
     s32 textureId;
-    StaticSprite(std::string texturePath, Graphics::MinifyingFilter minifyingFilter = Graphics::MinifyingFilter::Linear);
-    StaticSprite(const StaticSprite& other);
+    StaticSprite(s32 textureId = -1) : textureId(textureId) {}
   };
 
   struct AnimatedSprite {
@@ -87,19 +86,30 @@ namespace Components {
     bool isPlaying;
     bool loop;
 
-    AnimatedSprite(std::string spriteSheetPath, s32 frameWidth, s32 frameHeight,
-      s32 totalFrames, f32 framesPerSecond,
-      Graphics::MinifyingFilter minifyingFilter = Graphics::MinifyingFilter::Linear);
-    AnimatedSprite(const AnimatedSprite& other);
+    AnimatedSprite(s32 spriteSheetId = -1, bool autoPlay = true, bool loop = true)
+      : spriteSheetId(spriteSheetId), animationTime(0.0f), isPlaying(autoPlay), loop(loop) {}
 
-    void play();
-    void pause();
-    void stop();
-    void reset();
+    void play() {
+      isPlaying = true;
+    }
+
+    void pause() {
+      isPlaying = false;
+    }
+
+    void stop() {
+      isPlaying = false;
+      animationTime = 0.0f;
+    }
+
+    void reset() {
+      animationTime = 0.0f;
+    }
   };
 
   struct SimplePlayerControl {
     f32 speed;
+    SimplePlayerControl(f32 speed = 100.0f) : speed(speed) {}
   };
 
 } // namespace Components
