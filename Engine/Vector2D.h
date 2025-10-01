@@ -39,8 +39,8 @@ namespace Math {
     /* ======== //
     // Mutators //
     // ======== */
-    void X(f32 xval);
-    void Y(f32 yval);
+    f32& X();
+    f32& Y();
     // Sets the vector to become a zero vector
     void zero();
 

@@ -1,4 +1,4 @@
----------------------------------------------------------------------------------- -
+//-----------------------------------------------------------------------------------
 // file:    Vector2D.cpp
 // project: Monkey Stole My GPA
 //
@@ -22,8 +22,8 @@ namespace Math {
   f32 Vec2D::X() const { return x; }
   f32 Vec2D::Y() const { return y; }
   // Mutators
-  void Vec2D::X(f32 xval) { x = xval; }
-  void Vec2D::Y(f32 yval) { y = yval; }
+  f32& Vec2D::X() { return x; }
+  f32& Vec2D::Y() { return y; }
   void Vec2D::zero() { x = 0; y = 0; }
   // Member Functions
   f32 Vec2D::get_magnitude_sq() const
@@ -100,15 +100,15 @@ namespace Math {
   Vec2D operator/(Vec2D const& vect, f32 divisor)
   {
     Vec2D tmp{ vect };
-    tmp.X(vect.X() / divisor);
-    tmp.Y(vect.Y() / divisor);
+    tmp.X() = vect.X() / divisor;
+    tmp.Y() = vect.Y() / divisor;
     return tmp;
   }
   Vec2D operator*(Vec2D const& vect, f32 scalar)
   {
     Vec2D tmp{ vect };
-    tmp.X(vect.X() * scalar);
-    tmp.Y(vect.Y() * scalar);
+    tmp.X() = vect.X() * scalar;
+    tmp.Y() = vect.Y() * scalar;
     return tmp;
   }
 
