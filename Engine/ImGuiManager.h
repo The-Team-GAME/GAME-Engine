@@ -3,13 +3,20 @@
 #include <functional>
 #include <vector>
 
-namespace ImguiMgr {
-	void imgui_init();
-	void imgui_exit();
+namespace Engine
+{
+  class ImGuiManager
+  {
+  private:
+    bool guiEnabled = true;
 
-	void begin();
-	void end();
+  public:
+    ImGuiManager();
+    ~ImGuiManager();
 
-	void update();
+    void begin();
+    void end();
+
+    void update();
+  };
 }
-

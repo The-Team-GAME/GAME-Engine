@@ -44,19 +44,7 @@ void Graphics::updateViewMatrix() {
 }
 
 // Initializes the graphics system, shaders, and buffers.
-Graphics::Graphics()
-{
-  // empoty by design
-}
-
-
-void Graphics::set_params(int width, int height)
-{
-  win_width = width;
-  win_height = height;
-}
-
-void Graphics::init_graphics()
+Graphics::Graphics(int windowWidth, int windowHeight)
 {
   // Initialize FreeType
   if (FT_Init_FreeType(&ft))
@@ -141,7 +129,7 @@ void Graphics::init_graphics()
     textureSlots[i] = 0;
 
   // Set initial viewport and projection matrix.
-  setViewport(win_width, win_height);
+  setViewport(windowWidth, windowHeight);
 
   // Use consistent virtual resolution
   projection = glm::ortho(0.0f, VIRTUAL_WIDTH, VIRTUAL_HEIGHT, 0.0f, -1.0f, 1.0f);
@@ -313,81 +301,6 @@ void Graphics::drawRect(const glm::vec4& color, float x, float y, float width, f
   quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[3], color, {0.0f, 1.0f}, texID };
 
   // Increment the index count for the two triangles that make up the quad.
-  quadIndexCount += 6;
-}
-
-// Draws a filled circle using a triangle fan approach (batched as quads approximation)
-void Graphics::drawCircle(const glm::vec4& color, float x, float y, float radius, int segments)
-{
-  // Clamp segments to reasonable values
-  segments = std::max(8, std::min(segments, 64));
-
-  // We'll approximate the circle using triangular quads
-  // Each quad represents a slice of the circle
-  constexpr float texID = 0.0f; // Use white texture
-
-  float angleStep = 2.0f * 3.14159265359f / segments;
-
-  for (int i = 0; i < segments; i++)
-  {
-    if (quadIndexCount >= MaxIndices)
-    {
-      nextBatch();
-    }
-
-    float angle1 = i * angleStep;
-    float angle2 = (i + 1) * angleStep;
-
-    // Create a triangle as a degenerate quad (center + 2 edge points + duplicate)
-    glm::vec3 center = { x, y, 0.0f };
-    glm::vec3 p1 = { x + radius * cosf(angle1), y + radius * sinf(angle1), 0.0f };
-    glm::vec3 p2 = { x + radius * cosf(angle2), y + radius * sinf(angle2), 0.0f };
-
-    quadVertexBufferBase[vertexIndex++] = { center, color, {0.5f, 0.5f}, texID };
-    quadVertexBufferBase[vertexIndex++] = { p1, color, {0.5f, 0.5f}, texID };
-    quadVertexBufferBase[vertexIndex++] = { p2, color, {0.5f, 0.5f}, texID };
-    quadVertexBufferBase[vertexIndex++] = { p2, color, {0.5f, 0.5f}, texID }; // Duplicate to form quad
-
-    quadIndexCount += 6;
-  }
-}
-
-// Draws a line between two points with specified thickness
-void Graphics::drawLine(const glm::vec4& color, float x1, float y1, float x2, float y2, float thickness)
-{
-  if (quadIndexCount >= MaxIndices)
-  {
-    nextBatch();
-  }
-
-  // Calculate the line direction and perpendicular offset
-  float dx = x2 - x1;
-  float dy = y2 - y1;
-  float length = sqrtf(dx * dx + dy * dy);
-
-  if (length < 0.001f) return; // Don't draw zero-length lines
-
-  // Normalize direction
-  dx /= length;
-  dy /= length;
-
-  // Perpendicular vector for thickness
-  float perpX = -dy * thickness * 0.5f;
-  float perpY = dx * thickness * 0.5f;
-
-  constexpr float texID = 0.0f; // Use white texture
-
-  // Create a quad representing the line
-  glm::vec3 v0 = { x1 + perpX, y1 + perpY, 0.0f };
-  glm::vec3 v1 = { x2 + perpX, y2 + perpY, 0.0f };
-  glm::vec3 v2 = { x2 - perpX, y2 - perpY, 0.0f };
-  glm::vec3 v3 = { x1 - perpX, y1 - perpY, 0.0f };
-
-  quadVertexBufferBase[vertexIndex++] = { v0, color, {0.0f, 0.0f}, texID };
-  quadVertexBufferBase[vertexIndex++] = { v1, color, {1.0f, 0.0f}, texID };
-  quadVertexBufferBase[vertexIndex++] = { v2, color, {1.0f, 1.0f}, texID };
-  quadVertexBufferBase[vertexIndex++] = { v3, color, {0.0f, 1.0f}, texID };
-
   quadIndexCount += 6;
 }
 

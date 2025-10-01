@@ -1,22 +1,6 @@
-//-----------------------------------------------------------------------------------
-// file:    Config.h
-// project: Monkey Stole My GPA
-//
-// author:  Cheng Ming Xian (100%)
-//          Primary author
-//					Shee Yang (?%)
-//
-// email:   c.mingxian@digipen.edu
-//
-// brief:   This file uses the rapidjson library to parse files into
-//
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
-//-----------------------------------------------------------------------------------
 #pragma once
-#include <string>
-#include <vector>
-#include "TypeDef.h"
 
+#include <string>
 namespace FileHandler {
 
 	f32 d_f32();
@@ -27,35 +11,13 @@ namespace FileHandler {
 
 	void clear_json(); // clears the js::Document so another file can be parsed in
 
-	void set_container(std::string str);
-
 	bool has_key(std::string const& key); // Checks if a key is present
 
-	void delete_key(std::string const& key); // Deletes the key
+	void delete_key(std::string const& key); // Delets the key
 
 	f32 get_f32(const std::string& key);
 
-	s32 get_s32(const std::string& key);
+	f32 get_s32(const std::string& key);
 
 	std::string get_string(const std::string& key);
-
-	// Array support
-	bool is_array(const std::string& key);
-
-	s32 get_array_size(const std::string& key);
-
-	std::string get_string_from_array(const std::string& key, s32 index);
-
-	f32 get_f32_from_array(const std::string& key, s32 index);
-
-	s32 get_s32_from_array(const std::string& key, s32 index);
-
-	// Object in array support
-	bool has_key_in_array_object(const std::string& arrayKey, s32 index, const std::string& objectKey);
-
-	std::string get_string_from_array_object(const std::string& arrayKey, s32 index, const std::string& objectKey);
-
-	f32 get_f32_from_array_object(const std::string& arrayKey, s32 index, const std::string& objectKey);
-
-	s32 get_s32_from_array_object(const std::string& arrayKey, s32 index, const std::string& objectKey);
 }

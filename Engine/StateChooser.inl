@@ -12,7 +12,6 @@
 #include "ImGuiState.h"
 #include "DevSpriteAnimationState.h"
 #include "DevECSMessageState.h"
-#include "LevelLoaderTestState.h"
 
 inline void StateChooserPanel()
 {
@@ -59,10 +58,6 @@ inline void StateChooserPanel()
   if (ImGui::Button("DevECSMessageState"))
   {
     Engine::StateManager::ChangeState(DevECSMessageState::Get());
-  }
-  if (ImGui::Button("LevelLoaderTestState"))
-  {
-    Engine::StateManager::ChangeState(LevelLoaderTestState::Get());
   }
 
   ImGui::End();

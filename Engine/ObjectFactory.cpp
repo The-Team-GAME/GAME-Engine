@@ -12,8 +12,8 @@ Engine::ObjectFactory::ObjectFactory(ECS::World* world) : m_world(world)
 
 int Engine::ObjectFactory::registerObject(std::string filePath)
 {
-  fh::set_container("entity");
   fh::parse_file(filePath);
+
   ObjectPrefab newObject;
 
   // TODO: check if data contains in debug mode only

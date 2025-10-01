@@ -10,8 +10,6 @@
 
 class Graphics
 {
-  int win_width;
-  int win_height;
 public:
   // Add these for consistent virtual resolution
   static constexpr float VIRTUAL_WIDTH = 1600.0f;
@@ -121,9 +119,7 @@ private:
   void updateViewMatrix();
 
 public:
-  Graphics();
-  void set_params(int win_width, int win_height);
-  void init_graphics();
+  Graphics(int windowWidth, int windowHeight);
   ~Graphics();
 
   void beginFrame();
@@ -143,8 +139,6 @@ public:
   void drawText(int fontId, const std::string& text, float x, float y, float scale, const glm::vec4& color);
 
   void drawRect(const glm::vec4& color, float x, float y, float width, float height, float rotation = 0.0f, Origin origin = Origin::Center);
-  void drawCircle(const glm::vec4& color, float x, float y, float radius, int segments = 32);
-  void drawLine(const glm::vec4& color, float x1, float y1, float x2, float y2, float thickness = 2.0f);
   void drawTexture(int imageId, float x, float y, float width, float height, float rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& tintColor = glm::vec4(1.0f));
   void drawTextureRegion(int imageId, float destX, float destY, float destWidth, float destHeight, float srcX, float srcY, float srcWidth, float srcHeight, float rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& tintColor = glm::vec4(1.0f));
 

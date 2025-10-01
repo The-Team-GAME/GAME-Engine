@@ -102,6 +102,9 @@
     <ClCompile Include="ImGuiManager.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
+    <ClCompile Include="EcsState.cpp">
+      <Filter>Source Files\GameStates</Filter>
+    </ClCompile>
     <ClCompile Include="ECS\ComponentManager.cpp">
       <Filter>Source Files\ECS\Backend</Filter>
     </ClCompile>
@@ -146,21 +149,6 @@
     </ClCompile>
     <ClCompile Include="ECS\EventManager.cpp">
       <Filter>Source Files\ECS\Backend</Filter>
-    </ClCompile>
-    <ClCompile Include="ECS\System.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ECS\World.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Precompiled.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ResourceManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Config.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -287,27 +275,6 @@
     <ClInclude Include="ECS\EventManager.h">
       <Filter>Source Files\ECS\Backend</Filter>
     </ClInclude>
-    <ClInclude Include="BasicEvents.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DamageSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DevECSMessageState.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Precompiled.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ResourceManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ResourceManagerPanel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Config.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ECS\Entity.inl">
@@ -329,20 +296,5 @@
       <Filter>Source Files\GameObjects</Filter>
     </None>
     <None Include="Assets\objects\banana.json" />
-    <None Include="ECS\ComponentArray.inl">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="ECS\ComponentManager.inl">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="ECS\EventManager.inl">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="ECS\System.inl">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="ECS\World.inl">
-      <Filter>Header Files</Filter>
-    </None>
   </ItemGroup>
 </Project>

@@ -140,8 +140,8 @@ inline void EntityEditorPanel()
         if (ImGui::TreeNode("Position"))
         {
           auto* pos = entity.getComponent<Components::Position>();
-          ImGui::DragFloat("X##pos", &pos->X(), 1.0f);
-          ImGui::DragFloat("Y##pos", &pos->Y(), 1.0f);
+          ImGui::DragFloat("X##pos", &pos->x, 1.0f);
+          ImGui::DragFloat("Y##pos", &pos->y, 1.0f);
           
           if (ImGui::Button("Remove##position"))
             entity.removeComponent<Components::Position>();
@@ -156,8 +156,8 @@ inline void EntityEditorPanel()
         if (ImGui::TreeNode("Velocity"))
         {
           auto* vel = entity.getComponent<Components::Velocity>();
-          ImGui::DragFloat("X##vel", &vel->X(), 1.0f);
-          ImGui::DragFloat("Y##vel", &vel->Y(), 1.0f);
+          ImGui::DragFloat("X##vel", &vel->x, 1.0f);
+          ImGui::DragFloat("Y##vel", &vel->y, 1.0f);
           
           if (ImGui::Button("Remove##velocity"))
             entity.removeComponent<Components::Velocity>();
@@ -188,12 +188,12 @@ inline void EntityEditorPanel()
         if (ImGui::TreeNode("Color"))
         {
           auto* color = entity.getComponent<Components::Color>();
-          float colorArray[4] = { color->X(), color->Y(), color->z, color->w };
+          float colorArray[4] = { color->x, color->y, color->z, color->w };
           
           if (ImGui::ColorEdit4("RGBA", colorArray))
           {
-            color->X() = colorArray[0];
-            color->Y() = colorArray[1];
+            color->x = colorArray[0];
+            color->y = colorArray[1];
             color->z = colorArray[2];
             color->w = colorArray[3];
           }
@@ -226,13 +226,13 @@ inline void EntityEditorPanel()
         if (ImGui::TreeNode("Scale"))
         {
           auto* scale = entity.getComponent<Components::Scale>();
-          ImGui::DragFloat("X##scale", &scale->X(), 0.01f, 0.01f, 10.0f);
-          ImGui::DragFloat("Y##scale", &scale->Y(), 0.01f, 0.01f, 10.0f);
+          ImGui::DragFloat("X##scale", &scale->x, 0.01f, 0.01f, 10.0f);
+          ImGui::DragFloat("Y##scale", &scale->y, 0.01f, 0.01f, 10.0f);
           
           if (ImGui::Button("Uniform Scale"))
           {
-            float uniform = (scale->X() + scale->Y()) / 2.0f;
-            scale->X() = scale->Y() = uniform;
+            float uniform = (scale->x + scale->y) / 2.0f;
+            scale->x = scale->y = uniform;
           }
           
           if (ImGui::Button("Remove##scale"))

@@ -1,17 +1,3 @@
-//-----------------------------------------------------------------------------------
-// file:    Time.cpp
-// project: Monkey Stole My GPA
-//
-// author:  Cheng Ming Xian (100%)
-//          Primary author
-//
-// email:   c.mingxian@digipen.edu
-//
-// brief:   Defines the time system for the engine to keep track of the gameloop 
-//					delta time and all the calculations and getters that go with it
-//
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
-//-----------------------------------------------------------------------------------
 #include "Time.h"
 #include <chrono>
 namespace chrono = std::chrono;
@@ -19,9 +5,9 @@ namespace chrono = std::chrono;
 namespace {
 	chrono::nanoseconds curr_time = chrono::duration_cast<chrono::nanoseconds>((chrono::steady_clock::now()).time_since_epoch());
 
-	f32 delta_time{};									// in seconds
-	f32 tick_rate{ 60.f };						// The tick rate is the number of times you want to game logic to update per second
-	f32 fixed_dt{ 1.f / tick_rate };	// precalulate fixed_dt so we dont have to do it every time get_tick_rate is called
+	f32 delta_time{}; // in seconds
+	f32 tick_rate{ 144.f };
+	f32 fixed_dt{ 1.f / tick_rate }; // precalulate fixed_dt so we dont have to do it every time get_tick_rate is called
 }
 
 namespace Engine {
