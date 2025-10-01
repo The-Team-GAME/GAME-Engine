@@ -15,12 +15,12 @@ int Engine::ResourceManager::load_texture(std::string name, std::string path, Gr
   }
 
   // Load the texture
-  s32 textureId = Engine::GRAPHICS.loadTexture(path.c_str(), minifyingFilter);
-  if (textureId != -1)
+  s32 texture_id = Engine::GRAPHICS.loadTexture(path.c_str(), minifyingFilter);
+  if (texture_id != -1)
   {
-    textures[name] = textureId;
-    std::cout << "ResourceManager: Successfully loaded texture '" << name << "' from '" << path << "' (ID: " << textureId << ").\n";
-    return textureId;
+    textures[name] = texture_id;
+    std::cout << "ResourceManager: Successfully loaded texture '" << name << "' from '" << path << "' (ID: " << texture_id << ").\n";
+    return texture_id;
   }
   else
   {

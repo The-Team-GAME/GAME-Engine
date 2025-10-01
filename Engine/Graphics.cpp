@@ -648,10 +648,10 @@ s32 Graphics::loadTexture(const char* filepath, MinifyingFilter min_filter)
 
   // Store the texture info and return its ID
   Texture tex = { texture, width, height };
-  s32 textureId = nextTextureId++;
-  textures[textureId] = tex;
+  s32 texture_id = nextTextureId++;
+  textures[texture_id] = tex;
 
-  return textureId;
+  return texture_id;
 }
 
 // A convenience function to draw a full texture.
@@ -737,9 +737,9 @@ void Graphics::drawTextureRegion(s32 imageId, f32 destX, f32 destY, f32 destWidt
 s32 Graphics::loadSpriteSheet(const char* filepath, s32 frameWidth, s32 frameHeight, s32 totalFrames, f32 animationSpeed, MinifyingFilter min_filter)
 {
   // Load the texture using existing loadTexture function
-  s32 textureId = loadTexture(filepath, min_filter);
+  s32 texture_id = loadTexture(filepath, min_filter);
 
-  if (textureId == -1)
+  if (texture_id == -1)
   {
     std::cout << "Failed to load sprite sheet: " << filepath << std::endl;
     return -1;
@@ -747,7 +747,7 @@ s32 Graphics::loadSpriteSheet(const char* filepath, s32 frameWidth, s32 frameHei
 
   // Create sprite sheet data
   SpriteSheet spriteSheet = {
-    static_cast<unsigned int>(textureId),
+    static_cast<unsigned int>(texture_id),
     frameWidth,
     frameHeight,
     totalFrames,
@@ -775,10 +775,10 @@ void Graphics::drawAnimatedSprite(s32 spriteSheetId, f32 x, f32 y, f32 width, f3
   s32 currentFrame = static_cast<int>(time * spriteSheet.animationSpeed) % spriteSheet.totalFrames;
 
   // Get texture dimensions to calculate frames per row
-  auto texIt = textures.find(spriteSheet.textureId);
+  auto texIt = textures.find(spriteSheet.texture_id);
   if (texIt == textures.end())
   {
-    std::cout << "Invalid texture ID in sprite sheet: " << spriteSheet.textureId << std::endl;
+    std::cout << "Invalid texture ID in sprite sheet: " << spriteSheet.texture_id << std::endl;
     return;
   }
   const Texture& texture = texIt->second;
@@ -794,7 +794,7 @@ void Graphics::drawAnimatedSprite(s32 spriteSheetId, f32 x, f32 y, f32 width, f3
 
   // Use drawTextureRegion to render the specific frame
   drawTextureRegion(
-    spriteSheet.textureId,
+    spriteSheet.texture_id,
     x, y, width, height,
     srcX, srcY, static_cast<f32>(spriteSheet.frameWidth), static_cast<f32>(spriteSheet.frameHeight),
     rotation,
@@ -819,12 +819,12 @@ glm::vec2 Graphics::screenToVirtual(f32 screenX, f32 screenY) const
 }
 
 // Unloads a texture by its ID
-void Graphics::unloadTexture(s32 textureId)
+void Graphics::unloadTexture(s32 texture_id)
 {
-  auto it = textures.find(textureId);
+  auto it = textures.find(texture_id);
   if (it == textures.end())
   {
-    std::cout << "Graphics: Invalid texture ID: " << textureId << std::endl;
+    std::cout << "Graphics: Invalid texture ID: " << texture_id << std::endl;
     return;
   }
 
@@ -848,7 +848,7 @@ void Graphics::unloadTexture(s32 textureId)
 
   nextTextureId--;
 
-  std::cout << "Graphics: Unloaded texture with ID " << textureId << std::endl;
+  std::cout << "Graphics: Unloaded texture with ID " << texture_id << std::endl;
 }
 
 // Unloads all textures
@@ -888,7 +888,7 @@ void Graphics::unloadSpriteSheet(s32 spriteSheetId)
   // Note: We don't delete the underlying texture here because it's managed
   // by the textures map. The sprite sheet just references a texture ID.
   // If you want to delete the underlying texture as well, you would call:
-  // unloadTexture(spriteSheets[spriteSheetId].textureId);
+  // unloadTexture(spriteSheets[spriteSheetId].texture_id);
 
   spriteSheets.erase(it);
 
@@ -908,9 +908,9 @@ void Graphics::unloadAllSpriteSheets()
 }
 
 // Gets the dimensions of a texture by its ID
-void Graphics::getTextureDimensions(s32 textureId, int& width, int& height) const
+void Graphics::getTextureDimensions(s32 texture_id, int& width, int& height) const
 {
-  auto it = textures.find(textureId);
+  auto it = textures.find(texture_id);
   if (it == textures.end())
   {
     width = 0;
@@ -923,9 +923,9 @@ void Graphics::getTextureDimensions(s32 textureId, int& width, int& height) cons
 }
 
 // Gets the OpenGL texture handle by texture ID
-u32 Graphics::getTextureHandle(s32 textureId) const
+u32 Graphics::getTextureHandle(s32 texture_id) const
 {
-  auto it = textures.find(textureId);
+  auto it = textures.find(texture_id);
   if (it == textures.end())
   {
     return 0;

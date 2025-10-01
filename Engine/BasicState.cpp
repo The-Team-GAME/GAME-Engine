@@ -9,21 +9,21 @@
 void BasicState::Load()
 {
   // Load fonts using ResourceManager
-  fontId1 = Engine::RESOURCES.load_font("roboto", "Assets/fonts/Roboto-Regular.ttf", 48);
-  if (fontId1 == -1)
+  font_id_1 = Engine::RESOURCES.load_font("roboto", "Assets/fonts/Roboto-Regular.ttf", 48);
+  if (font_id_1 == -1)
   {
     std::cout << "Failed to load roboto font for BasicState.\n";
   }
 
-  fontId2 = Engine::RESOURCES.load_font("playfair", "Assets/fonts/PlayfairDisplay-VariableFont_wght.ttf", 48);
-  if (fontId2 == -1)
+  font_id_2 = Engine::RESOURCES.load_font("playfair", "Assets/fonts/PlayfairDisplay-VariableFont_wght.ttf", 48);
+  if (font_id_2 == -1)
   {
     std::cout << "Failed to load playfair font for BasicState.\n";
   }
 
   // Load sound using ResourceManager
-  moveSoundId = Engine::RESOURCES.load_sound("move_sound", "Assets/sounds/move1.wav");
-  if (moveSoundId == -1)
+  move_sound_id = Engine::RESOURCES.load_sound("move_sound", "Assets/sounds/move1.wav");
+  if (move_sound_id == -1)
   {
     std::cout << "Failed to load move sound for BasicState.\n";
   }
@@ -45,9 +45,9 @@ void BasicState::Update()
 
   if (Engine::Input::IsKeyPressed(GLFW_KEY_P))
   {
-    if (moveSoundId != -1)
+    if (move_sound_id != -1)
     {
-      Engine::AUDIO.playSound(moveSoundId);
+      Engine::AUDIO.playSound(move_sound_id);
       std::cout << "P key was pressed! Playing sound.\n";
     }
   }
@@ -72,9 +72,9 @@ void BasicState::Draw()
   Engine::GRAPHICS.drawLine({ 1.0f, 1.0f, 1.0f, 1.0f }, 800.0f, 200.0f, 600.0f, 400.0f, 1.0f); // White line
 
   // Draw some text using the loaded font
-  Engine::GRAPHICS.drawText(fontId1, "Hello", 250.0f, 250.0f, 1.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
-  Engine::GRAPHICS.drawText(fontId2, "Hello", 250.0f, 300.0f, 1.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
-  Engine::GRAPHICS.drawText(fontId1, "Press 'P' to play sound", 250.0f, 350.0f, 0.5f, { 1.0f, 1.0f, 0.0f, 1.0f });
+  Engine::GRAPHICS.drawText(font_id_1, "Hello", 250.0f, 250.0f, 1.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+  Engine::GRAPHICS.drawText(font_id_2, "Hello", 250.0f, 300.0f, 1.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+  Engine::GRAPHICS.drawText(font_id_1, "Press 'P' to play sound", 250.0f, 350.0f, 0.5f, { 1.0f, 1.0f, 0.0f, 1.0f });
 }
 
 void BasicState::Free()

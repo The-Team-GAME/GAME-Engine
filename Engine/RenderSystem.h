@@ -41,7 +41,7 @@ public:
     auto color = entity.hasComponent<Components::Color>() ?
       *entity.getComponent<Components::Color>() : Components::Color{ 1.0f, 1.0f, 1.0f, 1.0f };
 
-    Engine::GRAPHICS.drawTexture(sprite->textureId, pos->X(), pos->Y(),
+    Engine::GRAPHICS.drawTexture(sprite->texture_id, pos->X(), pos->Y(),
       size->width * scale.X(), size->height * scale.Y(),
       rotation.angle, Graphics::Origin::Center,
       { color.X(), color.Y(), color.Z(), color.W() });

@@ -76,7 +76,7 @@ namespace Components {
   struct Renderable {};
 
   struct StaticSprite {
-    s32 textureId;
+    s32 texture_id;
     StaticSprite(std::string texturePath, Graphics::MinifyingFilter minifyingFilter = Graphics::MinifyingFilter::Linear);
     StaticSprite(const StaticSprite& other);
   };

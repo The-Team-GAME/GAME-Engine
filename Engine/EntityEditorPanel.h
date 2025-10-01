@@ -288,7 +288,7 @@ inline void EntityEditorPanel()
         if (ImGui::TreeNode("StaticSprite"))
         {
           auto* sprite = entity.getComponent<Components::StaticSprite>();
-          ImGui::Text("Texture ID: %d", sprite->textureId);
+          ImGui::Text("Texture ID: %d", sprite->texture_id);
           ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), 
             "Note: StaticSprite editing not yet supported");
           

@@ -59,7 +59,7 @@ private:
 
   struct SpriteSheet
   {
-    u32 textureId;
+    u32 texture_id;
     s32 frameWidth;
     s32 frameHeight;
     s32 totalFrames;
@@ -150,10 +150,10 @@ public:
   void drawTextureRegion(s32 imageId, f32 destX, f32 destY, f32 destWidth, f32 destHeight, f32 srcX, f32 srcY, f32 srcWidth, f32 srcHeight, f32 rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& ts32Color = glm::vec4(1.0f));
 
   s32 loadTexture(const char* filepath, MinifyingFilter min_filter = MinifyingFilter::Linear);
-  void unloadTexture(s32 textureId);
+  void unloadTexture(s32 texture_id);
   void unloadAllTextures();
-  void getTextureDimensions(s32 textureId, s32& width, s32& height) const;
-  u32 getTextureHandle(s32 textureId) const; // Add this method
+  void getTextureDimensions(s32 texture_id, s32& width, s32& height) const;
+  u32 getTextureHandle(s32 texture_id) const; // Add this method
 
   void clearScreen(f32 r, f32 g, f32 b, f32 a);
 
