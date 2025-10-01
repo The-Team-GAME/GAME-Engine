@@ -1,53 +1,65 @@
 #pragma once
 
 #include "StateManager.h"
-#include "core.h"
-#include "ObjectFactory.h"
+#include "Core.h"
+#include "BasicComponents.h"
+#include "RenderSystem.h"
+#include "BackgroundSystem.h"
 #include <string>
-#include <vector>
-#include <filesystem>
-#include <algorithm>
-#include <cstdlib>
-#include <stack>
-#include <iostream>
-#include "Graphics.h"
 
 class DevSpriteAnimationState : public Engine::GameState<DevSpriteAnimationState> {
 private:
-  s32 marioSpriteSheetId = -1;
-  f32 animationTime = 0.0f;
+  ECS::Entity marioEntity;
+  ECS::Entity backgroundEntity;
 
 public:
   void Load() {};
 
   void Init() {
-    // Load sprite sheet using ResourceManager
-    marioSpriteSheetId = Engine::RESOURCES.load_sprite_sheet(
-      "mario_sprite",
-      "Assets/images/mario.png",
-      96 / 3, // frame width
-      32, // frame height
-      3, // total frames
-      8.0f, // frames per second
-      Graphics::MinifyingFilter::Nearest
-    );
+    // Create background entity
+    backgroundEntity = Engine::WORLD.createEntity()
+      .addComponent<Components::Background>()
+      .addComponent<Components::Color>(0.1f, 0.1f, 0.1f, 1.0f);
+
+    // Create animated Mario entity using the AnimatedSprite component
+    marioEntity = Engine::WORLD.createEntity()
+      .addComponent<Components::Position>(200.0f, 150.0f)
+      .addComponent<Components::Size>(96.0f, 96.0f)
+      .addComponent<Components::AnimatedSprite>(
+        "Assets/images/mario.png",  // sprite sheet path
+        96 / 3,                      // frame width (32 pixels)
+        32,                          // frame height
+        3,                           // total frames
+        8.0f,                        // frames per second
+        Graphics::MinifyingFilter::Nearest
+      );
+
+    marioEntity.addComponent<Components::Rotation>(0.0f);
+    marioEntity.addComponent<Components::Scale>(1.0f, 1.0f);
+    marioEntity.addComponent<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
+
+    // Add systems to render the entities
+    Engine::WORLD.addSystem<BackgroundSystem>();
+    Engine::WORLD.addSystem<AnimatedSpriteRenderSystem>();
   };
 
   void Update() {
-    animationTime += 0.016f;
   };
 
   void Draw() {
-    Engine::GRAPHICS.clearScreen(0.1f, 0.1f, 0.1f, 1.0f);
-
-    // Draw animated sprite
-    Engine::GRAPHICS.drawAnimatedSprite(marioSpriteSheetId, 200.0f, 150.0f, 96.0f, 96.0f, animationTime);
   };
 
-  void Free() {};
+  void Free() {
+    // Clean up entities
+    if (marioEntity.isValid()) {
+      marioEntity.destroy();
+    }
+    if (backgroundEntity.isValid()) {
+      backgroundEntity.destroy();
+    }
+  };
 
   void Unload() {
-    // Unload sprite sheet using ResourceManager
-    Engine::RESOURCES.unload_sprite_sheet("mario_sprite");
+
   };
 };

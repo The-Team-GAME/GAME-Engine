@@ -81,4 +81,21 @@ namespace Components {
     StaticSprite(const StaticSprite& other);
   };
 
+  struct AnimatedSprite {
+    s32 spriteSheetId;
+    f32 animationTime;
+    bool isPlaying;
+    bool loop;
+    
+    AnimatedSprite(std::string spriteSheetPath, s32 frameWidth, s32 frameHeight, 
+                   s32 totalFrames, f32 framesPerSecond, 
+                   Graphics::MinifyingFilter minifyingFilter = Graphics::MinifyingFilter::Linear);
+    AnimatedSprite(const AnimatedSprite& other);
+    
+    void play();
+    void pause();
+    void stop();
+    void reset();
+  };
+
 } // namespace Components
