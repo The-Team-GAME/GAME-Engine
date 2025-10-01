@@ -17,8 +17,8 @@ public:
     auto rotation = entity.hasComponent<Components::Rotation>() ?
       *entity.getComponent<Components::Rotation>() : Components::Rotation{ 0.0f };
 
-    Engine::GRAPHICS.drawRect({ color->x, color->y, color->z, color->w },
-      pos->x, pos->y, size->width, size->height,
+    Engine::GRAPHICS.drawRect({ color->X(), color->Y(), color->z, color->w },
+      pos->X(), pos->Y(), size->width, size->height,
       rotation.angle, Graphics::Origin::Center);
   }
 };
@@ -41,9 +41,9 @@ public:
     auto color = entity.hasComponent<Components::Color>() ?
       *entity.getComponent<Components::Color>() : Components::Color{ 1.0f, 1.0f, 1.0f, 1.0f };
 
-    Engine::GRAPHICS.drawTexture(sprite->textureId, pos->x, pos->y,
-      size->width * scale.x, size->height * scale.y,
+    Engine::GRAPHICS.drawTexture(sprite->textureId, pos->X(), pos->Y(),
+      size->width * scale.X(), size->height * scale.Y(),
       rotation.angle, Graphics::Origin::Center,
-      { color.x, color.y, color.z, color.w });
+      { color.X(), color.Y(), color.z, color.w });
   }
 };

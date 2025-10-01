@@ -5,46 +5,53 @@
 #include <backends/imgui_impl_opengl3.h>
 #include "InputManager.h"
 
-Engine::ImGuiManager::ImGuiManager()
-{
-  ImGui::CreateContext();
-  ImGuiIO& io = ImGui::GetIO();
-  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-  //io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
-  ImGui::StyleColorsDark();
-
-  ImGui_ImplGlfw_InitForOpenGL(Engine::WINDOW.getWindow(), true); // TODO: pass window as parameter
-  ImGui_ImplOpenGL3_Init();
+namespace {
+  bool guiEnabled = true;
 }
 
-Engine::ImGuiManager::~ImGuiManager()
-{
-  ImGui_ImplOpenGL3_Shutdown();
-  ImGui_ImplGlfw_Shutdown();
-  ImGui::DestroyContext();
-}
+namespace ImguiMgr {
 
-void Engine::ImGuiManager::begin()
-{
-  ImGui_ImplOpenGL3_NewFrame();
-  ImGui_ImplGlfw_NewFrame();
-  ImGui::NewFrame();
-}
-
-void Engine::ImGuiManager::end()
-{
-  ImGui::Render();
-  if (guiEnabled)
+  void imgui_init()
   {
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    //io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
+    ImGui::StyleColorsDark();
+
+    ImGui_ImplGlfw_InitForOpenGL(Engine::WINDOW.getWindow(), true); // TODO: pass window as parameter
+    ImGui_ImplOpenGL3_Init();
   }
-}
 
-void Engine::ImGuiManager::update()
-{
-  // Toggle ImGui with F1 key
-  if (Input::IsKeyPressed(GLFW_KEY_F1))
+  void imgui_exit()
   {
-    guiEnabled = !guiEnabled;
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+  }
+
+  void begin()
+  {
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+  }
+
+  void end()
+  {
+    ImGui::Render();
+    if (guiEnabled)
+    {
+      ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
+  }
+
+  void update()
+  {
+    // Toggle ImGui with F1 key
+    if (Engine::Input::IsKeyPressed(GLFW_KEY_F1))
+    {
+      guiEnabled = !guiEnabled;
+    }
   }
 }

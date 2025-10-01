@@ -108,7 +108,7 @@ void ImGuiState::handleMouse()
         if (pointInRect(mouse, minP, maxP)) {
           dragMode_ = DragMode::Moving;
           auto* pos = Engine::WORLD.getComponent<Components::Position>(rects_[selectedIndex_]);
-          moveGrabOffset_ = mouse - glm::vec2{ pos->x, pos->y };
+          moveGrabOffset_ = mouse - glm::vec2{ pos->X(), pos->Y() };
           prevMouse_ = mouse;
           return;
         }
@@ -124,7 +124,7 @@ void ImGuiState::handleMouse()
       if (getBounds(rects_[selectedIndex_], minP, maxP) && pointInRect(mouse, minP, maxP)) {
         dragMode_ = DragMode::Moving;
         auto* pos = Engine::WORLD.getComponent<Components::Position>(rects_[selectedIndex_]);
-        moveGrabOffset_ = mouse - glm::vec2{ pos->x, pos->y };
+        moveGrabOffset_ = mouse - glm::vec2{ pos->X(), pos->Y() };
       }
       else {
         dragMode_ = DragMode::None;
@@ -148,8 +148,8 @@ void ImGuiState::handleMouse()
       auto id = rects_[selectedIndex_];
       if (auto* pos = Engine::WORLD.getComponent<Components::Position>(id)) {
         glm::vec2 newCenter = mouse - moveGrabOffset_;
-        pos->x = newCenter.x;
-        pos->y = newCenter.y;
+        pos->X() = newCenter.x;
+        pos->Y() = newCenter.y;
       }
     }
     else if (dragMode_ == DragMode::Resizing && selectedIndex_ >= 0) {
@@ -157,8 +157,8 @@ void ImGuiState::handleMouse()
       auto* pos = Engine::WORLD.getComponent<Components::Position>(id);
       auto* size = Engine::WORLD.getComponent<Components::Size>(id);
       if (pos && size) {
-        glm::vec2 minP{ pos->x - size->width * 0.5f,  pos->y - size->height * 0.5f };
-        glm::vec2 maxP{ pos->x + size->width * 0.5f,  pos->y + size->height * 0.5f };
+        glm::vec2 minP{ pos->X() - size->width * 0.5f,  pos->Y() - size->height * 0.5f };
+        glm::vec2 maxP{ pos->X() + size->width * 0.5f,  pos->Y() + size->height * 0.5f };
 
         // Adjust sides
         if (resize_.l) minP.x = std::min(mouse.x, maxP.x - minRectSizePx_);
@@ -167,8 +167,8 @@ void ImGuiState::handleMouse()
         if (resize_.b) maxP.y = std::max(mouse.y, minP.y + minRectSizePx_);
 
         // Recompute center/size
-        pos->x = (minP.x + maxP.x) * 0.5f;
-        pos->y = (minP.y + maxP.y) * 0.5f;
+        pos->X() = (minP.x + maxP.x) * 0.5f;
+        pos->Y() = (minP.y + maxP.y) * 0.5f;
         size->width = std::max(minRectSizePx_, maxP.x - minP.x);
         size->height = std::max(minRectSizePx_, maxP.y - minP.y);
       }
@@ -277,8 +277,8 @@ bool ImGuiState::getBounds(EntityID id, glm::vec2& minP, glm::vec2& maxP) const
   auto* pos = Engine::WORLD.getComponent<Components::Position>(id);
   auto* size = Engine::WORLD.getComponent<Components::Size>(id);
   if (!pos || !size) return false;
-  minP = { pos->x - size->width * 0.5f,  pos->y - size->height * 0.5f };
-  maxP = { pos->x + size->width * 0.5f,  pos->y + size->height * 0.5f };
+  minP = { pos->X() - size->width * 0.5f,  pos->Y() - size->height * 0.5f };
+  maxP = { pos->X() + size->width * 0.5f,  pos->Y() + size->height * 0.5f };
   return true;
 }
 
@@ -352,7 +352,7 @@ void ImGuiState::drawImGui()
         if (!pos || !size) continue;
         char label[160];
         std::snprintf(label, sizeof(label), "#%d  pos(%.0f,%.0f) size(%.0f,%.0f)",
-          i, pos->x, pos->y, size->width, size->height);
+          i, pos->X(), pos->Y(), size->width, size->height);
         bool selected = (selectedIndex_ == i);
         if (ImGui::Selectable(label, selected)) selectedIndex_ = i;
       }
@@ -369,9 +369,9 @@ void ImGuiState::drawImGui()
       auto* col = Engine::WORLD.getComponent<Components::Collider>(id);
 
       if (pos && size && color) {
-        ImGui::DragFloat2("Position (center)", &pos->x, 1.0f);
+        ImGui::DragFloat2("Position (center)", &pos->X(), 1.0f);
         ImGui::DragFloat2("Size", &size->width, 1.0f, minRectSizePx_, 10000.0f);
-        ImGui::ColorEdit4("Color", &color->x, ImGuiColorEditFlags_AlphaBar);
+        ImGui::ColorEdit4("Color", &color->X(), ImGuiColorEditFlags_AlphaBar);
 
         // Keep size invariant even if user drags below min
         glm::vec2 s{ size->width, size->height };
@@ -397,8 +397,8 @@ void ImGuiState::drawImGui()
 
         ImGui::SameLine();
         if (ImGui::Button("Apply Default Color")) {
-          color->x = currentColor_.x;
-          color->y = currentColor_.y;
+          color->X() = currentColor_.x;
+          color->Y() = currentColor_.y;
           color->z = currentColor_.z;
           color->w = currentColor_.w;
         }

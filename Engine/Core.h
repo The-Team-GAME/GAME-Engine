@@ -4,6 +4,7 @@
 #include "Graphics.h"
 #include "ECS/ECS.h"
 #include "ObjectFactory.h"
+#include "LevelLoader.h"
 #include "Time.h"
 #include "ImGuiManager.h"
 #include "WindowManager.h"
@@ -26,8 +27,8 @@ namespace Engine
 
   extern ECS::World WORLD;
   extern ObjectFactory FACTORY;
+  extern LevelLoader LEVEL_LOADER;
   extern Graphics GRAPHICS;
-  extern ImGuiManager IMGUI;
   extern WindowManager WINDOW;
   extern AudioManager AUDIO;
   extern ResourceManager RESOURCES;
