@@ -76,10 +76,10 @@ private:
 
   struct Font {
     std::unordered_map<char, Character> Characters;
-    u32 atlasTexture;  // Single texture for all characters
-    u32 fontSize;
-    f32 baseline;
-    s32 atlasWidth, atlasHeight;
+    u32 atlasTexture = 0;  // Single texture for all characters
+    u32 fontSize = 0;
+    f32 baseline = 0.0f;
+    s32 atlasWidth = 0, atlasHeight = 0;
     bool isValid = true;  // Track if font is still valid
   };
 
@@ -110,7 +110,7 @@ private:
   u32 textureSlotIndex = 1; // 0 = white texture
 
 
-  Shader textureShader;
+  Shader textureShader{};
   glm::mat4 projection = glm::mat4(1.0f);
   glm::mat4 view = glm::mat4(1.0f);
   glm::mat4 viewProjectionMatrix = glm::mat4(1.0f);

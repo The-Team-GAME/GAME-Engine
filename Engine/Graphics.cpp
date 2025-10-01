@@ -103,7 +103,7 @@ void Graphics::init_graphics()
   glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, TexID));
 
   // Generate indices for all possible quads in a batch.
-  uint32_t indices[MaxIndices];
+  uint32_t indices[MaxIndices] = {};
   uint32_t offset = 0;
   for (uint32_t i = 0; i < MaxIndices; i += 6)
   {
@@ -702,6 +702,11 @@ void Graphics::draw_texture_region(s32 imageId, f32 destX, f32 destY, f32 destWi
   }
   else
   {
+    if (textureSlotIndex >= MaxTextureSlots)
+    {
+      // If we exceed the max texture slots, flush and start a new batch.
+      next_batch();
+    }
     // If not found, add it to the next available slot.
     textureIndex = (f32)textureSlotIndex;
     textureSlots[textureSlotIndex] = tex.id;
@@ -908,7 +913,7 @@ void Graphics::unload_all_sprite_sheets()
 }
 
 // Gets the dimensions of a texture by its ID
-void Graphics::get_texture_dimensions(s32 texture_id, int& width, int& height) const
+void Graphics::get_texture_dimensions(s32 texture_id, s32& width, s32& height) const
 {
   auto it = textures.find(texture_id);
   if (it == textures.end())
