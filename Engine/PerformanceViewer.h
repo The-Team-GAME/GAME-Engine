@@ -8,9 +8,9 @@ inline void PerformanceViewerPanel()
   ImGui::Begin("Performance Viewer");
 
   // Static variables to smooth the display updates
-  static float display_fps = 0.0f;
-  static float update_timer = 0.0f;
-  static const float update_interval = 0.25f; // Update display every 0.25 seconds
+  static f32 display_fps = 0.0f;
+  static f32 update_timer = 0.0f;
+  static const f32 update_interval = 0.25f; // Update display every 0.25 seconds
   static std::unordered_map<std::string, double> cached_percentages;
 
   update_timer += Engine::Time::get_real_dt();
@@ -30,7 +30,7 @@ inline void PerformanceViewerPanel()
 
   ImGui::Text("FPS: %.1f", display_fps);
 
-  float tick_rate_input = Engine::Time::get_tick_rate();
+  f32 tick_rate_input = Engine::Time::get_tick_rate();
 
   ImGui::SliderFloat("Tick Rate", &tick_rate_input, 10.0f, 144.0f);
 
