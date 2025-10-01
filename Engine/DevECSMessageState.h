@@ -53,7 +53,7 @@ public:
     // Check if the clone is valid and then modify it to differentiate it
     if (clonedEnemy.isValid()) {
       // Get the position component of the clone and move it somewhere else
-      auto* clonedPos = clonedEnemy.getComponent<Components::Position>();
+      auto* clonedPos = clonedEnemy.get_component<Components::Position>();
       if (clonedPos) {
         clonedPos->X() = 200.0f;
         clonedPos->Y() = 150.0f;
@@ -81,21 +81,21 @@ public:
       Engine::WORLD.sendEvent<DamageEvent>(player.getId(), 10);
       // Print the health of all entities with Health component  
       for (const auto& entity : Engine::WORLD.getEntitiesWith<Components::Health>()) {
-        auto* health = entity.getComponent<Components::Health>();
+        auto* health = entity.get_component<Components::Health>();
         std::cout << "Entity " << entity.getId() << " has health: " << health->value << "\n";
       }
       std::cout << "\n";
 
       auto bgEntity = Engine::WORLD.getFirstEntityWith<Components::Background>();
-      auto* bg_color = bgEntity.getComponent<Components::Color>();
+      auto* bg_color = bgEntity.get_component<Components::Color>();
 
       if (!player.hasComponent<Components::Health>())
         return;
 
       *bg_color = Components::Color{
-        player.getComponent<Components::Health>()->value / 100.0f,
-        player.getComponent<Components::Health>()->value / 100.0f,
-        player.getComponent<Components::Health>()->value / 100.0f,
+        player.get_component<Components::Health>()->value / 100.0f,
+        player.get_component<Components::Health>()->value / 100.0f,
+        player.get_component<Components::Health>()->value / 100.0f,
         1.0f
       };
     }

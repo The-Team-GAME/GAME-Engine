@@ -141,7 +141,7 @@ namespace Engine
       {
         // Create a temporary entity to check its ObjectId
         auto tempEntity = m_factory->createObject(prefabId);
-        auto* objectId = tempEntity.getComponent<Components::ObjectId>();
+        auto* objectId = tempEntity.get_component<Components::ObjectId>();
 
         if (objectId && *objectId == entityData.prefabId)
         {

@@ -29,7 +29,7 @@ public:
       .addComponent<Components::Scale>(2.0f, 2.0f); // Make it 2 times bigger
 
     // You can modify components like this too
-    //enemy2.getComponent<Components::Position>()->x = 300.0f;
+    //enemy2.get_component<Components::Position>()->x = 300.0f;
 
     auto background = Engine::WORLD.createEntity()
       .addComponent<Components::Tag<"GameObjectState">>()

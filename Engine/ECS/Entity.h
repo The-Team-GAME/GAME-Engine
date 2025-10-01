@@ -24,10 +24,10 @@ namespace ECS {
     Entity& removeComponent();
 
     template<typename T>
-    T* getComponent();
+    T* get_component();
 
     template<typename T>
-    const T* getComponent() const;
+    const T* get_component() const;
 
     template<typename T>
     bool hasComponent() const;

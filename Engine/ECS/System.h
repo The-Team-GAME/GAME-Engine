@@ -23,11 +23,11 @@ namespace ECS {
 
     // Clean way to specify required components!
     template<typename... Components>
-    void requireComponents();
+    void require_components();
 
     // Clean way to specify listened-to events!
     template<typename... Events>
-    void listenToEvents();
+    void listen_to_events();
 
     // System logic
     virtual void update();

@@ -17,13 +17,13 @@ namespace ECS {
   }
 
   template<typename T>
-  T* Entity::getComponent() {
-    return world->getComponent<T>(id);
+  T* Entity::get_component() {
+    return world->get_component<T>(id);
   }
 
   template<typename T>
-  const T* Entity::getComponent() const {
-    return world->getComponent<T>(id);
+  const T* Entity::get_component() const {
+    return world->get_component<T>(id);
   }
 
   template<typename T>

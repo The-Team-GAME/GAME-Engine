@@ -22,7 +22,7 @@ namespace ECS {
   }
 
   template<typename T>
-  T* ComponentArray<T>::getComponent(EntityID entity) {
+  T* ComponentArray<T>::get_component(EntityID entity) {
     auto it = components.find(entity);
     return it != components.end() ? &it->second : nullptr;
   }

@@ -133,9 +133,9 @@ public:
   void setViewport(s32 width, s32 height);
 
   // Camera controls
-  void setCameraPosition(f32 x, f32 y);
-  void setCameraZoom(f32 zoom);
-  void setCameraRotation(f32 degrees);
+  void set_camera_position(f32 x, f32 y);
+  void set_camera_zoom(f32 zoom);
+  void set_camera_rotation(f32 degrees);
 
   // Font and Text
   s32 loadFont(const char* filepath, u32 size);

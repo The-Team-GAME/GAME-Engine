@@ -28,7 +28,7 @@ namespace ECS {
 
     void cloneComponent(EntityID source, EntityID destination) override;
 
-    T* getComponent(EntityID entity);
+    T* get_component(EntityID entity);
 
     bool hasComponent(EntityID entity) const;
 

@@ -55,7 +55,7 @@ inline void CameraPanel()
     }
 
     // Apply position
-    Engine::GRAPHICS.setCameraPosition(camera_position.x, camera_position.y);
+    Engine::GRAPHICS.set_camera_position(camera_position.x, camera_position.y);
   }
 
   ImGui::Separator();
@@ -110,7 +110,7 @@ inline void CameraPanel()
     }
 
     // Apply zoom
-    Engine::GRAPHICS.setCameraZoom(camera_zoom);
+    Engine::GRAPHICS.set_camera_zoom(camera_zoom);
   }
 
   ImGui::Separator();
@@ -174,7 +174,7 @@ inline void CameraPanel()
     }
 
     // Apply rotation
-    Engine::GRAPHICS.setCameraRotation(camera_rotation);
+    Engine::GRAPHICS.set_camera_rotation(camera_rotation);
   }
 
   ImGui::Separator();
@@ -186,9 +186,9 @@ inline void CameraPanel()
     camera_zoom = 1.0f;
     camera_rotation = 0.0f;
     
-    Engine::GRAPHICS.setCameraPosition(camera_position.x, camera_position.y);
-    Engine::GRAPHICS.setCameraZoom(camera_zoom);
-    Engine::GRAPHICS.setCameraRotation(camera_rotation);
+    Engine::GRAPHICS.set_camera_position(camera_position.x, camera_position.y);
+    Engine::GRAPHICS.set_camera_zoom(camera_zoom);
+    Engine::GRAPHICS.set_camera_rotation(camera_rotation);
   }
 
   ImGui::Separator();

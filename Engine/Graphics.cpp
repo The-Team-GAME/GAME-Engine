@@ -270,21 +270,21 @@ void Graphics::setViewport(s32 width, s32 height)
 }
 
 // Sets the camera's world position.
-void Graphics::setCameraPosition(f32 x, f32 y)
+void Graphics::set_camera_position(f32 x, f32 y)
 {
   camera.position = { x, y };
   updateViewMatrix();
 }
 
 // Sets the camera's zoom level.
-void Graphics::setCameraZoom(f32 zoom)
+void Graphics::set_camera_zoom(f32 zoom)
 {
   camera.zoom = zoom;
   updateViewMatrix();
 }
 
 // Sets the camera's rotation in degrees.
-void Graphics::setCameraRotation(f32 degrees)
+void Graphics::set_camera_rotation(f32 degrees)
 {
   camera.rotation = degrees;
   updateViewMatrix();

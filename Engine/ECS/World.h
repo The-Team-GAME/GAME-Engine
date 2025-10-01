@@ -36,7 +36,7 @@ namespace ECS
     std::unordered_map<EventTypeID, std::vector<std::function<void(const Event&)>>> eventHandlers;
 
     template <typename T>
-    ComponentArray<T>* getComponentArray();
+    ComponentArray<T>* get_componentArray();
 
   public:
     // Component registration
@@ -62,10 +62,10 @@ namespace ECS
     void removeComponent(EntityID entity);
 
     template <typename T>
-    T* getComponent(EntityID entity);
+    T* get_component(EntityID entity);
 
     template <typename T>
-    const T* getComponent(EntityID entity) const;
+    const T* get_component(EntityID entity) const;
 
     template <typename T>
     bool hasComponent(EntityID entity) const;
@@ -113,7 +113,7 @@ namespace ECS
     size_t getEntityCount() const;
 
     template <typename T>
-    size_t getComponentCount() const;
+    size_t get_componentCount() const;
 
   private:
     void entityComponentChanged(EntityID entity);

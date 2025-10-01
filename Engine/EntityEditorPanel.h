@@ -139,7 +139,7 @@ inline void EntityEditorPanel()
       {
         if (ImGui::TreeNode("Position"))
         {
-          auto* pos = entity.getComponent<Components::Position>();
+          auto* pos = entity.get_component<Components::Position>();
           ImGui::DragFloat("X##pos", &pos->X(), 1.0f);
           ImGui::DragFloat("Y##pos", &pos->Y(), 1.0f);
           
@@ -155,7 +155,7 @@ inline void EntityEditorPanel()
       {
         if (ImGui::TreeNode("Velocity"))
         {
-          auto* vel = entity.getComponent<Components::Velocity>();
+          auto* vel = entity.get_component<Components::Velocity>();
           ImGui::DragFloat("X##vel", &vel->X(), 1.0f);
           ImGui::DragFloat("Y##vel", &vel->Y(), 1.0f);
           
@@ -171,7 +171,7 @@ inline void EntityEditorPanel()
       {
         if (ImGui::TreeNode("Size"))
         {
-          auto* size = entity.getComponent<Components::Size>();
+          auto* size = entity.get_component<Components::Size>();
           ImGui::DragFloat("Width", &size->width, 1.0f, 0.0f, 10000.0f);
           ImGui::DragFloat("Height", &size->height, 1.0f, 0.0f, 10000.0f);
           
@@ -187,7 +187,7 @@ inline void EntityEditorPanel()
       {
         if (ImGui::TreeNode("Color"))
         {
-          auto* color = entity.getComponent<Components::Color>();
+          auto* color = entity.get_component<Components::Color>();
           f32 colorArray[4] = { color->X(), color->Y(), color->Z(), color->W()};
           
           if (ImGui::ColorEdit4("RGBA", colorArray))
@@ -210,7 +210,7 @@ inline void EntityEditorPanel()
       {
         if (ImGui::TreeNode("Rotation"))
         {
-          auto* rot = entity.getComponent<Components::Rotation>();
+          auto* rot = entity.get_component<Components::Rotation>();
           ImGui::SliderFloat("Angle (degrees)", &rot->angle, 0.0f, 360.0f);
           
           if (ImGui::Button("Remove##rotation"))
@@ -225,7 +225,7 @@ inline void EntityEditorPanel()
       {
         if (ImGui::TreeNode("Scale"))
         {
-          auto* scale = entity.getComponent<Components::Scale>();
+          auto* scale = entity.get_component<Components::Scale>();
           ImGui::DragFloat("X##scale", &scale->X(), 0.01f, 0.01f, 10.0f);
           ImGui::DragFloat("Y##scale", &scale->Y(), 0.01f, 0.01f, 10.0f);
           
@@ -247,7 +247,7 @@ inline void EntityEditorPanel()
       {
         if (ImGui::TreeNode("Health"))
         {
-          auto* health = entity.getComponent<Components::Health>();
+          auto* health = entity.get_component<Components::Health>();
           ImGui::DragInt("Current", &health->value, 1, 0, health->max);
           ImGui::DragInt("Max", &health->max, 1, 1, 10000);
           
@@ -272,7 +272,7 @@ inline void EntityEditorPanel()
       {
         if (ImGui::TreeNode("RotationSpeed"))
         {
-          auto* rotSpeed = entity.getComponent<Components::RotationSpeed>();
+          auto* rotSpeed = entity.get_component<Components::RotationSpeed>();
           ImGui::DragFloat("Degrees/Second", &rotSpeed->degrees_per_second, 1.0f, -360.0f, 360.0f);
           
           if (ImGui::Button("Remove##rotspeed"))
@@ -287,7 +287,7 @@ inline void EntityEditorPanel()
       {
         if (ImGui::TreeNode("StaticSprite"))
         {
-          auto* sprite = entity.getComponent<Components::StaticSprite>();
+          auto* sprite = entity.get_component<Components::StaticSprite>();
           ImGui::Text("Texture ID: %d", sprite->texture_id);
           ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), 
             "Note: StaticSprite editing not yet supported");

@@ -107,7 +107,7 @@ void ImGuiState::handleMouse()
         }
         if (pointInRect(mouse, minP, maxP)) {
           dragMode_ = DragMode::Moving;
-          auto* pos = Engine::WORLD.getComponent<Components::Position>(rects_[selectedIndex_]);
+          auto* pos = Engine::WORLD.get_component<Components::Position>(rects_[selectedIndex_]);
           moveGrabOffset_ = mouse - glm::vec2{ pos->X(), pos->Y() };
           prevMouse_ = mouse;
           return;
@@ -123,7 +123,7 @@ void ImGuiState::handleMouse()
       glm::vec2 minP, maxP;
       if (getBounds(rects_[selectedIndex_], minP, maxP) && pointInRect(mouse, minP, maxP)) {
         dragMode_ = DragMode::Moving;
-        auto* pos = Engine::WORLD.getComponent<Components::Position>(rects_[selectedIndex_]);
+        auto* pos = Engine::WORLD.get_component<Components::Position>(rects_[selectedIndex_]);
         moveGrabOffset_ = mouse - glm::vec2{ pos->X(), pos->Y() };
       }
       else {
@@ -146,7 +146,7 @@ void ImGuiState::handleMouse()
 
     if (dragMode_ == DragMode::Moving && selectedIndex_ >= 0) {
       auto id = rects_[selectedIndex_];
-      if (auto* pos = Engine::WORLD.getComponent<Components::Position>(id)) {
+      if (auto* pos = Engine::WORLD.get_component<Components::Position>(id)) {
         glm::vec2 newCenter = mouse - moveGrabOffset_;
         pos->X() = newCenter.x;
         pos->Y() = newCenter.y;
@@ -154,8 +154,8 @@ void ImGuiState::handleMouse()
     }
     else if (dragMode_ == DragMode::Resizing && selectedIndex_ >= 0) {
       auto id = rects_[selectedIndex_];
-      auto* pos = Engine::WORLD.getComponent<Components::Position>(id);
-      auto* size = Engine::WORLD.getComponent<Components::Size>(id);
+      auto* pos = Engine::WORLD.get_component<Components::Position>(id);
+      auto* size = Engine::WORLD.get_component<Components::Size>(id);
       if (pos && size) {
         glm::vec2 minP{ pos->X() - size->width * 0.5f,  pos->Y() - size->height * 0.5f };
         glm::vec2 maxP{ pos->X() + size->width * 0.5f,  pos->Y() + size->height * 0.5f };
@@ -211,7 +211,7 @@ void ImGuiState::runCollisionPass()
   // Brute-force AABB among collider-enabled rects
   for (size_t i = 0; i < rects_.size(); ++i) {
     auto idA = rects_[i];
-    auto* colA = Engine::WORLD.getComponent<Components::Collider>(idA);
+    auto* colA = Engine::WORLD.get_component<Components::Collider>(idA);
     if (!colA || !colA->enabled) continue;
 
     glm::vec2 aMin, aMax;
@@ -219,7 +219,7 @@ void ImGuiState::runCollisionPass()
 
     for (size_t j = i + 1; j < rects_.size(); ++j) {
       auto idB = rects_[j];
-      auto* colB = Engine::WORLD.getComponent<Components::Collider>(idB);
+      auto* colB = Engine::WORLD.get_component<Components::Collider>(idB);
       if (!colB || !colB->enabled) continue;
 
       glm::vec2 bMin, bMax;
@@ -274,8 +274,8 @@ void ImGuiState::drawSelectionGizmo()
 /* Picking helpers */
 bool ImGuiState::getBounds(EntityID id, glm::vec2& minP, glm::vec2& maxP) const
 {
-  auto* pos = Engine::WORLD.getComponent<Components::Position>(id);
-  auto* size = Engine::WORLD.getComponent<Components::Size>(id);
+  auto* pos = Engine::WORLD.get_component<Components::Position>(id);
+  auto* size = Engine::WORLD.get_component<Components::Size>(id);
   if (!pos || !size) return false;
   minP = { pos->X() - size->width * 0.5f,  pos->Y() - size->height * 0.5f };
   maxP = { pos->X() + size->width * 0.5f,  pos->Y() + size->height * 0.5f };
@@ -347,8 +347,8 @@ void ImGuiState::drawImGui()
     if (ImGui::BeginListBox("Rectangles", ImVec2(420, 200))) {
       for (int i = 0; i < (int)rects_.size(); ++i) {
         const EntityID id = rects_[i];
-        auto* pos = Engine::WORLD.getComponent<Components::Position>(id);
-        auto* size = Engine::WORLD.getComponent<Components::Size>(id);
+        auto* pos = Engine::WORLD.get_component<Components::Position>(id);
+        auto* size = Engine::WORLD.get_component<Components::Size>(id);
         if (!pos || !size) continue;
         char label[160];
         std::snprintf(label, sizeof(label), "#%d  pos(%.0f,%.0f) size(%.0f,%.0f)",
@@ -363,10 +363,10 @@ void ImGuiState::drawImGui()
       ImGui::Separator();
       ImGui::Text("Selected #%d", selectedIndex_);
       const EntityID id = rects_[selectedIndex_];
-      auto* pos = Engine::WORLD.getComponent<Components::Position>(id);
-      auto* size = Engine::WORLD.getComponent<Components::Size>(id);
-      auto* color = Engine::WORLD.getComponent<Components::Color>(id);
-      auto* col = Engine::WORLD.getComponent<Components::Collider>(id);
+      auto* pos = Engine::WORLD.get_component<Components::Position>(id);
+      auto* size = Engine::WORLD.get_component<Components::Size>(id);
+      auto* color = Engine::WORLD.get_component<Components::Color>(id);
+      auto* col = Engine::WORLD.get_component<Components::Collider>(id);
 
       if (pos && size && color) {
         ImGui::DragFloat2("Position (center)", &pos->X(), 1.0f);
@@ -384,7 +384,7 @@ void ImGuiState::drawImGui()
         if (!hasCollider) {
           if (ImGui::Button("Add Collider")) {
             Engine::WORLD.addComponent<Components::Collider>(id, Components::Collider{ true,false });
-            col = Engine::WORLD.getComponent<Components::Collider>(id);
+            col = Engine::WORLD.get_component<Components::Collider>(id);
           }
         }
         else {

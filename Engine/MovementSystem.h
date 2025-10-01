@@ -6,12 +6,12 @@
 class MovementSystem : public ECS::System {
 public:
   MovementSystem() {
-    requireComponents<Components::Position, Components::Velocity>();
+    require_components<Components::Position, Components::Velocity>();
   }
 
   void updateEntity(ECS::Entity& entity) override {
-    auto* pos = entity.getComponent<Components::Position>();
-    auto* vel = entity.getComponent<Components::Velocity>();
+    auto* pos = entity.get_component<Components::Position>();
+    auto* vel = entity.get_component<Components::Velocity>();
 
     pos->X() += vel->X() * Engine::Time::get_fixed_dt();
     pos->Y() += vel->Y() * Engine::Time::get_fixed_dt();

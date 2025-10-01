@@ -5,7 +5,7 @@ namespace ECS
 {
 
   template <typename T>
-  ComponentArray<T>* World::getComponentArray()
+  ComponentArray<T>* World::get_componentArray()
   {
     ComponentTypeID typeId = ComponentTypeManager::getTypeId<T>();
     auto it = componentArrays.find(typeId);
@@ -45,8 +45,8 @@ namespace ECS
   {
     assert(!hasComponent<T>(entity) && "Entity already has this component");
     ComponentTypeID typeId = ComponentTypeManager::getTypeId<T>();
-    auto* array = getComponentArray<T>();
-    // The assert is no longer strictly necessary as getComponentArray now ensures creation.
+    auto* array = get_componentArray<T>();
+    // The assert is no longer strictly necessary as get_componentArray now ensures creation.
     // assert(array && "Component not registered");
 
     array->addComponent(entity, T{ std::forward<Args>(args)... });
@@ -59,7 +59,7 @@ namespace ECS
   {
     assert(hasComponent<T>(entity) && "Entity does not have this component");
     ComponentTypeID typeId = ComponentTypeManager::getTypeId<T>();
-    auto* array = getComponentArray<T>();
+    auto* array = get_componentArray<T>();
     if (array)
     {
       array->removeComponent(entity);
@@ -69,19 +69,19 @@ namespace ECS
   }
 
   template <typename T>
-  T* World::getComponent(EntityID entity)
+  T* World::get_component(EntityID entity)
   {
     assert(hasComponent<T>(entity) && "Entity does not have this component");
-    auto* array = getComponentArray<T>();
-    return array ? array->getComponent(entity) : nullptr;
+    auto* array = get_componentArray<T>();
+    return array ? array->get_component(entity) : nullptr;
   }
 
   template <typename T>
-  const T* World::getComponent(EntityID entity) const
+  const T* World::get_component(EntityID entity) const
   {
     assert(hasComponent<T>(entity) && "Entity does not have this component");
-    auto* array = const_cast<World*>(this)->getComponentArray<T>();
-    return array ? array->getComponent(entity) : nullptr;
+    auto* array = const_cast<World*>(this)->get_componentArray<T>();
+    return array ? array->get_component(entity) : nullptr;
   }
 
   template <typename T>
@@ -189,9 +189,9 @@ namespace ECS
   }
 
   template <typename T>
-  size_t World::getComponentCount() const
+  size_t World::get_componentCount() const
   {
-    auto* array = const_cast<World*>(this)->getComponentArray<T>();
+    auto* array = const_cast<World*>(this)->get_componentArray<T>();
     return array ? array->size() : 0;
   }
 
