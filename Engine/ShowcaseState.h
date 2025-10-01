@@ -127,7 +127,7 @@ public:
     player = Engine::WORLD.createEntity()
       .addComponent<Components::Tag<"ShowcaseState">>()
       .addComponent<Components::Position>(200.0f, 450.0f)
-      .addComponent<Components::Size>(128.0f, 128.0f)
+      .addComponent<Components::Size>(64.0f, 64.0f)
       .addComponent<Components::Velocity>(0.0f, 0.0f)
       .addComponent<Components::AnimatedSprite>(playerIdleSpriteSheetId)
       .addComponent<Components::Health>(100, 100)
@@ -165,6 +165,7 @@ public:
         if (playerSprite) {
           playerSprite->spriteSheetId = playerPunchSpriteSheetId;
           playerSprite->reset();
+          // player.getComponent<Components::Size>()->width = 96.0f; // Adjust size for punch
           std::cout << "Playing punch animation\n";
         }
       }

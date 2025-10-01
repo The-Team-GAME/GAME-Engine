@@ -1,8 +1,8 @@
 {
   "entity": {
     "id": "lazy_monkey",
-    "width": 96,
-    "height": 96,
+    "width": 64,
+    "height": 64,
     "spriteSheetPath": "Assets/images/LazyMonkey_Idle_Spritesheet.png",
     "frameWidth": 64,
     "frameHeight": 64,
