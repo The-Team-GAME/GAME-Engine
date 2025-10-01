@@ -55,8 +55,8 @@ public:
       // Get the position component of the clone and move it somewhere else
       auto* clonedPos = clonedEnemy.getComponent<Components::Position>();
       if (clonedPos) {
-        clonedPos->x = 200.0f;
-        clonedPos->y = 150.0f;
+        clonedPos->X() = 200.0f;
+        clonedPos->Y() = 150.0f;
       }
     }
     // --- End of Demonstration ---
