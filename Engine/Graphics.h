@@ -152,6 +152,7 @@ public:
   s32 load_texture(const char* filepath, MinifyingFilter min_filter = MinifyingFilter::Linear);
   void unload_texture(s32 texture_id);
   void unload_all_textures();
+  void get_texture_dimensions(s32 texture_id, s32& width, s32& height) const;
   u32 get_texture_handle(s32 texture_id) const;
 
   void clear_screen(f32 r, f32 g, f32 b, f32 a);
