@@ -6,6 +6,7 @@
 #include "RenderSystem.h"
 #include "BackgroundSystem.h"
 #include <string>
+#include "SimplePlayerMovementSystem.h"
 
 class DevSpriteAnimationState : public Engine::GameState<DevSpriteAnimationState> {
 private:
@@ -28,6 +29,7 @@ public:
       .addComponent<Components::Size>(96.0f, 96.0f).addComponent<Components::Rotation>(0.0f)
       .addComponent<Components::Scale>(1.0f, 1.0f)
       .addComponent<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+      .addComponent<Components::SimplePlayerControl>(100.0f)
       .addComponent<Components::AnimatedSprite>(
         "Assets/images/LazyMonkey_Idle_Spritesheet.png",  // sprite sheet path
         320 / 5,                                          // frame width (Total width / number of frames)
@@ -55,6 +57,7 @@ public:
     // Add systems to render the entities
     Engine::WORLD.addSystem<BackgroundSystem>();
     Engine::WORLD.addSystem<AnimatedSpriteRenderSystem>();
+    Engine::WORLD.addSystem<SimplePlayerMovementSystem>();
   };
 
   void Update() {
@@ -74,6 +77,10 @@ public:
     if (backgroundEntity.isValid()) {
       backgroundEntity.destroy();
     }
+
+    Engine::WORLD.removeSystem<BackgroundSystem>();
+    Engine::WORLD.removeSystem<AnimatedSpriteRenderSystem>();
+    Engine::WORLD.removeSystem<SimplePlayerMovementSystem>();
   };
 
   void Unload() {
