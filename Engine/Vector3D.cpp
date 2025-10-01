@@ -23,9 +23,9 @@ namespace Math {
   f32 Vec3D::Y() const { return y; }
   f32 Vec3D::Z() const { return z; }
   // Mutators
-  void Vec3D::X(f32 xval) { x = xval; }
-  void Vec3D::Y(f32 yval) { y = yval; }
-  void Vec3D::Z(f32 zval) { z = zval; }
+  f32& Vec3D::X() { return x; }
+  f32& Vec3D::Y() { return y; }
+  f32& Vec3D::Z() { return z; }
   void Vec3D::zero() { x = 0; y = 0; z = 0; }
   // Member Functions
   f32 Vec3D::get_magnitude_sq() const
