@@ -134,9 +134,10 @@ public:
     // Create banana from prefab
     banana = Engine::FACTORY.createObject(bananaPrefab)
       .add_component<Components::Tag<"ShowcaseState">>()
-      .add_component<Components::Position>(1200.0f, 655.0f)
+      .add_component<Components::Position>(1200.0f, 675.0f)
       .add_component<Components::Rotation>(0.0f)
-      .add_component<Components::RotationSpeed>(90.0f);
+      .add_component<Components::RotationSpeed>(90.0f)
+      .add_component<Components::Scale>(3.0f, 3.0f);
 
     // Create player with idle animation
     player = Engine::WORLD.create_entity()
@@ -221,7 +222,7 @@ public:
         auto* pos = collectedEntity.get_component<Components::Position>();
         if (pos) {
           pos->X() = static_cast<f32>(rand() % 1400 + 100);
-          pos->Y() = static_cast<f32>(rand() % 700 + 100);
+          675.0f; // Keep y position constant
         }
       }
       });
