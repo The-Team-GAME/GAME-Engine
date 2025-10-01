@@ -10,27 +10,40 @@
 #include "InputManager.h"
 #include <GLFW/glfw3.h>
 
+// Custom events for the showcase
+struct CollectEvent {
+  ECS::EntityID collector;
+  ECS::EntityID collected;
+  s32 points;
+};
+
+struct AttackEvent {
+  ECS::EntityID attacker;
+  ECS::EntityID target;
+  s32 damage;
+};
+
 class ShowcaseState : public Engine::GameState<ShowcaseState> {
 private:
   // Prefabs
-  s32 enemyPrefab = -1;
-  s32 coinPrefab = -1;
+  s32 bananaPrefab = -1;
+  s32 lazyMonkeyPrefab = -1;
 
   // Entities
   ECS::Entity player;
   ECS::Entity enemy;
-  ECS::Entity coin;
+  ECS::Entity banana;
   ECS::Entity backgroundEntity;
   ECS::Entity textureBackground;
 
   // Sprite Sheets
-  s32 idleSpriteSheetId = -1;
-  s32 walkSpriteSheetId = -1;
+  s32 playerIdleSpriteSheetId = -1;
+  s32 playerPunchSpriteSheetId = -1;
+  s32 playerRunSpriteSheetId = -1;
 
   // Audio
-  s32 jumpSoundId = -1;
+  s32 walkSoundId = -1;
   s32 collectSoundId = -1;
-  s32 bgMusicId = -1;
 
   // Fonts
   s32 titleFontId = -1;
@@ -41,39 +54,47 @@ private:
 
   // Player state
   bool isWalking = false;
-  s32 coinsCollected = 0;
+  s32 bananaCollected = 0;
 
 public:
   void Load() {
     // Load prefabs
-    enemyPrefab = Engine::RESOURCES.load_object_prefab("showcase_enemy", "Assets/objects/enemy.json");
-    coinPrefab = Engine::RESOURCES.load_object_prefab("showcase_coin", "Assets/objects/banana.json");
+    bananaPrefab = Engine::RESOURCES.load_object_prefab("banana", "Assets/objects/banana.json");
+    lazyMonkeyPrefab = Engine::RESOURCES.load_object_prefab("lazy_monkey", "Assets/objects/lazy_monkey.json");
 
-    // Load sprite sheets for player animation
-    idleSpriteSheetId = Engine::RESOURCES.load_sprite_sheet(
+    playerIdleSpriteSheetId = Engine::RESOURCES.load_sprite_sheet(
       "Player_Idle",
-      "Assets/images/LazyMonkey_Idle_Spritesheet.png",
-      320 / 5,  // frame width
+      "Assets/images/Bro_Idle_Spritesheet.png",
+      448 / 7,  // frame width
       64,       // frame height
-      5,        // total frames
+      7,        // total frames
       8.0f,     // frames per second
       Graphics::MinifyingFilter::Nearest
     );
 
-    walkSpriteSheetId = Engine::RESOURCES.load_sprite_sheet(
-      "Player_Walk",
-      "Assets/images/LazyMonkey_Walk_Spritesheet.png",
-      384 / 6,  // frame width
+    playerPunchSpriteSheetId = Engine::RESOURCES.load_sprite_sheet(
+      "Player_Punch",
+      "Assets/images/Bro_Punch_Spritesheet.png",
+      1152 / 12,  // frame width
+      64,         // frame height
+      12,         // total frames
+      12.0f,      // frames per second
+      Graphics::MinifyingFilter::Nearest
+    );
+
+    playerRunSpriteSheetId = Engine::RESOURCES.load_sprite_sheet(
+      "Player_Run",
+      "Assets/images/Bro_Run_Spritesheet.png",
+      512 / 8,  // frame width
       64,       // frame height
-      6,        // total frames
-      12.0f,    // frames per second
+      8,        // total frames
+      16.0f,    // frames per second
       Graphics::MinifyingFilter::Nearest
     );
 
     // Load audio
-    jumpSoundId = Engine::RESOURCES.load_sound("jump_sound", "Assets/sounds/move1.wav");
+    walkSoundId = Engine::RESOURCES.load_sound("walk_sound", "Assets/sounds/move1.wav");
     collectSoundId = Engine::RESOURCES.load_sound("collect_sound", "Assets/sounds/move1.wav");
-    bgMusicId = Engine::RESOURCES.load_sound("bg_music", "Assets/sounds/move1.wav");
 
     // Load fonts
     titleFontId = Engine::RESOURCES.load_font("title_font", "Assets/fonts/PlayfairDisplay-VariableFont_wght.ttf", 48);
@@ -108,19 +129,19 @@ public:
       .addComponent<Components::Position>(200.0f, 450.0f)
       .addComponent<Components::Size>(128.0f, 128.0f)
       .addComponent<Components::Velocity>(0.0f, 0.0f)
-      .addComponent<Components::AnimatedSprite>(idleSpriteSheetId)
-      .addComponent<Components::Health>(100, 100);
+      .addComponent<Components::AnimatedSprite>(playerIdleSpriteSheetId)
+      .addComponent<Components::Health>(100, 100)
+      .addComponent<Components::Scale>(2.0f, 2.0f);
 
     // Create enemy from prefab
-    enemy = Engine::FACTORY.createObject(enemyPrefab)
+    enemy = Engine::FACTORY.createObject(lazyMonkeyPrefab)
       .addComponent<Components::Tag<"ShowcaseState">>()
       .addComponent<Components::Position>(800.0f, 450.0f)
-      .addComponent<Components::Rotation>(0.0f)
-      .addComponent<Components::RotationSpeed>(45.0f)
-      .addComponent<Components::Health>(50, 50);
+      .addComponent<Components::Health>(50, 50)
+      .addComponent<Components::Scale>(2.0f, 2.0f);
 
-    // Create coin from prefab
-    coin = Engine::FACTORY.createObject(coinPrefab)
+    // Create banana from prefab
+    banana = Engine::FACTORY.createObject(bananaPrefab)
       .addComponent<Components::Tag<"ShowcaseState">>()
       .addComponent<Components::Position>(1200.0f, 450.0f)
       .addComponent<Components::Rotation>(0.0f)
@@ -133,19 +154,79 @@ public:
     Engine::WORLD.addSystem<MovementSystem>();
     Engine::WORLD.addSystem<RotationSystem>();
 
-    // Play background music (if your audio system supports it)
-    if (bgMusicId != -1) {
-      Engine::AUDIO.playSound(bgMusicId);
-    }
+    Engine::WORLD.addEventListener<AttackEvent>([this](const AttackEvent& event) {
+      std::cout << "Attack event! Entity " << event.attacker
+        << " attacks Entity " << event.target
+        << " for " << event.damage << " damage!\n";
 
-    // Subscribe to damage events
-    Engine::WORLD.addEventListener<DamageEvent>([this](const DamageEvent& event) {
-      std::cout << "Damage event received! Entity " << event.target 
-                << " took " << event.amount << " damage!\n";
-    });
+      // Play attack animation
+      if (event.attacker == player.getId()) {
+        auto* playerSprite = player.getComponent<Components::AnimatedSprite>();
+        if (playerSprite) {
+          playerSprite->spriteSheetId = playerPunchSpriteSheetId;
+          playerSprite->reset();
+          std::cout << "Playing punch animation\n";
+        }
+      }
+
+      // Apply damage to enemy
+      auto targetEntity = Engine::WORLD.getEntity(event.target);
+      if (targetEntity.isValid()) {
+        std::cout << "Target entity is valid\n";
+
+        if (targetEntity.hasComponent<Components::Health>()) {
+          std::cout << "Target has health component\n";
+          auto* health = targetEntity.getComponent<Components::Health>();
+          std::cout << "Health before damage: " << health->value << "\n";
+
+          health->damage(event.damage);
+
+          std::cout << "Health after damage: " << health->value << "\n";
+
+          if (health->isDead()) {
+            std::cout << "Entity " << event.target << " has been defeated!\n";
+            targetEntity.destroy();
+          }
+        }
+        else {
+          std::cout << "ERROR: Target entity does not have health component!\n";
+        }
+      }
+      else {
+        std::cout << "ERROR: Target entity is not valid!\n";
+      }
+      });
+
+    // Subscribe to collect events
+    Engine::WORLD.addEventListener<CollectEvent>([this](const CollectEvent& event) {
+      std::cout << "Collect event! Entity " << event.collector
+        << " collected Entity " << event.collected
+        << " for " << event.points << " points!\n";
+
+      // Play collection sound
+      if (collectSoundId != -1) {
+        Engine::AUDIO.playSound(collectSoundId);
+      }
+
+      // Update score
+      if (event.collector == player.getId()) {
+        bananaCollected += event.points;
+      }
+
+      // Respawn the collected item
+      auto collectedEntity = Engine::WORLD.getEntity(event.collected);
+      if (collectedEntity.isValid()) {
+        auto* pos = collectedEntity.getComponent<Components::Position>();
+        if (pos) {
+          pos->X() = static_cast<f32>(rand() % 1400 + 100);
+          pos->Y() = static_cast<f32>(rand() % 700 + 100);
+        }
+      }
+      });
   }
 
   void Update() {
+
     auto* playerPos = player.getComponent<Components::Position>();
     auto* playerVel = player.getComponent<Components::Velocity>();
     auto* playerSprite = player.getComponent<Components::AnimatedSprite>();
@@ -175,57 +256,33 @@ public:
 
     // Animation change based on movement
     bool shouldWalk = (newVelX != 0.0f || newVelY != 0.0f);
-    
+
     if (shouldWalk && !isWalking) {
       // Switch to walking animation
-      playerSprite->spriteSheetId = walkSpriteSheetId;
+      playerSprite->spriteSheetId = playerRunSpriteSheetId;
       playerSprite->reset();
+      Engine::AUDIO.playSoundLooped(walkSoundId);
       isWalking = true;
     }
     else if (!shouldWalk && isWalking) {
       // Switch to idle animation
-      playerSprite->spriteSheetId = idleSpriteSheetId;
+      playerSprite->spriteSheetId = playerIdleSpriteSheetId;
       playerSprite->reset();
+      Engine::AUDIO.stopSound(walkSoundId);
       isWalking = false;
     }
 
-    // Jump sound on spacebar
-    if (Engine::Input::IsKeyPressed(GLFW_KEY_SPACE)) {
-      if (jumpSoundId != -1) {
-        Engine::AUDIO.playSound(jumpSoundId);
-      }
-      std::cout << "Jump!\n";
-    }
-
-    // Attack enemy with E key (demonstrate messaging system)
+    // Attack enemy with E key (using event system)
     if (Engine::Input::IsKeyPressed(GLFW_KEY_E)) {
-      if (enemy.isValid() && enemy.hasComponent<Components::Health>()) {
-        Engine::WORLD.sendEvent<DamageEvent>(enemy.getId(), 10);
-        
-        auto* enemyHealth = enemy.getComponent<Components::Health>();
-        if (enemyHealth->isDead()) {
-          std::cout << "Enemy defeated!\n";
-          enemy.destroy();
-        }
-      }
+      std::cout << "E key pressed! Player ID: " << player.getId() << ", Enemy ID: " << enemy.getId() << "\n";
+
+      // Send attack event 
+      Engine::WORLD.sendEvent<AttackEvent>(player.getId(), enemy.getId(), 10);
     }
 
-    // Collect coin with C key
+    // Collect banana with C key (using event system)
     if (Engine::Input::IsKeyPressed(GLFW_KEY_C)) {
-      if (coin.isValid()) {
-        if (collectSoundId != -1) {
-          Engine::AUDIO.playSound(collectSoundId);
-        }
-        coinsCollected++;
-        std::cout << "Coin collected! Total: " << coinsCollected << "\n";
-        
-        // Respawn coin at random position
-        auto* coinPos = coin.getComponent<Components::Position>();
-        if (coinPos) {
-          coinPos->X() = static_cast<f32>(rand() % 1400 + 100);
-          coinPos->Y() = static_cast<f32>(rand() % 700 + 100);
-        }
-      }
+      Engine::WORLD.sendEvent<CollectEvent>(player.getId(), banana.getId(), 1);
     }
   }
 
@@ -245,7 +302,7 @@ public:
     if (infoFontId != -1) {
       Engine::GRAPHICS.drawText(
         infoFontId,
-        "WASD: Move | SPACE: Jump | E: Attack | C: Collect",
+        "WASD: Move | E: Attack | C: Collect",
         50.0f, 120.0f,
         0.6f,
         { 0.8f, 0.8f, 0.8f, 1.0f } // Light gray
@@ -253,7 +310,7 @@ public:
 
       Engine::GRAPHICS.drawText(
         infoFontId,
-        "Coins: " + std::to_string(coinsCollected),
+        "Bananas: " + std::to_string(bananaCollected),
         50.0f, 160.0f,
         0.7f,
         { 1.0f, 1.0f, 0.0f, 1.0f } // Yellow
@@ -286,6 +343,11 @@ public:
   }
 
   void Free() {
+    // Stop any playing sounds
+    if (isWalking) {
+      Engine::AUDIO.stopSound(walkSoundId);
+    }
+
     // Cleanup entities
     Engine::WORLD.destroyEntitiesWith<Components::Tag<"ShowcaseState">>();
 
@@ -299,13 +361,12 @@ public:
 
   void Unload() {
     // Unload prefabs
-    Engine::RESOURCES.unload_object_prefab("showcase_enemy");
-    Engine::RESOURCES.unload_object_prefab("showcase_coin");
+    Engine::RESOURCES.unload_object_prefab("lazy_monkey");
+    Engine::RESOURCES.unload_object_prefab("banana");
 
     // Unload audio
-    Engine::RESOURCES.unload_sound("jump_sound");
+    Engine::RESOURCES.unload_sound("walk_sound");
     Engine::RESOURCES.unload_sound("collect_sound");
-    Engine::RESOURCES.unload_sound("bg_music");
 
     // Unload fonts
     Engine::RESOURCES.unload_font("title_font");

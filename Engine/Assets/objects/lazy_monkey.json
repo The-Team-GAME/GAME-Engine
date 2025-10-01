@@ -1,0 +1,15 @@
+{
+  "entity": {
+    "id": "lazy_monkey",
+    "width": 96,
+    "height": 96,
+    "spriteSheetPath": "Assets/images/LazyMonkey_Idle_Spritesheet.png",
+    "frameWidth": 64,
+    "frameHeight": 64,
+    "totalFrames": 5,
+    "framesPerSecond": 8.0,
+    "minifyingFilter": 0,
+    "autoPlay": true,
+    "loop": true
+  }
+}
