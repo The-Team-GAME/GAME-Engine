@@ -63,7 +63,7 @@ void Graphics::init_graphics()
   // Initialize FreeType
   if (FT_Init_FreeType(&ft))
   {
-    std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+    Log::warning("ERROR::FREETYPE: Could not init FreeType Library");
   }
 
   // Enable alpha blending.
@@ -401,7 +401,7 @@ s32 Graphics::load_font(const char* filepath, u32 size)
   FT_Face face;
   if (FT_New_Face(ft, filepath, 0, &face))
   {
-    std::cout << "ERROR::FREETYPE: Failed to load font: " << filepath << std::endl;
+    Log::warning("ERROR::FREETYPE: Failed to load font: " + std::string(filepath));
     return -1;
   }
 
@@ -506,7 +506,7 @@ void Graphics::unload_font(s32 fontId)
   auto it = fonts.find(fontId);
   if (it == fonts.end())
   {
-    std::cout << "Graphics: Invalid font ID: " << fontId << std::endl;
+    Log::warning("Graphics: Invalid font ID: " + std::to_string(fontId));
     return;
   }
 
@@ -517,7 +517,7 @@ void Graphics::unload_font(s32 fontId)
 
   nextFontId--;
 
-  std::cout << "Graphics: Unloaded font with ID " << fontId << std::endl;
+  Log::info("Graphics: Unloaded font with ID " + std::to_string(fontId));
 }
 
 // Unloads all fonts
@@ -533,7 +533,7 @@ void Graphics::unload_all_fonts()
   // Reset the counter
   nextFontId = 0;
 
-  std::cout << "Graphics: Unloaded all fonts" << std::endl;
+  Log::info("Graphics: Unloaded all fonts");
 }
 
 // Draws text on the screen.
@@ -542,7 +542,7 @@ void Graphics::draw_text(s32 fontId, const std::string& text, f32 x, f32 y, f32 
   auto it = fonts.find(fontId);
   if (it == fonts.end())
   {
-    std::cout << "Graphics: Invalid font ID: " << fontId << std::endl;
+    Log::warning("Graphics: Invalid font ID: " + std::to_string(fontId));
     return;
   }
 
@@ -615,7 +615,7 @@ s32 Graphics::load_texture(const char* filepath, MinifyingFilter min_filter)
 
   if (!data)
   {
-    std::cout << "Failed to load texture: " << filepath << std::endl;
+    Log::warning("Failed to load texture: " + std::string(filepath));
     return -1; // Return -1 on failure.
   }
 
@@ -661,7 +661,7 @@ void Graphics::draw_texture(s32 imageId, f32 x, f32 y, f32 width, f32 height, f3
   auto it = textures.find(imageId);
   if (it == textures.end())
   {
-    std::cout << "Invalid image ID: " << imageId << std::endl;
+    Log::warning("Invalid image ID: " + std::to_string(imageId));
     return;
   }
   // Calls draw_texture_region with the full dimensions of the source texture.
@@ -681,7 +681,7 @@ void Graphics::draw_texture_region(s32 imageId, f32 destX, f32 destY, f32 destWi
   auto it = textures.find(imageId);
   if (it == textures.end())
   {
-    std::cout << "Invalid image ID: " << imageId << std::endl;
+    Log::warning("Invalid image ID: " + std::to_string(imageId));
     return;
   }
 
@@ -747,7 +747,7 @@ s32 Graphics::load_sprite_sheet(const char* filepath, s32 frameWidth, s32 frameH
 
   if (texture_id == -1)
   {
-    std::cout << "Failed to load sprite sheet: " << filepath << std::endl;
+    Log::warning("Failed to load sprite sheet: " + std::string(filepath));
     return -1;
   }
 
@@ -771,7 +771,7 @@ void Graphics::draw_animated_sprite(s32 spriteSheetId, f32 x, f32 y, f32 width, 
   auto it = spriteSheets.find(spriteSheetId);
   if (it == spriteSheets.end())
   {
-    std::cout << "Invalid sprite sheet ID: " << spriteSheetId << std::endl;
+    Log::warning("Invalid sprite sheet ID: " + std::to_string(spriteSheetId));
     return;
   }
 
@@ -784,7 +784,7 @@ void Graphics::draw_animated_sprite(s32 spriteSheetId, f32 x, f32 y, f32 width, 
   auto texIt = textures.find(spriteSheet.texture_id);
   if (texIt == textures.end())
   {
-    std::cout << "Invalid texture ID in sprite sheet: " << spriteSheet.texture_id << std::endl;
+    Log::warning("Invalid texture ID in sprite sheet: " + std::to_string(spriteSheet.texture_id));
     return;
   }
   const Texture& texture = texIt->second;
@@ -830,7 +830,7 @@ void Graphics::unload_texture(s32 texture_id)
   auto it = textures.find(texture_id);
   if (it == textures.end())
   {
-    std::cout << "Graphics: Invalid texture ID: " << texture_id << std::endl;
+    Log::warning("Graphics: Invalid texture ID: " + std::to_string(texture_id));
     return;
   }
 
@@ -854,7 +854,7 @@ void Graphics::unload_texture(s32 texture_id)
 
   nextTextureId--;
 
-  std::cout << "Graphics: Unloaded texture with ID " << texture_id << std::endl;
+  Log::info("Graphics: Unloaded texture with ID " + std::to_string(texture_id));
 }
 
 // Unloads all textures
@@ -878,7 +878,7 @@ void Graphics::unload_all_textures()
   // Reset the counter
   nextTextureId = 0;
 
-  std::cout << "Graphics: Unloaded all textures" << std::endl;
+  Log::info("Graphics: Unloaded all textures");
 }
 
 // Unloads a sprite sheet by its ID
@@ -887,7 +887,7 @@ void Graphics::unload_sprite_sheet(s32 spriteSheetId)
   auto it = spriteSheets.find(spriteSheetId);
   if (it == spriteSheets.end())
   {
-    std::cout << "Graphics: Invalid sprite sheet ID: " << spriteSheetId << std::endl;
+    Log::warning("Graphics: Invalid sprite sheet ID: " + std::to_string(spriteSheetId));
     return;
   }
 
@@ -901,7 +901,7 @@ void Graphics::unload_sprite_sheet(s32 spriteSheetId)
   // If this was the last allocated sprite sheet, decrement the counter
   nextSpriteSheetId--;
 
-  std::cout << "Graphics: Unloaded sprite sheet with ID " << spriteSheetId << std::endl;
+  Log::info("Graphics: Unloaded sprite sheet with ID " + std::to_string(spriteSheetId));
 }
 
 // Unloads all sprite sheets
@@ -911,6 +911,8 @@ void Graphics::unload_all_sprite_sheets()
 
   // Reset the counter
   nextSpriteSheetId = 0;
+
+  Log::info("Graphics: Unloaded all sprite sheets");
 }
 
 // Gets the dimensions of a texture by its ID
