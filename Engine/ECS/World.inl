@@ -99,7 +99,7 @@ namespace ECS
   }
 
   template <typename T, typename... Args>
-  T* World::addSystem(Args &&...args)
+  T* World::add_system(Args &&...args)
   {
     auto system = std::make_unique<T>(std::forward<Args>(args)...);
     T* ptr = system.get();
@@ -119,7 +119,7 @@ namespace ECS
   }
 
   template <typename T>
-  void World::removeSystem()
+  void World::remove_system()
   {
     systems.erase(
       std::remove_if(systems.begin(), systems.end(),
@@ -131,13 +131,13 @@ namespace ECS
   }
 
   template <typename T, typename... Args>
-  void World::sendEvent(Args&&... args)
+  void World::send_event(Args&&... args)
   {
     eventQueue.emplace_back(T{ std::forward<Args>(args)... });
   }
 
   template <typename T>
-  void World::addEventListener(std::function<void(const T&)> handler)
+  void World::add_event_listener(std::function<void(const T&)> handler)
   {
     EventTypeID eventType = EventTypeManager::getTypeId<T>();
     eventHandlers[eventType].emplace_back([handler](const Event& event) {
@@ -148,17 +148,17 @@ namespace ECS
   }
 
   template <typename T>
-  void World::addEventListener(std::function<void(const Event&)> handler)
+  void World::add_event_listener(std::function<void(const Event&)> handler)
   {
     EventTypeID eventType = EventTypeManager::getTypeId<T>();
     eventHandlers[eventType].emplace_back(handler);
   }
 
   template <typename T>
-  void World::removeEventListener()
+  void World::remove_event_listener()
   {
     EventTypeID eventType = EventTypeManager::getTypeId<T>();
-    removeEventListener(eventType);
+    remove_event_listener(eventType);
   }
 
   template <typename... T>

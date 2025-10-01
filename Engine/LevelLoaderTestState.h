@@ -29,8 +29,8 @@ public:
     backgroundEntityId = bg.getId();
 
     // Add rendering systems
-    Engine::WORLD.addSystem<BackgroundSystem>();
-    Engine::WORLD.addSystem<StaticSpriteRenderSystem>();
+    Engine::WORLD.add_system<BackgroundSystem>();
+    Engine::WORLD.add_system<StaticSpriteRenderSystem>();
 
     // Load the test level
     currentLevelId = Engine::LEVEL_LOADER.loadLevel("Assets/levels/test_level.json");
@@ -143,8 +143,8 @@ public:
     Engine::WORLD.destory_entity(backgroundEntityId);
 
     // Remove systems
-    Engine::WORLD.removeSystem<BackgroundSystem>();
-    Engine::WORLD.removeSystem<StaticSpriteRenderSystem>();
+    Engine::WORLD.remove_system<BackgroundSystem>();
+    Engine::WORLD.remove_system<StaticSpriteRenderSystem>();
   }
 
   void Unload()

@@ -42,9 +42,9 @@ public:
 
 
     // Add systems to the world
-    Engine::WORLD.addSystem<BackgroundSystem>(); // Background system should be first
-    Engine::WORLD.addSystem<RotationSystem>();
-    Engine::WORLD.addSystem<RectRenderSystem>();
+    Engine::WORLD.add_system<BackgroundSystem>(); // Background system should be first
+    Engine::WORLD.add_system<RotationSystem>();
+    Engine::WORLD.add_system<RectRenderSystem>();
 
   };
 
@@ -58,9 +58,9 @@ public:
     Engine::WORLD.destory_entities_with<Components::Tag<"Rubric2500Particles">>();
 
     // Remove systems
-    Engine::WORLD.removeSystem<BackgroundSystem>();
-    Engine::WORLD.removeSystem<RotationSystem>();
-    Engine::WORLD.removeSystem<RectRenderSystem>();
+    Engine::WORLD.remove_system<BackgroundSystem>();
+    Engine::WORLD.remove_system<RotationSystem>();
+    Engine::WORLD.remove_system<RectRenderSystem>();
   };
 
   void Unload() {};

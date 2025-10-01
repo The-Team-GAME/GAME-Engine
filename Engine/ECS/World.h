@@ -75,26 +75,26 @@ namespace ECS
 
     // System management
     template <typename T, typename... Args>
-    T* addSystem(Args &&...args);
+    T* add_system(Args &&...args);
 
     template <typename T>
-    void removeSystem();
+    void remove_system();
 
     // Event management
     template <typename T, typename... Args>
-    void sendEvent(Args&&... args);
+    void send_event(Args&&... args);
 
     // Direct event handling without systems
     template <typename T>
-    void addEventListener(std::function<void(const T&)> handler);
+    void add_event_listener(std::function<void(const T&)> handler);
 
     template <typename T>
-    void addEventListener(std::function<void(const Event&)> handler);
+    void add_event_listener(std::function<void(const Event&)> handler);
 
-    void removeEventListener(EventTypeID eventType);
+    void remove_event_listener(EventTypeID eventType);
 
     template <typename T>
-    void removeEventListener();
+    void remove_event_listener();
 
     // Main update loop
     void update();

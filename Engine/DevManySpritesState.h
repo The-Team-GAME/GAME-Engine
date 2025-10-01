@@ -36,9 +36,9 @@ public:
       .add_component<Components::Color>(0.2f, 0.3f, 0.4f, 1.0f); // Dark blue background
 
     // Add systems to the world
-    Engine::WORLD.addSystem<BackgroundSystem>();
-    Engine::WORLD.addSystem<RotationSystem>();
-    Engine::WORLD.addSystem<StaticSpriteRenderSystem>();
+    Engine::WORLD.add_system<BackgroundSystem>();
+    Engine::WORLD.add_system<RotationSystem>();
+    Engine::WORLD.add_system<StaticSpriteRenderSystem>();
   }
 
   void Init() {}
@@ -55,9 +55,9 @@ public:
     Engine::WORLD.destory_entities_with<Components::Tag<"DevManySpritesState">>();
 
     // Remove systems
-    Engine::WORLD.removeSystem<BackgroundSystem>();
-    Engine::WORLD.removeSystem<RotationSystem>();
-    Engine::WORLD.removeSystem<StaticSpriteRenderSystem>();
+    Engine::WORLD.remove_system<BackgroundSystem>();
+    Engine::WORLD.remove_system<RotationSystem>();
+    Engine::WORLD.remove_system<StaticSpriteRenderSystem>();
   }
 
   void Unload() {}

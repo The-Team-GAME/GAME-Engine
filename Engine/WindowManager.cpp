@@ -75,7 +75,7 @@ void WindowManager::framebufferSizeCallback(GLFWwindow* window, s32 width, s32 h
     windowManager->height = height;
 
       // Send resize event to engine (this will update Graphics viewport)
-      Engine::WORLD.sendEvent<WindowResizeEvent>(width, height);
+      Engine::WORLD.send_event<WindowResizeEvent>(width, height);
   }
 }
 
@@ -88,5 +88,5 @@ void WindowManager::file_drop_callback([[maybe_unused]] GLFWwindow* window, s32 
     filePaths.push_back(paths[i]);
   }
 
-  Engine::WORLD.sendEvent<FileDropEvent>(filePaths);
+  Engine::WORLD.send_event<FileDropEvent>(filePaths);
 }

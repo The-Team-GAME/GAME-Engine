@@ -58,7 +58,7 @@ namespace ECS
     return active_entities.find(id) != active_entities.end();
   }
 
-  void World::removeEventListener(EventTypeID eventType)
+  void World::remove_event_listener(EventTypeID eventType)
   {
     eventHandlers.erase(eventType);
   }

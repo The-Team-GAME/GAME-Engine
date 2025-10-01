@@ -29,8 +29,8 @@ void ImGuiState::Init()
     .add_component<Components::Color>(0.08f, 0.08f, 0.10f, 1.0f)
     .add_component<Components::Collider>(false, false);
 
-  Engine::WORLD.addSystem<BackgroundSystem>();
-  Engine::WORLD.addSystem<RectRenderSystem>();
+  Engine::WORLD.add_system<BackgroundSystem>();
+  Engine::WORLD.add_system<RectRenderSystem>();
 
   rects_.clear();
   selectedIndex_ = -1;
@@ -47,8 +47,8 @@ void ImGuiState::Free()
   selectedIndex_ = -1;
 
   // Remove systems added in Init
-  Engine::WORLD.removeSystem<BackgroundSystem>();
-  Engine::WORLD.removeSystem<RectRenderSystem>();
+  Engine::WORLD.remove_system<BackgroundSystem>();
+  Engine::WORLD.remove_system<RectRenderSystem>();
 }
 
 void ImGuiState::Unload() {}

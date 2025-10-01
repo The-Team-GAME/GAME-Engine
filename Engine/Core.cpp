@@ -61,7 +61,7 @@ namespace Engine
     isRunning = true;
 
     // Register the graphics resize system
-    WORLD.addEventListener<WindowResizeEvent>([](const WindowResizeEvent& event) {
+    WORLD.add_event_listener<WindowResizeEvent>([](const WindowResizeEvent& event) {
       GRAPHICS.set_viewport(event.width, event.height);
       }
     );
@@ -167,6 +167,6 @@ namespace Engine
 
     StateManager::Exit(); // TODO: to be removed 
 
-    WORLD.removeEventListener<WindowResizeEvent>();
+    WORLD.remove_event_listener<WindowResizeEvent>();
   }
 }

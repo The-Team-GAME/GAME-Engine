@@ -267,7 +267,7 @@ inline void ResourceManagerPanel()
   static bool eventListenerRegistered = false;
   if (!eventListenerRegistered)
   {
-    Engine::WORLD.addEventListener<FileDropEvent>([&](const FileDropEvent& event) {
+    Engine::WORLD.add_event_listener<FileDropEvent>([&](const FileDropEvent& event) {
       for (const auto& filePath : event.filePaths)
       {
         std::filesystem::path path(filePath);
