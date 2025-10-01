@@ -1,3 +1,4 @@
+
 #include "Core.h"
 #include <GLFW/glfw3.h>
 #include <iostream>
@@ -20,7 +21,7 @@
 namespace {
   f64 accumulator{};
   s32 step_limit = 3;
-  bool render = false;
+  bool do_render = false;
   bool physicsStepMode = false;  // Toggle for step-by-step physics
 }
 namespace Engine
@@ -66,17 +67,6 @@ namespace Engine
     StateManager::Init(BasicState::Get()); // TODO: to be removed
   }
 
-  Core::~Core()
-  {
-    FileHandler::clear_json();
-
-    ImguiMgr::imgui_exit();
-
-    StateManager::Exit(); // TODO: to be removed 
-
-    WORLD.removeEventListener<WindowResizeEvent>();
-  }
-
   void Core::run()
   {
     while (!glfwWindowShouldClose(WINDOW.getWindow()) && isRunning)
@@ -97,9 +87,8 @@ namespace Engine
 
       if (accumulator > Time::get_fixed_dt() * step_limit)
       {
-        // Caps the accumulator so each gameloop will only go through 5 loops max
+        // Caps the accumulator so each gameloop will only go through 3 loops max
         accumulator = Time::get_fixed_dt() * step_limit;
-        //std::cout << "nyo" << std::endl; // Should probably warn the user if this happens
       }
       //std::cout << "DT: " << Time::get_real_dt() << " FPS: " << Time::calc_fps(Time::get_real_dt()) << std::endl;
       // END OF TIME UPDATES ================================================
@@ -107,7 +96,6 @@ namespace Engine
       glfwPollEvents();
       AUDIO.update();
       ImguiMgr::begin();
-      GRAPHICS.beginFrame();
 
 
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
@@ -115,6 +103,13 @@ namespace Engine
       {
         // To decrement the accumulator when each gameloop runs
         accumulator -= Time::get_fixed_dt();
+
+        // Toggle the do_render flag to render the frames later now that the logic had updated
+        if (!do_render)
+        {
+          do_render = true;
+          GRAPHICS.beginFrame();
+        }
 
         // Update input right before the main gameloop. This needs to be here because if it is out side the while loop,
         // WORLD.update() won't have a chance to react before the input state is cleared on the next frame. 
@@ -158,13 +153,28 @@ namespace Engine
       EntityEditorPanel();
       CameraPanel();
       // start of draw stuff
-      StateManager::GetCurrentState()->Draw();
-      WORLD.draw();
-      GRAPHICS.endFrame();
+      if (do_render)
+      {
+        StateManager::GetCurrentState()->Draw();
+        WORLD.draw();
+        GRAPHICS.endFrame();
+        do_render = false;
+      }
       // end of draw stuff
       ImguiMgr::end();
       glfwSwapBuffers(WINDOW.getWindow());
       // Rendering End ==========================================
     }
+  }
+
+  Core::~Core()
+  {
+    FileHandler::clear_json();
+
+    ImguiMgr::imgui_exit();
+
+    StateManager::Exit(); // TODO: to be removed 
+
+    WORLD.removeEventListener<WindowResizeEvent>();
   }
 }
