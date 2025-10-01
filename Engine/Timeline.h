@@ -1,3 +1,22 @@
+//-----------------------------------------------------------------------------------
+// file:    Timeline.h
+// project: Monkey Stole My GPA
+//
+// author:  Ryan Ang
+//          Primary author
+//
+// email:   a.ryanankiat@digipen.edu
+//
+// brief:   This file helps initialise the functions that helps 
+//          implements the Timeline class, handling the initialization and
+//          rendering of the timeline UI. It manages the grid structure, playback
+//          controls, playhead movement, dynamic layer resizing, and processing of
+//          drag-and-drop events to place image clips onto the grid.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
+
+
 #pragma once
 #include <vector>
 #include <string>

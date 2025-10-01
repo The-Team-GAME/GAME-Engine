@@ -1,3 +1,20 @@
+//-----------------------------------------------------------------------------------
+// file:    Timeline.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Ryan Ang
+//          Primary author
+//
+// email:   a.ryanankiat@digipen.edu
+//
+// brief:   This file implements the Timeline class, handling the initialization and
+//          rendering of the timeline UI. It manages the grid structure, playback
+//          controls, playhead movement, dynamic layer resizing, and processing of
+//          drag-and-drop events to place image clips onto the grid.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
+
 #include "Timeline.h"
 #include "imgui.h"
 
@@ -14,6 +31,19 @@ Timeline::Timeline()
   for ( ; currentFrame < 1; ++currentFrame)
     layers.push_back(currentFrame);
 }
+
+
+/*=================================================================================
+    Function Brief:
+    Handles the entire rendering and interaction logic for the timeline window.
+    This includes drawing the grid, handling zoom/playback controls, updating the
+    playhead position, processing drag-and-drop events from the SpriteDropper,
+    and drawing the placed TimelineClip objects.
+
+    Where to call it:
+    Must be called once per frame inside the game state's main Draw() function
+    (e.g., SpriteState::Draw()).
+    ==================================================================================*/
 
 // --Timeline--
 void Timeline::Draw() {

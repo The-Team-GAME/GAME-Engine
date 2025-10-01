@@ -1,3 +1,21 @@
+//-----------------------------------------------------------------------------------
+// file:    SpriteState.h
+// project: Monkey Stole My GPA
+//
+// author:  Ryan Ang
+//          Primary author
+//
+// email:   a.ryanankiat@digipen.edu
+//
+// brief:   This file defines the SpriteState class, which manages the main scene,
+//          loads visual assets, handles file browsing, processes drag-and-drop
+//          events from the SpriteDropper, and orchestrates the Timeline and object
+//          creation logic within the game loop.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
+
+
 #pragma once
 
 #include "StateManager.h"
@@ -34,7 +52,7 @@ class SpriteState : public Engine::GameState<SpriteState> {
 
 private:
 
-	Timeline timeline;  // adds timeline class to file
+	Timeline timeline;	// adds timeline class to file
 
 	int linearMonkeyImageId = -1;
 	int nearestMonkeyImageId = -1;
@@ -53,7 +71,15 @@ private:
 	float spritePosX = 0.0f;
 
 
-	//loads my images accordingly into the sprite manager
+	/*=================================================================================
+		Function Brief:
+		Clears the current list of loaded texture IDs and reloads all image files from
+		the project's asset directory into the graphics system.
+
+		Where to call it:
+		Called on game load, after a new image file is successfully copied into the
+		assets folder, or whenever the asset list needs to be refreshed.
+		==================================================================================*/
 	void LoadAllAssets() {
 		loadedImageIds.clear();
 		fs::path assets_path = fs::current_path() / "Engine" / "Assets" / "images";
@@ -80,13 +106,27 @@ private:
 
 public:
 
+	/*=================================================================================
+		Function Brief:
+		Called when the game state is loaded. This is typically used for background
+		loading tasks. Here, it loads all available project assets.
 
+		Where to call it:
+		Automatically called by the StateManager when transitioning to this state.
+		==================================================================================*/
 	void Load() {
 		LoadAllAssets(); //loads updating assets within sprite dropper
 	};
 
 
+	/*=================================================================================
+		Function Brief:
+		Initializes the game state by loading necessary starting assets and setting up
+		initial variables.
 
+		Where to call it:
+		Automatically called by the StateManager right after Load() and before Update().
+		==================================================================================*/
 	void Init() {
 		linearMonkeyImageId = Engine::GRAPHICS.loadTexture("Assets/images/monkey.png");
 		nearestMonkeyImageId = Engine::GRAPHICS.loadTexture("Assets/images/monkey.png", Graphics::MinifyingFilter::Nearest);
@@ -94,14 +134,29 @@ public:
 	};
 
 
+	/*=================================================================================
+		Function Brief:
+		The main game loop logic update function. Handles non-rendering updates like
+		physics and input processing.
+
+		Where to call it:
+		Called once per game loop frame by the StateManager.
+		==================================================================================*/
 	void Update() {
 
-	
+
 
 	};
 
 
+	/*=================================================================================
+		Function Brief:
+		The main rendering function. Clears the screen, draws all game objects, and
+		handles ImGui interface rendering.
 
+		Where to call it:
+		Called once per game loop frame by the StateManager after Update().
+		==================================================================================*/
 	void Draw() {
 		// Main scene texture drawing
 		Engine::GRAPHICS.clearScreen(0.1f, 0.1f, 0.1f, 1.0f);
@@ -158,6 +213,23 @@ public:
 
 	};
 
+	/*=================================================================================
+		Function Brief:
+		Called when the game state is paused or when Unload() is about to be called.
+		Use this to free up temporary resources or save transient state data.
+
+		Where to call it:
+		Automatically called by the StateManager.
+		==================================================================================*/
 	void Free() {};
+
+	/*=================================================================================
+		Function Brief:
+		Called when the game state is permanently exiting. Use this to unload or
+		destroy all resources (textures, models, etc.) specific to this state.
+
+		Where to call it:
+		Automatically called by the StateManager when leaving this state.
+		==================================================================================*/
 	void Unload() {};
 };

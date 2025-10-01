@@ -1,10 +1,38 @@
+//-----------------------------------------------------------------------------------
+// file:    ResourceManager.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Ryan Ang
+//          Primary author
+//
+// email:   a.ryanankiat@digipen.edu
+//
+// brief:   This file implements the ResourceManager class. It centralizes all asset
+//          management operations (loading, retrieval, and unloading) for various
+//          resource types (textures, sounds, fonts, etc.). It prevents duplicate
+//          loading and provides a generic 'load' function to handle files based
+//          on their extension.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
+
 #include "ResourceManager.h"
 #include "Core.h"
 #include "ObjectFactory.h"
 #include <iostream>
 #include <algorithm>
 #include <cctype>
+#include <stdexcept>
 
+/*=================================================================================
+    Function Brief:
+    Attempts to load a texture file into the graphics system and registers it
+    in the resource map. Prevents duplicate loading if the name already exists.
+
+    Where to call it:
+    Internally by the generic `load()` function or directly when specifically
+    loading textures (e.g., during initialization).
+    ==================================================================================*/
 int Engine::ResourceManager::load_texture(std::string name, std::string path, Graphics::MinifyingFilter minifyingFilter)
 {
   // Check if texture with this name already exists
@@ -29,6 +57,13 @@ int Engine::ResourceManager::load_texture(std::string name, std::string path, Gr
   }
 }
 
+/*=================================================================================
+    Function Brief:
+    Retrieves the graphics ID associated with a registered texture name.
+
+    Where to call it:
+    By rendering components or other systems requiring the internal ID of a texture.
+    ==================================================================================*/
 int Engine::ResourceManager::get_texture(std::string name)
 {
   auto it = textures.find(name);
@@ -43,6 +78,14 @@ int Engine::ResourceManager::get_texture(std::string name)
   }
 }
 
+/*=================================================================================
+    Function Brief:
+    Removes a texture from the resource registry and unloads it from the graphics
+    subsystem.
+
+    Where to call it:
+    When a specific texture resource is no longer needed (e.g., end of state, editor cleanup).
+    ==================================================================================*/
 void Engine::ResourceManager::unload_texture(std::string name)
 {
   auto it = textures.find(name);
@@ -59,11 +102,26 @@ void Engine::ResourceManager::unload_texture(std::string name)
   }
 }
 
+/*=================================================================================
+    Function Brief:
+    Returns the total number of textures currently loaded and managed.
+
+    Where to call it:
+    UI panels (like ResourceManagerPanel) or debugging tools.
+    ==================================================================================*/
 size_t Engine::ResourceManager::get_texture_count()
 {
   return textures.size();
 }
 
+/*=================================================================================
+    Function Brief:
+    Attempts to load a sound file into the audio system and registers it
+    in the resource map. Prevents duplicate loading.
+
+    Where to call it:
+    Internally by the generic `load()` function or directly when loading audio assets.
+    ==================================================================================*/
 int Engine::ResourceManager::load_sound(std::string name, std::string path)
 {
   // Check if sound with this name already exists
@@ -88,6 +146,13 @@ int Engine::ResourceManager::load_sound(std::string name, std::string path)
   }
 }
 
+/*=================================================================================
+    Function Brief:
+    Retrieves the audio ID associated with a registered sound name.
+
+    Where to call it:
+    By audio playback components requiring the internal ID of a sound.
+    ==================================================================================*/
 int Engine::ResourceManager::get_sound(std::string name)
 {
   auto it = sounds.find(name);
@@ -102,6 +167,14 @@ int Engine::ResourceManager::get_sound(std::string name)
   }
 }
 
+/*=================================================================================
+    Function Brief:
+    Removes a sound from the resource registry and unloads it from the audio
+    subsystem.
+
+    Where to call it:
+    When a specific sound resource is no longer needed.
+    ==================================================================================*/
 void Engine::ResourceManager::unload_sound(std::string name)
 {
   auto it = sounds.find(name);
@@ -118,11 +191,26 @@ void Engine::ResourceManager::unload_sound(std::string name)
   }
 }
 
+/*=================================================================================
+    Function Brief:
+    Returns the total number of sounds currently loaded and managed.
+
+    Where to call it:
+    UI panels or debugging tools.
+    ==================================================================================*/
 size_t Engine::ResourceManager::get_sound_count()
 {
   return sounds.size();
 }
 
+/*=================================================================================
+    Function Brief:
+    Attempts to load a font file into the graphics system (for text rendering) and
+    registers it in the resource map. Prevents duplicate loading.
+
+    Where to call it:
+    Internally by the generic `load()` function or directly when loading font assets.
+    ==================================================================================*/
 int Engine::ResourceManager::load_font(std::string name, std::string path, unsigned int size)
 {
   // Check if font with this name already exists
@@ -147,6 +235,13 @@ int Engine::ResourceManager::load_font(std::string name, std::string path, unsig
   }
 }
 
+/*=================================================================================
+    Function Brief:
+    Retrieves the graphics ID associated with a registered font name.
+
+    Where to call it:
+    By text rendering components requiring the internal ID of a font.
+    ==================================================================================*/
 int Engine::ResourceManager::get_font(std::string name)
 {
   auto it = fonts.find(name);
@@ -161,6 +256,14 @@ int Engine::ResourceManager::get_font(std::string name)
   }
 }
 
+/*=================================================================================
+    Function Brief:
+    Removes a font from the resource registry and unloads it from the graphics
+    subsystem.
+
+    Where to call it:
+    When a specific font resource is no longer needed.
+    ==================================================================================*/
 void Engine::ResourceManager::unload_font(std::string name)
 {
   auto it = fonts.find(name);
@@ -177,11 +280,26 @@ void Engine::ResourceManager::unload_font(std::string name)
   }
 }
 
+/*=================================================================================
+    Function Brief:
+    Returns the total number of fonts currently loaded and managed.
+
+    Where to call it:
+    UI panels or debugging tools.
+    ==================================================================================*/
 size_t Engine::ResourceManager::get_font_count()
 {
   return fonts.size();
 }
 
+/*=================================================================================
+    Function Brief:
+    Attempts to load a sprite sheet (texture with animation metadata) into the
+    graphics system and registers it in the resource map. Prevents duplicate loading.
+
+    Where to call it:
+    Internally by the generic `load()` function or directly when loading sprite sheets.
+    ==================================================================================*/
 int Engine::ResourceManager::load_sprite_sheet(std::string name, std::string path, int frameWidth, int frameHeight, int totalFrames, float animationSpeed, Graphics::MinifyingFilter minifyingFilter)
 {
   // Check if sprite sheet with this name already exists
@@ -206,6 +324,13 @@ int Engine::ResourceManager::load_sprite_sheet(std::string name, std::string pat
   }
 }
 
+/*=================================================================================
+    Function Brief:
+    Retrieves the graphics ID associated with a registered sprite sheet name.
+
+    Where to call it:
+    By rendering/animation components requiring the internal ID of a sprite sheet.
+    ==================================================================================*/
 int Engine::ResourceManager::get_sprite_sheet(std::string name)
 {
   auto it = spriteSheets.find(name);
@@ -220,6 +345,14 @@ int Engine::ResourceManager::get_sprite_sheet(std::string name)
   }
 }
 
+/*=================================================================================
+    Function Brief:
+    Removes a sprite sheet from the resource registry and unloads it from the
+    graphics subsystem.
+
+    Where to call it:
+    When a specific sprite sheet resource is no longer needed.
+    ==================================================================================*/
 void Engine::ResourceManager::unload_sprite_sheet(std::string name)
 {
   auto it = spriteSheets.find(name);
@@ -236,11 +369,26 @@ void Engine::ResourceManager::unload_sprite_sheet(std::string name)
   }
 }
 
+/*=================================================================================
+    Function Brief:
+    Returns the total number of sprite sheets currently loaded and managed.
+
+    Where to call it:
+    UI panels or debugging tools.
+    ==================================================================================*/
 size_t Engine::ResourceManager::get_sprite_sheet_count()
 {
   return spriteSheets.size();
 }
 
+/*=================================================================================
+    Function Brief:
+    Attempts to load an object prefab (usually a JSON file defining an entity)
+    by registering it with the ObjectFactory. Prevents duplicate loading.
+
+    Where to call it:
+    Internally by the generic `load()` function or directly when loading prefabs.
+    ==================================================================================*/
 int Engine::ResourceManager::load_object_prefab(std::string name, std::string path)
 {
   // Check if object prefab with this name already exists
@@ -265,6 +413,13 @@ int Engine::ResourceManager::load_object_prefab(std::string name, std::string pa
   }
 }
 
+/*=================================================================================
+    Function Brief:
+    Retrieves the ObjectFactory ID associated with a registered object prefab name.
+
+    Where to call it:
+    By systems that need to instantiate objects using the factory.
+    ==================================================================================*/
 int Engine::ResourceManager::get_object_prefab(std::string name)
 {
   auto it = objectPrefabs.find(name);
@@ -279,6 +434,14 @@ int Engine::ResourceManager::get_object_prefab(std::string name)
   }
 }
 
+/*=================================================================================
+    Function Brief:
+    Removes an object prefab from the resource registry and unregisters it from
+    the ObjectFactory.
+
+    Where to call it:
+    When a specific object prefab resource is no longer needed.
+    ==================================================================================*/
 void Engine::ResourceManager::unload_object_prefab(std::string name)
 {
   auto it = objectPrefabs.find(name);
@@ -295,11 +458,26 @@ void Engine::ResourceManager::unload_object_prefab(std::string name)
   }
 }
 
+/*=================================================================================
+    Function Brief:
+    Returns the total number of object prefabs currently loaded and managed.
+
+    Where to call it:
+    UI panels or debugging tools.
+    ==================================================================================*/
 size_t Engine::ResourceManager::get_object_prefab_count()
 {
   return objectPrefabs.size();
 }
 
+/*=================================================================================
+    Function Brief:
+    A utility function that extracts the file extension from a given path and
+    converts it to lowercase for case-insensitive matching.
+
+    Where to call it:
+    Internally by the generic `load()` function.
+    ==================================================================================*/
 std::string Engine::ResourceManager::get_file_extension(const std::string& path)
 {
   size_t dotPos = path.find_last_of('.');
@@ -317,6 +495,16 @@ std::string Engine::ResourceManager::get_file_extension(const std::string& path)
   return extension;
 }
 
+/*=================================================================================
+    Function Brief:
+    The generic public function for loading any resource. It determines the resource
+    type by checking the file extension and calls the appropriate type-specific
+    loading function (e.g., load_texture, load_sound).
+
+    Where to call it:
+    Publicly by any system (like the File Explorer or Drag-and-Drop system) that
+    needs to load an asset given only its name and path.
+    ==================================================================================*/
 int Engine::ResourceManager::load(std::string name, std::string path)
 {
   std::string extension = get_file_extension(path);
