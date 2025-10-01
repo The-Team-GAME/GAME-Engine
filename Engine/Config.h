@@ -26,7 +26,6 @@ namespace Config {
 	as the subsequent functions called might rely on those values and without the values 
 	initialised, there might be major errors.
 	==================================================================================*/
-
 	void load_config();
 
 	// Accessors for config values (self explainatory)

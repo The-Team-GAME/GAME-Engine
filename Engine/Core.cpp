@@ -96,20 +96,13 @@ namespace Engine
       glfwPollEvents();
       AUDIO.update();
       ImguiMgr::begin();
-
+      GRAPHICS.beginFrame();
 
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
       while (accumulator >= Time::get_fixed_dt())
       {
         // To decrement the accumulator when each gameloop runs
         accumulator -= Time::get_fixed_dt();
-
-        // Toggle the do_render flag to render the frames later now that the logic had updated
-        if (!do_render)
-        {
-          do_render = true;
-          GRAPHICS.beginFrame();
-        }
 
         // Update input right before the main gameloop. This needs to be here because if it is out side the while loop,
         // WORLD.update() won't have a chance to react before the input state is cleared on the next frame. 
@@ -153,13 +146,10 @@ namespace Engine
       EntityEditorPanel();
       CameraPanel();
       // start of draw stuff
-      if (do_render)
-      {
-        StateManager::GetCurrentState()->Draw();
-        WORLD.draw();
-        GRAPHICS.endFrame();
-        do_render = false;
-      }
+      StateManager::GetCurrentState()->Draw();
+      WORLD.draw();
+      GRAPHICS.endFrame();
+
       // end of draw stuff
       ImguiMgr::end();
       glfwSwapBuffers(WINDOW.getWindow());

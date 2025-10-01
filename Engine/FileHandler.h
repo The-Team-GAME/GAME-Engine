@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------------
-// file:    Config.h
+// file:    FileHandler.h
 // project: Monkey Stole My GPA
 //
 // author:  Cheng Ming Xian (100%)
@@ -8,7 +8,9 @@
 //
 // email:   c.mingxian@digipen.edu
 //
-// brief:   This file uses the rapidjson library to parse files into
+// brief:   This file uses the rapidjson library to parse a filestream into a 
+//					rapidjson::Document type and then use the other functions in this file
+//					to read from and write to(wip) the json file.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
