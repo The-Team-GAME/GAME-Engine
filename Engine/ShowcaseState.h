@@ -110,75 +110,75 @@ public:
 
   void Init() {
     // Create solid color background
-    backgroundEntity = Engine::WORLD.createEntity()
-      .addComponent<Components::Tag<"ShowcaseState">>()
-      .addComponent<Components::Background>()
-      .addComponent<Components::Color>(0.15f, 0.20f, 0.25f, 1.0f);
+    backgroundEntity = Engine::WORLD.create_entity()
+      .add_component<Components::Tag<"ShowcaseState">>()
+      .add_component<Components::Background>()
+      .add_component<Components::Color>(0.15f, 0.20f, 0.25f, 1.0f);
 
     // Create texture background (behind everything)
-    textureBackground = Engine::WORLD.createEntity()
-      .addComponent<Components::Tag<"ShowcaseState">>()
-      .addComponent<Components::Position>(800.0f, 450.0f)
-      .addComponent<Components::Size>(1600.0f, 900.0f)
-      .addComponent<Components::StaticSprite>(backgroundTextureId)
-      .addComponent<Components::Color>(1.0f, 1.0f, 1.0f, 0.5f); // Semi-transparent
+    textureBackground = Engine::WORLD.create_entity()
+      .add_component<Components::Tag<"ShowcaseState">>()
+      .add_component<Components::Position>(800.0f, 450.0f)
+      .add_component<Components::Size>(1600.0f, 900.0f)
+      .add_component<Components::StaticSprite>(backgroundTextureId)
+      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.5f); // Semi-transparent
 
 
     // Create enemy from prefab
     enemy = Engine::FACTORY.createObject(lazyMonkeyPrefab)
-      .addComponent<Components::Tag<"ShowcaseState">>()
-      .addComponent<Components::Position>(800.0f, 655.0f)
-      .addComponent<Components::Health>(50, 50)
-      .addComponent<Components::Scale>(2.0f, 2.0f);
+      .add_component<Components::Tag<"ShowcaseState">>()
+      .add_component<Components::Position>(800.0f, 655.0f)
+      .add_component<Components::Health>(50, 50)
+      .add_component<Components::Scale>(2.0f, 2.0f);
 
     // Create banana from prefab
     banana = Engine::FACTORY.createObject(bananaPrefab)
-      .addComponent<Components::Tag<"ShowcaseState">>()
-      .addComponent<Components::Position>(1200.0f, 655.0f)
-      .addComponent<Components::Rotation>(0.0f)
-      .addComponent<Components::RotationSpeed>(90.0f);
+      .add_component<Components::Tag<"ShowcaseState">>()
+      .add_component<Components::Position>(1200.0f, 655.0f)
+      .add_component<Components::Rotation>(0.0f)
+      .add_component<Components::RotationSpeed>(90.0f);
 
     // Create player with idle animation
-    player = Engine::WORLD.createEntity()
-      .addComponent<Components::Tag<"ShowcaseState">>()
-      .addComponent<Components::Position>(200.0f, 655.0f)
-      .addComponent<Components::Size>(64.0f, 64.0f)
-      .addComponent<Components::Velocity>(0.0f, 0.0f)
-      .addComponent<Components::AnimatedSprite>(playerIdleSpriteSheetId)
-      .addComponent<Components::Health>(100, 100)
-      .addComponent<Components::Scale>(2.0f, 2.0f);
+    player = Engine::WORLD.create_entity()
+      .add_component<Components::Tag<"ShowcaseState">>()
+      .add_component<Components::Position>(200.0f, 655.0f)
+      .add_component<Components::Size>(64.0f, 64.0f)
+      .add_component<Components::Velocity>(0.0f, 0.0f)
+      .add_component<Components::AnimatedSprite>(playerIdleSpriteSheetId)
+      .add_component<Components::Health>(100, 100)
+      .add_component<Components::Scale>(2.0f, 2.0f);
 
     // Add systems
-    Engine::WORLD.addSystem<BackgroundSystem>();
-    Engine::WORLD.addSystem<StaticSpriteRenderSystem>();
-    Engine::WORLD.addSystem<AnimatedSpriteRenderSystem>();
-    Engine::WORLD.addSystem<MovementSystem>();
-    Engine::WORLD.addSystem<RotationSystem>();
+    Engine::WORLD.add_system<BackgroundSystem>();
+    Engine::WORLD.add_system<StaticSpriteRenderSystem>();
+    Engine::WORLD.add_system<AnimatedSpriteRenderSystem>();
+    Engine::WORLD.add_system<MovementSystem>();
+    Engine::WORLD.add_system<RotationSystem>();
 
-    Engine::WORLD.addEventListener<AttackEvent>([this](const AttackEvent& event) {
+    Engine::WORLD.add_event_listener<AttackEvent>([this](const AttackEvent& event) {
       std::cout << "Attack event! Entity " << event.attacker
         << " attacks Entity " << event.target
         << " for " << event.damage << " damage!\n";
 
       // Play attack animation
       if (event.attacker == player.getId()) {
-        auto* playerSprite = player.getComponent<Components::AnimatedSprite>();
+        auto* playerSprite = player.get_component<Components::AnimatedSprite>();
         if (playerSprite) {
           playerSprite->spriteSheetId = playerPunchSpriteSheetId;
           playerSprite->reset();
-          player.getComponent<Components::Size>()->width = 96.0f; // Adjust size for punch sprites
+          player.get_component<Components::Size>()->width = 96.0f; // Adjust size for punch sprites
           std::cout << "Playing punch animation\n";
         }
       }
 
       // Apply damage to enemy
-      auto targetEntity = Engine::WORLD.getEntity(event.target);
-      if (targetEntity.isValid()) {
+      auto target_entity = Engine::WORLD.get_entity(event.target);
+      if (target_entity.isValid()) {
         std::cout << "Target entity is valid\n";
 
-        if (targetEntity.hasComponent<Components::Health>()) {
+        if (target_entity.has_component<Components::Health>()) {
           std::cout << "Target has health component\n";
-          auto* health = targetEntity.getComponent<Components::Health>();
+          auto* health = target_entity.get_component<Components::Health>();
           std::cout << "Health before damage: " << health->value << "\n";
 
           health->damage(event.damage);
@@ -187,7 +187,7 @@ public:
 
           if (health->isDead()) {
             std::cout << "Entity " << event.target << " has been defeated!\n";
-            targetEntity.destroy();
+            target_entity.destroy();
           }
         }
         else {
@@ -200,7 +200,7 @@ public:
       });
 
     // Subscribe to collect events
-    Engine::WORLD.addEventListener<CollectEvent>([this](const CollectEvent& event) {
+    Engine::WORLD.add_event_listener<CollectEvent>([this](const CollectEvent& event) {
       std::cout << "Collect event! Entity " << event.collector
         << " collected Entity " << event.collected
         << " for " << event.points << " points!\n";
@@ -216,9 +216,9 @@ public:
       }
 
       // Respawn the collected item
-      auto collectedEntity = Engine::WORLD.getEntity(event.collected);
+      auto collectedEntity = Engine::WORLD.get_entity(event.collected);
       if (collectedEntity.isValid()) {
-        auto* pos = collectedEntity.getComponent<Components::Position>();
+        auto* pos = collectedEntity.get_component<Components::Position>();
         if (pos) {
           pos->X() = static_cast<f32>(rand() % 1400 + 100);
           pos->Y() = static_cast<f32>(rand() % 700 + 100);
@@ -229,9 +229,9 @@ public:
 
   void Update() {
 
-    auto* playerPos = player.getComponent<Components::Position>();
-    auto* playerVel = player.getComponent<Components::Velocity>();
-    auto* playerSprite = player.getComponent<Components::AnimatedSprite>();
+    auto* playerPos = player.get_component<Components::Position>();
+    auto* playerVel = player.get_component<Components::Velocity>();
+    auto* playerSprite = player.get_component<Components::AnimatedSprite>();
 
     if (!playerPos || !playerVel || !playerSprite) return;
 
@@ -245,7 +245,7 @@ public:
           // Punch animation completed, return to idle
           playerSprite->spriteSheetId = playerIdleSpriteSheetId;
           playerSprite->reset();
-          player.getComponent<Components::Size>()->width = 64.0f; // Reset size after punch
+          player.get_component<Components::Size>()->width = 64.0f; // Reset size after punch
           std::cout << "Punch animation completed, returning to idle\n";
         }
       }
@@ -298,19 +298,19 @@ public:
       std::cout << "E key pressed! Player ID: " << player.getId() << ", Enemy ID: " << enemy.getId() << "\n";
 
       // Send attack event 
-      Engine::WORLD.sendEvent<AttackEvent>(player.getId(), enemy.getId(), 10);
+      Engine::WORLD.send_event<AttackEvent>(player.getId(), enemy.getId(), 10);
     }
 
     // Collect banana with C key (using event system)
     if (Engine::Input::IsKeyPressed(GLFW_KEY_C)) {
-      Engine::WORLD.sendEvent<CollectEvent>(player.getId(), banana.getId(), 1);
+      Engine::WORLD.send_event<CollectEvent>(player.getId(), banana.getId(), 1);
     }
   }
 
   void Draw() {
     // Draw title text (first font)
     if (titleFontId != -1) {
-      Engine::GRAPHICS.drawText(
+      Engine::GRAPHICS.draw_text(
         titleFontId,
         "Engine Showcase",
         50.0f, 50.0f,
@@ -321,7 +321,7 @@ public:
 
     // Draw info text (second font)
     if (infoFontId != -1) {
-      Engine::GRAPHICS.drawText(
+      Engine::GRAPHICS.draw_text(
         infoFontId,
         "WASD: Move | E: Attack | C: Collect",
         50.0f, 120.0f,
@@ -329,7 +329,7 @@ public:
         { 0.8f, 0.8f, 0.8f, 1.0f } // Light gray
       );
 
-      Engine::GRAPHICS.drawText(
+      Engine::GRAPHICS.draw_text(
         infoFontId,
         "Bananas: " + std::to_string(bananaCollected),
         50.0f, 160.0f,
@@ -338,9 +338,9 @@ public:
       );
 
       // Show player health
-      if (player.isValid() && player.hasComponent<Components::Health>()) {
-        auto* health = player.getComponent<Components::Health>();
-        Engine::GRAPHICS.drawText(
+      if (player.isValid() && player.has_component<Components::Health>()) {
+        auto* health = player.get_component<Components::Health>();
+        Engine::GRAPHICS.draw_text(
           infoFontId,
           "Player HP: " + std::to_string(health->value) + "/" + std::to_string(health->max),
           50.0f, 200.0f,
@@ -350,9 +350,9 @@ public:
       }
 
       // Show enemy health
-      if (enemy.isValid() && enemy.hasComponent<Components::Health>()) {
-        auto* health = enemy.getComponent<Components::Health>();
-        Engine::GRAPHICS.drawText(
+      if (enemy.isValid() && enemy.has_component<Components::Health>()) {
+        auto* health = enemy.get_component<Components::Health>();
+        Engine::GRAPHICS.draw_text(
           infoFontId,
           "Enemy HP: " + std::to_string(health->value) + "/" + std::to_string(health->max),
           50.0f, 240.0f,
@@ -370,14 +370,14 @@ public:
     }
 
     // Cleanup entities
-    Engine::WORLD.destroyEntitiesWith<Components::Tag<"ShowcaseState">>();
+    Engine::WORLD.destroy_entities_with<Components::Tag<"ShowcaseState">>();
 
     // Remove systems
-    Engine::WORLD.removeSystem<BackgroundSystem>();
-    Engine::WORLD.removeSystem<StaticSpriteRenderSystem>();
-    Engine::WORLD.removeSystem<AnimatedSpriteRenderSystem>();
-    Engine::WORLD.removeSystem<MovementSystem>();
-    Engine::WORLD.removeSystem<RotationSystem>();
+    Engine::WORLD.remove_system<BackgroundSystem>();
+    Engine::WORLD.remove_system<StaticSpriteRenderSystem>();
+    Engine::WORLD.remove_system<AnimatedSpriteRenderSystem>();
+    Engine::WORLD.remove_system<MovementSystem>();
+    Engine::WORLD.remove_system<RotationSystem>();
   }
 
   void Unload() {

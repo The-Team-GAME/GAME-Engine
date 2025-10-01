@@ -136,16 +136,16 @@ ECS::Entity Engine::ObjectFactory::createObject(int id)
 {
   ObjectPrefab& objectPrefab = objectList[id];
 
-  ECS::Entity entity = m_world->createEntity()
-    .addComponent<Components::ObjectId>(objectPrefab.objectId)
-    .addComponent<Components::Size>(objectPrefab.size);
+  ECS::Entity entity = m_world->create_entity()
+    .add_component<Components::ObjectId>(objectPrefab.objectId)
+    .add_component<Components::Size>(objectPrefab.size);
 
   if (objectPrefab.staticSprite.has_value()) {
-    entity.addComponent<Components::StaticSprite>(objectPrefab.staticSprite.value());
+    entity.add_component<Components::StaticSprite>(objectPrefab.staticSprite.value());
   }
 
   if (objectPrefab.animatedSprite.has_value()) {
-    entity.addComponent<Components::AnimatedSprite>(objectPrefab.animatedSprite.value());
+    entity.add_component<Components::AnimatedSprite>(objectPrefab.animatedSprite.value());
   }
 
   return entity;

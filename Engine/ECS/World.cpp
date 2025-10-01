@@ -3,42 +3,42 @@
 namespace ECS
 {
 
-  Entity World::createEntity()
+  Entity World::create_entity()
   {
-    EntityID id = nextEntityId++;
-    activeEntities.insert(id);
-    entitySignatures[id] = ComponentSignature{}; // Initialize empty signature
+    EntityID id = next_entity_id++;
+    active_entities.insert(id);
+    entity_signatures[id] = ComponentSignature{}; // Initialize empty signature
     return Entity(id, this);
   }
 
-  Entity World::getEntity(EntityID id)
+  Entity World::get_entity(EntityID id)
   {
-    if (activeEntities.find(id) != activeEntities.end())
+    if (active_entities.find(id) != active_entities.end())
     {
       return Entity(id, this);
     }
     return Entity(INVALID_ENTITY, this);
   }
 
-  Entity World::cloneEntity(EntityID sourceId)
+  Entity World::clone_entity(EntityID source_id)
   {
-    if (!isEntityActive(sourceId))
+    if (!is_entity_active(source_id))
     {
       return Entity(INVALID_ENTITY, this); // Source entity doesn't exist or is inactive
     }
 
-    Entity newEntity = createEntity();
+    Entity newEntity = create_entity();
 
     // Copy signature from source to new entity
-    const auto& sourceSignature = entitySignatures.at(sourceId);
-    entitySignatures[newEntity.getId()] = sourceSignature;
+    const auto& sourceSignature = entity_signatures.at(source_id);
+    entity_signatures[newEntity.getId()] = sourceSignature;
 
     // Copy all components using the signature
-    for (auto const& [typeId, componentArray] : componentArrays)
+    for (auto const& [typeId, componentArray] : component_arrays)
     {
       if (sourceSignature.test(typeId))
       {
-        componentArray->cloneComponent(sourceId, newEntity.getId());
+        componentArray->cloneComponent(source_id, newEntity.getId());
       }
     }
 
@@ -48,17 +48,17 @@ namespace ECS
     return newEntity;
   }
 
-  void World::destroyEntity(EntityID id)
+  void World::destroy_entity(EntityID id)
   {
-    entitiesToDestroy.insert(id);
+    entities_to_destory.insert(id);
   }
 
-  bool World::isEntityActive(EntityID id) const
+  bool World::is_entity_active(EntityID id) const
   {
-    return activeEntities.find(id) != activeEntities.end();
+    return active_entities.find(id) != active_entities.end();
   }
 
-  void World::removeEventListener(EventTypeID eventType)
+  void World::remove_event_listener(EventTypeID eventType)
   {
     eventHandlers.erase(eventType);
   }
@@ -98,18 +98,18 @@ namespace ECS
     }
 
     // Clean up destroyed entities
-    for (EntityID entityId : entitiesToDestroy)
+    for (EntityID entityId : entities_to_destory)
     {
-      if (activeEntities.erase(entityId))
+      if (active_entities.erase(entityId))
       {
         // Remove from all component arrays
-        for (auto& [typeId, array] : componentArrays)
+        for (auto& [typeId, array] : component_arrays)
         {
           array->removeEntity(entityId);
         }
 
         // Remove signature
-        entitySignatures.erase(entityId);
+        entity_signatures.erase(entityId);
 
         // Remove from all systems
         for (auto& system : systems)
@@ -118,7 +118,7 @@ namespace ECS
         }
       }
     }
-    entitiesToDestroy.clear();
+    entities_to_destory.clear();
   }
 
   void World::draw()
@@ -133,8 +133,8 @@ namespace ECS
   std::vector<Entity> World::getAllEntities() const
   {
     std::vector<Entity> result;
-    result.reserve(activeEntities.size());
-    for (EntityID entityId : activeEntities)
+    result.reserve(active_entities.size());
+    for (EntityID entityId : active_entities)
     {
       result.emplace_back(entityId, const_cast<World*>(this));
     }
@@ -143,7 +143,7 @@ namespace ECS
 
   size_t World::getEntityCount() const
   {
-    return activeEntities.size();
+    return active_entities.size();
   }
 
   void World::entityComponentChanged(EntityID entity)
@@ -163,11 +163,11 @@ namespace ECS
 
   bool World::systemMatchesEntity(const System& system, EntityID entity) const
   {
-    if (!isEntityActive(entity))
+    if (!is_entity_active(entity))
       return false;
 
-    auto it = entitySignatures.find(entity);
-    if (it == entitySignatures.end())
+    auto it = entity_signatures.find(entity);
+    if (it == entity_signatures.end())
       return false;
 
     const auto& requiredSignature = system.getRequiredSignature();

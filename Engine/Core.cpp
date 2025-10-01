@@ -61,8 +61,8 @@ namespace Engine
     isRunning = true;
 
     // Register the graphics resize system
-    WORLD.addEventListener<WindowResizeEvent>([](const WindowResizeEvent& event) {
-      GRAPHICS.setViewport(event.width, event.height);
+    WORLD.add_event_listener<WindowResizeEvent>([](const WindowResizeEvent& event) {
+      GRAPHICS.set_viewport(event.width, event.height);
       }
     );
 
@@ -98,7 +98,7 @@ namespace Engine
       glfwPollEvents();
       AUDIO.update();
       ImguiMgr::begin();
-      GRAPHICS.beginFrame();
+      GRAPHICS.begin_frame();
 
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
       while (accumulator >= Time::get_fixed_dt())
@@ -150,7 +150,7 @@ namespace Engine
       // start of draw stuff
       StateManager::GetCurrentState()->Draw();
       WORLD.draw();
-      GRAPHICS.endFrame();
+      GRAPHICS.end_frame();
 
       // end of draw stuff
       ImguiMgr::end();
@@ -167,6 +167,6 @@ namespace Engine
 
     StateManager::Exit(); // TODO: to be removed 
 
-    WORLD.removeEventListener<WindowResizeEvent>();
+    WORLD.remove_event_listener<WindowResizeEvent>();
   }
 }

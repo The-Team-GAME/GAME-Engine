@@ -6,13 +6,13 @@
 namespace ECS {
 
   template<typename... Components>
-  void System::requireComponents() {
+  void System::require_components() {
     requiredSignature.reset();
     ((requiredSignature.set(ComponentTypeManager::getTypeId<Components>())), ...);
   }
 
   template<typename... Events>
-  void System::listenToEvents() {
+  void System::listen_to_events() {
     eventSignature.reset();
     ((eventSignature.set(EventTypeManager::getTypeId<Events>())), ...);
   }

@@ -13,10 +13,10 @@ public:
 
   void Init()
   {
-    auto background = Engine::WORLD.createEntity()
-      .addComponent<Components::Tag<"Rubric2500Particles">>()
-      .addComponent<Components::Background>()
-      .addComponent<Components::Color>(0.0f, 0.0f, 0.0f, 0.0f);
+    auto background = Engine::WORLD.create_entity()
+      .add_component<Components::Tag<"Rubric2500Particles">>()
+      .add_component<Components::Background>()
+      .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 0.0f);
 
     for (int i = 0; i < 2500; ++i) {
       f32 x = static_cast<f32>(rand() % 1600); // Random x position within window width
@@ -31,20 +31,20 @@ public:
       );
       f32 rotationSpeed = 30.0f + static_cast<f32>(rand() % 90); // Random rotation speed between 30 and 120 degrees per second
 
-      Engine::WORLD.createEntity()
-        .addComponent<Components::Tag<"Rubric2500Particles">>()
-        .addComponent<Components::Position>(x, y)
-        .addComponent<Components::Size>(size, size)
-        .addComponent<Components::Color>(color)
-        .addComponent<Components::Rotation>(rotation)
-        .addComponent<Components::RotationSpeed>(rotationSpeed);
+      Engine::WORLD.create_entity()
+        .add_component<Components::Tag<"Rubric2500Particles">>()
+        .add_component<Components::Position>(x, y)
+        .add_component<Components::Size>(size, size)
+        .add_component<Components::Color>(color)
+        .add_component<Components::Rotation>(rotation)
+        .add_component<Components::RotationSpeed>(rotationSpeed);
     }
 
 
     // Add systems to the world
-    Engine::WORLD.addSystem<BackgroundSystem>(); // Background system should be first
-    Engine::WORLD.addSystem<RotationSystem>();
-    Engine::WORLD.addSystem<RectRenderSystem>();
+    Engine::WORLD.add_system<BackgroundSystem>(); // Background system should be first
+    Engine::WORLD.add_system<RotationSystem>();
+    Engine::WORLD.add_system<RectRenderSystem>();
 
   };
 
@@ -55,12 +55,12 @@ public:
   };
 
   void Free() {
-    Engine::WORLD.destroyEntitiesWith<Components::Tag<"Rubric2500Particles">>();
+    Engine::WORLD.destroy_entities_with<Components::Tag<"Rubric2500Particles">>();
 
     // Remove systems
-    Engine::WORLD.removeSystem<BackgroundSystem>();
-    Engine::WORLD.removeSystem<RotationSystem>();
-    Engine::WORLD.removeSystem<RectRenderSystem>();
+    Engine::WORLD.remove_system<BackgroundSystem>();
+    Engine::WORLD.remove_system<RotationSystem>();
+    Engine::WORLD.remove_system<RectRenderSystem>();
   };
 
   void Unload() {};

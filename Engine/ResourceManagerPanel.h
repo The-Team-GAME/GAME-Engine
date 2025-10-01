@@ -82,18 +82,18 @@ inline void ResourceManagerPanel()
       {
         auto& textureMap = Engine::RESOURCES.get_all_textures();
 
-        for (const auto& [name, textureId] : textureMap)
+        for (const auto& [name, texture_id] : textureMap)
         {
           ImGui::PushID(name.c_str());
 
           // Get texture dimensions
           s32 width = 0, height = 0;
-          Engine::GRAPHICS.getTextureDimensions(textureId, width, height);
+          Engine::GRAPHICS.get_texture_dimensions(texture_id, width, height);
 
           // Display texture name
           ImGui::Text("%s", name.c_str());
           ImGui::SameLine();
-          ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "(ID: %d, %dx%d)", textureId, width, height);
+          ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "(ID: %d, %dx%d)", texture_id, width, height);
 
           // Display texture preview
           f32 previewSize = 64.0f;
@@ -101,7 +101,7 @@ inline void ResourceManagerPanel()
           ImVec2 imageSize(previewSize, previewSize * aspectRatio);
 
           // Get the OpenGL texture handle for ImGui
-          u32 textureHandle = Engine::GRAPHICS.getTextureHandle(textureId);
+          u32 textureHandle = Engine::GRAPHICS.get_texture_handle(texture_id);
           ImGui::Image((ImTextureID)(intptr_t)textureHandle, imageSize);
 
           // Unload button
@@ -267,7 +267,7 @@ inline void ResourceManagerPanel()
   static bool eventListenerRegistered = false;
   if (!eventListenerRegistered)
   {
-    Engine::WORLD.addEventListener<FileDropEvent>([&](const FileDropEvent& event) {
+    Engine::WORLD.add_event_listener<FileDropEvent>([&](const FileDropEvent& event) {
       for (const auto& filePath : event.filePaths)
       {
         std::filesystem::path path(filePath);

@@ -18,22 +18,22 @@ namespace ECS {
     bool isValid() const;
 
     template<typename T, typename... Args>
-    Entity& addComponent(Args&&... args);
+    Entity& add_component(Args&&... args);
 
     template<typename T>
-    Entity& removeComponent();
+    Entity& remove_component();
 
     template<typename T>
-    T* getComponent();
+    T* get_component();
 
     template<typename T>
-    const T* getComponent() const;
+    const T* get_component() const;
 
     template<typename T>
-    bool hasComponent() const;
+    bool has_component() const;
 
     template<typename... T>
-    bool hasComponents() const;
+    bool has_components() const;
 
     void destroy();
 

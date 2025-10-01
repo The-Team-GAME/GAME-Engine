@@ -7,11 +7,11 @@
 class BackgroundSystem : public ECS::System {
 public:
   BackgroundSystem() {
-    requireComponents<Components::Color, Components::Background>();
+    require_components<Components::Color, Components::Background>();
   }
 
-  void drawEntity(const ECS::Entity& entity) override {
-    auto* color = entity.getComponent<Components::Color>();
-    Engine::GRAPHICS.clearScreen(color->X(), color->Y(), color->Z(), color->W());
+  void draw_entity(const ECS::Entity& entity) override {
+    auto* color = entity.get_component<Components::Color>();
+    Engine::GRAPHICS.clear_screen(color->X(), color->Y(), color->Z(), color->W());
   }
 };

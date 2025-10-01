@@ -37,8 +37,8 @@ namespace Components {
   };
 
   struct RotationSpeed {
-    f32 degreesPerSecond;
-    RotationSpeed(f32 degreesPerSecond = 0.0f) : degreesPerSecond(degreesPerSecond) {}
+    f32 degrees_per_second;
+    RotationSpeed(f32 degrees_per_second = 0.0f) : degrees_per_second(degrees_per_second) {}
   };
 
   struct Velocity : Math::Vec2D {
@@ -76,8 +76,8 @@ namespace Components {
   struct Renderable {};
 
   struct StaticSprite {
-    s32 textureId;
-    StaticSprite(s32 textureId = -1) : textureId(textureId) {}
+    s32 texture_id;
+    StaticSprite(s32 texture_id = -1) : texture_id(texture_id) {}
   };
 
   struct AnimatedSprite {
@@ -87,7 +87,8 @@ namespace Components {
     bool loop;
 
     AnimatedSprite(s32 spriteSheetId = -1, bool autoPlay = true, bool loop = true)
-      : spriteSheetId(spriteSheetId), animationTime(0.0f), isPlaying(autoPlay), loop(loop) {}
+      : spriteSheetId(spriteSheetId), animationTime(0.0f), isPlaying(autoPlay), loop(loop) {
+    }
 
     void play() {
       isPlaying = true;

@@ -159,7 +159,7 @@ namespace Engine
      * @param newState Pointer to the new game state.
      * @param data Optional data to pass to the new state.
      */
-    static void ChangeState(GameStateBase* newState, std::any data = std::any());
+    static void ChangeState(GameStateBase* newState);
 
     /**
      * @brief Pushes a new state onto the state stack.
@@ -169,7 +169,7 @@ namespace Engine
      * @param newState Pointer to the new game state.
      * @param data Optional data to pass to the new state.
      */
-    static void PushState(GameStateBase* newState, std::any data = std::any());
+    static void PushState(GameStateBase* newState);
 
     /**
      * @brief Pops the current state from the stack.
@@ -182,40 +182,15 @@ namespace Engine
     static bool PopState();
 
     /**
-     * @brief Pops the current state from the stack and passes data to the previous state.
-     *
-     * @param data Data to pass to the previous state.
-     * @return True if successfully popped a state, false if stack was empty.
-     */
-    static bool PopState(std::any data);
-
-    /**
      * @brief Restarts the current game state.
      *
      * This function reinitializes the current state, resetting it to its default state.
      */
     static void Restart();
 
-    /**
-     * @brief Stops the game loop.
-     *
-     * This function sets the running flag to false, terminating the game loop.
-     */
-    static void Stop();
-
     static void Init(GameStateBase* initialState);
 
     static void Exit();
-
-    /**
-     * @brief Runs the game loop with the initial game state.
-     *
-     * This function initializes the game engine, loads the initial state, and
-     * runs the main game loop until the game is stopped.
-     *
-     * @param initialState Pointer to the initial game state.
-     */
-    static void Run(GameStateBase* initialState);
 
     /**
      * @brief Gets the current state data.
@@ -224,20 +199,19 @@ namespace Engine
      *
      * @return Reference to the current state's data.
      */
-    //static std::any& GetStateData();
+     //static std::any& GetStateData();
 
-    /**
-     * @brief Gets the current state.
-     *
-     * Helper function to access the current state (top of the stack).
-     *
-     * @return Pointer to the current state.
-     */
+     /**
+      * @brief Gets the current state.
+      *
+      * Helper function to access the current state (top of the stack).
+      *
+      * @return Pointer to the current state.
+      */
     static GameStateBase* GetCurrentState();
 
   private:
     inline static std::vector<GameStateBase*> stateStack;
-    //inline static std::vector<std::any> stateDataStack;
   };
 
   //inline DevConsole console; // this allows all states to access the console

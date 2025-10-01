@@ -9,12 +9,12 @@
 class SimplePlayerMovementSystem : public ECS::System {
 public:
   SimplePlayerMovementSystem() {
-    requireComponents<Components::Position, Components::SimplePlayerControl>();
+    require_components<Components::Position, Components::SimplePlayerControl>();
   }
 
-  void updateEntity(ECS::Entity& entity) override {
-    auto* pos = entity.getComponent<Components::Position>();
-    auto* control = entity.getComponent<Components::SimplePlayerControl>();
+  void update_entity(ECS::Entity& entity) override {
+    auto* pos = entity.get_component<Components::Position>();
+    auto* control = entity.get_component<Components::SimplePlayerControl>();
 
     if (Engine::Input::IsKeyHeld(GLFW_KEY_W)) {
       pos->Y() -= control->speed * Engine::Time::get_fixed_dt();

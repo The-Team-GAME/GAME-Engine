@@ -52,7 +52,7 @@ void WindowManager::set_params(s32 w, s32 h, std::string win_name)
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
     // Set up file drop callback
-    glfwSetDropCallback(window, fileDropCallback);
+    glfwSetDropCallback(window, file_drop_callback);
   }
 
 WindowManager::~WindowManager()
@@ -75,11 +75,11 @@ void WindowManager::framebufferSizeCallback(GLFWwindow* window, s32 width, s32 h
     windowManager->height = height;
 
       // Send resize event to engine (this will update Graphics viewport)
-      Engine::WORLD.sendEvent<WindowResizeEvent>(width, height);
+      Engine::WORLD.send_event<WindowResizeEvent>(width, height);
   }
 }
 
-void WindowManager::fileDropCallback([[maybe_unused]] GLFWwindow* window, s32 count, const char** paths)
+void WindowManager::file_drop_callback([[maybe_unused]] GLFWwindow* window, s32 count, const char** paths)
 {
 
   std::vector<std::string> filePaths;
@@ -88,5 +88,5 @@ void WindowManager::fileDropCallback([[maybe_unused]] GLFWwindow* window, s32 co
     filePaths.push_back(paths[i]);
   }
 
-  Engine::WORLD.sendEvent<FileDropEvent>(filePaths);
+  Engine::WORLD.send_event<FileDropEvent>(filePaths);
 }
