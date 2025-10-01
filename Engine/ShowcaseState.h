@@ -165,7 +165,7 @@ public:
         if (playerSprite) {
           playerSprite->spriteSheetId = playerPunchSpriteSheetId;
           playerSprite->reset();
-          // player.getComponent<Components::Size>()->width = 96.0f; // Adjust size for punch
+          player.getComponent<Components::Size>()->width = 96.0f; // Adjust size for punch sprites
           std::cout << "Playing punch animation\n";
         }
       }
@@ -234,6 +234,22 @@ public:
 
     if (!playerPos || !playerVel || !playerSprite) return;
 
+    // Check if punch animation has completed
+    if (playerSprite->spriteSheetId == playerPunchSpriteSheetId) {
+      Graphics::SpriteSheetInfo info;
+      if (Engine::GRAPHICS.getSpriteSheetInfo(playerPunchSpriteSheetId, info)) {
+        f32 totalDuration = info.totalFrames / info.animationSpeed;
+
+        if (playerSprite->animationTime >= totalDuration) {
+          // Punch animation completed, return to idle
+          playerSprite->spriteSheetId = playerIdleSpriteSheetId;
+          playerSprite->reset();
+          player.getComponent<Components::Size>()->width = 64.0f; // Reset size after punch
+          std::cout << "Punch animation completed, returning to idle\n";
+        }
+      }
+    }
+
     // Player movement input
     f32 speed = 300.0f;
     f32 newVelX = 0.0f;
@@ -255,22 +271,25 @@ public:
     playerVel->X() = newVelX;
     playerVel->Y() = newVelY;
 
-    // Animation change based on movement
-    bool shouldWalk = (newVelX != 0.0f || newVelY != 0.0f);
+    // Only change to walk/idle if not currently punching
+    if (playerSprite->spriteSheetId != playerPunchSpriteSheetId) {
+      // Animation change based on movement
+      bool shouldWalk = (newVelX != 0.0f || newVelY != 0.0f);
 
-    if (shouldWalk && !isWalking) {
-      // Switch to walking animation
-      playerSprite->spriteSheetId = playerRunSpriteSheetId;
-      playerSprite->reset();
-      Engine::AUDIO.playSoundLooped(walkSoundId);
-      isWalking = true;
-    }
-    else if (!shouldWalk && isWalking) {
-      // Switch to idle animation
-      playerSprite->spriteSheetId = playerIdleSpriteSheetId;
-      playerSprite->reset();
-      Engine::AUDIO.stopSound(walkSoundId);
-      isWalking = false;
+      if (shouldWalk && !isWalking) {
+        // Switch to walking animation
+        playerSprite->spriteSheetId = playerRunSpriteSheetId;
+        playerSprite->reset();
+        Engine::AUDIO.playSoundLooped(walkSoundId);
+        isWalking = true;
+      }
+      else if (!shouldWalk && isWalking) {
+        // Switch to idle animation
+        playerSprite->spriteSheetId = playerIdleSpriteSheetId;
+        playerSprite->reset();
+        Engine::AUDIO.stopSound(walkSoundId);
+        isWalking = false;
+      }
     }
 
     // Attack enemy with E key (using event system)
