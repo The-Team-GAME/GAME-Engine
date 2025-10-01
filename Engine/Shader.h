@@ -2,6 +2,7 @@
 
 #include "Precompiled.h"
 #include <string>
+#include "TypeDef.h"
 
 class Shader {
 private:
@@ -25,12 +26,12 @@ public:
 
   // utility uniform functions
   void setBool(const std::string& name, bool value) const;
-  void setInt(const std::string& name, int value) const;
-  void setFloat(const std::string& name, float value) const;
+  void setInt(const std::string& name, s32 value) const;
+  void setFloat(const std::string& name, f32 value) const;
   void setVec3(const std::string& name, glm::vec3 const& list) const;
-  void setVec3(const std::string& name, float x, float y, float z) const;
+  void setVec3(const std::string& name, f32 x, f32 y, f32 z) const;
   void setVec4(const std::string& name, glm::vec4 const& list) const;
-  void setVec4(const std::string& name, float a, float b, float c, float d) const;
+  void setVec4(const std::string& name, f32 a, f32 b, f32 c, f32 d) const;
   void setMatrix(const std::string& name, const glm::mat4x4& matrix, bool transpose = false) const;
-  void setIntArray(const std::string& name, int count, const int* value) const;
+  void setIntArray(const std::string& name, s32 count, const int* value) const;
 };

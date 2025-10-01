@@ -62,7 +62,7 @@ int Engine::ObjectFactory::registerObject(std::string filePath)
   else { Log::warning("Key: texturePath does not exist."); }
 
   objectList.push_back(newObject);
-  int id = nextObjectId;
+  s32 id = nextObjectId;
   nextObjectId++;
 
   fh::clear_json();
@@ -151,7 +151,7 @@ ECS::Entity Engine::ObjectFactory::createObject(int id)
 //  }
 //
 //  objectList.push_back(newObject);
-//  int id = nextObjectId;
+//  s32 id = nextObjectId;
 //  nextObjectId++;
 //
 //  return id;

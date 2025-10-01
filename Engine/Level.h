@@ -3,14 +3,15 @@
 #include <string>
 #include <vector>
 #include "ECS/Types.h"
+#include "TypeDef.h"
 
 namespace Engine
 {
   struct EntityData
   {
     std::string prefabId;
-    float x = 0.0f;
-    float y = 0.0f;
+    f32 x = 0.0f;
+    f32 y = 0.0f;
   };
 
   struct Level

@@ -5,12 +5,12 @@
 
 struct DamageEvent {
   ECS::EntityID target;
-  int amount;
+  s32 amount;
 };
 
 struct WindowResizeEvent {
-  int width;
-  int height;
+  s32 width;
+  s32 height;
 };
 
 struct FileDropEvent {

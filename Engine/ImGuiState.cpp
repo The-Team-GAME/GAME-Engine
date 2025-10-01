@@ -116,7 +116,7 @@ void ImGuiState::handleMouse()
     }
 
     // Try to pick another rect
-    int pick = pickTopmostRect(mouse);
+    s32 pick = pickTopmostRect(mouse);
     if (pick >= 0) {
       selectedIndex_ = pick;
       // Second click starts move immediately if inside body
@@ -258,7 +258,7 @@ void ImGuiState::drawSelectionGizmo()
   Engine::GRAPHICS.drawRect(sel, center.x, center.y, size.x + 4.0f, size.y + 4.0f, 0.0f, Graphics::Origin::Center);
 
   // 8 handles
-  const float hs = handlePx_;
+  const f32 hs = handlePx_;
   const glm::vec2 c = center;
   const glm::vec2 s = size * 0.5f;
   const glm::vec2 pts[8] = {
@@ -290,7 +290,7 @@ bool ImGuiState::pointInRect(const glm::vec2& p, const glm::vec2& minP, const gl
 ImGuiState::ResizeMask ImGuiState::hitHandle(const glm::vec2& p, const glm::vec2& minP, const glm::vec2& maxP) const
 {
   ResizeMask m{};
-  const float hs = handlePx_ * 0.5f + handleHoverInflate_;
+  const f32 hs = handlePx_ * 0.5f + handleHoverInflate_;
   const glm::vec2 c{ (minP.x + maxP.x) * 0.5f, (minP.y + maxP.y) * 0.5f };
   const glm::vec2 s{ (maxP.x - minP.x) * 0.5f, (maxP.y - minP.y) * 0.5f };
 
@@ -413,15 +413,15 @@ void ImGuiState::drawImGui()
 void ImGuiState::computeCenterAndSize(const glm::vec2& a, const glm::vec2& b,
   glm::vec2& outCenter, glm::vec2& outSize)
 {
-  const float minX = std::min(a.x, b.x);
-  const float maxX = std::max(a.x, b.x);
-  const float minY = std::min(a.y, b.y);
-  const float maxY = std::max(a.y, b.y);
+  const f32 minX = std::min(a.x, b.x);
+  const f32 maxX = std::max(a.x, b.x);
+  const f32 minY = std::min(a.y, b.y);
+  const f32 maxY = std::max(a.y, b.y);
   outSize = { std::max(0.0f, maxX - minX), std::max(0.0f, maxY - minY) };
   outCenter = { minX + outSize.x * 0.5f, minY + outSize.y * 0.5f };
 }
 
-void ImGuiState::clampMinSize(glm::vec2& size, float minSize)
+void ImGuiState::clampMinSize(glm::vec2& size, f32 minSize)
 {
   size.x = std::max(size.x, minSize);
   size.y = std::max(size.y, minSize);

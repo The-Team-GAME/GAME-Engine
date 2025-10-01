@@ -19,17 +19,17 @@ public:
       .addComponent<Components::Color>(0.0f, 0.0f, 0.0f, 0.0f);
 
     for (int i = 0; i < 2500; ++i) {
-      float x = static_cast<float>(rand() % 1600); // Random x position within window width
-      float y = static_cast<float>(rand() % 900); // Random y position within window height
-      float size = static_cast<float>((rand() % 20) + 5); // Random size between 5 and 25
-      float rotation = static_cast<float>(rand() % 360); // Random rotation angle
+      f32 x = static_cast<f32>(rand() % 1600); // Random x position within window width
+      f32 y = static_cast<f32>(rand() % 900); // Random y position within window height
+      f32 size = static_cast<f32>((rand() % 20) + 5); // Random size between 5 and 25
+      f32 rotation = static_cast<f32>(rand() % 360); // Random rotation angle
       Components::Color color = Components::Color(
-        static_cast<float>(rand() % 256) / 255.0f,
-        static_cast<float>(rand() % 256) / 255.0f,
-        static_cast<float>(rand() % 256) / 255.0f,
+        static_cast<f32>(rand() % 256) / 255.0f,
+        static_cast<f32>(rand() % 256) / 255.0f,
+        static_cast<f32>(rand() % 256) / 255.0f,
         1.0f
       );
-      float rotationSpeed = 30.0f + static_cast<float>(rand() % 90); // Random rotation speed between 30 and 120 degrees per second
+      f32 rotationSpeed = 30.0f + static_cast<f32>(rand() % 90); // Random rotation speed between 30 and 120 degrees per second
 
       Engine::WORLD.createEntity()
         .addComponent<Components::Tag<"Rubric2500Particles">>()

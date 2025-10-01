@@ -10,7 +10,7 @@
 class GameObjectState : public Engine::GameState<GameObjectState>
 {
 private:
-  int enemyPrefab = -1;
+  s32 enemyPrefab = -1;
 public:
   void Load() {};
 

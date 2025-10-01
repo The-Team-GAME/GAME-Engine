@@ -79,8 +79,9 @@ void WindowManager::framebufferSizeCallback(GLFWwindow* window, s32 width, s32 h
   }
 }
 
-void WindowManager::fileDropCallback(GLFWwindow* window, int count, const char** paths)
+void WindowManager::fileDropCallback([[maybe_unused]] GLFWwindow* window, s32 count, const char** paths)
 {
+
   std::vector<std::string> filePaths;
   for (int i = 0; i < count; ++i)
   {

@@ -4,7 +4,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include "ECS/System.h"
-
+#include "TypeDef.h"
 
 class ImGuiState : public Engine::GameState<ImGuiState>
 {
@@ -31,14 +31,14 @@ private:
   struct ResizeMask { bool l = false, r = false, t = false, b = false; } resize_;
 
   // Thresholds
-  float startDragThresholdPx_ = 6.0f;
-  float minRectSizePx_ = 8.0f;
-  float handlePx_ = 8.0f;
-  float handleHoverInflate_ = 4.0f;
+  f32 startDragThresholdPx_ = 6.0f;
+  f32 minRectSizePx_ = 8.0f;
+  f32 handlePx_ = 8.0f;
+  f32 handleHoverInflate_ = 4.0f;
 
   // UI
   glm::vec4 currentColor_{ 1.0f, 1.0f, 1.0f, 0.25f };
-  int selectedIndex_ = -1;
+  s32 selectedIndex_ = -1;
   bool spawnWithCollider_ = false;
 
   // ECS rectangles
@@ -53,7 +53,7 @@ private:
   // Picking / geometry
   static void computeCenterAndSize(const glm::vec2& a, const glm::vec2& b,
     glm::vec2& outCenter, glm::vec2& outSize);
-  static void clampMinSize(glm::vec2& size, float minSize = 1.0f);
+  static void clampMinSize(glm::vec2& size, f32 minSize = 1.0f);
 
   bool getBounds(ECS::EntityID id, glm::vec2& minP, glm::vec2& maxP) const;
   static bool pointInRect(const glm::vec2& p, const glm::vec2& minP, const glm::vec2& maxP);
@@ -63,7 +63,7 @@ private:
   struct HitInfo { bool colliding = false; };
   
   ResizeMask hitHandle(const glm::vec2& p, const glm::vec2& minP, const glm::vec2& maxP) const;
-  int pickTopmostRect(const glm::vec2& p) const;
+  s32 pickTopmostRect(const glm::vec2& p) const;
 
   // Serialization stubs
   bool SaveToFile(const char* path) const;
