@@ -41,10 +41,10 @@ namespace Math {
     /* ======== //
     // Mutators //
     // ======== */
-    void X(f32 xval);
-    void Y(f32 yval);
-    void Z(f32 zval);
-    void W(f32 wval);
+    f32& X();
+    f32& Y();
+    f32& Z();
+    f32& W();
     // Sets the vector to become a zero vector
     void zero();
 

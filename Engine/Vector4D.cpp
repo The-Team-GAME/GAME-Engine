@@ -26,10 +26,10 @@ namespace Math {
   f32 Vec4D::Z() const { return z; }
   f32 Vec4D::W() const { return w; }
   // Mutators
-  void Vec4D::X(f32 xval) { x = xval; }
-  void Vec4D::Y(f32 yval) { y = yval; }
-  void Vec4D::Z(f32 zval) { z = zval; }
-  void Vec4D::W(f32 wval) { w = wval; }
+  f32& Vec4D::X() { return x; }
+  f32& Vec4D::Y() { return y; }
+  f32& Vec4D::Z() { return z; }
+  f32& Vec4D::W() { return w; }
   void Vec4D::zero() { x = 0; y = 0; z = 0; w = 0; }
   // Member Functions
   f32 Vec4D::get_magnitude_sq() const
@@ -110,19 +110,19 @@ namespace Math {
   Vec4D operator/(Vec4D const& vect, f32 divisor)
   {
     Vec4D tmp{ vect };
-    tmp.X(vect.X() / divisor);
-    tmp.Y(vect.Y() / divisor);
-    tmp.Z(vect.Z() / divisor);
-    tmp.W(vect.W() / divisor);
+    tmp.X() = vect.X() / divisor;
+    tmp.Y() = vect.Y() / divisor;
+    tmp.Z() = vect.Z() / divisor;
+    tmp.W() = vect.W() / divisor;
     return tmp;
   }
   Vec4D operator*(Vec4D const& vect, f32 scalar)
   {
     Vec4D tmp{ vect };
-    tmp.X(vect.X() * scalar);
-    tmp.Y(vect.Y() * scalar);
-    tmp.Z(vect.Z() * scalar);
-    tmp.W(vect.W() * scalar);
+    tmp.X() = vect.X() * scalar;
+    tmp.Y() = vect.Y() * scalar;
+    tmp.Z() = vect.Z() * scalar;
+    tmp.W() = vect.W() * scalar;
     return tmp;
   }
 
