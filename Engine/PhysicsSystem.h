@@ -24,6 +24,11 @@ public:
 
     // --- 4. Collision resolution (can use mass here for realistic collisions) ---
     if (col->penetration.x != 0.0f || col->penetration.y != 0.0f) {
+			// if overlapped too small, ignore it
+			col->penetration.x = (fabs(col->penetration.x) < 0.001f) ? 0.0f : col->penetration.x;
+			col->penetration.y = (fabs(col->penetration.y) < 0.001f) ? 0.0f : col->penetration.y;
+
+
       // Push entity out of overlap
       pos->x += col->penetration.x;
       pos->y += col->penetration.y;

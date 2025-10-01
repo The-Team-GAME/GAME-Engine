@@ -38,10 +38,31 @@ public:
         // Static collision (simple overlap)
         Math::Vec2D overlap;
         if (checkAABBCollision(*posA, *colA, *posB, *colB, overlap)) {
+
+          // If overlap is very small, ignore it
+       //   const float epsilon = 0.000000001f; // tweak threshold depending on your scale
+       //   if (fabs(overlap.x) > epsilon && fabs(overlap.y) > epsilon) {
+       //     std::cout << "Ignoring tiny overlap between "
+       //       << entity.getId() << " and " << otherEntity.getId()
+							//<< " overlap=(" << overlap.x << ", " << overlap.y << ")\n";
+       //     return; // too little overlap, ignore
+       //   }
+					// Separate along penetration vector
+					
+					// Set penetration for potential use by other systems (e.g. grounding)
+					// Set grounded if collision is below feet
+
+      //    std::cout << "Static collision between "
+      //      << entity.getId() << " and " << otherEntity.getId()
+						//<< " overlap=(" << overlap.x << ", " << overlap.y << ")\n";
           colA->penetration = -overlap;
           colB->penetration = overlap;
-
         }
+     //   else {
+					//rbA->isGrounded = false;
+					//rbB->isGrounded = false;
+     //     
+     //   }
       }
       else if (rbA && rbB) {
         // Treat static objects as zero velocity

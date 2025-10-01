@@ -42,7 +42,9 @@ private:
 
   void handleJump(Components::RigidBody* rb, float jumpVel) {
     // Only jump if grounded and space is pressed
+		if (rb->isGrounded) std::cout << "Grounded\n";
     if (Engine::Input::IsKeyPressed(GLFW_KEY_SPACE) && rb->isGrounded) {
+			std::cout << "Jump!\n";
       rb->velocity.y = -jumpVel;  // Negative if +Y is down
       rb->isGrounded = false;
     }
