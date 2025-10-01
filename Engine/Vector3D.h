@@ -1,5 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    Vector3D.h
+// project: Monkey Stole My GPA
+//
+// author:  Cheng Ming Xian (100%)
+//          Primary author
+//
+// email:   c.mingxian@digipen.edu
+//
+// brief:   This file defines a 3D vector class and all of the operations that can
+//          act on a 3D vector.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
-
 #include "TypeDef.h"
 #include <iostream>
 
@@ -7,8 +20,9 @@ namespace Math {
 
 
   class Vec3D {
-  public:
+  private:
     float x, y, z;
+  public:
 
     Vec3D(float x_vec = 0, float y_vec = 0, float z_vec = 0) : x{ x_vec }, y{ y_vec }, z{ z_vec } {}; //(default)ctor
     Vec3D(Vec3D const&) = default; //copy constructor

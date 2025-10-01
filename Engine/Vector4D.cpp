@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    Vector4D.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Cheng Ming Xian (100%)
+//          Primary author
+//
+// email:   c.mingxian@digipen.edu
+//
+// brief:   This file defines a 4D vector class and all of the operations that can
+//          act on a 4D vector.
+//          I implemented this file as i thought that it might be needed for graphics
+//          calculations down the line.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "Vector4D.h"
 
 namespace Math {

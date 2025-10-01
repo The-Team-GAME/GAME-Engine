@@ -1,3 +1,17 @@
+//-----------------------------------------------------------------------------------
+// file:    Vector3D.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Cheng Ming Xian (100%)
+//          Primary author
+//
+// email:   c.mingxian@digipen.edu
+//
+// brief:   This file defines a 3D vector class and all of the operations that can
+//          act on a 3D vector.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "Vector3D.h"
 
 namespace Math {
