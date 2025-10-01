@@ -89,7 +89,7 @@ ECS::Entity Engine::ObjectFactory::createObject(int id)
 {
   ObjectPrefab& objectPrefab = objectList[id];
 
-  ECS::Entity entity = m_world->createEntity()
+  ECS::Entity entity = m_world->create_entity()
     .addComponent<Components::ObjectId>(objectPrefab.objectId)
     .addComponent<Components::Size>(objectPrefab.size);
 

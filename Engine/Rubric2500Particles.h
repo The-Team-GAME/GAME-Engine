@@ -13,7 +13,7 @@ public:
 
   void Init()
   {
-    auto background = Engine::WORLD.createEntity()
+    auto background = Engine::WORLD.create_entity()
       .addComponent<Components::Tag<"Rubric2500Particles">>()
       .addComponent<Components::Background>()
       .addComponent<Components::Color>(0.0f, 0.0f, 0.0f, 0.0f);
@@ -31,7 +31,7 @@ public:
       );
       f32 rotationSpeed = 30.0f + static_cast<f32>(rand() % 90); // Random rotation speed between 30 and 120 degrees per second
 
-      Engine::WORLD.createEntity()
+      Engine::WORLD.create_entity()
         .addComponent<Components::Tag<"Rubric2500Particles">>()
         .addComponent<Components::Position>(x, y)
         .addComponent<Components::Size>(size, size)

@@ -31,7 +31,7 @@ public:
     // You can modify components like this too
     //enemy2.get_component<Components::Position>()->x = 300.0f;
 
-    auto background = Engine::WORLD.createEntity()
+    auto background = Engine::WORLD.create_entity()
       .addComponent<Components::Tag<"GameObjectState">>()
       .addComponent<Components::Background>()
       .addComponent<Components::Color>(0.2f, 0.3f, 0.4f, 1.0f); // Dark blue background

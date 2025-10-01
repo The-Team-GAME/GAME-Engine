@@ -42,7 +42,7 @@ inline void EntityEditorPanel()
     // Create new entity button
     if (ImGui::Button("Create New Entity"))
     {
-      auto newEntity = Engine::WORLD.createEntity();
+      auto newEntity = Engine::WORLD.create_entity();
       selectedEntityId = static_cast<int>(newEntity.getId());
     }
     
@@ -51,7 +51,7 @@ inline void EntityEditorPanel()
     // Delete selected entity
     if (selectedEntityId != -1 && ImGui::Button("Delete Selected"))
     {
-      Engine::WORLD.destroyEntity(selectedEntityId);
+      Engine::WORLD.destory_entity(selectedEntityId);
       selectedEntityId = -1;
     }
   }
@@ -61,7 +61,7 @@ inline void EntityEditorPanel()
   // Section 2: Component Editor for Selected Entity
   if (selectedEntityId != -1)
   {
-    auto entity = Engine::WORLD.getEntity(selectedEntityId);
+    auto entity = Engine::WORLD.get_entity(selectedEntityId);
     
     if (!entity.isValid())
     {
@@ -319,7 +319,7 @@ inline void EntityEditorPanel()
     // Clone Entity
     if (ImGui::Button("Clone This Entity"))
     {
-      auto clonedEntity = Engine::WORLD.cloneEntity(entity.getId());
+      auto clonedEntity = Engine::WORLD.clone_entity(entity.getId());
       selectedEntityId = static_cast<int>(clonedEntity.getId());
     }
   }

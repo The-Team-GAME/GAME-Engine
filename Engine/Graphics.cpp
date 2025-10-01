@@ -224,13 +224,13 @@ void Graphics::flush()
   // Prepare the shader for drawing.
   textureShader.use();
   // Set the combined view-projection matrix uniform.
-  textureShader.setMatrix("u_ViewProjection", viewProjectionMatrix);
+  textureShader.set_matrix("u_ViewProjection", viewProjectionMatrix);
 
   // Create an array of sampler indices [0, 1, 2, ..., 31].
   s32 samplers[MaxTextureSlots];
   std::iota(samplers, samplers + MaxTextureSlots, 0);
   // Upload the sampler array to the shader.
-  textureShader.setIntArray("u_Textures", MaxTextureSlots, samplers);
+  textureShader.set_int_array("u_Textures", MaxTextureSlots, samplers);
 
   // Bind all active textures to their respective texture units.
   for (uint32_t i = 0; i < textureSlotIndex; i++)

@@ -30,7 +30,7 @@ public:
         .addComponent<Components::RotationSpeed>(45.0f);
     }
 
-    auto background = Engine::WORLD.createEntity()
+    auto background = Engine::WORLD.create_entity()
       .addComponent<Components::Tag<"DevManySpritesState">>()
       .addComponent<Components::Background>()
       .addComponent<Components::Color>(0.2f, 0.3f, 0.4f, 1.0f); // Dark blue background

@@ -28,7 +28,7 @@ public:
 
   void Init() {
     // Create player entity
-    player = Engine::WORLD.createEntity()
+    player = Engine::WORLD.create_entity()
       .addComponent<Components::Tag<"Player">>()
       .addComponent<Components::Tag<"GameObjectState">>()
       .addComponent<Components::Position>(10.0f, 20.0f)
@@ -38,7 +38,7 @@ public:
       .addComponent<Components::Color>(0.0f, 1.0f, 1.0f, 1.0f); // Make player cyan
 
     // Create an enemy entity to act as a template
-    auto enemy = Engine::WORLD.createEntity()
+    auto enemy = Engine::WORLD.create_entity()
       .addComponent<Components::Tag<"Enemy">>()
       .addComponent<Components::Tag<"GameObjectState">>()
       .addComponent<Components::Position>(50.0f, 30.0f)
@@ -48,7 +48,7 @@ public:
 
     // --- Cloning Demonstration ---
     // Create a new enemy by cloning the first one
-    auto clonedEnemy = Engine::WORLD.cloneEntity(enemy.getId());
+    auto clonedEnemy = Engine::WORLD.clone_entity(enemy.getId());
 
     // Check if the clone is valid and then modify it to differentiate it
     if (clonedEnemy.isValid()) {
@@ -62,7 +62,7 @@ public:
     // --- End of Demonstration ---
 
     // Entity to clear background
-    auto background = Engine::WORLD.createEntity()
+    auto background = Engine::WORLD.create_entity()
       .addComponent<Components::Tag<"GameObjectState">>()
       .addComponent<Components::Background>()
       .addComponent<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f); // White background

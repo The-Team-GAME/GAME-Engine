@@ -23,7 +23,7 @@ namespace Components {
 void ImGuiState::Load() {}
 void ImGuiState::Init()
 {
-  Engine::WORLD.createEntity()
+  Engine::WORLD.create_entity()
     .addComponent<Components::Tag<"RectPainter">>()
     .addComponent<Components::Background>()
     .addComponent<Components::Color>(0.08f, 0.08f, 0.10f, 1.0f)
@@ -185,7 +185,7 @@ void ImGuiState::handleMouse()
       glm::vec2 center, size;
       computeCenterAndSize(dragStart_, mouse, center, size);
       if (size.x >= minRectSizePx_ && size.y >= minRectSizePx_) {
-        auto entity = Engine::WORLD.createEntity()
+        auto entity = Engine::WORLD.create_entity()
           .addComponent<Components::Tag<"RectPainter">>()
           .addComponent<Components::Position>(center.x, center.y)
           .addComponent<Components::Size>(size.x, size.y)
@@ -330,7 +330,7 @@ void ImGuiState::drawImGui()
     ImGui::ColorEdit4("Default Color", &currentColor_.x, ImGuiColorEditFlags_AlphaBar);
 
     if (ImGui::Button("Clear All")) {
-      for (EntityID id : rects_) Engine::WORLD.destroyEntity(id);
+      for (EntityID id : rects_) Engine::WORLD.destory_entity(id);
       rects_.clear();
       selectedIndex_ = -1;
       dragMode_ = DragMode::None;
@@ -339,7 +339,7 @@ void ImGuiState::drawImGui()
     ImGui::SameLine();
     const bool canDelete = (selectedIndex_ >= 0 && selectedIndex_ < (int)rects_.size());
     if (ImGui::Button("Delete Selected") && canDelete) {
-      Engine::WORLD.destroyEntity(rects_[selectedIndex_]);
+      Engine::WORLD.destory_entity(rects_[selectedIndex_]);
       rects_.erase(rects_.begin() + selectedIndex_);
       selectedIndex_ = -1;
     }

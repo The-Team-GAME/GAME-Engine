@@ -21,14 +21,14 @@ namespace ECS
   class World
   {
   private:
-    EntityID nextEntityId = 1;
-    std::unordered_set<EntityID> activeEntities;
-    std::unordered_set<EntityID> entitiesToDestroy;
+    EntityID next_entity_id = 1;
+    std::unordered_set<EntityID> active_entities;
+    std::unordered_set<EntityID> entities_to_destory;
 
     // Entity signatures for fast component checking
-    std::unordered_map<EntityID, ComponentSignature> entitySignatures;
+    std::unordered_map<EntityID, ComponentSignature> entity_signatures;
 
-    std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> componentArrays;
+    std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> component_arrays;
     std::vector<std::unique_ptr<System>> systems;
     std::vector<Event> eventQueue;
 
@@ -36,18 +36,18 @@ namespace ECS
     std::unordered_map<EventTypeID, std::vector<std::function<void(const Event&)>>> eventHandlers;
 
     template <typename T>
-    ComponentArray<T>* get_componentArray();
+    ComponentArray<T>* get_component_array();
 
   public:
     // Component registration
     template <typename T>
-    void registerComponent();
+    void register_component();
 
     // Entity management
-    Entity createEntity();
-    Entity getEntity(EntityID id);
-    Entity cloneEntity(EntityID sourceId);
-    void destroyEntity(EntityID id);
+    Entity create_entity();
+    Entity get_entity(EntityID id);
+    Entity clone_entity(EntityID source_id);
+    void destory_entity(EntityID id);
 
     template <typename... T>
     void destroyEntitiesWith();

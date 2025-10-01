@@ -23,7 +23,7 @@ public:
   void Init()
   {
     // Create background
-    auto bg = Engine::WORLD.createEntity();
+    auto bg = Engine::WORLD.create_entity();
     bg.addComponent<Components::Background>();
     bg.addComponent<Components::Color>(0.2f, 0.2f, 0.3f, 1.0f);
     backgroundEntityId = bg.getId();
@@ -140,7 +140,7 @@ public:
     }
 
     // Destroy background entity
-    Engine::WORLD.destroyEntity(backgroundEntityId);
+    Engine::WORLD.destory_entity(backgroundEntityId);
 
     // Remove systems
     Engine::WORLD.removeSystem<BackgroundSystem>();
