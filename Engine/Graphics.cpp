@@ -9,6 +9,7 @@
 #include "Core.h"
 
 #include "TypeDef.h"
+#include "Logger.h"
 namespace
 {
   // Anonymous namespace to keep these constants local to this file.
@@ -102,8 +103,8 @@ void Graphics::init_graphics()
   glEnableVertexAttribArray(3);
   glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, TexID));
 
-  // Generate indices for all possible quads in a batch.
-  uint32_t indices[MaxIndices] = {};
+  // Generate indices for all possible quads in a batch
+  std::vector<uint32_t> indices(MaxIndices);
   uint32_t offset = 0;
   for (uint32_t i = 0; i < MaxIndices; i += 6)
   {
@@ -122,7 +123,7 @@ void Graphics::init_graphics()
   // Create an Index Buffer Object (IBO) and upload the index data.
   glGenBuffers(1, &quadIBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadIBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
 
   // Create a 1x1 white texture for drawing solid colors without a real texture.
   u32 whiteTexture;
@@ -704,11 +705,11 @@ void Graphics::draw_texture_region(s32 imageId, f32 destX, f32 destY, f32 destWi
   {
     if (textureSlotIndex >= MaxTextureSlots)
     {
-      // If we exceed the max texture slots, flush and start a new batch.
-      next_batch();
+      Log::warning("Maximum texture slots reached");
+      return;
     }
-    // If not found, add it to the next available slot.
-    textureIndex = (f32)textureSlotIndex;
+
+    textureIndex = static_cast<f32>(textureSlotIndex);
     textureSlots[textureSlotIndex] = tex.id;
     textureSlotIndex++;
   }
