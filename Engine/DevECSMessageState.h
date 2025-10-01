@@ -33,7 +33,7 @@ public:
       .addComponent<Components::Tag<"GameObjectState">>()
       .addComponent<Components::Position>(10.0f, 20.0f)
 			.addComponent<Components::Collider>(10.0f, 10.0f)
-			.addComponent<Components::RigidBody>(1.0f) // mass=1.0, not static
+			.addComponent<Components::RigidBody>(1.0f, false) // mass=1.0, not static
       .addComponent<Components::Health>(100, 100)
       .addComponent<Components::Size>(10.0f, 10.0f)
       .addComponent<Components::Color>(0.0f, 1.0f, 1.0f, 1.0f); // Make player cyan
