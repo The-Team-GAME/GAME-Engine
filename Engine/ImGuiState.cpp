@@ -399,8 +399,8 @@ void ImGuiState::drawImGui()
         if (ImGui::Button("Apply Default Color")) {
           color->X() = currentColor_.x;
           color->Y() = currentColor_.y;
-          color->z = currentColor_.z;
-          color->w = currentColor_.w;
+          color->Z() = currentColor_.z;
+          color->W() = currentColor_.w;
         }
       }
     }

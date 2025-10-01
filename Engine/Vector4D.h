@@ -22,9 +22,21 @@ namespace Math {
 
 
   class Vec4D {
-  public:
+  private:
     f32 x, y, z, w;
+  public:
 
+    /*=================================================================================
+    Function Brief:
+    The function clears the rapidjson::Document variables that holds the parsed file
+    stream.
+
+    Where to call it:
+    Usually after a json file has been read and the values parsed into their appropriate
+    variables or before another json file is about to be read. Clearing the
+    json Document basically ensures that nothing foreign ends up in the new stream that
+    you are going to read.
+    ==================================================================================*/
     Vec4D(f32 x_vec = 0, f32 y_vec = 0, f32 z_vec = 0, f32 w_vec = 0)
       : x{ x_vec }, y{ y_vec }, z{ z_vec }, w{ w_vec } {
     }; //(default)ctor

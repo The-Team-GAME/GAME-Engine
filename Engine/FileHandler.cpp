@@ -22,7 +22,7 @@ namespace FileHandler {
 
 	void parse_file(std::string filepath)
 	{
-		//clear_json();
+		//clear_json(); // clearing the json stream incase there was something left over
 		std::ifstream ifs(filepath);
 		if (!ifs.is_open())
 		{

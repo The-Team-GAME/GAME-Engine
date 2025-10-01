@@ -188,14 +188,14 @@ inline void EntityEditorPanel()
         if (ImGui::TreeNode("Color"))
         {
           auto* color = entity.getComponent<Components::Color>();
-          float colorArray[4] = { color->X(), color->Y(), color->z, color->w };
+          float colorArray[4] = { color->X(), color->Y(), color->Z(), color->W()};
           
           if (ImGui::ColorEdit4("RGBA", colorArray))
           {
             color->X() = colorArray[0];
             color->Y() = colorArray[1];
-            color->z = colorArray[2];
-            color->w = colorArray[3];
+            color->Z() = colorArray[2];
+            color->W() = colorArray[3];
           }
           
           if (ImGui::Button("Remove##color"))

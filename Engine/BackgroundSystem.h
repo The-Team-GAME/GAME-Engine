@@ -12,6 +12,6 @@ public:
 
   void drawEntity(const ECS::Entity& entity) override {
     auto* color = entity.getComponent<Components::Color>();
-    Engine::GRAPHICS.clearScreen(color->x, color->y, color->z, color->w);
+    Engine::GRAPHICS.clearScreen(color->X(), color->Y(), color->Z(), color->W());
   }
 };
