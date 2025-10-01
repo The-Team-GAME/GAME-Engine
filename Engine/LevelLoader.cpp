@@ -95,7 +95,7 @@ namespace Engine
     // Load all object prefabs
     for (const auto& prefabPath : level.objectPrefabPaths)
     {
-      int prefabId = m_factory->registerObject(prefabPath);
+      s32 prefabId = m_factory->registerObject(prefabPath);
       if (prefabId != -1)
       {
         level.loadedPrefabIds.push_back(prefabId);
@@ -136,7 +136,7 @@ namespace Engine
     for (const auto& entityData : level.entities)
     {
       // Find the prefab ID by matching the prefab's object ID
-      int prefabIdToUse = -1;
+      s32 prefabIdToUse = -1;
       for (int prefabId : level.loadedPrefabIds)
       {
         // Create a temporary entity to check its ObjectId

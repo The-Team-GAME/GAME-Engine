@@ -46,7 +46,7 @@ namespace Engine
     glfwGetCursorPos(window, &xpos, &ypos);
 
     // Convert from window coordinates to virtual coordinates using Graphics system
-    mousePosition = Engine::GRAPHICS.screenToVirtual(static_cast<float>(xpos), static_cast<float>(ypos));
+    mousePosition = Engine::GRAPHICS.screenToVirtual(static_cast<f32>(xpos), static_cast<f32>(ypos));
 
     //std::cout << "Mouse Position: (" << mousePosition.x << ", " << mousePosition.y << ")\n";
   }

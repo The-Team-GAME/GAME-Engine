@@ -1,7 +1,7 @@
 #include "AudioManager.h"
 #include <iostream>
 #include <fmod_errors.h>
-
+#include "TypeDef.h"
 namespace Engine
 {
   AudioManager::AudioManager() : fmodSystem(nullptr), nextSoundId(1)
@@ -42,7 +42,7 @@ namespace Engine
     }
   }
 
-  int AudioManager::loadSound(const std::string& filepath)
+  s32 AudioManager::loadSound(const std::string& filepath)
   {
     if (!fmodSystem)
     {
@@ -59,7 +59,7 @@ namespace Engine
       return -1;
     }
 
-    int soundId = nextSoundId++;
+    s32 soundId = nextSoundId++;
     sounds[soundId] = sound;
     std::cout << "AudioManager: Successfully loaded sound '" << filepath << "' with ID " << soundId << std::endl;
     return soundId;
@@ -188,7 +188,7 @@ namespace Engine
     channels.clear();
   }
 
-  void AudioManager::setVolume(int soundId, float volume)
+  void AudioManager::setVolume(int soundId, f32 volume)
   {
     auto it = channels.find(soundId);
     if (it != channels.end())
@@ -197,7 +197,7 @@ namespace Engine
     }
   }
 
-  void AudioManager::setMasterVolume(float volume)
+  void AudioManager::setMasterVolume(f32 volume)
   {
     if (fmodSystem)
     {

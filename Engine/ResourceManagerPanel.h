@@ -87,7 +87,7 @@ inline void ResourceManagerPanel()
           ImGui::PushID(name.c_str());
 
           // Get texture dimensions
-          int width = 0, height = 0;
+          s32 width = 0, height = 0;
           Engine::GRAPHICS.getTextureDimensions(textureId, width, height);
 
           // Display texture name
@@ -96,12 +96,12 @@ inline void ResourceManagerPanel()
           ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "(ID: %d, %dx%d)", textureId, width, height);
 
           // Display texture preview
-          float previewSize = 64.0f;
-          float aspectRatio = width > 0 ? (float)height / (float)width : 1.0f;
+          f32 previewSize = 64.0f;
+          f32 aspectRatio = width > 0 ? (f32)height / (f32)width : 1.0f;
           ImVec2 imageSize(previewSize, previewSize * aspectRatio);
 
           // Get the OpenGL texture handle for ImGui
-          unsigned int textureHandle = Engine::GRAPHICS.getTextureHandle(textureId);
+          u32 textureHandle = Engine::GRAPHICS.getTextureHandle(textureId);
           ImGui::Image((ImTextureID)(intptr_t)textureHandle, imageSize);
 
           // Unload button
@@ -274,7 +274,7 @@ inline void ResourceManagerPanel()
         std::string filename = path.stem().string();
 
         // Use the generic load function
-        int result = Engine::RESOURCES.load(filename, filePath);
+        s32 result = Engine::RESOURCES.load(filename, filePath);
 
         if (result != -1)
         {

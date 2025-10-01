@@ -4,7 +4,6 @@
 #include <iostream>
 #include "FileHandler.h"
 #include "Graphics.h"
-#include <glm/glm.hpp>
 #include "StateManager.h"
 #include "BasicState.h"
 #include "MainMenuState.h"
@@ -46,8 +45,8 @@ namespace Engine
   Core::Core()
   {
     Config::load_config();
-    int win_width = Config::get_win_width();
-    int win_height = Config::get_win_height();
+    s32 win_width = Config::get_win_width();
+    s32 win_height = Config::get_win_height();
 
     WINDOW.set_params(win_width, win_height, "Monkey Stole My GPA");
     WINDOW.window_init();

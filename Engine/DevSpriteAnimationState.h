@@ -14,8 +14,8 @@
 
 class DevSpriteAnimationState : public Engine::GameState<DevSpriteAnimationState> {
 private:
-  int marioSpriteSheetId = -1;
-  float animationTime = 0.0f;
+  s32 marioSpriteSheetId = -1;
+  f32 animationTime = 0.0f;
 
 public:
   void Load() {};

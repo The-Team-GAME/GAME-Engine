@@ -18,7 +18,7 @@
 class EcsState : public Engine::GameState<EcsState>
 {
 private:
-  int enemyPrefab;
+  s32 enemyPrefab;
   ECS::Entity player;
 
 public:

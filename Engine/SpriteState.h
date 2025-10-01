@@ -227,19 +227,19 @@ void FileExplorer(bool* p_open, bool is_directory_selection_mode = false) {
 
 class SpriteState : public Engine::GameState<SpriteState> {
 private:
-  int linearMonkeyImageId = -1;
-  int nearestMonkeyImageId = -1;
+  s32 linearMonkeyImageId = -1;
+  s32 nearestMonkeyImageId = -1;
   bool showFileExplorerSource = false;
   bool showFileExplorerDest = false;
   bool fileCopied = false;
 
   struct ImageData {
-    unsigned int texture_id;
+    u32 texture_id;
     const char* name;
   };
 
   std::vector<ImageData> ImageAspectRatio;
-  float spritePosX = 0.0f;
+  f32 spritePosX = 0.0f;
 
 public:
   void Load() {};

@@ -7,12 +7,12 @@ inline void PerformanceViewerPanel()
 {
   ImGui::Begin("Performance Viewer");
 
-  static float frameTimeAccumulator = 0.0f;
-  static int frameCount = 0;
-  static float lastFPS = 0.0f;
-  const float updateInterval = 0.1f; // Update FPS display every 0.5 seconds
+  static f32 frameTimeAccumulator = 0.0f;
+  static s32 frameCount = 0;
+  static f32 lastFPS = 0.0f;
+  const f32 updateInterval = 0.1f; // Update FPS display every 0.5 seconds
 
-  float dt = Engine::Time::get_real_dt();
+  f32 dt = Engine::Time::get_real_dt();
   if (dt > 0.0f)
   {
     frameTimeAccumulator += dt;
@@ -28,7 +28,7 @@ inline void PerformanceViewerPanel()
 
   ImGui::Text("FPS: %.1f", lastFPS);
 
-  float tick_rate_input = Engine::Time::get_tick_rate();
+  f32 tick_rate_input = Engine::Time::get_tick_rate();
 
   ImGui::SliderFloat("Tick Rate", &tick_rate_input, 10.0f, 144.0f);
 

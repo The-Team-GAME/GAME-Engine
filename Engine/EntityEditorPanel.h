@@ -7,7 +7,7 @@
 
 inline void EntityEditorPanel()
 {
-  static int selectedEntityId = -1;
+  static s32 selectedEntityId = -1;
   static char entitySearchBuffer[256] = "";
 
   ImGui::Begin("Entity Editor");
@@ -188,7 +188,7 @@ inline void EntityEditorPanel()
         if (ImGui::TreeNode("Color"))
         {
           auto* color = entity.getComponent<Components::Color>();
-          float colorArray[4] = { color->X(), color->Y(), color->Z(), color->W()};
+          f32 colorArray[4] = { color->X(), color->Y(), color->Z(), color->W()};
           
           if (ImGui::ColorEdit4("RGBA", colorArray))
           {
@@ -231,7 +231,7 @@ inline void EntityEditorPanel()
           
           if (ImGui::Button("Uniform Scale"))
           {
-            float uniform = (scale->X() + scale->Y()) / 2.0f;
+            f32 uniform = (scale->X() + scale->Y()) / 2.0f;
             scale->X() = scale->Y() = uniform;
           }
           
@@ -251,7 +251,7 @@ inline void EntityEditorPanel()
           ImGui::DragInt("Current", &health->value, 1, 0, health->max);
           ImGui::DragInt("Max", &health->max, 1, 1, 10000);
           
-          ImGui::ProgressBar(static_cast<float>(health->value) / health->max);
+          ImGui::ProgressBar(static_cast<f32>(health->value) / health->max);
           
           if (ImGui::Button("Heal 10"))
             health->heal(10);

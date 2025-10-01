@@ -11,8 +11,8 @@
 class DevManySpritesState : public Engine::GameState<DevManySpritesState>
 {
 private:
-  int enemyPrefab = -1;
-  int bananaPrefab = -1;
+  s32 enemyPrefab = -1;
+  s32 bananaPrefab = -1;
 
 public:
   void Load() {
@@ -21,8 +21,8 @@ public:
     bananaPrefab = Engine::RESOURCES.load_object_prefab("banana", "Assets/objects/banana.json");
 
     for (int i = 0; i < 2500; ++i) { // Create 2500 bananas
-      float x = static_cast<float>(rand() % 1600); // Random x position within window width
-      float y = static_cast<float>(rand() % 900); // Random y position within window height
+      f32 x = static_cast<f32>(rand() % 1600); // Random x position within window width
+      f32 y = static_cast<f32>(rand() % 900); // Random y position within window height
       Engine::FACTORY.createObject(bananaPrefab)
         .addComponent<Components::Tag<"DevManySpritesState">>()
         .addComponent<Components::Position>(x, y)

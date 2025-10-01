@@ -1,14 +1,14 @@
 #pragma once
 
 #include "StateManager.h" 
-
+#include "TypeDef.h"
 class BasicState : public Engine::GameState<BasicState>
 {
 private:
-  int fontId1 = -1;
-  int fontId2 = -1;
-  int moveSoundId = -1;
-  float rotation = 0.0f;
+  s32 fontId1 = -1;
+  s32 fontId2 = -1;
+  s32 moveSoundId = -1;
+  f32 rotation = 0.f;
 
 public:
   /*!

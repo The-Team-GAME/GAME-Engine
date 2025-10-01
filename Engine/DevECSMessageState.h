@@ -18,7 +18,7 @@
 class DevECSMessageState : public Engine::GameState<DevECSMessageState>
 {
 private:
-  int enemyPrefab;
+  s32 enemyPrefab;
   ECS::Entity player;
 
 public:

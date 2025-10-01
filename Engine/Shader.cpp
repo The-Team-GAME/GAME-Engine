@@ -38,7 +38,7 @@ void Shader::init(const char* vertexPath, const char* fragmentPath)
   const char* fShaderCode = fragmentCode.c_str();
 
   // 2. compile shaders
-  int success;
+  s32 success;
 
   // vertex Shader
   GLuint vertex = glCreateShader(GL_VERTEX_SHADER);
@@ -100,11 +100,11 @@ void Shader::setBool(const std::string& name, bool const value) const {
   glUniform1i(glGetUniformLocation(m_id, name.c_str()), static_cast<int>(value));
 }
 
-void Shader::setInt(const std::string& name, int const value) const {
+void Shader::setInt(const std::string& name, s32 const value) const {
   glUniform1i(glGetUniformLocation(m_id, name.c_str()), value);
 }
 
-void Shader::setFloat(const std::string& name, float const value) const {
+void Shader::setFloat(const std::string& name, f32 const value) const {
   glUniform1f(glGetUniformLocation(m_id, name.c_str()), value);
 }
 
@@ -116,7 +116,7 @@ void Shader::setVec3(const std::string& name, glm::vec3 const& list) const {
   glUniform3f(glGetUniformLocation(m_id, name.c_str()), list[0], list[1], list[2]);
 }
 
-void Shader::setVec3(const std::string& name, float x, float y, float z) const {
+void Shader::setVec3(const std::string& name, f32 x, f32 y, f32 z) const {
   glUniform3f(glGetUniformLocation(m_id, name.c_str()), x, y, z);
 }
 
@@ -124,10 +124,10 @@ void Shader::setVec4(const std::string& name, glm::vec4 const& list) const {
   glUniform4f(glGetUniformLocation(m_id, name.c_str()), list[0], list[1], list[2], list[3]);
 }
 
-void Shader::setVec4(const std::string& name, float a, float b, float c, float d) const {
+void Shader::setVec4(const std::string& name, f32 a, f32 b, f32 c, f32 d) const {
   glUniform4f(glGetUniformLocation(m_id, name.c_str()), a, b, c, d);
 }
 
-void Shader::setIntArray(const std::string& name, int count, const int* value) const {
+void Shader::setIntArray(const std::string& name, s32 count, const int* value) const {
   glUniform1iv(glGetUniformLocation(m_id, name.c_str()), count, value);
 }

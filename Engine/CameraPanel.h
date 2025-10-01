@@ -11,8 +11,8 @@ inline void CameraPanel()
 
   // Get current camera values through a static accessor
   static glm::vec2 cameraPosition = { 0.0f, 0.0f };
-  static float cameraZoom = 1.0f;
-  static float cameraRotation = 0.0f;
+  static f32 cameraZoom = 1.0f;
+  static f32 cameraRotation = 0.0f;
 
   // Position Controls
   if (ImGui::CollapsingHeader("Position", ImGuiTreeNodeFlags_DefaultOpen))
