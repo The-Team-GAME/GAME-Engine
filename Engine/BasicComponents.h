@@ -105,6 +105,11 @@ namespace Components {
     void reset() {
       animationTime = 0.0f;
     }
+
+    // Check if animation has completed one full cycle
+    bool hasCompleted(f32 totalDuration) const {
+      return !loop && animationTime >= totalDuration;
+    }
   };
 
   struct SimplePlayerControl {
