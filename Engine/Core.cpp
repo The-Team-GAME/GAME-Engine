@@ -17,6 +17,7 @@
 #include "EntityEditorPanel.h"
 #include "CameraPanel.h"
 #include "Config.h"
+#include "Perf.h"
 
 namespace {
   f64 accumulator{};
@@ -42,6 +43,8 @@ namespace Engine
   AudioManager AUDIO{};
 
   ResourceManager RESOURCES{};
+
+  Perf PERFORMANCE{};
 
   Core::Core()
   {

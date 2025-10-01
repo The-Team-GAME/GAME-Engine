@@ -23,6 +23,8 @@ namespace Engine
 {
   void Input::Update()
   {
+    Engine::PERFORMANCE.start("Input");
+
     GLFWwindow* window = Engine::WINDOW.getWindow(); //TODO: pass window as parameter in constructor
 
     // Update previous states
@@ -49,6 +51,8 @@ namespace Engine
     mousePosition = Engine::GRAPHICS.screenToVirtual(static_cast<float>(xpos), static_cast<float>(ypos));
 
     //std::cout << "Mouse Position: (" << mousePosition.x << ", " << mousePosition.y << ")\n";
+
+    Engine::PERFORMANCE.stop("Input");
   }
 
   bool Input::IsKeyPressed(int key)

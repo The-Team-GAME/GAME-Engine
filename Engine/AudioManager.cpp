@@ -1,6 +1,7 @@
 #include "AudioManager.h"
 #include <iostream>
 #include <fmod_errors.h>
+#include "Core.h"
 
 namespace Engine
 {
@@ -212,6 +213,8 @@ namespace Engine
 
   void AudioManager::update()
   {
+    Engine::PERFORMANCE.start("Audio");
+
     if (fmodSystem)
     {
       fmodSystem->update();
@@ -232,6 +235,8 @@ namespace Engine
         }
       }
     }
+
+    Engine::PERFORMANCE.stop("Audio");
   }
 
   bool AudioManager::isPlaying(int soundId)
