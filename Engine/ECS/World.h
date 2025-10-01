@@ -50,16 +50,16 @@ namespace ECS
     void destory_entity(EntityID id);
 
     template <typename... T>
-    void destroyEntitiesWith();
+    void destory_entities_with();
 
-    bool isEntityActive(EntityID id) const;
+    bool is_entity_active(EntityID id) const;
 
     // Component management
     template <typename T, typename... Args>
-    void addComponent(EntityID entity, Args &&...args);
+    void add_component(EntityID entity, Args &&...args);
 
     template <typename T>
-    void removeComponent(EntityID entity);
+    void remove_component(EntityID entity);
 
     template <typename T>
     T* get_component(EntityID entity);
@@ -68,10 +68,10 @@ namespace ECS
     const T* get_component(EntityID entity) const;
 
     template <typename T>
-    bool hasComponent(EntityID entity) const;
+    bool has_component(EntityID entity) const;
 
     template <typename... T>
-    bool hasComponents(EntityID entity) const;
+    bool has_components(EntityID entity) const;
 
     // System management
     template <typename T, typename... Args>

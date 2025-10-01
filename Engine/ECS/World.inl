@@ -29,11 +29,11 @@ namespace ECS
   }
 
   template <typename... T>
-  void World::destroyEntitiesWith()
+  void World::destory_entities_with()
   {
     for (EntityID entity : active_entities)
     {
-      if (hasComponents<T...>(entity))
+      if (has_components<T...>(entity))
       {
         destory_entity(entity);
       }
@@ -41,28 +41,28 @@ namespace ECS
   }
 
   template <typename T, typename... Args>
-  void World::addComponent(EntityID entity, Args &&...args)
+  void World::add_component(EntityID entity, Args &&...args)
   {
-    assert(!hasComponent<T>(entity) && "Entity already has this component");
+    assert(!has_component<T>(entity) && "Entity already has this component");
     ComponentTypeID typeId = ComponentTypeManager::getTypeId<T>();
     auto* array = get_component_array<T>();
     // The assert is no longer strictly necessary as get_component_array now ensures creation.
     // assert(array && "Component not registered");
 
-    array->addComponent(entity, T{ std::forward<Args>(args)... });
+    array->add_component(entity, T{ std::forward<Args>(args)... });
     entity_signatures[entity].set(typeId);
     entityComponentChanged(entity);
   }
 
   template <typename T>
-  void World::removeComponent(EntityID entity)
+  void World::remove_component(EntityID entity)
   {
-    assert(hasComponent<T>(entity) && "Entity does not have this component");
+    assert(has_component<T>(entity) && "Entity does not have this component");
     ComponentTypeID typeId = ComponentTypeManager::getTypeId<T>();
     auto* array = get_component_array<T>();
     if (array)
     {
-      array->removeComponent(entity);
+      array->remove_component(entity);
       entity_signatures[entity].reset(typeId);
       entityComponentChanged(entity);
     }
@@ -71,7 +71,7 @@ namespace ECS
   template <typename T>
   T* World::get_component(EntityID entity)
   {
-    assert(hasComponent<T>(entity) && "Entity does not have this component");
+    assert(has_component<T>(entity) && "Entity does not have this component");
     auto* array = get_component_array<T>();
     return array ? array->get_component(entity) : nullptr;
   }
@@ -79,13 +79,13 @@ namespace ECS
   template <typename T>
   const T* World::get_component(EntityID entity) const
   {
-    assert(hasComponent<T>(entity) && "Entity does not have this component");
+    assert(has_component<T>(entity) && "Entity does not have this component");
     auto* array = const_cast<World*>(this)->get_component_array<T>();
     return array ? array->get_component(entity) : nullptr;
   }
 
   template <typename T>
-  bool World::hasComponent(EntityID entity) const
+  bool World::has_component(EntityID entity) const
   {
     ComponentTypeID typeId = ComponentTypeManager::getTypeId<T>();
     auto it = entity_signatures.find(entity);
@@ -93,9 +93,9 @@ namespace ECS
   }
 
   template <typename... T>
-  bool World::hasComponents(EntityID entity) const
+  bool World::has_components(EntityID entity) const
   {
-    return (hasComponent<T>(entity) && ...);
+    return (has_component<T>(entity) && ...);
   }
 
   template <typename T, typename... Args>
@@ -167,7 +167,7 @@ namespace ECS
     std::vector<Entity> result;
     for (EntityID entityId : active_entities)
     {
-      if (hasComponents<T...>(entityId))
+      if (has_components<T...>(entityId))
       {
         result.emplace_back(entityId, const_cast<World*>(this));
       }
@@ -180,7 +180,7 @@ namespace ECS
   {
     for (EntityID entityId : active_entities)
     {
-      if (hasComponents<T...>(entityId))
+      if (has_components<T...>(entityId))
       {
         return Entity(entityId, const_cast<World*>(this));
       }

@@ -162,7 +162,7 @@ namespace Engine
       auto entity = m_factory->createObject(prefabIdToUse);
 
       // Set position
-      entity.addComponent<Components::Position>(entityData.x, entityData.y);
+      entity.add_component<Components::Position>(entityData.x, entityData.y);
 
       // Track spawned entity
       level.spawnedEntities.push_back(entity.getId());

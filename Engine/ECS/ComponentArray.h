@@ -22,15 +22,15 @@ namespace ECS {
     std::unordered_map<EntityID, T> components;
 
   public:
-    void addComponent(EntityID entity, T component);
+    void add_component(EntityID entity, T component);
 
-    void removeComponent(EntityID entity);
+    void remove_component(EntityID entity);
 
     void cloneComponent(EntityID source, EntityID destination) override;
 
     T* get_component(EntityID entity);
 
-    bool hasComponent(EntityID entity) const;
+    bool has_component(EntityID entity) const;
 
     void removeEntity(EntityID entity) override;
 

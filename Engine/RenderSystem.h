@@ -14,7 +14,7 @@ public:
     auto* pos = entity.get_component<Components::Position>();
     auto* size = entity.get_component<Components::Size>();
 
-    auto rotation = entity.hasComponent<Components::Rotation>() ?
+    auto rotation = entity.has_component<Components::Rotation>() ?
       *entity.get_component<Components::Rotation>() : Components::Rotation{ 0.0f };
 
     Engine::GRAPHICS.draw_rect({ color->X(), color->Y(), color->Z(), color->W()},
@@ -34,11 +34,11 @@ public:
     auto* size = entity.get_component<Components::Size>();
     auto* pos = entity.get_component<Components::Position>();
 
-    auto rotation = entity.hasComponent<Components::Rotation>() ?
+    auto rotation = entity.has_component<Components::Rotation>() ?
       *entity.get_component<Components::Rotation>() : Components::Rotation{ 0.0f };
-    auto scale = entity.hasComponent<Components::Scale>() ?
+    auto scale = entity.has_component<Components::Scale>() ?
       *entity.get_component<Components::Scale>() : Components::Scale{ 1.0f, 1.0f };
-    auto color = entity.hasComponent<Components::Color>() ?
+    auto color = entity.has_component<Components::Color>() ?
       *entity.get_component<Components::Color>() : Components::Color{ 1.0f, 1.0f, 1.0f, 1.0f };
 
     Engine::GRAPHICS.draw_texture(sprite->texture_id, pos->X(), pos->Y(),

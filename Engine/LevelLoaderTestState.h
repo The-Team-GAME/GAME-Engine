@@ -24,8 +24,8 @@ public:
   {
     // Create background
     auto bg = Engine::WORLD.create_entity();
-    bg.addComponent<Components::Background>();
-    bg.addComponent<Components::Color>(0.2f, 0.2f, 0.3f, 1.0f);
+    bg.add_component<Components::Background>();
+    bg.add_component<Components::Color>(0.2f, 0.2f, 0.3f, 1.0f);
     backgroundEntityId = bg.getId();
 
     // Add rendering systems

@@ -14,9 +14,9 @@ public:
   void Init()
   {
     auto background = Engine::WORLD.create_entity()
-      .addComponent<Components::Tag<"Rubric2500Particles">>()
-      .addComponent<Components::Background>()
-      .addComponent<Components::Color>(0.0f, 0.0f, 0.0f, 0.0f);
+      .add_component<Components::Tag<"Rubric2500Particles">>()
+      .add_component<Components::Background>()
+      .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 0.0f);
 
     for (int i = 0; i < 2500; ++i) {
       f32 x = static_cast<f32>(rand() % 1600); // Random x position within window width
@@ -32,12 +32,12 @@ public:
       f32 rotationSpeed = 30.0f + static_cast<f32>(rand() % 90); // Random rotation speed between 30 and 120 degrees per second
 
       Engine::WORLD.create_entity()
-        .addComponent<Components::Tag<"Rubric2500Particles">>()
-        .addComponent<Components::Position>(x, y)
-        .addComponent<Components::Size>(size, size)
-        .addComponent<Components::Color>(color)
-        .addComponent<Components::Rotation>(rotation)
-        .addComponent<Components::RotationSpeed>(rotationSpeed);
+        .add_component<Components::Tag<"Rubric2500Particles">>()
+        .add_component<Components::Position>(x, y)
+        .add_component<Components::Size>(size, size)
+        .add_component<Components::Color>(color)
+        .add_component<Components::Rotation>(rotation)
+        .add_component<Components::RotationSpeed>(rotationSpeed);
     }
 
 
@@ -55,7 +55,7 @@ public:
   };
 
   void Free() {
-    Engine::WORLD.destroyEntitiesWith<Components::Tag<"Rubric2500Particles">>();
+    Engine::WORLD.destory_entities_with<Components::Tag<"Rubric2500Particles">>();
 
     // Remove systems
     Engine::WORLD.removeSystem<BackgroundSystem>();

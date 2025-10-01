@@ -29,22 +29,22 @@ public:
   void Init() {
     // Create player entity
     player = Engine::WORLD.create_entity()
-      .addComponent<Components::Tag<"Player">>()
-      .addComponent<Components::Tag<"GameObjectState">>()
-      .addComponent<Components::Position>(10.0f, 20.0f)
-      .addComponent<Components::Velocity>(100.0f, 0.0f) // Make player move
-      .addComponent<Components::Health>(100, 100)
-      .addComponent<Components::Size>(10.0f, 10.0f)
-      .addComponent<Components::Color>(0.0f, 1.0f, 1.0f, 1.0f); // Make player cyan
+      .add_component<Components::Tag<"Player">>()
+      .add_component<Components::Tag<"GameObjectState">>()
+      .add_component<Components::Position>(10.0f, 20.0f)
+      .add_component<Components::Velocity>(100.0f, 0.0f) // Make player move
+      .add_component<Components::Health>(100, 100)
+      .add_component<Components::Size>(10.0f, 10.0f)
+      .add_component<Components::Color>(0.0f, 1.0f, 1.0f, 1.0f); // Make player cyan
 
     // Create an enemy entity to act as a template
     auto enemy = Engine::WORLD.create_entity()
-      .addComponent<Components::Tag<"Enemy">>()
-      .addComponent<Components::Tag<"GameObjectState">>()
-      .addComponent<Components::Position>(50.0f, 30.0f)
-      .addComponent<Components::Health>(100, 100)
-      .addComponent<Components::Size>(10.0f, 10.0f)
-      .addComponent<Components::Color>(0.0f, 1.0f, 0.0f, 1.0f);
+      .add_component<Components::Tag<"Enemy">>()
+      .add_component<Components::Tag<"GameObjectState">>()
+      .add_component<Components::Position>(50.0f, 30.0f)
+      .add_component<Components::Health>(100, 100)
+      .add_component<Components::Size>(10.0f, 10.0f)
+      .add_component<Components::Color>(0.0f, 1.0f, 0.0f, 1.0f);
 
     // --- Cloning Demonstration ---
     // Create a new enemy by cloning the first one
@@ -63,9 +63,9 @@ public:
 
     // Entity to clear background
     auto background = Engine::WORLD.create_entity()
-      .addComponent<Components::Tag<"GameObjectState">>()
-      .addComponent<Components::Background>()
-      .addComponent<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f); // White background
+      .add_component<Components::Tag<"GameObjectState">>()
+      .add_component<Components::Background>()
+      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f); // White background
 
     // Add systems to the world
     Engine::WORLD.addSystem<BackgroundSystem>(); // Background system should be first
@@ -89,7 +89,7 @@ public:
       auto bgEntity = Engine::WORLD.getFirstEntityWith<Components::Background>();
       auto* bg_color = bgEntity.get_component<Components::Color>();
 
-      if (!player.hasComponent<Components::Health>())
+      if (!player.has_component<Components::Health>())
         return;
 
       *bg_color = Components::Color{
@@ -104,7 +104,7 @@ public:
   void Draw() {}
 
   void Free() {
-    Engine::WORLD.destroyEntitiesWith<Components::Tag<"GameObjectState">>();
+    Engine::WORLD.destory_entities_with<Components::Tag<"GameObjectState">>();
 
     // Remove systems
     // TODO: make a function to remove all systems at once

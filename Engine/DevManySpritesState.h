@@ -24,16 +24,16 @@ public:
       f32 x = static_cast<f32>(rand() % 1600); // Random x position within window width
       f32 y = static_cast<f32>(rand() % 900); // Random y position within window height
       Engine::FACTORY.createObject(bananaPrefab)
-        .addComponent<Components::Tag<"DevManySpritesState">>()
-        .addComponent<Components::Position>(x, y)
-        .addComponent<Components::Rotation>(0.0f)
-        .addComponent<Components::RotationSpeed>(45.0f);
+        .add_component<Components::Tag<"DevManySpritesState">>()
+        .add_component<Components::Position>(x, y)
+        .add_component<Components::Rotation>(0.0f)
+        .add_component<Components::RotationSpeed>(45.0f);
     }
 
     auto background = Engine::WORLD.create_entity()
-      .addComponent<Components::Tag<"DevManySpritesState">>()
-      .addComponent<Components::Background>()
-      .addComponent<Components::Color>(0.2f, 0.3f, 0.4f, 1.0f); // Dark blue background
+      .add_component<Components::Tag<"DevManySpritesState">>()
+      .add_component<Components::Background>()
+      .add_component<Components::Color>(0.2f, 0.3f, 0.4f, 1.0f); // Dark blue background
 
     // Add systems to the world
     Engine::WORLD.addSystem<BackgroundSystem>();
@@ -52,7 +52,7 @@ public:
     Engine::RESOURCES.unload_object_prefab("enemy");
     Engine::RESOURCES.unload_object_prefab("banana");
 
-    Engine::WORLD.destroyEntitiesWith<Components::Tag<"DevManySpritesState">>();
+    Engine::WORLD.destory_entities_with<Components::Tag<"DevManySpritesState">>();
 
     // Remove systems
     Engine::WORLD.removeSystem<BackgroundSystem>();

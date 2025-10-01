@@ -24,10 +24,10 @@ void ImGuiState::Load() {}
 void ImGuiState::Init()
 {
   Engine::WORLD.create_entity()
-    .addComponent<Components::Tag<"RectPainter">>()
-    .addComponent<Components::Background>()
-    .addComponent<Components::Color>(0.08f, 0.08f, 0.10f, 1.0f)
-    .addComponent<Components::Collider>(false, false);
+    .add_component<Components::Tag<"RectPainter">>()
+    .add_component<Components::Background>()
+    .add_component<Components::Color>(0.08f, 0.08f, 0.10f, 1.0f)
+    .add_component<Components::Collider>(false, false);
 
   Engine::WORLD.addSystem<BackgroundSystem>();
   Engine::WORLD.addSystem<RectRenderSystem>();
@@ -42,7 +42,7 @@ void ImGuiState::Init()
 void ImGuiState::Free()
 {
   // Destroy all entities from this state
-  Engine::WORLD.destroyEntitiesWith<Components::Tag<"RectPainter">>();
+  Engine::WORLD.destory_entities_with<Components::Tag<"RectPainter">>();
   rects_.clear();
   selectedIndex_ = -1;
 
@@ -186,11 +186,11 @@ void ImGuiState::handleMouse()
       computeCenterAndSize(dragStart_, mouse, center, size);
       if (size.x >= minRectSizePx_ && size.y >= minRectSizePx_) {
         auto entity = Engine::WORLD.create_entity()
-          .addComponent<Components::Tag<"RectPainter">>()
-          .addComponent<Components::Position>(center.x, center.y)
-          .addComponent<Components::Size>(size.x, size.y)
-          .addComponent<Components::Color>(currentColor_.x, currentColor_.y, currentColor_.z, currentColor_.w)
-          .addComponent<Components::Collider>(true, false);
+          .add_component<Components::Tag<"RectPainter">>()
+          .add_component<Components::Position>(center.x, center.y)
+          .add_component<Components::Size>(size.x, size.y)
+          .add_component<Components::Color>(currentColor_.x, currentColor_.y, currentColor_.z, currentColor_.w)
+          .add_component<Components::Collider>(true, false);
         rects_.push_back(entity.getId());
         selectedIndex_ = (int)rects_.size() - 1;
       }
@@ -383,7 +383,7 @@ void ImGuiState::drawImGui()
         bool hasCollider = (col != nullptr);
         if (!hasCollider) {
           if (ImGui::Button("Add Collider")) {
-            Engine::WORLD.addComponent<Components::Collider>(id, Components::Collider{ true,false });
+            Engine::WORLD.add_component<Components::Collider>(id, Components::Collider{ true,false });
             col = Engine::WORLD.get_component<Components::Collider>(id);
           }
         }

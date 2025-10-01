@@ -22,7 +22,7 @@ namespace ECS
 
   Entity World::clone_entity(EntityID source_id)
   {
-    if (!isEntityActive(source_id))
+    if (!is_entity_active(source_id))
     {
       return Entity(INVALID_ENTITY, this); // Source entity doesn't exist or is inactive
     }
@@ -53,7 +53,7 @@ namespace ECS
     entities_to_destory.insert(id);
   }
 
-  bool World::isEntityActive(EntityID id) const
+  bool World::is_entity_active(EntityID id) const
   {
     return active_entities.find(id) != active_entities.end();
   }
@@ -163,7 +163,7 @@ namespace ECS
 
   bool World::systemMatchesEntity(const System& system, EntityID entity) const
   {
-    if (!isEntityActive(entity))
+    if (!is_entity_active(entity))
       return false;
 
     auto it = entity_signatures.find(entity);
