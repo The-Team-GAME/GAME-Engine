@@ -273,7 +273,7 @@ inline void EntityEditorPanel()
         if (ImGui::TreeNode("RotationSpeed"))
         {
           auto* rotSpeed = entity.getComponent<Components::RotationSpeed>();
-          ImGui::DragFloat("Degrees/Second", &rotSpeed->degreesPerSecond, 1.0f, -360.0f, 360.0f);
+          ImGui::DragFloat("Degrees/Second", &rotSpeed->degrees_per_second, 1.0f, -360.0f, 360.0f);
           
           if (ImGui::Button("Remove##rotspeed"))
             entity.removeComponent<Components::RotationSpeed>();

@@ -42,7 +42,7 @@ namespace ECS {
     virtual void updateEntity(Entity& entity);
 
     // Override for per-entity drawing logic (const reference because rendering shouldn't modify entities)
-    virtual void drawEntity(const Entity& entity);
+    virtual void draw_entity(const Entity& entity);
 
     // Override for entity lifecycle events
     virtual void onEntityAdded(const Entity& entity);

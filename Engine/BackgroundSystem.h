@@ -10,7 +10,7 @@ public:
     requireComponents<Components::Color, Components::Background>();
   }
 
-  void drawEntity(const ECS::Entity& entity) override {
+  void draw_entity(const ECS::Entity& entity) override {
     auto* color = entity.getComponent<Components::Color>();
     Engine::GRAPHICS.clearScreen(color->X(), color->Y(), color->Z(), color->W());
   }

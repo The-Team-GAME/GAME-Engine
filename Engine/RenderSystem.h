@@ -9,7 +9,7 @@ public:
     requireComponents<Components::Color, Components::Position, Components::Size>();
   }
 
-  void drawEntity(const ECS::Entity& entity) override {
+  void draw_entity(const ECS::Entity& entity) override {
     auto* color = entity.getComponent<Components::Color>();
     auto* pos = entity.getComponent<Components::Position>();
     auto* size = entity.getComponent<Components::Size>();
@@ -29,7 +29,7 @@ public:
     requireComponents<Components::StaticSprite, Components::Position, Components::Size>();
   }
 
-  void drawEntity(const ECS::Entity& entity) override {
+  void draw_entity(const ECS::Entity& entity) override {
     auto* sprite = entity.getComponent<Components::StaticSprite>();
     auto* size = entity.getComponent<Components::Size>();
     auto* pos = entity.getComponent<Components::Position>();

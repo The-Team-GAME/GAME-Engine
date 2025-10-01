@@ -37,8 +37,8 @@ namespace Components {
   };
 
   struct RotationSpeed {
-    f32 degreesPerSecond;
-    RotationSpeed(f32 degreesPerSecond = 0.0f) : degreesPerSecond(degreesPerSecond) {}
+    f32 degrees_per_second;
+    RotationSpeed(f32 degrees_per_second = 0.0f) : degrees_per_second(degrees_per_second) {}
   };
 
   struct Velocity : Math::Vec2D {

@@ -14,7 +14,7 @@ public:
     auto* rot = entity.getComponent<Components::Rotation>();
     auto* speed = entity.getComponent<Components::RotationSpeed>();
 
-    rot->angle += speed->degreesPerSecond * Engine::Time::get_fixed_dt();
+    rot->angle += speed->degrees_per_second * Engine::Time::get_fixed_dt();
   }
 };
 

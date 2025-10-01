@@ -18,7 +18,7 @@ namespace ECS {
     // Create Entity handles for each entity ID
     for (EntityID entityId : entities) {
       const Entity entity(entityId, world);
-      drawEntity(entity);
+      draw_entity(entity);
     }
   }
 
@@ -26,7 +26,7 @@ namespace ECS {
 
   void System::updateEntity([[maybe_unused]] Entity& entity) {}
 
-  void System::drawEntity([[maybe_unused]] const Entity& entity) {}
+  void System::draw_entity([[maybe_unused]] const Entity& entity) {}
 
   void System::onEntityAdded([[maybe_unused]] const Entity& entity) {}
 
