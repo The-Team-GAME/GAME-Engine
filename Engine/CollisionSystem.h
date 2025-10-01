@@ -3,6 +3,7 @@
 #include "ECS/System.h"
 #include "BasicComponents.h"
 #include <iostream>
+#include <algorithm>
 
 class CollisionSystem : public ECS::System {
 public:
@@ -11,82 +12,61 @@ public:
   }
 
   void updateEntity(ECS::Entity& entity) override {
-    auto* posA = entity.getComponent<Components::Position>( );
-    auto* colA = entity.getComponent<Components::Collider>( );
+    auto* posA = entity.getComponent<Components::Position>();
+    auto* colA = entity.getComponent<Components::Collider>();
     auto* rbA = entity.getComponent<Components::RigidBody>();
 
     if (!posA || !colA || !rbA) return;
 
-    // Clear previous penetration
-    colA->penetration = { 0.0f, 0.0f };
-    
-    float footOffset = 0.01f; // small distance below collider
+    const float dt = Engine::Time::get_fixed_dt();
+    float footOffset = 0.01f;
     Math::Vec2D footPos = { posA->x, posA->y - colA->halfHeight - footOffset };
 
     for (ECS::Entity otherEntity : world->getEntitiesWith<Components::Collider>()) {
       auto otherId = otherEntity.getId();
-      if (otherId == entity.getId()) continue; // skip self + duplicates
+      if (otherId <= entity.getId()) continue; // Skip self + duplicates
 
       auto* posB = world->getComponent<Components::Position>(otherId);
       auto* colB = world->getComponent<Components::Collider>(otherId);
       auto* rbB = world->getComponent<Components::RigidBody>(otherId); // nullptr if static
 
-
       if (!posB || !colB) continue;
 
-      // Try dynamic collision first (if both have rigidbodies and neither is static)
-      bool dynamicCollisionHandled = false;
+      bool handledDynamic = false;
 
+      // --- Dynamic vs Dynamic collision ---
       if (!colA->isStatic && !colB->isStatic && rbA && rbB) {
-        // Dynamic vs Dynamic collision
-        Math::Vec2D velB = rbB->velocity;
+        float tFirst = 0.0f;
         Math::Vec2D normal;
-        float t = sweptAABB(*posA, *rbA, *colA, *posB, velB, *colB, normal);
+        if (sweptAABB_Dynamic(*posA, *rbA, *colA, *posB, rbB->velocity, *colB, dt, tFirst, normal)) {
+          if (tFirst <= dt) {
+            colA->dynamicCollisionTime = tFirst;
+            colA->dynamicNormal = normal;
 
-        if (t < 0.01666666666f) {
-          // Stop velocity along collision normal
-          if (normal.x != 0) rbA->velocity.x = 0;
-          if (normal.y != 0) rbA->velocity.y = 0;
+            colB->dynamicCollisionTime = tFirst;
+            colB->dynamicNormal = -normal;
 
-          std::cout << "Dynamic collision between "
-            << entity.getId() << " and " << otherEntity.getId()
-            << " normal=(" << normal.x << ", " << normal.y << ")\n";
+            std::cout << "Dynamic collision between " << entity.getId() << " and " << otherEntity.getId()
+              << " normal=(" << normal.x << ", " << normal.y << ")\n";
 
-          dynamicCollisionHandled = true;
+            handledDynamic = true;
+          }
         }
       }
 
-      // Fall back to static collision check if no dynamic collision occurred
-      if (!dynamicCollisionHandled) {
+      // --- Static collision fallback ---
+      if (!handledDynamic) {
         Math::Vec2D overlap;
         if (checkAABBCollision(*posA, *colA, *posB, *colB, overlap)) {
-    /*      std::cout << "Static collision between "
-            << entity.getId() << " and " << otherEntity.getId()
-            << " overlap=(" << overlap.x << ", " << overlap.y << ")\n";*/
-
-          // Store penetration based on which entity is static
-          if (colA->isStatic) {
-            colB->penetration = overlap;
-          }
-          if (colB->isStatic) {
-            colA->penetration = -overlap;
-          }
-
-          // If both are dynamic (no static collision occurred above), store for both
-          if (!colA->isStatic && !colB->isStatic) {
-            colA->penetration = -overlap;
-            colB->penetration = overlap;
-          }
+          storePenetration(*colA, *colB, overlap);
         }
       }
     }
   }
 
 private:
-  bool checkAABBCollision(const Components::Position& aPos,
-    const Components::Collider& aCol,
-    const Components::Position& bPos,
-    const Components::Collider& bCol,
+  bool checkAABBCollision(const Components::Position& aPos, const Components::Collider& aCol,
+    const Components::Position& bPos, const Components::Collider& bCol,
     Math::Vec2D& outOverlap)
   {
     float dx = bPos.x - aPos.x;
@@ -97,61 +77,63 @@ private:
     float py = (aCol.halfHeight + bCol.halfHeight) - std::abs(dy);
     if (py <= 0) return false;
 
-    // Resolve along shallowest axis to prevent diagonal tunneling
-    if (px < py) {
-      outOverlap = { (dx > 0) ? px : -px, 0.0f };
-    }
-    else {
-      outOverlap = { 0.0f, (dy > 0) ? py : -py };
-    }
+    if (px < py) outOverlap = { (dx > 0) ? px : -px, 0.0f };
+    else         outOverlap = { 0.0f, (dy > 0) ? py : -py };
 
     return true;
   }
 
-  float sweptAABB(const Components::Position& aPos, const Components::RigidBody& aRb, const Components::Collider& aCol,
+  void storePenetration(Components::Collider& aCol, Components::Collider& bCol, const Math::Vec2D& overlap) {
+    if (aCol.isStatic) bCol.penetration = overlap;
+    if (bCol.isStatic) aCol.penetration = overlap * -1;
+
+    if (!aCol.isStatic && !bCol.isStatic) {
+      aCol.penetration = overlap * -1;
+      bCol.penetration = overlap;
+    }
+  }
+
+  bool sweptAABB_Dynamic(const Components::Position& aPos, const Components::RigidBody& aRb, const Components::Collider& aCol,
     const Components::Position& bPos, const Math::Vec2D& bVel, const Components::Collider& bCol,
-    Math::Vec2D& normal)
+    float dt, float& firstTimeOfCollision, Math::Vec2D& normal)
   {
     float vx = aRb.velocity.x - bVel.x;
     float vy = aRb.velocity.y - bVel.y;
 
-    float xInvEntry, yInvEntry;
-    float xInvExit, yInvExit;
+    float tFirst = 0.0f;
+    float tLast = dt;
 
-    if (vx > 0.0f) {
-      xInvEntry = (bPos.x - bCol.halfWidth) - (aPos.x + aCol.halfWidth);
-      xInvExit = (bPos.x + bCol.halfWidth) - (aPos.x - aCol.halfWidth);
-    }
-    else {
-      xInvEntry = (bPos.x + bCol.halfWidth) - (aPos.x - aCol.halfWidth);
-      xInvExit = (bPos.x - bCol.halfWidth) - (aPos.x + aCol.halfWidth);
-    }
+    auto processAxis = [&](float aMin, float aMax, float bMin, float bMax, float v) -> bool {
+      if (v < 0.0f) {
+        if (aMax < bMin) tFirst = std::max((aMax - bMin) / v, tFirst);
+        if (aMin < bMax) tLast = std::min((aMin - bMax) / v, tLast);
+        if (aMin > bMax) return false;
+      }
+      else if (v > 0.0f) {
+        if (aMin > bMax) tFirst = std::max((aMin - bMax) / v, tFirst);
+        if (aMax > bMin) tLast = std::min((aMax - bMin) / v, tLast);
+        if (aMax < bMin) return false;
+      }
+      else {
+        if (aMax < bMin || aMin > bMax) return false;
+      }
+      return true;
+      };
 
-    if (vy > 0.0f) {
-      yInvEntry = (bPos.y - bCol.halfHeight) - (aPos.y + aCol.halfHeight);
-      yInvExit = (bPos.y + bCol.halfHeight) - (aPos.y - aCol.halfHeight);
-    }
-    else {
-      yInvEntry = (bPos.y + bCol.halfHeight) - (aPos.y - aCol.halfHeight);
-      yInvExit = (bPos.y - bCol.halfHeight) - (aPos.y + aCol.halfHeight);
-    }
+    if (!processAxis(aPos.x - aCol.halfWidth, aPos.x + aCol.halfWidth, bPos.x - bCol.halfWidth, bPos.x + bCol.halfWidth, vx))
+      return false;
+    if (!processAxis(aPos.y - aCol.halfHeight, aPos.y + aCol.halfHeight, bPos.y - bCol.halfHeight, bPos.y + bCol.halfHeight, vy))
+      return false;
 
-    float xEntry = (vx == 0.0f) ? -INFINITY : xInvEntry / vx;
-    float xExit = (vx == 0.0f) ? INFINITY : xInvExit / vx;
-    float yEntry = (vy == 0.0f) ? -INFINITY : yInvEntry / vy;
-    float yExit = (vy == 0.0f) ? INFINITY : yInvExit / vy;
+    firstTimeOfCollision = tFirst;
+    if (tFirst > tLast) return false;
 
-    float entryTime = std::max(xEntry, yEntry);
-    float exitTime = std::min(xExit, yExit);
+    float xEntry = (vx != 0) ? ((vx > 0 ? (bPos.x - bCol.halfWidth - (aPos.x + aCol.halfWidth)) : (bPos.x + bCol.halfWidth - (aPos.x - aCol.halfWidth))) / vx) : -INFINITY;
+    float yEntry = (vy != 0) ? ((vy > 0 ? (bPos.y - bCol.halfHeight - (aPos.y + aCol.halfHeight)) : (bPos.y + bCol.halfHeight - (aPos.y - aCol.halfHeight))) / vy) : -INFINITY;
 
-    if (entryTime > exitTime || (xEntry < 0.0f && yEntry < 0.0f) || entryTime > 1.0f) {
-      normal = { 0.0f, 0.0f };
-      return 1.0f; // no collision this frame
-    }
+    normal = (xEntry > yEntry) ? (vx > 0 ? Math::Vec2D{ -1, 0 } : Math::Vec2D{ 1, 0 })
+      : (vy > 0 ? Math::Vec2D{ 0, -1 } : Math::Vec2D{ 0, 1 });
 
-    if (xEntry > yEntry) normal = (xInvEntry < 0.0f) ? Math::Vec2D{ 1.0f,0.0f } : Math::Vec2D{ -1.0f,0.0f };
-    else                 normal = (yInvEntry < 0.0f) ? Math::Vec2D{ 0.0f,1.0f } : Math::Vec2D{ 0.0f,-1.0f };
-
-    return entryTime;
+    return true;
   }
 };

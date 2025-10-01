@@ -41,11 +41,11 @@ public:
 
 private:
   // Physics constants
-  static constexpr float MAX_HORIZONTAL_SPEED = 400.0f;
-  static constexpr float MAX_VERTICAL_SPEED = 1200.0f;
-  static constexpr float AIR_DRAG = 0.98f;
-  static constexpr float VELOCITY_THRESHOLD = 0.5f;
-  static constexpr float GROUND_CHECK_THRESHOLD = 0.02f;
+  static constexpr f32 MAX_HORIZONTAL_SPEED = 400.0f;
+  static constexpr f32 MAX_VERTICAL_SPEED = 1200.0f;
+  static constexpr f32 AIR_DRAG = 0.98f;
+  static constexpr f32 VELOCITY_THRESHOLD = 0.5f;
+  static constexpr f32 GROUND_CHECK_THRESHOLD = 0.02f;
 
   void updateGroundedState(Components::RigidBody* rb, Components::Collider* col) {
     // Negative Y penetration = ground pushing entity upward (ground below)
@@ -57,15 +57,15 @@ private:
     rb->isGrounded = (col && col->penetration.y < -GROUND_CHECK_THRESHOLD);
   }
 
-  void integrateAcceleration(Components::RigidBody* rb, float dt) {
+  void integrateAcceleration(Components::RigidBody* rb, f32 dt) {
     rb->velocity.x += rb->acceleration.x * dt;
     rb->velocity.y += rb->acceleration.y * dt;
   }
 
-  void applyDrag(Components::RigidBody* rb, float dt) {
+  void applyDrag(Components::RigidBody* rb, f32 dt) {
     // Horizontal friction (only when grounded and no input)
     if (rb->isGrounded && rb->acceleration.x == 0.0f) {
-      float frictionForce = rb->friction * dt;
+      f32 frictionForce = rb->friction * dt;
 
       if (rb->velocity.x > 0.0f) {
         rb->velocity.x = std::max(0.0f, rb->velocity.x - frictionForce);
