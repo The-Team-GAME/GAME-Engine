@@ -6,6 +6,7 @@
 #include "Shader.h"
 #include <filesystem>
 #include "Graphics.h"
+#include "Core.h"
 
 namespace
 {
@@ -180,6 +181,7 @@ Graphics::~Graphics()
 // Called at the beginning of a frame to prepare for drawing.
 void Graphics::beginFrame()
 {
+  Engine::PERFORMANCE.start("Graphics");
   updateViewMatrix(); // Update camera matrix in case it moved.
   startBatch();       // Reset the batch renderer.
 }
@@ -187,6 +189,7 @@ void Graphics::beginFrame()
 // Called at the end of a frame to draw everything that was batched.
 void Graphics::endFrame()
 {
+  Engine::PERFORMANCE.stop("Graphics");
   flush(); // Draw the current batch.
 }
 

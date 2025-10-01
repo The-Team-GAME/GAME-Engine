@@ -34,5 +34,11 @@ inline void PerformanceViewerPanel()
 
   Engine::Time::set_tick_rate(tick_rate_input);
 
+
+  auto total_time = Engine::PERFORMANCE.get_total_time();
+  for (const auto& [label, time] : Engine::PERFORMANCE.get_elapsed_time_map()) {
+    ImGui::Text((label + ": " + std::to_string((time / total_time) * 100.0)).c_str());
+  }
+
   ImGui::End();
 }
