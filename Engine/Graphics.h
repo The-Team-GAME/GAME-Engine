@@ -164,6 +164,15 @@ public:
   void unload_all_sprite_sheets();
   void draw_animated_sprite(s32 spriteSheetId, f32 x, f32 y, f32 width, f32 height, f32 time, f32 rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& ts32Color = glm::vec4(1.0f));
 
+  struct SpriteSheetInfo {
+    s32 frameWidth;
+    s32 frameHeight;
+    s32 totalFrames;
+    f32 animationSpeed;
+  };
+
+  bool getSpriteSheetInfo(s32 spriteSheetId, SpriteSheetInfo& info) const;
+
 private:
   void start_batch();
   void next_batch();

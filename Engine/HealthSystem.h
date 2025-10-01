@@ -10,7 +10,7 @@ public:
     require_components<Components::Health>();
   }
 
-  void updateEntity(ECS::Entity& entity) override
+  void update_entity(ECS::Entity& entity) override
   {
     auto health = entity.get_component<Components::Health>();
 

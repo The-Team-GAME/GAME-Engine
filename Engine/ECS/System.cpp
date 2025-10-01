@@ -10,7 +10,7 @@ namespace ECS {
     // Create Entity handles for each entity ID
     for (EntityID entityId : entities) {
       Entity entity(entityId, world);
-      updateEntity(entity);
+      update_entity(entity);
     }
   }
 
@@ -24,7 +24,7 @@ namespace ECS {
 
   void System::onEvent([[maybe_unused]] const Event& event, [[maybe_unused]] EntityID entity) {}
 
-  void System::updateEntity([[maybe_unused]] Entity& entity) {}
+  void System::update_entity([[maybe_unused]] Entity& entity) {}
 
   void System::draw_entity([[maybe_unused]] const Entity& entity) {}
 

@@ -140,7 +140,7 @@ public:
     }
 
     // Destroy background entity
-    Engine::WORLD.destory_entity(backgroundEntityId);
+    Engine::WORLD.destroy_entity(backgroundEntityId);
 
     // Remove systems
     Engine::WORLD.remove_system<BackgroundSystem>();

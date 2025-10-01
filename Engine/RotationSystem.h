@@ -10,7 +10,7 @@ public:
     require_components<Components::Rotation, Components::RotationSpeed>();
   }
 
-  void updateEntity(ECS::Entity& entity) override {
+  void update_entity(ECS::Entity& entity) override {
     auto* rot = entity.get_component<Components::Rotation>();
     auto* speed = entity.get_component<Components::RotationSpeed>();
 

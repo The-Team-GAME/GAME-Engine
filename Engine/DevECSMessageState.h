@@ -104,7 +104,7 @@ public:
   void Draw() {}
 
   void Free() {
-    Engine::WORLD.destory_entities_with<Components::Tag<"GameObjectState">>();
+    Engine::WORLD.destroy_entities_with<Components::Tag<"GameObjectState">>();
 
     // Remove systems
     // TODO: make a function to remove all systems at once

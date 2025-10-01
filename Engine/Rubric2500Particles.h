@@ -55,7 +55,7 @@ public:
   };
 
   void Free() {
-    Engine::WORLD.destory_entities_with<Components::Tag<"Rubric2500Particles">>();
+    Engine::WORLD.destroy_entities_with<Components::Tag<"Rubric2500Particles">>();
 
     // Remove systems
     Engine::WORLD.remove_system<BackgroundSystem>();

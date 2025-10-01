@@ -42,7 +42,7 @@ void ImGuiState::Init()
 void ImGuiState::Free()
 {
   // Destroy all entities from this state
-  Engine::WORLD.destory_entities_with<Components::Tag<"RectPainter">>();
+  Engine::WORLD.destroy_entities_with<Components::Tag<"RectPainter">>();
   rects_.clear();
   selectedIndex_ = -1;
 
@@ -330,7 +330,7 @@ void ImGuiState::drawImGui()
     ImGui::ColorEdit4("Default Color", &currentColor_.x, ImGuiColorEditFlags_AlphaBar);
 
     if (ImGui::Button("Clear All")) {
-      for (EntityID id : rects_) Engine::WORLD.destory_entity(id);
+      for (EntityID id : rects_) Engine::WORLD.destroy_entity(id);
       rects_.clear();
       selectedIndex_ = -1;
       dragMode_ = DragMode::None;
@@ -339,7 +339,7 @@ void ImGuiState::drawImGui()
     ImGui::SameLine();
     const bool canDelete = (selectedIndex_ >= 0 && selectedIndex_ < (int)rects_.size());
     if (ImGui::Button("Delete Selected") && canDelete) {
-      Engine::WORLD.destory_entity(rects_[selectedIndex_]);
+      Engine::WORLD.destroy_entity(rects_[selectedIndex_]);
       rects_.erase(rects_.begin() + selectedIndex_);
       selectedIndex_ = -1;
     }

@@ -9,7 +9,7 @@ public:
     require_components<Components::Position, Components::Velocity>();
   }
 
-  void updateEntity(ECS::Entity& entity) override {
+  void update_entity(ECS::Entity& entity) override {
     auto* pos = entity.get_component<Components::Position>();
     auto* vel = entity.get_component<Components::Velocity>();
 

@@ -938,3 +938,20 @@ u32 Graphics::get_texture_handle(s32 texture_id) const
 
   return it->second.id;
 }
+
+// Add this method
+bool Graphics::getSpriteSheetInfo(s32 spriteSheetId, SpriteSheetInfo& info) const
+{
+  auto it = spriteSheets.find(spriteSheetId);
+  if (it == spriteSheets.end())
+  {
+    return false;
+  }
+
+  const SpriteSheet& sheet = it->second;
+  info.frameWidth = sheet.frameWidth;
+  info.frameHeight = sheet.frameHeight;
+  info.totalFrames = sheet.totalFrames;
+  info.animationSpeed = sheet.animationSpeed;
+  return true;
+}

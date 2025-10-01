@@ -47,10 +47,10 @@ namespace ECS
     Entity create_entity();
     Entity get_entity(EntityID id);
     Entity clone_entity(EntityID source_id);
-    void destory_entity(EntityID id);
+    void destroy_entity(EntityID id);
 
     template <typename... T>
-    void destory_entities_with();
+    void destroy_entities_with();
 
     bool is_entity_active(EntityID id) const;
 
