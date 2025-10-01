@@ -123,29 +123,30 @@ public:
       .addComponent<Components::StaticSprite>(backgroundTextureId)
       .addComponent<Components::Color>(1.0f, 1.0f, 1.0f, 0.5f); // Semi-transparent
 
-    // Create player with idle animation
-    player = Engine::WORLD.createEntity()
-      .addComponent<Components::Tag<"ShowcaseState">>()
-      .addComponent<Components::Position>(200.0f, 450.0f)
-      .addComponent<Components::Size>(64.0f, 64.0f)
-      .addComponent<Components::Velocity>(0.0f, 0.0f)
-      .addComponent<Components::AnimatedSprite>(playerIdleSpriteSheetId)
-      .addComponent<Components::Health>(100, 100)
-      .addComponent<Components::Scale>(2.0f, 2.0f);
 
     // Create enemy from prefab
     enemy = Engine::FACTORY.createObject(lazyMonkeyPrefab)
       .addComponent<Components::Tag<"ShowcaseState">>()
-      .addComponent<Components::Position>(800.0f, 450.0f)
+      .addComponent<Components::Position>(800.0f, 655.0f)
       .addComponent<Components::Health>(50, 50)
       .addComponent<Components::Scale>(2.0f, 2.0f);
 
     // Create banana from prefab
     banana = Engine::FACTORY.createObject(bananaPrefab)
       .addComponent<Components::Tag<"ShowcaseState">>()
-      .addComponent<Components::Position>(1200.0f, 450.0f)
+      .addComponent<Components::Position>(1200.0f, 655.0f)
       .addComponent<Components::Rotation>(0.0f)
       .addComponent<Components::RotationSpeed>(90.0f);
+
+    // Create player with idle animation
+    player = Engine::WORLD.createEntity()
+      .addComponent<Components::Tag<"ShowcaseState">>()
+      .addComponent<Components::Position>(200.0f, 655.0f)
+      .addComponent<Components::Size>(64.0f, 64.0f)
+      .addComponent<Components::Velocity>(0.0f, 0.0f)
+      .addComponent<Components::AnimatedSprite>(playerIdleSpriteSheetId)
+      .addComponent<Components::Health>(100, 100)
+      .addComponent<Components::Scale>(2.0f, 2.0f);
 
     // Add systems
     Engine::WORLD.addSystem<BackgroundSystem>();
