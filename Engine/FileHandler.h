@@ -1,3 +1,17 @@
+//-----------------------------------------------------------------------------------
+// file:    Config.h
+// project: Monkey Stole My GPA
+//
+// author:  Cheng Ming Xian (100%)
+//          Primary author
+//					Shee Yang (?%)
+//
+// email:   c.mingxian@digipen.edu
+//
+// brief:   This file uses the rapidjson library to parse files into
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 #include <string>
 #include <vector>

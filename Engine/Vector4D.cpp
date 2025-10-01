@@ -19,25 +19,25 @@
 namespace Math {
 
   // Constructor
-  // Vec4D(float x_vec, float y_vec) : x{ x_vec }, y{ y_vec } {}
+  // Vec4D(f32 x_vec, f32 y_vec) : x{ x_vec }, y{ y_vec } {}
   // Acessors
-  float Vec4D::X() const { return x; }
-  float Vec4D::Y() const { return y; }
-  float Vec4D::Z() const { return z; }
-  float Vec4D::W() const { return w; }
+  f32 Vec4D::X() const { return x; }
+  f32 Vec4D::Y() const { return y; }
+  f32 Vec4D::Z() const { return z; }
+  f32 Vec4D::W() const { return w; }
   // Mutators
-  void Vec4D::X(float xval) { x = xval; }
-  void Vec4D::Y(float yval) { y = yval; }
-  void Vec4D::Z(float zval) { z = zval; }
-  void Vec4D::W(float wval) { w = wval; }
+  void Vec4D::X(f32 xval) { x = xval; }
+  void Vec4D::Y(f32 yval) { y = yval; }
+  void Vec4D::Z(f32 zval) { z = zval; }
+  void Vec4D::W(f32 wval) { w = wval; }
   void Vec4D::zero() { x = 0; y = 0; z = 0; w = 0; }
   // Member Functions
-  float Vec4D::get_magnitude_sq() const
+  f32 Vec4D::get_magnitude_sq() const
   {
     return powf(x, 2) + powf(y, 2) + powf(z, 2) + powf(w, 2);
   }
 
-  float Vec4D::get_magnitude() const
+  f32 Vec4D::get_magnitude() const
   {
     return sqrt(this->get_magnitude_sq());
   }
@@ -66,7 +66,7 @@ namespace Math {
     w *= -1;
     return *this;
   }
-  Vec4D& Vec4D::operator*=(float scalar)
+  Vec4D& Vec4D::operator*=(f32 scalar)
   {
     *this = *this * scalar;
     return *this;
@@ -75,18 +75,18 @@ namespace Math {
   // Non Member Functions
   Vec4D normalise_vector(Vec4D const& vect)
   {
-    float magnitude = vect.get_magnitude();
+    f32 magnitude = vect.get_magnitude();
     Vec4D tmp{ vect };
     return tmp / magnitude;
   }
 
-  Vec4D scale_vector(Vec4D const& vect, float scale)
+  Vec4D scale_vector(Vec4D const& vect, f32 scale)
   {
     Vec4D tmp{ vect };
     return tmp * scale;
   }
 
-  float dot_product(Vec4D const& lhs, Vec4D const& rhs)
+  f32 dot_product(Vec4D const& lhs, Vec4D const& rhs)
   {
     return	lhs.X() * rhs.X() +
       lhs.Y() * rhs.Y() +
@@ -107,7 +107,7 @@ namespace Math {
     tmp -= vect2;
     return tmp;
   }
-  Vec4D operator/(Vec4D const& vect, float divisor)
+  Vec4D operator/(Vec4D const& vect, f32 divisor)
   {
     Vec4D tmp{ vect };
     tmp.X(vect.X() / divisor);
@@ -116,7 +116,7 @@ namespace Math {
     tmp.W(vect.W() / divisor);
     return tmp;
   }
-  Vec4D operator*(Vec4D const& vect, float scalar)
+  Vec4D operator*(Vec4D const& vect, f32 scalar)
   {
     Vec4D tmp{ vect };
     tmp.X(vect.X() * scalar);
