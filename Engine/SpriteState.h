@@ -238,8 +238,8 @@ private:
     const char* name;
   };
 
-  std::vector<ImageData> ImageAspectRatio;
-  f32 spritePosX = 0.0f;
+  std::vector<ImageData> image_aspect_ratio;
+  f32 sprite_pos_x = 0.0f;
 
 public:
   void Load() {};
@@ -256,13 +256,13 @@ public:
   void Update() {};
 
   void Draw() {
-    Engine::GRAPHICS.clearScreen(0.1f, 0.1f, 0.1f, 1.0f);
+    Engine::GRAPHICS.clear_screen(0.1f, 0.1f, 0.1f, 1.0f);
 
-    Engine::GRAPHICS.drawTexture(linear_monkey_image_id, 200.0f, 150.0f, 150.0f, 210.0f);
-    Engine::GRAPHICS.drawTexture(nearest_monkey_image_id, 400.0f, 150.0f, 150.0f, 210.0f);
+    Engine::GRAPHICS.draw_texture(linear_monkey_image_id, 200.0f, 150.0f, 150.0f, 210.0f);
+    Engine::GRAPHICS.draw_texture(nearest_monkey_image_id, 400.0f, 150.0f, 150.0f, 210.0f);
 
-    Engine::GRAPHICS.drawTextureRegion(
-      nearest_monkey_image_id, 600.0f, 150.0f, 150.0f, 210.0f, spritePosX += Engine::Time::get_fixed_dt() * 10.0f, 0.0f, 15.0f, 21.0f
+    Engine::GRAPHICS.draw_texture_region(
+      nearest_monkey_image_id, 600.0f, 150.0f, 150.0f, 210.0f, sprite_pos_x += Engine::Time::get_fixed_dt() * 10.0f, 0.0f, 15.0f, 21.0f
     );
 
 

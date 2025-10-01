@@ -65,7 +65,7 @@ void ImGuiState::Draw()
     glm::vec2 center, size;
     computeCenterAndSize(dragStart_, prevMouse_, center, size);
     clampMinSize(size, minRectSizePx_);
-    Engine::GRAPHICS.drawRect(currentColor_, center.x, center.y, size.x, size.y, 0.0f, Graphics::Origin::Center);
+    Engine::GRAPHICS.draw_rect(currentColor_, center.x, center.y, size.x, size.y, 0.0f, Graphics::Origin::Center);
   }
 
   runCollisionPass();
@@ -239,7 +239,7 @@ void ImGuiState::runCollisionPass()
     if (!getBounds(id, minP, maxP)) continue;
     glm::vec2 c{ (minP.x + maxP.x) * 0.5f, (minP.y + maxP.y) * 0.5f };
     glm::vec2 s{ std::max(1.0f, maxP.x - minP.x), std::max(1.0f, maxP.y - minP.y) };
-    Engine::GRAPHICS.drawRect(glm::vec4{ 1,0,0,0.20f }, c.x, c.y, s.x + 6.0f, s.y + 6.0f, 0.0f, Graphics::Origin::Center);
+    Engine::GRAPHICS.draw_rect(glm::vec4{ 1,0,0,0.20f }, c.x, c.y, s.x + 6.0f, s.y + 6.0f, 0.0f, Graphics::Origin::Center);
   }
 }
 
@@ -255,7 +255,7 @@ void ImGuiState::drawSelectionGizmo()
   glm::vec2 center{ (minP.x + maxP.x) * 0.5f, (minP.y + maxP.y) * 0.5f };
   glm::vec2 size{ std::max(1.0f, maxP.x - minP.x), std::max(1.0f, maxP.y - minP.y) };
   glm::vec4 sel{ 1.f, 1.f, 0.f, 0.15f };
-  Engine::GRAPHICS.drawRect(sel, center.x, center.y, size.x + 4.0f, size.y + 4.0f, 0.0f, Graphics::Origin::Center);
+  Engine::GRAPHICS.draw_rect(sel, center.x, center.y, size.x + 4.0f, size.y + 4.0f, 0.0f, Graphics::Origin::Center);
 
   // 8 handles
   const f32 hs = handlePx_;
@@ -267,7 +267,7 @@ void ImGuiState::drawSelectionGizmo()
     {c.x - s.x, c.y + s.y}, {c.x, c.y + s.y}, {c.x + s.x, c.y + s.y},
   };
   for (auto& p : pts) {
-    Engine::GRAPHICS.drawRect(glm::vec4{ 1,1,0,0.9f }, p.x, p.y, hs, hs, 0.0f, Graphics::Origin::Center);
+    Engine::GRAPHICS.draw_rect(glm::vec4{ 1,1,0,0.9f }, p.x, p.y, hs, hs, 0.0f, Graphics::Origin::Center);
   }
 }
 

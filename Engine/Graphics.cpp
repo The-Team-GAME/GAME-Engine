@@ -33,7 +33,7 @@ namespace
 }
 
 // Recalculates the view matrix based on the camera's current position, rotation, and zoom.
-void Graphics::updateViewMatrix() {
+void Graphics::update_view_matrix() {
   view = glm::mat4(1.0f);
   view = glm::translate(view, glm::vec3(camera.position.x, camera.position.y, 0.0f));
   // Use virtual resolution for consistent camera behavior
@@ -142,12 +142,12 @@ void Graphics::init_graphics()
     textureSlots[i] = 0;
 
   // Set initial viewport and projection matrix.
-  setViewport(win_width, win_height);
+  set_viewport(win_width, win_height);
 
   // Use consistent virtual resolution
   projection = glm::ortho(0.0f, VIRTUAL_WIDTH, VIRTUAL_HEIGHT, 0.0f, -1.0f, 1.0f);
 
-  updateViewMatrix();
+  update_view_matrix();
 }
 
 // Cleans up OpenGL objects and resources.
@@ -179,22 +179,22 @@ Graphics::~Graphics()
 }
 
 // Called at the beginning of a frame to prepare for drawing.
-void Graphics::beginFrame()
+void Graphics::begin_frame()
 {
   Engine::PERFORMANCE.start("Graphics");
-  updateViewMatrix(); // Update camera matrix in case it moved.
-  startBatch();       // Reset the batch renderer.
+  update_view_matrix(); // Update camera matrix in case it moved.
+  start_batch();       // Reset the batch renderer.
 }
 
 // Called at the end of a frame to draw everything that was batched.
-void Graphics::endFrame()
+void Graphics::end_frame()
 {
   Engine::PERFORMANCE.stop("Graphics");
   flush(); // Draw the current batch.
 }
 
 // Resets the batch data, preparing for a new set of draw calls.
-void Graphics::startBatch()
+void Graphics::start_batch()
 {
   quadIndexCount = 0;
   vertexIndex = 0;
@@ -202,10 +202,10 @@ void Graphics::startBatch()
 }
 
 // Draws the current batch and starts a new one.
-void Graphics::nextBatch()
+void Graphics::next_batch()
 {
   flush();
-  startBatch();
+  start_batch();
 }
 
 // Submits the current batch of vertices to the GPU for drawing.
@@ -242,7 +242,7 @@ void Graphics::flush()
 }
 
 // Calculates the positional offset needed to draw a quad from a specific origin point.
-glm::vec2 Graphics::calculateOriginOffset(f32 width, f32 height, Origin origin) const
+glm::vec2 Graphics::calculate_origin_offset(f32 width, f32 height, Origin origin) const
 {
   switch (origin)
   {
@@ -255,7 +255,7 @@ glm::vec2 Graphics::calculateOriginOffset(f32 width, f32 height, Origin origin) 
 }
 
 // Sets the OpenGL viewport and updates the projection matrix.
-void Graphics::setViewport(s32 width, s32 height)
+void Graphics::set_viewport(s32 width, s32 height)
 {
   viewportWidth = width;
   viewportHeight = height;
@@ -266,40 +266,40 @@ void Graphics::setViewport(s32 width, s32 height)
   // Update the orthographic projection matrix to match the new dimensions.
   // projection = glm::ortho(0.0f, static_cast<f32>(width), static_cast<f32>(height), 0.0f, -1.0f, 1.0f);
 
-  updateViewMatrix(); // Recalculate the combined matrix.
+  update_view_matrix(); // Recalculate the combined matrix.
 }
 
 // Sets the camera's world position.
 void Graphics::set_camera_position(f32 x, f32 y)
 {
   camera.position = { x, y };
-  updateViewMatrix();
+  update_view_matrix();
 }
 
 // Sets the camera's zoom level.
 void Graphics::set_camera_zoom(f32 zoom)
 {
   camera.zoom = zoom;
-  updateViewMatrix();
+  update_view_matrix();
 }
 
 // Sets the camera's rotation in degrees.
 void Graphics::set_camera_rotation(f32 degrees)
 {
   camera.rotation = degrees;
-  updateViewMatrix();
+  update_view_matrix();
 }
 
 // Adds a colored rectangle to the current drawing batch.
-void Graphics::drawRect(const glm::vec4& color, f32 x, f32 y, f32 width, f32 height, f32 rotation, Origin origin) {
+void Graphics::draw_rect(const glm::vec4& color, f32 x, f32 y, f32 width, f32 height, f32 rotation, Origin origin) {
   // If the current batch is full, draw it and start a new one.
   if (quadIndexCount >= MaxIndices)
   {
-    nextBatch();
+    next_batch();
   }
 
   // Calculate the origin offset.
-  glm::vec2 offset = calculateOriginOffset(width, height, origin);
+  glm::vec2 offset = calculate_origin_offset(width, height, origin);
 
   // Create the transformation matrix for the quad.
   glm::mat4 transform = glm::translate(glm::mat4(1.0f), { x + offset.x, y + offset.y, 0.0f })
@@ -320,7 +320,7 @@ void Graphics::drawRect(const glm::vec4& color, f32 x, f32 y, f32 width, f32 hei
 }
 
 // Draws a filled circle using a triangle fan approach (batched as quads approximation)
-void Graphics::drawCircle(const glm::vec4& color, f32 x, f32 y, f32 radius, s32 segments)
+void Graphics::draw_circle(const glm::vec4& color, f32 x, f32 y, f32 radius, s32 segments)
 {
   // Clamp segments to reasonable values
   segments = std::max(8, std::min(segments, 64));
@@ -335,7 +335,7 @@ void Graphics::drawCircle(const glm::vec4& color, f32 x, f32 y, f32 radius, s32 
   {
     if (quadIndexCount >= MaxIndices)
     {
-      nextBatch();
+      next_batch();
     }
 
     f32 angle1 = i * angleStep;
@@ -356,11 +356,11 @@ void Graphics::drawCircle(const glm::vec4& color, f32 x, f32 y, f32 radius, s32 
 }
 
 // Draws a line between two points with specified thickness
-void Graphics::drawLine(const glm::vec4& color, f32 x1, f32 y1, f32 x2, f32 y2, f32 thickness)
+void Graphics::draw_line(const glm::vec4& color, f32 x1, f32 y1, f32 x2, f32 y2, f32 thickness)
 {
   if (quadIndexCount >= MaxIndices)
   {
-    nextBatch();
+    next_batch();
   }
 
   // Calculate the line direction and perpendicular offset
@@ -395,7 +395,7 @@ void Graphics::drawLine(const glm::vec4& color, f32 x1, f32 y1, f32 x2, f32 y2, 
 }
 
 // Loads a font from a file and prepares it for rendering.
-s32 Graphics::loadFont(const char* filepath, u32 size)
+s32 Graphics::load_font(const char* filepath, u32 size)
 {
   FT_Face face;
   if (FT_New_Face(ft, filepath, 0, &face))
@@ -500,7 +500,7 @@ s32 Graphics::loadFont(const char* filepath, u32 size)
 }
 
 // Unloads a font by its ID
-void Graphics::unloadFont(s32 fontId)
+void Graphics::unload_font(s32 fontId)
 {
   auto it = fonts.find(fontId);
   if (it == fonts.end())
@@ -520,7 +520,7 @@ void Graphics::unloadFont(s32 fontId)
 }
 
 // Unloads all fonts
-void Graphics::unloadAllFonts()
+void Graphics::unload_all_fonts()
 {
   // Delete all atlas textures
   for (auto& pair : fonts)
@@ -536,7 +536,7 @@ void Graphics::unloadAllFonts()
 }
 
 // Draws text on the screen.
-void Graphics::drawText(s32 fontId, const std::string& text, f32 x, f32 y, f32 scale, const glm::vec4& color)
+void Graphics::draw_text(s32 fontId, const std::string& text, f32 x, f32 y, f32 scale, const glm::vec4& color)
 {
   auto it = fonts.find(fontId);
   if (it == fonts.end())
@@ -558,7 +558,7 @@ void Graphics::drawText(s32 fontId, const std::string& text, f32 x, f32 y, f32 s
   {
     if (textureSlotIndex >= MaxTextureSlots)
     {
-      nextBatch();
+      next_batch();
       textureIndex = 1.0f;
     }
     else
@@ -582,7 +582,7 @@ void Graphics::drawText(s32 fontId, const std::string& text, f32 x, f32 y, f32 s
     if (ch.Size.x > 0 && ch.Size.y > 0)
     {
       if (quadIndexCount >= MaxIndices)
-        nextBatch();
+        next_batch();
 
       f32 xpos = currentX + ch.Bearing.x * scale;
       f32 ypos = y + (font.baseline - ch.Bearing.y) * scale;
@@ -606,7 +606,7 @@ void Graphics::drawText(s32 fontId, const std::string& text, f32 x, f32 y, f32 s
 }
 
 // Loads a texture from a file and returns an ID for it.
-s32 Graphics::loadTexture(const char* filepath, MinifyingFilter min_filter)
+s32 Graphics::load_texture(const char* filepath, MinifyingFilter min_filter)
 {
   s32 width, height, nrChannels;
   // Load image data from file using stb_image.
@@ -655,7 +655,7 @@ s32 Graphics::loadTexture(const char* filepath, MinifyingFilter min_filter)
 }
 
 // A convenience function to draw a full texture.
-void Graphics::drawTexture(s32 imageId, f32 x, f32 y, f32 width, f32 height, f32 rotation, Origin origin, const glm::vec4& tintColor)
+void Graphics::draw_texture(s32 imageId, f32 x, f32 y, f32 width, f32 height, f32 rotation, Origin origin, const glm::vec4& tintColor)
 {
   auto it = textures.find(imageId);
   if (it == textures.end())
@@ -663,8 +663,8 @@ void Graphics::drawTexture(s32 imageId, f32 x, f32 y, f32 width, f32 height, f32
     std::cout << "Invalid image ID: " << imageId << std::endl;
     return;
   }
-  // Calls drawTextureRegion with the full dimensions of the source texture.
-  drawTextureRegion(
+  // Calls draw_texture_region with the full dimensions of the source texture.
+  draw_texture_region(
     imageId,
     x, y, width, height,
     0, 0, static_cast<f32>(it->second.width), static_cast<f32>(it->second.height),
@@ -675,7 +675,7 @@ void Graphics::drawTexture(s32 imageId, f32 x, f32 y, f32 width, f32 height, f32
 }
 
 // Adds a region of a texture to the current drawing batch.
-void Graphics::drawTextureRegion(s32 imageId, f32 destX, f32 destY, f32 destWidth, f32 destHeight, f32 srcX, f32 srcY, f32 srcWidth, f32 srcHeight, f32 rotation, Origin origin, const glm::vec4& tintColor)
+void Graphics::draw_texture_region(s32 imageId, f32 destX, f32 destY, f32 destWidth, f32 destHeight, f32 srcX, f32 srcY, f32 srcWidth, f32 srcHeight, f32 rotation, Origin origin, const glm::vec4& tintColor)
 {
   auto it = textures.find(imageId);
   if (it == textures.end())
@@ -687,7 +687,7 @@ void Graphics::drawTextureRegion(s32 imageId, f32 destX, f32 destY, f32 destWidt
   // If the batch is full (either too many indices or too many textures), start a new one.
   if (quadIndexCount >= MaxIndices || textureSlotIndex >= MaxTextureSlots)
   {
-    nextBatch();
+    next_batch();
   }
 
   f32 textureIndex = 0.0f;
@@ -709,7 +709,7 @@ void Graphics::drawTextureRegion(s32 imageId, f32 destX, f32 destY, f32 destWidt
   }
 
   // Calculate origin offset.
-  glm::vec2 offset = calculateOriginOffset(destWidth, destHeight, origin);
+  glm::vec2 offset = calculate_origin_offset(destWidth, destHeight, origin);
 
   // Create the transformation matrix for the destination quad.
   glm::mat4 transform = glm::translate(glm::mat4(1.0f), { destX + offset.x, destY + offset.y, 0.0f })
@@ -734,10 +734,10 @@ void Graphics::drawTextureRegion(s32 imageId, f32 destX, f32 destY, f32 destWidt
 }
 
 // Loads a sprite sheet from a file and returns an ID for it.
-s32 Graphics::loadSpriteSheet(const char* filepath, s32 frameWidth, s32 frameHeight, s32 totalFrames, f32 animationSpeed, MinifyingFilter min_filter)
+s32 Graphics::load_sprite_sheet(const char* filepath, s32 frameWidth, s32 frameHeight, s32 totalFrames, f32 animationSpeed, MinifyingFilter min_filter)
 {
-  // Load the texture using existing loadTexture function
-  s32 texture_id = loadTexture(filepath, min_filter);
+  // Load the texture using existing load_texture function
+  s32 texture_id = load_texture(filepath, min_filter);
 
   if (texture_id == -1)
   {
@@ -760,7 +760,7 @@ s32 Graphics::loadSpriteSheet(const char* filepath, s32 frameWidth, s32 frameHei
 }
 
 // Draws an animated sprite from a sprite sheet.
-void Graphics::drawAnimatedSprite(s32 spriteSheetId, f32 x, f32 y, f32 width, f32 height, f32 time, f32 rotation, Origin origin, const glm::vec4& tintColor)
+void Graphics::draw_animated_sprite(s32 spriteSheetId, f32 x, f32 y, f32 width, f32 height, f32 time, f32 rotation, Origin origin, const glm::vec4& tintColor)
 {
   auto it = spriteSheets.find(spriteSheetId);
   if (it == spriteSheets.end())
@@ -792,8 +792,8 @@ void Graphics::drawAnimatedSprite(s32 spriteSheetId, f32 x, f32 y, f32 width, f3
   f32 srcX = static_cast<f32>(frameX * spriteSheet.frameWidth);
   f32 srcY = static_cast<f32>(frameY * spriteSheet.frameHeight);
 
-  // Use drawTextureRegion to render the specific frame
-  drawTextureRegion(
+  // Use draw_texture_region to render the specific frame
+  draw_texture_region(
     spriteSheet.texture_id,
     x, y, width, height,
     srcX, srcY, static_cast<f32>(spriteSheet.frameWidth), static_cast<f32>(spriteSheet.frameHeight),
@@ -804,13 +804,13 @@ void Graphics::drawAnimatedSprite(s32 spriteSheetId, f32 x, f32 y, f32 width, f3
 }
 
 // Clears the screen with a specified color.
-void Graphics::clearScreen(f32 r, f32 g, f32 b, f32 a)
+void Graphics::clear_screen(f32 r, f32 g, f32 b, f32 a)
 {
   glClearColor(r, g, b, a);
   glClear(GL_COLOR_BUFFER_BIT);
 }
 
-glm::vec2 Graphics::screenToVirtual(f32 screenX, f32 screenY) const
+glm::vec2 Graphics::screen_to_virtual(f32 screenX, f32 screenY) const
 {
   return {
     (screenX / viewportWidth) * VIRTUAL_WIDTH,
@@ -819,7 +819,7 @@ glm::vec2 Graphics::screenToVirtual(f32 screenX, f32 screenY) const
 }
 
 // Unloads a texture by its ID
-void Graphics::unloadTexture(s32 texture_id)
+void Graphics::unload_texture(s32 texture_id)
 {
   auto it = textures.find(texture_id);
   if (it == textures.end())
@@ -852,7 +852,7 @@ void Graphics::unloadTexture(s32 texture_id)
 }
 
 // Unloads all textures
-void Graphics::unloadAllTextures()
+void Graphics::unload_all_textures()
 {
   for (const auto& pair : textures)
   {
@@ -876,7 +876,7 @@ void Graphics::unloadAllTextures()
 }
 
 // Unloads a sprite sheet by its ID
-void Graphics::unloadSpriteSheet(s32 spriteSheetId)
+void Graphics::unload_sprite_sheet(s32 spriteSheetId)
 {
   auto it = spriteSheets.find(spriteSheetId);
   if (it == spriteSheets.end())
@@ -888,7 +888,7 @@ void Graphics::unloadSpriteSheet(s32 spriteSheetId)
   // Note: We don't delete the underlying texture here because it's managed
   // by the textures map. The sprite sheet just references a texture ID.
   // If you want to delete the underlying texture as well, you would call:
-  // unloadTexture(spriteSheets[spriteSheetId].texture_id);
+  // unload_texture(spriteSheets[spriteSheetId].texture_id);
 
   spriteSheets.erase(it);
 
@@ -899,7 +899,7 @@ void Graphics::unloadSpriteSheet(s32 spriteSheetId)
 }
 
 // Unloads all sprite sheets
-void Graphics::unloadAllSpriteSheets()
+void Graphics::unload_all_sprite_sheets()
 {
   spriteSheets.clear();
 
@@ -908,7 +908,7 @@ void Graphics::unloadAllSpriteSheets()
 }
 
 // Gets the dimensions of a texture by its ID
-void Graphics::getTextureDimensions(s32 texture_id, int& width, int& height) const
+void Graphics::get_texture_dimensions(s32 texture_id, int& width, int& height) const
 {
   auto it = textures.find(texture_id);
   if (it == textures.end())
@@ -923,7 +923,7 @@ void Graphics::getTextureDimensions(s32 texture_id, int& width, int& height) con
 }
 
 // Gets the OpenGL texture handle by texture ID
-u32 Graphics::getTextureHandle(s32 texture_id) const
+u32 Graphics::get_texture_handle(s32 texture_id) const
 {
   auto it = textures.find(texture_id);
   if (it == textures.end())

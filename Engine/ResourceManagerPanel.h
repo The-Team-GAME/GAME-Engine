@@ -88,7 +88,7 @@ inline void ResourceManagerPanel()
 
           // Get texture dimensions
           s32 width = 0, height = 0;
-          Engine::GRAPHICS.getTextureDimensions(texture_id, width, height);
+          Engine::GRAPHICS.get_texture_dimensions(texture_id, width, height);
 
           // Display texture name
           ImGui::Text("%s", name.c_str());
@@ -101,7 +101,7 @@ inline void ResourceManagerPanel()
           ImVec2 imageSize(previewSize, previewSize * aspectRatio);
 
           // Get the OpenGL texture handle for ImGui
-          u32 textureHandle = Engine::GRAPHICS.getTextureHandle(texture_id);
+          u32 textureHandle = Engine::GRAPHICS.get_texture_handle(texture_id);
           ImGui::Image((ImTextureID)(intptr_t)textureHandle, imageSize);
 
           // Unload button

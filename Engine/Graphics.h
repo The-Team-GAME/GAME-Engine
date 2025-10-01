@@ -119,7 +119,7 @@ private:
   s32 viewportWidth = 800;
   s32 viewportHeight = 600;
 
-  void updateViewMatrix();
+  void update_view_matrix();
 
 public:
   Graphics();
@@ -127,10 +127,10 @@ public:
   void init_graphics();
   ~Graphics();
 
-  void beginFrame();
-  void endFrame(); // New function to draw the batch
+  void begin_frame();
+  void end_frame(); // New function to draw the batch
 
-  void setViewport(s32 width, s32 height);
+  void set_viewport(s32 width, s32 height);
 
   // Camera controls
   void set_camera_position(f32 x, f32 y);
@@ -138,42 +138,42 @@ public:
   void set_camera_rotation(f32 degrees);
 
   // Font and Text
-  s32 loadFont(const char* filepath, u32 size);
-  void unloadFont(s32 fontId);
-  void unloadAllFonts();
-  void drawText(s32 fontId, const std::string& text, f32 x, f32 y, f32 scale, const glm::vec4& color);
+  s32 load_font(const char* filepath, u32 size);
+  void unload_font(s32 fontId);
+  void unload_all_fonts();
+  void draw_text(s32 fontId, const std::string& text, f32 x, f32 y, f32 scale, const glm::vec4& color);
 
-  void drawRect(const glm::vec4& color, f32 x, f32 y, f32 width, f32 height, f32 rotation = 0.0f, Origin origin = Origin::Center);
-  void drawCircle(const glm::vec4& color, f32 x, f32 y, f32 radius, s32 segments = 32);
-  void drawLine(const glm::vec4& color, f32 x1, f32 y1, f32 x2, f32 y2, f32 thickness = 2.0f);
-  void drawTexture(s32 imageId, f32 x, f32 y, f32 width, f32 height, f32 rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& ts32Color = glm::vec4(1.0f));
-  void drawTextureRegion(s32 imageId, f32 destX, f32 destY, f32 destWidth, f32 destHeight, f32 srcX, f32 srcY, f32 srcWidth, f32 srcHeight, f32 rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& ts32Color = glm::vec4(1.0f));
+  void draw_rect(const glm::vec4& color, f32 x, f32 y, f32 width, f32 height, f32 rotation = 0.0f, Origin origin = Origin::Center);
+  void draw_circle(const glm::vec4& color, f32 x, f32 y, f32 radius, s32 segments = 32);
+  void draw_line(const glm::vec4& color, f32 x1, f32 y1, f32 x2, f32 y2, f32 thickness = 2.0f);
+  void draw_texture(s32 imageId, f32 x, f32 y, f32 width, f32 height, f32 rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& ts32Color = glm::vec4(1.0f));
+  void draw_texture_region(s32 imageId, f32 destX, f32 destY, f32 destWidth, f32 destHeight, f32 srcX, f32 srcY, f32 srcWidth, f32 srcHeight, f32 rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& ts32Color = glm::vec4(1.0f));
 
-  s32 loadTexture(const char* filepath, MinifyingFilter min_filter = MinifyingFilter::Linear);
-  void unloadTexture(s32 texture_id);
-  void unloadAllTextures();
-  void getTextureDimensions(s32 texture_id, s32& width, s32& height) const;
-  u32 getTextureHandle(s32 texture_id) const; // Add this method
+  s32 load_texture(const char* filepath, MinifyingFilter min_filter = MinifyingFilter::Linear);
+  void unload_texture(s32 texture_id);
+  void unload_all_textures();
+  void get_texture_dimensions(s32 texture_id, s32& width, s32& height) const;
+  u32 get_texture_handle(s32 texture_id) const; // Add this method
 
-  void clearScreen(f32 r, f32 g, f32 b, f32 a);
+  void clear_screen(f32 r, f32 g, f32 b, f32 a);
 
 
 
-  s32 loadSpriteSheet(const char* filepath, s32 frameWidth, s32 frameHeight, s32 totalFrames, f32 animationSpeed, MinifyingFilter min_filter = MinifyingFilter::Linear);
-  void unloadSpriteSheet(s32 spriteSheetId);
-  void unloadAllSpriteSheets();
-  void drawAnimatedSprite(s32 spriteSheetId, f32 x, f32 y, f32 width, f32 height, f32 time, f32 rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& ts32Color = glm::vec4(1.0f));
+  s32 load_sprite_sheet(const char* filepath, s32 frameWidth, s32 frameHeight, s32 totalFrames, f32 animationSpeed, MinifyingFilter min_filter = MinifyingFilter::Linear);
+  void unload_sprite_sheet(s32 spriteSheetId);
+  void unload_all_sprite_sheets();
+  void draw_animated_sprite(s32 spriteSheetId, f32 x, f32 y, f32 width, f32 height, f32 time, f32 rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& ts32Color = glm::vec4(1.0f));
 
 private:
-  void startBatch();
-  void nextBatch();
+  void start_batch();
+  void next_batch();
   void flush();
-  glm::vec2 calculateOriginOffset(f32 width, f32 height, Origin origin) const;
+  glm::vec2 calculate_origin_offset(f32 width, f32 height, Origin origin) const;
 
 
   // Font data
   FT_Library ft;
 
 public:
-  glm::vec2 screenToVirtual(f32 screenX, f32 screenY) const;
+  glm::vec2 screen_to_virtual(f32 screenX, f32 screenY) const;
 };
