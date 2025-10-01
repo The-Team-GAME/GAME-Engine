@@ -451,9 +451,9 @@ s32 Graphics::load_font(const char* filepath, u32 size)
     // Copy glyph data to RGBA atlas
     if (face->glyph->bitmap.width > 0 && face->glyph->bitmap.rows > 0)
     {
-      for (s32 y = 0; y < face->glyph->bitmap.rows; y++)
+      for (u32 y = 0; y < face->glyph->bitmap.rows; y++)
       {
-        for (s32 x = 0; x < face->glyph->bitmap.width; x++)
+        for (u32 x = 0; x < face->glyph->bitmap.width; x++)
         {
           s32 atlasIndex = ((y * atlasWidth) + (currentX + x)) * 4;
           s32 glyphIndex = y * face->glyph->bitmap.width + x;

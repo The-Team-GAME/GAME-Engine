@@ -11,8 +11,8 @@
 class Graphics
 {
 private:
-  s32 win_width;
-  s32 win_height;
+  s32 win_width = 0;
+  s32 win_height = 0;
 public:
   // Add these for consistent virtual resolution
   static constexpr f32 VIRTUAL_WIDTH = 1600.0f;
@@ -88,9 +88,9 @@ private:
   static const u32 MaxIndices = MaxQuads * 6;
   static const u32 MaxTextureSlots = 32; // Check your GPU's limit
 
-  u32 quadVAO;
-  u32 quadVBO;
-  u32 quadIBO;
+  u32 quadVAO = 0;
+  u32 quadVBO = 0;
+  u32 quadIBO = 0;
 
   u32 quadIndexCount = 0;
   std::vector<Vertex> quadVertexBufferBase;
@@ -106,14 +106,14 @@ private:
   s32 nextFontId = 0;
   s32 nextSpriteSheetId = 0;
 
-  std::array<u32, MaxTextureSlots> textureSlots;
+  std::array<u32, MaxTextureSlots> textureSlots = {};
   u32 textureSlotIndex = 1; // 0 = white texture
 
 
   Shader textureShader;
-  glm::mat4 projection;
-  glm::mat4 view;
-  glm::mat4 viewProjectionMatrix;
+  glm::mat4 projection = glm::mat4(1.0f);
+  glm::mat4 view = glm::mat4(1.0f);
+  glm::mat4 viewProjectionMatrix = glm::mat4(1.0f);
   Camera2D camera;
 
   s32 viewportWidth = 800;
@@ -153,7 +153,7 @@ public:
   void unload_texture(s32 texture_id);
   void unload_all_textures();
   void get_texture_dimensions(s32 texture_id, s32& width, s32& height) const;
-  u32 get_texture_handle(s32 texture_id) const; // Add this method
+  u32 get_texture_handle(s32 texture_id) const;
 
   void clear_screen(f32 r, f32 g, f32 b, f32 a);
 
@@ -172,7 +172,7 @@ private:
 
 
   // Font data
-  FT_Library ft;
+  FT_Library ft = {};
 
 public:
   glm::vec2 screen_to_virtual(f32 screenX, f32 screenY) const;
