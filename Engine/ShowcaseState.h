@@ -405,6 +405,10 @@ public:
     Engine::WORLD.remove_system<AnimatedSpriteRenderSystem>();
     Engine::WORLD.remove_system<BasicMovementSystem>();
     Engine::WORLD.remove_system<RotationSystem>();
+
+    // Remove event listeners
+    Engine::WORLD.remove_event_listener<AttackEvent>();
+    Engine::WORLD.remove_event_listener<CollectEvent>();
   }
 
   void Unload() {
