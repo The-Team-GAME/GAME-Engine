@@ -59,7 +59,6 @@ namespace Engine
   LevelLoader LEVEL_LOADER{ &WORLD, &FACTORY };
 
   AudioManager AUDIO{};
-	Perf PERFORMANCE{};
 
   ResourceManager RESOURCES{};
 
