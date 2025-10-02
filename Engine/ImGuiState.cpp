@@ -1,3 +1,20 @@
+//-----------------------------------------------------------------------------------
+// file:    ImGuiState.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Ong Zi Ming (100%)
+//          Primary author
+//
+// email:   o.ziming@digipen.edu
+//
+// brief:   Defines functions that creates and deletes rectangle objects that can be 
+// edited to change position, size and color. Multiple objects can be created or 
+// deleted and collision detection is present. Object collision can also be turned off.
+// Objects can also be duplicated.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
+
 #include "ImGuiState.h"
 #include "core.h"
 #include "InputManager.h"

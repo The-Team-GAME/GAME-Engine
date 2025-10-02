@@ -1,3 +1,16 @@
+//-----------------------------------------------------------------------------------
+// file:    ImGuiState.h
+// project: Monkey Stole My GPA
+//
+// author:  Ong Zi Ming (100%)
+//          Primary author
+//
+// email:   o.ziming@digipen.edu
+//
+// brief:   Header file for the ImGuistate that handles object creation and deletion.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "StateManager.h"
