@@ -2,10 +2,10 @@
 // file:    EcsState.h
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (100%)
+// author:  How Hong Chin Ryan (100%)
 //          Primary author
 //
-// email:   chew.s@digipen.edu
+// email:   hongchinryan.how@digipen.edu
 //
 // brief:   This file defines the EcsState which demonstrates the ECS architecture.
 //          Shows entity creation, component management, system integration, entity

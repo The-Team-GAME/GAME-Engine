@@ -2,11 +2,13 @@
 // file:    BasicComponents.h
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (100%)
+// author:  Chew Shee Yang (70%)
 //          Primary author
+//          How Hong Chin Ryan (30%)          
+//          Secondary author
 //
-// email:   chew.s@digipen.edu
-//
+// email:   chew.s@digipen.edu, hongchinryan.how@digipen.edu
+//    
 // brief:   This file defines common components used throughout the game engine.
 //          Includes transform components (Position, Scale, Rotation), rendering
 //          components (Color, StaticSprite, AnimatedSprite), gameplay components
@@ -106,14 +108,12 @@ namespace Components {
     }
   };
 
-
-
   struct PlayerController {
     //bool isGrounded = false; // Whether the player is on the ground
     PlayerController(/*bool isgrounded = false*/)
       /* : isGrounded(isgrounded)*/ {
     }
-  };
+  }; 
 
   struct Collider {
     f32 halfWidth, halfHeight;

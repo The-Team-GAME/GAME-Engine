@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    GravitySystem.h
+// project: Monkey Stole My GPA
+//
+// author:  How Hong Chin Ryan (100%)
+//          Primary author
+//
+// email:   hongchinryan.how@digipen.edu
+//
+// brief:   This file defines the GravitySystem class, which applies gravitational
+//          forces to entities with RigidBody and Gravity components.
+//
+// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
+
 #pragma once
 
 #include "ECS/System.h"

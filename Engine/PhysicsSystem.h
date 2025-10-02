@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    PhysicsSystem.h
+// project: Monkey Stole My GPA
+//
+// author:  How Hong Chin Ryan (100%)
+//          Primary author
+//
+// email:   hongchinryan.how@digipen.edu
+//
+// brief:   This file defines the PhysicsSystem class, which resolves collisions
+//          and applies physics-based movement to entities in the ECS framework.
+//
+// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
+
 #pragma once
 #include "ECS/System.h"
 #include "BasicComponents.h"
