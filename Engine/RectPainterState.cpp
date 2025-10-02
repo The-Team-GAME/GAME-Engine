@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------------
-// file:    ImGuiState.cpp
+// file:    RectPainterState.cpp
 // project: Monkey Stole My GPA
 //
 // author:  Ong Zi Ming (100%)
@@ -15,7 +15,7 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 
-#include "ImGuiState.h"
+#include "RectPainterState.h"
 #include "core.h"
 #include "InputManager.h"
 #include "BasicComponents.h"
@@ -39,8 +39,8 @@ namespace Components {
   };
 }
 
-void ImGuiState::Load() {}
-void ImGuiState::Init()
+void RectPainterState::Load() {}
+void RectPainterState::Init()
 {
   Engine::WORLD.create_entity()
     .add_component<Components::Tag<"RectPainter">>()
@@ -64,7 +64,7 @@ void ImGuiState::Init()
 
 }
 
-void ImGuiState::Free()
+void RectPainterState::Free()
 {
   // Destroy all entities from this state
   Engine::WORLD.destroy_entities_with<Components::Tag<"RectPainter">>();
@@ -77,15 +77,15 @@ void ImGuiState::Free()
   Engine::WORLD.remove_system<RectRenderSystem>();
 }
 
-void ImGuiState::Unload() {}
+void RectPainterState::Unload() {}
 
-void ImGuiState::Update()
+void RectPainterState::Update()
 {
   handleShortcuts();
   handleMouse();
 }
 
-void ImGuiState::Draw()
+void RectPainterState::Draw()
 {
   // Preview while drawing
   if (dragMode_ == DragMode::Drawing && passedThreshold_) {
@@ -108,15 +108,15 @@ void ImGuiState::Draw()
   drawImGui();
 }
 
-void ImGuiState::handleMouse()
+void RectPainterState::handleMouse()
 {
   ImGuiIO& io = ImGui::GetIO();
   if (io.WantCaptureMouse) {
-    prevMouse_ = Engine::Input::GetMousePosition();
+    prevMouse_ = Engine::Input::GetMouseWorldPosition();
     return;
   }
 
-  const glm::vec2 mouse = Engine::Input::GetMousePosition();
+  const glm::vec2 mouse = Engine::Input::GetMouseWorldPosition();
   const bool lDown = Engine::Input::IsMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT);
   const bool lHeld = Engine::Input::IsMouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT);
   const bool lUp = Engine::Input::IsMouseButtonReleased(GLFW_MOUSE_BUTTON_LEFT);
@@ -224,7 +224,7 @@ void ImGuiState::handleMouse()
           size->width = std::max(minRectSizePx_, newMax.x - newMin.x);
           size->height = std::max(minRectSizePx_, newMax.y - newMin.y);
         }
-        
+
       }
     }
 
@@ -258,7 +258,7 @@ void ImGuiState::handleMouse()
   prevMouse_ = mouse;
 }
 
-void ImGuiState::handleShortcuts()
+void RectPainterState::handleShortcuts()
 {
   ImGuiIO& io = ImGui::GetIO();
   if (io.WantTextInput) return; // don't steal while typing
@@ -298,7 +298,7 @@ void ImGuiState::handleShortcuts()
   //if (ctrl && Engine::Input::IsKeyPressed(GLFW_KEY_O)) ;
 }
 
-void ImGuiState::runCollisionPass()
+void RectPainterState::runCollisionPass()
 {
   // transient per-frame collision flags
   static std::unordered_map<EntityID, HitInfo> hits;
@@ -340,7 +340,7 @@ void ImGuiState::runCollisionPass()
 }
 
 /* Overlay */
-void ImGuiState::drawSelectionGizmo()
+void RectPainterState::drawSelectionGizmo()
 {
   if (selectedIndex_ < 0 || selectedIndex_ >= (int)rects_.size()) return;
 
@@ -368,7 +368,7 @@ void ImGuiState::drawSelectionGizmo()
 }
 
 /* Picking helpers */
-bool ImGuiState::getBounds(EntityID id, glm::vec2& minP, glm::vec2& maxP) const
+bool RectPainterState::getBounds(EntityID id, glm::vec2& minP, glm::vec2& maxP) const
 {
   auto* pos = Engine::WORLD.get_component<Components::Position>(id);
   auto* size = Engine::WORLD.get_component<Components::Size>(id);
@@ -378,12 +378,12 @@ bool ImGuiState::getBounds(EntityID id, glm::vec2& minP, glm::vec2& maxP) const
   return true;
 }
 
-bool ImGuiState::pointInRect(const glm::vec2& p, const glm::vec2& minP, const glm::vec2& maxP)
+bool RectPainterState::pointInRect(const glm::vec2& p, const glm::vec2& minP, const glm::vec2& maxP)
 {
   return (p.x >= minP.x && p.x <= maxP.x && p.y >= minP.y && p.y <= maxP.y);
 }
 
-ImGuiState::ResizeMask ImGuiState::hitHandle(const glm::vec2& p, const glm::vec2& minP, const glm::vec2& maxP) const
+RectPainterState::ResizeMask RectPainterState::hitHandle(const glm::vec2& p, const glm::vec2& minP, const glm::vec2& maxP) const
 {
   ResizeMask m{};
   const f32 hs = handlePx_ * 0.5f + handleHoverInflate_;
@@ -407,7 +407,7 @@ ImGuiState::ResizeMask ImGuiState::hitHandle(const glm::vec2& p, const glm::vec2
   return m;
 }
 
-int ImGuiState::pickTopmostRect(const glm::vec2& p) const
+int RectPainterState::pickTopmostRect(const glm::vec2& p) const
 {
   for (int i = (int)rects_.size() - 1; i >= 0; --i) { // topmost = last created
     glm::vec2 minP, maxP;
@@ -417,7 +417,7 @@ int ImGuiState::pickTopmostRect(const glm::vec2& p) const
 }
 
 /* ImGui */
-void ImGuiState::drawImGui()
+void RectPainterState::drawImGui()
 {
   if (ImGui::Begin("Rect Painter (ECS)", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
     ImGui::TextUnformatted("Click rect to select. Drag inside to move. Drag handles to resize.");
@@ -445,7 +445,7 @@ void ImGuiState::drawImGui()
       rects_.erase(rects_.begin() + selectedIndex_);
       selectedIndex_ = -1;
     }
-    
+
     ImGui::SameLine();
     if (ImGui::Button("Duplicate") && canDelete) {
       const EntityID src = rects_[selectedIndex_];
@@ -487,7 +487,7 @@ void ImGuiState::drawImGui()
       auto* pos = Engine::WORLD.get_component<Components::Position>(id);
       auto* size = Engine::WORLD.get_component<Components::Size>(id);
       auto* color = Engine::WORLD.get_component<Components::Color>(id);
-      auto* col = Engine::WORLD.get_component<Components::BasicCollider>(id);
+      //auto* col = Engine::WORLD.get_component<Components::BasicCollider>(id);
 
       if (pos && size && color) {
         ImGui::DragFloat2("Position (center)", &pos->X(), 1.0f);
@@ -523,12 +523,12 @@ void ImGuiState::drawImGui()
           color->W() = currentColor_.w;
         }
 
-        if (ImGui::Button("Send to Back [")) { 
-          sendToBack(selectedIndex_); 
+        if (ImGui::Button("Send to Back [")) {
+          sendToBack(selectedIndex_);
         }
         ImGui::SameLine();
-        if (ImGui::Button("Bring to Front ]")) { 
-          bringToFront(selectedIndex_); 
+        if (ImGui::Button("Bring to Front ]")) {
+          bringToFront(selectedIndex_);
         }
 
       }
@@ -539,7 +539,7 @@ void ImGuiState::drawImGui()
 }
 
 /* Helpers */
-void ImGuiState::computeCenterAndSize(const glm::vec2& a, const glm::vec2& b,
+void RectPainterState::computeCenterAndSize(const glm::vec2& a, const glm::vec2& b,
   glm::vec2& outCenter, glm::vec2& outSize)
 {
   const f32 minX = std::min(a.x, b.x);
@@ -550,25 +550,25 @@ void ImGuiState::computeCenterAndSize(const glm::vec2& a, const glm::vec2& b,
   outCenter = { minX + outSize.x * 0.5f, minY + outSize.y * 0.5f };
 }
 
-void ImGuiState::clampMinSize(glm::vec2& size, f32 minSize)
+void RectPainterState::clampMinSize(glm::vec2& size, f32 minSize)
 {
   size.x = std::max(size.x, minSize);
   size.y = std::max(size.y, minSize);
 }
 
-glm::vec2 ImGuiState::snapToGrid(glm::vec2 v, float grid)
+glm::vec2 RectPainterState::snapToGrid(glm::vec2 v, float grid)
 {
   if (grid <= 0.0f) return v;
   return { std::round(v.x / grid) * grid, std::round(v.y / grid) * grid };
 }
 
-float ImGuiState::snapScalar(float v, float grid)
+float RectPainterState::snapScalar(float v, float grid)
 {
   if (grid <= 0.0f) return v;
   return std::round(v / grid) * grid;
 }
 
-void ImGuiState::bringToFront(s32 index)
+void RectPainterState::bringToFront(s32 index)
 {
   if (index < 0 || index >= (s32)rects_.size()) return;
   auto id = rects_[index];
@@ -577,7 +577,7 @@ void ImGuiState::bringToFront(s32 index)
   selectedIndex_ = (s32)rects_.size() - 1;
 }
 
-void ImGuiState::sendToBack(s32 index)
+void RectPainterState::sendToBack(s32 index)
 {
   if (index < 0 || index >= (s32)rects_.size()) return;
   auto id = rects_[index];
@@ -586,7 +586,7 @@ void ImGuiState::sendToBack(s32 index)
   selectedIndex_ = 0;
 }
 
-void ImGuiState::clearAllRects()
+void RectPainterState::clearAllRects()
 {
   for (EntityID id : rects_) Engine::WORLD.destroy_entity(id);
   rects_.clear();
@@ -594,12 +594,12 @@ void ImGuiState::clearAllRects()
   dragMode_ = DragMode::None;
 }
 
-bool ImGuiState::aabbOverlap(const glm::vec2& aMin, const glm::vec2& aMax,
+bool RectPainterState::aabbOverlap(const glm::vec2& aMin, const glm::vec2& aMax,
   const glm::vec2& bMin, const glm::vec2& bMax)
 {
   return !(aMax.x < bMin.x || bMax.x < aMin.x || aMax.y < bMin.y || bMax.y < aMin.y);
 }
 
 /* Serialization stubs */
-bool ImGuiState::SaveToFile(const char* /*path*/) const { return false; }
-bool ImGuiState::LoadFromFile(const char* /*path*/) { return false; }
+bool RectPainterState::SaveToFile(const char* /*path*/) const { return false; }
+bool RectPainterState::LoadFromFile(const char* /*path*/) { return false; }

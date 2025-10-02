@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------------
-// file:    Rubric2500Particles.h
+// file:    Rubric2500ParticlesState.h
 // project: Monkey Stole My GPA
 //
 // author:  Chew Shee Yang (100%)
@@ -20,7 +20,7 @@
 #include "BackgroundSystem.h"
 #include "Core.h"
 
-class Rubric2500Particles : public Engine::GameState<Rubric2500Particles>
+class Rubric2500ParticlesState : public Engine::GameState<Rubric2500ParticlesState>
 {
 private:
 public:
@@ -29,7 +29,7 @@ public:
   void Init()
   {
     auto background = Engine::WORLD.create_entity()
-      .add_component<Components::Tag<"Rubric2500Particles">>()
+      .add_component<Components::Tag<"Rubric2500ParticlesState">>()
       .add_component<Components::Background>()
       .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -47,7 +47,7 @@ public:
       f32 rotationSpeed = 30.0f + static_cast<f32>(rand() % 90); // Random rotation speed between 30 and 120 degrees per second
 
       Engine::WORLD.create_entity()
-        .add_component<Components::Tag<"Rubric2500Particles">>()
+        .add_component<Components::Tag<"Rubric2500ParticlesState">>()
         .add_component<Components::Position>(x, y)
         .add_component<Components::Size>(size, size)
         .add_component<Components::Color>(color)
@@ -70,7 +70,7 @@ public:
   };
 
   void Free() {
-    Engine::WORLD.destroy_entities_with<Components::Tag<"Rubric2500Particles">>();
+    Engine::WORLD.destroy_entities_with<Components::Tag<"Rubric2500ParticlesState">>();
 
     // Remove systems
     Engine::WORLD.remove_system<BackgroundSystem>();

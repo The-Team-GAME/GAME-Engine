@@ -10,7 +10,7 @@
 // brief:   This file defines the ComponentSelector class, which provides UI
 //          functionality for adding and managing components in the editor.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 
 #pragma once

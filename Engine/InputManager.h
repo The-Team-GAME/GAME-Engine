@@ -83,5 +83,12 @@ namespace Engine
      * @return glm::vec2 A vector containing the x and y position of the mouse.
      */
     static glm::vec2 GetMousePosition();
+
+    /**
+     * @brief Gets the current position of the mouse cursor in world coordinates.
+     * This accounts for camera position, zoom, and rotation.
+     * @return glm::vec2 A vector containing the x and y position of the mouse in world space.
+     */
+    static glm::vec2 GetMouseWorldPosition();
   };
 }

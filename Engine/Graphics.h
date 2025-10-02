@@ -239,6 +239,8 @@ public:
   // Utility functions       //
   // ======================= */
   glm::vec2 screen_to_virtual(f32 screenX, f32 screenY) const;
+  glm::vec2 screen_to_world(f32 screenX, f32 screenY) const;
+  glm::vec2 world_to_screen(f32 worldX, f32 worldY) const;
 
 private:
   /* ============================ //

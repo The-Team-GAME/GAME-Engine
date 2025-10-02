@@ -10,7 +10,7 @@
 // brief:   This file defines the PhysicsSystem class, which resolves collisions
 //          and applies physics-based movement to entities in the ECS framework.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 
 #pragma once
@@ -34,7 +34,7 @@ public:
     if (!pos || !rb || !col) return;
     if (col->isStatic) return; // Static bodies don't move
 
-    float dt = Engine::Time::get_fixed_dt();
+    //float dt = Engine::Time::get_fixed_dt();
 
     // --- Handle Dynamic Collisions (Swept AABB) ---
     //if (col->dynamicCollisionTime >= 0.0f && col->dynamicCollisionTime <= dt) {

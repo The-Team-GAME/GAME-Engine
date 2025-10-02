@@ -146,8 +146,7 @@ public:
       .add_component<Components::Tag<"ShowcaseState">>()
       .add_component<Components::Position>(800.0f, 450.0f)
       .add_component<Components::Size>(1600.0f, 900.0f)
-      .add_component<Components::StaticSprite>(backgroundTextureId)
-      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.5f); // Semi-transparent
+      .add_component<Components::StaticSprite>(backgroundTextureId);
 
 
     // Create enemy from prefab
@@ -181,6 +180,7 @@ public:
     Engine::WORLD.add_system<AnimatedSpriteRenderSystem>();
     Engine::WORLD.add_system<BasicMovementSystem>();
     Engine::WORLD.add_system<RotationSystem>();
+    Engine::WORLD.add_system<RectRenderSystem>();
 
     Engine::WORLD.add_event_listener<AttackEvent>([this](const AttackEvent& event) {
       std::cout << "Attack event! Entity " << event.attacker
@@ -405,6 +405,11 @@ public:
     Engine::WORLD.remove_system<AnimatedSpriteRenderSystem>();
     Engine::WORLD.remove_system<BasicMovementSystem>();
     Engine::WORLD.remove_system<RotationSystem>();
+    Engine::WORLD.remove_system<RectRenderSystem>();
+
+    // Remove event listeners
+    Engine::WORLD.remove_event_listener<AttackEvent>();
+    Engine::WORLD.remove_event_listener<CollectEvent>();
   }
 
   void Unload() {

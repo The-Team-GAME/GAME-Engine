@@ -10,7 +10,7 @@
 // brief:   This file defines the GravitySystem class, which applies gravitational
 //          forces to entities with RigidBody and Gravity components.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 
 #pragma once

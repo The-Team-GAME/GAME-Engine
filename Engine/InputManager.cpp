@@ -113,4 +113,15 @@ namespace Engine
   {
     return mousePosition;
   }
+
+  glm::vec2 Input::GetMouseWorldPosition()
+  {
+    // Get the raw screen coordinates
+    GLFWwindow* window = Engine::WINDOW.getWindow();
+    double xpos, ypos;
+    glfwGetCursorPos(window, &xpos, &ypos);
+
+    // Convert screen coordinates to world coordinates using Graphics system
+    return Engine::GRAPHICS.screen_to_world(static_cast<f32>(xpos), static_cast<f32>(ypos));
+  }
 }
