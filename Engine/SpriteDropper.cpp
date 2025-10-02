@@ -29,7 +29,7 @@
     Must be called once per frame inside the game state's main Draw() function
     (e.g., SpriteState::Draw()).
     ==================================================================================*/
-void SpriteDropper(std::vector<int>& loadedImageIds, std::vector<DroppedImage>& droppedImages) {
+void SpriteDropper(std::vector<int>& loadedImageIds) {
 
   // --- Sprite Dropper ---
   ImGui::Begin("Sprite Dropper");

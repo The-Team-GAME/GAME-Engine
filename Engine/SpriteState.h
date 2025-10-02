@@ -210,7 +210,7 @@ public:
     ImGui::End();
 
     //calls the sprite dropper function :>
-    SpriteDropper(loadedImageIds, droppedImages);
+    SpriteDropper(loadedImageIds);
 
   };
 

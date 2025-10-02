@@ -17,6 +17,7 @@
 
 #include "Timeline.h"
 #include "imgui.h"
+#include "TypeDef.h"
 
 Timeline::Timeline()
   : currentFrame(0),
@@ -28,7 +29,7 @@ Timeline::Timeline()
   lastFrameTime(0.0)        // Initialize time to zero
 {
   // Start with 2 layers
-  for ( ; currentFrame < 1; ++currentFrame)
+  for (; currentFrame < 1; ++currentFrame)
     layers.push_back(currentFrame);
 }
 
@@ -45,12 +46,12 @@ Timeline::Timeline()
     (e.g., SpriteState::Draw()).
     ==================================================================================*/
 
-// --Timeline--
+    // --Timeline--
 void Timeline::Draw() {
   if (ImGui::Begin("Timeline"))
   {
     ImVec2 timelineSize(cellSize.x * numFrames, cellSize.y * (int)layers.size());
-    ImVec2 incrementchange(5,5);
+    ImVec2 incrementchange(5, 5);
 
     // --- Control buttons ---
     if (ImGui::Button("Add")) { //adds layer
@@ -70,10 +71,10 @@ void Timeline::Draw() {
       // Clamp the min zoom level
       if (zoom < 0.2f) zoom = 0.2f;
     }
-    ImGui::SameLine(); 
+    ImGui::SameLine();
     ImGui::SetNextItemWidth(200);
     ImGui::SliderFloat(" ", &zoom, 0.05f, 3.0f, "%.1fx"); //zoom slider
-    
+
     ImGui::SameLine();
     if (ImGui::Button("+")) { //zooms in timeline
       zoom += 0.5f;
@@ -102,8 +103,8 @@ void Timeline::Draw() {
     ImVec2 currentCellSize = ImVec2(cellSize.x * zoom, cellSize.y);
 
     //Draw grid & cells
-    for (int layer = 0; layer < (int)layers.size(); ++layer) {
-      for (int frame = 0; frame < numFrames; ++frame) {
+    for (s32 layer = 0; layer < (int)layers.size(); ++layer) {
+      for (s32 frame = 0; frame < numFrames; ++frame) {
         ImVec2 cellMin = ImVec2(p.x + frame * currentCellSize.x, p.y + layer * currentCellSize.y);
         ImVec2 cellMax = ImVec2(cellMin.x + currentCellSize.x, cellMin.y + currentCellSize.y);
 
@@ -134,7 +135,7 @@ void Timeline::Draw() {
       float deltaTime = (float)(currentTime - lastFrameTime);
 
       // Advance the current frame based on the playback speed and delta time
-      currentFrame += playbackSpeed * deltaTime;
+      currentFrame += static_cast<s32>(playbackSpeed * deltaTime);
 
       // Check if the marker has reached or passed the end of the timeline
       if (currentFrame >= numFrames) {

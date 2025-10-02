@@ -176,6 +176,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="ECS\EventManager.cpp" />
     <ClCompile Include="ECS\System.cpp" />
     <ClCompile Include="ECS\World.cpp" />
+    <ClCompile Include="FileExplorer.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="ImGuiManager.cpp" />
     <ClCompile Include="RectPainterState.cpp" />
@@ -188,7 +189,9 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="Perf.cpp" />
     <ClCompile Include="Precompiled.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
+    <ClCompile Include="SpriteDropper.cpp" />
     <ClCompile Include="Time.cpp" />
+    <ClCompile Include="Timeline.cpp" />
     <ClCompile Include="Vector2D.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="StateManager.cpp" />
@@ -211,6 +214,8 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="DevECSMessageState.h" />
     <ClInclude Include="DevManySpritesState.h" />
     <ClInclude Include="DevSpriteAnimationState.h" />
+    <ClInclude Include="FileExplorer.h" />
+    <ClInclude Include="GameObjectState.h" />
     <ClInclude Include="PhysicsTestScene.h" />
     <ClInclude Include="ECS\ComponentArray.h" />
     <ClInclude Include="ECS\ComponentManager.h" />
@@ -247,7 +252,9 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="FileHandler.h" />
     <ClInclude Include="ShowcaseState.h" />
     <ClInclude Include="SimplePlayerMovementSystem.h" />
+    <ClInclude Include="SpriteDropper.h" />
     <ClInclude Include="Time.h" />
+    <ClInclude Include="Timeline.h" />
     <ClInclude Include="Vector2D.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="SpriteState.h" />

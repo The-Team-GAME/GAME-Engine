@@ -116,7 +116,8 @@ void FileExplorer(bool* p_open) {
 
       else {
         std::string extension = entry.path().extension().string();
-        std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+        std::transform(extension.begin(), extension.end(), extension.begin(),
+          [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
         // Check for valid image extensions
         if (extension == ".jpg" || extension == ".png" || extension == ".jpeg") {

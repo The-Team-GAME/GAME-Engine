@@ -28,7 +28,7 @@ class LevelLoaderTestState : public Engine::GameState<LevelLoaderTestState>
 private:
   std::string currentLevelId;
   bool levelLoaded = false;
-  ECS::EntityID backgroundEntityId;
+  ECS::EntityID backgroundEntityId = 0;
 
 public:
   void Load()
