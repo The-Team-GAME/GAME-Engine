@@ -20,7 +20,7 @@
 #include "BasicComponents.h"
 #include "RenderSystem.h"
 #include "BackgroundSystem.h"
-#include "MovementSystem.h"
+#include "BasicMovementSystem.h"
 #include "BasicEvents.h"
 #include "InputManager.h"
 #include <GLFW/glfw3.h>
@@ -170,7 +170,7 @@ public:
       .add_component<Components::Tag<"ShowcaseState">>()
       .add_component<Components::Position>(200.0f, 655.0f)
       .add_component<Components::Size>(64.0f, 64.0f)
-      //.add_component<Components::Velocity>(0.0f, 0.0f) // TODO: Ryan
+      .add_component<Components::Velocity>(0.0f, 0.0f)
       .add_component<Components::AnimatedSprite>(playerIdleSpriteSheetId)
       .add_component<Components::Health>(100, 100)
       .add_component<Components::Scale>(2.0f, 2.0f);
@@ -179,7 +179,7 @@ public:
     Engine::WORLD.add_system<BackgroundSystem>();
     Engine::WORLD.add_system<StaticSpriteRenderSystem>();
     Engine::WORLD.add_system<AnimatedSpriteRenderSystem>();
-    Engine::WORLD.add_system<MovementSystem>();
+    Engine::WORLD.add_system<BasicMovementSystem>();
     Engine::WORLD.add_system<RotationSystem>();
 
     Engine::WORLD.add_event_listener<AttackEvent>([this](const AttackEvent& event) {
@@ -254,10 +254,10 @@ public:
   void Update() {
 
     auto* playerPos = player.get_component<Components::Position>();
-    //auto* playerVel = player.get_component<Components::Velocity>(); // TODO: Ryan
+    auto* playerVel = player.get_component<Components::Velocity>();
     auto* playerSprite = player.get_component<Components::AnimatedSprite>();
 
-    if (!playerPos || /* !playerVel || */ !playerSprite) return; // TODO: Ryan
+    if (!playerPos || !playerVel || !playerSprite) return;
 
     // Check if punch animation has completed
     if (playerSprite->spriteSheetId == playerPunchSpriteSheetId) {
@@ -308,9 +308,8 @@ public:
       scale->Y() = 2.0f;
     }
 
-    // TODO: Ryan
-    /*playerVel->X() = newVelX;
-    playerVel->Y() = newVelY;*/
+    playerVel->X() = newVelX;
+    playerVel->Y() = newVelY;
 
     // Only change to walk/idle if not currently punching
     if (playerSprite->spriteSheetId != playerPunchSpriteSheetId) {
@@ -377,18 +376,6 @@ public:
         { 1.0f, 1.0f, 0.0f, 1.0f } // Yellow
       );
 
-      //// Show player health
-      //if (player.isValid() && player.has_component<Components::Health>()) {
-      //  auto* health = player.get_component<Components::Health>();
-      //  Engine::GRAPHICS.draw_text(
-      //    infoFontId,
-      //    "Player HP: " + std::to_string(health->value) + "/" + std::to_string(health->max),
-      //    50.0f, 260.0f,
-      //    0.7f,
-      //    { 0.0f, 1.0f, 0.0f, 1.0f } // Green
-      //  );
-      //}
-
       // Show enemy health
       if (enemy.isValid() && enemy.has_component<Components::Health>()) {
         auto* health = enemy.get_component<Components::Health>();
@@ -416,7 +403,7 @@ public:
     Engine::WORLD.remove_system<BackgroundSystem>();
     Engine::WORLD.remove_system<StaticSpriteRenderSystem>();
     Engine::WORLD.remove_system<AnimatedSpriteRenderSystem>();
-    Engine::WORLD.remove_system<MovementSystem>();
+    Engine::WORLD.remove_system<BasicMovementSystem>();
     Engine::WORLD.remove_system<RotationSystem>();
   }
 
