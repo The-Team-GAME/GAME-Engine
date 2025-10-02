@@ -22,8 +22,8 @@
 #include "SpriteState.h"
 #include "GameObjectState.h"
 #include "DevManySpritesState.h"
-#include "Rubric2500Particles.h"
-#include "ImGuiState.h"
+#include "Rubric2500ParticlesState.h"
+#include "RectPainterState.h"
 #include "DevSpriteAnimationState.h"
 #include "DevECSMessageState.h"
 #include "LevelLoaderTestState.h"
@@ -52,11 +52,11 @@ inline void StateChooserPanel()
   }
   if (ImGui::Button("ImGui Rect Painter"))
   {
-    Engine::StateManager::ChangeState(ImGuiState::Get());
+    Engine::StateManager::ChangeState(RectPainterState::Get());
   }
   if (ImGui::Button("2500Particles"))
   {
-    Engine::StateManager::ChangeState(Rubric2500Particles::Get());
+    Engine::StateManager::ChangeState(Rubric2500ParticlesState::Get());
   }
   if (ImGui::Button("2500Sprites"))
   {

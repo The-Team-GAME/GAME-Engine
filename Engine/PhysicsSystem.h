@@ -19,7 +19,7 @@ public:
     if (!pos || !rb || !col) return;
     if (col->isStatic) return; // Static bodies don't move
 
-    float dt = Engine::Time::get_fixed_dt();
+    //float dt = Engine::Time::get_fixed_dt();
 
     // --- Handle Dynamic Collisions (Swept AABB) ---
     //if (col->dynamicCollisionTime >= 0.0f && col->dynamicCollisionTime <= dt) {

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------------
-// file:    ImGuiState.h
+// file:    RectPainterState.h
 // project: Monkey Stole My GPA
 //
 // author:  Ong Zi Ming (100%)
@@ -19,7 +19,7 @@
 #include "ECS/System.h"
 #include "TypeDef.h"
 
-class ImGuiState : public Engine::GameState<ImGuiState>
+class RectPainterState : public Engine::GameState<RectPainterState>
 {
 public:
   void Load();
