@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    BasicComponents.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines common components used throughout the game engine.
+//          Includes transform components (Position, Scale, Rotation), rendering
+//          components (Color, StaticSprite, AnimatedSprite), gameplay components
+//          (Health, Velocity), and utility components (Tag, ObjectId).
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "Vector2D.h"
@@ -5,6 +21,9 @@
 #include "Graphics.h"
 #include <string>
 
+/* ======================================= //
+// Fixed string for compile-time tags     //
+// ======================================= */
 template<size_t N>
 struct fixed_string {
   constexpr fixed_string(const char(&str)[N]) {
@@ -15,6 +34,9 @@ struct fixed_string {
 
 
 namespace Components {
+  /* ====================== //
+  // Identification tags    //
+  // ====================== */
   template <fixed_string id>
   struct Tag {};
 
@@ -22,7 +44,9 @@ namespace Components {
     using std::basic_string<char>::basic_string;
   };
 
-  // Translate
+  /* ====================== //
+  // Transform components   //
+  // ====================== */
   struct Position : Math::Vec2D {
     using Math::Vec2D::Vec2D;
   };
@@ -41,6 +65,9 @@ namespace Components {
     RotationSpeed(f32 degrees_per_second = 0.0f) : degrees_per_second(degrees_per_second) {}
   };
 
+  /* ====================== //
+  // Physics components     //
+  // ====================== */
   struct Velocity : Math::Vec2D {
     using Math::Vec2D::Vec2D;
   };
@@ -50,12 +77,18 @@ namespace Components {
     Size(f32 width = 0.0f, f32 height = 0.0f) : width(width), height(height) {}
   };
 
+  /* ====================== //
+  // Rendering components   //
+  // ====================== */
   struct Color : Math::Vec4D {
     using Math::Vec4D::Vec4D;
   };
 
-  struct Background {};
+  struct Background {}; // Tag for background entities
 
+  /* ====================== //
+  // Gameplay components    //
+  // ====================== */
   struct Health {
     s32 value, max;
     Health(int value = 100, s32 max = 100) : value(value), max(max) {}
@@ -73,8 +106,11 @@ namespace Components {
     }
   };
 
-  struct Renderable {};
+  struct Renderable {}; // Tag for renderable entities
 
+  /* ====================== //
+  // Sprite components      //
+  // ====================== */
   struct StaticSprite {
     s32 texture_id;
     StaticSprite(s32 texture_id = -1) : texture_id(texture_id) {}
@@ -113,6 +149,9 @@ namespace Components {
     }
   };
 
+  /* ====================== //
+  // Input components       //
+  // ====================== */
   struct SimplePlayerControl {
     f32 speed;
     SimplePlayerControl(f32 speed = 100.0f) : speed(speed) {}

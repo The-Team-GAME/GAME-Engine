@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    BasicState.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements the BasicState which demonstrates basic rendering
+//          capabilities including shapes (rectangles, circles, lines), text rendering
+//          with multiple fonts, and audio playback.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "BasicState.h"
 #include "core.h"
 #include "InputManager.h"
