@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------------
-// file:    StateChooser.inl
+// file:    StateChooser.h
 // project: Monkey Stole My GPA
 //
 // author:  Chew Shee Yang (100%)

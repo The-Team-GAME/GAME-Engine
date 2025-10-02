@@ -251,7 +251,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Vector2D.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="SpriteState.h" />
-    <ClInclude Include="StateChooser.inl" />
+    <ClInclude Include="StateChooser.h" />
     <ClInclude Include="StateManager.h" />
     <ClInclude Include="TypeDef.h" />
     <ClInclude Include="Vector3D.h" />

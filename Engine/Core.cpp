@@ -23,7 +23,7 @@
 #include "BasicState.h"
 #include "MainMenuState.h"
 #include "ImGuiManager.h"
-#include "StateChooser.inl"
+#include "StateChooser.h"
 #include "Time.h"
 #include "PerformanceViewer.h"
 #include "WindowManager.h"

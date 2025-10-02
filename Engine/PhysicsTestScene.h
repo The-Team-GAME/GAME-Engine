@@ -19,8 +19,7 @@
 #include "Graphics.h"
 #include "ObjectFactory.h"
 #include "MovementSystem.h"
-#include "RenderSystem.h"
-#include "ComponentSelector.h"
+#include "RenderSystem.h" 
 #include "BackgroundSystem.h"
 #include "PlayerControllerSystem.h"
 #include "PhysicsSystem.h"
@@ -59,19 +58,19 @@ public:
       .add_component<Components::RigidBody>(1.0f) // mass=1.0,
       .add_component<Components::Gravity>()
       .add_component<Components::Collider>(100.0f, 50.0f, true); // x, y, isStatic
-   
+
 
     // Create two enemy instances from the prefab
     auto enemy2 = Engine::WORLD.create_entity()
       .add_component<Components::Tag<"Floor">>()
       .add_component<Components::Position>(500.0f, 500.0f)
       .add_component<Components::Color>(1.0f, 0.2f, 0.2f, 1.0f)
-			.add_component<Components::Size>(4000.0f, 50.0f)
-			.add_component<Components::RigidBody>(10000000.0f) // mass=1.0,
-			.add_component<Components::Collider>(4000.0f, 50.0f, true); // x, y, isStatic
-      
+      .add_component<Components::Size>(4000.0f, 50.0f)
+      .add_component<Components::RigidBody>(10000000.0f) // mass=1.0,
+      .add_component<Components::Collider>(4000.0f, 50.0f, true); // x, y, isStatic
 
-    
+
+
 
 
     // You can modify components like this too
@@ -86,9 +85,9 @@ public:
     Engine::WORLD.add_system<BackgroundSystem>(); // Background system should be first
     Engine::WORLD.add_system<GravitySystem>();
 
-		Engine::WORLD.add_system<PlayerControllerSystem>();
+    Engine::WORLD.add_system<PlayerControllerSystem>();
 
-    
+
     Engine::WORLD.add_system<MovementSystem>();
     Engine::WORLD.add_system<PhysicsSystem>();
     Engine::WORLD.add_system<CollisionSystem>();
@@ -98,12 +97,11 @@ public:
   };
 
   void Update() {
-		
+
   };
 
   void Draw()
   {
-    EditorUI::ComponentSelector::DrawAddComponentButtons(1); // Example entity ID
   };
 
   void Free() {
