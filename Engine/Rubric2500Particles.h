@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    Rubric2500Particles.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines a game state that creates and renders 2500 rotating
+//          colored particles to demonstrate ECS performance capabilities as required
+//          by the rubric specifications.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "StateManager.h"
