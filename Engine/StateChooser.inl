@@ -46,19 +46,19 @@ inline void StateChooserPanel()
   ImGui::Text("Current State: %s", typeid(*Engine::StateManager::GetCurrentState()).name());
 
   
-  if (ImGui::Button("*** SHOWCASE STATE ***"))
+  if (ImGui::Button("ShowcaseState"))
   {
     Engine::StateManager::ChangeState(ShowcaseState::Get());
   }
-  if (ImGui::Button("ImGui Rect Painter"))
+  if (ImGui::Button("RectPainterState"))
   {
     Engine::StateManager::ChangeState(RectPainterState::Get());
   }
-  if (ImGui::Button("2500Particles"))
+  if (ImGui::Button("Rubric2500ParticlesState"))
   {
     Engine::StateManager::ChangeState(Rubric2500ParticlesState::Get());
   }
-  if (ImGui::Button("2500Sprites"))
+  if (ImGui::Button("DevManySpritesState"))
   {
     Engine::StateManager::ChangeState(DevManySpritesState::Get());
   }
