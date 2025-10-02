@@ -19,6 +19,9 @@
 
 namespace Engine
 {
+  /* ================ //
+  // Member Functions //
+  // ================ */
   void Perf::start(const std::string& label)
   {
     start_time_map[label] = std::chrono::high_resolution_clock::now();

@@ -23,6 +23,19 @@ public:
     require_components<Components::Position, Components::Velocity>();
   }
 
+  /*=================================================================================
+  Function Brief:
+  Updates a single entity's position based on its velocity and the fixed delta time.
+  This function is called automatically by the ECS framework for each entity that
+  has the required components.
+
+  Parameters:
+  entity - Reference to the entity being updated.
+
+  Where to call it:
+  This is called automatically by the ECS system during the update loop. Do not
+  call this directly.
+  ==================================================================================*/
   void update_entity(ECS::Entity& entity) override {
     auto* pos = entity.get_component<Components::Position>();
     auto* vel = entity.get_component<Components::Velocity>();

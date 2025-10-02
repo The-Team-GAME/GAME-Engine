@@ -22,10 +22,16 @@
 
 namespace fh = FileHandler;
 
+/* ===================== //
+// Constructor           //
+// ===================== */
 Engine::ObjectFactory::ObjectFactory(ECS::World* world) : m_world(world)
 {
 }
 
+/* ===================== //
+// Member Functions      //
+// ===================== */
 int Engine::ObjectFactory::registerObject(std::string filePath)
 {
   fh::set_container("entity");

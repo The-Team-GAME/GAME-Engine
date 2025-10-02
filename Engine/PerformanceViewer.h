@@ -18,6 +18,16 @@
 #include "Core.h"
 #include "Time.h"
 
+/*=================================================================================
+Function Brief:
+Creates and renders an ImGui panel that displays performance metrics including
+current FPS, adjustable tick rate, and performance profiling data showing the
+percentage of time spent in each labeled code section.
+
+Where to call it:
+Call this function once per frame during the ImGui rendering phase, typically
+in the Draw() or Update() function of a game state.
+==================================================================================*/
 inline void PerformanceViewerPanel()
 {
   ImGui::Begin("Performance Viewer");
