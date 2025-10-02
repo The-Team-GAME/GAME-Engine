@@ -17,6 +17,7 @@
 
 #include <cstdint>
 #include <bitset>
+#include <iostream> //remove when not in use
 
 namespace ECS {
 

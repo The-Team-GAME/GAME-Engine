@@ -98,12 +98,7 @@ inline void EntityEditorPanel()
       }
 
       ImGui::SameLine();
-      if (ImGui::Button("Add Velocity"))
-      {
-        if (!entity.has_component<Components::Velocity>())
-          entity.add_component<Components::Velocity>(0.0f, 0.0f);
-      }
-
+      
       if (ImGui::Button("Add Size"))
       {
         if (!entity.has_component<Components::Size>())
@@ -166,7 +161,7 @@ inline void EntityEditorPanel()
       }
 
       // Velocity Component
-      if (entity.has_component<Components::Velocity>())
+      /*if (entity.hasComponent<Components::Velocity>())
       {
         if (ImGui::TreeNode("Velocity"))
         {
@@ -179,7 +174,7 @@ inline void EntityEditorPanel()
 
           ImGui::TreePop();
         }
-      }
+      }*/
 
       // Size Component
       if (entity.has_component<Components::Size>())

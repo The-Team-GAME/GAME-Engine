@@ -170,6 +170,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="BasicState.cpp" />
     <ClCompile Include="BasicState.h" />
     <ClCompile Include="Config.cpp" />
+    <ClCompile Include="ComponentSelector.cpp" />
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="ECS\ComponentManager.cpp" />
     <ClCompile Include="ECS\Entity.cpp" />
@@ -201,6 +202,9 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="AudioManager.h" />
     <ClInclude Include="BackgroundSystem.h" />
     <ClInclude Include="BasicComponents.h" />
+    <ClInclude Include="BasicMovementSystem.h" />
+    <ClInclude Include="CollisionSystem.h" />
+    <ClInclude Include="ComponentSelector.h" />
     <ClInclude Include="BasicEvents.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="CameraPanel.h" />
@@ -219,8 +223,11 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="ECS\Types.h" />
     <ClInclude Include="ECS\World.h" />
     <ClInclude Include="EntityEditorPanel.h" />
-    <ClInclude Include="GameObjectState.h" />
     <ClInclude Include="Graphics.h" />
+    <ClInclude Include="GravitySystem.h" />
+    <ClInclude Include="LevelLoaderTestState.h" />
+    <ClInclude Include="PhysicsSystem.h" />
+    <ClInclude Include="PlayerControllerSystem.h" />
     <ClInclude Include="HealthSystem.h" />
     <ClInclude Include="ImGuiManager.h" />
     <ClInclude Include="ImGuiState.h" />

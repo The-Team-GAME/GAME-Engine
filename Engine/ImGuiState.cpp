@@ -21,6 +21,7 @@
 #include "BasicComponents.h"
 #include "BackgroundSystem.h"
 #include "RenderSystem.h"
+#include "CollisionSystem.h"
 
 #include <imgui.h>
 #include <GLFW/glfw3.h>
@@ -31,10 +32,10 @@
 using ECS::EntityID;
 
 namespace Components {
-  struct Collider {
+  struct BasicCollider {
     bool enabled = true;
     bool isTrigger = false;
-    Collider(bool e = true, bool t = false) : enabled(e), isTrigger(t) {}
+    BasicCollider(bool e = true, bool t = false) : enabled(e), isTrigger(t) {}
   };
 }
 
@@ -44,8 +45,7 @@ void ImGuiState::Init()
   Engine::WORLD.create_entity()
     .add_component<Components::Tag<"RectPainter">>()
     .add_component<Components::Background>()
-    .add_component<Components::Color>(0.08f, 0.08f, 0.10f, 1.0f)
-    .add_component<Components::Collider>(false, false);
+    .add_component<Components::Color>(0.08f, 0.08f, 0.10f, 1.0f);
 
   Engine::WORLD.add_system<BackgroundSystem>();
   Engine::WORLD.add_system<RectRenderSystem>();
@@ -246,7 +246,7 @@ void ImGuiState::handleMouse()
           .add_component<Components::Position>(center.x, center.y)
           .add_component<Components::Size>(size.x, size.y)
           .add_component<Components::Color>(currentColor_.x, currentColor_.y, currentColor_.z, currentColor_.w)
-          .add_component<Components::Collider>(spawnWithCollider_, false);
+          .add_component<Components::BasicCollider>(spawnWithCollider_, false);
         rects_.push_back(entity.getId());
         selectedIndex_ = (int)rects_.size() - 1;
       }
@@ -276,14 +276,14 @@ void ImGuiState::handleShortcuts()
     auto* p = Engine::WORLD.get_component<Components::Position>(src);
     auto* s = Engine::WORLD.get_component<Components::Size>(src);
     auto* c = Engine::WORLD.get_component<Components::Color>(src);
-    auto* col = Engine::WORLD.get_component<Components::Collider>(src);
+    auto* col = Engine::WORLD.get_component<Components::BasicCollider>(src);
     if (p && s && c) {
       auto e = Engine::WORLD.create_entity()
         .add_component<Components::Tag<"RectPainter">>()
         .add_component<Components::Position>(p->X() + 10.f, p->Y() + 10.f)
         .add_component<Components::Size>(s->width, s->height)
         .add_component<Components::Color>(c->X(), c->Y(), c->Z(), c->W());
-      if (col) e.add_component<Components::Collider>(col->enabled, col->isTrigger);
+      if (col) e.add_component<Components::BasicCollider>(col->enabled, col->isTrigger);
       rects_.push_back(e.getId());
       selectedIndex_ = (int)rects_.size() - 1;
     }
@@ -307,7 +307,7 @@ void ImGuiState::runCollisionPass()
   // Brute-force AABB among collider-enabled rects
   for (size_t i = 0; i < rects_.size(); ++i) {
     auto idA = rects_[i];
-    auto* colA = Engine::WORLD.get_component<Components::Collider>(idA);
+    auto* colA = Engine::WORLD.get_component<Components::BasicCollider>(idA);
     if (!colA || !colA->enabled) continue;
 
     glm::vec2 aMin, aMax;
@@ -315,7 +315,7 @@ void ImGuiState::runCollisionPass()
 
     for (size_t j = i + 1; j < rects_.size(); ++j) {
       auto idB = rects_[j];
-      auto* colB = Engine::WORLD.get_component<Components::Collider>(idB);
+      auto* colB = Engine::WORLD.get_component<Components::BasicCollider>(idB);
       if (!colB || !colB->enabled) continue;
 
       glm::vec2 bMin, bMax;
@@ -452,14 +452,14 @@ void ImGuiState::drawImGui()
       auto* p = Engine::WORLD.get_component<Components::Position>(src);
       auto* s = Engine::WORLD.get_component<Components::Size>(src);
       auto* c = Engine::WORLD.get_component<Components::Color>(src);
-      auto* col = Engine::WORLD.get_component<Components::Collider>(src);
+      auto* col = Engine::WORLD.get_component<Components::BasicCollider>(src);
       if (p && s && c) {
         auto e = Engine::WORLD.create_entity()
           .add_component<Components::Tag<"RectPainter">>()
           .add_component<Components::Position>(p->X() + 12.f, p->Y() + 12.f)
           .add_component<Components::Size>(s->width, s->height)
           .add_component<Components::Color>(c->X(), c->Y(), c->Z(), c->W());
-        if (col) e.add_component<Components::Collider>(col->enabled, col->isTrigger);
+        if (col) e.add_component<Components::BasicCollider>(col->enabled, col->isTrigger);
         rects_.push_back(e.getId());
         selectedIndex_ = (int)rects_.size() - 1;
       }
@@ -487,7 +487,7 @@ void ImGuiState::drawImGui()
       auto* pos = Engine::WORLD.get_component<Components::Position>(id);
       auto* size = Engine::WORLD.get_component<Components::Size>(id);
       auto* color = Engine::WORLD.get_component<Components::Color>(id);
-      auto* col = Engine::WORLD.get_component<Components::Collider>(id);
+      auto* col = Engine::WORLD.get_component<Components::BasicCollider>(id);
 
       if (pos && size && color) {
         ImGui::DragFloat2("Position (center)", &pos->X(), 1.0f);
@@ -500,21 +500,20 @@ void ImGuiState::drawImGui()
         size->width = s.x;
         size->height = s.y;
 
-        // Collider controls
-        bool hasCollider = (col != nullptr);
-        if (!hasCollider) {
-          if (ImGui::Button("Add Collider")) {
-            Engine::WORLD.add_component<Components::Collider>(id, Components::Collider{ true,false });
-            col = Engine::WORLD.get_component<Components::Collider>(id);
+        // BasicCollider controls
+        //bool hasBasicCollider = (col != nullptr);
+       /* if (!hasBasicCollider) {
+          if (ImGui::Button("Add BasicCollider")) {
+            Engine::WORLD.add_component<Components::BasicCollider>(id, Components::BasicCollider{ true,false });
+            col = Engine::WORLD.get_component<Components::BasicCollider>(id);
           }
         }
         else {
-          ImGui::Checkbox("Collider Enabled", &col->enabled);
           ImGui::Checkbox("Is Trigger", &col->isTrigger);
-          if (ImGui::Button("Remove Collider")) {
-            col->enabled = false; col->isTrigger = false;
+          if (ImGui::Button("Remove BasicCollider")) {
+            col->isTrigger = false;
           }
-        }
+        }*/
 
         ImGui::SameLine();
         if (ImGui::Button("Apply Default Color")) {

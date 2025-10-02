@@ -16,119 +16,110 @@
 #pragma once
 
 #include "StateManager.h"
-#include "EcsState.h"
 #include "Graphics.h"
-#include <iostream>
-#include <glm/glm.hpp>
-#include "Core.h"
-#include "BasicComponents.h"
+#include "ObjectFactory.h"
 #include "MovementSystem.h"
-#include "HealthSystem.h"
 #include "RenderSystem.h"
+#include "ComponentSelector.h"
 #include "BackgroundSystem.h"
-#include "InputManager.h"
-#include "BasicEvents.h"
-#include "DamageSystem.h"
+#include "PlayerControllerSystem.h"
+#include "PhysicsSystem.h"
+#include "GravitySystem.h"
+#include "CollisionSystem.h"
 
 class EcsState : public Engine::GameState<EcsState>
 {
 private:
-  s32 enemyPrefab;
-  ECS::Entity player;
-
+  int enemyPrefab = -1;
 public:
-  void Load() {
+  void Load() {};
+
+  void Init()
+  {
+    // Load the enemy prefab from a JSON file
     enemyPrefab = Engine::FACTORY.registerObject("Assets/objects/enemy.json");
-  }
 
-  void Init() {
-    // Create player entity
-    player = Engine::WORLD.create_entity()
-      .add_component<Components::Tag<"Player">>()
+
+    // Create two enemy instances from the prefab
+    auto enemy1 = Engine::WORLD.create_entity()
       .add_component<Components::Tag<"GameObjectState">>()
-      .add_component<Components::Position>(10.0f, 20.0f)
-      .add_component<Components::Velocity>(100.0f, 0.0f) // Make player move
-      .add_component<Components::Health>(100, 100)
-      .add_component<Components::Size>(10.0f, 10.0f)
-      .add_component<Components::Color>(0.0f, 1.0f, 1.0f, 1.0f); // Make player cyan
+      .add_component<Components::Position>(200.0f, 200.0f)
+      .add_component<Components::Color>(0.2f, 1.0f, 0.2f, 1.0f)
+      .add_component<Components::Size>(20.0f, 20.0f)
+      .add_component<Components::Gravity>()
+      .add_component<Components::RigidBody>(1.0f) // mass=1.0, 
+      .add_component<Components::Collider>(20.0f, 20.0f, false) // x, y, isStatic
+      .add_component<Components::PlayerController>();
 
-    // Create an enemy entity to act as a template
-    auto enemy = Engine::WORLD.create_entity()
-      .add_component<Components::Tag<"Enemy">>()
+    auto enemy3 = Engine::WORLD.create_entity()
       .add_component<Components::Tag<"GameObjectState">>()
-      .add_component<Components::Position>(50.0f, 30.0f)
-      .add_component<Components::Health>(100, 100)
-      .add_component<Components::Size>(10.0f, 10.0f)
-      .add_component<Components::Color>(0.0f, 1.0f, 0.0f, 1.0f);
+      .add_component<Components::Position>(500.0f, 300.0f)
+      .add_component<Components::Color>(1.0f, 0.2f, 0.2f, 1.0f)
+      .add_component<Components::Size>(100.0f, 50.0f)
+      .add_component<Components::RigidBody>(1.0f) // mass=1.0,
+      .add_component<Components::Gravity>()
+      .add_component<Components::Collider>(100.0f, 50.0f, true); // x, y, isStatic
+   
 
-    // --- Cloning Demonstration ---
-    // Create a new enemy by cloning the first one
-    auto clonedEnemy = Engine::WORLD.clone_entity(enemy.getId());
+    // Create two enemy instances from the prefab
+    auto enemy2 = Engine::WORLD.create_entity()
+      .add_component<Components::Tag<"Floor">>()
+      .add_component<Components::Position>(500.0f, 500.0f)
+      .add_component<Components::Color>(1.0f, 0.2f, 0.2f, 1.0f)
+			.add_component<Components::Size>(4000.0f, 50.0f)
+			.add_component<Components::RigidBody>(10000000.0f) // mass=1.0,
+			.add_component<Components::Collider>(4000.0f, 50.0f, true); // x, y, isStatic
+      
 
-    // Check if the clone is valid and then modify it to differentiate it
-    if (clonedEnemy.isValid()) {
-      // Get the position component of the clone and move it somewhere else
-      auto* clonedPos = clonedEnemy.get_component<Components::Position>();
-      if (clonedPos) {
-        clonedPos->X() = 200.0f;
-        clonedPos->Y() = 150.0f;
-      }
-    }
-    // --- End of Demonstration ---
+    
 
-    // Entity to clear background
+
+    // You can modify components like this too
+    //enemy2.getComponent<Components::Position>()->x = 300.0f;
+
     auto background = Engine::WORLD.create_entity()
       .add_component<Components::Tag<"GameObjectState">>()
       .add_component<Components::Background>()
-      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f); // White background
+      .add_component<Components::Color>(0.2f, 0.3f, 0.4f, 1.0f); // Dark blue background
 
     // Add systems to the world
     Engine::WORLD.add_system<BackgroundSystem>(); // Background system should be first
+    Engine::WORLD.add_system<GravitySystem>();
+
+		Engine::WORLD.add_system<PlayerControllerSystem>();
+
+    
     Engine::WORLD.add_system<MovementSystem>();
-    Engine::WORLD.add_system<HealthSystem>();
+    Engine::WORLD.add_system<PhysicsSystem>();
+    Engine::WORLD.add_system<CollisionSystem>();
+
     Engine::WORLD.add_system<RectRenderSystem>();
-    Engine::WORLD.add_system<DamageSystem>(); // Add the new system
-  }
+    Engine::WORLD.add_system<StaticSpriteRenderSystem>();
+  };
 
   void Update() {
-    if (Engine::Input::IsKeyPressed(GLFW_KEY_SPACE))
-    {
-      Engine::WORLD.send_event<DamageEvent>(player.getId(), 10);
-      // Print the health of all entities with Health component  
-      for (const auto& entity : Engine::WORLD.getEntitiesWith<Components::Health>()) {
-        auto* health = entity.get_component<Components::Health>();
-        std::cout << "Entity " << entity.getId() << " has health: " << health->value << "\n";
-      }
-      std::cout << "\n";
+		
+  };
 
-      auto bgEntity = Engine::WORLD.getFirstEntityWith<Components::Background>();
-      auto* bg_color = bgEntity.get_component<Components::Color>();
-
-      if (!player.has_component<Components::Health>())
-        return;
-
-      *bg_color = Components::Color{
-        player.get_component<Components::Health>()->value / 100.0f,
-        player.get_component<Components::Health>()->value / 100.0f,
-        player.get_component<Components::Health>()->value / 100.0f,
-        1.0f
-      };
-    }
-  }
-
-  void Draw() {}
+  void Draw()
+  {
+    EditorUI::ComponentSelector::DrawAddComponentButtons(1); // Example entity ID
+  };
 
   void Free() {
+    Engine::FACTORY.unregisterObject(enemyPrefab);
     Engine::WORLD.destroy_entities_with<Components::Tag<"GameObjectState">>();
-
+    Engine::WORLD.destroy_entities_with<Components::Tag<"Floor">>();
     // Remove systems
-    // TODO: make a function to remove all systems at once
-    Engine::WORLD.remove_system<BackgroundSystem>();
-    Engine::WORLD.remove_system<MovementSystem>();
-    Engine::WORLD.remove_system<HealthSystem>();
+    Engine::WORLD.remove_system<BackgroundSystem>(); // Background system should be first
+    Engine::WORLD.remove_system<GravitySystem>();
+    Engine::WORLD.remove_system<PlayerControllerSystem>();
     Engine::WORLD.remove_system<RectRenderSystem>();
-    Engine::WORLD.remove_system<DamageSystem>();
-  }
+    Engine::WORLD.remove_system<MovementSystem>();
+    Engine::WORLD.remove_system<PhysicsSystem>();
+    Engine::WORLD.remove_system<CollisionSystem>();
+    Engine::WORLD.remove_system<StaticSpriteRenderSystem>();
+  };
 
   void Unload() {
     Engine::FACTORY.unregisterObject(enemyPrefab);
