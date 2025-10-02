@@ -17,7 +17,7 @@
 #include "imgui.h"
 #include "StateManager.h"
 #include "BasicState.h"
-#include "PhysicsTestScene.h"
+#include "PhysicsTestState.h"
 #include "SpriteState.h"
 #include "GameObjectState.h"
 #include "DevManySpritesState.h"
@@ -61,9 +61,9 @@ inline void StateChooserPanel()
   {
     Engine::StateManager::ChangeState(DevManySpritesState::Get());
   }
-  if (ImGui::Button("PhysicsTestScene"))
+  if (ImGui::Button("PhysicsTestState"))
   {
-    Engine::StateManager::ChangeState(PhysicsTestScene::Get());
+    Engine::StateManager::ChangeState(PhysicsTestState::Get());
   }
   if (ImGui::Button("LevelLoaderTestState"))
   {

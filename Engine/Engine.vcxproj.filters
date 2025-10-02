@@ -332,7 +332,7 @@
     <ClInclude Include="FileExplorer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PhysicsTestScene.h">
+    <ClInclude Include="PhysicsTestState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EntityEditorPanel.h">

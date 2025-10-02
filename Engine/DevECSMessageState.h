@@ -16,7 +16,7 @@
 #pragma once
 
 #include "StateManager.h"
-#include "PhysicsTestScene.h"
+#include "PhysicsTestState.h"
 #include "Graphics.h"
 #include <iostream>
 #include <glm/glm.hpp>
