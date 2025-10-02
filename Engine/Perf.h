@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    Perf.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines a performance profiling utility that measures and
+//          tracks execution time for labeled code sections using high-resolution
+//          timers.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 #include <string>
 #include <unordered_map>

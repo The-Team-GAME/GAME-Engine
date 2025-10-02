@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    ObjectFactory.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines the ObjectFactory class which manages object prefabs
+//          and creates ECS entities from JSON configuration files. It handles loading
+//          textures, sprite sheets, and component initialization.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include <vector>
@@ -17,13 +32,6 @@ namespace Engine
     std::optional<Components::AnimatedSprite> animatedSprite;
   };
 
-  /**
-   * @class ObjectFactory
-   * @brief A factory for creating game objects (entities) from prefabs.
-   *
-   * This class is responsible for loading object prefabs from files,
-   * storing them, and then creating entities in the ECS world based on these prefabs.
-   */
   class ObjectFactory
   {
   private:
@@ -31,39 +39,19 @@ namespace Engine
     std::vector<ObjectPrefab> objectList;
     s32 nextObjectId = 0;
   public:
-    /**
-     * @brief Construct a new Object Factory object.
-     *
-     * @param world A pointer to the ECS world where entities will be created.
-     */
+
     ObjectFactory(ECS::World* world);
 
-    /**
-     * @brief Registers an object prefab from a JSON file. An object prefab is akin to the entity type.
-     *
-     * @param filePath The path to the JSON file describing the object's components.
-     * @return s32 An ID for the newly registered object prefab.
-     */
+
     s32 registerObject(std::string filePath);
 
-    /**
-     * @brief Unregisters an object prefab using its ID.
-     *
-     * @param id The ID of the object prefab to unregister.
-     */
+
     void unregisterObject(int id);
 
-    /**
-     * @brief Unregisters all object prefabs.
-     */
+
     void unregisterAllObjects();
 
-    /**
-     * @brief Creates a unique entity in the world from a registered object prefab.
-     *
-     * @param id The ID of the object prefab to instantiate.
-     * @return ECS::Entity The newly created entity with components from the prefab.
-     */
+
     ECS::Entity createObject(int id);
   };
 }
