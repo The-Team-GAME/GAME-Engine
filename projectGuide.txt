@@ -1,0 +1,4 @@
+Project builds in x64 Release and x64 Debug in Visual Studio
+No additional configuration required to build the project
+
+Press F1 to turn of the ImGui windows
