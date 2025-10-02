@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    SpriteState.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines a game state for demonstrating sprite rendering with
+//          different texture filtering modes and includes a file explorer utility
+//          for browsing and selecting image files.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "StateManager.h"
@@ -27,7 +42,21 @@ static std::string root_path;
 
 
 
-// My file explorer function :>
+/*=================================================================================
+Function Brief:
+Creates an ImGui-based file explorer dialog for browsing and selecting files or
+directories. Supports filtering for image files and directory navigation with
+history tracking.
+
+Parameters:
+p_open - Pointer to boolean controlling whether the dialog is open
+is_directory_selection_mode - If true, allows selecting folders; if false, filters
+                              for image files only
+
+Where to call it:
+Call this function each frame when the file explorer should be visible, typically
+from within an ImGui drawing context.
+==================================================================================*/
 void file_explorer(bool* p_open, bool is_directory_selection_mode = false) {
 
   static fs::path current_path;
@@ -155,9 +184,9 @@ void file_explorer(bool* p_open, bool is_directory_selection_mode = false) {
 
         std::string extension = entry.path().extension().string();
 
-        std::transform(extension.begin(), extension.end(), extension.begin(), 
+        std::transform(extension.begin(), extension.end(), extension.begin(),
           [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-        
+
         if (extension == ".jpg" || extension == ".png" || extension == ".jpeg") {
 
           entries.push_back(entry);

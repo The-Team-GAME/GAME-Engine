@@ -51,7 +51,7 @@ public:
     auto rotation = entity.has_component<Components::Rotation>() ?
       *entity.get_component<Components::Rotation>() : Components::Rotation{ 0.0f };
 
-    Engine::GRAPHICS.draw_rect({ color->X(), color->Y(), color->Z(), color->W()},
+    Engine::GRAPHICS.draw_rect({ color->X(), color->Y(), color->Z(), color->W() },
       pos->X(), pos->Y(), size->width, size->height,
       rotation.angle, Graphics::Origin::Center);
   }
