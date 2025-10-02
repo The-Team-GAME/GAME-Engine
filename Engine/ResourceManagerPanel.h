@@ -2,16 +2,17 @@
 // file:    ResourceManagerPanel.h
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (100%)
+// author:  Ryan Ang
 //          Primary author
 //
-// email:   chew.s@digipen.edu
+// email:   a.ryanankiat@digipen.edu
 //
-// brief:   This file defines an ImGui panel for managing game resources. It provides
-//          a drag-and-drop interface for loading resources and displays all loaded
-//          resources with preview, playback, and unload capabilities.
+// brief:   Defines the ResourceManagerPanel inline function, which provides a
+//          comprehensive ImGui interface for engine resource management. This panel
+//          displays loaded resources (Textures, Sounds, Fonts, etc.), allows manual
+//          unloading, and implements a drag-and-drop zone for easy file loading.
 //
-// Copyright Â© 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 #include "imgui.h"
@@ -22,16 +23,21 @@
 #include <string>
 #include <vector>
 
-/*=================================================================================
-Function Brief:
-Creates and renders an ImGui panel for managing game resources. Provides a
-drag-and-drop zone for loading files, displays all loaded resources organized
-by type, and offers controls for previewing, testing, and unloading resources.
 
-Where to call it:
-Call this function once per frame during the ImGui rendering phase, typically
-in the Draw() or Update() function of a game state.
-==================================================================================*/
+
+
+
+/*=================================================================================
+    Function Brief:
+    Renders the "Resource Manager" ImGui window. It provides an overview of all
+    loaded engine resources, allows viewing and unloading of individual resources
+    (with texture previews and sound controls), and registers an event listener
+    to process dropped files for dynamic resource loading.
+
+    Where to call it:
+    Must be called once per frame within the main editor/game loop's ImGui rendering
+    phase.
+    ==================================================================================*/
 inline void ResourceManagerPanel()
 {
   static bool showLoadConfirmation = false;
@@ -107,26 +113,26 @@ inline void ResourceManagerPanel()
       {
         auto& textureMap = Engine::RESOURCES.get_all_textures();
 
-        for (const auto& [name, texture_id] : textureMap)
+        for (const auto& [name, textureId] : textureMap)
         {
           ImGui::PushID(name.c_str());
 
           // Get texture dimensions
-          s32 width = 0, height = 0;
-          Engine::GRAPHICS.get_texture_dimensions(texture_id, width, height);
+          int width = 0, height = 0;
+          Engine::GRAPHICS.getTextureDimensions(textureId, width, height);
 
           // Display texture name
           ImGui::Text("%s", name.c_str());
           ImGui::SameLine();
-          ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "(ID: %d, %dx%d)", texture_id, width, height);
+          ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "(ID: %d, %dx%d)", textureId, width, height);
 
           // Display texture preview
-          f32 previewSize = 64.0f;
-          f32 aspectRatio = width > 0 ? (f32)height / (f32)width : 1.0f;
+          float previewSize = 64.0f;
+          float aspectRatio = width > 0 ? (float)height / (float)width : 1.0f;
           ImVec2 imageSize(previewSize, previewSize * aspectRatio);
 
           // Get the OpenGL texture handle for ImGui
-          u32 textureHandle = Engine::GRAPHICS.get_texture_handle(texture_id);
+          unsigned int textureHandle = Engine::GRAPHICS.getTextureHandle(textureId);
           ImGui::Image((ImTextureID)(intptr_t)textureHandle, imageSize);
 
           // Unload button
@@ -292,14 +298,15 @@ inline void ResourceManagerPanel()
   static bool eventListenerRegistered = false;
   if (!eventListenerRegistered)
   {
-    Engine::WORLD.add_event_listener<FileDropEvent>([&](const FileDropEvent& event) {
+    Engine::WORLD.addEventListener<FileDropEvent>([&](const FileDropEvent& event) {
       for (const auto& filePath : event.filePaths)
       {
         std::filesystem::path path(filePath);
         std::string filename = path.stem().string();
 
         // Use the generic load function
-        s32 result = Engine::RESOURCES.load(filename, filePath);
+        // NOTE: The load function likely needs the full path, not just filename, for successful loading.
+        int result = Engine::RESOURCES.load(filename, filePath);
 
         if (result != -1)
         {
