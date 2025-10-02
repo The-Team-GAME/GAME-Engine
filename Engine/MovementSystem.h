@@ -2,10 +2,10 @@
 // file:    MovementSystem.h
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (100%)
+// author:  How Hong Chin Ryan (100%)
 //          Primary author
 //
-// email:   chew.s@digipen.edu
+// email:   hongchinryan.how@digipen.edu
 //
 // brief:   This file defines a system that handles entity movement by updating
 //          positions based on velocity and delta time in the ECS framework.

@@ -2,7 +2,7 @@
 // file:    Perf.h
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (100%)
+// author:  How Hong Chin Ryan (100%)
 //          Primary author
 //
 // email:   chew.s@digipen.edu
