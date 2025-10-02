@@ -139,15 +139,7 @@ public:
     backgroundEntity = Engine::WORLD.create_entity()
       .add_component<Components::Tag<"ShowcaseState">>()
       .add_component<Components::Background>()
-      .add_component<Components::Color>(0.15f, 0.20f, 0.25f, 1.0f);
-
-    // Create texture background (behind everything)
-    textureBackground = Engine::WORLD.create_entity()
-      .add_component<Components::Tag<"ShowcaseState">>()
-      .add_component<Components::Position>(800.0f, 450.0f)
-      .add_component<Components::Size>(1600.0f, 900.0f)
       .add_component<Components::StaticSprite>(backgroundTextureId);
-
 
     // Create enemy from prefab
     enemy = Engine::FACTORY.createObject(lazyMonkeyPrefab)
@@ -175,7 +167,7 @@ public:
       .add_component<Components::Scale>(2.0f, 2.0f);
 
     // Add systems
-    Engine::WORLD.add_system<BackgroundSystem>();
+    Engine::WORLD.add_system<TextureBackgroundSystem>();
     Engine::WORLD.add_system<StaticSpriteRenderSystem>();
     Engine::WORLD.add_system<AnimatedSpriteRenderSystem>();
     Engine::WORLD.add_system<BasicMovementSystem>();
@@ -400,7 +392,7 @@ public:
     Engine::WORLD.destroy_entities_with<Components::Tag<"ShowcaseState">>();
 
     // Remove systems
-    Engine::WORLD.remove_system<BackgroundSystem>();
+    Engine::WORLD.remove_system<TextureBackgroundSystem>();
     Engine::WORLD.remove_system<StaticSpriteRenderSystem>();
     Engine::WORLD.remove_system<AnimatedSpriteRenderSystem>();
     Engine::WORLD.remove_system<BasicMovementSystem>();

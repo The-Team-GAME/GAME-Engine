@@ -839,6 +839,44 @@ void Graphics::clear_screen(f32 r, f32 g, f32 b, f32 a)
   glClear(GL_COLOR_BUFFER_BIT);
 }
 
+// Clears the screen by drawing a full-screen texture
+// TODO: very hacky implementation, improve it later
+void Graphics::clear_screen(s32 texture_id)
+{
+  auto it = textures.find(texture_id);
+  if (it == textures.end())
+  {
+    Log::warning("Invalid texture ID for clear_screen: " + std::to_string(texture_id));
+    return;
+  }
+
+  // Flush any pending draws first
+  flush();
+
+  // Store current camera state
+  Camera2D oldCamera = camera;
+
+  // Reset camera to default state (no zoom, rotation, or offset)
+  camera.position = { 0.0f, 0.0f };
+  camera.zoom = 1.0f;
+  camera.rotation = 0.0f;
+  update_view_matrix();
+
+  // Draw the texture at full virtual resolution
+  draw_texture(texture_id, VIRTUAL_WIDTH / 2.0f, VIRTUAL_HEIGHT / 2.0f,
+    VIRTUAL_WIDTH, VIRTUAL_HEIGHT, 0.0f, Origin::Center);
+
+  // Flush this draw immediately
+  flush();
+
+  // Restore original camera state
+  camera = oldCamera;
+  update_view_matrix();
+
+  // Start a new batch for subsequent draws
+  start_batch();
+}
+
 glm::vec2 Graphics::screen_to_virtual(f32 screenX, f32 screenY) const
 {
   return {
@@ -851,15 +889,15 @@ glm::vec2 Graphics::screen_to_world(f32 screenX, f32 screenY) const
 {
   // First convert screen coordinates to virtual coordinates
   glm::vec2 virtual_coords = screen_to_virtual(screenX, screenY);
-  
+
   // Convert virtual coordinates to world coordinates by applying inverse camera transform
   // Create homogeneous coordinate
   glm::vec4 virtual_point(virtual_coords.x, virtual_coords.y, 0.0f, 1.0f);
-  
+
   // Apply inverse view matrix to transform from virtual space to world space
   glm::mat4 inverse_view = glm::inverse(view);
   glm::vec4 world_point = inverse_view * virtual_point;
-  
+
   return glm::vec2(world_point.x, world_point.y);
 }
 
@@ -868,7 +906,7 @@ glm::vec2 Graphics::world_to_screen(f32 worldX, f32 worldY) const
   // Convert world coordinates to virtual coordinates using view matrix
   glm::vec4 world_point(worldX, worldY, 0.0f, 1.0f);
   glm::vec4 virtual_point = view * world_point;
-  
+
   // Convert virtual coordinates to screen coordinates
   return {
     (virtual_point.x / VIRTUAL_WIDTH) * viewportWidth,

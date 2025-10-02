@@ -33,3 +33,22 @@ public:
     Engine::GRAPHICS.clear_screen(color->X(), color->Y(), color->Z(), color->W());
   }
 };
+
+
+/* ================================================================ //
+// Texture background rendering system - draws sprite backgrounds   //
+// Works with entities that have Background and StaticSprite        //
+// ================================================================ */
+class TextureBackgroundSystem : public ECS::System {
+public:
+  TextureBackgroundSystem() {
+    require_components<Components::Background, Components::StaticSprite>();
+  }
+
+  void draw_entity(const ECS::Entity& entity) override {
+    auto* sprite = entity.get_component<Components::StaticSprite>();
+
+    // Draw the background texture (no tint color in StaticSprite)
+    Engine::GRAPHICS.clear_screen(sprite->texture_id);
+  }
+};

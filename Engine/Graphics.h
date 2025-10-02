@@ -212,6 +212,7 @@ public:
   // Screen operations        //
   // ======================== */
   void clear_screen(f32 r, f32 g, f32 b, f32 a);
+  void clear_screen(s32 texture_id);
 
   /* ============================ //
   // Sprite sheet management      //
