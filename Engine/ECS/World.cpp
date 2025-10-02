@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    World.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements the World class methods for entity creation,
+//          destruction, cloning, event dispatching, system updates, and entity
+//          queries. Manages the main ECS update and draw loops.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "World.h"
 
 namespace ECS

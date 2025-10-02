@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    DevECSMessageState.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines a development state for testing ECS event messaging
+//          and entity cloning. Demonstrates damage events, health system integration,
+//          and dynamic background color changes based on player health.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "StateManager.h"

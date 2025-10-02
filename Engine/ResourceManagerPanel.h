@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    ResourceManagerPanel.h
+// project: Monkey Stole My GPA
+//
+// author:  Ryan Ang
+//          Primary author
+//
+// email:   a.ryanankiat@digipen.edu
+//
+// brief:   Defines the ResourceManagerPanel inline function, which provides a
+//          comprehensive ImGui interface for engine resource management. This panel
+//          displays loaded resources (Textures, Sounds, Fonts, etc.), allows manual
+//          unloading, and implements a drag-and-drop zone for easy file loading.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 #include "imgui.h"
 #include "Core.h"
@@ -7,6 +23,21 @@
 #include <string>
 #include <vector>
 
+
+
+
+
+/*=================================================================================
+    Function Brief:
+    Renders the "Resource Manager" ImGui window. It provides an overview of all
+    loaded engine resources, allows viewing and unloading of individual resources
+    (with texture previews and sound controls), and registers an event listener
+    to process dropped files for dynamic resource loading.
+
+    Where to call it:
+    Must be called once per frame within the main editor/game loop's ImGui rendering
+    phase.
+    ==================================================================================*/
 inline void ResourceManagerPanel()
 {
   static bool showLoadConfirmation = false;

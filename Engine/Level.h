@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    Level.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines the Level data structures used for level serialization.
+//          Includes entity placement data, prefab references, and runtime tracking
+//          for loaded/spawned entities.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include <string>
@@ -7,6 +22,9 @@
 
 namespace Engine
 {
+  /* ========================== //
+  // Entity placement data      //
+  // ========================== */
   struct EntityData
   {
     std::string prefabId;
@@ -14,6 +32,9 @@ namespace Engine
     f32 y = 0.0f;
   };
 
+  /* ========================== //
+  // Level data structure       //
+  // ========================== */
   struct Level
   {
     std::string levelId;

@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    System.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements the System base class methods including entity
+//          iteration, event handling, and lifecycle management. Provides default
+//          implementations for virtual methods.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "System.h"
 #include "Entity.h"
 #include "World.h"

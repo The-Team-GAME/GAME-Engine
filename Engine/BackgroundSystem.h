@@ -1,9 +1,27 @@
+//-----------------------------------------------------------------------------------
+// file:    BackgroundSystem.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines the BackgroundSystem which renders background colors
+//          for entities with Background and Color components. Clears the screen
+//          with the entity's color component.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "ECS/System.h"
 #include "BasicComponents.h"
 
-// For now this just clears into a solid color, but could be extended to do more complex background rendering
+/* ============================================================== //
+// Background rendering system - clears screen with solid color  //
+// Could be extended for more complex background rendering       //
+// ============================================================== */
 class BackgroundSystem : public ECS::System {
 public:
   BackgroundSystem() {

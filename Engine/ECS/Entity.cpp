@@ -1,3 +1,17 @@
+//-----------------------------------------------------------------------------------
+// file:    Entity.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements the Entity class methods for entity handle
+//          management, validation, and comparison operations.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "Entity.h"
 #include "World.h"
 

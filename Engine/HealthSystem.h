@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    HealthSystem.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines the HealthSystem which manages entity health and
+//          handles entity destruction when health reaches zero. Automatically
+//          destroys entities with depleted health.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 #include "ECS/System.h"
 #include "BasicComponents.h"

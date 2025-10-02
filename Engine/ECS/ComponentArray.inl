@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    ComponentArray.inl
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements the template methods for the ComponentArray class.
+//          Provides inline implementations for adding, removing, cloning, and accessing
+//          components by entity ID.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 #include "ComponentArray.h"
 

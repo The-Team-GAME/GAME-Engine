@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    CameraPanel.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines the CameraPanel ImGui interface for controlling camera
+//          properties including position, zoom, and rotation. Provides an intuitive
+//          UI with presets and real-time camera manipulation.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 #include "imgui.h"
 #include "Core.h"
@@ -19,14 +34,14 @@ inline void CameraPanel()
   {
     ImGui::DragFloat("X", &camera_position.x, 1.0f);
     ImGui::DragFloat("Y", &camera_position.y, 1.0f);
-    
+
     if (ImGui::Button("Reset Position"))
     {
       camera_position = { 0.0f, 0.0f };
     }
 
     ImGui::SameLine();
-    
+
     if (ImGui::Button("Center on Origin"))
     {
       camera_position = { Graphics::VIRTUAL_WIDTH / 2.0f, Graphics::VIRTUAL_HEIGHT / 2.0f };
@@ -37,17 +52,17 @@ inline void CameraPanel()
     {
       if (ImGui::Button("Top-Left"))
         camera_position = { 0.0f, 0.0f };
-      
+
       ImGui::SameLine();
-      
+
       if (ImGui::Button("Top-Right"))
         camera_position = { Graphics::VIRTUAL_WIDTH, 0.0f };
-      
+
       if (ImGui::Button("Bottom-Left"))
         camera_position = { 0.0f, Graphics::VIRTUAL_HEIGHT };
-      
+
       ImGui::SameLine();
-      
+
       if (ImGui::Button("Bottom-Right"))
         camera_position = { Graphics::VIRTUAL_WIDTH, Graphics::VIRTUAL_HEIGHT };
 
@@ -64,17 +79,17 @@ inline void CameraPanel()
   if (ImGui::CollapsingHeader("Zoom", ImGuiTreeNodeFlags_DefaultOpen))
   {
     ImGui::SliderFloat("Zoom Level", &camera_zoom, 0.1f, 5.0f, "%.2f");
-    
+
     ImGui::Text("Shortcuts:");
-    
+
     if (ImGui::Button("Zoom In (+25%)"))
     {
       camera_zoom *= 1.25f;
       if (camera_zoom > 5.0f) camera_zoom = 5.0f;
     }
-    
+
     ImGui::SameLine();
-    
+
     if (ImGui::Button("Zoom Out (-25%)"))
     {
       camera_zoom *= 0.75f;
@@ -87,7 +102,7 @@ inline void CameraPanel()
     }
 
     ImGui::SameLine();
-    
+
     if (ImGui::Button("Fit Screen"))
     {
       camera_zoom = 1.0f;
@@ -119,7 +134,7 @@ inline void CameraPanel()
   if (ImGui::CollapsingHeader("Rotation", ImGuiTreeNodeFlags_DefaultOpen))
   {
     ImGui::SliderFloat("Angle (degrees)", &camera_rotation, 0.0f, 360.0f, "%.1f°");
-    
+
     // Wrap rotation to 0-360 range
     if (camera_rotation < 0.0f) camera_rotation += 360.0f;
     if (camera_rotation >= 360.0f) camera_rotation -= 360.0f;
@@ -129,9 +144,9 @@ inline void CameraPanel()
       camera_rotation += 15.0f;
       if (camera_rotation >= 360.0f) camera_rotation -= 360.0f;
     }
-    
+
     ImGui::SameLine();
-    
+
     if (ImGui::Button("Rotate -15°"))
     {
       camera_rotation -= 15.0f;
@@ -143,9 +158,9 @@ inline void CameraPanel()
       camera_rotation += 90.0f;
       if (camera_rotation >= 360.0f) camera_rotation -= 360.0f;
     }
-    
+
     ImGui::SameLine();
-    
+
     if (ImGui::Button("Rotate -90°"))
     {
       camera_rotation -= 90.0f;
@@ -185,7 +200,7 @@ inline void CameraPanel()
     camera_position = { 0.0f, 0.0f };
     camera_zoom = 1.0f;
     camera_rotation = 0.0f;
-    
+
     Engine::GRAPHICS.set_camera_position(camera_position.x, camera_position.y);
     Engine::GRAPHICS.set_camera_zoom(camera_zoom);
     Engine::GRAPHICS.set_camera_rotation(camera_rotation);
@@ -198,14 +213,14 @@ inline void CameraPanel()
   {
     ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Virtual Resolution:");
     ImGui::Text("  %.0f x %.0f", Graphics::VIRTUAL_WIDTH, Graphics::VIRTUAL_HEIGHT);
-    
+
     ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Current Camera:");
     ImGui::Text("  Position: (%.1f, %.1f)", camera_position.x, camera_position.y);
     ImGui::Text("  Zoom: %.2fx", camera_zoom);
     ImGui::Text("  Rotation: %.1f°", camera_rotation);
 
     ImGui::Separator();
-    
+
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Tips:");
     ImGui::TextWrapped("• Use position controls to pan the camera");
     ImGui::TextWrapped("• Zoom > 1.0 zooms in, < 1.0 zooms out");

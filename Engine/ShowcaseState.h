@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    ShowcaseState.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines the showcase game state that demonstrates core engine
+//          features including sprite animation, sound playback, collision events,
+//          resource management, and ECS systems working together.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "StateManager.h"
@@ -10,13 +25,25 @@
 #include "InputManager.h"
 #include <GLFW/glfw3.h>
 
-// Custom events for the showcase
+/* ===================== //
+// Custom Events         //
+// ===================== */
+/*=================================================================================
+Struct Brief:
+Event dispatched when one entity collects another entity. Includes information
+about the collector, the collected item, and points awarded.
+==================================================================================*/
 struct CollectEvent {
   ECS::EntityID collector;
   ECS::EntityID collected;
   s32 points;
 };
 
+/*=================================================================================
+Struct Brief:
+Event dispatched when one entity attacks another entity. Contains information
+about the attacker, target, and damage dealt.
+==================================================================================*/
 struct AttackEvent {
   ECS::EntityID attacker;
   ECS::EntityID target;

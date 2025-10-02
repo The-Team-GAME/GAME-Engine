@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    ResourceManager.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Ryan Ang
+//          Primary author
+//
+// email:   a.ryanankiat@digipen.edu
+//
+// brief:   This file implements the ResourceManager class which provides centralized
+//          management of game resources including textures, sounds, fonts, sprite
+//          sheets, and object prefabs with automatic duplicate detection.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "ResourceManager.h"
 #include "Core.h"
 #include "ObjectFactory.h"
@@ -5,6 +20,9 @@
 #include <algorithm>
 #include <cctype>
 
+/* ===================== //
+// Texture Management    //
+// ===================== */
 int Engine::ResourceManager::load_texture(std::string name, std::string path, Graphics::MinifyingFilter minifyingFilter)
 {
   // Check if texture with this name already exists
@@ -64,6 +82,9 @@ size_t Engine::ResourceManager::get_texture_count()
   return textures.size();
 }
 
+/* ===================== //
+// Sound Management      //
+// ===================== */
 int Engine::ResourceManager::load_sound(std::string name, std::string path)
 {
   // Check if sound with this name already exists
@@ -123,6 +144,9 @@ size_t Engine::ResourceManager::get_sound_count()
   return sounds.size();
 }
 
+/* ===================== //
+// Font Management       //
+// ===================== */
 int Engine::ResourceManager::load_font(std::string name, std::string path, u32 size)
 {
   // Check if font with this name already exists
@@ -182,6 +206,9 @@ size_t Engine::ResourceManager::get_font_count()
   return fonts.size();
 }
 
+/* ===================== //
+// Sprite Sheet Management//
+// ===================== */
 int Engine::ResourceManager::load_sprite_sheet(std::string name, std::string path, s32 frameWidth, s32 frameHeight, s32 totalFrames, f32 animationSpeed, Graphics::MinifyingFilter minifyingFilter)
 {
   // Check if sprite sheet with this name already exists
@@ -241,6 +268,9 @@ size_t Engine::ResourceManager::get_sprite_sheet_count()
   return spriteSheets.size();
 }
 
+/* ===================== //
+// Object Prefab Management//
+// ===================== */
 int Engine::ResourceManager::load_object_prefab(std::string name, std::string path)
 {
   // Check if object prefab with this name already exists
@@ -300,6 +330,9 @@ size_t Engine::ResourceManager::get_object_prefab_count()
   return objectPrefabs.size();
 }
 
+/* ===================== //
+// Helper Functions      //
+// ===================== */
 std::string Engine::ResourceManager::get_file_extension(const std::string& path)
 {
   size_t dotPos = path.find_last_of('.');
