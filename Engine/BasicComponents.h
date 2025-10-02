@@ -37,8 +37,8 @@ namespace Components {
   };
 
   struct RotationSpeed {
-    f32 degreesPerSecond;
-    RotationSpeed(f32 degreesPerSecond = 0.0f) : degreesPerSecond(degreesPerSecond) {}
+    f32 degrees_per_second;
+    RotationSpeed(f32 degrees_per_second = 0.0f) : degrees_per_second(degrees_per_second) {}
   };
 
   struct Velocity : Math::Vec2D {
@@ -76,9 +76,46 @@ namespace Components {
   struct Renderable {};
 
   struct StaticSprite {
-    s32 textureId;
-    StaticSprite(std::string texturePath, Graphics::MinifyingFilter minifyingFilter = Graphics::MinifyingFilter::Linear);
-    StaticSprite(const StaticSprite& other);
+    s32 texture_id;
+    StaticSprite(s32 texture_id = -1) : texture_id(texture_id) {}
+  };
+
+  struct AnimatedSprite {
+    s32 spriteSheetId;
+    f32 animationTime;
+    bool isPlaying;
+    bool loop;
+
+    AnimatedSprite(s32 spriteSheetId = -1, bool autoPlay = true, bool loop = true)
+      : spriteSheetId(spriteSheetId), animationTime(0.0f), isPlaying(autoPlay), loop(loop) {
+    }
+
+    void play() {
+      isPlaying = true;
+    }
+
+    void pause() {
+      isPlaying = false;
+    }
+
+    void stop() {
+      isPlaying = false;
+      animationTime = 0.0f;
+    }
+
+    void reset() {
+      animationTime = 0.0f;
+    }
+
+    // Check if animation has completed one full cycle
+    bool hasCompleted(f32 totalDuration) const {
+      return !loop && animationTime >= totalDuration;
+    }
+  };
+
+  struct SimplePlayerControl {
+    f32 speed;
+    SimplePlayerControl(f32 speed = 100.0f) : speed(speed) {}
   };
 
 } // namespace Components

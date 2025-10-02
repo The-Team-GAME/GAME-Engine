@@ -15,12 +15,12 @@ int Engine::ResourceManager::load_texture(std::string name, std::string path, Gr
   }
 
   // Load the texture
-  s32 textureId = Engine::GRAPHICS.loadTexture(path.c_str(), minifyingFilter);
-  if (textureId != -1)
+  s32 texture_id = Engine::GRAPHICS.load_texture(path.c_str(), minifyingFilter);
+  if (texture_id != -1)
   {
-    textures[name] = textureId;
-    std::cout << "ResourceManager: Successfully loaded texture '" << name << "' from '" << path << "' (ID: " << textureId << ").\n";
-    return textureId;
+    textures[name] = texture_id;
+    std::cout << "ResourceManager: Successfully loaded texture '" << name << "' from '" << path << "' (ID: " << texture_id << ").\n";
+    return texture_id;
   }
   else
   {
@@ -49,7 +49,7 @@ void Engine::ResourceManager::unload_texture(std::string name)
   if (it != textures.end())
   {
     std::cout << "ResourceManager: Attempting to unload texture '" << name << "' (ID: " << it->second << ").\n";
-    Engine::GRAPHICS.unloadTexture(it->second);
+    Engine::GRAPHICS.unload_texture(it->second);
     textures.erase(it);
     std::cout << "ResourceManager: Unloaded texture '" << name << "'.\n";
   }
@@ -133,7 +133,7 @@ int Engine::ResourceManager::load_font(std::string name, std::string path, u32 s
   }
 
   // Load the font
-  s32 fontId = Engine::GRAPHICS.loadFont(path.c_str(), size);
+  s32 fontId = Engine::GRAPHICS.load_font(path.c_str(), size);
   if (fontId != -1)
   {
     fonts[name] = fontId;
@@ -167,7 +167,7 @@ void Engine::ResourceManager::unload_font(std::string name)
   if (it != fonts.end())
   {
     std::cout << "ResourceManager: Attempting to unload font '" << name << "' (ID: " << it->second << ").\n";
-    Engine::GRAPHICS.unloadFont(it->second);
+    Engine::GRAPHICS.unload_font(it->second);
     fonts.erase(it);
     std::cout << "ResourceManager: Unloaded font '" << name << "'.\n";
   }
@@ -192,7 +192,7 @@ int Engine::ResourceManager::load_sprite_sheet(std::string name, std::string pat
   }
 
   // Load the sprite sheet
-  s32 spriteSheetId = Engine::GRAPHICS.loadSpriteSheet(path.c_str(), frameWidth, frameHeight, totalFrames, animationSpeed, minifyingFilter);
+  s32 spriteSheetId = Engine::GRAPHICS.load_sprite_sheet(path.c_str(), frameWidth, frameHeight, totalFrames, animationSpeed, minifyingFilter);
   if (spriteSheetId != -1)
   {
     spriteSheets[name] = spriteSheetId;
@@ -226,7 +226,7 @@ void Engine::ResourceManager::unload_sprite_sheet(std::string name)
   if (it != spriteSheets.end())
   {
     std::cout << "ResourceManager: Attempting to unload sprite sheet '" << name << "' (ID: " << it->second << ").\n";
-    Engine::GRAPHICS.unloadSpriteSheet(it->second);
+    Engine::GRAPHICS.unload_sprite_sheet(it->second);
     spriteSheets.erase(it);
     std::cout << "ResourceManager: Unloaded sprite sheet '" << name << "'.\n";
   }
@@ -312,7 +312,7 @@ std::string Engine::ResourceManager::get_file_extension(const std::string& path)
 
   // Convert to lowercase for case-insensitive comparison
   std::transform(extension.begin(), extension.end(), extension.begin(),
-    [](unsigned char c) { return std::tolower(c); });
+    [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
   return extension;
 }

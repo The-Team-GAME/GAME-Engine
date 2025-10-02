@@ -1,8 +1,9 @@
 #include "ObjectFactory.h"
-#include "Logger.h" // contains string and iostream already
+#include "Logger.h"
 #include "BasicComponents.h"
 #include "ECS/World.h"
 #include "FileHandler.h"
+#include "Core.h"
 
 namespace fh = FileHandler;
 
@@ -18,21 +19,21 @@ int Engine::ObjectFactory::registerObject(std::string filePath)
 
   // TODO: check if data contains in debug mode only
 
-  if (fh::has_key("id")) 
+  if (fh::has_key("id"))
   {
     if (fh::get_string("id") != fh::d_string())
     {
       newObject.objectId = Components::ObjectId(fh::get_string("id").c_str());
     }
-    else{ Log::warning("Key: id does not contain a value."); }
+    else { Log::warning("Key: id does not contain a value."); }
   }
-  else{ Log::warning("Key: id does not exist."); }
+  else { Log::warning("Key: id does not exist."); }
 
 
   if (fh::has_key("width") && fh::has_key("height"))
   {
-    if (fh::get_f32("width")  != fh::d_f32()
-     && fh::get_f32("height") != fh::d_f32())
+    if (fh::get_f32("width") != fh::d_f32()
+      && fh::get_f32("height") != fh::d_f32())
     {
       newObject.size = Components::Size(fh::get_f32("width"), fh::get_f32("height"));
     }
@@ -41,25 +42,71 @@ int Engine::ObjectFactory::registerObject(std::string filePath)
   else { Log::warning("Key: width/height does not exist."); }
 
 
-  if (fh::has_key("texturePath")) // Seems that magnifying filter is optional so i wont check for it
+  if (fh::has_key("texturePath"))
   {
-    std::string texture = fh::get_string("texturePath");
-    if (texture != fh::d_string() )
+    std::string texturePath = fh::get_string("texturePath");
+    if (texturePath != fh::d_string())
     {
-      if (fh::get_s32("minifyingFilter") != fh::d_s32())
+      // Generate a resource name from the texture path
+      std::string resourceName = "texture_" + texturePath;
+      std::replace(resourceName.begin(), resourceName.end(), '/', '_');
+      std::replace(resourceName.begin(), resourceName.end(), '\\', '_');
+      std::replace(resourceName.begin(), resourceName.end(), '.', '_');
+
+      // Determine minifying filter
+      Graphics::MinifyingFilter filter = Graphics::MinifyingFilter::Linear;
+      if (fh::has_key("minifyingFilter") && fh::get_s32("minifyingFilter") != fh::d_s32())
       {
-        // Just static casting it cuz Graphics::MinifyingFilter is an enum
-        Graphics::MinifyingFilter filter = static_cast<Graphics::MinifyingFilter>(fh::get_s32("minifyingFilter"));
-        newObject.staticSprite = Components::StaticSprite(texture, filter);
+        filter = static_cast<Graphics::MinifyingFilter>(fh::get_s32("minifyingFilter"));
       }
-      else
-      {
-        newObject.staticSprite = Components::StaticSprite(texture);
-      }
+
+      // Load texture and store the ID
+      s32 textureId = Engine::RESOURCES.load_texture(resourceName, texturePath, filter);
+      newObject.staticSprite = Components::StaticSprite(textureId);
     }
     else { Log::warning("Key: texturePath does not contain a value."); }
   }
   else { Log::warning("Key: texturePath does not exist."); }
+
+  // Check for animated sprite (sprite sheet)
+  if (fh::has_key("spriteSheetPath"))
+  {
+    std::string spriteSheetPath = fh::get_string("spriteSheetPath");
+    if (spriteSheetPath != fh::d_string()
+      && fh::has_key("frameWidth") && fh::has_key("frameHeight")
+      && fh::has_key("totalFrames") && fh::has_key("framesPerSecond"))
+    {
+      // Generate a resource name from the sprite sheet path
+      std::string resourceName = "spritesheet_" + spriteSheetPath;
+      std::replace(resourceName.begin(), resourceName.end(), '/', '_');
+      std::replace(resourceName.begin(), resourceName.end(), '\\', '_');
+      std::replace(resourceName.begin(), resourceName.end(), '.', '_');
+
+      s32 frameWidth = fh::get_s32("frameWidth");
+      s32 frameHeight = fh::get_s32("frameHeight");
+      s32 totalFrames = fh::get_s32("totalFrames");
+      f32 framesPerSecond = fh::get_f32("framesPerSecond");
+
+      // Determine minifying filter
+      Graphics::MinifyingFilter filter = Graphics::MinifyingFilter::Linear;
+      if (fh::has_key("minifyingFilter") && fh::get_s32("minifyingFilter") != fh::d_s32())
+      {
+        filter = static_cast<Graphics::MinifyingFilter>(fh::get_s32("minifyingFilter"));
+      }
+
+      // Load sprite sheet and store the ID
+      s32 spriteSheetId = Engine::RESOURCES.load_sprite_sheet(
+        resourceName, spriteSheetPath,
+        frameWidth, frameHeight, totalFrames, framesPerSecond,
+        filter
+      );
+      newObject.animatedSprite = Components::AnimatedSprite(spriteSheetId);
+    }
+    else
+    {
+      Log::warning("Sprite sheet requires: spriteSheetPath, frameWidth, frameHeight, totalFrames, framesPerSecond");
+    }
+  }
 
   objectList.push_back(newObject);
   s32 id = nextObjectId;
@@ -89,12 +136,16 @@ ECS::Entity Engine::ObjectFactory::createObject(int id)
 {
   ObjectPrefab& objectPrefab = objectList[id];
 
-  ECS::Entity entity = m_world->createEntity()
-    .addComponent<Components::ObjectId>(objectPrefab.objectId)
-    .addComponent<Components::Size>(objectPrefab.size);
+  ECS::Entity entity = m_world->create_entity()
+    .add_component<Components::ObjectId>(objectPrefab.objectId)
+    .add_component<Components::Size>(objectPrefab.size);
 
   if (objectPrefab.staticSprite.has_value()) {
-    entity.addComponent<Components::StaticSprite>(objectPrefab.staticSprite.value());
+    entity.add_component<Components::StaticSprite>(objectPrefab.staticSprite.value());
+  }
+
+  if (objectPrefab.animatedSprite.has_value()) {
+    entity.add_component<Components::AnimatedSprite>(objectPrefab.animatedSprite.value());
   }
 
   return entity;

@@ -21,14 +21,14 @@ namespace ECS
   class World
   {
   private:
-    EntityID nextEntityId = 1;
-    std::unordered_set<EntityID> activeEntities;
-    std::unordered_set<EntityID> entitiesToDestroy;
+    EntityID next_entity_id = 1;
+    std::unordered_set<EntityID> active_entities;
+    std::unordered_set<EntityID> entities_to_destory;
 
     // Entity signatures for fast component checking
-    std::unordered_map<EntityID, ComponentSignature> entitySignatures;
+    std::unordered_map<EntityID, ComponentSignature> entity_signatures;
 
-    std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> componentArrays;
+    std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> component_arrays;
     std::vector<std::unique_ptr<System>> systems;
     std::vector<Event> eventQueue;
 
@@ -36,65 +36,65 @@ namespace ECS
     std::unordered_map<EventTypeID, std::vector<std::function<void(const Event&)>>> eventHandlers;
 
     template <typename T>
-    ComponentArray<T>* getComponentArray();
+    ComponentArray<T>* get_component_array();
 
   public:
     // Component registration
     template <typename T>
-    void registerComponent();
+    void register_component();
 
     // Entity management
-    Entity createEntity();
-    Entity getEntity(EntityID id);
-    Entity cloneEntity(EntityID sourceId);
-    void destroyEntity(EntityID id);
+    Entity create_entity();
+    Entity get_entity(EntityID id);
+    Entity clone_entity(EntityID source_id);
+    void destroy_entity(EntityID id);
 
     template <typename... T>
-    void destroyEntitiesWith();
+    void destroy_entities_with();
 
-    bool isEntityActive(EntityID id) const;
+    bool is_entity_active(EntityID id) const;
 
     // Component management
     template <typename T, typename... Args>
-    void addComponent(EntityID entity, Args &&...args);
+    void add_component(EntityID entity, Args &&...args);
 
     template <typename T>
-    void removeComponent(EntityID entity);
+    void remove_component(EntityID entity);
 
     template <typename T>
-    T* getComponent(EntityID entity);
+    T* get_component(EntityID entity);
 
     template <typename T>
-    const T* getComponent(EntityID entity) const;
+    const T* get_component(EntityID entity) const;
 
     template <typename T>
-    bool hasComponent(EntityID entity) const;
+    bool has_component(EntityID entity) const;
 
     template <typename... T>
-    bool hasComponents(EntityID entity) const;
+    bool has_components(EntityID entity) const;
 
     // System management
     template <typename T, typename... Args>
-    T* addSystem(Args &&...args);
+    T* add_system(Args &&...args);
 
     template <typename T>
-    void removeSystem();
+    void remove_system();
 
     // Event management
     template <typename T, typename... Args>
-    void sendEvent(Args&&... args);
+    void send_event(Args&&... args);
 
     // Direct event handling without systems
     template <typename T>
-    void addEventListener(std::function<void(const T&)> handler);
+    void add_event_listener(std::function<void(const T&)> handler);
 
     template <typename T>
-    void addEventListener(std::function<void(const Event&)> handler);
+    void add_event_listener(std::function<void(const Event&)> handler);
 
-    void removeEventListener(EventTypeID eventType);
+    void remove_event_listener(EventTypeID eventType);
 
     template <typename T>
-    void removeEventListener();
+    void remove_event_listener();
 
     // Main update loop
     void update();
@@ -113,7 +113,7 @@ namespace ECS
     size_t getEntityCount() const;
 
     template <typename T>
-    size_t getComponentCount() const;
+    size_t get_componentCount() const;
 
   private:
     void entityComponentChanged(EntityID entity);

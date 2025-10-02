@@ -15,7 +15,7 @@ private:
 
     // Static callback function for GLFW
     static void framebufferSizeCallback(GLFWwindow* window, s32 width, s32 height);
-    static void fileDropCallback(GLFWwindow* window, s32 count, const char** paths);
+    static void file_drop_callback(GLFWwindow* window, s32 count, const char** paths);
 
 public:
   WindowManager();
@@ -24,8 +24,8 @@ public:
   ~WindowManager();
 
   GLFWwindow* getWindow() const { return window; }
-  s32 getWidth() const { return width; }
-  s32 getHeight() const { return height; }
+  s32 get_width() const { return width; }
+  s32 get_height() const { return height; }
 
 };
 

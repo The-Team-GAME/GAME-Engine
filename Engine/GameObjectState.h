@@ -21,25 +21,25 @@ public:
 
     // Create two enemy instances from the prefab
     auto enemy1 = Engine::FACTORY.createObject(enemyPrefab)
-      .addComponent<Components::Tag<"GameObjectState">>()
-      .addComponent<Components::Position>(100.0f, 100.0f); // Position the first enemy left
+      .add_component<Components::Tag<"GameObjectState">>()
+      .add_component<Components::Position>(100.0f, 100.0f); // Position the first enemy left
     auto enemy2 = Engine::FACTORY.createObject(enemyPrefab)
-      .addComponent<Components::Tag<"GameObjectState">>()
-      .addComponent<Components::Position>(300.0f, 100.0f) // Position the second enemy right
-      .addComponent<Components::Scale>(2.0f, 2.0f); // Make it 2 times bigger
+      .add_component<Components::Tag<"GameObjectState">>()
+      .add_component<Components::Position>(300.0f, 100.0f) // Position the second enemy right
+      .add_component<Components::Scale>(2.0f, 2.0f); // Make it 2 times bigger
 
     // You can modify components like this too
-    //enemy2.getComponent<Components::Position>()->x = 300.0f;
+    //enemy2.get_component<Components::Position>()->x = 300.0f;
 
-    auto background = Engine::WORLD.createEntity()
-      .addComponent<Components::Tag<"GameObjectState">>()
-      .addComponent<Components::Background>()
-      .addComponent<Components::Color>(0.2f, 0.3f, 0.4f, 1.0f); // Dark blue background
+    auto background = Engine::WORLD.create_entity()
+      .add_component<Components::Tag<"GameObjectState">>()
+      .add_component<Components::Background>()
+      .add_component<Components::Color>(0.2f, 0.3f, 0.4f, 1.0f); // Dark blue background
 
     // Add systems to the world
-    Engine::WORLD.addSystem<BackgroundSystem>(); // Background system should be first
-    Engine::WORLD.addSystem<MovementSystem>();
-    Engine::WORLD.addSystem<StaticSpriteRenderSystem>();
+    Engine::WORLD.add_system<BackgroundSystem>(); // Background system should be first
+    Engine::WORLD.add_system<MovementSystem>();
+    Engine::WORLD.add_system<StaticSpriteRenderSystem>();
   };
 
   void Update() {};
@@ -50,12 +50,12 @@ public:
 
   void Free() {
     Engine::FACTORY.unregisterObject(enemyPrefab);
-    Engine::WORLD.destroyEntitiesWith<Components::Tag<"GameObjectState">>();
+    Engine::WORLD.destroy_entities_with<Components::Tag<"GameObjectState">>();
 
     // Remove systems
-    Engine::WORLD.removeSystem<BackgroundSystem>();
-    Engine::WORLD.removeSystem<MovementSystem>();
-    Engine::WORLD.removeSystem<StaticSpriteRenderSystem>();
+    Engine::WORLD.remove_system<BackgroundSystem>();
+    Engine::WORLD.remove_system<MovementSystem>();
+    Engine::WORLD.remove_system<StaticSpriteRenderSystem>();
   };
 
   void Unload() {};
