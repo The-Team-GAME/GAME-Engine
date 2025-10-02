@@ -119,7 +119,7 @@ inline void ResourceManagerPanel()
 
           // Get texture dimensions
           int width = 0, height = 0;
-          Engine::GRAPHICS.getTextureDimensions(textureId, width, height);
+          Engine::GRAPHICS.get_texture_dimensions(textureId, width, height);
 
           // Display texture name
           ImGui::Text("%s", name.c_str());
@@ -132,7 +132,7 @@ inline void ResourceManagerPanel()
           ImVec2 imageSize(previewSize, previewSize * aspectRatio);
 
           // Get the OpenGL texture handle for ImGui
-          unsigned int textureHandle = Engine::GRAPHICS.getTextureHandle(textureId);
+          unsigned int textureHandle = Engine::GRAPHICS.get_texture_handle(textureId);
           ImGui::Image((ImTextureID)(intptr_t)textureHandle, imageSize);
 
           // Unload button
@@ -298,7 +298,7 @@ inline void ResourceManagerPanel()
   static bool eventListenerRegistered = false;
   if (!eventListenerRegistered)
   {
-    Engine::WORLD.addEventListener<FileDropEvent>([&](const FileDropEvent& event) {
+    Engine::WORLD.add_event_listener<FileDropEvent>([&](const FileDropEvent& event) {
       for (const auto& filePath : event.filePaths)
       {
         std::filesystem::path path(filePath);
