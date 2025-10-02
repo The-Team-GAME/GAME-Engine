@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    Entity.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines the Entity class which provides a clean handle-based
+//          API for working with entities in the ECS. Entity acts as a lightweight
+//          wrapper around an entity ID with convenient component access methods.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 #include "Types.h"
 
@@ -5,7 +20,9 @@ namespace ECS {
 
   class World; // Forward declaration
 
-  // Entity handle for clean API
+  /* ============================ //
+  // Entity handle for clean API  //
+  // ============================ */
   class Entity {
   private:
     EntityID id;

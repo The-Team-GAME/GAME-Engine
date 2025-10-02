@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    EventManager.inl
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements the template methods for EventTypeManager and Event.
+//          Provides automatic event type ID generation and type-safe event data
+//          storage and retrieval.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 #include "EventManager.h"
 

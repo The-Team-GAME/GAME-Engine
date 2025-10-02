@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    World.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines the World class which is the main ECS container.
+//          Manages entities, components, systems, and events. Provides the primary
+//          interface for creating entities, adding components, registering systems,
+//          and dispatching events.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "Types.h"
@@ -17,7 +33,9 @@
 namespace ECS
 {
 
-  // Main ECS World
+  /* ================ //
+  // Main ECS World   //
+  // ================ */
   class World
   {
   private:
@@ -39,11 +57,15 @@ namespace ECS
     ComponentArray<T>* get_component_array();
 
   public:
-    // Component registration
+    /* ========================= //
+    // Component registration    //
+    // ========================= */
     template <typename T>
     void register_component();
 
-    // Entity management
+    /* =================== //
+    // Entity management   //
+    // =================== */
     Entity create_entity();
     Entity get_entity(EntityID id);
     Entity clone_entity(EntityID source_id);
@@ -54,7 +76,9 @@ namespace ECS
 
     bool is_entity_active(EntityID id) const;
 
-    // Component management
+    /* ====================== //
+    // Component management   //
+    // ====================== */
     template <typename T, typename... Args>
     void add_component(EntityID entity, Args &&...args);
 
@@ -73,14 +97,18 @@ namespace ECS
     template <typename... T>
     bool has_components(EntityID entity) const;
 
-    // System management
+    /* ================== //
+    // System management  //
+    // ================== */
     template <typename T, typename... Args>
     T* add_system(Args &&...args);
 
     template <typename T>
     void remove_system();
 
-    // Event management
+    /* ================= //
+    // Event management  //
+    // ================= */
     template <typename T, typename... Args>
     void send_event(Args&&... args);
 
@@ -96,13 +124,19 @@ namespace ECS
     template <typename T>
     void remove_event_listener();
 
-    // Main update loop
+    /* ==================== //
+    // Main update loop     //
+    // ==================== */
     void update();
 
-    // Main draw loop
+    /* ================ //
+    // Main draw loop   //
+    // ================ */
     void draw();
 
-    // Query methods - return Entity instead of EntityID
+    /* ============================================== //
+    // Query methods - return Entity instead of EntityID //
+    // ============================================== */
     template <typename... T>
     std::vector<Entity> getEntitiesWith() const;
 
