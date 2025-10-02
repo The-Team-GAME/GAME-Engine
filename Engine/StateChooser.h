@@ -77,10 +77,6 @@ inline void StateChooserPanel()
   // {
   //   Engine::StateManager::ChangeState(BasicState::Get());
   // }
-  // if (ImGui::Button("MainMenuState"))
-  // {
-  //   Engine::StateManager::ChangeState(MainMenuState::Get());
-  // }
   // if (ImGui::Button("SpriteState"))
   // {
   //   Engine::StateManager::ChangeState(SpriteState::Get());

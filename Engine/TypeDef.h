@@ -1,3 +1,17 @@
+//-----------------------------------------------------------------------------------
+// file:    TypeDef.h
+// project: Monkey Stole My GPA
+//
+// author:  Cheng Ming Xian (100%)
+//          Primary author
+//
+// email:   c.mingxian@digipen.edu
+//
+// brief:   This file defines typedefs for built-in data types
+//
+// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
+
 #pragma once
 
 // Built in Data Types

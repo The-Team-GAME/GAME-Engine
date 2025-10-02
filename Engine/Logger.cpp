@@ -1,3 +1,16 @@
+//-----------------------------------------------------------------------------------
+// file:    Logger.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Cheng Ming Xian (100%)
+//          Primary author
+//
+// email:   c.mingxian@digipen.edu
+//
+// brief:   This file implements the logging functions for outputting warnings, info, and crash messages.
+//
+// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "Logger.h"
 #include <iostream>
 #include <fstream>
@@ -7,6 +20,7 @@
 
 namespace Log {
 
+	// Outputs a warning message to the console
 	void warning(std::string text)
 	{
 		// Stuff to log file TODO
@@ -15,6 +29,7 @@ namespace Log {
 		std::cout << "Warning>> " << text << std::endl;
 	}
 
+	// Outputs an info message to the console
 	void info(std::string text)
 	{
 		// Stuff to log file TODO
@@ -23,6 +38,7 @@ namespace Log {
 		std::cout << "Info>> " << text << std::endl;
 	}
 
+	// Outputs a crash message to the console and logs it to a file with a timestamp
 	void crash(std::string text)
 	{
 		// Get current time using chrono
