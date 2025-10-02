@@ -128,7 +128,7 @@ namespace Engine
     // Clear any previously spawned entities
     for (auto entityId : level.spawnedEntities)
     {
-      m_world->destory_entity(entityId);
+      m_world->destroy_entity(entityId);
     }
     level.spawnedEntities.clear();
 
@@ -189,7 +189,7 @@ namespace Engine
     // Destroy all spawned entities
     for (auto entityId : level.spawnedEntities)
     {
-      m_world->destory_entity(entityId);
+      m_world->destroy_entity(entityId);
     }
     level.spawnedEntities.clear();
 

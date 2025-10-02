@@ -11,7 +11,7 @@ public:
     require_components<Components::Position, Components::RigidBody>();
   }
 
-  void updateEntity(ECS::Entity& entity) override {
+  void update_entity(ECS::Entity& entity) override {
     auto* pos = entity.get_component<Components::Position>();
     auto* rb = entity.get_component<Components::RigidBody>();
     auto* col = entity.get_component<Components::Collider>();

@@ -48,7 +48,7 @@ namespace ECS
     return newEntity;
   }
 
-  void World::destory_entity(EntityID id)
+  void World::destroy_entity(EntityID id)
   {
     entities_to_destory.insert(id);
   }

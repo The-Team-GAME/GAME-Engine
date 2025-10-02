@@ -155,8 +155,9 @@ void file_explorer(bool* p_open, bool is_directory_selection_mode = false) {
 
         std::string extension = entry.path().extension().string();
 
-        std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
-
+        std::transform(extension.begin(), extension.end(), extension.begin(), 
+          [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+        
         if (extension == ".jpg" || extension == ".png" || extension == ".jpeg") {
 
           entries.push_back(entry);
@@ -352,7 +353,6 @@ public:
       file_explorer(&show_file_explorer_source);
 
     }
-
     if (show_file_explorer_dest) {
 
       file_explorer(&show_file_explorer_dest, true);

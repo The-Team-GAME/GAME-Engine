@@ -11,8 +11,8 @@
 class Graphics
 {
 private:
-  s32 win_width;
-  s32 win_height;
+  s32 win_width = 0;
+  s32 win_height = 0;
 public:
   // Add these for consistent virtual resolution
   static constexpr f32 VIRTUAL_WIDTH = 1600.0f;
@@ -76,10 +76,10 @@ private:
 
   struct Font {
     std::unordered_map<char, Character> Characters;
-    u32 atlasTexture;  // Single texture for all characters
-    u32 fontSize;
-    f32 baseline;
-    s32 atlasWidth, atlasHeight;
+    u32 atlasTexture = 0;  // Single texture for all characters
+    u32 fontSize = 0;
+    f32 baseline = 0.0f;
+    s32 atlasWidth = 0, atlasHeight = 0;
     bool isValid = true;  // Track if font is still valid
   };
 
@@ -88,9 +88,9 @@ private:
   static const u32 MaxIndices = MaxQuads * 6;
   static const u32 MaxTextureSlots = 32; // Check your GPU's limit
 
-  u32 quadVAO;
-  u32 quadVBO;
-  u32 quadIBO;
+  u32 quadVAO = 0;
+  u32 quadVBO = 0;
+  u32 quadIBO = 0;
 
   u32 quadIndexCount = 0;
   std::vector<Vertex> quadVertexBufferBase;
@@ -106,14 +106,14 @@ private:
   s32 nextFontId = 0;
   s32 nextSpriteSheetId = 0;
 
-  std::array<u32, MaxTextureSlots> textureSlots;
+  std::array<u32, MaxTextureSlots> textureSlots = {};
   u32 textureSlotIndex = 1; // 0 = white texture
 
 
-  Shader textureShader;
-  glm::mat4 projection;
-  glm::mat4 view;
-  glm::mat4 viewProjectionMatrix;
+  Shader textureShader{};
+  glm::mat4 projection = glm::mat4(1.0f);
+  glm::mat4 view = glm::mat4(1.0f);
+  glm::mat4 viewProjectionMatrix = glm::mat4(1.0f);
   Camera2D camera;
 
   s32 viewportWidth = 800;
@@ -153,7 +153,7 @@ public:
   void unload_texture(s32 texture_id);
   void unload_all_textures();
   void get_texture_dimensions(s32 texture_id, s32& width, s32& height) const;
-  u32 get_texture_handle(s32 texture_id) const; // Add this method
+  u32 get_texture_handle(s32 texture_id) const;
 
   void clear_screen(f32 r, f32 g, f32 b, f32 a);
 
@@ -164,6 +164,15 @@ public:
   void unload_all_sprite_sheets();
   void draw_animated_sprite(s32 spriteSheetId, f32 x, f32 y, f32 width, f32 height, f32 time, f32 rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& ts32Color = glm::vec4(1.0f));
 
+  struct SpriteSheetInfo {
+    s32 frameWidth;
+    s32 frameHeight;
+    s32 totalFrames;
+    f32 animationSpeed;
+  };
+
+  bool getSpriteSheetInfo(s32 spriteSheetId, SpriteSheetInfo& info) const;
+
 private:
   void start_batch();
   void next_batch();
@@ -172,7 +181,7 @@ private:
 
 
   // Font data
-  FT_Library ft;
+  FT_Library ft = {};
 
 public:
   glm::vec2 screen_to_virtual(f32 screenX, f32 screenY) const;

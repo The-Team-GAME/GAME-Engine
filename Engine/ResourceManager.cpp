@@ -312,7 +312,7 @@ std::string Engine::ResourceManager::get_file_extension(const std::string& path)
 
   // Convert to lowercase for case-insensitive comparison
   std::transform(extension.begin(), extension.end(), extension.begin(),
-    [](unsigned char c) { return std::tolower(c); });
+    [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
   return extension;
 }

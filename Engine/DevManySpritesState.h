@@ -52,7 +52,7 @@ public:
     Engine::RESOURCES.unload_object_prefab("enemy");
     Engine::RESOURCES.unload_object_prefab("banana");
 
-    Engine::WORLD.destory_entities_with<Components::Tag<"DevManySpritesState">>();
+    Engine::WORLD.destroy_entities_with<Components::Tag<"DevManySpritesState">>();
 
     // Remove systems
     Engine::WORLD.remove_system<BackgroundSystem>();

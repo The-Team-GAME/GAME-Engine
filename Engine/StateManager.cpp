@@ -19,7 +19,7 @@
 
 namespace Engine
 {
-  void StateManager::ChangeState(GameStateBase* newState, std::any data)
+  void StateManager::ChangeState(GameStateBase* newState)
   {
     // Clear all existing states
     while (!stateStack.empty())
@@ -38,7 +38,7 @@ namespace Engine
     newState->Init();
   }
 
-  void StateManager::PushState(GameStateBase* newState, std::any /*data*/)
+  void StateManager::PushState(GameStateBase* newState)
   {
     stateStack.push_back(newState);
     //stateDataStack.push_back(data);
@@ -70,40 +70,7 @@ namespace Engine
     }
     else
     {
-      // No more states, stop the game
-      Stop();
-      return false;
-    }
-  }
-
-  bool StateManager::PopState(std::any data)
-  {
-    //if (stateStack.empty() || stateDataStack.empty())
-    if (stateStack.empty())
-    {
-      // No state to pop
-      return false;
-    }
-
-    // Unload current state 
-    GetCurrentState()->Free();
-    GetCurrentState()->Unload();
-    stateStack.pop_back();
-    //stateDataStack.pop_back();
-
-    // If we still have states, initialize the new top state with the new data
-    if (!stateStack.empty())
-    {
-      // Replace the data for the new current state
-      //stateDataStack.back() = data;
-
-      GetCurrentState()->Init();
-      return true;
-    }
-    else
-    {
-      // No more states, stop the game
-      Stop();
+      // TODO: No more states, stop the game
       return false;
     }
   }
@@ -115,11 +82,6 @@ namespace Engine
       GetCurrentState()->Free();
       GetCurrentState()->Init();
     }
-  }
-
-  void StateManager::Stop()
-  {
-    //running = false;
   }
 
   void StateManager::Init(GameStateBase* initialState)
@@ -137,7 +99,6 @@ namespace Engine
       GetCurrentState()->Free();
       GetCurrentState()->Unload();
       stateStack.pop_back();
-      //stateDataStack.pop_back();
     }
   }
 
@@ -145,11 +106,4 @@ namespace Engine
   {
     return stateStack.back();
   }
-
-  /*std::any& StateManager::GetStateData()
-  {
-     return stateDataStack.back();
-  }*/
-
-
 }

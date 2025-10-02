@@ -29,13 +29,13 @@ namespace ECS
   }
 
   template <typename... T>
-  void World::destory_entities_with()
+  void World::destroy_entities_with()
   {
     for (EntityID entity : active_entities)
     {
       if (has_components<T...>(entity))
       {
-        destory_entity(entity);
+        destroy_entity(entity);
       }
     }
   }

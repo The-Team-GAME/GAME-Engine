@@ -20,7 +20,7 @@ namespace Engine
   f32 Perf::get_elapsed(const std::string& label) const
   {
     auto it = elapsed_time_map.find(label);
-    f32 elapsed = (it != elapsed_time_map.end()) ? it->second : 0.0;
+    f32 elapsed = (it != elapsed_time_map.end()) ? static_cast<f32>(it->second) : 0.0f;
     std::cout << label << ": " << elapsed << " seconds (" << (elapsed * 1000.0) << " ms)" << std::endl;
     return elapsed;
   }

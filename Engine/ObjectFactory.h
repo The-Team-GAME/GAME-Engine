@@ -5,14 +5,18 @@
 #include "BasicComponents.h"
 #include <optional>
 
+
 namespace Engine
 {
+
   struct ObjectPrefab
   {
     Components::ObjectId objectId; // so that level data can reference to these objects
     Components::Size size;
     std::optional<Components::StaticSprite> staticSprite;
+    std::optional<Components::AnimatedSprite> animatedSprite;
   };
+
   /**
    * @class ObjectFactory
    * @brief A factory for creating game objects (entities) from prefabs.
