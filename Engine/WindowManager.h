@@ -24,8 +24,8 @@ class WindowManager
 {
 private:
   GLFWwindow* window;
-  s32 width;
-  s32 height;
+  s32 width = 0;
+  s32 height = 0;
   std::string title;
 
   /* ===================== //
