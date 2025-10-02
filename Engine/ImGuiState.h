@@ -24,6 +24,7 @@ private:
   // Interaction state
   DragMode dragMode_ = DragMode::None;
   bool passedThreshold_ = false;
+  bool globalSnap_ = false;
   glm::vec2 dragStart_{ 0.0f };     // for drawing/resizing
   glm::vec2 prevMouse_{ 0.0f };
   glm::vec2 moveGrabOffset_{ 0.0f };
@@ -35,6 +36,7 @@ private:
   f32 minRectSizePx_ = 8.0f;
   f32 handlePx_ = 8.0f;
   f32 handleHoverInflate_ = 4.0f;
+  f32 snapGridPx_ = 14.0f;
 
   // UI
   glm::vec4 currentColor_{ 1.0f, 1.0f, 1.0f, 0.25f };
@@ -65,7 +67,19 @@ private:
   ResizeMask hitHandle(const glm::vec2& p, const glm::vec2& minP, const glm::vec2& maxP) const;
   s32 pickTopmostRect(const glm::vec2& p) const;
 
+  // keyboard actions
+  void handleShortcuts();
+
+  // Snapping
+  static glm::vec2 snapToGrid(glm::vec2 v, f32 grid);
+  static f32 snapScalar(f32 v, f32 grid);
+
   // Serialization stubs
   bool SaveToFile(const char* path) const;
   bool LoadFromFile(const char* path);
+
+  // Helpers for persistence
+  void clearAllRects();
+  void bringToFront(s32 index);
+  void sendToBack(s32 index);
 };
