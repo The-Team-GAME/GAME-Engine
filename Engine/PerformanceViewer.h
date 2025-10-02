@@ -1,8 +1,33 @@
+//-----------------------------------------------------------------------------------
+// file:    PerformanceViewer.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines an ImGui panel for visualizing performance metrics
+//          including FPS, tick rate control, and performance profiling data as
+//          percentages of total execution time.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 #include <imgui.h>
 #include "Core.h"
 #include "Time.h"
 
+/*=================================================================================
+Function Brief:
+Creates and renders an ImGui panel that displays performance metrics including
+current FPS, adjustable tick rate, and performance profiling data showing the
+percentage of time spent in each labeled code section.
+
+Where to call it:
+Call this function once per frame during the ImGui rendering phase, typically
+in the Draw() or Update() function of a game state.
+==================================================================================*/
 inline void PerformanceViewerPanel()
 {
   ImGui::Begin("Performance Viewer");

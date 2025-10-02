@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    Graphics.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements the Graphics class providing a comprehensive 2D
+//          rendering system with batch rendering, texture/sprite sheet management,
+//          text rendering using FreeType, camera system, and primitive drawing.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "Precompiled.h"
 #include <GL/glew.h>
 #include <vector>
@@ -10,6 +25,7 @@
 
 #include "TypeDef.h"
 #include "Logger.h"
+
 namespace
 {
   // Anonymous namespace to keep these constants local to this file.
@@ -33,7 +49,11 @@ namespace
   };
 }
 
-// Recalculates the view matrix based on the camera's current position, rotation, and zoom.
+/*=================================================================================
+Function Brief:
+Recalculates the view matrix based on the camera's current position, rotation,
+and zoom level. Updates the combined view-projection matrix used for rendering.
+==================================================================================*/
 void Graphics::update_view_matrix() {
   view = glm::mat4(1.0f);
   view = glm::translate(view, glm::vec3(camera.position.x, camera.position.y, 0.0f));
@@ -46,7 +66,10 @@ void Graphics::update_view_matrix() {
   viewProjectionMatrix = projection * view;
 }
 
-// Initializes the graphics system, shaders, and buffers.
+/*=================================================================================
+Function Brief:
+Constructor that initializes the Graphics system.
+==================================================================================*/
 Graphics::Graphics()
 {
   // empty by design

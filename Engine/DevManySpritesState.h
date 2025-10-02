@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    DevManySpritesState.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines a development state for stress testing sprite rendering.
+//          Creates 2500 rotating banana sprites to test the engine's batch rendering
+//          performance and entity management capabilities.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "StateManager.h" 
@@ -6,8 +21,9 @@
 #include "RenderSystem.h"
 #include "RotationSystem.h"
 
-
-// Used to test how well the engine handles many sprites
+/* ================================================= //
+// Stress test state for sprite rendering           //
+// ================================================= */
 class DevManySpritesState : public Engine::GameState<DevManySpritesState>
 {
 private:

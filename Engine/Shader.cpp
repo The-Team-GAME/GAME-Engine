@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    Shader.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements the Shader class which handles OpenGL shader program
+//          compilation, linking, and uniform variable management for vertex and
+//          fragment shaders.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "Precompiled.h"
 #include <string>
 #include <sstream>
@@ -8,6 +23,9 @@
 
 #include "Shader.h"
 
+/* ===================== //
+// Shader Initialization //
+// ===================== */
 void Shader::init(const char* vertexPath, const char* fragmentPath)
 {
   // 1. retrieve the vertex/fragment source code from filePath
@@ -82,11 +100,17 @@ void Shader::init(const char* vertexPath, const char* fragmentPath)
   glDeleteShader(fragment);
 }
 
+/* ===================== //
+// Resource Management   //
+// ===================== */
 void Shader::destroy()
 {
   glDeleteProgram(m_id);
 }
 
+/* ===================== //
+// Shader Usage          //
+// ===================== */
 void Shader::use() const {
   glUseProgram(m_id);
 }
@@ -95,7 +119,9 @@ GLuint Shader::getId() const {
   return m_id;
 }
 
-
+/* ===================== //
+// Uniform Setters       //
+// ===================== */
 void Shader::set_bool(const std::string& name, bool const value) const {
   glUniform1i(glGetUniformLocation(m_id, name.c_str()), static_cast<int>(value));
 }

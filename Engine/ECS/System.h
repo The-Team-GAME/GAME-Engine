@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    System.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines the System base class for the ECS. Systems contain
+//          game logic and operate on entities with specific component combinations.
+//          Supports component requirements, event listening, and entity lifecycle hooks.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "Types.h"
@@ -10,7 +25,9 @@ namespace ECS {
   class World; // Forward declaration
   class Entity; // Forward declaration
 
-  // System base class with clean required components specification
+  /* ============================================================= //
+  // System base class with clean required components specification //
+  // ============================================================= */
   class System {
   protected:
     World* world = nullptr;

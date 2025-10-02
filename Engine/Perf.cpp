@@ -1,9 +1,27 @@
+//-----------------------------------------------------------------------------------
+// file:    Perf.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements a performance profiling utility that measures and
+//          tracks execution time for labeled code sections using high-resolution
+//          timers.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "TypeDef.h"
 #include "Perf.h"
 #include <iostream>
 
 namespace Engine
 {
+  /* ================ //
+  // Member Functions //
+  // ================ */
   void Perf::start(const std::string& label)
   {
     start_time_map[label] = std::chrono::high_resolution_clock::now();

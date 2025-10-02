@@ -1,4 +1,19 @@
 
+//-----------------------------------------------------------------------------------
+// file:    Core.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements the Core class which manages the main game loop.
+//          Handles fixed timestep updates, rendering, input processing, and
+//          coordinates all major engine subsystems.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "Core.h"
 #include <GLFW/glfw3.h>
 #include <iostream>
@@ -25,11 +40,14 @@ namespace {
   bool do_render = false;
   bool physicsStepMode = false;  // Toggle for step-by-step physics
 }
+
 namespace Engine
 {
 
-
-  // These are global instances of the core engine systems.
+  /* ========================================================================= //
+  // Global engine system instances                                            //
+  // These are defined here and declared extern in Core.h for global access   //
+  // ========================================================================= */
   // They are defined here and declared extern in Core.h for use throughout the engine.
   ECS::World WORLD{};
   ObjectFactory FACTORY{ &WORLD };
@@ -46,6 +64,11 @@ namespace Engine
 
   Perf PERFORMANCE{};
 
+  /*=================================================================================
+  Function Brief:
+  Constructor that initializes all engine subsystems including window, graphics,
+  ImGui, audio, and the ECS world. Loads configuration and sets up event listeners.
+  ==================================================================================*/
   Core::Core()
   {
     Config::load_config();
@@ -70,6 +93,15 @@ namespace Engine
     StateManager::Init(ShowcaseState::Get()); // TODO: to be removed
   }
 
+  /*=================================================================================
+  Function Brief:
+  Main game loop that runs continuously until the window is closed. Implements
+  fixed timestep updates with accumulator for consistent physics, handles input,
+  updates all systems, and renders the scene. Supports physics step mode for debugging.
+
+  Where to call it:
+  Called once after Core construction to start the game loop.
+  ==================================================================================*/
   void Core::run()
   {
     while (!glfwWindowShouldClose(WINDOW.getWindow()) && isRunning)
@@ -160,6 +192,11 @@ namespace Engine
     }
   }
 
+  /*=================================================================================
+  Function Brief:
+  Destructor that cleans up all engine resources, shuts down subsystems, and
+  removes event listeners. Ensures proper cleanup before application exit.
+  ==================================================================================*/
   Core::~Core()
   {
     FileHandler::clear_json();

@@ -1,17 +1,17 @@
 //-----------------------------------------------------------------------------------
 // file:    StateManager.cpp
-// project: CLIMB
+// project: Monkey Stole My GPA
 //
 // author:  Chew Shee Yang (100%)
 //          Primary author
 //
 // email:   chew.s@digipen.edu
 //
-// brief:   Defines the game state management system, including the base state
-//          interface, template for state implementation, and the StateManager
-//          namespace for handling state transitions and game lifecycle.
+// brief:   This file implements the game state management system, including state
+//          stack operations for transitions, push/pop functionality, and lifecycle
+//          management for handling state initialization and cleanup.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright Â© 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 
 #include "StateManager.h" 
@@ -19,6 +19,9 @@
 
 namespace Engine
 {
+  /* ===================== //
+  // State Transitions     //
+  // ===================== */
   void StateManager::ChangeState(GameStateBase* newState)
   {
     // Clear all existing states
@@ -38,6 +41,9 @@ namespace Engine
     newState->Init();
   }
 
+  /* ===================== //
+  // Stack Operations      //
+  // ===================== */
   void StateManager::PushState(GameStateBase* newState)
   {
     stateStack.push_back(newState);
@@ -75,6 +81,9 @@ namespace Engine
     }
   }
 
+  /* ===================== //
+  // State Control         //
+  // ===================== */
   void StateManager::Restart()
   {
     if (!stateStack.empty())
@@ -102,6 +111,9 @@ namespace Engine
     }
   }
 
+  /* ===================== //
+  // State Access          //
+  // ===================== */
   GameStateBase* StateManager::GetCurrentState()
   {
     return stateStack.back();

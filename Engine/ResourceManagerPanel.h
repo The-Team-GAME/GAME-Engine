@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    ResourceManagerPanel.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines an ImGui panel for managing game resources. It provides
+//          a drag-and-drop interface for loading resources and displays all loaded
+//          resources with preview, playback, and unload capabilities.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 #include "imgui.h"
 #include "Core.h"
@@ -7,6 +22,16 @@
 #include <string>
 #include <vector>
 
+/*=================================================================================
+Function Brief:
+Creates and renders an ImGui panel for managing game resources. Provides a
+drag-and-drop zone for loading files, displays all loaded resources organized
+by type, and offers controls for previewing, testing, and unloading resources.
+
+Where to call it:
+Call this function once per frame during the ImGui rendering phase, typically
+in the Draw() or Update() function of a game state.
+==================================================================================*/
 inline void ResourceManagerPanel()
 {
   static bool showLoadConfirmation = false;

@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    LevelLoader.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines the LevelLoader which manages loading, spawning, and
+//          unloading game levels from JSON files. Handles prefab loading, entity
+//          instantiation, and level lifecycle management.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include <string>

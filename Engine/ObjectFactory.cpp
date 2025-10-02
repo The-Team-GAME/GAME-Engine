@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    ObjectFactory.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements the ObjectFactory class which manages object prefabs
+//          and creates ECS entities from JSON configuration files. It handles loading
+//          textures, sprite sheets, and component initialization.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "ObjectFactory.h"
 #include "Logger.h"
 #include "BasicComponents.h"
@@ -7,10 +22,16 @@
 
 namespace fh = FileHandler;
 
+/* ===================== //
+// Constructor           //
+// ===================== */
 Engine::ObjectFactory::ObjectFactory(ECS::World* world) : m_world(world)
 {
 }
 
+/* ===================== //
+// Member Functions      //
+// ===================== */
 int Engine::ObjectFactory::registerObject(std::string filePath)
 {
   fh::set_container("entity");
