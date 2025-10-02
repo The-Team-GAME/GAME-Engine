@@ -90,7 +90,8 @@ private:
     for (const auto& entry : fs::directory_iterator(assets_path)) {
       if (entry.is_regular_file()) {
         std::string extension = entry.path().extension().string();
-        std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+        std::transform(extension.begin(), extension.end(), extension.begin(),
+          [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
         if (extension == ".jpg" || extension == ".png" || extension == ".jpeg") {
           int textureId = Engine::GRAPHICS.load_texture(entry.path().string().c_str(), Graphics::MinifyingFilter::Nearest);
           if (textureId != -1) {
