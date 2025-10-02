@@ -2,9 +2,9 @@
 // file:    BasicComponents.h
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (70%)
+// author:  Chew Shee Yang (65%)
 //          Primary author
-//          How Hong Chin Ryan (30%)          
+//          How Hong Chin Ryan (35%)          
 //          Secondary author
 //
 // email:   chew.s@digipen.edu, hongchinryan.how@digipen.edu
@@ -113,14 +113,14 @@ namespace Components {
     PlayerController(/*bool isgrounded = false*/)
       /* : isGrounded(isgrounded)*/ {
     }
-  }; 
+  };
 
   struct Collider {
     f32 halfWidth, halfHeight;
     Math::Vec2D penetration = { 0.0f, 0.0f }; // penetration from last collision
-		Math::Vec2D dynamicNormal = { 0.0f, 0.0f }; // normal of last dynamic collision
+    Math::Vec2D dynamicNormal = { 0.0f, 0.0f }; // normal of last dynamic collision
     f32 dynamicCollisionTime = 0.0f; // cooldown timer to prevent repeated dynamic collisions
-		bool enabled = true;              // optional: whether this collider is active
+    bool enabled = true;              // optional: whether this collider is active
     bool isStatic = false;                   // optional: whether this collider is a trigger
 
     Collider(float width = 1.0f, float height = 1.0f, bool isstatic = false)

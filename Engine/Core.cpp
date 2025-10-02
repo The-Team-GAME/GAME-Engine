@@ -3,10 +3,10 @@
 // file:    Core.cpp
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (100%)
-//          Primary author
-//
-// email:   chew.s@digipen.edu
+// author:  Chew Shee Yang (50%)
+//          Cheng Ming Xian (50%)
+
+// email:   chew.s@digipen.edu, c.mingxian@digipen.edu
 //
 // brief:   This file implements the Core class which manages the main game loop.
 //          Handles fixed timestep updates, rendering, input processing, and

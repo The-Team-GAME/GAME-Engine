@@ -2,17 +2,17 @@
 // file:    FileHandler.h
 // project: Monkey Stole My GPA
 //
-// author:  Cheng Ming Xian (100%)
+// author:  Cheng Ming Xian (70%)
 //          Primary author
-//					Shee Yang (?%)
+//					Shee Yang (30%)
 //
-// email:   c.mingxian@digipen.edu
+// email:   c.mingxian@digipen.edu, chew.s@digipen.edu
 //
 // brief:   This file uses the rapidjson library to parse a filestream into a 
 //					rapidjson::Document type and then use the other functions in this file
 //					to read from and write to(wip) the json file.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 #include <string>
@@ -35,7 +35,7 @@ namespace FileHandler {
 	/*=================================================================================
 	Function Brief:
 	The function take in a json file and deseralises it into a readable format that can
-	allow its objects/ members to be parsed into respective variables using the 
+	allow its objects/ members to be parsed into respective variables using the
 	rapidjson library.
 	==================================================================================*/
 	void parse_file(std::string filepath);
@@ -47,7 +47,7 @@ namespace FileHandler {
 
 	Where to call it:
 	Usually after a json file has been read and the values parsed into their appropriate
-	variables or before another json file is about to be read. Clearing the 
+	variables or before another json file is about to be read. Clearing the
 	json Document basically ensures that nothing foreign ends up in the new stream that
 	you are going to read.
 	==================================================================================*/
@@ -61,7 +61,7 @@ namespace FileHandler {
 
 	/*=================================================================================
 	Function Brief:
-	The functions below are a set of getters for the values of the corresponding key 
+	The functions below are a set of getters for the values of the corresponding key
 	found in the json files. They return a default value for each type where a value
 	value cannot be obtained.
 	==================================================================================*/

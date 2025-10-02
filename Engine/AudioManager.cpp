@@ -2,10 +2,10 @@
 // file:    AudioManager.cpp
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (100%)
+// author:  How Hong Chin Ryan (100%)
 //          Primary author
 //
-// email:   chew.s@digipen.edu
+// email:   hongchinryan.how@digipen.edu
 //
 // brief:   This file implements the AudioManager class which provides an interface
 //          for loading, playing, and managing audio using the FMOD audio library.

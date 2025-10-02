@@ -2,10 +2,10 @@
 // file:    Shader.h
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (100%)
+// author:  Ong Zi Ming (100%)
 //          Primary author
 //
-// email:   chew.s@digipen.edu
+// email:   o.ziming@digipen.edu
 //
 // brief:   This file defines the Shader class which handles OpenGL shader program
 //          compilation, linking, and uniform variable management for vertex and

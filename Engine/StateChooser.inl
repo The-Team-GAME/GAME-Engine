@@ -66,6 +66,10 @@ inline void StateChooserPanel()
   {
     Engine::StateManager::ChangeState(PhysicsTestScene::Get());
   }
+  if (ImGui::Button("LevelLoaderTestState"))
+  {
+    Engine::StateManager::ChangeState(LevelLoaderTestState::Get());
+  }
 
   // Other states for development and testing - uncomment as needed
   // 
@@ -92,10 +96,6 @@ inline void StateChooserPanel()
   // if (ImGui::Button("DevECSMessageState"))
   // {
   //   Engine::StateManager::ChangeState(DevECSMessageState::Get());
-  // }
-  // if (ImGui::Button("LevelLoaderTestState"))
-  // {
-  //   Engine::StateManager::ChangeState(LevelLoaderTestState::Get());
   // }
 
 
