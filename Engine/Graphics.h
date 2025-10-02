@@ -192,7 +192,7 @@ public:
   void draw_rect(const glm::vec4& color, f32 x, f32 y, f32 width, f32 height, f32 rotation = 0.0f, Origin origin = Origin::Center);
   void draw_circle(const glm::vec4& color, f32 x, f32 y, f32 radius, s32 segments = 32);
   void draw_line(const glm::vec4& color, f32 x1, f32 y1, f32 x2, f32 y2, f32 thickness = 2.0f);
-  
+
   /* ====================== //
   // Texture drawing        //
   // ====================== */

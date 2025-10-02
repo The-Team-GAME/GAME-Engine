@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    InputManager.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements the InputManager which handles keyboard and mouse
+//          input state tracking. Provides frame-based input detection (pressed,
+//          released, held) and mouse position in virtual coordinates.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "InputManager.h"
 #include "Core.h"
 #include <GLFW/glfw3.h>
@@ -6,7 +21,9 @@
 
 namespace
 {
-  // Keyboard state
+  /* =================== //
+  // Input state arrays  //
+  // =================== */
   std::array<bool, GLFW_KEY_LAST + 1> currentKeys;
   std::array<bool, GLFW_KEY_LAST + 1> previousKeys;
 
@@ -14,13 +31,20 @@ namespace
   std::array<bool, GLFW_MOUSE_BUTTON_LAST + 1> currentMouseButtons;
   std::array<bool, GLFW_MOUSE_BUTTON_LAST + 1> previousMouseButtons;
 
-  // Mouse position
+  /* =================== //
+  // Mouse state         //
+  // =================== */
   glm::vec2 mousePosition;
 }
 
-// TODO: Dont use GLFW enums directly in the Input class
 namespace Engine
 {
+  /*=================================================================================
+  Function Brief:
+  Updates the internal state of the input manager. Should be called once per frame
+  before checking any input states. Updates keyboard, mouse button states, and
+  mouse position in virtual coordinates.
+  ==================================================================================*/
   void Input::Update()
   {
     Engine::PERFORMANCE.start("Input");

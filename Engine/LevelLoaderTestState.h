@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    LevelLoaderTestState.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines a test state for the LevelLoader system. Provides
+//          interactive controls for loading, spawning, reloading, and unloading
+//          levels to verify level management functionality.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "StateManager.h"
