@@ -30,8 +30,17 @@ class PhysicsTestScene : public Engine::GameState<PhysicsTestScene>
 {
 private:
   int enemyPrefab = -1;
+
+  // Add font IDs
+  s32 titleFontId = -1;
+  s32 infoFontId = -1;
+
 public:
-  void Load() {};
+  void Load() {
+    // Load fonts
+    titleFontId = Engine::RESOURCES.load_font("physics_title_font", "Assets/fonts/PlayfairDisplay-VariableFont_wght.ttf", 82);
+    infoFontId = Engine::RESOURCES.load_font("physics_info_font", "Assets/fonts/Roboto-Regular.ttf", 48);
+  };
 
   void Init()
   {
@@ -102,6 +111,27 @@ public:
 
   void Draw()
   {
+    // Draw title text
+    if (titleFontId != -1) {
+      Engine::GRAPHICS.draw_text(
+        titleFontId,
+        "Physics Test Scene",
+        50.0f, 50.0f,
+        1.0f,
+        { 1.0f, 0.9f, 0.3f, 1.0f } // Gold color
+      );
+    }
+
+    // Draw control info
+    if (infoFontId != -1) {
+      Engine::GRAPHICS.draw_text(
+        infoFontId,
+        "WASD: Move Player | SPACE: Jump",
+        50.0f, 140.0f,
+        0.6f,
+        { 1.0f, 1.0f, 1.0f, 1.0f } // White
+      );
+    }
   };
 
   void Free() {
@@ -121,5 +151,9 @@ public:
 
   void Unload() {
     Engine::FACTORY.unregisterObject(enemyPrefab);
+
+    // Unload fonts
+    Engine::RESOURCES.unload_font("physics_title_font");
+    Engine::RESOURCES.unload_font("physics_info_font");
   }
 };
