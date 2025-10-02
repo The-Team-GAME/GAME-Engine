@@ -21,15 +21,15 @@ inline void StateChooserPanel()
 
   ImGui::Text("Current State: %s", typeid(*Engine::StateManager::GetCurrentState()).name());
 
-  if (ImGui::Button("BasicState"))
+ /* if (ImGui::Button("BasicState"))
   {
     Engine::StateManager::ChangeState(BasicState::Get());
-  }
-  if (ImGui::Button("MainMenuState"))
+  }*/
+  /*if (ImGui::Button("MainMenuState"))
   {
     Engine::StateManager::ChangeState(MainMenuState::Get());
-  }
-  if (ImGui::Button("EcsState"))
+  }*/
+  /*if (ImGui::Button("EcsState"))
   {
     Engine::StateManager::ChangeState(EcsState::Get());
   }
@@ -40,20 +40,24 @@ inline void StateChooserPanel()
   if (ImGui::Button("GameObjectState"))
   {
     Engine::StateManager::ChangeState(GameObjectState::Get());
-  }
-  if (ImGui::Button("DevManySpritesState"))
+  }*/
+  if (ImGui::Button("*** SHOWCASE STATE ***"))
   {
-    Engine::StateManager::ChangeState(DevManySpritesState::Get());
-  }
-  if (ImGui::Button("Rubric2500Particles"))
-  {
-    Engine::StateManager::ChangeState(Rubric2500Particles::Get());
+    Engine::StateManager::ChangeState(ShowcaseState::Get());
   }
   if (ImGui::Button("ImGui Rect Painter"))
   {
     Engine::StateManager::ChangeState(ImGuiState::Get());
   }
-  if (ImGui::Button("DevSpriteAnimationState"))
+  if (ImGui::Button("2500Particles"))
+  {
+    Engine::StateManager::ChangeState(Rubric2500Particles::Get());
+  }
+  if (ImGui::Button("2500Sprites"))
+  {
+    Engine::StateManager::ChangeState(DevManySpritesState::Get());
+  }
+ /* if (ImGui::Button("DevSpriteAnimationState"))
   {
     Engine::StateManager::ChangeState(DevSpriteAnimationState::Get());
   }
@@ -64,11 +68,8 @@ inline void StateChooserPanel()
   if (ImGui::Button("LevelLoaderTestState"))
   {
     Engine::StateManager::ChangeState(LevelLoaderTestState::Get());
-  }
-  if (ImGui::Button("*** SHOWCASE STATE ***"))
-  {
-    Engine::StateManager::ChangeState(ShowcaseState::Get());
-  }
+  }*/
+  
 
   ImGui::End();
 }

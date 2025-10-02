@@ -32,6 +32,7 @@
 #include "CameraPanel.h"
 #include "Config.h"
 #include "Perf.h"
+#include "ShowcaseState.h"
 
 namespace {
   f64 accumulator{};
@@ -89,7 +90,7 @@ namespace Engine
       }
     );
 
-    StateManager::Init(BasicState::Get()); // TODO: to be removed
+    StateManager::Init(ShowcaseState::Get()); // TODO: to be removed
   }
 
   /*=================================================================================
