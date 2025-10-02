@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    EntityEditorPanel.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines the EntityEditorPanel ImGui interface for runtime
+//          entity and component manipulation. Provides a GUI for creating, deleting,
+//          and editing entities and their components during gameplay.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 #include "imgui.h"
 #include "Core.h"

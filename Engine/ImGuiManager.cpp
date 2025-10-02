@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    ImGuiManager.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements the ImGuiManager which manages ImGui context,
+//          frame rendering, and provides toggle functionality for showing/hiding
+//          the debug UI with the F1 key.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "ImGuiManager.h"
 #include "Core.h"
 #include <imgui.h>

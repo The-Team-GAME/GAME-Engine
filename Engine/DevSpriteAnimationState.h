@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    DevSpriteAnimationState.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines a development state for testing animated sprite rendering.
+//          Demonstrates sprite sheet loading and animation playback with idle and
+//          walking animations for a LazyMonkey character.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "StateManager.h"

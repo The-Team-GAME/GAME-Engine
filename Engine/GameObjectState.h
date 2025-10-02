@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    GameObjectState.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines the GameObjectState which demonstrates the ObjectFactory
+//          prefab system. Shows how to load prefabs from JSON files and instantiate
+//          multiple entities with different component configurations.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "StateManager.h"

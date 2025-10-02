@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    EcsState.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines the EcsState which demonstrates the ECS architecture.
+//          Shows entity creation, component management, system integration, entity
+//          cloning, and event-driven gameplay with health and damage systems.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "StateManager.h"
