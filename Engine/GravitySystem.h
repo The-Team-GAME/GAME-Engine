@@ -10,7 +10,7 @@ public:
     require_components<Components::RigidBody, Components::Gravity, Components::Collider>();
   }
 
-  void updateEntity(ECS::Entity& entity) override {
+  void update_entity(ECS::Entity& entity) override {
     auto* rb = entity.get_component<Components::RigidBody>();
     auto* g = entity.get_component<Components::Gravity>();
     auto* col = entity.get_component<Components::Collider>();

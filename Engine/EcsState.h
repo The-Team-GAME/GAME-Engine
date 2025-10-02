@@ -93,8 +93,8 @@ public:
 
   void Free() {
     Engine::FACTORY.unregisterObject(enemyPrefab);
-    Engine::WORLD.destory_entities_with<Components::Tag<"GameObjectState">>();
-    Engine::WORLD.destory_entities_with<Components::Tag<"Floor">>();
+    Engine::WORLD.destroy_entities_with<Components::Tag<"GameObjectState">>();
+    Engine::WORLD.destroy_entities_with<Components::Tag<"Floor">>();
     // Remove systems
     Engine::WORLD.remove_system<BackgroundSystem>(); // Background system should be first
     Engine::WORLD.remove_system<GravitySystem>();
