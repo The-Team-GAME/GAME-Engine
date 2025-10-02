@@ -27,7 +27,7 @@
 #include "GravitySystem.h"
 #include "CollisionSystem.h"
 
-class EcsState : public Engine::GameState<EcsState>
+class PhysicsTestScene : public Engine::GameState<PhysicsTestScene>
 {
 private:
   int enemyPrefab = -1;
