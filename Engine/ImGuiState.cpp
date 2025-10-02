@@ -21,6 +21,7 @@
 #include "BasicComponents.h"
 #include "BackgroundSystem.h"
 #include "RenderSystem.h"
+#include "CollisionSystem.h"
 
 #include <imgui.h>
 #include <GLFW/glfw3.h>
@@ -44,8 +45,7 @@ void ImGuiState::Init()
   Engine::WORLD.create_entity()
     .add_component<Components::Tag<"RectPainter">>()
     .add_component<Components::Background>()
-    .add_component<Components::Color>(0.08f, 0.08f, 0.10f, 1.0f)
-    .add_component<Components::Collider>(false, false);
+    .add_component<Components::Color>(0.08f, 0.08f, 0.10f, 1.0f);
 
   Engine::WORLD.add_system<BackgroundSystem>();
   Engine::WORLD.add_system<RectRenderSystem>();
@@ -501,20 +501,19 @@ void ImGuiState::drawImGui()
         size->height = s.y;
 
         // Collider controls
-        bool hasCollider = (col != nullptr);
-        if (!hasCollider) {
+        //bool hasCollider = (col != nullptr);
+       /* if (!hasCollider) {
           if (ImGui::Button("Add Collider")) {
             Engine::WORLD.add_component<Components::Collider>(id, Components::Collider{ true,false });
             col = Engine::WORLD.get_component<Components::Collider>(id);
           }
         }
         else {
-          ImGui::Checkbox("Collider Enabled", &col->enabled);
           ImGui::Checkbox("Is Trigger", &col->isTrigger);
           if (ImGui::Button("Remove Collider")) {
-            col->enabled = false; col->isTrigger = false;
+            col->isTrigger = false;
           }
-        }
+        }*/
 
         ImGui::SameLine();
         if (ImGui::Button("Apply Default Color")) {

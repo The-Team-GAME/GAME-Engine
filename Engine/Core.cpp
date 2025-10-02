@@ -12,7 +12,7 @@
 //          Handles fixed timestep updates, rendering, input processing, and
 //          coordinates all major engine subsystems.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "Core.h"
 #include <GLFW/glfw3.h>
@@ -59,6 +59,7 @@ namespace Engine
   LevelLoader LEVEL_LOADER{ &WORLD, &FACTORY };
 
   AudioManager AUDIO{};
+	Perf PERFORMANCE{};
 
   ResourceManager RESOURCES{};
 

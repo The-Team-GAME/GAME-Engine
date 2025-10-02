@@ -33,7 +33,7 @@
 class DevECSMessageState : public Engine::GameState<DevECSMessageState>
 {
 private:
-  s32 enemyPrefab;
+  int enemyPrefab = -1;
   ECS::Entity player;
 
 public:
@@ -47,10 +47,13 @@ public:
       .add_component<Components::Tag<"Player">>()
       .add_component<Components::Tag<"GameObjectState">>()
       .add_component<Components::Position>(10.0f, 20.0f)
-      .add_component<Components::Velocity>(100.0f, 0.0f) // Make player move
+			.add_component<Components::Collider>(10.0f, 10.0f)
+			.add_component<Components::RigidBody>(1.0f, false) // mass=1.0, not static
       .add_component<Components::Health>(100, 100)
       .add_component<Components::Size>(10.0f, 10.0f)
       .add_component<Components::Color>(0.0f, 1.0f, 1.0f, 1.0f); // Make player cyan
+
+		player.get_component<Components::RigidBody>()->velocity.X() = 100.0f; // Give the player an initial horizontal velocity
 
     // Create an enemy entity to act as a template
     auto enemy = Engine::WORLD.create_entity()
@@ -84,9 +87,16 @@ public:
 
     // Add systems to the world
     Engine::WORLD.add_system<BackgroundSystem>(); // Background system should be first
-    Engine::WORLD.add_system<MovementSystem>();
-    Engine::WORLD.add_system<HealthSystem>();
+    Engine::WORLD.add_system<GravitySystem>();
+    Engine::WORLD.add_system<PlayerControllerSystem>();
     Engine::WORLD.add_system<RectRenderSystem>();
+    Engine::WORLD.add_system<MovementSystem>();
+    Engine::WORLD.add_system<PhysicsSystem>();
+    Engine::WORLD.add_system<CollisionSystem>();
+    Engine::WORLD.add_system<StaticSpriteRenderSystem>();
+    Engine::WORLD.add_system<HealthSystem>();
+
+
     Engine::WORLD.add_system<DamageSystem>(); // Add the new system
   }
 
@@ -123,11 +133,17 @@ public:
 
     // Remove systems
     // TODO: make a function to remove all systems at once
-    Engine::WORLD.remove_system<BackgroundSystem>();
+    Engine::WORLD.remove_system<BackgroundSystem>(); // Background system should be first
+    Engine::WORLD.remove_system<GravitySystem>();
+    Engine::WORLD.remove_system<PlayerControllerSystem>();
     Engine::WORLD.remove_system<MovementSystem>();
+    Engine::WORLD.remove_system<PhysicsSystem>();
+    Engine::WORLD.remove_system<CollisionSystem>();
+    Engine::WORLD.remove_system<StaticSpriteRenderSystem>();
     Engine::WORLD.remove_system<HealthSystem>();
     Engine::WORLD.remove_system<RectRenderSystem>();
-    Engine::WORLD.remove_system<DamageSystem>();
+
+    Engine::WORLD.remove_system<DamageSystem>(); // Add the new system
   }
 
   void Unload() {}

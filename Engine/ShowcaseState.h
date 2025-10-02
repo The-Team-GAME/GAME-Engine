@@ -170,7 +170,7 @@ public:
       .add_component<Components::Tag<"ShowcaseState">>()
       .add_component<Components::Position>(200.0f, 655.0f)
       .add_component<Components::Size>(64.0f, 64.0f)
-      .add_component<Components::Velocity>(0.0f, 0.0f)
+      //.add_component<Components::Velocity>(0.0f, 0.0f) // TODO: Ryan
       .add_component<Components::AnimatedSprite>(playerIdleSpriteSheetId)
       .add_component<Components::Health>(100, 100)
       .add_component<Components::Scale>(2.0f, 2.0f);
@@ -254,10 +254,10 @@ public:
   void Update() {
 
     auto* playerPos = player.get_component<Components::Position>();
-    auto* playerVel = player.get_component<Components::Velocity>();
+    //auto* playerVel = player.get_component<Components::Velocity>(); // TODO: Ryan
     auto* playerSprite = player.get_component<Components::AnimatedSprite>();
 
-    if (!playerPos || !playerVel || !playerSprite) return;
+    if (!playerPos || /* !playerVel || */ !playerSprite) return; // TODO: Ryan
 
     // Check if punch animation has completed
     if (playerSprite->spriteSheetId == playerPunchSpriteSheetId) {
@@ -308,8 +308,9 @@ public:
       scale->Y() = 2.0f;
     }
 
-    playerVel->X() = newVelX;
-    playerVel->Y() = newVelY;
+    // TODO: Ryan
+    /*playerVel->X() = newVelX;
+    playerVel->Y() = newVelY;*/
 
     // Only change to walk/idle if not currently punching
     if (playerSprite->spriteSheetId != playerPunchSpriteSheetId) {
