@@ -181,8 +181,8 @@ namespace Engine
       EntityEditorPanel();
       CameraPanel();
       // start of draw stuff
-      StateManager::GetCurrentState()->Draw();
       WORLD.draw();
+      StateManager::GetCurrentState()->Draw();
       GRAPHICS.end_frame();
 
       // end of draw stuff
