@@ -112,11 +112,11 @@ void RectPainterState::handleMouse()
 {
   ImGuiIO& io = ImGui::GetIO();
   if (io.WantCaptureMouse) {
-    prevMouse_ = Engine::Input::GetMousePosition();
+    prevMouse_ = Engine::Input::GetMouseWorldPosition();
     return;
   }
 
-  const glm::vec2 mouse = Engine::Input::GetMousePosition();
+  const glm::vec2 mouse = Engine::Input::GetMouseWorldPosition();
   const bool lDown = Engine::Input::IsMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT);
   const bool lHeld = Engine::Input::IsMouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT);
   const bool lUp = Engine::Input::IsMouseButtonReleased(GLFW_MOUSE_BUTTON_LEFT);

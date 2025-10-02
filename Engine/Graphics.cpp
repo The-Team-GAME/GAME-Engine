@@ -847,6 +847,35 @@ glm::vec2 Graphics::screen_to_virtual(f32 screenX, f32 screenY) const
   };
 }
 
+glm::vec2 Graphics::screen_to_world(f32 screenX, f32 screenY) const
+{
+  // First convert screen coordinates to virtual coordinates
+  glm::vec2 virtual_coords = screen_to_virtual(screenX, screenY);
+  
+  // Convert virtual coordinates to world coordinates by applying inverse camera transform
+  // Create homogeneous coordinate
+  glm::vec4 virtual_point(virtual_coords.x, virtual_coords.y, 0.0f, 1.0f);
+  
+  // Apply inverse view matrix to transform from virtual space to world space
+  glm::mat4 inverse_view = glm::inverse(view);
+  glm::vec4 world_point = inverse_view * virtual_point;
+  
+  return glm::vec2(world_point.x, world_point.y);
+}
+
+glm::vec2 Graphics::world_to_screen(f32 worldX, f32 worldY) const
+{
+  // Convert world coordinates to virtual coordinates using view matrix
+  glm::vec4 world_point(worldX, worldY, 0.0f, 1.0f);
+  glm::vec4 virtual_point = view * world_point;
+  
+  // Convert virtual coordinates to screen coordinates
+  return {
+    (virtual_point.x / VIRTUAL_WIDTH) * viewportWidth,
+    (virtual_point.y / VIRTUAL_HEIGHT) * viewportHeight
+  };
+}
+
 // Unloads a texture by its ID
 void Graphics::unload_texture(s32 texture_id)
 {
