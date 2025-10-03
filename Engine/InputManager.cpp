@@ -118,7 +118,7 @@ namespace Engine
   {
     // Get the raw screen coordinates
     GLFWwindow* window = Engine::WINDOW.getWindow();
-    double xpos, ypos;
+    f64 xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
 
     // Convert screen coordinates to world coordinates using Graphics system
