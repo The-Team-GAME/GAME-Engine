@@ -3,6 +3,7 @@
 #include "../Precompiled.h"
 #include <memory> 
 #include <unordered_map>
+#include <array>
 
 namespace Engine {
   namespace Graphics
@@ -82,10 +83,8 @@ namespace Engine {
     {
       TextureData texture_atlas;                                 // Glyph atlas texture
       std::unordered_map<unsigned int, Graphics::Glyph> glyphs;  // Character -> glyph mapping
-      unsigned int font_size;                                    // Font size in pixels
-      float baseline;                                            // Baseline offset
-
-      FontData() : texture_atlas(nullptr), font_size(0), baseline(0.0f) {}
+      unsigned int font_size = 0;                                    // Font size in pixels
+      float baseline = 0.0f;                                            // Baseline offset
     };
 
 
