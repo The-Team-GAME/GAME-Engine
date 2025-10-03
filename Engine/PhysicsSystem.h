@@ -34,44 +34,44 @@ public:
     if (!pos || !rb || !col) return;
     if (col->isStatic) return; // Static bodies don't move
 
-    //float dt = Engine::Time::get_fixed_dt();
+    float dt = Engine::Time::get_fixed_dt();
 
     // --- Handle Dynamic Collisions (Swept AABB) ---
-    //if (col->dynamicCollisionTime >= 0.0f && col->dynamicCollisionTime <= dt) {
-    //  Math::Vec2D normal = col->dynamicNormal;
-    //  float dotProduct = rb->velocity.X() * normal.X() + rb->velocity.Y() * normal.Y();
+    if (col->dynamicCollisionTime >= 0.0f && col->dynamicCollisionTime <= dt) {
+      Math::Vec2D normal = col->dynamicNormal;
+      float dotProduct = rb->velocity.X() * normal.X() + rb->velocity.Y() * normal.Y();
 
-    //  // Only resolve if moving into the collision
-    //  if (dotProduct < 0.0f) {
-    //    // CRITICAL: Rewind position to collision point
-    //    // MovementSystem already moved us the full dt, so we need to undo that
-    //    // and move only to the collision time
-    //    float overshoot = dt - col->dynamicCollisionTime;
-    //    pos->X() -= rb->velocity.X() * overshoot;
-    //    pos->Y() -= rb->velocity.Y() * overshoot;
+      // Only resolve if moving into the collision
+      if (dotProduct < 0.0f) {
+        // CRITICAL: Rewind position to collision point
+        // MovementSystem already moved us the full dt, so we need to undo that
+        // and move only to the collision time
+        float overshoot = dt - col->dynamicCollisionTime;
+        pos->X() -= rb->velocity.X() * overshoot;
+        pos->Y() -= rb->velocity.Y() * overshoot;
 
-    //    // Add small separation to prevent sinking
-    //    const float SEPARATION_BIAS = 0.1f;
-    //    pos->X() += normal.X() * SEPARATION_BIAS;
-    //    pos->Y() += normal.Y() * SEPARATION_BIAS;
+        // Add small separation to prevent sinking
+        const float SEPARATION_BIAS = 0.1f;
+        pos->X() += normal.X() * SEPARATION_BIAS;
+        pos->Y() += normal.Y() * SEPARATION_BIAS;
 
-    //    // Reflect velocity along collision normal (with restitution)
-    //    rb->velocity.X() -= (1.0f + rb->restitution) * dotProduct * normal.X();
-    //    rb->velocity.Y() -= (1.0f + rb->restitution) * dotProduct * normal.Y();
+        // Reflect velocity along collision normal (with restitution)
+        rb->velocity.X() -= (1.0f + rb->restitution) * dotProduct * normal.X();
+        rb->velocity.Y() -= (1.0f + rb->restitution) * dotProduct * normal.Y();
 
-    //    // Apply friction on tangent
-    //    Math::Vec2D tangent = { -normal.Y(), normal.X() };
-    //    float tangentVel = rb->velocity.X() * tangent.X() + rb->velocity.Y() * tangent.Y();
-    //    rb->velocity.X() -= tangentVel * rb->friction * tangent.X();
-    //    rb->velocity.Y() -= tangentVel * rb->friction * tangent.Y();
-    //  }
+        // Apply friction on tangent
+        Math::Vec2D tangent = { -normal.Y(), normal.X() };
+        float tangentVel = rb->velocity.X() * tangent.X() + rb->velocity.Y() * tangent.Y();
+        rb->velocity.X() -= tangentVel * rb->friction * tangent.X();
+        rb->velocity.Y() -= tangentVel * rb->friction * tangent.Y();
+      }
 
-    //  // Reset collision data
-    //  col->dynamicCollisionTime = -1.0f;
-    //  col->dynamicNormal = { 0.0f, 0.0f };
+      // Reset collision data
+      col->dynamicCollisionTime = -1.0f;
+      col->dynamicNormal = { 0.0f, 0.0f };
 
-    //  return;
-    //}
+      return;
+    }
 
     // --- Handle Static Collisions (Penetration Resolution) ---
     if (col->penetration.X() != 0.0f || col->penetration.Y() != 0.0f) {
