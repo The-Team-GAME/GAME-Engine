@@ -148,6 +148,10 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="DevSpriteAnimationState.h" />
     <ClInclude Include="FileExplorer.h" />
     <ClInclude Include="GameObjectState.h" />
+    <ClInclude Include="Graphics\Components.h" />
+    <ClInclude Include="Graphics\ResourceManager.h" />
+    <ClInclude Include="Graphics\Systems.h" />
+    <ClInclude Include="Graphics\Types.h" />
     <ClInclude Include="PhysicsTestState.h" />
     <ClInclude Include="ECS\ComponentArray.h" />
     <ClInclude Include="ECS\ComponentManager.h" />
@@ -175,6 +179,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Perf.h" />
     <ClInclude Include="PerformanceViewer.h" />
     <ClInclude Include="Precompiled.h" />
+    <ClInclude Include="Graphics\Renderer.h" />
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="ResourceManagerPanel.h" />
