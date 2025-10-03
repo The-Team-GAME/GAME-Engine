@@ -89,7 +89,7 @@ namespace Engine
       }
     );
 
-    StateManager::Init(ShowcaseState::Get()); // TODO: to be removed
+    StateManager::init(ShowcaseState::get()); // TODO: to be removed
   }
 
   /*=================================================================================
@@ -103,7 +103,7 @@ namespace Engine
   ==================================================================================*/
   void Core::run()
   {
-    while (!glfwWindowShouldClose(WINDOW.getWindow()) && isRunning)
+    while (!glfwWindowShouldClose(WINDOW.get_window()) && isRunning)
     {
       // START OF TIME UPDATES ==============================================
       // Updates the real_dt and increments the accumulator
@@ -140,7 +140,7 @@ namespace Engine
 
         // Update input right before the main gameloop. This needs to be here because if it is out side the while loop,
         // WORLD.update() won't have a chance to react before the input state is cleared on the next frame. 
-        Input::Update();
+        Input::update();
 
         if (Engine::Input::is_key_pressed(GLFW_KEY_ESCAPE))
         {
@@ -164,7 +164,7 @@ namespace Engine
         if (shouldRunPhysics)
         {
           // Main gameloop here
-          StateManager::GetCurrentState()->Update();
+          StateManager::get_current_state()->update();
           WORLD.update();
         }
 
@@ -181,12 +181,12 @@ namespace Engine
       CameraPanel();
       // start of draw stuff
       WORLD.draw();
-      StateManager::GetCurrentState()->Draw();
+      StateManager::get_current_state()->draw();
       GRAPHICS.end_frame();
 
       // end of draw stuff
       ImguiMgr::end();
-      glfwSwapBuffers(WINDOW.getWindow());
+      glfwSwapBuffers(WINDOW.get_window());
       // Rendering End ==========================================
     }
   }
@@ -202,7 +202,7 @@ namespace Engine
 
     ImguiMgr::imgui_exit();
 
-    StateManager::Exit(); // TODO: to be removed 
+    StateManager::exit(); // TODO: to be removed 
 
     WORLD.remove_event_listener<WindowResizeEvent>();
   }

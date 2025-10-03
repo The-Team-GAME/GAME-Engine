@@ -33,7 +33,7 @@ namespace Engine
      * @brief Updates the internal state of the input manager.
      * This should be called once at the beginning of each frame.
      */
-    static void Update();
+    static void update();
 
     // Keyboard input
     /**

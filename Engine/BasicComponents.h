@@ -167,23 +167,23 @@ namespace Components {
   struct AnimatedSprite {
     s32 spriteSheetId;
     f32 animationTime;
-    bool isPlaying;
+    bool is_playing;
     bool loop;
 
     AnimatedSprite(s32 spriteSheetId = -1, bool autoPlay = true, bool loop = true)
-      : spriteSheetId(spriteSheetId), animationTime(0.0f), isPlaying(autoPlay), loop(loop) {
+      : spriteSheetId(spriteSheetId), animationTime(0.0f), is_playing(autoPlay), loop(loop) {
     }
 
     void play() {
-      isPlaying = true;
+      is_playing = true;
     }
 
     void pause() {
-      isPlaying = false;
+      is_playing = false;
     }
 
     void stop() {
-      isPlaying = false;
+      is_playing = false;
       animationTime = 0.0f;
     }
 

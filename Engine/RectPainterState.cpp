@@ -39,8 +39,8 @@ namespace Components {
   };
 }
 
-void RectPainterState::Load() {}
-void RectPainterState::Init()
+void RectPainterState::load() {}
+void RectPainterState::init()
 {
   Engine::WORLD.create_entity()
     .add_component<Components::Tag<"RectPainter">>()
@@ -64,7 +64,7 @@ void RectPainterState::Init()
 
 }
 
-void RectPainterState::Free()
+void RectPainterState::free()
 {
   // Destroy all entities from this state
   Engine::WORLD.destroy_entities_with<Components::Tag<"RectPainter">>();
@@ -77,15 +77,15 @@ void RectPainterState::Free()
   Engine::WORLD.remove_system<RectRenderSystem>();
 }
 
-void RectPainterState::Unload() {}
+void RectPainterState::unload() {}
 
-void RectPainterState::Update()
+void RectPainterState::update()
 {
   handleShortcuts();
   handleMouse();
 }
 
-void RectPainterState::Draw()
+void RectPainterState::draw()
 {
   // Preview while drawing
   if (dragMode_ == DragMode::Drawing && passedThreshold_) {

@@ -40,7 +40,7 @@ namespace Engine
     Where to call it:
     Called when the state is first created or when transitioning to this state.
     ==================================================================================*/
-    virtual void Load() {};
+    virtual void load() {};
 
     /*=================================================================================
     Function Brief:
@@ -50,7 +50,7 @@ namespace Engine
     Where to call it:
     Called after Load() and is meant to prepare the state for updates and rendering.
     ==================================================================================*/
-    virtual void Init() {};
+    virtual void init() {};
 
     /*=================================================================================
     Function Brief:
@@ -60,7 +60,7 @@ namespace Engine
     Where to call it:
     Called every frame during the game loop.
     ==================================================================================*/
-    virtual void Update() {};
+    virtual void update() {};
 
     /*=================================================================================
     Function Brief:
@@ -69,7 +69,7 @@ namespace Engine
     Where to call it:
     Called every frame after Update() to render the current state to the screen.
     ==================================================================================*/
-    virtual void Draw() {};
+    virtual void draw() {};
 
     /*=================================================================================
     Function Brief:
@@ -79,7 +79,7 @@ namespace Engine
     Where to call it:
     Typically called when the state transitions to another state or when the game ends.
     ==================================================================================*/
-    virtual void Free() {};
+    virtual void free() {};
 
     /*=================================================================================
     Function Brief:
@@ -89,7 +89,7 @@ namespace Engine
     Where to call it:
     Called when the state is completely removed from memory.
     ==================================================================================*/
-    virtual void Unload() {};
+    virtual void unload() {};
 
     /*=================================================================================
     Function Brief:
@@ -121,7 +121,7 @@ namespace Engine
   StateManager::Init(MainMenuState::Get());
 
   // Change to main menu state
-  StateManager::ChangeState(MainMenuState::Get());
+  StateManager::change_state(MainMenuState::Get());
   ==================================================================================*/
   template <typename Derived>
   class GameState : public GameStateBase
@@ -134,7 +134,7 @@ namespace Engine
     Returns:
     Pointer to the singleton instance of the derived state.
     ==================================================================================*/
-    static Derived* Get()
+    static Derived* get()
     {
       static Derived instance{};
       return &instance;
@@ -163,7 +163,7 @@ namespace Engine
     Use when you want to completely replace the current state(s) with a new state,
     such as transitioning from main menu to gameplay.
     ==================================================================================*/
-    static void ChangeState(GameStateBase* newState);
+    static void change_state(GameStateBase* newState);
 
     /*=================================================================================
     Function Brief:
@@ -177,7 +177,7 @@ namespace Engine
     Use when you want to overlay a new state on top of existing ones, such as
     opening a pause menu or settings screen.
     ==================================================================================*/
-    static void PushState(GameStateBase* newState);
+    static void push_state(GameStateBase* newState);
 
     /*=================================================================================
     Function Brief:
@@ -191,7 +191,7 @@ namespace Engine
     Use when closing an overlaid state to return to the previous state, such as
     closing a pause menu to resume gameplay.
     ==================================================================================*/
-    static bool PopState();
+    static bool pop_state();
 
     /*=================================================================================
     Function Brief:
@@ -202,7 +202,7 @@ namespace Engine
     Use when you want to reset the current state, such as restarting a level after
     a game over.
     ==================================================================================*/
-    static void Restart();
+    static void restart();
 
     /*=================================================================================
     Function Brief:
@@ -215,7 +215,7 @@ namespace Engine
     Where to call it:
     Call once during engine initialization before entering the main game loop.
     ==================================================================================*/
-    static void Init(GameStateBase* initialState);
+    static void init(GameStateBase* initialState);
 
     /*=================================================================================
     Function Brief:
@@ -225,7 +225,7 @@ namespace Engine
     Where to call it:
     Call during engine shutdown to properly clean up all game states.
     ==================================================================================*/
-    static void Exit();
+    static void exit();
 
     /*=================================================================================
     Function Brief:
@@ -234,9 +234,9 @@ namespace Engine
     Returns:
     Pointer to the current game state.
     ==================================================================================*/
-    static GameStateBase* GetCurrentState();
+    static GameStateBase* get_current_state();
 
   private:
-    inline static std::vector<GameStateBase*> stateStack;
+    inline static std::vector<GameStateBase*> state_stack;
   };
 }

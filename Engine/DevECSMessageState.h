@@ -37,11 +37,11 @@ private:
   ECS::Entity player;
 
 public:
-  void Load() {
+  void load() {
     enemy_prefab = Engine::FACTORY.registerObject("Assets/objects/enemy.json");
   }
 
-  void Init() {
+  void init() {
     // Create player entity
     player = Engine::WORLD.create_entity()
       .add_component<Components::Tag<"Player">>()
@@ -100,7 +100,7 @@ public:
     Engine::WORLD.add_system<DamageSystem>(); // Add the new system
   }
 
-  void Update() {
+  void update() {
     if (Engine::Input::is_key_pressed(GLFW_KEY_SPACE))
     {
       Engine::WORLD.send_event<DamageEvent>(player.get_id(), 10);
@@ -126,9 +126,9 @@ public:
     }
   }
 
-  void Draw() {}
+  void draw() {}
 
-  void Free() {
+  void free() {
     Engine::WORLD.destroy_entities_with<Components::Tag<"GameObjectState">>();
 
     // Remove systems
@@ -146,5 +146,5 @@ public:
     Engine::WORLD.remove_system<DamageSystem>(); // Add the new system
   }
 
-  void Unload() {}
+  void unload() {}
 };

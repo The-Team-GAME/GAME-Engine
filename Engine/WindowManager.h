@@ -41,7 +41,7 @@ private:
   width - New framebuffer width in pixels
   height - New framebuffer height in pixels
   ==================================================================================*/
-  static void framebufferSizeCallback(GLFWwindow* window, s32 width, s32 height);
+  static void framebuffer_resize_callback(GLFWwindow* window, s32 width, s32 height);
 
   /*=================================================================================
   Function Brief:
@@ -95,7 +95,7 @@ public:
   /* ===================== //
   // Accessors             //
   // ===================== */
-  GLFWwindow* getWindow() const { return window; }
+  GLFWwindow* get_window() const { return window; }
   s32 get_width() const { return width; }
   s32 get_height() const { return height; }
 

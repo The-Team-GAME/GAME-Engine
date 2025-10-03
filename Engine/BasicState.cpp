@@ -21,7 +21,7 @@
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 
-void BasicState::Load()
+void BasicState::load()
 {
   // Load fonts using ResourceManager
   font_id_1 = Engine::RESOURCES.load_font("roboto", "Assets/fonts/Roboto-Regular.ttf", 48);
@@ -46,12 +46,12 @@ void BasicState::Load()
 
 }
 
-void BasicState::Init()
+void BasicState::init()
 {
 
 }
 
-void BasicState::Update()
+void BasicState::update()
 {
   if (Engine::Input::is_key_pressed(GLFW_KEY_SPACE))
   {
@@ -62,7 +62,7 @@ void BasicState::Update()
   {
     if (move_sound_id != -1)
     {
-      Engine::AUDIO.playSound(move_sound_id);
+      Engine::AUDIO.play_sound(move_sound_id);
       std::cout << "P key was pressed! Playing sound.\n";
     }
   }
@@ -71,7 +71,7 @@ void BasicState::Update()
 
 }
 
-void BasicState::Draw()
+void BasicState::draw()
 {
   Engine::GRAPHICS.clear_screen(0.1f, 0.1f, 0.1f, 1.0f); // Dark gray background
 
@@ -92,12 +92,12 @@ void BasicState::Draw()
   Engine::GRAPHICS.draw_text(font_id_1, "Press 'P' to play sound", 250.0f, 350.0f, 0.5f, { 1.0f, 1.0f, 0.0f, 1.0f });
 }
 
-void BasicState::Free()
+void BasicState::free()
 {
 
 }
 
-void BasicState::Unload()
+void BasicState::unload()
 {
   // Unload resources using ResourceManager
   Engine::RESOURCES.unload_font("roboto");

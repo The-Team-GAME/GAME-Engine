@@ -33,7 +33,7 @@ private:
   s32 walk_sprite_sheet_id;
 
 public:
-  void Load() {
+  void load() {
     // Load sprite sheets in the Load phase
     idle_sprite_sheet_id = Engine::RESOURCES.load_sprite_sheet(
       "LazyMonkey_Idle",
@@ -56,7 +56,7 @@ public:
     );
   };
 
-  void Init() {
+  void init() {
     // Create background entity
     background_entity = Engine::WORLD.create_entity()
       .add_component<Components::Background>()
@@ -86,13 +86,13 @@ public:
     Engine::WORLD.add_system<SimplePlayerMovementSystem>();
   };
 
-  void Update() {
+  void update() {
   };
 
-  void Draw() {
+  void draw() {
   };
 
-  void Free() {
+  void free() {
     // Clean up entities
     if (idle_lazy_monkey.is_valid()) {
       idle_lazy_monkey.destroy();
@@ -109,7 +109,7 @@ public:
     Engine::WORLD.remove_system<SimplePlayerMovementSystem>();
   };
 
-  void Unload() {
+  void unload() {
     // Resources are automatically managed by ResourceManager
   };
 };

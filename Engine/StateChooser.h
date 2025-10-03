@@ -42,55 +42,55 @@ inline void StateChooserPanel()
 {
   ImGui::Begin("State Chooser");
 
-  ImGui::Text("Current State: %s", typeid(*Engine::StateManager::GetCurrentState()).name());
+  ImGui::Text("Current State: %s", typeid(*Engine::StateManager::get_current_state()).name());
 
 
   if (ImGui::Button("ShowcaseState"))
   {
-    Engine::StateManager::ChangeState(ShowcaseState::Get());
+    Engine::StateManager::change_state(ShowcaseState::get());
   }
   if (ImGui::Button("RectPainterState"))
   {
-    Engine::StateManager::ChangeState(RectPainterState::Get());
+    Engine::StateManager::change_state(RectPainterState::get());
   }
   if (ImGui::Button("Rubric2500ParticlesState"))
   {
-    Engine::StateManager::ChangeState(Rubric2500ParticlesState::Get());
+    Engine::StateManager::change_state(Rubric2500ParticlesState::get());
   }
   if (ImGui::Button("DevManySpritesState"))
   {
-    Engine::StateManager::ChangeState(DevManySpritesState::Get());
+    Engine::StateManager::change_state(DevManySpritesState::get());
   }
   if (ImGui::Button("PhysicsTestState"))
   {
-    Engine::StateManager::ChangeState(PhysicsTestState::Get());
+    Engine::StateManager::change_state(PhysicsTestState::get());
   }
   if (ImGui::Button("LevelLoaderTestState"))
   {
-    Engine::StateManager::ChangeState(LevelLoaderTestState::Get());
+    Engine::StateManager::change_state(LevelLoaderTestState::get());
   }
 
   // Other states for development and testing - uncomment as needed
   // 
   // if (ImGui::Button("BasicState"))
   // {
-  //   Engine::StateManager::ChangeState(BasicState::Get());
+  //   Engine::StateManager::change_state(BasicState::Get());
   // }
   // if (ImGui::Button("SpriteState"))
   // {
-  //   Engine::StateManager::ChangeState(SpriteState::Get());
+  //   Engine::StateManager::change_state(SpriteState::Get());
   // }
   // if (ImGui::Button("GameObjectState"))
   // {
-  //   Engine::StateManager::ChangeState(GameObjectState::Get());
+  //   Engine::StateManager::change_state(GameObjectState::Get());
   // }
   // if (ImGui::Button("DevSpriteAnimationState"))
   // {
-  //   Engine::StateManager::ChangeState(DevSpriteAnimationState::Get());
+  //   Engine::StateManager::change_state(DevSpriteAnimationState::Get());
   // }
   // if (ImGui::Button("DevECSMessageState"))
   // {
-  //   Engine::StateManager::ChangeState(DevECSMessageState::Get());
+  //   Engine::StateManager::change_state(DevECSMessageState::Get());
   // }
 
 

@@ -31,7 +31,7 @@ private:
   s32 banana_prefab = -1;
 
 public:
-  void Load() {
+  void load() {
     // Load object prefabs through ResourceManager  
     enemy_prefab = Engine::RESOURCES.load_object_prefab("enemy", "Assets/objects/enemy.json");
     banana_prefab = Engine::RESOURCES.load_object_prefab("banana", "Assets/objects/banana.json");
@@ -57,13 +57,13 @@ public:
     Engine::WORLD.add_system<StaticSpriteRenderSystem>();
   }
 
-  void Init() {}
+  void init() {}
 
-  void Update() {}
+  void update() {}
 
-  void Draw() {}
+  void draw() {}
 
-  void Free() {
+  void free() {
     // Unload through ResourceManager (new approach)
     Engine::RESOURCES.unload_object_prefab("enemy");
     Engine::RESOURCES.unload_object_prefab("banana");
@@ -76,5 +76,5 @@ public:
     Engine::WORLD.remove_system<StaticSpriteRenderSystem>();
   }
 
-  void Unload() {}
+  void unload() {}
 };

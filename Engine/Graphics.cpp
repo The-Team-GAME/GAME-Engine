@@ -63,7 +63,7 @@ void Graphics::update_view_matrix() {
   view = glm::scale(view, glm::vec3(1.0f / camera.zoom, 1.0f / camera.zoom, 1.0f)); // Changed: invert the zoom
   view = glm::translate(view, glm::vec3(-VIRTUAL_WIDTH / 2.0f, -VIRTUAL_HEIGHT / 2.0f, 0.0f));
   view = glm::inverse(view);
-  viewProjectionMatrix = projection * view;
+  view_projection_matrix = projection * view;
 }
 
 /*=================================================================================
@@ -94,10 +94,10 @@ void Graphics::init_graphics()
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   // Load and compile the shader program.
-  textureShader.init("Assets\\shaders\\texture.vert", "Assets\\shaders\\texture.frag");
+  texture_shader.init("Assets\\shaders\\texture.vert", "Assets\\shaders\\texture.frag");
 
   // Pre-allocate memory for the vertex buffer.
-  quadVertexBufferBase.resize(MaxVertices);
+  quad_vertex_buffer.resize(MaxVertices);
 
   // Create and bind a Vertex Array Object (VAO) to store the vertex attribute configuration.
   glGenVertexArrays(1, &quadVAO);
@@ -110,21 +110,21 @@ void Graphics::init_graphics()
   glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * MaxVertices, nullptr, GL_DYNAMIC_DRAW);
 
   // Define the layout of the vertex data.
-  // Attribute 0: Position (3 f32s)
+  // Attribute 0: position (3 f32s)
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Position));
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, position));
 
-  // Attribute 1: Color (4 f32s)
+  // Attribute 1: color (4 f32s)
   glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Color));
+  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, color));
 
-  // Attribute 2: Texture Coordinates (2 f32s)
+  // Attribute 2: tex_coords (2 f32s)
   glEnableVertexAttribArray(2);
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, TexCoords));
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, tex_coords));
 
-  // Attribute 3: Texture ID (1 f32)
+  // Attribute 3: tex_id (1 f32)
   glEnableVertexAttribArray(3);
-  glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, TexID));
+  glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, tex_id));
 
   // Generate indices for all possible quads in a batch
   std::vector<uint32_t> indices(MaxIndices);
@@ -160,10 +160,10 @@ void Graphics::init_graphics()
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &color);
 
   // The white texture is always in slot 0.
-  textureSlots[0] = whiteTexture;
+  texture_slots[0] = whiteTexture;
   // Initialize other texture slots to 0.
   for (uint32_t i = 1; i < MaxTextureSlots; i++)
-    textureSlots[i] = 0;
+    texture_slots[i] = 0;
 
   // Set initial viewport and projection matrix.
   set_viewport(win_width, win_height);
@@ -177,7 +177,7 @@ void Graphics::init_graphics()
 // Cleans up OpenGL objects and resources.
 Graphics::~Graphics()
 {
-  textureShader.destroy();
+  texture_shader.destroy();
 
   glDeleteVertexArrays(1, &quadVAO);
   glDeleteBuffers(1, &quadVBO);
@@ -191,10 +191,10 @@ Graphics::~Graphics()
   // Clean up all remaining fonts
   for (const auto& pair : fonts)
   {
-    glDeleteTextures(1, &pair.second.atlasTexture);
+    glDeleteTextures(1, &pair.second.atlas_texture);
   }
 
-  for (const auto& texture : textureSlots)
+  for (const auto& texture : texture_slots)
   {
     if (texture != 0) glDeleteTextures(1, &texture);
   }
@@ -220,9 +220,9 @@ void Graphics::end_frame()
 // Resets the batch data, preparing for a new set of draw calls.
 void Graphics::start_batch()
 {
-  quadIndexCount = 0;
-  vertexIndex = 0;
-  textureSlotIndex = 1; // Slot 0 is reserved for the white texture.
+  quad_index_count = 0;
+  vertex_index = 0;
+  texture_slot_index = 1; // Slot 0 is reserved for the white texture.
 }
 
 // Draws the current batch and starts a new one.
@@ -236,33 +236,33 @@ void Graphics::next_batch()
 void Graphics::flush()
 {
   // Don't do anything if there's nothing to draw.
-  if (quadIndexCount == 0)
+  if (quad_index_count == 0)
     return;
 
   // Calculate the size of the vertex data to be uploaded.
-  uint32_t dataSize = vertexIndex * sizeof(Vertex);
+  uint32_t dataSize = vertex_index * sizeof(Vertex);
   glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
   // Upload the vertex data from our CPU-side vector to the GPU's VBO.
-  glBufferSubData(GL_ARRAY_BUFFER, 0, dataSize, quadVertexBufferBase.data());
+  glBufferSubData(GL_ARRAY_BUFFER, 0, dataSize, quad_vertex_buffer.data());
 
   // Prepare the shader for drawing.
-  textureShader.use();
+  texture_shader.use();
   // Set the combined view-projection matrix uniform.
-  textureShader.set_matrix("u_ViewProjection", viewProjectionMatrix);
+  texture_shader.set_matrix("u_ViewProjection", view_projection_matrix);
 
   // Create an array of sampler indices [0, 1, 2, ..., 31].
   s32 samplers[MaxTextureSlots];
   std::iota(samplers, samplers + MaxTextureSlots, 0);
   // Upload the sampler array to the shader.
-  textureShader.set_int_array("u_Textures", MaxTextureSlots, samplers);
+  texture_shader.set_int_array("u_Textures", MaxTextureSlots, samplers);
 
   // Bind all active textures to their respective texture units.
-  for (uint32_t i = 0; i < textureSlotIndex; i++)
-    glBindTextureUnit(i, textureSlots[i]);
+  for (uint32_t i = 0; i < texture_slot_index; i++)
+    glBindTextureUnit(i, texture_slots[i]);
 
   // Bind the VAO and draw the elements.
   glBindVertexArray(quadVAO);
-  glDrawElements(GL_TRIANGLES, quadIndexCount, GL_UNSIGNED_INT, nullptr);
+  glDrawElements(GL_TRIANGLES, quad_index_count, GL_UNSIGNED_INT, nullptr);
 }
 
 // Calculates the positional offset needed to draw a quad from a specific origin point.
@@ -281,8 +281,8 @@ glm::vec2 Graphics::calculate_origin_offset(f32 width, f32 height, Origin origin
 // Sets the OpenGL viewport and updates the projection matrix.
 void Graphics::set_viewport(s32 width, s32 height)
 {
-  viewportWidth = width;
-  viewportHeight = height;
+  viewport_width = width;
+  viewport_height = height;
 
   // Tell OpenGL the size of the rendering window.
   glViewport(0, 0, width, height);
@@ -317,7 +317,7 @@ void Graphics::set_camera_rotation(f32 degrees)
 // Adds a colored rectangle to the current drawing batch.
 void Graphics::draw_rect(const glm::vec4& color, f32 x, f32 y, f32 width, f32 height, f32 rotation, Origin origin) {
   // If the current batch is full, draw it and start a new one.
-  if (quadIndexCount >= MaxIndices)
+  if (quad_index_count >= MaxIndices)
   {
     next_batch();
   }
@@ -334,13 +334,13 @@ void Graphics::draw_rect(const glm::vec4& color, f32 x, f32 y, f32 width, f32 he
   constexpr f32 texID = 0.0f;
 
   // Add the 4 vertices of the quad to the vertex buffer.
-  quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[0], color, {0.0f, 0.0f}, texID };
-  quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[1], color, {1.0f, 0.0f}, texID };
-  quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[2], color, {1.0f, 1.0f}, texID };
-  quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[3], color, {0.0f, 1.0f}, texID };
+  quad_vertex_buffer[vertex_index++] = { transform * QuadVertexPositions[0], color, {0.0f, 0.0f}, texID };
+  quad_vertex_buffer[vertex_index++] = { transform * QuadVertexPositions[1], color, {1.0f, 0.0f}, texID };
+  quad_vertex_buffer[vertex_index++] = { transform * QuadVertexPositions[2], color, {1.0f, 1.0f}, texID };
+  quad_vertex_buffer[vertex_index++] = { transform * QuadVertexPositions[3], color, {0.0f, 1.0f}, texID };
 
   // Increment the index count for the two triangles that make up the quad.
-  quadIndexCount += 6;
+  quad_index_count += 6;
 }
 
 // Draws a filled circle using a triangle fan approach (batched as quads approximation)
@@ -357,7 +357,7 @@ void Graphics::draw_circle(const glm::vec4& color, f32 x, f32 y, f32 radius, s32
 
   for (s32 i = 0; i < segments; i++)
   {
-    if (quadIndexCount >= MaxIndices)
+    if (quad_index_count >= MaxIndices)
     {
       next_batch();
     }
@@ -370,19 +370,19 @@ void Graphics::draw_circle(const glm::vec4& color, f32 x, f32 y, f32 radius, s32
     glm::vec3 p1 = { x + radius * cosf(angle1), y + radius * sinf(angle1), 0.0f };
     glm::vec3 p2 = { x + radius * cosf(angle2), y + radius * sinf(angle2), 0.0f };
 
-    quadVertexBufferBase[vertexIndex++] = { center, color, {0.5f, 0.5f}, texID };
-    quadVertexBufferBase[vertexIndex++] = { p1, color, {0.5f, 0.5f}, texID };
-    quadVertexBufferBase[vertexIndex++] = { p2, color, {0.5f, 0.5f}, texID };
-    quadVertexBufferBase[vertexIndex++] = { p2, color, {0.5f, 0.5f}, texID }; // Duplicate to form quad
+    quad_vertex_buffer[vertex_index++] = { center, color, {0.5f, 0.5f}, texID };
+    quad_vertex_buffer[vertex_index++] = { p1, color, {0.5f, 0.5f}, texID };
+    quad_vertex_buffer[vertex_index++] = { p2, color, {0.5f, 0.5f}, texID };
+    quad_vertex_buffer[vertex_index++] = { p2, color, {0.5f, 0.5f}, texID }; // Duplicate to form quad
 
-    quadIndexCount += 6;
+    quad_index_count += 6;
   }
 }
 
 // Draws a line between two points with specified thickness
 void Graphics::draw_line(const glm::vec4& color, f32 x1, f32 y1, f32 x2, f32 y2, f32 thickness)
 {
-  if (quadIndexCount >= MaxIndices)
+  if (quad_index_count >= MaxIndices)
   {
     next_batch();
   }
@@ -410,12 +410,12 @@ void Graphics::draw_line(const glm::vec4& color, f32 x1, f32 y1, f32 x2, f32 y2,
   glm::vec3 v2 = { x2 - perpX, y2 - perpY, 0.0f };
   glm::vec3 v3 = { x1 - perpX, y1 - perpY, 0.0f };
 
-  quadVertexBufferBase[vertexIndex++] = { v0, color, {0.0f, 0.0f}, texID };
-  quadVertexBufferBase[vertexIndex++] = { v1, color, {1.0f, 0.0f}, texID };
-  quadVertexBufferBase[vertexIndex++] = { v2, color, {1.0f, 1.0f}, texID };
-  quadVertexBufferBase[vertexIndex++] = { v3, color, {0.0f, 1.0f}, texID };
+  quad_vertex_buffer[vertex_index++] = { v0, color, {0.0f, 0.0f}, texID };
+  quad_vertex_buffer[vertex_index++] = { v1, color, {1.0f, 0.0f}, texID };
+  quad_vertex_buffer[vertex_index++] = { v2, color, {1.0f, 1.0f}, texID };
+  quad_vertex_buffer[vertex_index++] = { v3, color, {0.0f, 1.0f}, texID };
 
-  quadIndexCount += 6;
+  quad_index_count += 6;
 }
 
 // Loads a font from a file and prepares it for rendering.
@@ -448,9 +448,9 @@ s32 Graphics::load_font(const char* filepath, u32 size)
 
   // Create atlas texture
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-  u32 atlasTexture;
-  glGenTextures(1, &atlasTexture);
-  glBindTexture(GL_TEXTURE_2D, atlasTexture);
+  u32 atlas_texture;
+  glGenTextures(1, &atlas_texture);
+  glBindTexture(GL_TEXTURE_2D, atlas_texture);
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -458,11 +458,11 @@ s32 Graphics::load_font(const char* filepath, u32 size)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   Font font;
-  font.fontSize = size;
+  font.font_size = size;
   font.baseline = 0.0f;
-  font.atlasTexture = atlasTexture;
-  font.atlasWidth = atlasWidth;
-  font.atlasHeight = atlasHeight;
+  font.atlas_texture = atlas_texture;
+  font.atlas_width = atlasWidth;
+  font.atlas_height = atlasHeight;
   font.is_valid = true;
 
   // Second pass: pack characters into atlas
@@ -506,8 +506,8 @@ s32 Graphics::load_font(const char* filepath, u32 size)
         static_cast<u32>(face->glyph->advance.x)
     };
 
-    font.Characters.insert(std::pair<char, Character>(c, character));
-    font.baseline = std::max(font.baseline, static_cast<f32>(character.Bearing.y));
+    font.characters.insert(std::pair<char, Character>(c, character));
+    font.baseline = std::max(font.baseline, static_cast<f32>(character.bearing.y));
 
     currentX += face->glyph->bitmap.width + 1; // +1 for padding
   }
@@ -534,7 +534,7 @@ void Graphics::unload_font(s32 fontId)
   }
 
   // Delete the atlas texture
-  glDeleteTextures(1, &it->second.atlasTexture);
+  glDeleteTextures(1, &it->second.atlas_texture);
 
   fonts.erase(it);
 
@@ -549,7 +549,7 @@ void Graphics::unload_all_fonts()
   // Delete all atlas textures
   for (auto& pair : fonts)
   {
-    glDeleteTextures(1, &pair.second.atlasTexture);
+    glDeleteTextures(1, &pair.second.atlas_texture);
   }
   fonts.clear();
 
@@ -573,59 +573,59 @@ void Graphics::draw_text(s32 fontId, const std::string& text, f32 x, f32 y, f32 
 
   // Find or add font atlas to texture slots
   f32 textureIndex = 0.0f;
-  auto texIt = std::find(textureSlots.begin() + 1, textureSlots.begin() + textureSlotIndex, font.atlasTexture);
-  if (texIt != textureSlots.begin() + textureSlotIndex)
+  auto texIt = std::find(texture_slots.begin() + 1, texture_slots.begin() + texture_slot_index, font.atlas_texture);
+  if (texIt != texture_slots.begin() + texture_slot_index)
   {
-    textureIndex = static_cast<f32>(std::distance(textureSlots.begin(), texIt));
+    textureIndex = static_cast<f32>(std::distance(texture_slots.begin(), texIt));
   }
   else
   {
-    if (textureSlotIndex >= MaxTextureSlots)
+    if (texture_slot_index >= MaxTextureSlots)
     {
       next_batch();
       textureIndex = 1.0f;
     }
     else
     {
-      textureIndex = static_cast<f32>(textureSlotIndex);
+      textureIndex = static_cast<f32>(texture_slot_index);
     }
-    textureSlots[static_cast<int>(textureIndex)] = font.atlasTexture;
-    if (textureSlotIndex < MaxTextureSlots) textureSlotIndex++;
+    texture_slots[static_cast<int>(textureIndex)] = font.atlas_texture;
+    if (texture_slot_index < MaxTextureSlots) texture_slot_index++;
   }
 
   f32 currentX = x;
 
   for (char c : text)
   {
-    auto charIt = font.Characters.find(c);
-    if (charIt == font.Characters.end())
+    auto charIt = font.characters.find(c);
+    if (charIt == font.characters.end())
       continue;
 
     const Character& ch = charIt->second;
 
-    if (ch.Size.x > 0 && ch.Size.y > 0)
+    if (ch.size.x > 0 && ch.size.y > 0)
     {
-      if (quadIndexCount >= MaxIndices)
+      if (quad_index_count >= MaxIndices)
         next_batch();
 
-      f32 xpos = currentX + ch.Bearing.x * scale;
-      f32 ypos = y + (font.baseline - ch.Bearing.y) * scale;
-      f32 w = ch.Size.x * scale;
-      f32 h = ch.Size.y * scale;
+      f32 xpos = currentX + ch.bearing.x * scale;
+      f32 ypos = y + (font.baseline - ch.bearing.y) * scale;
+      f32 w = ch.size.x * scale;
+      f32 h = ch.size.y * scale;
 
       glm::mat4 transform = glm::translate(glm::mat4(1.0f), { xpos + w / 2.0f, ypos + h / 2.0f, 0.0f })
         * glm::scale(glm::mat4(1.0f), { w, h, 1.0f });
 
       // Use pre-calculated UV coordinates
-      quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[0], color, ch.texCoords[0], textureIndex };
-      quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[1], color, ch.texCoords[1], textureIndex };
-      quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[2], color, ch.texCoords[2], textureIndex };
-      quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[3], color, ch.texCoords[3], textureIndex };
+      quad_vertex_buffer[vertex_index++] = { transform * QuadVertexPositions[0], color, ch.tex_coords[0], textureIndex };
+      quad_vertex_buffer[vertex_index++] = { transform * QuadVertexPositions[1], color, ch.tex_coords[1], textureIndex };
+      quad_vertex_buffer[vertex_index++] = { transform * QuadVertexPositions[2], color, ch.tex_coords[2], textureIndex };
+      quad_vertex_buffer[vertex_index++] = { transform * QuadVertexPositions[3], color, ch.tex_coords[3], textureIndex };
 
-      quadIndexCount += 6;
+      quad_index_count += 6;
     }
 
-    currentX += (ch.Advance >> 6) * scale;
+    currentX += (ch.advance >> 6) * scale;
   }
 }
 
@@ -709,7 +709,7 @@ void Graphics::draw_texture_region(s32 imageId, f32 destX, f32 destY, f32 destWi
   }
 
   // If the batch is full (either too many indices or too many textures), start a new one.
-  if (quadIndexCount >= MaxIndices || textureSlotIndex >= MaxTextureSlots)
+  if (quad_index_count >= MaxIndices || texture_slot_index >= MaxTextureSlots)
   {
     next_batch();
   }
@@ -718,23 +718,23 @@ void Graphics::draw_texture_region(s32 imageId, f32 destX, f32 destY, f32 destWi
   const auto& tex = it->second;
 
   // Find if the texture is already in one of the active slots for this batch.
-  auto texSlotIt = std::find(textureSlots.begin() + 1, textureSlots.begin() + textureSlotIndex, tex.id);
-  if (texSlotIt != textureSlots.begin() + textureSlotIndex)
+  auto texSlotIt = std::find(texture_slots.begin() + 1, texture_slots.begin() + texture_slot_index, tex.id);
+  if (texSlotIt != texture_slots.begin() + texture_slot_index)
   {
     // If found, get its index.
-    textureIndex = static_cast<f32>(std::distance(textureSlots.begin(), texSlotIt));
+    textureIndex = static_cast<f32>(std::distance(texture_slots.begin(), texSlotIt));
   }
   else
   {
-    if (textureSlotIndex >= MaxTextureSlots)
+    if (texture_slot_index >= MaxTextureSlots)
     {
       Log::warning("Maximum texture slots reached");
       return;
     }
 
-    textureIndex = static_cast<f32>(textureSlotIndex);
-    textureSlots[textureSlotIndex] = tex.id;
-    textureSlotIndex++;
+    textureIndex = static_cast<f32>(texture_slot_index);
+    texture_slots[texture_slot_index] = tex.id;
+    texture_slot_index++;
   }
 
   // Calculate origin offset.
@@ -754,16 +754,16 @@ void Graphics::draw_texture_region(s32 imageId, f32 destX, f32 destY, f32 destWi
   };
 
   // Add the 4 vertices of the quad to the vertex buffer.
-  quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[0], tintColor, texCoords[0], textureIndex };
-  quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[1], tintColor, texCoords[1], textureIndex };
-  quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[2], tintColor, texCoords[2], textureIndex };
-  quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[3], tintColor, texCoords[3], textureIndex };
+  quad_vertex_buffer[vertex_index++] = { transform * QuadVertexPositions[0], tintColor, texCoords[0], textureIndex };
+  quad_vertex_buffer[vertex_index++] = { transform * QuadVertexPositions[1], tintColor, texCoords[1], textureIndex };
+  quad_vertex_buffer[vertex_index++] = { transform * QuadVertexPositions[2], tintColor, texCoords[2], textureIndex };
+  quad_vertex_buffer[vertex_index++] = { transform * QuadVertexPositions[3], tintColor, texCoords[3], textureIndex };
 
-  quadIndexCount += 6;
+  quad_index_count += 6;
 }
 
 // Loads a sprite sheet from a file and returns an ID for it.
-s32 Graphics::load_sprite_sheet(const char* filepath, s32 frameWidth, s32 frameHeight, s32 totalFrames, f32 animationSpeed, MinifyingFilter min_filter)
+s32 Graphics::load_sprite_sheet(const char* filepath, s32 frame_width, s32 frame_height, s32 total_frames, f32 animation_speed, MinifyingFilter min_filter)
 {
   // Load the texture using existing load_texture function
   s32 texture_id = load_texture(filepath, min_filter);
@@ -777,22 +777,22 @@ s32 Graphics::load_sprite_sheet(const char* filepath, s32 frameWidth, s32 frameH
   // Create sprite sheet data
   SpriteSheet spriteSheet = {
     static_cast<u32>(texture_id),
-    frameWidth,
-    frameHeight,
-    totalFrames,
-    animationSpeed
+    frame_width,
+    frame_height,
+    total_frames,
+    animation_speed
   };
 
   s32 spriteSheetId = next_sprite_sheet_id++;
-  spriteSheets[spriteSheetId] = spriteSheet;
+  sprite_sheets[spriteSheetId] = spriteSheet;
   return spriteSheetId;
 }
 
 // Draws an animated sprite from a sprite sheet.
 void Graphics::draw_animated_sprite(s32 spriteSheetId, f32 x, f32 y, f32 width, f32 height, f32 time, f32 rotation, Origin origin, const glm::vec4& tintColor)
 {
-  auto it = spriteSheets.find(spriteSheetId);
-  if (it == spriteSheets.end())
+  auto it = sprite_sheets.find(spriteSheetId);
+  if (it == sprite_sheets.end())
   {
     Log::warning("Invalid sprite sheet ID: " + std::to_string(spriteSheetId));
     return;
@@ -801,7 +801,7 @@ void Graphics::draw_animated_sprite(s32 spriteSheetId, f32 x, f32 y, f32 width, 
   const SpriteSheet& spriteSheet = it->second;
 
   // Calculate current frame based on time and animation speed
-  s32 currentFrame = static_cast<int>(time * spriteSheet.animationSpeed) % spriteSheet.totalFrames;
+  s32 currentFrame = static_cast<int>(time * spriteSheet.animation_speed) % spriteSheet.total_frames;
 
   // Get texture dimensions to calculate frames per row
   auto texIt = textures.find(spriteSheet.texture_id);
@@ -812,20 +812,20 @@ void Graphics::draw_animated_sprite(s32 spriteSheetId, f32 x, f32 y, f32 width, 
   }
   const Texture& texture = texIt->second;
 
-  s32 framesPerRow = texture.width / spriteSheet.frameWidth;
+  s32 framesPerRow = texture.width / spriteSheet.frame_width;
 
   // Calculate source coordinates for current frame
   s32 frameX = currentFrame % framesPerRow;
   s32 frameY = currentFrame / framesPerRow;
 
-  f32 srcX = static_cast<f32>(frameX * spriteSheet.frameWidth);
-  f32 srcY = static_cast<f32>(frameY * spriteSheet.frameHeight);
+  f32 srcX = static_cast<f32>(frameX * spriteSheet.frame_width);
+  f32 srcY = static_cast<f32>(frameY * spriteSheet.frame_height);
 
   // Use draw_texture_region to render the specific frame
   draw_texture_region(
     spriteSheet.texture_id,
     x, y, width, height,
-    srcX, srcY, static_cast<f32>(spriteSheet.frameWidth), static_cast<f32>(spriteSheet.frameHeight),
+    srcX, srcY, static_cast<f32>(spriteSheet.frame_width), static_cast<f32>(spriteSheet.frame_height),
     rotation,
     origin,
     tintColor
@@ -880,8 +880,8 @@ void Graphics::clear_screen(s32 texture_id)
 glm::vec2 Graphics::screen_to_virtual(f32 screenX, f32 screenY) const
 {
   return {
-    (screenX / viewportWidth) * VIRTUAL_WIDTH,
-    (screenY / viewportHeight) * VIRTUAL_HEIGHT
+    (screenX / viewport_width) * VIRTUAL_WIDTH,
+    (screenY / viewport_height) * VIRTUAL_HEIGHT
   };
 }
 
@@ -909,8 +909,8 @@ glm::vec2 Graphics::world_to_screen(f32 worldX, f32 worldY) const
 
   // Convert virtual coordinates to screen coordinates
   return {
-    (virtual_point.x / VIRTUAL_WIDTH) * viewportWidth,
-    (virtual_point.y / VIRTUAL_HEIGHT) * viewportHeight
+    (virtual_point.x / VIRTUAL_WIDTH) * viewport_width,
+    (virtual_point.y / VIRTUAL_HEIGHT) * viewport_height
   };
 }
 
@@ -933,9 +933,9 @@ void Graphics::unload_texture(s32 texture_id)
   // Clear the texture from any active texture slots
   for (uint32_t i = 0; i < MaxTextureSlots; i++)
   {
-    if (textureSlots[i] == glTextureId)
+    if (texture_slots[i] == glTextureId)
     {
-      textureSlots[i] = 0;
+      texture_slots[i] = 0;
     }
   }
 
@@ -960,10 +960,10 @@ void Graphics::unload_all_textures()
   // Clear all texture slots except the white texture (slot 0)
   for (uint32_t i = 1; i < MaxTextureSlots; i++)
   {
-    textureSlots[i] = 0;
+    texture_slots[i] = 0;
   }
 
-  textureSlotIndex = 1; // Reset to 1 (slot 0 is reserved for white texture)
+  texture_slot_index = 1; // Reset to 1 (slot 0 is reserved for white texture)
 
   // Reset the counter
   next_texture_id = 0;
@@ -974,8 +974,8 @@ void Graphics::unload_all_textures()
 // Unloads a sprite sheet by its ID
 void Graphics::unload_sprite_sheet(s32 spriteSheetId)
 {
-  auto it = spriteSheets.find(spriteSheetId);
-  if (it == spriteSheets.end())
+  auto it = sprite_sheets.find(spriteSheetId);
+  if (it == sprite_sheets.end())
   {
     Log::warning("Graphics: Invalid sprite sheet ID: " + std::to_string(spriteSheetId));
     return;
@@ -986,7 +986,7 @@ void Graphics::unload_sprite_sheet(s32 spriteSheetId)
   // If you want to delete the underlying texture as well, you would call:
   // unload_texture(spriteSheets[spriteSheetId].texture_id);
 
-  spriteSheets.erase(it);
+  sprite_sheets.erase(it);
 
   // If this was the last allocated sprite sheet, decrement the counter
   next_sprite_sheet_id--;
@@ -997,7 +997,7 @@ void Graphics::unload_sprite_sheet(s32 spriteSheetId)
 // Unloads all sprite sheets
 void Graphics::unload_all_sprite_sheets()
 {
-  spriteSheets.clear();
+  sprite_sheets.clear();
 
   // Reset the counter
   next_sprite_sheet_id = 0;
@@ -1033,18 +1033,18 @@ u32 Graphics::get_texture_handle(s32 texture_id) const
 }
 
 // Add this method
-bool Graphics::getSpriteSheetInfo(s32 spriteSheetId, SpriteSheetInfo& info) const
+bool Graphics::get_sprite_sheet_info(s32 spriteSheetId, SpriteSheetInfo& info) const
 {
-  auto it = spriteSheets.find(spriteSheetId);
-  if (it == spriteSheets.end())
+  auto it = sprite_sheets.find(spriteSheetId);
+  if (it == sprite_sheets.end())
   {
     return false;
   }
 
   const SpriteSheet& sheet = it->second;
-  info.frameWidth = sheet.frameWidth;
-  info.frameHeight = sheet.frameHeight;
-  info.totalFrames = sheet.totalFrames;
-  info.animationSpeed = sheet.animationSpeed;
+  info.frame_width = sheet.frame_width;
+  info.frame_height = sheet.frame_height;
+  info.total_frames = sheet.total_frames;
+  info.animation_speed = sheet.animation_speed;
   return true;
 }

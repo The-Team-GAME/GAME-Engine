@@ -172,14 +172,14 @@ inline void ResourceManagerPanel()
           ImGui::SameLine();
           if (ImGui::Button("Play"))
           {
-            Engine::AUDIO.playSound(soundId);
+            Engine::AUDIO.play_sound(soundId);
           }
 
           // Stop button
           ImGui::SameLine();
           if (ImGui::Button("Stop"))
           {
-            Engine::AUDIO.stopSound(soundId);
+            Engine::AUDIO.stop_sound(soundId);
           }
 
           // Unload button

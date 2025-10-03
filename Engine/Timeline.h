@@ -36,13 +36,13 @@ class Timeline {
 public:
   Timeline();
 
-  void Draw();
+  void draw();
 
   s32 get_current_frame() const { return currentFrame; }
   s32 get_num_layers() const { return (s32)layers.size(); }
 
   // Making playback state public (or adding a getter/setter) for the GameState to use
-  bool isPlaying = false;
+  bool is_playing = false;
   f64 lastFrameTime = 0.0;
 
 private:

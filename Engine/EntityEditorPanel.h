@@ -339,7 +339,7 @@ inline void EntityEditorPanel()
             sprite->reset();
 
           // Status
-          ImGui::Checkbox("Is Playing", &sprite->isPlaying);
+          ImGui::Checkbox("Is Playing", &sprite->is_playing);
           ImGui::Checkbox("Loop", &sprite->loop);
 
           // Manual time control

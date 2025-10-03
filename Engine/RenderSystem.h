@@ -129,7 +129,7 @@ public:
   void update_entity(ECS::Entity& entity) override {
     auto* sprite = entity.get_component<Components::AnimatedSprite>();
 
-    if (sprite->isPlaying) {
+    if (sprite->is_playing) {
       sprite->animationTime += Engine::Time::get_fixed_dt();
     }
   }

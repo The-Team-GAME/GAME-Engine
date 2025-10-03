@@ -84,7 +84,7 @@ private:
   s32 banana_collected = 0;
 
 public:
-  void Load() {
+  void load() {
     // Load prefabs
     banana_prefab = Engine::RESOURCES.load_object_prefab("banana", "Assets/objects/banana.json");
     lazy_monkey_prefab = Engine::RESOURCES.load_object_prefab("lazy_monkey", "Assets/objects/lazy_monkey.json");
@@ -134,7 +134,7 @@ public:
     );
   }
 
-  void Init() {
+  void init() {
     // Create solid color background
     background_entity = Engine::WORLD.create_entity()
       .add_component<Components::Tag<"ShowcaseState">>()
@@ -181,12 +181,12 @@ public:
 
       // Play attack animation
       if (event.attacker == player.get_id()) {
-        Engine::AUDIO.stopSound(walkSoundId); // Stop walking sound if playing
+        Engine::AUDIO.stop_sound(walkSoundId); // Stop walking sound if playing
 
-        auto* playerSprite = player.get_component<Components::AnimatedSprite>();
-        if (playerSprite) {
-          playerSprite->spriteSheetId = player_punch_sprite_sheet_id;
-          playerSprite->reset();
+        auto* player_sprite = player.get_component<Components::AnimatedSprite>();
+        if (player_sprite) {
+          player_sprite->spriteSheetId = player_punch_sprite_sheet_id;
+          player_sprite->reset();
           player.get_component<Components::Size>()->width = 96.0f; // Adjust size for punch sprites
           std::cout << "Playing punch animation\n";
         }
@@ -243,24 +243,24 @@ public:
       });
   }
 
-  void Update() {
+  void update() {
 
-    auto* playerPos = player.get_component<Components::Position>();
-    auto* playerVel = player.get_component<Components::Velocity>();
-    auto* playerSprite = player.get_component<Components::AnimatedSprite>();
+    auto* player_pos = player.get_component<Components::Position>();
+    auto* player_vel = player.get_component<Components::Velocity>();
+    auto* player_sprite = player.get_component<Components::AnimatedSprite>();
 
-    if (!playerPos || !playerVel || !playerSprite) return;
+    if (!player_pos || !player_vel || !player_sprite) return;
 
     // Check if punch animation has completed
-    if (playerSprite->spriteSheetId == player_punch_sprite_sheet_id) {
+    if (player_sprite->spriteSheetId == player_punch_sprite_sheet_id) {
       Graphics::SpriteSheetInfo info;
-      if (Engine::GRAPHICS.getSpriteSheetInfo(player_punch_sprite_sheet_id, info)) {
-        f32 totalDuration = info.totalFrames / info.animationSpeed;
+      if (Engine::GRAPHICS.get_sprite_sheet_info(player_punch_sprite_sheet_id, info)) {
+        f32 totalDuration = info.total_frames / info.animation_speed;
 
-        if (playerSprite->animationTime >= totalDuration) {
+        if (player_sprite->animationTime >= totalDuration) {
           // Punch animation completed, return to idle
-          playerSprite->spriteSheetId = player_idle_sprite_sheet_id;
-          playerSprite->reset();
+          player_sprite->spriteSheetId = player_idle_sprite_sheet_id;
+          player_sprite->reset();
           player.get_component<Components::Size>()->width = 64.0f; // Reset size after punch
           std::cout << "Punch animation completed, returning to idle\n";
         }
@@ -269,27 +269,27 @@ public:
 
     // Player movement input
     f32 speed = 300.0f;
-    f32 newVelX = 0.0f;
-    f32 newVelY = 0.0f;
+    f32 new_vel_x = 0.0f;
+    f32 new_vel_y = 0.0f;
 
     if (Engine::Input::is_key_held(GLFW_KEY_W)) {
-      newVelY = -speed;
+      new_vel_y = -speed;
     }
     if (Engine::Input::is_key_held(GLFW_KEY_S)) {
-      newVelY = speed;
+      new_vel_y = speed;
     }
     if (Engine::Input::is_key_held(GLFW_KEY_A)) {
-      newVelX = -speed;
+      new_vel_x = -speed;
     }
     if (Engine::Input::is_key_held(GLFW_KEY_D)) {
-      newVelX = speed;
+      new_vel_x = speed;
     }
 
     // Update facing direction based on horizontal movement
-    if (newVelX > 0.0f) {
+    if (new_vel_x > 0.0f) {
       facing_right = true;
     }
-    else if (newVelX < 0.0f) {
+    else if (new_vel_x < 0.0f) {
       facing_right = false;
     }
 
@@ -300,26 +300,26 @@ public:
       scale->Y() = 2.0f;
     }
 
-    playerVel->X() = newVelX;
-    playerVel->Y() = newVelY;
+    player_vel->X() = new_vel_x;
+    player_vel->Y() = new_vel_y;
 
     // Only change to walk/idle if not currently punching
-    if (playerSprite->spriteSheetId != player_punch_sprite_sheet_id) {
+    if (player_sprite->spriteSheetId != player_punch_sprite_sheet_id) {
       // Animation change based on movement
-      bool shouldWalk = (newVelX != 0.0f || newVelY != 0.0f);
+      bool shouldWalk = (new_vel_x != 0.0f || new_vel_y != 0.0f);
 
       if (shouldWalk && !is_walking) {
         // Switch to walking animation
-        playerSprite->spriteSheetId = player_run_sprite_sheet_id;
-        playerSprite->reset();
-        Engine::AUDIO.playSoundLooped(walkSoundId);
+        player_sprite->spriteSheetId = player_run_sprite_sheet_id;
+        player_sprite->reset();
+        Engine::AUDIO.play_sound_looped(walkSoundId);
         is_walking = true;
       }
       else if (!shouldWalk && is_walking) {
         // Switch to idle animation
-        playerSprite->spriteSheetId = player_idle_sprite_sheet_id;
-        playerSprite->reset();
-        Engine::AUDIO.stopSound(walkSoundId);
+        player_sprite->spriteSheetId = player_idle_sprite_sheet_id;
+        player_sprite->reset();
+        Engine::AUDIO.stop_sound(walkSoundId);
         is_walking = false;
       }
     }
@@ -338,7 +338,7 @@ public:
     }
   }
 
-  void Draw() {
+  void draw() {
     // Draw title text (first font)
     if (title_font_id != -1) {
       Engine::GRAPHICS.draw_text(
@@ -382,10 +382,10 @@ public:
     }
   }
 
-  void Free() {
+  void free() {
     // Stop any playing sounds
     if (is_walking) {
-      Engine::AUDIO.stopSound(walkSoundId);
+      Engine::AUDIO.stop_sound(walkSoundId);
     }
 
     // Cleanup entities
@@ -404,7 +404,7 @@ public:
     Engine::WORLD.remove_event_listener<CollectEvent>();
   }
 
-  void Unload() {
+  void unload() {
     // Unload prefabs
     Engine::RESOURCES.unload_object_prefab("lazy_monkey");
     Engine::RESOURCES.unload_object_prefab("banana");

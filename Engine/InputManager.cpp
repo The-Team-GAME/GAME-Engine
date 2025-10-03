@@ -45,11 +45,11 @@ namespace Engine
   before checking any input states. Updates keyboard, mouse button states, and
   mouse position in virtual coordinates.
   ==================================================================================*/
-  void Input::Update()
+  void Input::update()
   {
     Engine::PERFORMANCE.start("Input");
 
-    GLFWwindow* window = Engine::WINDOW.getWindow(); //TODO: pass window as parameter in constructor
+    GLFWwindow* window = Engine::WINDOW.get_window(); //TODO: pass window as parameter in constructor
 
     // Update previous states
     previousKeys = currentKeys;
@@ -117,7 +117,7 @@ namespace Engine
   glm::vec2 Input::GetMouseWorldPosition()
   {
     // Get the raw screen coordinates
-    GLFWwindow* window = Engine::WINDOW.getWindow();
+    GLFWwindow* window = Engine::WINDOW.get_window();
     f64 xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
 

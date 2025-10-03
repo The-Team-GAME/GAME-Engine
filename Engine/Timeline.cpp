@@ -24,7 +24,7 @@ Timeline::Timeline()
   numFrames(100),           //total frames
   zoom(1.0f),               //zooms the x axis of the grid
   cellSize(ImVec2(100, 90)), //
-  isPlaying(false),         // Start in a paused state
+  is_playing(false),         // Start in a paused state
   playbackSpeed(30.0f),     // Default speed of 30 frames per second
   lastFrameTime(0.0)        // Initialize time to zero
 {
@@ -47,7 +47,7 @@ Timeline::Timeline()
     ==================================================================================*/
 
     // --Timeline--
-void Timeline::Draw() {
+void Timeline::draw() {
   if (ImGui::Begin("Timeline"))
   {
     ImVec2 timelineSize(cellSize.x * numFrames, cellSize.y * (int)layers.size());
@@ -84,10 +84,10 @@ void Timeline::Draw() {
 
     // Add play/pause button
     ImGui::SameLine();
-    if (ImGui::Button(isPlaying ? "Pause" : "Play")) {
-      isPlaying = !isPlaying;
+    if (ImGui::Button(is_playing ? "Pause" : "Play")) {
+      is_playing = !is_playing;
       // When playback starts, reset the last frame time
-      if (isPlaying) {
+      if (is_playing) {
         lastFrameTime = ImGui::GetTime();
       }
     }
@@ -118,7 +118,7 @@ void Timeline::Draw() {
           currentCellSize))
         {
           currentFrame = frame;
-          isPlaying = false; // Pause playback on manual selection
+          is_playing = false; // Pause playback on manual selection
         }
       }
     }
@@ -129,7 +129,7 @@ void Timeline::Draw() {
     draw_list->AddRectFilled(headMin, headMax, IM_COL32(255, 0, 0, 255));
 
     // Update playhead position if playing
-    if (isPlaying) {
+    if (is_playing) {
       // Get the current time and calculate the time elapsed since the last frame
       f64 currentTime = ImGui::GetTime();
       f32 deltaTime = (f32)(currentTime - lastFrameTime);
@@ -140,7 +140,7 @@ void Timeline::Draw() {
       // Check if the marker has reached or passed the end of the timeline
       if (currentFrame >= numFrames) {
         // Stop playback by setting isPlaying to false
-        isPlaying = false;
+        is_playing = false;
         currentFrame = numFrames - 1; //clamp to current frame
       }
 

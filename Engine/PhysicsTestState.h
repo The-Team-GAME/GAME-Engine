@@ -37,13 +37,13 @@ private:
   s32 info_font_id = -1;
 
 public:
-  void Load() {
+  void load() {
     // Load fonts
     title_font_id = Engine::RESOURCES.load_font("physics_title_font", "Assets/fonts/PlayfairDisplay-VariableFont_wght.ttf", 82);
     info_font_id = Engine::RESOURCES.load_font("physics_info_font", "Assets/fonts/Roboto-Regular.ttf", 48);
   };
 
-  void Init()
+  void init()
   {
     auto player = Engine::WORLD.create_entity()
       .add_component<Components::Tag<"GameObjectState">>()
@@ -93,11 +93,11 @@ public:
     Engine::WORLD.add_system<StaticSpriteRenderSystem>();
   };
 
-  void Update() {
+  void update() {
 
   };
 
-  void Draw()
+  void draw()
   {
     // Draw title text
     if (title_font_id != -1) {
@@ -122,7 +122,7 @@ public:
     }
   };
 
-  void Free() {
+  void free() {
     Engine::FACTORY.unregisterObject(enemy_prefab);
     Engine::WORLD.destroy_entities_with<Components::Tag<"GameObjectState">>();
     // Remove systems
@@ -136,7 +136,7 @@ public:
     Engine::WORLD.remove_system<StaticSpriteRenderSystem>();
   };
 
-  void Unload() {
+  void unload() {
     Engine::FACTORY.unregisterObject(enemy_prefab);
 
     // Unload fonts

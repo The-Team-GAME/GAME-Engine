@@ -95,7 +95,7 @@ s32 Engine::ResourceManager::load_sound(std::string name, std::string path)
   }
 
   // Load the sound
-  s32 soundId = Engine::AUDIO.loadSound(path);
+  s32 soundId = Engine::AUDIO.load_sound(path);
   if (soundId != -1)
   {
     sounds[name] = soundId;
@@ -129,7 +129,7 @@ void Engine::ResourceManager::unload_sound(std::string name)
   if (it != sounds.end())
   {
     std::cout << "ResourceManager: Attempting to unload sound '" << name << "' (ID: " << it->second << ").\n";
-    Engine::AUDIO.unloadSound(it->second);
+    Engine::AUDIO.unload_sound(it->second);
     sounds.erase(it);
     std::cout << "ResourceManager: Unloaded sound '" << name << "'.\n";
   }
@@ -209,20 +209,20 @@ size_t Engine::ResourceManager::get_font_count()
 /* ===================== //
 // Sprite Sheet Management//
 // ===================== */
-s32 Engine::ResourceManager::load_sprite_sheet(std::string name, std::string path, s32 frameWidth, s32 frameHeight, s32 totalFrames, f32 animationSpeed, Graphics::MinifyingFilter minifying_filter)
+s32 Engine::ResourceManager::load_sprite_sheet(std::string name, std::string path, s32 frame_width, s32 frame_height, s32 total_frames, f32 animation_speed, Graphics::MinifyingFilter minifying_filter)
 {
   // Check if sprite sheet with this name already exists
-  if (spriteSheets.find(name) != spriteSheets.end())
+  if (sprite_sheets.find(name) != sprite_sheets.end())
   {
-    std::cout << "ResourceManager: Sprite sheet '" << name << "' already loaded (ID: " << spriteSheets[name] << "), skipping duplicate load.\n";
-    return spriteSheets[name];
+    std::cout << "ResourceManager: Sprite sheet '" << name << "' already loaded (ID: " << sprite_sheets[name] << "), skipping duplicate load.\n";
+    return sprite_sheets[name];
   }
 
   // Load the sprite sheet
-  s32 spriteSheetId = Engine::GRAPHICS.load_sprite_sheet(path.c_str(), frameWidth, frameHeight, totalFrames, animationSpeed, minifying_filter);
+  s32 spriteSheetId = Engine::GRAPHICS.load_sprite_sheet(path.c_str(), frame_width, frame_height, total_frames, animation_speed, minifying_filter);
   if (spriteSheetId != -1)
   {
-    spriteSheets[name] = spriteSheetId;
+    sprite_sheets[name] = spriteSheetId;
     std::cout << "ResourceManager: Successfully loaded sprite sheet '" << name << "' from '" << path << "' (ID: " << spriteSheetId << ").\n";
     return spriteSheetId;
   }
@@ -235,8 +235,8 @@ s32 Engine::ResourceManager::load_sprite_sheet(std::string name, std::string pat
 
 s32 Engine::ResourceManager::get_sprite_sheet(std::string name)
 {
-  auto it = spriteSheets.find(name);
-  if (it != spriteSheets.end())
+  auto it = sprite_sheets.find(name);
+  if (it != sprite_sheets.end())
   {
     return it->second;
   }
@@ -249,12 +249,12 @@ s32 Engine::ResourceManager::get_sprite_sheet(std::string name)
 
 void Engine::ResourceManager::unload_sprite_sheet(std::string name)
 {
-  auto it = spriteSheets.find(name);
-  if (it != spriteSheets.end())
+  auto it = sprite_sheets.find(name);
+  if (it != sprite_sheets.end())
   {
     std::cout << "ResourceManager: Attempting to unload sprite sheet '" << name << "' (ID: " << it->second << ").\n";
     Engine::GRAPHICS.unload_sprite_sheet(it->second);
-    spriteSheets.erase(it);
+    sprite_sheets.erase(it);
     std::cout << "ResourceManager: Unloaded sprite sheet '" << name << "'.\n";
   }
   else
@@ -265,7 +265,7 @@ void Engine::ResourceManager::unload_sprite_sheet(std::string name)
 
 size_t Engine::ResourceManager::get_sprite_sheet_count()
 {
-  return spriteSheets.size();
+  return sprite_sheets.size();
 }
 
 /* ===================== //
@@ -274,17 +274,17 @@ size_t Engine::ResourceManager::get_sprite_sheet_count()
 s32 Engine::ResourceManager::load_object_prefab(std::string name, std::string path)
 {
   // Check if object prefab with this name already exists
-  if (objectPrefabs.find(name) != objectPrefabs.end())
+  if (object_prefabs.find(name) != object_prefabs.end())
   {
-    std::cout << "ResourceManager: Object prefab '" << name << "' already loaded (ID: " << objectPrefabs[name] << "), skipping duplicate load.\n";
-    return objectPrefabs[name];
+    std::cout << "ResourceManager: Object prefab '" << name << "' already loaded (ID: " << object_prefabs[name] << "), skipping duplicate load.\n";
+    return object_prefabs[name];
   }
 
   // Load the object prefab through the factory
   s32 prefabId = Engine::FACTORY.registerObject(path);
   if (prefabId != -1)
   {
-    objectPrefabs[name] = prefabId;
+    object_prefabs[name] = prefabId;
     std::cout << "ResourceManager: Successfully loaded object prefab '" << name << "' from '" << path << "' (ID: " << prefabId << ").\n";
     return prefabId;
   }
@@ -297,8 +297,8 @@ s32 Engine::ResourceManager::load_object_prefab(std::string name, std::string pa
 
 s32 Engine::ResourceManager::get_object_prefab(std::string name)
 {
-  auto it = objectPrefabs.find(name);
-  if (it != objectPrefabs.end())
+  auto it = object_prefabs.find(name);
+  if (it != object_prefabs.end())
   {
     return it->second;
   }
@@ -311,12 +311,12 @@ s32 Engine::ResourceManager::get_object_prefab(std::string name)
 
 void Engine::ResourceManager::unload_object_prefab(std::string name)
 {
-  auto it = objectPrefabs.find(name);
-  if (it != objectPrefabs.end())
+  auto it = object_prefabs.find(name);
+  if (it != object_prefabs.end())
   {
     std::cout << "ResourceManager: Attempting to unload object prefab '" << name << "' (ID: " << it->second << ").\n";
     Engine::FACTORY.unregisterObject(it->second);
-    objectPrefabs.erase(it);
+    object_prefabs.erase(it);
     std::cout << "ResourceManager: Unloaded object prefab '" << name << "'.\n";
   }
   else
@@ -327,7 +327,7 @@ void Engine::ResourceManager::unload_object_prefab(std::string name)
 
 size_t Engine::ResourceManager::get_object_prefab_count()
 {
-  return objectPrefabs.size();
+  return object_prefabs.size();
 }
 
 /* ===================== //

@@ -46,7 +46,7 @@ int Engine::ObjectFactory::registerObject(std::string filePath)
   {
     if (fh::get_string("id") != fh::d_string())
     {
-      newObject.objectId = Components::ObjectId(fh::get_string("id").c_str());
+      newObject.object_id = Components::ObjectId(fh::get_string("id").c_str());
     }
     else { Log::warning("Key: id does not contain a value."); }
   }
@@ -85,7 +85,7 @@ int Engine::ObjectFactory::registerObject(std::string filePath)
 
       // Load texture and store the ID
       s32 textureId = Engine::RESOURCES.load_texture(resourceName, texturePath, filter);
-      newObject.staticSprite = Components::StaticSprite(textureId);
+      newObject.static_sprite = Components::StaticSprite(textureId);
     }
     else { Log::warning("Key: texturePath does not contain a value."); }
   }
@@ -105,10 +105,10 @@ int Engine::ObjectFactory::registerObject(std::string filePath)
       std::replace(resourceName.begin(), resourceName.end(), '\\', '_');
       std::replace(resourceName.begin(), resourceName.end(), '.', '_');
 
-      s32 frameWidth = fh::get_s32("frameWidth");
-      s32 frameHeight = fh::get_s32("frameHeight");
-      s32 totalFrames = fh::get_s32("totalFrames");
-      f32 framesPerSecond = fh::get_f32("framesPerSecond");
+      s32 frame_width = fh::get_s32("frameWidth");
+      s32 frame_height = fh::get_s32("frameHeight");
+      s32 total_frames = fh::get_s32("totalFrames");
+      f32 frames_per_second = fh::get_f32("framesPerSecond");
 
       // Determine minifying filter
       Graphics::MinifyingFilter filter = Graphics::MinifyingFilter::Linear;
@@ -120,10 +120,10 @@ int Engine::ObjectFactory::registerObject(std::string filePath)
       // Load sprite sheet and store the ID
       s32 spriteSheetId = Engine::RESOURCES.load_sprite_sheet(
         resourceName, spriteSheetPath,
-        frameWidth, frameHeight, totalFrames, framesPerSecond,
+        frame_width, frame_height, total_frames, frames_per_second,
         filter
       );
-      newObject.animatedSprite = Components::AnimatedSprite(spriteSheetId);
+      newObject.animated_sprite = Components::AnimatedSprite(spriteSheetId);
     }
     else
     {
@@ -160,15 +160,15 @@ ECS::Entity Engine::ObjectFactory::createObject(s32 id)
   ObjectPrefab& objectPrefab = objectList[id];
 
   ECS::Entity entity = m_world->create_entity()
-    .add_component<Components::ObjectId>(objectPrefab.objectId)
+    .add_component<Components::ObjectId>(objectPrefab.object_id)
     .add_component<Components::Size>(objectPrefab.size);
 
-  if (objectPrefab.staticSprite.has_value()) {
-    entity.add_component<Components::StaticSprite>(objectPrefab.staticSprite.value());
+  if (objectPrefab.static_sprite.has_value()) {
+    entity.add_component<Components::StaticSprite>(objectPrefab.static_sprite.value());
   }
 
-  if (objectPrefab.animatedSprite.has_value()) {
-    entity.add_component<Components::AnimatedSprite>(objectPrefab.animatedSprite.value());
+  if (objectPrefab.animated_sprite.has_value()) {
+    entity.add_component<Components::AnimatedSprite>(objectPrefab.animated_sprite.value());
   }
 
   return entity;

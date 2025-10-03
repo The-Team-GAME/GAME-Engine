@@ -25,7 +25,7 @@ namespace Engine
   class AudioManager
   {
   private:
-    FMOD::System* fmodSystem; // FMOD system instance
+    FMOD::System* fmod_system; // FMOD system instance
     std::unordered_map<s32, FMOD::Sound*> sounds; // Map of sound IDs to FMOD sound objects
     std::unordered_map<s32, FMOD::Channel*> channels; // Map of sound IDs to active channels
     s32 next_sound_id; // Counter for generating unique sound IDs
@@ -37,23 +37,23 @@ namespace Engine
     /* ============================== //
     // Sound loading and management   //
     // ============================== */
-    s32 loadSound(const std::string& filepath); // Loads a sound file and returns its unique ID
-    void unloadSound(s32 soundId); // Unloads a specific sound by ID
-    void unloadAllSounds(); // Unloads all loaded sounds
+    s32 load_sound(const std::string& filepath); // Loads a sound file and returns its unique ID
+    void unload_sound(s32 soundId); // Unloads a specific sound by ID
+    void unload_all_sounds(); // Unloads all loaded sounds
 
     /* ================== //
     // Playback control   //
     // ================== */
-    bool playSound(s32 soundId); // Plays a sound once by ID
-    bool playSoundLooped(s32 soundId); // Plays a sound in loop mode by ID
-    void stopSound(s32 soundId); // Stops a specific sound by ID
-    void stopAllSounds(); // Stops all currently playing sounds
+    bool play_sound(s32 soundId); // Plays a sound once by ID
+    bool play_sound_looped(s32 soundId); // Plays a sound in loop mode by ID
+    void stop_sound(s32 soundId); // Stops a specific sound by ID
+    void stop_all_sounds(); // Stops all currently playing sounds
 
     /* ================ //
     // Volume control   //
     // ================ */
-    void setVolume(s32 soundId, f32 volume); // Sets volume for a specific sound (0.0 to 1.0)
-    void setMasterVolume(f32 volume); // Sets master volume for all sounds (0.0 to 1.0)
+    void set_sound_volume(s32 soundId, f32 volume); // Sets volume for a specific sound (0.0 to 1.0)
+    void set_master_volume(f32 volume); // Sets master volume for all sounds (0.0 to 1.0)
 
     /* ======= //
     // Update  //
@@ -63,6 +63,6 @@ namespace Engine
     /* ========= //
     // Utility   //
     // ========= */
-    bool isPlaying(s32 soundId); // Checks if a sound is currently playing
+    bool is_playing(s32 soundId); // Checks if a sound is currently playing
   };
 }

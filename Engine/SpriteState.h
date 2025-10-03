@@ -115,7 +115,7 @@ public:
     Where to call it:
     Automatically called by the StateManager when transitioning to this state.
     ==================================================================================*/
-  void Load() {
+  void load() {
     LoadAllAssets(); //loads updating assets within sprite dropper
   };
 
@@ -128,7 +128,7 @@ public:
     Where to call it:
     Automatically called by the StateManager right after Load() and before Update().
     ==================================================================================*/
-  void Init() {
+  void init() {
     linear_monkey_image_id = Engine::GRAPHICS.load_texture("Assets/images/monkey.png");
     nearest_monkey_image_id = Engine::GRAPHICS.load_texture("Assets/images/monkey.png", Graphics::MinifyingFilter::Nearest);
     std::cout << "Current path is " << std::filesystem::current_path() << std::endl;
@@ -143,7 +143,7 @@ public:
     Where to call it:
     Called once per game loop frame by the StateManager.
     ==================================================================================*/
-  void Update() {
+  void update() {
 
 
 
@@ -158,7 +158,7 @@ public:
     Where to call it:
     Called once per game loop frame by the StateManager after Update().
     ==================================================================================*/
-  void Draw() {
+  void draw() {
     // Main scene texture drawing
     Engine::GRAPHICS.clear_screen(0.1f, 0.1f, 0.1f, 1.0f);
     Engine::GRAPHICS.draw_texture(linear_monkey_image_id, 200.0f, 150.0f, 150.0f, 210.0f);
@@ -175,7 +175,7 @@ public:
       Engine::GRAPHICS.draw_texture(droppedImage.texture_id, 600.f, 500.f, 150.0f, 210.0f);
     }
 
-    timeline.Draw();
+    timeline.draw();
 
     // --- Image Menu ---
     ImGui::Begin("Image Menu");
@@ -222,7 +222,7 @@ public:
     Where to call it:
     Automatically called by the StateManager.
     ==================================================================================*/
-  void Free() {};
+  void free() {};
 
   /*=================================================================================
     Function Brief:
@@ -232,5 +232,5 @@ public:
     Where to call it:
     Automatically called by the StateManager when leaving this state.
     ==================================================================================*/
-  void Unload() {};
+  void unload() {};
 };

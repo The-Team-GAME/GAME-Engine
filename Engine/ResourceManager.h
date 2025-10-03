@@ -29,8 +29,8 @@ namespace Engine
     std::unordered_map<std::string, s32> textures;
     std::unordered_map<std::string, s32> sounds;
     std::unordered_map<std::string, s32> fonts;
-    std::unordered_map<std::string, s32> spriteSheets;
-    std::unordered_map<std::string, s32> objectPrefabs;
+    std::unordered_map<std::string, s32> sprite_sheets;
+    std::unordered_map<std::string, s32> object_prefabs;
 
   public:
     /* ===================== //
@@ -118,12 +118,12 @@ namespace Engine
     Returns:
     The sprite sheet ID if successful, or existing ID if already loaded, -1 on failure.
     ==================================================================================*/
-    s32 load_sprite_sheet(std::string name, std::string path, s32 frameWidth, s32 frameHeight,
-      s32 totalFrames, f32 animationSpeed, Graphics::MinifyingFilter minifying_filter);
+    s32 load_sprite_sheet(std::string name, std::string path, s32 frame_width, s32 frame_height,
+      s32 total_frames, f32 animation_speed, Graphics::MinifyingFilter minifying_filter);
     s32 get_sprite_sheet(std::string name);
     void unload_sprite_sheet(std::string name);
     size_t get_sprite_sheet_count();
-    const std::unordered_map<std::string, s32>& get_all_sprite_sheets() const { return spriteSheets; }
+    const std::unordered_map<std::string, s32>& get_all_sprite_sheets() const { return sprite_sheets; }
 
     /* ===================== //
     // Object Prefab Management//
@@ -144,7 +144,7 @@ namespace Engine
     s32 get_object_prefab(std::string name);
     void unload_object_prefab(std::string name);
     size_t get_object_prefab_count();
-    const std::unordered_map<std::string, s32>& get_all_object_prefabs() const { return objectPrefabs; }
+    const std::unordered_map<std::string, s32>& get_all_object_prefabs() const { return object_prefabs; }
 
     /* ===================== //
     // Generic Loading       //

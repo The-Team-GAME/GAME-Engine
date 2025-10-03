@@ -25,9 +25,9 @@ class Rubric2500ParticlesState : public Engine::GameState<Rubric2500ParticlesSta
 {
 private:
 public:
-  void Load() {};
+  void load() {};
 
-  void Init()
+  void init()
   {
     auto background = Engine::WORLD.create_entity()
       .add_component<Components::Tag<"Rubric2500ParticlesState">>()
@@ -45,7 +45,7 @@ public:
         static_cast<f32>(rand() % 256) / 255.0f,
         1.0f
       );
-      f32 rotationSpeed = 30.0f + static_cast<f32>(rand() % 90); // Random rotation speed between 30 and 120 degrees per second
+      f32 rotation_speed = 30.0f + static_cast<f32>(rand() % 90); // Random rotation speed between 30 and 120 degrees per second
 
       Engine::WORLD.create_entity()
         .add_component<Components::Tag<"Rubric2500ParticlesState">>()
@@ -53,7 +53,7 @@ public:
         .add_component<Components::Size>(size, size)
         .add_component<Components::Color>(color)
         .add_component<Components::Rotation>(rotation)
-        .add_component<Components::RotationSpeed>(rotationSpeed);
+        .add_component<Components::RotationSpeed>(rotation_speed);
     }
 
 
@@ -64,13 +64,13 @@ public:
 
   };
 
-  void Update() {};
+  void update() {};
 
-  void Draw()
+  void draw()
   {
   };
 
-  void Free() {
+  void free() {
     Engine::WORLD.destroy_entities_with<Components::Tag<"Rubric2500ParticlesState">>();
 
     // Remove systems
@@ -79,5 +79,5 @@ public:
     Engine::WORLD.remove_system<RectRenderSystem>();
   };
 
-  void Unload() {};
+  void unload() {};
 };

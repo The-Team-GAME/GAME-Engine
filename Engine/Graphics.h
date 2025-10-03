@@ -74,35 +74,35 @@ public:
 private:
   struct Vertex
   {
-    glm::vec3 Position;
-    glm::vec4 Color;
-    glm::vec2 TexCoords;
-    f32 TexID;
+    glm::vec3 position;
+    glm::vec4 color;
+    glm::vec2 tex_coords;
+    f32 tex_id;
   };
 
   struct SpriteSheet
   {
     u32 texture_id;
-    s32 frameWidth;
-    s32 frameHeight;
-    s32 totalFrames;
-    f32 animationSpeed; // Frames per second
+    s32 frame_width;
+    s32 frame_height;
+    s32 total_frames;
+    f32 animation_speed; // Frames per second
   };
 
   // Font rendering structures
   struct Character {
-    glm::vec2 texCoords[4];  // UV coordinates in the atlas
-    glm::ivec2 Size;
-    glm::ivec2 Bearing;
-    u32 Advance;
+    glm::vec2 tex_coords[4];  // UV coordinates in the atlas
+    glm::ivec2 size;
+    glm::ivec2 bearing;
+    u32 advance;
   };
 
   struct Font {
-    std::unordered_map<char, Character> Characters;
-    u32 atlasTexture = 0;  // Single texture for all characters
-    u32 fontSize = 0;
+    std::unordered_map<char, Character> characters;
+    u32 atlas_texture = 0;  // Single texture for all characters
+    u32 font_size = 0;
     f32 baseline = 0.0f;
-    s32 atlasWidth = 0, atlasHeight = 0;
+    s32 atlas_width = 0, atlas_height = 0;
     bool is_valid = true;  // Track if font is still valid
   };
 
@@ -121,16 +121,16 @@ private:
   u32 quadVBO = 0;
   u32 quadIBO = 0;
 
-  u32 quadIndexCount = 0;
-  std::vector<Vertex> quadVertexBufferBase;
-  u32 vertexIndex = 0;
+  u32 quad_index_count = 0;
+  std::vector<Vertex> quad_vertex_buffer;
+  u32 vertex_index = 0;
 
   /* ========================= //
   // Resource storage          //
   // ========================= */
   std::unordered_map<s32, Texture> textures;
   std::unordered_map<s32, Font> fonts;
-  std::unordered_map<s32, SpriteSheet> spriteSheets;
+  std::unordered_map<s32, SpriteSheet> sprite_sheets;
 
   // ID counters for generating unique IDs
   s32 next_texture_id = 0;
@@ -140,20 +140,20 @@ private:
   /* ========================= //
   // Texture binding slots     //
   // ========================= */
-  std::array<u32, MaxTextureSlots> textureSlots = {};
-  u32 textureSlotIndex = 1; // 0 = white texture
+  std::array<u32, MaxTextureSlots> texture_slots = {};
+  u32 texture_slot_index = 1; // 0 = white texture
 
   /* ========================= //
   // Rendering state           //
   // ========================= */
-  Shader textureShader{};
+  Shader texture_shader{};
   glm::mat4 projection = glm::mat4(1.0f);
   glm::mat4 view = glm::mat4(1.0f);
-  glm::mat4 viewProjectionMatrix = glm::mat4(1.0f);
+  glm::mat4 view_projection_matrix = glm::mat4(1.0f);
   Camera2D camera;
 
-  s32 viewportWidth = 800;
-  s32 viewportHeight = 600;
+  s32 viewport_width = 800;
+  s32 viewport_height = 600;
 
   void update_view_matrix();
 
@@ -217,19 +217,19 @@ public:
   /* ============================ //
   // Sprite sheet management      //
   // ============================ */
-  s32 load_sprite_sheet(const char* filepath, s32 frameWidth, s32 frameHeight, s32 totalFrames, f32 animationSpeed, MinifyingFilter min_filter = MinifyingFilter::Linear);
+  s32 load_sprite_sheet(const char* filepath, s32 frame_width, s32 frame_height, s32 total_frames, f32 animation_speed, MinifyingFilter min_filter = MinifyingFilter::Linear);
   void unload_sprite_sheet(s32 spriteSheetId);
   void unload_all_sprite_sheets();
   void draw_animated_sprite(s32 spriteSheetId, f32 x, f32 y, f32 width, f32 height, f32 time, f32 rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& ts32Color = glm::vec4(1.0f));
 
   struct SpriteSheetInfo {
-    s32 frameWidth;
-    s32 frameHeight;
-    s32 totalFrames;
-    f32 animationSpeed;
+    s32 frame_width;
+    s32 frame_height;
+    s32 total_frames;
+    f32 animation_speed;
   };
 
-  bool getSpriteSheetInfo(s32 spriteSheetId, SpriteSheetInfo& info) const;
+  bool get_sprite_sheet_info(s32 spriteSheetId, SpriteSheetInfo& info) const;
 
   /* ======================== //
   // FreeType library         //

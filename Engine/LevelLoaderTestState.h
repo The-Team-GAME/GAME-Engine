@@ -31,11 +31,11 @@ private:
   ECS::EntityID background_entity_id = 0;
 
 public:
-  void Load()
+  void load()
   {
   }
 
-  void Init()
+  void init()
   {
     // Create background
     auto bg = Engine::WORLD.create_entity();
@@ -71,7 +71,7 @@ public:
     }
   }
 
-  void Update()
+  void update()
   {
     // Press R to reload the level
     if (Engine::Input::is_key_pressed(GLFW_KEY_R))
@@ -114,7 +114,7 @@ public:
     }
   }
 
-  void Draw()
+  void draw()
   {
     // Draw instructions
     ImGui::Begin("Level Loader Test");
@@ -144,7 +144,7 @@ public:
     ImGui::End();
   }
 
-  void Free()
+  void free()
   {
     Log::info("LevelLoaderTestState: Free");
 
@@ -162,7 +162,7 @@ public:
     Engine::WORLD.remove_system<StaticSpriteRenderSystem>();
   }
 
-  void Unload()
+  void unload()
   {
     Log::info("LevelLoaderTestState: Unload");
   }

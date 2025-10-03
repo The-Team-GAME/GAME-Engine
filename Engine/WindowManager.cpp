@@ -69,7 +69,7 @@ void WindowManager::window_init()
 
   // Set up the resize callback - this handles both window and framebuffer resize
   glfwSetWindowUserPointer(window, this);
-  glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+  glfwSetFramebufferSizeCallback(window, framebuffer_resize_callback);
 
   // Set up file drop callback
   glfwSetDropCallback(window, file_drop_callback);
@@ -88,7 +88,7 @@ WindowManager::~WindowManager()
 /* ===================== //
 // Callbacks             //
 // ===================== */
-void WindowManager::framebufferSizeCallback(GLFWwindow* window, s32 width, s32 height) {
+void WindowManager::framebuffer_resize_callback(GLFWwindow* window, s32 width, s32 height) {
   // Get the WindowManager instance from the user pos32er
   WindowManager* windowManager = static_cast<WindowManager*>(glfwGetWindowUserPointer(window));
 

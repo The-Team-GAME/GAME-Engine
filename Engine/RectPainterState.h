@@ -22,12 +22,12 @@
 class RectPainterState : public Engine::GameState<RectPainterState>
 {
 public:
-  void Load();
-  void Init();
-  void Update();
-  void Draw();
-  void Free();
-  void Unload();
+  void load();
+  void init();
+  void update();
+  void draw();
+  void free();
+  void unload();
 
 private:
 

@@ -27,9 +27,9 @@ class GameObjectState : public Engine::GameState<GameObjectState>
 private:
   s32 enemy_prefab = -1;
 public:
-  void Load() {};
+  void load() {};
 
-  void Init()
+  void init()
   {
     // Load the enemy prefab from a JSON file
     enemy_prefab = Engine::FACTORY.registerObject("Assets/objects/enemy.json");
@@ -57,13 +57,13 @@ public:
     Engine::WORLD.add_system<StaticSpriteRenderSystem>();
   };
 
-  void Update() {};
+  void update() {};
 
-  void Draw()
+  void draw()
   {
   };
 
-  void Free() {
+  void free() {
     Engine::FACTORY.unregisterObject(enemy_prefab);
     Engine::WORLD.destroy_entities_with<Components::Tag<"GameObjectState">>();
 
@@ -73,5 +73,5 @@ public:
     Engine::WORLD.remove_system<StaticSpriteRenderSystem>();
   };
 
-  void Unload() {};
+  void unload() {};
 };

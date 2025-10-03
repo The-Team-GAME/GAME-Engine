@@ -30,30 +30,30 @@ public:
   /*!
    * @brief Loads resources needed by the main menu state.
    */
-  void Load();
+  void load();
 
   /*!
    * @brief Initializes the main menu state.
    */
-  void Init();
+  void init();
 
   /*!
    * @brief Updates the main menu state logic.
    */
-  void Update();
+  void update();
 
   /*!
    * @brief Renders the main menu interface.
    */
-  void Draw();
+  void draw();
 
   /*!
    * @brief Frees runtime resources used by the main menu state.
    */
-  void Free();
+  void free();
 
   /*!
    * @brief Unloads resources used by the main menu state.
    */
-  void Unload();
+  void unload();
 };
