@@ -463,7 +463,7 @@ s32 Graphics::load_font(const char* filepath, u32 size)
   font.atlasTexture = atlasTexture;
   font.atlasWidth = atlasWidth;
   font.atlasHeight = atlasHeight;
-  font.isValid = true;
+  font.is_valid = true;
 
   // Second pass: pack characters into atlas
   s32 currentX = 0;
@@ -503,7 +503,7 @@ s32 Graphics::load_font(const char* filepath, u32 size)
         { {x0, y0}, {x1, y0}, {x1, y1}, {x0, y1} }, // UV coords
         glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
         glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-        static_cast<unsigned int>(face->glyph->advance.x)
+        static_cast<u32>(face->glyph->advance.x)
     };
 
     font.Characters.insert(std::pair<char, Character>(c, character));
@@ -518,7 +518,7 @@ s32 Graphics::load_font(const char* filepath, u32 size)
   FT_Done_Face(face);
   glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
-  s32 fontId = nextFontId++;
+  s32 fontId = next_font_id++;
   fonts[fontId] = font;
   return fontId;
 }
@@ -538,7 +538,7 @@ void Graphics::unload_font(s32 fontId)
 
   fonts.erase(it);
 
-  nextFontId--;
+  next_font_id--;
 
   Log::info("Graphics: Unloaded font with ID " + std::to_string(fontId));
 }
@@ -554,7 +554,7 @@ void Graphics::unload_all_fonts()
   fonts.clear();
 
   // Reset the counter
-  nextFontId = 0;
+  next_font_id = 0;
 
   Log::info("Graphics: Unloaded all fonts");
 }
@@ -672,7 +672,7 @@ s32 Graphics::load_texture(const char* filepath, MinifyingFilter min_filter)
 
   // Store the texture info and return its ID
   Texture tex = { texture, width, height };
-  s32 texture_id = nextTextureId++;
+  s32 texture_id = next_texture_id++;
   textures[texture_id] = tex;
 
   return texture_id;
@@ -776,14 +776,14 @@ s32 Graphics::load_sprite_sheet(const char* filepath, s32 frameWidth, s32 frameH
 
   // Create sprite sheet data
   SpriteSheet spriteSheet = {
-    static_cast<unsigned int>(texture_id),
+    static_cast<u32>(texture_id),
     frameWidth,
     frameHeight,
     totalFrames,
     animationSpeed
   };
 
-  s32 spriteSheetId = nextSpriteSheetId++;
+  s32 spriteSheetId = next_sprite_sheet_id++;
   spriteSheets[spriteSheetId] = spriteSheet;
   return spriteSheetId;
 }
@@ -942,7 +942,7 @@ void Graphics::unload_texture(s32 texture_id)
   // Remove from the textures map
   textures.erase(it);
 
-  nextTextureId--;
+  next_texture_id--;
 
   Log::info("Graphics: Unloaded texture with ID " + std::to_string(texture_id));
 }
@@ -966,7 +966,7 @@ void Graphics::unload_all_textures()
   textureSlotIndex = 1; // Reset to 1 (slot 0 is reserved for white texture)
 
   // Reset the counter
-  nextTextureId = 0;
+  next_texture_id = 0;
 
   Log::info("Graphics: Unloaded all textures");
 }
@@ -989,7 +989,7 @@ void Graphics::unload_sprite_sheet(s32 spriteSheetId)
   spriteSheets.erase(it);
 
   // If this was the last allocated sprite sheet, decrement the counter
-  nextSpriteSheetId--;
+  next_sprite_sheet_id--;
 
   Log::info("Graphics: Unloaded sprite sheet with ID " + std::to_string(spriteSheetId));
 }
@@ -1000,7 +1000,7 @@ void Graphics::unload_all_sprite_sheets()
   spriteSheets.clear();
 
   // Reset the counter
-  nextSpriteSheetId = 0;
+  next_sprite_sheet_id = 0;
 
   Log::info("Graphics: Unloaded all sprite sheets");
 }

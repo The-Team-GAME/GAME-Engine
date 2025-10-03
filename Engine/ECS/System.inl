@@ -22,14 +22,14 @@ namespace ECS {
 
   template<typename... Components>
   void System::require_components() {
-    requiredSignature.reset();
-    ((requiredSignature.set(ComponentTypeManager::getTypeId<Components>())), ...);
+    required_signature.reset();
+    ((required_signature.set(ComponentTypeManager::get_type_id<Components>())), ...);
   }
 
   template<typename... Events>
   void System::listen_to_events() {
-    eventSignature.reset();
-    ((eventSignature.set(EventTypeManager::getTypeId<Events>())), ...);
+    event_signature.reset();
+    ((event_signature.set(EventTypeManager::get_type_id<Events>())), ...);
   }
 
 } // namespace ECS

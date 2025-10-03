@@ -25,20 +25,20 @@
 class GameObjectState : public Engine::GameState<GameObjectState>
 {
 private:
-  s32 enemyPrefab = -1;
+  s32 enemy_prefab = -1;
 public:
   void Load() {};
 
   void Init()
   {
     // Load the enemy prefab from a JSON file
-    enemyPrefab = Engine::FACTORY.registerObject("Assets/objects/enemy.json");
+    enemy_prefab = Engine::FACTORY.registerObject("Assets/objects/enemy.json");
 
     // Create two enemy instances from the prefab
-    auto enemy1 = Engine::FACTORY.createObject(enemyPrefab)
+    auto enemy1 = Engine::FACTORY.createObject(enemy_prefab)
       .add_component<Components::Tag<"GameObjectState">>()
       .add_component<Components::Position>(100.0f, 100.0f); // Position the first enemy left
-    auto enemy2 = Engine::FACTORY.createObject(enemyPrefab)
+    auto enemy2 = Engine::FACTORY.createObject(enemy_prefab)
       .add_component<Components::Tag<"GameObjectState">>()
       .add_component<Components::Position>(300.0f, 100.0f) // Position the second enemy right
       .add_component<Components::Scale>(2.0f, 2.0f); // Make it 2 times bigger
@@ -64,7 +64,7 @@ public:
   };
 
   void Free() {
-    Engine::FACTORY.unregisterObject(enemyPrefab);
+    Engine::FACTORY.unregisterObject(enemy_prefab);
     Engine::WORLD.destroy_entities_with<Components::Tag<"GameObjectState">>();
 
     // Remove systems

@@ -19,6 +19,7 @@
 #include "ECS/ECS.h"
 #include "BasicComponents.h"
 #include <optional>
+#include "TypeDef.h"
 
 
 namespace Engine
@@ -77,7 +78,7 @@ namespace Engine
     Where to call it:
     When an object type is no longer needed or during cleanup operations.
     ==================================================================================*/
-    void unregisterObject(int id);
+    void unregisterObject(s32 id);
 
     /*=================================================================================
     Function Brief:
@@ -105,6 +106,6 @@ namespace Engine
     During gameplay when spawning new game objects, such as enemies, collectibles,
     or environmental elements.
     ==================================================================================*/
-    ECS::Entity createObject(int id);
+    ECS::Entity createObject(s32 id);
   };
 }

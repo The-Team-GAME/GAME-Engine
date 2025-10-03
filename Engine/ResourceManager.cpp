@@ -23,7 +23,7 @@
 /* ===================== //
 // Texture Management    //
 // ===================== */
-int Engine::ResourceManager::load_texture(std::string name, std::string path, Graphics::MinifyingFilter minifyingFilter)
+s32 Engine::ResourceManager::load_texture(std::string name, std::string path, Graphics::MinifyingFilter minifying_filter)
 {
   // Check if texture with this name already exists
   if (textures.find(name) != textures.end())
@@ -33,7 +33,7 @@ int Engine::ResourceManager::load_texture(std::string name, std::string path, Gr
   }
 
   // Load the texture
-  s32 texture_id = Engine::GRAPHICS.load_texture(path.c_str(), minifyingFilter);
+  s32 texture_id = Engine::GRAPHICS.load_texture(path.c_str(), minifying_filter);
   if (texture_id != -1)
   {
     textures[name] = texture_id;
@@ -47,7 +47,7 @@ int Engine::ResourceManager::load_texture(std::string name, std::string path, Gr
   }
 }
 
-int Engine::ResourceManager::get_texture(std::string name)
+s32 Engine::ResourceManager::get_texture(std::string name)
 {
   auto it = textures.find(name);
   if (it != textures.end())
@@ -85,7 +85,7 @@ size_t Engine::ResourceManager::get_texture_count()
 /* ===================== //
 // Sound Management      //
 // ===================== */
-int Engine::ResourceManager::load_sound(std::string name, std::string path)
+s32 Engine::ResourceManager::load_sound(std::string name, std::string path)
 {
   // Check if sound with this name already exists
   if (sounds.find(name) != sounds.end())
@@ -109,7 +109,7 @@ int Engine::ResourceManager::load_sound(std::string name, std::string path)
   }
 }
 
-int Engine::ResourceManager::get_sound(std::string name)
+s32 Engine::ResourceManager::get_sound(std::string name)
 {
   auto it = sounds.find(name);
   if (it != sounds.end())
@@ -147,7 +147,7 @@ size_t Engine::ResourceManager::get_sound_count()
 /* ===================== //
 // Font Management       //
 // ===================== */
-int Engine::ResourceManager::load_font(std::string name, std::string path, u32 size)
+s32 Engine::ResourceManager::load_font(std::string name, std::string path, u32 size)
 {
   // Check if font with this name already exists
   if (fonts.find(name) != fonts.end())
@@ -171,7 +171,7 @@ int Engine::ResourceManager::load_font(std::string name, std::string path, u32 s
   }
 }
 
-int Engine::ResourceManager::get_font(std::string name)
+s32 Engine::ResourceManager::get_font(std::string name)
 {
   auto it = fonts.find(name);
   if (it != fonts.end())
@@ -209,7 +209,7 @@ size_t Engine::ResourceManager::get_font_count()
 /* ===================== //
 // Sprite Sheet Management//
 // ===================== */
-int Engine::ResourceManager::load_sprite_sheet(std::string name, std::string path, s32 frameWidth, s32 frameHeight, s32 totalFrames, f32 animationSpeed, Graphics::MinifyingFilter minifyingFilter)
+s32 Engine::ResourceManager::load_sprite_sheet(std::string name, std::string path, s32 frameWidth, s32 frameHeight, s32 totalFrames, f32 animationSpeed, Graphics::MinifyingFilter minifying_filter)
 {
   // Check if sprite sheet with this name already exists
   if (spriteSheets.find(name) != spriteSheets.end())
@@ -219,7 +219,7 @@ int Engine::ResourceManager::load_sprite_sheet(std::string name, std::string pat
   }
 
   // Load the sprite sheet
-  s32 spriteSheetId = Engine::GRAPHICS.load_sprite_sheet(path.c_str(), frameWidth, frameHeight, totalFrames, animationSpeed, minifyingFilter);
+  s32 spriteSheetId = Engine::GRAPHICS.load_sprite_sheet(path.c_str(), frameWidth, frameHeight, totalFrames, animationSpeed, minifying_filter);
   if (spriteSheetId != -1)
   {
     spriteSheets[name] = spriteSheetId;
@@ -233,7 +233,7 @@ int Engine::ResourceManager::load_sprite_sheet(std::string name, std::string pat
   }
 }
 
-int Engine::ResourceManager::get_sprite_sheet(std::string name)
+s32 Engine::ResourceManager::get_sprite_sheet(std::string name)
 {
   auto it = spriteSheets.find(name);
   if (it != spriteSheets.end())
@@ -271,7 +271,7 @@ size_t Engine::ResourceManager::get_sprite_sheet_count()
 /* ===================== //
 // Object Prefab Management//
 // ===================== */
-int Engine::ResourceManager::load_object_prefab(std::string name, std::string path)
+s32 Engine::ResourceManager::load_object_prefab(std::string name, std::string path)
 {
   // Check if object prefab with this name already exists
   if (objectPrefabs.find(name) != objectPrefabs.end())
@@ -295,7 +295,7 @@ int Engine::ResourceManager::load_object_prefab(std::string name, std::string pa
   }
 }
 
-int Engine::ResourceManager::get_object_prefab(std::string name)
+s32 Engine::ResourceManager::get_object_prefab(std::string name)
 {
   auto it = objectPrefabs.find(name);
   if (it != objectPrefabs.end())
@@ -350,7 +350,7 @@ std::string Engine::ResourceManager::get_file_extension(const std::string& path)
   return extension;
 }
 
-int Engine::ResourceManager::load(std::string name, std::string path)
+s32 Engine::ResourceManager::load(std::string name, std::string path)
 {
   std::string extension = get_file_extension(path);
 

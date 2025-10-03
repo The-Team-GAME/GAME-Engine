@@ -15,5 +15,5 @@
 #include "ComponentManager.h"
 
 namespace ECS {
-  ComponentTypeID ComponentTypeManager::nextTypeId = 0;
+  ComponentTypeID ComponentTypeManager::next_type_id = 0;
 }

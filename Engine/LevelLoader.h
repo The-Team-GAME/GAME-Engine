@@ -26,10 +26,10 @@ namespace Engine
   class LevelLoader
   {
   private:
-    ECS::World* m_world;
-    ObjectFactory* m_factory;
-    std::unordered_map<std::string, Level> loadedLevels;
-    std::string currentLevelId;
+    ECS::World* world;
+    ObjectFactory* factory;
+    std::unordered_map<std::string, Level> loaded_levels;
+    std::string current_level_id;
 
   public:
     LevelLoader(ECS::World* world, ObjectFactory* factory);
@@ -40,7 +40,7 @@ namespace Engine
      * @param filePath Path to the level JSON file
      * @return std::string The level ID if successful, empty string otherwise
      */
-    std::string loadLevel(const std::string& filePath);
+    std::string load_level(const std::string& filePath);
 
     /**
      * @brief Spawns all entities defined in a loaded level.
@@ -48,26 +48,26 @@ namespace Engine
      * @param levelId The ID of the level to spawn
      * @return bool True if successful, false otherwise
      */
-    bool spawnLevel(const std::string& levelId);
+    bool spawn_level(const std::string& levelId);
 
     /**
      * @brief Unloads a level, destroying all spawned entities and unloading prefabs.
      *
      * @param levelId The ID of the level to unload
      */
-    void unloadLevel(const std::string& levelId);
+    void unload_level(const std::string& levelId);
 
     /**
      * @brief Unloads the current active level.
      */
-    void unloadCurrentLevel();
+    void unload_current_level();
 
     /**
      * @brief Gets the current level ID.
      *
      * @return std::string The current level ID
      */
-    std::string getCurrentLevelId() const { return currentLevelId; }
+    std::string get_current_level_id() const { return current_level_id; }
 
     /**
      * @brief Checks if a level is loaded.
@@ -75,9 +75,9 @@ namespace Engine
      * @param levelId The level ID to check
      * @return bool True if loaded, false otherwise
      */
-    bool isLevelLoaded(const std::string& levelId) const;
+    bool is_level_loaded(const std::string& levelId) const;
 
   private:
-    Level parseLevel(const std::string& filePath);
+    Level parse_level(const std::string& filePath);
   };
 }

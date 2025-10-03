@@ -13,22 +13,23 @@
 //          controls, playhead movement, dynamic layer resizing, and processing of
 //          drag-and-drop events to place image clips onto the grid.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 
 
 #pragma once
 #include <vector>
 #include <string>
-#include <algorithm> // Needed for std::min/max, if used in implementation
+#include <algorithm>
 #include "imgui.h"
+#include "TypeDef.h"
 
 // Structure to hold the data for an image clip on the timeline
 struct TimelineClip {
-  int textureId;
-  int layer;
-  int startFrame;
-  int durationFrames = 30; // Default duration for a new clip
+  s32 texture_id;
+  s32 layer;
+  s32 start_frame;
+  s32 duration_frames = 30; // Default duration for a new clip
 };
 
 class Timeline {
@@ -37,22 +38,22 @@ public:
 
   void Draw();
 
-  int GetCurrentFrame() const { return currentFrame; }
-  int GetNumLayers() const { return (int)layers.size(); }
+  s32 get_current_frame() const { return currentFrame; }
+  s32 get_num_layers() const { return (s32)layers.size(); }
 
   // Making playback state public (or adding a getter/setter) for the GameState to use
   bool isPlaying = false;
-  double lastFrameTime = 0.0;
+  f64 lastFrameTime = 0.0;
 
 private:
-  std::vector<int> layers;
-  int currentFrame;
-  int numFrames;
-  float zoom;
+  std::vector<s32> layers;
+  s32 currentFrame;
+  s32 numFrames;
+  f32 zoom;
 
 
   ImVec2 cellSize;  // Stores the base cell size (horizontal part is scaled by zoom)
   std::vector<TimelineClip> clips;   // New member to store the placed image clips
 
-  float playbackSpeed;   // Playback members
+  f32 playbackSpeed;   // Playback members
 };

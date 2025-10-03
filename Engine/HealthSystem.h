@@ -29,7 +29,7 @@ public:
   {
     auto health = entity.get_component<Components::Health>();
 
-    if (health->isDead())
+    if (health->is_dead())
     {
       entity.destroy();
     }

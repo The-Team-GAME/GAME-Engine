@@ -53,12 +53,12 @@ void BasicState::Init()
 
 void BasicState::Update()
 {
-  if (Engine::Input::IsKeyPressed(GLFW_KEY_SPACE))
+  if (Engine::Input::is_key_pressed(GLFW_KEY_SPACE))
   {
     std::cout << "Spacebar was pressed!\n";
   }
 
-  if (Engine::Input::IsKeyPressed(GLFW_KEY_P))
+  if (Engine::Input::is_key_pressed(GLFW_KEY_P))
   {
     if (move_sound_id != -1)
     {

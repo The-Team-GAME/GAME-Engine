@@ -19,11 +19,11 @@ namespace ECS {
 
   Entity::Entity(EntityID id, World* world) : id(id), world(world) {}
 
-  EntityID Entity::getId() const {
+  EntityID Entity::get_id() const {
     return id;
   }
 
-  bool Entity::isValid() const {
+  bool Entity::is_valid() const {
     return id != INVALID_ENTITY;
   }
 

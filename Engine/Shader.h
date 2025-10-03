@@ -71,7 +71,7 @@ public:
   Returns:
   The GLuint program ID.
   ==================================================================================*/
-  GLuint getId() const;
+  GLuint get_id() const;
 
   /* ===================== //
   // Uniform Setters       //

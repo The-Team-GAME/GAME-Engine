@@ -37,7 +37,7 @@ namespace {
   f64 accumulator{};
   s32 step_limit = 3;
   bool do_render = false;
-  bool physicsStepMode = false;  // Toggle for step-by-step physics
+  bool physics_step_mode = false;  // Toggle for step-by-step physics
 }
 
 namespace Engine
@@ -109,7 +109,7 @@ namespace Engine
       // Updates the real_dt and increments the accumulator
       Time::update_time();
 
-      if (!physicsStepMode)
+      if (!physics_step_mode)
       {
         // In normal mode, accumulate real delta time
         accumulator += Time::get_real_dt();
@@ -142,24 +142,24 @@ namespace Engine
         // WORLD.update() won't have a chance to react before the input state is cleared on the next frame. 
         Input::Update();
 
-        if (Engine::Input::IsKeyPressed(GLFW_KEY_ESCAPE))
+        if (Engine::Input::is_key_pressed(GLFW_KEY_ESCAPE))
         {
           isRunning = false;
         }
 
         // Demonstrate error catching is working
-        if (Engine::Input::IsKeyPressed(GLFW_KEY_F11))
+        if (Engine::Input::is_key_pressed(GLFW_KEY_F11))
         {
           throw std::runtime_error("F11 was pressed");
         }
 
-        if (Engine::Input::IsKeyPressed(GLFW_KEY_P))
+        if (Engine::Input::is_key_pressed(GLFW_KEY_P))
         {
-          physicsStepMode = !physicsStepMode;
-          std::cout << "Physics Step Mode: " << (physicsStepMode ? "ON" : "OFF") << std::endl;
+          physics_step_mode = !physics_step_mode;
+          std::cout << "Physics Step Mode: " << (physics_step_mode ? "ON" : "OFF") << std::endl;
         }
 
-        bool shouldRunPhysics = !physicsStepMode || Engine::Input::IsKeyPressed(GLFW_KEY_RIGHT_BRACKET);
+        bool shouldRunPhysics = !physics_step_mode || Engine::Input::is_key_pressed(GLFW_KEY_RIGHT_BRACKET);
 
         if (shouldRunPhysics)
         {

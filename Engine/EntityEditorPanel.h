@@ -22,7 +22,7 @@
 
 inline void EntityEditorPanel()
 {
-  static s32 selectedEntityId = -1;
+  static s32 selected_entity_id = -1;
   static char entitySearchBuffer[256] = "";
 
   ImGui::Begin("Entity Editor");
@@ -30,7 +30,7 @@ inline void EntityEditorPanel()
   // Section 1: Entity List
   if (ImGui::CollapsingHeader("Entities", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    ImGui::Text("Total Entities: %zu", Engine::WORLD.getEntityCount());
+    ImGui::Text("Total Entities: %zu", Engine::WORLD.get_entity_count());
 
     // Search/Filter
     ImGui::InputText("Search", entitySearchBuffer, 256);
@@ -40,15 +40,15 @@ inline void EntityEditorPanel()
     // Entity list with selection
     ImGui::BeginChild("EntityList", ImVec2(0, 200), true);
 
-    auto allEntities = Engine::WORLD.getAllEntities();
+    auto allEntities = Engine::WORLD.get_all_entities();
     for (const auto& entity : allEntities)
     {
-      bool isSelected = (selectedEntityId == static_cast<int>(entity.getId()));
-      std::string label = "Entity " + std::to_string(entity.getId());
+      bool isSelected = (selected_entity_id == static_cast<int>(entity.get_id()));
+      std::string label = "Entity " + std::to_string(entity.get_id());
 
       if (ImGui::Selectable(label.c_str(), isSelected))
       {
-        selectedEntityId = static_cast<int>(entity.getId());
+        selected_entity_id = static_cast<int>(entity.get_id());
       }
     }
 
@@ -58,34 +58,34 @@ inline void EntityEditorPanel()
     if (ImGui::Button("Create New Entity"))
     {
       auto newEntity = Engine::WORLD.create_entity();
-      selectedEntityId = static_cast<int>(newEntity.getId());
+      selected_entity_id = static_cast<int>(newEntity.get_id());
     }
 
     ImGui::SameLine();
 
     // Delete selected entity
-    if (selectedEntityId != -1 && ImGui::Button("Delete Selected"))
+    if (selected_entity_id != -1 && ImGui::Button("Delete Selected"))
     {
-      Engine::WORLD.destroy_entity(selectedEntityId);
-      selectedEntityId = -1;
+      Engine::WORLD.destroy_entity(selected_entity_id);
+      selected_entity_id = -1;
     }
   }
 
   ImGui::Separator();
 
   // Section 2: Component Editor for Selected Entity
-  if (selectedEntityId != -1)
+  if (selected_entity_id != -1)
   {
-    auto entity = Engine::WORLD.get_entity(selectedEntityId);
+    auto entity = Engine::WORLD.get_entity(selected_entity_id);
 
-    if (!entity.isValid())
+    if (!entity.is_valid())
     {
-      selectedEntityId = -1;
+      selected_entity_id = -1;
       ImGui::End();
       return;
     }
 
-    ImGui::Text("Editing Entity: %d", selectedEntityId);
+    ImGui::Text("Editing Entity: %d", selected_entity_id);
     ImGui::Separator();
 
     // Add Component Section
@@ -98,7 +98,7 @@ inline void EntityEditorPanel()
       }
 
       ImGui::SameLine();
-      
+
       if (ImGui::Button("Add Size"))
       {
         if (!entity.has_component<Components::Size>())
@@ -376,8 +376,8 @@ inline void EntityEditorPanel()
     // Clone Entity
     if (ImGui::Button("Clone This Entity"))
     {
-      auto clonedEntity = Engine::WORLD.clone_entity(entity.getId());
-      selectedEntityId = static_cast<int>(clonedEntity.getId());
+      auto clonedEntity = Engine::WORLD.clone_entity(entity.get_id());
+      selected_entity_id = static_cast<int>(clonedEntity.get_id());
     }
   }
   else

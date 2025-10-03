@@ -34,34 +34,34 @@ public:
     // Physics constants
     const f32 moveAccel = 2000.0f;      // Horizontal acceleration
     const f32 jumpVelocity = 3000.0f;    // Initial jump velocity
-    //const float gravity = 2000.0f;        // Gravity acceleration
+    //const f32 gravity = 2000.0f;        // Gravity acceleration
 
     // Apply gravity constantly
     //rb->acceleration.y += gravity;
 
     // Horizontal movement
-    handleHorizontalMovement(rb, moveAccel);
+    handle_horizontal_movement(rb, moveAccel);
 
     // Jump
-    handleJump(rb, jumpVelocity);
+    handle_jump(rb, jumpVelocity);
   }
 
 private:
-  void handleHorizontalMovement(Components::RigidBody* rb, f32 accel) {
-    if (Engine::Input::IsKeyHeld(GLFW_KEY_A)) {
+  void handle_horizontal_movement(Components::RigidBody* rb, f32 accel) {
+    if (Engine::Input::is_key_held(GLFW_KEY_A)) {
       rb->acceleration.X() -= accel;
     }
-    if (Engine::Input::IsKeyHeld(GLFW_KEY_D)) {
+    if (Engine::Input::is_key_held(GLFW_KEY_D)) {
       rb->acceleration.X() += accel;
     }
   }
 
-  void handleJump(Components::RigidBody* rb, f32 jumpVel) {
+  void handle_jump(Components::RigidBody* rb, f32 jumpVel) {
     // Only jump if grounded and space is pressed
-		if (rb->isGrounded) std::cout << "Grounded\n";
-		else std::cout << "Airborne\n";
-    if (Engine::Input::IsKeyPressed(GLFW_KEY_SPACE) && rb->isGrounded) {
-			std::cout << "Jump!\n";
+    if (rb->isGrounded) std::cout << "Grounded\n";
+    else std::cout << "Airborne\n";
+    if (Engine::Input::is_key_pressed(GLFW_KEY_SPACE) && rb->isGrounded) {
+      std::cout << "Jump!\n";
       rb->velocity.Y() = -jumpVel;  // Negative if +Y is down
       //rb->isGrounded = false;
     }

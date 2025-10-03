@@ -26,7 +26,7 @@ namespace Engine
   Constructor that initializes the FMOD system for audio playback.
   Creates and initializes an FMOD system instance with 512 virtual channels.
   ==================================================================================*/
-  AudioManager::AudioManager() : fmodSystem(nullptr), nextSoundId(1)
+  AudioManager::AudioManager() : fmodSystem(nullptr), next_sound_id(1)
   {
     FMOD_RESULT result;
 
@@ -97,7 +97,7 @@ namespace Engine
       return -1;
     }
 
-    s32 soundId = nextSoundId++;
+    s32 soundId = next_sound_id++;
     sounds[soundId] = sound;
     std::cout << "AudioManager: Successfully loaded sound '" << filepath << "' with ID " << soundId << std::endl;
     return soundId;
@@ -111,7 +111,7 @@ namespace Engine
   Parameters:
   soundId - The ID of the sound to unload
   ==================================================================================*/
-  void AudioManager::unloadSound(int soundId)
+  void AudioManager::unloadSound(s32 soundId)
   {
     // Stop the sound if it's playing
     stopSound(soundId);
@@ -152,7 +152,7 @@ namespace Engine
   Returns:
   bool - true if playback started successfully, false otherwise
   ==================================================================================*/
-  bool AudioManager::playSound(int soundId)
+  bool AudioManager::playSound(s32 soundId)
   {
     if (!fmodSystem)
     {
@@ -197,7 +197,7 @@ namespace Engine
   Returns:
   bool - true if playback started successfully, false otherwise
   ==================================================================================*/
-  bool AudioManager::playSoundLooped(int soundId)
+  bool AudioManager::playSoundLooped(s32 soundId)
   {
     if (!fmodSystem)
     {
@@ -240,7 +240,7 @@ namespace Engine
   Parameters:
   soundId - The ID of the sound to stop
   ==================================================================================*/
-  void AudioManager::stopSound(int soundId)
+  void AudioManager::stopSound(s32 soundId)
   {
     auto it = channels.find(soundId);
     if (it != channels.end())
@@ -282,7 +282,7 @@ namespace Engine
   soundId - The ID of the sound to adjust
   volume - The volume level (0.0 to 1.0)
   ==================================================================================*/
-  void AudioManager::setVolume(int soundId, f32 volume)
+  void AudioManager::setVolume(s32 soundId, f32 volume)
   {
     auto it = channels.find(soundId);
     if (it != channels.end())
@@ -358,7 +358,7 @@ namespace Engine
   Returns:
   bool - true if the sound is playing, false otherwise
   ==================================================================================*/
-  bool AudioManager::isPlaying(int soundId)
+  bool AudioManager::isPlaying(s32 soundId)
   {
     auto it = channels.find(soundId);
     if (it != channels.end())

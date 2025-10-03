@@ -18,6 +18,7 @@
 #include "StateManager.h"
 #include "RenderSystem.h"
 #include "BackgroundSystem.h"
+#include "TypeDef.h"
 #include "Core.h"
 
 class Rubric2500ParticlesState : public Engine::GameState<Rubric2500ParticlesState>
@@ -33,7 +34,7 @@ public:
       .add_component<Components::Background>()
       .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 0.0f);
 
-    for (int i = 0; i < 2500; ++i) {
+    for (s32 i = 0; i < 2500; ++i) {
       f32 x = static_cast<f32>(rand() % 1600); // Random x position within window width
       f32 y = static_cast<f32>(rand() % 900); // Random y position within window height
       f32 size = static_cast<f32>((rand() % 20) + 5); // Random size between 5 and 25

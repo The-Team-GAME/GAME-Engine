@@ -103,7 +103,7 @@ private:
     u32 fontSize = 0;
     f32 baseline = 0.0f;
     s32 atlasWidth = 0, atlasHeight = 0;
-    bool isValid = true;  // Track if font is still valid
+    bool is_valid = true;  // Track if font is still valid
   };
 
   /* ========================== //
@@ -133,9 +133,9 @@ private:
   std::unordered_map<s32, SpriteSheet> spriteSheets;
 
   // ID counters for generating unique IDs
-  s32 nextTextureId = 0;
-  s32 nextFontId = 0;
-  s32 nextSpriteSheetId = 0;
+  s32 next_texture_id = 0;
+  s32 next_font_id = 0;
+  s32 next_sprite_sheet_id = 0;
 
   /* ========================= //
   // Texture binding slots     //

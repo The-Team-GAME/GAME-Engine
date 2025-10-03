@@ -45,9 +45,9 @@ public:
 
     if (!pos || !rb) return;
 
-		if (col->isStatic) return; // Static bodies don't move
+    if (col->isStatic) return; // Static bodies don't move
 
-    float dt = Engine::Time::get_fixed_dt();
+    f32 dt = Engine::Time::get_fixed_dt();
 
     // Update grounded state based on collision penetration
     updateGroundedState(rb, col);

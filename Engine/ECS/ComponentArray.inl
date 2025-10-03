@@ -29,7 +29,7 @@ namespace ECS {
   }
 
   template<typename T>
-  void ComponentArray<T>::cloneComponent(EntityID source, EntityID destination) {
+  void ComponentArray<T>::clone_component(EntityID source, EntityID destination) {
     auto it = components.find(source);
     if (it != components.end()) {
       components.emplace(destination, it->second); // Assumes T is copy-constructible
@@ -48,7 +48,7 @@ namespace ECS {
   }
 
   template<typename T>
-  void ComponentArray<T>::removeEntity(EntityID entity) {
+  void ComponentArray<T>::remove_entity(EntityID entity) {
     remove_component(entity);
   }
 

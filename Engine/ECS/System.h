@@ -32,8 +32,8 @@ namespace ECS {
   protected:
     World* world = nullptr;
     std::unordered_set<EntityID> entities;
-    ComponentSignature requiredSignature;
-    EventSignature eventSignature;
+    ComponentSignature required_signature;
+    EventSignature event_signature;
 
   public:
     virtual ~System();
@@ -53,7 +53,7 @@ namespace ECS {
     virtual void draw();
 
     // Override for handling a specific event for a specific entity
-    virtual void onEvent(const Event& event, EntityID entity);
+    virtual void on_event(const Event& event, EntityID entity);
 
     // Override for per-entity logic
     virtual void update_entity(Entity& entity);
@@ -62,20 +62,20 @@ namespace ECS {
     virtual void draw_entity(const Entity& entity);
 
     // Override for entity lifecycle events
-    virtual void onEntityAdded(const Entity& entity);
-    virtual void onEntityRemoved(const Entity& entity);
+    virtual void on_entity_added(const Entity& entity);
+    virtual void on_entity_removed(const Entity& entity);
 
     // Internal methods
-    void addEntity(EntityID entity);
-    void removeEntity(EntityID entity);
+    void add_entity(EntityID entity);
+    void remove_entity(EntityID entity);
 
-    const std::unordered_set<EntityID>& getEntities() const;
-    const ComponentSignature& getRequiredSignature() const;
-    const EventSignature& getEventSignature() const;
+    const std::unordered_set<EntityID>& get_entities() const;
+    const ComponentSignature& get_required_signature() const;
+    const EventSignature& get_event_signature() const;
 
   private:
     friend class World;
-    void setWorld(World* w);
+    void set_world(World* w);
   };
 
 } // namespace ECS

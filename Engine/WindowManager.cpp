@@ -106,7 +106,7 @@ void WindowManager::file_drop_callback([[maybe_unused]] GLFWwindow* window, s32 
 {
 
   std::vector<std::string> filePaths;
-  for (int i = 0; i < count; ++i)
+  for (s32 i = 0; i < count; ++i)
   {
     filePaths.push_back(paths[i]);
   }

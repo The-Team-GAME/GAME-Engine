@@ -25,17 +25,17 @@
 
 class DevSpriteAnimationState : public Engine::GameState<DevSpriteAnimationState> {
 private:
-  ECS::Entity idleLazyMonkey;
-  ECS::Entity walkLazyMonkey;
-  ECS::Entity backgroundEntity;
+  ECS::Entity idle_lazy_monkey;
+  ECS::Entity walk_lazy_monkey;
+  ECS::Entity background_entity;
 
-  s32 idleSpriteSheetId;
-  s32 walkSpriteSheetId;
+  s32 idle_sprite_sheet_id;
+  s32 walk_sprite_sheet_id;
 
 public:
   void Load() {
     // Load sprite sheets in the Load phase
-    idleSpriteSheetId = Engine::RESOURCES.load_sprite_sheet(
+    idle_sprite_sheet_id = Engine::RESOURCES.load_sprite_sheet(
       "LazyMonkey_Idle",
       "Assets/images/LazyMonkey_Idle_Spritesheet.png",
       320 / 5,  // frame width
@@ -45,7 +45,7 @@ public:
       Graphics::MinifyingFilter::Nearest
     );
 
-    walkSpriteSheetId = Engine::RESOURCES.load_sprite_sheet(
+    walk_sprite_sheet_id = Engine::RESOURCES.load_sprite_sheet(
       "LazyMonkey_Walk",
       "Assets/images/LazyMonkey_Walk_Spritesheet.png",
       384 / 6,  // frame width
@@ -58,27 +58,27 @@ public:
 
   void Init() {
     // Create background entity
-    backgroundEntity = Engine::WORLD.create_entity()
+    background_entity = Engine::WORLD.create_entity()
       .add_component<Components::Background>()
       .add_component<Components::Color>(0.1f, 0.1f, 0.1f, 1.0f);
 
     // Create animated LazyMonkey entities using sprite sheet IDs
-    idleLazyMonkey = Engine::WORLD.create_entity()
+    idle_lazy_monkey = Engine::WORLD.create_entity()
       .add_component<Components::Position>(200.0f, 150.0f)
       .add_component<Components::Size>(96.0f, 96.0f)
       .add_component<Components::Rotation>(0.0f)
       .add_component<Components::Scale>(1.0f, 1.0f)
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::SimplePlayerControl>(100.0f)
-      .add_component<Components::AnimatedSprite>(idleSpriteSheetId);
+      .add_component<Components::AnimatedSprite>(idle_sprite_sheet_id);
 
-    walkLazyMonkey = Engine::WORLD.create_entity()
+    walk_lazy_monkey = Engine::WORLD.create_entity()
       .add_component<Components::Position>(400.0f, 150.0f)
       .add_component<Components::Size>(96.0f, 96.0f)
       .add_component<Components::Rotation>(0.0f)
       .add_component<Components::Scale>(1.0f, 1.0f)
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-      .add_component<Components::AnimatedSprite>(walkSpriteSheetId);
+      .add_component<Components::AnimatedSprite>(walk_sprite_sheet_id);
 
     // Add systems to render the entities
     Engine::WORLD.add_system<BackgroundSystem>();
@@ -94,14 +94,14 @@ public:
 
   void Free() {
     // Clean up entities
-    if (idleLazyMonkey.isValid()) {
-      idleLazyMonkey.destroy();
+    if (idle_lazy_monkey.is_valid()) {
+      idle_lazy_monkey.destroy();
     }
-    if (walkLazyMonkey.isValid()) {
-      walkLazyMonkey.destroy();
+    if (walk_lazy_monkey.is_valid()) {
+      walk_lazy_monkey.destroy();
     }
-    if (backgroundEntity.isValid()) {
-      backgroundEntity.destroy();
+    if (background_entity.is_valid()) {
+      background_entity.destroy();
     }
 
     Engine::WORLD.remove_system<BackgroundSystem>();

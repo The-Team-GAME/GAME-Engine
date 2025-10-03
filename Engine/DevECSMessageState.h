@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------    
 // file:    DevECSMessageState.h
 // project: Monkey Stole My GPA
 //
@@ -33,12 +33,12 @@
 class DevECSMessageState : public Engine::GameState<DevECSMessageState>
 {
 private:
-  int enemyPrefab = -1;
+  s32 enemy_prefab = -1;
   ECS::Entity player;
 
 public:
   void Load() {
-    enemyPrefab = Engine::FACTORY.registerObject("Assets/objects/enemy.json");
+    enemy_prefab = Engine::FACTORY.registerObject("Assets/objects/enemy.json");
   }
 
   void Init() {
@@ -47,13 +47,13 @@ public:
       .add_component<Components::Tag<"Player">>()
       .add_component<Components::Tag<"GameObjectState">>()
       .add_component<Components::Position>(10.0f, 20.0f)
-			.add_component<Components::Collider>(10.0f, 10.0f)
-			.add_component<Components::RigidBody>(1.0f, false) // mass=1.0, not static
+      .add_component<Components::Collider>(10.0f, 10.0f)
+      .add_component<Components::RigidBody>(1.0f, false) // mass=1.0, not static
       .add_component<Components::Health>(100, 100)
       .add_component<Components::Size>(10.0f, 10.0f)
       .add_component<Components::Color>(0.0f, 1.0f, 1.0f, 1.0f); // Make player cyan
 
-		player.get_component<Components::RigidBody>()->velocity.X() = 100.0f; // Give the player an initial horizontal velocity
+    player.get_component<Components::RigidBody>()->velocity.X() = 100.0f; // Give the player an initial horizontal velocity
 
     // Create an enemy entity to act as a template
     auto enemy = Engine::WORLD.create_entity()
@@ -66,10 +66,10 @@ public:
 
     // --- Cloning Demonstration ---
     // Create a new enemy by cloning the first one
-    auto clonedEnemy = Engine::WORLD.clone_entity(enemy.getId());
+    auto clonedEnemy = Engine::WORLD.clone_entity(enemy.get_id());
 
     // Check if the clone is valid and then modify it to differentiate it
-    if (clonedEnemy.isValid()) {
+    if (clonedEnemy.is_valid()) {
       // Get the position component of the clone and move it somewhere else
       auto* clonedPos = clonedEnemy.get_component<Components::Position>();
       if (clonedPos) {
@@ -101,17 +101,17 @@ public:
   }
 
   void Update() {
-    if (Engine::Input::IsKeyPressed(GLFW_KEY_SPACE))
+    if (Engine::Input::is_key_pressed(GLFW_KEY_SPACE))
     {
-      Engine::WORLD.send_event<DamageEvent>(player.getId(), 10);
+      Engine::WORLD.send_event<DamageEvent>(player.get_id(), 10);
       // Print the health of all entities with Health component  
-      for (const auto& entity : Engine::WORLD.getEntitiesWith<Components::Health>()) {
+      for (const auto& entity : Engine::WORLD.get_entities_with<Components::Health>()) {
         auto* health = entity.get_component<Components::Health>();
-        std::cout << "Entity " << entity.getId() << " has health: " << health->value << "\n";
+        std::cout << "Entity " << entity.get_id() << " has health: " << health->value << "\n";
       }
       std::cout << "\n";
 
-      auto bgEntity = Engine::WORLD.getFirstEntityWith<Components::Background>();
+      auto bgEntity = Engine::WORLD.get_first_entity_with<Components::Background>();
       auto* bg_color = bgEntity.get_component<Components::Color>();
 
       if (!player.has_component<Components::Health>())

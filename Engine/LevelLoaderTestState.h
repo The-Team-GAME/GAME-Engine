@@ -26,9 +26,9 @@
 class LevelLoaderTestState : public Engine::GameState<LevelLoaderTestState>
 {
 private:
-  std::string currentLevelId;
-  bool levelLoaded = false;
-  ECS::EntityID backgroundEntityId = 0;
+  std::string current_level_id;
+  bool level_loaded = false;
+  ECS::EntityID background_entity_id = 0;
 
 public:
   void Load()
@@ -41,22 +41,22 @@ public:
     auto bg = Engine::WORLD.create_entity();
     bg.add_component<Components::Background>();
     bg.add_component<Components::Color>(0.2f, 0.2f, 0.3f, 1.0f);
-    backgroundEntityId = bg.getId();
+    background_entity_id = bg.get_id();
 
     // Add rendering systems
     Engine::WORLD.add_system<BackgroundSystem>();
     Engine::WORLD.add_system<StaticSpriteRenderSystem>();
 
     // Load the test level
-    currentLevelId = Engine::LEVEL_LOADER.loadLevel("Assets/levels/test_level.json");
+    current_level_id = Engine::LEVEL_LOADER.load_level("Assets/levels/test_level.json");
 
-    if (!currentLevelId.empty())
+    if (!current_level_id.empty())
     {
-      levelLoaded = true;
-      Log::info("Level loaded: " + currentLevelId);
+      level_loaded = true;
+      Log::info("Level loaded: " + current_level_id);
 
       // Spawn the level
-      if (Engine::LEVEL_LOADER.spawnLevel(currentLevelId))
+      if (Engine::LEVEL_LOADER.spawn_level(current_level_id))
       {
         Log::info("Level spawned successfully!");
       }
@@ -74,42 +74,42 @@ public:
   void Update()
   {
     // Press R to reload the level
-    if (Engine::Input::IsKeyPressed(GLFW_KEY_R))
+    if (Engine::Input::is_key_pressed(GLFW_KEY_R))
     {
       Log::info("Reloading level...");
 
-      if (levelLoaded)
+      if (level_loaded)
       {
-        Engine::LEVEL_LOADER.unloadLevel(currentLevelId);
+        Engine::LEVEL_LOADER.unload_level(current_level_id);
       }
 
-      currentLevelId = Engine::LEVEL_LOADER.loadLevel("Assets/levels/test_level.json");
-      if (!currentLevelId.empty())
+      current_level_id = Engine::LEVEL_LOADER.load_level("Assets/levels/test_level.json");
+      if (!current_level_id.empty())
       {
-        levelLoaded = true;
-        Engine::LEVEL_LOADER.spawnLevel(currentLevelId);
+        level_loaded = true;
+        Engine::LEVEL_LOADER.spawn_level(current_level_id);
       }
     }
 
     // Press U to unload the level
-    if (Engine::Input::IsKeyPressed(GLFW_KEY_U))
+    if (Engine::Input::is_key_pressed(GLFW_KEY_U))
     {
-      if (levelLoaded)
+      if (level_loaded)
       {
         Log::info("Unloading level...");
-        Engine::LEVEL_LOADER.unloadLevel(currentLevelId);
-        levelLoaded = false;
-        currentLevelId.clear();
+        Engine::LEVEL_LOADER.unload_level(current_level_id);
+        level_loaded = false;
+        current_level_id.clear();
       }
     }
 
     // Press L to spawn the level (if loaded but not spawned)
-    if (Engine::Input::IsKeyPressed(GLFW_KEY_L))
+    if (Engine::Input::is_key_pressed(GLFW_KEY_L))
     {
-      if (levelLoaded && !currentLevelId.empty())
+      if (level_loaded && !current_level_id.empty())
       {
         Log::info("Spawning level...");
-        Engine::LEVEL_LOADER.spawnLevel(currentLevelId);
+        Engine::LEVEL_LOADER.spawn_level(current_level_id);
       }
     }
   }
@@ -122,8 +122,8 @@ public:
     ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "Level Loader Test State");
     ImGui::Separator();
 
-    ImGui::Text("Current Level: %s", currentLevelId.empty() ? "None" : currentLevelId.c_str());
-    ImGui::Text("Level Loaded: %s", levelLoaded ? "Yes" : "No");
+    ImGui::Text("Current Level: %s", current_level_id.empty() ? "None" : current_level_id.c_str());
+    ImGui::Text("Level Loaded: %s", level_loaded ? "Yes" : "No");
 
     ImGui::Spacing();
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Controls:");
@@ -135,7 +135,7 @@ public:
     ImGui::Separator();
 
     // Show entity count
-    ImGui::Text("Active Entities: %d", Engine::WORLD.getEntityCount());
+    ImGui::Text("Active Entities: %d", Engine::WORLD.get_entity_count());
 
     // Camera controls
     ImGui::Spacing();
@@ -149,13 +149,13 @@ public:
     Log::info("LevelLoaderTestState: Free");
 
     // Unload current level
-    if (levelLoaded && !currentLevelId.empty())
+    if (level_loaded && !current_level_id.empty())
     {
-      Engine::LEVEL_LOADER.unloadLevel(currentLevelId);
+      Engine::LEVEL_LOADER.unload_level(current_level_id);
     }
 
     // Destroy background entity
-    Engine::WORLD.destroy_entity(backgroundEntityId);
+    Engine::WORLD.destroy_entity(background_entity_id);
 
     // Remove systems
     Engine::WORLD.remove_system<BackgroundSystem>();

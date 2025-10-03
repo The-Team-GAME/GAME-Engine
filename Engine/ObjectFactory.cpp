@@ -140,7 +140,7 @@ int Engine::ObjectFactory::registerObject(std::string filePath)
   return id;
 }
 
-void Engine::ObjectFactory::unregisterObject(int id)
+void Engine::ObjectFactory::unregisterObject(s32 id)
 {
   if (id < 0 || id >= static_cast<int>(objectList.size())) {
     return; // Invalid ID
@@ -155,7 +155,7 @@ void Engine::ObjectFactory::unregisterAllObjects()
   nextObjectId = 0;
 }
 
-ECS::Entity Engine::ObjectFactory::createObject(int id)
+ECS::Entity Engine::ObjectFactory::createObject(s32 id)
 {
   ObjectPrefab& objectPrefab = objectList[id];
 

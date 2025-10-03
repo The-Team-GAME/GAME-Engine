@@ -48,10 +48,10 @@ namespace ECS
 
     std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> component_arrays;
     std::vector<std::unique_ptr<System>> systems;
-    std::vector<Event> eventQueue;
+    std::vector<Event> event_queue;
 
     // Direct event handlers - map from event type to list of handlers
-    std::unordered_map<EventTypeID, std::vector<std::function<void(const Event&)>>> eventHandlers;
+    std::unordered_map<EventTypeID, std::vector<std::function<void(const Event&)>>> event_handlers;
 
     template <typename T>
     ComponentArray<T>* get_component_array();
@@ -138,20 +138,20 @@ namespace ECS
     // Query methods - return Entity instead of EntityID //
     // ============================================== */
     template <typename... T>
-    std::vector<Entity> getEntitiesWith() const;
+    std::vector<Entity> get_entities_with() const;
 
     template <typename... T>
-    Entity getFirstEntityWith() const;
+    Entity get_first_entity_with() const;
 
-    std::vector<Entity> getAllEntities() const;
-    size_t getEntityCount() const;
+    std::vector<Entity> get_all_entities() const;
+    size_t get_entity_count() const;
 
     template <typename T>
-    size_t get_componentCount() const;
+    size_t get_component_count() const;
 
   private:
-    void entityComponentChanged(EntityID entity);
-    bool systemMatchesEntity(const System& system, EntityID entity) const;
+    void entity_component_changed(EntityID entity);
+    bool system_matches_entity(const System& system, EntityID entity) const;
   };
 
 } // namespace ECS

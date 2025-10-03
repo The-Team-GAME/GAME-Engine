@@ -16,5 +16,5 @@
 
 namespace ECS
 {
-  EventTypeID EventTypeManager::nextTypeId = 0;
+  EventTypeID EventTypeManager::next_type_id = 0;
 }

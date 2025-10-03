@@ -12,7 +12,7 @@
 // deleted and collision detection is present. Object collision can also be turned off.
 // Objects can also be duplicated.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 
 #include "RectPainterState.h"
@@ -93,7 +93,7 @@ void RectPainterState::Draw()
     computeCenterAndSize(dragStart_, prevMouse_, center, size);
     clampMinSize(size, minRectSizePx_);
     // preview respects snap when Shift or global snap active
-    const bool shift = Engine::Input::IsKeyHeld(GLFW_KEY_LEFT_SHIFT) || Engine::Input::IsKeyHeld(GLFW_KEY_RIGHT_SHIFT);
+    const bool shift = Engine::Input::is_key_held(GLFW_KEY_LEFT_SHIFT) || Engine::Input::is_key_held(GLFW_KEY_RIGHT_SHIFT);
     if (globalSnap_ || shift) {
       center = snapToGrid(center, snapGridPx_);
       size.x = snapScalar(size.x, snapGridPx_);
@@ -117,14 +117,14 @@ void RectPainterState::handleMouse()
   }
 
   const glm::vec2 mouse = Engine::Input::GetMouseWorldPosition();
-  const bool lDown = Engine::Input::IsMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT);
-  const bool lHeld = Engine::Input::IsMouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT);
-  const bool lUp = Engine::Input::IsMouseButtonReleased(GLFW_MOUSE_BUTTON_LEFT);
-  const bool shift = Engine::Input::IsKeyHeld(GLFW_KEY_LEFT_SHIFT) || Engine::Input::IsKeyHeld(GLFW_KEY_RIGHT_SHIFT);
+  const bool lDown = Engine::Input::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_LEFT);
+  const bool lHeld = Engine::Input::is_mouse_button_held(GLFW_MOUSE_BUTTON_LEFT);
+  const bool lUp = Engine::Input::is_mouse_button_released(GLFW_MOUSE_BUTTON_LEFT);
+  const bool shift = Engine::Input::is_key_held(GLFW_KEY_LEFT_SHIFT) || Engine::Input::is_key_held(GLFW_KEY_RIGHT_SHIFT);
   const bool snap = (globalSnap_ || shift);
 
   // Esc clears selection
-  if (Engine::Input::IsKeyPressed(GLFW_KEY_ESCAPE)) { selectedIndex_ = -1; dragMode_ = DragMode::None; }
+  if (Engine::Input::is_key_pressed(GLFW_KEY_ESCAPE)) { selectedIndex_ = -1; dragMode_ = DragMode::None; }
 
   // Mouse down: decide mode
   if (lDown) {
@@ -247,7 +247,7 @@ void RectPainterState::handleMouse()
           .add_component<Components::Size>(size.x, size.y)
           .add_component<Components::Color>(currentColor_.x, currentColor_.y, currentColor_.z, currentColor_.w)
           .add_component<Components::BasicCollider>(spawnWithCollider_, false);
-        rects_.push_back(entity.getId());
+        rects_.push_back(entity.get_id());
         selectedIndex_ = (int)rects_.size() - 1;
       }
     }
@@ -262,16 +262,16 @@ void RectPainterState::handleShortcuts()
 {
   ImGuiIO& io = ImGui::GetIO();
   if (io.WantTextInput) return; // don't steal while typing
-  const bool ctrl = Engine::Input::IsKeyHeld(GLFW_KEY_LEFT_CONTROL) || Engine::Input::IsKeyHeld(GLFW_KEY_RIGHT_CONTROL);
+  const bool ctrl = Engine::Input::is_key_held(GLFW_KEY_LEFT_CONTROL) || Engine::Input::is_key_held(GLFW_KEY_RIGHT_CONTROL);
   const bool hasSel = (selectedIndex_ >= 0 && selectedIndex_ < (int)rects_.size());
 
-  if (hasSel && Engine::Input::IsKeyPressed(GLFW_KEY_DELETE)) {
+  if (hasSel && Engine::Input::is_key_pressed(GLFW_KEY_DELETE)) {
     Engine::WORLD.destroy_entity(rects_[selectedIndex_]);
     rects_.erase(rects_.begin() + selectedIndex_);
     selectedIndex_ = -1;
   }
 
-  if (hasSel && ctrl && Engine::Input::IsKeyPressed(GLFW_KEY_D)) {
+  if (hasSel && ctrl && Engine::Input::is_key_pressed(GLFW_KEY_D)) {
     const EntityID src = rects_[selectedIndex_];
     auto* p = Engine::WORLD.get_component<Components::Position>(src);
     auto* s = Engine::WORLD.get_component<Components::Size>(src);
@@ -284,18 +284,18 @@ void RectPainterState::handleShortcuts()
         .add_component<Components::Size>(s->width, s->height)
         .add_component<Components::Color>(c->X(), c->Y(), c->Z(), c->W());
       if (col) e.add_component<Components::BasicCollider>(col->enabled, col->isTrigger);
-      rects_.push_back(e.getId());
+      rects_.push_back(e.get_id());
       selectedIndex_ = (int)rects_.size() - 1;
     }
   }
 
-  if (hasSel && Engine::Input::IsKeyPressed(GLFW_KEY_LEFT_BRACKET))  sendToBack(selectedIndex_);
-  if (hasSel && Engine::Input::IsKeyPressed(GLFW_KEY_RIGHT_BRACKET)) bringToFront(selectedIndex_);
+  if (hasSel && Engine::Input::is_key_pressed(GLFW_KEY_LEFT_BRACKET))  sendToBack(selectedIndex_);
+  if (hasSel && Engine::Input::is_key_pressed(GLFW_KEY_RIGHT_BRACKET)) bringToFront(selectedIndex_);
 
-  if (Engine::Input::IsKeyPressed(GLFW_KEY_G)) globalSnap_ = !globalSnap_;
+  if (Engine::Input::is_key_pressed(GLFW_KEY_G)) globalSnap_ = !globalSnap_;
 
-  //if (ctrl && Engine::Input::IsKeyPressed(GLFW_KEY_S)) ;
-  //if (ctrl && Engine::Input::IsKeyPressed(GLFW_KEY_O)) ;
+  //if (ctrl && Engine::Input::is_key_pressed(GLFW_KEY_S)) ;
+  //if (ctrl && Engine::Input::is_key_pressed(GLFW_KEY_O)) ;
 }
 
 void RectPainterState::runCollisionPass()
@@ -407,9 +407,9 @@ RectPainterState::ResizeMask RectPainterState::hitHandle(const glm::vec2& p, con
   return m;
 }
 
-int RectPainterState::pickTopmostRect(const glm::vec2& p) const
+s32 RectPainterState::pickTopmostRect(const glm::vec2& p) const
 {
-  for (int i = (int)rects_.size() - 1; i >= 0; --i) { // topmost = last created
+  for (s32 i = (s32)rects_.size() - 1; i >= 0; --i) { // topmost = last created
     glm::vec2 minP, maxP;
     if (getBounds(rects_[i], minP, maxP) && pointInRect(p, minP, maxP)) return i;
   }
@@ -460,13 +460,13 @@ void RectPainterState::drawImGui()
           .add_component<Components::Size>(s->width, s->height)
           .add_component<Components::Color>(c->X(), c->Y(), c->Z(), c->W());
         if (col) e.add_component<Components::BasicCollider>(col->enabled, col->isTrigger);
-        rects_.push_back(e.getId());
+        rects_.push_back(e.get_id());
         selectedIndex_ = (int)rects_.size() - 1;
       }
     }
 
     if (ImGui::BeginListBox("Rectangles", ImVec2(420, 200))) {
-      for (int i = 0; i < (int)rects_.size(); ++i) {
+      for (s32 i = 0; i < (s32)rects_.size(); ++i) {
         const EntityID id = rects_[i];
         auto* pos = Engine::WORLD.get_component<Components::Position>(id);
         auto* size = Engine::WORLD.get_component<Components::Size>(id);
@@ -556,13 +556,13 @@ void RectPainterState::clampMinSize(glm::vec2& size, f32 minSize)
   size.y = std::max(size.y, minSize);
 }
 
-glm::vec2 RectPainterState::snapToGrid(glm::vec2 v, float grid)
+glm::vec2 RectPainterState::snapToGrid(glm::vec2 v, f32 grid)
 {
   if (grid <= 0.0f) return v;
   return { std::round(v.x / grid) * grid, std::round(v.y / grid) * grid };
 }
 
-float RectPainterState::snapScalar(float v, float grid)
+f32 RectPainterState::snapScalar(f32 v, f32 grid)
 {
   if (grid <= 0.0f) return v;
   return std::round(v / grid) * grid;

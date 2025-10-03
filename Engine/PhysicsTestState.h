@@ -25,25 +25,26 @@
 #include "PhysicsSystem.h"
 #include "GravitySystem.h"
 #include "CollisionSystem.h"
+#include "TypeDef.h"
 
 class PhysicsTestState : public Engine::GameState<PhysicsTestState>
 {
 private:
-  int enemyPrefab = -1;
+  s32 enemy_prefab = -1;
 
   // Add font IDs
-  s32 titleFontId = -1;
-  s32 infoFontId = -1;
+  s32 title_font_id = -1;
+  s32 info_font_id = -1;
 
 public:
   void Load() {
     // Load fonts
-    titleFontId = Engine::RESOURCES.load_font("physics_title_font", "Assets/fonts/PlayfairDisplay-VariableFont_wght.ttf", 82);
-    infoFontId = Engine::RESOURCES.load_font("physics_info_font", "Assets/fonts/Roboto-Regular.ttf", 48);
+    title_font_id = Engine::RESOURCES.load_font("physics_title_font", "Assets/fonts/PlayfairDisplay-VariableFont_wght.ttf", 82);
+    info_font_id = Engine::RESOURCES.load_font("physics_info_font", "Assets/fonts/Roboto-Regular.ttf", 48);
   };
 
   void Init()
-  { 
+  {
     auto player = Engine::WORLD.create_entity()
       .add_component<Components::Tag<"GameObjectState">>()
       .add_component<Components::Position>(200.0f, 200.0f)
@@ -99,9 +100,9 @@ public:
   void Draw()
   {
     // Draw title text
-    if (titleFontId != -1) {
+    if (title_font_id != -1) {
       Engine::GRAPHICS.draw_text(
-        titleFontId,
+        title_font_id,
         "Physics Test Scene",
         50.0f, 50.0f,
         1.0f,
@@ -110,9 +111,9 @@ public:
     }
 
     // Draw control info
-    if (infoFontId != -1) {
+    if (info_font_id != -1) {
       Engine::GRAPHICS.draw_text(
-        infoFontId,
+        info_font_id,
         "WASD: Move Player | SPACE: Jump",
         50.0f, 140.0f,
         0.6f,
@@ -122,7 +123,7 @@ public:
   };
 
   void Free() {
-    Engine::FACTORY.unregisterObject(enemyPrefab);
+    Engine::FACTORY.unregisterObject(enemy_prefab);
     Engine::WORLD.destroy_entities_with<Components::Tag<"GameObjectState">>();
     // Remove systems
     Engine::WORLD.remove_system<BackgroundSystem>(); // Background system should be first
@@ -136,7 +137,7 @@ public:
   };
 
   void Unload() {
-    Engine::FACTORY.unregisterObject(enemyPrefab);
+    Engine::FACTORY.unregisterObject(enemy_prefab);
 
     // Unload fonts
     Engine::RESOURCES.unload_font("physics_title_font");

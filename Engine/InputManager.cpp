@@ -68,7 +68,7 @@ namespace Engine
     }
 
     // Update mouse position
-    double xpos, ypos;
+    f64 xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
 
     // Convert from window coordinates to virtual coordinates using Graphics system
@@ -79,32 +79,32 @@ namespace Engine
     Engine::PERFORMANCE.stop("Input");
   }
 
-  bool Input::IsKeyPressed(int key)
+  bool Input::is_key_pressed(s32 key)
   {
     return currentKeys[key] && !previousKeys[key];
   }
 
-  bool Input::IsKeyReleased(int key)
+  bool Input::is_key_released(s32 key)
   {
     return !currentKeys[key] && previousKeys[key];
   }
 
-  bool Input::IsKeyHeld(int key)
+  bool Input::is_key_held(s32 key)
   {
     return currentKeys[key];
   }
 
-  bool Input::IsMouseButtonPressed(int button)
+  bool Input::is_mouse_button_pressed(s32 button)
   {
     return currentMouseButtons[button] && !previousMouseButtons[button];
   }
 
-  bool Input::IsMouseButtonReleased(int button)
+  bool Input::is_mouse_button_released(s32 button)
   {
     return !currentMouseButtons[button] && previousMouseButtons[button];
   }
 
-  bool Input::IsMouseButtonHeld(int button)
+  bool Input::is_mouse_button_held(s32 button)
   {
     return currentMouseButtons[button];
   }

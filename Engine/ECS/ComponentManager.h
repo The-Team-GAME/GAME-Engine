@@ -23,14 +23,14 @@ namespace ECS {
   // ===================================== */
   class ComponentTypeManager {
   private:
-    static ComponentTypeID nextTypeId;
+    static ComponentTypeID next_type_id;
 
   public:
     template<typename T>
-    static ComponentTypeID getTypeId();
+    static ComponentTypeID get_type_id();
 
-    static ComponentTypeID getNextAvailableId() {
-      return nextTypeId + 1;
+    static ComponentTypeID get_next_available_id() {
+      return next_type_id + 1;
     }
   };
 

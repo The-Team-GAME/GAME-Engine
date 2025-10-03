@@ -21,7 +21,7 @@
 #include "InputManager.h"
 
 namespace {
-  bool guiEnabled = true;
+  bool gui_enabled = true;
 }
 
 namespace ImguiMgr {
@@ -55,7 +55,7 @@ namespace ImguiMgr {
   void end()
   {
     ImGui::Render();
-    if (guiEnabled)
+    if (gui_enabled)
     {
       ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
@@ -64,9 +64,9 @@ namespace ImguiMgr {
   void update()
   {
     // Toggle ImGui with F1 key
-    if (Engine::Input::IsKeyPressed(GLFW_KEY_F1))
+    if (Engine::Input::is_key_pressed(GLFW_KEY_F1))
     {
-      guiEnabled = !guiEnabled;
+      gui_enabled = !gui_enabled;
     }
   }
 }

@@ -19,9 +19,9 @@
 namespace ECS {
 
   template<typename T>
-  ComponentTypeID ComponentTypeManager::getTypeId() {
-    static ComponentTypeID typeId = ++nextTypeId;
-    return typeId;
+  ComponentTypeID ComponentTypeManager::get_type_id() {
+    static ComponentTypeID type_id = ++next_type_id;
+    return type_id;
   }
 
 } // namespace ECS

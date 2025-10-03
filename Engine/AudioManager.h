@@ -28,7 +28,7 @@ namespace Engine
     FMOD::System* fmodSystem; // FMOD system instance
     std::unordered_map<s32, FMOD::Sound*> sounds; // Map of sound IDs to FMOD sound objects
     std::unordered_map<s32, FMOD::Channel*> channels; // Map of sound IDs to active channels
-    s32 nextSoundId; // Counter for generating unique sound IDs
+    s32 next_sound_id; // Counter for generating unique sound IDs
 
   public:
     AudioManager(); // Constructor - initializes FMOD system

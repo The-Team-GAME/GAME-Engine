@@ -31,8 +31,8 @@ namespace ECS {
   public:
     Entity(EntityID id = INVALID_ENTITY, World* world = nullptr);
 
-    EntityID getId() const;
-    bool isValid() const;
+    EntityID get_id() const;
+    bool is_valid() const;
 
     template<typename T, typename... Args>
     Entity& add_component(Args&&... args);

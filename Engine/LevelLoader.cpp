@@ -1,7 +1,6 @@
 //-----------------------------------------------------------------------------------
 // file:    LevelLoader.cpp
-// project: Monkey Stole My GPA
-//
+// project: Monkey Stole My GPA        world->destroy_entity(entityId);//
 // author:  Chew Shee Yang (100%)
 //          Primary author
 //
@@ -24,11 +23,11 @@ namespace fh = FileHandler;
 namespace Engine
 {
   LevelLoader::LevelLoader(ECS::World* world, ObjectFactory* factory)
-    : m_world(world), m_factory(factory)
+    : world(world), factory(factory)
   {
   }
 
-  Level LevelLoader::parseLevel(const std::string& filePath)
+  Level LevelLoader::parse_level(const std::string& filePath)
   {
     Level level;
 
@@ -90,9 +89,9 @@ namespace Engine
     return level;
   }
 
-  std::string LevelLoader::loadLevel(const std::string& filePath)
+  std::string LevelLoader::load_level(const std::string& filePath)
   {
-    Level level = parseLevel(filePath);
+    Level level = parse_level(filePath);
 
     if (level.levelId.empty())
     {
@@ -101,7 +100,7 @@ namespace Engine
     }
 
     // Check if level already loaded
-    if (isLevelLoaded(level.levelId))
+    if (is_level_loaded(level.levelId))
     {
       Log::warning("Level already loaded: " + level.levelId);
       return level.levelId;
@@ -110,7 +109,7 @@ namespace Engine
     // Load all object prefabs
     for (const auto& prefabPath : level.objectPrefabPaths)
     {
-      s32 prefabId = m_factory->registerObject(prefabPath);
+      s32 prefabId = factory->registerObject(prefabPath);
       if (prefabId != -1)
       {
         level.loadedPrefabIds.push_back(prefabId);
@@ -123,16 +122,16 @@ namespace Engine
     }
 
     // Store the level
-    loadedLevels[level.levelId] = level;
+    loaded_levels[level.levelId] = level;
 
     Log::info("Level loaded successfully: " + level.levelId);
     return level.levelId;
   }
 
-  bool LevelLoader::spawnLevel(const std::string& levelId)
+  bool LevelLoader::spawn_level(const std::string& levelId)
   {
-    auto it = loadedLevels.find(levelId);
-    if (it == loadedLevels.end())
+    auto it = loaded_levels.find(levelId);
+    if (it == loaded_levels.end())
     {
       Log::warning("Cannot spawn level - not loaded: " + levelId);
       return false;
@@ -143,7 +142,7 @@ namespace Engine
     // Clear any previously spawned entities
     for (auto entityId : level.spawnedEntities)
     {
-      m_world->destroy_entity(entityId);
+      world->destroy_entity(entityId);
     }
     level.spawnedEntities.clear();
 
@@ -152,10 +151,10 @@ namespace Engine
     {
       // Find the prefab ID by matching the prefab's object ID
       s32 prefabIdToUse = -1;
-      for (int prefabId : level.loadedPrefabIds)
+      for (s32 prefabId : level.loadedPrefabIds)
       {
         // Create a temporary entity to check its ObjectId
-        auto tempEntity = m_factory->createObject(prefabId);
+        auto tempEntity = factory->createObject(prefabId);
         auto* objectId = tempEntity.get_component<Components::ObjectId>();
 
         if (objectId && *objectId == entityData.prefabId)
@@ -174,26 +173,26 @@ namespace Engine
       }
 
       // Create entity from prefab
-      auto entity = m_factory->createObject(prefabIdToUse);
+      auto entity = factory->createObject(prefabIdToUse);
 
       // Set position
       entity.add_component<Components::Position>(entityData.x, entityData.y);
 
       // Track spawned entity
-      level.spawnedEntities.push_back(entity.getId());
+      level.spawnedEntities.push_back(entity.get_id());
     }
 
-    currentLevelId = levelId;
+    current_level_id = levelId;
     Log::info("Spawned level: " + levelId + " with " +
       std::to_string(level.spawnedEntities.size()) + " entities");
 
     return true;
   }
 
-  void LevelLoader::unloadLevel(const std::string& levelId)
+  void LevelLoader::unload_level(const std::string& levelId)
   {
-    auto it = loadedLevels.find(levelId);
-    if (it == loadedLevels.end())
+    auto it = loaded_levels.find(levelId);
+    if (it == loaded_levels.end())
     {
       Log::warning("Cannot unload level - not loaded: " + levelId);
       return;
@@ -204,38 +203,38 @@ namespace Engine
     // Destroy all spawned entities
     for (auto entityId : level.spawnedEntities)
     {
-      m_world->destroy_entity(entityId);
+      world->destroy_entity(entityId);
     }
     level.spawnedEntities.clear();
 
     // Unload all prefabs
-    for (int prefabId : level.loadedPrefabIds)
+    for (s32 prefabId : level.loadedPrefabIds)
     {
-      m_factory->unregisterObject(prefabId);
+      factory->unregisterObject(prefabId);
     }
     level.loadedPrefabIds.clear();
 
     // Remove level from loaded levels
-    loadedLevels.erase(it);
+    loaded_levels.erase(it);
 
-    if (currentLevelId == levelId)
+    if (current_level_id == levelId)
     {
-      currentLevelId.clear();
+      current_level_id.clear();
     }
 
     Log::info("Unloaded level: " + levelId);
   }
 
-  void LevelLoader::unloadCurrentLevel()
+  void LevelLoader::unload_current_level()
   {
-    if (!currentLevelId.empty())
+    if (!current_level_id.empty())
     {
-      unloadLevel(currentLevelId);
+      unload_level(current_level_id);
     }
   }
 
-  bool LevelLoader::isLevelLoaded(const std::string& levelId) const
+  bool LevelLoader::is_level_loaded(const std::string& levelId) const
   {
-    return loadedLevels.find(levelId) != loadedLevels.end();
+    return loaded_levels.find(levelId) != loaded_levels.end();
   }
 }

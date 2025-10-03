@@ -12,7 +12,7 @@
 //          displays loaded resources (Textures, Sounds, Fonts, etc.), allows manual
 //          unloading, and implements a drag-and-drop zone for easy file loading.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 #include "imgui.h"
@@ -40,18 +40,18 @@
     ==================================================================================*/
 inline void ResourceManagerPanel()
 {
-  static bool showLoadConfirmation = false;
-  static std::string lastLoadedFile = "";
-  static std::string lastLoadError = "";
+  static bool show_load_confirmation = false;
+  static std::string last_loaded_file = "";
+  static std::string last_load_error = "";
 
   if (ImGui::Begin("Resource Manager"))
   {
     // Get counts from the resource manager
-    size_t textureCount = Engine::RESOURCES.get_texture_count();
-    size_t soundCount = Engine::RESOURCES.get_sound_count();
-    size_t fontCount = Engine::RESOURCES.get_font_count();
-    size_t spriteSheetCount = Engine::RESOURCES.get_sprite_sheet_count();
-    size_t objectPrefabCount = Engine::RESOURCES.get_object_prefab_count();
+    size_t texture_count = Engine::RESOURCES.get_texture_count();
+    size_t sound_count = Engine::RESOURCES.get_sound_count();
+    size_t font_count = Engine::RESOURCES.get_font_count();
+    size_t sprite_sheet_count = Engine::RESOURCES.get_sprite_sheet_count();
+    size_t object_prefab_count = Engine::RESOURCES.get_object_prefab_count();
 
     // Drag and Drop Zone
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.2f, 0.2f, 0.3f, 0.5f));
@@ -71,26 +71,26 @@ inline void ResourceManagerPanel()
     ImGui::Separator();
 
     // Display confirmation/error messages
-    if (showLoadConfirmation)
+    if (show_load_confirmation)
     {
-      if (!lastLoadError.empty())
+      if (!last_load_error.empty())
       {
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.3f, 0.3f, 1.0f));
-        ImGui::TextWrapped("Error: %s", lastLoadError.c_str());
+        ImGui::TextWrapped("Error: %s", last_load_error.c_str());
         ImGui::PopStyleColor();
       }
-      else if (!lastLoadedFile.empty())
+      else if (!last_loaded_file.empty())
       {
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.3f, 1.0f, 0.3f, 1.0f));
-        ImGui::TextWrapped("Loaded: %s", lastLoadedFile.c_str());
+        ImGui::TextWrapped("Loaded: %s", last_loaded_file.c_str());
         ImGui::PopStyleColor();
       }
 
       if (ImGui::Button("Clear Message"))
       {
-        showLoadConfirmation = false;
-        lastLoadedFile = "";
-        lastLoadError = "";
+        show_load_confirmation = false;
+        last_loaded_file = "";
+        last_load_error = "";
       }
       ImGui::Separator();
     }
@@ -98,18 +98,18 @@ inline void ResourceManagerPanel()
     // Display overview
     if (ImGui::CollapsingHeader("Overview", ImGuiTreeNodeFlags_DefaultOpen))
     {
-      ImGui::Text("Textures: %zu", textureCount);
-      ImGui::Text("Sounds: %zu", soundCount);
-      ImGui::Text("Fonts: %zu", fontCount);
-      ImGui::Text("Sprite Sheets: %zu", spriteSheetCount);
-      ImGui::Text("Object Prefabs: %zu", objectPrefabCount);
+      ImGui::Text("Textures: %zu", texture_count);
+      ImGui::Text("Sounds: %zu", sound_count);
+      ImGui::Text("Fonts: %zu", font_count);
+      ImGui::Text("Sprite Sheets: %zu", sprite_sheet_count);
+      ImGui::Text("Object Prefabs: %zu", object_prefab_count);
       ImGui::Separator();
     }
 
     // Textures section with previews
     if (ImGui::CollapsingHeader("Textures"))
     {
-      if (textureCount > 0)
+      if (texture_count > 0)
       {
         auto& textureMap = Engine::RESOURCES.get_all_textures();
 
@@ -127,13 +127,13 @@ inline void ResourceManagerPanel()
           ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "(ID: %d, %dx%d)", texture_id, width, height);
 
           // Display texture preview
-          f32 previewSize = 64.0f;
-          f32 aspectRatio = width > 0 ? (f32)height / (f32)width : 1.0f;
-          ImVec2 imageSize(previewSize, previewSize * aspectRatio);
+          f32 preview_size = 64.0f;
+          f32 aspect_ratio = width > 0 ? (f32)height / (f32)width : 1.0f;
+          ImVec2 image_size(preview_size, preview_size * aspect_ratio);
 
           // Get the OpenGL texture handle for ImGui
           u32 textureHandle = Engine::GRAPHICS.get_texture_handle(texture_id);
-          ImGui::Image((ImTextureID)(intptr_t)textureHandle, imageSize);
+          ImGui::Image((ImTextureID)(intptr_t)textureHandle, image_size);
 
           // Unload button
           ImGui::SameLine();
@@ -155,7 +155,7 @@ inline void ResourceManagerPanel()
     // Sounds section with playback controls
     if (ImGui::CollapsingHeader("Sounds"))
     {
-      if (soundCount > 0)
+      if (sound_count > 0)
       {
         auto& soundMap = Engine::RESOURCES.get_all_sounds();
 
@@ -202,7 +202,7 @@ inline void ResourceManagerPanel()
     // Fonts section
     if (ImGui::CollapsingHeader("Fonts"))
     {
-      if (fontCount > 0)
+      if (font_count > 0)
       {
         auto& fontMap = Engine::RESOURCES.get_all_fonts();
 
@@ -233,7 +233,7 @@ inline void ResourceManagerPanel()
     // Sprite Sheets section
     if (ImGui::CollapsingHeader("Sprite Sheets"))
     {
-      if (spriteSheetCount > 0)
+      if (sprite_sheet_count > 0)
       {
         auto& spriteSheetMap = Engine::RESOURCES.get_all_sprite_sheets();
 
@@ -264,7 +264,7 @@ inline void ResourceManagerPanel()
     // Object Prefabs section
     if (ImGui::CollapsingHeader("Object Prefabs"))
     {
-      if (objectPrefabCount > 0)
+      if (object_prefab_count > 0)
       {
         auto& objectPrefabMap = Engine::RESOURCES.get_all_object_prefabs();
 
@@ -295,8 +295,8 @@ inline void ResourceManagerPanel()
   ImGui::End();
 
   // Listen for file drop events
-  static bool eventListenerRegistered = false;
-  if (!eventListenerRegistered)
+  static bool event_listener_registered = false;
+  if (!event_listener_registered)
   {
     Engine::WORLD.add_event_listener<FileDropEvent>([&](const FileDropEvent& event) {
       for (const auto& filePath : event.filePaths)
@@ -309,18 +309,18 @@ inline void ResourceManagerPanel()
 
         if (result != -1)
         {
-          lastLoadedFile = filename + " (" + path.extension().string() + ")";
-          lastLoadError = "";
+          last_loaded_file = filename + " (" + path.extension().string() + ")";
+          last_load_error = "";
         }
         else
         {
-          lastLoadError = "Failed to load: " + filename;
+          last_load_error = "Failed to load: " + filename;
         }
 
-        showLoadConfirmation = true;
+        show_load_confirmation = true;
       }
       });
 
-    eventListenerRegistered = true;
+    event_listener_registered = true;
   }
 }

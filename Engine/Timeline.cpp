@@ -12,7 +12,7 @@
 //          controls, playhead movement, dynamic layer resizing, and processing of
 //          drag-and-drop events to place image clips onto the grid.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 
 #include "Timeline.h"
@@ -29,8 +29,8 @@ Timeline::Timeline()
   lastFrameTime(0.0)        // Initialize time to zero
 {
   // Start with 2 layers
-  for (; currentFrame < 1; ++currentFrame)
-    layers.push_back(currentFrame);
+  for (s32 i = 0; i < 2; ++i)
+    layers.push_back(i);
 }
 
 
@@ -131,8 +131,8 @@ void Timeline::Draw() {
     // Update playhead position if playing
     if (isPlaying) {
       // Get the current time and calculate the time elapsed since the last frame
-      double currentTime = ImGui::GetTime();
-      float deltaTime = (float)(currentTime - lastFrameTime);
+      f64 currentTime = ImGui::GetTime();
+      f32 deltaTime = (f32)(currentTime - lastFrameTime);
 
       // Advance the current frame based on the playback speed and delta time
       currentFrame += static_cast<s32>(playbackSpeed * deltaTime);

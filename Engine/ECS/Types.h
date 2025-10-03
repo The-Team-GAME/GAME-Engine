@@ -18,15 +18,16 @@
 #include <cstdint>
 #include <bitset>
 #include <iostream> //remove when not in use
+#include "../TypeDef.h"
 
 namespace ECS {
 
   /* ============== //
   // Type aliases   //
   // ============== */
-  using EntityID = std::uint32_t;
-  using ComponentTypeID = std::uint32_t;
-  using EventTypeID = std::uint32_t;
+  using EntityID = u32;
+  using ComponentTypeID = u32;
+  using EventTypeID = u32;
 
   /* =================== //
   // Constants           //

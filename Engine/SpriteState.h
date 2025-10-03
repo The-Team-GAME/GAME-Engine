@@ -54,21 +54,21 @@ private:
 
   Timeline timeline;	// adds timeline class to file
 
-  int linearMonkeyImageId = -1;
-  int nearestMonkeyImageId = -1;
-  std::vector<int> loadedImageIds;
-  std::vector<DroppedImage> droppedImages;
+  s32 linear_monkey_image_id = -1;
+  s32 nearest_monkey_image_id = -1;
+  std::vector<s32> loaded_image_ids;
+  std::vector<DroppedImage> dropped_images;
 
-  bool showFileExplorerSource = false;
-  bool fileCopied = false;
+  bool show_file_explorer_source = false;
+  bool file_copied = false;
 
   struct ImageData {
-    unsigned int texture_id;
+    u32 texture_id;
     const char* name;
   };
 
-  std::vector<ImageData> ImageAspectRatio;
-  float spritePosX = 0.0f;
+  std::vector<ImageData> image_aspect_ratio;
+  f32 sprite_pos_x = 0.0f;
 
 
   /*=================================================================================
@@ -81,7 +81,7 @@ private:
     assets folder, or whenever the asset list needs to be refreshed.
     ==================================================================================*/
   void LoadAllAssets() {
-    loadedImageIds.clear();
+    loaded_image_ids.clear();
     fs::path assets_path = fs::current_path() / "Engine" / "Assets" / "images";
     if (!fs::exists(assets_path) || !fs::is_directory(assets_path)) {
       fs::create_directories(assets_path);
@@ -93,9 +93,9 @@ private:
         std::transform(extension.begin(), extension.end(), extension.begin(),
           [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
         if (extension == ".jpg" || extension == ".png" || extension == ".jpeg") {
-          int textureId = Engine::GRAPHICS.load_texture(entry.path().string().c_str(), Graphics::MinifyingFilter::Nearest);
-          if (textureId != -1) {
-            loadedImageIds.push_back(textureId);
+          s32 texture_id = Engine::GRAPHICS.load_texture(entry.path().string().c_str(), Graphics::MinifyingFilter::Nearest);
+          if (texture_id != -1) {
+            loaded_image_ids.push_back(texture_id);
           }
         }
       }
@@ -129,8 +129,8 @@ public:
     Automatically called by the StateManager right after Load() and before Update().
     ==================================================================================*/
   void Init() {
-    linearMonkeyImageId = Engine::GRAPHICS.load_texture("Assets/images/monkey.png");
-    nearestMonkeyImageId = Engine::GRAPHICS.load_texture("Assets/images/monkey.png", Graphics::MinifyingFilter::Nearest);
+    linear_monkey_image_id = Engine::GRAPHICS.load_texture("Assets/images/monkey.png");
+    nearest_monkey_image_id = Engine::GRAPHICS.load_texture("Assets/images/monkey.png", Graphics::MinifyingFilter::Nearest);
     std::cout << "Current path is " << std::filesystem::current_path() << std::endl;
   };
 
@@ -161,18 +161,18 @@ public:
   void Draw() {
     // Main scene texture drawing
     Engine::GRAPHICS.clear_screen(0.1f, 0.1f, 0.1f, 1.0f);
-    Engine::GRAPHICS.draw_texture(linearMonkeyImageId, 200.0f, 150.0f, 150.0f, 210.0f);
-    Engine::GRAPHICS.draw_texture(nearestMonkeyImageId, 400.0f, 150.0f, 150.0f, 210.0f);
+    Engine::GRAPHICS.draw_texture(linear_monkey_image_id, 200.0f, 150.0f, 150.0f, 210.0f);
+    Engine::GRAPHICS.draw_texture(nearest_monkey_image_id, 400.0f, 150.0f, 150.0f, 210.0f);
     Engine::GRAPHICS.draw_texture_region(
-      nearestMonkeyImageId, 600.0f, 150.0f, 150.0f, 210.0f, spritePosX += Engine::Time::get_fixed_dt() * 10.0f, 0.0f, 15.0f, 21.0f
+      nearest_monkey_image_id, 600.0f, 150.0f, 150.0f, 210.0f, sprite_pos_x += Engine::Time::get_fixed_dt() * 10.0f, 0.0f, 15.0f, 21.0f
     );
 
 
 
     // This loop draws the dropped images at their final position
-    for (const auto& droppedImage : droppedImages) {
+    for (const auto& droppedImage : dropped_images) {
       //Engine::GRAPHICS.draw_texture(droppedImage.textureId, droppedImage.position.x, droppedImage.position.y, 150.0f, 210.0f);
-      Engine::GRAPHICS.draw_texture(droppedImage.textureId, 600.f, 500.f, 150.0f, 210.0f);
+      Engine::GRAPHICS.draw_texture(droppedImage.texture_id, 600.f, 500.f, 150.0f, 210.0f);
     }
 
     timeline.Draw();
@@ -182,16 +182,16 @@ public:
     ImGui::Text("Project Root: %s", fs::current_path().string().c_str());
     ImGui::Separator();
     if (ImGui::Button("Browse for Image")) {
-      showFileExplorerSource = true;
-      fileCopied = false;
+      show_file_explorer_source = true;
+      file_copied = false;
       selected_file_path.clear();
     }
 
-    if (showFileExplorerSource) {
-      FileExplorer(&showFileExplorerSource);
+    if (show_file_explorer_source) {
+      FileExplorer(&show_file_explorer_source);
     }
 
-    if (!showFileExplorerSource && !selected_file_path.empty() && !fileCopied) {
+    if (!show_file_explorer_source && !selected_file_path.empty() && !file_copied) {
       try {
         fs::path source_path(selected_file_path);
         fs::path destination_dir = fs::current_path() / "Engine" / "Assets" / "images";
@@ -201,7 +201,7 @@ public:
         std::cout << "File copied successfully to: " << destination_path << std::endl;
         LoadAllAssets();
         selected_file_path.clear();
-        fileCopied = true;
+        file_copied = true;
       }
       catch (const fs::filesystem_error& e) {
         fprintf(stderr, "Filesystem error: %s\n", e.what());
@@ -210,7 +210,7 @@ public:
     ImGui::End();
 
     //calls the sprite dropper function :>
-    SpriteDropper(loadedImageIds);
+    SpriteDropper(loaded_image_ids);
 
   };
 

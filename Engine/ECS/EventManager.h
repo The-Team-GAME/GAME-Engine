@@ -30,11 +30,11 @@ namespace ECS
   class EventTypeManager
   {
   private:
-    static EventTypeID nextTypeId;
+    static EventTypeID next_type_id;
 
   public:
     template <typename T>
-    static EventTypeID getTypeId();
+    static EventTypeID get_type_id();
   };
 
   /* ======================================== //
@@ -42,7 +42,7 @@ namespace ECS
   // ======================================== */
   struct Event
   {
-    EventTypeID typeId = INVALID_EVENT_TYPE;
+    EventTypeID type_id = INVALID_EVENT_TYPE;
     std::any data;
 
     template <typename T>

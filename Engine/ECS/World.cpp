@@ -46,19 +46,19 @@ namespace ECS
 
     // Copy signature from source to new entity
     const auto& sourceSignature = entity_signatures.at(source_id);
-    entity_signatures[newEntity.getId()] = sourceSignature;
+    entity_signatures[newEntity.get_id()] = sourceSignature;
 
     // Copy all components using the signature
     for (auto const& [typeId, componentArray] : component_arrays)
     {
       if (sourceSignature.test(typeId))
       {
-        componentArray->cloneComponent(source_id, newEntity.getId());
+        componentArray->clone_component(source_id, newEntity.get_id());
       }
     }
 
     // Notify systems about the new entity
-    entityComponentChanged(newEntity.getId());
+    entity_component_changed(newEntity.get_id());
 
     return newEntity;
   }
@@ -75,17 +75,17 @@ namespace ECS
 
   void World::remove_event_listener(EventTypeID eventType)
   {
-    eventHandlers.erase(eventType);
+    event_handlers.erase(eventType);
   }
 
   void World::update()
   {
     // Dispatch all queued events
-    for (const auto& event : eventQueue)
+    for (const auto& event : event_queue)
     {
       // Call direct event handlers first
-      auto handlerIt = eventHandlers.find(event.typeId);
-      if (handlerIt != eventHandlers.end()) {
+      auto handlerIt = event_handlers.find(event.type_id);
+      if (handlerIt != event_handlers.end()) {
         for (const auto& handler : handlerIt->second) {
           handler(event);
         }
@@ -94,17 +94,17 @@ namespace ECS
       // Then call system event handlers
       for (auto& system : systems)
       {
-        const auto& systemEventSignature = system->getEventSignature();
-        if (systemEventSignature.test(event.typeId))
+        const auto& systemEventSignature = system->get_event_signature();
+        if (systemEventSignature.test(event.type_id))
         {
-          // Call onEvent for each entity the system manages
-          for (EntityID entity : system->getEntities()) {
-            system->onEvent(event, entity);
+          // Call on_event for each entity the system manages
+          for (EntityID entity : system->get_entities()) {
+            system->on_event(event, entity);
           }
         }
       }
     }
-    eventQueue.clear();
+    event_queue.clear();
 
     // Update all systems
     for (auto& system : systems)
@@ -120,7 +120,7 @@ namespace ECS
         // Remove from all component arrays
         for (auto& [typeId, array] : component_arrays)
         {
-          array->removeEntity(entityId);
+          array->remove_entity(entityId);
         }
 
         // Remove signature
@@ -129,7 +129,7 @@ namespace ECS
         // Remove from all systems
         for (auto& system : systems)
         {
-          system->removeEntity(entityId);
+          system->remove_entity(entityId);
         }
       }
     }
@@ -145,7 +145,7 @@ namespace ECS
     }
   }
 
-  std::vector<Entity> World::getAllEntities() const
+  std::vector<Entity> World::get_all_entities() const
   {
     std::vector<Entity> result;
     result.reserve(active_entities.size());
@@ -156,27 +156,27 @@ namespace ECS
     return result;
   }
 
-  size_t World::getEntityCount() const
+  size_t World::get_entity_count() const
   {
     return active_entities.size();
   }
 
-  void World::entityComponentChanged(EntityID entity)
+  void World::entity_component_changed(EntityID entity)
   {
     for (auto& system : systems)
     {
-      if (systemMatchesEntity(*system, entity))
+      if (system_matches_entity(*system, entity))
       {
-        system->addEntity(entity);
+        system->add_entity(entity);
       }
       else
       {
-        system->removeEntity(entity);
+        system->remove_entity(entity);
       }
     }
   }
 
-  bool World::systemMatchesEntity(const System& system, EntityID entity) const
+  bool World::system_matches_entity(const System& system, EntityID entity) const
   {
     if (!is_entity_active(entity))
       return false;
@@ -185,7 +185,7 @@ namespace ECS
     if (it == entity_signatures.end())
       return false;
 
-    const auto& requiredSignature = system.getRequiredSignature();
+    const auto& requiredSignature = system.get_required_signature();
     const auto& entitySignature = it->second;
 
     // Fast bitwise check: entity has all required components

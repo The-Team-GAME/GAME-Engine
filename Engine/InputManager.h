@@ -15,6 +15,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 #include <glm/glm.hpp>
+#include "TypeDef.h"
 
 namespace Engine
 {
@@ -40,21 +41,21 @@ namespace Engine
      * @param key The key code to check (e.g., from GLFW).
      * @return true if the key was pressed in this frame, false otherwise.
      */
-    static bool IsKeyPressed(int key);
+    static bool is_key_pressed(s32 key);
 
     /**
      * @brief Checks if a key was just released in the current frame.
      * @param key The key code to check.
      * @return true if the key was released in this frame, false otherwise.
      */
-    static bool IsKeyReleased(int key);
+    static bool is_key_released(s32 key);
 
     /**
      * @brief Checks if a key is currently being held down.
      * @param key The key code to check.
      * @return true if the key is held down, false otherwise.
      */
-    static bool IsKeyHeld(int key);
+    static bool is_key_held(s32 key);
 
     // Mouse input
     /**
@@ -62,21 +63,21 @@ namespace Engine
      * @param button The mouse button code to check (e.g., from GLFW).
      * @return true if the mouse button was pressed in this frame, false otherwise.
      */
-    static bool IsMouseButtonPressed(int button);
+    static bool is_mouse_button_pressed(s32 button);
 
     /**
      * @brief Checks if a mouse button was just released in the current frame.
      * @param button The mouse button code to check.
      * @return true if the mouse button was released in this frame, false otherwise.
      */
-    static bool IsMouseButtonReleased(int button);
+    static bool is_mouse_button_released(s32 button);
 
     /**
      * @brief Checks if a mouse button is currently being held down.
      * @param button The mouse button code to check.
      * @return true if the mouse button is held down, false otherwise.
      */
-    static bool IsMouseButtonHeld(int button);
+    static bool is_mouse_button_held(s32 button);
 
     /**
      * @brief Gets the current position of the mouse cursor in window coordinates.
