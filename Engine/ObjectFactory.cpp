@@ -2,10 +2,12 @@
 // file:    ObjectFactory.cpp
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (100%)
+// author:  Chew Shee Yang (50%)
 //          Primary author
-//
+//          Cheng Ming Xian (50%)
+// 
 // email:   chew.s@digipen.edu
+//          c.mingxian@digipen.edu
 //
 // brief:   This file implements the ObjectFactory class which manages object prefabs
 //          and creates ECS entities from JSON configuration files. It handles loading
