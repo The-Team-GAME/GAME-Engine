@@ -43,13 +43,8 @@ public:
   };
 
   void Init()
-  {
-    // Load the enemy prefab from a JSON file
-    enemyPrefab = Engine::FACTORY.registerObject("Assets/objects/enemy.json");
-
-
-    // Create two enemy instances from the prefab
-    auto enemy1 = Engine::WORLD.create_entity()
+  { 
+    auto player = Engine::WORLD.create_entity()
       .add_component<Components::Tag<"GameObjectState">>()
       .add_component<Components::Position>(200.0f, 200.0f)
       .add_component<Components::Color>(0.2f, 1.0f, 0.2f, 1.0f)
@@ -59,31 +54,23 @@ public:
       .add_component<Components::Collider>(20.0f, 20.0f, false) // x, y, isStatic
       .add_component<Components::PlayerController>();
 
-    auto enemy3 = Engine::WORLD.create_entity()
+    auto platform1 = Engine::WORLD.create_entity()
       .add_component<Components::Tag<"GameObjectState">>()
       .add_component<Components::Position>(500.0f, 300.0f)
       .add_component<Components::Color>(1.0f, 0.2f, 0.2f, 1.0f)
-      .add_component<Components::Size>(100.0f, 50.0f)
+      .add_component<Components::Size>(400.0f, 100.0f)
       .add_component<Components::RigidBody>(1.0f) // mass=1.0,
       .add_component<Components::Gravity>()
-      .add_component<Components::Collider>(100.0f, 50.0f, true); // x, y, isStatic
+      .add_component<Components::Collider>(400.0f, 100.0f, true); // x, y, isStatic
 
-
-    // Create two enemy instances from the prefab
-    auto enemy2 = Engine::WORLD.create_entity()
-      .add_component<Components::Tag<"Floor">>()
+    auto platform2 = Engine::WORLD.create_entity()
+      .add_component<Components::Tag<"GameObjectState">>()
       .add_component<Components::Position>(500.0f, 500.0f)
       .add_component<Components::Color>(1.0f, 0.2f, 0.2f, 1.0f)
-      .add_component<Components::Size>(4000.0f, 50.0f)
+      .add_component<Components::Size>(4000.0f, 100.0f)
       .add_component<Components::RigidBody>(10000000.0f) // mass=1.0,
-      .add_component<Components::Collider>(4000.0f, 50.0f, true); // x, y, isStatic
+      .add_component<Components::Collider>(4000.0f, 100.0f, true); // x, y, isStatic
 
-
-
-
-
-    // You can modify components like this too
-    //enemy2.getComponent<Components::Position>()->x = 300.0f;
 
     auto background = Engine::WORLD.create_entity()
       .add_component<Components::Tag<"GameObjectState">>()
@@ -137,7 +124,6 @@ public:
   void Free() {
     Engine::FACTORY.unregisterObject(enemyPrefab);
     Engine::WORLD.destroy_entities_with<Components::Tag<"GameObjectState">>();
-    Engine::WORLD.destroy_entities_with<Components::Tag<"Floor">>();
     // Remove systems
     Engine::WORLD.remove_system<BackgroundSystem>(); // Background system should be first
     Engine::WORLD.remove_system<GravitySystem>();
