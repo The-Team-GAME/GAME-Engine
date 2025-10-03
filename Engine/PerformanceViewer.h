@@ -57,7 +57,7 @@ inline void PerformanceViewerPanel()
 
   f32 tick_rate_input = Engine::Time::get_tick_rate();
 
-  ImGui::SliderFloat("Tick Rate", &tick_rate_input, 10.0f, 144.0f);
+  ImGui::SliderFloat("Tick Rate", &tick_rate_input, 45.0f, 144.0f);
 
   Engine::Time::set_tick_rate(tick_rate_input);
 
