@@ -41,7 +41,7 @@ namespace Components
           float v1 = static_cast<float>((row + 1) * subTextureHeight) / (rows * subTextureHeight);
 
           Engine::Graphics::SubTexture subTexture;
-          subTexture.texCoords = { glm::vec2(u0, v1), glm::vec2(u1, v1), glm::vec2(u1, v0), glm::vec2(u0, v0) };
+          subTexture.tex_coords = { glm::vec2(u0, v1), glm::vec2(u1, v1), glm::vec2(u1, v0), glm::vec2(u0, v0) };
           subTextures.push_back(subTexture);
         }
       }
@@ -64,7 +64,7 @@ namespace Components
       for (size_t i = 0; i < frameCount; ++i)
       {
         frames[i].duration = frameDuration;
-        frames[i].beforeTime = i * frameDuration;
+        frames[i].before_time = i * frameDuration;
       }
     }
   };
