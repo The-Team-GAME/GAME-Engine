@@ -27,5 +27,9 @@ namespace Engine {
     // Draw text using a font
     void draw_text(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color);
 
+    // Clear the screen with a color or texture
+    void clear_screen(const Math::Vec4D& color);
+    void clear_screen(Engine::Graphics::Texture texture);
+
   }
 }

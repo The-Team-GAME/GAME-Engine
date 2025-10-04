@@ -133,8 +133,7 @@ void BasicState::update()
 void BasicState::draw()
 {
   // Clear background
-  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT);
+  Engine::Graphics::clear_screen({ 20.0f, 20.0f, 20.0f, 255.0f });
 
   auto unit_rect = Engine::Resources::get_unit_rect_texture();
 
