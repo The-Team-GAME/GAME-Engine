@@ -36,14 +36,6 @@ void BasicState::load()
     std::cout << "Failed to load playfair font for BasicState.\n";
   }
 
-  // Load sound using ResourceManager
-  move_sound_id = Engine::RESOURCES.load_sound("move_sound", "Assets/sounds/move1.wav");
-  if (move_sound_id == -1)
-  {
-    std::cout << "Failed to load move sound for BasicState.\n";
-  }
-
-
 }
 
 void BasicState::init()
@@ -53,22 +45,7 @@ void BasicState::init()
 
 void BasicState::update()
 {
-  if (Engine::Input::is_key_pressed(GLFW_KEY_SPACE))
-  {
-    std::cout << "Spacebar was pressed!\n";
-  }
-
-  if (Engine::Input::is_key_pressed(GLFW_KEY_P))
-  {
-    if (move_sound_id != -1)
-    {
-      Engine::AUDIO.play_sound(move_sound_id);
-      std::cout << "P key was pressed! Playing sound.\n";
-    }
-  }
-
   rotation += 45.0f * Engine::Time::get_fixed_dt();
-
 }
 
 void BasicState::draw()

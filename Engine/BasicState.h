@@ -23,7 +23,6 @@ class BasicState : public Engine::GameState<BasicState>
 private:
   s32 font_id_1 = -1;
   s32 font_id_2 = -1;
-  s32 move_sound_id = -1;
   f32 rotation = 0.f;
 
 public:
