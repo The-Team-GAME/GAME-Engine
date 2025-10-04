@@ -46,13 +46,13 @@ public:
   ==================================================================================*/
   void draw_entity(const ECS::Entity& entity) override {
     auto* transform = entity.get_component<Components::Transform2D>();
-    
+
     // Default white color if no color component exists
     Math::Vec4D color(255.0f, 255.0f, 255.0f, 255.0f);
-    
+
     // Get the unit rect texture (1x1 white pixel)
     auto texture = Engine::Resources::get_unit_rect_texture();
-    
+
     // Draw the texture with transform and color
     Engine::Graphics::draw_texture(
       texture,
@@ -91,14 +91,14 @@ public:
   void draw_entity(const ECS::Entity& entity) override {
     auto* texture_comp = entity.get_component<Components::Texture>();
     auto* transform = entity.get_component<Components::Transform2D>();
-    
+
     if (!texture_comp->texture) {
       return; // Skip if texture is invalid
     }
-    
+
     // Default white color (no tinting)
     Math::Vec4D color(255.0f, 255.0f, 255.0f, 255.0f);
-    
+
     // Draw the texture
     Engine::Graphics::draw_texture(
       texture_comp->texture,
@@ -139,27 +139,26 @@ public:
     auto* texture_comp = entity.get_component<Components::Texture>();
     auto* atlas = entity.get_component<Components::TextureAtlas>();
     auto* transform = entity.get_component<Components::Transform2D>();
-    
+
     if (!texture_comp->texture || atlas->subTextures.empty()) {
       return;
     }
-    
+
     // Clamp drawIndex to valid range
     size_t index = atlas->drawIndex % atlas->subTextures.size();
-    
+
     // Default white color
     Math::Vec4D color(255.0f, 255.0f, 255.0f, 255.0f);
-    
-    // TODO: Implement draw_subtexture function in Renderer
-    // For now, this is a placeholder showing the intended API
-    // Engine::Graphics::draw_subtexture(
-    //   texture_comp->texture,
-    //   atlas->subTextures[index].tex_coords,
-    //   transform->position,
-    //   transform->scale,
-    //   transform->rotation,
-    //   color
-    // );
+
+    // Draw the subtexture
+    Engine::Graphics::draw_subtexture(
+      texture_comp->texture,
+      atlas->subTextures[index].tex_coords,
+      transform->position,
+      transform->scale,
+      transform->rotation,
+      color
+    );
   }
 };
 
@@ -191,24 +190,24 @@ public:
   void update_entity(ECS::Entity& entity) override {
     auto* animation = entity.get_component<Components::Animation>();
     auto* atlas = entity.get_component<Components::TextureAtlas>();
-    
+
     if (animation->frames.empty()) {
       return;
     }
-    
+
     // Update animation time
     float current_time = Engine::Time::get_time() - animation->startTime;
-    
+
     // Loop the animation
     if (current_time >= animation->totalDuration) {
       current_time = fmod(current_time, animation->totalDuration);
       animation->startTime = Engine::Time::get_time() - current_time;
     }
-    
+
     // Find which frame we should be on
     for (size_t i = 0; i < animation->frames.size(); ++i) {
       if (current_time >= animation->frames[i].before_time &&
-          current_time < animation->frames[i].before_time + animation->frames[i].duration) {
+        current_time < animation->frames[i].before_time + animation->frames[i].duration) {
         atlas->drawIndex = i;
         break;
       }
@@ -218,7 +217,6 @@ public:
   /*=================================================================================
   Function Brief:
   Draws the current frame of an animated sprite for the given entity.
-  The actual drawing is handled by TextureAtlasRenderSystem.
 
   Parameters:
   entity - Reference to the entity being rendered.
@@ -227,26 +225,26 @@ public:
     auto* texture_comp = entity.get_component<Components::Texture>();
     auto* atlas = entity.get_component<Components::TextureAtlas>();
     auto* transform = entity.get_component<Components::Transform2D>();
-    
+
     if (!texture_comp->texture || atlas->subTextures.empty()) {
       return;
     }
-    
+
     // Clamp drawIndex to valid range
     size_t index = atlas->drawIndex % atlas->subTextures.size();
-    
+
     // Default white color
     Math::Vec4D color(255.0f, 255.0f, 255.0f, 255.0f);
-    
-    // TODO: Implement draw_subtexture function in Renderer
-    // Engine::Graphics::draw_subtexture(
-    //   texture_comp->texture,
-    //   atlas->subTextures[index].tex_coords,
-    //   transform->position,
-    //   transform->scale,
-    //   transform->rotation,
-    //   color
-    // );
+
+    // Draw the current animation frame
+    Engine::Graphics::draw_subtexture(
+      texture_comp->texture,
+      atlas->subTextures[index].tex_coords,
+      transform->position,
+      transform->scale,
+      transform->rotation,
+      color
+    );
   }
 };
 
@@ -277,14 +275,14 @@ public:
     auto* font_comp = entity.get_component<Components::Font>();
     auto* text = entity.get_component<Components::Text>();
     auto* transform = entity.get_component<Components::Transform2D>();
-    
+
     if (!font_comp->font || text->content.empty()) {
       return;
     }
-    
+
     // Default white color
     Math::Vec4D color(255.0f, 255.0f, 255.0f, 255.0f);
-    
+
     // TODO: Implement draw_text function in Renderer
     // Engine::Graphics::draw_text(
     //   font_comp->font,
