@@ -82,9 +82,9 @@ namespace Components {
   /* ====================== //
   // Rendering components   //
   // ====================== */
-  struct Color : Math::Vec4D {
+  /*struct Color : Math::Vec4D {
     using Math::Vec4D::Vec4D;
-  };
+  };*/
 
   struct Background {}; // Tag for background entities
 

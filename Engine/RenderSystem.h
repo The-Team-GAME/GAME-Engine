@@ -18,6 +18,7 @@
 #include "Graphics/Components.h"
 #include "Graphics/Renderer.h"
 #include "Graphics/Resource.h"
+#include "Time.h"
 #include <iostream>
 
 /*=================================================================================
@@ -47,8 +48,12 @@ public:
   void draw_entity(const ECS::Entity& entity) override {
     auto* transform = entity.get_component<Components::Transform2D>();
 
-    // Default white color if no color component exists
+    // Check if entity has a Color component, otherwise use white
     Math::Vec4D color(255.0f, 255.0f, 255.0f, 255.0f);
+    auto* color_comp = entity.get_component<Components::Color>();
+    if (color_comp) {
+      color = color_comp->color;
+    }
 
     // Get the unit rect texture (1x1 white pixel)
     auto texture = Engine::Resources::get_unit_rect_texture();
@@ -92,16 +97,20 @@ public:
     auto* texture_comp = entity.get_component<Components::Texture>();
     auto* transform = entity.get_component<Components::Transform2D>();
 
-    if (!texture_comp->texture) {
+    if (!texture_comp->texture_handle) {
       return; // Skip if texture is invalid
     }
 
-    // Default white color (no tinting)
+    // Check if entity has a Color component, otherwise use white
     Math::Vec4D color(255.0f, 255.0f, 255.0f, 255.0f);
+    auto* color_comp = entity.get_component<Components::Color>();
+    if (color_comp) {
+      color = color_comp->color;
+    }
 
     // Draw the texture
     Engine::Graphics::draw_texture(
-      texture_comp->texture,
+      texture_comp->texture_handle,
       transform->position,
       transform->scale,
       transform->rotation,
@@ -140,19 +149,23 @@ public:
     auto* atlas = entity.get_component<Components::TextureAtlas>();
     auto* transform = entity.get_component<Components::Transform2D>();
 
-    if (!texture_comp->texture || atlas->subTextures.empty()) {
+    if (!texture_comp->texture_handle || atlas->subTextures.empty()) {
       return;
     }
 
     // Clamp drawIndex to valid range
     size_t index = atlas->drawIndex % atlas->subTextures.size();
 
-    // Default white color
+    // Check if entity has a Color component, otherwise use white
     Math::Vec4D color(255.0f, 255.0f, 255.0f, 255.0f);
+    auto* color_comp = entity.get_component<Components::Color>();
+    if (color_comp) {
+      color = color_comp->color;
+    }
 
     // Draw the subtexture
     Engine::Graphics::draw_subtexture(
-      texture_comp->texture,
+      texture_comp->texture_handle,
       atlas->subTextures[index].tex_coords,
       transform->position,
       transform->scale,
@@ -226,19 +239,23 @@ public:
     auto* atlas = entity.get_component<Components::TextureAtlas>();
     auto* transform = entity.get_component<Components::Transform2D>();
 
-    if (!texture_comp->texture || atlas->subTextures.empty()) {
+    if (!texture_comp->texture_handle || atlas->subTextures.empty()) {
       return;
     }
 
     // Clamp drawIndex to valid range
     size_t index = atlas->drawIndex % atlas->subTextures.size();
 
-    // Default white color
+    // Check if entity has a Color component, otherwise use white
     Math::Vec4D color(255.0f, 255.0f, 255.0f, 255.0f);
+    auto* color_comp = entity.get_component<Components::Color>();
+    if (color_comp) {
+      color = color_comp->color;
+    }
 
     // Draw the current animation frame
     Engine::Graphics::draw_subtexture(
-      texture_comp->texture,
+      texture_comp->texture_handle,
       atlas->subTextures[index].tex_coords,
       transform->position,
       transform->scale,
@@ -276,17 +293,21 @@ public:
     auto* text = entity.get_component<Components::Text>();
     auto* transform = entity.get_component<Components::Transform2D>();
 
-    if (!font_comp->font || text->content.empty()) {
+    if (!font_comp->font_handle || text->content.empty()) {
       return;
     }
 
-    // Default white color
+    // Check if entity has a Color component, otherwise use white
     Math::Vec4D color(255.0f, 255.0f, 255.0f, 255.0f);
+    auto* color_comp = entity.get_component<Components::Color>();
+    if (color_comp) {
+      color = color_comp->color;
+    }
 
     // Draw the text
     // Use transform->scale.x as the font scale factor
     Engine::Graphics::draw_text(
-      font_comp->font,
+      font_comp->font_handle,
       text->content,
       transform->position,
       transform->scale.x,

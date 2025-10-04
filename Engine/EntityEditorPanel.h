@@ -195,7 +195,8 @@ inline void EntityEditorPanel()
       // Color Component
       if (entity.has_component<Components::Color>())
       {
-        if (ImGui::TreeNode("Color"))
+        // todo: bring back
+       /* if (ImGui::TreeNode("Color"))
         {
           auto* color = entity.get_component<Components::Color>();
           f32 colorArray[4] = { color->x, color->y, color->z, color->w };
@@ -212,7 +213,7 @@ inline void EntityEditorPanel()
             entity.remove_component<Components::Color>();
 
           ImGui::TreePop();
-        }
+        }*/
       }
 
       // Rotation Component

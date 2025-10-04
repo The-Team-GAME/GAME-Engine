@@ -1,16 +1,17 @@
 #pragma once
 
 #include "RendererInternal.h"
+#include "Renderer.h"
 #include <string>
 
 namespace Components
 {
   struct Texture
   {
-    Engine::Graphics::Texture texture;
+    Engine::Graphics::Texture texture_handle;
 
-    Texture() : texture(nullptr) {}
-    Texture(Engine::Graphics::Texture tex) : texture(tex) {}
+    Texture() : texture_handle(nullptr) {}
+    Texture(Engine::Graphics::Texture tex) : texture_handle(tex) {}
   };
 
   struct TextureAtlas
@@ -71,15 +72,18 @@ namespace Components
 
   struct Font
   {
-    Engine::Graphics::Font font;
+    Engine::Graphics::Font font_handle;
 
-    Font() : font(nullptr) {}
-    Font(Engine::Graphics::Font tex) : font(tex) {}
+    Font() : font_handle(nullptr) {}
+    Font(Engine::Graphics::Font fnt) : font_handle(fnt) {}
   };
 
   struct Text
   {
     std::string content;
+
+    Text() : content("") {}
+    Text(const std::string& str) : content(str) {}
   };
 
   struct Transform2D
@@ -87,6 +91,20 @@ namespace Components
     glm::vec2 position;
     float rotation = 0.0f; // In degrees
     glm::vec2 scale = { 1.0f, 1.0f };
+
+    Transform2D() : position(0.0f, 0.0f), rotation(0.0f), scale(1.0f, 1.0f) {}
+    Transform2D(const glm::vec2& pos, float rot = 0.0f, const glm::vec2& scl = glm::vec2(1.0f, 1.0f))
+      : position(pos), rotation(rot), scale(scl) {
+    }
+  };
+
+  struct Color
+  {
+    Math::Vec4D color;
+
+    Color() : color(255.0f, 255.0f, 255.0f, 255.0f) {}
+    Color(const Math::Vec4D& c) : color(c) {}
+    Color(float r, float g, float b, float a = 255.0f) : color(r, g, b, a) {}
   };
 
 }
