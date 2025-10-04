@@ -153,7 +153,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Graphics\Components.h" />
     <ClInclude Include="Graphics\Resource.h" />
     <ClInclude Include="Graphics\Systems.h" />
-    <ClInclude Include="Graphics\Types.h" />
+    <ClInclude Include="Graphics\RendererInternal.h" />
     <ClInclude Include="PhysicsTestState.h" />
     <ClInclude Include="ECS\ComponentArray.h" />
     <ClInclude Include="ECS\ComponentManager.h" />

@@ -389,7 +389,7 @@
     <ClInclude Include="Graphics\Systems.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Graphics\Types.h">
+    <ClInclude Include="Graphics\RendererInternal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

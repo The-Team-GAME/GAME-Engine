@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Types.h"
+#include "RendererInternal.h"
 #include <string>
 
 namespace Components

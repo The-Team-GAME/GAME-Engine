@@ -10,6 +10,8 @@
 namespace Engine {
   namespace Graphics
   {
+    FT_Library ft;
+
     // Used by Animation component
     struct Frame
     {
@@ -119,11 +121,22 @@ namespace Engine {
       std::unordered_map<unsigned int, Graphics::Glyph> glyphs;  // Character -> glyph mapping
       unsigned int font_size = 0;                                    // Font size in pixels
       float baseline = 0.0f;                                            // Baseline offset
+
+      FontData(const std::string& path, unsigned int size)
+      {
+        // FreeType should already be initialized
+
+        // Load font face
+      }
+
+
     };
+
+
+
 
 
     using Texture = std::shared_ptr<TextureData>;
     using Font = std::shared_ptr<FontData>;
-
   }
 }

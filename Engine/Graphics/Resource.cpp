@@ -1,5 +1,6 @@
 #include "Resource.h"
 #include <memory>
+#include "RendererInternal.h"
 
 bool Engine::Resources::init()
 {
