@@ -10,11 +10,12 @@
 // brief:   This file defines a 3D vector class and all of the operations that can
 //          act on a 3D vector.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 #include "TypeDef.h"
 #include <iostream>
+#include <glm/glm.hpp>
 
 namespace Math {
 
@@ -26,6 +27,9 @@ namespace Math {
 
     Vec3D(f32 x_vec = 0, f32 y_vec = 0, f32 z_vec = 0) : x{ x_vec }, y{ y_vec }, z{ z_vec } {}; //(default)ctor
     Vec3D(Vec3D const&) = default; //copy constructor
+    
+    // Constructor from glm::vec3
+    Vec3D(const glm::vec3& v) : x{ v.x }, y{ v.y }, z{ v.z } {}
 
     /* ======== //
     // Acessors //
@@ -56,6 +60,11 @@ namespace Math {
     Vec3D& operator-=(Vec3D const& rhs);
     Vec3D& operator- ();
     Vec3D& operator*=(f32 scalar);
+    
+    /* ========================= //
+    // Conversion to GLM types   //
+    // ========================= */
+    operator glm::vec3() const { return glm::vec3(x, y, z); }
   };
 
   /* ===================== //

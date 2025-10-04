@@ -10,13 +10,13 @@
 // brief:   This file defines a 2D vector class and all of the operations that can
 //          act on a 2D vector.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
 #include "TypeDef.h"
-
 #include <iostream>
+#include <glm/glm.hpp>
 
 namespace Math {
 
@@ -28,6 +28,9 @@ namespace Math {
 
     Vec2D(f32 x_vec = 0, f32 y_vec = 0) : x{ x_vec }, y{ y_vec } {}; //(default)ctor
     Vec2D(Vec2D const&) = default; //copy constructor
+
+    // Constructor from glm::vec2
+    Vec2D(const glm::vec2& v) : x{ v.x }, y{ v.y } {}
 
     /* ======== //
     // Acessors //
@@ -56,6 +59,11 @@ namespace Math {
     Vec2D& operator-=(Vec2D const& rhs);
     Vec2D& operator- ();
     Vec2D& operator*=(f32 scalar);
+
+    /* ========================= //
+    // Conversion to GLM types   //
+    // ========================= */
+    operator glm::vec2() const { return glm::vec2(x, y); }
   };
 
   /* ===================== //

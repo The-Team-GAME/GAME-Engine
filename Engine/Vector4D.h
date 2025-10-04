@@ -12,11 +12,12 @@
 //          I implemented this file as i thought that it might be needed for graphics
 //          calculations down the line.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 #include "TypeDef.h"
 #include <iostream>
+#include <glm/glm.hpp>
 
 namespace Math {
 
@@ -41,6 +42,9 @@ namespace Math {
       : x{ x_vec }, y{ y_vec }, z{ z_vec }, w{ w_vec } {
     }; //(default)ctor
     Vec4D(Vec4D const&) = default; //copy constructor
+
+    // Constructor from glm::vec4
+    Vec4D(const glm::vec4& v) : x{ v.x }, y{ v.y }, z{ v.z }, w{ v.w } {}
 
     /* ======== //
     // Acessors //
@@ -73,6 +77,11 @@ namespace Math {
     Vec4D& operator-=(Vec4D const& rhs);
     Vec4D& operator- ();
     Vec4D& operator*=(f32 scalar);
+
+    /* ========================= //
+    // Conversion to GLM types   //
+    // ========================= */
+    operator glm::vec4() const { return glm::vec4(x, y, z, w); }
   };
 
   /* ===================== //
