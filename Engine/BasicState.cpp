@@ -123,40 +123,11 @@ void BasicState::update()
   rotation += 45.0f * Engine::Time::get_fixed_dt();
 
   // Update rotation for all rectangle entities
-  if (rect_top_left.is_valid()) {
-    auto* transform = rect_top_left.get_component<Components::Transform2D>();
-    if (transform) {
-      transform->rotation = rotation;
-    }
-  }
-
-  if (rect_bottom_right.is_valid()) {
-    auto* transform = rect_bottom_right.get_component<Components::Transform2D>();
-    if (transform) {
-      transform->rotation = rotation;
-    }
-  }
-
-  if (rect_bottom_left.is_valid()) {
-    auto* transform = rect_bottom_left.get_component<Components::Transform2D>();
-    if (transform) {
-      transform->rotation = rotation;
-    }
-  }
-
-  if (rect_top_right.is_valid()) {
-    auto* transform = rect_top_right.get_component<Components::Transform2D>();
-    if (transform) {
-      transform->rotation = rotation;
-    }
-  }
-
-  if (rect_center.is_valid()) {
-    auto* transform = rect_center.get_component<Components::Transform2D>();
-    if (transform) {
-      transform->rotation = rotation;
-    }
-  }
+  rect_top_left.get_component<Components::Transform2D>()->rotation = rotation;
+  rect_bottom_right.get_component<Components::Transform2D>()->rotation = rotation;
+  rect_bottom_left.get_component<Components::Transform2D>()->rotation = rotation;
+  rect_top_right.get_component<Components::Transform2D>()->rotation = rotation;
+  rect_center.get_component<Components::Transform2D>()->rotation = rotation;
 }
 
 void BasicState::draw()
@@ -169,18 +140,18 @@ void BasicState::draw()
 
   Engine::Graphics::draw_texture(
     unit_rect,
-    Math::Vec2D(400.0f - 25.0f, 300.0f - 25.0f),
-    Math::Vec2D(50.0f, 50.0f),
+    { 400.0f - 25.0f, 300.0f - 25.0f },
+    { 50.0f, 50.0f },
     0.0f,
-    Math::Vec4D(0.0f, 255.0f, 255.0f, 255.0f)
+    { 0.0f, 255.0f, 255.0f, 255.0f }
   );
 
   Engine::Graphics::draw_text(
     font_roboto,
     "Monkey Stole My GPA",
-    Math::Vec2D(400.0f, 100.0f),
+    { 400.0f, 100.0f },
     1.0f,
-    Math::Vec4D(255.0f, 255.0f, 255.0f, 255.0f)
+    { 255.0f, 255.0f, 255.0f, 255.0f }
   );
 
 }
