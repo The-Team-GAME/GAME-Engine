@@ -355,5 +355,27 @@ namespace Engine {
       }
     }
 
+    void clear_screen(const Math::Vec4D& color) {
+      // Convert color from 0-255 to 0-1 range
+      glClearColor(color.x / 255.0f, color.y / 255.0f, color.z / 255.0f, color.w / 255.0f);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+
+    void clear_screen(Engine::Graphics::Texture texture) {
+      // Clear with black first
+      glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+      // Draw the texture to fill the entire screen
+      Math::Vec2D resolution = get_virtual_resolution();
+      draw_texture(
+        texture,
+        Math::Vec2D(resolution.x * 0.5f, resolution.y * 0.5f), // Center position
+        resolution, // Full screen size
+        0.0f, // No rotation
+        Math::Vec4D(255.0f, 255.0f, 255.0f, 255.0f) // White (no tint)
+      );
+    }
+
   } // namespace Graphics
 } // namespace Engine
