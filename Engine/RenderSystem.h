@@ -283,13 +283,14 @@ public:
     // Default white color
     Math::Vec4D color(255.0f, 255.0f, 255.0f, 255.0f);
 
-    // TODO: Implement draw_text function in Renderer
-    // Engine::Graphics::draw_text(
-    //   font_comp->font,
-    //   text->content,
-    //   transform->position,
-    //   transform->scale.x, // Use x component as font scale
-    //   color
-    // );
+    // Draw the text
+    // Use transform->scale.x as the font scale factor
+    Engine::Graphics::draw_text(
+      font_comp->font,
+      text->content,
+      transform->position,
+      transform->scale.x,
+      color
+    );
   }
 };

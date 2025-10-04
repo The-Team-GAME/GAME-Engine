@@ -4,6 +4,7 @@
 #include "../Vector4D.h"
 #include "RendererInternal.h"
 #include <array>
+#include <string>
 
 namespace Engine {
   namespace Graphics {
@@ -22,6 +23,9 @@ namespace Engine {
     // Draw a subtexture (part of a texture atlas) using custom texture coordinates
     // TODO: change to use Math::Vec2D for tex_coords
     void draw_subtexture(Engine::Graphics::Texture texture, const std::array<glm::vec2, 4>& tex_coords, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color);
+
+    // Draw text using a font
+    void draw_text(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color);
 
   }
 }

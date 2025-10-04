@@ -22,6 +22,154 @@ namespace Engine {
       glm::vec4 color;
     };
 
+    // Helper function to draw a quad with custom texture coordinates
+    static void draw_quad(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size,
+      f32 rotation, const Math::Vec4D& color, const std::array<glm::vec2, 4>& tex_coords) {
+      if (!texture || texture->id == 0) {
+        Log::warning("Attempted to draw invalid texture");
+        return;
+      }
+
+      if (!shader || !shader->is_valid()) {
+        Log::error("Shader is not valid");
+        return;
+      }
+
+      // Use shader
+      shader->use();
+
+      // Bind texture
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, texture->id);
+      shader->set_int("u_texture", 0);
+
+      // Create transformation matrix
+      glm::mat4 model = glm::mat4(1.0f);
+      model = glm::translate(model, glm::vec3(position.x, position.y, 0.0f));
+
+      if (rotation != 0.0f) {
+        model = glm::translate(model, glm::vec3(size.x * 0.5f, size.y * 0.5f, 0.0f));
+        model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::translate(model, glm::vec3(-size.x * 0.5f, -size.y * 0.5f, 0.0f));
+      }
+
+      model = glm::scale(model, glm::vec3(size.x, size.y, 1.0f));
+
+      // Set view matrix (identity for now)
+      glm::mat4 view = glm::mat4(1.0f);
+      shader->set_mat4("u_view", view);
+
+      // Set projection matrix
+      glm::mat4 projection = glm::ortho(0.0f, 1920.0f, 1080.0f, 0.0f, -1.0f, 1.0f);
+      shader->set_mat4("u_projection", projection);
+
+      // Create quad vertices
+      Vertex vertices[4];
+
+      // Convert color from 0-255 to 0-1
+      glm::vec4 normalized_color(color.x / 255.0f, color.y / 255.0f, color.z / 255.0f, color.w / 255.0f);
+
+      // Bottom-left
+      vertices[0].position = glm::vec2(0.0f, 1.0f);
+      vertices[0].texCoord = tex_coords[0];
+      vertices[0].color = normalized_color;
+
+      // Bottom-right
+      vertices[1].position = glm::vec2(1.0f, 1.0f);
+      vertices[1].texCoord = tex_coords[1];
+      vertices[1].color = normalized_color;
+
+      // Top-right
+      vertices[2].position = glm::vec2(1.0f, 0.0f);
+      vertices[2].texCoord = tex_coords[2];
+      vertices[2].color = normalized_color;
+
+      // Top-left
+      vertices[3].position = glm::vec2(0.0f, 0.0f);
+      vertices[3].texCoord = tex_coords[3];
+      vertices[3].color = normalized_color;
+
+      // Transform vertices by model matrix
+      for (int i = 0; i < 4; i++) {
+        glm::vec4 transformed = model * glm::vec4(vertices[i].position, 0.0f, 1.0f);
+        vertices[i].position = glm::vec2(transformed.x, transformed.y);
+      }
+
+      // Upload vertices to GPU
+      glBindVertexArray(vao);
+      glBindBuffer(GL_ARRAY_BUFFER, vbo);
+      glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+
+      // Draw quad
+      glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+      glBindVertexArray(0);
+    }
+
+    // Helper function to draw a glyph (character) at a specific position without rotation
+    static void draw_glyph(const TextureData& atlas_texture, const std::array<glm::vec2, 4>& tex_coords,
+      const Math::Vec2D& position, const Math::Vec2D& size, const Math::Vec4D& color) {
+      if (atlas_texture.id == 0) {
+        return;
+      }
+
+      if (!shader || !shader->is_valid()) {
+        return;
+      }
+
+      // Use shader
+      shader->use();
+
+      // Bind texture atlas
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, atlas_texture.id);
+      shader->set_int("u_texture", 0);
+
+      // Set view matrix (identity for now)
+      glm::mat4 view = glm::mat4(1.0f);
+      shader->set_mat4("u_view", view);
+
+      // Set projection matrix
+      glm::mat4 projection = glm::ortho(0.0f, 1920.0f, 1080.0f, 0.0f, -1.0f, 1.0f);
+      shader->set_mat4("u_projection", projection);
+
+      // Create quad vertices (no rotation for text glyphs)
+      Vertex vertices[4];
+
+      // Convert color from 0-255 to 0-1
+      glm::vec4 normalized_color(color.x / 255.0f, color.y / 255.0f, color.z / 255.0f, color.w / 255.0f);
+
+      // Bottom-left
+      vertices[0].position = glm::vec2(position.x, position.y + size.y);
+      vertices[0].texCoord = tex_coords[0];
+      vertices[0].color = normalized_color;
+
+      // Bottom-right
+      vertices[1].position = glm::vec2(position.x + size.x, position.y + size.y);
+      vertices[1].texCoord = tex_coords[1];
+      vertices[1].color = normalized_color;
+
+      // Top-right
+      vertices[2].position = glm::vec2(position.x + size.x, position.y);
+      vertices[2].texCoord = tex_coords[2];
+      vertices[2].color = normalized_color;
+
+      // Top-left
+      vertices[3].position = glm::vec2(position.x, position.y);
+      vertices[3].texCoord = tex_coords[3];
+      vertices[3].color = normalized_color;
+
+      // Upload vertices to GPU
+      glBindVertexArray(vao);
+      glBindBuffer(GL_ARRAY_BUFFER, vbo);
+      glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+
+      // Draw quad
+      glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+      glBindVertexArray(0);
+    }
+
     bool init() {
       // Vertex shader source
       const std::string vertex_shader_source = R"(
@@ -129,85 +277,63 @@ namespace Engine {
     }
 
     void draw_texture(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
-      if (!texture || texture->id == 0) {
-        Log::warning("Attempted to draw invalid texture");
+      // Default texture coordinates for full texture (bottom-left, bottom-right, top-right, top-left)
+      std::array<glm::vec2, 4> default_tex_coords = {
+        glm::vec2(0.0f, 1.0f), // Bottom-left
+        glm::vec2(1.0f, 1.0f), // Bottom-right
+        glm::vec2(1.0f, 0.0f), // Top-right
+        glm::vec2(0.0f, 0.0f)  // Top-left
+      };
+
+      draw_quad(texture, position, size, rotation, color, default_tex_coords);
+    }
+
+    void draw_subtexture(Engine::Graphics::Texture texture, const std::array<glm::vec2, 4>& tex_coords,
+      const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
+      draw_quad(texture, position, size, rotation, color, tex_coords);
+    }
+
+    void draw_text(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color) {
+      if (!font || font->texture_atlas.id == 0) {
+        Log::warning("Attempted to draw text with invalid font");
         return;
       }
 
-      if (!shader || !shader->is_valid()) {
-        Log::error("Shader is not valid");
+      if (text.empty()) {
         return;
       }
 
-      // Use shader
-      shader->use();
+      // Starting position for text rendering
+      float x = position.x;
+      float y = position.y;
 
-      // Bind texture
-      glActiveTexture(GL_TEXTURE0);
-      glBindTexture(GL_TEXTURE_2D, texture->id);
-      shader->set_int("u_texture", 0);
+      // Iterate through all characters in the text
+      for (char c : text) {
+        // Get the glyph for this character
+        auto it = font->glyphs.find(static_cast<unsigned int>(c));
 
-      // Create transformation matrix
-      glm::mat4 model = glm::mat4(1.0f);
-      model = glm::translate(model, glm::vec3(position.x, position.y, 0.0f));
+        if (it == font->glyphs.end()) {
+          // Character not found in font, skip it
+          continue;
+        }
 
-      if (rotation != 0.0f) {
-        model = glm::translate(model, glm::vec3(size.x * 0.5f, size.y * 0.5f, 0.0f));
-        model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-        model = glm::translate(model, glm::vec3(-size.x * 0.5f, -size.y * 0.5f, 0.0f));
+        const Glyph& glyph = it->second;
+
+        // Calculate position and size for this glyph
+        float xpos = x + glyph.bearing.x * scale;
+        float ypos = y + (font->baseline - glyph.bearing.y) * scale;
+
+        float w = glyph.size.x * scale;
+        float h = glyph.size.y * scale;
+
+        // Draw the glyph
+        draw_glyph(font->texture_atlas, glyph.tex_coords,
+          Math::Vec2D(xpos, ypos), Math::Vec2D(w, h), color);
+
+        // Advance cursor to next glyph position
+        // Note: advance is in 1/64th pixels, so we shift by 6 to get pixels
+        x += (glyph.advance >> 6) * scale;
       }
-
-      model = glm::scale(model, glm::vec3(size.x, size.y, 1.0f));
-
-      // Set view matrix (identity for now)
-      glm::mat4 view = glm::mat4(1.0f);
-      shader->set_mat4("u_view", view);
-
-      // Set projection matrix
-      glm::mat4 projection = glm::ortho(0.0f, 1920.0f, 1080.0f, 0.0f, -1.0f, 1.0f);
-      shader->set_mat4("u_projection", projection);
-
-      // Create quad vertices
-      Vertex vertices[4];
-
-      // Convert color from 0-255 to 0-1
-      glm::vec4 normalized_color(color.x / 255.0f, color.y / 255.0f, color.z / 255.0f, color.w / 255.0f);
-
-      // Bottom-left
-      vertices[0].position = glm::vec2(0.0f, 1.0f);
-      vertices[0].texCoord = glm::vec2(0.0f, 1.0f);
-      vertices[0].color = normalized_color;
-
-      // Bottom-right
-      vertices[1].position = glm::vec2(1.0f, 1.0f);
-      vertices[1].texCoord = glm::vec2(1.0f, 1.0f);
-      vertices[1].color = normalized_color;
-
-      // Top-right
-      vertices[2].position = glm::vec2(1.0f, 0.0f);
-      vertices[2].texCoord = glm::vec2(1.0f, 0.0f);
-      vertices[2].color = normalized_color;
-
-      // Top-left
-      vertices[3].position = glm::vec2(0.0f, 0.0f);
-      vertices[3].texCoord = glm::vec2(0.0f, 0.0f);
-      vertices[3].color = normalized_color;
-
-      // Transform vertices by model matrix
-      for (int i = 0; i < 4; i++) {
-        glm::vec4 transformed = model * glm::vec4(vertices[i].position, 0.0f, 1.0f);
-        vertices[i].position = glm::vec2(transformed.x, transformed.y);
-      }
-
-      // Upload vertices to GPU
-      glBindVertexArray(vao);
-      glBindBuffer(GL_ARRAY_BUFFER, vbo);
-      glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-
-      // Draw quad
-      glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-      glBindVertexArray(0);
     }
 
   } // namespace Graphics
