@@ -28,6 +28,27 @@ namespace Systems {
   };
 
 
+  class StaticSpriteRenderSystemNoColor : public ECS::System {
+  public:
+    StaticSpriteRenderSystemNoColor() {
+      require_components<Components::Transform2D, Components::Texture>();
+    }
+
+    void draw_entity(ECS::Entity& entity) override {
+      auto* transform = entity.get_component<Components::Transform2D>();
+      auto* texture = entity.get_component<Components::Texture>();
+
+      Engine::Graphics::draw_texture(
+        texture->texture_handle,
+        Math::Vec2D(transform->position.x, transform->position.y),
+        Math::Vec2D(transform->scale.x, transform->scale.y),
+        transform->rotation,
+        Math::Vec4D(255.0f, 255.0f, 255.0f, 255.0f) // White default
+      );
+    }
+  };
+
+
   class AtlasSpriteRenderSystem : public ECS::System {
   public:
     AtlasSpriteRenderSystem() {
@@ -57,6 +78,34 @@ namespace Systems {
   };
 
 
+  class AtlasSpriteRenderSystemNoColor : public ECS::System {
+  public:
+    AtlasSpriteRenderSystemNoColor() {
+      require_components<Components::Transform2D, Components::Texture, Components::TextureAtlas>();
+    }
+
+    void draw_entity(ECS::Entity& entity) override {
+      auto* transform = entity.get_component<Components::Transform2D>();
+      auto* texture = entity.get_component<Components::Texture>();
+      auto* atlas = entity.get_component<Components::TextureAtlas>();
+
+      // Ensure drawIndex is within bounds
+      if (atlas->drawIndex < atlas->subTextures.size()) {
+        const auto& subTexture = atlas->subTextures[atlas->drawIndex];
+
+        Engine::Graphics::draw_subtexture(
+          texture->texture_handle,
+          subTexture.tex_coords,
+          Math::Vec2D(transform->position.x, transform->position.y),
+          Math::Vec2D(transform->scale.x, transform->scale.y),
+          transform->rotation,
+          Math::Vec4D(255.0f, 255.0f, 255.0f, 255.0f) // White default
+        );
+      }
+    }
+  };
+
+
   class TextRenderSystem : public ECS::System {
   public:
     TextRenderSystem() {
@@ -78,6 +127,31 @@ namespace Systems {
         Math::Vec2D(transform->position.x, transform->position.y),
         text_scale,
         color->color
+      );
+    }
+  };
+
+
+  class TextRenderSystemNoColor : public ECS::System {
+  public:
+    TextRenderSystemNoColor() {
+      require_components<Components::Transform2D, Components::Font, Components::Text>();
+    }
+
+    void draw_entity(ECS::Entity& entity) override {
+      auto* transform = entity.get_component<Components::Transform2D>();
+      auto* font = entity.get_component<Components::Font>();
+      auto* text = entity.get_component<Components::Text>();
+
+      // Use the average of scale.x and scale.y as the text scale
+      float text_scale = (transform->scale.x + transform->scale.y) * 0.5f;
+
+      Engine::Graphics::draw_text(
+        font->font_handle,
+        text->content,
+        Math::Vec2D(transform->position.x, transform->position.y),
+        text_scale,
+        Math::Vec4D(255.0f, 255.0f, 255.0f, 255.0f) // White default
       );
     }
   };
