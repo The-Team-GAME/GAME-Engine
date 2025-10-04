@@ -13,11 +13,17 @@ namespace Engine {
     // TODO: unit_rect does not need reference counting, since it's always in memory until we exit
     static Engine::Graphics::Texture unit_rect;
 
+    // Base path for resource loading
+    static std::string resource_path = "";
+
     // Initialization code here (e.g., setting up resource maps, loading default resources)
     bool init();
 
     // Cleanup code here (e.g., unloading all resources, clearing maps)
     bool exit();
+
+    // Set the base path for resource loading
+    void set_resource_path(const std::string& path);
 
     Engine::Graphics::Texture load_texture(const std::string& filepath);
     Engine::Graphics::Font load_font(const std::string& filepath, u32 size);

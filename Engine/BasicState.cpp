@@ -43,6 +43,9 @@ void BasicState::load()
 
 void BasicState::init()
 {
+  // Set resource path for loading assets
+  Engine::Resources::set_resource_path("Assets/");
+
   // Add rendering systems
   Engine::WORLD.add_system<RectRenderSystem>();
   Engine::WORLD.add_system<TextRenderSystem>();
@@ -158,7 +161,7 @@ void BasicState::draw()
   // but for demonstration purposes, we will do it here to show that the resource
   // manager caches the texture and does not reload it from disk every time.
   // If you look at the memory usage, you will see that it does not increase !!
-  auto monkey_texture = Engine::Resources::load_texture("Assets/images/monkey.png");
+  auto monkey_texture = Engine::Resources::load_texture("images/monkey.png");
 
   Engine::Graphics::draw_texture(
     monkey_texture,

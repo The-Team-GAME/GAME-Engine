@@ -41,16 +41,32 @@ bool Engine::Resources::exit()
   return true;
 }
 
+void Engine::Resources::set_resource_path(const std::string& path)
+{
+  resource_path = path;
+
+  // Ensure the path ends with a separator
+  if (!resource_path.empty() && resource_path.back() != '/' && resource_path.back() != '\\')
+  {
+    resource_path += '/';
+  }
+
+  Log::info("Resource path set to: " + resource_path);
+}
+
 Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& filepath)
 {
-  // Check if texture is already in cache
-  auto it = texture_cache.find(filepath);
+  // Construct full path
+  std::string full_path = resource_path + filepath;
+
+  // Check if texture is already in cache (use full path for cache key)
+  auto it = texture_cache.find(full_path);
   if (it != texture_cache.end())
   {
     // Try to lock the weak_ptr
     if (auto cached = it->second.lock())
     {
-      Log::info("Texture loaded from cache: " + filepath);
+      Log::info("Texture loaded from cache: " + full_path);
       return cached;
     }
     else
@@ -61,17 +77,17 @@ Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& fil
   }
 
   // Load new texture
-  auto texture = std::make_shared<Engine::Graphics::TextureData>(filepath);
+  auto texture = std::make_shared<Engine::Graphics::TextureData>(full_path);
 
   // Only cache if the texture was successfully loaded
   if (texture->id != 0)
   {
-    texture_cache[filepath] = texture;
-    Log::info("Texture loaded: " + filepath);
+    texture_cache[full_path] = texture;
+    Log::info("Texture loaded: " + full_path);
   }
   else
   {
-    Log::warning("Failed to load texture: " + filepath);
+    Log::warning("Failed to load texture: " + full_path);
   }
 
   return texture;
@@ -79,8 +95,11 @@ Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& fil
 
 Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath, u32 size)
 {
+  // Construct full path
+  std::string full_path = resource_path + filepath;
+
   // Create a unique key combining filepath and size
-  std::string cache_key = filepath + "_" + std::to_string(size);
+  std::string cache_key = full_path + "_" + std::to_string(size);
 
   // Check if font is already in cache
   auto it = font_cache.find(cache_key);
@@ -89,7 +108,7 @@ Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath,
     // Try to lock the weak_ptr
     if (auto cached = it->second.lock())
     {
-      Log::info("Font loaded from cache: " + filepath + " (size: " + std::to_string(size) + ")");
+      Log::info("Font loaded from cache: " + full_path + " (size: " + std::to_string(size) + ")");
       return cached;
     }
     else
@@ -100,11 +119,11 @@ Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath,
   }
 
   // Load new font
-  auto font = std::make_shared<Engine::Graphics::FontData>(filepath, size);
+  auto font = std::make_shared<Engine::Graphics::FontData>(full_path, size);
 
   // Cache the font
   font_cache[cache_key] = font;
-  Log::info("Font loaded: " + filepath + " (size: " + std::to_string(size) + ")");
+  Log::info("Font loaded: " + full_path + " (size: " + std::to_string(size) + ")");
 
   return font;
 }
