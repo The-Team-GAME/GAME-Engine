@@ -40,7 +40,7 @@ public:
 
   void init() {
     // Create idle LazyMonkey entity with animation
-    idle_lazy_monkey = Engine::WORLD.create_entity()
+    idle_lazy_monkey = ECS::World::create_entity()
       .add_component<Components::Transform2D>(
         glm::vec2(200.0f, 150.0f),  // position
         0.0f,                        // rotation
@@ -66,7 +66,7 @@ public:
     }
 
     // Create walking LazyMonkey entity with animation
-    walk_lazy_monkey = Engine::WORLD.create_entity()
+    walk_lazy_monkey = ECS::World::create_entity()
       .add_component<Components::Transform2D>(
         glm::vec2(400.0f, 150.0f),  // position
         0.0f,                        // rotation
@@ -92,7 +92,7 @@ public:
     }
 
     // Add rendering system for animated sprites
-    Engine::WORLD.add_system<AnimatedSpriteRenderSystem>();
+    ECS::World::add_system<AnimatedSpriteRenderSystem>();
   };
 
   void update() {
@@ -117,7 +117,7 @@ public:
     }
 
     // Remove systems
-    Engine::WORLD.remove_system<AnimatedSpriteRenderSystem>();
+    ECS::World::remove_system<AnimatedSpriteRenderSystem>();
   };
 
   void unload() {

@@ -15,24 +15,21 @@
 //-----------------------------------------------------------------------------------
 #include "System.h"
 #include "Entity.h"
-#include "World.h"
 
 namespace ECS {
 
   System::~System() = default;
 
   void System::update() {
-    // Create Entity handles for each entity ID
     for (EntityID entityId : entities) {
-      Entity entity(entityId, world);
+      Entity entity(entityId);
       update_entity(entity);
     }
   }
 
   void System::draw() {
-    // Create Entity handles for each entity ID
     for (EntityID entityId : entities) {
-      const Entity entity(entityId, world);
+      const Entity entity(entityId);
       draw_entity(entity);
     }
   }
@@ -49,14 +46,14 @@ namespace ECS {
 
   void System::add_entity(EntityID entity) {
     if (entities.insert(entity).second) {
-      Entity entityHandle(entity, world);
+      Entity entityHandle(entity);
       on_entity_added(entityHandle);
     }
   }
 
   void System::remove_entity(EntityID entity) {
     if (entities.erase(entity) > 0) {
-      Entity entityHandle(entity, world);
+      Entity entityHandle(entity);
       on_entity_removed(entityHandle);
     }
   }
@@ -71,10 +68,6 @@ namespace ECS {
 
   const EventSignature& System::get_event_signature() const {
     return event_signature;
-  }
-
-  void System::set_world(World* w) {
-    world = w;
   }
 
 } // namespace ECS

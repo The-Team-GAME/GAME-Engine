@@ -17,7 +17,7 @@
 
 namespace ECS {
 
-  Entity::Entity(EntityID id, World* world) : id(id), world(world) {}
+  Entity::Entity(EntityID id) : id(id) {}
 
   EntityID Entity::get_id() const {
     return id;
@@ -28,7 +28,7 @@ namespace ECS {
   }
 
   void Entity::destroy() {
-    world->destroy_entity(id);
+    World::destroy_entity(id);
   }
 
   bool Entity::operator==(const Entity& other) const {

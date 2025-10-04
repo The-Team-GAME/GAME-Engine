@@ -22,7 +22,6 @@
 
 namespace ECS {
 
-  class World; // Forward declaration
   class Entity; // Forward declaration
 
   /* ============================================================= //
@@ -30,7 +29,6 @@ namespace ECS {
   // ============================================================= */
   class System {
   protected:
-    World* world = nullptr;
     std::unordered_set<EntityID> entities;
     ComponentSignature required_signature;
     EventSignature event_signature;
@@ -72,10 +70,6 @@ namespace ECS {
     const std::unordered_set<EntityID>& get_entities() const;
     const ComponentSignature& get_required_signature() const;
     const EventSignature& get_event_signature() const;
-
-  private:
-    friend class World;
-    void set_world(World* w);
   };
 
 } // namespace ECS

@@ -47,7 +47,7 @@ namespace Engine
   /* ======================================= //
   // Global engine system instances         //
   // ======================================= */
-  extern ECS::World WORLD;
+  // extern ECS::World WORLD;
   //extern ObjectFactory FACTORY;
   //extern LevelLoader LEVEL_LOADER;
   //extern Graphics GRAPHICS;

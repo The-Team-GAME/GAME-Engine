@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------------
-// file:    World.h
+// file:    World::h
 // project: Monkey Stole My GPA
 //
 // author:  Chew Shee Yang (100%)
@@ -7,7 +7,7 @@
 //
 // email:   chew.s@digipen.edu
 //
-// brief:   This file defines the World class which is the main ECS container.
+// brief:   This file defines the World namespace which is the main ECS container.
 //          Manages entities, components, systems, and events. Provides the primary
 //          interface for creating entities, adding components, registering systems,
 //          and dispatching events.
@@ -32,36 +32,16 @@
 
 namespace ECS
 {
-
-  /* ================ //
-  // Main ECS World   //
-  // ================ */
-  class World
+  namespace World
   {
-  private:
-    EntityID next_entity_id = 1;
-    std::unordered_set<EntityID> active_entities;
-    std::unordered_set<EntityID> entities_to_destory;
-
-    // Entity signatures for fast component checking
-    std::unordered_map<EntityID, ComponentSignature> entity_signatures;
-
-    std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> component_arrays;
-    std::vector<std::unique_ptr<System>> systems;
-    std::vector<Event> event_queue;
-
-    // Direct event handlers - map from event type to list of handlers
-    std::unordered_map<EventTypeID, std::vector<std::function<void(const Event&)>>> event_handlers;
-
-    template <typename T>
-    ComponentArray<T>* get_component_array();
-
-  public:
     /* ========================= //
     // Component registration    //
     // ========================= */
     template <typename T>
     void register_component();
+
+    template <typename T>
+    ComponentArray<T>* get_component_array();
 
     /* =================== //
     // Entity management   //
@@ -74,7 +54,7 @@ namespace ECS
     template <typename... T>
     void destroy_entities_with();
 
-    bool is_entity_active(EntityID id) const;
+    bool is_entity_active(EntityID id);
 
     /* ====================== //
     // Component management   //
@@ -89,13 +69,13 @@ namespace ECS
     T* get_component(EntityID entity);
 
     template <typename T>
-    const T* get_component(EntityID entity) const;
-
-    template <typename T>
-    bool has_component(EntityID entity) const;
+    const T* get_component(EntityID entity);
 
     template <typename... T>
-    bool has_components(EntityID entity) const;
+    bool has_components(EntityID entity);
+
+    template <typename T>
+    bool has_component(EntityID entity);
 
     /* ================== //
     // System management  //
@@ -112,7 +92,6 @@ namespace ECS
     template <typename T, typename... Args>
     void send_event(Args&&... args);
 
-    // Direct event handling without systems
     template <typename T>
     void add_event_listener(std::function<void(const T&)> handler);
 
@@ -138,21 +117,34 @@ namespace ECS
     // Query methods - return Entity instead of EntityID //
     // ============================================== */
     template <typename... T>
-    std::vector<Entity> get_entities_with() const;
+    std::vector<Entity> get_entities_with();
 
     template <typename... T>
-    Entity get_first_entity_with() const;
+    Entity get_first_entity_with();
 
-    std::vector<Entity> get_all_entities() const;
-    size_t get_entity_count() const;
+    std::vector<Entity> get_all_entities();
+    size_t get_entity_count();
 
     template <typename T>
-    size_t get_component_count() const;
+    size_t get_component_count();
 
-  private:
-    void entity_component_changed(EntityID entity);
-    bool system_matches_entity(const System& system, EntityID entity) const;
-  };
+    /* =============== //
+    // Internal state  //
+    // =============== */
+    namespace Internal
+    {
+      extern EntityID next_entity_id;
+      extern std::unordered_set<EntityID> active_entities;
+      extern std::unordered_set<EntityID> entities_to_destroy;
+      extern std::unordered_map<EntityID, ComponentSignature> entity_signatures;
+      extern std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> component_arrays;
+      extern std::vector<std::unique_ptr<System>> systems;
+      extern std::vector<Event> event_queue;
+      extern std::unordered_map<EventTypeID, std::vector<std::function<void(const Event&)>>> event_handlers;
 
+      void entity_component_changed(EntityID entity);
+      bool system_matches_entity(const System& system, EntityID entity);
+    }
+  } // namespace World
 } // namespace ECS
 

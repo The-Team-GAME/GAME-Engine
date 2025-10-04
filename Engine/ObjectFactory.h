@@ -36,7 +36,6 @@ namespace Engine
   class ObjectFactory
   {
   private:
-    ECS::World* m_world;
     std::vector<ObjectPrefab> objectList;
     s32 nextObjectId = 0;
   public:
@@ -48,7 +47,7 @@ namespace Engine
     Parameters:
     world - A pointer to the ECS world where entities will be created.
     ==================================================================================*/
-    ObjectFactory(ECS::World* world);
+    ObjectFactory();
 
     /*=================================================================================
     Function Brief:

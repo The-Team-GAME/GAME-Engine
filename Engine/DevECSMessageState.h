@@ -43,7 +43,7 @@ public:
 
   void init() {
     // Create player entity
-    player = Engine::WORLD.create_entity()
+    player = ECS::World::create_entity()
       .add_component<Components::Tag<"Player">>()
       .add_component<Components::Tag<"GameObjectState">>()
       .add_component<Components::Position>(10.0f, 20.0f)
@@ -56,7 +56,7 @@ public:
     player.get_component<Components::RigidBody>()->velocity.x = 100.0f; // Give the player an initial horizontal velocity
 
     // Create an enemy entity to act as a template
-    auto enemy = Engine::WORLD.create_entity()
+    auto enemy = ECS::World::create_entity()
       .add_component<Components::Tag<"Enemy">>()
       .add_component<Components::Tag<"GameObjectState">>()
       .add_component<Components::Position>(50.0f, 30.0f)
@@ -66,7 +66,7 @@ public:
 
     // --- Cloning Demonstration ---
     // Create a new enemy by cloning the first one
-    auto clonedEnemy = Engine::WORLD.clone_entity(enemy.get_id());
+    auto clonedEnemy = ECS::World::clone_entity(enemy.get_id());
 
     // Check if the clone is valid and then modify it to differentiate it
     if (clonedEnemy.is_valid()) {
@@ -80,38 +80,38 @@ public:
     // --- End of Demonstration ---
 
     // Entity to clear background
-    auto background = Engine::WORLD.create_entity()
+    auto background = ECS::World::create_entity()
       .add_component<Components::Tag<"GameObjectState">>()
       .add_component<Components::Background>()
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f); // White background
 
     // Add systems to the world
-    Engine::WORLD.add_system<BackgroundSystem>(); // Background system should be first
-    Engine::WORLD.add_system<GravitySystem>();
-    Engine::WORLD.add_system<PlayerControllerSystem>();
-    Engine::WORLD.add_system<RectRenderSystem>();
-    Engine::WORLD.add_system<MovementSystem>();
-    Engine::WORLD.add_system<PhysicsSystem>();
-    Engine::WORLD.add_system<CollisionSystem>();
-    Engine::WORLD.add_system<StaticSpriteRenderSystem>();
-    Engine::WORLD.add_system<HealthSystem>();
+    ECS::World::add_system<BackgroundSystem>(); // Background system should be first
+    ECS::World::add_system<GravitySystem>();
+    ECS::World::add_system<PlayerControllerSystem>();
+    ECS::World::add_system<RectRenderSystem>();
+    ECS::World::add_system<MovementSystem>();
+    ECS::World::add_system<PhysicsSystem>();
+    ECS::World::add_system<CollisionSystem>();
+    ECS::World::add_system<StaticSpriteRenderSystem>();
+    ECS::World::add_system<HealthSystem>();
 
 
-    Engine::WORLD.add_system<DamageSystem>(); // Add the new system
+    ECS::World::add_system<DamageSystem>(); // Add the new system
   }
 
   void update() {
     if (Engine::Input::is_key_pressed(GLFW_KEY_SPACE))
     {
-      Engine::WORLD.send_event<DamageEvent>(player.get_id(), 10);
+      ECS::World::send_event<DamageEvent>(player.get_id(), 10);
       // Print the health of all entities with Health component  
-      for (const auto& entity : Engine::WORLD.get_entities_with<Components::Health>()) {
+      for (const auto& entity : ECS::World::get_entities_with<Components::Health>()) {
         auto* health = entity.get_component<Components::Health>();
         std::cout << "Entity " << entity.get_id() << " has health: " << health->value << "\n";
       }
       std::cout << "\n";
 
-      auto bgEntity = Engine::WORLD.get_first_entity_with<Components::Background>();
+      auto bgEntity = ECS::World::get_first_entity_with<Components::Background>();
       auto* bg_color = bgEntity.get_component<Components::Color>();
 
       if (!player.has_component<Components::Health>())
@@ -129,21 +129,21 @@ public:
   void draw() {}
 
   void free() {
-    Engine::WORLD.destroy_entities_with<Components::Tag<"GameObjectState">>();
+    ECS::World::destroy_entities_with<Components::Tag<"GameObjectState">>();
 
     // Remove systems
     // TODO: make a function to remove all systems at once
-    Engine::WORLD.remove_system<BackgroundSystem>(); // Background system should be first
-    Engine::WORLD.remove_system<GravitySystem>();
-    Engine::WORLD.remove_system<PlayerControllerSystem>();
-    Engine::WORLD.remove_system<MovementSystem>();
-    Engine::WORLD.remove_system<PhysicsSystem>();
-    Engine::WORLD.remove_system<CollisionSystem>();
-    Engine::WORLD.remove_system<StaticSpriteRenderSystem>();
-    Engine::WORLD.remove_system<HealthSystem>();
-    Engine::WORLD.remove_system<RectRenderSystem>();
+    ECS::World::remove_system<BackgroundSystem>(); // Background system should be first
+    ECS::World::remove_system<GravitySystem>();
+    ECS::World::remove_system<PlayerControllerSystem>();
+    ECS::World::remove_system<MovementSystem>();
+    ECS::World::remove_system<PhysicsSystem>();
+    ECS::World::remove_system<CollisionSystem>();
+    ECS::World::remove_system<StaticSpriteRenderSystem>();
+    ECS::World::remove_system<HealthSystem>();
+    ECS::World::remove_system<RectRenderSystem>();
 
-    Engine::WORLD.remove_system<DamageSystem>(); // Add the new system
+    ECS::World::remove_system<DamageSystem>(); // Add the new system
   }
 
   void unload() {}

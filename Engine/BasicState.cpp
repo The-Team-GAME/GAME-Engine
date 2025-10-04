@@ -47,12 +47,12 @@ void BasicState::init()
   Engine::Resources::set_resource_path("Assets/");
 
   // Add rendering systems
-  Engine::WORLD.add_system<RectRenderSystem>();
-  Engine::WORLD.add_system<TextRenderSystem>();
+  ECS::World::add_system<RectRenderSystem>();
+  ECS::World::add_system<TextRenderSystem>();
 
   // Create rectangle entities
   // Top left, Red
-  rect_top_left = Engine::WORLD.create_entity()
+  rect_top_left = ECS::World::create_entity()
     .add_component<Components::Transform2D>(
       0.0f, 0.0f,
       rotation,
@@ -61,7 +61,7 @@ void BasicState::init()
     .add_component<Components::Color>(255.0f, 0.0f, 0.0f, 255.0f);
 
   // Bottom right, Green
-  rect_bottom_right = Engine::WORLD.create_entity()
+  rect_bottom_right = ECS::World::create_entity()
     .add_component<Components::Transform2D>(
       1600.0f, 900.0f,
       rotation,
@@ -69,7 +69,7 @@ void BasicState::init()
     ).add_component<Components::Color>(0.0f, 255.0f, 0.0f, 255.0f);
 
   // Bottom left, Blue
-  rect_bottom_left = Engine::WORLD.create_entity()
+  rect_bottom_left = ECS::World::create_entity()
     .add_component<Components::Transform2D>(
       0.0f, 900.0f,
       rotation,
@@ -77,7 +77,7 @@ void BasicState::init()
     ).add_component<Components::Color>(0.0f, 0.0f, 255.0f, 255.0f);
 
   // Top right, Yellow
-  rect_top_right = Engine::WORLD.create_entity()
+  rect_top_right = ECS::World::create_entity()
     .add_component<Components::Transform2D>(
       1600.0f, 0.0f,
       rotation,
@@ -85,7 +85,7 @@ void BasicState::init()
     ).add_component<Components::Color>(255.0f, 255.0f, 0.0f, 255.0f);
 
   // Center, Magenta
-  rect_center = Engine::WORLD.create_entity()
+  rect_center = ECS::World::create_entity()
     .add_component<Components::Transform2D>(
       800.0f, 450.0f,
       rotation,
@@ -93,7 +93,7 @@ void BasicState::init()
     ).add_component<Components::Color>(255.0f, 0.0f, 255.0f, 255.0f);
 
   // Create text entities
-  text_hello_1 = Engine::WORLD.create_entity()
+  text_hello_1 = ECS::World::create_entity()
     .add_component<Components::Transform2D>(
       250.0f, 250.0f,
       0.0f,
@@ -102,7 +102,7 @@ void BasicState::init()
     .add_component<Components::Font>(font_roboto)
     .add_component<Components::Text>("Hello");
 
-  text_hello_2 = Engine::WORLD.create_entity()
+  text_hello_2 = ECS::World::create_entity()
     .add_component<Components::Transform2D>(
       250.0f, 300.0f,
       0.0f,
@@ -111,7 +111,7 @@ void BasicState::init()
     .add_component<Components::Font>(font_playfair)
     .add_component<Components::Text>("Hello");
 
-  text_instruction = Engine::WORLD.create_entity()
+  text_instruction = ECS::World::create_entity()
     .add_component<Components::Transform2D>(
       250.0f, 350.0f,
       0.0f,
@@ -202,8 +202,8 @@ void BasicState::free()
   }
 
   // Remove systems
-  Engine::WORLD.remove_system<RectRenderSystem>();
-  Engine::WORLD.remove_system<TextRenderSystem>();
+  ECS::World::remove_system<RectRenderSystem>();
+  ECS::World::remove_system<TextRenderSystem>();
 }
 
 void BasicState::unload()

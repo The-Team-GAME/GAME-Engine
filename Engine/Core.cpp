@@ -49,7 +49,7 @@ namespace Engine
   // These are defined here and declared extern in Core.h for global access   //
   // ========================================================================= */
   // They are defined here and declared extern in Core.h for use throughout the engine.
-  ECS::World WORLD{};
+  // ECS::World WORLD{};
   //ObjectFactory FACTORY{ &WORLD };
 
   //Graphics GRAPHICS;
@@ -65,7 +65,7 @@ namespace Engine
   /*=================================================================================
   Function Brief:
   Constructor that initializes all engine subsystems including window, graphics,
-  ImGui, audio, and the ECS world. Loads configuration and sets up event listeners.
+  ImGui, audio, and the ECS World:: Loads configuration and sets up event listeners.
   ==================================================================================*/
   Core::Core()
   {
@@ -92,7 +92,7 @@ namespace Engine
     isRunning = true;
 
     // Register the graphics resize system
-    WORLD.add_event_listener<WindowResizeEvent>([](const WindowResizeEvent& event) {
+    ECS::World::add_event_listener<WindowResizeEvent>([](const WindowResizeEvent& event) {
       //GRAPHICS.set_viewport(event.width, event.height); //TODO: bring back when implmemented in new graphics
       }
     );
@@ -147,7 +147,7 @@ namespace Engine
         accumulator -= Time::get_fixed_dt();
 
         // Update input right before the main gameloop. This needs to be here because if it is out side the while loop,
-        // WORLD.update() won't have a chance to react before the input state is cleared on the next frame. 
+        // World::update() won't have a chance to react before the input state is cleared on the next frame. 
         Input::update();
 
         if (Engine::Input::is_key_pressed(GLFW_KEY_ESCAPE))
@@ -173,7 +173,7 @@ namespace Engine
         {
           // Main gameloop here
           StateManager::get_current_state()->update();
-          WORLD.update();
+          ECS::World::update();
         }
 
         ImguiMgr::update();
@@ -189,7 +189,7 @@ namespace Engine
       //CameraPanel();
       // start of draw stuff
       StateManager::get_current_state()->draw();
-      WORLD.draw();
+      ECS::World::draw();
       //GRAPHICS.end_frame();
 
       // end of draw stuff
@@ -212,7 +212,7 @@ namespace Engine
 
     StateManager::exit(); // TODO: to be removed 
 
-    WORLD.remove_event_listener<WindowResizeEvent>();
+    ECS::World::remove_event_listener<WindowResizeEvent>();
 
     // Cleanup graphics resources
     Engine::Resources::exit();

@@ -30,7 +30,7 @@ inline void EntityEditorPanel()
   // Section 1: Entity List
   if (ImGui::CollapsingHeader("Entities", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    ImGui::Text("Total Entities: %zu", Engine::WORLD.get_entity_count());
+    ImGui::Text("Total Entities: %zu", ECS::World::get_entity_count());
 
     // Search/Filter
     ImGui::InputText("Search", entitySearchBuffer, 256);
@@ -40,7 +40,7 @@ inline void EntityEditorPanel()
     // Entity list with selection
     ImGui::BeginChild("EntityList", ImVec2(0, 200), true);
 
-    auto allEntities = Engine::WORLD.get_all_entities();
+    auto allEntities = ECS::World::get_all_entities();
     for (const auto& entity : allEntities)
     {
       bool isSelected = (selected_entity_id == static_cast<int>(entity.get_id()));
@@ -57,7 +57,7 @@ inline void EntityEditorPanel()
     // Create new entity button
     if (ImGui::Button("Create New Entity"))
     {
-      auto newEntity = Engine::WORLD.create_entity();
+      auto newEntity = ECS::World::create_entity();
       selected_entity_id = static_cast<int>(newEntity.get_id());
     }
 
@@ -66,7 +66,7 @@ inline void EntityEditorPanel()
     // Delete selected entity
     if (selected_entity_id != -1 && ImGui::Button("Delete Selected"))
     {
-      Engine::WORLD.destroy_entity(selected_entity_id);
+      ECS::World::destroy_entity(selected_entity_id);
       selected_entity_id = -1;
     }
   }
@@ -76,7 +76,7 @@ inline void EntityEditorPanel()
   // Section 2: Component Editor for Selected Entity
   if (selected_entity_id != -1)
   {
-    auto entity = Engine::WORLD.get_entity(selected_entity_id);
+    auto entity = ECS::World::get_entity(selected_entity_id);
 
     if (!entity.is_valid())
     {
@@ -377,7 +377,7 @@ inline void EntityEditorPanel()
     // Clone Entity
     if (ImGui::Button("Clone This Entity"))
     {
-      auto clonedEntity = Engine::WORLD.clone_entity(entity.get_id());
+      auto clonedEntity = ECS::World::clone_entity(entity.get_id());
       selected_entity_id = static_cast<int>(clonedEntity.get_id());
     }
   }

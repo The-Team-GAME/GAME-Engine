@@ -110,7 +110,7 @@ namespace Engine {
       height = h;
 
       // Send resize event to engine (this will update Graphics viewport)
-      Engine::WORLD.send_event<WindowResizeEvent>(width, height);
+      ECS::World::send_event<WindowResizeEvent>(width, height);
     }
 
     void file_drop_callback([[maybe_unused]] GLFWwindow* window, s32 count, const char** paths)
@@ -121,7 +121,7 @@ namespace Engine {
         filePaths.push_back(paths[i]);
       }
 
-      Engine::WORLD.send_event<FileDropEvent>(filePaths);
+      ECS::World::send_event<FileDropEvent>(filePaths);
     }
   }
 }

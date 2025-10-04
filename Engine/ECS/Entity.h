@@ -18,18 +18,15 @@
 
 namespace ECS {
 
-  class World; // Forward declaration
-
   /* ============================ //
   // Entity handle for clean API  //
   // ============================ */
   class Entity {
   private:
     EntityID id;
-    World* world;
 
   public:
-    Entity(EntityID id = INVALID_ENTITY, World* world = nullptr);
+    Entity(EntityID id = INVALID_ENTITY);
 
     EntityID get_id() const;
     bool is_valid() const;

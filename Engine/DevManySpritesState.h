@@ -46,15 +46,15 @@ public:
         .add_component<Components::RotationSpeed>(45.0f);
     }
 
-    auto background = Engine::WORLD.create_entity()
+    auto background = ECS::World::create_entity()
       .add_component<Components::Tag<"DevManySpritesState">>()
       .add_component<Components::Background>()
       .add_component<Components::Color>(0.2f, 0.3f, 0.4f, 1.0f); // Dark blue background
 
     // Add systems to the world
-    Engine::WORLD.add_system<BackgroundSystem>();
-    Engine::WORLD.add_system<RotationSystem>();
-    Engine::WORLD.add_system<StaticSpriteRenderSystem>();
+    ECS::World::add_system<BackgroundSystem>();
+    ECS::World::add_system<RotationSystem>();
+    ECS::World::add_system<StaticSpriteRenderSystem>();
   }
 
   void init() {}
@@ -68,12 +68,12 @@ public:
     Engine::RESOURCES.unload_object_prefab("enemy");
     Engine::RESOURCES.unload_object_prefab("banana");
 
-    Engine::WORLD.destroy_entities_with<Components::Tag<"DevManySpritesState">>();
+    ECS::World::destroy_entities_with<Components::Tag<"DevManySpritesState">>();
 
     // Remove systems
-    Engine::WORLD.remove_system<BackgroundSystem>();
-    Engine::WORLD.remove_system<RotationSystem>();
-    Engine::WORLD.remove_system<StaticSpriteRenderSystem>();
+    ECS::World::remove_system<BackgroundSystem>();
+    ECS::World::remove_system<RotationSystem>();
+    ECS::World::remove_system<StaticSpriteRenderSystem>();
   }
 
   void unload() {}

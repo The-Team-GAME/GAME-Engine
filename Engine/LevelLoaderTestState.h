@@ -38,14 +38,14 @@ public:
   void init()
   {
     // Create background
-    auto bg = Engine::WORLD.create_entity();
+    auto bg = ECS::World::create_entity();
     bg.add_component<Components::Background>();
     bg.add_component<Components::Color>(0.2f, 0.2f, 0.3f, 1.0f);
     background_entity_id = bg.get_id();
 
     // Add rendering systems
-    Engine::WORLD.add_system<BackgroundSystem>();
-    Engine::WORLD.add_system<StaticSpriteRenderSystem>();
+    ECS::World::add_system<BackgroundSystem>();
+    ECS::World::add_system<StaticSpriteRenderSystem>();
 
     // Load the test level
     current_level_id = Engine::LEVEL_LOADER.load_level("Assets/levels/test_level.json");
@@ -135,7 +135,7 @@ public:
     ImGui::Separator();
 
     // Show entity count
-    ImGui::Text("Active Entities: %d", Engine::WORLD.get_entity_count());
+    ImGui::Text("Active Entities: %d", ECS::World::get_entity_count());
 
     // Camera controls
     ImGui::Spacing();
@@ -155,11 +155,11 @@ public:
     }
 
     // Destroy background entity
-    Engine::WORLD.destroy_entity(background_entity_id);
+    ECS::World::destroy_entity(background_entity_id);
 
     // Remove systems
-    Engine::WORLD.remove_system<BackgroundSystem>();
-    Engine::WORLD.remove_system<StaticSpriteRenderSystem>();
+    ECS::World::remove_system<BackgroundSystem>();
+    ECS::World::remove_system<StaticSpriteRenderSystem>();
   }
 
   void unload()
