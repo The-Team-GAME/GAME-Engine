@@ -153,6 +153,21 @@ void BasicState::draw()
     { 255.0f, 255.0f, 255.0f, 255.0f }
   );
 
+
+  // Normally it would be a horrible idewa to load a texture every frame like this,
+  // but for demonstration purposes, we will do it here to show that the resource
+  // manager caches the texture and does not reload it from disk every time.
+  // If you look at the memory usage, you will see that it does not increase !!
+  auto monkey_texture = Engine::Resources::load_texture("Assets/images/monkey.png");
+
+  Engine::Graphics::draw_texture(
+    monkey_texture,
+    { 500.0f, 300.0f },
+    { static_cast<f32>(monkey_texture->width * 10), static_cast<f32>(monkey_texture->height * 10) },
+    0.0f,
+    { 255.0f, 255.0f, 255.0f, 255.0f }
+  );
+
 }
 
 void BasicState::free()
