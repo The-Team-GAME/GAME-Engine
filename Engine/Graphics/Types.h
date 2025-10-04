@@ -39,7 +39,7 @@ namespace Engine {
       int width = 0;
       int height = 0;
 
-      TextureData(std::string path)
+      TextureData(const std::string& path)
       {
         // Load image using stb_image
         int channels;

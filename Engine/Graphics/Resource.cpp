@@ -1,5 +1,5 @@
 #include "Resource.h"
-
+#include <memory>
 
 bool Engine::Resources::init()
 {
@@ -8,7 +8,7 @@ bool Engine::Resources::init()
 
 Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& filepath)
 {
-  return Engine::Graphics::Texture();
+  return std::make_shared<Engine::Graphics::TextureData>(filepath);
 }
 
 Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath, u32 size)
