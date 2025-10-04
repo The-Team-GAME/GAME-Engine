@@ -45,7 +45,8 @@ FT_Library Engine::Graphics::get_freetype_library()
 }
 
 // TextureData constructor
-Engine::Graphics::TextureData::TextureData(const std::string& path)
+Engine::Graphics::TextureData::TextureData(const std::string& path, TextureFilter filtering)
+  : filter(filtering)
 {
   // Load image using stb_image
   int channels;
@@ -66,12 +67,24 @@ Engine::Graphics::TextureData::TextureData(const std::string& path)
   // Set texture parameters
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  // Set filtering based on mode
+  if (filtering == TextureFilter::Nearest) {
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  }
+  else {
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  }
 
   // Upload texture data to GPU
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-  glGenerateMipmap(GL_TEXTURE_2D);
+
+  // Only generate mipmaps for linear filtering
+  if (filtering == TextureFilter::Linear) {
+    glGenerateMipmap(GL_TEXTURE_2D);
+  }
 
   // Free image memory on CPU
   stbi_image_free(data);
@@ -86,6 +99,24 @@ Engine::Graphics::TextureData::~TextureData()
   if (id != 0)
   {
     glDeleteTextures(1, &id);
+  }
+}
+
+void Engine::Graphics::TextureData::set_filter(TextureFilter filtering)
+{
+  if (id == 0) return;
+
+  filter = filtering;
+  glBindTexture(GL_TEXTURE_2D, id);
+
+  if (filtering == TextureFilter::Nearest) {
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  }
+  else {
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glGenerateMipmap(GL_TEXTURE_2D);
   }
 }
 
@@ -189,3 +220,4 @@ Engine::Graphics::FontData::FontData(const std::string& path, unsigned int size)
 
   Log::info("Font atlas created: " + std::to_string(atlas_width) + "x" + std::to_string(atlas_height) + " with " + std::to_string(glyphs.size()) + " glyphs");
 }
+

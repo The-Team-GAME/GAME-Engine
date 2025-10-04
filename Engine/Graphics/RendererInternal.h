@@ -35,14 +35,21 @@ namespace Engine {
       unsigned int advance;
     };
 
+    // Add filtering mode enum
+    enum class TextureFilter {
+      Nearest,  // For pixel art
+      Linear    // For smooth textures
+    };
+
     // Holds information about a loaded texture including its OpenGL ID and dimensions.
     struct TextureData
     {
       unsigned int id = 0; // OpenGL handle (0 means invalid)
       int width = 0;
       int height = 0;
+      TextureFilter filter = TextureFilter::Nearest; // Default to pixel art
 
-      TextureData(const std::string& path);
+      TextureData(const std::string& path, TextureFilter filtering = TextureFilter::Nearest);
       ~TextureData();
 
       // Delete copy constructor and assignment operator to prevent accidental copies
@@ -52,6 +59,9 @@ namespace Engine {
 
       // Default constructor
       TextureData();
+
+      // Method to change filtering mode after creation
+      void set_filter(TextureFilter filtering);
     };
 
 
