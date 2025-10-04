@@ -61,7 +61,7 @@ namespace Engine {
       // Create shader
       shader = std::make_unique<Shader>(vertex_shader_source, fragment_shader_source);
 
-      if (!shader->isValid()) {
+      if (!shader->is_valid()) {
         Log::error("Failed to create shader");
         return false;
       }
@@ -134,7 +134,7 @@ namespace Engine {
         return;
       }
 
-      if (!shader || !shader->isValid()) {
+      if (!shader || !shader->is_valid()) {
         Log::error("Shader is not valid");
         return;
       }
@@ -145,7 +145,7 @@ namespace Engine {
       // Bind texture
       glActiveTexture(GL_TEXTURE0);
       glBindTexture(GL_TEXTURE_2D, texture->id);
-      shader->setInt("u_texture", 0);
+      shader->set_int("u_texture", 0);
 
       // Create transformation matrix
       glm::mat4 model = glm::mat4(1.0f);
@@ -161,11 +161,11 @@ namespace Engine {
 
       // Set view matrix (identity for now)
       glm::mat4 view = glm::mat4(1.0f);
-      shader->setMat4("u_view", view);
+      shader->set_mat4("u_view", view);
 
       // Set projection matrix
       glm::mat4 projection = glm::ortho(0.0f, 1920.0f, 1080.0f, 0.0f, -1.0f, 1.0f);
-      shader->setMat4("u_projection", projection);
+      shader->set_mat4("u_projection", projection);
 
       // Create quad vertices
       Vertex vertices[4];

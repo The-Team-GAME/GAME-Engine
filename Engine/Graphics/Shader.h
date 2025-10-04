@@ -24,24 +24,24 @@ namespace Engine {
       void use() const;
 
       // Utility uniform functions
-      void setBool(const std::string& name, bool value);
-      void setInt(const std::string& name, int value);
-      void setFloat(const std::string& name, float value);
-      void setVec2(const std::string& name, const glm::vec2& value);
-      void setVec2(const std::string& name, float x, float y);
-      void setVec3(const std::string& name, const glm::vec3& value);
-      void setVec3(const std::string& name, float x, float y, float z);
-      void setVec4(const std::string& name, const glm::vec4& value);
-      void setVec4(const std::string& name, float x, float y, float z, float w);
-      void setMat2(const std::string& name, const glm::mat2& mat);
-      void setMat3(const std::string& name, const glm::mat3& mat);
-      void setMat4(const std::string& name, const glm::mat4& mat);
+      void set_bool(const std::string& name, bool value);
+      void set_int(const std::string& name, int value);
+      void set_float(const std::string& name, float value);
+      void set_vec2(const std::string& name, const glm::vec2& value);
+      void set_vec2(const std::string& name, float x, float y);
+      void set_vec3(const std::string& name, const glm::vec3& value);
+      void set_vec3(const std::string& name, float x, float y, float z);
+      void set_vec4(const std::string& name, const glm::vec4& value);
+      void set_vec4(const std::string& name, float x, float y, float z, float w);
+      void set_mat2(const std::string& name, const glm::mat2& mat);
+      void set_mat3(const std::string& name, const glm::mat3& mat);
+      void set_mat4(const std::string& name, const glm::mat4& mat);
 
       // Get the program ID
-      unsigned int getID() const { return program_id; }
+      unsigned int get_id() const { return program_id; }
 
       // Check if shader is valid
-      bool isValid() const { return program_id != 0; }
+      bool is_valid() const { return program_id != 0; }
 
     private:
       unsigned int program_id;
@@ -50,16 +50,16 @@ namespace Engine {
       mutable std::unordered_map<std::string, int> uniform_location_cache;
 
       // Get uniform location (with caching)
-      int getUniformLocation(const std::string& name) const;
+      int get_uniform_location(const std::string& name) const;
 
       // Compile a shader
-      unsigned int compileShader(unsigned int type, const std::string& source);
+      unsigned int compile_shader(unsigned int type, const std::string& source);
 
       // Link the shader program
-      bool linkProgram(unsigned int vertexShader, unsigned int fragmentShader);
+      bool link_program(unsigned int vertexShader, unsigned int fragmentShader);
 
       // Check for compilation/linking errors
-      void checkCompileErrors(unsigned int shader, const std::string& type);
+      void check_compile_errors(unsigned int shader, const std::string& type);
     };
 
   } // namespace Graphics
