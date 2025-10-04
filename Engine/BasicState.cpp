@@ -51,68 +51,68 @@ void BasicState::init()
   // Top left, Red
   rect_top_left = Engine::WORLD.create_entity()
     .add_component<Components::Transform2D>(
-      glm::vec2(0.0f, 0.0f),
+      0.0f, 0.0f,
       rotation,
-      glm::vec2(50.0f, 50.0f)
+      50.0f, 50.0f
     )
-    .add_component<Components::Color>(Math::Vec4D(255.0f, 0.0f, 0.0f, 255.0f));
+    .add_component<Components::Color>(255.0f, 0.0f, 0.0f, 255.0f);
 
   // Bottom right, Green
   rect_bottom_right = Engine::WORLD.create_entity()
     .add_component<Components::Transform2D>(
-      glm::vec2(1600.0f, 900.0f),
+      1600.0f, 900.0f,
       rotation,
-      glm::vec2(50.0f, 50.0f)
-    ).add_component<Components::Color>(Math::Vec4D(0.0f, 255.0f, 0.0f, 255.0f));
+      50.0f, 50.0f
+    ).add_component<Components::Color>(0.0f, 255.0f, 0.0f, 255.0f);
 
   // Bottom left, Blue
   rect_bottom_left = Engine::WORLD.create_entity()
     .add_component<Components::Transform2D>(
-      glm::vec2(0.0f, 900.0f),
+      0.0f, 900.0f,
       rotation,
-      glm::vec2(50.0f, 50.0f)
-    ).add_component<Components::Color>(Math::Vec4D(0.0f, 0.0f, 255.0f, 255.0f));
+      50.0f, 50.0f
+    ).add_component<Components::Color>(0.0f, 0.0f, 255.0f, 255.0f);
 
   // Top right, Yellow
   rect_top_right = Engine::WORLD.create_entity()
     .add_component<Components::Transform2D>(
-      glm::vec2(1600.0f, 0.0f),
+      1600.0f, 0.0f,
       rotation,
-      glm::vec2(50.0f, 50.0f)
-    ).add_component<Components::Color>(Math::Vec4D(255.0f, 255.0f, 0.0f, 255.0f));
+      50.0f, 50.0f
+    ).add_component<Components::Color>(255.0f, 255.0f, 0.0f, 255.0f);
 
   // Center, Magenta
   rect_center = Engine::WORLD.create_entity()
     .add_component<Components::Transform2D>(
-      glm::vec2(800.0f, 450.0f),
+      800.0f, 450.0f,
       rotation,
-      glm::vec2(50.0f, 50.0f)
-    ).add_component<Components::Color>(Math::Vec4D(255.0f, 0.0f, 255.0f, 255.0f));
+      50.0f, 50.0f
+    ).add_component<Components::Color>(255.0f, 0.0f, 255.0f, 255.0f);
 
   // Create text entities
   text_hello_1 = Engine::WORLD.create_entity()
     .add_component<Components::Transform2D>(
-      glm::vec2(250.0f, 250.0f),
+      250.0f, 250.0f,
       0.0f,
-      glm::vec2(1.0f, 1.0f)
+      1.0f, 1.0f
     )
     .add_component<Components::Font>(font_roboto)
     .add_component<Components::Text>("Hello");
 
   text_hello_2 = Engine::WORLD.create_entity()
     .add_component<Components::Transform2D>(
-      glm::vec2(250.0f, 300.0f),
+      250.0f, 300.0f,
       0.0f,
-      glm::vec2(1.0f, 1.0f)
+      1.0f, 1.0f
     )
     .add_component<Components::Font>(font_playfair)
     .add_component<Components::Text>("Hello");
 
   text_instruction = Engine::WORLD.create_entity()
     .add_component<Components::Transform2D>(
-      glm::vec2(250.0f, 350.0f),
+      250.0f, 350.0f,
       0.0f,
-      glm::vec2(0.5f, 0.5f)
+      0.5f, 0.5f
     )
     .add_component<Components::Font>(font_roboto)
     .add_component<Components::Text>("Press 'P' to play sound");
