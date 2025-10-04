@@ -11,7 +11,7 @@
 namespace Engine {
   namespace Graphics
   {
-    FT_Library& get_freetype_library();
+    FT_Library get_freetype_library();
 
     // Used by Animation component
     struct Frame

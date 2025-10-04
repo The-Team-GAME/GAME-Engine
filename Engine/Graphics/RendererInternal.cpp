@@ -1,34 +1,45 @@
 #include "RendererInternal.h"
+#include <stdexcept>
 
-// Custom deleter for FreeType library
 struct FreeTypeDeleter
 {
-  void operator()(FT_Library* lib) const
+  void operator()(FT_Library lib) const
   {
-    if (lib && *lib)
+    if (lib)
     {
-      FT_Done_FreeType(*lib);
-      Log::info("FreeType library cleaned up");
+      FT_Done_FreeType(lib);
+      // Log::info("FreeType library cleaned up");
     }
-    delete lib;
   }
 };
 
-FT_Library& Engine::Graphics::get_freetype_library()
+// Use std::unique_ptr with the raw FT_Library handle
+using UniqueFTLibrary = std::unique_ptr<
+  std::remove_pointer_t<FT_Library>, // FT_Library is a pointer typedef, so we remove the pointer
+  FreeTypeDeleter
+>;
+
+FT_Library Engine::Graphics::get_freetype_library()
 {
-  static std::unique_ptr<FT_Library, FreeTypeDeleter> ft_ptr = []() {
-    FT_Library* lib = new FT_Library();
-    if (FT_Init_FreeType(lib))
+  // The static variable stores the FT_Library handle
+  static UniqueFTLibrary ft_ptr = []() -> UniqueFTLibrary {
+    FT_Library lib_handle = nullptr; // Initialize a handle variable
+
+    if (FT_Init_FreeType(&lib_handle))
     {
-      Log::warning("Could not initialize FreeType library");
-      *lib = nullptr;
+      return nullptr;
     }
     else
     {
-      Log::info("FreeType library initialized");
+      return UniqueFTLibrary(lib_handle);
     }
-    return std::unique_ptr<FT_Library, FreeTypeDeleter>(lib);
-    }();
+    }(); // Immediately execute the lambda
 
-  return *ft_ptr;
+  // Throw an error if initialization failed, rather than returning a bad handle
+  if (!ft_ptr) {
+    throw std::runtime_error("FreeType library failed to initialize.");
+  }
+
+  // Return the raw handle (FT_Library is a typedef to a pointer)
+  return ft_ptr.get();
 }

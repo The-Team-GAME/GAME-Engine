@@ -112,6 +112,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="FileExplorer.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="Graphics\Renderer.cpp" />
+    <ClCompile Include="Graphics\RendererInternal.cpp" />
     <ClCompile Include="Graphics\Resource.cpp" />
     <ClCompile Include="ImGuiManager.cpp" />
     <ClCompile Include="RectPainterState.cpp" />
