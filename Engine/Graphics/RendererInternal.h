@@ -11,7 +11,7 @@
 namespace Engine {
   namespace Graphics
   {
-    static FT_Library ft;
+    FT_Library& get_freetype_library();
 
     // Used by Animation component
     struct Frame
@@ -129,7 +129,7 @@ namespace Engine {
 
         // Load font face
         FT_Face face;
-        if (FT_New_Face(ft, path.c_str(), 0, &face))
+        if (FT_New_Face(get_freetype_library(), path.c_str(), 0, &face))
         {
           Log::warning("ERROR::FREETYPE: Failed to load font: " + path);
         }

@@ -7,14 +7,6 @@ bool Engine::Graphics::init()
 
   // Setup OpenGL state
 
-  // Init FreeType
-
-  if (FT_Init_FreeType(&ft))
-  {
-    Log::warning("Could not initialize FreeType library");
-    return false;
-  }
-
 
   return true;
 }
