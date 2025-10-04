@@ -14,6 +14,6 @@ namespace Engine {
     bool exit();
 
     void draw_texture(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color);
- 
+
   }
 }
