@@ -11,7 +11,7 @@
 namespace Engine {
   namespace Graphics
   {
-    FT_Library ft;
+    static FT_Library ft;
 
     // Used by Animation component
     struct Frame
@@ -203,7 +203,7 @@ namespace Engine {
 
           // Store glyph info
           Glyph g = {
-              { {x0, y0}, {x1, y0}, {x1, y1}, {x0, y1} }, // UV coords
+              { glm::vec2(x0, y0), glm::vec2(x1, y0), glm::vec2(x1, y1), glm::vec2(x0, y1) }, // UV coords
               glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
               glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
               static_cast<u32>(face->glyph->advance.x)
