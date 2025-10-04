@@ -51,8 +51,8 @@ public:
     auto rotation = entity.has_component<Components::Rotation>() ?
       *entity.get_component<Components::Rotation>() : Components::Rotation{ 0.0f };
 
-    Engine::GRAPHICS.draw_rect({ color->X(), color->Y(), color->Z(), color->W() },
-      pos->X(), pos->Y(), size->width, size->height,
+    Engine::GRAPHICS.draw_rect({ color->x, color->y, color->z, color->w },
+      pos->x, pos->y, size->width, size->height,
       rotation.angle, Graphics::Origin::Center);
   }
 };
@@ -94,10 +94,10 @@ public:
     auto color = entity.has_component<Components::Color>() ?
       *entity.get_component<Components::Color>() : Components::Color{ 1.0f, 1.0f, 1.0f, 1.0f };
 
-    Engine::GRAPHICS.draw_texture(sprite->texture_id, pos->X(), pos->Y(),
-      size->width * scale.X(), size->height * scale.Y(),
+    Engine::GRAPHICS.draw_texture(sprite->texture_id, pos->x, pos->y,
+      size->width * scale.x, size->height * scale.y,
       rotation.angle, Graphics::Origin::Center,
-      { color.X(), color.Y(), color.Z(), color.W() });
+      { color.x, color.y, color.z, color.w });
   }
 };
 
@@ -154,10 +154,10 @@ public:
     auto color = entity.has_component<Components::Color>() ?
       *entity.get_component<Components::Color>() : Components::Color{ 1.0f, 1.0f, 1.0f, 1.0f };
 
-    Engine::GRAPHICS.draw_animated_sprite(sprite->spriteSheetId, pos->X(), pos->Y(),
-      size->width * scale.X(), size->height * scale.Y(),
+    Engine::GRAPHICS.draw_animated_sprite(sprite->spriteSheetId, pos->x, pos->y,
+      size->width * scale.x, size->height * scale.y,
       sprite->animationTime,
       rotation.angle, Graphics::Origin::Center,
-      { color.X(), color.Y(), color.Z(), color.W() });
+      { color.x, color.y, color.z, color.w });
   }
 };

@@ -20,9 +20,9 @@ namespace Math {
 
 
   class Vec3D {
-  private:
-    f32 x, y, z;
   public:
+
+    f32 x, y, z;
 
     Vec3D(f32 x_vec = 0, f32 y_vec = 0, f32 z_vec = 0) : x{ x_vec }, y{ y_vec }, z{ z_vec } {}; //(default)ctor
     Vec3D(Vec3D const&) = default; //copy constructor

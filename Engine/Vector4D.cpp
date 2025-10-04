@@ -88,10 +88,10 @@ namespace Math {
 
   f32 dot_product(Vec4D const& lhs, Vec4D const& rhs)
   {
-    return	lhs.X() * rhs.X() +
-      lhs.Y() * rhs.Y() +
-      lhs.Z() * rhs.Z() +
-      lhs.W() * rhs.W();
+    return	lhs.x * rhs.x +
+      lhs.y * rhs.y +
+      lhs.z * rhs.z +
+      lhs.w * rhs.w;
   }
 
   // Non Member Operator Overloads
@@ -110,25 +110,25 @@ namespace Math {
   Vec4D operator/(Vec4D const& vect, f32 divisor)
   {
     Vec4D tmp{ vect };
-    tmp.X() = vect.X() / divisor;
-    tmp.Y() = vect.Y() / divisor;
-    tmp.Z() = vect.Z() / divisor;
-    tmp.W() = vect.W() / divisor;
+    tmp.x = vect.x / divisor;
+    tmp.y = vect.y / divisor;
+    tmp.z = vect.z / divisor;
+    tmp.w = vect.w / divisor;
     return tmp;
   }
   Vec4D operator*(Vec4D const& vect, f32 scalar)
   {
     Vec4D tmp{ vect };
-    tmp.X() = vect.X() * scalar;
-    tmp.Y() = vect.Y() * scalar;
-    tmp.Z() = vect.Z() * scalar;
-    tmp.W() = vect.W() * scalar;
+    tmp.x = vect.x * scalar;
+    tmp.y = vect.y * scalar;
+    tmp.z = vect.z * scalar;
+    tmp.w = vect.w * scalar;
     return tmp;
   }
 
   std::ostream& operator<<(std::ostream& os, Vec4D const& vect)
   {
-    os << "(" << vect.X() << "," << vect.Y() << "," << vect.Z() << ")";
+    os << "(" << vect.x << "," << vect.y << "," << vect.z << ")";
     return os;
   }
 }

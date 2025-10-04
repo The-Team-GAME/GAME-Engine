@@ -30,7 +30,7 @@ public:
 
   void draw_entity(const ECS::Entity& entity) override {
     auto* color = entity.get_component<Components::Color>();
-    Engine::GRAPHICS.clear_screen(color->X(), color->Y(), color->Z(), color->W());
+    Engine::GRAPHICS.clear_screen(color->x, color->y, color->z, color->w);
   }
 };
 

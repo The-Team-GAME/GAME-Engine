@@ -45,16 +45,16 @@ public:
     auto* control = entity.get_component<Components::SimplePlayerControl>();
 
     if (Engine::Input::is_key_held(GLFW_KEY_W)) {
-      pos->Y() -= control->speed * Engine::Time::get_fixed_dt();
+      pos->y -= control->speed * Engine::Time::get_fixed_dt();
     }
     if (Engine::Input::is_key_held(GLFW_KEY_S)) {
-      pos->Y() += control->speed * Engine::Time::get_fixed_dt();
+      pos->y += control->speed * Engine::Time::get_fixed_dt();
     }
     if (Engine::Input::is_key_held(GLFW_KEY_A)) {
-      pos->X() -= control->speed * Engine::Time::get_fixed_dt();
+      pos->x -= control->speed * Engine::Time::get_fixed_dt();
     }
     if (Engine::Input::is_key_held(GLFW_KEY_D)) {
-      pos->X() += control->speed * Engine::Time::get_fixed_dt();
+      pos->x += control->speed * Engine::Time::get_fixed_dt();
     }
   }
 };

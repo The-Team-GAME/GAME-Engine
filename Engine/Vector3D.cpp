@@ -81,18 +81,18 @@ namespace Math {
 
   f32 dot_product(Vec3D const& lhs, Vec3D const& rhs)
   {
-    return	lhs.X() * rhs.X() +
-      lhs.Y() * rhs.Y() +
-      lhs.Z() * rhs.Z();
+    return	lhs.x * rhs.x +
+      lhs.y * rhs.y +
+      lhs.z * rhs.z;
   }
 
   Vec3D cross_product(Vec3D const& lhs, Vec3D const& rhs)
   {
     Vec3D tmp
     {
-      lhs.Y() * rhs.Z() - lhs.Z() * rhs.Y(),
-      lhs.Z() * rhs.X() - lhs.X() * rhs.Z(),
-      lhs.X() * rhs.Y() - lhs.Y() * rhs.X()
+      lhs.y * rhs.z - lhs.z * rhs.y,
+      lhs.z * rhs.x - lhs.x * rhs.z,
+      lhs.x * rhs.y - lhs.y * rhs.x
     };
     return tmp;
   }
@@ -113,23 +113,23 @@ namespace Math {
   Vec3D operator/(Vec3D const& vect, f32 divisor)
   {
     Vec3D tmp{ vect };
-    tmp.X() = vect.X() / divisor;
-    tmp.Y() = vect.Y() / divisor;
-    tmp.Z() = vect.Z() / divisor;
+    tmp.x = vect.x / divisor;
+    tmp.y = vect.y / divisor;
+    tmp.z = vect.z / divisor;
     return tmp;
   }
   Vec3D operator*(Vec3D const& vect, f32 scalar)
   {
     Vec3D tmp{ vect };
-    tmp.X() = vect.X() * scalar;
-    tmp.Y() = vect.Y() * scalar;
-    tmp.Z() = vect.Z() * scalar;
+    tmp.x = vect.x * scalar;
+    tmp.y = vect.y * scalar;
+    tmp.z = vect.z * scalar;
     return tmp;
   }
 
   std::ostream& operator<<(std::ostream& os, Vec3D const& vect)
   {
-    os << "(" << vect.X() << "," << vect.Y() << "," << vect.Z() << ")";
+    os << "(" << vect.x << "," << vect.y << "," << vect.z << ")";
     return os;
   }
 }
