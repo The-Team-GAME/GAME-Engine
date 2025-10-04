@@ -111,6 +111,8 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="ECS\World.cpp" />
     <ClCompile Include="FileExplorer.cpp" />
     <ClCompile Include="Graphics.cpp" />
+    <ClCompile Include="Graphics\Renderer.cpp" />
+    <ClCompile Include="Graphics\Resource.cpp" />
     <ClCompile Include="ImGuiManager.cpp" />
     <ClCompile Include="RectPainterState.cpp" />
     <ClCompile Include="InputManager.cpp" />
@@ -149,7 +151,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="FileExplorer.h" />
     <ClInclude Include="GameObjectState.h" />
     <ClInclude Include="Graphics\Components.h" />
-    <ClInclude Include="Graphics\ResourceManager.h" />
+    <ClInclude Include="Graphics\Resource.h" />
     <ClInclude Include="Graphics\Systems.h" />
     <ClInclude Include="Graphics\Types.h" />
     <ClInclude Include="PhysicsTestState.h" />
