@@ -34,9 +34,9 @@ namespace Engine {
     // Holds information about a loaded texture including its OpenGL ID and dimensions.
     struct TextureData
     {
-      unsigned int id; // OpenGL handle
-      int width;
-      int height;
+      unsigned int id = 0; // OpenGL handle (0 means invalid)
+      int width = 0;
+      int height = 0;
 
       TextureData(std::string path);
       {
@@ -105,8 +105,8 @@ namespace Engine {
       }
 
       // Default constructor
-      TextureData() : id(0), width(0), height(0) {}
-      TextureData(unsigned int id, int width, int height) : id(id), width(width), height(height) {}
+      // TextureData() : id(0), width(0), height(0) {}
+      // TextureData(unsigned int id, int width, int height) : id(id), width(width), height(height) {}
     };
 
 
