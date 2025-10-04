@@ -66,7 +66,5 @@ namespace Engine {
       FontData(const std::string& path, unsigned int size);
     };
 
-    using Texture = std::shared_ptr<TextureData>;
-    using Font = std::shared_ptr<FontData>;
   }
 }

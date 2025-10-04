@@ -7,6 +7,8 @@
 namespace Engine {
   namespace Graphics {
 
+    using Texture = std::shared_ptr<TextureData>;
+    using Font = std::shared_ptr<FontData>;
 
     // Initialization code here (e.g., setting up OpenGL context, loading shaders)
     bool init();

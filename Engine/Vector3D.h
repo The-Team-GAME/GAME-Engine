@@ -20,7 +20,7 @@ namespace Math {
 
 
   class Vec3D {
-  private:
+  public:
     f32 x, y, z;
   public:
 

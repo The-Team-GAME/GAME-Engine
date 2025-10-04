@@ -35,7 +35,7 @@ namespace Engine {
       if (!success) {
         char info_log[512];
         glGetShaderInfoLog(shader, 512, nullptr, info_log);
-        Log::error(std::string("Shader compilation failed: ") + info_log);
+        Log::crash(std::string("Shader compilation failed: ") + info_log);
         return 0;
       }
 
@@ -96,7 +96,7 @@ namespace Engine {
       if (!success) {
         char info_log[512];
         glGetProgramInfoLog(program, 512, nullptr, info_log);
-        Log::error(std::string("Shader program linking failed: ") + info_log);
+        Log::crash(std::string("Shader program linking failed: ") + info_log);
         glDeleteShader(vertex_shader);
         glDeleteShader(fragment_shader);
         return 0;
@@ -112,7 +112,7 @@ namespace Engine {
       // Create shader program
       shader_program = create_shader_program();
       if (shader_program == 0) {
-        Log::error("Failed to create shader program");
+        Log::crash("Failed to create shader program");
         return false;
       }
 

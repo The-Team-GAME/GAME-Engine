@@ -22,7 +22,7 @@ namespace Math {
 
 
   class Vec4D {
-  private:
+  public:
     f32 x, y, z, w;
   public:
 

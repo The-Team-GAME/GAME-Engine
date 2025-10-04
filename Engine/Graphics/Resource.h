@@ -2,7 +2,7 @@
 #include <unordered_map>
 #include <string>
 #include <memory>
-#include "RendererInternal.h"
+#include "Renderer.h"
 #include "../TypeDef.h"
 
 namespace Engine {
