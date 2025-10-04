@@ -54,7 +54,8 @@ Engine::Graphics::TextureData::TextureData(const std::string& path)
   {
     Log::warning("Failed to load texture: " + path);
     id = 0;
-    width = height = 0;
+    width = 0;
+    height = 0;
     return;
   }
 
