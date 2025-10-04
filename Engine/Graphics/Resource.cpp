@@ -3,7 +3,7 @@
 
 bool Engine::Resources::init()
 {
-
+  return true;
 }
 
 Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& filepath)

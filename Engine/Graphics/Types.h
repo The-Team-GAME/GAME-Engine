@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <array>
 #include <string>
+#include "../Logger.h"
 
 namespace Engine {
   namespace Graphics
@@ -38,14 +39,14 @@ namespace Engine {
       int width = 0;
       int height = 0;
 
-      TextureData(std::string path);
+      TextureData(std::string path)
       {
         // Load image using stb_image
         int channels;
         unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 4);
         if (!data)
         {
-          std::cerr << "Failed to load texture: " << path << std::endl;
+          Log::warning("Failed to load texture: " + path);
           id = 0;
           width = height = 0;
           return;
@@ -81,14 +82,15 @@ namespace Engine {
       // Delete copy constructor and assignment operator to prevent accidental copies
       TextureData(const TextureData&) = delete;
       TextureData& operator=(const TextureData&) = delete;
+      TextureData(const TextureData&&) = delete;
 
       // Allow move semantics
-      TextureData(TextureData&& other) noexcept : id(other.id), width(other.width), height(other.height)
+      /*TextureData(TextureData&& other) noexcept : id(other.id), width(other.width), height(other.height)
       {
         other.id = 0;
-      }
+      }*/
 
-      TextureData& operator=(TextureData&& other) noexcept
+      /*TextureData& operator=(TextureData&& other) noexcept
       {
         if (this != &other)
         {
@@ -102,7 +104,7 @@ namespace Engine {
           other.id = 0;
         }
         return *this;
-      }
+      }*/
 
       // Default constructor
       // TextureData() : id(0), width(0), height(0) {}
