@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------------
-// file:    World::inl
+// file:    World.inl
 // project: Monkey Stole My GPA
 //
 // author:  Chew Shee Yang (100%)
@@ -83,14 +83,6 @@ namespace ECS
 
     template <typename T>
     T* get_component(EntityID entity)
-    {
-      assert(has_component<T>(entity) && "Entity does not have this component");
-      auto* array = get_component_array<T>();
-      return array ? array->get_component(entity) : nullptr;
-    }
-
-    template <typename T>
-    const T* get_component(EntityID entity)
     {
       assert(has_component<T>(entity) && "Entity does not have this component");
       auto* array = get_component_array<T>();

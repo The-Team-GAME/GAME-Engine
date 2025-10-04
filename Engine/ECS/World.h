@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------------
-// file:    World::h
+// file:    World.h
 // project: Monkey Stole My GPA
 //
 // author:  Chew Shee Yang (100%)
@@ -67,9 +67,6 @@ namespace ECS
 
     template <typename T>
     T* get_component(EntityID entity);
-
-    template <typename T>
-    const T* get_component(EntityID entity);
 
     template <typename... T>
     bool has_components(EntityID entity);
