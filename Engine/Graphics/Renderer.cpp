@@ -15,12 +15,21 @@ namespace Engine {
     static GLuint vbo = 0;
     static GLuint ebo = 0;
 
+    // Virtual resolution
+    static float virtual_width = 1600.0f;
+    static float virtual_height = 900.0f;
+
     // Vertex structure for a textured quad
     struct Vertex {
       glm::vec2 position;
       glm::vec2 texCoord;
       glm::vec4 color;
     };
+
+    // Helper function to get the current projection matrix
+    static glm::mat4 get_projection_matrix() {
+      return glm::ortho(0.0f, virtual_width, virtual_height, 0.0f, -1.0f, 1.0f);
+    }
 
     // Helper function to draw a quad with custom texture coordinates
     static void draw_quad(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size,
@@ -59,9 +68,8 @@ namespace Engine {
       glm::mat4 view = glm::mat4(1.0f);
       shader->set_mat4("u_view", view);
 
-      // Set projection matrix
-      glm::mat4 projection = glm::ortho(0.0f, 1920.0f, 1080.0f, 0.0f, -1.0f, 1.0f);
-      shader->set_mat4("u_projection", projection);
+      // Set projection matrix using virtual resolution
+      shader->set_mat4("u_projection", get_projection_matrix());
 
       // Create quad vertices
       Vertex vertices[4];
@@ -129,9 +137,8 @@ namespace Engine {
       glm::mat4 view = glm::mat4(1.0f);
       shader->set_mat4("u_view", view);
 
-      // Set projection matrix
-      glm::mat4 projection = glm::ortho(0.0f, 1920.0f, 1080.0f, 0.0f, -1.0f, 1.0f);
-      shader->set_mat4("u_projection", projection);
+      // Set projection matrix using virtual resolution
+      shader->set_mat4("u_projection", get_projection_matrix());
 
       // Create quad vertices (no rotation for text glyphs)
       Vertex vertices[4];
@@ -248,7 +255,8 @@ namespace Engine {
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-      Log::info("Renderer initialized");
+      Log::info("Renderer initialized with virtual resolution: " +
+        std::to_string((int)virtual_width) + "x" + std::to_string((int)virtual_height));
       return true;
     }
 
@@ -274,6 +282,17 @@ namespace Engine {
 
       Log::info("Renderer cleaned up");
       return true;
+    }
+
+    void set_virtual_resolution(float width, float height) {
+      virtual_width = width;
+      virtual_height = height;
+      Log::info("Virtual resolution set to: " +
+        std::to_string((int)width) + "x" + std::to_string((int)height));
+    }
+
+    Math::Vec2D get_virtual_resolution() {
+      return Math::Vec2D(virtual_width, virtual_height);
     }
 
     void draw_texture(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
