@@ -19,7 +19,7 @@
 #include "FileHandler.h"
 #include "Graphics.h"
 #include "StateManager.h"
-//#include "BasicState.h"
+#include "BasicState.h"
 #include "ImGuiManager.h"
 #include "StateChooser.h"
 #include "Time.h"
@@ -100,7 +100,7 @@ namespace Engine
       }
     );
 
-    StateManager::init(DevSpriteAnimationState::get()); // TODO: to be removed
+    StateManager::init(BasicState::get()); // TODO: to be removed
   }
 
   /*=================================================================================
