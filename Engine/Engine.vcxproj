@@ -115,7 +115,6 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="Graphics\Resource.cpp" />
     <ClCompile Include="Graphics\Shader.cpp" />
     <ClCompile Include="ImGuiManager.cpp" />
-    <ClCompile Include="RectPainterState.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="LevelLoader.cpp" />
     <ClCompile Include="Logger.cpp" />
@@ -123,7 +122,6 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="FileHandler.cpp" />
     <ClCompile Include="Perf.cpp" />
     <ClCompile Include="Precompiled.cpp" />
-    <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="SpriteDropper.cpp" />
     <ClCompile Include="Time.cpp" />
     <ClCompile Include="Timeline.cpp" />
@@ -136,26 +134,22 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AudioManager.h" />
-    <ClInclude Include="BackgroundSystem.h" />
     <ClInclude Include="BasicComponents.h" />
     <ClInclude Include="BasicMovementSystem.h" />
     <ClInclude Include="CollisionSystem.h" />
     <ClInclude Include="BasicEvents.h" />
     <ClInclude Include="Config.h" />
-    <ClInclude Include="CameraPanel.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="DamageSystem.h" />
     <ClInclude Include="DevECSMessageState.h" />
     <ClInclude Include="DevManySpritesState.h" />
     <ClInclude Include="DevSpriteAnimationState.h" />
     <ClInclude Include="FileExplorer.h" />
-    <ClInclude Include="GameObjectState.h" />
     <ClInclude Include="Graphics\Components.h" />
     <ClInclude Include="Graphics\Resource.h" />
     <ClInclude Include="Graphics\Shader.h" />
     <ClInclude Include="Graphics\Systems.h" />
     <ClInclude Include="Graphics\RendererInternal.h" />
-    <ClInclude Include="PhysicsTestState.h" />
     <ClInclude Include="ECS\ComponentArray.h" />
     <ClInclude Include="ECS\ComponentManager.h" />
     <ClInclude Include="ECS\ECS.h" />
@@ -171,7 +165,6 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="PlayerControllerSystem.h" />
     <ClInclude Include="HealthSystem.h" />
     <ClInclude Include="ImGuiManager.h" />
-    <ClInclude Include="RectPainterState.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Level.h" />
     <ClInclude Include="LevelLoader.h" />
@@ -183,12 +176,9 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Precompiled.h" />
     <ClInclude Include="Graphics\Renderer.h" />
     <ClInclude Include="RenderSystem.h" />
-    <ClInclude Include="ResourceManager.h" />
-    <ClInclude Include="ResourceManagerPanel.h" />
     <ClInclude Include="RotationSystem.h" />
     <ClInclude Include="Rubric2500ParticlesState.h" />
     <ClInclude Include="FileHandler.h" />
-    <ClInclude Include="ShowcaseState.h" />
     <ClInclude Include="SimplePlayerMovementSystem.h" />
     <ClInclude Include="SpriteDropper.h" />
     <ClInclude Include="Time.h" />

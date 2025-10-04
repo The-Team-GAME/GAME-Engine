@@ -52,7 +52,7 @@ namespace Engine
 
   WindowManager WINDOW;
 
-  Graphics GRAPHICS;
+  //Graphics GRAPHICS;
 
   LevelLoader LEVEL_LOADER{ &WORLD, &FACTORY };
 
@@ -88,8 +88,8 @@ namespace Engine
       throw std::runtime_error("Failed to initialize resource manager");
     }
 
-    GRAPHICS.set_params(win_width, win_height);
-    GRAPHICS.init_graphics();
+    /*GRAPHICS.set_params(win_width, win_height);
+    GRAPHICS.init_graphics();*/
     isRunning = true;
 
     // Register the graphics resize system

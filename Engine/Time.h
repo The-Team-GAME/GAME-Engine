@@ -10,7 +10,7 @@
 // brief:   Header file for the time system for the engine to keep track of the gameloop 
 //					delta time and all the calculations and getters that go with it
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 #include "TypeDef.h"
@@ -69,6 +69,16 @@ namespace Engine {
 		the accumulator for the fixed_dt time loop and SHOULD NOT BE USED FOR CALCULATIONS
 		==================================================================================*/
 		f32 get_real_dt(void);
+
+		/*=================================================================================
+		Function Brief:
+		This function returns the total elapsed time since the engine started
+
+		Where to call it:
+		This function can be called anywhere you need to know the current time, such as
+		for animations, timers, or any time-based game logic
+		==================================================================================*/
+		f32 get_time(void);
 
 		/*=================================================================================
 		Function Brief:

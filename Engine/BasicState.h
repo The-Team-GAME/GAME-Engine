@@ -17,12 +17,27 @@
 
 #include "StateManager.h" 
 #include "TypeDef.h"
+#include "ECS/ECS.h"
+#include "Graphics/Renderer.h"
 
 class BasicState : public Engine::GameState<BasicState>
 {
 private:
-  s32 font_id_1 = -1;
-  s32 font_id_2 = -1;
+  // Entities for rendering
+  ECS::Entity rect_top_left;
+  ECS::Entity rect_bottom_right;
+  ECS::Entity rect_bottom_left;
+  ECS::Entity rect_top_right;
+  ECS::Entity rect_center;
+  
+  ECS::Entity text_hello_1;
+  ECS::Entity text_hello_2;
+  ECS::Entity text_instruction;
+  
+  // Font resources
+  Engine::Graphics::Font font_roboto;
+  Engine::Graphics::Font font_playfair;
+  
   f32 rotation = 0.f;
 
 public:

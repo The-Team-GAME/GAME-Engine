@@ -50,7 +50,7 @@ namespace Engine
   extern ECS::World WORLD;
   extern ObjectFactory FACTORY;
   extern LevelLoader LEVEL_LOADER;
-  extern Graphics GRAPHICS;
+  //extern Graphics GRAPHICS;
   extern WindowManager WINDOW;
   extern AudioManager AUDIO;
   extern ResourceManager RESOURCES;

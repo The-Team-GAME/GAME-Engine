@@ -17,79 +17,94 @@
 
 #include "StateManager.h"
 #include "Core.h"
-#include "BasicComponents.h"
+#include "Graphics/Components.h"
 #include "RenderSystem.h"
-#include "BackgroundSystem.h"
+#include "Graphics/Resource.h"
+#include "Graphics/Renderer.h"
 #include <string>
-#include "SimplePlayerMovementSystem.h"
 
 class DevSpriteAnimationState : public Engine::GameState<DevSpriteAnimationState> {
 private:
   ECS::Entity idle_lazy_monkey;
   ECS::Entity walk_lazy_monkey;
-  ECS::Entity background_entity;
 
-  s32 idle_sprite_sheet_id;
-  s32 walk_sprite_sheet_id;
+  Engine::Graphics::Texture idle_texture;
+  Engine::Graphics::Texture walk_texture;
 
 public:
   void load() {
-    // Load sprite sheets in the Load phase
-    idle_sprite_sheet_id = Engine::RESOURCES.load_sprite_sheet(
-      "LazyMonkey_Idle",
-      "Assets/images/LazyMonkey_Idle_Spritesheet.png",
-      320 / 5,  // frame width
-      64,       // frame height
-      5,        // total frames
-      8.0f,     // frames per second
-      Graphics::MinifyingFilter::Nearest
-    );
-
-    walk_sprite_sheet_id = Engine::RESOURCES.load_sprite_sheet(
-      "LazyMonkey_Walk",
-      "Assets/images/LazyMonkey_Walk_Spritesheet.png",
-      384 / 6,  // frame width
-      64,       // frame height
-      6,        // total frames
-      16.0f,    // frames per second
-      Graphics::MinifyingFilter::Nearest
-    );
+    // Load sprite sheet textures in the Load phase
+    idle_texture = Engine::Resources::load_texture("Assets/images/LazyMonkey_Idle_Spritesheet.png");
+    walk_texture = Engine::Resources::load_texture("Assets/images/LazyMonkey_Walk_Spritesheet.png");
   };
 
   void init() {
-    // Create background entity
-    background_entity = Engine::WORLD.create_entity()
-      .add_component<Components::Background>()
-      .add_component<Components::Color>(0.1f, 0.1f, 0.1f, 1.0f);
-
-    // Create animated LazyMonkey entities using sprite sheet IDs
+    // Create idle LazyMonkey entity with animation
     idle_lazy_monkey = Engine::WORLD.create_entity()
-      .add_component<Components::Position>(200.0f, 150.0f)
-      .add_component<Components::Size>(96.0f, 96.0f)
-      .add_component<Components::Rotation>(0.0f)
-      .add_component<Components::Scale>(1.0f, 1.0f)
-      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-      .add_component<Components::SimplePlayerControl>(100.0f)
-      .add_component<Components::AnimatedSprite>(idle_sprite_sheet_id);
+      .add_component<Components::Transform2D>(
+        glm::vec2(200.0f, 150.0f),  // position
+        0.0f,                        // rotation
+        glm::vec2(192.0f, 192.0f)    // scale (3x the 64px height)
+      )
+      .add_component<Components::Texture>(idle_texture)
+      .add_component<Components::TextureAtlas>(
+        320 / 5,  // subTextureWidth (64px per frame)
+        64,       // subTextureHeight
+        1,        // rows
+        5,        // cols
+        5         // totalSubTextures
+      )
+      .add_component<Components::Animation>(
+        5,        // frameCount
+        1.0f / 8.0f  // frameDuration (8 fps)
+      );
 
+    // Set animation start time
+    auto* idle_anim = idle_lazy_monkey.get_component<Components::Animation>();
+    if (idle_anim) {
+      idle_anim->startTime = Engine::Time::get_time();
+    }
+
+    // Create walking LazyMonkey entity with animation
     walk_lazy_monkey = Engine::WORLD.create_entity()
-      .add_component<Components::Position>(400.0f, 150.0f)
-      .add_component<Components::Size>(96.0f, 96.0f)
-      .add_component<Components::Rotation>(0.0f)
-      .add_component<Components::Scale>(1.0f, 1.0f)
-      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-      .add_component<Components::AnimatedSprite>(walk_sprite_sheet_id);
+      .add_component<Components::Transform2D>(
+        glm::vec2(400.0f, 150.0f),  // position
+        0.0f,                        // rotation
+        glm::vec2(192.0f, 192.0f)    // scale (3x the 64px height)
+      )
+      .add_component<Components::Texture>(walk_texture)
+      .add_component<Components::TextureAtlas>(
+        384 / 6,  // subTextureWidth (64px per frame)
+        64,       // subTextureHeight
+        1,        // rows
+        6,        // cols
+        6         // totalSubTextures
+      )
+      .add_component<Components::Animation>(
+        6,        // frameCount
+        1.0f / 16.0f  // frameDuration (16 fps)
+      );
 
-    // Add systems to render the entities
-    Engine::WORLD.add_system<BackgroundSystem>();
+    // Set animation start time
+    auto* walk_anim = walk_lazy_monkey.get_component<Components::Animation>();
+    if (walk_anim) {
+      walk_anim->startTime = Engine::Time::get_time();
+    }
+
+    // Add rendering system for animated sprites
     Engine::WORLD.add_system<AnimatedSpriteRenderSystem>();
-    Engine::WORLD.add_system<SimplePlayerMovementSystem>();
   };
 
   void update() {
+    // Update is handled by the ECS system
   };
 
   void draw() {
+    // Clear background
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Drawing is handled by the ECS system
   };
 
   void free() {
@@ -100,16 +115,17 @@ public:
     if (walk_lazy_monkey.is_valid()) {
       walk_lazy_monkey.destroy();
     }
-    if (background_entity.is_valid()) {
-      background_entity.destroy();
-    }
 
-    Engine::WORLD.remove_system<BackgroundSystem>();
+    // Remove systems
     Engine::WORLD.remove_system<AnimatedSpriteRenderSystem>();
-    Engine::WORLD.remove_system<SimplePlayerMovementSystem>();
   };
 
   void unload() {
-    // Resources are automatically managed by ResourceManager
+    // Reset texture pointers (actual cleanup handled by resource manager)
+    idle_texture.reset();
+    walk_texture.reset();
+
+    // Clear unused resources from cache
+    Engine::Resources::clear_unused_resources();
   };
 };
