@@ -17,7 +17,7 @@
 #include "ECS/System.h"
 #include "Graphics/Components.h"
 #include "Graphics/Renderer.h"
-#include "Graphics/Resource.h"
+#include "Graphics/Resources.h"
 #include "Time.h"
 #include <iostream>
 

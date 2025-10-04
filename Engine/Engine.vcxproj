@@ -112,7 +112,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="FileExplorer.cpp" />
     <ClCompile Include="Graphics\Renderer.cpp" />
     <ClCompile Include="Graphics\RendererInternal.cpp" />
-    <ClCompile Include="Graphics\Resource.cpp" />
+    <ClCompile Include="Graphics\Resources.cpp" />
     <ClCompile Include="Graphics\Shader.cpp" />
     <ClCompile Include="ImGuiManager.cpp" />
     <ClCompile Include="InputManager.cpp" />
@@ -144,7 +144,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="DevSpriteAnimationState.h" />
     <ClInclude Include="FileExplorer.h" />
     <ClInclude Include="Graphics\Components.h" />
-    <ClInclude Include="Graphics\Resource.h" />
+    <ClInclude Include="Graphics\Resources.h" />
     <ClInclude Include="Graphics\Shader.h" />
     <ClInclude Include="Graphics\Systems.h" />
     <ClInclude Include="Graphics\RendererInternal.h" />

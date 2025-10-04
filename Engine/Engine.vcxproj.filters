@@ -57,9 +57,6 @@
     <ClCompile Include="WinMain.cpp">
       <Filter>Source Files\Main</Filter>
     </ClCompile>
-    <ClCompile Include="Shader.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
     <ClCompile Include="StateManager.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
@@ -114,12 +111,6 @@
     <ClCompile Include="Vector3D.cpp">
       <Filter>Source Files\Math</Filter>
     </ClCompile>
-    <ClCompile Include="ObjectFactory.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphics.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
     <ClCompile Include="Time.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
@@ -150,9 +141,6 @@
     <ClCompile Include="Precompiled.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ResourceManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -165,19 +153,13 @@
     <ClCompile Include="FileExplorer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RectPainterState.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LevelLoader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SpriteDropper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Timeline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Graphics\Resource.cpp">
+    <ClCompile Include="Graphics\Resources.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Graphics\Renderer.cpp">
@@ -186,11 +168,11 @@
     <ClCompile Include="Graphics\RendererInternal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\Shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Shader.h">
-      <Filter>Source Files\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="StateManager.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
@@ -247,18 +229,6 @@
     </ClInclude>
     <ClInclude Include="Vector3D.h">
       <Filter>Source Files\Math</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjectFactory.h">
-      <Filter>Source Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="GameObjectState.h">
-      <Filter>Source Files\GameStates</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphics.h">
-      <Filter>Source Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="BackgroundSystem.h">
-      <Filter>Source Files\ECS\Systems</Filter>
     </ClInclude>
     <ClInclude Include="PerformanceViewer.h">
       <Filter>Source Files\Engine\ImGuiPanels</Filter>
@@ -323,25 +293,13 @@
     <ClInclude Include="Precompiled.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ResourceManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ResourceManagerPanel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BasicMovementSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CameraPanel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FileExplorer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PhysicsTestState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EntityEditorPanel.h">
@@ -353,19 +311,7 @@
     <ClInclude Include="LevelLoaderTestState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RectPainterState.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Level.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LevelLoader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Rubric2500ParticlesState.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ShowcaseState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SimplePlayerMovementSystem.h">
@@ -383,7 +329,7 @@
     <ClInclude Include="Graphics\Renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Graphics\Resource.h">
+    <ClInclude Include="Graphics\Resources.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\Components.h">
@@ -393,6 +339,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\RendererInternal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
