@@ -174,6 +174,13 @@ void BasicState::draw()
     Math::Vec4D(0.0f, 255.0f, 255.0f, 255.0f)
   );
 
+  Engine::Graphics::draw_text(
+    font_roboto,
+    "Monkey Stole My GPA",
+    Math::Vec2D(400.0f, 100.0f),
+    1.0f,
+    Math::Vec4D(255.0f, 255.0f, 255.0f, 255.0f)
+  );
 
 }
 
