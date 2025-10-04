@@ -39,6 +39,16 @@ namespace Log {
 
 	/*=================================================================================
 			Function Brief:
+			Outputs an error message to the console. Currently, logging to file is marked as TODO.
+
+			Where to call it:
+			Call this function whenever a critical issue or error needs to be logged
+			for debugging or user notification purposes.
+			==================================================================================*/
+	void error(std::string text);
+
+	/*=================================================================================
+			Function Brief:
 			Outputs a crash message to the console and logs it to a file with a timestamp.
 			This function appends the crash details to "crash.log".
 

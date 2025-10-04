@@ -38,6 +38,15 @@ namespace Log {
 		std::cout << "Info>> " << text << std::endl;
 	}
 
+	// Outputs an error message to the console
+	void error(std::string text)
+	{
+		// Stuff to log file TODO
+
+		// Stuff to cout in the console
+		std::cerr << "Error>> " << text << std::endl;
+	}
+
 	// Outputs a crash message to the console and logs it to a file with a timestamp
 	void crash(std::string text)
 	{
