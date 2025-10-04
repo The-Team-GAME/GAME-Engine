@@ -19,7 +19,7 @@
 #include "Graphics.h"
 #include "ECS/ECS.h"
 #include "ObjectFactory.h"
-#include "LevelLoader.h"
+//#include "LevelLoader.h"
 #include "Time.h"
 #include "ImGuiManager.h"
 #include "WindowManager.h"
@@ -48,8 +48,8 @@ namespace Engine
   // Global engine system instances         //
   // ======================================= */
   extern ECS::World WORLD;
-  extern ObjectFactory FACTORY;
-  extern LevelLoader LEVEL_LOADER;
+  //extern ObjectFactory FACTORY;
+  //extern LevelLoader LEVEL_LOADER;
   //extern Graphics GRAPHICS;
   extern WindowManager WINDOW;
   extern AudioManager AUDIO;

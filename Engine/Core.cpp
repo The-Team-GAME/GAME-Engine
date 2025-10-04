@@ -50,13 +50,13 @@ namespace Engine
   // ========================================================================= */
   // They are defined here and declared extern in Core.h for use throughout the engine.
   ECS::World WORLD{};
-  ObjectFactory FACTORY{ &WORLD };
+  //ObjectFactory FACTORY{ &WORLD };
 
   WindowManager WINDOW;
 
   //Graphics GRAPHICS;
 
-  LevelLoader LEVEL_LOADER{ &WORLD, &FACTORY };
+  //LevelLoader LEVEL_LOADER{ &WORLD, &FACTORY };
 
   AudioManager AUDIO{};
 

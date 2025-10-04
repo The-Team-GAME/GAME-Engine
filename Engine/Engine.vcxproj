@@ -115,7 +115,6 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="Graphics\Shader.cpp" />
     <ClCompile Include="ImGuiManager.cpp" />
     <ClCompile Include="InputManager.cpp" />
-    <ClCompile Include="LevelLoader.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="FileHandler.cpp" />
     <ClCompile Include="Perf.cpp" />
@@ -164,8 +163,6 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="HealthSystem.h" />
     <ClInclude Include="ImGuiManager.h" />
     <ClInclude Include="InputManager.h" />
-    <ClInclude Include="Level.h" />
-    <ClInclude Include="LevelLoader.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="MovementSystem.h" />
     <ClInclude Include="Perf.h" />
