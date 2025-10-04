@@ -191,8 +191,8 @@ namespace Engine
       EntityEditorPanel();
       //CameraPanel();
       // start of draw stuff
-      WORLD.draw();
       StateManager::get_current_state()->draw();
+      WORLD.draw();
       //GRAPHICS.end_frame();
 
       // end of draw stuff
