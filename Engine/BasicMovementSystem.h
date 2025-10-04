@@ -40,7 +40,7 @@ public:
     auto* pos = entity.get_component<Components::Position>();
     auto* vel = entity.get_component<Components::Velocity>();
 
-    pos->X() += vel->X() * Engine::Time::get_fixed_dt();
-    pos->Y() += vel->Y() * Engine::Time::get_fixed_dt();
+    pos->x += vel->x * Engine::Time::get_fixed_dt();
+    pos->y += vel->y * Engine::Time::get_fixed_dt();
   }
 };

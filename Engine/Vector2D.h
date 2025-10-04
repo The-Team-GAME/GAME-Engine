@@ -23,9 +23,8 @@ namespace Math {
 
   class Vec2D {
   public:
-    f32 x, y;
 
-  public:
+    f32 x, y;
 
     Vec2D(f32 x_vec = 0, f32 y_vec = 0) : x{ x_vec }, y{ y_vec } {}; //(default)ctor
     Vec2D(Vec2D const&) = default; //copy constructor

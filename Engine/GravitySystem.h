@@ -37,6 +37,6 @@ public:
 
     // Apply downward acceleration
     if (rb->isGrounded) return; // No gravity if grounded
-    rb->acceleration.Y() += g->strength * 12000 * dt;
+    rb->acceleration.y += g->strength * 12000 * dt;
   }
 };

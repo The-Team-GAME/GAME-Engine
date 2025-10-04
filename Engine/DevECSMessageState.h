@@ -53,7 +53,7 @@ public:
       .add_component<Components::Size>(10.0f, 10.0f)
       .add_component<Components::Color>(0.0f, 1.0f, 1.0f, 1.0f); // Make player cyan
 
-    player.get_component<Components::RigidBody>()->velocity.X() = 100.0f; // Give the player an initial horizontal velocity
+    player.get_component<Components::RigidBody>()->velocity.x = 100.0f; // Give the player an initial horizontal velocity
 
     // Create an enemy entity to act as a template
     auto enemy = Engine::WORLD.create_entity()
@@ -73,8 +73,8 @@ public:
       // Get the position component of the clone and move it somewhere else
       auto* clonedPos = clonedEnemy.get_component<Components::Position>();
       if (clonedPos) {
-        clonedPos->X() = 200.0f;
-        clonedPos->Y() = 150.0f;
+        clonedPos->x = 200.0f;
+        clonedPos->y = 150.0f;
       }
     }
     // --- End of Demonstration ---

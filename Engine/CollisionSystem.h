@@ -37,7 +37,7 @@ public:
 
     const f32 dt = Engine::Time::get_fixed_dt();
     f32 foot_offset = 0.01f;
-    Math::Vec2D foot_pos = { posA->X(), posA->Y() - colA->halfHeight - foot_offset };
+    Math::Vec2D foot_pos = { posA->x, posA->y - colA->halfHeight - foot_offset };
 
     for (ECS::Entity other_entity : world->get_entities_with<Components::Collider>()) {
       auto other_id = other_entity.get_id();
@@ -86,11 +86,11 @@ private:
     const Components::Position& b_pos, const Components::Collider& b_col,
     Math::Vec2D& out_overlap)
   {
-    f32 dx = b_pos.X() - a_pos.X();
+    f32 dx = b_pos.x - a_pos.x;
     f32 px = (a_col.halfWidth + b_col.halfWidth) - std::abs(dx);
     if (px <= 0) return false;
 
-    f32 dy = b_pos.Y() - a_pos.Y();
+    f32 dy = b_pos.y - a_pos.y;
     f32 py = (a_col.halfHeight + b_col.halfHeight) - std::abs(dy);
     if (py <= 0) return false;
 
@@ -114,8 +114,8 @@ private:
     const Components::Position& b_pos, const Math::Vec2D& b_vel, const Components::Collider& b_col,
     f32 dt, f32& first_time_of_collision, Math::Vec2D& normal)
   {
-    f32 vx = a_rb.velocity.X() - b_vel.X();
-    f32 vy = a_rb.velocity.Y() - b_vel.Y();
+    f32 vx = a_rb.velocity.x - b_vel.x;
+    f32 vy = a_rb.velocity.y - b_vel.y;
 
     f32 t_first = 0.0f;
     f32 t_last = dt;
@@ -137,16 +137,16 @@ private:
       return true;
       };
 
-    if (!processAxis(a_pos.X() - a_col.halfWidth, a_pos.X() + a_col.halfWidth, b_pos.X() - b_col.halfWidth, b_pos.X() + b_col.halfWidth, vx))
+    if (!processAxis(a_pos.x - a_col.halfWidth, a_pos.x + a_col.halfWidth, b_pos.x - b_col.halfWidth, b_pos.x + b_col.halfWidth, vx))
       return false;
-    if (!processAxis(a_pos.Y() - a_col.halfHeight, a_pos.Y() + a_col.halfHeight, b_pos.Y() - b_col.halfHeight, b_pos.Y() + b_col.halfHeight, vy))
+    if (!processAxis(a_pos.y - a_col.halfHeight, a_pos.y + a_col.halfHeight, b_pos.y - b_col.halfHeight, b_pos.y + b_col.halfHeight, vy))
       return false;
 
     first_time_of_collision = t_first;
     if (t_first > t_last) return false;
 
-    f32 x_entry = (vx != 0) ? ((vx > 0 ? (b_pos.X() - b_col.halfWidth - (a_pos.X() + a_col.halfWidth)) : (b_pos.X() + b_col.halfWidth - (a_pos.X() - a_col.halfWidth))) / vx) : -INFINITY;
-    f32 y_entry = (vy != 0) ? ((vy > 0 ? (b_pos.Y() - b_col.halfHeight - (a_pos.Y() + a_col.halfHeight)) : (b_pos.Y() + b_col.halfHeight - (a_pos.Y() - a_col.halfHeight))) / vy) : -INFINITY;
+    f32 x_entry = (vx != 0) ? ((vx > 0 ? (b_pos.x - b_col.halfWidth - (a_pos.x + a_col.halfWidth)) : (b_pos.x + b_col.halfWidth - (a_pos.x - a_col.halfWidth))) / vx) : -INFINITY;
+    f32 y_entry = (vy != 0) ? ((vy > 0 ? (b_pos.y - b_col.halfHeight - (a_pos.y + a_col.halfHeight)) : (b_pos.y + b_col.halfHeight - (a_pos.y - a_col.halfHeight))) / vy) : -INFINITY;
 
     normal = (x_entry > y_entry) ? (vx > 0 ? Math::Vec2D{ -1, 0 } : Math::Vec2D{ 1, 0 })
       : (vy > 0 ? Math::Vec2D{ 0, -1 } : Math::Vec2D{ 0, 1 });

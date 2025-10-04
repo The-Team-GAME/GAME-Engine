@@ -40,7 +40,7 @@ public:
     // --- Handle Dynamic Collisions (Swept AABB) ---
     if (col->dynamicCollisionTime >= 0.0f && col->dynamicCollisionTime <= dt) {
       Math::Vec2D normal = col->dynamicNormal;
-      f32 dot_product = rb->velocity.X() * normal.X() + rb->velocity.Y() * normal.Y();
+      f32 dot_product = rb->velocity.x * normal.x + rb->velocity.y * normal.y;
 
       // Only resolve if moving into the collision
       if (dot_product < 0.0f) {
@@ -48,23 +48,23 @@ public:
         // MovementSystem already moved us the full dt, so we need to undo that
         // and move only to the collision time
         f32 overshoot = dt - col->dynamicCollisionTime;
-        pos->X() -= rb->velocity.X() * overshoot;
-        pos->Y() -= rb->velocity.Y() * overshoot;
+        pos->x -= rb->velocity.x * overshoot;
+        pos->y -= rb->velocity.y * overshoot;
 
         // Add small separation to prevent sinking
         const f32 separation_bias = 0.1f;
-        pos->X() += normal.X() * separation_bias;
-        pos->Y() += normal.Y() * separation_bias;
+        pos->x += normal.x * separation_bias;
+        pos->y += normal.y * separation_bias;
 
         // Reflect velocity along collision normal (with restitution)
-        rb->velocity.X() -= (1.0f + rb->restitution) * dot_product * normal.X();
-        rb->velocity.Y() -= (1.0f + rb->restitution) * dot_product * normal.Y();
+        rb->velocity.x -= (1.0f + rb->restitution) * dot_product * normal.x;
+        rb->velocity.y -= (1.0f + rb->restitution) * dot_product * normal.y;
 
         // Apply friction on tangent
-        Math::Vec2D tangent = { -normal.Y(), normal.X() };
-        f32 tangent_vel = rb->velocity.X() * tangent.X() + rb->velocity.Y() * tangent.Y();
-        rb->velocity.X() -= tangent_vel * rb->friction * tangent.X();
-        rb->velocity.Y() -= tangent_vel * rb->friction * tangent.Y();
+        Math::Vec2D tangent = { -normal.y, normal.x };
+        f32 tangent_vel = rb->velocity.x * tangent.x + rb->velocity.y * tangent.y;
+        rb->velocity.x -= tangent_vel * rb->friction * tangent.x;
+        rb->velocity.y -= tangent_vel * rb->friction * tangent.y;
       }
 
       // Reset collision data
@@ -75,21 +75,21 @@ public:
     }
 
     // --- Handle Static Collisions (Penetration Resolution) ---
-    if (col->penetration.X() != 0.0f || col->penetration.Y() != 0.0f) {
+    if (col->penetration.x != 0.0f || col->penetration.y != 0.0f) {
       // Ignore very small overlaps
-      col->penetration.X() = (fabs(col->penetration.X()) < 3.f) ? 0.0f : col->penetration.X();
-      col->penetration.Y() = (fabs(col->penetration.Y()) < 3.f) ? 0.0f : col->penetration.Y();
+      col->penetration.x = (fabs(col->penetration.x) < 3.f) ? 0.0f : col->penetration.x;
+      col->penetration.y = (fabs(col->penetration.y) < 3.f) ? 0.0f : col->penetration.y;
 
       // Push entity out of overlap
-      pos->X() += col->penetration.X();
-      pos->Y() += col->penetration.Y();
+      pos->x += col->penetration.x;
+      pos->y += col->penetration.y;
 
       // Bounce velocity based on penetration direction
-      if (col->penetration.X() != 0.0f) {
-        rb->velocity.X() = -rb->velocity.X() * rb->restitution;
+      if (col->penetration.x != 0.0f) {
+        rb->velocity.x = -rb->velocity.x * rb->restitution;
       }
-      if (col->penetration.Y() != 0.0f) {
-        rb->velocity.Y() = -rb->velocity.Y() * rb->restitution;
+      if (col->penetration.y != 0.0f) {
+        rb->velocity.y = -rb->velocity.y * rb->restitution;
       }
 
       col->penetration = { 0.0f, 0.0f };

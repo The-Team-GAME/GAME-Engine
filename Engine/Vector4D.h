@@ -23,8 +23,8 @@ namespace Math {
 
   class Vec4D {
   public:
+
     f32 x, y, z, w;
-  public:
 
     /*=================================================================================
     Function Brief:

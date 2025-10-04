@@ -76,11 +76,11 @@ namespace Math {
 
   f32 dot_product(Vec2D const& lhs, Vec2D const& rhs)
   {
-    return lhs.X() * rhs.X() + lhs.Y() * rhs.Y();
+    return lhs.x * rhs.x + lhs.y * rhs.y;
   }
   f32 cross_product(Vec2D const& lhs, Vec2D const& rhs)
   {
-    f32 result = lhs.X() * rhs.Y() - lhs.Y() * rhs.X();
+    f32 result = lhs.x * rhs.y - lhs.y * rhs.x;
     return result < 0 ? -result : result;
   }
 
@@ -100,21 +100,21 @@ namespace Math {
   Vec2D operator/(Vec2D const& vect, f32 divisor)
   {
     Vec2D tmp{ vect };
-    tmp.X() = vect.X() / divisor;
-    tmp.Y() = vect.Y() / divisor;
+    tmp.x = vect.x / divisor;
+    tmp.y = vect.y / divisor;
     return tmp;
   }
   Vec2D operator*(Vec2D const& vect, f32 scalar)
   {
     Vec2D tmp{ vect };
-    tmp.X() = vect.X() * scalar;
-    tmp.Y() = vect.Y() * scalar;
+    tmp.x = vect.x * scalar;
+    tmp.y = vect.y * scalar;
     return tmp;
   }
 
   std::ostream& operator<<(std::ostream& os, Vec2D const& vect)
   {
-    os << "(" << vect.X() << "," << vect.Y() << ")";
+    os << "(" << vect.x << "," << vect.y << ")";
     return os;
   }
 }

@@ -236,7 +236,7 @@ public:
       if (collectedEntity.is_valid()) {
         auto* pos = collectedEntity.get_component<Components::Position>();
         if (pos) {
-          pos->X() = static_cast<f32>(rand() % 1400 + 100);
+          pos->x = static_cast<f32>(rand() % 1400 + 100);
           675.0f; // Keep y position constant
         }
       }
@@ -296,12 +296,12 @@ public:
     // Apply scale to flip sprite horizontally
     auto* scale = player.get_component<Components::Scale>();
     if (scale) {
-      scale->X() = facing_right ? 2.0f : -2.0f;
-      scale->Y() = 2.0f;
+      scale->x = facing_right ? 2.0f : -2.0f;
+      scale->y = 2.0f;
     }
 
-    player_vel->X() = new_vel_x;
-    player_vel->Y() = new_vel_y;
+    player_vel->x = new_vel_x;
+    player_vel->y = new_vel_y;
 
     // Only change to walk/idle if not currently punching
     if (player_sprite->spriteSheetId != player_punch_sprite_sheet_id) {

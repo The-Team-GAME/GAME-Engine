@@ -145,7 +145,7 @@ void RectPainterState::handleMouse()
         if (pointInRect(mouse, minP, maxP)) {
           dragMode_ = DragMode::Moving;
           auto* pos = Engine::WORLD.get_component<Components::Position>(rects_[selectedIndex_]);
-          moveGrabOffset_ = mouse - glm::vec2{ pos->X(), pos->Y() };
+          moveGrabOffset_ = mouse - glm::vec2{ pos->x, pos->y };
           prevMouse_ = mouse;
           return;
         }
@@ -161,7 +161,7 @@ void RectPainterState::handleMouse()
       if (getBounds(rects_[selectedIndex_], minP, maxP) && pointInRect(mouse, minP, maxP)) {
         dragMode_ = DragMode::Moving;
         auto* pos = Engine::WORLD.get_component<Components::Position>(rects_[selectedIndex_]);
-        moveGrabOffset_ = mouse - glm::vec2{ pos->X(), pos->Y() };
+        moveGrabOffset_ = mouse - glm::vec2{ pos->x, pos->y };
       }
       else {
         dragMode_ = DragMode::None;
@@ -186,8 +186,8 @@ void RectPainterState::handleMouse()
       if (auto* pos = Engine::WORLD.get_component<Components::Position>(id)) {
         glm::vec2 newCenter = mouse - moveGrabOffset_;
         if (snap) newCenter = snapToGrid(newCenter, snapGridPx_);
-        pos->X() = newCenter.x;
-        pos->Y() = newCenter.y;
+        pos->x = newCenter.x;
+        pos->y = newCenter.y;
       }
     }
     else if (dragMode_ == DragMode::Resizing && selectedIndex_ >= 0) {
@@ -195,8 +195,8 @@ void RectPainterState::handleMouse()
       auto* pos = Engine::WORLD.get_component<Components::Position>(id);
       auto* size = Engine::WORLD.get_component<Components::Size>(id);
       if (pos && size) {
-        glm::vec2 minP{ pos->X() - size->width * 0.5f,  pos->Y() - size->height * 0.5f };
-        glm::vec2 maxP{ pos->X() + size->width * 0.5f,  pos->Y() + size->height * 0.5f };
+        glm::vec2 minP{ pos->x - size->width * 0.5f,  pos->y - size->height * 0.5f };
+        glm::vec2 maxP{ pos->x + size->width * 0.5f,  pos->y + size->height * 0.5f };
 
         glm::vec2 m = mouse;
         if (snap) m = snapToGrid(m, snapGridPx_);
@@ -208,19 +208,19 @@ void RectPainterState::handleMouse()
         if (resize_.b) maxP.y = std::max(mouse.y, minP.y + minRectSizePx_);
 
         // Recompute center/size
-        pos->X() = (minP.x + maxP.x) * 0.5f;
-        pos->Y() = (minP.y + maxP.y) * 0.5f;
+        pos->x = (minP.x + maxP.x) * 0.5f;
+        pos->y = (minP.y + maxP.y) * 0.5f;
         size->width = std::max(minRectSizePx_, maxP.x - minP.x);
         size->height = std::max(minRectSizePx_, maxP.y - minP.y);
 
         if (snap) {
           // snap edges to keep alignment tidy
-          glm::vec2 newMin{ pos->X() - size->width * 0.5f,  pos->Y() - size->height * 0.5f };
-          glm::vec2 newMax{ pos->X() + size->width * 0.5f,  pos->Y() + size->height * 0.5f };
+          glm::vec2 newMin{ pos->x - size->width * 0.5f,  pos->y - size->height * 0.5f };
+          glm::vec2 newMax{ pos->x + size->width * 0.5f,  pos->y + size->height * 0.5f };
           newMin = snapToGrid(newMin, snapGridPx_);
           newMax = snapToGrid(newMax, snapGridPx_);
-          pos->X() = (newMin.x + newMax.x) * 0.5f;
-          pos->Y() = (newMin.y + newMax.y) * 0.5f;
+          pos->x = (newMin.x + newMax.x) * 0.5f;
+          pos->y = (newMin.y + newMax.y) * 0.5f;
           size->width = std::max(minRectSizePx_, newMax.x - newMin.x);
           size->height = std::max(minRectSizePx_, newMax.y - newMin.y);
         }
@@ -280,9 +280,9 @@ void RectPainterState::handleShortcuts()
     if (p && s && c) {
       auto e = Engine::WORLD.create_entity()
         .add_component<Components::Tag<"RectPainter">>()
-        .add_component<Components::Position>(p->X() + 10.f, p->Y() + 10.f)
+        .add_component<Components::Position>(p->x + 10.f, p->y + 10.f)
         .add_component<Components::Size>(s->width, s->height)
-        .add_component<Components::Color>(c->X(), c->Y(), c->Z(), c->W());
+        .add_component<Components::Color>(c->x, c->y, c->z, c->w);
       if (col) e.add_component<Components::BasicCollider>(col->enabled, col->isTrigger);
       rects_.push_back(e.get_id());
       selectedIndex_ = (int)rects_.size() - 1;
@@ -373,8 +373,8 @@ bool RectPainterState::getBounds(EntityID id, glm::vec2& minP, glm::vec2& maxP) 
   auto* pos = Engine::WORLD.get_component<Components::Position>(id);
   auto* size = Engine::WORLD.get_component<Components::Size>(id);
   if (!pos || !size) return false;
-  minP = { pos->X() - size->width * 0.5f,  pos->Y() - size->height * 0.5f };
-  maxP = { pos->X() + size->width * 0.5f,  pos->Y() + size->height * 0.5f };
+  minP = { pos->x - size->width * 0.5f,  pos->y - size->height * 0.5f };
+  maxP = { pos->x + size->width * 0.5f,  pos->y + size->height * 0.5f };
   return true;
 }
 
@@ -456,9 +456,9 @@ void RectPainterState::drawImGui()
       if (p && s && c) {
         auto e = Engine::WORLD.create_entity()
           .add_component<Components::Tag<"RectPainter">>()
-          .add_component<Components::Position>(p->X() + 12.f, p->Y() + 12.f)
+          .add_component<Components::Position>(p->x + 12.f, p->y + 12.f)
           .add_component<Components::Size>(s->width, s->height)
-          .add_component<Components::Color>(c->X(), c->Y(), c->Z(), c->W());
+          .add_component<Components::Color>(c->x, c->y, c->z, c->w);
         if (col) e.add_component<Components::BasicCollider>(col->enabled, col->isTrigger);
         rects_.push_back(e.get_id());
         selectedIndex_ = (int)rects_.size() - 1;
@@ -473,7 +473,7 @@ void RectPainterState::drawImGui()
         if (!pos || !size) continue;
         char label[160];
         std::snprintf(label, sizeof(label), "#%d  pos(%.0f,%.0f) size(%.0f,%.0f)",
-          i, pos->X(), pos->Y(), size->width, size->height);
+          i, pos->x, pos->y, size->width, size->height);
         bool selected = (selectedIndex_ == i);
         if (ImGui::Selectable(label, selected)) selectedIndex_ = i;
       }
@@ -490,9 +490,9 @@ void RectPainterState::drawImGui()
       //auto* col = Engine::WORLD.get_component<Components::BasicCollider>(id);
 
       if (pos && size && color) {
-        ImGui::DragFloat2("Position (center)", &pos->X(), 1.0f);
+        ImGui::DragFloat2("Position (center)", &pos->x, 1.0f);
         ImGui::DragFloat2("Size", &size->width, 1.0f, minRectSizePx_, 10000.0f);
-        ImGui::ColorEdit4("Color", &color->X(), ImGuiColorEditFlags_AlphaBar);
+        ImGui::ColorEdit4("Color", &color->x, ImGuiColorEditFlags_AlphaBar);
 
         // Keep size invariant even if user drags below min
         glm::vec2 s{ size->width, size->height };
@@ -517,10 +517,10 @@ void RectPainterState::drawImGui()
 
         ImGui::SameLine();
         if (ImGui::Button("Apply Default Color")) {
-          color->X() = currentColor_.x;
-          color->Y() = currentColor_.y;
-          color->Z() = currentColor_.z;
-          color->W() = currentColor_.w;
+          color->x = currentColor_.x;
+          color->y = currentColor_.y;
+          color->z = currentColor_.z;
+          color->w = currentColor_.w;
         }
 
         if (ImGui::Button("Send to Back [")) {
