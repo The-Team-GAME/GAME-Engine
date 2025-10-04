@@ -4,6 +4,7 @@
 #include <memory> 
 #include <unordered_map>
 #include <array>
+#include <string>
 
 namespace Engine {
   namespace Graphics
@@ -36,6 +37,37 @@ namespace Engine {
       unsigned int id; // OpenGL handle
       int width;
       int height;
+
+      TextureData(std::string path);
+      {
+        // Load image using stb_image
+        int channels;
+        unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 4);
+        if (!data)
+        {
+          std::cerr << "Failed to load texture: " << path << std::endl;
+          id = 0;
+          width = height = 0;
+          return;
+        }
+
+        // Generate OpenGL texture
+        glGenTextures(1, &id);
+        glBindTexture(GL_TEXTURE_2D, id);
+
+        // Set texture parameters
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        // Upload texture data to GPU
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        // Free image memory on CPU
+        stbi_image_free(data);
+      }
 
       // Destructor to cleanup OpenGL texture
       ~TextureData()
