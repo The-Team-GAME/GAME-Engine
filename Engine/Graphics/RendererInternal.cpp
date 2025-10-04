@@ -93,6 +93,8 @@ Engine::Graphics::TextureData::~TextureData()
 Engine::Graphics::FontData::FontData(const std::string& path, unsigned int size)
   : font_size(size), baseline(0.0f)
 {
+  constexpr int PADDING = 1; // Padding between glyphs in the atlas
+
   // Load font face
   FT_Face face;
   if (FT_New_Face(get_freetype_library(), path.c_str(), 0, &face))
@@ -111,7 +113,7 @@ Engine::Graphics::FontData::FontData(const std::string& path, unsigned int size)
   {
     if (FT_Load_Char(face, c, FT_LOAD_RENDER))
       continue;
-    atlas_width += face->glyph->bitmap.width + 1; // +1 for padding
+    atlas_width += face->glyph->bitmap.width + PADDING;
     atlas_height = std::max(atlas_height, static_cast<int>(face->glyph->bitmap.rows));
   }
 
@@ -176,7 +178,7 @@ Engine::Graphics::FontData::FontData(const std::string& path, unsigned int size)
     glyphs.insert(std::pair<char, Glyph>(c, g));
     baseline = std::max(baseline, static_cast<f32>(g.bearing.y));
 
-    currentX += face->glyph->bitmap.width + 1; // +1 for padding
+    currentX += face->glyph->bitmap.width + PADDING;
   }
 
   // Upload the complete RGBA atlas to GPU
