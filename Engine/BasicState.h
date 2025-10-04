@@ -29,15 +29,15 @@ private:
   ECS::Entity rect_bottom_left;
   ECS::Entity rect_top_right;
   ECS::Entity rect_center;
-  
+
   ECS::Entity text_hello_1;
   ECS::Entity text_hello_2;
   ECS::Entity text_instruction;
-  
+
   // Font resources
   Engine::Graphics::Font font_roboto;
   Engine::Graphics::Font font_playfair;
-  
+
   f32 rotation = 0.f;
 
 public:

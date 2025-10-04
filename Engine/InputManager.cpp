@@ -123,6 +123,7 @@ namespace Engine
     glfwGetCursorPos(window, &xpos, &ypos);
 
     // Convert screen coordinates to world coordinates using Graphics system
-    return Engine::GRAPHICS.screen_to_world(static_cast<f32>(xpos), static_cast<f32>(ypos));
+    //return Engine::GRAPHICS.screen_to_world(static_cast<f32>(xpos), static_cast<f32>(ypos)); // TODO: re-enable when world coord is implemented in new Graphics
+    return glm::vec2(static_cast<f32>(xpos), static_cast<f32>(ypos));
   }
 }

@@ -24,7 +24,7 @@
 #include "ImGuiManager.h"
 #include "WindowManager.h"
 #include "AudioManager.h"
-#include "ResourceManager.h"
+//#include "ResourceManager.h"
 #include "Perf.h"
 
 namespace Engine
@@ -53,6 +53,6 @@ namespace Engine
   //extern Graphics GRAPHICS;
   extern WindowManager WINDOW;
   extern AudioManager AUDIO;
-  extern ResourceManager RESOURCES;
+  //extern ResourceManager RESOURCES;
   extern Perf PERFORMANCE;
 }

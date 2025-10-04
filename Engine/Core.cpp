@@ -25,12 +25,14 @@
 #include "Time.h"
 #include "PerformanceViewer.h"
 #include "WindowManager.h"
-#include "ResourceManagerPanel.h"
+//#include "ResourceManagerPanel.h"
 #include "EntityEditorPanel.h"
-#include "CameraPanel.h"
+//#include "CameraPanel.h"
 #include "Config.h"
 #include "Perf.h"
-#include "ShowcaseState.h"
+#include "InputManager.h"
+#include "BasicEvents.h"
+//#include "ShowcaseState.h"
 
 namespace {
   f64 accumulator{};
@@ -58,7 +60,7 @@ namespace Engine
 
   AudioManager AUDIO{};
 
-  ResourceManager RESOURCES{};
+  //ResourceManager RESOURCES{};
 
   Perf PERFORMANCE{};
 
@@ -94,11 +96,11 @@ namespace Engine
 
     // Register the graphics resize system
     WORLD.add_event_listener<WindowResizeEvent>([](const WindowResizeEvent& event) {
-      GRAPHICS.set_viewport(event.width, event.height);
+      //GRAPHICS.set_viewport(event.width, event.height); //TODO: bring back when implmemented in new graphics
       }
     );
 
-    StateManager::init(ShowcaseState::get()); // TODO: to be removed
+    StateManager::init(BasicState::get()); // TODO: to be removed
   }
 
   /*=================================================================================
@@ -139,7 +141,7 @@ namespace Engine
       glfwPollEvents();
       AUDIO.update();
       ImguiMgr::begin();
-      GRAPHICS.begin_frame();
+      //GRAPHICS.begin_frame();
 
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
       while (accumulator >= Time::get_fixed_dt())
@@ -185,13 +187,13 @@ namespace Engine
       // Rendering Start ========================================
       StateChooserPanel();
       PerformanceViewerPanel();
-      ResourceManagerPanel();
+      //ResourceManagerPanel();
       EntityEditorPanel();
-      CameraPanel();
+      //CameraPanel();
       // start of draw stuff
       WORLD.draw();
       StateManager::get_current_state()->draw();
-      GRAPHICS.end_frame();
+      //GRAPHICS.end_frame();
 
       // end of draw stuff
       ImguiMgr::end();
