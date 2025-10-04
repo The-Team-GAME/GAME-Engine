@@ -50,8 +50,9 @@ public:
 
     // Check if entity has a Color component, otherwise use white
     Math::Vec4D color(255.0f, 255.0f, 255.0f, 255.0f);
-    auto* color_comp = entity.get_component<Components::Color>();
-    if (color_comp) {
+    if (entity.has_component<Components::Color>())
+    {
+      auto* color_comp = entity.get_component<Components::Color>();
       color = color_comp->color;
     }
 
