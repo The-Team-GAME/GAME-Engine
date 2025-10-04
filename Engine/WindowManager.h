@@ -7,7 +7,7 @@
 //
 // email:   chew.s@digipen.edu
 //
-// brief:   This file defines the WindowManager class which handles GLFW window
+// brief:   This file defines the WindowManager namespace which handles GLFW window
 //          creation, configuration, event callbacks, and OpenGL context management
 //          with automatic aspect ratio constraints.
 //
@@ -20,84 +20,44 @@
 #include <functional>
 #include "TypeDef.h"
 
-class WindowManager
-{
-private:
-  GLFWwindow* window;
-  s32 width = 0;
-  s32 height = 0;
-  std::string title;
+namespace Engine {
+  namespace WindowManager
+  {
+    /*=================================================================================
+    Function Brief:
+    Initializes GLFW, creates the window, sets up OpenGL context, and registers
+    event callbacks. Configures 16:9 aspect ratio constraint and disables VSync.
 
-  /* ===================== //
-  // Static Callbacks      //
-  // ===================== */
-  /*=================================================================================
-  Function Brief:
-  Static callback function for GLFW framebuffer resize events. Updates internal
-  dimensions and dispatches WindowResizeEvent to the engine.
+    Parameters:
+    width - Window width in pixels
+    height - Window height in pixels
+    title - Window title string
 
-  Parameters:
-  window - The GLFW window that was resized
-  width - New framebuffer width in pixels
-  height - New framebuffer height in pixels
-  ==================================================================================*/
-  static void framebuffer_resize_callback(GLFWwindow* window, s32 width, s32 height);
+    Where to call it:
+    Call this to create and configure the game window.
+    ==================================================================================*/
+    void init(s32 width, s32 height, const std::string& title);
 
-  /*=================================================================================
-  Function Brief:
-  Static callback function for GLFW file drop events. Dispatches FileDropEvent
-  to the engine with the paths of dropped files.
+    /*=================================================================================
+    Function Brief:
+    Destroys the GLFW window and terminates GLFW.
 
-  Parameters:
-  window - The GLFW window that received the drop
-  count - Number of files dropped
-  paths - Array of file path strings
-  ==================================================================================*/
-  static void file_drop_callback(GLFWwindow* window, s32 count, const char** paths);
+    Where to call it:
+    Call this during engine shutdown to clean up window resources.
+    ==================================================================================*/
+    void shutdown();
 
-public:
-  /*=================================================================================
-  Function Brief:
-  Constructs a new WindowManager instance with null window pointer.
-  ==================================================================================*/
-  WindowManager();
+    /* ===================== //
+    // Accessors             //
+    // ===================== */
+    GLFWwindow* get_window();
+    s32 get_width();
+    s32 get_height();
 
-  /*=================================================================================
-  Function Brief:
-  Initializes GLFW, creates the window, sets up OpenGL context, and registers
-  event callbacks. Configures 16:9 aspect ratio constraint and disables VSync.
-
-  Where to call it:
-  Call this after set_params() to create and configure the game window.
-  ==================================================================================*/
-  void window_init();
-
-  /*=================================================================================
-  Function Brief:
-  Sets the window parameters including dimensions and title.
-
-  Parameters:
-  width - Window width in pixels
-  height - Window height in pixels
-  win_name - Window title string
-
-  Where to call it:
-  Call this before window_init() to configure window properties.
-  ==================================================================================*/
-  void set_params(s32 width, s32 height, std::string win_name);
-
-  /*=================================================================================
-  Function Brief:
-  Destructor that destroys the GLFW window and terminates GLFW.
-  ==================================================================================*/
-  ~WindowManager();
-
-  /* ===================== //
-  // Accessors             //
-  // ===================== */
-  GLFWwindow* get_window() const { return window; }
-  s32 get_width() const { return width; }
-  s32 get_height() const { return height; }
-
-};
-
+    /* ===================== //
+    // Internal Callbacks    //
+    // ===================== */
+    void framebuffer_resize_callback(GLFWwindow* window, s32 width, s32 height);
+    void file_drop_callback(GLFWwindow* window, s32 count, const char** paths);
+  }
+}

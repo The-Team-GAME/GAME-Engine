@@ -49,7 +49,7 @@ namespace Engine
   {
     Engine::PERFORMANCE.start("Input");
 
-    GLFWwindow* window = Engine::WINDOW.get_window(); //TODO: pass window as parameter in constructor
+    GLFWwindow* window = Engine::WindowManager::get_window(); //TODO: pass window as parameter in constructor
 
     // Update previous states
     previousKeys = currentKeys;
@@ -118,7 +118,7 @@ namespace Engine
   glm::vec2 Input::GetMouseWorldPosition()
   {
     // Get the raw screen coordinates
-    GLFWwindow* window = Engine::WINDOW.get_window();
+    GLFWwindow* window = Engine::WindowManager::get_window();
     f64 xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
 

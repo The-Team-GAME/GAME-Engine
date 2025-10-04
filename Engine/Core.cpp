@@ -52,8 +52,6 @@ namespace Engine
   ECS::World WORLD{};
   //ObjectFactory FACTORY{ &WORLD };
 
-  WindowManager WINDOW;
-
   //Graphics GRAPHICS;
 
   //LevelLoader LEVEL_LOADER{ &WORLD, &FACTORY };
@@ -75,8 +73,7 @@ namespace Engine
     s32 win_width = Config::get_win_width();
     s32 win_height = Config::get_win_height();
 
-    WINDOW.set_params(win_width, win_height, "Monkey Stole My GPA");
-    WINDOW.window_init();
+    WindowManager::init(win_width, win_height, "Monkey Stole My GPA");
 
     ImguiMgr::imgui_init();
 
@@ -114,7 +111,7 @@ namespace Engine
   ==================================================================================*/
   void Core::run()
   {
-    while (!glfwWindowShouldClose(WINDOW.get_window()) && isRunning)
+    while (!glfwWindowShouldClose(WindowManager::get_window()) && isRunning)
     {
       // START OF TIME UPDATES ==============================================
       // Updates the real_dt and increments the accumulator
@@ -197,7 +194,7 @@ namespace Engine
 
       // end of draw stuff
       ImguiMgr::end();
-      glfwSwapBuffers(WINDOW.get_window());
+      glfwSwapBuffers(WindowManager::get_window());
       // Rendering End ==========================================
     }
   }
@@ -220,6 +217,9 @@ namespace Engine
     // Cleanup graphics resources
     Engine::Resources::exit();
     Engine::Graphics::exit();
+
+    // Cleanup window
+    WindowManager::shutdown();
   }
 
 }
