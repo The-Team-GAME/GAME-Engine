@@ -16,7 +16,7 @@
 
 #include "imgui.h"
 #include "StateManager.h"
-#include "BasicState.h"
+//#include "BasicState.h"
 //#include "PhysicsTestState.h"
 //#include "SpriteState.h"
 //#include "GameObjectState.h"
@@ -74,7 +74,7 @@ inline void StateChooserPanel()
   // 
    if (ImGui::Button("BasicState"))
    {
-     Engine::StateManager::change_state(BasicState::get());
+     //Engine::StateManager::change_state(BasicState::get());
    }
   // if (ImGui::Button("SpriteState"))
   // {
