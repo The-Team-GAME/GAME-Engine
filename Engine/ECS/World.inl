@@ -64,7 +64,10 @@ namespace ECS
     // The assert is no longer strictly necessary as get_component_array now ensures creation.
     // assert(array && "Component not registered");
 
-    array->add_component(entity, T{ std::forward<Args>(args)... });
+
+    // array->add_component(entity, T{ std::forward<Args>(args)... });
+    // Use parentheses instead of braces to allow implicit conversions
+    array->add_component(entity, T(std::forward<Args>(args)...));
     entity_signatures[entity].set(typeId);
     entity_component_changed(entity);
   }
