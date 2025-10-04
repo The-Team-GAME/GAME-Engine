@@ -164,20 +164,8 @@ void BasicState::draw()
   glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 
-  // Note: For circles and lines, we would need to either:
-  // 1. Create separate systems for them
-  // 2. Or draw them directly here using the renderer
-
-  // For now, we'll draw them directly using the low-level renderer
-  // TODO: Create CircleRenderSystem and LineRenderSystem for ECS integration
-
-  // Get unit rect texture for drawing shapes
   auto unit_rect = Engine::Resources::get_unit_rect_texture();
 
-  // Draw circles and lines manually for now
-  // (These would ideally be ECS entities with their own components and systems)
-
-  // Cyan circle at (400, 300) - approximate with a small square
   Engine::Graphics::draw_texture(
     unit_rect,
     Math::Vec2D(400.0f - 25.0f, 300.0f - 25.0f),
@@ -186,30 +174,7 @@ void BasicState::draw()
     Math::Vec4D(0.0f, 255.0f, 255.0f, 255.0f)
   );
 
-  // White lines - approximate with thin rectangles
-  // Line from (200, 200) to (600, 400)
-  float line1_length = std::sqrt(std::pow(600.0f - 200.0f, 2) + std::pow(400.0f - 200.0f, 2));
-  float line1_angle = std::atan2(400.0f - 200.0f, 600.0f - 200.0f) * 180.0f / 3.14159f;
-  Engine::Graphics::draw_texture(
-    unit_rect,
-    Math::Vec2D(200.0f, 200.0f),
-    Math::Vec2D(line1_length, 5.0f),
-    line1_angle,
-    Math::Vec4D(255.0f, 255.0f, 255.0f, 255.0f)
-  );
 
-  // Line from (800, 200) to (600, 400)
-  float line2_length = std::sqrt(std::pow(600.0f - 800.0f, 2) + std::pow(400.0f - 200.0f, 2));
-  float line2_angle = std::atan2(400.0f - 200.0f, 600.0f - 800.0f) * 180.0f / 3.14159f;
-  Engine::Graphics::draw_texture(
-    unit_rect,
-    Math::Vec2D(800.0f, 200.0f),
-    Math::Vec2D(line2_length, 1.0f),
-    line2_angle,
-    Math::Vec4D(255.0f, 255.0f, 255.0f, 255.0f)
-  );
-
-  // ECS systems will handle drawing the rectangles and text
 }
 
 void BasicState::free()

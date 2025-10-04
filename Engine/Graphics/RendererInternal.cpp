@@ -91,14 +91,14 @@ Engine::Graphics::TextureData::~TextureData()
 
 // FontData constructor
 Engine::Graphics::FontData::FontData(const std::string& path, unsigned int size)
+  : font_size(size), baseline(0.0f)
 {
-  // FreeType should already be initialized
-
   // Load font face
   FT_Face face;
   if (FT_New_Face(get_freetype_library(), path.c_str(), 0, &face))
   {
-    Log::warning("ERROR::FREETYPE: Failed to load font: " + path);
+    Log::error("ERROR::FREETYPE: Failed to load font: " + path);
+    return;
   }
 
   FT_Set_Pixel_Sizes(face, 0, size);
@@ -118,19 +118,16 @@ Engine::Graphics::FontData::FontData(const std::string& path, unsigned int size)
   // Create RGBA atlas data
   std::vector<unsigned char> atlas_data(atlas_width * atlas_height * 4, 0);
 
-  // Create atlas texture
+  // Generate and configure OpenGL texture
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-  u32 atlas_texture;
-  glGenTextures(1, &atlas_texture);
-  glBindTexture(GL_TEXTURE_2D, atlas_texture);
+  glGenTextures(1, &texture_atlas.id);
+  glBindTexture(GL_TEXTURE_2D, texture_atlas.id);
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  font_size = size;
-  baseline = 0.0f;
   texture_atlas.width = atlas_width;
   texture_atlas.height = atlas_height;
 
@@ -170,7 +167,7 @@ Engine::Graphics::FontData::FontData(const std::string& path, unsigned int size)
 
     // Store glyph info
     Glyph g = {
-        { glm::vec2(x0, y0), glm::vec2(x1, y0), glm::vec2(x1, y1), glm::vec2(x0, y1) }, // UV coords
+        { glm::vec2(x0, y1), glm::vec2(x1, y1), glm::vec2(x1, y0), glm::vec2(x0, y0) }, // UV coords (bottom-left, bottom-right, top-right, top-left)
         glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
         glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
         static_cast<u32>(face->glyph->advance.x)
@@ -187,4 +184,6 @@ Engine::Graphics::FontData::FontData(const std::string& path, unsigned int size)
 
   FT_Done_Face(face);
   glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+
+  Log::info("Font atlas created: " + std::to_string(atlas_width) + "x" + std::to_string(atlas_height) + " with " + std::to_string(glyphs.size()) + " glyphs");
 }
