@@ -53,13 +53,12 @@ namespace Engine {
       shader->set_int("u_texture", 0);
 
       // Create transformation matrix
+      // Position is now treated as the center of the object
       glm::mat4 model = glm::mat4(1.0f);
       model = glm::translate(model, glm::vec3(position.x, position.y, 0.0f));
 
       if (rotation != 0.0f) {
-        model = glm::translate(model, glm::vec3(size.x * 0.5f, size.y * 0.5f, 0.0f));
         model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-        model = glm::translate(model, glm::vec3(-size.x * 0.5f, -size.y * 0.5f, 0.0f));
       }
 
       model = glm::scale(model, glm::vec3(size.x, size.y, 1.0f));
@@ -77,23 +76,24 @@ namespace Engine {
       // Convert color from 0-255 to 0-1
       glm::vec4 normalized_color(color.x / 255.0f, color.y / 255.0f, color.z / 255.0f, color.w / 255.0f);
 
+      // Vertices are now centered around the origin (0, 0)
       // Bottom-left
-      vertices[0].position = glm::vec2(0.0f, 1.0f);
+      vertices[0].position = glm::vec2(-0.5f, 0.5f);
       vertices[0].texCoord = tex_coords[0];
       vertices[0].color = normalized_color;
 
       // Bottom-right
-      vertices[1].position = glm::vec2(1.0f, 1.0f);
+      vertices[1].position = glm::vec2(0.5f, 0.5f);
       vertices[1].texCoord = tex_coords[1];
       vertices[1].color = normalized_color;
 
       // Top-right
-      vertices[2].position = glm::vec2(1.0f, 0.0f);
+      vertices[2].position = glm::vec2(0.5f, -0.5f);
       vertices[2].texCoord = tex_coords[2];
       vertices[2].color = normalized_color;
 
       // Top-left
-      vertices[3].position = glm::vec2(0.0f, 0.0f);
+      vertices[3].position = glm::vec2(-0.5f, -0.5f);
       vertices[3].texCoord = tex_coords[3];
       vertices[3].color = normalized_color;
 
