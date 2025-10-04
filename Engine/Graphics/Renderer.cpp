@@ -1,16 +1,14 @@
 #include "Renderer.h"
+#include "Shader.h"
 #include "../Logger.h"
 #include <glm/gtc/matrix_transform.hpp>
-#include <vector>
+#include <memory>
 
 namespace Engine {
   namespace Graphics {
 
     // Shader program
-    static GLuint shader_program = 0;
-    static GLint u_projection = -1;
-    static GLint u_view = -1;
-    static GLint u_texture = -1;
+    static std::unique_ptr<Shader> shader;
 
     // Vertex Array Object and Vertex Buffer Object
     static GLuint vao = 0;
@@ -24,28 +22,9 @@ namespace Engine {
       glm::vec4 color;
     };
 
-    // Compile shader helper function
-    static GLuint compile_shader(GLenum type, const char* source) {
-      GLuint shader = glCreateShader(type);
-      glShaderSource(shader, 1, &source, nullptr);
-      glCompileShader(shader);
-
-      GLint success;
-      glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-      if (!success) {
-        char info_log[512];
-        glGetShaderInfoLog(shader, 512, nullptr, info_log);
-        Log::crash(std::string("Shader compilation failed: ") + info_log);
-        return 0;
-      }
-
-      return shader;
-    }
-
-    // Create shader program
-    static GLuint create_shader_program() {
-      // Vertex shader
-      const char* vertex_shader_source = R"(
+    bool init() {
+      // Vertex shader source
+      const std::string vertex_shader_source = R"(
         #version 330 core
         layout (location = 0) in vec2 a_position;
         layout (location = 1) in vec2 a_texCoord;
@@ -64,8 +43,8 @@ namespace Engine {
         }
       )";
 
-      // Fragment shader
-      const char* fragment_shader_source = R"(
+      // Fragment shader source
+      const std::string fragment_shader_source = R"(
         #version 330 core
         in vec2 v_texCoord;
         in vec4 v_color;
@@ -79,47 +58,13 @@ namespace Engine {
         }
       )";
 
-      GLuint vertex_shader = compile_shader(GL_VERTEX_SHADER, vertex_shader_source);
-      GLuint fragment_shader = compile_shader(GL_FRAGMENT_SHADER, fragment_shader_source);
+      // Create shader
+      shader = std::make_unique<Shader>(vertex_shader_source, fragment_shader_source);
 
-      if (vertex_shader == 0 || fragment_shader == 0) {
-        return 0;
-      }
-
-      GLuint program = glCreateProgram();
-      glAttachShader(program, vertex_shader);
-      glAttachShader(program, fragment_shader);
-      glLinkProgram(program);
-
-      GLint success;
-      glGetProgramiv(program, GL_LINK_STATUS, &success);
-      if (!success) {
-        char info_log[512];
-        glGetProgramInfoLog(program, 512, nullptr, info_log);
-        Log::crash(std::string("Shader program linking failed: ") + info_log);
-        glDeleteShader(vertex_shader);
-        glDeleteShader(fragment_shader);
-        return 0;
-      }
-
-      glDeleteShader(vertex_shader);
-      glDeleteShader(fragment_shader);
-
-      return program;
-    }
-
-    bool init() {
-      // Create shader program
-      shader_program = create_shader_program();
-      if (shader_program == 0) {
-        Log::crash("Failed to create shader program");
+      if (!shader->isValid()) {
+        Log::error("Failed to create shader");
         return false;
       }
-
-      // Get uniform locations
-      u_projection = glGetUniformLocation(shader_program, "u_projection");
-      u_view = glGetUniformLocation(shader_program, "u_view");
-      u_texture = glGetUniformLocation(shader_program, "u_texture");
 
       // Create VAO and VBO for a quad
       glGenVertexArrays(1, &vao);
@@ -176,10 +121,8 @@ namespace Engine {
         ebo = 0;
       }
 
-      if (shader_program != 0) {
-        glDeleteProgram(shader_program);
-        shader_program = 0;
-      }
+      // Delete shader
+      shader.reset();
 
       Log::info("Renderer cleaned up");
       return true;
@@ -191,13 +134,18 @@ namespace Engine {
         return;
       }
 
-      // Use shader program
-      glUseProgram(shader_program);
+      if (!shader || !shader->isValid()) {
+        Log::error("Shader is not valid");
+        return;
+      }
+
+      // Use shader
+      shader->use();
 
       // Bind texture
       glActiveTexture(GL_TEXTURE0);
       glBindTexture(GL_TEXTURE_2D, texture->id);
-      glUniform1i(u_texture, 0);
+      shader->setInt("u_texture", 0);
 
       // Create transformation matrix
       glm::mat4 model = glm::mat4(1.0f);
@@ -211,15 +159,13 @@ namespace Engine {
 
       model = glm::scale(model, glm::vec3(size.x, size.y, 1.0f));
 
-      // For now, use identity view matrix (this should be set by camera system)
+      // Set view matrix (identity for now)
       glm::mat4 view = glm::mat4(1.0f);
-      glUniformMatrix4fv(u_view, 1, GL_FALSE, &view[0][0]);
+      shader->setMat4("u_view", view);
 
-      // Set projection matrix (orthographic projection)
-      // This should ideally be set once per frame, not per draw call
-      // For now, we'll use a simple orthographic projection
+      // Set projection matrix
       glm::mat4 projection = glm::ortho(0.0f, 1920.0f, 1080.0f, 0.0f, -1.0f, 1.0f);
-      glUniformMatrix4fv(u_projection, 1, GL_FALSE, &projection[0][0]);
+      shader->setMat4("u_projection", projection);
 
       // Create quad vertices
       Vertex vertices[4];
