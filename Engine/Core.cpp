@@ -1,4 +1,3 @@
-
 //-----------------------------------------------------------------------------------
 // file:    Core.cpp
 // project: Monkey Stole My GPA
@@ -78,6 +77,16 @@ namespace Engine
     WINDOW.window_init();
 
     ImguiMgr::imgui_init();
+
+    // Initialize graphics renderer
+    if (!Engine::Graphics::init()) {
+      throw std::runtime_error("Failed to initialize graphics renderer");
+    }
+
+    // Initialize resource manager
+    if (!Engine::Resources::init()) {
+      throw std::runtime_error("Failed to initialize resource manager");
+    }
 
     GRAPHICS.set_params(win_width, win_height);
     GRAPHICS.init_graphics();
@@ -205,5 +214,10 @@ namespace Engine
     StateManager::exit(); // TODO: to be removed 
 
     WORLD.remove_event_listener<WindowResizeEvent>();
+
+    // Cleanup graphics resources
+    Engine::Resources::exit();
+    Engine::Graphics::exit();
   }
+
 }

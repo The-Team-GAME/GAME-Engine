@@ -110,10 +110,10 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="ECS\System.cpp" />
     <ClCompile Include="ECS\World.cpp" />
     <ClCompile Include="FileExplorer.cpp" />
-    <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="Graphics\Renderer.cpp" />
     <ClCompile Include="Graphics\RendererInternal.cpp" />
     <ClCompile Include="Graphics\Resource.cpp" />
+    <ClCompile Include="Graphics\Shader.cpp" />
     <ClCompile Include="ImGuiManager.cpp" />
     <ClCompile Include="RectPainterState.cpp" />
     <ClCompile Include="InputManager.cpp" />
@@ -128,7 +128,6 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="Time.cpp" />
     <ClCompile Include="Timeline.cpp" />
     <ClCompile Include="Vector2D.cpp" />
-    <ClCompile Include="Shader.cpp" />
     <ClCompile Include="StateManager.cpp" />
     <ClCompile Include="Vector3D.cpp" />
     <ClCompile Include="Vector4D.cpp" />
@@ -153,6 +152,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="GameObjectState.h" />
     <ClInclude Include="Graphics\Components.h" />
     <ClInclude Include="Graphics\Resource.h" />
+    <ClInclude Include="Graphics\Shader.h" />
     <ClInclude Include="Graphics\Systems.h" />
     <ClInclude Include="Graphics\RendererInternal.h" />
     <ClInclude Include="PhysicsTestState.h" />
@@ -165,7 +165,6 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="ECS\Types.h" />
     <ClInclude Include="ECS\World.h" />
     <ClInclude Include="EntityEditorPanel.h" />
-    <ClInclude Include="Graphics.h" />
     <ClInclude Include="GravitySystem.h" />
     <ClInclude Include="LevelLoaderTestState.h" />
     <ClInclude Include="PhysicsSystem.h" />
@@ -195,7 +194,6 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Time.h" />
     <ClInclude Include="Timeline.h" />
     <ClInclude Include="Vector2D.h" />
-    <ClInclude Include="Shader.h" />
     <ClInclude Include="SpriteState.h" />
     <ClInclude Include="StateChooser.h" />
     <ClInclude Include="StateManager.h" />
