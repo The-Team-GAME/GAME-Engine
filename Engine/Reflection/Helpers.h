@@ -25,7 +25,7 @@
 #define FIELDS_EXPAND_5(C, F1, F2, F3, F4, F5) FIELDS_EXPAND_4(C, F1, F2, F3, F4), FIELD_PAIR(C, F5)
 // Add more as needed...
 
-#define GENERATE_FIELDS(CLASS_NAME, ...)                                                     \
+#define REFLECT(CLASS_NAME, ...)                                                     \
   template <>                                                                                \
   constexpr auto reflection_fields<CLASS_NAME>()                                             \
   {                                                                                          \
@@ -33,18 +33,26 @@
                           std::make_tuple(EXPAND_FIELDS(CLASS_NAME, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__))); \
   }
 
-// Forward declaration of the reflection function template
 template <typename T>
-constexpr auto reflection_fields();
+constexpr auto reflection_fields()
+{
+}
 
 struct Person
 {
   std::string name;
   int age;
 };
+REFLECT(Person, name, age)
 
-// Generate fields OUTSIDE the struct
-GENERATE_FIELDS(Person, name, age)
+struct Book
+{
+  std::string title;
+  std::string author;
+  int pages;
+};
+REFLECT(Book, title, author, pages)
+
 
 template <typename T>
 void print_struct_fields(const T& obj)
@@ -59,23 +67,24 @@ void print_struct_fields(const T& obj)
     fields_tuple);
 }
 
-// This is not needed, just for suppressing intellisense warnings.
-template <typename T>
-constexpr auto reflection_fields()
-{
-}
+
 
 /* Example usage */
-/*
+
 int main()
 {
   Person person{ "Alice", 30 };
   Person person2{ "bobby", 23 };
+  Book book{ "1984", "George Orwell", 328 };
 
   print_struct_fields(person);
   std::cout << "\n";
+
   print_struct_fields(person2);
+  std::cout << "\n";
+
+  print_struct_fields(book);
+  std::cout << "\n";
 
   return 0;
 }
-*/
