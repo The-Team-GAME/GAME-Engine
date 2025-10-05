@@ -38,7 +38,7 @@ struct Person
 {
   std::string name;
   int age;
-  const std::string _type = "Person";
+  static constexpr const char* _type = "Person";
 };
 
 // Generate fields OUTSIDE the struct
