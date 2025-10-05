@@ -32,11 +32,11 @@ namespace ECS {
   /* =================== //
   // Constants           //
   // =================== */
-  constexpr EntityID INVALID_ENTITY = 0;
-  constexpr ComponentTypeID INVALID_COMPONENT_TYPE = 0;
-  constexpr EventTypeID INVALID_EVENT_TYPE = 0;
-  constexpr size_t MAX_COMPONENTS = 64;
-  constexpr size_t MAX_EVENTS = 64;
+  inline constexpr EntityID INVALID_ENTITY = 0;
+  inline constexpr ComponentTypeID INVALID_COMPONENT_TYPE = 0;
+  inline constexpr EventTypeID INVALID_EVENT_TYPE = 0;
+  inline constexpr size_t MAX_COMPONENTS = 64;
+  inline constexpr size_t MAX_EVENTS = 64;
 
   /* ======================== //
   // Bitset signatures        //

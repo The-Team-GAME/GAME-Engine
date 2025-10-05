@@ -103,7 +103,7 @@ namespace Engine {
     /* ===================== //
     // Callbacks             //
     // ===================== */
-    void framebuffer_resize_callback([[maybe_unused]] GLFWwindow* window, s32 w, s32 h)
+    void framebuffer_resize_callback([[maybe_unused]] GLFWwindow* win, s32 w, s32 h)
     {
       // Update the stored dimensions
       width = w;
@@ -113,7 +113,7 @@ namespace Engine {
       ECS::World::send_event<WindowResizeEvent>(width, height);
     }
 
-    void file_drop_callback([[maybe_unused]] GLFWwindow* window, s32 count, const char** paths)
+    void file_drop_callback([[maybe_unused]] GLFWwindow* win, s32 count, const char** paths)
     {
       std::vector<std::string> filePaths;
       for (s32 i = 0; i < count; ++i)

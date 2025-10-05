@@ -99,10 +99,10 @@ namespace Engine
     isRunning = true;
 
     // Register the graphics resize system
-    ECS::World::add_event_listener<WindowResizeEvent>([](const WindowResizeEvent& event) {
-      //GRAPHICS.set_viewport(event.width, event.height); //TODO: bring back when implmemented in new graphics
-      }
-    );
+    //ECS::World::add_event_listener<WindowResizeEvent>([](const WindowResizeEvent& event) {
+    //  GRAPHICS.set_viewport(event.width, event.height); //TODO: bring back when implmemented in new graphics
+    //  }
+    //);
 
     StateManager::init(BasicState::get()); // TODO: to be removed
   }
