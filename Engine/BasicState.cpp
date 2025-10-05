@@ -122,11 +122,24 @@ void BasicState::init()
 
 
   auto info = rect_center.get_component<Components::Transform2D>();
- 
+
   for_each(refl::reflect<Components::Transform2D>().members, [&](auto member) {
     std::cout << "  " << get_display_name(member) << " (" << member.name << ") = ";
     refl::runtime::debug(std::cout, member(*info));
     std::cout << "\n";
+
+    if (member.name == "rotation")
+    member(*info) = 123234.0f; // just to test if we can modify the value
+     
+
+    });
+
+  for_each(refl::reflect<Components::Transform2D>().members, [&](auto member) {
+
+    std::cout << "  " << get_display_name(member) << " (" << member.name << ") = ";
+    refl::runtime::debug(std::cout, member(*info));
+    std::cout << "\n";
+
     });
 
 }
