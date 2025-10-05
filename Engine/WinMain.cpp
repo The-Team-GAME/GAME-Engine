@@ -27,7 +27,8 @@
   template <>                                                                                \
   constexpr auto reflection_fields<CLASS_NAME>()                                             \
   {                                                                                          \
-    return std::make_tuple(EXPAND_FIELDS(CLASS_NAME, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)); \
+    return std::make_pair(#CLASS_NAME,                                                       \
+                          std::make_tuple(EXPAND_FIELDS(CLASS_NAME, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__))); \
   }
 
 // Forward declaration of the reflection function template
@@ -38,7 +39,6 @@ struct Person
 {
   std::string name;
   int age;
-  static constexpr const char* _type = "Person";
 };
 
 // Generate fields OUTSIDE the struct
@@ -47,11 +47,16 @@ GENERATE_FIELDS(Person, name, age)
 template <typename T>
 void print_struct_fields(const T& obj)
 {
+  auto reflection_data = reflection_fields<T>();
+  const char* class_name = reflection_data.first;
+  auto fields_tuple = reflection_data.second;
+
+  std::cout << "Type: " << class_name << " has fields:\n";
   std::apply([&obj](const auto &...pairs)
     { ((std::cout << "- " << pairs.first << ": "
       << (obj.*pairs.second) << "\n"),
       ...); },
-    reflection_fields<T>());
+    fields_tuple);
 }
 
 int main()
@@ -59,16 +64,14 @@ int main()
   Person person{ "Alice", 30 };
   Person person2{ "bobby", 23 };
 
-  std::cout << "Type: " << person._type << " has fields:\n";
   print_struct_fields(person);
-
-  std::cout << "Type: " << person2._type << " has fields:\n";
+  std::cout << "\n";
   print_struct_fields(person2);
 
   return 0;
 }
 
-// This is not needed, just for supressing intellisense warnings.
+// This is not needed, just for suppressing intellisense warnings.
 template <typename T>
 constexpr auto reflection_fields()
 {
