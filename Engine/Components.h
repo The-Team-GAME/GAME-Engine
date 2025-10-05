@@ -120,5 +120,5 @@ namespace Components
 
 }
 
-REFL_AUTO(type(Components::Text))
-REFL_AUTO(type(Components::Transform2D), field(rotation))
+REFL_AUTO(type(Components::Text), field(content))
+REFL_AUTO(type(Components::Transform2D), field(position), field(rotation), field(scale))
