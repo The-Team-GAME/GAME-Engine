@@ -118,7 +118,7 @@ void BasicState::init()
       0.5f, 0.5f
     )
     .add_component<Components::Font>(font_roboto)
-    .add_component<Components::Text>("Press 'P' to play sound");
+    .add_component<Components::Text>("Press 'S' to play sound");
 }
 
 void BasicState::update()
@@ -173,6 +173,13 @@ void BasicState::draw()
     0.0f,
     { 255.0f, 255.0f, 255.0f, 255.0f }
   );
+
+  static auto move_sound = Engine::Resources::load_sound("sounds/move1.wav");
+
+  if (Engine::Input::is_key_pressed(GLFW_KEY_S)) {
+    Engine::Audio::play_sound(move_sound, 0.5f, false);
+  }
+
 
 }
 
