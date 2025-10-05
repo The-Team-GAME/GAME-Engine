@@ -33,19 +33,15 @@
 template <typename T>
 constexpr auto reflection_fields();
 
-// Check if type has reflection - improved version
 template<typename T, typename = void>
 struct has_reflection : std::false_type {};
 
 template<typename T>
-struct has_reflection<T, std::void_t<decltype(reflection_fields<T>())>> : std::true_type
-{
-  // Additional check to ensure it's not the base template (which returns void)
-  static constexpr bool value = !std::is_void_v<decltype(reflection_fields<T>())>;
-};
+struct has_reflection<T, std::void_t<decltype(reflection_fields<T>())>> : std::true_type {};
 
 template<typename T>
 constexpr bool has_reflection_v = has_reflection<T>::value;
+
 
 #define REFLECT(CLASS_NAME, ...)                                                     \
   template <>                                                                                \
@@ -56,11 +52,8 @@ constexpr bool has_reflection_v = has_reflection<T>::value;
   }
 
 template <typename T>
-constexpr auto reflection_fields()
-{
-  // Base template returns void to indicate no reflection
-  return;
-}
+constexpr auto reflection_fields();
+
 
 /* Example usage */
 /*
