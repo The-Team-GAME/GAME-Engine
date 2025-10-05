@@ -147,6 +147,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="FileExplorer.h" />
     <ClInclude Include="Components.h" />
     <ClInclude Include="Reflection\Helpers.h" />
+    <ClInclude Include="Reflection\Reflect.h" />
     <ClInclude Include="Resources.h" />
     <ClInclude Include="Graphics\Shader.h" />
     <ClInclude Include="Graphics\Systems.h" />
