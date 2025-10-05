@@ -61,16 +61,17 @@ void print_struct_fields(const T& obj)
 
   std::cout << "Type: " << class_name << " has fields:\n";
   std::apply([&obj](const auto &...pairs)
-    { ((std::cout << "- " << pairs.first << ": "
-      << (obj.*pairs.second) << "\n"),
-      ...); },
-    fields_tuple);
+    {
+      ((std::cout << "- " << pairs.first << ": " << (obj.*pairs.second) << "\n"), ...);
+    },
+    fields_tuple
+  );
 }
 
 
 
 /* Example usage */
-
+/*
 int main()
 {
   Person person{ "Alice", 30 };
@@ -88,3 +89,4 @@ int main()
 
   return 0;
 }
+*/
