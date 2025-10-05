@@ -196,6 +196,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <None Include="Assets\shaders\basic.vert" />
     <None Include="Assets\shaders\texture.frag" />
     <None Include="Assets\shaders\texture.vert" />
+    <None Include="cpp.hint" />
     <None Include="ECS\ComponentArray.inl" />
     <None Include="ECS\ComponentManager.inl" />
     <None Include="ECS\Entity.inl" />
