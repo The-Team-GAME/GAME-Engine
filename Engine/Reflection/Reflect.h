@@ -4,6 +4,7 @@
 #include <tuple>
 #include <utility>
 #include <iostream>
+#include <type_traits>
 
 #define FIELD_PAIR(CLASS, FIELD) std::make_pair(#FIELD, &CLASS::FIELD)
 
@@ -23,7 +24,28 @@
 #define FIELDS_EXPAND_3(C, F1, F2, F3) FIELDS_EXPAND_2(C, F1, F2), FIELD_PAIR(C, F3)
 #define FIELDS_EXPAND_4(C, F1, F2, F3, F4) FIELDS_EXPAND_3(C, F1, F2, F3), FIELD_PAIR(C, F4)
 #define FIELDS_EXPAND_5(C, F1, F2, F3, F4, F5) FIELDS_EXPAND_4(C, F1, F2, F3, F4), FIELD_PAIR(C, F5)
+#define FIELDS_EXPAND_6(C, F1, F2, F3, F4, F5, F6) FIELDS_EXPAND_5(C, F1, F2, F3, F4, F5), FIELD_PAIR(C, F6)
+#define FIELDS_EXPAND_7(C, F1, F2, F3, F4, F5, F6, F7) FIELDS_EXPAND_6(C, F1, F2, F3, F4, F5, F6), FIELD_PAIR(C, F7)
+#define FIELDS_EXPAND_8(C, F1, F2, F3, F4, F5, F6, F7, F8) FIELDS_EXPAND_7(C, F1, F2, F3, F4, F5, F6, F7), FIELD_PAIR(C, F8)
 // Add more as needed...
+
+// Forward declare the template
+template <typename T>
+constexpr auto reflection_fields();
+
+// Check if type has reflection - improved version
+template<typename T, typename = void>
+struct has_reflection : std::false_type {};
+
+template<typename T>
+struct has_reflection<T, std::void_t<decltype(reflection_fields<T>())>> : std::true_type
+{
+  // Additional check to ensure it's not the base template (which returns void)
+  static constexpr bool value = !std::is_void_v<decltype(reflection_fields<T>())>;
+};
+
+template<typename T>
+constexpr bool has_reflection_v = has_reflection<T>::value;
 
 #define REFLECT(CLASS_NAME, ...)                                                     \
   template <>                                                                                \
@@ -36,18 +58,9 @@
 template <typename T>
 constexpr auto reflection_fields()
 {
+  // Base template returns void to indicate no reflection
+  return;
 }
-
-
-// Check if type has reflection
-template<typename T, typename = void>
-struct has_reflection : std::false_type {};
-
-template<typename T>
-struct has_reflection<T, std::void_t<decltype(reflection_fields<T>())>> : std::true_type {};
-
-template<typename T>
-constexpr bool has_reflection_v = has_reflection<T>::value;
 
 /* Example usage */
 /*

@@ -33,7 +33,7 @@ int main()
   if (deserialize_from_json(person2, json))
   {
     std::cout << "Deserialized successfully:\n";
-    //print_struct_fields(person2);
+    print_struct_fields(person2);
   }
 
   return 0;
