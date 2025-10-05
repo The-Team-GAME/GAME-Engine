@@ -1,7 +1,7 @@
 #include "Resources.h"
 #include <memory>
-#include "RendererInternal.h"
-#include "../Logger.h"
+#include "Graphics/RendererInternal.h"
+#include "Logger.h"
 
 bool Engine::Resources::init()
 {
@@ -126,6 +126,60 @@ Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath,
   Log::info("Font loaded: " + full_path + " (size: " + std::to_string(size) + ")");
 
   return font;
+}
+
+Engine::Audio::Sound Engine::Resources::load_sound(const std::string& filepath) {
+  std::string full_path = resource_path + filepath;
+
+  auto it = sound_cache.find(full_path);
+  if (it != sound_cache.end()) {
+    if (auto cached = it->second.lock()) {
+      Log::info("Sound loaded from cache: " + full_path);
+      return cached;
+    }
+    else {
+      sound_cache.erase(it);
+    }
+  }
+
+  auto sound = std::make_shared<Engine::Audio::SoundData>(full_path, false);
+
+  if (sound->sound != nullptr) {
+    sound_cache[full_path] = sound;
+    Log::info("Sound loaded: " + full_path);
+  }
+  else {
+    Log::warning("Failed to load sound: " + full_path);
+  }
+
+  return sound;
+}
+
+Engine::Audio::Sound Engine::Resources::load_music(const std::string& filepath) {
+  std::string full_path = resource_path + filepath;
+
+  auto it = sound_cache.find(full_path);
+  if (it != sound_cache.end()) {
+    if (auto cached = it->second.lock()) {
+      Log::info("Music loaded from cache: " + full_path);
+      return cached;
+    }
+    else {
+      sound_cache.erase(it);
+    }
+  }
+
+  auto music = std::make_shared<Engine::Audio::SoundData>(full_path, true);
+
+  if (music->sound != nullptr) {
+    sound_cache[full_path] = music;
+    Log::info("Music loaded: " + full_path);
+  }
+  else {
+    Log::warning("Failed to load music: " + full_path);
+  }
+
+  return music;
 }
 
 Engine::Graphics::Texture Engine::Resources::get_unit_rect_texture()

@@ -51,7 +51,7 @@ namespace Engine
   //extern ObjectFactory FACTORY;
   //extern LevelLoader LEVEL_LOADER;
   //extern Graphics GRAPHICS;
-  extern AudioManager AUDIO;
+  //extern AudioManager AUDIO;
   //extern ResourceManager RESOURCES;
   extern Perf PERFORMANCE;
 }

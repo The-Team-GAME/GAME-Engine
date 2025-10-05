@@ -19,7 +19,7 @@
 #include "Core.h"
 #include "Graphics/Components.h"
 #include "RenderSystem.h"
-#include "Graphics/Resources.h"
+#include "Resources.h"
 #include "Graphics/Renderer.h"
 #include <string>
 

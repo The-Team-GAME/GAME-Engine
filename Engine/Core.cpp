@@ -33,6 +33,8 @@
 #include "InputManager.h"
 #include "BasicEvents.h"
 //#include "ShowcaseState.h"
+#include "Audio/AudioManager.h"
+#include "Resources.h"
 
 namespace {
   f64 accumulator{};
@@ -56,7 +58,7 @@ namespace Engine
 
   //LevelLoader LEVEL_LOADER{ &WORLD, &FACTORY };
 
-  AudioManager AUDIO{};
+  //AudioManager AUDIO{};
 
   //ResourceManager RESOURCES{};
 
@@ -85,6 +87,11 @@ namespace Engine
     // Initialize resource manager
     if (!Engine::Resources::init()) {
       throw std::runtime_error("Failed to initialize resource manager");
+    }
+
+    // Initialize audio manager
+    if (!Engine::Audio::init()) {
+      throw std::runtime_error("Failed to initialize audio manager");
     }
 
     /*GRAPHICS.set_params(win_width, win_height);
@@ -136,7 +143,7 @@ namespace Engine
       // END OF TIME UPDATES ================================================
 
       glfwPollEvents();
-      AUDIO.update();
+      Engine::Audio::update();
       ImguiMgr::begin();
       //GRAPHICS.begin_frame();
 
@@ -217,6 +224,7 @@ namespace Engine
     // Cleanup graphics resources
     Engine::Resources::exit();
     Engine::Graphics::exit();
+    Engine::Audio::exit();
 
     // Cleanup window
     WindowManager::shutdown();

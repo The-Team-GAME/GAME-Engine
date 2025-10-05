@@ -1,14 +1,16 @@
 #pragma once
+#include "TypeDef.h"
 #include <unordered_map>
 #include <string>
 #include <memory>
-#include "Renderer.h"
-#include "../TypeDef.h"
+#include "Graphics/Renderer.h"
+#include "Audio/AudioManager.h"
 
 namespace Engine {
   namespace Resources {
     static std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> texture_cache;
     static std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::FontData>> font_cache;
+    static std::unordered_map<std::string, std::weak_ptr<Engine::Audio::SoundData>> sound_cache;
 
     // TODO: unit_rect does not need reference counting, since it's always in memory until we exit
     static Engine::Graphics::Texture unit_rect;
@@ -27,6 +29,12 @@ namespace Engine {
 
     Engine::Graphics::Texture load_texture(const std::string& filepath);
     Engine::Graphics::Font load_font(const std::string& filepath, u32 size);
+
+    // Load sound effect (stored in memory)
+    Engine::Audio::Sound load_sound(const std::string& filepath);
+
+    // Load music (streamed from disk)
+    Engine::Audio::Sound load_music(const std::string& filepath);
 
     Engine::Graphics::Texture get_unit_rect_texture();
 
