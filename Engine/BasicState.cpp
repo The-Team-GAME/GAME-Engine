@@ -119,6 +119,16 @@ void BasicState::init()
     )
     .add_component<Components::Font>(font_roboto)
     .add_component<Components::Text>("Press 'S' to play sound");
+
+
+  auto info = rect_center.get_component<Components::Transform2D>();
+ 
+  for_each(refl::reflect<Components::Transform2D>().members, [&](auto member) {
+    std::cout << "  " << get_display_name(member) << " (" << member.name << ") = ";
+    refl::runtime::debug(std::cout, member(*info));
+    std::cout << "\n";
+    });
+
 }
 
 void BasicState::update()
