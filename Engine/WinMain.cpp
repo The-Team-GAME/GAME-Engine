@@ -1,76 +1,55 @@
-#include <string>
-#include <tuple>
-#include <utility>
-#include <iostream>
+//-----------------------------------------------------------------------------------
+// file:    WinMain.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file contains the main entry point for the game engine. It sets up
+//          memory leak detection, initializes the core engine, and handles top-level
+//          exception catching for robust error reporting.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
+#include "Core.h"
+#include "Logger.h"
+#include <exception>
+#include <stdexcept>
 
-#define FIELD_PAIR(CLASS, FIELD) std::make_pair(#FIELD, &CLASS::FIELD)
+/*=================================================================================
+Function Brief:
+Main entry point for the application. Enables memory leak detection, initializes
+and runs the game engine, and catches any unhandled exceptions for error logging.
 
-// Count arguments (supports up to 20)
-#define COUNT_ARGS(...) COUNT_ARGS_IMPL(__VA_ARGS__, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
-#define COUNT_ARGS_IMPL(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, N, ...) N
-
-// Concatenation helper
-#define CONCAT(A, B) CONCAT_IMPL(A, B)
-#define CONCAT_IMPL(A, B) A##B
-
-// Expand fields based on count
-#define EXPAND_FIELDS(CLASS, N, ...) CONCAT(FIELDS_EXPAND_, N)(CLASS, __VA_ARGS__)
-
-#define FIELDS_EXPAND_1(C, F1) FIELD_PAIR(C, F1)
-#define FIELDS_EXPAND_2(C, F1, F2) FIELDS_EXPAND_1(C, F1), FIELD_PAIR(C, F2)
-#define FIELDS_EXPAND_3(C, F1, F2, F3) FIELDS_EXPAND_2(C, F1, F2), FIELD_PAIR(C, F3)
-#define FIELDS_EXPAND_4(C, F1, F2, F3, F4) FIELDS_EXPAND_3(C, F1, F2, F3), FIELD_PAIR(C, F4)
-#define FIELDS_EXPAND_5(C, F1, F2, F3, F4, F5) FIELDS_EXPAND_4(C, F1, F2, F3, F4), FIELD_PAIR(C, F5)
-// Add more as needed...
-
-#define GENERATE_FIELDS(CLASS_NAME, ...)                                                     \
-  template <>                                                                                \
-  constexpr auto reflection_fields<CLASS_NAME>()                                             \
-  {                                                                                          \
-    return std::make_pair(#CLASS_NAME,                                                       \
-                          std::make_tuple(EXPAND_FIELDS(CLASS_NAME, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__))); \
-  }
-
-// Forward declaration of the reflection function template
-template <typename T>
-constexpr auto reflection_fields();
-
-struct Person
-{
-  std::string name;
-  int age;
-};
-
-// Generate fields OUTSIDE the struct
-GENERATE_FIELDS(Person, name, age)
-
-template <typename T>
-void print_struct_fields(const T& obj)
-{
-  auto [class_name, fields_tuple] = reflection_fields<T>();
-
-  std::cout << "Type: " << class_name << " has fields:\n";
-  std::apply([&obj](const auto &...pairs)
-    { ((std::cout << "- " << pairs.first << ": "
-      << (obj.*pairs.second) << "\n"),
-      ...); },
-    fields_tuple);
-}
-
+Returns:
+0 on successful execution, 1 if an exception occurred.
+==================================================================================*/
 int main()
 {
-  Person person{ "Alice", 30 };
-  Person person2{ "bobby", 23 };
+  // Enable memory leak detection
+  s32 tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+  tmpDbgFlag |= _CRTDBG_LEAK_CHECK_DF;
+  _CrtSetDbgFlag(tmpDbgFlag);
+  _CrtSetBreakAlloc(-1);
 
-  print_struct_fields(person);
-  std::cout << "\n";
-  print_struct_fields(person2);
+  try
+  {
+    // Start the engine
+    Engine::Core engine{};
+    engine.run();
+  }
+  catch (const std::exception& e)
+  {
+    Log::crash(std::string("Unhandled exception in main: ") + e.what());
+    return 1;
+  }
+  catch (...)
+  {
+    Log::crash("Unknown unhandled exception in main");
+    return 1;
+  }
 
   return 0;
-}
-
-// This is not needed, just for suppressing intellisense warnings.
-template <typename T>
-constexpr auto reflection_fields()
-{
 }
