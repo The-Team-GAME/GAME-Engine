@@ -47,9 +47,7 @@ GENERATE_FIELDS(Person, name, age)
 template <typename T>
 void print_struct_fields(const T& obj)
 {
-  auto reflection_data = reflection_fields<T>();
-  const char* class_name = reflection_data.first;
-  auto fields_tuple = reflection_data.second;
+  auto [class_name, fields_tuple] = reflection_fields<T>();
 
   std::cout << "Type: " << class_name << " has fields:\n";
   std::apply([&obj](const auto &...pairs)
