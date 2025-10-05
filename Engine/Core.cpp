@@ -33,7 +33,7 @@
 #include "InputManager.h"
 #include "BasicEvents.h"
 //#include "ShowcaseState.h"
-#include "Audio/AudioManager.h"
+#include "Audio/AudioPlayer.h"
 #include "Resources.h"
 
 namespace {

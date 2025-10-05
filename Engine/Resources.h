@@ -4,7 +4,7 @@
 #include <string>
 #include <memory>
 #include "Graphics/Renderer.h"
-#include "Audio/AudioManager.h"
+#include "Audio/AudioPlayer.h"
 
 namespace Engine {
   namespace Resources {
