@@ -161,7 +161,10 @@ void BasicState::draw()
   // but for demonstration purposes, we will do it here to show that the resource
   // manager caches the texture and does not reload it from disk every time.
   // If you look at the memory usage, you will see that it does not increase !!
-  auto monkey_texture = Engine::Resources::load_texture("images/monkey.png");
+  //auto monkey_texture = Engine::Resources::load_texture("images/monkey.png");
+
+  // nvm the constant printing pissed me off, so imma make it static
+  static auto monkey_texture = Engine::Resources::load_texture("images/monkey.png");
 
   Engine::Graphics::draw_texture(
     monkey_texture,
