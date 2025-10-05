@@ -1,7 +1,7 @@
 #pragma once
 
-#include "RendererInternal.h"
-#include "Renderer.h"
+#include "Graphics/RendererInternal.h"
+#include "Graphics/Renderer.h"
 #include <string>
 
 namespace Components

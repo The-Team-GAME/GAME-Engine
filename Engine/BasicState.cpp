@@ -16,7 +16,7 @@
 #include "BasicState.h"
 #include "Core.h"
 #include "InputManager.h"
-#include "Graphics/Components.h"
+#include "Components.h"
 #include "Resources.h"
 #include "RenderSystem.h"
 #include "Time.h"

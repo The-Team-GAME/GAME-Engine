@@ -17,7 +17,7 @@
 
 #include "StateManager.h"
 #include "Core.h"
-#include "Graphics/Components.h"
+#include "Components.h"
 #include "RenderSystem.h"
 #include "Resources.h"
 #include "Graphics/Renderer.h"

@@ -15,7 +15,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 #include "ECS/System.h"
-#include "Graphics/Components.h"
+#include "Components.h"
 #include "Graphics/Renderer.h"
 #include "Resources.h"
 #include "Time.h"
