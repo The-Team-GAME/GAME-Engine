@@ -51,9 +51,6 @@ constexpr bool has_reflection_v = has_reflection<T>::value;
                           std::make_tuple(EXPAND_FIELDS(CLASS_NAME, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__))); \
   }
 
-template <typename T>
-constexpr auto reflection_fields();
-
 
 /* Example usage */
 /*
