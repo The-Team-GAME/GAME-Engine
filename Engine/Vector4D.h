@@ -18,6 +18,7 @@
 #include "TypeDef.h"
 #include <iostream>
 #include <glm/glm.hpp>
+#include "Reflection/Reflect.h"
 
 namespace Math {
 
@@ -102,3 +103,4 @@ namespace Math {
   // Overload of the << operator to display the vector in the output stream
   std::ostream& operator<<(std::ostream& os, Vec4D const& vect);
 }
+REFLECT(Math::Vec4D, x, y, z, w)

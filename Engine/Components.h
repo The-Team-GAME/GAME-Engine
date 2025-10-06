@@ -121,3 +121,6 @@ namespace Components
 }
 
 REFLECT(Components::Color, color)
+REFLECT(Components::Transform2D, position, rotation, scale)
+REFLECT(Components::Text, content)
+REFLECT(Components::Animation, frames, startTime, totalDuration)
