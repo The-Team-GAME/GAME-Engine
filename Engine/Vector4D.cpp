@@ -128,7 +128,7 @@ namespace Math {
 
   std::ostream& operator<<(std::ostream& os, Vec4D const& vect)
   {
-    os << "(" << vect.x << "," << vect.y << "," << vect.z << ")";
+    os << "(" << vect.x << "," << vect.y << "," << vect.z << "," << vect.w << ")";
     return os;
   }
 }
