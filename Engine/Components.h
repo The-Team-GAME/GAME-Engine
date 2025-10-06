@@ -2,8 +2,7 @@
 
 #include "Graphics/RendererInternal.h"
 #include "Graphics/Renderer.h"
-#include <string>
-#include <refl.hpp>
+#include <string> 
 
 
 
@@ -119,6 +118,3 @@ namespace Components
   };
 
 }
-
-REFL_AUTO(type(Components::Text), field(content))
-REFL_AUTO(type(Components::Transform2D), field(position), field(rotation), field(scale))

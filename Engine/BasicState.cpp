@@ -24,6 +24,7 @@
 #include <iostream> 
 #include <GLFW/glfw3.h>
 #include <imgui.h>
+#include "Reflection/Helpers.h"
 
 void BasicState::load()
 {
@@ -40,6 +41,24 @@ void BasicState::load()
     std::cout << "Failed to load playfair font for BasicState.\n";
   }
 }
+
+struct Book
+{
+  std::string title;
+  std::string author;
+  int pages;
+};
+REFLECT(Book, title, author, pages)
+
+struct Person
+{
+  std::string name;
+  int age;
+  double height;
+  bool is_student;
+  Book favorite_book;
+};
+REFLECT(Person, name, age, height, is_student, favorite_book)
 
 void BasicState::init()
 {
@@ -121,27 +140,24 @@ void BasicState::init()
     .add_component<Components::Text>("Press 'S' to play sound");
 
 
-  auto info = rect_center.get_component<Components::Transform2D>();
+  //auto info = rect_center.get_component<Components::Transform2D>();
 
-  for_each(refl::reflect<Components::Transform2D>().members, [&](auto member) {
-    std::cout << "  " << get_display_name(member) << " (" << member.name << ") = ";
-    refl::runtime::debug(std::cout, member(*info));
-    std::cout << "\n";
 
-    if (member.name == "rotation")
-    member(*info) = 123234.0f; // just to test if we can modify the value
-     
 
-    });
+  Book book{ "1984", "George Orwell", 328 };
 
-  for_each(refl::reflect<Components::Transform2D>().members, [&](auto member) {
+  // Serialize
+  Person person{ "Alice", 30, 5.7, false, book };
+  std::string json = serialize_to_json(person);
+  std::cout << "Serialized: " << json << "\n\n";
 
-    std::cout << "  " << get_display_name(member) << " (" << member.name << ") = ";
-    refl::runtime::debug(std::cout, member(*info));
-    std::cout << "\n";
-
-    });
-
+  // Deserialize
+  Person person2;
+  if (deserialize_from_json(person2, json))
+  {
+    std::cout << "Deserialized successfully:\n";
+    print_struct_fields(person2);
+  }
 }
 
 void BasicState::update()
