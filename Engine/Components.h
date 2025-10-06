@@ -3,6 +3,7 @@
 #include "Graphics/RendererInternal.h"
 #include "Graphics/Renderer.h"
 #include <string> 
+#include "Reflection/Reflect.h"
 
 
 
@@ -118,3 +119,5 @@ namespace Components
   };
 
 }
+
+REFLECT(Components::Color, color)

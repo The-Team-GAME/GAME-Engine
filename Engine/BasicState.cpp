@@ -143,20 +143,18 @@ void BasicState::init()
   //auto info = rect_center.get_component<Components::Transform2D>();
 
 
+  auto col1 = rect_center.get_component<Components::Color>() ;
 
-  Book book{ "1984", "George Orwell", 328 };
-
-  // Serialize
-  Person person{ "Alice", 30, 5.7, false, book };
-  std::string json = serialize_to_json(person);
+  // Serialize 
+  std::string json = serialize_to_json(*col1);
   std::cout << "Serialized: " << json << "\n\n";
 
   // Deserialize
-  Person person2;
-  if (deserialize_from_json(person2, json))
+  Components::Color col2;
+  if (deserialize_from_json(col2, json))
   {
     std::cout << "Deserialized successfully:\n";
-    print_struct_fields(person2);
+    print_struct_fields(col2);
   }
 }
 
