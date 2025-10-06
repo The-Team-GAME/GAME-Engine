@@ -1,39 +1,54 @@
-#include "Reflection/Reflect.h"
-#include "Reflection/Helpers.h"
+//-----------------------------------------------------------------------------------
+// file:    WinMain.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file contains the main entry point for the game engine. It sets up
+//          memory leak detection, initializes the core engine, and handles top-level
+//          exception catching for robust error reporting.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
+#include "Core.h"
+#include "Logger.h"
+#include <exception>
+#include <stdexcept>
 
-struct Book
-{
-  std::string title;
-  std::string author;
-  int pages;
-};
-REFLECT(Book, title, author, pages)
+/*=================================================================================
+Function Brief:
+Main entry point for the application. Enables memory leak detection, initializes
+and runs the game engine, and catches any unhandled exceptions for error logging.
 
-struct Person
-{
-  std::string name;
-  int age;
-  double height;
-  bool is_student;
-  Book favorite_book;
-};
-REFLECT(Person, name, age, height, is_student, favorite_book)
-
+Returns:
+0 on successful execution, 1 if an exception occurred.
+==================================================================================*/
 int main()
 {
-  Book book{ "1984", "George Orwell", 328 };
+  // Enable memory leak detection
+  s32 tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+  tmpDbgFlag |= _CRTDBG_LEAK_CHECK_DF;
+  _CrtSetDbgFlag(tmpDbgFlag);
+  _CrtSetBreakAlloc(-1);
 
-  // Serialize
-  Person person{ "Alice", 30, 5.7, false, book };
-  std::string json = serialize_to_json(person);
-  std::cout << "Serialized: " << json << "\n\n";
-
-  // Deserialize
-  Person person2;
-  if (deserialize_from_json(person2, json))
+  try
   {
-    std::cout << "Deserialized successfully:\n";
-    print_struct_fields(person2);
+    // Start the engine
+    Engine::Core engine{};
+    engine.run();
+  }
+  catch (const std::exception& e)
+  {
+    Log::crash(std::string("Unhandled exception in main: ") + e.what());
+    return 1;
+  }
+  catch (...)
+  {
+    Log::crash("Unknown unhandled exception in main");
+    return 1;
   }
 
   return 0;
