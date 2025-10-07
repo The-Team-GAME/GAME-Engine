@@ -142,11 +142,14 @@ public:
       .add_component<Components::Transform2D>(200.0f, 655.0f, 0.0f, player_idle_width * 2.0f, player_idle_height * 2.0f)
       .add_component<Components::Texture>(player_idle_texture)
       .add_component<Components::Health>(100, 100)
-      .add_component<Components::Color>(255.0f, 255.0f, 255.0f, 255.0f);
+      .add_component<Components::Color>(255.0f, 255.0f, 255.0f, 255.0f)
+      .add_component<Components::TextureAtlas>(64, 64, 1, 7, 7)
+      .add_component<Components::Animation>(7, 0.15f);
 
     // Add systems
     //ECS::World::add_system<Systems::TextureBackgroundSystem>();
     ECS::World::add_system<Systems::AnimationUpdateSystem>();
+    ECS::World::add_system<Systems::StaticSpriteRenderSystem>();
     ECS::World::add_system<Systems::AtlasSpriteRenderSystem>();
     ECS::World::add_system<BasicMovementSystem>();
     ECS::World::add_system<RotationSystem>();
