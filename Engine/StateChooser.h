@@ -19,7 +19,7 @@
 #include "BasicState.h"
 //#include "PhysicsTestState.h"
 #include "GameObjectState.h"
-//#include "Rubric2500ParticlesState.h"
+#include "Rubric2500ParticlesState.h"
 //#include "RectPainterState.h"
 #include "DevSpriteAnimationState.h"
 #include "ShowcaseState.h"
@@ -49,10 +49,10 @@ inline void StateChooserPanel()
   //{
   //  Engine::StateManager::change_state(RectPainterState::get());
   //}
-  //if (ImGui::Button("Rubric2500ParticlesState"))
-  //{
-  //  Engine::StateManager::change_state(Rubric2500ParticlesState::get());
-  //}
+  if (ImGui::Button("Rubric2500ParticlesState"))
+  {
+    Engine::StateManager::change_state(Rubric2500ParticlesState::get());
+  }
 
   //if (ImGui::Button("PhysicsTestState"))
   //{

@@ -17,7 +17,7 @@
 
 #include "StateManager.h"
 #include "RenderSystem.h"
-#include "BackgroundSystem.h"
+#include "RotationSystem.h"
 #include "TypeDef.h"
 #include "Core.h"
 
@@ -29,38 +29,32 @@ public:
 
   void init()
   {
-    auto background = ECS::World::create_entity()
-      .add_component<Components::Tag<"Rubric2500ParticlesState">>()
-      .add_component<Components::Background>()
-      .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 0.0f);
-
     for (s32 i = 0; i < 2500; ++i) {
       f32 x = static_cast<f32>(rand() % 1600); // Random x position within window width
       f32 y = static_cast<f32>(rand() % 900); // Random y position within window height
       f32 size = static_cast<f32>((rand() % 20) + 5); // Random size between 5 and 25
       f32 rotation = static_cast<f32>(rand() % 360); // Random rotation angle
       Components::Color color = Components::Color(
-        static_cast<f32>(rand() % 256) / 255.0f,
-        static_cast<f32>(rand() % 256) / 255.0f,
-        static_cast<f32>(rand() % 256) / 255.0f,
-        1.0f
+        static_cast<f32>(rand() % 256),
+        static_cast<f32>(rand() % 256),
+        static_cast<f32>(rand() % 256),
+        255.0f
       );
-      f32 rotation_speed = 30.0f + static_cast<f32>(rand() % 90); // Random rotation speed between 30 and 120 degrees per second
 
-      ECS::World::create_entity()
+      auto temp = ECS::World::create_entity()
         .add_component<Components::Tag<"Rubric2500ParticlesState">>()
-        .add_component<Components::Position>(x, y)
-        .add_component<Components::Size>(size, size)
+        .add_component<Components::Transform2D>(x, y, rotation, size, size)
         .add_component<Components::Color>(color)
-        .add_component<Components::Rotation>(rotation)
-        .add_component<Components::RotationSpeed>(rotation_speed);
+        .add_component<Components::RigidBody>()
+        .add_component<Components::Texture>(Engine::Resources::get_unit_rect_texture());
+
+      temp.get_component<Components::RigidBody>()->angular_velocity = 30.0f + static_cast<f32>(rand() % 90); // Random rotation speed between 30 and 120 degrees per second 
     }
 
 
     // Add systems to the world
-    ECS::World::add_system<BackgroundSystem>(); // Background system should be first
     ECS::World::add_system<RotationSystem>();
-    ECS::World::add_system<RectRenderSystem>();
+    ECS::World::add_system<Systems::StaticSpriteRenderSystem>();
 
   };
 
@@ -68,15 +62,15 @@ public:
 
   void draw()
   {
+    Engine::Graphics::clear_screen({ 0.0f,0.0f,0.0f,0.0f }); // Clear to black
   };
 
   void free() {
     ECS::World::destroy_entities_with<Components::Tag<"Rubric2500ParticlesState">>();
 
     // Remove systems
-    ECS::World::remove_system<BackgroundSystem>();
     ECS::World::remove_system<RotationSystem>();
-    ECS::World::remove_system<RectRenderSystem>();
+    ECS::World::remove_system<Systems::StaticSpriteRenderSystem>();
   };
 
   void unload() {};
