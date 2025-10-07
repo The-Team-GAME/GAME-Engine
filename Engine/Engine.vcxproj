@@ -119,7 +119,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="Engine\ImGuiManager.cpp" />
     <ClCompile Include="Engine\InputManager.cpp" />
     <ClCompile Include="Engine\Logger.cpp" />
-    <ClCompile Include="Deprecated\FileHandler.cpp" />
+    <ClCompile Include="Engine\FileHandler.cpp" />
     <ClCompile Include="Engine\Perf.cpp" />
     <ClCompile Include="Engine\Precompiled.cpp" />
     <ClCompile Include="Deprecated\SpriteDropper.cpp" />
@@ -178,7 +178,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="GameLogic\Systems\RenderSystem.h" />
     <ClInclude Include="GameLogic\Systems\RotationSystem.h" />
     <ClInclude Include="GameLogic\GameStates\Rubric2500ParticlesState.h" />
-    <ClInclude Include="Deprecated\FileHandler.h" />
+    <ClInclude Include="Engine\FileHandler.h" />
     <ClInclude Include="GameLogic\GameStates\ShowcaseState.h" />
     <ClInclude Include="Deprecated\SpriteDropper.h" />
     <ClInclude Include="Engine\Time.h" />

@@ -14,9 +14,10 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "TypeDef.h"
+#include "../TypeDef.h"
 #include <iostream>
 #include <glm/glm.hpp>
+#include "../Reflection/Reflect.h"
 
 namespace Math {
 
@@ -88,3 +89,4 @@ namespace Math {
   std::ostream& operator<<(std::ostream& os, Vec2D const& vect);
 }
 
+REFLECT(Math::Vec2D, x, y)

@@ -15,3 +15,7 @@
 #include "WindowManager.h"
 #include "ObjectFactory.h"
 #include "Logger.h"
+#include "Math/Vector2D.h"
+#include "Math/Vector3D.h"
+#include "Math/Vector4D.h"
+#include "FileHandler.h"

@@ -15,10 +15,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "StateManager.h" 
-#include "TypeDef.h"
-#include "ECS/ECS.h"
-#include "Graphics/Renderer.h"
+#include "../../Engine/MonkeyEngine.h"
 
 class BasicState : public Engine::GameState<BasicState>
 {

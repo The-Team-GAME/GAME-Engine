@@ -13,9 +13,11 @@
 // Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
-#include "TypeDef.h"
+
+#include "../TypeDef.h"
 #include <iostream>
 #include <glm/glm.hpp>
+#include "../Reflection/Reflect.h"
 
 namespace Math {
 
@@ -87,6 +89,4 @@ namespace Math {
   std::ostream& operator<<(std::ostream& os, Vec3D const& vect);
 }
 
-
-
-
+REFLECT(Math::Vec3D, x, y, z)

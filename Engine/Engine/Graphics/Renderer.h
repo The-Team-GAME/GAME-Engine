@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../Vector2D.h"
-#include "../Vector4D.h"
+#include "../Math/Vector2D.h" 
+#include "../Math/Vector4D.h"
 #include "RendererInternal.h"
 #include <array>
 #include <string>

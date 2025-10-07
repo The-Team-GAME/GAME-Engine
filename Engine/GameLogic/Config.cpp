@@ -12,9 +12,8 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-#include "Logger.h" // contains string and iostream already
-#include "FileHandler.h"
-#include "TypeDef.h"
+
+#include "../../Engine/MonkeyEngine.h"
 
 namespace fh = FileHandler;
 

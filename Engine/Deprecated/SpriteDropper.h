@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "Typedef.h"
+#include "../../Engine/MonkeyEngine.h"
 #include <imgui.h>
 #include <vector>
 
