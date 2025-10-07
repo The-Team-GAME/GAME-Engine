@@ -144,7 +144,6 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Core.h" />
     <ClInclude Include="DamageSystem.h" />
     <ClInclude Include="DevECSMessageState.h" />
-    <ClInclude Include="DevManySpritesState.h" />
     <ClInclude Include="DevSpriteAnimationState.h" />
     <ClInclude Include="FileExplorer.h" />
     <ClInclude Include="Components.h" />
@@ -187,7 +186,6 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Time.h" />
     <ClInclude Include="Timeline.h" />
     <ClInclude Include="Vector2D.h" />
-    <ClInclude Include="SpriteState.h" />
     <ClInclude Include="StateChooser.h" />
     <ClInclude Include="StateManager.h" />
     <ClInclude Include="TypeDef.h" />

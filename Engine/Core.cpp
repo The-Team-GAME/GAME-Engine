@@ -84,7 +84,7 @@ namespace Engine
     //  }
     //);
 
-    StateManager::init(BasicState::get()); // TODO: to be removed
+    StateManager::init(ShowcaseState::get()); // TODO: to be removed
   }
 
   /*=================================================================================

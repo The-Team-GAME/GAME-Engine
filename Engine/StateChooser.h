@@ -18,14 +18,10 @@
 #include "StateManager.h"
 #include "BasicState.h"
 //#include "PhysicsTestState.h"
-//#include "SpriteState.h"
 #include "GameObjectState.h"
-//#include "DevManySpritesState.h"
 //#include "Rubric2500ParticlesState.h"
 //#include "RectPainterState.h"
 #include "DevSpriteAnimationState.h"
-//#include "DevECSMessageState.h"
-//#include "LevelLoaderTestState.h"
 #include "ShowcaseState.h"
 
 /*=================================================================================
@@ -49,50 +45,32 @@ inline void StateChooserPanel()
   {
     Engine::StateManager::change_state(ShowcaseState::get());
   }
-  /*
-  if (ImGui::Button("RectPainterState"))
-  {
-    Engine::StateManager::change_state(RectPainterState::get());
-  }
-  if (ImGui::Button("Rubric2500ParticlesState"))
-  {
-    Engine::StateManager::change_state(Rubric2500ParticlesState::get());
-  }
-  if (ImGui::Button("DevManySpritesState"))
-  {
-    Engine::StateManager::change_state(DevManySpritesState::get());
-  }
-  if (ImGui::Button("PhysicsTestState"))
-  {
-    Engine::StateManager::change_state(PhysicsTestState::get());
-  }
-  if (ImGui::Button("LevelLoaderTestState"))
-  {
-    Engine::StateManager::change_state(LevelLoaderTestState::get());
-  }*/
+  //if (ImGui::Button("RectPainterState"))
+  //{
+  //  Engine::StateManager::change_state(RectPainterState::get());
+  //}
+  //if (ImGui::Button("Rubric2500ParticlesState"))
+  //{
+  //  Engine::StateManager::change_state(Rubric2500ParticlesState::get());
+  //}
 
-  // Other states for development and testing - uncomment as needed
-  // 
-   if (ImGui::Button("BasicState"))
-   {
-     Engine::StateManager::change_state(BasicState::get());
-   }
-  // if (ImGui::Button("SpriteState"))
-  // {
-  //   Engine::StateManager::change_state(SpriteState::get());
-  // }
-   if (ImGui::Button("GameObjectState"))
-   {
-     Engine::StateManager::change_state(GameObjectState::get());
-   }
-   if (ImGui::Button("DevSpriteAnimationState"))
-   {
-     Engine::StateManager::change_state(DevSpriteAnimationState::get());
-   }
-  // if (ImGui::Button("DevECSMessageState"))
-  // {
-  //   Engine::StateManager::change_state(DevECSMessageState::get());
-  // }
+  //if (ImGui::Button("PhysicsTestState"))
+  //{
+  //  Engine::StateManager::change_state(PhysicsTestState::get());
+  //}
+
+  if (ImGui::Button("BasicState"))
+  {
+    Engine::StateManager::change_state(BasicState::get());
+  }
+  if (ImGui::Button("GameObjectState"))
+  {
+    Engine::StateManager::change_state(GameObjectState::get());
+  }
+  if (ImGui::Button("DevSpriteAnimationState"))
+  {
+    Engine::StateManager::change_state(DevSpriteAnimationState::get());
+  }
 
 
   ImGui::End();

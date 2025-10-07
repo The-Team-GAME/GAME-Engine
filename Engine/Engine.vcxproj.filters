@@ -242,14 +242,8 @@
     <ClInclude Include="Time.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
-    <ClInclude Include="SpriteState.h">
-      <Filter>Source Files\GameStates</Filter>
-    </ClInclude>
     <ClInclude Include="PerformanceViewer.h">
       <Filter>Source Files\Engine\ImGuiPanels</Filter>
-    </ClInclude>
-    <ClInclude Include="DevManySpritesState.h">
-      <Filter>Source Files\GameStates</Filter>
     </ClInclude>
     <ClInclude Include="RotationSystem.h">
       <Filter>Header Files</Filter>
