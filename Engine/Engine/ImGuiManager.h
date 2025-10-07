@@ -19,8 +19,8 @@
 #include <vector>
 
 namespace ImGuiManager {
-	void imgui_init();
-	void imgui_exit();
+	void init();
+	void exit();
 
 	void begin();
 	void end();

@@ -50,7 +50,7 @@ namespace Engine
   {
     WindowManager::init(window_width, window_height, window_title);
 
-    ImGuiManager::imgui_init();
+    ImGuiManager::init();
 
     // Initialize graphics renderer
     if (!Engine::Graphics::init()) {
@@ -186,18 +186,12 @@ namespace Engine
   Core::~Core()
   {
     StateManager::exit();
-
     //ECS::World::remove_event_listener<WindowResizeEvent>();
-
-    // Cleanup graphics resources
     Engine::Audio::exit();
     Engine::Resources::exit();
     Engine::Graphics::exit();
-
-    ImGuiManager::imgui_exit();
-
-    // Cleanup window
-    WindowManager::shutdown();
+    ImGuiManager::exit();
+    WindowManager::exit();
   }
 
   void Core::stop()

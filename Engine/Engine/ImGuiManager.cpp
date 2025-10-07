@@ -27,7 +27,7 @@ namespace {
 
 namespace ImGuiManager {
 
-  void imgui_init()
+  void init()
   {
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
@@ -39,7 +39,7 @@ namespace ImGuiManager {
     ImGui_ImplOpenGL3_Init();
   }
 
-  void imgui_exit()
+  void exit()
   {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();

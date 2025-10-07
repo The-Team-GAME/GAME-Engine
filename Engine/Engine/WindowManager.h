@@ -45,7 +45,7 @@ namespace Engine {
     Where to call it:
     Call this during engine shutdown to clean up window resources.
     ==================================================================================*/
-    void shutdown();
+    void exit();
 
     /* ===================== //
     // Accessors             //

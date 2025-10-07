@@ -73,7 +73,7 @@ namespace Engine {
       glfwSetDropCallback(window, file_drop_callback);
     }
 
-    void shutdown()
+    void exit()
     {
       if (window)
       {
