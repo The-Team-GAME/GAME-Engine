@@ -235,9 +235,8 @@ public:
     auto* player_transform = player.get_component<Components::Transform2D>();
     auto* rigid = player.get_component<Components::RigidBody>();
     auto* player_texture = player.get_component<Components::Texture>();
-    //auto* player_size = player.get_component<Components::Size>();
 
-    if (!player_transform || !rigid || !player_texture /*|| !player_size*/) return;
+    if (!player_transform || !rigid || !player_texture) return;
 
     // Player movement input
     f32 speed = 300.0f;
@@ -280,16 +279,16 @@ public:
       if (shouldWalk && !is_walking) {
         // Switch to walking animation
         player_texture->texture_handle = player_run_texture;
-        /*player_size->width = player_idle_width;
-        player_size->height = player_idle_height;*/
+        player_transform->scale.x = player_idle_width;
+        player_transform->scale.y = player_idle_height;
         Engine::Audio::play_sound(walk_sound, 1.0f, true);
         is_walking = true;
       }
       else if (!shouldWalk && is_walking) {
         // Switch to idle animation
         player_texture->texture_handle = player_idle_texture;
-        /*player_size->width = player_idle_width;
-        player_size->height = player_idle_height;*/
+        player_transform->scale.x = player_idle_width;
+        player_transform->scale.y = player_idle_height;
         Engine::Audio::stop_sound(walk_sound);
         is_walking = false;
       }
