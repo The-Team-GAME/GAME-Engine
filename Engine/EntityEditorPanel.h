@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    EntityEditorPanel.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines the EntityEditorPanel ImGui interface for runtime
+//          entity and component manipulation. Provides a GUI for creating, deleting,
+//          and editing entities and their components during gameplay.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 #include "imgui.h"
 #include "Core.h"
@@ -7,7 +22,7 @@
 
 inline void EntityEditorPanel()
 {
-  static int selectedEntityId = -1;
+  static s32 selected_entity_id = -1;
   static char entitySearchBuffer[256] = "";
 
   ImGui::Begin("Entity Editor");
@@ -15,62 +30,62 @@ inline void EntityEditorPanel()
   // Section 1: Entity List
   if (ImGui::CollapsingHeader("Entities", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    ImGui::Text("Total Entities: %zu", Engine::WORLD.getEntityCount());
-    
+    ImGui::Text("Total Entities: %zu", Engine::WORLD.get_entity_count());
+
     // Search/Filter
     ImGui::InputText("Search", entitySearchBuffer, 256);
-    
+
     ImGui::Separator();
-    
+
     // Entity list with selection
     ImGui::BeginChild("EntityList", ImVec2(0, 200), true);
-    
-    auto allEntities = Engine::WORLD.getAllEntities();
+
+    auto allEntities = Engine::WORLD.get_all_entities();
     for (const auto& entity : allEntities)
     {
-      bool isSelected = (selectedEntityId == static_cast<int>(entity.getId()));
-      std::string label = "Entity " + std::to_string(entity.getId());
-      
+      bool isSelected = (selected_entity_id == static_cast<int>(entity.get_id()));
+      std::string label = "Entity " + std::to_string(entity.get_id());
+
       if (ImGui::Selectable(label.c_str(), isSelected))
       {
-        selectedEntityId = static_cast<int>(entity.getId());
+        selected_entity_id = static_cast<int>(entity.get_id());
       }
     }
-    
+
     ImGui::EndChild();
-    
+
     // Create new entity button
     if (ImGui::Button("Create New Entity"))
     {
-      auto newEntity = Engine::WORLD.createEntity();
-      selectedEntityId = static_cast<int>(newEntity.getId());
+      auto newEntity = Engine::WORLD.create_entity();
+      selected_entity_id = static_cast<int>(newEntity.get_id());
     }
-    
+
     ImGui::SameLine();
-    
+
     // Delete selected entity
-    if (selectedEntityId != -1 && ImGui::Button("Delete Selected"))
+    if (selected_entity_id != -1 && ImGui::Button("Delete Selected"))
     {
-      Engine::WORLD.destroyEntity(selectedEntityId);
-      selectedEntityId = -1;
+      Engine::WORLD.destroy_entity(selected_entity_id);
+      selected_entity_id = -1;
     }
   }
 
   ImGui::Separator();
 
   // Section 2: Component Editor for Selected Entity
-  if (selectedEntityId != -1)
+  if (selected_entity_id != -1)
   {
-    auto entity = Engine::WORLD.getEntity(selectedEntityId);
-    
-    if (!entity.isValid())
+    auto entity = Engine::WORLD.get_entity(selected_entity_id);
+
+    if (!entity.is_valid())
     {
-      selectedEntityId = -1;
+      selected_entity_id = -1;
       ImGui::End();
       return;
     }
 
-    ImGui::Text("Editing Entity: %d", selectedEntityId);
+    ImGui::Text("Editing Entity: %d", selected_entity_id);
     ImGui::Separator();
 
     // Add Component Section
@@ -78,54 +93,49 @@ inline void EntityEditorPanel()
     {
       if (ImGui::Button("Add Position"))
       {
-        if (!entity.hasComponent<Components::Position>())
-          entity.addComponent<Components::Position>(0.0f, 0.0f);
+        if (!entity.has_component<Components::Position>())
+          entity.add_component<Components::Position>(0.0f, 0.0f);
       }
-      
+
       ImGui::SameLine();
-      if (ImGui::Button("Add Velocity"))
-      {
-        if (!entity.hasComponent<Components::Velocity>())
-          entity.addComponent<Components::Velocity>(0.0f, 0.0f);
-      }
-      
+
       if (ImGui::Button("Add Size"))
       {
-        if (!entity.hasComponent<Components::Size>())
-          entity.addComponent<Components::Size>(100.0f, 100.0f);
+        if (!entity.has_component<Components::Size>())
+          entity.add_component<Components::Size>(100.0f, 100.0f);
       }
-      
+
       ImGui::SameLine();
       if (ImGui::Button("Add Color"))
       {
-        if (!entity.hasComponent<Components::Color>())
-          entity.addComponent<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
+        if (!entity.has_component<Components::Color>())
+          entity.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
       }
-      
+
       if (ImGui::Button("Add Rotation"))
       {
-        if (!entity.hasComponent<Components::Rotation>())
-          entity.addComponent<Components::Rotation>(0.0f);
+        if (!entity.has_component<Components::Rotation>())
+          entity.add_component<Components::Rotation>(0.0f);
       }
-      
+
       ImGui::SameLine();
       if (ImGui::Button("Add Scale"))
       {
-        if (!entity.hasComponent<Components::Scale>())
-          entity.addComponent<Components::Scale>(1.0f, 1.0f);
+        if (!entity.has_component<Components::Scale>())
+          entity.add_component<Components::Scale>(1.0f, 1.0f);
       }
-      
+
       if (ImGui::Button("Add Health"))
       {
-        if (!entity.hasComponent<Components::Health>())
-          entity.addComponent<Components::Health>(100, 100);
+        if (!entity.has_component<Components::Health>())
+          entity.add_component<Components::Health>(100, 100);
       }
-      
+
       ImGui::SameLine();
       if (ImGui::Button("Add RotationSpeed"))
       {
-        if (!entity.hasComponent<Components::RotationSpeed>())
-          entity.addComponent<Components::RotationSpeed>(0.0f);
+        if (!entity.has_component<Components::RotationSpeed>())
+          entity.add_component<Components::RotationSpeed>(0.0f);
       }
     }
 
@@ -135,61 +145,61 @@ inline void EntityEditorPanel()
     if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
     {
       // Position Component
-      if (entity.hasComponent<Components::Position>())
+      if (entity.has_component<Components::Position>())
       {
         if (ImGui::TreeNode("Position"))
         {
-          auto* pos = entity.getComponent<Components::Position>();
+          auto* pos = entity.get_component<Components::Position>();
           ImGui::DragFloat("X##pos", &pos->x, 1.0f);
           ImGui::DragFloat("Y##pos", &pos->y, 1.0f);
-          
+
           if (ImGui::Button("Remove##position"))
-            entity.removeComponent<Components::Position>();
-          
+            entity.remove_component<Components::Position>();
+
           ImGui::TreePop();
         }
       }
 
       // Velocity Component
-      if (entity.hasComponent<Components::Velocity>())
+      /*if (entity.hasComponent<Components::Velocity>())
       {
         if (ImGui::TreeNode("Velocity"))
         {
-          auto* vel = entity.getComponent<Components::Velocity>();
+          auto* vel = entity.get_component<Components::Velocity>();
           ImGui::DragFloat("X##vel", &vel->x, 1.0f);
           ImGui::DragFloat("Y##vel", &vel->y, 1.0f);
-          
+
           if (ImGui::Button("Remove##velocity"))
-            entity.removeComponent<Components::Velocity>();
-          
+            entity.remove_component<Components::Velocity>();
+
           ImGui::TreePop();
         }
-      }
+      }*/
 
       // Size Component
-      if (entity.hasComponent<Components::Size>())
+      if (entity.has_component<Components::Size>())
       {
         if (ImGui::TreeNode("Size"))
         {
-          auto* size = entity.getComponent<Components::Size>();
+          auto* size = entity.get_component<Components::Size>();
           ImGui::DragFloat("Width", &size->width, 1.0f, 0.0f, 10000.0f);
           ImGui::DragFloat("Height", &size->height, 1.0f, 0.0f, 10000.0f);
-          
+
           if (ImGui::Button("Remove##size"))
-            entity.removeComponent<Components::Size>();
-          
+            entity.remove_component<Components::Size>();
+
           ImGui::TreePop();
         }
       }
 
       // Color Component
-      if (entity.hasComponent<Components::Color>())
+      if (entity.has_component<Components::Color>())
       {
         if (ImGui::TreeNode("Color"))
         {
-          auto* color = entity.getComponent<Components::Color>();
-          float colorArray[4] = { color->x, color->y, color->z, color->w };
-          
+          auto* color = entity.get_component<Components::Color>();
+          f32 colorArray[4] = { color->x, color->y, color->z, color->w };
+
           if (ImGui::ColorEdit4("RGBA", colorArray))
           {
             color->x = colorArray[0];
@@ -197,118 +207,165 @@ inline void EntityEditorPanel()
             color->z = colorArray[2];
             color->w = colorArray[3];
           }
-          
+
           if (ImGui::Button("Remove##color"))
-            entity.removeComponent<Components::Color>();
-          
+            entity.remove_component<Components::Color>();
+
           ImGui::TreePop();
         }
       }
 
       // Rotation Component
-      if (entity.hasComponent<Components::Rotation>())
+      if (entity.has_component<Components::Rotation>())
       {
         if (ImGui::TreeNode("Rotation"))
         {
-          auto* rot = entity.getComponent<Components::Rotation>();
+          auto* rot = entity.get_component<Components::Rotation>();
           ImGui::SliderFloat("Angle (degrees)", &rot->angle, 0.0f, 360.0f);
-          
+
           if (ImGui::Button("Remove##rotation"))
-            entity.removeComponent<Components::Rotation>();
-          
+            entity.remove_component<Components::Rotation>();
+
           ImGui::TreePop();
         }
       }
 
       // Scale Component
-      if (entity.hasComponent<Components::Scale>())
+      if (entity.has_component<Components::Scale>())
       {
         if (ImGui::TreeNode("Scale"))
         {
-          auto* scale = entity.getComponent<Components::Scale>();
+          auto* scale = entity.get_component<Components::Scale>();
           ImGui::DragFloat("X##scale", &scale->x, 0.01f, 0.01f, 10.0f);
           ImGui::DragFloat("Y##scale", &scale->y, 0.01f, 0.01f, 10.0f);
-          
+
           if (ImGui::Button("Uniform Scale"))
           {
-            float uniform = (scale->x + scale->y) / 2.0f;
+            f32 uniform = (scale->x + scale->y) / 2.0f;
             scale->x = scale->y = uniform;
           }
-          
+
           if (ImGui::Button("Remove##scale"))
-            entity.removeComponent<Components::Scale>();
-          
+            entity.remove_component<Components::Scale>();
+
           ImGui::TreePop();
         }
       }
 
       // Health Component
-      if (entity.hasComponent<Components::Health>())
+      if (entity.has_component<Components::Health>())
       {
         if (ImGui::TreeNode("Health"))
         {
-          auto* health = entity.getComponent<Components::Health>();
+          auto* health = entity.get_component<Components::Health>();
           ImGui::DragInt("Current", &health->value, 1, 0, health->max);
           ImGui::DragInt("Max", &health->max, 1, 1, 10000);
-          
-          ImGui::ProgressBar(static_cast<float>(health->value) / health->max);
-          
+
+          ImGui::ProgressBar(static_cast<f32>(health->value) / health->max);
+
           if (ImGui::Button("Heal 10"))
             health->heal(10);
-          
+
           ImGui::SameLine();
           if (ImGui::Button("Damage 10"))
             health->damage(10);
-          
+
           if (ImGui::Button("Remove##health"))
-            entity.removeComponent<Components::Health>();
-          
+            entity.remove_component<Components::Health>();
+
           ImGui::TreePop();
         }
       }
 
       // RotationSpeed Component
-      if (entity.hasComponent<Components::RotationSpeed>())
+      if (entity.has_component<Components::RotationSpeed>())
       {
         if (ImGui::TreeNode("RotationSpeed"))
         {
-          auto* rotSpeed = entity.getComponent<Components::RotationSpeed>();
-          ImGui::DragFloat("Degrees/Second", &rotSpeed->degreesPerSecond, 1.0f, -360.0f, 360.0f);
-          
+          auto* rotSpeed = entity.get_component<Components::RotationSpeed>();
+          ImGui::DragFloat("Degrees/Second", &rotSpeed->degrees_per_second, 1.0f, -360.0f, 360.0f);
+
           if (ImGui::Button("Remove##rotspeed"))
-            entity.removeComponent<Components::RotationSpeed>();
-          
+            entity.remove_component<Components::RotationSpeed>();
+
           ImGui::TreePop();
         }
       }
 
       // StaticSprite Component (Read-only for now)
-      if (entity.hasComponent<Components::StaticSprite>())
+      if (entity.has_component<Components::StaticSprite>())
       {
         if (ImGui::TreeNode("StaticSprite"))
         {
-          auto* sprite = entity.getComponent<Components::StaticSprite>();
-          ImGui::Text("Texture ID: %d", sprite->textureId);
-          ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), 
+          auto* sprite = entity.get_component<Components::StaticSprite>();
+          ImGui::Text("Texture ID: %d", sprite->texture_id);
+          ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
             "Note: StaticSprite editing not yet supported");
-          
+
           if (ImGui::Button("Remove##sprite"))
-            entity.removeComponent<Components::StaticSprite>();
-          
+            entity.remove_component<Components::StaticSprite>();
+
+          ImGui::TreePop();
+        }
+      }
+
+      // AnimatedSprite Component
+      if (entity.has_component<Components::AnimatedSprite>())
+      {
+        if (ImGui::TreeNode("AnimatedSprite"))
+        {
+          auto* sprite = entity.get_component<Components::AnimatedSprite>();
+
+          ImGui::Text("Sprite Sheet ID: %d", sprite->spriteSheetId);
+          ImGui::Text("Animation Time: %.2f", sprite->animationTime);
+
+          ImGui::Separator();
+
+          // Playback controls
+          ImGui::Text("Playback Controls:");
+          if (ImGui::Button("Play"))
+            sprite->play();
+
+          ImGui::SameLine();
+          if (ImGui::Button("Pause"))
+            sprite->pause();
+
+          ImGui::SameLine();
+          if (ImGui::Button("Stop"))
+            sprite->stop();
+
+          ImGui::SameLine();
+          if (ImGui::Button("Reset"))
+            sprite->reset();
+
+          // Status
+          ImGui::Checkbox("Is Playing", &sprite->is_playing);
+          ImGui::Checkbox("Loop", &sprite->loop);
+
+          // Manual time control
+          ImGui::SliderFloat("Time", &sprite->animationTime, 0.0f, 10.0f);
+
+          ImGui::Separator();
+          ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
+            "Note: Frame/texture editing not yet supported");
+
+          if (ImGui::Button("Remove##animsprite"))
+            entity.remove_component<Components::AnimatedSprite>();
+
           ImGui::TreePop();
         }
       }
 
       // Background Component (marker only)
-      if (entity.hasComponent<Components::Background>())
+      if (entity.has_component<Components::Background>())
       {
         if (ImGui::TreeNode("Background"))
         {
           ImGui::Text("Background marker component");
-          
+
           if (ImGui::Button("Remove##background"))
-            entity.removeComponent<Components::Background>();
-          
+            entity.remove_component<Components::Background>();
+
           ImGui::TreePop();
         }
       }
@@ -319,8 +376,8 @@ inline void EntityEditorPanel()
     // Clone Entity
     if (ImGui::Button("Clone This Entity"))
     {
-      auto clonedEntity = Engine::WORLD.cloneEntity(entity.getId());
-      selectedEntityId = static_cast<int>(clonedEntity.getId());
+      auto clonedEntity = Engine::WORLD.clone_entity(entity.get_id());
+      selected_entity_id = static_cast<int>(clonedEntity.get_id());
     }
   }
   else

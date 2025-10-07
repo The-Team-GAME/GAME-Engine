@@ -13,7 +13,7 @@
 //          drag-and-drop operations, allowing assets to be placed onto other
 //          target windows, such as the Timeline.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 
 #pragma once
 
@@ -22,12 +22,12 @@
 #include <vector>
 
 struct DroppedImage {
-	int textureId;
-	ImVec2 position;
-	bool isDropped = false;
+  s32 texture_id;
+  ImVec2 position;
+  bool is_dropped = false;
 };
 
 // Function to render the Sprite Dropper UI.
 // It takes the list of loaded images to display and a reference to the vector
 // where dropped images should be stored.
-void SpriteDropper(std::vector<int>& loadedImageIds, std::vector<DroppedImage>& droppedImages);
+void SpriteDropper(std::vector<s32>& loadedImageIds);

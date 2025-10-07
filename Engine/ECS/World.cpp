@@ -1,76 +1,91 @@
+//-----------------------------------------------------------------------------------
+// file:    World.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements the World class methods for entity creation,
+//          destruction, cloning, event dispatching, system updates, and entity
+//          queries. Manages the main ECS update and draw loops.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "World.h"
 
 namespace ECS
 {
 
-  Entity World::createEntity()
+  Entity World::create_entity()
   {
-    EntityID id = nextEntityId++;
-    activeEntities.insert(id);
-    entitySignatures[id] = ComponentSignature{}; // Initialize empty signature
+    EntityID id = next_entity_id++;
+    active_entities.insert(id);
+    entity_signatures[id] = ComponentSignature{}; // Initialize empty signature
     return Entity(id, this);
   }
 
-  Entity World::getEntity(EntityID id)
+  Entity World::get_entity(EntityID id)
   {
-    if (activeEntities.find(id) != activeEntities.end())
+    if (active_entities.find(id) != active_entities.end())
     {
       return Entity(id, this);
     }
     return Entity(INVALID_ENTITY, this);
   }
 
-  Entity World::cloneEntity(EntityID sourceId)
+  Entity World::clone_entity(EntityID source_id)
   {
-    if (!isEntityActive(sourceId))
+    if (!is_entity_active(source_id))
     {
       return Entity(INVALID_ENTITY, this); // Source entity doesn't exist or is inactive
     }
 
-    Entity newEntity = createEntity();
+    Entity newEntity = create_entity();
 
     // Copy signature from source to new entity
-    const auto& sourceSignature = entitySignatures.at(sourceId);
-    entitySignatures[newEntity.getId()] = sourceSignature;
+    const auto& sourceSignature = entity_signatures.at(source_id);
+    entity_signatures[newEntity.get_id()] = sourceSignature;
 
     // Copy all components using the signature
-    for (auto const& [typeId, componentArray] : componentArrays)
+    for (auto const& [typeId, componentArray] : component_arrays)
     {
       if (sourceSignature.test(typeId))
       {
-        componentArray->cloneComponent(sourceId, newEntity.getId());
+        componentArray->clone_component(source_id, newEntity.get_id());
       }
     }
 
     // Notify systems about the new entity
-    entityComponentChanged(newEntity.getId());
+    entity_component_changed(newEntity.get_id());
 
     return newEntity;
   }
 
-  void World::destroyEntity(EntityID id)
+  void World::destroy_entity(EntityID id)
   {
-    entitiesToDestroy.insert(id);
+    entities_to_destory.insert(id);
   }
 
-  bool World::isEntityActive(EntityID id) const
+  bool World::is_entity_active(EntityID id) const
   {
-    return activeEntities.find(id) != activeEntities.end();
+    return active_entities.find(id) != active_entities.end();
   }
 
-  void World::removeEventListener(EventTypeID eventType)
+  void World::remove_event_listener(EventTypeID eventType)
   {
-    eventHandlers.erase(eventType);
+    event_handlers.erase(eventType);
   }
 
   void World::update()
   {
     // Dispatch all queued events
-    for (const auto& event : eventQueue)
+    for (const auto& event : event_queue)
     {
       // Call direct event handlers first
-      auto handlerIt = eventHandlers.find(event.typeId);
-      if (handlerIt != eventHandlers.end()) {
+      auto handlerIt = event_handlers.find(event.type_id);
+      if (handlerIt != event_handlers.end()) {
         for (const auto& handler : handlerIt->second) {
           handler(event);
         }
@@ -79,17 +94,17 @@ namespace ECS
       // Then call system event handlers
       for (auto& system : systems)
       {
-        const auto& systemEventSignature = system->getEventSignature();
-        if (systemEventSignature.test(event.typeId))
+        const auto& systemEventSignature = system->get_event_signature();
+        if (systemEventSignature.test(event.type_id))
         {
-          // Call onEvent for each entity the system manages
-          for (EntityID entity : system->getEntities()) {
-            system->onEvent(event, entity);
+          // Call on_event for each entity the system manages
+          for (EntityID entity : system->get_entities()) {
+            system->on_event(event, entity);
           }
         }
       }
     }
-    eventQueue.clear();
+    event_queue.clear();
 
     // Update all systems
     for (auto& system : systems)
@@ -98,27 +113,27 @@ namespace ECS
     }
 
     // Clean up destroyed entities
-    for (EntityID entityId : entitiesToDestroy)
+    for (EntityID entityId : entities_to_destory)
     {
-      if (activeEntities.erase(entityId))
+      if (active_entities.erase(entityId))
       {
         // Remove from all component arrays
-        for (auto& [typeId, array] : componentArrays)
+        for (auto& [typeId, array] : component_arrays)
         {
-          array->removeEntity(entityId);
+          array->remove_entity(entityId);
         }
 
         // Remove signature
-        entitySignatures.erase(entityId);
+        entity_signatures.erase(entityId);
 
         // Remove from all systems
         for (auto& system : systems)
         {
-          system->removeEntity(entityId);
+          system->remove_entity(entityId);
         }
       }
     }
-    entitiesToDestroy.clear();
+    entities_to_destory.clear();
   }
 
   void World::draw()
@@ -130,47 +145,47 @@ namespace ECS
     }
   }
 
-  std::vector<Entity> World::getAllEntities() const
+  std::vector<Entity> World::get_all_entities() const
   {
     std::vector<Entity> result;
-    result.reserve(activeEntities.size());
-    for (EntityID entityId : activeEntities)
+    result.reserve(active_entities.size());
+    for (EntityID entityId : active_entities)
     {
       result.emplace_back(entityId, const_cast<World*>(this));
     }
     return result;
   }
 
-  size_t World::getEntityCount() const
+  size_t World::get_entity_count() const
   {
-    return activeEntities.size();
+    return active_entities.size();
   }
 
-  void World::entityComponentChanged(EntityID entity)
+  void World::entity_component_changed(EntityID entity)
   {
     for (auto& system : systems)
     {
-      if (systemMatchesEntity(*system, entity))
+      if (system_matches_entity(*system, entity))
       {
-        system->addEntity(entity);
+        system->add_entity(entity);
       }
       else
       {
-        system->removeEntity(entity);
+        system->remove_entity(entity);
       }
     }
   }
 
-  bool World::systemMatchesEntity(const System& system, EntityID entity) const
+  bool World::system_matches_entity(const System& system, EntityID entity) const
   {
-    if (!isEntityActive(entity))
+    if (!is_entity_active(entity))
       return false;
 
-    auto it = entitySignatures.find(entity);
-    if (it == entitySignatures.end())
+    auto it = entity_signatures.find(entity);
+    if (it == entity_signatures.end())
       return false;
 
-    const auto& requiredSignature = system.getRequiredSignature();
+    const auto& requiredSignature = system.get_required_signature();
     const auto& entitySignature = it->second;
 
     // Fast bitwise check: entity has all required components

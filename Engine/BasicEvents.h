@@ -1,18 +1,42 @@
+//-----------------------------------------------------------------------------------
+// file:    BasicEvents.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines common event structures used throughout the game engine.
+//          Includes gameplay events (DamageEvent), window events (WindowResizeEvent),
+//          and file handling events (FileDropEvent).
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 #include "ECS/Types.h"
 #include <string>
 #include <vector>
 
+/* ================== //
+// Gameplay events    //
+// ================== */
 struct DamageEvent {
   ECS::EntityID target;
-  int amount;
+  s32 amount;
 };
 
+/* ================= //
+// Window events     //
+// ================= */
 struct WindowResizeEvent {
-  int width;
-  int height;
+  s32 width;
+  s32 height;
 };
 
+/* ====================== //
+// File handling events   //
+// ====================== */
 struct FileDropEvent {
   std::vector<std::string> filePaths;
 };

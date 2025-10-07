@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    Graphics.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements the Graphics class providing a comprehensive 2D
+//          rendering system with batch rendering, texture/sprite sheet management,
+//          text rendering using FreeType, camera system, and primitive drawing.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "Precompiled.h"
 #include <GL/glew.h>
 #include <vector>
@@ -6,6 +21,10 @@
 #include "Shader.h"
 #include <filesystem>
 #include "Graphics.h"
+#include "Core.h"
+
+#include "TypeDef.h"
+#include "Logger.h"
 
 namespace
 {
@@ -30,8 +49,12 @@ namespace
   };
 }
 
-// Recalculates the view matrix based on the camera's current position, rotation, and zoom.
-void Graphics::updateViewMatrix() {
+/*=================================================================================
+Function Brief:
+Recalculates the view matrix based on the camera's current position, rotation,
+and zoom level. Updates the combined view-projection matrix used for rendering.
+==================================================================================*/
+void Graphics::update_view_matrix() {
   view = glm::mat4(1.0f);
   view = glm::translate(view, glm::vec3(camera.position.x, camera.position.y, 0.0f));
   // Use virtual resolution for consistent camera behavior
@@ -40,16 +63,30 @@ void Graphics::updateViewMatrix() {
   view = glm::scale(view, glm::vec3(1.0f / camera.zoom, 1.0f / camera.zoom, 1.0f)); // Changed: invert the zoom
   view = glm::translate(view, glm::vec3(-VIRTUAL_WIDTH / 2.0f, -VIRTUAL_HEIGHT / 2.0f, 0.0f));
   view = glm::inverse(view);
-  viewProjectionMatrix = projection * view;
+  view_projection_matrix = projection * view;
 }
 
-// Initializes the graphics system, shaders, and buffers.
-Graphics::Graphics(int windowWidth, int windowHeight)
+/*=================================================================================
+Function Brief:
+Constructor that initializes the Graphics system.
+==================================================================================*/
+Graphics::Graphics()
+{
+  // empty by design
+}
+
+void Graphics::set_params(s32 width, s32 height)
+{
+  win_width = width;
+  win_height = height;
+}
+
+void Graphics::init_graphics()
 {
   // Initialize FreeType
   if (FT_Init_FreeType(&ft))
   {
-    std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+    Log::warning("ERROR::FREETYPE: Could not init FreeType Library");
   }
 
   // Enable alpha blending.
@@ -57,10 +94,10 @@ Graphics::Graphics(int windowWidth, int windowHeight)
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   // Load and compile the shader program.
-  textureShader.init("Assets\\shaders\\texture.vert", "Assets\\shaders\\texture.frag");
+  texture_shader.init("Assets\\shaders\\texture.vert", "Assets\\shaders\\texture.frag");
 
   // Pre-allocate memory for the vertex buffer.
-  quadVertexBufferBase.resize(MaxVertices);
+  quad_vertex_buffer.resize(MaxVertices);
 
   // Create and bind a Vertex Array Object (VAO) to store the vertex attribute configuration.
   glGenVertexArrays(1, &quadVAO);
@@ -73,24 +110,24 @@ Graphics::Graphics(int windowWidth, int windowHeight)
   glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * MaxVertices, nullptr, GL_DYNAMIC_DRAW);
 
   // Define the layout of the vertex data.
-  // Attribute 0: Position (3 floats)
+  // Attribute 0: position (3 f32s)
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Position));
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, position));
 
-  // Attribute 1: Color (4 floats)
+  // Attribute 1: color (4 f32s)
   glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Color));
+  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, color));
 
-  // Attribute 2: Texture Coordinates (2 floats)
+  // Attribute 2: tex_coords (2 f32s)
   glEnableVertexAttribArray(2);
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, TexCoords));
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, tex_coords));
 
-  // Attribute 3: Texture ID (1 float)
+  // Attribute 3: tex_id (1 f32)
   glEnableVertexAttribArray(3);
-  glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, TexID));
+  glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, tex_id));
 
-  // Generate indices for all possible quads in a batch.
-  uint32_t indices[MaxIndices];
+  // Generate indices for all possible quads in a batch
+  std::vector<uint32_t> indices(MaxIndices);
   uint32_t offset = 0;
   for (uint32_t i = 0; i < MaxIndices; i += 6)
   {
@@ -109,10 +146,10 @@ Graphics::Graphics(int windowWidth, int windowHeight)
   // Create an Index Buffer Object (IBO) and upload the index data.
   glGenBuffers(1, &quadIBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadIBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
 
   // Create a 1x1 white texture for drawing solid colors without a real texture.
-  unsigned int whiteTexture;
+  u32 whiteTexture;
   glGenTextures(1, &whiteTexture);
   glBindTexture(GL_TEXTURE_2D, whiteTexture);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -123,24 +160,24 @@ Graphics::Graphics(int windowWidth, int windowHeight)
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &color);
 
   // The white texture is always in slot 0.
-  textureSlots[0] = whiteTexture;
+  texture_slots[0] = whiteTexture;
   // Initialize other texture slots to 0.
   for (uint32_t i = 1; i < MaxTextureSlots; i++)
-    textureSlots[i] = 0;
+    texture_slots[i] = 0;
 
   // Set initial viewport and projection matrix.
-  setViewport(windowWidth, windowHeight);
+  set_viewport(win_width, win_height);
 
   // Use consistent virtual resolution
   projection = glm::ortho(0.0f, VIRTUAL_WIDTH, VIRTUAL_HEIGHT, 0.0f, -1.0f, 1.0f);
 
-  updateViewMatrix();
+  update_view_matrix();
 }
 
 // Cleans up OpenGL objects and resources.
 Graphics::~Graphics()
 {
-  textureShader.destroy();
+  texture_shader.destroy();
 
   glDeleteVertexArrays(1, &quadVAO);
   glDeleteBuffers(1, &quadVBO);
@@ -154,10 +191,10 @@ Graphics::~Graphics()
   // Clean up all remaining fonts
   for (const auto& pair : fonts)
   {
-    glDeleteTextures(1, &pair.second.atlasTexture);
+    glDeleteTextures(1, &pair.second.atlas_texture);
   }
 
-  for (const auto& texture : textureSlots)
+  for (const auto& texture : texture_slots)
   {
     if (texture != 0) glDeleteTextures(1, &texture);
   }
@@ -166,68 +203,70 @@ Graphics::~Graphics()
 }
 
 // Called at the beginning of a frame to prepare for drawing.
-void Graphics::beginFrame()
+void Graphics::begin_frame()
 {
-  updateViewMatrix(); // Update camera matrix in case it moved.
-  startBatch();       // Reset the batch renderer.
+  Engine::PERFORMANCE.start("Graphics");
+  update_view_matrix(); // Update camera matrix in case it moved.
+  start_batch();       // Reset the batch renderer.
 }
 
 // Called at the end of a frame to draw everything that was batched.
-void Graphics::endFrame()
+void Graphics::end_frame()
 {
+  Engine::PERFORMANCE.stop("Graphics");
   flush(); // Draw the current batch.
 }
 
 // Resets the batch data, preparing for a new set of draw calls.
-void Graphics::startBatch()
+void Graphics::start_batch()
 {
-  quadIndexCount = 0;
-  vertexIndex = 0;
-  textureSlotIndex = 1; // Slot 0 is reserved for the white texture.
+  quad_index_count = 0;
+  vertex_index = 0;
+  texture_slot_index = 1; // Slot 0 is reserved for the white texture.
 }
 
 // Draws the current batch and starts a new one.
-void Graphics::nextBatch()
+void Graphics::next_batch()
 {
   flush();
-  startBatch();
+  start_batch();
 }
 
 // Submits the current batch of vertices to the GPU for drawing.
 void Graphics::flush()
 {
   // Don't do anything if there's nothing to draw.
-  if (quadIndexCount == 0)
+  if (quad_index_count == 0)
     return;
 
   // Calculate the size of the vertex data to be uploaded.
-  uint32_t dataSize = vertexIndex * sizeof(Vertex);
+  uint32_t dataSize = vertex_index * sizeof(Vertex);
   glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
   // Upload the vertex data from our CPU-side vector to the GPU's VBO.
-  glBufferSubData(GL_ARRAY_BUFFER, 0, dataSize, quadVertexBufferBase.data());
+  glBufferSubData(GL_ARRAY_BUFFER, 0, dataSize, quad_vertex_buffer.data());
 
   // Prepare the shader for drawing.
-  textureShader.use();
+  texture_shader.use();
   // Set the combined view-projection matrix uniform.
-  textureShader.setMatrix("u_ViewProjection", viewProjectionMatrix);
+  texture_shader.set_matrix("u_ViewProjection", view_projection_matrix);
 
   // Create an array of sampler indices [0, 1, 2, ..., 31].
-  int samplers[MaxTextureSlots];
+  s32 samplers[MaxTextureSlots];
   std::iota(samplers, samplers + MaxTextureSlots, 0);
   // Upload the sampler array to the shader.
-  textureShader.setIntArray("u_Textures", MaxTextureSlots, samplers);
+  texture_shader.set_int_array("u_Textures", MaxTextureSlots, samplers);
 
   // Bind all active textures to their respective texture units.
-  for (uint32_t i = 0; i < textureSlotIndex; i++)
-    glBindTextureUnit(i, textureSlots[i]);
+  for (uint32_t i = 0; i < texture_slot_index; i++)
+    glBindTextureUnit(i, texture_slots[i]);
 
   // Bind the VAO and draw the elements.
   glBindVertexArray(quadVAO);
-  glDrawElements(GL_TRIANGLES, quadIndexCount, GL_UNSIGNED_INT, nullptr);
+  glDrawElements(GL_TRIANGLES, quad_index_count, GL_UNSIGNED_INT, nullptr);
 }
 
 // Calculates the positional offset needed to draw a quad from a specific origin point.
-glm::vec2 Graphics::calculateOriginOffset(float width, float height, Origin origin) const
+glm::vec2 Graphics::calculate_origin_offset(f32 width, f32 height, Origin origin) const
 {
   switch (origin)
   {
@@ -240,51 +279,51 @@ glm::vec2 Graphics::calculateOriginOffset(float width, float height, Origin orig
 }
 
 // Sets the OpenGL viewport and updates the projection matrix.
-void Graphics::setViewport(int width, int height)
+void Graphics::set_viewport(s32 width, s32 height)
 {
-  viewportWidth = width;
-  viewportHeight = height;
+  viewport_width = width;
+  viewport_height = height;
 
   // Tell OpenGL the size of the rendering window.
   glViewport(0, 0, width, height);
 
   // Update the orthographic projection matrix to match the new dimensions.
-  // projection = glm::ortho(0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, -1.0f, 1.0f);
+  // projection = glm::ortho(0.0f, static_cast<f32>(width), static_cast<f32>(height), 0.0f, -1.0f, 1.0f);
 
-  updateViewMatrix(); // Recalculate the combined matrix.
+  update_view_matrix(); // Recalculate the combined matrix.
 }
 
 // Sets the camera's world position.
-void Graphics::setCameraPosition(float x, float y)
+void Graphics::set_camera_position(f32 x, f32 y)
 {
   camera.position = { x, y };
-  updateViewMatrix();
+  update_view_matrix();
 }
 
 // Sets the camera's zoom level.
-void Graphics::setCameraZoom(float zoom)
+void Graphics::set_camera_zoom(f32 zoom)
 {
   camera.zoom = zoom;
-  updateViewMatrix();
+  update_view_matrix();
 }
 
 // Sets the camera's rotation in degrees.
-void Graphics::setCameraRotation(float degrees)
+void Graphics::set_camera_rotation(f32 degrees)
 {
   camera.rotation = degrees;
-  updateViewMatrix();
+  update_view_matrix();
 }
 
 // Adds a colored rectangle to the current drawing batch.
-void Graphics::drawRect(const glm::vec4& color, float x, float y, float width, float height, float rotation, Origin origin) {
+void Graphics::draw_rect(const glm::vec4& color, f32 x, f32 y, f32 width, f32 height, f32 rotation, Origin origin) {
   // If the current batch is full, draw it and start a new one.
-  if (quadIndexCount >= MaxIndices)
+  if (quad_index_count >= MaxIndices)
   {
-    nextBatch();
+    next_batch();
   }
 
   // Calculate the origin offset.
-  glm::vec2 offset = calculateOriginOffset(width, height, origin);
+  glm::vec2 offset = calculate_origin_offset(width, height, origin);
 
   // Create the transformation matrix for the quad.
   glm::mat4 transform = glm::translate(glm::mat4(1.0f), { x + offset.x, y + offset.y, 0.0f })
@@ -292,32 +331,107 @@ void Graphics::drawRect(const glm::vec4& color, float x, float y, float width, f
     * glm::scale(glm::mat4(1.0f), { width, height, 1.0f });
 
   // Use texture ID 0.0f, which corresponds to the white texture slot.
-  constexpr float texID = 0.0f;
+  constexpr f32 texID = 0.0f;
 
   // Add the 4 vertices of the quad to the vertex buffer.
-  quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[0], color, {0.0f, 0.0f}, texID };
-  quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[1], color, {1.0f, 0.0f}, texID };
-  quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[2], color, {1.0f, 1.0f}, texID };
-  quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[3], color, {0.0f, 1.0f}, texID };
+  quad_vertex_buffer[vertex_index++] = { transform * QuadVertexPositions[0], color, {0.0f, 0.0f}, texID };
+  quad_vertex_buffer[vertex_index++] = { transform * QuadVertexPositions[1], color, {1.0f, 0.0f}, texID };
+  quad_vertex_buffer[vertex_index++] = { transform * QuadVertexPositions[2], color, {1.0f, 1.0f}, texID };
+  quad_vertex_buffer[vertex_index++] = { transform * QuadVertexPositions[3], color, {0.0f, 1.0f}, texID };
 
   // Increment the index count for the two triangles that make up the quad.
-  quadIndexCount += 6;
+  quad_index_count += 6;
+}
+
+// Draws a filled circle using a triangle fan approach (batched as quads approximation)
+void Graphics::draw_circle(const glm::vec4& color, f32 x, f32 y, f32 radius, s32 segments)
+{
+  // Clamp segments to reasonable values
+  segments = std::max(8, std::min(segments, 64));
+
+  // We'll approximate the circle using triangular quads
+  // Each quad represents a slice of the circle
+  constexpr f32 texID = 0.0f; // Use white texture
+
+  f32 angleStep = 2.0f * 3.14159265359f / segments;
+
+  for (s32 i = 0; i < segments; i++)
+  {
+    if (quad_index_count >= MaxIndices)
+    {
+      next_batch();
+    }
+
+    f32 angle1 = i * angleStep;
+    f32 angle2 = (i + 1) * angleStep;
+
+    // Create a triangle as a degenerate quad (center + 2 edge points + duplicate)
+    glm::vec3 center = { x, y, 0.0f };
+    glm::vec3 p1 = { x + radius * cosf(angle1), y + radius * sinf(angle1), 0.0f };
+    glm::vec3 p2 = { x + radius * cosf(angle2), y + radius * sinf(angle2), 0.0f };
+
+    quad_vertex_buffer[vertex_index++] = { center, color, {0.5f, 0.5f}, texID };
+    quad_vertex_buffer[vertex_index++] = { p1, color, {0.5f, 0.5f}, texID };
+    quad_vertex_buffer[vertex_index++] = { p2, color, {0.5f, 0.5f}, texID };
+    quad_vertex_buffer[vertex_index++] = { p2, color, {0.5f, 0.5f}, texID }; // Duplicate to form quad
+
+    quad_index_count += 6;
+  }
+}
+
+// Draws a line between two points with specified thickness
+void Graphics::draw_line(const glm::vec4& color, f32 x1, f32 y1, f32 x2, f32 y2, f32 thickness)
+{
+  if (quad_index_count >= MaxIndices)
+  {
+    next_batch();
+  }
+
+  // Calculate the line direction and perpendicular offset
+  f32 dx = x2 - x1;
+  f32 dy = y2 - y1;
+  f32 length = sqrtf(dx * dx + dy * dy);
+
+  if (length < 0.001f) return; // Don't draw zero-length lines
+
+  // Normalize direction
+  dx /= length;
+  dy /= length;
+
+  // Perpendicular vector for thickness
+  f32 perpX = -dy * thickness * 0.5f;
+  f32 perpY = dx * thickness * 0.5f;
+
+  constexpr f32 texID = 0.0f; // Use white texture
+
+  // Create a quad representing the line
+  glm::vec3 v0 = { x1 + perpX, y1 + perpY, 0.0f };
+  glm::vec3 v1 = { x2 + perpX, y2 + perpY, 0.0f };
+  glm::vec3 v2 = { x2 - perpX, y2 - perpY, 0.0f };
+  glm::vec3 v3 = { x1 - perpX, y1 - perpY, 0.0f };
+
+  quad_vertex_buffer[vertex_index++] = { v0, color, {0.0f, 0.0f}, texID };
+  quad_vertex_buffer[vertex_index++] = { v1, color, {1.0f, 0.0f}, texID };
+  quad_vertex_buffer[vertex_index++] = { v2, color, {1.0f, 1.0f}, texID };
+  quad_vertex_buffer[vertex_index++] = { v3, color, {0.0f, 1.0f}, texID };
+
+  quad_index_count += 6;
 }
 
 // Loads a font from a file and prepares it for rendering.
-int Graphics::loadFont(const char* filepath, unsigned int size)
+s32 Graphics::load_font(const char* filepath, u32 size)
 {
   FT_Face face;
   if (FT_New_Face(ft, filepath, 0, &face))
   {
-    std::cout << "ERROR::FREETYPE: Failed to load font: " << filepath << std::endl;
+    Log::warning("ERROR::FREETYPE: Failed to load font: " + std::string(filepath));
     return -1;
   }
 
   FT_Set_Pixel_Sizes(face, 0, size);
 
   // Calculate atlas dimensions
-  int atlasWidth = 0, atlasHeight = 0;
+  s32 atlasWidth = 0, atlasHeight = 0;
 
   // First pass: calculate required atlas size
   for (unsigned char c = 0; c < 128; c++)
@@ -334,9 +448,9 @@ int Graphics::loadFont(const char* filepath, unsigned int size)
 
   // Create atlas texture
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-  unsigned int atlasTexture;
-  glGenTextures(1, &atlasTexture);
-  glBindTexture(GL_TEXTURE_2D, atlasTexture);
+  u32 atlas_texture;
+  glGenTextures(1, &atlas_texture);
+  glBindTexture(GL_TEXTURE_2D, atlas_texture);
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -344,15 +458,15 @@ int Graphics::loadFont(const char* filepath, unsigned int size)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   Font font;
-  font.fontSize = size;
+  font.font_size = size;
   font.baseline = 0.0f;
-  font.atlasTexture = atlasTexture;
-  font.atlasWidth = atlasWidth;
-  font.atlasHeight = atlasHeight;
-  font.isValid = true;
+  font.atlas_texture = atlas_texture;
+  font.atlas_width = atlasWidth;
+  font.atlas_height = atlasHeight;
+  font.is_valid = true;
 
   // Second pass: pack characters into atlas
-  int currentX = 0;
+  s32 currentX = 0;
   for (unsigned char c = 0; c < 128; c++)
   {
     if (FT_Load_Char(face, c, FT_LOAD_RENDER))
@@ -361,12 +475,12 @@ int Graphics::loadFont(const char* filepath, unsigned int size)
     // Copy glyph data to RGBA atlas
     if (face->glyph->bitmap.width > 0 && face->glyph->bitmap.rows > 0)
     {
-      for (int y = 0; y < face->glyph->bitmap.rows; y++)
+      for (u32 y = 0; y < face->glyph->bitmap.rows; y++)
       {
-        for (int x = 0; x < face->glyph->bitmap.width; x++)
+        for (u32 x = 0; x < face->glyph->bitmap.width; x++)
         {
-          int atlasIndex = ((y * atlasWidth) + (currentX + x)) * 4;
-          int glyphIndex = y * face->glyph->bitmap.width + x;
+          s32 atlasIndex = ((y * atlasWidth) + (currentX + x)) * 4;
+          s32 glyphIndex = y * face->glyph->bitmap.width + x;
 
           unsigned char alpha = face->glyph->bitmap.buffer[glyphIndex];
 
@@ -380,20 +494,20 @@ int Graphics::loadFont(const char* filepath, unsigned int size)
     }
 
     // Calculate UV coordinates
-    float x0 = static_cast<float>(currentX) / atlasWidth;
-    float x1 = static_cast<float>(currentX + face->glyph->bitmap.width) / atlasWidth;
-    float y0 = 0.0f;
-    float y1 = static_cast<float>(face->glyph->bitmap.rows) / atlasHeight;
+    f32 x0 = static_cast<f32>(currentX) / atlasWidth;
+    f32 x1 = static_cast<f32>(currentX + face->glyph->bitmap.width) / atlasWidth;
+    f32 y0 = 0.0f;
+    f32 y1 = static_cast<f32>(face->glyph->bitmap.rows) / atlasHeight;
 
     Character character = {
         { {x0, y0}, {x1, y0}, {x1, y1}, {x0, y1} }, // UV coords
         glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
         glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-        static_cast<unsigned int>(face->glyph->advance.x)
+        static_cast<u32>(face->glyph->advance.x)
     };
 
-    font.Characters.insert(std::pair<char, Character>(c, character));
-    font.baseline = std::max(font.baseline, static_cast<float>(character.Bearing.y));
+    font.characters.insert(std::pair<char, Character>(c, character));
+    font.baseline = std::max(font.baseline, static_cast<f32>(character.bearing.y));
 
     currentX += face->glyph->bitmap.width + 1; // +1 for padding
   }
@@ -404,132 +518,132 @@ int Graphics::loadFont(const char* filepath, unsigned int size)
   FT_Done_Face(face);
   glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
-  int fontId = nextFontId++;
+  s32 fontId = next_font_id++;
   fonts[fontId] = font;
   return fontId;
 }
 
 // Unloads a font by its ID
-void Graphics::unloadFont(int fontId)
+void Graphics::unload_font(s32 fontId)
 {
   auto it = fonts.find(fontId);
   if (it == fonts.end())
   {
-    std::cout << "Graphics: Invalid font ID: " << fontId << std::endl;
+    Log::warning("Graphics: Invalid font ID: " + std::to_string(fontId));
     return;
   }
 
   // Delete the atlas texture
-  glDeleteTextures(1, &it->second.atlasTexture);
+  glDeleteTextures(1, &it->second.atlas_texture);
 
   fonts.erase(it);
 
-  nextFontId--;
+  next_font_id--;
 
-  std::cout << "Graphics: Unloaded font with ID " << fontId << std::endl;
+  Log::info("Graphics: Unloaded font with ID " + std::to_string(fontId));
 }
 
 // Unloads all fonts
-void Graphics::unloadAllFonts()
+void Graphics::unload_all_fonts()
 {
   // Delete all atlas textures
   for (auto& pair : fonts)
   {
-    glDeleteTextures(1, &pair.second.atlasTexture);
+    glDeleteTextures(1, &pair.second.atlas_texture);
   }
   fonts.clear();
 
   // Reset the counter
-  nextFontId = 0;
+  next_font_id = 0;
 
-  std::cout << "Graphics: Unloaded all fonts" << std::endl;
+  Log::info("Graphics: Unloaded all fonts");
 }
 
 // Draws text on the screen.
-void Graphics::drawText(int fontId, const std::string& text, float x, float y, float scale, const glm::vec4& color)
+void Graphics::draw_text(s32 fontId, const std::string& text, f32 x, f32 y, f32 scale, const glm::vec4& color)
 {
   auto it = fonts.find(fontId);
   if (it == fonts.end())
   {
-    std::cout << "Graphics: Invalid font ID: " << fontId << std::endl;
+    Log::warning("Graphics: Invalid font ID: " + std::to_string(fontId));
     return;
   }
 
   const Font& font = it->second;
 
   // Find or add font atlas to texture slots
-  float textureIndex = 0.0f;
-  auto texIt = std::find(textureSlots.begin() + 1, textureSlots.begin() + textureSlotIndex, font.atlasTexture);
-  if (texIt != textureSlots.begin() + textureSlotIndex)
+  f32 textureIndex = 0.0f;
+  auto texIt = std::find(texture_slots.begin() + 1, texture_slots.begin() + texture_slot_index, font.atlas_texture);
+  if (texIt != texture_slots.begin() + texture_slot_index)
   {
-    textureIndex = static_cast<float>(std::distance(textureSlots.begin(), texIt));
+    textureIndex = static_cast<f32>(std::distance(texture_slots.begin(), texIt));
   }
   else
   {
-    if (textureSlotIndex >= MaxTextureSlots)
+    if (texture_slot_index >= MaxTextureSlots)
     {
-      nextBatch();
+      next_batch();
       textureIndex = 1.0f;
     }
     else
     {
-      textureIndex = static_cast<float>(textureSlotIndex);
+      textureIndex = static_cast<f32>(texture_slot_index);
     }
-    textureSlots[static_cast<int>(textureIndex)] = font.atlasTexture;
-    if (textureSlotIndex < MaxTextureSlots) textureSlotIndex++;
+    texture_slots[static_cast<int>(textureIndex)] = font.atlas_texture;
+    if (texture_slot_index < MaxTextureSlots) texture_slot_index++;
   }
 
-  float currentX = x;
+  f32 currentX = x;
 
   for (char c : text)
   {
-    auto charIt = font.Characters.find(c);
-    if (charIt == font.Characters.end())
+    auto charIt = font.characters.find(c);
+    if (charIt == font.characters.end())
       continue;
 
     const Character& ch = charIt->second;
 
-    if (ch.Size.x > 0 && ch.Size.y > 0)
+    if (ch.size.x > 0 && ch.size.y > 0)
     {
-      if (quadIndexCount >= MaxIndices)
-        nextBatch();
+      if (quad_index_count >= MaxIndices)
+        next_batch();
 
-      float xpos = currentX + ch.Bearing.x * scale;
-      float ypos = y + (font.baseline - ch.Bearing.y) * scale;
-      float w = ch.Size.x * scale;
-      float h = ch.Size.y * scale;
+      f32 xpos = currentX + ch.bearing.x * scale;
+      f32 ypos = y + (font.baseline - ch.bearing.y) * scale;
+      f32 w = ch.size.x * scale;
+      f32 h = ch.size.y * scale;
 
       glm::mat4 transform = glm::translate(glm::mat4(1.0f), { xpos + w / 2.0f, ypos + h / 2.0f, 0.0f })
         * glm::scale(glm::mat4(1.0f), { w, h, 1.0f });
 
       // Use pre-calculated UV coordinates
-      quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[0], color, ch.texCoords[0], textureIndex };
-      quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[1], color, ch.texCoords[1], textureIndex };
-      quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[2], color, ch.texCoords[2], textureIndex };
-      quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[3], color, ch.texCoords[3], textureIndex };
+      quad_vertex_buffer[vertex_index++] = { transform * QuadVertexPositions[0], color, ch.tex_coords[0], textureIndex };
+      quad_vertex_buffer[vertex_index++] = { transform * QuadVertexPositions[1], color, ch.tex_coords[1], textureIndex };
+      quad_vertex_buffer[vertex_index++] = { transform * QuadVertexPositions[2], color, ch.tex_coords[2], textureIndex };
+      quad_vertex_buffer[vertex_index++] = { transform * QuadVertexPositions[3], color, ch.tex_coords[3], textureIndex };
 
-      quadIndexCount += 6;
+      quad_index_count += 6;
     }
 
-    currentX += (ch.Advance >> 6) * scale;
+    currentX += (ch.advance >> 6) * scale;
   }
 }
 
 // Loads a texture from a file and returns an ID for it.
-int Graphics::loadTexture(const char* filepath, MinifyingFilter min_filter)
+s32 Graphics::load_texture(const char* filepath, MinifyingFilter min_filter)
 {
-  int width, height, nrChannels;
+  s32 width, height, nrChannels;
   // Load image data from file using stb_image.
   unsigned char* data = stbi_load(filepath, &width, &height, &nrChannels, 0);
 
   if (!data)
   {
-    std::cout << "Failed to load texture: " << filepath << std::endl;
+    Log::warning("Failed to load texture: " + std::string(filepath));
     return -1; // Return -1 on failure.
   }
 
   // Create an OpenGL texture object.
-  unsigned int texture;
+  u32 texture;
   glGenTextures(1, &texture);
   glBindTexture(GL_TEXTURE_2D, texture);
 
@@ -558,26 +672,26 @@ int Graphics::loadTexture(const char* filepath, MinifyingFilter min_filter)
 
   // Store the texture info and return its ID
   Texture tex = { texture, width, height };
-  int textureId = nextTextureId++;
-  textures[textureId] = tex;
+  s32 texture_id = next_texture_id++;
+  textures[texture_id] = tex;
 
-  return textureId;
+  return texture_id;
 }
 
 // A convenience function to draw a full texture.
-void Graphics::drawTexture(int imageId, float x, float y, float width, float height, float rotation, Origin origin, const glm::vec4& tintColor)
+void Graphics::draw_texture(s32 imageId, f32 x, f32 y, f32 width, f32 height, f32 rotation, Origin origin, const glm::vec4& tintColor)
 {
   auto it = textures.find(imageId);
   if (it == textures.end())
   {
-    std::cout << "Invalid image ID: " << imageId << std::endl;
+    Log::warning("Invalid image ID: " + std::to_string(imageId));
     return;
   }
-  // Calls drawTextureRegion with the full dimensions of the source texture.
-  drawTextureRegion(
+  // Calls draw_texture_region with the full dimensions of the source texture.
+  draw_texture_region(
     imageId,
     x, y, width, height,
-    0, 0, static_cast<float>(it->second.width), static_cast<float>(it->second.height),
+    0, 0, static_cast<f32>(it->second.width), static_cast<f32>(it->second.height),
     rotation,
     origin,
     tintColor
@@ -585,41 +699,46 @@ void Graphics::drawTexture(int imageId, float x, float y, float width, float hei
 }
 
 // Adds a region of a texture to the current drawing batch.
-void Graphics::drawTextureRegion(int imageId, float destX, float destY, float destWidth, float destHeight, float srcX, float srcY, float srcWidth, float srcHeight, float rotation, Origin origin, const glm::vec4& tintColor)
+void Graphics::draw_texture_region(s32 imageId, f32 destX, f32 destY, f32 destWidth, f32 destHeight, f32 srcX, f32 srcY, f32 srcWidth, f32 srcHeight, f32 rotation, Origin origin, const glm::vec4& tintColor)
 {
   auto it = textures.find(imageId);
   if (it == textures.end())
   {
-    std::cout << "Invalid image ID: " << imageId << std::endl;
+    Log::warning("Invalid image ID: " + std::to_string(imageId));
     return;
   }
 
   // If the batch is full (either too many indices or too many textures), start a new one.
-  if (quadIndexCount >= MaxIndices || textureSlotIndex >= MaxTextureSlots)
+  if (quad_index_count >= MaxIndices || texture_slot_index >= MaxTextureSlots)
   {
-    nextBatch();
+    next_batch();
   }
 
-  float textureIndex = 0.0f;
+  f32 textureIndex = 0.0f;
   const auto& tex = it->second;
 
   // Find if the texture is already in one of the active slots for this batch.
-  auto texSlotIt = std::find(textureSlots.begin() + 1, textureSlots.begin() + textureSlotIndex, tex.id);
-  if (texSlotIt != textureSlots.begin() + textureSlotIndex)
+  auto texSlotIt = std::find(texture_slots.begin() + 1, texture_slots.begin() + texture_slot_index, tex.id);
+  if (texSlotIt != texture_slots.begin() + texture_slot_index)
   {
     // If found, get its index.
-    textureIndex = static_cast<float>(std::distance(textureSlots.begin(), texSlotIt));
+    textureIndex = static_cast<f32>(std::distance(texture_slots.begin(), texSlotIt));
   }
   else
   {
-    // If not found, add it to the next available slot.
-    textureIndex = (float)textureSlotIndex;
-    textureSlots[textureSlotIndex] = tex.id;
-    textureSlotIndex++;
+    if (texture_slot_index >= MaxTextureSlots)
+    {
+      Log::warning("Maximum texture slots reached");
+      return;
+    }
+
+    textureIndex = static_cast<f32>(texture_slot_index);
+    texture_slots[texture_slot_index] = tex.id;
+    texture_slot_index++;
   }
 
   // Calculate origin offset.
-  glm::vec2 offset = calculateOriginOffset(destWidth, destHeight, origin);
+  glm::vec2 offset = calculate_origin_offset(destWidth, destHeight, origin);
 
   // Create the transformation matrix for the destination quad.
   glm::mat4 transform = glm::translate(glm::mat4(1.0f), { destX + offset.x, destY + offset.y, 0.0f })
@@ -635,78 +754,78 @@ void Graphics::drawTextureRegion(int imageId, float destX, float destY, float de
   };
 
   // Add the 4 vertices of the quad to the vertex buffer.
-  quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[0], tintColor, texCoords[0], textureIndex };
-  quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[1], tintColor, texCoords[1], textureIndex };
-  quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[2], tintColor, texCoords[2], textureIndex };
-  quadVertexBufferBase[vertexIndex++] = { transform * QuadVertexPositions[3], tintColor, texCoords[3], textureIndex };
+  quad_vertex_buffer[vertex_index++] = { transform * QuadVertexPositions[0], tintColor, texCoords[0], textureIndex };
+  quad_vertex_buffer[vertex_index++] = { transform * QuadVertexPositions[1], tintColor, texCoords[1], textureIndex };
+  quad_vertex_buffer[vertex_index++] = { transform * QuadVertexPositions[2], tintColor, texCoords[2], textureIndex };
+  quad_vertex_buffer[vertex_index++] = { transform * QuadVertexPositions[3], tintColor, texCoords[3], textureIndex };
 
-  quadIndexCount += 6;
+  quad_index_count += 6;
 }
 
 // Loads a sprite sheet from a file and returns an ID for it.
-int Graphics::loadSpriteSheet(const char* filepath, int frameWidth, int frameHeight, int totalFrames, float animationSpeed, MinifyingFilter min_filter)
+s32 Graphics::load_sprite_sheet(const char* filepath, s32 frame_width, s32 frame_height, s32 total_frames, f32 animation_speed, MinifyingFilter min_filter)
 {
-  // Load the texture using existing loadTexture function
-  int textureId = loadTexture(filepath, min_filter);
+  // Load the texture using existing load_texture function
+  s32 texture_id = load_texture(filepath, min_filter);
 
-  if (textureId == -1)
+  if (texture_id == -1)
   {
-    std::cout << "Failed to load sprite sheet: " << filepath << std::endl;
+    Log::warning("Failed to load sprite sheet: " + std::string(filepath));
     return -1;
   }
 
   // Create sprite sheet data
   SpriteSheet spriteSheet = {
-    static_cast<unsigned int>(textureId),
-    frameWidth,
-    frameHeight,
-    totalFrames,
-    animationSpeed
+    static_cast<u32>(texture_id),
+    frame_width,
+    frame_height,
+    total_frames,
+    animation_speed
   };
 
-  int spriteSheetId = nextSpriteSheetId++;
-  spriteSheets[spriteSheetId] = spriteSheet;
+  s32 spriteSheetId = next_sprite_sheet_id++;
+  sprite_sheets[spriteSheetId] = spriteSheet;
   return spriteSheetId;
 }
 
 // Draws an animated sprite from a sprite sheet.
-void Graphics::drawAnimatedSprite(int spriteSheetId, float x, float y, float width, float height, float time, float rotation, Origin origin, const glm::vec4& tintColor)
+void Graphics::draw_animated_sprite(s32 spriteSheetId, f32 x, f32 y, f32 width, f32 height, f32 time, f32 rotation, Origin origin, const glm::vec4& tintColor)
 {
-  auto it = spriteSheets.find(spriteSheetId);
-  if (it == spriteSheets.end())
+  auto it = sprite_sheets.find(spriteSheetId);
+  if (it == sprite_sheets.end())
   {
-    std::cout << "Invalid sprite sheet ID: " << spriteSheetId << std::endl;
+    Log::warning("Invalid sprite sheet ID: " + std::to_string(spriteSheetId));
     return;
   }
 
   const SpriteSheet& spriteSheet = it->second;
 
   // Calculate current frame based on time and animation speed
-  int currentFrame = static_cast<int>(time * spriteSheet.animationSpeed) % spriteSheet.totalFrames;
+  s32 currentFrame = static_cast<int>(time * spriteSheet.animation_speed) % spriteSheet.total_frames;
 
   // Get texture dimensions to calculate frames per row
-  auto texIt = textures.find(spriteSheet.textureId);
+  auto texIt = textures.find(spriteSheet.texture_id);
   if (texIt == textures.end())
   {
-    std::cout << "Invalid texture ID in sprite sheet: " << spriteSheet.textureId << std::endl;
+    Log::warning("Invalid texture ID in sprite sheet: " + std::to_string(spriteSheet.texture_id));
     return;
   }
   const Texture& texture = texIt->second;
 
-  int framesPerRow = texture.width / spriteSheet.frameWidth;
+  s32 framesPerRow = texture.width / spriteSheet.frame_width;
 
   // Calculate source coordinates for current frame
-  int frameX = currentFrame % framesPerRow;
-  int frameY = currentFrame / framesPerRow;
+  s32 frameX = currentFrame % framesPerRow;
+  s32 frameY = currentFrame / framesPerRow;
 
-  float srcX = static_cast<float>(frameX * spriteSheet.frameWidth);
-  float srcY = static_cast<float>(frameY * spriteSheet.frameHeight);
+  f32 srcX = static_cast<f32>(frameX * spriteSheet.frame_width);
+  f32 srcY = static_cast<f32>(frameY * spriteSheet.frame_height);
 
-  // Use drawTextureRegion to render the specific frame
-  drawTextureRegion(
-    spriteSheet.textureId,
+  // Use draw_texture_region to render the specific frame
+  draw_texture_region(
+    spriteSheet.texture_id,
     x, y, width, height,
-    srcX, srcY, static_cast<float>(spriteSheet.frameWidth), static_cast<float>(spriteSheet.frameHeight),
+    srcX, srcY, static_cast<f32>(spriteSheet.frame_width), static_cast<f32>(spriteSheet.frame_height),
     rotation,
     origin,
     tintColor
@@ -714,32 +833,99 @@ void Graphics::drawAnimatedSprite(int spriteSheetId, float x, float y, float wid
 }
 
 // Clears the screen with a specified color.
-void Graphics::clearScreen(float r, float g, float b, float a)
+void Graphics::clear_screen(f32 r, f32 g, f32 b, f32 a)
 {
   glClearColor(r, g, b, a);
   glClear(GL_COLOR_BUFFER_BIT);
 }
 
-glm::vec2 Graphics::screenToVirtual(float screenX, float screenY) const
+// Clears the screen by drawing a full-screen texture
+// TODO: very hacky implementation, improve it later
+void Graphics::clear_screen(s32 texture_id)
+{
+  auto it = textures.find(texture_id);
+  if (it == textures.end())
+  {
+    Log::warning("Invalid texture ID for clear_screen: " + std::to_string(texture_id));
+    return;
+  }
+
+  // Flush any pending draws first
+  flush();
+
+  // Store current camera state
+  Camera2D oldCamera = camera;
+
+  // Reset camera to default state (no zoom, rotation, or offset)
+  camera.position = { 0.0f, 0.0f };
+  camera.zoom = 1.0f;
+  camera.rotation = 0.0f;
+  update_view_matrix();
+
+  // Draw the texture at full virtual resolution
+  draw_texture(texture_id, VIRTUAL_WIDTH / 2.0f, VIRTUAL_HEIGHT / 2.0f,
+    VIRTUAL_WIDTH, VIRTUAL_HEIGHT, 0.0f, Origin::Center);
+
+  // Flush this draw immediately
+  flush();
+
+  // Restore original camera state
+  camera = oldCamera;
+  update_view_matrix();
+
+  // Start a new batch for subsequent draws
+  start_batch();
+}
+
+glm::vec2 Graphics::screen_to_virtual(f32 screenX, f32 screenY) const
 {
   return {
-    (screenX / viewportWidth) * VIRTUAL_WIDTH,
-    (screenY / viewportHeight) * VIRTUAL_HEIGHT
+    (screenX / viewport_width) * VIRTUAL_WIDTH,
+    (screenY / viewport_height) * VIRTUAL_HEIGHT
+  };
+}
+
+glm::vec2 Graphics::screen_to_world(f32 screenX, f32 screenY) const
+{
+  // First convert screen coordinates to virtual coordinates
+  glm::vec2 virtual_coords = screen_to_virtual(screenX, screenY);
+
+  // Convert virtual coordinates to world coordinates by applying inverse camera transform
+  // Create homogeneous coordinate
+  glm::vec4 virtual_point(virtual_coords.x, virtual_coords.y, 0.0f, 1.0f);
+
+  // Apply inverse view matrix to transform from virtual space to world space
+  glm::mat4 inverse_view = glm::inverse(view);
+  glm::vec4 world_point = inverse_view * virtual_point;
+
+  return glm::vec2(world_point.x, world_point.y);
+}
+
+glm::vec2 Graphics::world_to_screen(f32 worldX, f32 worldY) const
+{
+  // Convert world coordinates to virtual coordinates using view matrix
+  glm::vec4 world_point(worldX, worldY, 0.0f, 1.0f);
+  glm::vec4 virtual_point = view * world_point;
+
+  // Convert virtual coordinates to screen coordinates
+  return {
+    (virtual_point.x / VIRTUAL_WIDTH) * viewport_width,
+    (virtual_point.y / VIRTUAL_HEIGHT) * viewport_height
   };
 }
 
 // Unloads a texture by its ID
-void Graphics::unloadTexture(int textureId)
+void Graphics::unload_texture(s32 texture_id)
 {
-  auto it = textures.find(textureId);
+  auto it = textures.find(texture_id);
   if (it == textures.end())
   {
-    std::cout << "Graphics: Invalid texture ID: " << textureId << std::endl;
+    Log::warning("Graphics: Invalid texture ID: " + std::to_string(texture_id));
     return;
   }
 
   // Save the texture ID before erasing
-  unsigned int glTextureId = it->second.id;
+  u32 glTextureId = it->second.id;
 
   // Delete the OpenGL texture object
   glDeleteTextures(1, &glTextureId);
@@ -747,22 +933,22 @@ void Graphics::unloadTexture(int textureId)
   // Clear the texture from any active texture slots
   for (uint32_t i = 0; i < MaxTextureSlots; i++)
   {
-    if (textureSlots[i] == glTextureId)
+    if (texture_slots[i] == glTextureId)
     {
-      textureSlots[i] = 0;
+      texture_slots[i] = 0;
     }
   }
 
   // Remove from the textures map
   textures.erase(it);
 
-  nextTextureId--;
+  next_texture_id--;
 
-  std::cout << "Graphics: Unloaded texture with ID " << textureId << std::endl;
+  Log::info("Graphics: Unloaded texture with ID " + std::to_string(texture_id));
 }
 
 // Unloads all textures
-void Graphics::unloadAllTextures()
+void Graphics::unload_all_textures()
 {
   for (const auto& pair : textures)
   {
@@ -774,53 +960,55 @@ void Graphics::unloadAllTextures()
   // Clear all texture slots except the white texture (slot 0)
   for (uint32_t i = 1; i < MaxTextureSlots; i++)
   {
-    textureSlots[i] = 0;
+    texture_slots[i] = 0;
   }
 
-  textureSlotIndex = 1; // Reset to 1 (slot 0 is reserved for white texture)
+  texture_slot_index = 1; // Reset to 1 (slot 0 is reserved for white texture)
 
   // Reset the counter
-  nextTextureId = 0;
+  next_texture_id = 0;
 
-  std::cout << "Graphics: Unloaded all textures" << std::endl;
+  Log::info("Graphics: Unloaded all textures");
 }
 
 // Unloads a sprite sheet by its ID
-void Graphics::unloadSpriteSheet(int spriteSheetId)
+void Graphics::unload_sprite_sheet(s32 spriteSheetId)
 {
-  auto it = spriteSheets.find(spriteSheetId);
-  if (it == spriteSheets.end())
+  auto it = sprite_sheets.find(spriteSheetId);
+  if (it == sprite_sheets.end())
   {
-    std::cout << "Graphics: Invalid sprite sheet ID: " << spriteSheetId << std::endl;
+    Log::warning("Graphics: Invalid sprite sheet ID: " + std::to_string(spriteSheetId));
     return;
   }
 
   // Note: We don't delete the underlying texture here because it's managed
   // by the textures map. The sprite sheet just references a texture ID.
   // If you want to delete the underlying texture as well, you would call:
-  // unloadTexture(spriteSheets[spriteSheetId].textureId);
+  // unload_texture(spriteSheets[spriteSheetId].texture_id);
 
-  spriteSheets.erase(it);
+  sprite_sheets.erase(it);
 
   // If this was the last allocated sprite sheet, decrement the counter
-  nextSpriteSheetId--;
+  next_sprite_sheet_id--;
 
-  std::cout << "Graphics: Unloaded sprite sheet with ID " << spriteSheetId << std::endl;
+  Log::info("Graphics: Unloaded sprite sheet with ID " + std::to_string(spriteSheetId));
 }
 
 // Unloads all sprite sheets
-void Graphics::unloadAllSpriteSheets()
+void Graphics::unload_all_sprite_sheets()
 {
-  spriteSheets.clear();
+  sprite_sheets.clear();
 
   // Reset the counter
-  nextSpriteSheetId = 0;
+  next_sprite_sheet_id = 0;
+
+  Log::info("Graphics: Unloaded all sprite sheets");
 }
 
 // Gets the dimensions of a texture by its ID
-void Graphics::getTextureDimensions(int textureId, int& width, int& height) const
+void Graphics::get_texture_dimensions(s32 texture_id, s32& width, s32& height) const
 {
-  auto it = textures.find(textureId);
+  auto it = textures.find(texture_id);
   if (it == textures.end())
   {
     width = 0;
@@ -833,13 +1021,30 @@ void Graphics::getTextureDimensions(int textureId, int& width, int& height) cons
 }
 
 // Gets the OpenGL texture handle by texture ID
-unsigned int Graphics::getTextureHandle(int textureId) const
+u32 Graphics::get_texture_handle(s32 texture_id) const
 {
-  auto it = textures.find(textureId);
+  auto it = textures.find(texture_id);
   if (it == textures.end())
   {
     return 0;
   }
 
   return it->second.id;
+}
+
+// Add this method
+bool Graphics::get_sprite_sheet_info(s32 spriteSheetId, SpriteSheetInfo& info) const
+{
+  auto it = sprite_sheets.find(spriteSheetId);
+  if (it == sprite_sheets.end())
+  {
+    return false;
+  }
+
+  const SpriteSheet& sheet = it->second;
+  info.frame_width = sheet.frame_width;
+  info.frame_height = sheet.frame_height;
+  info.total_frames = sheet.total_frames;
+  info.animation_speed = sheet.animation_speed;
+  return true;
 }

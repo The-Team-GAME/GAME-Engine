@@ -96,14 +96,8 @@
     <ClCompile Include="..\Dependencies\ImGui\backends\imgui_impl_opengl3.cpp">
       <Filter>Source Files\Dependencies\ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="MainMenuState.cpp">
-      <Filter>Source Files\GameStates</Filter>
-    </ClCompile>
     <ClCompile Include="ImGuiManager.cpp">
       <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="EcsState.cpp">
-      <Filter>Source Files\GameStates</Filter>
     </ClCompile>
     <ClCompile Include="ECS\ComponentManager.cpp">
       <Filter>Source Files\ECS\Backend</Filter>
@@ -126,9 +120,6 @@
     <ClCompile Include="Graphics.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="BasicComponents.cpp">
-      <Filter>Source Files\ECS\Components</Filter>
-    </ClCompile>
     <ClCompile Include="Time.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
@@ -138,7 +129,7 @@
     <ClCompile Include="AudioManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ImGuiState.cpp">
+    <ClCompile Include="Perf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Logger.cpp">
@@ -149,6 +140,42 @@
     </ClCompile>
     <ClCompile Include="ECS\EventManager.cpp">
       <Filter>Source Files\ECS\Backend</Filter>
+    </ClCompile>
+    <ClCompile Include="ECS\System.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ECS\World.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Precompiled.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Config.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ECS\System.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ECS\World.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FileExplorer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RectPainterState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LevelLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteDropper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Timeline.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -164,17 +191,8 @@
     <ClInclude Include="InputManager.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
-    <ClInclude Include="MainMenuState.h">
-      <Filter>Source Files\GameStates</Filter>
-    </ClInclude>
     <ClInclude Include="ImGuiManager.h">
       <Filter>Source Files\Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="StateChooser.inl">
-      <Filter>Source Files\Engine\ImGuiPanels</Filter>
-    </ClInclude>
-    <ClInclude Include="EcsState.h">
-      <Filter>Source Files\GameStates</Filter>
     </ClInclude>
     <ClInclude Include="TypeDef.h">
       <Filter>Header Files</Filter>
@@ -251,16 +269,10 @@
     <ClInclude Include="RotationSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Rubric2500Particles.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="WindowManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AudioManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGuiState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DevSpriteAnimationState.h">
@@ -272,8 +284,92 @@
     <ClInclude Include="FileHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Perf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerControllerSystem.h">
+      <Filter>Source Files\ECS\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsSystem.h">
+      <Filter>Source Files\ECS\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="RotationSystem.h">
+      <Filter>Source Files\ECS\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionSystem.h">
+      <Filter>Source Files\ECS\Systems</Filter>
+    </ClInclude>
     <ClInclude Include="ECS\EventManager.h">
       <Filter>Source Files\ECS\Backend</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicEvents.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DamageSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DevECSMessageState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Precompiled.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceManagerPanel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicMovementSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraPanel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FileExplorer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsTestState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EntityEditorPanel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GravitySystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LevelLoaderTestState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RectPainterState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Level.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LevelLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Rubric2500ParticlesState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShowcaseState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SimplePlayerMovementSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteDropper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Timeline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StateChooser.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -296,5 +392,20 @@
       <Filter>Source Files\GameObjects</Filter>
     </None>
     <None Include="Assets\objects\banana.json" />
+    <None Include="ECS\ComponentArray.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="ECS\ComponentManager.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="ECS\EventManager.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="ECS\System.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="ECS\World.inl">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

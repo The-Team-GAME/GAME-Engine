@@ -12,7 +12,7 @@
 //          drag-and-drop operations, allowing assets to be placed onto other
 //          target windows, such as the Timeline.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 
 #include "SpriteDropper.h"
@@ -29,15 +29,15 @@
     Must be called once per frame inside the game state's main Draw() function
     (e.g., SpriteState::Draw()).
     ==================================================================================*/
-void SpriteDropper(std::vector<int>& loadedImageIds, std::vector<DroppedImage>& droppedImages) {
+void SpriteDropper(std::vector<int>& loadedImageIds) {
 
   // --- Sprite Dropper ---
   ImGui::Begin("Sprite Dropper");
   // NOTE: Changed text to reflect its primary role as a source, not a drop zone
   ImGui::Text("Drag Images to Timeline:");
 
-  for (int imageId : loadedImageIds) {
-    ImGui::PushID(imageId);
+  for (s32 image_id : loadedImageIds) {
+    ImGui::PushID(image_id);
 
     // Push a style color change to make the button background transparent
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
@@ -56,10 +56,10 @@ void SpriteDropper(std::vector<int>& loadedImageIds, std::vector<DroppedImage>& 
 
       // Set the payload with the image ID
       // The string "SPRITEDROP_ID" links this source to the Timeline's drop target.
-      ImGui::SetDragDropPayload("SPRITEDROP_ID", &imageId, sizeof(int));
+      ImGui::SetDragDropPayload("SPRITEDROP_ID", &image_id, sizeof(int));
 
       // Draw the drag preview that follows the mouse
-      ImGui::Image(reinterpret_cast<void*>(static_cast<intptr_t>(imageId)), ImVec2(50, 50));
+      ImGui::Image(reinterpret_cast<void*>(static_cast<intptr_t>(image_id)), ImVec2(50, 50));
       ImGui::Text("Dragging Image...");
 
       ImGui::EndDragDropSource();
@@ -70,7 +70,7 @@ void SpriteDropper(std::vector<int>& loadedImageIds, std::vector<DroppedImage>& 
     ImVec2 max = ImGui::GetItemRectMax();
 
     ImGui::GetWindowDrawList()->AddImage(
-      reinterpret_cast<void*>(static_cast<intptr_t>(imageId)),
+      reinterpret_cast<void*>(static_cast<intptr_t>(image_id)),
       min, max,
       ImVec2(0, 0), ImVec2(1, 1),
       ImGui::GetColorU32(ImVec4(1, 1, 1, 1))

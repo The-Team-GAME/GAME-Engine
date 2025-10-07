@@ -1,17 +1,17 @@
 //-----------------------------------------------------------------------------------
 // file:    StateManager.cpp
-// project: CLIMB
+// project: Monkey Stole My GPA
 //
 // author:  Chew Shee Yang (100%)
 //          Primary author
 //
 // email:   chew.s@digipen.edu
 //
-// brief:   Defines the game state management system, including the base state
-//          interface, template for state implementation, and the StateManager
-//          namespace for handling state transitions and game lifecycle.
+// brief:   This file implements the game state management system, including state
+//          stack operations for transitions, push/pop functionality, and lifecycle
+//          management for handling state initialization and cleanup.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright Â© 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 
 #include "StateManager.h" 
@@ -19,137 +19,103 @@
 
 namespace Engine
 {
-  void StateManager::ChangeState(GameStateBase* newState, std::any data)
+  /* ===================== //
+  // State Transitions     //
+  // ===================== */
+  void StateManager::change_state(GameStateBase* newState)
   {
     // Clear all existing states
-    while (!stateStack.empty())
+    while (!state_stack.empty())
     {
-      GameStateBase* state = GetCurrentState();
-      state->Free();
-      state->Unload();
-      stateStack.pop_back();
+      GameStateBase* state = get_current_state();
+      state->free();
+      state->unload();
+      state_stack.pop_back();
       //stateDataStack.pop_back();
     }
 
     // Add the new state
-    stateStack.push_back(newState);
+    state_stack.push_back(newState);
     //stateDataStack.push_back(data);
-    newState->Load();
-    newState->Init();
+    newState->load();
+    newState->init();
   }
 
-  void StateManager::PushState(GameStateBase* newState, std::any /*data*/)
+  /* ===================== //
+  // Stack Operations      //
+  // ===================== */
+  void StateManager::push_state(GameStateBase* newState)
   {
-    stateStack.push_back(newState);
+    state_stack.push_back(newState);
     //stateDataStack.push_back(data);
-    GetCurrentState()->Load();
-    GetCurrentState()->Init();
+    get_current_state()->load();
+    get_current_state()->init();
   }
 
-  bool StateManager::PopState()
+  bool StateManager::pop_state()
   {
-    //if (stateStack.empty() || stateDataStack.empty())
-    if (stateStack.empty())
+    //if (state_stack.empty() || stateDataStack.empty())
+    if (state_stack.empty())
     {
       // No state to pop
       return false;
     }
 
     // Unload current state 
-    GetCurrentState()->Free();
-    GetCurrentState()->Unload();
-    stateStack.pop_back();
+    get_current_state()->free();
+    get_current_state()->unload();
+    state_stack.pop_back();
     //stateDataStack.pop_back();
 
     // If we still have states, initialize the new top state
-    if (!stateStack.empty())
+    if (!state_stack.empty())
     {
       // dont need to load again because prev data is still preserved
-      GetCurrentState()->Init();
+      get_current_state()->init();
       return true;
     }
     else
     {
-      // No more states, stop the game
-      Stop();
+      // TODO: No more states, stop the game
       return false;
     }
   }
 
-  bool StateManager::PopState(std::any data)
+  /* ===================== //
+  // State Control         //
+  // ===================== */
+  void StateManager::restart()
   {
-    //if (stateStack.empty() || stateDataStack.empty())
-    if (stateStack.empty())
+    if (!state_stack.empty())
     {
-      // No state to pop
-      return false;
-    }
-
-    // Unload current state 
-    GetCurrentState()->Free();
-    GetCurrentState()->Unload();
-    stateStack.pop_back();
-    //stateDataStack.pop_back();
-
-    // If we still have states, initialize the new top state with the new data
-    if (!stateStack.empty())
-    {
-      // Replace the data for the new current state
-      //stateDataStack.back() = data;
-
-      GetCurrentState()->Init();
-      return true;
-    }
-    else
-    {
-      // No more states, stop the game
-      Stop();
-      return false;
+      get_current_state()->free();
+      get_current_state()->init();
     }
   }
 
-  void StateManager::Restart()
+  void StateManager::init(GameStateBase* initialState)
   {
-    if (!stateStack.empty())
-    {
-      GetCurrentState()->Free();
-      GetCurrentState()->Init();
-    }
+    state_stack.push_back(initialState);
+    get_current_state()->load();
+    get_current_state()->init();
   }
 
-  void StateManager::Stop()
-  {
-    //running = false;
-  }
-
-  void StateManager::Init(GameStateBase* initialState)
-  {
-    stateStack.push_back(initialState);
-    GetCurrentState()->Load();
-    GetCurrentState()->Init();
-  }
-
-  void StateManager::Exit()
+  void StateManager::exit()
   {
     // Clean up all states in the stack
-    while (!stateStack.empty())
+    while (!state_stack.empty())
     {
-      GetCurrentState()->Free();
-      GetCurrentState()->Unload();
-      stateStack.pop_back();
-      //stateDataStack.pop_back();
+      get_current_state()->free();
+      get_current_state()->unload();
+      state_stack.pop_back();
     }
   }
 
-  GameStateBase* StateManager::GetCurrentState()
+  /* ===================== //
+  // State Access          //
+  // ===================== */
+  GameStateBase* StateManager::get_current_state()
   {
-    return stateStack.back();
+    return state_stack.back();
   }
-
-  /*std::any& StateManager::GetStateData()
-  {
-     return stateDataStack.back();
-  }*/
-
-
 }

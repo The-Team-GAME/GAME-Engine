@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    GameObjectState.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines the GameObjectState which demonstrates the ObjectFactory
+//          prefab system. Shows how to load prefabs from JSON files and instantiate
+//          multiple entities with different component configurations.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "StateManager.h"
@@ -10,53 +25,53 @@
 class GameObjectState : public Engine::GameState<GameObjectState>
 {
 private:
-  int enemyPrefab = -1;
+  s32 enemy_prefab = -1;
 public:
-  void Load() {};
+  void load() {};
 
-  void Init()
+  void init()
   {
     // Load the enemy prefab from a JSON file
-    enemyPrefab = Engine::FACTORY.registerObject("Assets/objects/enemy.json");
+    enemy_prefab = Engine::FACTORY.registerObject("Assets/objects/enemy.json");
 
     // Create two enemy instances from the prefab
-    auto enemy1 = Engine::FACTORY.createObject(enemyPrefab)
-      .addComponent<Components::Tag<"GameObjectState">>()
-      .addComponent<Components::Position>(100.0f, 100.0f); // Position the first enemy left
-    auto enemy2 = Engine::FACTORY.createObject(enemyPrefab)
-      .addComponent<Components::Tag<"GameObjectState">>()
-      .addComponent<Components::Position>(300.0f, 100.0f) // Position the second enemy right
-      .addComponent<Components::Scale>(2.0f, 2.0f); // Make it 2 times bigger
+    auto enemy1 = Engine::FACTORY.createObject(enemy_prefab)
+      .add_component<Components::Tag<"GameObjectState">>()
+      .add_component<Components::Position>(100.0f, 100.0f); // Position the first enemy left
+    auto enemy2 = Engine::FACTORY.createObject(enemy_prefab)
+      .add_component<Components::Tag<"GameObjectState">>()
+      .add_component<Components::Position>(300.0f, 100.0f) // Position the second enemy right
+      .add_component<Components::Scale>(2.0f, 2.0f); // Make it 2 times bigger
 
     // You can modify components like this too
-    //enemy2.getComponent<Components::Position>()->x = 300.0f;
+    //enemy2.get_component<Components::Position>()->x = 300.0f;
 
-    auto background = Engine::WORLD.createEntity()
-      .addComponent<Components::Tag<"GameObjectState">>()
-      .addComponent<Components::Background>()
-      .addComponent<Components::Color>(0.2f, 0.3f, 0.4f, 1.0f); // Dark blue background
+    auto background = Engine::WORLD.create_entity()
+      .add_component<Components::Tag<"GameObjectState">>()
+      .add_component<Components::Background>()
+      .add_component<Components::Color>(0.2f, 0.3f, 0.4f, 1.0f); // Dark blue background
 
     // Add systems to the world
-    Engine::WORLD.addSystem<BackgroundSystem>(); // Background system should be first
-    Engine::WORLD.addSystem<MovementSystem>();
-    Engine::WORLD.addSystem<StaticSpriteRenderSystem>();
+    Engine::WORLD.add_system<BackgroundSystem>(); // Background system should be first
+    Engine::WORLD.add_system<MovementSystem>();
+    Engine::WORLD.add_system<StaticSpriteRenderSystem>();
   };
 
-  void Update() {};
+  void update() {};
 
-  void Draw()
+  void draw()
   {
   };
 
-  void Free() {
-    Engine::FACTORY.unregisterObject(enemyPrefab);
-    Engine::WORLD.destroyEntitiesWith<Components::Tag<"GameObjectState">>();
+  void free() {
+    Engine::FACTORY.unregisterObject(enemy_prefab);
+    Engine::WORLD.destroy_entities_with<Components::Tag<"GameObjectState">>();
 
     // Remove systems
-    Engine::WORLD.removeSystem<BackgroundSystem>();
-    Engine::WORLD.removeSystem<MovementSystem>();
-    Engine::WORLD.removeSystem<StaticSpriteRenderSystem>();
+    Engine::WORLD.remove_system<BackgroundSystem>();
+    Engine::WORLD.remove_system<MovementSystem>();
+    Engine::WORLD.remove_system<StaticSpriteRenderSystem>();
   };
 
-  void Unload() {};
+  void unload() {};
 };

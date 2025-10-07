@@ -1,8 +1,8 @@
 {
   "entity": {
     "id": "banana",
-    "width": 200,
-    "height": 120,
+    "width": 20,
+    "height": 12,
     "texturePath": "Assets/images/banana.png",
     "minifyingFilter": 0
   }

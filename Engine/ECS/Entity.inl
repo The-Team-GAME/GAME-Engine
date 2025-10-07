@@ -1,39 +1,54 @@
+//-----------------------------------------------------------------------------------
+// file:    Entity.inl
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements the template methods for the Entity class.
+//          Provides inline implementations for component manipulation operations
+//          that forward calls to the World instance.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 #include "Entity.h"
-#include "World.h" // Add this include
+#include "World.h"
 
 namespace ECS {
 
   template<typename T, typename... Args>
-  Entity& Entity::addComponent(Args&&... args) {
-    world->addComponent<T>(id, std::forward<Args>(args)...);
+  Entity& Entity::add_component(Args&&... args) {
+    world->add_component<T>(id, std::forward<Args>(args)...);
     return *this;
   }
 
   template<typename T>
-  Entity& Entity::removeComponent() {
-    world->removeComponent<T>(id);
+  Entity& Entity::remove_component() {
+    world->remove_component<T>(id);
     return *this;
   }
 
   template<typename T>
-  T* Entity::getComponent() {
-    return world->getComponent<T>(id);
+  T* Entity::get_component() {
+    return world->get_component<T>(id);
   }
 
   template<typename T>
-  const T* Entity::getComponent() const {
-    return world->getComponent<T>(id);
+  const T* Entity::get_component() const {
+    return world->get_component<T>(id);
   }
 
   template<typename T>
-  bool Entity::hasComponent() const {
-    return world->hasComponent<T>(id);
+  bool Entity::has_component() const {
+    return world->has_component<T>(id);
   }
 
   template<typename... T>
-  bool Entity::hasComponents() const {
-    return world->hasComponents<T...>(id);
+  bool Entity::has_components() const {
+    return world->has_components<T...>(id);
   }
 
 } // namespace ECS

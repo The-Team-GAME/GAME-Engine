@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    World.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines the World class which is the main ECS container.
+//          Manages entities, components, systems, and events. Provides the primary
+//          interface for creating entities, adding components, registering systems,
+//          and dispatching events.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "Types.h"
@@ -17,107 +33,125 @@
 namespace ECS
 {
 
-  // Main ECS World
+  /* ================ //
+  // Main ECS World   //
+  // ================ */
   class World
   {
   private:
-    EntityID nextEntityId = 1;
-    std::unordered_set<EntityID> activeEntities;
-    std::unordered_set<EntityID> entitiesToDestroy;
+    EntityID next_entity_id = 1;
+    std::unordered_set<EntityID> active_entities;
+    std::unordered_set<EntityID> entities_to_destory;
 
     // Entity signatures for fast component checking
-    std::unordered_map<EntityID, ComponentSignature> entitySignatures;
+    std::unordered_map<EntityID, ComponentSignature> entity_signatures;
 
-    std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> componentArrays;
+    std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> component_arrays;
     std::vector<std::unique_ptr<System>> systems;
-    std::vector<Event> eventQueue;
+    std::vector<Event> event_queue;
 
     // Direct event handlers - map from event type to list of handlers
-    std::unordered_map<EventTypeID, std::vector<std::function<void(const Event&)>>> eventHandlers;
+    std::unordered_map<EventTypeID, std::vector<std::function<void(const Event&)>>> event_handlers;
 
     template <typename T>
-    ComponentArray<T>* getComponentArray();
+    ComponentArray<T>* get_component_array();
 
   public:
-    // Component registration
+    /* ========================= //
+    // Component registration    //
+    // ========================= */
     template <typename T>
-    void registerComponent();
+    void register_component();
 
-    // Entity management
-    Entity createEntity();
-    Entity getEntity(EntityID id);
-    Entity cloneEntity(EntityID sourceId);
-    void destroyEntity(EntityID id);
+    /* =================== //
+    // Entity management   //
+    // =================== */
+    Entity create_entity();
+    Entity get_entity(EntityID id);
+    Entity clone_entity(EntityID source_id);
+    void destroy_entity(EntityID id);
 
     template <typename... T>
-    void destroyEntitiesWith();
+    void destroy_entities_with();
 
-    bool isEntityActive(EntityID id) const;
+    bool is_entity_active(EntityID id) const;
 
-    // Component management
+    /* ====================== //
+    // Component management   //
+    // ====================== */
     template <typename T, typename... Args>
-    void addComponent(EntityID entity, Args &&...args);
+    void add_component(EntityID entity, Args &&...args);
 
     template <typename T>
-    void removeComponent(EntityID entity);
+    void remove_component(EntityID entity);
 
     template <typename T>
-    T* getComponent(EntityID entity);
+    T* get_component(EntityID entity);
 
     template <typename T>
-    const T* getComponent(EntityID entity) const;
+    const T* get_component(EntityID entity) const;
 
     template <typename T>
-    bool hasComponent(EntityID entity) const;
+    bool has_component(EntityID entity) const;
 
     template <typename... T>
-    bool hasComponents(EntityID entity) const;
+    bool has_components(EntityID entity) const;
 
-    // System management
+    /* ================== //
+    // System management  //
+    // ================== */
     template <typename T, typename... Args>
-    T* addSystem(Args &&...args);
+    T* add_system(Args &&...args);
 
     template <typename T>
-    void removeSystem();
+    void remove_system();
 
-    // Event management
+    /* ================= //
+    // Event management  //
+    // ================= */
     template <typename T, typename... Args>
-    void sendEvent(Args&&... args);
+    void send_event(Args&&... args);
 
     // Direct event handling without systems
     template <typename T>
-    void addEventListener(std::function<void(const T&)> handler);
+    void add_event_listener(std::function<void(const T&)> handler);
 
     template <typename T>
-    void addEventListener(std::function<void(const Event&)> handler);
+    void add_event_listener(std::function<void(const Event&)> handler);
 
-    void removeEventListener(EventTypeID eventType);
+    void remove_event_listener(EventTypeID eventType);
 
     template <typename T>
-    void removeEventListener();
+    void remove_event_listener();
 
-    // Main update loop
+    /* ==================== //
+    // Main update loop     //
+    // ==================== */
     void update();
 
-    // Main draw loop
+    /* ================ //
+    // Main draw loop   //
+    // ================ */
     void draw();
 
-    // Query methods - return Entity instead of EntityID
+    /* ============================================== //
+    // Query methods - return Entity instead of EntityID //
+    // ============================================== */
     template <typename... T>
-    std::vector<Entity> getEntitiesWith() const;
+    std::vector<Entity> get_entities_with() const;
 
     template <typename... T>
-    Entity getFirstEntityWith() const;
+    Entity get_first_entity_with() const;
 
-    std::vector<Entity> getAllEntities() const;
-    size_t getEntityCount() const;
+    std::vector<Entity> get_all_entities() const;
+    size_t get_entity_count() const;
 
     template <typename T>
-    size_t getComponentCount() const;
+    size_t get_component_count() const;
 
   private:
-    void entityComponentChanged(EntityID entity);
-    bool systemMatchesEntity(const System& system, EntityID entity) const;
+    void entity_component_changed(EntityID entity);
+    bool system_matches_entity(const System& system, EntityID entity) const;
   };
 
 } // namespace ECS

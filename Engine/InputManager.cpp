@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    InputManager.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements the InputManager which handles keyboard and mouse
+//          input state tracking. Provides frame-based input detection (pressed,
+//          released, held) and mouse position in virtual coordinates.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "InputManager.h"
 #include "Core.h"
 #include <GLFW/glfw3.h>
@@ -6,7 +21,9 @@
 
 namespace
 {
-  // Keyboard state
+  /* =================== //
+  // Input state arrays  //
+  // =================== */
   std::array<bool, GLFW_KEY_LAST + 1> currentKeys;
   std::array<bool, GLFW_KEY_LAST + 1> previousKeys;
 
@@ -14,16 +31,25 @@ namespace
   std::array<bool, GLFW_MOUSE_BUTTON_LAST + 1> currentMouseButtons;
   std::array<bool, GLFW_MOUSE_BUTTON_LAST + 1> previousMouseButtons;
 
-  // Mouse position
+  /* =================== //
+  // Mouse state         //
+  // =================== */
   glm::vec2 mousePosition;
 }
 
-// TODO: Dont use GLFW enums directly in the Input class
 namespace Engine
 {
-  void Input::Update()
+  /*=================================================================================
+  Function Brief:
+  Updates the internal state of the input manager. Should be called once per frame
+  before checking any input states. Updates keyboard, mouse button states, and
+  mouse position in virtual coordinates.
+  ==================================================================================*/
+  void Input::update()
   {
-    GLFWwindow* window = Engine::WINDOW.getWindow(); //TODO: pass window as parameter in constructor
+    Engine::PERFORMANCE.start("Input");
+
+    GLFWwindow* window = Engine::WINDOW.get_window(); //TODO: pass window as parameter in constructor
 
     // Update previous states
     previousKeys = currentKeys;
@@ -42,41 +68,43 @@ namespace Engine
     }
 
     // Update mouse position
-    double xpos, ypos;
+    f64 xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
 
     // Convert from window coordinates to virtual coordinates using Graphics system
-    mousePosition = Engine::GRAPHICS.screenToVirtual(static_cast<float>(xpos), static_cast<float>(ypos));
+    mousePosition = Engine::GRAPHICS.screen_to_virtual(static_cast<f32>(xpos), static_cast<f32>(ypos));
 
     //std::cout << "Mouse Position: (" << mousePosition.x << ", " << mousePosition.y << ")\n";
+
+    Engine::PERFORMANCE.stop("Input");
   }
 
-  bool Input::IsKeyPressed(int key)
+  bool Input::is_key_pressed(s32 key)
   {
     return currentKeys[key] && !previousKeys[key];
   }
 
-  bool Input::IsKeyReleased(int key)
+  bool Input::is_key_released(s32 key)
   {
     return !currentKeys[key] && previousKeys[key];
   }
 
-  bool Input::IsKeyHeld(int key)
+  bool Input::is_key_held(s32 key)
   {
     return currentKeys[key];
   }
 
-  bool Input::IsMouseButtonPressed(int button)
+  bool Input::is_mouse_button_pressed(s32 button)
   {
     return currentMouseButtons[button] && !previousMouseButtons[button];
   }
 
-  bool Input::IsMouseButtonReleased(int button)
+  bool Input::is_mouse_button_released(s32 button)
   {
     return !currentMouseButtons[button] && previousMouseButtons[button];
   }
 
-  bool Input::IsMouseButtonHeld(int button)
+  bool Input::is_mouse_button_held(s32 button)
   {
     return currentMouseButtons[button];
   }
@@ -84,5 +112,16 @@ namespace Engine
   glm::vec2 Input::GetMousePosition()
   {
     return mousePosition;
+  }
+
+  glm::vec2 Input::GetMouseWorldPosition()
+  {
+    // Get the raw screen coordinates
+    GLFWwindow* window = Engine::WINDOW.get_window();
+    f64 xpos, ypos;
+    glfwGetCursorPos(window, &xpos, &ypos);
+
+    // Convert screen coordinates to world coordinates using Graphics system
+    return Engine::GRAPHICS.screen_to_world(static_cast<f32>(xpos), static_cast<f32>(ypos));
   }
 }

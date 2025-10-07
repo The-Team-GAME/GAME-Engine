@@ -1,25 +1,39 @@
+//-----------------------------------------------------------------------------------
+// file:    Vector3D.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Cheng Ming Xian (100%)
+//          Primary author
+//
+// email:   c.mingxian@digipen.edu
+//
+// brief:   This file defines a 3D vector class and all of the operations that can
+//          act on a 3D vector.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "Vector3D.h"
 
 namespace Math {
 
   // Constructor
-  // Vec3D(float x_vec, float y_vec) : x{ x_vec }, y{ y_vec } {}
+  // Vec3D(f32 x_vec, f32 y_vec) : x{ x_vec }, y{ y_vec } {}
   // Acessors
-  float Vec3D::X() const { return x; }
-  float Vec3D::Y() const { return y; }
-  float Vec3D::Z() const { return z; }
+  f32 Vec3D::X() const { return x; }
+  f32 Vec3D::Y() const { return y; }
+  f32 Vec3D::Z() const { return z; }
   // Mutators
-  void Vec3D::X(float xval) { x = xval; }
-  void Vec3D::Y(float yval) { y = yval; }
-  void Vec3D::Z(float zval) { z = zval; }
+  f32& Vec3D::X() { return x; }
+  f32& Vec3D::Y() { return y; }
+  f32& Vec3D::Z() { return z; }
   void Vec3D::zero() { x = 0; y = 0; z = 0; }
   // Member Functions
-  float Vec3D::get_magnitude_sq() const
+  f32 Vec3D::get_magnitude_sq() const
   {
     return powf(x, 2) + powf(y, 2) + powf(z, 2);
   }
 
-  float Vec3D::get_magnitude() const
+  f32 Vec3D::get_magnitude() const
   {
     return sqrt(this->get_magnitude_sq());
   }
@@ -45,7 +59,7 @@ namespace Math {
     z *= -1;
     return *this;
   }
-  Vec3D& Vec3D::operator*=(float scalar)
+  Vec3D& Vec3D::operator*=(f32 scalar)
   {
     *this = *this * scalar;
     return *this;
@@ -54,31 +68,31 @@ namespace Math {
   // Non Member Functions
   Vec3D normalise_vector(Vec3D const& vect)
   {
-    float magnitude = vect.get_magnitude();
+    f32 magnitude = vect.get_magnitude();
     Vec3D tmp{ vect };
     return tmp / magnitude;
   }
 
-  Vec3D scale_vector(Vec3D const& vect, float scale)
+  Vec3D scale_vector(Vec3D const& vect, f32 scale)
   {
     Vec3D tmp{ vect };
     return tmp * scale;
   }
 
-  float dot_product(Vec3D const& lhs, Vec3D const& rhs)
+  f32 dot_product(Vec3D const& lhs, Vec3D const& rhs)
   {
-    return	lhs.X() * rhs.X() +
-      lhs.Y() * rhs.Y() +
-      lhs.Z() * rhs.Z();
+    return	lhs.x * rhs.x +
+      lhs.y * rhs.y +
+      lhs.z * rhs.z;
   }
 
   Vec3D cross_product(Vec3D const& lhs, Vec3D const& rhs)
   {
     Vec3D tmp
     {
-      lhs.Y() * rhs.Z() - lhs.Z() * rhs.Y(),
-      lhs.Z() * rhs.X() - lhs.X() * rhs.Z(),
-      lhs.X() * rhs.Y() - lhs.Y() * rhs.X()
+      lhs.y * rhs.z - lhs.z * rhs.y,
+      lhs.z * rhs.x - lhs.x * rhs.z,
+      lhs.x * rhs.y - lhs.y * rhs.x
     };
     return tmp;
   }
@@ -96,26 +110,26 @@ namespace Math {
     tmp -= vect2;
     return tmp;
   }
-  Vec3D operator/(Vec3D const& vect, float divisor)
+  Vec3D operator/(Vec3D const& vect, f32 divisor)
   {
     Vec3D tmp{ vect };
-    tmp.X(vect.X() / divisor);
-    tmp.Y(vect.Y() / divisor);
-    tmp.Z(vect.Z() / divisor);
+    tmp.x = vect.x / divisor;
+    tmp.y = vect.y / divisor;
+    tmp.z = vect.z / divisor;
     return tmp;
   }
-  Vec3D operator*(Vec3D const& vect, float scalar)
+  Vec3D operator*(Vec3D const& vect, f32 scalar)
   {
     Vec3D tmp{ vect };
-    tmp.X(vect.X() * scalar);
-    tmp.Y(vect.Y() * scalar);
-    tmp.Z(vect.Z() * scalar);
+    tmp.x = vect.x * scalar;
+    tmp.y = vect.y * scalar;
+    tmp.z = vect.z * scalar;
     return tmp;
   }
 
   std::ostream& operator<<(std::ostream& os, Vec3D const& vect)
   {
-    os << "(" << vect.X() << "," << vect.Y() << "," << vect.Z() << ")";
+    os << "(" << vect.x << "," << vect.y << "," << vect.z << ")";
     return os;
   }
 }

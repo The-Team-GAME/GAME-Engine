@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    Graphics.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines the Graphics class which provides a comprehensive 2D
+//          rendering system. Features include batch rendering, texture management,
+//          sprite sheets, animated sprites, text rendering with FreeType, camera
+//          controls (position, zoom, rotation), and primitive shape drawing.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "Precompiled.h"
@@ -6,29 +22,37 @@
 #include <unordered_map>
 #include <array>
 #include "Shader.h"
-
+#include "TypeDef.h"
 
 class Graphics
 {
+private:
+  s32 win_width = 0;
+  s32 win_height = 0;
 public:
   // Add these for consistent virtual resolution
-  static constexpr float VIRTUAL_WIDTH = 1600.0f;
-  static constexpr float VIRTUAL_HEIGHT = 900.0f;
+  static constexpr f32 VIRTUAL_WIDTH = 1600.0f;
+  static constexpr f32 VIRTUAL_HEIGHT = 900.0f;
 
+  /* =================== //
+  // Graphics structures //
+  // =================== */
   struct Texture
   {
-    unsigned int id;
-    int width;
-    int height;
+    u32 id;
+    s32 width;
+    s32 height;
   };
   struct Camera2D
   {
     glm::vec2 position = { 0.0f, 0.0f };
-    float zoom = 1.0f;
-    float rotation = 0.0f;
+    f32 zoom = 1.0f;
+    f32 rotation = 0.0f;
   };
 
-
+  /* ================= //
+  // Graphics enums    //
+  // ================= */
   enum class MinifyingFilter
   {
     Nearest,
@@ -44,129 +68,187 @@ public:
     BottomRight
   };
 
-
+  /* ======================== //
+  // Private structures       //
+  // ======================== */
 private:
   struct Vertex
   {
-    glm::vec3 Position;
-    glm::vec4 Color;
-    glm::vec2 TexCoords;
-    float TexID;
+    glm::vec3 position;
+    glm::vec4 color;
+    glm::vec2 tex_coords;
+    f32 tex_id;
   };
 
   struct SpriteSheet
   {
-    unsigned int textureId;
-    int frameWidth;
-    int frameHeight;
-    int totalFrames;
-    float animationSpeed; // Frames per second
+    u32 texture_id;
+    s32 frame_width;
+    s32 frame_height;
+    s32 total_frames;
+    f32 animation_speed; // Frames per second
   };
 
   // Font rendering structures
   struct Character {
-    glm::vec2 texCoords[4];  // UV coordinates in the atlas
-    glm::ivec2 Size;
-    glm::ivec2 Bearing;
-    unsigned int Advance;
+    glm::vec2 tex_coords[4];  // UV coordinates in the atlas
+    glm::ivec2 size;
+    glm::ivec2 bearing;
+    u32 advance;
   };
 
   struct Font {
-    std::unordered_map<char, Character> Characters;
-    unsigned int atlasTexture;  // Single texture for all characters
-    unsigned int fontSize;
-    float baseline;
-    int atlasWidth, atlasHeight;
-    bool isValid = true;  // Track if font is still valid
+    std::unordered_map<char, Character> characters;
+    u32 atlas_texture = 0;  // Single texture for all characters
+    u32 font_size = 0;
+    f32 baseline = 0.0f;
+    s32 atlas_width = 0, atlas_height = 0;
+    bool is_valid = true;  // Track if font is still valid
   };
 
-  static const uint32_t MaxQuads = 10000;
-  static const uint32_t MaxVertices = MaxQuads * 4;
-  static const uint32_t MaxIndices = MaxQuads * 6;
-  static const uint32_t MaxTextureSlots = 32; // Check your GPU's limit
+  /* ========================== //
+  // Batch rendering constants  //
+  // ========================== */
+  static const u32 MaxQuads = 10000;
+  static const u32 MaxVertices = MaxQuads * 4;
+  static const u32 MaxIndices = MaxQuads * 6;
+  static const u32 MaxTextureSlots = 32; // Check your GPU's limit
 
-  unsigned int quadVAO;
-  unsigned int quadVBO;
-  unsigned int quadIBO;
+  /* ======================= //
+  // OpenGL buffers          //
+  // ======================= */
+  u32 quadVAO = 0;
+  u32 quadVBO = 0;
+  u32 quadIBO = 0;
 
-  uint32_t quadIndexCount = 0;
-  std::vector<Vertex> quadVertexBufferBase;
-  uint32_t vertexIndex = 0;
+  u32 quad_index_count = 0;
+  std::vector<Vertex> quad_vertex_buffer;
+  u32 vertex_index = 0;
 
-  // Rendering Data - Changed to unordered_map
-  std::unordered_map<int, Texture> textures;
-  std::unordered_map<int, Font> fonts;
-  std::unordered_map<int, SpriteSheet> spriteSheets;
+  /* ========================= //
+  // Resource storage          //
+  // ========================= */
+  std::unordered_map<s32, Texture> textures;
+  std::unordered_map<s32, Font> fonts;
+  std::unordered_map<s32, SpriteSheet> sprite_sheets;
 
   // ID counters for generating unique IDs
-  int nextTextureId = 0;
-  int nextFontId = 0;
-  int nextSpriteSheetId = 0;
+  s32 next_texture_id = 0;
+  s32 next_font_id = 0;
+  s32 next_sprite_sheet_id = 0;
 
-  std::array<unsigned int, MaxTextureSlots> textureSlots;
-  uint32_t textureSlotIndex = 1; // 0 = white texture
+  /* ========================= //
+  // Texture binding slots     //
+  // ========================= */
+  std::array<u32, MaxTextureSlots> texture_slots = {};
+  u32 texture_slot_index = 1; // 0 = white texture
 
-
-  Shader textureShader;
-  glm::mat4 projection;
-  glm::mat4 view;
-  glm::mat4 viewProjectionMatrix;
+  /* ========================= //
+  // Rendering state           //
+  // ========================= */
+  Shader texture_shader{};
+  glm::mat4 projection = glm::mat4(1.0f);
+  glm::mat4 view = glm::mat4(1.0f);
+  glm::mat4 view_projection_matrix = glm::mat4(1.0f);
   Camera2D camera;
 
-  int viewportWidth = 800;
-  int viewportHeight = 600;
+  s32 viewport_width = 800;
+  s32 viewport_height = 600;
 
-  void updateViewMatrix();
+  void update_view_matrix();
 
 public:
-  Graphics(int windowWidth, int windowHeight);
+  /* ===================================== //
+  // Initialization and lifecycle          //
+  // ===================================== */
+  Graphics();
+  void set_params(s32 win_width, s32 win_height);
+  void init_graphics();
   ~Graphics();
 
-  void beginFrame();
-  void endFrame(); // New function to draw the batch
+  void begin_frame();
+  void end_frame();
 
-  void setViewport(int width, int height);
+  void set_viewport(s32 width, s32 height);
 
-  // Camera controls
-  void setCameraPosition(float x, float y);
-  void setCameraZoom(float zoom);
-  void setCameraRotation(float degrees);
+  /* =================== //
+  // Camera controls     //
+  // =================== */
+  void set_camera_position(f32 x, f32 y);
+  void set_camera_zoom(f32 zoom);
+  void set_camera_rotation(f32 degrees);
 
-  // Font and Text
-  int loadFont(const char* filepath, unsigned int size);
-  void unloadFont(int fontId);
-  void unloadAllFonts();
-  void drawText(int fontId, const std::string& text, float x, float y, float scale, const glm::vec4& color);
+  /* ====================== //
+  // Font and text rendering //
+  // ====================== */
+  s32 load_font(const char* filepath, u32 size);
+  void unload_font(s32 fontId);
+  void unload_all_fonts();
+  void draw_text(s32 fontId, const std::string& text, f32 x, f32 y, f32 scale, const glm::vec4& color);
 
-  void drawRect(const glm::vec4& color, float x, float y, float width, float height, float rotation = 0.0f, Origin origin = Origin::Center);
-  void drawTexture(int imageId, float x, float y, float width, float height, float rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& tintColor = glm::vec4(1.0f));
-  void drawTextureRegion(int imageId, float destX, float destY, float destWidth, float destHeight, float srcX, float srcY, float srcWidth, float srcHeight, float rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& tintColor = glm::vec4(1.0f));
+  /* ====================== //
+  // Primitive drawing      //
+  // ====================== */
+  void draw_rect(const glm::vec4& color, f32 x, f32 y, f32 width, f32 height, f32 rotation = 0.0f, Origin origin = Origin::Center);
+  void draw_circle(const glm::vec4& color, f32 x, f32 y, f32 radius, s32 segments = 32);
+  void draw_line(const glm::vec4& color, f32 x1, f32 y1, f32 x2, f32 y2, f32 thickness = 2.0f);
 
-  int loadTexture(const char* filepath, MinifyingFilter min_filter = MinifyingFilter::Linear);
-  void unloadTexture(int textureId);
-  void unloadAllTextures();
-  void getTextureDimensions(int textureId, int& width, int& height) const;
-  unsigned int getTextureHandle(int textureId) const; // Add this method
+  /* ====================== //
+  // Texture drawing        //
+  // ====================== */
+  void draw_texture(s32 imageId, f32 x, f32 y, f32 width, f32 height, f32 rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& ts32Color = glm::vec4(1.0f));
+  void draw_texture_region(s32 imageId, f32 destX, f32 destY, f32 destWidth, f32 destHeight, f32 srcX, f32 srcY, f32 srcWidth, f32 srcHeight, f32 rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& ts32Color = glm::vec4(1.0f));
 
-  void clearScreen(float r, float g, float b, float a);
+  /* ======================== //
+  // Texture management       //
+  // ======================== */
+  s32 load_texture(const char* filepath, MinifyingFilter min_filter = MinifyingFilter::Linear);
+  void unload_texture(s32 texture_id);
+  void unload_all_textures();
+  void get_texture_dimensions(s32 texture_id, s32& width, s32& height) const;
+  u32 get_texture_handle(s32 texture_id) const;
 
+  /* ======================== //
+  // Screen operations        //
+  // ======================== */
+  void clear_screen(f32 r, f32 g, f32 b, f32 a);
+  void clear_screen(s32 texture_id);
 
+  /* ============================ //
+  // Sprite sheet management      //
+  // ============================ */
+  s32 load_sprite_sheet(const char* filepath, s32 frame_width, s32 frame_height, s32 total_frames, f32 animation_speed, MinifyingFilter min_filter = MinifyingFilter::Linear);
+  void unload_sprite_sheet(s32 spriteSheetId);
+  void unload_all_sprite_sheets();
+  void draw_animated_sprite(s32 spriteSheetId, f32 x, f32 y, f32 width, f32 height, f32 time, f32 rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& ts32Color = glm::vec4(1.0f));
 
-  int loadSpriteSheet(const char* filepath, int frameWidth, int frameHeight, int totalFrames, float animationSpeed, MinifyingFilter min_filter = MinifyingFilter::Linear);
-  void unloadSpriteSheet(int spriteSheetId);
-  void unloadAllSpriteSheets();
-  void drawAnimatedSprite(int spriteSheetId, float x, float y, float width, float height, float time, float rotation = 0.0f, Origin origin = Origin::Center, const glm::vec4& tintColor = glm::vec4(1.0f));
+  struct SpriteSheetInfo {
+    s32 frame_width;
+    s32 frame_height;
+    s32 total_frames;
+    f32 animation_speed;
+  };
+
+  bool get_sprite_sheet_info(s32 spriteSheetId, SpriteSheetInfo& info) const;
+
+  /* ======================== //
+  // FreeType library         //
+  // ======================== */
+  FT_Library ft = {};
+
+  /* ======================= //
+  // Utility functions       //
+  // ======================= */
+  glm::vec2 screen_to_virtual(f32 screenX, f32 screenY) const;
+  glm::vec2 screen_to_world(f32 screenX, f32 screenY) const;
+  glm::vec2 world_to_screen(f32 worldX, f32 worldY) const;
 
 private:
-  void startBatch();
-  void nextBatch();
+  /* ============================ //
+  // Private rendering methods    //
+  // ============================ */
+  void start_batch();
+  void next_batch();
   void flush();
-  glm::vec2 calculateOriginOffset(float width, float height, Origin origin) const;
-
-
-  // Font data
-  FT_Library ft;
-
-public:
-  glm::vec2 screenToVirtual(float screenX, float screenY) const;
+  glm::vec2 calculate_origin_offset(f32 width, f32 height, Origin origin) const;
 };

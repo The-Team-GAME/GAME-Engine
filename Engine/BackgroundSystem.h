@@ -1,17 +1,54 @@
+//-----------------------------------------------------------------------------------
+// file:    BackgroundSystem.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines the BackgroundSystem which renders background colors
+//          for entities with Background and Color components. Clears the screen
+//          with the entity's color component.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "ECS/System.h"
 #include "BasicComponents.h"
 
-// For now this just clears into a solid color, but could be extended to do more complex background rendering
+/* ============================================================== //
+// Background rendering system - clears screen with solid color  //
+// Could be extended for more complex background rendering       //
+// ============================================================== */
 class BackgroundSystem : public ECS::System {
 public:
   BackgroundSystem() {
-    requireComponents<Components::Color, Components::Background>();
+    require_components<Components::Color, Components::Background>();
   }
 
-  void drawEntity(const ECS::Entity& entity) override {
-    auto* color = entity.getComponent<Components::Color>();
-    Engine::GRAPHICS.clearScreen(color->x, color->y, color->z, color->w);
+  void draw_entity(const ECS::Entity& entity) override {
+    auto* color = entity.get_component<Components::Color>();
+    Engine::GRAPHICS.clear_screen(color->x, color->y, color->z, color->w);
+  }
+};
+
+
+/* ================================================================ //
+// Texture background rendering system - draws sprite backgrounds   //
+// Works with entities that have Background and StaticSprite        //
+// ================================================================ */
+class TextureBackgroundSystem : public ECS::System {
+public:
+  TextureBackgroundSystem() {
+    require_components<Components::Background, Components::StaticSprite>();
+  }
+
+  void draw_entity(const ECS::Entity& entity) override {
+    auto* sprite = entity.get_component<Components::StaticSprite>();
+
+    // Draw the background texture (no tint color in StaticSprite)
+    Engine::GRAPHICS.clear_screen(sprite->texture_id);
   }
 };

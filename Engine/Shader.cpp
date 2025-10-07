@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    Shader.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Ong Zi Ming (100%)
+//          Primary author
+//
+// email:   o.ziming@digipen.edu
+//
+// brief:   This file implements the Shader class which handles OpenGL shader program
+//          compilation, linking, and uniform variable management for vertex and
+//          fragment shaders.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "Precompiled.h"
 #include <string>
 #include <sstream>
@@ -8,6 +23,9 @@
 
 #include "Shader.h"
 
+/* ===================== //
+// Shader Initialization //
+// ===================== */
 void Shader::init(const char* vertexPath, const char* fragmentPath)
 {
   // 1. retrieve the vertex/fragment source code from filePath
@@ -38,7 +56,7 @@ void Shader::init(const char* vertexPath, const char* fragmentPath)
   const char* fShaderCode = fragmentCode.c_str();
 
   // 2. compile shaders
-  int success;
+  s32 success;
 
   // vertex Shader
   GLuint vertex = glCreateShader(GL_VERTEX_SHADER);
@@ -82,52 +100,60 @@ void Shader::init(const char* vertexPath, const char* fragmentPath)
   glDeleteShader(fragment);
 }
 
+/* ===================== //
+// Resource Management   //
+// ===================== */
 void Shader::destroy()
 {
   glDeleteProgram(m_id);
 }
 
+/* ===================== //
+// Shader Usage          //
+// ===================== */
 void Shader::use() const {
   glUseProgram(m_id);
 }
 
-GLuint Shader::getId() const {
+GLuint Shader::get_id() const {
   return m_id;
 }
 
-
-void Shader::setBool(const std::string& name, bool const value) const {
+/* ===================== //
+// Uniform Setters       //
+// ===================== */
+void Shader::set_bool(const std::string& name, bool const value) const {
   glUniform1i(glGetUniformLocation(m_id, name.c_str()), static_cast<int>(value));
 }
 
-void Shader::setInt(const std::string& name, int const value) const {
+void Shader::set_int(const std::string& name, s32 const value) const {
   glUniform1i(glGetUniformLocation(m_id, name.c_str()), value);
 }
 
-void Shader::setFloat(const std::string& name, float const value) const {
+void Shader::set_float(const std::string& name, f32 const value) const {
   glUniform1f(glGetUniformLocation(m_id, name.c_str()), value);
 }
 
-void Shader::setMatrix(const std::string& name, const glm::mat4x4& matrix, bool transpose) const {
+void Shader::set_matrix(const std::string& name, const glm::mat4x4& matrix, bool transpose) const {
   glUniformMatrix4fv(glGetUniformLocation(m_id, name.c_str()), 1, transpose, glm::value_ptr(matrix));
 }
 
-void Shader::setVec3(const std::string& name, glm::vec3 const& list) const {
+void Shader::set_vec3(const std::string& name, glm::vec3 const& list) const {
   glUniform3f(glGetUniformLocation(m_id, name.c_str()), list[0], list[1], list[2]);
 }
 
-void Shader::setVec3(const std::string& name, float x, float y, float z) const {
+void Shader::set_vec3(const std::string& name, f32 x, f32 y, f32 z) const {
   glUniform3f(glGetUniformLocation(m_id, name.c_str()), x, y, z);
 }
 
-void Shader::setVec4(const std::string& name, glm::vec4 const& list) const {
+void Shader::set_vec4(const std::string& name, glm::vec4 const& list) const {
   glUniform4f(glGetUniformLocation(m_id, name.c_str()), list[0], list[1], list[2], list[3]);
 }
 
-void Shader::setVec4(const std::string& name, float a, float b, float c, float d) const {
+void Shader::set_vec4(const std::string& name, f32 a, f32 b, f32 c, f32 d) const {
   glUniform4f(glGetUniformLocation(m_id, name.c_str()), a, b, c, d);
 }
 
-void Shader::setIntArray(const std::string& name, int count, const int* value) const {
+void Shader::set_int_array(const std::string& name, s32 count, const int* value) const {
   glUniform1iv(glGetUniformLocation(m_id, name.c_str()), count, value);
 }
