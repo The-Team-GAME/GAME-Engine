@@ -185,17 +185,16 @@ namespace Engine
   ==================================================================================*/
   Core::~Core()
   {
+    StateManager::exit();
 
-    ImGuiManager::imgui_exit();
-
-    StateManager::exit(); // TODO: to be removed 
-
-    ECS::World::remove_event_listener<WindowResizeEvent>();
+    //ECS::World::remove_event_listener<WindowResizeEvent>();
 
     // Cleanup graphics resources
+    Engine::Audio::exit();
     Engine::Resources::exit();
     Engine::Graphics::exit();
-    Engine::Audio::exit();
+
+    ImGuiManager::imgui_exit();
 
     // Cleanup window
     WindowManager::shutdown();
