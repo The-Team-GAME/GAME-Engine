@@ -27,14 +27,16 @@
 
 void BasicState::load()
 {
+  Engine::Resources::set_resource_path("Assets/");
+
   // Load fonts using the new resource manager
-  font_roboto = Engine::Resources::load_font("Assets/fonts/Roboto-Regular.ttf", 48);
+  font_roboto = Engine::Resources::load_font("fonts/Roboto-Regular.ttf", 48);
   if (!font_roboto)
   {
     std::cout << "Failed to load roboto font for BasicState.\n";
   }
 
-  font_playfair = Engine::Resources::load_font("Assets/fonts/PlayfairDisplay-VariableFont_wght.ttf", 48);
+  font_playfair = Engine::Resources::load_font("fonts/PlayfairDisplay-VariableFont_wght.ttf", 48);
   if (!font_playfair)
   {
     std::cout << "Failed to load playfair font for BasicState.\n";
