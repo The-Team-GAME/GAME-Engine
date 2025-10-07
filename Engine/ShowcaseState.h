@@ -257,8 +257,8 @@ public:
           auto* player_animation = player.get_component<Components::Animation>();
           auto* player_atlas = player.get_component<Components::TextureAtlas>();
           if (player_animation && player_atlas) {
-            *player_animation = Components::Animation(7, 0.15f);
-            *player_atlas = Components::TextureAtlas(64, 64, 1, 7, 7);
+            *player_animation = Components::Animation(8, 0.1f);
+            *player_atlas = Components::TextureAtlas(64, 64, 1, 8, 8);
           }
         }
         else {
@@ -314,14 +314,26 @@ public:
       bool shouldWalk = (new_vel_x != 0.0f || new_vel_y != 0.0f);
 
       if (shouldWalk && !is_walking) {
-        // Switch to walking animation
+        // Switch to walking animation (8 frames)
         player_texture->texture_handle = player_run_texture;
+        auto* player_animation = player.get_component<Components::Animation>();
+        auto* player_atlas = player.get_component<Components::TextureAtlas>();
+        if (player_animation && player_atlas) {
+          *player_animation = Components::Animation(8, 0.1f);
+          *player_atlas = Components::TextureAtlas(64, 64, 1, 8, 8);
+        }
         Engine::Audio::play_sound(walk_sound, 1.0f, true);
         is_walking = true;
       }
       else if (!shouldWalk && is_walking) {
-        // Switch to idle animation
+        // Switch to idle animation (7 frames)
         player_texture->texture_handle = player_idle_texture;
+        auto* player_animation = player.get_component<Components::Animation>();
+        auto* player_atlas = player.get_component<Components::TextureAtlas>();
+        if (player_animation && player_atlas) {
+          *player_animation = Components::Animation(7, 0.15f);
+          *player_atlas = Components::TextureAtlas(64, 64, 1, 7, 7);
+        }
         Engine::Audio::stop_sound(walk_sound);
         is_walking = false;
       }

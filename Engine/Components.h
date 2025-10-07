@@ -4,7 +4,7 @@
 #include "Graphics/Renderer.h"
 #include <string> 
 #include "Reflection/Reflect.h"
-
+#include "Time.h"
 
 /* ======================================= //
 // Fixed string for compile-time tags     //
@@ -78,7 +78,7 @@ namespace Components
   struct Animation
   {
     std::vector<Engine::Graphics::Frame> frames;
-    float startTime = 0.0f;     // To get the elapsed time to calculate which frame to show
+    f32 startTime = Engine::Time::get_time();     // To get the elapsed time to calculate which frame to show
     float totalDuration = 0.0f; // Total duration of the animation
 
     // Evenly spaced frames
@@ -86,6 +86,8 @@ namespace Components
     {
       if (frameCount == 0)
         return;
+
+      startTime = Engine::Time::get_time();
 
       frames.resize(frameCount);
       for (size_t i = 0; i < frameCount; ++i)
