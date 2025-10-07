@@ -31,9 +31,9 @@ public:
       f32 size = static_cast<f32>((rand() % 20) + 5); // Random size between 5 and 25
       f32 rotation = static_cast<f32>(rand() % 360); // Random rotation angle
       Components::Color color = Components::Color(
-        static_cast<double>(rand()) / (static_cast<double>(RAND_MAX) + 1.0),
-        static_cast<double>(rand()) / (static_cast<double>(RAND_MAX) + 1.0),
-        static_cast<double>(rand()) / (static_cast<double>(RAND_MAX) + 1.0),
+        static_cast<float>(rand()) / (static_cast<float>(RAND_MAX) + 1.0f),
+        static_cast<float>(rand()) / (static_cast<float>(RAND_MAX) + 1.0f),
+        static_cast<float>(rand()) / (static_cast<float>(RAND_MAX) + 1.0f),
         1.0f
       );
 
