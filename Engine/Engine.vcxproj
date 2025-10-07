@@ -143,7 +143,6 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Config.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="DamageSystem.h" />
-    <ClInclude Include="DevECSMessageState.h" />
     <ClInclude Include="DevSpriteAnimationState.h" />
     <ClInclude Include="FileExplorer.h" />
     <ClInclude Include="Components.h" />
@@ -164,7 +163,6 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="ECS\World.h" />
     <ClInclude Include="EntityEditorPanel.h" />
     <ClInclude Include="GravitySystem.h" />
-    <ClInclude Include="LevelLoaderTestState.h" />
     <ClInclude Include="PhysicsSystem.h" />
     <ClInclude Include="PlayerControllerSystem.h" />
     <ClInclude Include="HealthSystem.h" />
@@ -181,7 +179,6 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Rubric2500ParticlesState.h" />
     <ClInclude Include="FileHandler.h" />
     <ClInclude Include="ShowcaseState.h" />
-    <ClInclude Include="SimplePlayerMovementSystem.h" />
     <ClInclude Include="SpriteDropper.h" />
     <ClInclude Include="Time.h" />
     <ClInclude Include="Timeline.h" />
