@@ -61,7 +61,7 @@ public:
         5,        // frameCount
         1.0f / 8.0f  // frameDuration (8 fps)
       )
-      .add_component<Components::Color>(255, 255, 255, 255);;
+      .add_component<Components::Color>(255.0f, 255.0f, 255.0f, 255.0f);
 
     // Set animation start time
     auto* idle_anim = idle_lazy_monkey.get_component<Components::Animation>();
@@ -88,7 +88,7 @@ public:
         6,        // frameCount
         1.0f / 16.0f  // frameDuration (16 fps)
       )
-      .add_component<Components::Color>(255,255,255,255);
+      .add_component<Components::Color>(255.0f, 255.0f, 255.0f, 255.0f);
 
     // Set animation start time
     auto* walk_anim = walk_lazy_monkey.get_component<Components::Animation>();

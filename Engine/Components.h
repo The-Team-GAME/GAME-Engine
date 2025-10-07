@@ -162,9 +162,9 @@ namespace Components
 
 
 
- /* ====================== //
- // Gameplay components    //
- // ====================== */
+  /* ====================== //
+  // Gameplay components    //
+  // ====================== */
 
   struct Health {
     s32 value, max;

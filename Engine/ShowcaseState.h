@@ -177,9 +177,9 @@ public:
           player_transform->scale.x = (facing_right ? 2.0f : -2.0f) * player_punch_width;
           player_transform->scale.y = 2.0f * player_punch_height;
           *player_animation = Components::Animation(12, 0.05f); // 12 frames, 0.05s each
-          *player_atlas = Components::TextureAtlas(player_punch_width, player_punch_height, 1, 12, 12); // TODO: add a set_blah_blah
+          *player_atlas = Components::TextureAtlas(static_cast<s32>(player_punch_width), static_cast<s32>(player_punch_height), 1, 12, 12); // TODO: add a set_blah_blah
 
-          std::cout << "Playing punch animation\n";
+          std::cout << "Playing punch animation\n"; 
         }
       }
 
