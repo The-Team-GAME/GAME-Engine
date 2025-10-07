@@ -50,7 +50,7 @@ namespace Engine
   {
     WindowManager::init(window_width, window_height, window_title);
 
-    ImguiMgr::imgui_init();
+    ImGuiManager::imgui_init();
 
     // Initialize graphics renderer
     if (!Engine::Graphics::init()) {
@@ -115,7 +115,7 @@ namespace Engine
 
       glfwPollEvents();
       Engine::Audio::update();
-      ImguiMgr::begin();
+      ImGuiManager::begin();
       //GRAPHICS.begin_frame();
 
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
@@ -154,7 +154,7 @@ namespace Engine
           ECS::World::update();
         }
 
-        ImguiMgr::update();
+        ImGuiManager::update();
 
         // End of gameloop
       }
@@ -170,7 +170,7 @@ namespace Engine
       //GRAPHICS.end_frame();
 
       // end of draw stuff
-      ImguiMgr::end();
+      ImGuiManager::end();
       glfwSwapBuffers(WindowManager::get_window());
       // Rendering End ==========================================
     }
@@ -184,7 +184,7 @@ namespace Engine
   Core::~Core()
   {
 
-    ImguiMgr::imgui_exit();
+    ImGuiManager::imgui_exit();
 
     StateManager::exit(); // TODO: to be removed 
 

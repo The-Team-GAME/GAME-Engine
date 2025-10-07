@@ -25,7 +25,7 @@ namespace {
   std::vector<std::function<void()>> registered_panels;
 }
 
-namespace ImguiMgr {
+namespace ImGuiManager {
 
   void imgui_init()
   {

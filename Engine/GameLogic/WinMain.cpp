@@ -47,7 +47,7 @@ int main()
 
     // Start the engine
     Engine::Core engine(win_width, win_height, "Monkey Stole My GPA", ShowcaseState::get());
-    ImguiMgr::register_panel(StateChooserPanel);
+    ImGuiManager::register_panel(StateChooserPanel);
     engine.run();
 
     FileHandler::clear_json();

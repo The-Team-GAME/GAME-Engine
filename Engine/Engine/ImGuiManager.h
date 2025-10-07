@@ -18,7 +18,7 @@
 #include <functional>
 #include <vector>
 
-namespace ImguiMgr {
+namespace ImGuiManager {
 	void imgui_init();
 	void imgui_exit();
 
