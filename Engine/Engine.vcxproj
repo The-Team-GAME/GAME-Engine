@@ -103,7 +103,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="Engine\Audio\AudioPlayer.cpp" />
     <ClCompile Include="GameLogic\GameStates\BasicState.cpp" />
     <ClCompile Include="GameLogic\GameStates\BasicState.h" />
-    <ClCompile Include="Engine\Config.cpp" />
+    <ClCompile Include="GameLogic\Config.cpp" />
     <ClCompile Include="Engine\Core.cpp" />
     <ClCompile Include="Engine\ECS\ComponentManager.cpp" />
     <ClCompile Include="Engine\ECS\Entity.cpp" />
@@ -136,11 +136,12 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Engine\Audio\AudioInternal.h" />
     <ClInclude Include="Engine\Audio\AudioPlayer.h" />
     <ClInclude Include="Deprecated\BasicComponents.h" />
+    <ClInclude Include="Engine\MonkeyEngine.h" />
     <ClInclude Include="GameLogic\Systems\BasicMovementSystem.h" />
     <ClInclude Include="Engine\GUI\CameraPanel.h" />
     <ClInclude Include="GameLogic\Systems\CollisionSystem.h" />
     <ClInclude Include="Engine\WindowEvents.h" />
-    <ClInclude Include="Engine\Config.h" />
+    <ClInclude Include="GameLogic\Config.h" />
     <ClInclude Include="Engine\Core.h" />
     <ClInclude Include="Deprecated\DamageSystem.h" />
     <ClInclude Include="GameLogic\GameStates\DevSpriteAnimationState.h" />
