@@ -22,6 +22,7 @@
 
 namespace {
   bool gui_enabled = true;
+  std::vector<std::function<void()>> registered_panels;
 }
 
 namespace ImguiMgr {
@@ -50,6 +51,15 @@ namespace ImguiMgr {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+
+    // Render all registered panels
+    if (gui_enabled)
+    {
+      for (const auto& panel : registered_panels)
+      {
+        panel();
+      }
+    }
   }
 
   void end()
@@ -68,5 +78,15 @@ namespace ImguiMgr {
     {
       gui_enabled = !gui_enabled;
     }
+  }
+
+  void register_panel(const std::function<void()>& panel_func)
+  {
+    registered_panels.push_back(panel_func);
+  }
+
+  void clear_panels()
+  {
+    registered_panels.clear();
   }
 }

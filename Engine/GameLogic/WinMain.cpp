@@ -11,12 +11,13 @@
 //          memory leak detection, initializes the core engine, and handles top-level
 //          exception catching for robust error reporting.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 
 
 #include "../Engine/MonkeyEngine.h"
 #include "GameStates/ShowcaseState.h"
+#include "GUI/StateChooser.h"
 #include <exception>
 #include <stdexcept>
 #include "Config.h"
@@ -46,6 +47,7 @@ int main()
 
     // Start the engine
     Engine::Core engine(win_width, win_height, "Monkey Stole My GPA", ShowcaseState::get());
+    ImguiMgr::register_panel(StateChooserPanel);
     engine.run();
 
     FileHandler::clear_json();

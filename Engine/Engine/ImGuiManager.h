@@ -26,5 +26,11 @@ namespace ImguiMgr {
 	void end();
 
 	void update();
+
+	// Register a panel function to be called every frame
+	void register_panel(const std::function<void()>& panel_func);
+
+	// Clear all registered panels
+	void clear_panels();
 }
 
