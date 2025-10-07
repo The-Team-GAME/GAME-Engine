@@ -36,13 +36,16 @@ inline void PerformanceViewerPanel()
   // Static variables to smooth the display updates
   static f32 display_fps = 0.0f;
   static f32 update_timer = 0.0f;
-  static const f32 update_interval = 0.25f; // Update display every 0.25 seconds
+  static s32 frame_count = 0;
+  static const f32 update_interval = 0.25f;
   static std::unordered_map<std::string, double> cached_percentages;
 
   update_timer += Engine::Time::get_real_dt();
+  frame_count++;
 
   if (update_timer >= update_interval) {
-    display_fps = Engine::Time::calc_fps(Engine::Time::get_real_dt());
+    // Calculate average FPS over the interval
+    display_fps = frame_count / update_timer;
 
     // Update cached performance percentages
     auto total_time = Engine::Perf::get_total_time();
@@ -52,6 +55,7 @@ inline void PerformanceViewerPanel()
     }
 
     update_timer = 0.0f;
+    frame_count = 0;
   }
 
   ImGui::Text("FPS: %.1f", display_fps);
