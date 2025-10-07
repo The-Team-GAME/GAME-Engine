@@ -15,13 +15,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "StateManager.h"
-#include "Graphics/Renderer.h"
-#include "Resources.h"
-#include "ObjectFactory.h"
-#include "ECS/ECS.h"
-#include "Components.h"
-#include "RenderSystem.h"
+#include "../../Engine/MonkeyEngine.h"
 
 class GameObjectState : public Engine::GameState<GameObjectState>
 {

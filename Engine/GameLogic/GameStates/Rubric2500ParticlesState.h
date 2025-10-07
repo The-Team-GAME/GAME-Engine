@@ -15,11 +15,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "StateManager.h"
-#include "RenderSystem.h"
-#include "RotationSystem.h"
-#include "TypeDef.h"
-#include "Core.h"
+#include "../../Engine/MonkeyEngine.h"
 
 class Rubric2500ParticlesState : public Engine::GameState<Rubric2500ParticlesState>
 {

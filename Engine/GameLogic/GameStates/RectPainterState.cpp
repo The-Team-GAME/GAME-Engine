@@ -598,7 +598,7 @@ void RectPainterState::sendToBack(s32 index)
 
 void RectPainterState::clearAllRects()
 {
-  for (EntityID id : rects_) Engine::World::destroy_entity(id);
+  for (EntityID id : rects_) ECS::World::destroy_entity(id);
   rects_.clear();
   selectedIndex_ = -1;
   dragMode_ = DragMode::None;

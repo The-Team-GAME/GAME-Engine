@@ -15,12 +15,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "StateManager.h"
-#include "Core.h"
-#include "Components.h"
-#include "RenderSystem.h"
-#include "Resources.h"
-#include "Graphics/Renderer.h"
+#include "../../Engine/MonkeyEngine.h"
 #include <string>
 
 class DevSpriteAnimationState : public Engine::GameState<DevSpriteAnimationState> {
