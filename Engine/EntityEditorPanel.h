@@ -16,7 +16,7 @@
 #pragma once
 #include "imgui.h"
 #include "Core.h"
-#include "BasicComponents.h"
+#include "Components.h"
 #include <string>
 #include <vector>
 
@@ -45,6 +45,13 @@ inline void EntityEditorPanel()
     {
       bool isSelected = (selected_entity_id == static_cast<int>(entity.get_id()));
       std::string label = "Entity " + std::to_string(entity.get_id());
+
+      // Show ObjectId if available
+      if (entity.has_component<Components::ObjectId>())
+      {
+        auto* objId = entity.get_component<Components::ObjectId>();
+        label += " (" + std::string(*objId) + ")";
+      }
 
       if (ImGui::Selectable(label.c_str(), isSelected))
       {
@@ -91,51 +98,32 @@ inline void EntityEditorPanel()
     // Add Component Section
     if (ImGui::CollapsingHeader("Add Component"))
     {
-      if (ImGui::Button("Add Position"))
+      if (ImGui::Button("Add Transform2D"))
       {
-        if (!entity.has_component<Components::Position>())
-          entity.add_component<Components::Position>(0.0f, 0.0f);
+        if (!entity.has_component<Components::Transform2D>())
+          entity.add_component<Components::Transform2D>();
       }
 
       ImGui::SameLine();
 
-      if (ImGui::Button("Add Size"))
-      {
-        if (!entity.has_component<Components::Size>())
-          entity.add_component<Components::Size>(100.0f, 100.0f);
-      }
-
-      ImGui::SameLine();
       if (ImGui::Button("Add Color"))
       {
         if (!entity.has_component<Components::Color>())
-          entity.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
+          entity.add_component<Components::Color>();
       }
 
-      if (ImGui::Button("Add Rotation"))
+      if (ImGui::Button("Add Text"))
       {
-        if (!entity.has_component<Components::Rotation>())
-          entity.add_component<Components::Rotation>(0.0f);
-      }
-
-      ImGui::SameLine();
-      if (ImGui::Button("Add Scale"))
-      {
-        if (!entity.has_component<Components::Scale>())
-          entity.add_component<Components::Scale>(1.0f, 1.0f);
-      }
-
-      if (ImGui::Button("Add Health"))
-      {
-        if (!entity.has_component<Components::Health>())
-          entity.add_component<Components::Health>(100, 100);
+        if (!entity.has_component<Components::Text>())
+          entity.add_component<Components::Text>("Sample Text");
       }
 
       ImGui::SameLine();
-      if (ImGui::Button("Add RotationSpeed"))
+
+      if (ImGui::Button("Add ObjectId"))
       {
-        if (!entity.has_component<Components::RotationSpeed>())
-          entity.add_component<Components::RotationSpeed>(0.0f);
+        if (!entity.has_component<Components::ObjectId>())
+          entity.add_component<Components::ObjectId>("unnamed");
       }
     }
 
@@ -144,49 +132,57 @@ inline void EntityEditorPanel()
     // Edit Components Section
     if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
     {
-      // Position Component
-      if (entity.has_component<Components::Position>())
+      // ObjectId Component
+      if (entity.has_component<Components::ObjectId>())
       {
-        if (ImGui::TreeNode("Position"))
+        if (ImGui::TreeNode("ObjectId"))
         {
-          auto* pos = entity.get_component<Components::Position>();
-          ImGui::DragFloat("X##pos", &pos->x, 1.0f);
-          ImGui::DragFloat("Y##pos", &pos->y, 1.0f);
+          auto* objId = entity.get_component<Components::ObjectId>();
+          char buffer[256];
+          strncpy_s(buffer, objId->c_str(), sizeof(buffer) - 1);
+          buffer[sizeof(buffer) - 1] = '\0';
 
-          if (ImGui::Button("Remove##position"))
-            entity.remove_component<Components::Position>();
+          if (ImGui::InputText("ID", buffer, sizeof(buffer)))
+          {
+            *objId = Components::ObjectId(buffer);
+          }
+
+          if (ImGui::Button("Remove##objectid"))
+            entity.remove_component<Components::ObjectId>();
 
           ImGui::TreePop();
         }
       }
 
-      // Velocity Component
-      /*if (entity.hasComponent<Components::Velocity>())
+      // Transform2D Component
+      if (entity.has_component<Components::Transform2D>())
       {
-        if (ImGui::TreeNode("Velocity"))
+        if (ImGui::TreeNode("Transform2D"))
         {
-          auto* vel = entity.get_component<Components::Velocity>();
-          ImGui::DragFloat("X##vel", &vel->x, 1.0f);
-          ImGui::DragFloat("Y##vel", &vel->y, 1.0f);
+          auto* transform = entity.get_component<Components::Transform2D>();
 
-          if (ImGui::Button("Remove##velocity"))
-            entity.remove_component<Components::Velocity>();
+          ImGui::Text("Position:");
+          ImGui::DragFloat("X##pos", &transform->position.x, 1.0f);
+          ImGui::DragFloat("Y##pos", &transform->position.y, 1.0f);
 
-          ImGui::TreePop();
-        }
-      }*/
+          ImGui::Separator();
+          ImGui::Text("Rotation:");
+          ImGui::SliderFloat("Angle (degrees)", &transform->rotation, 0.0f, 360.0f);
 
-      // Size Component
-      if (entity.has_component<Components::Size>())
-      {
-        if (ImGui::TreeNode("Size"))
-        {
-          auto* size = entity.get_component<Components::Size>();
-          ImGui::DragFloat("Width", &size->width, 1.0f, 0.0f, 10000.0f);
-          ImGui::DragFloat("Height", &size->height, 1.0f, 0.0f, 10000.0f);
+          ImGui::Separator();
+          ImGui::Text("Scale:");
+          ImGui::DragFloat("X##scale", &transform->scale.x, 0.01f, 0.01f, 10.0f);
+          ImGui::DragFloat("Y##scale", &transform->scale.y, 0.01f, 0.01f, 10.0f);
 
-          if (ImGui::Button("Remove##size"))
-            entity.remove_component<Components::Size>();
+          if (ImGui::Button("Reset Transform"))
+          {
+            transform->position = Math::Vec2D(0.0f, 0.0f);
+            transform->rotation = 0.0f;
+            transform->scale = Math::Vec2D(1.0f, 1.0f);
+          }
+
+          if (ImGui::Button("Remove##transform"))
+            entity.remove_component<Components::Transform2D>();
 
           ImGui::TreePop();
         }
@@ -195,177 +191,177 @@ inline void EntityEditorPanel()
       // Color Component
       if (entity.has_component<Components::Color>())
       {
-        // todo: bring back
-       /* if (ImGui::TreeNode("Color"))
+        if (ImGui::TreeNode("Color"))
         {
           auto* color = entity.get_component<Components::Color>();
-          f32 colorArray[4] = { color->x, color->y, color->z, color->w };
+          f32 colorArray[4] = {
+            color->color.x / 255.0f,
+            color->color.y / 255.0f,
+            color->color.z / 255.0f,
+            color->color.w / 255.0f
+          };
 
           if (ImGui::ColorEdit4("RGBA", colorArray))
           {
-            color->x = colorArray[0];
-            color->y = colorArray[1];
-            color->z = colorArray[2];
-            color->w = colorArray[3];
+            color->color.x = colorArray[0] * 255.0f;
+            color->color.y = colorArray[1] * 255.0f;
+            color->color.z = colorArray[2] * 255.0f;
+            color->color.w = colorArray[3] * 255.0f;
           }
 
           if (ImGui::Button("Remove##color"))
             entity.remove_component<Components::Color>();
 
           ImGui::TreePop();
-        }*/
-      }
-
-      // Rotation Component
-      if (entity.has_component<Components::Rotation>())
-      {
-        if (ImGui::TreeNode("Rotation"))
-        {
-          auto* rot = entity.get_component<Components::Rotation>();
-          ImGui::SliderFloat("Angle (degrees)", &rot->angle, 0.0f, 360.0f);
-
-          if (ImGui::Button("Remove##rotation"))
-            entity.remove_component<Components::Rotation>();
-
-          ImGui::TreePop();
         }
       }
 
-      // Scale Component
-      if (entity.has_component<Components::Scale>())
+      // Text Component
+      if (entity.has_component<Components::Text>())
       {
-        if (ImGui::TreeNode("Scale"))
+        if (ImGui::TreeNode("Text"))
         {
-          auto* scale = entity.get_component<Components::Scale>();
-          ImGui::DragFloat("X##scale", &scale->x, 0.01f, 0.01f, 10.0f);
-          ImGui::DragFloat("Y##scale", &scale->y, 0.01f, 0.01f, 10.0f);
+          auto* text = entity.get_component<Components::Text>();
+          char buffer[1024];
+          strncpy_s(buffer, text->content.c_str(), sizeof(buffer) - 1);
+          buffer[sizeof(buffer) - 1] = '\0';
 
-          if (ImGui::Button("Uniform Scale"))
+          if (ImGui::InputTextMultiline("Content", buffer, sizeof(buffer)))
           {
-            f32 uniform = (scale->x + scale->y) / 2.0f;
-            scale->x = scale->y = uniform;
+            text->content = buffer;
           }
 
-          if (ImGui::Button("Remove##scale"))
-            entity.remove_component<Components::Scale>();
+          if (ImGui::Button("Remove##text"))
+            entity.remove_component<Components::Text>();
 
           ImGui::TreePop();
         }
       }
 
-      // Health Component
-      if (entity.has_component<Components::Health>())
+      // Texture Component (Read-only)
+      if (entity.has_component<Components::Texture>())
       {
-        if (ImGui::TreeNode("Health"))
+        if (ImGui::TreeNode("Texture"))
         {
-          auto* health = entity.get_component<Components::Health>();
-          ImGui::DragInt("Current", &health->value, 1, 0, health->max);
-          ImGui::DragInt("Max", &health->max, 1, 1, 10000);
+          auto* texture = entity.get_component<Components::Texture>();
 
-          ImGui::ProgressBar(static_cast<f32>(health->value) / health->max);
+          if (texture->texture_handle)
+          {
+            ImGui::Text("Texture ID: %u", texture->texture_handle->id);
+            ImGui::Text("Size: %dx%d", texture->texture_handle->width, texture->texture_handle->height);
+            ImGui::Text("Filter: %s",
+              texture->texture_handle->filter == Engine::Graphics::TextureFilter::Nearest ? "Nearest" : "Linear");
+          }
+          else
+          {
+            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Invalid texture");
+          }
 
-          if (ImGui::Button("Heal 10"))
-            health->heal(10);
-
-          ImGui::SameLine();
-          if (ImGui::Button("Damage 10"))
-            health->damage(10);
-
-          if (ImGui::Button("Remove##health"))
-            entity.remove_component<Components::Health>();
-
-          ImGui::TreePop();
-        }
-      }
-
-      // RotationSpeed Component
-      if (entity.has_component<Components::RotationSpeed>())
-      {
-        if (ImGui::TreeNode("RotationSpeed"))
-        {
-          auto* rotSpeed = entity.get_component<Components::RotationSpeed>();
-          ImGui::DragFloat("Degrees/Second", &rotSpeed->degrees_per_second, 1.0f, -360.0f, 360.0f);
-
-          if (ImGui::Button("Remove##rotspeed"))
-            entity.remove_component<Components::RotationSpeed>();
-
-          ImGui::TreePop();
-        }
-      }
-
-      // StaticSprite Component (Read-only for now)
-      if (entity.has_component<Components::StaticSprite>())
-      {
-        if (ImGui::TreeNode("StaticSprite"))
-        {
-          auto* sprite = entity.get_component<Components::StaticSprite>();
-          ImGui::Text("Texture ID: %d", sprite->texture_id);
           ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
-            "Note: StaticSprite editing not yet supported");
+            "Note: Texture editing not yet supported");
 
-          if (ImGui::Button("Remove##sprite"))
-            entity.remove_component<Components::StaticSprite>();
+          if (ImGui::Button("Remove##texture"))
+            entity.remove_component<Components::Texture>();
 
           ImGui::TreePop();
         }
       }
 
-      // AnimatedSprite Component
-      if (entity.has_component<Components::AnimatedSprite>())
+      // TextureAtlas Component
+      if (entity.has_component<Components::TextureAtlas>())
       {
-        if (ImGui::TreeNode("AnimatedSprite"))
+        if (ImGui::TreeNode("TextureAtlas"))
         {
-          auto* sprite = entity.get_component<Components::AnimatedSprite>();
+          auto* atlas = entity.get_component<Components::TextureAtlas>();
 
-          ImGui::Text("Sprite Sheet ID: %d", sprite->spriteSheetId);
-          ImGui::Text("Animation Time: %.2f", sprite->animationTime);
+          ImGui::Text("Total SubTextures: %zu", atlas->subTextures.size());
+          ImGui::Text("Current Draw Index: %zu", atlas->drawIndex);
+
+          if (atlas->subTextures.size() > 0)
+          {
+            int currentIndex = static_cast<int>(atlas->drawIndex);
+            if (ImGui::SliderInt("Frame", &currentIndex, 0, static_cast<int>(atlas->subTextures.size() - 1)))
+            {
+              atlas->drawIndex = static_cast<size_t>(currentIndex);
+            }
+          }
+
+          ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
+            "Note: Atlas editing not yet supported");
+
+          if (ImGui::Button("Remove##atlas"))
+            entity.remove_component<Components::TextureAtlas>();
+
+          ImGui::TreePop();
+        }
+      }
+
+      // Animation Component
+      if (entity.has_component<Components::Animation>())
+      {
+        if (ImGui::TreeNode("Animation"))
+        {
+          auto* anim = entity.get_component<Components::Animation>();
+
+          ImGui::Text("Total Frames: %zu", anim->frames.size());
+          ImGui::Text("Total Duration: %.2f s", anim->totalDuration);
+          ImGui::DragFloat("Start Time", &anim->startTime, 0.01f);
+
+          // Calculate current frame
+          if (anim->frames.size() > 0 && anim->totalDuration > 0.0f)
+          {
+            float elapsed = anim->startTime;
+            size_t currentFrame = 0;
+            for (size_t i = 0; i < anim->frames.size(); ++i)
+            {
+              if (elapsed >= anim->frames[i].before_time)
+                currentFrame = i;
+              else
+                break;
+            }
+            ImGui::Text("Current Frame: %zu", currentFrame);
+          }
 
           ImGui::Separator();
 
-          // Playback controls
-          ImGui::Text("Playback Controls:");
-          if (ImGui::Button("Play"))
-            sprite->play();
+          if (ImGui::Button("Reset Animation"))
+          {
+            anim->startTime = 0.0f;
+          }
 
-          ImGui::SameLine();
-          if (ImGui::Button("Pause"))
-            sprite->pause();
-
-          ImGui::SameLine();
-          if (ImGui::Button("Stop"))
-            sprite->stop();
-
-          ImGui::SameLine();
-          if (ImGui::Button("Reset"))
-            sprite->reset();
-
-          // Status
-          ImGui::Checkbox("Is Playing", &sprite->is_playing);
-          ImGui::Checkbox("Loop", &sprite->loop);
-
-          // Manual time control
-          ImGui::SliderFloat("Time", &sprite->animationTime, 0.0f, 10.0f);
-
-          ImGui::Separator();
           ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
-            "Note: Frame/texture editing not yet supported");
+            "Note: Frame editing not yet supported");
 
-          if (ImGui::Button("Remove##animsprite"))
-            entity.remove_component<Components::AnimatedSprite>();
+          if (ImGui::Button("Remove##animation"))
+            entity.remove_component<Components::Animation>();
 
           ImGui::TreePop();
         }
       }
 
-      // Background Component (marker only)
-      if (entity.has_component<Components::Background>())
+      // Font Component (Read-only)
+      if (entity.has_component<Components::Font>())
       {
-        if (ImGui::TreeNode("Background"))
+        if (ImGui::TreeNode("Font"))
         {
-          ImGui::Text("Background marker component");
+          auto* font = entity.get_component<Components::Font>();
 
-          if (ImGui::Button("Remove##background"))
-            entity.remove_component<Components::Background>();
+          if (font->font_handle)
+          {
+            ImGui::Text("Font Size: %u", font->font_handle->font_size);
+            ImGui::Text("Baseline: %.2f", font->font_handle->baseline);
+            ImGui::Text("Glyphs Loaded: %zu", font->font_handle->glyphs.size());
+          }
+          else
+          {
+            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Invalid font");
+          }
+
+          ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
+            "Note: Font editing not yet supported");
+
+          if (ImGui::Button("Remove##font"))
+            entity.remove_component<Components::Font>();
 
           ImGui::TreePop();
         }

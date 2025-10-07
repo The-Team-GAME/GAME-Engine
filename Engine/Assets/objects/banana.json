@@ -4,6 +4,6 @@
     "width": 20,
     "height": 12,
     "texturePath": "Assets/images/banana.png",
-    "minifyingFilter": 0
+    "textureFilter": 0
   }
 }

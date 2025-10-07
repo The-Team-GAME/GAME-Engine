@@ -17,7 +17,6 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include "FileHandler.h"
-#include "Graphics.h"
 #include "StateManager.h"
 #include "BasicState.h"
 #include "ImGuiManager.h"

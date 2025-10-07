@@ -4,6 +4,6 @@
     "width": 150,
     "height": 210,
     "texturePath": "Assets/images/monkey.png",
-    "minifyingFilter": 0
+    "textureFilter": 0
   }
 }

@@ -7,7 +7,7 @@
 //
 // email:   chew.s@digipen.edu
 //
-// brief:   This file defines the ObjectFactory class which manages object prefabs
+// brief:   This file defines the ObjectFactory namespace which manages object prefabs
 //          and creates ECS entities from JSON configuration files. It handles loading
 //          textures, sprite sheets, and component initialization.
 //
@@ -17,38 +17,23 @@
 
 #include <vector>
 #include "ECS/ECS.h"
-#include "BasicComponents.h"
+#include "Components.h"
 #include <optional>
 #include "TypeDef.h"
 
-
 namespace Engine
 {
-
   struct ObjectPrefab
   {
-    Components::ObjectId object_id; // so that level data can reference to these objects
-    Components::Size size;
-    std::optional<Components::StaticSprite> static_sprite;
-    std::optional<Components::AnimatedSprite> animated_sprite;
+    Components::ObjectId object_id;
+    Math::Vec2D size;
+    std::optional<Engine::Graphics::Texture> texture;
+    std::optional<Components::TextureAtlas> texture_atlas;
+    std::optional<Components::Animation> animation;
   };
 
-  class ObjectFactory
+  namespace ObjectFactory
   {
-  private:
-    std::vector<ObjectPrefab> objectList;
-    s32 nextObjectId = 0;
-  public:
-    /*=================================================================================
-    Function Brief:
-    Constructs a new ObjectFactory instance that will create entities in the
-    specified ECS world.
-
-    Parameters:
-    world - A pointer to the ECS world where entities will be created.
-    ==================================================================================*/
-    ObjectFactory();
-
     /*=================================================================================
     Function Brief:
     Registers an object prefab from a JSON file. The JSON file should contain entity
@@ -62,9 +47,9 @@ namespace Engine
 
     Where to call it:
     During game initialization or when loading new object types. Call this before
-    attempting to create instances of the object with createObject().
+    attempting to create instances of the object with create_object().
     ==================================================================================*/
-    s32 registerObject(std::string filePath);
+    s32 register_object(const std::string& filePath);
 
     /*=================================================================================
     Function Brief:
@@ -77,7 +62,7 @@ namespace Engine
     Where to call it:
     When an object type is no longer needed or during cleanup operations.
     ==================================================================================*/
-    void unregisterObject(s32 id);
+    void unregister_object(s32 id);
 
     /*=================================================================================
     Function Brief:
@@ -88,7 +73,7 @@ namespace Engine
     During level transitions, game shutdown, or when a complete reset of registered
     objects is required.
     ==================================================================================*/
-    void unregisterAllObjects();
+    void unregister_all_objects();
 
     /*=================================================================================
     Function Brief:
@@ -105,6 +90,6 @@ namespace Engine
     During gameplay when spawning new game objects, such as enemies, collectibles,
     or environmental elements.
     ==================================================================================*/
-    ECS::Entity createObject(s32 id);
-  };
+    ECS::Entity create_object(s32 id);
+  }
 }

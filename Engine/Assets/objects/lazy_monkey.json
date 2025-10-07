@@ -8,8 +8,6 @@
     "frameHeight": 64,
     "totalFrames": 5,
     "framesPerSecond": 8.0,
-    "minifyingFilter": 0,
-    "autoPlay": true,
-    "loop": true
+    "textureFilter": 0
   }
 }

@@ -16,9 +16,8 @@
 #pragma once
 
 #include "Precompiled.h"
-#include "Graphics.h"
+#include "Graphics/Renderer.h"
 #include "ECS/ECS.h"
-#include "ObjectFactory.h"
 //#include "LevelLoader.h"
 #include "Time.h"
 #include "ImGuiManager.h"
@@ -48,10 +47,6 @@ namespace Engine
   // Global engine system instances         //
   // ======================================= */
   // extern ECS::World WORLD;
-  //extern ObjectFactory FACTORY;
   //extern LevelLoader LEVEL_LOADER;
-  //extern Graphics GRAPHICS;
-  //extern AudioManager AUDIO;
-  //extern ResourceManager RESOURCES;
   extern Perf PERFORMANCE;
 }
