@@ -48,6 +48,8 @@ namespace Engine
   ==================================================================================*/
   Core::Core(s32 window_width, s32 window_height, const char* window_title, GameStateBase* initialState)
   {
+    isRunning = true;
+
     WindowManager::init(window_width, window_height, window_title);
 
     ImGuiManager::init();
@@ -67,7 +69,6 @@ namespace Engine
       throw std::runtime_error("Failed to initialize audio manager");
     }
 
-    isRunning = true;
 
     // Register the graphics resize system
     //ECS::World::add_event_listener<WindowResizeEvent>([](const WindowResizeEvent& event) {
