@@ -18,6 +18,7 @@
 #include "Core.h"
 #include "Time.h"
 #include "Perf.h"
+#include <algorithm>
 
 /*=================================================================================
 Function Brief:
@@ -58,17 +59,59 @@ inline void PerformanceViewerPanel()
     frame_count = 0;
   }
 
+  // FPS Display Section
+  ImGui::SeparatorText("Frame Rate");
   ImGui::Text("FPS: %.1f", display_fps);
 
+  // Color-code FPS based on performance
+  if (display_fps >= 60.0f) {
+    ImGui::SameLine();
+    ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "[GOOD]");
+  }
+  else if (display_fps >= 30.0f) {
+    ImGui::SameLine();
+    ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "[OK]");
+  }
+  else {
+    ImGui::SameLine();
+    ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "[LOW]");
+  }
+
+  ImGui::Spacing();
+
+  // Tick Rate Control Section
+  ImGui::SeparatorText("Tick Rate Control");
   f32 tick_rate_input = Engine::Time::get_tick_rate();
 
-  ImGui::SliderFloat("Tick Rate", &tick_rate_input, 45.0f, 144.0f);
+  if (ImGui::SliderFloat("Tick Rate", &tick_rate_input, 45.0f, 144.0f, "%.1f Hz")) {
+    Engine::Time::set_tick_rate(tick_rate_input);
+  }
 
-  Engine::Time::set_tick_rate(tick_rate_input);
+  ImGui::Text("Frame Time: %.2f ms", 1000.0f / tick_rate_input);
 
+  ImGui::Spacing();
 
-  for (const auto& [label, percentage] : cached_percentages) {
-    ImGui::Text((label + ": " + std::to_string(percentage)).c_str());
+  // Performance Profiling Section
+  if (!cached_percentages.empty()) {
+    ImGui::SeparatorText("Performance Profiling");
+
+    // Sort by percentage (descending)
+    std::vector<std::pair<std::string, double>> sorted_percentages(
+      cached_percentages.begin(), cached_percentages.end()
+    );
+    std::sort(sorted_percentages.begin(), sorted_percentages.end(),
+      [](const auto& a, const auto& b) { return a.second > b.second; });
+
+    for (const auto& [label, percentage] : sorted_percentages) {
+      ImGui::Text("%s:", label.c_str());
+      ImGui::SameLine(200.0f);
+      ImGui::Text("%.2f%%", percentage);
+
+      // Progress bar for visual representation
+      ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.2f, 0.6f, 1.0f, 1.0f));
+      ImGui::ProgressBar(static_cast<float>(percentage / 100.0), ImVec2(-1.0f, 0.0f), "");
+      ImGui::PopStyleColor();
+    }
   }
 
   ImGui::End();
