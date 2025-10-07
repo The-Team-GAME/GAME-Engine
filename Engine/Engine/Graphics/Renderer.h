@@ -43,6 +43,9 @@ namespace Engine {
     void reset_camera();
 
     // Drawing functions
+    
+    void draw_rect(const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color);
+
     void draw_texture(Engine::Graphics::Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color);
 
     // Draw a subtexture (part of a texture atlas) using custom texture coordinates

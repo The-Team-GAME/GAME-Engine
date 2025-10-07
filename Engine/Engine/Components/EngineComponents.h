@@ -135,11 +135,17 @@ namespace Components
 
   struct Color
   {
-    Math::Vec4D color;
+    Math::Vec4D color; // in RGBA format, each channel 0-255
 
     Color() : color(255.0f, 255.0f, 255.0f, 255.0f) {}
     Color(const Math::Vec4D& c) : color(c) {}
     Color(float r, float g, float b, float a = 255.0f) : color(r, g, b, a) {}
+
+    float& r() { return color.x; }
+    float& g() { return color.y; }
+    float& b() { return color.z; }
+    float& a() { return color.w; }
+
   };
 
 

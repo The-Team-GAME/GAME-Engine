@@ -35,13 +35,7 @@ namespace Components {
 void RectPainterState::load() {}
 void RectPainterState::init()
 {
-  ECS::World::create_entity()
-    .add_component<Components::Tag<"RectPainter">>()
-    .add_component<Components::Background>()
-    .add_component<Components::Color>(0.08f, 0.08f, 0.10f, 1.0f);
-
-  ECS::World::add_system<BackgroundSystem>();
-  ECS::World::add_system<RectRenderSystem>();
+  ECS::World::add_system<Systems::StaticSpriteRenderSystem>();
 
   rects_.clear();
   selectedIndex_ = -1;
@@ -66,8 +60,7 @@ void RectPainterState::free()
   dragMode_ = DragMode::None;
 
   // Remove systems added in Init
-  ECS::World::remove_system<BackgroundSystem>();
-  ECS::World::remove_system<RectRenderSystem>();
+  ECS::World::remove_system<Systems::StaticSpriteRenderSystem>();
 }
 
 void RectPainterState::unload() {}
@@ -80,6 +73,8 @@ void RectPainterState::update()
 
 void RectPainterState::draw()
 {
+  Engine::Graphics::clear_screen({ 0.08f, 0.08f, 0.10f, 1.0f });
+
   // Preview while drawing
   if (dragMode_ == DragMode::Drawing && passedThreshold_) {
     glm::vec2 center, size;
@@ -137,8 +132,8 @@ void RectPainterState::handleMouse()
         }
         if (pointInRect(mouse, minP, maxP)) {
           dragMode_ = DragMode::Moving;
-          auto* pos = ECS::World::get_component<Components::Position>(rects_[selectedIndex_]);
-          moveGrabOffset_ = mouse - glm::vec2{ pos->x, pos->y };
+          auto* transform = ECS::World::get_component<Components::Transform2D>(rects_[selectedIndex_]);
+          moveGrabOffset_ = mouse - glm::vec2{ transform->position.x, transform->position.y };
           prevMouse_ = mouse;
           return;
         }
@@ -153,8 +148,8 @@ void RectPainterState::handleMouse()
       glm::vec2 minP, maxP;
       if (getBounds(rects_[selectedIndex_], minP, maxP) && pointInRect(mouse, minP, maxP)) {
         dragMode_ = DragMode::Moving;
-        auto* pos = ECS::World::get_component<Components::Position>(rects_[selectedIndex_]);
-        moveGrabOffset_ = mouse - glm::vec2{ pos->x, pos->y };
+        auto* transform = ECS::World::get_component<Components::Transform2D>(rects_[selectedIndex_]);
+        moveGrabOffset_ = mouse - glm::vec2{ transform->position.x, transform->position.y };
       }
       else {
         dragMode_ = DragMode::None;
@@ -176,20 +171,23 @@ void RectPainterState::handleMouse()
 
     if (dragMode_ == DragMode::Moving && selectedIndex_ >= 0) {
       auto id = rects_[selectedIndex_];
-      if (auto* pos = ECS::World::get_component<Components::Position>(id)) {
+      if (auto* transform = ECS::World::get_component<Components::Transform2D>(id)) {
         glm::vec2 newCenter = mouse - moveGrabOffset_;
         if (snap) newCenter = snapToGrid(newCenter, snapGridPx_);
-        pos->x = newCenter.x;
-        pos->y = newCenter.y;
+        transform->position.x = newCenter.x;
+        transform->position.y = newCenter.y;
       }
     }
     else if (dragMode_ == DragMode::Resizing && selectedIndex_ >= 0) {
       auto id = rects_[selectedIndex_];
-      auto* pos = ECS::World::get_component<Components::Position>(id);
-      auto* size = ECS::World::get_component<Components::Size>(id);
-      if (pos && size) {
-        glm::vec2 minP{ pos->x - size->width * 0.5f,  pos->y - size->height * 0.5f };
-        glm::vec2 maxP{ pos->x + size->width * 0.5f,  pos->y + size->height * 0.5f };
+      auto* transform = ECS::World::get_component<Components::Transform2D>(id);
+
+      if (transform) {
+        Math::Vec2D& pos = transform->position;
+        Math::Vec2D& size = transform->scale;
+
+        glm::vec2 minP{ pos.x - size.x * 0.5f,  pos.y - size.y * 0.5f };
+        glm::vec2 maxP{ pos.x + size.x * 0.5f,  pos.y + size.y * 0.5f };
 
         glm::vec2 m = mouse;
         if (snap) m = snapToGrid(m, snapGridPx_);
@@ -201,21 +199,21 @@ void RectPainterState::handleMouse()
         if (resize_.b) maxP.y = std::max(mouse.y, minP.y + minRectSizePx_);
 
         // Recompute center/size
-        pos->x = (minP.x + maxP.x) * 0.5f;
-        pos->y = (minP.y + maxP.y) * 0.5f;
-        size->width = std::max(minRectSizePx_, maxP.x - minP.x);
-        size->height = std::max(minRectSizePx_, maxP.y - minP.y);
+        pos.x = (minP.x + maxP.x) * 0.5f;
+        pos.y = (minP.y + maxP.y) * 0.5f;
+        size.x = std::max(minRectSizePx_, maxP.x - minP.x);
+        size.y = std::max(minRectSizePx_, maxP.y - minP.y);
 
         if (snap) {
           // snap edges to keep alignment tidy
-          glm::vec2 newMin{ pos->x - size->width * 0.5f,  pos->y - size->height * 0.5f };
-          glm::vec2 newMax{ pos->x + size->width * 0.5f,  pos->y + size->height * 0.5f };
+          glm::vec2 newMin{ pos.x - size.x * 0.5f,  pos.y - size.y * 0.5f };
+          glm::vec2 newMax{ pos.x + size.x * 0.5f,  pos.y + size.y * 0.5f };
           newMin = snapToGrid(newMin, snapGridPx_);
           newMax = snapToGrid(newMax, snapGridPx_);
-          pos->x = (newMin.x + newMax.x) * 0.5f;
-          pos->y = (newMin.y + newMax.y) * 0.5f;
-          size->width = std::max(minRectSizePx_, newMax.x - newMin.x);
-          size->height = std::max(minRectSizePx_, newMax.y - newMin.y);
+          pos.x = (newMin.x + newMax.x) * 0.5f;
+          pos.y = (newMin.y + newMax.y) * 0.5f;
+          size.x = std::max(minRectSizePx_, newMax.x - newMin.x);
+          size.y = std::max(minRectSizePx_, newMax.y - newMin.y);
         }
 
       }
@@ -236,8 +234,7 @@ void RectPainterState::handleMouse()
       if (size.x >= minRectSizePx_ && size.y >= minRectSizePx_) {
         auto entity = ECS::World::create_entity()
           .add_component<Components::Tag<"RectPainter">>()
-          .add_component<Components::Position>(center.x, center.y)
-          .add_component<Components::Size>(size.x, size.y)
+          .add_component<Components::Transform2D>(center.x, center.y, 0.0f, size.x, size.y)
           .add_component<Components::Color>(currentColor_.x, currentColor_.y, currentColor_.z, currentColor_.w)
           .add_component<Components::BasicCollider>(spawnWithCollider_, false);
         rects_.push_back(entity.get_id());
@@ -266,16 +263,16 @@ void RectPainterState::handleShortcuts()
 
   if (hasSel && ctrl && Engine::Input::is_key_pressed(GLFW_KEY_D)) {
     const EntityID src = rects_[selectedIndex_];
-    auto* p = ECS::World::get_component<Components::Position>(src);
-    auto* s = ECS::World::get_component<Components::Size>(src);
+
+    auto* translate = ECS::World::get_component<Components::Transform2D>(src);
+
     auto* c = ECS::World::get_component<Components::Color>(src);
     auto* col = ECS::World::get_component<Components::BasicCollider>(src);
-    if (p && s && c) {
+    if (translate && c) {
       auto e = ECS::World::create_entity()
         .add_component<Components::Tag<"RectPainter">>()
-        .add_component<Components::Position>(p->x + 10.f, p->y + 10.f)
-        .add_component<Components::Size>(s->width, s->height)
-        .add_component<Components::Color>(c->x, c->y, c->z, c->w);
+        .add_component<Components::Transform2D>(translate->position.x + 10.f, translate->position.y + 10.f, 0.0f, translate->scale.x, translate->scale.y)
+        .add_component<Components::Color>(c->r(), c->g(), c->b(), c->a());
       if (col) e.add_component<Components::BasicCollider>(col->enabled, col->isTrigger);
       rects_.push_back(e.get_id());
       selectedIndex_ = (int)rects_.size() - 1;
@@ -363,11 +360,12 @@ void RectPainterState::drawSelectionGizmo()
 /* Picking helpers */
 bool RectPainterState::getBounds(EntityID id, glm::vec2& minP, glm::vec2& maxP) const
 {
-  auto* pos = ECS::World::get_component<Components::Position>(id);
-  auto* size = ECS::World::get_component<Components::Size>(id);
-  if (!pos || !size) return false;
-  minP = { pos->x - size->width * 0.5f,  pos->y - size->height * 0.5f };
-  maxP = { pos->x + size->width * 0.5f,  pos->y + size->height * 0.5f };
+  auto* transform = ECS::World::get_component<Components::Transform2D>(id);
+
+
+  if (!transform) return false;
+  minP = { transform->position.x - transform->scale.x * 0.5f,  transform->position.y - transform->scale.y * 0.5f };
+  maxP = { transform->position.x + transform->scale.x * 0.5f,  transform->position.y + transform->scale.y * 0.5f };
   return true;
 }
 
@@ -442,16 +440,16 @@ void RectPainterState::drawImGui()
     ImGui::SameLine();
     if (ImGui::Button("Duplicate") && canDelete) {
       const EntityID src = rects_[selectedIndex_];
-      auto* p = ECS::World::get_component<Components::Position>(src);
-      auto* s = ECS::World::get_component<Components::Size>(src);
+      auto* translate = ECS::World::get_component<Components::Transform2D>(src);
+      Math::Vec2D* p = &translate->position;
+      Math::Vec2D* s = &translate->scale;
       auto* c = ECS::World::get_component<Components::Color>(src);
       auto* col = ECS::World::get_component<Components::BasicCollider>(src);
       if (p && s && c) {
         auto e = ECS::World::create_entity()
           .add_component<Components::Tag<"RectPainter">>()
-          .add_component<Components::Position>(p->x + 12.f, p->y + 12.f)
-          .add_component<Components::Size>(s->width, s->height)
-          .add_component<Components::Color>(c->x, c->y, c->z, c->w);
+          .add_component<Components::Transform2D>(p->x + 12.f, p->y + 12.f, 0.0f, s->x, s->y)
+          .add_component<Components::Color>(c->r(), c->g(), c->b(), c->a());
         if (col) e.add_component<Components::BasicCollider>(col->enabled, col->isTrigger);
         rects_.push_back(e.get_id());
         selectedIndex_ = (int)rects_.size() - 1;
@@ -461,12 +459,13 @@ void RectPainterState::drawImGui()
     if (ImGui::BeginListBox("Rectangles", ImVec2(420, 200))) {
       for (s32 i = 0; i < (s32)rects_.size(); ++i) {
         const EntityID id = rects_[i];
-        auto* pos = ECS::World::get_component<Components::Position>(id);
-        auto* size = ECS::World::get_component<Components::Size>(id);
-        if (!pos || !size) continue;
+
+        auto* transform = ECS::World::get_component<Components::Transform2D>(id);
+
+        if (!transform) continue;
         char label[160];
         std::snprintf(label, sizeof(label), "#%d  pos(%.0f,%.0f) size(%.0f,%.0f)",
-          i, pos->x, pos->y, size->width, size->height);
+          i, transform->position.x, transform->position.y, transform->scale.x, transform->scale.y);
         bool selected = (selectedIndex_ == i);
         if (ImGui::Selectable(label, selected)) selectedIndex_ = i;
       }
@@ -477,21 +476,20 @@ void RectPainterState::drawImGui()
       ImGui::Separator();
       ImGui::Text("Selected #%d", selectedIndex_);
       const EntityID id = rects_[selectedIndex_];
-      auto* pos = ECS::World::get_component<Components::Position>(id);
-      auto* size = ECS::World::get_component<Components::Size>(id);
+      auto* transform = ECS::World::get_component<Components::Transform2D>(id);
       auto* color = ECS::World::get_component<Components::Color>(id);
       //auto* col = ECS::World::get_component<Components::BasicCollider>(id);
 
-      if (pos && size && color) {
-        ImGui::DragFloat2("Position (center)", &pos->x, 1.0f);
-        ImGui::DragFloat2("Size", &size->width, 1.0f, minRectSizePx_, 10000.0f);
-        ImGui::ColorEdit4("Color", &color->x, ImGuiColorEditFlags_AlphaBar);
+      if (transform && color) {
+        ImGui::DragFloat2("Position (center)", &transform->position.x, 1.0f);
+        ImGui::DragFloat2("Size", &transform->scale.x, 1.0f, minRectSizePx_, 10000.0f);
+        ImGui::ColorEdit4("Color", &color->r(), ImGuiColorEditFlags_AlphaBar);
 
         // Keep size invariant even if user drags below min
-        glm::vec2 s{ size->width, size->height };
+        glm::vec2 s{ transform->scale.x, transform->scale.y };
         clampMinSize(s, minRectSizePx_);
-        size->width = s.x;
-        size->height = s.y;
+        transform->scale.x = s.x;
+        transform->scale.y = s.y;
 
         // BasicCollider controls
         //bool hasBasicCollider = (col != nullptr);
@@ -510,10 +508,10 @@ void RectPainterState::drawImGui()
 
         ImGui::SameLine();
         if (ImGui::Button("Apply Default Color")) {
-          color->x = currentColor_.x;
-          color->y = currentColor_.y;
-          color->z = currentColor_.z;
-          color->w = currentColor_.w;
+          color->r() = currentColor_.x;
+          color->g() = currentColor_.y;
+          color->b() = currentColor_.z;
+          color->a() = currentColor_.w;
         }
 
         if (ImGui::Button("Send to Back [")) {

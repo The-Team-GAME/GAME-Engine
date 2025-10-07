@@ -3,6 +3,7 @@
 #include "../Logger.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <memory>
+#include "../Resources.h"
 
 namespace Engine {
   namespace Graphics {
@@ -351,6 +352,11 @@ namespace Engine {
       current_camera.position = Math::Vec2D(0.0f, 0.0f);
       current_camera.rotation = 0.0f;
       current_camera.zoom = 1.0f;
+    }
+
+    void draw_rect(const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color)
+    {
+      draw_texture(Engine::Resources::get_unit_rect_texture(), position, size, rotation, color);
     }
 
     void draw_texture(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
