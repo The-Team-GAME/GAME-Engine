@@ -161,7 +161,7 @@ namespace Components
 
 
 
-
+  //TODO: move to GameLogic
   /* ====================== //
   // Gameplay components    //
   // ====================== */

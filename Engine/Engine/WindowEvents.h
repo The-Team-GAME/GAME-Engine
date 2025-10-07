@@ -18,14 +18,6 @@
 #include <string>
 #include <vector>
 
-/* ================== //
-// Gameplay events    //
-// ================== */
-struct DamageEvent {
-  ECS::EntityID target;
-  s32 amount;
-};
-
 /* ================= //
 // Window events     //
 // ================= */
