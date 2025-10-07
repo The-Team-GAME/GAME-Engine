@@ -30,7 +30,7 @@ namespace Components
   };
 
   /* ====================== //
-  // Rendering components     //
+  // Rendering components   //
   // ====================== */
   struct Texture
   {
@@ -138,6 +138,47 @@ namespace Components
     Color() : color(255.0f, 255.0f, 255.0f, 255.0f) {}
     Color(const Math::Vec4D& c) : color(c) {}
     Color(float r, float g, float b, float a = 255.0f) : color(r, g, b, a) {}
+  };
+
+
+  /* ====================== //
+  // Physics components     //
+  // ====================== */
+
+  struct RigidBody {
+    // Note to MX, feel free to change anything here im just adding this so all the demos work
+    bool detect_collisions = true;
+    Math::Vec2D linear_velocity = { 0.0f, 0.0f }; // Velocity in units per second
+    bool is_kinematic = false; // If true, not affected by physics forces
+    float mass = 1.0f; // Mass in kg
+    Math::Vec2D linear_terminal_velocity = { 1000.0f, 1000.0f }; // TODO: Use the std library to get the max float value for default
+    float rotation = 0.0f; // In degrees
+    float rotation_terminal_velocity = 360.0f; // In degrees per second
+    float angular_velocity = 0.0f; // In degrees per second
+  };
+
+
+
+
+ /* ====================== //
+ // Gameplay components    //
+ // ====================== */
+
+  struct Health {
+    s32 value, max;
+    Health(s32 value = 100, s32 max = 100) : value(value), max(max) {}
+
+    void heal(s32 amount) {
+      value = std::min(value + amount, max);
+    }
+
+    void damage(s32 amount) {
+      value = std::max(value - amount, 0);
+    }
+
+    bool is_dead() const {
+      return value <= 0;
+    }
   };
 
 }

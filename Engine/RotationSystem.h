@@ -27,7 +27,7 @@ public:
   both Rotation and RotationSpeed components.
   ==================================================================================*/
   RotationSystem() {
-    require_components<Components::Rotation, Components::RotationSpeed>();
+    require_components<Components::Transform2D, Components::RigidBody>();
   }
 
   /*=================================================================================
@@ -40,10 +40,10 @@ public:
   entity - Reference to the entity being updated.
   ==================================================================================*/
   void update_entity(ECS::Entity& entity) override {
-    auto* rot = entity.get_component<Components::Rotation>();
-    auto* speed = entity.get_component<Components::RotationSpeed>();
+    auto* transform = entity.get_component<Components::Transform2D>();
+    auto* rigid = entity.get_component<Components::RigidBody>();
 
-    rot->angle += speed->degrees_per_second * Engine::Time::get_fixed_dt();
+    transform->rotation += rigid->angular_velocity * Engine::Time::get_fixed_dt();
   }
 };
 

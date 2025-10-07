@@ -17,13 +17,16 @@
 
 #include "StateManager.h"
 #include "Core.h"
+#include "Components.h"
 #include "BasicComponents.h"
 #include "RenderSystem.h"
-#include "BackgroundSystem.h"
+//#include "BackgroundSystem.h"
 #include "BasicMovementSystem.h"
 #include "BasicEvents.h"
 #include "InputManager.h"
+#include "Resources.h"
 #include <GLFW/glfw3.h>
+#include "RotationSystem.h"
 
 /* ===================== //
 // Custom Events         //
@@ -52,148 +55,119 @@ struct AttackEvent {
 
 class ShowcaseState : public Engine::GameState<ShowcaseState> {
 private:
-  // Prefabs
-  s32 banana_prefab = -1;
-  s32 lazy_monkey_prefab = -1;
-
   // Entities
   ECS::Entity player;
   ECS::Entity enemy;
   ECS::Entity banana;
   ECS::Entity background_entity;
-  ECS::Entity texture_background;
 
-  // Sprite Sheets
-  s32 player_idle_sprite_sheet_id = -1;
-  s32 player_punch_sprite_sheet_id = -1;
-  s32 player_run_sprite_sheet_id = -1;
+  // Resources - automatically managed via shared_ptr
+  Engine::Graphics::Texture player_idle_texture;
+  Engine::Graphics::Texture player_punch_texture;
+  Engine::Graphics::Texture player_run_texture;
+  Engine::Graphics::Texture banana_texture;
+  Engine::Graphics::Texture enemy_texture;
+  Engine::Graphics::Texture background_texture;
 
-  // Audio
-  s32 walkSoundId = -1;
+  Engine::Audio::Sound walk_sound;
 
-  // Fonts
-  s32 title_font_id = -1;
-  s32 info_font_id = -1;
-
-  // Texture Background
-  s32 background_texture_id = -1;
+  Engine::Graphics::Font title_font;
+  Engine::Graphics::Font info_font;
 
   // Player state
   bool is_walking = false;
-  bool facing_right = true;  // Add this to track facing direction
+  bool facing_right = true;
   s32 banana_collected = 0;
+
+  // Player dimensions
+  const f32 player_idle_width = 64.0f;
+  const f32 player_idle_height = 64.0f;
+  const f32 player_punch_width = 96.0f;
+  const f32 player_punch_height = 64.0f;
 
 public:
   void load() {
-    // Load prefabs
-    banana_prefab = Engine::RESOURCES.load_object_prefab("banana", "Assets/objects/banana.json");
-    lazy_monkey_prefab = Engine::RESOURCES.load_object_prefab("lazy_monkey", "Assets/objects/lazy_monkey.json");
+    // Load sprite sheet textures with Nearest filter for pixel art
+    player_idle_texture = Engine::Resources::load_texture("Assets/images/Bro_Idle_Spritesheet.png");
+    player_punch_texture = Engine::Resources::load_texture("Assets/images/Bro_Punch_Spritesheet.png");
+    player_run_texture = Engine::Resources::load_texture("Assets/images/Bro_Run_Spritesheet.png");
 
-    player_idle_sprite_sheet_id = Engine::RESOURCES.load_sprite_sheet(
-      "Player_Idle",
-      "Assets/images/Bro_Idle_Spritesheet.png",
-      448 / 7,  // frame width
-      64,       // frame height
-      7,        // total frames
-      8.0f,     // frames per second
-      Graphics::MinifyingFilter::Nearest
-    );
+    // Load object textures
+    banana_texture = Engine::Resources::load_texture("Assets/images/banana.png");
+    enemy_texture = Engine::Resources::load_texture("Assets/images/lazy_monkey.png");
 
-    player_punch_sprite_sheet_id = Engine::RESOURCES.load_sprite_sheet(
-      "Player_Punch",
-      "Assets/images/Bro_Punch_Spritesheet.png",
-      1152 / 12,  // frame width
-      64,         // frame height
-      12,         // total frames
-      24.0f,      // frames per second
-      Graphics::MinifyingFilter::Nearest
-    );
-
-    player_run_sprite_sheet_id = Engine::RESOURCES.load_sprite_sheet(
-      "Player_Run",
-      "Assets/images/Bro_Run_Spritesheet.png",
-      512 / 8,  // frame width
-      64,       // frame height
-      8,        // total frames
-      16.0f,    // frames per second
-      Graphics::MinifyingFilter::Nearest
-    );
+    // Load background texture with Linear filter for smooth backgrounds
+    background_texture = Engine::Resources::load_texture("Assets/images/sample_bg.png");
 
     // Load audio
-    walkSoundId = Engine::RESOURCES.load_sound("walk_sound", "Assets/sounds/move1.wav");
+    walk_sound = Engine::Resources::load_sound("Assets/sounds/move1.wav");
 
     // Load fonts
-    title_font_id = Engine::RESOURCES.load_font("title_font", "Assets/fonts/PlayfairDisplay-VariableFont_wght.ttf", 82);
-    info_font_id = Engine::RESOURCES.load_font("info_font", "Assets/fonts/Roboto-Regular.ttf", 48);
-
-    // Load texture background
-    background_texture_id = Engine::RESOURCES.load_texture(
-      "showcase_bg",
-      "Assets/images/sample_bg.png",
-      Graphics::MinifyingFilter::Linear
-    );
+    title_font = Engine::Resources::load_font("Assets/fonts/PlayfairDisplay-VariableFont_wght.ttf", 82);
+    info_font = Engine::Resources::load_font("Assets/fonts/Roboto-Regular.ttf", 48);
   }
 
   void init() {
-    // Create solid color background
-    background_entity = Engine::WORLD.create_entity()
+    // Create texture background
+   /* background_entity = ECS::World::create_entity()
       .add_component<Components::Tag<"ShowcaseState">>()
       .add_component<Components::Background>()
-      .add_component<Components::StaticSprite>(background_texture_id);
+      .add_component<Components::Texture>(background_texture);*/
 
-    // Create enemy from prefab
-    enemy = Engine::FACTORY.createObject(lazy_monkey_prefab)
+      // Create enemy
+    enemy = ECS::World::create_entity()
       .add_component<Components::Tag<"ShowcaseState">>()
-      .add_component<Components::Position>(800.0f, 655.0f)
+      .add_component<Components::Transform2D>(800.0f, 655.0f, 0.0f, 64.0f * 2.0f, 64.0f * 2.0f)
+      .add_component<Components::Texture>(enemy_texture)
       .add_component<Components::Health>(50, 50)
-      .add_component<Components::Scale>(2.0f, 2.0f);
+      .add_component<Components::Color>(255.0f, 255.0f, 255.0f, 255.0f);
 
-    // Create banana from prefab
-    banana = Engine::FACTORY.createObject(banana_prefab)
+
+    // Create banana
+    banana = ECS::World::create_entity()
       .add_component<Components::Tag<"ShowcaseState">>()
-      .add_component<Components::Position>(1200.0f, 675.0f)
-      .add_component<Components::Rotation>(0.0f)
-      .add_component<Components::RotationSpeed>(90.0f)
-      .add_component<Components::Scale>(3.0f, 3.0f);
+      .add_component<Components::Transform2D>(1200.0f, 675.0f, 0.0f, 32.0f * 3.0f, 32.0f * 3.0f)
+      .add_component<Components::Texture>(banana_texture)
+      .add_component<Components::Color>(255.0f, 255.0f, 255.0f, 255.0f)
+      .add_component<Components::RigidBody>();
+
+    enemy.get_component<Components::RigidBody>()->rotation = 90.0f;
 
     // Create player with idle animation
-    player = Engine::WORLD.create_entity()
+    player = ECS::World::create_entity()
       .add_component<Components::Tag<"ShowcaseState">>()
-      .add_component<Components::Position>(200.0f, 655.0f)
-      .add_component<Components::Size>(64.0f, 64.0f)
-      .add_component<Components::Velocity>(0.0f, 0.0f)
-      .add_component<Components::AnimatedSprite>(player_idle_sprite_sheet_id)
+      .add_component<Components::Transform2D>(200.0f, 655.0f, 0.0f, player_idle_width * 2.0f, player_idle_height * 2.0f)
+      .add_component<Components::Texture>(player_idle_texture)
       .add_component<Components::Health>(100, 100)
-      .add_component<Components::Scale>(2.0f, 2.0f);
+      .add_component<Components::Color>(255.0f, 255.0f, 255.0f, 255.0f);
 
     // Add systems
-    Engine::WORLD.add_system<TextureBackgroundSystem>();
-    Engine::WORLD.add_system<StaticSpriteRenderSystem>();
-    Engine::WORLD.add_system<AnimatedSpriteRenderSystem>();
-    Engine::WORLD.add_system<BasicMovementSystem>();
-    Engine::WORLD.add_system<RotationSystem>();
-    Engine::WORLD.add_system<RectRenderSystem>();
+    //ECS::World::add_system<Systems::TextureBackgroundSystem>();
+    ECS::World::add_system<Systems::StaticSpriteRenderSystem>();
+    ECS::World::add_system<BasicMovementSystem>();
+    ECS::World::add_system<RotationSystem>();
 
-    Engine::WORLD.add_event_listener<AttackEvent>([this](const AttackEvent& event) {
+    ECS::World::add_event_listener<AttackEvent>([this](const AttackEvent& event) {
       std::cout << "Attack event! Entity " << event.attacker
         << " attacks Entity " << event.target
         << " for " << event.damage << " damage!\n";
 
       // Play attack animation
       if (event.attacker == player.get_id()) {
-        Engine::AUDIO.stop_sound(walkSoundId); // Stop walking sound if playing
+        Engine::Audio::stop_sound(walk_sound);
 
-        auto* player_sprite = player.get_component<Components::AnimatedSprite>();
-        if (player_sprite) {
-          player_sprite->spriteSheetId = player_punch_sprite_sheet_id;
-          player_sprite->reset();
-          player.get_component<Components::Size>()->width = 96.0f; // Adjust size for punch sprites
+        auto* player_texture = player.get_component<Components::Texture>();
+       /* auto* player_size = player.get_component<Components::Size>();
+        if (player_texture && player_size) {
+          player_texture->texture_handle = player_punch_texture;
+          player_size->width = player_punch_width;
+          player_size->height = player_punch_height;
           std::cout << "Playing punch animation\n";
-        }
+        }*/
       }
 
       // Apply damage to enemy
-      auto target_entity = Engine::WORLD.get_entity(event.target);
+      auto target_entity = ECS::World::get_entity(event.target);
       if (target_entity.is_valid()) {
         std::cout << "Target entity is valid\n";
 
@@ -221,7 +195,7 @@ public:
       });
 
     // Subscribe to collect events
-    Engine::WORLD.add_event_listener<CollectEvent>([this](const CollectEvent& event) {
+    ECS::World::add_event_listener<CollectEvent>([this](const CollectEvent& event) {
       std::cout << "Collect event! Entity " << event.collector
         << " collected Entity " << event.collected
         << " for " << event.points << " points!\n";
@@ -232,40 +206,24 @@ public:
       }
 
       // Respawn the collected item
-      auto collectedEntity = Engine::WORLD.get_entity(event.collected);
+      auto collectedEntity = ECS::World::get_entity(event.collected);
       if (collectedEntity.is_valid()) {
-        auto* pos = collectedEntity.get_component<Components::Position>();
-        if (pos) {
-          pos->x = static_cast<f32>(rand() % 1400 + 100);
-          675.0f; // Keep y position constant
+        auto* transform = collectedEntity.get_component<Components::Transform2D>();
+        if (transform) {
+          transform->position.x = static_cast<f32>(rand() % 1400 + 100);
+          transform->position.y = 675.0f; // Keep y position constant
         }
       }
       });
   }
 
   void update() {
-
-    auto* player_pos = player.get_component<Components::Position>();
+    auto* player_transform = player.get_component<Components::Transform2D>();
     auto* player_vel = player.get_component<Components::Velocity>();
-    auto* player_sprite = player.get_component<Components::AnimatedSprite>();
+    auto* player_texture = player.get_component<Components::Texture>();
+    auto* player_size = player.get_component<Components::Size>();
 
-    if (!player_pos || !player_vel || !player_sprite) return;
-
-    // Check if punch animation has completed
-    if (player_sprite->spriteSheetId == player_punch_sprite_sheet_id) {
-      Graphics::SpriteSheetInfo info;
-      if (Engine::GRAPHICS.get_sprite_sheet_info(player_punch_sprite_sheet_id, info)) {
-        f32 totalDuration = info.total_frames / info.animation_speed;
-
-        if (player_sprite->animationTime >= totalDuration) {
-          // Punch animation completed, return to idle
-          player_sprite->spriteSheetId = player_idle_sprite_sheet_id;
-          player_sprite->reset();
-          player.get_component<Components::Size>()->width = 64.0f; // Reset size after punch
-          std::cout << "Punch animation completed, returning to idle\n";
-        }
-      }
-    }
+    if (!player_transform || !player_vel || !player_texture || !player_size) return;
 
     // Player movement input
     f32 speed = 300.0f;
@@ -294,32 +252,31 @@ public:
     }
 
     // Apply scale to flip sprite horizontally
-    auto* scale = player.get_component<Components::Scale>();
-    if (scale) {
-      scale->x = facing_right ? 2.0f : -2.0f;
-      scale->y = 2.0f;
-    }
+    player_transform->scale.x = facing_right ? 2.0f : -2.0f;
+    player_transform->scale.y = 2.0f;
 
     player_vel->x = new_vel_x;
     player_vel->y = new_vel_y;
 
     // Only change to walk/idle if not currently punching
-    if (player_sprite->spriteSheetId != player_punch_sprite_sheet_id) {
+    if (player_texture->texture_handle != player_punch_texture) {
       // Animation change based on movement
       bool shouldWalk = (new_vel_x != 0.0f || new_vel_y != 0.0f);
 
       if (shouldWalk && !is_walking) {
         // Switch to walking animation
-        player_sprite->spriteSheetId = player_run_sprite_sheet_id;
-        player_sprite->reset();
-        Engine::AUDIO.play_sound_looped(walkSoundId);
+        player_texture->texture_handle = player_run_texture;
+        player_size->width = player_idle_width;
+        player_size->height = player_idle_height;
+        Engine::Audio::play_sound(walk_sound, 1.0f, true);
         is_walking = true;
       }
       else if (!shouldWalk && is_walking) {
         // Switch to idle animation
-        player_sprite->spriteSheetId = player_idle_sprite_sheet_id;
-        player_sprite->reset();
-        Engine::AUDIO.stop_sound(walkSoundId);
+        player_texture->texture_handle = player_idle_texture;
+        player_size->width = player_idle_width;
+        player_size->height = player_idle_height;
+        Engine::Audio::stop_sound(walk_sound);
         is_walking = false;
       }
     }
@@ -329,54 +286,54 @@ public:
       std::cout << "E key pressed! Player ID: " << player.get_id() << ", Enemy ID: " << enemy.get_id() << "\n";
 
       // Send attack event 
-      Engine::WORLD.send_event<AttackEvent>(player.get_id(), enemy.get_id(), 10);
+      ECS::World::send_event<AttackEvent>(player.get_id(), enemy.get_id(), 10);
     }
 
     // Collect banana with C key (using event system)
     if (Engine::Input::is_key_pressed(GLFW_KEY_C)) {
-      Engine::WORLD.send_event<CollectEvent>(player.get_id(), banana.get_id(), 1);
+      ECS::World::send_event<CollectEvent>(player.get_id(), banana.get_id(), 1);
     }
   }
 
   void draw() {
     // Draw title text (first font)
-    if (title_font_id != -1) {
-      Engine::GRAPHICS.draw_text(
-        title_font_id,
+    if (title_font && title_font->texture_atlas.id != 0) {
+      Engine::Graphics::draw_text(
+        title_font,
         "Engine Showcase",
-        50.0f, 50.0f,
+        { 50.0f, 50.0f },
         1.0f,
-        { 1.0f, 0.9f, 0.3f, 1.0f } // Gold color
+        { 255.0f, 230.0f, 77.0f, 255.0f } // Gold color
       );
     }
 
     // Draw info text (second font)
-    if (info_font_id != -1) {
-      Engine::GRAPHICS.draw_text(
-        info_font_id,
+    if (info_font && info_font->texture_atlas.id != 0) {
+      Engine::Graphics::draw_text(
+        info_font,
         "WASD: Move | E: Attack | C: Collect",
-        50.0f, 140.0f,
+        { 50.0f, 140.0f },
         0.6f,
-        { 1.0f, 1.0f, 1.0f, 1.0f } // Light gray
+        { 255.0f, 255.0f, 255.0f, 255.0f } // White
       );
 
-      Engine::GRAPHICS.draw_text(
-        info_font_id,
+      Engine::Graphics::draw_text(
+        info_font,
         "Bananas: " + std::to_string(banana_collected),
-        50.0f, 200.0f,
+        { 50.0f, 200.0f },
         0.7f,
-        { 1.0f, 1.0f, 0.0f, 1.0f } // Yellow
+        { 255.0f, 255.0f, 0.0f, 255.0f } // Yellow
       );
 
       // Show enemy health
       if (enemy.is_valid() && enemy.has_component<Components::Health>()) {
         auto* health = enemy.get_component<Components::Health>();
-        Engine::GRAPHICS.draw_text(
-          info_font_id,
+        Engine::Graphics::draw_text(
+          info_font,
           "Enemy HP: " + std::to_string(health->value) + "/" + std::to_string(health->max),
-          50.0f, 240.0f,
+          { 50.0f, 240.0f },
           0.7f,
-          { 1.0f, 0.0f, 0.0f, 1.0f } // Red
+          { 255.0f, 0.0f, 0.0f, 255.0f } // Red
         );
       }
     }
@@ -385,37 +342,26 @@ public:
   void free() {
     // Stop any playing sounds
     if (is_walking) {
-      Engine::AUDIO.stop_sound(walkSoundId);
+      Engine::Audio::stop_sound(walk_sound);
     }
 
     // Cleanup entities
-    Engine::WORLD.destroy_entities_with<Components::Tag<"ShowcaseState">>();
+    ECS::World::destroy_entities_with<Components::Tag<"ShowcaseState">>();
 
     // Remove systems
-    Engine::WORLD.remove_system<TextureBackgroundSystem>();
-    Engine::WORLD.remove_system<StaticSpriteRenderSystem>();
-    Engine::WORLD.remove_system<AnimatedSpriteRenderSystem>();
-    Engine::WORLD.remove_system<BasicMovementSystem>();
-    Engine::WORLD.remove_system<RotationSystem>();
-    Engine::WORLD.remove_system<RectRenderSystem>();
+    ECS::World::remove_system<TextureBackgroundSystem>();
+    ECS::World::remove_system<StaticSpriteRenderSystem>();
+    ECS::World::remove_system<BasicMovementSystem>();
+    ECS::World::remove_system<RotationSystem>();
+    ECS::World::remove_system<RectRenderSystem>();
 
     // Remove event listeners
-    Engine::WORLD.remove_event_listener<AttackEvent>();
-    Engine::WORLD.remove_event_listener<CollectEvent>();
+    ECS::World::remove_event_listener<AttackEvent>();
+    ECS::World::remove_event_listener<CollectEvent>();
   }
 
   void unload() {
-    // Unload prefabs
-    Engine::RESOURCES.unload_object_prefab("lazy_monkey");
-    Engine::RESOURCES.unload_object_prefab("banana");
-
-    // Unload audio
-    Engine::RESOURCES.unload_sound("walk_sound");
-
-    // Unload fonts
-    Engine::RESOURCES.unload_font("title_font");
-    Engine::RESOURCES.unload_font("info_font");
-
-    // Sprite sheets and textures are managed by ResourceManager
+    // Resources are automatically cleaned up when shared_ptrs go out of scope
+    // Reset them explicitly if desired (optional, happens automatically in destructor)
   }
 };

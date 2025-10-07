@@ -20,7 +20,7 @@
 class BasicMovementSystem : public ECS::System {
 public:
   BasicMovementSystem() {
-    require_components<Components::Position, Components::Velocity>();
+    require_components<Components::RigidBody, Components::Transform2D>();
   }
 
   /*=================================================================================
@@ -37,10 +37,10 @@ public:
   call this directly.
   ==================================================================================*/
   void update_entity(ECS::Entity& entity) override {
-    auto* pos = entity.get_component<Components::Position>();
-    auto* vel = entity.get_component<Components::Velocity>();
+    auto* rigid = entity.get_component<Components::RigidBody>();
+    auto* transform = entity.get_component<Components::Transform2D>();
 
-    pos->x += vel->x * Engine::Time::get_fixed_dt();
-    pos->y += vel->y * Engine::Time::get_fixed_dt();
+    transform->position.x += rigid->linear_velocity.x * Engine::Time::get_fixed_dt();
+    transform->position.y += rigid->linear_velocity.y * Engine::Time::get_fixed_dt();
   }
 };

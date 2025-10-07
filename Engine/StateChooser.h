@@ -26,7 +26,7 @@
 #include "DevSpriteAnimationState.h"
 //#include "DevECSMessageState.h"
 //#include "LevelLoaderTestState.h"
-//#include "ShowcaseState.h"
+#include "ShowcaseState.h"
 
 /*=================================================================================
 Function Brief:
@@ -45,10 +45,11 @@ inline void StateChooserPanel()
   ImGui::Text("Current State: %s", typeid(*Engine::StateManager::get_current_state()).name());
 
 
-  /*if (ImGui::Button("ShowcaseState"))
+  if (ImGui::Button("ShowcaseState"))
   {
     Engine::StateManager::change_state(ShowcaseState::get());
   }
+  /*
   if (ImGui::Button("RectPainterState"))
   {
     Engine::StateManager::change_state(RectPainterState::get());
