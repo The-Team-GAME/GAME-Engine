@@ -60,7 +60,8 @@ public:
       .add_component<Components::Animation>(
         5,        // frameCount
         1.0f / 8.0f  // frameDuration (8 fps)
-      );
+      )
+      .add_component<Components::Color>(255, 255, 255, 255);;
 
     // Set animation start time
     auto* idle_anim = idle_lazy_monkey.get_component<Components::Animation>();
@@ -86,7 +87,8 @@ public:
       .add_component<Components::Animation>(
         6,        // frameCount
         1.0f / 16.0f  // frameDuration (16 fps)
-      );
+      )
+      .add_component<Components::Color>(255,255,255,255);
 
     // Set animation start time
     auto* walk_anim = walk_lazy_monkey.get_component<Components::Animation>();
@@ -95,7 +97,7 @@ public:
     }
 
     // Add rendering system for animated sprites
-    ECS::World::add_system<Systems::AtlasSpriteRenderSystemNoColor>();
+    ECS::World::add_system<Systems::AtlasSpriteRenderSystem>();
     ECS::World::add_system<Systems::AnimationUpdateSystem>();
   };
 
@@ -121,7 +123,7 @@ public:
     }
 
     // Remove systems
-    ECS::World::remove_system<Systems::AtlasSpriteRenderSystemNoColor>();
+    ECS::World::remove_system<Systems::AtlasSpriteRenderSystem>();
     ECS::World::remove_system<Systems::AnimationUpdateSystem>();
   };
 
