@@ -14,7 +14,7 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "ImGuiManager.h"
-#include "Core.h"
+#include "WindowManager.h"
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>

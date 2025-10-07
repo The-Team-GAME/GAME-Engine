@@ -20,9 +20,8 @@
 #include "RenderSystem.h"
 #include "Resources.h"
 #include "Time.h"
-#include <glm/glm.hpp>
-#include <iostream> 
-#include <GLFW/glfw3.h>
+#include <iostream>
+#include "Precompiled.h"
 #include <imgui.h>
 #include "Reflection/Helpers.h"
 

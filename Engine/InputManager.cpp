@@ -15,9 +15,11 @@
 //-----------------------------------------------------------------------------------
 #include "InputManager.h"
 #include "Core.h"
-#include <GLFW/glfw3.h>
+#include "Precompiled.h"
 #include <array>
 #include <glm/glm.hpp>
+#include "Perf.h"
+#include "WindowManager.h"
 
 namespace
 {
@@ -47,7 +49,7 @@ namespace Engine
   ==================================================================================*/
   void Input::update()
   {
-    Engine::PERFORMANCE.start("Input");
+    Engine::Perf::start("Input");
 
     GLFWwindow* window = Engine::WindowManager::get_window(); //TODO: pass window as parameter in constructor
 
@@ -77,7 +79,7 @@ namespace Engine
 
     //std::cout << "Mouse Position: (" << mousePosition.x << ", " << mousePosition.y << ")\n";
 
-    Engine::PERFORMANCE.stop("Input");
+    Engine::Perf::stop("Input");
   }
 
   bool Input::is_key_pressed(s32 key)

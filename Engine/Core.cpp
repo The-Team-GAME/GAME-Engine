@@ -14,7 +14,7 @@
 // Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "Core.h"
-#include <GLFW/glfw3.h>
+#include "Precompiled.h"
 #include <iostream>
 #include "FileHandler.h"
 #include "StateManager.h"
@@ -44,18 +44,6 @@ namespace {
 
 namespace Engine
 {
-
-  /* ========================================================================= //
-  // Global engine system instances                                            //
-  // These are defined here and declared extern in Core.h for global access   //
-  // ========================================================================= */
-  // They are defined here and declared extern in Core.h for use throughout the engine.
-  // ECS::World WORLD{};
-
-  //LevelLoader LEVEL_LOADER{ &WORLD, &FACTORY };
-
-  Perf PERFORMANCE{};
-
   /*=================================================================================
   Function Brief:
   Constructor that initializes all engine subsystems including window, graphics,

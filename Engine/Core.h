@@ -15,15 +15,6 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "Precompiled.h"
-#include "Graphics/Renderer.h"
-#include "ECS/ECS.h"
-//#include "LevelLoader.h"
-#include "Time.h"
-#include "ImGuiManager.h"
-#include "WindowManager.h"
-#include "Perf.h"
-
 namespace Engine
 {
   /* ========================= //
@@ -40,11 +31,4 @@ namespace Engine
 
     void run();
   };
-
-  /* ======================================= //
-  // Global engine system instances         //
-  // ======================================= */
-  // extern ECS::World WORLD;
-  //extern LevelLoader LEVEL_LOADER;
-  extern Perf PERFORMANCE;
 }

@@ -25,7 +25,7 @@
 #include "BasicEvents.h"
 #include "InputManager.h"
 #include "Resources.h"
-#include <GLFW/glfw3.h>
+#include "Precompiled.h"
 #include "RotationSystem.h"
 
 /* ===================== //

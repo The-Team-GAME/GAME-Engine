@@ -13,7 +13,11 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
+
+#include "Precompiled.h"
+
 #include "Core.h"
+#include "Typedef.h"
 #include "Logger.h"
 #include <exception>
 #include <stdexcept>

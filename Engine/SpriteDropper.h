@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "core.h"
+#include "Typedef.h"
 #include <imgui.h>
 #include <vector>
 

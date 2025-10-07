@@ -17,6 +17,7 @@
 #include <imgui.h>
 #include "Core.h"
 #include "Time.h"
+#include "Perf.h"
 
 /*=================================================================================
 Function Brief:
@@ -44,9 +45,9 @@ inline void PerformanceViewerPanel()
     display_fps = Engine::Time::calc_fps(Engine::Time::get_real_dt());
 
     // Update cached performance percentages
-    auto total_time = Engine::PERFORMANCE.get_total_time();
+    auto total_time = Engine::Perf::get_total_time();
     cached_percentages.clear();
-    for (const auto& [label, time] : Engine::PERFORMANCE.get_elapsed_time_map()) {
+    for (const auto& [label, time] : Engine::Perf::get_elapsed_time_map()) {
       cached_percentages[label] = (time / total_time) * 100.0;
     }
 

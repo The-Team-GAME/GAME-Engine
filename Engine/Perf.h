@@ -20,13 +20,8 @@
 
 namespace Engine
 {
-  class Perf
+  namespace Perf
   {
-  private:
-    std::unordered_map<std::string, std::chrono::high_resolution_clock::time_point> start_time_map;
-    std::unordered_map<std::string, f64> elapsed_time_map;
-
-  public:
     /*=================================================================================
     Function Brief:
     Starts a performance timer for a labeled code section. Records the current
@@ -67,7 +62,7 @@ namespace Engine
     Returns:
     The elapsed time in seconds as a float. Returns 0.0f if the label doesn't exist.
     ==================================================================================*/
-    f32 get_elapsed(const std::string& label) const;
+    f32 get_elapsed(const std::string& label);
 
     /*=================================================================================
     Function Brief:
@@ -76,7 +71,7 @@ namespace Engine
     Returns:
     A constant reference to the unordered map containing all label-time pairs.
     ==================================================================================*/
-    const std::unordered_map<std::string, f64>& get_elapsed_time_map() const;
+    const std::unordered_map<std::string, f64>& get_elapsed_time_map();
 
     /*=================================================================================
     Function Brief:
@@ -85,6 +80,6 @@ namespace Engine
     Returns:
     The sum of all recorded elapsed times in seconds as a double.
     ==================================================================================*/
-    const f64 get_total_time() const;
-  };
+    f64 get_total_time();
+  }
 }

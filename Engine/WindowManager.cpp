@@ -17,6 +17,7 @@
 #include "Core.h"
 #include "BasicEvents.h"
 #include <iostream>
+#include "ECS/ECS.h"
 
 namespace Engine {
   namespace WindowManager
