@@ -2,6 +2,11 @@
 #include "../Logger.h"
 #include <imgui.h>
 #include "../Audio/AudioPlayerInternal.h"
+#include "../Audio/AudioPlayer.h"
+#include <unordered_map>
+
+// Static storage for playing channel handles
+static std::unordered_map<std::string, Engine::Audio::ChannelHandle> playing_sounds;
 
 void ResourceManagerPanel() {
   if (!ImGui::Begin("Resource Manager")) {
@@ -159,6 +164,74 @@ void ResourceManagerPanel() {
         ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "[ALIVE]");
 
         ImGui::Text("  Type: %s", sound_ptr->is_stream ? "Music (Streamed)" : "Sound Effect");
+
+        // Check if this sound is currently playing
+        auto channel_it = playing_sounds.find(path);
+        bool is_playing = false;
+        if (channel_it != playing_sounds.end()) {
+          is_playing = Engine::Audio::is_channel_playing(channel_it->second);
+          // Clean up finished sounds
+          if (!is_playing) {
+            playing_sounds.erase(channel_it);
+          }
+        }
+
+        // Playback controls
+        ImGui::Text("  Controls:");
+        ImGui::SameLine();
+
+        if (!is_playing) {
+          // Play button
+          if (ImGui::SmallButton("Play")) {
+            Engine::Audio::ChannelHandle handle = Engine::Audio::play_sound(sound_ptr, 1.0f, false);
+            if (handle != Engine::Audio::INVALID_CHANNEL) {
+              playing_sounds[path] = handle;
+              Log::info("Playing sound: " + path);
+            }
+          }
+          ImGui::SameLine();
+
+          // Play looped button
+          if (ImGui::SmallButton("Play Loop")) {
+            Engine::Audio::ChannelHandle handle = Engine::Audio::play_sound(sound_ptr, 1.0f, true);
+            if (handle != Engine::Audio::INVALID_CHANNEL) {
+              playing_sounds[path] = handle;
+              Log::info("Playing sound (looped): " + path);
+            }
+          }
+        }
+        else {
+          // Stop button
+          if (ImGui::SmallButton("Stop")) {
+            Engine::Audio::stop_channel(channel_it->second);
+            playing_sounds.erase(channel_it);
+            Log::info("Stopped sound: " + path);
+          }
+          ImGui::SameLine();
+
+          // Pause/Resume button
+          ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "[PLAYING]");
+          ImGui::SameLine();
+
+          if (ImGui::SmallButton("Pause")) {
+            Engine::Audio::pause_channel(channel_it->second);
+            Log::info("Paused sound: " + path);
+          }
+          ImGui::SameLine();
+
+          if (ImGui::SmallButton("Resume")) {
+            Engine::Audio::resume_channel(channel_it->second);
+            Log::info("Resumed sound: " + path);
+          }
+
+          // Volume control
+          static float volume = 1.0f;
+          ImGui::SetNextItemWidth(150.0f);
+          if (ImGui::SliderFloat("Volume", &volume, 0.0f, 1.0f, "%.2f")) {
+            Engine::Audio::set_channel_volume(channel_it->second, volume);
+          }
+        }
+
         ImGui::Spacing();
       }
       else {
