@@ -145,7 +145,8 @@ public:
 
     // Add systems
     //ECS::World::add_system<Systems::TextureBackgroundSystem>();
-    ECS::World::add_system<Systems::StaticSpriteRenderSystem>();
+    ECS::World::add_system<Systems::AnimationUpdateSystem>();
+    ECS::World::add_system<Systems::AtlasSpriteRenderSystem>();
     ECS::World::add_system<BasicMovementSystem>();
     ECS::World::add_system<RotationSystem>();
 
