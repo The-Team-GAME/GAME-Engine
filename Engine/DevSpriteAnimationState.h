@@ -92,7 +92,8 @@ public:
     }
 
     // Add rendering system for animated sprites
-    ECS::World::add_system<AnimatedSpriteRenderSystem>();
+    ECS::World::add_system<Systems::AtlasSpriteRenderSystem>();
+    ECS::World::add_system<Systems::AnimationUpdateSystem>();
   };
 
   void update() {
@@ -117,7 +118,8 @@ public:
     }
 
     // Remove systems
-    ECS::World::remove_system<AnimatedSpriteRenderSystem>();
+    ECS::World::remove_system<Systems::AtlasSpriteRenderSystem>();
+    ECS::World::remove_system<Systems::AnimationUpdateSystem>();
   };
 
   void unload() {

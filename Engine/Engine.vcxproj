@@ -150,7 +150,6 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Reflection\Reflect.h" />
     <ClInclude Include="Resources.h" />
     <ClInclude Include="Graphics\Shader.h" />
-    <ClInclude Include="Graphics\Systems.h" />
     <ClInclude Include="Graphics\RendererInternal.h" />
     <ClInclude Include="ECS\ComponentArray.h" />
     <ClInclude Include="ECS\ComponentManager.h" />

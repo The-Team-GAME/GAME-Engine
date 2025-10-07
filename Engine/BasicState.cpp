@@ -17,7 +17,7 @@
 #include "Core.h"
 #include "InputManager.h"
 #include "Components.h"
-#include "Graphics/Systems.h"
+#include "RenderSystem.h"
 #include "Resources.h"
 #include "Time.h"
 #include <glm/glm.hpp>
