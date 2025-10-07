@@ -116,7 +116,6 @@ namespace Engine
       glfwPollEvents();
       Engine::Audio::update();
       ImGuiManager::begin();
-      //GRAPHICS.begin_frame();
 
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
       while (accumulator >= Time::get_fixed_dt())
@@ -164,12 +163,15 @@ namespace Engine
       //ResourceManagerPanel();
       EntityEditorPanel();
       CameraPanel();
+
+      // Clear screen (automatically begins batch)
       // start of draw stuff
       StateManager::get_current_state()->draw();
       ECS::World::draw();
-      //GRAPHICS.end_frame();
 
-      // end of draw stuff
+      // end of draw stuff (flush remaining batches)
+      Engine::Graphics::end_batch();
+
       ImGuiManager::end();
       glfwSwapBuffers(WindowManager::get_window());
       // Rendering End ==========================================

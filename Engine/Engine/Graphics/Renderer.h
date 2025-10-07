@@ -30,6 +30,12 @@ namespace Engine {
     // Cleanup code here (e.g., deleting OpenGL resources)
     bool exit();
 
+    // Begin a new batch (call at start of frame)
+    void begin_batch();
+
+    // End batch (call at end of frame)
+    void end_batch();
+
     // Virtual resolution functions
     void set_virtual_resolution(f32 width, f32 height);
     Math::Vec2D get_virtual_resolution();
@@ -43,7 +49,7 @@ namespace Engine {
     void reset_camera();
 
     // Drawing functions
-    
+
     void draw_rect(const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color);
 
     void draw_texture(Engine::Graphics::Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color);

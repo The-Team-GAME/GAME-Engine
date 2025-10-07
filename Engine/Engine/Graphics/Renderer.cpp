@@ -4,24 +4,30 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <memory>
 #include "../Resources.h"
+#include <vector>
 
 namespace Engine {
   namespace Graphics {
 
     // Shader program
-    static std::unique_ptr<Shader> shader;
+    std::unique_ptr<Shader> shader;
 
     // Vertex Array Object and Vertex Buffer Object
-    static GLuint vao = 0;
-    static GLuint vbo = 0;
-    static GLuint ebo = 0;
+    GLuint vao = 0;
+    GLuint vbo = 0;
+    GLuint ebo = 0;
 
     // Virtual resolution
-    static float virtual_width = 1600.0f;
-    static float virtual_height = 900.0f;
+    float virtual_width = 1600.0f;
+    float virtual_height = 900.0f;
 
     // Camera state
-    static Camera current_camera;
+    Camera current_camera;
+
+    // Batch rendering constants
+    constexpr size_t MAX_QUAD_COUNT = 10000;
+    constexpr size_t MAX_VERTEX_COUNT = MAX_QUAD_COUNT * 4;
+    constexpr size_t MAX_INDEX_COUNT = MAX_QUAD_COUNT * 6;
 
     // Vertex structure for a textured quad
     struct Vertex {
@@ -30,13 +36,28 @@ namespace Engine {
       glm::vec4 color;
     };
 
+    // Batch state
+    struct BatchState {
+      std::vector<Vertex> vertices;
+      GLuint current_texture_id = 0;
+      size_t quad_count = 0;
+
+      void reset() {
+        vertices.clear();
+        current_texture_id = 0;
+        quad_count = 0;
+      }
+    };
+
+    BatchState batch_state;
+
     // Helper function to get the current projection matrix
-    static glm::mat4 get_projection_matrix() {
+    glm::mat4 get_projection_matrix() {
       return glm::ortho(0.0f, virtual_width, virtual_height, 0.0f, -1.0f, 1.0f);
     }
 
     // Helper function to get the current view matrix based on camera
-    static glm::mat4 get_view_matrix() {
+    glm::mat4 get_view_matrix() {
       glm::mat4 view = glm::mat4(1.0f);
 
       // Calculate the center of the screen in virtual coordinates
@@ -63,8 +84,73 @@ namespace Engine {
       return view;
     }
 
+    // Flush the current batch to GPU
+    void flush_batch() {
+      if (batch_state.quad_count == 0) {
+        return;
+      }
+
+      // Use shader
+      shader->use();
+
+      // Bind texture
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, batch_state.current_texture_id);
+      shader->set_int("u_texture", 0);
+
+      // Set view and projection matrices
+      shader->set_mat4("u_view", get_view_matrix());
+      shader->set_mat4("u_projection", get_projection_matrix());
+
+      // Upload vertices to GPU
+      glBindVertexArray(vao);
+      glBindBuffer(GL_ARRAY_BUFFER, vbo);
+      glBufferSubData(GL_ARRAY_BUFFER, 0, batch_state.vertices.size() * sizeof(Vertex), batch_state.vertices.data());
+
+      // Draw all quads in one call
+      glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(batch_state.quad_count * 6), GL_UNSIGNED_INT, 0);
+
+      glBindVertexArray(0);
+
+      // Reset batch
+      batch_state.reset();
+    }
+
+    // Begin a new batch (call at start of frame)
+    void begin_batch() {
+      batch_state.reset();
+    }
+
+    // End batch (call at end of frame)
+    void end_batch() {
+      flush_batch();
+    }
+
+    // Add a quad to the batch
+    void batch_quad(GLuint texture_id, const Vertex vertices[4]) {
+      // Check if we need to flush due to texture change
+      if (batch_state.current_texture_id != 0 && batch_state.current_texture_id != texture_id) {
+        flush_batch();
+      }
+
+      // Check if we need to flush due to batch being full
+      if (batch_state.quad_count >= MAX_QUAD_COUNT) {
+        flush_batch();
+      }
+
+      // Set current texture
+      batch_state.current_texture_id = texture_id;
+
+      // Add vertices to batch
+      for (int i = 0; i < 4; i++) {
+        batch_state.vertices.push_back(vertices[i]);
+      }
+
+      batch_state.quad_count++;
+    }
+
     // Helper function to draw a quad with custom texture coordinates
-    static void draw_quad(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size,
+    void draw_quad(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size,
       f32 rotation, const Math::Vec4D& color, const std::array<glm::vec2, 4>& tex_coords) {
       if (!texture || texture->id == 0) {
         Log::warning("Attempted to draw invalid texture");
@@ -76,16 +162,7 @@ namespace Engine {
         return;
       }
 
-      // Use shader
-      shader->use();
-
-      // Bind texture
-      glActiveTexture(GL_TEXTURE0);
-      glBindTexture(GL_TEXTURE_2D, texture->id);
-      shader->set_int("u_texture", 0);
-
       // Create transformation matrix
-      // Position is now treated as the center of the object
       glm::mat4 model = glm::mat4(1.0f);
       model = glm::translate(model, glm::vec3(position.x, position.y, 0.0f));
 
@@ -95,58 +172,34 @@ namespace Engine {
 
       model = glm::scale(model, glm::vec3(size.x, size.y, 1.0f));
 
-      // Set view matrix (using camera)
-      shader->set_mat4("u_view", get_view_matrix());
-
-      // Set projection matrix using virtual resolution
-      shader->set_mat4("u_projection", get_projection_matrix());
-
       // Create quad vertices
       Vertex vertices[4];
 
-      // Convert color from 0-255 to 0-1
+      // Convert color from 0-1 range
       glm::vec4 normalized_color(color.x, color.y, color.z, color.w);
 
-      // Vertices are now centered around the origin (0, 0)
-      // Bottom-left
-      vertices[0].position = glm::vec2(-0.5f, 0.5f);
-      vertices[0].texCoord = tex_coords[0];
-      vertices[0].color = normalized_color;
-
-      // Bottom-right
-      vertices[1].position = glm::vec2(0.5f, 0.5f);
-      vertices[1].texCoord = tex_coords[1];
-      vertices[1].color = normalized_color;
-
-      // Top-right
-      vertices[2].position = glm::vec2(0.5f, -0.5f);
-      vertices[2].texCoord = tex_coords[2];
-      vertices[2].color = normalized_color;
-
-      // Top-left
-      vertices[3].position = glm::vec2(-0.5f, -0.5f);
-      vertices[3].texCoord = tex_coords[3];
-      vertices[3].color = normalized_color;
+      // Vertices are centered around the origin
+      glm::vec2 base_positions[4] = {
+        glm::vec2(-0.5f, 0.5f),  // Bottom-left
+        glm::vec2(0.5f, 0.5f),   // Bottom-right
+        glm::vec2(0.5f, -0.5f),  // Top-right
+        glm::vec2(-0.5f, -0.5f)  // Top-left
+      };
 
       // Transform vertices by model matrix
       for (int i = 0; i < 4; i++) {
-        glm::vec4 transformed = model * glm::vec4(vertices[i].position, 0.0f, 1.0f);
+        glm::vec4 transformed = model * glm::vec4(base_positions[i], 0.0f, 1.0f);
         vertices[i].position = glm::vec2(transformed.x, transformed.y);
+        vertices[i].texCoord = tex_coords[i];
+        vertices[i].color = normalized_color;
       }
 
-      // Upload vertices to GPU
-      glBindVertexArray(vao);
-      glBindBuffer(GL_ARRAY_BUFFER, vbo);
-      glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-
-      // Draw quad
-      glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-      glBindVertexArray(0);
+      // Add to batch instead of drawing immediately
+      batch_quad(texture->id, vertices);
     }
 
     // Helper function to draw a glyph (character) at a specific position without rotation
-    static void draw_glyph(const TextureData& atlas_texture, const std::array<glm::vec2, 4>& tex_coords,
+    void draw_glyph(const TextureData& atlas_texture, const std::array<glm::vec2, 4>& tex_coords,
       const Math::Vec2D& position, const Math::Vec2D& size, const Math::Vec4D& color) {
       if (atlas_texture.id == 0) {
         return;
@@ -156,24 +209,10 @@ namespace Engine {
         return;
       }
 
-      // Use shader
-      shader->use();
-
-      // Bind texture atlas
-      glActiveTexture(GL_TEXTURE0);
-      glBindTexture(GL_TEXTURE_2D, atlas_texture.id);
-      shader->set_int("u_texture", 0);
-
-      // Set view matrix (using camera)
-      shader->set_mat4("u_view", get_view_matrix());
-
-      // Set projection matrix using virtual resolution
-      shader->set_mat4("u_projection", get_projection_matrix());
-
       // Create quad vertices (no rotation for text glyphs)
       Vertex vertices[4];
 
-      // Convert color from 0-255 to 0-1
+      // Convert color from 0-1 range
       glm::vec4 normalized_color(color.x, color.y, color.z, color.w);
 
       // Bottom-left
@@ -196,15 +235,8 @@ namespace Engine {
       vertices[3].texCoord = tex_coords[3];
       vertices[3].color = normalized_color;
 
-      // Upload vertices to GPU
-      glBindVertexArray(vao);
-      glBindBuffer(GL_ARRAY_BUFFER, vbo);
-      glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-
-      // Draw quad
-      glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-      glBindVertexArray(0);
+      // Add to batch instead of drawing immediately
+      batch_quad(atlas_texture.id, vertices);
     }
 
     bool init() {
@@ -251,21 +283,32 @@ namespace Engine {
         return false;
       }
 
-      // Create VAO and VBO for a quad
+      // Create VAO and VBO for batched quads
       glGenVertexArrays(1, &vao);
       glGenBuffers(1, &vbo);
       glGenBuffers(1, &ebo);
 
       glBindVertexArray(vao);
 
-      // Allocate buffer for 4 vertices (quad)
+      // Allocate buffer for maximum number of vertices
       glBindBuffer(GL_ARRAY_BUFFER, vbo);
-      glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * 4, nullptr, GL_DYNAMIC_DRAW);
+      glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * MAX_VERTEX_COUNT, nullptr, GL_DYNAMIC_DRAW);
 
-      // Create index buffer for quad (2 triangles)
-      GLuint indices[] = { 0, 1, 2, 2, 3, 0 };
+      // Create index buffer for maximum number of quads
+      std::vector<GLuint> indices;
+      indices.reserve(MAX_INDEX_COUNT);
+      for (size_t i = 0; i < MAX_QUAD_COUNT; i++) {
+        GLuint offset = static_cast<GLuint>(i * 4);
+        indices.push_back(offset + 0);
+        indices.push_back(offset + 1);
+        indices.push_back(offset + 2);
+        indices.push_back(offset + 2);
+        indices.push_back(offset + 3);
+        indices.push_back(offset + 0);
+      }
+
       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
 
       // Position attribute
       glEnableVertexAttribArray(0);
@@ -288,8 +331,11 @@ namespace Engine {
       // Initialize camera to default
       reset_camera();
 
-      Log::info("Renderer initialized with virtual resolution: " +
-        std::to_string((int)virtual_width) + "x" + std::to_string((int)virtual_height));
+      // Reserve space for batch vertices
+      batch_state.vertices.reserve(MAX_VERTEX_COUNT);
+
+      Log::info("Renderer initialized with batching (max " + std::to_string(MAX_QUAD_COUNT) + " quads per batch)");
+      Log::info("Virtual resolution: " + std::to_string((int)virtual_width) + "x" + std::to_string((int)virtual_height));
       return true;
     }
 
@@ -396,7 +442,6 @@ namespace Engine {
         auto it = font->glyphs.find(static_cast<unsigned int>(c));
 
         if (it == font->glyphs.end()) {
-          // Character not found in font, skip it
           continue;
         }
 
@@ -414,20 +459,31 @@ namespace Engine {
           Math::Vec2D(xpos, ypos), Math::Vec2D(w, h), color);
 
         // Advance cursor to next glyph position
-        // Note: advance is in 1/64th pixels, so we shift by 6 to get pixels
         x += (glyph.advance >> 6) * scale;
       }
     }
 
     void clear_screen(const Math::Vec4D& color) {
+      // Flush any pending batches before clearing
+      end_batch();
+
       glClearColor(color.x, color.y, color.z, color.w);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+      // Begin new batch
+      begin_batch();
     }
 
     void clear_screen(Engine::Graphics::Texture texture) {
+      // Flush any pending batches before clearing
+      end_batch();
+
       // Clear with black first
       glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+      // Begin new batch
+      begin_batch();
 
       // Draw the texture to fill the entire screen
       Math::Vec2D resolution = get_virtual_resolution();
