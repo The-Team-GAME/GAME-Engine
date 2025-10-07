@@ -33,9 +33,12 @@ private:
 
 public:
   void load() {
+
+    Engine::Resources::set_resource_path("Assets/");
+
     // Load sprite sheet textures in the Load phase
-    idle_texture = Engine::Resources::load_texture("Assets/images/LazyMonkey_Idle_Spritesheet.png");
-    walk_texture = Engine::Resources::load_texture("Assets/images/LazyMonkey_Walk_Spritesheet.png");
+    idle_texture = Engine::Resources::load_texture("images/LazyMonkey_Idle_Spritesheet.png");
+    walk_texture = Engine::Resources::load_texture("images/LazyMonkey_Walk_Spritesheet.png");
   };
 
   void init() {
@@ -92,7 +95,7 @@ public:
     }
 
     // Add rendering system for animated sprites
-    ECS::World::add_system<Systems::AtlasSpriteRenderSystem>();
+    ECS::World::add_system<Systems::AtlasSpriteRenderSystemNoColor>();
     ECS::World::add_system<Systems::AnimationUpdateSystem>();
   };
 
@@ -118,7 +121,7 @@ public:
     }
 
     // Remove systems
-    ECS::World::remove_system<Systems::AtlasSpriteRenderSystem>();
+    ECS::World::remove_system<Systems::AtlasSpriteRenderSystemNoColor>();
     ECS::World::remove_system<Systems::AnimationUpdateSystem>();
   };
 
