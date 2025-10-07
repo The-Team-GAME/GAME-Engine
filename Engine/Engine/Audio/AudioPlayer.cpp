@@ -2,6 +2,7 @@
 #include "AudioPlayerInternal.h"
 #include "../Logger.h"
 #include <fmod.hpp>
+#include "../Perf.h"
 
 namespace Engine {
   namespace Audio {
@@ -36,11 +37,15 @@ namespace Engine {
     }
 
     void update() {
+      Engine::Perf::start("Audio");
+
       // Update FMOD audio system every frame
       FMOD::System* fmod_system = Engine::Audio::get_fmod_system();
       if (fmod_system) {
         fmod_system->update();
       }
+
+      Engine::Perf::stop("Audio");
     }
 
     ChannelHandle play_sound(Sound sound, f32 volume, bool loop) {
