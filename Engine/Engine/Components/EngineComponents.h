@@ -137,9 +137,9 @@ namespace Components
   {
     Math::Vec4D color; // in RGBA format, each channel 0-255
 
-    Color() : color(255.0f, 255.0f, 255.0f, 255.0f) {}
+    Color() : color(1.0f, 1.0f, 1.0f, 1.0f) {}
     Color(const Math::Vec4D& c) : color(c) {}
-    Color(float r, float g, float b, float a = 255.0f) : color(r, g, b, a) {}
+    Color(float r, float g, float b, float a = 1.0f) : color(r, g, b, a) {}
 
     float& r() { return color.x; }
     float& g() { return color.y; }

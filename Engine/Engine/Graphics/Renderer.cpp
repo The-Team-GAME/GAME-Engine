@@ -105,7 +105,7 @@ namespace Engine {
       Vertex vertices[4];
 
       // Convert color from 0-255 to 0-1
-      glm::vec4 normalized_color(color.x / 255.0f, color.y / 255.0f, color.z / 255.0f, color.w / 255.0f);
+      glm::vec4 normalized_color(color.x, color.y, color.z, color.w);
 
       // Vertices are now centered around the origin (0, 0)
       // Bottom-left
@@ -174,7 +174,7 @@ namespace Engine {
       Vertex vertices[4];
 
       // Convert color from 0-255 to 0-1
-      glm::vec4 normalized_color(color.x / 255.0f, color.y / 255.0f, color.z / 255.0f, color.w / 255.0f);
+      glm::vec4 normalized_color(color.x, color.y, color.z, color.w);
 
       // Bottom-left
       vertices[0].position = glm::vec2(position.x, position.y + size.y);
@@ -420,8 +420,7 @@ namespace Engine {
     }
 
     void clear_screen(const Math::Vec4D& color) {
-      // Convert color from 0-255 to 0-1 range
-      glClearColor(color.x / 255.0f, color.y / 255.0f, color.z / 255.0f, color.w / 255.0f);
+      glClearColor(color.x, color.y, color.z, color.w);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
@@ -437,7 +436,7 @@ namespace Engine {
         Math::Vec2D(resolution.x * 0.5f, resolution.y * 0.5f), // Center position
         resolution, // Full screen size
         0.0f, // No rotation
-        Math::Vec4D(255.0f, 255.0f, 255.0f, 255.0f) // White (no tint)
+        Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f) // White (no tint)
       );
     }
 

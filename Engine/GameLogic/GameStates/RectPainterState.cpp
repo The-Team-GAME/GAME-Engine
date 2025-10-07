@@ -88,7 +88,12 @@ void RectPainterState::draw()
       size.y = snapScalar(size.y, snapGridPx_);
     }
 
-    Engine::Graphics::draw_rect(currentColor_, center.x, center.y, size.x, size.y, 0.0f, Graphics::Origin::Center);
+    Engine::Graphics::draw_rect(
+      { center.x, center.y },
+      { size.x, size.y },
+      0.0f,
+      { currentColor_.x  , currentColor_.y  , currentColor_.z  , currentColor_.w }
+    );
   }
 
   runCollisionPass();
@@ -325,7 +330,12 @@ void RectPainterState::runCollisionPass()
     if (!getBounds(id, minP, maxP)) continue;
     glm::vec2 c{ (minP.x + maxP.x) * 0.5f, (minP.y + maxP.y) * 0.5f };
     glm::vec2 s{ std::max(1.0f, maxP.x - minP.x), std::max(1.0f, maxP.y - minP.y) };
-    Engine::Graphics::draw_rect(glm::vec4{ 1,0,0,0.20f }, c.x, c.y, s.x + 6.0f, s.y + 6.0f, 0.0f, Graphics::Origin::Center);
+    Engine::Graphics::draw_rect(
+      { c.x, c.y },
+      { s.x + 6.0f, s.y + 6.0f },
+      0.0f,
+      { 1.0f, 0.0f, 0.0f, 0.5f }
+    );
   }
 }
 
@@ -340,8 +350,12 @@ void RectPainterState::drawSelectionGizmo()
   // Slight highlight box
   glm::vec2 center{ (minP.x + maxP.x) * 0.5f, (minP.y + maxP.y) * 0.5f };
   glm::vec2 size{ std::max(1.0f, maxP.x - minP.x), std::max(1.0f, maxP.y - minP.y) };
-  glm::vec4 sel{ 1.f, 1.f, 0.f, 0.15f };
-  Engine::Graphics::draw_rect(sel, center.x, center.y, size.x + 4.0f, size.y + 4.0f, 0.0f, Graphics::Origin::Center);
+  Engine::Graphics::draw_rect(
+    { center.x, center.y },
+    { size.x + 4.0f, size.y + 4.0f },
+    0.0f,
+    { 1.0f, 1.0f, 0.0f, 0.15f }
+  );
 
   // 8 handles
   const f32 hs = handlePx_;
@@ -353,7 +367,12 @@ void RectPainterState::drawSelectionGizmo()
     {c.x - s.x, c.y + s.y}, {c.x, c.y + s.y}, {c.x + s.x, c.y + s.y},
   };
   for (auto& p : pts) {
-    Engine::Graphics::draw_rect(glm::vec4{ 1,1,0,0.9f }, p.x, p.y, hs, hs, 0.0f, Graphics::Origin::Center);
+    Engine::Graphics::draw_rect(
+      { p.x, p.y },
+      { hs, hs },
+      0.0f,
+      { 1.0f, 1.0f, 0.0f, 0.5f }
+    );
   }
 }
 

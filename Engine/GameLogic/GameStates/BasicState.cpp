@@ -72,7 +72,7 @@ void BasicState::init()
       rotation,
       50.0f, 50.0f
     )
-    .add_component<Components::Color>(255.0f, 0.0f, 0.0f, 255.0f)
+    .add_component<Components::Color>(1.0f, 0.0f, 0.0f, 1.0f)
     .add_component<Components::Texture>(Engine::Resources::get_unit_rect_texture());
 
   // Bottom right, Green
@@ -82,7 +82,7 @@ void BasicState::init()
       rotation,
       50.0f, 50.0f
     )
-    .add_component<Components::Color>(0.0f, 255.0f, 0.0f, 255.0f)
+    .add_component<Components::Color>(0.0f, 1.0f, 0.0f, 1.0f)
     .add_component<Components::Texture>(Engine::Resources::get_unit_rect_texture());
 
   // Bottom left, Blue
@@ -92,7 +92,7 @@ void BasicState::init()
       rotation,
       50.0f, 50.0f
     )
-    .add_component<Components::Color>(0.0f, 0.0f, 255.0f, 255.0f)
+    .add_component<Components::Color>(0.0f, 0.0f, 1.0f, 1.0f)
     .add_component<Components::Texture>(Engine::Resources::get_unit_rect_texture());
 
   // Top right, Yellow
@@ -102,7 +102,7 @@ void BasicState::init()
       rotation,
       50.0f, 50.0f
     )
-    .add_component<Components::Color>(255.0f, 255.0f, 0.0f, 255.0f)
+    .add_component<Components::Color>(1.0f, 1.0f, 0.0f, 1.0f)
     .add_component<Components::Texture>(Engine::Resources::get_unit_rect_texture());
 
   // Center, Magenta
@@ -112,7 +112,7 @@ void BasicState::init()
       rotation,
       50.0f, 50.0f
     )
-    .add_component<Components::Color>(255.0f, 0.0f, 255.0f, 255.0f)
+    .add_component<Components::Color>(1.0f, 0.0f, 1.0f, 1.0f)
     .add_component<Components::Texture>(Engine::Resources::get_unit_rect_texture());
 
   // Create text entities
@@ -176,7 +176,7 @@ void BasicState::update()
 void BasicState::draw()
 {
   // Clear background
-  Engine::Graphics::clear_screen({ 20.0f, 20.0f, 20.0f, 255.0f });
+  Engine::Graphics::clear_screen({ 20.0f, 20.0f, 20.0f, 1.0f });
 
   auto unit_rect = Engine::Resources::get_unit_rect_texture();
 
@@ -185,7 +185,7 @@ void BasicState::draw()
     { 400.0f - 25.0f, 300.0f - 25.0f },
     { 50.0f, 50.0f },
     0.0f,
-    { 0.0f, 255.0f, 255.0f, 255.0f }
+    { 0.0f, 1.0f, 1.0f, 1.0f }
   );
 
   Engine::Graphics::draw_text(
@@ -193,7 +193,7 @@ void BasicState::draw()
     "Monkey Stole My GPA",
     { 400.0f, 100.0f },
     1.0f,
-    { 255.0f, 255.0f, 255.0f, 255.0f }
+    { 1.0f, 1.0f, 1.0f, 1.0f }
   );
 
 
@@ -211,7 +211,7 @@ void BasicState::draw()
     { 500.0f, 300.0f },
     { static_cast<f32>(monkey_texture->width * 10), static_cast<f32>(monkey_texture->height * 10) },
     0.0f,
-    { 255.0f, 255.0f, 255.0f, 255.0f }
+    { 1.0f, 1.0f, 1.0f, 1.0f }
   );
 
   static auto move_sound = Engine::Resources::load_sound("sounds/move1.wav");

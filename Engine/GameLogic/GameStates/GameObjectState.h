@@ -90,7 +90,7 @@ public:
 
     // Tint the monkey red
     if (auto* color = lazy_monkey.get_component<Components::Color>()) {
-      color->color = Math::Vec4D(255.0f, 100.0f, 100.0f, 255.0f); // Red tint
+      color->color = Math::Vec4D(1.0f, 0.5f, 0.5f, 1.0f); // Red tint
     }
   }
 
@@ -99,7 +99,7 @@ public:
   void draw()
   {
     // Clear screen with a color
-    Engine::Graphics::clear_screen(Math::Vec4D(50.0f, 75.0f, 100.0f, 255.0f)); // Dark blue background
+    Engine::Graphics::clear_screen(Math::Vec4D(0.2f, 0.3f, 0.5f, 1.0f)); // Dark blue background
   }
 
   void free()

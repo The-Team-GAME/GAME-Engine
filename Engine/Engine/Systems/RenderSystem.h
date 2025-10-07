@@ -65,7 +65,7 @@ namespace Systems
   //      Math::Vec2D(transform->position.x, transform->position.y),
   //      Math::Vec2D(transform->scale.x, transform->scale.y),
   //      transform->rotation,
-  //      Math::Vec4D(255.0f, 255.0f, 255.0f, 255.0f) // White default
+  //      Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f) // White default
   //    );
   //  }
   //};
@@ -121,7 +121,7 @@ namespace Systems
   //        Math::Vec2D(transform->position.x, transform->position.y),
   //        Math::Vec2D(transform->scale.x, transform->scale.y),
   //        transform->rotation,
-  //        Math::Vec4D(255.0f, 255.0f, 255.0f, 255.0f) // White default
+  //        Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f) // White default
   //      );
   //    }
   //  }
@@ -173,7 +173,7 @@ namespace Systems
   //      text->content,
   //      Math::Vec2D(transform->position.x, transform->position.y),
   //      text_scale,
-  //      Math::Vec4D(255.0f, 255.0f, 255.0f, 255.0f) // White default
+  //      Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f) // White default
   //    );
   //  }
   //};

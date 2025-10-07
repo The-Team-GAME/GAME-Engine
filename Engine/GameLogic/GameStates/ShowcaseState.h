@@ -126,7 +126,7 @@ public:
       .add_component<Components::Transform2D>(800.0f, 655.0f, 0.0f, 64.0f * 2.0f, 64.0f * 2.0f)
       .add_component<Components::Texture>(enemy_texture)
       .add_component<Components::Health>(50, 50)
-      .add_component<Components::Color>(255.0f, 255.0f, 255.0f, 255.0f)
+      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::TextureAtlas>(64, 64, 1, 5, 5)
       .add_component<Components::Animation>(5, 0.15f);
 
@@ -135,7 +135,7 @@ public:
       .add_component<Components::Tag<"ShowcaseState">>()
       .add_component<Components::Transform2D>(1200.0f, 675.0f, 0.0f, 20.0f * 3.0f, 12.0f * 3.0f)
       .add_component<Components::Texture>(banana_texture)
-      .add_component<Components::Color>(255.0f, 255.0f, 255.0f, 255.0f)
+      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::RigidBody>();
 
     banana.get_component<Components::RigidBody>()->rotation = 0.0f;
@@ -148,7 +148,7 @@ public:
       .add_component<Components::Texture>(player_idle_texture)
       .add_component<Components::RigidBody>()
       .add_component<Components::Health>(100, 100)
-      .add_component<Components::Color>(255.0f, 255.0f, 255.0f, 255.0f)
+      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::TextureAtlas>(64, 64, 1, 7, 7)
       .add_component<Components::Animation>(7, 0.15f);
 
@@ -369,7 +369,7 @@ public:
         "Engine Showcase",
         { 50.0f, 50.0f },
         1.0f,
-        { 255.0f, 230.0f, 77.0f, 255.0f } // Gold color
+        { 1.0f, 0.9f, 0.3f, 1.0f } // Gold color
       );
     }
 
@@ -380,7 +380,7 @@ public:
         "WASD: Move | E: Attack | C: Collect",
         { 50.0f, 140.0f },
         0.6f,
-        { 255.0f, 255.0f, 255.0f, 255.0f } // White
+        { 1.0f, 1.0f, 1.0f, 1.0f } // White
       );
 
       Engine::Graphics::draw_text(
@@ -388,7 +388,7 @@ public:
         "Bananas: " + std::to_string(banana_collected),
         { 50.0f, 200.0f },
         0.7f,
-        { 255.0f, 255.0f, 0.0f, 255.0f } // Yellow
+        { 1.0f, 1.0f, 0.0f, 1.0f } // Yellow
       );
 
       // Show enemy health
@@ -399,7 +399,7 @@ public:
           "Enemy HP: " + std::to_string(health->value) + "/" + std::to_string(health->max),
           { 50.0f, 240.0f },
           0.7f,
-          { 255.0f, 0.0f, 0.0f, 255.0f } // Red
+          { 1.0f, 0.0f, 0.0f, 1.0f } // Red
         );
       }
     }
