@@ -255,3 +255,37 @@ void Engine::Resources::clear_unused_resources()
     }
   }
 }
+
+Engine::Resources::ResourceStats Engine::Resources::get_resource_stats()
+{
+  ResourceStats stats = {};
+
+  for (const auto& pair : texture_cache)
+  {
+    stats.texture_count++;
+    if (!pair.second.expired())
+    {
+      stats.texture_alive++;
+    }
+  }
+
+  for (const auto& pair : font_cache)
+  {
+    stats.font_count++;
+    if (!pair.second.expired())
+    {
+      stats.font_alive++;
+    }
+  }
+
+  for (const auto& pair : sound_cache)
+  {
+    stats.sound_count++;
+    if (!pair.second.expired())
+    {
+      stats.sound_alive++;
+    }
+  }
+
+  return stats;
+}

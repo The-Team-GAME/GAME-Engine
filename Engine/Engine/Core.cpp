@@ -22,7 +22,7 @@
 #include "Time.h"
 #include "GUI/PerformanceViewer.h"
 #include "WindowManager.h"
-//#include "ResourceManagerPanel.h"
+#include "GUI/ResourceManagerPanel.h"
 #include "GUI/EntityEditorPanel.h"
 #include "GUI/CameraPanel.h"
 #include "Perf.h"
@@ -164,7 +164,7 @@ namespace Engine
 
       // Rendering Start ========================================
       PerformanceViewerPanel();
-      //ResourceManagerPanel();
+      ResourceManagerPanel();
       EntityEditorPanel();
       CameraPanel();
 

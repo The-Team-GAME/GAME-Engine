@@ -12,6 +12,15 @@ namespace Engine {
     static std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::FontData>> font_cache;
     static std::unordered_map<std::string, std::weak_ptr<Engine::Audio::SoundData>> sound_cache;
 
+    struct ResourceStats {
+      size_t texture_count;
+      size_t texture_alive;
+      size_t font_count;
+      size_t font_alive;
+      size_t sound_count;
+      size_t sound_alive;
+    };
+
     // TODO: unit_rect does not need reference counting, since it's always in memory until we exit
     static Engine::Graphics::Texture unit_rect;
 
@@ -40,5 +49,7 @@ namespace Engine {
 
     //optimization: clear unused resources from cache
     void clear_unused_resources();
+
+    ResourceStats get_resource_stats();
   }
 }
