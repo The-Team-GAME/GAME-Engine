@@ -110,7 +110,6 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="Engine\ECS\EventManager.cpp" />
     <ClCompile Include="Engine\ECS\System.cpp" />
     <ClCompile Include="Engine\ECS\World.cpp" />
-    <ClCompile Include="Deprecated\FileExplorer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer.cpp" />
     <ClCompile Include="Engine\Graphics\RendererInternal.cpp" />
     <ClCompile Include="Engine\ObjectFactory.cpp" />
@@ -122,7 +121,6 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="Engine\FileHandler.cpp" />
     <ClCompile Include="Engine\Perf.cpp" />
     <ClCompile Include="Engine\Precompiled.cpp" />
-    <ClCompile Include="Deprecated\SpriteDropper.cpp" />
     <ClCompile Include="Engine\Time.cpp" />
     <ClCompile Include="Engine\GUI\Timeline.cpp" />
     <ClCompile Include="Engine\Math\Vector2D.cpp" />
@@ -135,7 +133,6 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
   <ItemGroup>
     <ClInclude Include="Engine\Audio\AudioInternal.h" />
     <ClInclude Include="Engine\Audio\AudioPlayer.h" />
-    <ClInclude Include="Deprecated\BasicComponents.h" />
     <ClInclude Include="Engine\MonkeyEngine.h" />
     <ClInclude Include="GameLogic\Systems\BasicMovementSystem.h" />
     <ClInclude Include="Engine\GUI\CameraPanel.h" />
@@ -143,9 +140,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Engine\WindowEvents.h" />
     <ClInclude Include="GameLogic\Config.h" />
     <ClInclude Include="Engine\Core.h" />
-    <ClInclude Include="Deprecated\DamageSystem.h" />
     <ClInclude Include="GameLogic\GameStates\DevSpriteAnimationState.h" />
-    <ClInclude Include="Deprecated\FileExplorer.h" />
     <ClInclude Include="Engine\Components.h" />
     <ClInclude Include="GameLogic\GameStates\GameObjectState.h" />
     <ClInclude Include="Engine\ObjectFactory.h" />
@@ -164,7 +159,6 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Engine\ECS\World.h" />
     <ClInclude Include="Engine\GUI\EntityEditorPanel.h" />
     <ClInclude Include="GameLogic\Systems\GravitySystem.h" />
-    <ClInclude Include="Deprecated\PhysicsSystem.h" />
     <ClInclude Include="GameLogic\Systems\PlayerControllerSystem.h" />
     <ClInclude Include="GameLogic\Systems\HealthSystem.h" />
     <ClInclude Include="Engine\ImGuiManager.h" />
@@ -180,7 +174,6 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="GameLogic\GameStates\Rubric2500ParticlesState.h" />
     <ClInclude Include="Engine\FileHandler.h" />
     <ClInclude Include="GameLogic\GameStates\ShowcaseState.h" />
-    <ClInclude Include="Deprecated\SpriteDropper.h" />
     <ClInclude Include="Engine\Time.h" />
     <ClInclude Include="Engine\GUI\Timeline.h" />
     <ClInclude Include="Engine\Math\Vector2D.h" />
