@@ -15,9 +15,9 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "ECS/System.h"
-#include "BasicComponents.h"
-#include "Core.h"
+
+#include "../ECS/ECS.h"
+#include "../Components/EngineComponents.h"
 
 class RotationSystem : public ECS::System {
 public:

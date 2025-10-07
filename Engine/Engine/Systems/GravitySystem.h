@@ -15,8 +15,8 @@
 
 #pragma once
 
-#include "ECS/System.h"
-#include "BasicComponents.h"
+#include "../ECS/ECS.h"
+#include "../Components/EngineComponents.h"
 
 // For now this just clears into a solid color, but could be extended to do more complex background rendering
 class GravitySystem : public ECS::System {

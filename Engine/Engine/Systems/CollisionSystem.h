@@ -15,10 +15,9 @@
 
 #pragma once
 
-
-#include "ECS/System.h" 
-#include "BasicComponents.h"
-#include "TypeDef.h"
+#include "../ECS/ECS.h"
+#include "../Components/EngineComponents.h"
+#include "../TypeDef.h"
 #include <iostream>
 #include <algorithm>
 

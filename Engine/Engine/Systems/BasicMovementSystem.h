@@ -14,8 +14,8 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "ECS/System.h"
-#include "BasicComponents.h"
+#include "../ECS/ECS.h"
+#include "../Components/EngineComponents.h"
 
 class BasicMovementSystem : public ECS::System {
 public:

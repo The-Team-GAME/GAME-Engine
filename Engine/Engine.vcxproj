@@ -141,7 +141,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="GameLogic\Config.h" />
     <ClInclude Include="Engine\Core.h" />
     <ClInclude Include="GameLogic\GameStates\DevSpriteAnimationState.h" />
-    <ClInclude Include="Engine\Components.h" />
+    <ClInclude Include="Engine\Components\EngineComponents.h" />
     <ClInclude Include="GameLogic\GameStates\GameObjectState.h" />
     <ClInclude Include="Engine\ObjectFactory.h" />
     <ClInclude Include="Engine\Reflection\Helpers.h" />

@@ -13,8 +13,9 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
-#include "ECS/System.h"
-#include "BasicComponents.h"
+
+#include "../ECS/ECS.h"
+#include "../Components/EngineComponents.h"
 #include "Time.h"
 #include <algorithm>
 #include <cmath>

@@ -11,7 +11,7 @@
 #include "Perf.h"
 #include "Audio/AudioPlayer.h"
 #include "Resources.h"
-#include "Components.h"
+#include "Components/EngineComponents.h"
 #include "WindowManager.h"
 #include "ObjectFactory.h"
 #include "Logger.h"

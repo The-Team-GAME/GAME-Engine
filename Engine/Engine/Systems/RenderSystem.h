@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ECS/ECS.h"
-#include "Graphics/Renderer.h"
-#include "Components.h"
+#include "../ECS/ECS.h"
+#include "../Components/EngineComponents.h"
+#include "../Graphics/Renderer.h"
 
 namespace Systems
 {
