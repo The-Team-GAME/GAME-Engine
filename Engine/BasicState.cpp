@@ -17,8 +17,8 @@
 #include "Core.h"
 #include "InputManager.h"
 #include "Components.h"
+#include "Graphics/Systems.h"
 #include "Resources.h"
-#include "RenderSystem.h"
 #include "Time.h"
 #include <glm/glm.hpp>
 #include <iostream> 
@@ -66,8 +66,8 @@ void BasicState::init()
   Engine::Resources::set_resource_path("Assets/");
 
   // Add rendering systems
-  ECS::World::add_system<RectRenderSystem>();
-  ECS::World::add_system<TextRenderSystem>();
+  //ECS::World::add_system<Systems::StaticSpriteRenderSystem>();
+  ECS::World::add_system<Systems::TextRenderSystem>();
 
   // Create rectangle entities
   // Top left, Red
@@ -77,7 +77,8 @@ void BasicState::init()
       rotation,
       50.0f, 50.0f
     )
-    .add_component<Components::Color>(255.0f, 0.0f, 0.0f, 255.0f);
+    .add_component<Components::Color>(255.0f, 0.0f, 0.0f, 255.0f)
+    .add_component<Components::Texture>(Engine::Resources::get_unit_rect_texture());
 
   // Bottom right, Green
   rect_bottom_right = ECS::World::create_entity()
@@ -85,7 +86,9 @@ void BasicState::init()
       1600.0f, 900.0f,
       rotation,
       50.0f, 50.0f
-    ).add_component<Components::Color>(0.0f, 255.0f, 0.0f, 255.0f);
+    )
+    .add_component<Components::Color>(0.0f, 255.0f, 0.0f, 255.0f)
+    .add_component<Components::Texture>(Engine::Resources::get_unit_rect_texture());
 
   // Bottom left, Blue
   rect_bottom_left = ECS::World::create_entity()
@@ -93,7 +96,9 @@ void BasicState::init()
       0.0f, 900.0f,
       rotation,
       50.0f, 50.0f
-    ).add_component<Components::Color>(0.0f, 0.0f, 255.0f, 255.0f);
+    )
+    .add_component<Components::Color>(0.0f, 0.0f, 255.0f, 255.0f)
+    .add_component<Components::Texture>(Engine::Resources::get_unit_rect_texture());
 
   // Top right, Yellow
   rect_top_right = ECS::World::create_entity()
@@ -101,7 +106,9 @@ void BasicState::init()
       1600.0f, 0.0f,
       rotation,
       50.0f, 50.0f
-    ).add_component<Components::Color>(255.0f, 255.0f, 0.0f, 255.0f);
+    )
+    .add_component<Components::Color>(255.0f, 255.0f, 0.0f, 255.0f)
+    .add_component<Components::Texture>(Engine::Resources::get_unit_rect_texture());
 
   // Center, Magenta
   rect_center = ECS::World::create_entity()
@@ -109,7 +116,9 @@ void BasicState::init()
       800.0f, 450.0f,
       rotation,
       50.0f, 50.0f
-    ).add_component<Components::Color>(255.0f, 0.0f, 255.0f, 255.0f);
+    )
+    .add_component<Components::Color>(255.0f, 0.0f, 255.0f, 255.0f)
+    .add_component<Components::Texture>(Engine::Resources::get_unit_rect_texture());
 
   // Create text entities
   text_hello_1 = ECS::World::create_entity()
@@ -278,8 +287,8 @@ void BasicState::free()
   }
 
   // Remove systems
-  ECS::World::remove_system<RectRenderSystem>();
-  ECS::World::remove_system<TextRenderSystem>();
+  ECS::World::remove_system<Systems::StaticSpriteRenderSystem>();
+  ECS::World::remove_system<Systems::TextRenderSystem>();
 }
 
 void BasicState::unload()

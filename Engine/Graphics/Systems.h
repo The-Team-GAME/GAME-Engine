@@ -1,10 +1,32 @@
 #pragma once
 
 #include "../ECS/ECS.h"
-#include "Components.h"
 #include "Renderer.h"
+#include "../Components.h"
 
-namespace Systems {
+namespace Systems
+{
+
+  // Dont use this, instead just pass in a Engine::Resources::get_unit_rect_texture() when using StaticSpriteRenderSystem
+  //class RectRenderSystem : public ECS::System {
+  //public:
+  //  RectRenderSystem() {
+  //    require_components<Components::Transform2D, Components::Color>();
+  //  }
+
+  //  void draw_entity(const ECS::Entity& entity) override {
+  //    auto* transform = entity.get_component<Components::Transform2D>();
+  //    auto* color = entity.get_component<Components::Color>();
+
+  //    Engine::Graphics::draw_texture(
+  //      Engine::Resources::get_unit_rect_texture(),
+  //      Math::Vec2D(transform->position.x, transform->position.y),
+  //      Math::Vec2D(transform->scale.x, transform->scale.y),
+  //      transform->rotation,
+  //      color->color
+  //    );
+  //  }
+  //};
 
   class StaticSpriteRenderSystem : public ECS::System {
   public:
@@ -12,7 +34,7 @@ namespace Systems {
       require_components<Components::Transform2D, Components::Color, Components::Texture>();
     }
 
-    void draw_entity(ECS::Entity& entity) override {
+    void draw_entity(const ECS::Entity& entity) override {
       auto* transform = entity.get_component<Components::Transform2D>();
       auto* color = entity.get_component<Components::Color>();
       auto* texture = entity.get_component<Components::Texture>();
@@ -34,7 +56,7 @@ namespace Systems {
       require_components<Components::Transform2D, Components::Texture>();
     }
 
-    void draw_entity(ECS::Entity& entity) override {
+    void draw_entity(const ECS::Entity& entity) override {
       auto* transform = entity.get_component<Components::Transform2D>();
       auto* texture = entity.get_component<Components::Texture>();
 
@@ -55,7 +77,7 @@ namespace Systems {
       require_components<Components::Transform2D, Components::Color, Components::Texture, Components::TextureAtlas>();
     }
 
-    void draw_entity(ECS::Entity& entity) override {
+    void draw_entity(const ECS::Entity& entity) override {
       auto* transform = entity.get_component<Components::Transform2D>();
       auto* color = entity.get_component<Components::Color>();
       auto* texture = entity.get_component<Components::Texture>();
@@ -84,7 +106,7 @@ namespace Systems {
       require_components<Components::Transform2D, Components::Texture, Components::TextureAtlas>();
     }
 
-    void draw_entity(ECS::Entity& entity) override {
+    void draw_entity(const ECS::Entity& entity) override {
       auto* transform = entity.get_component<Components::Transform2D>();
       auto* texture = entity.get_component<Components::Texture>();
       auto* atlas = entity.get_component<Components::TextureAtlas>();
@@ -112,7 +134,7 @@ namespace Systems {
       require_components<Components::Transform2D, Components::Color, Components::Font, Components::Text>();
     }
 
-    void draw_entity(ECS::Entity& entity) override {
+    void draw_entity(const ECS::Entity& entity) override {
       auto* transform = entity.get_component<Components::Transform2D>();
       auto* color = entity.get_component<Components::Color>();
       auto* font = entity.get_component<Components::Font>();
@@ -138,7 +160,7 @@ namespace Systems {
       require_components<Components::Transform2D, Components::Font, Components::Text>();
     }
 
-    void draw_entity(ECS::Entity& entity) override {
+    void draw_entity(const ECS::Entity& entity) override {
       auto* transform = entity.get_component<Components::Transform2D>();
       auto* font = entity.get_component<Components::Font>();
       auto* text = entity.get_component<Components::Text>();
