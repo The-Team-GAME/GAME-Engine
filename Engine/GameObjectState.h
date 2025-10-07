@@ -16,62 +16,96 @@
 #pragma once
 
 #include "StateManager.h"
-#include "Graphics.h"
+#include "Graphics/Renderer.h"
 #include "ObjectFactory.h"
-#include "MovementSystem.h"
-#include "RenderSystem.h"
-#include "BackgroundSystem.h"
+#include "ECS/ECS.h"
+#include "Components.h"
 
 class GameObjectState : public Engine::GameState<GameObjectState>
 {
 private:
   s32 enemy_prefab = -1;
+  s32 banana_prefab = -1;
+  s32 lazy_monkey_prefab = -1;
+
 public:
-  void load() {};
+  void load() {}
 
   void init()
   {
-    // Load the enemy prefab from a JSON file
-    enemy_prefab = Engine::FACTORY.registerObject("Assets/objects/enemy.json");
+    // Load prefabs from JSON files
+    enemy_prefab = Engine::ObjectFactory::register_object("Assets/objects/enemy.json");
+    banana_prefab = Engine::ObjectFactory::register_object("Assets/objects/banana.json");
+    lazy_monkey_prefab = Engine::ObjectFactory::register_object("Assets/objects/lazy_monkey.json");
 
-    // Create two enemy instances from the prefab
-    auto enemy1 = Engine::FACTORY.createObject(enemy_prefab)
-      .add_component<Components::Tag<"GameObjectState">>()
-      .add_component<Components::Position>(100.0f, 100.0f); // Position the first enemy left
-    auto enemy2 = Engine::FACTORY.createObject(enemy_prefab)
-      .add_component<Components::Tag<"GameObjectState">>()
-      .add_component<Components::Position>(300.0f, 100.0f) // Position the second enemy right
-      .add_component<Components::Scale>(2.0f, 2.0f); // Make it 2 times bigger
+    // Create enemies from prefab
+    auto enemy1 = Engine::ObjectFactory::create_object(enemy_prefab)
+      .add_component<Components::Tag<"GameObjectState">>();
 
-    // You can modify components like this too
-    //enemy2.get_component<Components::Position>()->x = 300.0f;
+    // Modify enemy1's transform
+    if (auto* transform = enemy1.get_component<Components::Transform2D>()) {
+      transform->position = Math::Vec2D(200.0f, 300.0f);
+    }
 
-    auto background = Engine::WORLD.create_entity()
-      .add_component<Components::Tag<"GameObjectState">>()
-      .add_component<Components::Background>()
-      .add_component<Components::Color>(0.2f, 0.3f, 0.4f, 1.0f); // Dark blue background
+    auto enemy2 = Engine::ObjectFactory::create_object(enemy_prefab)
+      .add_component<Components::Tag<"GameObjectState">>();
 
-    // Add systems to the world
-    Engine::WORLD.add_system<BackgroundSystem>(); // Background system should be first
-    Engine::WORLD.add_system<MovementSystem>();
-    Engine::WORLD.add_system<StaticSpriteRenderSystem>();
-  };
+    // Modify enemy2's transform - different position and scale
+    if (auto* transform = enemy2.get_component<Components::Transform2D>()) {
+      transform->position = Math::Vec2D(600.0f, 300.0f);
+      transform->scale = Math::Vec2D(2.0f, 2.0f); // Make it 2x bigger
+    }
 
-  void update() {};
+    // Create bananas
+    auto banana1 = Engine::ObjectFactory::create_object(banana_prefab)
+      .add_component<Components::Tag<"GameObjectState">>();
+
+    if (auto* transform = banana1.get_component<Components::Transform2D>()) {
+      transform->position = Math::Vec2D(400.0f, 200.0f);
+      transform->rotation = 45.0f; // Rotate 45 degrees
+    }
+
+    auto banana2 = Engine::ObjectFactory::create_object(banana_prefab)
+      .add_component<Components::Tag<"GameObjectState">>();
+
+    if (auto* transform = banana2.get_component<Components::Transform2D>()) {
+      transform->position = Math::Vec2D(450.0f, 250.0f);
+      transform->scale = Math::Vec2D(3.0f, 3.0f); // Make it 3x bigger
+    }
+
+    // Create animated lazy monkey
+    auto lazy_monkey = Engine::ObjectFactory::create_object(lazy_monkey_prefab)
+      .add_component<Components::Tag<"GameObjectState">>();
+
+    if (auto* transform = lazy_monkey.get_component<Components::Transform2D>()) {
+      transform->position = Math::Vec2D(800.0f, 450.0f);
+      transform->scale = Math::Vec2D(3.0f, 3.0f); // Scale it up to see it better
+    }
+
+    // Tint the monkey red
+    if (auto* color = lazy_monkey.get_component<Components::Color>()) {
+      color->color = Math::Vec4D(255.0f, 100.0f, 100.0f, 255.0f); // Red tint
+    }
+  }
+
+  void update() {}
 
   void draw()
   {
-  };
+    // Clear screen with a color
+    Engine::Graphics::clear_screen(Math::Vec4D(50.0f, 75.0f, 100.0f, 255.0f)); // Dark blue background
+  }
 
-  void free() {
-    Engine::FACTORY.unregisterObject(enemy_prefab);
-    Engine::WORLD.destroy_entities_with<Components::Tag<"GameObjectState">>();
+  void free()
+  {
+    // Unregister prefabs
+    Engine::ObjectFactory::unregister_object(enemy_prefab);
+    Engine::ObjectFactory::unregister_object(banana_prefab);
+    Engine::ObjectFactory::unregister_object(lazy_monkey_prefab);
 
-    // Remove systems
-    Engine::WORLD.remove_system<BackgroundSystem>();
-    Engine::WORLD.remove_system<MovementSystem>();
-    Engine::WORLD.remove_system<StaticSpriteRenderSystem>();
-  };
+    // Destroy all entities with the GameObjectState tag
+    ECS::World::destroy_entities_with<Components::Tag<"GameObjectState">>();
+  }
 
-  void unload() {};
+  void unload() {}
 };

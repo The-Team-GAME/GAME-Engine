@@ -316,7 +316,7 @@ namespace Engine {
       return true;
     }
 
-    void set_virtual_resolution(float width, float height) {
+    void set_virtual_resolution(f32 width, f32 height) {
       virtual_width = width;
       virtual_height = height;
       Log::info("Virtual resolution set to: " +

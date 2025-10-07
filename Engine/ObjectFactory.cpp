@@ -18,6 +18,7 @@
 #include "FileHandler.h"
 #include "Graphics/Renderer.h"
 #include <algorithm>
+#include "Resources.h"
 
 namespace fh = FileHandler;
 
@@ -66,15 +67,13 @@ namespace Engine
         std::string texturePath = fh::get_string("texturePath");
         if (texturePath != fh::d_string())
         {
-          // Determine filtering mode
-          Graphics::TextureFilter filter = Graphics::TextureFilter::Nearest;
-          if (fh::has_key("textureFilter") && fh::get_s32("textureFilter") == 1)
-          {
-            filter = Graphics::TextureFilter::Linear;
-          }
+          // Load texture using Resources system (caching is handled automatically)
+          newObject.texture = Engine::Resources::load_texture(texturePath);
 
-          // Load texture
-          newObject.texture = std::make_shared<Graphics::TextureData>(texturePath, filter);
+          if (!newObject.texture || newObject.texture->id == 0)
+          {
+            Log::error("Failed to load texture: " + texturePath);
+          }
         }
         else { Log::warning("Key: texturePath does not contain a value."); }
       }
@@ -92,28 +91,33 @@ namespace Engine
           s32 total_frames = fh::get_s32("totalFrames");
           f32 frames_per_second = fh::get_f32("framesPerSecond");
 
-          // Determine filtering mode
-          Graphics::TextureFilter filter = Graphics::TextureFilter::Nearest;
-          if (fh::has_key("textureFilter") && fh::get_s32("textureFilter") == 1)
+          // Load texture using Resources system (caching is handled automatically)
+          newObject.texture = Engine::Resources::load_texture(spriteSheetPath);
+
+          if (!newObject.texture || newObject.texture->id == 0)
           {
-            filter = Graphics::TextureFilter::Linear;
+            Log::error("Failed to load sprite sheet: " + spriteSheetPath);
           }
+          else
+          {
+            // Calculate rows and columns based on texture dimensions
+            s32 cols = newObject.texture->width / frame_width;
+            s32 rows = newObject.texture->height / frame_height;
 
-          // Load texture
-          newObject.texture = std::make_shared<Graphics::TextureData>(spriteSheetPath, filter);
+            // Create texture atlas using the constructor
+            // This will automatically generate the correct texture coordinates
+            newObject.texture_atlas = Components::TextureAtlas(
+              frame_width,    // subTextureWidth
+              frame_height,   // subTextureHeight
+              rows,           // rows
+              cols,           // cols
+              total_frames    // totalSubTextures (limits to total_frames if less than rows*cols)
+            );
 
-          // Calculate rows and columns
-          s32 cols = newObject.texture->width / frame_width;
-          s32 rows = newObject.texture->height / frame_height;
-
-          // Create texture atlas
-          newObject.texture_atlas = Components::TextureAtlas(
-            frame_width, frame_height, rows, cols, total_frames
-          );
-
-          // Create animation with evenly spaced frames
-          f32 frame_duration = 1.0f / frames_per_second;
-          newObject.animation = Components::Animation(total_frames, frame_duration);
+            // Create animation with evenly spaced frames
+            f32 frame_duration = 1.0f / frames_per_second;
+            newObject.animation = Components::Animation(total_frames, frame_duration);
+          }
         }
         else
         {
@@ -155,7 +159,7 @@ namespace Engine
       ObjectPrefab& objectPrefab = object_list[id];
 
       // Create entity with Transform2D component using scale instead of size
-      ECS::Entity entity = ECS::Entity() // You'll need to get this from your world
+      ECS::Entity entity = ECS::World::create_entity()
         .add_component<Components::ObjectId>(objectPrefab.object_id)
         .add_component<Components::Transform2D>(Math::Vec2D(0.0f, 0.0f), 0.0f, objectPrefab.size)
         .add_component<Components::Color>();
