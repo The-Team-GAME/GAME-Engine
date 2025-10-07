@@ -99,8 +99,8 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="..\Dependencies\ImGui\imgui_draw.cpp" />
     <ClCompile Include="..\Dependencies\ImGui\imgui_tables.cpp" />
     <ClCompile Include="..\Dependencies\ImGui\imgui_widgets.cpp" />
-    <ClCompile Include="Engine\Audio\AudioInternal.cpp" />
     <ClCompile Include="Engine\Audio\AudioPlayer.cpp" />
+    <ClCompile Include="Engine\Audio\AudioPlayerInternal.cpp" />
     <ClCompile Include="GameLogic\GameStates\BasicState.cpp" />
     <ClCompile Include="GameLogic\GameStates\BasicState.h" />
     <ClCompile Include="GameLogic\Config.cpp" />
@@ -129,11 +129,12 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="Engine\Math\Vector4D.cpp" />
     <ClCompile Include="Engine\WindowManager.cpp" />
     <ClCompile Include="GameLogic\GameStates\RectPainterState.cpp" />
+    <ClCompile Include="GameLogic\GameStates\ShowcaseState.cpp" />
     <ClCompile Include="GameLogic\WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Engine\Audio\AudioInternal.h" />
     <ClInclude Include="Engine\Audio\AudioPlayer.h" />
+    <ClInclude Include="Engine\Audio\AudioPlayerInternal.h" />
     <ClInclude Include="Engine\GUI\ResourceManagerPanel.h" />
     <ClInclude Include="Engine\MonkeyEngine.h" />
     <ClInclude Include="Engine\Systems\BasicMovementSystem.h" />

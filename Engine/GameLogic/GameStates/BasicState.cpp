@@ -176,7 +176,7 @@ void BasicState::update()
 void BasicState::draw()
 {
   // Clear background
-  Engine::Graphics::clear_screen({ 20.0f, 20.0f, 20.0f, 1.0f });
+  Engine::Graphics::clear_screen({ 0.078f, 0.078f, 0.078f, 1.0f });
 
   auto unit_rect = Engine::Resources::get_unit_rect_texture();
 
@@ -195,7 +195,6 @@ void BasicState::draw()
     1.0f,
     { 1.0f, 1.0f, 1.0f, 1.0f }
   );
-
 
   // Normally it would be a horrible idewa to load a texture every frame like this,
   // but for demonstration purposes, we will do it here to show that the resource
@@ -219,7 +218,6 @@ void BasicState::draw()
   if (Engine::Input::is_key_pressed(GLFW_KEY_S)) {
     Engine::Audio::play_sound(move_sound, 0.5f, false);
   }
-
 
   ImGui::Begin("Reflection Demo");
 

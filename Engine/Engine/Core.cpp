@@ -28,6 +28,7 @@
 #include "Perf.h"
 #include "InputManager.h"
 #include "Audio/AudioPlayer.h"
+#include "Audio/AudioPlayerInternal.h"
 #include "Resources.h"
 #include "ECS/ECS.h"
 #include "WindowEvents.h"
@@ -115,7 +116,9 @@ namespace Engine
       // END OF TIME UPDATES ================================================
 
       glfwPollEvents();
+
       Engine::Audio::update();
+
       ImGuiManager::begin();
 
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap

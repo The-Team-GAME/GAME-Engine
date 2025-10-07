@@ -1,6 +1,7 @@
 #include "Resources.h"
 #include <memory>
 #include "Graphics/RendererInternal.h"
+#include "Audio/AudioPlayerInternal.h"
 #include "Logger.h"
 
 bool Engine::Resources::init()
@@ -33,6 +34,7 @@ bool Engine::Resources::exit()
   // Clear all caches
   texture_cache.clear();
   font_cache.clear();
+  sound_cache.clear();
 
   // unit_rect will be automatically cleaned up when it goes out of scope
   unit_rect.reset();
@@ -128,54 +130,76 @@ Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath,
   return font;
 }
 
-Engine::Audio::Sound Engine::Resources::load_sound(const std::string& filepath) {
+Engine::Audio::Sound Engine::Resources::load_sound(const std::string& filepath)
+{
   std::string full_path = resource_path + filepath;
 
+  // Check if sound is already in cache
   auto it = sound_cache.find(full_path);
-  if (it != sound_cache.end()) {
-    if (auto cached = it->second.lock()) {
+  if (it != sound_cache.end())
+  {
+    // Try to lock the weak_ptr
+    if (auto cached = it->second.lock())
+    {
       Log::info("Sound loaded from cache: " + full_path);
       return cached;
     }
-    else {
+    else
+    {
+      // Expired, remove from cache
       sound_cache.erase(it);
     }
   }
 
+  // Load new sound (not streamed)
   auto sound = std::make_shared<Engine::Audio::SoundData>(full_path, false);
 
-  if (sound->sound != nullptr) {
+  // Only cache if the sound was successfully loaded
+  if (sound->sound != nullptr)
+  {
     sound_cache[full_path] = sound;
     Log::info("Sound loaded: " + full_path);
   }
-  else {
+  else
+  {
     Log::warning("Failed to load sound: " + full_path);
   }
 
   return sound;
 }
 
-Engine::Audio::Sound Engine::Resources::load_music(const std::string& filepath) {
+Engine::Audio::Sound Engine::Resources::load_music(const std::string& filepath)
+{
   std::string full_path = resource_path + filepath;
 
+  // Check if music is already in cache
   auto it = sound_cache.find(full_path);
-  if (it != sound_cache.end()) {
-    if (auto cached = it->second.lock()) {
+  if (it != sound_cache.end())
+  {
+    // Try to lock the weak_ptr
+    if (auto cached = it->second.lock())
+    {
       Log::info("Music loaded from cache: " + full_path);
       return cached;
     }
-    else {
+    else
+    {
+      // Expired, remove from cache
       sound_cache.erase(it);
     }
   }
 
+  // Load new music (streamed from disk)
   auto music = std::make_shared<Engine::Audio::SoundData>(full_path, true);
 
-  if (music->sound != nullptr) {
+  // Only cache if the music was successfully loaded
+  if (music->sound != nullptr)
+  {
     sound_cache[full_path] = music;
     Log::info("Music loaded: " + full_path);
   }
-  else {
+  else
+  {
     Log::warning("Failed to load music: " + full_path);
   }
 
@@ -210,6 +234,20 @@ void Engine::Resources::clear_unused_resources()
     {
       Log::info("Clearing unused font from cache: " + it->first);
       it = font_cache.erase(it);
+    }
+    else
+    {
+      ++it;
+    }
+  }
+
+  // Clear expired sound cache entries
+  for (auto it = sound_cache.begin(); it != sound_cache.end();)
+  {
+    if (it->second.expired())
+    {
+      Log::info("Clearing unused sound from cache: " + it->first);
+      it = sound_cache.erase(it);
     }
     else
     {
