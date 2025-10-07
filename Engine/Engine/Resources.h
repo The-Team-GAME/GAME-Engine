@@ -8,9 +8,10 @@
 
 namespace Engine {
   namespace Resources {
-    static std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> texture_cache;
-    static std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::FontData>> font_cache;
-    static std::unordered_map<std::string, std::weak_ptr<Engine::Audio::SoundData>> sound_cache;
+    // Declare as extern - actual definition in Resources.cpp
+    extern std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> texture_cache;
+    extern std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::FontData>> font_cache;
+    extern std::unordered_map<std::string, std::weak_ptr<Engine::Audio::SoundData>> sound_cache;
 
     struct ResourceStats {
       size_t texture_count;
@@ -22,10 +23,10 @@ namespace Engine {
     };
 
     // TODO: unit_rect does not need reference counting, since it's always in memory until we exit
-    static Engine::Graphics::Texture unit_rect;
+    extern Engine::Graphics::Texture unit_rect;
 
     // Base path for resource loading
-    static std::string resource_path = "";
+    extern std::string resource_path;
 
     // Initialization code here (e.g., setting up resource maps, loading default resources)
     bool init();

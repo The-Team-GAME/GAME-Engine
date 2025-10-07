@@ -4,6 +4,14 @@
 #include "Audio/AudioPlayerInternal.h"
 #include "Logger.h"
 
+// Define the actual storage for the extern variables
+std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> Engine::Resources::texture_cache;
+std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::FontData>> Engine::Resources::font_cache;
+std::unordered_map<std::string, std::weak_ptr<Engine::Audio::SoundData>> Engine::Resources::sound_cache;
+
+Engine::Graphics::Texture Engine::Resources::unit_rect;
+std::string Engine::Resources::resource_path = "";
+
 bool Engine::Resources::init()
 {
   // Create a 1x1 white pixel texture for unit_rect

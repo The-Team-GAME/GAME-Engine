@@ -200,25 +200,25 @@ namespace Engine {
 
     void set_listener_position(const Math::Vec2D& position) {
       listener_position = position;
-      
+
       FMOD::System* system = get_fmod_system();
       FMOD_VECTOR pos = { position.x, position.y, 0.0f };
       FMOD_VECTOR vel = { 0.0f, 0.0f, 0.0f };
       FMOD_VECTOR forward = { listener_forward.x, listener_forward.y, 0.0f };
       FMOD_VECTOR up = { 0.0f, 0.0f, 1.0f };
-      
+
       system->set3DListenerAttributes(0, &pos, &vel, &forward, &up);
     }
 
     void set_listener_forward(const Math::Vec2D& forward) {
       listener_forward = forward;
-      
+
       FMOD::System* system = get_fmod_system();
       FMOD_VECTOR pos = { listener_position.x, listener_position.y, 0.0f };
       FMOD_VECTOR vel = { 0.0f, 0.0f, 0.0f };
       FMOD_VECTOR fwd = { forward.x, forward.y, 0.0f };
       FMOD_VECTOR up = { 0.0f, 0.0f, 1.0f };
-      
+
       system->set3DListenerAttributes(0, &pos, &vel, &fwd, &up);
     }
 
@@ -232,7 +232,7 @@ namespace Engine {
 
     void stop_all_sounds() {
       FMOD::System* system = get_fmod_system();
-      
+
       // Get master channel group
       FMOD::ChannelGroup* master_group = nullptr;
       if (system->getMasterChannelGroup(&master_group) == FMOD_OK && master_group) {
@@ -242,7 +242,7 @@ namespace Engine {
 
     void pause_all_sounds() {
       FMOD::System* system = get_fmod_system();
-      
+
       FMOD::ChannelGroup* master_group = nullptr;
       if (system->getMasterChannelGroup(&master_group) == FMOD_OK && master_group) {
         master_group->setPaused(true);
@@ -251,7 +251,7 @@ namespace Engine {
 
     void resume_all_sounds() {
       FMOD::System* system = get_fmod_system();
-      
+
       FMOD::ChannelGroup* master_group = nullptr;
       if (system->getMasterChannelGroup(&master_group) == FMOD_OK && master_group) {
         master_group->setPaused(false);

@@ -35,7 +35,7 @@ namespace Engine {
 
         Log::info("FMOD system initialized");
         return UniqueFMODSystem(system);
-      }();
+        }();
 
       if (!fmod_system) {
         throw std::runtime_error("FMOD system failed to initialize");
@@ -50,11 +50,12 @@ namespace Engine {
     // SoundData constructor
     SoundData::SoundData(const std::string& path, bool stream) : is_stream(stream) {
       FMOD::System* system = get_fmod_system();
-      
+
       FMOD_MODE mode = FMOD_DEFAULT;
       if (stream) {
         mode |= FMOD_CREATESTREAM; // Stream from disk (for music)
-      } else {
+      }
+      else {
         mode |= FMOD_CREATESAMPLE; // Load into memory (for sound effects)
       }
 
@@ -62,7 +63,7 @@ namespace Engine {
       mode |= FMOD_3D;
 
       FMOD_RESULT result = system->createSound(path.c_str(), mode, nullptr, &sound);
-      
+
       if (result != FMOD_OK) {
         Log::warning("Failed to load sound: " + path);
         sound = nullptr;
