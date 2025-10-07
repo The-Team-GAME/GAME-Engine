@@ -5,6 +5,7 @@
 #include <memory>
 #include "../Resources.h"
 #include <vector>
+#include "../Perf.h"
 
 namespace Engine {
   namespace Graphics {
@@ -123,7 +124,9 @@ namespace Engine {
 
     // End batch (call at end of frame)
     void end_batch() {
+      Engine::Perf::start("Graphics");
       flush_batch();
+      Engine::Perf::stop("Graphics");
     }
 
     // Add a quad to the batch
