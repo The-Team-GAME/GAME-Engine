@@ -15,6 +15,11 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
+// This will initialize most of the engine subsystems
+#include "Precompiled.h"
+#include "TypeDef.h"
+#include "StateManager.h"
+
 namespace Engine
 {
   /* ========================= //
@@ -26,9 +31,11 @@ namespace Engine
     bool isRunning;
 
   public:
-    Core();
+    Core(s32 window_width, s32 window_height, const char* window_title, GameStateBase* initialState);
     ~Core();
 
     void run();
+
+    void stop();
   };
 }

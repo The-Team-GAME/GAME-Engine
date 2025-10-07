@@ -128,14 +128,17 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="Engine\Math\Vector3D.cpp" />
     <ClCompile Include="Engine\Math\Vector4D.cpp" />
     <ClCompile Include="Engine\WindowManager.cpp" />
+    <ClCompile Include="GameLogic\GameStates\RectPainterState.cpp" />
     <ClCompile Include="GameLogic\WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Audio\AudioInternal.h" />
     <ClInclude Include="Engine\Audio\AudioPlayer.h" />
+    <ClInclude Include="Engine\GUI\ResourceManagerPanel.h" />
     <ClInclude Include="Engine\MonkeyEngine.h" />
     <ClInclude Include="Engine\Systems\BasicMovementSystem.h" />
     <ClInclude Include="Engine\GUI\CameraPanel.h" />
+    <ClInclude Include="Engine\Systems\RenderSystem.h" />
     <ClInclude Include="Engine\WindowEvents.h" />
     <ClInclude Include="GameLogic\Config.h" />
     <ClInclude Include="Engine\Core.h" />
@@ -165,18 +168,21 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Engine\Precompiled.h" />
     <ClInclude Include="Engine\Graphics\Renderer.h" />
     <ClInclude Include="Engine\Systems\RotationSystem.h" />
+    <ClInclude Include="GameLogic\GameStates\RectPainterState.h" />
     <ClInclude Include="GameLogic\GameStates\Rubric2500ParticlesState.h" />
     <ClInclude Include="Engine\FileHandler.h" />
     <ClInclude Include="GameLogic\GameStates\ShowcaseState.h" />
     <ClInclude Include="Engine\Time.h" />
     <ClInclude Include="Engine\GUI\Timeline.h" />
     <ClInclude Include="Engine\Math\Vector2D.h" />
-    <ClInclude Include="Engine\GUI\StateChooser.h" />
+    <ClInclude Include="GameLogic\GUI\StateChooser.h" />
     <ClInclude Include="Engine\StateManager.h" />
     <ClInclude Include="Engine\TypeDef.h" />
     <ClInclude Include="Engine\Math\Vector3D.h" />
     <ClInclude Include="Engine\Math\Vector4D.h" />
     <ClInclude Include="Engine\WindowManager.h" />
+    <ClInclude Include="GameLogic\Systems\HealthSystem.h" />
+    <ClInclude Include="GameLogic\Systems\PlayerControllerSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Engine\ECS\ComponentArray.inl" />

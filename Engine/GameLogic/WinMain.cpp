@@ -14,11 +14,9 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 
-#include "Precompiled.h"
 
-#include "Core.h"
-#include "Typedef.h"
-#include "Logger.h"
+#include "../Engine/MonkeyEngine.h"
+#include "GameStates/ShowcaseState.h"
 #include <exception>
 #include <stdexcept>
 
@@ -41,7 +39,7 @@ int main()
   try
   {
     // Start the engine
-    Engine::Core engine{};
+    Engine::Core engine(1600, 900, "Monkey Stole My GPA", ShowcaseState::get());
     engine.run();
   }
   catch (const std::exception& e)

@@ -18,22 +18,19 @@
 #include <iostream>
 #include "FileHandler.h"
 #include "StateManager.h"
-#include "BasicState.h"
 #include "ImGuiManager.h"
-#include "StateChooser.h"
 #include "Time.h"
-#include "PerformanceViewer.h"
+#include "GUI/PerformanceViewer.h"
 #include "WindowManager.h"
 //#include "ResourceManagerPanel.h"
-#include "EntityEditorPanel.h"
-#include "CameraPanel.h"
-#include "Config.h"
+#include "GUI/EntityEditorPanel.h"
+#include "GUI/CameraPanel.h"
 #include "Perf.h"
 #include "InputManager.h"
-#include "BasicEvents.h"
-//#include "ShowcaseState.h"
 #include "Audio/AudioPlayer.h"
 #include "Resources.h"
+#include "ECS/ECS.h"
+#include "WindowEvents.h"
 
 namespace {
   f64 accumulator{};
@@ -49,13 +46,15 @@ namespace Engine
   Constructor that initializes all engine subsystems including window, graphics,
   ImGui, audio, and the ECS World:: Loads configuration and sets up event listeners.
   ==================================================================================*/
-  Core::Core()
+  Core::Core(s32 window_width, s32 window_height, const char* window_title, GameStateBase* initialState)
   {
-    Config::load_config();
-    s32 win_width = Config::get_win_width();
-    s32 win_height = Config::get_win_height();
 
-    WindowManager::init(win_width, win_height, "Monkey Stole My GPA");
+    // TODO: REFACTOR: move to gamelogic
+    /*Config::load_config();
+    s32 win_width = Config::get_win_width();
+    s32 win_height = Config::get_win_height();*/
+
+    WindowManager::init(window_width, window_height, window_title);
 
     ImguiMgr::imgui_init();
 
@@ -74,8 +73,6 @@ namespace Engine
       throw std::runtime_error("Failed to initialize audio manager");
     }
 
-    /*GRAPHICS.set_params(win_width, win_height);
-    GRAPHICS.init_graphics();*/
     isRunning = true;
 
     // Register the graphics resize system
@@ -84,7 +81,7 @@ namespace Engine
     //  }
     //);
 
-    StateManager::init(ShowcaseState::get()); // TODO: to be removed
+    StateManager::init(initialState);
   }
 
   /*=================================================================================
@@ -169,7 +166,6 @@ namespace Engine
       }
 
       // Rendering Start ========================================
-      StateChooserPanel();
       PerformanceViewerPanel();
       //ResourceManagerPanel();
       EntityEditorPanel();
@@ -210,4 +206,8 @@ namespace Engine
     WindowManager::shutdown();
   }
 
+  void Core::stop()
+  {
+    isRunning = false;
+  }
 }

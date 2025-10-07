@@ -17,7 +17,7 @@
 
 #include "Timeline.h"
 #include "imgui.h"
-#include "TypeDef.h"
+#include "../TypeDef.h"
 
 Timeline::Timeline()
   : currentFrame(0),

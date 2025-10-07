@@ -16,15 +16,8 @@
 //-----------------------------------------------------------------------------------
 
 #include "RectPainterState.h"
-#include "core.h"
-#include "InputManager.h"
-#include "BasicComponents.h"
-#include "BackgroundSystem.h"
-#include "RenderSystem.h"
-#include "CollisionSystem.h"
-
+#include "../../Engine/MonkeyEngine.h"
 #include <imgui.h>
-#include <GLFW/glfw3.h>
 #include <algorithm>
 #include <cstdio>
 #include <unordered_map>
@@ -42,13 +35,13 @@ namespace Components {
 void RectPainterState::load() {}
 void RectPainterState::init()
 {
-  Engine::WORLD.create_entity()
+  ECS::World::create_entity()
     .add_component<Components::Tag<"RectPainter">>()
     .add_component<Components::Background>()
     .add_component<Components::Color>(0.08f, 0.08f, 0.10f, 1.0f);
 
-  Engine::WORLD.add_system<BackgroundSystem>();
-  Engine::WORLD.add_system<RectRenderSystem>();
+  ECS::World::add_system<BackgroundSystem>();
+  ECS::World::add_system<RectRenderSystem>();
 
   rects_.clear();
   selectedIndex_ = -1;
@@ -67,14 +60,14 @@ void RectPainterState::init()
 void RectPainterState::free()
 {
   // Destroy all entities from this state
-  Engine::WORLD.destroy_entities_with<Components::Tag<"RectPainter">>();
+  ECS::World::destroy_entities_with<Components::Tag<"RectPainter">>();
   rects_.clear();
   selectedIndex_ = -1;
   dragMode_ = DragMode::None;
 
   // Remove systems added in Init
-  Engine::WORLD.remove_system<BackgroundSystem>();
-  Engine::WORLD.remove_system<RectRenderSystem>();
+  ECS::World::remove_system<BackgroundSystem>();
+  ECS::World::remove_system<RectRenderSystem>();
 }
 
 void RectPainterState::unload() {}
@@ -100,7 +93,7 @@ void RectPainterState::draw()
       size.y = snapScalar(size.y, snapGridPx_);
     }
 
-    Engine::GRAPHICS.draw_rect(currentColor_, center.x, center.y, size.x, size.y, 0.0f, Graphics::Origin::Center);
+    Engine::Graphics::draw_rect(currentColor_, center.x, center.y, size.x, size.y, 0.0f, Graphics::Origin::Center);
   }
 
   runCollisionPass();
@@ -144,7 +137,7 @@ void RectPainterState::handleMouse()
         }
         if (pointInRect(mouse, minP, maxP)) {
           dragMode_ = DragMode::Moving;
-          auto* pos = Engine::WORLD.get_component<Components::Position>(rects_[selectedIndex_]);
+          auto* pos = ECS::World::get_component<Components::Position>(rects_[selectedIndex_]);
           moveGrabOffset_ = mouse - glm::vec2{ pos->x, pos->y };
           prevMouse_ = mouse;
           return;
@@ -160,7 +153,7 @@ void RectPainterState::handleMouse()
       glm::vec2 minP, maxP;
       if (getBounds(rects_[selectedIndex_], minP, maxP) && pointInRect(mouse, minP, maxP)) {
         dragMode_ = DragMode::Moving;
-        auto* pos = Engine::WORLD.get_component<Components::Position>(rects_[selectedIndex_]);
+        auto* pos = ECS::World::get_component<Components::Position>(rects_[selectedIndex_]);
         moveGrabOffset_ = mouse - glm::vec2{ pos->x, pos->y };
       }
       else {
@@ -183,7 +176,7 @@ void RectPainterState::handleMouse()
 
     if (dragMode_ == DragMode::Moving && selectedIndex_ >= 0) {
       auto id = rects_[selectedIndex_];
-      if (auto* pos = Engine::WORLD.get_component<Components::Position>(id)) {
+      if (auto* pos = ECS::World::get_component<Components::Position>(id)) {
         glm::vec2 newCenter = mouse - moveGrabOffset_;
         if (snap) newCenter = snapToGrid(newCenter, snapGridPx_);
         pos->x = newCenter.x;
@@ -192,8 +185,8 @@ void RectPainterState::handleMouse()
     }
     else if (dragMode_ == DragMode::Resizing && selectedIndex_ >= 0) {
       auto id = rects_[selectedIndex_];
-      auto* pos = Engine::WORLD.get_component<Components::Position>(id);
-      auto* size = Engine::WORLD.get_component<Components::Size>(id);
+      auto* pos = ECS::World::get_component<Components::Position>(id);
+      auto* size = ECS::World::get_component<Components::Size>(id);
       if (pos && size) {
         glm::vec2 minP{ pos->x - size->width * 0.5f,  pos->y - size->height * 0.5f };
         glm::vec2 maxP{ pos->x + size->width * 0.5f,  pos->y + size->height * 0.5f };
@@ -241,7 +234,7 @@ void RectPainterState::handleMouse()
       computeCenterAndSize(dragStart_, mouse, center, size);
       clampMinSize(size, minRectSizePx_);
       if (size.x >= minRectSizePx_ && size.y >= minRectSizePx_) {
-        auto entity = Engine::WORLD.create_entity()
+        auto entity = ECS::World::create_entity()
           .add_component<Components::Tag<"RectPainter">>()
           .add_component<Components::Position>(center.x, center.y)
           .add_component<Components::Size>(size.x, size.y)
@@ -266,19 +259,19 @@ void RectPainterState::handleShortcuts()
   const bool hasSel = (selectedIndex_ >= 0 && selectedIndex_ < (int)rects_.size());
 
   if (hasSel && Engine::Input::is_key_pressed(GLFW_KEY_DELETE)) {
-    Engine::WORLD.destroy_entity(rects_[selectedIndex_]);
+    ECS::World::destroy_entity(rects_[selectedIndex_]);
     rects_.erase(rects_.begin() + selectedIndex_);
     selectedIndex_ = -1;
   }
 
   if (hasSel && ctrl && Engine::Input::is_key_pressed(GLFW_KEY_D)) {
     const EntityID src = rects_[selectedIndex_];
-    auto* p = Engine::WORLD.get_component<Components::Position>(src);
-    auto* s = Engine::WORLD.get_component<Components::Size>(src);
-    auto* c = Engine::WORLD.get_component<Components::Color>(src);
-    auto* col = Engine::WORLD.get_component<Components::BasicCollider>(src);
+    auto* p = ECS::World::get_component<Components::Position>(src);
+    auto* s = ECS::World::get_component<Components::Size>(src);
+    auto* c = ECS::World::get_component<Components::Color>(src);
+    auto* col = ECS::World::get_component<Components::BasicCollider>(src);
     if (p && s && c) {
-      auto e = Engine::WORLD.create_entity()
+      auto e = ECS::World::create_entity()
         .add_component<Components::Tag<"RectPainter">>()
         .add_component<Components::Position>(p->x + 10.f, p->y + 10.f)
         .add_component<Components::Size>(s->width, s->height)
@@ -307,7 +300,7 @@ void RectPainterState::runCollisionPass()
   // Brute-force AABB among collider-enabled rects
   for (size_t i = 0; i < rects_.size(); ++i) {
     auto idA = rects_[i];
-    auto* colA = Engine::WORLD.get_component<Components::BasicCollider>(idA);
+    auto* colA = ECS::World::get_component<Components::BasicCollider>(idA);
     if (!colA || !colA->enabled) continue;
 
     glm::vec2 aMin, aMax;
@@ -315,7 +308,7 @@ void RectPainterState::runCollisionPass()
 
     for (size_t j = i + 1; j < rects_.size(); ++j) {
       auto idB = rects_[j];
-      auto* colB = Engine::WORLD.get_component<Components::BasicCollider>(idB);
+      auto* colB = ECS::World::get_component<Components::BasicCollider>(idB);
       if (!colB || !colB->enabled) continue;
 
       glm::vec2 bMin, bMax;
@@ -335,7 +328,7 @@ void RectPainterState::runCollisionPass()
     if (!getBounds(id, minP, maxP)) continue;
     glm::vec2 c{ (minP.x + maxP.x) * 0.5f, (minP.y + maxP.y) * 0.5f };
     glm::vec2 s{ std::max(1.0f, maxP.x - minP.x), std::max(1.0f, maxP.y - minP.y) };
-    Engine::GRAPHICS.draw_rect(glm::vec4{ 1,0,0,0.20f }, c.x, c.y, s.x + 6.0f, s.y + 6.0f, 0.0f, Graphics::Origin::Center);
+    Engine::Graphics::draw_rect(glm::vec4{ 1,0,0,0.20f }, c.x, c.y, s.x + 6.0f, s.y + 6.0f, 0.0f, Graphics::Origin::Center);
   }
 }
 
@@ -351,7 +344,7 @@ void RectPainterState::drawSelectionGizmo()
   glm::vec2 center{ (minP.x + maxP.x) * 0.5f, (minP.y + maxP.y) * 0.5f };
   glm::vec2 size{ std::max(1.0f, maxP.x - minP.x), std::max(1.0f, maxP.y - minP.y) };
   glm::vec4 sel{ 1.f, 1.f, 0.f, 0.15f };
-  Engine::GRAPHICS.draw_rect(sel, center.x, center.y, size.x + 4.0f, size.y + 4.0f, 0.0f, Graphics::Origin::Center);
+  Engine::Graphics::draw_rect(sel, center.x, center.y, size.x + 4.0f, size.y + 4.0f, 0.0f, Graphics::Origin::Center);
 
   // 8 handles
   const f32 hs = handlePx_;
@@ -363,15 +356,15 @@ void RectPainterState::drawSelectionGizmo()
     {c.x - s.x, c.y + s.y}, {c.x, c.y + s.y}, {c.x + s.x, c.y + s.y},
   };
   for (auto& p : pts) {
-    Engine::GRAPHICS.draw_rect(glm::vec4{ 1,1,0,0.9f }, p.x, p.y, hs, hs, 0.0f, Graphics::Origin::Center);
+    Engine::Graphics::draw_rect(glm::vec4{ 1,1,0,0.9f }, p.x, p.y, hs, hs, 0.0f, Graphics::Origin::Center);
   }
 }
 
 /* Picking helpers */
 bool RectPainterState::getBounds(EntityID id, glm::vec2& minP, glm::vec2& maxP) const
 {
-  auto* pos = Engine::WORLD.get_component<Components::Position>(id);
-  auto* size = Engine::WORLD.get_component<Components::Size>(id);
+  auto* pos = ECS::World::get_component<Components::Position>(id);
+  auto* size = ECS::World::get_component<Components::Size>(id);
   if (!pos || !size) return false;
   minP = { pos->x - size->width * 0.5f,  pos->y - size->height * 0.5f };
   maxP = { pos->x + size->width * 0.5f,  pos->y + size->height * 0.5f };
@@ -431,7 +424,7 @@ void RectPainterState::drawImGui()
     if (ImGui::Button("Clear All")) {
       clearAllRects();
       /*
-      for (EntityID id : rects_) Engine::WORLD.destroy_entity(id);
+      for (EntityID id : rects_) ECS::World::destroy_entity(id);
       rects_.clear();
       selectedIndex_ = -1;
       dragMode_ = DragMode::None;
@@ -441,7 +434,7 @@ void RectPainterState::drawImGui()
     ImGui::SameLine();
     const bool canDelete = (selectedIndex_ >= 0 && selectedIndex_ < (int)rects_.size());
     if (ImGui::Button("Delete Selected") && canDelete) {
-      Engine::WORLD.destroy_entity(rects_[selectedIndex_]);
+      ECS::World::destroy_entity(rects_[selectedIndex_]);
       rects_.erase(rects_.begin() + selectedIndex_);
       selectedIndex_ = -1;
     }
@@ -449,12 +442,12 @@ void RectPainterState::drawImGui()
     ImGui::SameLine();
     if (ImGui::Button("Duplicate") && canDelete) {
       const EntityID src = rects_[selectedIndex_];
-      auto* p = Engine::WORLD.get_component<Components::Position>(src);
-      auto* s = Engine::WORLD.get_component<Components::Size>(src);
-      auto* c = Engine::WORLD.get_component<Components::Color>(src);
-      auto* col = Engine::WORLD.get_component<Components::BasicCollider>(src);
+      auto* p = ECS::World::get_component<Components::Position>(src);
+      auto* s = ECS::World::get_component<Components::Size>(src);
+      auto* c = ECS::World::get_component<Components::Color>(src);
+      auto* col = ECS::World::get_component<Components::BasicCollider>(src);
       if (p && s && c) {
-        auto e = Engine::WORLD.create_entity()
+        auto e = ECS::World::create_entity()
           .add_component<Components::Tag<"RectPainter">>()
           .add_component<Components::Position>(p->x + 12.f, p->y + 12.f)
           .add_component<Components::Size>(s->width, s->height)
@@ -468,8 +461,8 @@ void RectPainterState::drawImGui()
     if (ImGui::BeginListBox("Rectangles", ImVec2(420, 200))) {
       for (s32 i = 0; i < (s32)rects_.size(); ++i) {
         const EntityID id = rects_[i];
-        auto* pos = Engine::WORLD.get_component<Components::Position>(id);
-        auto* size = Engine::WORLD.get_component<Components::Size>(id);
+        auto* pos = ECS::World::get_component<Components::Position>(id);
+        auto* size = ECS::World::get_component<Components::Size>(id);
         if (!pos || !size) continue;
         char label[160];
         std::snprintf(label, sizeof(label), "#%d  pos(%.0f,%.0f) size(%.0f,%.0f)",
@@ -484,10 +477,10 @@ void RectPainterState::drawImGui()
       ImGui::Separator();
       ImGui::Text("Selected #%d", selectedIndex_);
       const EntityID id = rects_[selectedIndex_];
-      auto* pos = Engine::WORLD.get_component<Components::Position>(id);
-      auto* size = Engine::WORLD.get_component<Components::Size>(id);
-      auto* color = Engine::WORLD.get_component<Components::Color>(id);
-      //auto* col = Engine::WORLD.get_component<Components::BasicCollider>(id);
+      auto* pos = ECS::World::get_component<Components::Position>(id);
+      auto* size = ECS::World::get_component<Components::Size>(id);
+      auto* color = ECS::World::get_component<Components::Color>(id);
+      //auto* col = ECS::World::get_component<Components::BasicCollider>(id);
 
       if (pos && size && color) {
         ImGui::DragFloat2("Position (center)", &pos->x, 1.0f);
@@ -504,8 +497,8 @@ void RectPainterState::drawImGui()
         //bool hasBasicCollider = (col != nullptr);
        /* if (!hasBasicCollider) {
           if (ImGui::Button("Add BasicCollider")) {
-            Engine::WORLD.add_component<Components::BasicCollider>(id, Components::BasicCollider{ true,false });
-            col = Engine::WORLD.get_component<Components::BasicCollider>(id);
+            ECS::World::add_component<Components::BasicCollider>(id, Components::BasicCollider{ true,false });
+            col = ECS::World::get_component<Components::BasicCollider>(id);
           }
         }
         else {
@@ -588,7 +581,7 @@ void RectPainterState::sendToBack(s32 index)
 
 void RectPainterState::clearAllRects()
 {
-  for (EntityID id : rects_) Engine::WORLD.destroy_entity(id);
+  for (EntityID id : rects_) Engine::World::destroy_entity(id);
   rects_.clear();
   selectedIndex_ = -1;
   dragMode_ = DragMode::None;

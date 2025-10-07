@@ -13,11 +13,9 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "StateManager.h"
+#include "../../Engine/MonkeyEngine.h"
 #include <vector>
 #include <glm/glm.hpp>
-#include "ECS/System.h"
-#include "TypeDef.h"
 
 class RectPainterState : public Engine::GameState<RectPainterState>
 {

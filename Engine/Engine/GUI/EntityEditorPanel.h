@@ -16,9 +16,10 @@
 #pragma once
 #include "imgui.h"
 #include "Core.h"
-#include "Components.h"
+#include "../Components/EngineComponents.h"
 #include <string>
 #include <vector>
+#include "../ECS/ECS.h"
 
 inline void EntityEditorPanel()
 {

@@ -15,14 +15,14 @@
 #pragma once
 
 #include "imgui.h"
-#include "StateManager.h"
-#include "BasicState.h"
+#include "../../Engine/MonkeyEngine.h"
+#include "../GameStates/BasicState.h"
 //#include "PhysicsTestState.h"
-#include "GameObjectState.h"
-#include "Rubric2500ParticlesState.h"
+#include "../GameStates/GameObjectState.h"
+#include "../GameStates/Rubric2500ParticlesState.h"
 //#include "RectPainterState.h"
-#include "DevSpriteAnimationState.h"
-#include "ShowcaseState.h"
+#include "../GameStates/DevSpriteAnimationState.h"
+#include "../GameStates/ShowcaseState.h"
 
 /*=================================================================================
 Function Brief:

@@ -22,7 +22,7 @@
 #include <string>
 #include <algorithm>
 #include "imgui.h"
-#include "TypeDef.h"
+#include "../TypeDef.h"
 
 // Structure to hold the data for an image clip on the timeline
 struct TimelineClip {
