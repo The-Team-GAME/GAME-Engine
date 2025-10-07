@@ -1,3 +1,5 @@
+//TODO: deprecating soon
+
 //-----------------------------------------------------------------------------------
 // file:    ObjectFactory.cpp
 // project: Monkey Stole My GPA
@@ -70,7 +72,7 @@ namespace Engine
           // Load texture using Resources system (caching is handled automatically)
           newObject.texture = Engine::Resources::load_texture(texturePath);
 
-          if (!newObject.texture || newObject.texture->id == 0)
+          if (!newObject.texture.has_value() || !newObject.texture.value() || newObject.texture.value()->id == 0)
           {
             Log::error("Failed to load texture: " + texturePath);
           }
@@ -94,15 +96,16 @@ namespace Engine
           // Load texture using Resources system (caching is handled automatically)
           newObject.texture = Engine::Resources::load_texture(spriteSheetPath);
 
-          if (!newObject.texture || newObject.texture->id == 0)
+          if (!newObject.texture.has_value() || !newObject.texture.value() || newObject.texture.value()->id == 0)
           {
             Log::error("Failed to load sprite sheet: " + spriteSheetPath);
           }
           else
           {
             // Calculate rows and columns based on texture dimensions
-            s32 cols = newObject.texture->width / frame_width;
-            s32 rows = newObject.texture->height / frame_height;
+            // Need to dereference the shared_ptr to access width and height
+            s32 cols = newObject.texture.value()->width / frame_width;
+            s32 rows = newObject.texture.value()->height / frame_height;
 
             // Create texture atlas using the constructor
             // This will automatically generate the correct texture coordinates

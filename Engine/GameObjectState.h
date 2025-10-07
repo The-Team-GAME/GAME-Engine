@@ -17,6 +17,7 @@
 
 #include "StateManager.h"
 #include "Graphics/Renderer.h"
+#include "Resources.h"
 #include "ObjectFactory.h"
 #include "ECS/ECS.h"
 #include "Components.h"
@@ -33,6 +34,8 @@ public:
 
   void init()
   {
+    Engine::Resources::set_resource_path("Assets/");
+
     // Load prefabs from JSON files
     enemy_prefab = Engine::ObjectFactory::register_object("Assets/objects/enemy.json");
     banana_prefab = Engine::ObjectFactory::register_object("Assets/objects/banana.json");
