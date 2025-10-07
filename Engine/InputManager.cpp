@@ -91,7 +91,7 @@ namespace Engine
   }
 
   bool Input::is_key_held(s32 key)
-  {
+  { 
     return currentKeys[key];
   }
 

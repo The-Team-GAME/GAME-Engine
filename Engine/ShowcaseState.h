@@ -142,6 +142,7 @@ public:
       .add_component<Components::Tag<"ShowcaseState">>()
       .add_component<Components::Transform2D>(200.0f, 655.0f, 0.0f, player_idle_width * 2.0f, player_idle_height * 2.0f)
       .add_component<Components::Texture>(player_idle_texture)
+      .add_component<Components::RigidBody>()
       .add_component<Components::Health>(100, 100)
       .add_component<Components::Color>(255.0f, 255.0f, 255.0f, 255.0f)
       .add_component<Components::TextureAtlas>(64, 64, 1, 7, 7)
@@ -260,8 +261,8 @@ public:
     }
 
     // Apply scale to flip sprite horizontally
-    player_transform->scale.x = facing_right ? 2.0f : -2.0f;
-    player_transform->scale.y = 2.0f;
+    player_transform->scale.x = (facing_right ? 2.0f : -2.0f) * player_idle_width;
+    player_transform->scale.y = 2.0f * player_idle_height;
 
     rigid->linear_velocity.x = new_vel_x;
     rigid->linear_velocity.y = new_vel_y;
