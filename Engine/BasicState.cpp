@@ -66,7 +66,7 @@ void BasicState::init()
   Engine::Resources::set_resource_path("Assets/");
 
   // Add rendering systems
-  //ECS::World::add_system<Systems::StaticSpriteRenderSystem>();
+  ECS::World::add_system<Systems::StaticSpriteRenderSystem>();
   ECS::World::add_system<Systems::TextRenderSystem>();
 
   // Create rectangle entities
