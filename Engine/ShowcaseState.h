@@ -87,24 +87,26 @@ private:
 
 public:
   void load() {
+    Engine::Resources::set_resource_path("Assets/");
+
     // Load sprite sheet textures with Nearest filter for pixel art
-    player_idle_texture = Engine::Resources::load_texture("Assets/images/Bro_Idle_Spritesheet.png");
-    player_punch_texture = Engine::Resources::load_texture("Assets/images/Bro_Punch_Spritesheet.png");
-    player_run_texture = Engine::Resources::load_texture("Assets/images/Bro_Run_Spritesheet.png");
+    player_idle_texture = Engine::Resources::load_texture("images/Bro_Idle_Spritesheet.png");
+    player_punch_texture = Engine::Resources::load_texture("images/Bro_Punch_Spritesheet.png");
+    player_run_texture = Engine::Resources::load_texture("images/Bro_Run_Spritesheet.png");
 
     // Load object textures
-    banana_texture = Engine::Resources::load_texture("Assets/images/banana.png");
-    enemy_texture = Engine::Resources::load_texture("Assets/images/lazy_monkey.png");
+    banana_texture = Engine::Resources::load_texture("images/banana.png");
+    enemy_texture = Engine::Resources::load_texture("images/lazy_monkey.png");
 
     // Load background texture with Linear filter for smooth backgrounds
-    background_texture = Engine::Resources::load_texture("Assets/images/sample_bg.png");
+    background_texture = Engine::Resources::load_texture("images/sample_bg.png");
 
     // Load audio
-    walk_sound = Engine::Resources::load_sound("Assets/sounds/move1.wav");
+    walk_sound = Engine::Resources::load_sound("sounds/move1.wav");
 
     // Load fonts
-    title_font = Engine::Resources::load_font("Assets/fonts/PlayfairDisplay-VariableFont_wght.ttf", 82);
-    info_font = Engine::Resources::load_font("Assets/fonts/Roboto-Regular.ttf", 48);
+    title_font = Engine::Resources::load_font("fonts/PlayfairDisplay-VariableFont_wght.ttf", 82);
+    info_font = Engine::Resources::load_font("fonts/Roboto-Regular.ttf", 48);
   }
 
   void init() {
@@ -131,7 +133,7 @@ public:
       .add_component<Components::Color>(255.0f, 255.0f, 255.0f, 255.0f)
       .add_component<Components::RigidBody>();
 
-    enemy.get_component<Components::RigidBody>()->rotation = 90.0f;
+    banana.get_component<Components::RigidBody>()->rotation = 90.0f;
 
     // Create player with idle animation
     player = ECS::World::create_entity()
@@ -219,11 +221,11 @@ public:
 
   void update() {
     auto* player_transform = player.get_component<Components::Transform2D>();
-    auto* player_vel = player.get_component<Components::Velocity>();
+    auto* rigid = player.get_component<Components::RigidBody>();
     auto* player_texture = player.get_component<Components::Texture>();
-    auto* player_size = player.get_component<Components::Size>();
+    //auto* player_size = player.get_component<Components::Size>();
 
-    if (!player_transform || !player_vel || !player_texture || !player_size) return;
+    if (!player_transform || !rigid || !player_texture /*|| !player_size*/) return;
 
     // Player movement input
     f32 speed = 300.0f;
@@ -255,8 +257,8 @@ public:
     player_transform->scale.x = facing_right ? 2.0f : -2.0f;
     player_transform->scale.y = 2.0f;
 
-    player_vel->x = new_vel_x;
-    player_vel->y = new_vel_y;
+    rigid->linear_velocity.x = new_vel_x;
+    rigid->linear_velocity.y = new_vel_y;
 
     // Only change to walk/idle if not currently punching
     if (player_texture->texture_handle != player_punch_texture) {
@@ -266,16 +268,16 @@ public:
       if (shouldWalk && !is_walking) {
         // Switch to walking animation
         player_texture->texture_handle = player_run_texture;
-        player_size->width = player_idle_width;
-        player_size->height = player_idle_height;
+        /*player_size->width = player_idle_width;
+        player_size->height = player_idle_height;*/
         Engine::Audio::play_sound(walk_sound, 1.0f, true);
         is_walking = true;
       }
       else if (!shouldWalk && is_walking) {
         // Switch to idle animation
         player_texture->texture_handle = player_idle_texture;
-        player_size->width = player_idle_width;
-        player_size->height = player_idle_height;
+        /*player_size->width = player_idle_width;
+        player_size->height = player_idle_height;*/
         Engine::Audio::stop_sound(walk_sound);
         is_walking = false;
       }
@@ -349,11 +351,11 @@ public:
     ECS::World::destroy_entities_with<Components::Tag<"ShowcaseState">>();
 
     // Remove systems
-    ECS::World::remove_system<TextureBackgroundSystem>();
-    ECS::World::remove_system<StaticSpriteRenderSystem>();
+    //ECS::World::remove_system<TextureBackgroundSystem>();
+    ECS::World::remove_system<Systems::StaticSpriteRenderSystem>();
     ECS::World::remove_system<BasicMovementSystem>();
     ECS::World::remove_system<RotationSystem>();
-    ECS::World::remove_system<RectRenderSystem>();
+    //ECS::World::remove_system<RectRenderSystem>();
 
     // Remove event listeners
     ECS::World::remove_event_listener<AttackEvent>();

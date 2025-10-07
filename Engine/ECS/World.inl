@@ -70,7 +70,7 @@ namespace ECS
     template <typename T>
     void remove_component(EntityID entity)
     {
-      assert(has_component<T>(entity) && "Entity does not have this component");
+      //assert(has_component<T>(entity) && "Entity does not have this component");
       ComponentTypeID typeId = ComponentTypeManager::get_type_id<T>();
       auto* array = get_component_array<T>();
       if (array)
@@ -84,7 +84,7 @@ namespace ECS
     template <typename T>
     T* get_component(EntityID entity)
     {
-      assert(has_component<T>(entity) && "Entity does not have this component");
+      //assert(has_component<T>(entity) && "Entity does not have this component");
       auto* array = get_component_array<T>();
       return array ? array->get_component(entity) : nullptr;
     }
