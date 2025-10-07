@@ -25,6 +25,9 @@ namespace Engine {
     // Play music (looping by default)
     void play_music(Sound music, float volume = 1.0f, bool loop = true);
 
+    // Stop a specific sound
+    void stop_sound(Sound sound);
+
     // Stop all sounds
     void stop_all_sounds();
 

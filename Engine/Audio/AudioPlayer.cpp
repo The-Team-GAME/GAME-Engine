@@ -80,6 +80,27 @@ namespace Engine {
       play_sound(music, volume, loop);
     }
 
+    void stop_sound(Sound sound) {
+      if (!sound || !sound->sound) {
+        return;
+      }
+
+      for (auto it = active_channels.begin(); it != active_channels.end(); ) {
+        FMOD::Channel* channel = *it;
+        if (channel) {
+          FMOD::Sound* channelSound = nullptr;
+          channel->getCurrentSound(&channelSound);
+
+          if (channelSound == sound->sound) {
+            channel->stop();
+            it = active_channels.erase(it);
+            continue;
+          }
+        }
+        ++it;
+      }
+    }
+
     void stop_all_sounds() {
       for (FMOD::Channel* channel : active_channels) {
         if (channel) {
