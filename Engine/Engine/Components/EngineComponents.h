@@ -2,7 +2,8 @@
 
 #include "Graphics/RendererInternal.h"
 #include "Graphics/Renderer.h"
-#include <string> 
+#include <string>
+#include <limits>
 #include "Reflection/Reflect.h"
 #include "Time.h"
 
@@ -159,36 +160,11 @@ namespace Components
     Math::Vec2D linear_velocity = { 0.0f, 0.0f }; // Velocity in units per second
     bool is_kinematic = false; // If true, not affected by physics forces
     float mass = 1.0f; // Mass in kg
-    Math::Vec2D linear_terminal_velocity = { 1000.0f, 1000.0f }; // TODO: Use the std library to get the max float value for default
+    Math::Vec2D linear_terminal_velocity = { std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
     float rotation = 0.0f; // In degrees
     float rotation_terminal_velocity = 360.0f; // In degrees per second
     float angular_velocity = 0.0f; // In degrees per second
   };
-
-
-
-  //TODO: move to GameLogic
-  /* ====================== //
-  // Gameplay components    //
-  // ====================== */
-
-  struct Health {
-    s32 value, max;
-    Health(s32 value = 100, s32 max = 100) : value(value), max(max) {}
-
-    void heal(s32 amount) {
-      value = std::min(value + amount, max);
-    }
-
-    void damage(s32 amount) {
-      value = std::max(value - amount, 0);
-    }
-
-    bool is_dead() const {
-      return value <= 0;
-    }
-  };
-
 }
 
 REFLECT(Components::Color, color)

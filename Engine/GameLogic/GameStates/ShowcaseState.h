@@ -16,18 +16,7 @@
 #pragma once
 
 #include "../../Engine/MonkeyEngine.h"
-//#include "StateManager.h"
-//#include "Core.h"
-//#include "Components.h"
-//#include "BasicComponents.h"
-//#include "RenderSystem.h"
-//#include "BackgroundSystem.h"
-//#include "BasicMovementSystem.h"
-//#include "BasicEvents.h"
-//#include "InputManager.h"
-//#include "Resources.h"
-//#include "Precompiled.h"
-//#include "RotationSystem.h"
+#include "../Components/Components.h"
 
 /* ===================== //
 // Custom Events         //
