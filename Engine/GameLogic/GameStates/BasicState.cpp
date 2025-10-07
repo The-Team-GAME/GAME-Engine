@@ -14,16 +14,10 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "BasicState.h"
-#include "Core.h"
-#include "InputManager.h"
-#include "Components.h"
-#include "RenderSystem.h"
-#include "Resources.h"
+#include "../../Engine/MonkeyEngine.h"
 #include "Time.h"
 #include <iostream>
-#include "Precompiled.h"
 #include <imgui.h>
-#include "Reflection/Helpers.h"
 
 void BasicState::load()
 {
