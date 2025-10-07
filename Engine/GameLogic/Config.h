@@ -13,7 +13,9 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
-#include "TypeDef.h"
+
+#include "../../Engine/MonkeyEngine.h"
+
 namespace Config {
 
 	/*=================================================================================

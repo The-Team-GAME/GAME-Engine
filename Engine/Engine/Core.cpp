@@ -48,12 +48,6 @@ namespace Engine
   ==================================================================================*/
   Core::Core(s32 window_width, s32 window_height, const char* window_title, GameStateBase* initialState)
   {
-
-    // TODO: REFACTOR: move to gamelogic
-    /*Config::load_config();
-    s32 win_width = Config::get_win_width();
-    s32 win_height = Config::get_win_height();*/
-
     WindowManager::init(window_width, window_height, window_title);
 
     ImguiMgr::imgui_init();
@@ -189,7 +183,6 @@ namespace Engine
   ==================================================================================*/
   Core::~Core()
   {
-    FileHandler::clear_json();
 
     ImguiMgr::imgui_exit();
 
