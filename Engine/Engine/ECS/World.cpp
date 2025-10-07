@@ -14,6 +14,7 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "World.h"
+#include "../Perf.h"
 
 namespace ECS
 {
@@ -120,6 +121,8 @@ namespace ECS
 
     void update()
     {
+      Engine::Perf::start("ECS Update");
+
       // Dispatch all queued events
       for (const auto& event : Internal::event_queue)
       {
@@ -168,14 +171,20 @@ namespace ECS
         }
       }
       Internal::entities_to_destroy.clear();
+
+      Engine::Perf::stop("ECS Update");
     }
 
     void draw()
     {
+      Engine::Perf::start("ECS Draw");
+
       for (auto& system : Internal::systems)
       {
         system->draw();
       }
+
+      Engine::Perf::stop("ECS Draw");
     }
 
     std::vector<Entity> get_all_entities()

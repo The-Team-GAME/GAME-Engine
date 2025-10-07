@@ -124,9 +124,9 @@ namespace Engine {
 
     // End batch (call at end of frame)
     void end_batch() {
-      Engine::Perf::start("Graphics");
+      Engine::Perf::start("Graphics flush");
       flush_batch();
-      Engine::Perf::stop("Graphics");
+      Engine::Perf::stop("Graphics flush");
     }
 
     // Add a quad to the batch
