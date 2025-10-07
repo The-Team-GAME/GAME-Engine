@@ -26,7 +26,7 @@
 #include "WindowManager.h"
 //#include "ResourceManagerPanel.h"
 #include "EntityEditorPanel.h"
-//#include "CameraPanel.h"
+#include "CameraPanel.h"
 #include "Config.h"
 #include "Perf.h"
 #include "InputManager.h"
@@ -192,7 +192,7 @@ namespace Engine
       PerformanceViewerPanel();
       //ResourceManagerPanel();
       EntityEditorPanel();
-      //CameraPanel();
+      CameraPanel();
       // start of draw stuff
       StateManager::get_current_state()->draw();
       ECS::World::draw();

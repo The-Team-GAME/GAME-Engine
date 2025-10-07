@@ -19,6 +19,9 @@ namespace Engine {
     static float virtual_width = 1600.0f;
     static float virtual_height = 900.0f;
 
+    // Camera state
+    static Camera current_camera;
+
     // Vertex structure for a textured quad
     struct Vertex {
       glm::vec2 position;
@@ -29,6 +32,29 @@ namespace Engine {
     // Helper function to get the current projection matrix
     static glm::mat4 get_projection_matrix() {
       return glm::ortho(0.0f, virtual_width, virtual_height, 0.0f, -1.0f, 1.0f);
+    }
+
+    // Helper function to get the current view matrix based on camera
+    static glm::mat4 get_view_matrix() {
+      glm::mat4 view = glm::mat4(1.0f);
+
+      // Apply zoom (scale)
+      view = glm::scale(view, glm::vec3(current_camera.zoom, current_camera.zoom, 1.0f));
+
+      // Apply rotation (around center of screen)
+      if (current_camera.rotation != 0.0f) {
+        // Translate to center
+        view = glm::translate(view, glm::vec3(virtual_width * 0.5f, virtual_height * 0.5f, 0.0f));
+        // Rotate
+        view = glm::rotate(view, glm::radians(-current_camera.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+        // Translate back
+        view = glm::translate(view, glm::vec3(-virtual_width * 0.5f, -virtual_height * 0.5f, 0.0f));
+      }
+
+      // Apply camera position (translation)
+      view = glm::translate(view, glm::vec3(-current_camera.position.x, -current_camera.position.y, 0.0f));
+
+      return view;
     }
 
     // Helper function to draw a quad with custom texture coordinates
@@ -63,9 +89,8 @@ namespace Engine {
 
       model = glm::scale(model, glm::vec3(size.x, size.y, 1.0f));
 
-      // Set view matrix (identity for now)
-      glm::mat4 view = glm::mat4(1.0f);
-      shader->set_mat4("u_view", view);
+      // Set view matrix (using camera)
+      shader->set_mat4("u_view", get_view_matrix());
 
       // Set projection matrix using virtual resolution
       shader->set_mat4("u_projection", get_projection_matrix());
@@ -133,9 +158,8 @@ namespace Engine {
       glBindTexture(GL_TEXTURE_2D, atlas_texture.id);
       shader->set_int("u_texture", 0);
 
-      // Set view matrix (identity for now)
-      glm::mat4 view = glm::mat4(1.0f);
-      shader->set_mat4("u_view", view);
+      // Set view matrix (using camera)
+      shader->set_mat4("u_view", get_view_matrix());
 
       // Set projection matrix using virtual resolution
       shader->set_mat4("u_projection", get_projection_matrix());
@@ -255,6 +279,9 @@ namespace Engine {
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+      // Initialize camera to default
+      reset_camera();
+
       Log::info("Renderer initialized with virtual resolution: " +
         std::to_string((int)virtual_width) + "x" + std::to_string((int)virtual_height));
       return true;
@@ -293,6 +320,32 @@ namespace Engine {
 
     Math::Vec2D get_virtual_resolution() {
       return Math::Vec2D(virtual_width, virtual_height);
+    }
+
+    void set_camera(const Camera& camera) {
+      current_camera = camera;
+    }
+
+    Camera get_camera() {
+      return current_camera;
+    }
+
+    void set_camera_position(const Math::Vec2D& position) {
+      current_camera.position = position;
+    }
+
+    void set_camera_rotation(f32 rotation) {
+      current_camera.rotation = rotation;
+    }
+
+    void set_camera_zoom(f32 zoom) {
+      current_camera.zoom = zoom;
+    }
+
+    void reset_camera() {
+      current_camera.position = Math::Vec2D(0.0f, 0.0f);
+      current_camera.rotation = 0.0f;
+      current_camera.zoom = 1.0f;
     }
 
     void draw_texture(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {

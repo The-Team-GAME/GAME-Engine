@@ -16,6 +16,7 @@
 #pragma once
 #include "imgui.h"
 #include "Core.h"
+#include "Graphics/Renderer.h"
 
 inline void CameraPanel()
 {
@@ -24,53 +25,75 @@ inline void CameraPanel()
   ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "Camera Settings");
   ImGui::Separator();
 
-  // Get current camera values through a static accessor
-  static glm::vec2 camera_position = { 0.0f, 0.0f };
-  static f32 camera_zoom = 1.0f;
-  static f32 camera_rotation = 0.0f;
+  // Get virtual resolution
+  Math::Vec2D virtual_resolution = Engine::Graphics::get_virtual_resolution();
+
+  // Get current camera from renderer
+  Engine::Graphics::Camera current_camera = Engine::Graphics::get_camera();
+
+  // Camera state (use current camera values)
+  Math::Vec2D camera_position = current_camera.position;
+  f32 camera_zoom = current_camera.zoom;
+  f32 camera_rotation = current_camera.rotation;
+
+  bool camera_changed = false;
 
   // Position Controls
   if (ImGui::CollapsingHeader("Position", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    ImGui::DragFloat("X", &camera_position.x, 1.0f);
-    ImGui::DragFloat("Y", &camera_position.y, 1.0f);
+    if (ImGui::DragFloat("X", &camera_position.x, 1.0f))
+      camera_changed = true;
+
+    if (ImGui::DragFloat("Y", &camera_position.y, 1.0f))
+      camera_changed = true;
 
     if (ImGui::Button("Reset Position"))
     {
       camera_position = { 0.0f, 0.0f };
+      camera_changed = true;
     }
 
     ImGui::SameLine();
 
     if (ImGui::Button("Center on Origin"))
     {
-      camera_position = { Graphics::VIRTUAL_WIDTH / 2.0f, Graphics::VIRTUAL_HEIGHT / 2.0f };
+      camera_position = { virtual_resolution.x / 2.0f, virtual_resolution.y / 2.0f };
+      camera_changed = true;
     }
 
     // Quick position presets
     if (ImGui::TreeNode("Quick Presets"))
     {
       if (ImGui::Button("Top-Left"))
+      {
         camera_position = { 0.0f, 0.0f };
+        camera_changed = true;
+      }
 
       ImGui::SameLine();
 
       if (ImGui::Button("Top-Right"))
-        camera_position = { Graphics::VIRTUAL_WIDTH, 0.0f };
+      {
+        camera_position = { virtual_resolution.x, 0.0f };
+        camera_changed = true;
+      }
 
       if (ImGui::Button("Bottom-Left"))
-        camera_position = { 0.0f, Graphics::VIRTUAL_HEIGHT };
+      {
+        camera_position = { 0.0f, virtual_resolution.y };
+        camera_changed = true;
+      }
 
       ImGui::SameLine();
 
       if (ImGui::Button("Bottom-Right"))
-        camera_position = { Graphics::VIRTUAL_WIDTH, Graphics::VIRTUAL_HEIGHT };
+      {
+        camera_position = { virtual_resolution.x, virtual_resolution.y };
+        camera_changed = true;
+      }
 
       ImGui::TreePop();
     }
-
-    // Apply position
-    Engine::GRAPHICS.set_camera_position(camera_position.x, camera_position.y);
   }
 
   ImGui::Separator();
@@ -78,7 +101,8 @@ inline void CameraPanel()
   // Zoom Controls
   if (ImGui::CollapsingHeader("Zoom", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    ImGui::SliderFloat("Zoom Level", &camera_zoom, 0.1f, 5.0f, "%.2f");
+    if (ImGui::SliderFloat("Zoom Level", &camera_zoom, 0.1f, 5.0f, "%.2f"))
+      camera_changed = true;
 
     ImGui::Text("Shortcuts:");
 
@@ -86,6 +110,7 @@ inline void CameraPanel()
     {
       camera_zoom *= 1.25f;
       if (camera_zoom > 5.0f) camera_zoom = 5.0f;
+      camera_changed = true;
     }
 
     ImGui::SameLine();
@@ -94,11 +119,13 @@ inline void CameraPanel()
     {
       camera_zoom *= 0.75f;
       if (camera_zoom < 0.1f) camera_zoom = 0.1f;
+      camera_changed = true;
     }
 
     if (ImGui::Button("Reset Zoom (1.0x)"))
     {
       camera_zoom = 1.0f;
+      camera_changed = true;
     }
 
     ImGui::SameLine();
@@ -106,26 +133,44 @@ inline void CameraPanel()
     if (ImGui::Button("Fit Screen"))
     {
       camera_zoom = 1.0f;
+      camera_changed = true;
     }
 
     // Quick zoom presets
     if (ImGui::TreeNode("Zoom Presets"))
     {
-      if (ImGui::Button("0.25x")) camera_zoom = 0.25f;
+      if (ImGui::Button("0.25x"))
+      {
+        camera_zoom = 0.25f;
+        camera_changed = true;
+      }
       ImGui::SameLine();
-      if (ImGui::Button("0.5x")) camera_zoom = 0.5f;
+      if (ImGui::Button("0.5x"))
+      {
+        camera_zoom = 0.5f;
+        camera_changed = true;
+      }
       ImGui::SameLine();
-      if (ImGui::Button("1.0x")) camera_zoom = 1.0f;
+      if (ImGui::Button("1.0x"))
+      {
+        camera_zoom = 1.0f;
+        camera_changed = true;
+      }
       ImGui::SameLine();
-      if (ImGui::Button("2.0x")) camera_zoom = 2.0f;
+      if (ImGui::Button("2.0x"))
+      {
+        camera_zoom = 2.0f;
+        camera_changed = true;
+      }
       ImGui::SameLine();
-      if (ImGui::Button("4.0x")) camera_zoom = 4.0f;
+      if (ImGui::Button("4.0x"))
+      {
+        camera_zoom = 4.0f;
+        camera_changed = true;
+      }
 
       ImGui::TreePop();
     }
-
-    // Apply zoom
-    Engine::GRAPHICS.set_camera_zoom(camera_zoom);
   }
 
   ImGui::Separator();
@@ -133,16 +178,18 @@ inline void CameraPanel()
   // Rotation Controls
   if (ImGui::CollapsingHeader("Rotation", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    ImGui::SliderFloat("Angle (degrees)", &camera_rotation, 0.0f, 360.0f, "%.1f°");
+    if (ImGui::SliderFloat("Angle (degrees)", &camera_rotation, 0.0f, 360.0f, "%.1f°"))
+      camera_changed = true;
 
     // Wrap rotation to 0-360 range
-    if (camera_rotation < 0.0f) camera_rotation += 360.0f;
-    if (camera_rotation >= 360.0f) camera_rotation -= 360.0f;
+    while (camera_rotation < 0.0f) camera_rotation += 360.0f;
+    while (camera_rotation >= 360.0f) camera_rotation -= 360.0f;
 
     if (ImGui::Button("Rotate +15°"))
     {
       camera_rotation += 15.0f;
       if (camera_rotation >= 360.0f) camera_rotation -= 360.0f;
+      camera_changed = true;
     }
 
     ImGui::SameLine();
@@ -151,12 +198,14 @@ inline void CameraPanel()
     {
       camera_rotation -= 15.0f;
       if (camera_rotation < 0.0f) camera_rotation += 360.0f;
+      camera_changed = true;
     }
 
     if (ImGui::Button("Rotate +90°"))
     {
       camera_rotation += 90.0f;
       if (camera_rotation >= 360.0f) camera_rotation -= 360.0f;
+      camera_changed = true;
     }
 
     ImGui::SameLine();
@@ -165,31 +214,50 @@ inline void CameraPanel()
     {
       camera_rotation -= 90.0f;
       if (camera_rotation < 0.0f) camera_rotation += 360.0f;
+      camera_changed = true;
     }
 
     if (ImGui::Button("Reset Rotation (0°)"))
     {
       camera_rotation = 0.0f;
+      camera_changed = true;
     }
 
     // Quick rotation presets
     if (ImGui::TreeNode("Rotation Presets"))
     {
-      if (ImGui::Button("0°")) camera_rotation = 0.0f;
+      if (ImGui::Button("0°"))
+      {
+        camera_rotation = 0.0f;
+        camera_changed = true;
+      }
       ImGui::SameLine();
-      if (ImGui::Button("45°")) camera_rotation = 45.0f;
+      if (ImGui::Button("45°"))
+      {
+        camera_rotation = 45.0f;
+        camera_changed = true;
+      }
       ImGui::SameLine();
-      if (ImGui::Button("90°")) camera_rotation = 90.0f;
+      if (ImGui::Button("90°"))
+      {
+        camera_rotation = 90.0f;
+        camera_changed = true;
+      }
       ImGui::SameLine();
-      if (ImGui::Button("180°")) camera_rotation = 180.0f;
+      if (ImGui::Button("180°"))
+      {
+        camera_rotation = 180.0f;
+        camera_changed = true;
+      }
       ImGui::SameLine();
-      if (ImGui::Button("270°")) camera_rotation = 270.0f;
+      if (ImGui::Button("270°"))
+      {
+        camera_rotation = 270.0f;
+        camera_changed = true;
+      }
 
       ImGui::TreePop();
     }
-
-    // Apply rotation
-    Engine::GRAPHICS.set_camera_rotation(camera_rotation);
   }
 
   ImGui::Separator();
@@ -197,22 +265,29 @@ inline void CameraPanel()
   // Combined Reset
   if (ImGui::Button("Reset All Camera Settings", ImVec2(-1, 0)))
   {
-    camera_position = { 0.0f, 0.0f };
-    camera_zoom = 1.0f;
-    camera_rotation = 0.0f;
+    Engine::Graphics::reset_camera();
+    camera_changed = false; // Already reset via function
+  }
 
-    Engine::GRAPHICS.set_camera_position(camera_position.x, camera_position.y);
-    Engine::GRAPHICS.set_camera_zoom(camera_zoom);
-    Engine::GRAPHICS.set_camera_rotation(camera_rotation);
+  // Apply camera changes to renderer
+  if (camera_changed)
+  {
+    Engine::Graphics::Camera new_camera;
+    new_camera.position = camera_position;
+    new_camera.zoom = camera_zoom;
+    new_camera.rotation = camera_rotation;
+    Engine::Graphics::set_camera(new_camera);
   }
 
   ImGui::Separator();
 
   // Display info
-  if (ImGui::CollapsingHeader("Info"))
+  if (ImGui::CollapsingHeader("Info", ImGuiTreeNodeFlags_DefaultOpen))
   {
     ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Virtual Resolution:");
-    ImGui::Text("  %.0f x %.0f", Graphics::VIRTUAL_WIDTH, Graphics::VIRTUAL_HEIGHT);
+    ImGui::Text("  %.0f x %.0f", virtual_resolution.x, virtual_resolution.y);
+
+    ImGui::Separator();
 
     ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Current Camera:");
     ImGui::Text("  Position: (%.1f, %.1f)", camera_position.x, camera_position.y);
@@ -221,10 +296,16 @@ inline void CameraPanel()
 
     ImGui::Separator();
 
+    ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "Status:");
+    ImGui::TextWrapped("✓ Camera system is active and functional");
+
+    ImGui::Separator();
+
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Tips:");
     ImGui::TextWrapped("• Use position controls to pan the camera");
     ImGui::TextWrapped("• Zoom > 1.0 zooms in, < 1.0 zooms out");
-    ImGui::TextWrapped("• Rotation rotates the entire view");
+    ImGui::TextWrapped("• Rotation rotates the entire view around screen center");
+    ImGui::TextWrapped("• All changes apply in real-time");
   }
 
   ImGui::End();

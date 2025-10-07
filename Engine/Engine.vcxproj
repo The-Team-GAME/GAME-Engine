@@ -136,6 +136,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Audio\AudioPlayer.h" />
     <ClInclude Include="BasicComponents.h" />
     <ClInclude Include="BasicMovementSystem.h" />
+    <ClInclude Include="CameraPanel.h" />
     <ClInclude Include="CollisionSystem.h" />
     <ClInclude Include="BasicEvents.h" />
     <ClInclude Include="Config.h" />
