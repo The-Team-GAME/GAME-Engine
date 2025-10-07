@@ -6,10 +6,32 @@
 #include "Reflection/Reflect.h"
 
 
-
+/* ======================================= //
+// Fixed string for compile-time tags     //
+// ======================================= */
+template<size_t N>
+struct fixed_string {
+  constexpr fixed_string(const char(&str)[N]) {
+    std::copy_n(str, N, value);
+  }
+  char value[N];
+};
 
 namespace Components
 {
+  /* ====================== //
+  // Identification tags    //
+  // ====================== */
+  template <fixed_string id>
+  struct Tag {};
+
+  struct ObjectId : std::basic_string<char> {
+    using std::basic_string<char>::basic_string;
+  };
+
+  /* ====================== //
+  // Rendering components     //
+  // ====================== */
   struct Texture
   {
     Engine::Graphics::Texture texture_handle;

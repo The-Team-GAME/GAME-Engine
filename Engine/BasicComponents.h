@@ -1,208 +1,210 @@
-//-----------------------------------------------------------------------------------
-// file:    BasicComponents.h
-// project: Monkey Stole My GPA
+// TODO: Deprecate soon
+
+////-----------------------------------------------------------------------------------
+//// file:    BasicComponents.h
+//// project: Monkey Stole My GPA
+////
+//// author:  Chew Shee Yang (65%)
+////          Primary author
+////          How Hong Chin Ryan (35%)          
+////          Secondary author
+////
+//// email:   chew.s@digipen.edu, hongchinryan.how@digipen.edu
+////    
+//// brief:   This file defines common components used throughout the game engine.
+////          Includes transform components (Position, Scale, Rotation), rendering
+////          components (Color, StaticSprite, AnimatedSprite), gameplay components
+////          (Health, Velocity), and utility components (Tag, ObjectId).
+////
+//// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+////-----------------------------------------------------------------------------------
+//#pragma once
 //
-// author:  Chew Shee Yang (65%)
-//          Primary author
-//          How Hong Chin Ryan (35%)          
-//          Secondary author
+//#include "Vector2D.h"
+//#include "Vector4D.h"
+//#include "Graphics.h"
+//#include <string>
 //
-// email:   chew.s@digipen.edu, hongchinryan.how@digipen.edu
-//    
-// brief:   This file defines common components used throughout the game engine.
-//          Includes transform components (Position, Scale, Rotation), rendering
-//          components (Color, StaticSprite, AnimatedSprite), gameplay components
-//          (Health, Velocity), and utility components (Tag, ObjectId).
+///* ======================================= //
+//// Fixed string for compile-time tags     //
+//// ======================================= */
+//template<size_t N>
+//struct fixed_string {
+//  constexpr fixed_string(const char(&str)[N]) {
+//    std::copy_n(str, N, value);
+//  }
+//  char value[N];
+//};
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
-//-----------------------------------------------------------------------------------
-#pragma once
-
-#include "Vector2D.h"
-#include "Vector4D.h"
-#include "Graphics.h"
-#include <string>
-
-/* ======================================= //
-// Fixed string for compile-time tags     //
-// ======================================= */
-template<size_t N>
-struct fixed_string {
-  constexpr fixed_string(const char(&str)[N]) {
-    std::copy_n(str, N, value);
-  }
-  char value[N];
-};
-
-
-namespace Components {
-  /* ====================== //
-  // Identification tags    //
-  // ====================== */
-  template <fixed_string id>
-  struct Tag {};
-
-  struct ObjectId : std::basic_string<char> {
-    using std::basic_string<char>::basic_string;
-  };
-
-  /* ====================== //
-  // Transform components   //
-  // ====================== */
-  struct Position : Math::Vec2D {
-    using Math::Vec2D::Vec2D;
-  };
-
-  struct Scale : Math::Vec2D {
-    using Math::Vec2D::Vec2D;
-  };
-
-  struct Rotation {
-    f32 angle; // in degrees
-    Rotation(f32 angle = 0.0f) : angle(angle) {}
-  };
-
-  struct RotationSpeed {
-    f32 degrees_per_second;
-    RotationSpeed(f32 degrees_per_second = 0.0f) : degrees_per_second(degrees_per_second) {}
-  };
-
-  /* ====================== //
-  // Physics components     //
-  // ====================== */
-  struct Velocity : Math::Vec2D {
-    using Math::Vec2D::Vec2D;
-  };
-
-  struct Size {
-    f32 width, height;
-    Size(f32 width = 0.0f, f32 height = 0.0f) : width(width), height(height) {}
-  };
-
-  /* ====================== //
-  // Rendering components   //
-  // ====================== */
-  /*struct Color : Math::Vec4D {
-    using Math::Vec4D::Vec4D;
-  };*/
-
-  struct Background {}; // Tag for background entities
-
-  /* ====================== //
-  // Gameplay components    //
-  // ====================== */
-  struct Health {
-    s32 value, max;
-    Health(s32 value = 100, s32 max = 100) : value(value), max(max) {}
-
-    void heal(s32 amount) {
-      value = std::min(value + amount, max);
-    }
-
-    void damage(s32 amount) {
-      value = std::max(value - amount, 0);
-    }
-
-    bool is_dead() const {
-      return value <= 0;
-    }
-  };
-
-  struct PlayerController {
-    //bool isGrounded = false; // Whether the player is on the ground
-    PlayerController(/*bool isgrounded = false*/)
-      /* : isGrounded(isgrounded)*/ {
-    }
-  };
-
-  struct Collider {
-    f32 halfWidth, halfHeight;
-    Math::Vec2D penetration = { 0.0f, 0.0f }; // penetration from last collision
-    Math::Vec2D dynamicNormal = { 0.0f, 0.0f }; // normal of last dynamic collision
-    f32 dynamicCollisionTime = 0.0f; // cooldown timer to prevent repeated dynamic collisions
-    bool enabled = true;              // optional: whether this collider is active
-    bool isStatic = false;                   // optional: whether this collider is a trigger
-
-    Collider(f32 width = 1.0f, f32 height = 1.0f, bool isstatic = false)
-      : halfWidth(width * 0.5f), halfHeight(height * 0.5f), isStatic(isstatic) {
-    }
-  };
-
-  struct Gravity {
-    f32 strength = 9.81f; // default gravity
-    Gravity(f32 g = 9.81f) : strength(g) {}
-  };
-
-  struct RigidBody {
-    f32 mass = 1.0f;                      // How heavy the body is
-    f32 inverse_mass = 1.0f;               // For faster physics (1/mass, 0 if immovable)
-    f32 restitution = 0.0f;               // Bounciness (0 = no bounce, 1 = perfectly elastic)
-    f32 friction = 50000.0f;                  // Surface friction coefficient (0 = no friction, 1 = max)
-    Math::Vec2D velocity = { 0.0f, 0.0f }; // Current movement speed
-    Math::Vec2D acceleration = { 0.0f, 0.0f }; // For applying force
-    bool useGravity = true;               // Whether gravity affects it
-    bool isGrounded = false;              // Whether the body is on the ground
-
-    RigidBody(f32 m = 1.0f, bool static_body = false)
-      : mass(m)
-    {
-      if (static_body || m <= 0.0f) {
-        mass = 0.0f;
-        inverse_mass = 0.0f; // immovable
-      }
-      else {
-        inverse_mass = 1.0f / mass;
-      }
-    }
-  };
-
-  /* ====================== //
-  // Sprite components      //
-  // ====================== */
-  struct StaticSprite {
-    s32 texture_id;
-    StaticSprite(s32 texture_id = -1) : texture_id(texture_id) {}
-  };
-
-  struct AnimatedSprite {
-    s32 spriteSheetId;
-    f32 animationTime;
-    bool is_playing;
-    bool loop;
-
-    AnimatedSprite(s32 spriteSheetId = -1, bool autoPlay = true, bool loop = true)
-      : spriteSheetId(spriteSheetId), animationTime(0.0f), is_playing(autoPlay), loop(loop) {
-    }
-
-    void play() {
-      is_playing = true;
-    }
-
-    void pause() {
-      is_playing = false;
-    }
-
-    void stop() {
-      is_playing = false;
-      animationTime = 0.0f;
-    }
-
-    void reset() {
-      animationTime = 0.0f;
-    }
-
-    // Check if animation has completed one full cycle
-    bool hasCompleted(f32 totalDuration) const {
-      return !loop && animationTime >= totalDuration;
-    }
-  };
-
-  /* ====================== //
-  // Input components       //
-  // ====================== */
-  struct SimplePlayerControl {
-    f32 speed;
-    SimplePlayerControl(f32 speed = 100.0f) : speed(speed) {}
-  };
-
-} // namespace Components
+//
+//namespace Components {
+//  /* ====================== //
+//  // Identification tags    //
+//  // ====================== */
+//  template <fixed_string id>
+//  struct Tag {};
+//
+//  struct ObjectId : std::basic_string<char> {
+//    using std::basic_string<char>::basic_string;
+//  };
+//
+//  /* ====================== //
+//  // Transform components   //
+//  // ====================== */
+//  struct Position : Math::Vec2D {
+//    using Math::Vec2D::Vec2D;
+//  };
+//
+//  struct Scale : Math::Vec2D {
+//    using Math::Vec2D::Vec2D;
+//  };
+//
+//  struct Rotation {
+//    f32 angle; // in degrees
+//    Rotation(f32 angle = 0.0f) : angle(angle) {}
+//  };
+//
+//  struct RotationSpeed {
+//    f32 degrees_per_second;
+//    RotationSpeed(f32 degrees_per_second = 0.0f) : degrees_per_second(degrees_per_second) {}
+//  };
+//
+//  /* ====================== //
+//  // Physics components     //
+//  // ====================== */
+//  struct Velocity : Math::Vec2D {
+//    using Math::Vec2D::Vec2D;
+//  };
+//
+//  struct Size {
+//    f32 width, height;
+//    Size(f32 width = 0.0f, f32 height = 0.0f) : width(width), height(height) {}
+//  };
+//
+//  /* ====================== //
+//  // Rendering components   //
+//  // ====================== */
+//  /*struct Color : Math::Vec4D {
+//    using Math::Vec4D::Vec4D;
+//  };*/
+//
+//  struct Background {}; // Tag for background entities
+//
+//  /* ====================== //
+//  // Gameplay components    //
+//  // ====================== */
+//  struct Health {
+//    s32 value, max;
+//    Health(s32 value = 100, s32 max = 100) : value(value), max(max) {}
+//
+//    void heal(s32 amount) {
+//      value = std::min(value + amount, max);
+//    }
+//
+//    void damage(s32 amount) {
+//      value = std::max(value - amount, 0);
+//    }
+//
+//    bool is_dead() const {
+//      return value <= 0;
+//    }
+//  };
+//
+//  struct PlayerController {
+//    //bool isGrounded = false; // Whether the player is on the ground
+//    PlayerController(/*bool isgrounded = false*/)
+//      /* : isGrounded(isgrounded)*/ {
+//    }
+//  };
+//
+//  struct Collider {
+//    f32 halfWidth, halfHeight;
+//    Math::Vec2D penetration = { 0.0f, 0.0f }; // penetration from last collision
+//    Math::Vec2D dynamicNormal = { 0.0f, 0.0f }; // normal of last dynamic collision
+//    f32 dynamicCollisionTime = 0.0f; // cooldown timer to prevent repeated dynamic collisions
+//    bool enabled = true;              // optional: whether this collider is active
+//    bool isStatic = false;                   // optional: whether this collider is a trigger
+//
+//    Collider(f32 width = 1.0f, f32 height = 1.0f, bool isstatic = false)
+//      : halfWidth(width * 0.5f), halfHeight(height * 0.5f), isStatic(isstatic) {
+//    }
+//  };
+//
+//  struct Gravity {
+//    f32 strength = 9.81f; // default gravity
+//    Gravity(f32 g = 9.81f) : strength(g) {}
+//  };
+//
+//  struct RigidBody {
+//    f32 mass = 1.0f;                      // How heavy the body is
+//    f32 inverse_mass = 1.0f;               // For faster physics (1/mass, 0 if immovable)
+//    f32 restitution = 0.0f;               // Bounciness (0 = no bounce, 1 = perfectly elastic)
+//    f32 friction = 50000.0f;                  // Surface friction coefficient (0 = no friction, 1 = max)
+//    Math::Vec2D velocity = { 0.0f, 0.0f }; // Current movement speed
+//    Math::Vec2D acceleration = { 0.0f, 0.0f }; // For applying force
+//    bool useGravity = true;               // Whether gravity affects it
+//    bool isGrounded = false;              // Whether the body is on the ground
+//
+//    RigidBody(f32 m = 1.0f, bool static_body = false)
+//      : mass(m)
+//    {
+//      if (static_body || m <= 0.0f) {
+//        mass = 0.0f;
+//        inverse_mass = 0.0f; // immovable
+//      }
+//      else {
+//        inverse_mass = 1.0f / mass;
+//      }
+//    }
+//  };
+//
+//  /* ====================== //
+//  // Sprite components      //
+//  // ====================== */
+//  struct StaticSprite {
+//    s32 texture_id;
+//    StaticSprite(s32 texture_id = -1) : texture_id(texture_id) {}
+//  };
+//
+//  struct AnimatedSprite {
+//    s32 spriteSheetId;
+//    f32 animationTime;
+//    bool is_playing;
+//    bool loop;
+//
+//    AnimatedSprite(s32 spriteSheetId = -1, bool autoPlay = true, bool loop = true)
+//      : spriteSheetId(spriteSheetId), animationTime(0.0f), is_playing(autoPlay), loop(loop) {
+//    }
+//
+//    void play() {
+//      is_playing = true;
+//    }
+//
+//    void pause() {
+//      is_playing = false;
+//    }
+//
+//    void stop() {
+//      is_playing = false;
+//      animationTime = 0.0f;
+//    }
+//
+//    void reset() {
+//      animationTime = 0.0f;
+//    }
+//
+//    // Check if animation has completed one full cycle
+//    bool hasCompleted(f32 totalDuration) const {
+//      return !loop && animationTime >= totalDuration;
+//    }
+//  };
+//
+//  /* ====================== //
+//  // Input components       //
+//  // ====================== */
+//  struct SimplePlayerControl {
+//    f32 speed;
+//    SimplePlayerControl(f32 speed = 100.0f) : speed(speed) {}
+//  };
+//
+//} // namespace Components
