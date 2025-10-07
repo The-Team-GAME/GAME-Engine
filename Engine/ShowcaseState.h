@@ -166,13 +166,18 @@ public:
         Engine::Audio::stop_sound(walk_sound);
 
         auto* player_texture = player.get_component<Components::Texture>();
-        /* auto* player_size = player.get_component<Components::Size>();
-         if (player_texture && player_size) {
-           player_texture->texture_handle = player_punch_texture;
-           player_size->width = player_punch_width;
-           player_size->height = player_punch_height;
-           std::cout << "Playing punch animation\n";
-         }*/
+        auto* player_transform = player.get_component<Components::Transform2D>();
+        auto* player_animation = player.get_component<Components::Animation>();
+        auto* player_atlas = player.get_component<Components::TextureAtlas>();
+        if (player_texture && player_transform && player_animation) {
+          player_texture->texture_handle = player_punch_texture;
+          player_transform->scale.x = (facing_right ? 2.0f : -2.0f) * player_punch_width;
+          player_transform->scale.y = 2.0f * player_punch_height;
+          *player_animation = Components::Animation(12, 0.05f); // 12 frames, 0.05s each
+          *player_atlas = Components::TextureAtlas(player_punch_width, player_punch_height, 1, 12, 12); // TODO: add a set_blah_blah
+
+          std::cout << "Playing punch animation\n";
+        }
       }
 
       // Apply damage to enemy
