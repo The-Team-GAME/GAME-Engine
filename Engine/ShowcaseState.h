@@ -96,7 +96,7 @@ public:
 
     // Load object textures
     banana_texture = Engine::Resources::load_texture("images/banana.png");
-    enemy_texture = Engine::Resources::load_texture("images/lazy_monkey.png");
+    enemy_texture = Engine::Resources::load_texture("images/LazyMonkey_Idle_Spritesheet.png");
 
     // Load background texture with Linear filter for smooth backgrounds
     background_texture = Engine::Resources::load_texture("images/sample_bg.png");
@@ -122,8 +122,9 @@ public:
       .add_component<Components::Transform2D>(800.0f, 655.0f, 0.0f, 64.0f * 2.0f, 64.0f * 2.0f)
       .add_component<Components::Texture>(enemy_texture)
       .add_component<Components::Health>(50, 50)
-      .add_component<Components::Color>(255.0f, 255.0f, 255.0f, 255.0f);
-
+      .add_component<Components::Color>(255.0f, 255.0f, 255.0f, 255.0f)
+      .add_component<Components::TextureAtlas>(64, 64, 1, 5, 5)
+      .add_component<Components::Animation>(5, 0.15f);
 
     // Create banana
     banana = ECS::World::create_entity()
@@ -160,13 +161,13 @@ public:
         Engine::Audio::stop_sound(walk_sound);
 
         auto* player_texture = player.get_component<Components::Texture>();
-       /* auto* player_size = player.get_component<Components::Size>();
-        if (player_texture && player_size) {
-          player_texture->texture_handle = player_punch_texture;
-          player_size->width = player_punch_width;
-          player_size->height = player_punch_height;
-          std::cout << "Playing punch animation\n";
-        }*/
+        /* auto* player_size = player.get_component<Components::Size>();
+         if (player_texture && player_size) {
+           player_texture->texture_handle = player_punch_texture;
+           player_size->width = player_punch_width;
+           player_size->height = player_punch_height;
+           std::cout << "Playing punch animation\n";
+         }*/
       }
 
       // Apply damage to enemy
@@ -299,6 +300,8 @@ public:
   }
 
   void draw() {
+    Engine::Graphics::clear_screen(background_texture);
+
     // Draw title text (first font)
     if (title_font && title_font->texture_atlas.id != 0) {
       Engine::Graphics::draw_text(
