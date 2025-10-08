@@ -32,6 +32,7 @@ namespace Engine {
     protected:
       std::unordered_set<EntityID> entities;
       ComponentSignature required_signature;
+      ComponentSignature excluded_signature;
       EventSignature event_signature;
 
     public:
@@ -40,6 +41,10 @@ namespace Engine {
       // Clean way to specify required components!
       template<typename... Components>
       void require_components();
+
+      // Clean way to specify excluded components!
+      template<typename... Components>
+      void exclude_components();
 
       // Clean way to specify listened-to events!
       template<typename... Events>
@@ -70,6 +75,7 @@ namespace Engine {
 
       const std::unordered_set<EntityID>& get_entities() const;
       const ComponentSignature& get_required_signature() const;
+      const ComponentSignature& get_excluded_signature() const;
       const EventSignature& get_event_signature() const;
     };
 

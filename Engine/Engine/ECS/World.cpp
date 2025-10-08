@@ -55,9 +55,16 @@ namespace Engine {
           return false;
 
         const auto& requiredSignature = system.get_required_signature();
+        const auto& excludedSignature = system.get_excluded_signature();
         const auto& entitySignature = it->second;
 
-        return (requiredSignature & entitySignature) == requiredSignature;
+        // Check if entity has all required components
+        bool hasRequired = (requiredSignature & entitySignature) == requiredSignature;
+
+        // Check if entity has none of the excluded components
+        bool hasExcluded = (excludedSignature & entitySignature).any();
+
+        return hasRequired && !hasExcluded;
       }
     } // namespace Internal
 

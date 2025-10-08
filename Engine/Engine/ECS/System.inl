@@ -27,6 +27,12 @@ namespace Engine {
       ((required_signature.set(ComponentTypeManager::get_type_id<Components>())), ...);
     }
 
+    template<typename... Components>
+    void System::exclude_components() {
+      excluded_signature.reset();
+      ((excluded_signature.set(ComponentTypeManager::get_type_id<Components>())), ...);
+    }
+
     template<typename... Events>
     void System::listen_to_events() {
       event_signature.reset();

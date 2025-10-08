@@ -67,6 +67,10 @@ namespace Engine {
       return required_signature;
     }
 
+    const ComponentSignature& System::get_excluded_signature() const {
+      return excluded_signature;
+    }
+
     const EventSignature& System::get_event_signature() const {
       return event_signature;
     }

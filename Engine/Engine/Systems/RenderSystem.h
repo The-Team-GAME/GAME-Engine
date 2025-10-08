@@ -10,6 +10,7 @@ namespace Systems
   public:
     StaticSpriteRenderSystem() {
       require_components<Components::Transform2D, Components::Color, Components::Texture>();
+      exclude_components<Components::TextureAtlas>();
     }
 
     void draw_entity(const Engine::ECS::Entity& entity) override {
