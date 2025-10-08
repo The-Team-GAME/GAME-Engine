@@ -46,6 +46,16 @@ constexpr bool has_reflection_v = has_reflection<T>::value;
 template<typename T>
 struct reflection_adaptor;
 
+// Check if a type has a nested Adaptor type
+template<typename T, typename = void>
+struct has_nested_adaptor : std::false_type {};
+
+template<typename T>
+struct has_nested_adaptor<T, std::void_t<typename T::Adaptor>> : std::true_type {};
+
+template<typename T>
+constexpr bool has_nested_adaptor_v = has_nested_adaptor<T>::value;
+
 // Adaptor traits - check if serialize method exists
 template<typename T, typename = void>
 struct has_adaptor : std::false_type {};
@@ -64,19 +74,21 @@ constexpr bool has_adaptor_v = has_adaptor<T>::value;
     static constexpr auto fields = std::make_tuple(EXPAND_FIELDS(CLASS_NAME, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)); \
   };
 
-#define REFLECT_ADAPTOR(CLASS_NAME, VIEW_TYPE, SERIALIZE_FUNC, DESERIALIZE_FUNC) \
-  template<>                                                                     \
-  struct reflection_adaptor<CLASS_NAME>                                          \
-  {                                                                              \
-    using view_type = VIEW_TYPE;                                                 \
-    static constexpr const char* class_name = #CLASS_NAME;                       \
-    static view_type serialize(const CLASS_NAME& obj) {                          \
-      return obj.SERIALIZE_FUNC();                                               \
-    }                                                                            \
-    static CLASS_NAME deserialize(const view_type& view) {                       \
-      CLASS_NAME obj;                                                            \
-      return obj.DESERIALIZE_FUNC(view);                                         \
-    }                                                                            \
+#define REFLECT_ADAPTOR(CLASS_NAME, ...)                                       \
+  REFLECT(CLASS_NAME::Adaptor, __VA_ARGS__)                                    \
+  template<>                                                                   \
+  struct reflection_adaptor<CLASS_NAME>                                        \
+  {                                                                            \
+    using view_type = CLASS_NAME::Adaptor;                                     \
+    static constexpr const char* class_name = #CLASS_NAME;                     \
+    static view_type serialize(const CLASS_NAME& obj) {                        \
+      view_type view;                                                          \
+      return view.serialize(obj);                                              \
+    }                                                                          \
+    static CLASS_NAME deserialize(const view_type& view) {                     \
+      return view.deserialize();                                               \
+    }                                                                          \
   };
+
 
 #include "Helpers.h"
