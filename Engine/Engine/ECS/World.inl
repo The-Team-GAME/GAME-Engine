@@ -45,8 +45,9 @@ namespace Engine {
     template <typename... T>
     void destroy_entities_with()
     {
-      for (EntityID entity : Internal::active_entities)
+      for (EntityID entityId : Internal::active_entities)
       {
+        Entity entity(entityId);
         if (has_components<T...>(entity))
         {
           destroy_entity(entity);
@@ -55,49 +56,53 @@ namespace Engine {
     }
 
     template <typename T, typename... Args>
-    void add_component(EntityID entity, Args &&...args)
+    void add_component(const Entity& entity, Args &&...args)
     {
+      EntityID entityId = entity.get_id();
       assert(!has_component<T>(entity) && "Entity already has this component");
       ComponentTypeID typeId = ComponentTypeManager::get_type_id<T>();
       auto* array = get_component_array<T>();
 
-      array->add_component(entity, T(std::forward<Args>(args)...));
-      Internal::entity_signatures[entity].set(typeId);
-      Internal::entity_component_changed(entity);
+      array->add_component(entityId, T(std::forward<Args>(args)...));
+      Internal::entity_signatures[entityId].set(typeId);
+      Internal::entity_component_changed(entityId);
     }
 
     template <typename T>
-    void remove_component(EntityID entity)
+    void remove_component(const Entity& entity)
     {
+      EntityID entityId = entity.get_id();
       //assert(has_component<T>(entity) && "Entity does not have this component");
       ComponentTypeID typeId = ComponentTypeManager::get_type_id<T>();
       auto* array = get_component_array<T>();
       if (array)
       {
-        array->remove_component(entity);
-        Internal::entity_signatures[entity].reset(typeId);
-        Internal::entity_component_changed(entity);
+        array->remove_component(entityId);
+        Internal::entity_signatures[entityId].reset(typeId);
+        Internal::entity_component_changed(entityId);
       }
     }
 
     template <typename T>
-    T* get_component(EntityID entity)
+    T* get_component(const Entity& entity)
     {
+      EntityID entityId = entity.get_id();
       //assert(has_component<T>(entity) && "Entity does not have this component");
       auto* array = get_component_array<T>();
-      return array ? array->get_component(entity) : nullptr;
+      return array ? array->get_component(entityId) : nullptr;
     }
 
     template <typename T>
-    bool has_component(EntityID entity)
+    bool has_component(const Entity& entity)
     {
+      EntityID entityId = entity.get_id();
       ComponentTypeID typeId = ComponentTypeManager::get_type_id<T>();
-      auto it = Internal::entity_signatures.find(entity);
+      auto it = Internal::entity_signatures.find(entityId);
       return it != Internal::entity_signatures.end() && it->second.test(typeId);
     }
 
     template <typename... T>
-    bool has_components(EntityID entity)
+    bool has_components(const Entity& entity)
     {
       return (has_component<T>(entity) && ...);
     }

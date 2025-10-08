@@ -22,34 +22,34 @@ namespace Engine {
 
     template<typename T, typename... Args>
     Entity& Entity::add_component(Args&&... args) {
-      ECS::add_component<T>(id, std::forward<Args>(args)...);
+      ECS::add_component<T>(*this, std::forward<Args>(args)...);
       return *this;
     }
 
     template<typename T>
     Entity& Entity::remove_component() {
-      ECS::remove_component<T>(id);
+      ECS::remove_component<T>(*this);
       return *this;
     }
 
     template<typename T>
     T* Entity::get_component() {
-      return ECS::get_component<T>(id);
+      return ECS::get_component<T>(*this);
     }
 
     template<typename T>
     const T* Entity::get_component() const {
-      return ECS::get_component<T>(id);
+      return ECS::get_component<T>(*this);
     }
 
     template<typename T>
     bool Entity::has_component() const {
-      return ECS::has_component<T>(id);
+      return ECS::has_component<T>(*this);
     }
 
     template<typename... T>
     bool Entity::has_components() const {
-      return ECS::has_components<T...>(id);
+      return ECS::has_components<T...>(*this);
     }
 
   } // namespace ECS

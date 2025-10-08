@@ -20,7 +20,7 @@
 //#include "PhysicsTestState.h"
 #include "../GameStates/GameObjectState.h"
 #include "../GameStates/Rubric2500ParticlesState.h"
-//#include "RectPainterState.h"
+#include "../GameStates/RectPainterState.h"
 #include "../GameStates/DevSpriteAnimationState.h"
 #include "../GameStates/ShowcaseState.h"
 
@@ -45,10 +45,10 @@ inline void StateChooserPanel()
   {
     Engine::StateManager::change_state(ShowcaseState::get());
   }
-  //if (ImGui::Button("RectPainterState"))
-  //{
-  //  Engine::StateManager::change_state(RectPainterState::get());
-  //}
+  if (ImGui::Button("RectPainterState"))
+  {
+    Engine::StateManager::change_state(RectPainterState::get());
+  }
   if (ImGui::Button("Rubric2500ParticlesState"))
   {
     Engine::StateManager::change_state(Rubric2500ParticlesState::get());

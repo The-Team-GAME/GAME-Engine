@@ -84,9 +84,10 @@ namespace Engine {
       return Entity(INVALID_ENTITY);
     }
 
-    Entity clone_entity(EntityID source_id)
+    Entity clone_entity(const Entity& source)
     {
-      if (!is_entity_active(source_id))
+      EntityID source_id = source.get_id();
+      if (!is_entity_active(source))
       {
         return Entity(INVALID_ENTITY);
       }
@@ -109,13 +110,15 @@ namespace Engine {
       return newEntity;
     }
 
-    void destroy_entity(EntityID id)
+    void destroy_entity(const Entity& entity)
     {
+      EntityID id = entity.get_id();
       Internal::entities_to_destroy.insert(id);
     }
 
-    bool is_entity_active(EntityID id)
+    bool is_entity_active(const Entity& entity)
     {
+      EntityID id = entity.get_id();
       return Internal::active_entities.find(id) != Internal::active_entities.end();
     }
 

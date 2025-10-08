@@ -29,7 +29,7 @@ namespace Engine {
     }
 
     void Entity::destroy() {
-      ECS::destroy_entity(id);
+      ECS::destroy_entity(*this);
     }
 
     bool Entity::operator==(const Entity& other) const {

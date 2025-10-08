@@ -47,31 +47,31 @@ namespace Engine {
     // =================== */
     Entity create_entity();
     Entity get_entity(EntityID id);
-    Entity clone_entity(EntityID source_id);
-    void destroy_entity(EntityID id);
+    Entity clone_entity(const Entity& source);
+    void destroy_entity(const Entity& entity);
 
     template <typename... T>
     void destroy_entities_with();
 
-    bool is_entity_active(EntityID id);
+    bool is_entity_active(const Entity& entity);
 
     /* ====================== //
     // Component management   //
     // ====================== */
     template <typename T, typename... Args>
-    void add_component(EntityID entity, Args &&...args);
+    void add_component(const Entity& entity, Args &&...args);
 
     template <typename T>
-    void remove_component(EntityID entity);
+    void remove_component(const Entity& entity);
 
     template <typename T>
-    T* get_component(EntityID entity);
+    T* get_component(const Entity& entity);
 
     template <typename... T>
-    bool has_components(EntityID entity);
+    bool has_components(const Entity& entity);
 
     template <typename T>
-    bool has_component(EntityID entity);
+    bool has_component(const Entity& entity);
 
     /* ================== //
     // System management  //

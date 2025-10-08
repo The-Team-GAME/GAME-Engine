@@ -12,7 +12,7 @@
 // deleted and collision detection is present. Object collision can also be turned off.
 // Objects can also be duplicated.
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 
 #include "RectPainterState.h"
@@ -137,7 +137,7 @@ void RectPainterState::handleMouse()
         }
         if (pointInRect(mouse, minP, maxP)) {
           dragMode_ = DragMode::Moving;
-          auto* transform = Engine::ECS::get_component<Components::Transform2D>(rects_[selectedIndex_]);
+          auto* transform = Engine::ECS::get_component<Components::Transform2D>(Engine::ECS::Entity(rects_[selectedIndex_]));
           moveGrabOffset_ = mouse - glm::vec2{ transform->position.x, transform->position.y };
           prevMouse_ = mouse;
           return;
@@ -153,7 +153,7 @@ void RectPainterState::handleMouse()
       glm::vec2 minP, maxP;
       if (getBounds(rects_[selectedIndex_], minP, maxP) && pointInRect(mouse, minP, maxP)) {
         dragMode_ = DragMode::Moving;
-        auto* transform = Engine::ECS::get_component<Components::Transform2D>(rects_[selectedIndex_]);
+        auto* transform = Engine::ECS::get_component<Components::Transform2D>(Engine::ECS::Entity(rects_[selectedIndex_]));
         moveGrabOffset_ = mouse - glm::vec2{ transform->position.x, transform->position.y };
       }
       else {
@@ -175,8 +175,8 @@ void RectPainterState::handleMouse()
     }
 
     if (dragMode_ == DragMode::Moving && selectedIndex_ >= 0) {
-      auto id = rects_[selectedIndex_];
-      if (auto* transform = Engine::ECS::get_component<Components::Transform2D>(id)) {
+      Engine::ECS::Entity entity(rects_[selectedIndex_]);
+      if (auto* transform = Engine::ECS::get_component<Components::Transform2D>(entity)) {
         glm::vec2 newCenter = mouse - moveGrabOffset_;
         if (snap) newCenter = snapToGrid(newCenter, snapGridPx_);
         transform->position.x = newCenter.x;
@@ -184,8 +184,8 @@ void RectPainterState::handleMouse()
       }
     }
     else if (dragMode_ == DragMode::Resizing && selectedIndex_ >= 0) {
-      auto id = rects_[selectedIndex_];
-      auto* transform = Engine::ECS::get_component<Components::Transform2D>(id);
+      Engine::ECS::Entity entity(rects_[selectedIndex_]);
+      auto* transform = Engine::ECS::get_component<Components::Transform2D>(entity);
 
       if (transform) {
         Math::Vec2D& pos = transform->position;
@@ -261,13 +261,13 @@ void RectPainterState::handleShortcuts()
   const bool hasSel = (selectedIndex_ >= 0 && selectedIndex_ < (int)rects_.size());
 
   if (hasSel && Engine::Input::is_key_pressed(GLFW_KEY_DELETE)) {
-    Engine::ECS::destroy_entity(rects_[selectedIndex_]);
+    Engine::ECS::destroy_entity(Engine::ECS::Entity(rects_[selectedIndex_]));
     rects_.erase(rects_.begin() + selectedIndex_);
     selectedIndex_ = -1;
   }
 
   if (hasSel && ctrl && Engine::Input::is_key_pressed(GLFW_KEY_D)) {
-    const EntityID src = rects_[selectedIndex_];
+    Engine::ECS::Entity src(rects_[selectedIndex_]);
 
     auto* translate = Engine::ECS::get_component<Components::Transform2D>(src);
 
@@ -302,7 +302,7 @@ void RectPainterState::runCollisionPass()
   // Brute-force AABB among collider-enabled rects
   for (size_t i = 0; i < rects_.size(); ++i) {
     auto idA = rects_[i];
-    auto* colA = Engine::ECS::get_component<Components::BasicCollider>(idA);
+    auto* colA = Engine::ECS::get_component<Components::BasicCollider>(Engine::ECS::Entity(idA));
     if (!colA || !colA->enabled) continue;
 
     glm::vec2 aMin, aMax;
@@ -310,7 +310,7 @@ void RectPainterState::runCollisionPass()
 
     for (size_t j = i + 1; j < rects_.size(); ++j) {
       auto idB = rects_[j];
-      auto* colB = Engine::ECS::get_component<Components::BasicCollider>(idB);
+      auto* colB = Engine::ECS::get_component<Components::BasicCollider>(Engine::ECS::Entity(idB));
       if (!colB || !colB->enabled) continue;
 
       glm::vec2 bMin, bMax;
@@ -379,7 +379,7 @@ void RectPainterState::drawSelectionGizmo()
 /* Picking helpers */
 bool RectPainterState::getBounds(EntityID id, glm::vec2& minP, glm::vec2& maxP) const
 {
-  auto* transform = Engine::ECS::get_component<Components::Transform2D>(id);
+  auto* transform = Engine::ECS::get_component<Components::Transform2D>(Engine::ECS::Entity(id));
 
 
   if (!transform) return false;
@@ -451,14 +451,14 @@ void RectPainterState::drawImGui()
     ImGui::SameLine();
     const bool canDelete = (selectedIndex_ >= 0 && selectedIndex_ < (int)rects_.size());
     if (ImGui::Button("Delete Selected") && canDelete) {
-      Engine::ECS::destroy_entity(rects_[selectedIndex_]);
+      Engine::ECS::destroy_entity(Engine::ECS::Entity(rects_[selectedIndex_]));
       rects_.erase(rects_.begin() + selectedIndex_);
       selectedIndex_ = -1;
     }
 
     ImGui::SameLine();
     if (ImGui::Button("Duplicate") && canDelete) {
-      const EntityID src = rects_[selectedIndex_];
+      Engine::ECS::Entity src(rects_[selectedIndex_]);
       auto* translate = Engine::ECS::get_component<Components::Transform2D>(src);
       Math::Vec2D* p = &translate->position;
       Math::Vec2D* s = &translate->scale;
@@ -494,10 +494,10 @@ void RectPainterState::drawImGui()
     if (selectedIndex_ >= 0 && selectedIndex_ < (int)rects_.size()) {
       ImGui::Separator();
       ImGui::Text("Selected #%d", selectedIndex_);
-      const EntityID id = rects_[selectedIndex_];
-      auto* transform = Engine::ECS::get_component<Components::Transform2D>(id);
-      auto* color = Engine::ECS::get_component<Components::Color>(id);
-      //auto* col = Engine::ECS::get_component<Components::BasicCollider>(id);
+      Engine::ECS::Entity entity(rects_[selectedIndex_]);
+      auto* transform = Engine::ECS::get_component<Components::Transform2D>(entity);
+      auto* color = Engine::ECS::get_component<Components::Color>(entity);
+      //auto* col = Engine::ECS::get_component<Components::BasicCollider>(entity);
 
       if (transform && color) {
         ImGui::DragFloat2("Position (center)", &transform->position.x, 1.0f);
