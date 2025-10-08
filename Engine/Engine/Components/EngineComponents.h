@@ -92,6 +92,33 @@ namespace Components
         }
       }
     }
+
+    struct Adaptor {
+      std::vector<std::array<glm::vec2, 4>> tex_coords_list;
+      size_t drawIndex;
+
+      Adaptor serialize(const TextureAtlas& atlas) const {
+        Adaptor adaptor;
+        adaptor.drawIndex = atlas.drawIndex;
+        adaptor.tex_coords_list.reserve(atlas.subTextures.size());
+        for (const auto& subTex : atlas.subTextures) {
+          adaptor.tex_coords_list.push_back(subTex.tex_coords);
+        }
+        return adaptor;
+      }
+
+      TextureAtlas deserialize() const {
+        TextureAtlas atlas(0, 0, 0, 0, 0);
+        atlas.drawIndex = drawIndex;
+        atlas.subTextures.reserve(tex_coords_list.size());
+        for (const auto& coords : tex_coords_list) {
+          Engine::Graphics::SubTexture subTex;
+          subTex.tex_coords = coords;
+          atlas.subTextures.push_back(subTex);
+        }
+        return atlas;
+      }
+    };
   };
 
   struct Animation
@@ -115,6 +142,38 @@ namespace Components
         frames[i].before_time = i * frameDuration;
       }
     }
+
+    struct Adaptor {
+      std::vector<float> durations;
+      std::vector<float> before_times;
+      float startTime;
+      float totalDuration;
+
+      Adaptor serialize(const Animation& anim) const {
+        Adaptor adaptor;
+        adaptor.startTime = anim.startTime;
+        adaptor.totalDuration = anim.totalDuration;
+        adaptor.durations.reserve(anim.frames.size());
+        adaptor.before_times.reserve(anim.frames.size());
+        for (const auto& frame : anim.frames) {
+          adaptor.durations.push_back(frame.duration);
+          adaptor.before_times.push_back(frame.before_time);
+        }
+        return adaptor;
+      }
+
+      Animation deserialize() const {
+        Animation anim(0, 0.0f);
+        anim.startTime = startTime;
+        anim.totalDuration = totalDuration;
+        anim.frames.resize(durations.size());
+        for (size_t i = 0; i < durations.size(); ++i) {
+          anim.frames[i].duration = durations[i];
+          anim.frames[i].before_time = before_times[i];
+        }
+        return anim;
+      }
+    };
   };
 
   struct Font
@@ -123,6 +182,24 @@ namespace Components
 
     Font() : font_handle(nullptr) {}
     Font(Engine::Graphics::Font fnt) : font_handle(fnt) {}
+
+    struct Adaptor {
+      std::string path;
+      int font_size;
+
+      Adaptor serialize(const Font& font) const {
+        Adaptor adaptor;
+        if (font.font_handle) {
+          adaptor.path = font.font_handle->path;
+          adaptor.font_size = font.font_handle->font_size;
+        }
+        return adaptor;
+      }
+
+      Font deserialize() const {
+        return Engine::Resources::load_font(path, font_size);
+      }
+    };
   };
 
   struct Text
@@ -188,5 +265,7 @@ namespace Components
 REFLECT(Components::Color, color)
 REFLECT(Components::Transform2D, position, rotation, scale)
 REFLECT(Components::Text, content)
-REFLECT(Components::Animation, frames, startTime, totalDuration)
 REFLECT_ADAPTOR(Components::Texture, path)
+REFLECT_ADAPTOR(Components::Font, path, font_size)
+REFLECT_ADAPTOR(Components::TextureAtlas, tex_coords_list, drawIndex)
+REFLECT_ADAPTOR(Components::Animation, durations, before_times, startTime, totalDuration)
