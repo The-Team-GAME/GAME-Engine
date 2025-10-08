@@ -33,9 +33,19 @@ namespace ImGuiManager {
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;  // Enable Multi-Viewport / Platform Windows
+
+    // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+    ImGuiStyle& style = ImGui::GetStyle();
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    {
+      style.WindowRounding = 0.0f;
+      style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+    }
+
     ImGui::StyleColorsDark();
 
-    ImGui_ImplGlfw_InitForOpenGL(Engine::WindowManager::get_window(), true); // TODO: pass window as parameter
+    ImGui_ImplGlfw_InitForOpenGL(Engine::WindowManager::get_window(), true);
     ImGui_ImplOpenGL3_Init();
   }
 
@@ -52,13 +62,46 @@ namespace ImGuiManager {
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    // Render all registered panels
-    if (gui_enabled)
+    // Create dockspace
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(viewport->WorkPos);
+    ImGui::SetNextWindowSize(viewport->WorkSize);
+    ImGui::SetNextWindowViewport(viewport->ID);
+
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+    window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse;
+    window_flags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+    window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+    window_flags |= ImGuiWindowFlags_NoBackground;
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+    ImGui::Begin("DockSpace", nullptr, window_flags);
+    ImGui::PopStyleVar(3);
+
+    // DockSpace
+    ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+    ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+
+    // Add a menu bar
+    if (ImGui::BeginMenuBar())
     {
-      for (const auto& panel : registered_panels)
+      if (ImGui::BeginMenu("Windows"))
       {
-        panel();
+        ImGui::MenuItem("Toggle GUI (F1)", nullptr, &gui_enabled);
+        ImGui::EndMenu();
       }
+      ImGui::EndMenuBar();
+    }
+
+    ImGui::End();
+
+    // Render all registered panels
+    for (const auto& panel : registered_panels)
+    {
+      panel();
     }
   }
 
@@ -68,6 +111,16 @@ namespace ImGuiManager {
     if (gui_enabled)
     {
       ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
+
+    // Update and Render additional Platform Windows
+    ImGuiIO& io = ImGui::GetIO();
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    {
+      GLFWwindow* backup_current_context = glfwGetCurrentContext();
+      ImGui::UpdatePlatformWindows();
+      ImGui::RenderPlatformWindowsDefault();
+      glfwMakeContextCurrent(backup_current_context);
     }
   }
 
