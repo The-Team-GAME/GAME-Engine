@@ -46,7 +46,7 @@ FT_Library Engine::Graphics::get_freetype_library()
 
 // TextureData constructor
 Engine::Graphics::TextureData::TextureData(const std::string& path, TextureFilter filtering)
-  : filter(filtering)
+  : filter(filtering), path(path)
 {
   // Load image using stb_image
   int channels;
@@ -122,7 +122,7 @@ void Engine::Graphics::TextureData::set_filter(TextureFilter filtering)
 
 // FontData constructor
 Engine::Graphics::FontData::FontData(const std::string& path, unsigned int size)
-  : font_size(size), baseline(0.0f)
+  : font_size(size), baseline(0.0f), path(path)
 {
   constexpr int PADDING = 1; // Padding between glyphs in the atlas
 

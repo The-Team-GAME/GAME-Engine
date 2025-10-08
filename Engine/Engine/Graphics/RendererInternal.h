@@ -48,6 +48,7 @@ namespace Engine {
       int width = 0;
       int height = 0;
       TextureFilter filter = TextureFilter::Nearest; // Default to pixel art
+      std::string path; // File path for reflection
 
       TextureData(const std::string& path, TextureFilter filtering = TextureFilter::Nearest);
       ~TextureData();
@@ -72,6 +73,7 @@ namespace Engine {
       std::unordered_map<unsigned int, Graphics::Glyph> glyphs;  // Character -> glyph mapping
       unsigned int font_size = 0;                                    // Font size in pixels
       float baseline = 0.0f;                                            // Baseline offset
+      std::string path; // File path for reflection
 
       FontData(const std::string& path, unsigned int size);
     };
