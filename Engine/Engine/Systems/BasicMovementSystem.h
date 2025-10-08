@@ -17,7 +17,7 @@
 #include "../ECS/ECS.h"
 #include "../Components/EngineComponents.h"
 
-class BasicMovementSystem : public ECS::System {
+class BasicMovementSystem : public Engine::ECS::System {
 public:
   BasicMovementSystem() {
     require_components<Components::RigidBody, Components::Transform2D>();
@@ -36,7 +36,7 @@ public:
   This is called automatically by the ECS system during the update loop. Do not
   call this directly.
   ==================================================================================*/
-  void update_entity(ECS::Entity& entity) override {
+  void update_entity(Engine::ECS::Entity& entity) override {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* transform = entity.get_component<Components::Transform2D>();
 

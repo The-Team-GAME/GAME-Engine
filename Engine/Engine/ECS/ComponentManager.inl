@@ -16,12 +16,14 @@
 #pragma once
 #include "ComponentManager.h"
 
-namespace ECS {
+namespace Engine {
+  namespace ECS {
 
-  template<typename T>
-  ComponentTypeID ComponentTypeManager::get_type_id() {
-    static ComponentTypeID type_id = ++next_type_id;
-    return type_id;
-  }
+    template<typename T>
+    ComponentTypeID ComponentTypeManager::get_type_id() {
+      static ComponentTypeID type_id = ++next_type_id;
+      return type_id;
+    }
 
-} // namespace ECS
+  } // namespace ECS
+} // namespace Engine

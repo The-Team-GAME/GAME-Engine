@@ -55,7 +55,7 @@ private:
   bool spawnWithCollider_ = false;
 
   // ECS rectangles
-  std::vector<ECS::EntityID> rects_{};
+  std::vector<Engine::ECS::EntityID> rects_{};
 
   // Core
   void handleMouse();
@@ -68,7 +68,7 @@ private:
     glm::vec2& outCenter, glm::vec2& outSize);
   static void clampMinSize(glm::vec2& size, f32 minSize = 1.0f);
 
-  bool getBounds(ECS::EntityID id, glm::vec2& minP, glm::vec2& maxP) const;
+  bool getBounds(Engine::ECS::EntityID id, glm::vec2& minP, glm::vec2& maxP) const;
   static bool pointInRect(const glm::vec2& p, const glm::vec2& minP, const glm::vec2& maxP);
   
   static bool aabbOverlap(const glm::vec2& aMin, const glm::vec2& aMax,

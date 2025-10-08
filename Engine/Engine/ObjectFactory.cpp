@@ -152,17 +152,17 @@ namespace Engine
       next_object_id = 0;
     }
 
-    ECS::Entity create_object(s32 id)
+    Engine::ECS::Entity create_object(s32 id)
     {
       if (id < 0 || id >= static_cast<s32>(object_list.size())) {
         Log::error("Invalid object ID: " + std::to_string(id));
-        return ECS::Entity(); // Return invalid entity
+        return Engine::ECS::Entity(); // Return invalid entity
       }
 
       ObjectPrefab& objectPrefab = object_list[id];
 
       // Create entity with Transform2D component using scale instead of size
-      ECS::Entity entity = ECS::World::create_entity()
+      Engine::ECS::Entity entity = Engine::ECS::create_entity()
         .add_component<Components::ObjectId>(objectPrefab.object_id)
         .add_component<Components::Transform2D>(Math::Vec2D(0.0f, 0.0f), 0.0f, objectPrefab.size)
         .add_component<Components::Color>();

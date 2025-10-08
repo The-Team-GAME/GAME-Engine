@@ -30,9 +30,8 @@
 #include <cassert>
 #include <functional>
 
-namespace ECS
-{
-  namespace World
+namespace Engine {
+  namespace ECS
   {
     /* ========================= //
     // Component registration    //
@@ -142,6 +141,6 @@ namespace ECS
       void entity_component_changed(EntityID entity);
       bool system_matches_entity(const System& system, EntityID entity);
     }
-  } // namespace World
-} // namespace ECS
+  } // namespace ECS
+} // namespace Engine
 

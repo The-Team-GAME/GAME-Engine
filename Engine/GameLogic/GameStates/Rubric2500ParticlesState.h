@@ -37,7 +37,7 @@ public:
         1.0f
       );
 
-      auto temp = ECS::World::create_entity()
+      auto temp = Engine::ECS::create_entity()
         .add_component<Components::Tag<"Rubric2500ParticlesState">>()
         .add_component<Components::Transform2D>(x, y, rotation, size, size)
         .add_component<Components::Color>(color)
@@ -49,8 +49,8 @@ public:
 
 
     // Add systems to the world
-    ECS::World::add_system<RotationSystem>();
-    ECS::World::add_system<Systems::StaticSpriteRenderSystem>();
+    Engine::ECS::add_system<RotationSystem>();
+    Engine::ECS::add_system<Systems::StaticSpriteRenderSystem>();
 
   };
 
@@ -62,11 +62,11 @@ public:
   };
 
   void free() {
-    ECS::World::destroy_entities_with<Components::Tag<"Rubric2500ParticlesState">>();
+    Engine::ECS::destroy_entities_with<Components::Tag<"Rubric2500ParticlesState">>();
 
     // Remove systems
-    ECS::World::remove_system<RotationSystem>();
-    ECS::World::remove_system<Systems::StaticSpriteRenderSystem>();
+    Engine::ECS::remove_system<RotationSystem>();
+    Engine::ECS::remove_system<Systems::StaticSpriteRenderSystem>();
   };
 
   void unload() {};

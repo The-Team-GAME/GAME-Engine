@@ -19,7 +19,7 @@
 #include "../ECS/ECS.h"
 #include "../Components/EngineComponents.h"
 
-class RotationSystem : public ECS::System {
+class RotationSystem : public Engine::ECS::System {
 public:
   /*=================================================================================
   Function Brief:
@@ -39,7 +39,7 @@ public:
   Parameters:
   entity - Reference to the entity being updated.
   ==================================================================================*/
-  void update_entity(ECS::Entity& entity) override {
+  void update_entity(Engine::ECS::Entity& entity) override {
     auto* transform = entity.get_component<Components::Transform2D>();
     auto* rigid = entity.get_component<Components::RigidBody>();
 

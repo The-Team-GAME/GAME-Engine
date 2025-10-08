@@ -20,8 +20,8 @@
 
 class DevSpriteAnimationState : public Engine::GameState<DevSpriteAnimationState> {
 private:
-  ECS::Entity idle_lazy_monkey;
-  ECS::Entity walk_lazy_monkey;
+  Engine::ECS::Entity idle_lazy_monkey;
+  Engine::ECS::Entity walk_lazy_monkey;
 
   Engine::Graphics::Texture idle_texture;
   Engine::Graphics::Texture walk_texture;
@@ -38,7 +38,7 @@ public:
 
   void init() {
     // Create idle LazyMonkey entity with animation
-    idle_lazy_monkey = ECS::World::create_entity()
+    idle_lazy_monkey = Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(
         glm::vec2(200.0f, 150.0f),  // position
         0.0f,                        // rotation
@@ -65,7 +65,7 @@ public:
     }
 
     // Create walking LazyMonkey entity with animation
-    walk_lazy_monkey = ECS::World::create_entity()
+    walk_lazy_monkey = Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(
         glm::vec2(400.0f, 150.0f),  // position
         0.0f,                        // rotation
@@ -92,8 +92,8 @@ public:
     }
 
     // Add rendering system for animated sprites
-    ECS::World::add_system<Systems::AtlasSpriteRenderSystem>();
-    ECS::World::add_system<Systems::AnimationUpdateSystem>();
+    Engine::ECS::add_system<Systems::AtlasSpriteRenderSystem>();
+    Engine::ECS::add_system<Systems::AnimationUpdateSystem>();
   };
 
   void update() {
@@ -118,8 +118,8 @@ public:
     }
 
     // Remove systems
-    ECS::World::remove_system<Systems::AtlasSpriteRenderSystem>();
-    ECS::World::remove_system<Systems::AnimationUpdateSystem>();
+    Engine::ECS::remove_system<Systems::AtlasSpriteRenderSystem>();
+    Engine::ECS::remove_system<Systems::AnimationUpdateSystem>();
   };
 
   void unload() {

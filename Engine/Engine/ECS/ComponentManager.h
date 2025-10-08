@@ -16,23 +16,25 @@
 #pragma once
 #include "Types.h"
 
-namespace ECS {
+namespace Engine {
+  namespace ECS {
 
-  /* ===================================== //
-  // Automatic component type ID generation //
-  // ===================================== */
-  class ComponentTypeManager {
-  private:
-    static ComponentTypeID next_type_id;
+    /* ===================================== //
+    // Automatic component type ID generation //
+    // ===================================== */
+    class ComponentTypeManager {
+    private:
+      static ComponentTypeID next_type_id;
 
-  public:
-    template<typename T>
-    static ComponentTypeID get_type_id();
+    public:
+      template<typename T>
+      static ComponentTypeID get_type_id();
 
-    static ComponentTypeID get_next_available_id() {
-      return next_type_id + 1;
-    }
-  };
+      static ComponentTypeID get_next_available_id() {
+        return next_type_id + 1;
+      }
+    };
 
-} // namespace ECS
+  } // namespace ECS
+} // namespace Engine
 

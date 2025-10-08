@@ -16,9 +16,8 @@
 #pragma once
 #include "World.h"
 
-namespace ECS
-{
-  namespace World
+namespace Engine {
+  namespace ECS
   {
     template <typename T>
     ComponentArray<T>* get_component_array()
@@ -197,5 +196,5 @@ namespace ECS
       auto* array = get_component_array<T>();
       return array ? array->size() : 0;
     }
-  } // namespace World
-} // namespace ECS
+  } // namespace ECS
+} // namespace Engine

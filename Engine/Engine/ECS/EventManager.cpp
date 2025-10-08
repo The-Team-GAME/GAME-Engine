@@ -14,7 +14,9 @@
 //-----------------------------------------------------------------------------------
 #include "EventManager.h"
 
-namespace ECS
-{
-  EventTypeID EventTypeManager::next_type_id = 0;
+namespace Engine {
+  namespace ECS
+  {
+    EventTypeID EventTypeManager::next_type_id = 0;
+  }
 }

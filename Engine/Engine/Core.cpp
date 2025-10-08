@@ -72,7 +72,7 @@ namespace Engine
 
 
     // Register the graphics resize system
-    //ECS::World::add_event_listener<WindowResizeEvent>([](const WindowResizeEvent& event) {
+    //Engine::ECS::add_event_listener<WindowResizeEvent>([](const WindowResizeEvent& event) {
     //  GRAPHICS.set_viewport(event.width, event.height); //TODO: bring back when implmemented in new graphics
     //  }
     //);
@@ -154,7 +154,7 @@ namespace Engine
         {
           // Main gameloop here
           StateManager::get_current_state()->update();
-          ECS::World::update();
+          Engine::ECS::update();
         }
 
         ImGuiManager::update();
@@ -171,7 +171,7 @@ namespace Engine
       // Clear screen (automatically begins batch)
       // start of draw stuff
       StateManager::get_current_state()->draw();
-      ECS::World::draw();
+      Engine::ECS::draw();
 
       // end of draw stuff (flush remaining batches)
       Engine::Graphics::end_batch();
@@ -190,7 +190,7 @@ namespace Engine
   Core::~Core()
   {
     StateManager::exit();
-    //ECS::World::remove_event_listener<WindowResizeEvent>();
+    //Engine::ECS::remove_event_listener<WindowResizeEvent>();
     Engine::Audio::exit();
     Engine::Resources::exit();
     Engine::Graphics::exit();

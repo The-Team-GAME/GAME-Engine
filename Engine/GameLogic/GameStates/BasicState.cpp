@@ -61,12 +61,12 @@ void BasicState::init()
   Engine::Resources::set_resource_path("Assets/");
 
   // Add rendering systems
-  ECS::World::add_system<Systems::StaticSpriteRenderSystem>();
-  ECS::World::add_system<Systems::TextRenderSystem>();
+  Engine::ECS::add_system<Systems::StaticSpriteRenderSystem>();
+  Engine::ECS::add_system<Systems::TextRenderSystem>();
 
   // Create rectangle entities
   // Top left, Red
-  rect_top_left = ECS::World::create_entity()
+  rect_top_left = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
       0.0f, 0.0f,
       rotation,
@@ -76,7 +76,7 @@ void BasicState::init()
     .add_component<Components::Texture>(Engine::Resources::get_unit_rect_texture());
 
   // Bottom right, Green
-  rect_bottom_right = ECS::World::create_entity()
+  rect_bottom_right = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
       1600.0f, 900.0f,
       rotation,
@@ -86,7 +86,7 @@ void BasicState::init()
     .add_component<Components::Texture>(Engine::Resources::get_unit_rect_texture());
 
   // Bottom left, Blue
-  rect_bottom_left = ECS::World::create_entity()
+  rect_bottom_left = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
       0.0f, 900.0f,
       rotation,
@@ -96,7 +96,7 @@ void BasicState::init()
     .add_component<Components::Texture>(Engine::Resources::get_unit_rect_texture());
 
   // Top right, Yellow
-  rect_top_right = ECS::World::create_entity()
+  rect_top_right = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
       1600.0f, 0.0f,
       rotation,
@@ -106,7 +106,7 @@ void BasicState::init()
     .add_component<Components::Texture>(Engine::Resources::get_unit_rect_texture());
 
   // Center, Magenta
-  rect_center = ECS::World::create_entity()
+  rect_center = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
       800.0f, 450.0f,
       rotation,
@@ -116,7 +116,7 @@ void BasicState::init()
     .add_component<Components::Texture>(Engine::Resources::get_unit_rect_texture());
 
   // Create text entities
-  text_hello_1 = ECS::World::create_entity()
+  text_hello_1 = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
       250.0f, 250.0f,
       0.0f,
@@ -125,7 +125,7 @@ void BasicState::init()
     .add_component<Components::Font>(font_roboto)
     .add_component<Components::Text>("Hello");
 
-  text_hello_2 = ECS::World::create_entity()
+  text_hello_2 = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
       250.0f, 300.0f,
       0.0f,
@@ -134,7 +134,7 @@ void BasicState::init()
     .add_component<Components::Font>(font_playfair)
     .add_component<Components::Text>("Hello");
 
-  text_instruction = ECS::World::create_entity()
+  text_instruction = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
       250.0f, 350.0f,
       0.0f,
@@ -280,8 +280,8 @@ void BasicState::free()
   }
 
   // Remove systems
-  ECS::World::remove_system<Systems::StaticSpriteRenderSystem>();
-  ECS::World::remove_system<Systems::TextRenderSystem>();
+  Engine::ECS::remove_system<Systems::StaticSpriteRenderSystem>();
+  Engine::ECS::remove_system<Systems::TextRenderSystem>();
 }
 
 void BasicState::unload()

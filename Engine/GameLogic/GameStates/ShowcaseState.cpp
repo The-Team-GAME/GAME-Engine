@@ -39,7 +39,7 @@ void ShowcaseState::load() {
 
 void ShowcaseState::init() {
   // Create enemy
-  enemy = ECS::World::create_entity()
+  enemy = Engine::ECS::create_entity()
     .add_component<Components::Tag<"ShowcaseState">>()
     .add_component<Components::Transform2D>(800.0f, 655.0f, 0.0f, 64.0f * 2.0f, 64.0f * 2.0f)
     .add_component<Components::Texture>(enemy_texture)
@@ -49,7 +49,7 @@ void ShowcaseState::init() {
     .add_component<Components::Animation>(5, 0.15f);
 
   // Create banana
-  banana = ECS::World::create_entity()
+  banana = Engine::ECS::create_entity()
     .add_component<Components::Tag<"ShowcaseState">>()
     .add_component<Components::Transform2D>(1200.0f, 675.0f, 0.0f, 20.0f * 3.0f, 12.0f * 3.0f)
     .add_component<Components::Texture>(banana_texture)
@@ -60,7 +60,7 @@ void ShowcaseState::init() {
   banana.get_component<Components::RigidBody>()->angular_velocity = 45.0f;
 
   // Create player with idle animation
-  player = ECS::World::create_entity()
+  player = Engine::ECS::create_entity()
     .add_component<Components::Tag<"ShowcaseState">>()
     .add_component<Components::Transform2D>(200.0f, 655.0f, 0.0f, player_idle_width * 2.0f, player_idle_height * 2.0f)
     .add_component<Components::Texture>(player_idle_texture)
@@ -71,14 +71,14 @@ void ShowcaseState::init() {
     .add_component<Components::Animation>(7, 0.15f);
 
   // Add systems
-  ECS::World::add_system<Systems::AnimationUpdateSystem>();
-  ECS::World::add_system<Systems::StaticSpriteRenderSystem>();
-  ECS::World::add_system<Systems::AtlasSpriteRenderSystem>();
-  ECS::World::add_system<BasicMovementSystem>();
-  ECS::World::add_system<RotationSystem>();
+  Engine::ECS::add_system<Systems::AnimationUpdateSystem>();
+  Engine::ECS::add_system<Systems::StaticSpriteRenderSystem>();
+  Engine::ECS::add_system<Systems::AtlasSpriteRenderSystem>();
+  Engine::ECS::add_system<BasicMovementSystem>();
+  Engine::ECS::add_system<RotationSystem>();
 
   // Subscribe to attack events
-  ECS::World::add_event_listener<AttackEvent>([this](const AttackEvent& event) {
+  Engine::ECS::add_event_listener<AttackEvent>([this](const AttackEvent& event) {
     std::cout << "Attack event! Entity " << event.attacker
       << " attacks Entity " << event.target
       << " for " << event.damage << " damage!\n";
@@ -107,7 +107,7 @@ void ShowcaseState::init() {
     }
 
     // Apply damage to enemy
-    auto target_entity = ECS::World::get_entity(event.target);
+    auto target_entity = Engine::ECS::get_entity(event.target);
     if (target_entity.is_valid()) {
       std::cout << "Target entity is valid\n";
 
@@ -135,7 +135,7 @@ void ShowcaseState::init() {
     });
 
   // Subscribe to collect events
-  ECS::World::add_event_listener<CollectEvent>([this](const CollectEvent& event) {
+  Engine::ECS::add_event_listener<CollectEvent>([this](const CollectEvent& event) {
     std::cout << "Collect event! Entity " << event.collector
       << " collected Entity " << event.collected
       << " for " << event.points << " points!\n";
@@ -146,7 +146,7 @@ void ShowcaseState::init() {
     }
 
     // Respawn the collected item
-    auto collectedEntity = ECS::World::get_entity(event.collected);
+    auto collectedEntity = Engine::ECS::get_entity(event.collected);
     if (collectedEntity.is_valid()) {
       auto* transform = collectedEntity.get_component<Components::Transform2D>();
       if (transform) {
@@ -274,7 +274,7 @@ void ShowcaseState::update() {
     std::cout << "E key pressed! Player ID: " << player.get_id() << ", Enemy ID: " << enemy.get_id() << "\n";
 
     // Send attack event 
-    ECS::World::send_event<AttackEvent>(player.get_id(), enemy.get_id(), 10);
+    Engine::ECS::send_event<AttackEvent>(player.get_id(), enemy.get_id(), 10);
 
     // Start punch animation
     is_punching = true;
@@ -283,7 +283,7 @@ void ShowcaseState::update() {
 
   // Collect banana with C key (using event system)
   if (Engine::Input::is_key_pressed(GLFW_KEY_C)) {
-    ECS::World::send_event<CollectEvent>(player.get_id(), banana.get_id(), 1);
+    Engine::ECS::send_event<CollectEvent>(player.get_id(), banana.get_id(), 1);
   }
 }
 
@@ -341,16 +341,16 @@ void ShowcaseState::free() {
   }
 
   // Cleanup entities
-  ECS::World::destroy_entities_with<Components::Tag<"ShowcaseState">>();
+  Engine::ECS::destroy_entities_with<Components::Tag<"ShowcaseState">>();
 
   // Remove systems
-  ECS::World::remove_system<Systems::StaticSpriteRenderSystem>();
-  ECS::World::remove_system<BasicMovementSystem>();
-  ECS::World::remove_system<RotationSystem>();
+  Engine::ECS::remove_system<Systems::StaticSpriteRenderSystem>();
+  Engine::ECS::remove_system<BasicMovementSystem>();
+  Engine::ECS::remove_system<RotationSystem>();
 
   // Remove event listeners
-  ECS::World::remove_event_listener<AttackEvent>();
-  ECS::World::remove_event_listener<CollectEvent>();
+  Engine::ECS::remove_event_listener<AttackEvent>();
+  Engine::ECS::remove_event_listener<CollectEvent>();
 }
 
 void ShowcaseState::unload() {

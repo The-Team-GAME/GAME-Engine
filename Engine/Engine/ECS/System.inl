@@ -18,18 +18,20 @@
 #include "ComponentManager.h"
 #include "EventManager.h"
 
-namespace ECS {
+namespace Engine {
+  namespace ECS {
 
-  template<typename... Components>
-  void System::require_components() {
-    required_signature.reset();
-    ((required_signature.set(ComponentTypeManager::get_type_id<Components>())), ...);
-  }
+    template<typename... Components>
+    void System::require_components() {
+      required_signature.reset();
+      ((required_signature.set(ComponentTypeManager::get_type_id<Components>())), ...);
+    }
 
-  template<typename... Events>
-  void System::listen_to_events() {
-    event_signature.reset();
-    ((event_signature.set(EventTypeManager::get_type_id<Events>())), ...);
-  }
+    template<typename... Events>
+    void System::listen_to_events() {
+      event_signature.reset();
+      ((event_signature.set(EventTypeManager::get_type_id<Events>())), ...);
+    }
 
-} // namespace ECS
+  } // namespace ECS
+} // namespace Engine

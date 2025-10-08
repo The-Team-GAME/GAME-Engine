@@ -15,28 +15,30 @@
 #include "Entity.h"
 #include "World.h"
 
-namespace ECS {
+namespace Engine {
+  namespace ECS {
 
-  Entity::Entity(EntityID id) : id(id) {}
+    Entity::Entity(EntityID id) : id(id) {}
 
-  EntityID Entity::get_id() const {
-    return id;
-  }
+    EntityID Entity::get_id() const {
+      return id;
+    }
 
-  bool Entity::is_valid() const {
-    return id != INVALID_ENTITY;
-  }
+    bool Entity::is_valid() const {
+      return id != INVALID_ENTITY;
+    }
 
-  void Entity::destroy() {
-    World::destroy_entity(id);
-  }
+    void Entity::destroy() {
+      ECS::destroy_entity(id);
+    }
 
-  bool Entity::operator==(const Entity& other) const {
-    return id == other.id;
-  }
+    bool Entity::operator==(const Entity& other) const {
+      return id == other.id;
+    }
 
-  bool Entity::operator!=(const Entity& other) const {
-    return id != other.id;
-  }
+    bool Entity::operator!=(const Entity& other) const {
+      return id != other.id;
+    }
 
-} // namespace ECS
+  } // namespace ECS
+} // namespace Engine

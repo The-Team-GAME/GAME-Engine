@@ -16,27 +16,29 @@
 #pragma once
 #include "EventManager.h"
 
-namespace ECS
-{
-
-  template <typename T>
-  EventTypeID EventTypeManager::get_type_id()
+namespace Engine {
+  namespace ECS
   {
-    static EventTypeID type_id = ++next_type_id;
-    return type_id;
-  }
 
-  template <typename T>
-  Event::Event(T&& eventData) : type_id(EventTypeManager::get_type_id<T>()), data(std::forward<T>(eventData)) {}
-
-  template <typename T>
-  const T* Event::get() const
-  {
-    if (EventTypeManager::get_type_id<T>() == type_id)
+    template <typename T>
+    EventTypeID EventTypeManager::get_type_id()
     {
-      return std::any_cast<T>(&data);
+      static EventTypeID type_id = ++next_type_id;
+      return type_id;
     }
-    return nullptr;
-  }
 
-} // namespace ECS
+    template <typename T>
+    Event::Event(T&& eventData) : type_id(EventTypeManager::get_type_id<T>()), data(std::forward<T>(eventData)) {}
+
+    template <typename T>
+    const T* Event::get() const
+    {
+      if (EventTypeManager::get_type_id<T>() == type_id)
+      {
+        return std::any_cast<T>(&data);
+      }
+      return nullptr;
+    }
+
+  } // namespace ECS
+} // namespace Engine

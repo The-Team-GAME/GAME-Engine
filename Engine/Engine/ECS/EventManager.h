@@ -21,36 +21,38 @@
 #include <unordered_map>
 #include <vector>
 
-namespace ECS
-{
-
-  /* =================================== //
-  // Automatic event type ID generation  //
-  // =================================== */
-  class EventTypeManager
+namespace Engine {
+  namespace ECS
   {
-  private:
-    static EventTypeID next_type_id;
 
-  public:
-    template <typename T>
-    static EventTypeID get_type_id();
-  };
+    /* =================================== //
+    // Automatic event type ID generation  //
+    // =================================== */
+    class EventTypeManager
+    {
+    private:
+      static EventTypeID next_type_id;
 
-  /* ======================================== //
-  // A wrapper for a specific event instance  //
-  // ======================================== */
-  struct Event
-  {
-    EventTypeID type_id = INVALID_EVENT_TYPE;
-    std::any data;
+    public:
+      template <typename T>
+      static EventTypeID get_type_id();
+    };
 
-    template <typename T>
-    Event(T&& eventData);
+    /* ======================================== //
+    // A wrapper for a specific event instance  //
+    // ======================================== */
+    struct Event
+    {
+      EventTypeID type_id = INVALID_EVENT_TYPE;
+      std::any data;
 
-    template <typename T>
-    const T* get() const;
-  };
+      template <typename T>
+      Event(T&& eventData);
 
-} // namespace ECS
+      template <typename T>
+      const T* get() const;
+    };
+
+  } // namespace ECS
+} // namespace Engine
 

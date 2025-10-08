@@ -19,46 +19,48 @@
 #include <unordered_map>
 #include <memory>
 
-namespace ECS {
+namespace Engine {
+  namespace ECS {
 
-  /* ============================ //
-  // Component storage interface  //
-  // ============================ */
-  class IComponentArray {
-  public:
-    virtual ~IComponentArray() = default;
-    virtual void remove_entity(EntityID entity) = 0;
-    virtual size_t size() const = 0;
-    virtual void clone_component(EntityID source, EntityID destination) = 0;
-  };
+    /* ============================ //
+    // Component storage interface  //
+    // ============================ */
+    class IComponentArray {
+    public:
+      virtual ~IComponentArray() = default;
+      virtual void remove_entity(EntityID entity) = 0;
+      virtual size_t size() const = 0;
+      virtual void clone_component(EntityID source, EntityID destination) = 0;
+    };
 
-  /* ============================= //
-  // Type-safe component storage   //
-  // ============================= */
-  template<typename T>
-  class ComponentArray : public IComponentArray {
-  private:
-    std::unordered_map<EntityID, T> components;
+    /* ============================= //
+    // Type-safe component storage   //
+    // ============================= */
+    template<typename T>
+    class ComponentArray : public IComponentArray {
+    private:
+      std::unordered_map<EntityID, T> components;
 
-  public:
-    void add_component(EntityID entity, T component);
+    public:
+      void add_component(EntityID entity, T component);
 
-    void remove_component(EntityID entity);
+      void remove_component(EntityID entity);
 
-    void clone_component(EntityID source, EntityID destination) override;
+      void clone_component(EntityID source, EntityID destination) override;
 
-    T* get_component(EntityID entity);
+      T* get_component(EntityID entity);
 
-    bool has_component(EntityID entity) const;
+      bool has_component(EntityID entity) const;
 
-    void remove_entity(EntityID entity) override;
+      void remove_entity(EntityID entity) override;
 
-    size_t size() const override;
+      size_t size() const override;
 
-    auto begin();
-    auto end();
-    auto begin() const;
-    auto end() const;
-  };
+      auto begin();
+      auto end();
+      auto begin() const;
+      auto end() const;
+    };
 
-} // namespace ECS
+  } // namespace ECS
+} // namespace Engine

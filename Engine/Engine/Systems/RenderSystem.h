@@ -8,13 +8,13 @@ namespace Systems
 {
 
   // Dont use this, instead just pass in a Engine::Resources::get_unit_rect_texture() when using StaticSpriteRenderSystem
-  //class RectRenderSystem : public ECS::System {
+  //class RectRenderSystem : public Engine::ECS::System {
   //public:
   //  RectRenderSystem() {
   //    require_components<Components::Transform2D, Components::Color>();
   //  }
 
-  //  void draw_entity(const ECS::Entity& entity) override {
+  //  void draw_entity(const Engine::ECS::Entity& entity) override {
   //    auto* transform = entity.get_component<Components::Transform2D>();
   //    auto* color = entity.get_component<Components::Color>();
 
@@ -28,13 +28,13 @@ namespace Systems
   //  }
   //};
 
-  class StaticSpriteRenderSystem : public ECS::System {
+  class StaticSpriteRenderSystem : public Engine::ECS::System {
   public:
     StaticSpriteRenderSystem() {
       require_components<Components::Transform2D, Components::Color, Components::Texture>();
     }
 
-    void draw_entity(const ECS::Entity& entity) override {
+    void draw_entity(const Engine::ECS::Entity& entity) override {
       auto* transform = entity.get_component<Components::Transform2D>();
       auto* color = entity.get_component<Components::Color>();
       auto* texture = entity.get_component<Components::Texture>();
@@ -50,13 +50,13 @@ namespace Systems
   };
 
 
-  //class StaticSpriteRenderSystemNoColor : public ECS::System {
+  //class StaticSpriteRenderSystemNoColor : public Engine::ECS::System {
   //public:
   //  StaticSpriteRenderSystemNoColor() {
   //    require_components<Components::Transform2D, Components::Texture>();
   //  }
 
-  //  void draw_entity(const ECS::Entity& entity) override {
+  //  void draw_entity(const Engine::ECS::Entity& entity) override {
   //    auto* transform = entity.get_component<Components::Transform2D>();
   //    auto* texture = entity.get_component<Components::Texture>();
 
@@ -71,13 +71,13 @@ namespace Systems
   //};
 
 
-  class AtlasSpriteRenderSystem : public ECS::System {
+  class AtlasSpriteRenderSystem : public Engine::ECS::System {
   public:
     AtlasSpriteRenderSystem() {
       require_components<Components::Transform2D, Components::Color, Components::Texture, Components::TextureAtlas>();
     }
 
-    void draw_entity(const ECS::Entity& entity) override {
+    void draw_entity(const Engine::ECS::Entity& entity) override {
       auto* transform = entity.get_component<Components::Transform2D>();
       auto* color = entity.get_component<Components::Color>();
       auto* texture = entity.get_component<Components::Texture>();
@@ -100,13 +100,13 @@ namespace Systems
   };
 
 
-  //class AtlasSpriteRenderSystemNoColor : public ECS::System {
+  //class AtlasSpriteRenderSystemNoColor : public Engine::ECS::System {
   //public:
   //  AtlasSpriteRenderSystemNoColor() {
   //    require_components<Components::Transform2D, Components::Texture, Components::TextureAtlas>();
   //  }
 
-  //  void draw_entity(const ECS::Entity& entity) override {
+  //  void draw_entity(const Engine::ECS::Entity& entity) override {
   //    auto* transform = entity.get_component<Components::Transform2D>();
   //    auto* texture = entity.get_component<Components::Texture>();
   //    auto* atlas = entity.get_component<Components::TextureAtlas>();
@@ -128,13 +128,13 @@ namespace Systems
   //};
 
 
-  class TextRenderSystem : public ECS::System {
+  class TextRenderSystem : public Engine::ECS::System {
   public:
     TextRenderSystem() {
       require_components<Components::Transform2D, Components::Color, Components::Font, Components::Text>();
     }
 
-    void draw_entity(const ECS::Entity& entity) override {
+    void draw_entity(const Engine::ECS::Entity& entity) override {
       auto* transform = entity.get_component<Components::Transform2D>();
       auto* color = entity.get_component<Components::Color>();
       auto* font = entity.get_component<Components::Font>();
@@ -154,13 +154,13 @@ namespace Systems
   };
 
 
-  //class TextRenderSystemNoColor : public ECS::System {
+  //class TextRenderSystemNoColor : public Engine::ECS::System {
   //public:
   //  TextRenderSystemNoColor() {
   //    require_components<Components::Transform2D, Components::Font, Components::Text>();
   //  }
 
-  //  void draw_entity(const ECS::Entity& entity) override {
+  //  void draw_entity(const Engine::ECS::Entity& entity) override {
   //    auto* transform = entity.get_component<Components::Transform2D>();
   //    auto* font = entity.get_component<Components::Font>();
   //    auto* text = entity.get_component<Components::Text>();
@@ -179,13 +179,13 @@ namespace Systems
   //};
 
 
-  class AnimationUpdateSystem : public ECS::System {
+  class AnimationUpdateSystem : public Engine::ECS::System {
   public:
     AnimationUpdateSystem() {
       require_components<Components::Animation, Components::TextureAtlas>();
     }
 
-    void update_entity(ECS::Entity& entity) override {
+    void update_entity(Engine::ECS::Entity& entity) override {
       auto* animation = entity.get_component<Components::Animation>();
       auto* atlas = entity.get_component<Components::TextureAtlas>();
 

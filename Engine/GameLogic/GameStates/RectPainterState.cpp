@@ -22,7 +22,7 @@
 #include <cstdio>
 #include <unordered_map>
 
-using ECS::EntityID;
+using Engine::ECS::EntityID;
 
 namespace Components {
   struct BasicCollider {
@@ -35,7 +35,7 @@ namespace Components {
 void RectPainterState::load() {}
 void RectPainterState::init()
 {
-  ECS::World::add_system<Systems::StaticSpriteRenderSystem>();
+  Engine::ECS::add_system<Systems::StaticSpriteRenderSystem>();
 
   rects_.clear();
   selectedIndex_ = -1;
@@ -54,13 +54,13 @@ void RectPainterState::init()
 void RectPainterState::free()
 {
   // Destroy all entities from this state
-  ECS::World::destroy_entities_with<Components::Tag<"RectPainter">>();
+  Engine::ECS::destroy_entities_with<Components::Tag<"RectPainter">>();
   rects_.clear();
   selectedIndex_ = -1;
   dragMode_ = DragMode::None;
 
   // Remove systems added in Init
-  ECS::World::remove_system<Systems::StaticSpriteRenderSystem>();
+  Engine::ECS::remove_system<Systems::StaticSpriteRenderSystem>();
 }
 
 void RectPainterState::unload() {}
@@ -137,7 +137,7 @@ void RectPainterState::handleMouse()
         }
         if (pointInRect(mouse, minP, maxP)) {
           dragMode_ = DragMode::Moving;
-          auto* transform = ECS::World::get_component<Components::Transform2D>(rects_[selectedIndex_]);
+          auto* transform = Engine::ECS::get_component<Components::Transform2D>(rects_[selectedIndex_]);
           moveGrabOffset_ = mouse - glm::vec2{ transform->position.x, transform->position.y };
           prevMouse_ = mouse;
           return;
@@ -153,7 +153,7 @@ void RectPainterState::handleMouse()
       glm::vec2 minP, maxP;
       if (getBounds(rects_[selectedIndex_], minP, maxP) && pointInRect(mouse, minP, maxP)) {
         dragMode_ = DragMode::Moving;
-        auto* transform = ECS::World::get_component<Components::Transform2D>(rects_[selectedIndex_]);
+        auto* transform = Engine::ECS::get_component<Components::Transform2D>(rects_[selectedIndex_]);
         moveGrabOffset_ = mouse - glm::vec2{ transform->position.x, transform->position.y };
       }
       else {
@@ -176,7 +176,7 @@ void RectPainterState::handleMouse()
 
     if (dragMode_ == DragMode::Moving && selectedIndex_ >= 0) {
       auto id = rects_[selectedIndex_];
-      if (auto* transform = ECS::World::get_component<Components::Transform2D>(id)) {
+      if (auto* transform = Engine::ECS::get_component<Components::Transform2D>(id)) {
         glm::vec2 newCenter = mouse - moveGrabOffset_;
         if (snap) newCenter = snapToGrid(newCenter, snapGridPx_);
         transform->position.x = newCenter.x;
@@ -185,7 +185,7 @@ void RectPainterState::handleMouse()
     }
     else if (dragMode_ == DragMode::Resizing && selectedIndex_ >= 0) {
       auto id = rects_[selectedIndex_];
-      auto* transform = ECS::World::get_component<Components::Transform2D>(id);
+      auto* transform = Engine::ECS::get_component<Components::Transform2D>(id);
 
       if (transform) {
         Math::Vec2D& pos = transform->position;
@@ -237,7 +237,7 @@ void RectPainterState::handleMouse()
       computeCenterAndSize(dragStart_, mouse, center, size);
       clampMinSize(size, minRectSizePx_);
       if (size.x >= minRectSizePx_ && size.y >= minRectSizePx_) {
-        auto entity = ECS::World::create_entity()
+        auto entity = Engine::ECS::create_entity()
           .add_component<Components::Tag<"RectPainter">>()
           .add_component<Components::Transform2D>(center.x, center.y, 0.0f, size.x, size.y)
           .add_component<Components::Color>(currentColor_.x, currentColor_.y, currentColor_.z, currentColor_.w)
@@ -261,7 +261,7 @@ void RectPainterState::handleShortcuts()
   const bool hasSel = (selectedIndex_ >= 0 && selectedIndex_ < (int)rects_.size());
 
   if (hasSel && Engine::Input::is_key_pressed(GLFW_KEY_DELETE)) {
-    ECS::World::destroy_entity(rects_[selectedIndex_]);
+    Engine::ECS::destroy_entity(rects_[selectedIndex_]);
     rects_.erase(rects_.begin() + selectedIndex_);
     selectedIndex_ = -1;
   }
@@ -269,12 +269,12 @@ void RectPainterState::handleShortcuts()
   if (hasSel && ctrl && Engine::Input::is_key_pressed(GLFW_KEY_D)) {
     const EntityID src = rects_[selectedIndex_];
 
-    auto* translate = ECS::World::get_component<Components::Transform2D>(src);
+    auto* translate = Engine::ECS::get_component<Components::Transform2D>(src);
 
-    auto* c = ECS::World::get_component<Components::Color>(src);
-    auto* col = ECS::World::get_component<Components::BasicCollider>(src);
+    auto* c = Engine::ECS::get_component<Components::Color>(src);
+    auto* col = Engine::ECS::get_component<Components::BasicCollider>(src);
     if (translate && c) {
-      auto e = ECS::World::create_entity()
+      auto e = Engine::ECS::create_entity()
         .add_component<Components::Tag<"RectPainter">>()
         .add_component<Components::Transform2D>(translate->position.x + 10.f, translate->position.y + 10.f, 0.0f, translate->scale.x, translate->scale.y)
         .add_component<Components::Color>(c->r(), c->g(), c->b(), c->a());
@@ -302,7 +302,7 @@ void RectPainterState::runCollisionPass()
   // Brute-force AABB among collider-enabled rects
   for (size_t i = 0; i < rects_.size(); ++i) {
     auto idA = rects_[i];
-    auto* colA = ECS::World::get_component<Components::BasicCollider>(idA);
+    auto* colA = Engine::ECS::get_component<Components::BasicCollider>(idA);
     if (!colA || !colA->enabled) continue;
 
     glm::vec2 aMin, aMax;
@@ -310,7 +310,7 @@ void RectPainterState::runCollisionPass()
 
     for (size_t j = i + 1; j < rects_.size(); ++j) {
       auto idB = rects_[j];
-      auto* colB = ECS::World::get_component<Components::BasicCollider>(idB);
+      auto* colB = Engine::ECS::get_component<Components::BasicCollider>(idB);
       if (!colB || !colB->enabled) continue;
 
       glm::vec2 bMin, bMax;
@@ -379,7 +379,7 @@ void RectPainterState::drawSelectionGizmo()
 /* Picking helpers */
 bool RectPainterState::getBounds(EntityID id, glm::vec2& minP, glm::vec2& maxP) const
 {
-  auto* transform = ECS::World::get_component<Components::Transform2D>(id);
+  auto* transform = Engine::ECS::get_component<Components::Transform2D>(id);
 
 
   if (!transform) return false;
@@ -441,7 +441,7 @@ void RectPainterState::drawImGui()
     if (ImGui::Button("Clear All")) {
       clearAllRects();
       /*
-      for (EntityID id : rects_) ECS::World::destroy_entity(id);
+      for (EntityID id : rects_) Engine::ECS::destroy_entity(id);
       rects_.clear();
       selectedIndex_ = -1;
       dragMode_ = DragMode::None;
@@ -451,7 +451,7 @@ void RectPainterState::drawImGui()
     ImGui::SameLine();
     const bool canDelete = (selectedIndex_ >= 0 && selectedIndex_ < (int)rects_.size());
     if (ImGui::Button("Delete Selected") && canDelete) {
-      ECS::World::destroy_entity(rects_[selectedIndex_]);
+      Engine::ECS::destroy_entity(rects_[selectedIndex_]);
       rects_.erase(rects_.begin() + selectedIndex_);
       selectedIndex_ = -1;
     }
@@ -459,13 +459,13 @@ void RectPainterState::drawImGui()
     ImGui::SameLine();
     if (ImGui::Button("Duplicate") && canDelete) {
       const EntityID src = rects_[selectedIndex_];
-      auto* translate = ECS::World::get_component<Components::Transform2D>(src);
+      auto* translate = Engine::ECS::get_component<Components::Transform2D>(src);
       Math::Vec2D* p = &translate->position;
       Math::Vec2D* s = &translate->scale;
-      auto* c = ECS::World::get_component<Components::Color>(src);
-      auto* col = ECS::World::get_component<Components::BasicCollider>(src);
+      auto* c = Engine::ECS::get_component<Components::Color>(src);
+      auto* col = Engine::ECS::get_component<Components::BasicCollider>(src);
       if (p && s && c) {
-        auto e = ECS::World::create_entity()
+        auto e = Engine::ECS::create_entity()
           .add_component<Components::Tag<"RectPainter">>()
           .add_component<Components::Transform2D>(p->x + 12.f, p->y + 12.f, 0.0f, s->x, s->y)
           .add_component<Components::Color>(c->r(), c->g(), c->b(), c->a());
@@ -479,7 +479,7 @@ void RectPainterState::drawImGui()
       for (s32 i = 0; i < (s32)rects_.size(); ++i) {
         const EntityID id = rects_[i];
 
-        auto* transform = ECS::World::get_component<Components::Transform2D>(id);
+        auto* transform = Engine::ECS::get_component<Components::Transform2D>(id);
 
         if (!transform) continue;
         char label[160];
@@ -495,9 +495,9 @@ void RectPainterState::drawImGui()
       ImGui::Separator();
       ImGui::Text("Selected #%d", selectedIndex_);
       const EntityID id = rects_[selectedIndex_];
-      auto* transform = ECS::World::get_component<Components::Transform2D>(id);
-      auto* color = ECS::World::get_component<Components::Color>(id);
-      //auto* col = ECS::World::get_component<Components::BasicCollider>(id);
+      auto* transform = Engine::ECS::get_component<Components::Transform2D>(id);
+      auto* color = Engine::ECS::get_component<Components::Color>(id);
+      //auto* col = Engine::ECS::get_component<Components::BasicCollider>(id);
 
       if (transform && color) {
         ImGui::DragFloat2("Position (center)", &transform->position.x, 1.0f);
@@ -514,8 +514,8 @@ void RectPainterState::drawImGui()
         //bool hasBasicCollider = (col != nullptr);
        /* if (!hasBasicCollider) {
           if (ImGui::Button("Add BasicCollider")) {
-            ECS::World::add_component<Components::BasicCollider>(id, Components::BasicCollider{ true,false });
-            col = ECS::World::get_component<Components::BasicCollider>(id);
+            Engine::ECS::add_component<Components::BasicCollider>(id, Components::BasicCollider{ true,false });
+            col = Engine::ECS::get_component<Components::BasicCollider>(id);
           }
         }
         else {
@@ -598,7 +598,7 @@ void RectPainterState::sendToBack(s32 index)
 
 void RectPainterState::clearAllRects()
 {
-  for (EntityID id : rects_) ECS::World::destroy_entity(id);
+  for (EntityID id : rects_) Engine::ECS::destroy_entity(id);
   rects_.clear();
   selectedIndex_ = -1;
   dragMode_ = DragMode::None;

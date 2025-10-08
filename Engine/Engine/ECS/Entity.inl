@@ -17,38 +17,40 @@
 #include "Entity.h"
 #include "World.h"
 
-namespace ECS {
+namespace Engine {
+  namespace ECS {
 
-  template<typename T, typename... Args>
-  Entity& Entity::add_component(Args&&... args) {
-    World::add_component<T>(id, std::forward<Args>(args)...);
-    return *this;
-  }
+    template<typename T, typename... Args>
+    Entity& Entity::add_component(Args&&... args) {
+      ECS::add_component<T>(id, std::forward<Args>(args)...);
+      return *this;
+    }
 
-  template<typename T>
-  Entity& Entity::remove_component() {
-    World::remove_component<T>(id);
-    return *this;
-  }
+    template<typename T>
+    Entity& Entity::remove_component() {
+      ECS::remove_component<T>(id);
+      return *this;
+    }
 
-  template<typename T>
-  T* Entity::get_component() {
-    return World::get_component<T>(id);
-  }
+    template<typename T>
+    T* Entity::get_component() {
+      return ECS::get_component<T>(id);
+    }
 
-  template<typename T>
-  const T* Entity::get_component() const {
-    return World::get_component<T>(id);
-  }
+    template<typename T>
+    const T* Entity::get_component() const {
+      return ECS::get_component<T>(id);
+    }
 
-  template<typename T>
-  bool Entity::has_component() const {
-    return World::has_component<T>(id);
-  }
+    template<typename T>
+    bool Entity::has_component() const {
+      return ECS::has_component<T>(id);
+    }
 
-  template<typename... T>
-  bool Entity::has_components() const {
-    return World::has_components<T...>(id);
-  }
+    template<typename... T>
+    bool Entity::has_components() const {
+      return ECS::has_components<T...>(id);
+    }
 
-} // namespace ECS
+  } // namespace ECS
+} // namespace Engine

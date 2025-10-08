@@ -17,7 +17,7 @@
 #include "ECS/System.h"
 #include "BasicComponents.h"
 
-class HealthSystem : public ECS::System
+class HealthSystem : public Engine::ECS::System
 {
 public:
   HealthSystem()
@@ -25,7 +25,7 @@ public:
     require_components<Components::Health>();
   }
 
-  void update_entity(ECS::Entity& entity) override
+  void update_entity(Engine::ECS::Entity& entity) override
   {
     auto health = entity.get_component<Components::Health>();
 

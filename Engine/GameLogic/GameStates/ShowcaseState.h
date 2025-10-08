@@ -27,8 +27,8 @@ Event dispatched when one entity collects another entity. Includes information
 about the collector, the collected item, and points awarded.
 ==================================================================================*/
 struct CollectEvent {
-  ECS::EntityID collector;
-  ECS::EntityID collected;
+  Engine::ECS::EntityID collector;
+  Engine::ECS::EntityID collected;
   s32 points;
 };
 
@@ -38,18 +38,18 @@ Event dispatched when one entity attacks another entity. Contains information
 about the attacker, target, and damage dealt.
 ==================================================================================*/
 struct AttackEvent {
-  ECS::EntityID attacker;
-  ECS::EntityID target;
+  Engine::ECS::EntityID attacker;
+  Engine::ECS::EntityID target;
   s32 damage;
 };
 
 class ShowcaseState : public Engine::GameState<ShowcaseState> {
 private:
   // Entities
-  ECS::Entity player;
-  ECS::Entity enemy;
-  ECS::Entity banana;
-  ECS::Entity background_entity;
+  Engine::ECS::Entity player;
+  Engine::ECS::Entity enemy;
+  Engine::ECS::Entity banana;
+  Engine::ECS::Entity background_entity;
 
   // Resources - automatically managed via shared_ptr
   Engine::Graphics::Texture player_idle_texture;

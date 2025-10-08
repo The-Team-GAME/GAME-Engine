@@ -16,9 +16,8 @@
 #include "World.h"
 #include "../Perf.h"
 
-namespace ECS
-{
-  namespace World
+namespace Engine {
+  namespace ECS
   {
     namespace Internal
     {
@@ -202,5 +201,5 @@ namespace ECS
     {
       return Internal::active_entities.size();
     }
-  } // namespace World
-} // namespace ECS
+  } // namespace ECS
+} // namespace Engine

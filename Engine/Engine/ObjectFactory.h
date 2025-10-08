@@ -92,6 +92,6 @@ namespace Engine
     During gameplay when spawning new game objects, such as enemies, collectibles,
     or environmental elements.
     ==================================================================================*/
-    ECS::Entity create_object(s32 id);
+    Engine::ECS::Entity create_object(s32 id);
   }
 }
