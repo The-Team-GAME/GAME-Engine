@@ -27,37 +27,50 @@
 template <typename T>
 void print_struct_fields(const T& obj, int indent = 0)
 {
-  auto [class_name, fields_tuple] = reflection_fields<T>();
+  // Check if type has adaptor
+  if constexpr (has_adaptor_v<T>)
+  {
+    using Adaptor = reflection_adaptor<T>;
+    auto view = Adaptor::serialize(obj);
 
-  std::string indent_str(indent, ' ');
-  std::cout << indent_str << "Type: " << class_name << " has fields:\n";
+    std::string indent_str(indent, ' ');
+    std::cout << indent_str << "Type: " << Adaptor::class_name << " (via adaptor):\n";
+    print_struct_fields(view, indent + 2);
+  }
+  else if constexpr (has_reflection_v<T>)
+  {
+    auto [class_name, fields_tuple] = reflection_fields<T>();
 
-  std::apply([&obj, indent](const auto &...pairs)
-    {
-      ((
-        [&]()
-        {
-          std::string field_indent(indent + 2, ' ');
-          std::cout << field_indent << "- " << pairs.first << ": ";
+    std::string indent_str(indent, ' ');
+    std::cout << indent_str << "Type: " << class_name << " has fields:\n";
 
-          using FieldType = std::remove_cvref_t<decltype(obj.*pairs.second)>;
-
-          if constexpr (has_reflection_v<FieldType>)
+    std::apply([&obj, indent](const auto &...pairs)
+      {
+        ((
+          [&]()
           {
-            // Nested struct with reflection
-            std::cout << "\n";
-            print_struct_fields(obj.*pairs.second, indent + 4);
-          }
-          else
-          {
-            // Primitive type
-            std::cout << (obj.*pairs.second) << "\n";
-          }
-        }()
-          ), ...);
-    },
-    fields_tuple
-  );
+            std::string field_indent(indent + 2, ' ');
+            std::cout << field_indent << "- " << pairs.first << ": ";
+
+            using FieldType = std::remove_cvref_t<decltype(obj.*pairs.second)>;
+
+            if constexpr (has_reflection_v<FieldType>)
+            {
+              // Nested struct with reflection
+              std::cout << "\n";
+              print_struct_fields(obj.*pairs.second, indent + 4);
+            }
+            else
+            {
+              // Primitive type
+              std::cout << (obj.*pairs.second) << "\n";
+            }
+          }()
+            ), ...);
+      },
+      fields_tuple
+    );
+  }
 }
 
 // Forward declarations
@@ -67,11 +80,35 @@ std::string serialize_to_json(const T& obj);
 template <typename T>
 bool deserialize_from_json(T& obj, const std::string& json_str);
 
+// Helper function to get reflection fields (handles both direct reflection and adaptors)
+template <typename T>
+auto reflection_fields()
+{
+  if constexpr (has_adaptor_v<T>)
+  {
+    using Adaptor = reflection_adaptor<T>;
+    using Info = reflection_info<typename Adaptor::view_type>;
+    return std::make_pair(Adaptor::class_name, Info::fields);
+  }
+  else
+  {
+    using Info = reflection_info<T>;
+    return std::make_pair(Info::class_name, Info::fields);
+  }
+}
+
 // Helper to set JSON value based on type
 template<typename T>
 void set_json_value(rapidjson::Value& val, const T& data, rapidjson::Document::AllocatorType& allocator)
 {
-  if constexpr (std::is_same_v<T, std::string>)
+  if constexpr (has_adaptor_v<T>)
+  {
+    // Handle types with adaptors by serializing to view type
+    using Adaptor = reflection_adaptor<T>;
+    auto view = Adaptor::serialize(data);
+    set_json_value(val, view, allocator);
+  }
+  else if constexpr (std::is_same_v<T, std::string>)
   {
     val.SetString(data.c_str(), static_cast<rapidjson::SizeType>(data.length()), allocator);
   }
@@ -133,7 +170,15 @@ void set_json_value(rapidjson::Value& val, const T& data, rapidjson::Document::A
 template<typename T>
 void get_json_value(T& data, const rapidjson::Value& val)
 {
-  if constexpr (std::is_same_v<T, std::string>)
+  if constexpr (has_adaptor_v<T>)
+  {
+    // Handle types with adaptors by deserializing from view type
+    using Adaptor = reflection_adaptor<T>;
+    typename Adaptor::view_type view;
+    get_json_value(view, val);
+    data = Adaptor::deserialize(view);
+  }
+  else if constexpr (std::is_same_v<T, std::string>)
   {
     if (val.IsString())
       data = val.GetString();
@@ -292,7 +337,21 @@ void display_struct_in_imgui(T& obj)
 template<typename T>
 void display_imgui_field(const char* label, T& data)
 {
-  if constexpr (std::is_same_v<T, std::string>)
+  if constexpr (has_adaptor_v<T>)
+  {
+    // Handle types with adaptors
+    using Adaptor = reflection_adaptor<T>;
+    auto view = Adaptor::serialize(data);
+
+    if (ImGui::TreeNode(label))
+    {
+      display_struct_in_imgui(view);
+      // Note: This won't update the original data since view is a copy
+      // To make this work, you'd need a more sophisticated two-way binding
+      ImGui::TreePop();
+    }
+  }
+  else if constexpr (std::is_same_v<T, std::string>)
   {
     char buffer[256];
     strncpy_s(buffer, data.c_str(), sizeof(buffer) - 1);

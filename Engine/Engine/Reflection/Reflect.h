@@ -31,75 +31,52 @@
 
 // Forward declare the template
 template <typename T>
-constexpr auto reflection_fields();
+struct reflection_info;
 
 template<typename T, typename = void>
 struct has_reflection : std::false_type {};
 
 template<typename T>
-struct has_reflection<T, std::void_t<decltype(reflection_fields<T>())>> : std::true_type {};
+struct has_reflection<T, std::void_t<decltype(reflection_info<T>::class_name)>> : std::true_type {};
 
 template<typename T>
 constexpr bool has_reflection_v = has_reflection<T>::value;
 
+// Adaptor template (to be specialized)
+template<typename T>
+struct reflection_adaptor;
+
+// Adaptor traits - check if serialize method exists
+template<typename T, typename = void>
+struct has_adaptor : std::false_type {};
+
+template<typename T>
+struct has_adaptor<T, std::void_t<decltype(reflection_adaptor<T>::serialize(std::declval<T>()))>> : std::true_type {};
+
+template<typename T>
+constexpr bool has_adaptor_v = has_adaptor<T>::value;
 
 #define REFLECT(CLASS_NAME, ...)                                                     \
-  template <>                                                                                \
-  constexpr auto reflection_fields<CLASS_NAME>()                                             \
-  {                                                                                          \
-    return std::make_pair(#CLASS_NAME,                                                       \
-                          std::make_tuple(EXPAND_FIELDS(CLASS_NAME, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__))); \
-  }
+  template <>                                                                        \
+  struct reflection_info<CLASS_NAME>                                                 \
+  {                                                                                  \
+    static constexpr const char* class_name = #CLASS_NAME;                           \
+    static constexpr auto fields = std::make_tuple(EXPAND_FIELDS(CLASS_NAME, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)); \
+  };
 
+#define REFLECT_ADAPTOR(CLASS_NAME, VIEW_TYPE, SERIALIZE_FUNC, DESERIALIZE_FUNC) \
+  template<>                                                                     \
+  struct reflection_adaptor<CLASS_NAME>                                          \
+  {                                                                              \
+    using view_type = VIEW_TYPE;                                                 \
+    static constexpr const char* class_name = #CLASS_NAME;                       \
+    static view_type serialize(const CLASS_NAME& obj) {                          \
+      return obj.SERIALIZE_FUNC();                                               \
+    }                                                                            \
+    static CLASS_NAME deserialize(const view_type& view) {                       \
+      CLASS_NAME obj;                                                            \
+      return obj.DESERIALIZE_FUNC(view);                                         \
+    }                                                                            \
+  };
 
-/* Example usage */
-/*
-
-struct Person
-{
-  std::string name;
-  int age;
-};
-REFLECT(Person, name, age)
-
-struct Book
-{
-  std::string title;
-  std::string author;
-  int pages;
-};
-REFLECT(Book, title, author, pages)
-
-
-template <typename T>
-void print_struct_fields(const T& obj)
-{
-  auto [class_name, fields_tuple] = reflection_fields<T>();
-
-  std::cout << "Type: " << class_name << " has fields:\n";
-  std::apply([&obj](const auto &...pairs)
-    {
-      ((std::cout << "- " << pairs.first << ": " << (obj.*pairs.second) << "\n"), ...);
-    },
-    fields_tuple
-  );
-}
-
-int main()
-{
-  Person person{ "Alice", 30 };
-  Person person2{ "bobby", 23 };
-  Book book{ "1984", "George Orwell", 328 };
-
-  print_struct_fields(person);
-  std::cout << "\n";
-
-  print_struct_fields(person2);
-  std::cout << "\n";
-
-  print_struct_fields(book);
-  std::cout << "\n";
-
-  return 0;
-}
-*/
+#include "Helpers.h"
