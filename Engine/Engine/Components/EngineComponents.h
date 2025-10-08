@@ -6,6 +6,7 @@
 #include <limits>
 #include "Reflection/Reflect.h"
 #include "Time.h"
+#include "../Resources.h"
 
 /* ======================================= //
 // Fixed string for compile-time tags     //
@@ -39,6 +40,23 @@ namespace Components
 
     Texture() : texture_handle(nullptr) {}
     Texture(Engine::Graphics::Texture tex) : texture_handle(tex) {}
+
+
+    struct Adaptor {
+      std::string path;
+
+      Adaptor serialize(const Texture& tex) const {
+        Adaptor view;
+        if (tex.texture_handle) {
+          view.path = tex.texture_handle->path;
+        }
+        return view;
+      }
+
+      Texture deserialize() const {
+        return Engine::Resources::load_texture(path);
+      }
+    };
   };
 
   struct TextureAtlas
@@ -171,3 +189,4 @@ REFLECT(Components::Color, color)
 REFLECT(Components::Transform2D, position, rotation, scale)
 REFLECT(Components::Text, content)
 REFLECT(Components::Animation, frames, startTime, totalDuration)
+REFLECT_ADAPTOR(Components::Texture, path)
