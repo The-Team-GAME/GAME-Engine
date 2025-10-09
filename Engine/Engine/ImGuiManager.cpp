@@ -19,6 +19,7 @@
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
 #include "InputManager.h"
+#include "Perf.h"
 
 namespace {
   bool gui_enabled = true;
@@ -107,6 +108,8 @@ namespace ImGuiManager {
 
   void end()
   {
+    Engine::Perf::start("ImGui Render");
+
     ImGui::Render();
     if (gui_enabled)
     {
@@ -122,6 +125,8 @@ namespace ImGuiManager {
       ImGui::RenderPlatformWindowsDefault();
       glfwMakeContextCurrent(backup_current_context);
     }
+
+    Engine::Perf::stop("ImGui Render");
   }
 
   void update()
