@@ -12,8 +12,7 @@
 
 ### ImGui Integration
 - Docking is now enabled
-- Precompiled to improve compile times and reduce solution clutter
-- ImGui files no longer appear when using "Find All in Entire Solution"
+- Precompiled to improve compile times and reduce solution clutter (ImGui files no longer appear when using "Find All in Entire Solution")
   
 ### ECS
 - Now accessed using the `Engine::ECS` namespace
@@ -30,9 +29,9 @@ Engine::ECS::create_entity()
     //   ^^^ Emphasis on `Engine::Resources::get_rect_texture()` !!! ^^^
 ```
 
-> **Note**: The reason why theres no Rect component is so that we can centralize drawing into `StaticSpriteRenderSystem`. This means there is no need for a separate rect-drawing system.
+> **Note**: The reason why theres no Rect component is so that we can centralize drawing into `StaticSpriteRenderSystem`. This means there is no need for a separate rect-drawing system. This will also make it easier to convert a Rect entity into a Texture Entity, since now they are all using Textures
 
-There is still a `Engine::Graphics::draw_rect` for us to use when making debugging tools (e.g. Hitbox visualizer)
+> **Note**: There is still a `Engine::Graphics::draw_rect` for us to use when making debugging tools (e.g. Hitbox visualizer)
 
 #### Virtual Resolution
 Fixed virtual resolution system for resolution-independent rendering
