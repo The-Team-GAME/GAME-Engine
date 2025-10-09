@@ -46,7 +46,7 @@ namespace Engine {
     // Load music (streamed from disk)
     Engine::Audio::Sound load_music(const std::string& filepath);
 
-    Engine::Graphics::Texture get_unit_rect_texture();
+    Engine::Graphics::Texture get_rect_texture();
 
     //optimization: clear unused resources from cache
     void clear_unused_resources();

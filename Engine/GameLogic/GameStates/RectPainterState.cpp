@@ -240,7 +240,7 @@ void RectPainterState::handleMouse()
           .add_component<Components::Tag<"RectPainter">>()
           .add_component<Components::Transform2D>(center.x, center.y, 0.0f, size.x, size.y)
           .add_component<Components::Color>(currentColor_.x, currentColor_.y, currentColor_.z, currentColor_.w)
-          .add_component<Components::Texture>(Engine::Resources::get_unit_rect_texture())
+          .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
           .add_component<Components::BasicCollider>(spawnWithCollider_, false);
         rects_.push_back(entity.get_id());
         selectedIndex_ = (int)rects_.size() - 1;
@@ -278,7 +278,7 @@ void RectPainterState::handleShortcuts()
         .add_component<Components::Tag<"RectPainter">>()
         .add_component<Components::Transform2D>(translate->position.x + 10.f, translate->position.y + 10.f, 0.0f, translate->scale.x, translate->scale.y)
         .add_component<Components::Color>(c->rgba.r, c->rgba.g, c->rgba.b, c->rgba.a)
-        .add_component<Components::Texture>(Engine::Resources::get_unit_rect_texture());
+        .add_component<Components::Texture>(Engine::Resources::get_rect_texture());
       if (col) e.add_component<Components::BasicCollider>(col->enabled, col->isTrigger);
       rects_.push_back(e.get_id());
       selectedIndex_ = (int)rects_.size() - 1;
@@ -470,7 +470,7 @@ void RectPainterState::drawImGui()
           .add_component<Components::Tag<"RectPainter">>()
           .add_component<Components::Transform2D>(p->x + 12.f, p->y + 12.f, 0.0f, s->x, s->y)
           .add_component<Components::Color>(c->rgba.r, c->rgba.g, c->rgba.b, c->rgba.a)
-          .add_component<Components::Texture>(Engine::Resources::get_unit_rect_texture());
+          .add_component<Components::Texture>(Engine::Resources::get_rect_texture());
         if (col) e.add_component<Components::BasicCollider>(col->enabled, col->isTrigger);
         rects_.push_back(e.get_id());
         selectedIndex_ = (int)rects_.size() - 1;

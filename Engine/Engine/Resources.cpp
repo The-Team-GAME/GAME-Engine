@@ -214,7 +214,7 @@ Engine::Audio::Sound Engine::Resources::load_music(const std::string& filepath)
   return music;
 }
 
-Engine::Graphics::Texture Engine::Resources::get_unit_rect_texture()
+Engine::Graphics::Texture Engine::Resources::get_rect_texture()
 {
   return unit_rect;
 }

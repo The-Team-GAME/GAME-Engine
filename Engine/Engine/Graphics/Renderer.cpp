@@ -405,7 +405,7 @@ namespace Engine {
 
     void draw_rect(const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color)
     {
-      draw_texture(Engine::Resources::get_unit_rect_texture(), position, size, rotation, color);
+      draw_texture(Engine::Resources::get_rect_texture(), position, size, rotation, color);
     }
 
     void draw_texture(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {

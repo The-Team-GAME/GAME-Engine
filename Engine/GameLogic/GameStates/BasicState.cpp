@@ -73,7 +73,7 @@ void BasicState::init()
       50.0f, 50.0f
     )
     .add_component<Components::Color>(1.0f, 0.0f, 0.0f, 1.0f)
-    .add_component<Components::Texture>(Engine::Resources::get_unit_rect_texture());
+    .add_component<Components::Texture>(Engine::Resources::get_rect_texture());
 
   // Bottom right, Green
   rect_bottom_right = Engine::ECS::create_entity()
@@ -83,7 +83,7 @@ void BasicState::init()
       50.0f, 50.0f
     )
     .add_component<Components::Color>(0.0f, 1.0f, 0.0f, 1.0f)
-    .add_component<Components::Texture>(Engine::Resources::get_unit_rect_texture());
+    .add_component<Components::Texture>(Engine::Resources::get_rect_texture());
 
   // Bottom left, Blue
   rect_bottom_left = Engine::ECS::create_entity()
@@ -93,7 +93,7 @@ void BasicState::init()
       50.0f, 50.0f
     )
     .add_component<Components::Color>(0.0f, 0.0f, 1.0f, 1.0f)
-    .add_component<Components::Texture>(Engine::Resources::get_unit_rect_texture());
+    .add_component<Components::Texture>(Engine::Resources::get_rect_texture());
 
   // Top right, Yellow
   rect_top_right = Engine::ECS::create_entity()
@@ -103,7 +103,7 @@ void BasicState::init()
       50.0f, 50.0f
     )
     .add_component<Components::Color>(1.0f, 1.0f, 0.0f, 1.0f)
-    .add_component<Components::Texture>(Engine::Resources::get_unit_rect_texture());
+    .add_component<Components::Texture>(Engine::Resources::get_rect_texture());
 
   // Center, Magenta
   rect_center = Engine::ECS::create_entity()
@@ -113,7 +113,7 @@ void BasicState::init()
       50.0f, 50.0f
     )
     .add_component<Components::Color>(1.0f, 0.0f, 1.0f, 1.0f)
-    .add_component<Components::Texture>(Engine::Resources::get_unit_rect_texture());
+    .add_component<Components::Texture>(Engine::Resources::get_rect_texture());
 
   // Create text entities
   text_hello_1 = Engine::ECS::create_entity()
@@ -178,7 +178,7 @@ void BasicState::draw()
   // Clear background
   Engine::Graphics::clear_screen({ 0.078f, 0.078f, 0.078f, 1.0f });
 
-  auto unit_rect = Engine::Resources::get_unit_rect_texture();
+  auto unit_rect = Engine::Resources::get_rect_texture();
 
   Engine::Graphics::draw_texture(
     unit_rect,
