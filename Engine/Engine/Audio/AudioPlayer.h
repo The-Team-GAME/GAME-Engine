@@ -14,7 +14,7 @@ namespace Engine {
 
     // Audio channel handle (similar to how you handle textures)
     using ChannelHandle = int;
-    constexpr ChannelHandle INVALID_CHANNEL = -1;
+    inline constexpr ChannelHandle INVALID_CHANNEL = -1;
 
     // Initialization and cleanup
     bool init();

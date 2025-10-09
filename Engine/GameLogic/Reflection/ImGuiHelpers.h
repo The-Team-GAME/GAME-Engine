@@ -1,9 +1,10 @@
 #include "../../Engine/MonkeyEngine.h"
 
+// TODO: fix this
 
 // Display struct fields in ImGui
 template <typename T>
-void display_struct_in_imgui(T& obj)
+void display_struct_in_imgui([[maybe_unused]] T& obj)
 {
   /*auto [class_name, fields_tuple] = get_class_fields<T>();
 
