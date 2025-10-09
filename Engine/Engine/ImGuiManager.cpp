@@ -59,50 +59,53 @@ namespace ImGuiManager {
 
   void begin()
   {
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-
-    // Create dockspace
-    ImGuiViewport* viewport = ImGui::GetMainViewport();
-    ImGui::SetNextWindowPos(viewport->WorkPos);
-    ImGui::SetNextWindowSize(viewport->WorkSize);
-    ImGui::SetNextWindowViewport(viewport->ID);
-
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-    window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse;
-    window_flags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-    window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-    window_flags |= ImGuiWindowFlags_NoBackground;
-
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-
-    ImGui::Begin("DockSpace", nullptr, window_flags);
-    ImGui::PopStyleVar(3);
-
-    // DockSpace
-    ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-    ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
-
-    // Add a menu bar
-    if (ImGui::BeginMenuBar())
+    if (gui_enabled)
     {
-      if (ImGui::BeginMenu("Windows"))
+      ImGui_ImplOpenGL3_NewFrame();
+      ImGui_ImplGlfw_NewFrame();
+      ImGui::NewFrame();
+
+      // Create dockspace
+      ImGuiViewport* viewport = ImGui::GetMainViewport();
+      ImGui::SetNextWindowPos(viewport->WorkPos);
+      ImGui::SetNextWindowSize(viewport->WorkSize);
+      ImGui::SetNextWindowViewport(viewport->ID);
+
+      ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+      window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse;
+      window_flags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+      window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+      window_flags |= ImGuiWindowFlags_NoBackground;
+
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+      ImGui::Begin("DockSpace", nullptr, window_flags);
+      ImGui::PopStyleVar(3);
+
+      // DockSpace
+      ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+      ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+
+      // Add a menu bar
+      if (ImGui::BeginMenuBar())
       {
-        ImGui::MenuItem("Toggle GUI (F1)", nullptr, &gui_enabled);
-        ImGui::EndMenu();
+        if (ImGui::BeginMenu("Windows"))
+        {
+          ImGui::MenuItem("Toggle GUI (F1)", nullptr, &gui_enabled);
+          ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
       }
-      ImGui::EndMenuBar();
-    }
 
-    ImGui::End();
+      ImGui::End();
 
-    // Render all registered panels
-    for (const auto& panel : registered_panels)
-    {
-      panel();
+      // Render all registered panels
+      for (const auto& panel : registered_panels)
+      {
+        panel();
+      }
     }
   }
 
@@ -110,20 +113,20 @@ namespace ImGuiManager {
   {
     Engine::Perf::start("ImGui Render");
 
-    ImGui::Render();
     if (gui_enabled)
     {
+      ImGui::Render();
       ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    }
 
-    // Update and Render additional Platform Windows
-    ImGuiIO& io = ImGui::GetIO();
-    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-    {
-      GLFWwindow* backup_current_context = glfwGetCurrentContext();
-      ImGui::UpdatePlatformWindows();
-      ImGui::RenderPlatformWindowsDefault();
-      glfwMakeContextCurrent(backup_current_context);
+      // Update and Render additional Platform Windows
+      ImGuiIO& io = ImGui::GetIO();
+      if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+      {
+        GLFWwindow* backup_current_context = glfwGetCurrentContext();
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
+        glfwMakeContextCurrent(backup_current_context);
+      }
     }
 
     Engine::Perf::stop("ImGui Render");
