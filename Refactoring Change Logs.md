@@ -34,13 +34,13 @@ Engine::ECS::create_entity()
 
 There is still a `Engine::Graphics::draw_rect` for us to use when making debugging tools (e.g. Hitbox visualizer)
 
-#### Things that are not implemented but was in the older version:
-- Getting mouse position in world coordinates
-- Setting anchor points for rotation and scale
-- Drawing with the input position being top Left
+#### Things that are not implemented yet but were in the older version:
+- ❌ Getting mouse position in world coordinates
+- ❌ Setting anchor points for rotation and scale
+- ❌ Drawing with top-left position as origin
 
 #### Things I still need to implement
-- Allow drawing in screen coordinates (For UI elements as they will not move with the camera)
+- 🔄 Screen-space coordinate rendering (for UI elements that remain fixed on screen)
 
 
 ### Resources System
