@@ -35,8 +35,6 @@ namespace Components {
 void RectPainterState::load() {}
 void RectPainterState::init()
 {
-  Engine::ECS::add_system<Systems::StaticSpriteRenderSystem>();
-
   rects_.clear();
   selectedIndex_ = -1;
   dragMode_ = DragMode::None;
@@ -58,9 +56,6 @@ void RectPainterState::free()
   rects_.clear();
   selectedIndex_ = -1;
   dragMode_ = DragMode::None;
-
-  // Remove systems added in Init
-  Engine::ECS::remove_system<Systems::StaticSpriteRenderSystem>();
 }
 
 void RectPainterState::unload() {}

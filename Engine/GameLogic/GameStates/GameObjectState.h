@@ -36,8 +36,6 @@ public:
     banana_prefab = Engine::ObjectFactory::register_object("Assets/objects/banana.json");
     lazy_monkey_prefab = Engine::ObjectFactory::register_object("Assets/objects/lazy_monkey.json");
 
-    Engine::ECS::add_system<Systems::StaticSpriteRenderSystem>();
-
     // Create enemies from prefab
     auto enemy1 = Engine::ObjectFactory::create_object(enemy_prefab)
       .add_component<Components::Tag<"GameObjectState">>();
@@ -102,8 +100,6 @@ public:
     Engine::ObjectFactory::unregister_object(enemy_prefab);
     Engine::ObjectFactory::unregister_object(banana_prefab);
     Engine::ObjectFactory::unregister_object(lazy_monkey_prefab);
-
-    Engine::ECS::remove_system<Systems::StaticSpriteRenderSystem>();
 
     // Destroy all entities with the GameObjectState tag
     Engine::ECS::destroy_entities_with<Components::Tag<"GameObjectState">>();

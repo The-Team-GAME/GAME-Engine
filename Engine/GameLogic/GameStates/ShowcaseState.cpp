@@ -70,13 +70,6 @@ void ShowcaseState::init() {
     .add_component<Components::TextureAtlas>(64, 64, 1, 7, 7)
     .add_component<Components::Animation>(7, 0.15f);
 
-  // Add systems
-  Engine::ECS::add_system<Systems::AnimationUpdateSystem>();
-  Engine::ECS::add_system<Systems::StaticSpriteRenderSystem>();
-  Engine::ECS::add_system<Systems::AtlasSpriteRenderSystem>();
-  Engine::ECS::add_system<BasicMovementSystem>();
-  Engine::ECS::add_system<RotationSystem>();
-
   // Subscribe to attack events
   Engine::ECS::add_event_listener<AttackEvent>([this](const AttackEvent& event) {
     std::cout << "Attack event! Entity " << event.attacker
@@ -342,11 +335,6 @@ void ShowcaseState::free() {
 
   // Cleanup entities
   Engine::ECS::destroy_entities_with<Components::Tag<"ShowcaseState">>();
-
-  // Remove systems
-  Engine::ECS::remove_system<Systems::StaticSpriteRenderSystem>();
-  Engine::ECS::remove_system<BasicMovementSystem>();
-  Engine::ECS::remove_system<RotationSystem>();
 
   // Remove event listeners
   Engine::ECS::remove_event_listener<AttackEvent>();

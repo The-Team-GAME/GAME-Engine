@@ -16,7 +16,7 @@
 #pragma once
 #include "imgui.h"
 #include "Core.h"
-#include "../Components/EngineComponents.h"
+#include "../Components/Components.h"
 #include <string>
 #include <vector>
 #include "../ECS/ECS.h"

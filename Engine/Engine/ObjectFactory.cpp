@@ -16,7 +16,7 @@
 //-----------------------------------------------------------------------------------
 #include "ObjectFactory.h"
 #include "Logger.h"
-#include "Components/EngineComponents.h"
+#include "Components/Components.h"
 #include "FileHandler.h"
 #include "Graphics/Renderer.h"
 #include <algorithm>

@@ -61,10 +61,6 @@ void BasicState::init()
   // Set resource path for loading assets
   Engine::Resources::set_resource_path("Assets/");
 
-  // Add rendering systems
-  Engine::ECS::add_system<Systems::StaticSpriteRenderSystem>();
-  Engine::ECS::add_system<Systems::TextRenderSystem>();
-
   // Create rectangle entities
   // Top left, Red
   rect_top_left = Engine::ECS::create_entity()
@@ -279,10 +275,6 @@ void BasicState::free()
   if (text_instruction.is_valid()) {
     text_instruction.destroy();
   }
-
-  // Remove systems
-  Engine::ECS::remove_system<Systems::StaticSpriteRenderSystem>();
-  Engine::ECS::remove_system<Systems::TextRenderSystem>();
 }
 
 void BasicState::unload()

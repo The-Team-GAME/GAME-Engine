@@ -32,6 +32,7 @@
 #include "Resources.h"
 #include "ECS/ECS.h"
 #include "WindowEvents.h"
+#include "Systems/Systems.h"
 
 namespace {
   f64 accumulator{};
@@ -91,6 +92,9 @@ namespace Engine
   ==================================================================================*/
   void Core::run()
   {
+    // CORE INITIALIZATION
+    register_engine_systems();
+
     while (!glfwWindowShouldClose(WindowManager::get_window()) && isRunning)
     {
       // START OF TIME UPDATES ==============================================
@@ -118,7 +122,6 @@ namespace Engine
       glfwPollEvents();
 
       Engine::Audio::update();
-
       ImGuiManager::begin();
 
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
@@ -180,6 +183,9 @@ namespace Engine
       glfwSwapBuffers(WindowManager::get_window());
       // Rendering End ==========================================
     }
+
+    // CORE CLEANUP
+    unregister_engine_systems();
   }
 
   /*=================================================================================

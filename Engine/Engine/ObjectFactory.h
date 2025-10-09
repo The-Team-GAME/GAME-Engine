@@ -19,7 +19,7 @@
 
 #include <vector>
 #include "ECS/ECS.h"
-#include "Components/EngineComponents.h"
+#include "Components/Components.h"
 #include <optional>
 #include "TypeDef.h"
 

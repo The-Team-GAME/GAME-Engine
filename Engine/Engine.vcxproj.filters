@@ -170,13 +170,10 @@
     <ClInclude Include="Engine\MonkeyEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Systems\BasicMovementSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\GUI\CameraPanel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Systems\RenderSystem.h">
+    <ClInclude Include="Engine\Systems\GraphicsSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine\WindowEvents.h">
@@ -194,7 +191,7 @@
     <ClInclude Include="GameLogic\GameStates\DevSpriteAnimationState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Components\EngineComponents.h">
+    <ClInclude Include="Engine\Components\Components.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GameLogic\GameStates\GameObjectState.h">
@@ -266,7 +263,7 @@
     <ClInclude Include="Engine\Graphics\Renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Systems\RotationSystem.h">
+    <ClInclude Include="Engine\Systems\PhysicsSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GameLogic\GameStates\RectPainterState.h">
@@ -321,6 +318,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GameLogic\Reflection\ImGuiHelpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Systems\Systems.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -46,12 +46,6 @@ public:
 
       temp.get_component<Components::RigidBody>()->angular_velocity = 30.0f + static_cast<f32>(rand() % 90); // Random rotation speed between 30 and 120 degrees per second 
     }
-
-
-    // Add systems to the world
-    Engine::ECS::add_system<RotationSystem>();
-    Engine::ECS::add_system<Systems::StaticSpriteRenderSystem>();
-
   };
 
   void update() {};
@@ -63,10 +57,6 @@ public:
 
   void free() {
     Engine::ECS::destroy_entities_with<Components::Tag<"Rubric2500ParticlesState">>();
-
-    // Remove systems
-    Engine::ECS::remove_system<RotationSystem>();
-    Engine::ECS::remove_system<Systems::StaticSpriteRenderSystem>();
   };
 
   void unload() {};

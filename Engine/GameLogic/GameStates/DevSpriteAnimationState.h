@@ -90,10 +90,6 @@ public:
     if (walk_anim) {
       walk_anim->startTime = Engine::Time::get_time();
     }
-
-    // Add rendering system for animated sprites
-    Engine::ECS::add_system<Systems::AtlasSpriteRenderSystem>();
-    Engine::ECS::add_system<Systems::AnimationUpdateSystem>();
   };
 
   void update() {
@@ -116,10 +112,6 @@ public:
     if (walk_lazy_monkey.is_valid()) {
       walk_lazy_monkey.destroy();
     }
-
-    // Remove systems
-    Engine::ECS::remove_system<Systems::AtlasSpriteRenderSystem>();
-    Engine::ECS::remove_system<Systems::AnimationUpdateSystem>();
   };
 
   void unload() {
