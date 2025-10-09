@@ -13,7 +13,8 @@
 ### ImGui Integration
 - Docking is now enabled
 - Precompiled to improve compile times and reduce solution clutter
-  - ImGui files no longer appear when using "Find All in Entire Solution"
+- ImGui files no longer appear when using "Find All in Entire Solution"
+  
 ### ECS
 - Now accessed using the `Engine::ECS` namespace
 - More functions refactored to return the Entity instead of EntityID to make using the library more fluent
@@ -31,6 +32,15 @@ Engine::ECS::create_entity()
 
 > **Note**: The reason why theres no Rect component is so that we can centralize drawing into `StaticSpriteRenderSystem`. This means there is no need for a separate rect-drawing system.
 
+There is still a `Engine::Graphics::draw_rect` for us to use when making debugging tools (e.g. Hitbox visualizer)
+
+#### Things that are not implemented but was in the older version:
+- Getting mouse position in world coordinates
+- Setting anchor points for rotation and scale
+- Drawing with the input position being top Left
+
+#### Things I still need to implement
+- Allow drawing in screen coordinates (For UI elements as they will not move with the camera)
 
 
 ### Resources System
