@@ -54,12 +54,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ECS\System.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ECS\World.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Audio\AudioPlayer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -158,12 +152,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="PerformanceViewer.h">
-      <Filter>Source Files\Engine\ImGuiPanels</Filter>
-    </ClInclude>
-    <ClInclude Include="RotationSystem.h">
-      <Filter>Source Files\ECS\Systems</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Audio\AudioPlayer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -327,6 +315,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Components\UtilityComponents.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Reflection\JsonHelpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLogic\Reflection\ImGuiHelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

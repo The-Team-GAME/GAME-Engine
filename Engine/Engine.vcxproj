@@ -133,6 +133,8 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Engine\Components\UtilityComponents.h" />
     <ClInclude Include="Engine\GUI\ResourceManagerPanel.h" />
     <ClInclude Include="Engine\MonkeyEngine.h" />
+    <ClInclude Include="GameLogic\Reflection\ImGuiHelpers.h" />
+    <ClInclude Include="Engine\Reflection\JsonHelpers.h" />
     <ClInclude Include="Engine\Systems\BasicMovementSystem.h" />
     <ClInclude Include="Engine\GUI\CameraPanel.h" />
     <ClInclude Include="Engine\Systems\RenderSystem.h" />
