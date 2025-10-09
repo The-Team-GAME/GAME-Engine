@@ -74,7 +74,6 @@ void RectPainterState::update()
 void RectPainterState::draw()
 {
   Engine::Graphics::clear_screen({ 0.08f, 0.08f, 0.10f, 1.0f });
-
   // Preview while drawing
   if (dragMode_ == DragMode::Drawing && passedThreshold_) {
     glm::vec2 center, size;
@@ -334,7 +333,7 @@ void RectPainterState::runCollisionPass()
       { c.x, c.y },
       { s.x + 6.0f, s.y + 6.0f },
       0.0f,
-      { 1.0f, 0.0f, 0.0f, 0.5f }
+      { 1.0f, 0.0f, 0.0f, 0.2f }
     );
   }
 }
@@ -371,7 +370,7 @@ void RectPainterState::drawSelectionGizmo()
       { p.x, p.y },
       { hs, hs },
       0.0f,
-      { 1.0f, 1.0f, 0.0f, 0.5f }
+      { 1.0f, 1.0f, 0.0f, 0.9f }
     );
   }
 }
@@ -419,7 +418,7 @@ RectPainterState::ResizeMask RectPainterState::hitHandle(const glm::vec2& p, con
 
 s32 RectPainterState::pickTopmostRect(const glm::vec2& p) const
 {
-  for (s32 i = (s32)rects_.size() - 1; i >= 0; --i) { // topmost = last created
+  for (int i = (int)rects_.size() - 1; i >= 0; --i) { // topmost = last created
     glm::vec2 minP, maxP;
     if (getBounds(rects_[i], minP, maxP) && pointInRect(p, minP, maxP)) return i;
   }
@@ -497,7 +496,7 @@ void RectPainterState::drawImGui()
       Engine::ECS::Entity entity(rects_[selectedIndex_]);
       auto* transform = Engine::ECS::get_component<Components::Transform2D>(entity);
       auto* color = Engine::ECS::get_component<Components::Color>(entity);
-      //auto* col = Engine::ECS::get_component<Components::BasicCollider>(entity);
+      auto* col = Engine::ECS::get_component<Components::BasicCollider>(entity);
 
       if (transform && color) {
         ImGui::DragFloat2("Position (center)", &transform->position.x, 1.0f);
@@ -511,19 +510,21 @@ void RectPainterState::drawImGui()
         transform->scale.y = s.y;
 
         // BasicCollider controls
-        //bool hasBasicCollider = (col != nullptr);
-       /* if (!hasBasicCollider) {
+        bool hasBasicCollider = (col != nullptr);
+        if (!hasBasicCollider) {
           if (ImGui::Button("Add BasicCollider")) {
-            Engine::ECS::add_component<Components::BasicCollider>(id, Components::BasicCollider{ true,false });
-            col = Engine::ECS::get_component<Components::BasicCollider>(id);
+            Engine::ECS::add_component<Components::BasicCollider>(selectedIndex_, Components::BasicCollider{ true,false });
+            col = Engine::ECS::get_component<Components::BasicCollider>(selectedIndex_);
           }
         }
         else {
+          ImGui::Checkbox("Collider Enabled", &col->enabled);
           ImGui::Checkbox("Is Trigger", &col->isTrigger);
-          if (ImGui::Button("Remove BasicCollider")) {
-            col->isTrigger = false;
+          if (ImGui::Button("Remove Collider")) {
+            col->enabled = false; col->isTrigger = false;
           }
-        }*/
+        }
+
 
         ImGui::SameLine();
         if (ImGui::Button("Apply Default Color")) {

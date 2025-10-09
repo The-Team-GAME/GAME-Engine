@@ -9,7 +9,7 @@
 //
 // brief:   Header file for the ImGuistate that handles object creation and deletion.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
@@ -70,11 +70,11 @@ private:
 
   bool getBounds(Engine::ECS::EntityID id, glm::vec2& minP, glm::vec2& maxP) const;
   static bool pointInRect(const glm::vec2& p, const glm::vec2& minP, const glm::vec2& maxP);
-  
+
   static bool aabbOverlap(const glm::vec2& aMin, const glm::vec2& aMax,
     const glm::vec2& bMin, const glm::vec2& bMax);
   struct HitInfo { bool colliding = false; };
-  
+
   ResizeMask hitHandle(const glm::vec2& p, const glm::vec2& minP, const glm::vec2& maxP) const;
   s32 pickTopmostRect(const glm::vec2& p) const;
 
