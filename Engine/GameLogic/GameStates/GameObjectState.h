@@ -84,7 +84,7 @@ public:
 
     // Tint the monkey red
     if (auto* color = lazy_monkey.get_component<Components::Color>()) {
-      color->color = Math::Vec4D(1.0f, 0.5f, 0.5f, 1.0f); // Red tint
+      *color = Math::Vec4D(1.0f, 0.5f, 0.5f, 1.0f); // Red tint
     }
   }
 

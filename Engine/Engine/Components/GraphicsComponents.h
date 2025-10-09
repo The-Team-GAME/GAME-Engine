@@ -206,35 +206,112 @@ namespace Components
   };
 
 
-  struct Color
-  {
-    union
-    {
-      Math::Vec4D color;
+  struct Color : public Math::Vec4D {
 
-      struct RGBA {
-        float r;
-        float g;
-        float b;
-        float a;
-      } rgba;
+    // Reference members for RGBA access
+    f32& r;
+    f32& g;
+    f32& b;
+    f32& a;
 
-    };
-
-    Color() : color(1.0f, 1.0f, 1.0f, 1.0f) {}
-
-    Color(const Math::Vec4D& c) : color(c) {}
-
-    Color(float r_val, float g_val, float b_val, float a_val = 1.0f)
-      : color(r_val, g_val, b_val, a_val) {
+    // Default constructor - creates white color (1, 1, 1, 1)
+    Color(f32 red = 1.0f, f32 green = 1.0f, f32 blue = 1.0f, f32 alpha = 1.0f)
+      : Math::Vec4D(red, green, blue, alpha), r(x), g(y), b(z), a(w) {
     }
+
+    // Copy constructor
+    Color(const Color& other)
+      : Math::Vec4D(other), r(x), g(y), b(z), a(w) {
+    }
+
+    // Copy constructor from Vec4D
+    Color(const Math::Vec4D& v)
+      : Math::Vec4D(v), r(x), g(y), b(z), a(w) {
+    }
+
+    // Copy constructor from glm::vec4
+    Color(const glm::vec4& v)
+      : Math::Vec4D(v), r(x), g(y), b(z), a(w) {
+    }
+
+    // Copy assignment operator
+    Color& operator=(const Color& other) {
+      if (this != &other) {
+        Math::Vec4D::operator=(other);
+      }
+      return *this;
+    }
+
+    // Assignment from Vec4D
+    Color& operator=(const Math::Vec4D& v) {
+      Math::Vec4D::operator=(v);
+      return *this;
+    }
+
+    /* ===================== //
+    // Convenience functions //
+    // ===================== */
+    void set_rgb(f32 red, f32 green, f32 blue) {
+      r = red;
+      g = green;
+      b = blue;
+    }
+
+    void set_rgba(f32 red, f32 green, f32 blue, f32 alpha) {
+      r = red;
+      g = green;
+      b = blue;
+      a = alpha;
+    }
+
+    // Clamp color values to [0, 1] range
+    void clamp() {
+      r = (r < 0.0f) ? 0.0f : (r > 1.0f) ? 1.0f : r;
+      g = (g < 0.0f) ? 0.0f : (g > 1.0f) ? 1.0f : g;
+      b = (b < 0.0f) ? 0.0f : (b > 1.0f) ? 1.0f : b;
+      a = (a < 0.0f) ? 0.0f : (a > 1.0f) ? 1.0f : a;
+    }
+
+    /* ================= //
+    // Common colors     //
+    // ================= */
+    static Color White() { return Color(1.0f, 1.0f, 1.0f, 1.0f); }
+    static Color Black() { return Color(0.0f, 0.0f, 0.0f, 1.0f); }
+    static Color Red() { return Color(1.0f, 0.0f, 0.0f, 1.0f); }
+    static Color Green() { return Color(0.0f, 1.0f, 0.0f, 1.0f); }
+    static Color Blue() { return Color(0.0f, 0.0f, 1.0f, 1.0f); }
+    static Color Yellow() { return Color(1.0f, 1.0f, 0.0f, 1.0f); }
+    static Color Cyan() { return Color(0.0f, 1.0f, 1.0f, 1.0f); }
+    static Color Magenta() { return Color(1.0f, 0.0f, 1.0f, 1.0f); }
+    static Color Clear() { return Color(0.0f, 0.0f, 0.0f, 0.0f); }
+
+
+    /* ================= //
+    // Reflection        //
+    // ================= */
+    struct Adaptor {
+      f32 r;
+      f32 g;
+      f32 b;
+      f32 a;
+
+      Adaptor serialize(const Color& color) const {
+        Adaptor adaptor = { color.r, color.g, color.b, color.a };
+        return adaptor;
+      }
+
+      Color deserialize() const {
+        Color color(r, g, b, a);
+        return color;
+      }
+    };
   };
 
 }
 
-REFLECT(Components::Color, color)
 REFLECT(Components::Transform2D, position, rotation, scale)
 REFLECT(Components::Text, content)
+REFLECT_ADAPTOR(Components::Color, r, g, b, a)
 REFLECT_ADAPTOR(Components::Texture, path)
 REFLECT_ADAPTOR(Components::Font, path, font_size)
 REFLECT_ADAPTOR(Components::TextureAtlas, tex_coords_list, drawIndex)

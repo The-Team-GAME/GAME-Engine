@@ -239,7 +239,7 @@ void RectPainterState::handleMouse()
         auto entity = Engine::ECS::create_entity()
           .add_component<Components::Tag<"RectPainter">>()
           .add_component<Components::Transform2D>(center.x, center.y, 0.0f, size.x, size.y)
-          .add_component<Components::Color>(currentColor_.x, currentColor_.y, currentColor_.z, currentColor_.w)
+          .add_component<Components::Color>(currentColor_)
           .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
           .add_component<Components::BasicCollider>(spawnWithCollider_, false);
         rects_.push_back(entity.get_id());
@@ -277,7 +277,7 @@ void RectPainterState::handleShortcuts()
       auto e = Engine::ECS::create_entity()
         .add_component<Components::Tag<"RectPainter">>()
         .add_component<Components::Transform2D>(translate->position.x + 10.f, translate->position.y + 10.f, 0.0f, translate->scale.x, translate->scale.y)
-        .add_component<Components::Color>(c->rgba.r, c->rgba.g, c->rgba.b, c->rgba.a)
+        .add_component<Components::Color>(*c)
         .add_component<Components::Texture>(Engine::Resources::get_rect_texture());
       if (col) e.add_component<Components::BasicCollider>(col->enabled, col->isTrigger);
       rects_.push_back(e.get_id());
@@ -469,7 +469,7 @@ void RectPainterState::drawImGui()
         auto e = Engine::ECS::create_entity()
           .add_component<Components::Tag<"RectPainter">>()
           .add_component<Components::Transform2D>(p->x + 12.f, p->y + 12.f, 0.0f, s->x, s->y)
-          .add_component<Components::Color>(c->rgba.r, c->rgba.g, c->rgba.b, c->rgba.a)
+          .add_component<Components::Color>(*c)
           .add_component<Components::Texture>(Engine::Resources::get_rect_texture());
         if (col) e.add_component<Components::BasicCollider>(col->enabled, col->isTrigger);
         rects_.push_back(e.get_id());
@@ -504,7 +504,7 @@ void RectPainterState::drawImGui()
       if (transform && color) {
         ImGui::DragFloat2("Position (center)", &transform->position.x, 1.0f);
         ImGui::DragFloat2("Size", &transform->scale.x, 1.0f, minRectSizePx_, 10000.0f);
-        ImGui::ColorEdit4("Color", &color->rgba.r, ImGuiColorEditFlags_AlphaBar);
+        ImGui::ColorEdit4("Color", &color->r, ImGuiColorEditFlags_AlphaBar);
 
         // Keep size invariant even if user drags below min
         glm::vec2 s{ transform->scale.x, transform->scale.y };
@@ -531,10 +531,10 @@ void RectPainterState::drawImGui()
 
         ImGui::SameLine();
         if (ImGui::Button("Apply Default Color")) {
-          color->rgba.r = currentColor_.x;
-          color->rgba.g = currentColor_.y;
-          color->rgba.b = currentColor_.z;
-          color->rgba.a = currentColor_.w;
+          color->r = currentColor_.x;
+          color->g = currentColor_.y;
+          color->b = currentColor_.z;
+          color->a = currentColor_.w;
         }
 
         if (ImGui::Button("Send to Back [")) {

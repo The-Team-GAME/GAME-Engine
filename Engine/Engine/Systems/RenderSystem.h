@@ -23,7 +23,7 @@ namespace Systems
         Math::Vec2D(transform->position.x, transform->position.y),
         Math::Vec2D(transform->scale.x, transform->scale.y),
         transform->rotation,
-        color->color
+        *color
       );
     }
   };
@@ -50,7 +50,7 @@ namespace Systems
           Math::Vec2D(transform->position.x, transform->position.y),
           Math::Vec2D(transform->scale.x, transform->scale.y),
           transform->rotation,
-          color->color
+          *color
         );
       }
     }
@@ -76,7 +76,7 @@ namespace Systems
         text->content,
         Math::Vec2D(transform->position.x, transform->position.y),
         text_scale,
-        color->color
+        *color
       );
     }
   };
