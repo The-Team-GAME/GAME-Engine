@@ -34,6 +34,13 @@ Engine::ECS::create_entity()
 
 There is still a `Engine::Graphics::draw_rect` for us to use when making debugging tools (e.g. Hitbox visualizer)
 
+#### Virtual Resolution
+Fixed virtual resolution system for resolution-independent rendering
+  - Default resolution: 1600x900
+  - All rendering coordinates are in virtual space
+
+**What this means:** 1600x900 will always be the bottom right corner of the window at any window size!! Don't have to worry about buttons shifting anymore
+
 #### Things that are not implemented yet but were in the older version:
 - ❌ Getting mouse position in world coordinates
 - ❌ Setting anchor points for rotation and scale
