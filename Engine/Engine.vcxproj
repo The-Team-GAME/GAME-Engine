@@ -128,6 +128,9 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
   <ItemGroup>
     <ClInclude Include="Engine\Audio\AudioPlayer.h" />
     <ClInclude Include="Engine\Audio\AudioPlayerInternal.h" />
+    <ClInclude Include="Engine\Components\GraphicsComponents.h" />
+    <ClInclude Include="Engine\Components\PhysicsComponents.h" />
+    <ClInclude Include="Engine\Components\UtilityComponents.h" />
     <ClInclude Include="Engine\GUI\ResourceManagerPanel.h" />
     <ClInclude Include="Engine\MonkeyEngine.h" />
     <ClInclude Include="Engine\Systems\BasicMovementSystem.h" />
