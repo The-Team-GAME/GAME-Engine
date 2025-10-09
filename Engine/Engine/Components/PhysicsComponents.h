@@ -3,8 +3,8 @@
 
 namespace Components
 {
+  // Note to MX, feel free to change anything here im just adding this so all the demos work
   struct RigidBody {
-    // Note to MX, feel free to change anything here im just adding this so all the demos work
     bool detect_collisions = true;
     Math::Vec2D linear_velocity = { 0.0f, 0.0f }; // Velocity in units per second
     bool is_kinematic = false; // If true, not affected by physics forces

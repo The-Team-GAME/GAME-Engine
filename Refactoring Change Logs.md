@@ -14,6 +14,9 @@
 - Docking is now enabled
 - Precompiled to improve compile times and reduce solution clutter
   - ImGui files no longer appear when using "Find All in Entire Solution"
+### ECS
+- Now accessed using the `Engine::ECS` namespace
+- More functions refactored to return the Entity instead of EntityID to make using the library more fluent
 
 ### Graphics System
 Required components to create a Rect entity:
