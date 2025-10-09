@@ -3,7 +3,7 @@
     "id": "banana",
     "width": 20,
     "height": 12,
-    "texturePath": "Assets/images/banana.png",
-    "minifyingFilter": 0
+    "texturePath": "images/banana.png",
+    "textureFilter": 0
   }
 }

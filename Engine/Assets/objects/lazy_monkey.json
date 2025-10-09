@@ -3,13 +3,11 @@
     "id": "lazy_monkey",
     "width": 64,
     "height": 64,
-    "spriteSheetPath": "Assets/images/LazyMonkey_Idle_Spritesheet.png",
+    "spriteSheetPath": "images/LazyMonkey_Idle_Spritesheet.png",
     "frameWidth": 64,
     "frameHeight": 64,
     "totalFrames": 5,
     "framesPerSecond": 8.0,
-    "minifyingFilter": 0,
-    "autoPlay": true,
-    "loop": true
+    "textureFilter": 0
   }
 }

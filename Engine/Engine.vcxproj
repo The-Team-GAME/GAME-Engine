@@ -49,15 +49,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\RapidJSON;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\json;$(SolutionDir)Dependencies\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\RapidJSON;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\FMOD\lib;$(SolutionDir)Dependencies\FreeType\objs;$(SolutionDir)Dependencies\GLFW\lib-vc2022;$(SolutionDir)Dependencies\GLEW\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glew32s.lib;glfw3.lib;opengl32.lib;freetype.lib;fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\FMOD\lib;$(SolutionDir)Dependencies\FreeType\objs;$(SolutionDir)Dependencies\GLFW\lib-vc2022;$(SolutionDir)Dependencies\GLEW\lib;$(SolutionDir)Dependencies\ImGui\out-debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;glfw3.lib;opengl32.lib;freetype.lib;fmod_vc.lib;imgui.obj;imgui_demo.obj;imgui_draw.obj;imgui_impl_glfw.obj;imgui_impl_opengl3.obj;imgui_tables.obj;imgui_widgets.obj;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCMT;MSVCRT</IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
@@ -81,8 +81,8 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\FMOD\lib;$(SolutionDir)Dependencies\FreeType\objs;$(SolutionDir)Dependencies\GLFW\lib-vc2022;$(SolutionDir)Dependencies\GLEW\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glew32s.lib;glfw3.lib;opengl32.lib;freetype.lib;fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\FMOD\lib;$(SolutionDir)Dependencies\FreeType\objs;$(SolutionDir)Dependencies\GLFW\lib-vc2022;$(SolutionDir)Dependencies\GLEW\lib;$(SolutionDir)Dependencies\ImGui\out-release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;glfw3.lib;opengl32.lib;freetype.lib;fmod_vc.lib;imgui.obj;imgui_demo.obj;imgui_draw.obj;imgui_impl_glfw.obj;imgui_impl_opengl3.obj;imgui_tables.obj;imgui_widgets.obj;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCMTD;MSVCRTD;LIBCMT</IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
@@ -92,123 +92,105 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\Dependencies\ImGui\backends\imgui_impl_glfw.cpp" />
-    <ClCompile Include="..\Dependencies\ImGui\backends\imgui_impl_opengl3.cpp" />
-    <ClCompile Include="..\Dependencies\ImGui\imgui.cpp" />
-    <ClCompile Include="..\Dependencies\ImGui\imgui_demo.cpp" />
-    <ClCompile Include="..\Dependencies\ImGui\imgui_draw.cpp" />
-    <ClCompile Include="..\Dependencies\ImGui\imgui_tables.cpp" />
-    <ClCompile Include="..\Dependencies\ImGui\imgui_widgets.cpp" />
-    <ClCompile Include="AudioManager.cpp" />
-    <ClCompile Include="BasicState.cpp" />
-    <ClCompile Include="BasicState.h" />
-    <ClCompile Include="Config.cpp" />
-    <ClCompile Include="Core.cpp" />
-    <ClCompile Include="ECS\ComponentManager.cpp" />
-    <ClCompile Include="ECS\Entity.cpp" />
-    <ClCompile Include="ECS\EventManager.cpp" />
-    <ClCompile Include="ECS\System.cpp" />
-    <ClCompile Include="ECS\World.cpp" />
-    <ClCompile Include="FileExplorer.cpp" />
-    <ClCompile Include="Graphics.cpp" />
-    <ClCompile Include="ImGuiManager.cpp" />
-    <ClCompile Include="RectPainterState.cpp" />
-    <ClCompile Include="InputManager.cpp" />
-    <ClCompile Include="LevelLoader.cpp" />
-    <ClCompile Include="Logger.cpp" />
-    <ClCompile Include="ObjectFactory.cpp" />
-    <ClCompile Include="FileHandler.cpp" />
-    <ClCompile Include="Perf.cpp" />
-    <ClCompile Include="Precompiled.cpp" />
-    <ClCompile Include="ResourceManager.cpp" />
-    <ClCompile Include="SpriteDropper.cpp" />
-    <ClCompile Include="Time.cpp" />
-    <ClCompile Include="Timeline.cpp" />
-    <ClCompile Include="Vector2D.cpp" />
-    <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="StateManager.cpp" />
-    <ClCompile Include="Vector3D.cpp" />
-    <ClCompile Include="Vector4D.cpp" />
-    <ClCompile Include="WindowManager.cpp" />
-    <ClCompile Include="WinMain.cpp" />
+    <ClCompile Include="Engine\Audio\AudioPlayer.cpp" />
+    <ClCompile Include="Engine\Audio\AudioPlayerInternal.cpp" />
+    <ClCompile Include="GameLogic\GameStates\BasicState.cpp" />
+    <ClCompile Include="GameLogic\GameStates\BasicState.h" />
+    <ClCompile Include="GameLogic\Config.cpp" />
+    <ClCompile Include="Engine\Core.cpp" />
+    <ClCompile Include="Engine\ECS\ComponentManager.cpp" />
+    <ClCompile Include="Engine\ECS\Entity.cpp" />
+    <ClCompile Include="Engine\ECS\EventManager.cpp" />
+    <ClCompile Include="Engine\ECS\System.cpp" />
+    <ClCompile Include="Engine\ECS\World.cpp" />
+    <ClCompile Include="Engine\Graphics\Renderer.cpp" />
+    <ClCompile Include="Engine\Graphics\RendererInternal.cpp" />
+    <ClCompile Include="Engine\ObjectFactory.cpp" />
+    <ClCompile Include="Engine\Resources.cpp" />
+    <ClCompile Include="Engine\Graphics\Shader.cpp" />
+    <ClCompile Include="Engine\ImGuiManager.cpp" />
+    <ClCompile Include="Engine\InputManager.cpp" />
+    <ClCompile Include="Engine\Logger.cpp" />
+    <ClCompile Include="Engine\FileHandler.cpp" />
+    <ClCompile Include="Engine\Perf.cpp" />
+    <ClCompile Include="Engine\Precompiled.cpp" />
+    <ClCompile Include="Engine\Time.cpp" />
+    <ClCompile Include="Engine\GUI\Timeline.cpp" />
+    <ClCompile Include="Engine\Math\Vector2D.cpp" />
+    <ClCompile Include="Engine\StateManager.cpp" />
+    <ClCompile Include="Engine\Math\Vector3D.cpp" />
+    <ClCompile Include="Engine\Math\Vector4D.cpp" />
+    <ClCompile Include="Engine\WindowManager.cpp" />
+    <ClCompile Include="GameLogic\GameStates\RectPainterState.cpp" />
+    <ClCompile Include="GameLogic\GameStates\ShowcaseState.cpp" />
+    <ClCompile Include="GameLogic\WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AudioManager.h" />
-    <ClInclude Include="BackgroundSystem.h" />
-    <ClInclude Include="BasicComponents.h" />
-    <ClInclude Include="BasicMovementSystem.h" />
-    <ClInclude Include="CollisionSystem.h" />
-    <ClInclude Include="BasicEvents.h" />
-    <ClInclude Include="Config.h" />
-    <ClInclude Include="CameraPanel.h" />
-    <ClInclude Include="Core.h" />
-    <ClInclude Include="DamageSystem.h" />
-    <ClInclude Include="DevECSMessageState.h" />
-    <ClInclude Include="DevManySpritesState.h" />
-    <ClInclude Include="DevSpriteAnimationState.h" />
-    <ClInclude Include="FileExplorer.h" />
-    <ClInclude Include="GameObjectState.h" />
-    <ClInclude Include="PhysicsTestState.h" />
-    <ClInclude Include="ECS\ComponentArray.h" />
-    <ClInclude Include="ECS\ComponentManager.h" />
-    <ClInclude Include="ECS\ECS.h" />
-    <ClInclude Include="ECS\Entity.h" />
-    <ClInclude Include="ECS\EventManager.h" />
-    <ClInclude Include="ECS\System.h" />
-    <ClInclude Include="ECS\Types.h" />
-    <ClInclude Include="ECS\World.h" />
-    <ClInclude Include="EntityEditorPanel.h" />
-    <ClInclude Include="Graphics.h" />
-    <ClInclude Include="GravitySystem.h" />
-    <ClInclude Include="LevelLoaderTestState.h" />
-    <ClInclude Include="PhysicsSystem.h" />
-    <ClInclude Include="PlayerControllerSystem.h" />
-    <ClInclude Include="HealthSystem.h" />
-    <ClInclude Include="ImGuiManager.h" />
-    <ClInclude Include="RectPainterState.h" />
-    <ClInclude Include="InputManager.h" />
-    <ClInclude Include="Level.h" />
-    <ClInclude Include="LevelLoader.h" />
-    <ClInclude Include="Logger.h" />
-    <ClInclude Include="MovementSystem.h" />
-    <ClInclude Include="ObjectFactory.h" />
-    <ClInclude Include="Perf.h" />
-    <ClInclude Include="PerformanceViewer.h" />
-    <ClInclude Include="Precompiled.h" />
-    <ClInclude Include="RenderSystem.h" />
-    <ClInclude Include="ResourceManager.h" />
-    <ClInclude Include="ResourceManagerPanel.h" />
-    <ClInclude Include="RotationSystem.h" />
-    <ClInclude Include="Rubric2500ParticlesState.h" />
-    <ClInclude Include="FileHandler.h" />
-    <ClInclude Include="ShowcaseState.h" />
-    <ClInclude Include="SimplePlayerMovementSystem.h" />
-    <ClInclude Include="SpriteDropper.h" />
-    <ClInclude Include="Time.h" />
-    <ClInclude Include="Timeline.h" />
-    <ClInclude Include="Vector2D.h" />
-    <ClInclude Include="Shader.h" />
-    <ClInclude Include="SpriteState.h" />
-    <ClInclude Include="StateChooser.h" />
-    <ClInclude Include="StateManager.h" />
-    <ClInclude Include="TypeDef.h" />
-    <ClInclude Include="Vector3D.h" />
-    <ClInclude Include="Vector4D.h" />
-    <ClInclude Include="WindowManager.h" />
+    <ClInclude Include="Engine\Audio\AudioPlayer.h" />
+    <ClInclude Include="Engine\Audio\AudioPlayerInternal.h" />
+    <ClInclude Include="Engine\Components\GraphicsComponents.h" />
+    <ClInclude Include="Engine\Components\PhysicsComponents.h" />
+    <ClInclude Include="Engine\Components\UtilityComponents.h" />
+    <ClInclude Include="Engine\GUI\ResourceManagerPanel.h" />
+    <ClInclude Include="Engine\MonkeyEngine.h" />
+    <ClInclude Include="Engine\Systems\Systems.h" />
+    <ClInclude Include="GameLogic\Reflection\ImGuiHelpers.h" />
+    <ClInclude Include="Engine\Reflection\JsonHelpers.h" />
+    <ClInclude Include="Engine\GUI\CameraPanel.h" />
+    <ClInclude Include="Engine\Systems\GraphicsSystem.h" />
+    <ClInclude Include="Engine\WindowEvents.h" />
+    <ClInclude Include="GameLogic\Components\Components.h" />
+    <ClInclude Include="GameLogic\Config.h" />
+    <ClInclude Include="Engine\Core.h" />
+    <ClInclude Include="GameLogic\GameStates\DevSpriteAnimationState.h" />
+    <ClInclude Include="Engine\Components\Components.h" />
+    <ClInclude Include="GameLogic\GameStates\GameObjectState.h" />
+    <ClInclude Include="Engine\ObjectFactory.h" />
+    <ClInclude Include="Engine\Reflection\Helpers.h" />
+    <ClInclude Include="Engine\Reflection\Reflect.h" />
+    <ClInclude Include="Engine\Resources.h" />
+    <ClInclude Include="Engine\Graphics\Shader.h" />
+    <ClInclude Include="Engine\Graphics\RendererInternal.h" />
+    <ClInclude Include="Engine\ECS\ComponentArray.h" />
+    <ClInclude Include="Engine\ECS\ComponentManager.h" />
+    <ClInclude Include="Engine\ECS\ECS.h" />
+    <ClInclude Include="Engine\ECS\Entity.h" />
+    <ClInclude Include="Engine\ECS\EventManager.h" />
+    <ClInclude Include="Engine\ECS\System.h" />
+    <ClInclude Include="Engine\ECS\Types.h" />
+    <ClInclude Include="Engine\ECS\World.h" />
+    <ClInclude Include="Engine\GUI\EntityEditorPanel.h" />
+    <ClInclude Include="Engine\ImGuiManager.h" />
+    <ClInclude Include="Engine\InputManager.h" />
+    <ClInclude Include="Engine\Logger.h" />
+    <ClInclude Include="Engine\Perf.h" />
+    <ClInclude Include="Engine\GUI\PerformanceViewer.h" />
+    <ClInclude Include="Engine\Precompiled.h" />
+    <ClInclude Include="Engine\Graphics\Renderer.h" />
+    <ClInclude Include="Engine\Systems\PhysicsSystem.h" />
+    <ClInclude Include="GameLogic\GameStates\RectPainterState.h" />
+    <ClInclude Include="GameLogic\GameStates\Rubric2500ParticlesState.h" />
+    <ClInclude Include="Engine\FileHandler.h" />
+    <ClInclude Include="GameLogic\GameStates\ShowcaseState.h" />
+    <ClInclude Include="Engine\Time.h" />
+    <ClInclude Include="Engine\GUI\Timeline.h" />
+    <ClInclude Include="Engine\Math\Vector2D.h" />
+    <ClInclude Include="GameLogic\GUI\StateChooser.h" />
+    <ClInclude Include="Engine\StateManager.h" />
+    <ClInclude Include="Engine\TypeDef.h" />
+    <ClInclude Include="Engine\Math\Vector3D.h" />
+    <ClInclude Include="Engine\Math\Vector4D.h" />
+    <ClInclude Include="Engine\WindowManager.h" />
+    <ClInclude Include="GameLogic\Systems\HealthSystem.h" />
+    <ClInclude Include="GameLogic\Systems\PlayerControllerSystem.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\objects\banana.json" />
-    <None Include="Assets\objects\enemy.json" />
-    <None Include="Assets\shaders\basic.frag" />
-    <None Include="Assets\shaders\basic.vert" />
-    <None Include="Assets\shaders\texture.frag" />
-    <None Include="Assets\shaders\texture.vert" />
-    <None Include="ECS\ComponentArray.inl" />
-    <None Include="ECS\ComponentManager.inl" />
-    <None Include="ECS\Entity.inl" />
-    <None Include="ECS\EventManager.inl" />
-    <None Include="ECS\System.inl" />
-    <None Include="ECS\World.inl" />
+    <None Include="Engine\ECS\ComponentArray.inl" />
+    <None Include="Engine\ECS\ComponentManager.inl" />
+    <None Include="Engine\ECS\Entity.inl" />
+    <None Include="Engine\ECS\EventManager.inl" />
+    <None Include="Engine\ECS\System.inl" />
+    <None Include="Engine\ECS\World.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
