@@ -196,18 +196,18 @@ inline void EntityEditorPanel()
         {
           auto* color = entity.get_component<Components::Color>();
           f32 colorArray[4] = {
-            color->color.x / 255.0f,
-            color->color.y / 255.0f,
-            color->color.z / 255.0f,
-            color->color.w / 255.0f
+            color->color.x,
+            color->color.y,
+            color->color.z,
+            color->color.w
           };
 
           if (ImGui::ColorEdit4("RGBA", colorArray))
           {
-            color->color.x = colorArray[0] * 255.0f;
-            color->color.y = colorArray[1] * 255.0f;
-            color->color.z = colorArray[2] * 255.0f;
-            color->color.w = colorArray[3] * 255.0f;
+            color->color.x = colorArray[0];
+            color->color.y = colorArray[1];
+            color->color.z = colorArray[2];
+            color->color.w = colorArray[3];
           }
 
           if (ImGui::Button("Remove##color"))
