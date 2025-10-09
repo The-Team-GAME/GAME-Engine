@@ -45,10 +45,8 @@ Engine::ECS::create_entity()
 ```
 Don't have to manually include one by one anymore
 
-> ⚠️ **Warning**: Do NOT use this include inside `Engine/` directory as it will cause circular dependency issues
+> ⚠️ **Warning**: Do NOT use this include inside `Engine/` directory as it may cause circular dependency issues
 
 
-**Side note:** I will check with prof if we can include our engine code in the  project additional path so we can just do 
-```
-#include <MonkeyEngine.h>
-```
+<sub> **Side note:** I will check with Prof if we can include our engine code in the project additional path so we can just do `#include <MonkeyEngine.h>`</sub>
+ 
