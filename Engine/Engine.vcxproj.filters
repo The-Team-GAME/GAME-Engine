@@ -13,45 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\Engine">
-      <UniqueIdentifier>{2aa33f24-9104-46e4-a0f4-6ca527a19a31}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Main">
-      <UniqueIdentifier>{385697f6-5874-4478-84bb-4bcd65262c76}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Shaders">
-      <UniqueIdentifier>{dca7a92a-4cb4-4b9d-8342-a5ab4ad1b884}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\GameStates">
-      <UniqueIdentifier>{05409f99-6b97-4466-bb82-3c53ddba7d13}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Dependencies">
-      <UniqueIdentifier>{d0a0f96e-ce41-427d-b7d8-994c198d9d15}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Dependencies\ImGui">
-      <UniqueIdentifier>{92ca82bf-e755-413f-bf44-663e6fdc2bb1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Engine\ImGuiPanels">
-      <UniqueIdentifier>{4b4c6b24-6f4c-4f29-807d-b702c77f6dec}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\ECS">
-      <UniqueIdentifier>{44f5bfe5-51ab-4ae6-85b7-5cad4f898c7d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\ECS\Backend">
-      <UniqueIdentifier>{f0b782ed-0693-46e1-89b0-d2acc6882697}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\ECS\Components">
-      <UniqueIdentifier>{bce9375b-1c70-4222-9fda-82cbc75a7fd5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\ECS\Systems">
-      <UniqueIdentifier>{9da84014-8217-49db-a30d-3286f6078382}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Math">
-      <UniqueIdentifier>{fb55182b-ff4d-48c7-b71a-e9567ed04d09}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\GameObjects">
-      <UniqueIdentifier>{633d352a-9345-4f2a-9ac0-8bf737b42176}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Audio\AudioPlayer.cpp">
