@@ -17,7 +17,6 @@
 
 #include "Types.h"
 #include "Entity.h"
-#include <unordered_map>
 #include <memory>
 #include <string>
 #include <functional>
@@ -28,31 +27,19 @@ namespace Engine {
     /* ====================================== //
     // Prefab - Reusable entity template      //
     // ====================================== */
-    class Prefab {
-    private:
+    struct Prefab {
       std::string name;
       std::function<void(Entity&)> setup_function;
 
-    public:
+      Prefab() = default;
       Prefab(const std::string& name, std::function<void(Entity&)> setup);
-
-      Entity instantiate() const;
-      const std::string& get_name() const;
     };
 
     /* ====================================== //
-    // Prefab Manager - Registry for prefabs  //
+    // Prefab functions                       //
     // ====================================== */
-    namespace PrefabManager {
-      void register_prefab(const std::string& name, std::function<void(Entity&)> setup);
-      Entity instantiate_prefab(const std::string& name);
-      bool has_prefab(const std::string& name);
-      void clear_prefabs();
-      
-      namespace Internal {
-        extern std::unordered_map<std::string, std::unique_ptr<Prefab>> prefabs;
-      }
-    }
+    Prefab create_prefab(const std::string& name, std::function<void(Entity&)> setup);
+    Entity instantiate_prefab(const Prefab& prefab);
 
   } // namespace ECS
 } // namespace Engine

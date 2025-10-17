@@ -49,7 +49,7 @@ void ShowcaseState::init() {
     .add_component<Components::Animation>(5, 0.15f);
 
   // Create banana prefab
-  Engine::ECS::PrefabManager::register_prefab("Banana", [this](Engine::ECS::Entity& entity) {
+  auto banana_prefabs = Engine::ECS::create_prefab("Banana", [this](Engine::ECS::Entity& entity) {
     entity.add_component<Components::Tag<"ShowcaseState">>()
       .add_component<Components::Transform2D>(1200.0f, 675.0f, 0.0f, 20.0f * 3.0f, 12.0f * 3.0f)
       .add_component<Components::Texture>(banana_texture)
@@ -62,7 +62,7 @@ void ShowcaseState::init() {
     });
 
   // Create banana using prefab
-  banana = Engine::ECS::PrefabManager::instantiate_prefab("Banana");
+  banana = Engine::ECS::instantiate_prefab(banana_prefabs);
 
   // Create player with idle animation
   player = Engine::ECS::create_entity()
