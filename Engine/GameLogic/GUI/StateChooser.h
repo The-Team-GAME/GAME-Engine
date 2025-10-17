@@ -17,8 +17,6 @@
 #include "imgui.h"
 #include "../../Engine/MonkeyEngine.h"
 #include "../GameStates/BasicState.h"
-//#include "PhysicsTestState.h"
-#include "../GameStates/GameObjectState.h"
 #include "../GameStates/Rubric2500ParticlesState.h"
 #include "../GameStates/RectPainterState.h"
 #include "../GameStates/DevSpriteAnimationState.h"
@@ -62,10 +60,6 @@ inline void StateChooserPanel()
   if (ImGui::Button("BasicState"))
   {
     Engine::StateManager::change_state(BasicState::get());
-  }
-  if (ImGui::Button("GameObjectState"))
-  {
-    Engine::StateManager::change_state(GameObjectState::get());
   }
   if (ImGui::Button("DevSpriteAnimationState"))
   {

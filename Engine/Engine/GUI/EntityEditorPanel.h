@@ -47,13 +47,6 @@ inline void EntityEditorPanel()
       bool isSelected = (selected_entity_id == static_cast<int>(entity.get_id()));
       std::string label = "Entity " + std::to_string(entity.get_id());
 
-      // Show ObjectId if available
-      if (entity.has_component<Components::ObjectId>())
-      {
-        auto* objId = entity.get_component<Components::ObjectId>();
-        label += " (" + std::string(*objId) + ")";
-      }
-
       if (ImGui::Selectable(label.c_str(), isSelected))
       {
         selected_entity_id = static_cast<int>(entity.get_id());
@@ -119,42 +112,13 @@ inline void EntityEditorPanel()
           entity.add_component<Components::Text>("Sample Text");
       }
 
-      ImGui::SameLine();
-
-      if (ImGui::Button("Add ObjectId"))
-      {
-        if (!entity.has_component<Components::ObjectId>())
-          entity.add_component<Components::ObjectId>("unnamed");
-      }
     }
 
     ImGui::Separator();
 
     // Edit Components Section
     if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
-    {
-      // ObjectId Component
-      if (entity.has_component<Components::ObjectId>())
-      {
-        if (ImGui::TreeNode("ObjectId"))
-        {
-          auto* objId = entity.get_component<Components::ObjectId>();
-          char buffer[256];
-          strncpy_s(buffer, objId->c_str(), sizeof(buffer) - 1);
-          buffer[sizeof(buffer) - 1] = '\0';
-
-          if (ImGui::InputText("ID", buffer, sizeof(buffer)))
-          {
-            *objId = Components::ObjectId(buffer);
-          }
-
-          if (ImGui::Button("Remove##objectid"))
-            entity.remove_component<Components::ObjectId>();
-
-          ImGui::TreePop();
-        }
-      }
-
+    { 
       // Transform2D Component
       if (entity.has_component<Components::Transform2D>())
       {
