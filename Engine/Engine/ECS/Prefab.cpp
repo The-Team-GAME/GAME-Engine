@@ -18,12 +18,12 @@
 namespace Engine {
   namespace ECS {
 
-    Prefab::Prefab(const std::string& name, std::function<void(Entity&)> setup)
-      : name(name), setup_function(std::move(setup)) {
+    Prefab::Prefab(std::function<void(Entity&)> setup)
+      : setup_function(std::move(setup)) {
     }
 
-    Prefab create_prefab(const std::string& name, std::function<void(Entity&)> setup) {
-      return Prefab(name, std::move(setup));
+    Prefab create_prefab(std::function<void(Entity&)> setup) {
+      return Prefab(std::move(setup));
     }
 
     Entity instantiate_prefab(const Prefab& prefab) {
