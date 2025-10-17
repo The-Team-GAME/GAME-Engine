@@ -102,10 +102,20 @@ namespace Engine {
         return Prefab();
       }
 
+      // Copy the JSON document so it persists beyond this function's scope
+      auto doc_copy = std::make_shared<rapidjson::Document>();
+      doc_copy->CopyFrom(doc, doc_copy->GetAllocator());
+
       // Create a lambda that will setup the entity with the deserialized components
-      auto setup_function = [components_data = doc["components"].GetArray()](Entity& entity) {
+      auto setup_function = [doc_copy](Entity& entity) {
+        if (!doc_copy->HasMember("components") || !(*doc_copy)["components"].IsArray()) {
+          return;
+        }
+
+        const auto& components_array = (*doc_copy)["components"].GetArray();
+
         // Iterate through each component in the JSON
-        for (const auto& component_entry : components_data) {
+        for (const auto& component_entry : components_array) {
           if (!component_entry.IsObject() || !component_entry.HasMember("type") || !component_entry.HasMember("data")) {
             continue;
           }
@@ -130,6 +140,5 @@ namespace Engine {
 
       return Prefab(setup_function);
     }
-
   } // namespace ECS
 } // namespace Engine

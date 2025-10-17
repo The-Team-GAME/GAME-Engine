@@ -64,6 +64,15 @@ void Engine::Resources::set_resource_path(const std::string& path)
   Log::info("Resource path set to: " + resource_path);
 }
 
+std::string Engine::Resources::get_relative_path(const std::string& full_path)
+{
+  if (full_path.find(resource_path) == 0)
+  {
+    return full_path.substr(resource_path.length());
+  }
+  return full_path;
+}
+
 Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& filepath)
 {
   // Construct full path

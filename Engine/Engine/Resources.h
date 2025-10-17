@@ -37,6 +37,8 @@ namespace Engine {
     // Set the base path for resource loading
     void set_resource_path(const std::string& path);
 
+    std::string get_relative_path(const std::string& full_path);
+
     Engine::Graphics::Texture load_texture(const std::string& filepath);
     Engine::Graphics::Font load_font(const std::string& filepath, u32 size);
 

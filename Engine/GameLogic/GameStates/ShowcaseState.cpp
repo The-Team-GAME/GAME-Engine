@@ -65,6 +65,9 @@ void ShowcaseState::init() {
   // banana = Engine::ECS::instantiate_prefab(banana_prefabs);
 
   std::string banana_json = Engine::ECS::serialize_prefab_to_json(banana_prefabs);
+
+  std::cout << banana_json << "\n";
+
   auto new_banana_prefab = Engine::ECS::deserialize_prefab_from_json(banana_json);
   banana = Engine::ECS::instantiate_prefab(new_banana_prefab);
 
