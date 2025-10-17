@@ -23,30 +23,30 @@
 namespace Engine {
   namespace ECS {
 
-    Prefab::Prefab(std::function<void(Entity&)> setup)
+    PrefabData::PrefabData(std::function<void(Entity&)> setup)
       : setup_function(std::move(setup)) {
     }
 
     Prefab create_prefab(std::function<void(Entity&)> setup) {
-      return Prefab(std::move(setup));
+      return std::make_shared<PrefabData>(std::move(setup));
     }
 
     Entity instantiate_prefab(const Prefab& prefab) {
       Entity entity = create_entity();
-      if (prefab.setup_function) {
-        prefab.setup_function(entity);
+      if (prefab && prefab->setup_function) {
+        prefab->setup_function(entity);
       }
       return entity;
     }
 
     std::string serialize_prefab_to_json(const Prefab& prefab) {
-      if (!prefab.setup_function) {
+      if (!prefab || !prefab->setup_function) {
         return "{}";
       }
 
       // Create a temporary entity and apply the prefab setup
       Entity temp_entity = create_entity();
-      prefab.setup_function(temp_entity);
+      prefab->setup_function(temp_entity);
 
       rapidjson::Document doc;
       doc.SetObject();
@@ -95,11 +95,11 @@ namespace Engine {
       doc.Parse(json_str.c_str());
 
       if (doc.HasParseError() || !doc.IsObject()) {
-        return Prefab();
+        return nullptr;
       }
 
       if (!doc.HasMember("components") || !doc["components"].IsArray()) {
-        return Prefab();
+        return nullptr;
       }
 
       // Parse and store component data once
@@ -153,7 +153,7 @@ namespace Engine {
         Internal::entity_component_changed(entity.get_id());
         };
 
-      return Prefab(setup_function);
+      return std::make_shared<PrefabData>(setup_function);
     }
   } // namespace ECS
 } // namespace Engine

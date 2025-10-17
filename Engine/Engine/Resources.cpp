@@ -10,7 +10,7 @@
 std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> Engine::Resources::texture_cache;
 std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::FontData>> Engine::Resources::font_cache;
 std::unordered_map<std::string, std::weak_ptr<Engine::Audio::SoundData>> Engine::Resources::sound_cache;
-std::unordered_map<std::string, std::weak_ptr<Engine::ECS::Prefab>> Engine::Resources::prefab_cache;
+std::unordered_map<std::string, std::weak_ptr<Engine::ECS::PrefabData>> Engine::Resources::prefab_cache;
 
 Engine::Graphics::Texture Engine::Resources::unit_rect;
 std::string Engine::Resources::resource_path = "";
@@ -232,7 +232,7 @@ Engine::Graphics::Texture Engine::Resources::get_rect_texture()
   return unit_rect;
 }
 
-std::shared_ptr<Engine::ECS::Prefab> Engine::Resources::load_prefab(const std::string& filepath)
+Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath)
 {
   // Construct full path
   std::string full_path = resource_path + filepath;
@@ -270,18 +270,17 @@ std::shared_ptr<Engine::ECS::Prefab> Engine::Resources::load_prefab(const std::s
   // Deserialize prefab
   Engine::ECS::Prefab prefab = Engine::ECS::deserialize_prefab_from_json(json_content);
 
-  if (!prefab.setup_function)
+  if (!prefab || !prefab->setup_function)
   {
     Log::warning("Failed to deserialize prefab: " + full_path);
     return nullptr;
   }
 
   // Cache the prefab
-  auto prefab_ptr = std::make_shared<Engine::ECS::Prefab>(std::move(prefab));
-  prefab_cache[full_path] = prefab_ptr;
+  prefab_cache[full_path] = prefab;
   Log::info("Prefab loaded: " + full_path);
 
-  return prefab_ptr;
+  return prefab;
 }
 
 bool Engine::Resources::save_prefab(const std::string& filepath, const Engine::ECS::Prefab& prefab)
@@ -312,8 +311,7 @@ bool Engine::Resources::save_prefab(const std::string& filepath, const Engine::E
   Log::info("Prefab saved: " + full_path);
 
   // Update cache
-  auto prefab_ptr = std::make_shared<Engine::ECS::Prefab>(prefab);
-  prefab_cache[full_path] = prefab_ptr;
+  prefab_cache[full_path] = prefab;
 
   return true;
 }

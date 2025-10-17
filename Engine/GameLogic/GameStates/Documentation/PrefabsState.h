@@ -31,7 +31,7 @@ public:
 
     auto loaded_banana_prefab = Engine::Resources::load_prefab("prefabs/banana_prefab.json");
 
-    Engine::ECS::instantiate_prefab(*loaded_banana_prefab).add_component<Components::Tag<"PrefabsState">>();
+    Engine::ECS::instantiate_prefab(loaded_banana_prefab).add_component<Components::Tag<"PrefabsState">>();
 
   };
 

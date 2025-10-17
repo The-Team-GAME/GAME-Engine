@@ -13,7 +13,7 @@ namespace Engine {
     extern std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> texture_cache;
     extern std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::FontData>> font_cache;
     extern std::unordered_map<std::string, std::weak_ptr<Engine::Audio::SoundData>> sound_cache;
-    extern std::unordered_map<std::string, std::weak_ptr<Engine::ECS::Prefab>> prefab_cache;
+    extern std::unordered_map<std::string, std::weak_ptr<Engine::ECS::PrefabData>> prefab_cache;
 
     struct ResourceStats {
       size_t texture_count;
@@ -55,7 +55,7 @@ namespace Engine {
     Engine::Graphics::Texture get_rect_texture();
 
     // Prefab loading and saving
-    std::shared_ptr<Engine::ECS::Prefab> load_prefab(const std::string& filepath);
+    Engine::ECS::Prefab load_prefab(const std::string& filepath);
     bool save_prefab(const std::string& filepath, const Engine::ECS::Prefab& prefab);
 
     //optimization: clear unused resources from cache

@@ -26,14 +26,16 @@
 namespace Engine {
   namespace ECS {
     /* ====================================== //
-    // Prefab - Reusable entity template      //
+    // PrefabData - Reusable entity template  //
     // ====================================== */
-    struct Prefab {
+    struct PrefabData {
       std::function<void(Entity&)> setup_function;
 
-      Prefab() = default;
-      Prefab(std::function<void(Entity&)> setup);
+      PrefabData() = default;
+      PrefabData(std::function<void(Entity&)> setup);
     };
+
+    using Prefab = std::shared_ptr<PrefabData>;
 
     /* ====================================== //
     // Prefab functions                       //
