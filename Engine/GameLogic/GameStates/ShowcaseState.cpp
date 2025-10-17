@@ -69,7 +69,7 @@ void ShowcaseState::init() {
   std::cout << banana_json << "\n";
 
   auto new_banana_prefab = Engine::ECS::deserialize_prefab_from_json(banana_json);
-  banana = Engine::ECS::instantiate_prefab(new_banana_prefab);
+  banana = Engine::ECS::instantiate_prefab(new_banana_prefab).add_component<Components::Tag<"ShowcaseState">>();
 
   // Create player with idle animation
   player = Engine::ECS::create_entity()

@@ -5,6 +5,7 @@
 #include <memory>
 #include "Graphics/Renderer.h"
 #include "Audio/AudioPlayer.h"
+#include "ECS/Prefab.h"
 
 namespace Engine {
   namespace Resources {
@@ -12,6 +13,7 @@ namespace Engine {
     extern std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> texture_cache;
     extern std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::FontData>> font_cache;
     extern std::unordered_map<std::string, std::weak_ptr<Engine::Audio::SoundData>> sound_cache;
+    extern std::unordered_map<std::string, std::weak_ptr<Engine::ECS::Prefab>> prefab_cache;
 
     struct ResourceStats {
       size_t texture_count;
@@ -20,6 +22,8 @@ namespace Engine {
       size_t font_alive;
       size_t sound_count;
       size_t sound_alive;
+      size_t prefab_count;
+      size_t prefab_alive;
     };
 
     // TODO: unit_rect does not need reference counting, since it's always in memory until we exit
@@ -49,6 +53,10 @@ namespace Engine {
     Engine::Audio::Sound load_music(const std::string& filepath);
 
     Engine::Graphics::Texture get_rect_texture();
+
+    // Prefab loading and saving
+    std::shared_ptr<Engine::ECS::Prefab> load_prefab(const std::string& filepath);
+    bool save_prefab(const std::string& filepath, const Engine::ECS::Prefab& prefab);
 
     //optimization: clear unused resources from cache
     void clear_unused_resources();

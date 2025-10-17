@@ -21,6 +21,7 @@
 #include "../GameStates/RectPainterState.h"
 #include "../GameStates/DevSpriteAnimationState.h"
 #include "../GameStates/ShowcaseState.h"
+#include "../GameStates/Documentation/PrefabsState.h"
 
 /*=================================================================================
 Function Brief:
@@ -51,12 +52,6 @@ inline void StateChooserPanel()
   {
     Engine::StateManager::change_state(Rubric2500ParticlesState::get());
   }
-
-  //if (ImGui::Button("PhysicsTestState"))
-  //{
-  //  Engine::StateManager::change_state(PhysicsTestState::get());
-  //}
-
   if (ImGui::Button("BasicState"))
   {
     Engine::StateManager::change_state(BasicState::get());
@@ -64,6 +59,10 @@ inline void StateChooserPanel()
   if (ImGui::Button("DevSpriteAnimationState"))
   {
     Engine::StateManager::change_state(DevSpriteAnimationState::get());
+  }
+  if (ImGui::Button("PrefabsState"))
+  {
+    Engine::StateManager::change_state(PrefabsState::get());
   }
 
 
