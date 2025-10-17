@@ -35,6 +35,7 @@ namespace Engine {
       virtual bool is_reflectable() const = 0;
       virtual std::string get_type_name() const = 0;
       virtual void serialize_component(EntityID entity, rapidjson::Value& json_val, rapidjson::Document::AllocatorType& allocator) const = 0;
+      virtual bool deserialize_and_add_component(EntityID entity, const rapidjson::Value& json_val) = 0;
     };
 
     /* ============================= //
@@ -65,6 +66,8 @@ namespace Engine {
       std::string get_type_name() const override;
 
       void serialize_component(EntityID entity, rapidjson::Value& json_val, rapidjson::Document::AllocatorType& allocator) const override;
+
+      bool deserialize_and_add_component(EntityID entity, const rapidjson::Value& json_val) override;
 
       auto begin();
       auto end();

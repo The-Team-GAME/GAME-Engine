@@ -41,6 +41,7 @@ namespace Engine {
     Prefab create_prefab(std::function<void(Entity&)> setup);
     Entity instantiate_prefab(const Prefab& prefab);
     std::string serialize_prefab_to_json(const Prefab& prefab);
+    Prefab deserialize_prefab_from_json(const std::string& json_str);
 
   } // namespace ECS
 } // namespace Engine

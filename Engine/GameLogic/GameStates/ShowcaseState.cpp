@@ -62,9 +62,11 @@ void ShowcaseState::init() {
     });
 
   // Create banana using prefab
-  banana = Engine::ECS::instantiate_prefab(banana_prefabs);
+  // banana = Engine::ECS::instantiate_prefab(banana_prefabs);
 
-  std::cout << Engine::ECS::serialize_prefab_to_json(banana_prefabs);
+  std::string banana_json = Engine::ECS::serialize_prefab_to_json(banana_prefabs);
+  //auto new_banana_prefab = Engine::ECS::deserialize_prefab_from_json(banana_json);
+  // banana = Engine::ECS::instantiate_prefab(new_banana_prefab);
 
   // Create player with idle animation
   player = Engine::ECS::create_entity()

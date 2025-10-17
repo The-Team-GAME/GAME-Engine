@@ -90,5 +90,46 @@ namespace Engine {
       return buffer.GetString();
     }
 
+    Prefab deserialize_prefab_from_json(const std::string& json_str) {
+      rapidjson::Document doc;
+      doc.Parse(json_str.c_str());
+
+      if (doc.HasParseError() || !doc.IsObject()) {
+        return Prefab();
+      }
+
+      if (!doc.HasMember("components") || !doc["components"].IsArray()) {
+        return Prefab();
+      }
+
+      // Create a lambda that will setup the entity with the deserialized components
+      auto setup_function = [components_data = doc["components"].GetArray()](Entity& entity) {
+        // Iterate through each component in the JSON
+        for (const auto& component_entry : components_data) {
+          if (!component_entry.IsObject() || !component_entry.HasMember("type") || !component_entry.HasMember("data")) {
+            continue;
+          }
+
+          std::string type_name = component_entry["type"].GetString();
+          const auto& component_data = component_entry["data"];
+
+          // Find the component array by type name
+          for (const auto& [type_id, component_array] : Internal::component_arrays) {
+            if (component_array->get_type_name() == type_name && component_array->is_reflectable()) {
+              // Deserialize and add the component
+              component_array->deserialize_and_add_component(entity.get_id(), component_data);
+              Internal::entity_signatures[entity.get_id()].set(type_id);
+              break;
+            }
+          }
+        }
+
+        // Notify systems about the component changes
+        Internal::entity_component_changed(entity.get_id());
+      };
+
+      return Prefab(setup_function);
+    }
+
   } // namespace ECS
 } // namespace Engine
