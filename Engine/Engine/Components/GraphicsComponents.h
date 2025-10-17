@@ -18,20 +18,19 @@ namespace Components
     Texture() : texture_handle(nullptr) {}
     Texture(Engine::Graphics::Texture tex) : texture_handle(tex) {}
 
-
-    struct Adaptor {
+    struct Reflector {
       std::string path;
 
-      Adaptor serialize(const Texture& tex) const {
-        Adaptor view;
+      static Reflector reflect(const Texture& tex) {
+        Reflector r;
         if (tex.texture_handle) {
-          view.path = tex.texture_handle->path;
+          r.path = tex.texture_handle->path;
         }
-        return view;
+        return r;
       }
 
-      Texture deserialize() const {
-        return Engine::Resources::load_texture(path);
+      static Texture create(const Reflector& r) {
+        return Engine::Resources::load_texture(r.path);
       }
     };
   };
@@ -39,13 +38,11 @@ namespace Components
   struct TextureAtlas
   {
     std::vector<Engine::Graphics::SubTexture> subTextures;
-    size_t drawIndex = 0; // Current subTexture index to draw
+    size_t drawIndex = 0;
 
-    // Constructor to initialize a texture atlas with evenly divided subTextures, works with multiple rows and columns
     TextureAtlas(int subTextureWidth, int subTextureHeight, size_t rows, size_t cols, size_t totalSubTextures = 0)
       : subTextures(), drawIndex(0)
     {
-      // If totalSubTextures is 0, fill the entire atlas
       if (totalSubTextures == 0)
       {
         totalSubTextures = rows * cols;
@@ -70,25 +67,25 @@ namespace Components
       }
     }
 
-    struct Adaptor {
+    struct Reflector {
       std::vector<std::array<glm::vec2, 4>> tex_coords_list;
       size_t drawIndex;
 
-      Adaptor serialize(const TextureAtlas& atlas) const {
-        Adaptor adaptor;
-        adaptor.drawIndex = atlas.drawIndex;
-        adaptor.tex_coords_list.reserve(atlas.subTextures.size());
+      static Reflector reflect(const TextureAtlas& atlas) {
+        Reflector r;
+        r.drawIndex = atlas.drawIndex;
+        r.tex_coords_list.reserve(atlas.subTextures.size());
         for (const auto& subTex : atlas.subTextures) {
-          adaptor.tex_coords_list.push_back(subTex.tex_coords);
+          r.tex_coords_list.push_back(subTex.tex_coords);
         }
-        return adaptor;
+        return r;
       }
 
-      TextureAtlas deserialize() const {
+      static TextureAtlas create(const Reflector& r) {
         TextureAtlas atlas(0, 0, 0, 0, 0);
-        atlas.drawIndex = drawIndex;
-        atlas.subTextures.reserve(tex_coords_list.size());
-        for (const auto& coords : tex_coords_list) {
+        atlas.drawIndex = r.drawIndex;
+        atlas.subTextures.reserve(r.tex_coords_list.size());
+        for (const auto& coords : r.tex_coords_list) {
           Engine::Graphics::SubTexture subTex;
           subTex.tex_coords = coords;
           atlas.subTextures.push_back(subTex);
@@ -101,10 +98,9 @@ namespace Components
   struct Animation
   {
     std::vector<Engine::Graphics::Frame> frames;
-    f32 startTime = Engine::Time::get_time();     // To get the elapsed time to calculate which frame to show
-    float totalDuration = 0.0f; // Total duration of the animation
+    f32 startTime = Engine::Time::get_time();
+    float totalDuration = 0.0f;
 
-    // Evenly spaced frames
     Animation(size_t frameCount, float frameDuration) : frames(), startTime(0.0f), totalDuration(frameDuration* frameCount)
     {
       if (frameCount == 0)
@@ -120,33 +116,33 @@ namespace Components
       }
     }
 
-    struct Adaptor {
+    struct Reflector {
       std::vector<float> durations;
       std::vector<float> before_times;
       float startTime;
       float totalDuration;
 
-      Adaptor serialize(const Animation& anim) const {
-        Adaptor adaptor;
-        adaptor.startTime = anim.startTime;
-        adaptor.totalDuration = anim.totalDuration;
-        adaptor.durations.reserve(anim.frames.size());
-        adaptor.before_times.reserve(anim.frames.size());
+      static Reflector reflect(const Animation& anim) {
+        Reflector r;
+        r.startTime = anim.startTime;
+        r.totalDuration = anim.totalDuration;
+        r.durations.reserve(anim.frames.size());
+        r.before_times.reserve(anim.frames.size());
         for (const auto& frame : anim.frames) {
-          adaptor.durations.push_back(frame.duration);
-          adaptor.before_times.push_back(frame.before_time);
+          r.durations.push_back(frame.duration);
+          r.before_times.push_back(frame.before_time);
         }
-        return adaptor;
+        return r;
       }
 
-      Animation deserialize() const {
+      static Animation create(const Reflector& r) {
         Animation anim(0, 0.0f);
-        anim.startTime = startTime;
-        anim.totalDuration = totalDuration;
-        anim.frames.resize(durations.size());
-        for (size_t i = 0; i < durations.size(); ++i) {
-          anim.frames[i].duration = durations[i];
-          anim.frames[i].before_time = before_times[i];
+        anim.startTime = r.startTime;
+        anim.totalDuration = r.totalDuration;
+        anim.frames.resize(r.durations.size());
+        for (size_t i = 0; i < r.durations.size(); ++i) {
+          anim.frames[i].duration = r.durations[i];
+          anim.frames[i].before_time = r.before_times[i];
         }
         return anim;
       }
@@ -160,66 +156,55 @@ namespace Components
     Font() : font_handle(nullptr) {}
     Font(Engine::Graphics::Font fnt) : font_handle(fnt) {}
 
-    struct Adaptor {
+    struct Reflector {
       std::string path;
       int font_size;
 
-      Adaptor serialize(const Font& font) const {
-        Adaptor adaptor;
+      static Reflector reflect(const Font& font) {
+        Reflector r;
         if (font.font_handle) {
-          adaptor.path = font.font_handle->path;
-          adaptor.font_size = font.font_handle->font_size;
+          r.path = font.font_handle->path;
+          r.font_size = font.font_handle->font_size;
         }
-        return adaptor;
+        return r;
       }
 
-      Font deserialize() const {
-        return Engine::Resources::load_font(path, font_size);
+      static Font create(const Reflector& r) {
+        return Engine::Resources::load_font(r.path, r.font_size);
       }
     };
   };
 
   struct Text
   {
-
     std::string content;
 
     Text() : content("") {}
     Text(const std::string& str) : content(str) {}
   };
 
-
-
-
   struct Color : public Math::Vec4D {
-
-    // Reference members for RGBA access
     f32& r;
     f32& g;
     f32& b;
     f32& a;
 
-    // Default constructor - creates white color (1, 1, 1, 1)
     Color(f32 red = 1.0f, f32 green = 1.0f, f32 blue = 1.0f, f32 alpha = 1.0f)
       : Math::Vec4D(red, green, blue, alpha), r(x), g(y), b(z), a(w) {
     }
 
-    // Copy constructor
     Color(const Color& other)
       : Math::Vec4D(other), r(x), g(y), b(z), a(w) {
     }
 
-    // Copy constructor from Vec4D
     Color(const Math::Vec4D& v)
       : Math::Vec4D(v), r(x), g(y), b(z), a(w) {
     }
 
-    // Copy constructor from glm::vec4
     Color(const glm::vec4& v)
       : Math::Vec4D(v), r(x), g(y), b(z), a(w) {
     }
 
-    // Copy assignment operator
     Color& operator=(const Color& other) {
       if (this != &other) {
         Math::Vec4D::operator=(other);
@@ -227,15 +212,11 @@ namespace Components
       return *this;
     }
 
-    // Assignment from Vec4D
     Color& operator=(const Math::Vec4D& v) {
       Math::Vec4D::operator=(v);
       return *this;
     }
 
-    /* ===================== //
-    // Convenience functions //
-    // ===================== */
     void set_rgb(f32 red, f32 green, f32 blue) {
       r = red;
       g = green;
@@ -249,7 +230,6 @@ namespace Components
       a = alpha;
     }
 
-    // Clamp color values to [0, 1] range
     void clamp() {
       r = (r < 0.0f) ? 0.0f : (r > 1.0f) ? 1.0f : r;
       g = (g < 0.0f) ? 0.0f : (g > 1.0f) ? 1.0f : g;
@@ -257,9 +237,6 @@ namespace Components
       a = (a < 0.0f) ? 0.0f : (a > 1.0f) ? 1.0f : a;
     }
 
-    /* ================= //
-    // Common colors     //
-    // ================= */
     static Color White() { return Color(1.0f, 1.0f, 1.0f, 1.0f); }
     static Color Black() { return Color(0.0f, 0.0f, 0.0f, 1.0f); }
     static Color Red() { return Color(1.0f, 0.0f, 0.0f, 1.0f); }
@@ -270,24 +247,19 @@ namespace Components
     static Color Magenta() { return Color(1.0f, 0.0f, 1.0f, 1.0f); }
     static Color Clear() { return Color(0.0f, 0.0f, 0.0f, 0.0f); }
 
-
-    /* ================= //
-    // Reflection        //
-    // ================= */
-    struct Adaptor {
+    struct Reflector {
       f32 r;
       f32 g;
       f32 b;
       f32 a;
 
-      Adaptor serialize(const Color& color) const {
-        Adaptor adaptor = { color.r, color.g, color.b, color.a };
-        return adaptor;
+      static Reflector reflect(const Color& color) {
+        Reflector ref = { color.r, color.g, color.b, color.a };
+        return ref;
       }
 
-      Color deserialize() const {
-        Color color(r, g, b, a);
-        return color;
+      static Color create(const Reflector& ref) {
+        return Color(ref.r, ref.g, ref.b, ref.a);
       }
     };
   };
