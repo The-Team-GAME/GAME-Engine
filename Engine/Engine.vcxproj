@@ -133,6 +133,12 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Engine\Components\UtilityComponents.h" />
     <ClInclude Include="Engine\GUI\ResourceManagerPanel.h" />
     <ClInclude Include="Engine\MonkeyEngine.h" />
+    <ClInclude Include="Engine\Reflection\ReflectionLibrary.h" />
+    <ClInclude Include="Engine\Reflection\ReflectionLibrary\Concepts.h" />
+    <ClInclude Include="Engine\Reflection\ReflectionLibrary\Helpers.h" />
+    <ClInclude Include="Engine\Reflection\ReflectionLibrary\Json.h" />
+    <ClInclude Include="Engine\Reflection\ReflectionLibrary\Macros.h" />
+    <ClInclude Include="Engine\Reflection\ReflectionLibrary\Print.h" />
     <ClInclude Include="Engine\Systems\Systems.h" />
     <ClInclude Include="GameLogic\Reflection\ImGuiHelpers.h" />
     <ClInclude Include="Engine\Reflection\JsonHelpers.h" />
