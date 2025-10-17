@@ -20,4 +20,4 @@ namespace Components
   };
 }
 
-REFLECT(Components::Health, value, max)
+REFLECT_FIELDS(Components::Health, value, max)

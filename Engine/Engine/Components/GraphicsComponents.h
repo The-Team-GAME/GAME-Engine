@@ -4,7 +4,7 @@
 #include "../Graphics/Renderer.h"
 #include <string>
 #include <limits>
-#include "../Reflection/Reflect.h"
+#include "../Reflection/ReflectionLibrary.h"
 #include "Time.h"
 #include "../Resources.h"
 
@@ -294,9 +294,9 @@ namespace Components
 
 }
 
-REFLECT(Components::Text, content)
-REFLECT_ADAPTOR(Components::Color, r, g, b, a)
-REFLECT_ADAPTOR(Components::Texture, path)
-REFLECT_ADAPTOR(Components::Font, path, font_size)
-REFLECT_ADAPTOR(Components::TextureAtlas, tex_coords_list, drawIndex)
-REFLECT_ADAPTOR(Components::Animation, durations, before_times, startTime, totalDuration)
+REFLECT_FIELDS(Components::Text, content)
+REFLECT_CUSTOM(Components::Color, r, g, b, a)
+REFLECT_CUSTOM(Components::Texture, path)
+REFLECT_CUSTOM(Components::Font, path, font_size)
+REFLECT_CUSTOM(Components::TextureAtlas, tex_coords_list, drawIndex)
+REFLECT_CUSTOM(Components::Animation, durations, before_times, startTime, totalDuration)

@@ -22,6 +22,5 @@
 #include "Math/Vector4D.h"
 #include "FileHandler.h"
 #include "WindowEvents.h"
-#include "Reflection/Reflect.h"
-#include "Reflection/Helpers.h"
+#include "Reflection/ReflectionLibrary.h"
 #include "ImGuiManager.h"

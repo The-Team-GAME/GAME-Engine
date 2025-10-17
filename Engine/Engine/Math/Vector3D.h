@@ -17,7 +17,7 @@
 #include "../TypeDef.h"
 #include <iostream>
 #include <glm/glm.hpp>
-#include "../Reflection/Reflect.h"
+#include "../Reflection/ReflectionLibrary.h"
 
 namespace Math {
 
@@ -89,4 +89,4 @@ namespace Math {
   std::ostream& operator<<(std::ostream& os, Vec3D const& vect);
 }
 
-REFLECT(Math::Vec3D, x, y, z)
+REFLECT_FIELDS(Math::Vec3D, x, y, z)
