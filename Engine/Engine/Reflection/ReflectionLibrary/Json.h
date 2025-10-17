@@ -221,6 +221,37 @@ namespace ReflectionLibrary
         return true;
     }
 
+    // Serialize object to JSON value
+    template <typename T>
+    static void serialize_obj(T &obj, rapidjson::Value &json_val, rapidjson::Document::AllocatorType &allocator)
+    {
+        json_val.SetObject();
+        for_each_field(obj, [&](std::string_view name, auto &field_value, int)
+                       {
+        rapidjson::Value field_val;
+        serialize_value(field_value, field_val, allocator);
+        rapidjson::Value key(name.data(), static_cast<rapidjson::SizeType>(name.length()), allocator);
+        json_val.AddMember(key, field_val, allocator); });
+    }
+
+    // Deserialize object from JSON value
+    template <typename T>
+    static bool deserialize_obj(T &obj, const rapidjson::Value &json_val)
+    {
+        if (!json_val.IsObject())
+            return false;
+
+        bool success = true;
+        for_each_field(obj, [&](std::string_view name, auto &field_value, int)
+                       {
+        if (json_val.HasMember(name.data()))
+        {
+          if (!deserialize_value(field_value, json_val[name.data()]))
+            success = false;
+        } });
+        return success;
+    }
+
     // Serialize object to JSON string
     template <typename T>
     static std::string to_json(T &obj, bool pretty = false)
@@ -229,12 +260,7 @@ namespace ReflectionLibrary
         doc.SetObject();
         auto &allocator = doc.GetAllocator();
 
-        for_each_field(obj, [&](std::string_view name, auto &field_value, int)
-                       {
-            rapidjson::Value field_val;
-            serialize_value(field_value, field_val, allocator);
-            rapidjson::Value key(name.data(), static_cast<rapidjson::SizeType>(name.length()), allocator);
-            doc.AddMember(key, field_val, allocator); });
+        serialize_obj(obj, doc, allocator);
 
         rapidjson::StringBuffer buffer;
         if (pretty)
@@ -262,16 +288,7 @@ namespace ReflectionLibrary
             return std::nullopt;
 
         T obj{};
-        bool success = true;
-        for_each_field(obj, [&](std::string_view name, auto &field_value, int)
-                       {
-        if (doc.HasMember(name.data()))
-        {
-            if (!deserialize_value(field_value, doc[name.data()]))
-                success = false;
-        } });
-
-        if (!success)
+        if (!deserialize_obj(obj, doc))
             return std::nullopt;
 
         return obj;
