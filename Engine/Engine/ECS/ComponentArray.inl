@@ -62,12 +62,12 @@ namespace Engine {
 
     template<typename T>
     bool ComponentArray<T>::is_reflectable() const {
-      return is_reflectable_v<T>;
+      return ReflectionLibrary::is_reflectable_v<T>;
     }
 
     template<typename T>
     std::string ComponentArray<T>::get_type_name() const {
-      if constexpr (is_reflectable_v<T>) {
+      if constexpr (ReflectionLibrary::is_reflectable_v<T>) {
         return std::string(ReflectionLibrary::class_name<T>);
       }
       else {
@@ -79,10 +79,10 @@ namespace Engine {
     void ComponentArray<T>::serialize_component(EntityID entity, rapidjson::Value& json_val, rapidjson::Document::AllocatorType& allocator) const {
       auto it = components.find(entity);
       if (it != components.end()) {
-        if constexpr (is_reflectable_v<T>) {
+        if constexpr (ReflectionLibrary::is_reflectable_v<T>) {
           T component_copy = it->second;
-          if constexpr (has_reflector_v<T>) {
-            auto reflector = ReflectionInfo<T>::reflect(component_copy);
+          if constexpr (ReflectionLibrary::has_reflector_v<T>) {
+            auto reflector = ReflectionLibrary::ReflectionInfo<T>::reflect(component_copy);
             ReflectionLibrary::serialize_obj(reflector, json_val, allocator);
           }
           else {
@@ -94,12 +94,12 @@ namespace Engine {
 
     template<typename T>
     bool ComponentArray<T>::deserialize_and_add_component(EntityID entity, const rapidjson::Value& json_val) {
-      if constexpr (is_reflectable_v<T>) {
-        if constexpr (has_reflector_v<T>) {
+      if constexpr (ReflectionLibrary::is_reflectable_v<T>) {
+        if constexpr (ReflectionLibrary::has_reflector_v<T>) {
           // Component has custom reflector
           typename T::Reflector reflector{};
           if (ReflectionLibrary::deserialize_obj(reflector, json_val)) {
-            T component = ReflectionInfo<T>::create(reflector);
+            T component = ReflectionLibrary::ReflectionInfo<T>::create(reflector);
             add_component(entity, std::move(component));
             return true;
           }

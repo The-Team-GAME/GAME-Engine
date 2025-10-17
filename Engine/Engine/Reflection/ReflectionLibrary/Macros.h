@@ -37,7 +37,7 @@
 
 #define REFLECT_FIELDS(CLASS_NAME, ...)                                                                                              \
     template <>                                                                                                                      \
-    struct ReflectionInfo<CLASS_NAME>                                                                                                \
+    struct ReflectionLibrary::ReflectionInfo<CLASS_NAME>                                                                                                \
     {                                                                                                                                \
         static constexpr const char *class_name = #CLASS_NAME;                                                                       \
         static constexpr auto fields = std::make_tuple(EXPAND_MACROS(CLASS_NAME, FIELD_PAIR, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)); \
@@ -46,7 +46,7 @@
 #define REFLECT_CUSTOM(CLASS_NAME, ...)                                   \
     REFLECT_FIELDS(CLASS_NAME::Reflector, __VA_ARGS__)                    \
     template <>                                                           \
-    struct ReflectionInfo<CLASS_NAME>                                     \
+    struct ReflectionLibrary::ReflectionInfo<CLASS_NAME>                                     \
     {                                                                     \
         using Reflector = CLASS_NAME::Reflector;                          \
         static constexpr const char *class_name = #CLASS_NAME;            \
