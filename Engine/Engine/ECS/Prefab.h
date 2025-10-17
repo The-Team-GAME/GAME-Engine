@@ -24,7 +24,7 @@
 #include <rapidjson/document.h>
 
 namespace Engine {
-  namespace ECS { 
+  namespace ECS {
     /* ====================================== //
     // Prefab - Reusable entity template      //
     // ====================================== */

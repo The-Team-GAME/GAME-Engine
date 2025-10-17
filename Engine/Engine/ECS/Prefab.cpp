@@ -126,7 +126,7 @@ namespace Engine {
 
         // Notify systems about the component changes
         Internal::entity_component_changed(entity.get_id());
-      };
+        };
 
       return Prefab(setup_function);
     }
