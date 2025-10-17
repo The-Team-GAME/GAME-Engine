@@ -18,6 +18,7 @@
 #include "Types.h"
 #include <unordered_map>
 #include <memory>
+#include <rapidjson/document.h>
 
 namespace Engine {
   namespace ECS {
@@ -31,6 +32,8 @@ namespace Engine {
       virtual void remove_entity(EntityID entity) = 0;
       virtual size_t size() const = 0;
       virtual void clone_component(EntityID source, EntityID destination) = 0;
+      virtual void serialize_component(EntityID entity, rapidjson::Value& json_val, rapidjson::Document::AllocatorType& allocator) const = 0;
+      virtual std::string get_type_name() const = 0;
     };
 
     /* ============================= //
@@ -55,6 +58,10 @@ namespace Engine {
       void remove_entity(EntityID entity) override;
 
       size_t size() const override;
+
+      void serialize_component(EntityID entity, rapidjson::Value& json_val, rapidjson::Document::AllocatorType& allocator) const override;
+
+      std::string get_type_name() const override;
 
       auto begin();
       auto end();

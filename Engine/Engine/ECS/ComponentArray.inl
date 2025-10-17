@@ -15,6 +15,8 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 #include "ComponentArray.h"
+#include "../Reflection/ReflectionLibrary.h"
+#include "../Reflection/ReflectionLibrary/Json.h"
 
 namespace Engine {
   namespace ECS {
@@ -56,6 +58,31 @@ namespace Engine {
     template<typename T>
     size_t ComponentArray<T>::size() const {
       return components.size();
+    }
+
+    template<typename T>
+    void ComponentArray<T>::serialize_component(EntityID entity, rapidjson::Value& json_val, rapidjson::Document::AllocatorType& allocator) const {
+      auto it = components.find(entity);
+      if (it != components.end()) {
+        if constexpr (is_reflectable_v<T>) {
+          T component_copy = it->second;
+          if constexpr (has_reflector_v<T>) {
+            auto reflector = ReflectionInfo<T>::reflect(component_copy);
+            ReflectionLibrary::serialize_obj(reflector, json_val, allocator);
+          }
+          else {
+            ReflectionLibrary::serialize_obj(component_copy, json_val, allocator);
+          }
+        }
+      }
+    }
+
+    template<typename T>
+    std::string ComponentArray<T>::get_type_name() const {
+      if constexpr (is_reflectable_v<T>) {
+        return std::string(ReflectionLibrary::class_name<T>);
+      }
+      return "Unknown";
     }
 
     template<typename T>
