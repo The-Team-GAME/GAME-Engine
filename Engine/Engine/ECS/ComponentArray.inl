@@ -82,7 +82,9 @@ namespace Engine {
       if constexpr (is_reflectable_v<T>) {
         return std::string(ReflectionLibrary::class_name<T>);
       }
-      return "Unknown";
+      else {
+        return "Unknown";
+      }
     }
 
     template<typename T>
