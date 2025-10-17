@@ -93,6 +93,30 @@ namespace Engine {
     }
 
     template<typename T>
+    bool ComponentArray<T>::deserialize_and_add_component(EntityID entity, const rapidjson::Value& json_val) {
+      if constexpr (is_reflectable_v<T>) {
+        if constexpr (has_reflector_v<T>) {
+          // Component has custom reflector
+          typename T::Reflector reflector{};
+          if (ReflectionLibrary::deserialize_obj(reflector, json_val)) {
+            T component = ReflectionInfo<T>::create(reflector);
+            add_component(entity, std::move(component));
+            return true;
+          }
+        }
+        else {
+          // Component uses direct reflection
+          T component{};
+          if (ReflectionLibrary::deserialize_obj(component, json_val)) {
+            add_component(entity, std::move(component));
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    template<typename T>
     auto ComponentArray<T>::begin() {
       return components.begin();
     }
