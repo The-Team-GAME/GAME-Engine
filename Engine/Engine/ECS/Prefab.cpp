@@ -60,7 +60,7 @@ namespace Engine {
 
       // Iterate through all component types and serialize the ones this entity has
       for (const auto& [type_id, component_array] : Internal::component_arrays) {
-        if (signature.test(type_id)) {
+        if (signature.test(type_id) && component_array->is_reflectable()) {
           rapidjson::Value component_entry(rapidjson::kObjectType);
 
           // Add type name instead of type_id

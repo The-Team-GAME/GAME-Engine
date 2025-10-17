@@ -61,6 +61,21 @@ namespace Engine {
     }
 
     template<typename T>
+    bool ComponentArray<T>::is_reflectable() const {
+      return is_reflectable_v<T>;
+    }
+
+    template<typename T>
+    std::string ComponentArray<T>::get_type_name() const {
+      if constexpr (is_reflectable_v<T>) {
+        return std::string(ReflectionLibrary::class_name<T>);
+      }
+      else {
+        return "Unknown";
+      }
+    }
+
+    template<typename T>
     void ComponentArray<T>::serialize_component(EntityID entity, rapidjson::Value& json_val, rapidjson::Document::AllocatorType& allocator) const {
       auto it = components.find(entity);
       if (it != components.end()) {
@@ -74,16 +89,6 @@ namespace Engine {
             ReflectionLibrary::serialize_obj(component_copy, json_val, allocator);
           }
         }
-      }
-    }
-
-    template<typename T>
-    std::string ComponentArray<T>::get_type_name() const {
-      if constexpr (is_reflectable_v<T>) {
-        return std::string(ReflectionLibrary::class_name<T>);
-      }
-      else {
-        return "Unknown";
       }
     }
 
