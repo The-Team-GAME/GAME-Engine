@@ -48,16 +48,21 @@ void ShowcaseState::init() {
     .add_component<Components::TextureAtlas>(64, 64, 1, 5, 5)
     .add_component<Components::Animation>(5, 0.15f);
 
-  // Create banana
-  banana = Engine::ECS::create_entity()
-    .add_component<Components::Tag<"ShowcaseState">>()
-    .add_component<Components::Transform2D>(1200.0f, 675.0f, 0.0f, 20.0f * 3.0f, 12.0f * 3.0f)
-    .add_component<Components::Texture>(banana_texture)
-    .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-    .add_component<Components::RigidBody>();
+  // Create banana prefab
+  Engine::ECS::PrefabManager::register_prefab("Banana", [this](Engine::ECS::Entity& entity) {
+    entity.add_component<Components::Tag<"ShowcaseState">>()
+      .add_component<Components::Transform2D>(1200.0f, 675.0f, 0.0f, 20.0f * 3.0f, 12.0f * 3.0f)
+      .add_component<Components::Texture>(banana_texture)
+      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+      .add_component<Components::RigidBody>();
 
-  banana.get_component<Components::RigidBody>()->rotation = 0.0f;
-  banana.get_component<Components::RigidBody>()->angular_velocity = 45.0f;
+    auto* rigid = entity.get_component<Components::RigidBody>();
+    rigid->rotation = 0.0f;
+    rigid->angular_velocity = 45.0f;
+    });
+
+  // Create banana using prefab
+  banana = Engine::ECS::PrefabManager::instantiate_prefab("Banana");
 
   // Create player with idle animation
   player = Engine::ECS::create_entity()

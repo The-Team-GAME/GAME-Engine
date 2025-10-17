@@ -94,6 +94,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
   <ItemGroup>
     <ClCompile Include="Engine\Audio\AudioPlayer.cpp" />
     <ClCompile Include="Engine\Audio\AudioPlayerInternal.cpp" />
+    <ClCompile Include="Engine\ECS\Prefab.cpp" />
     <ClCompile Include="GameLogic\GameStates\BasicState.cpp" />
     <ClCompile Include="GameLogic\GameStates\BasicState.h" />
     <ClCompile Include="GameLogic\Config.cpp" />
@@ -131,6 +132,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Engine\Components\GraphicsComponents.h" />
     <ClInclude Include="Engine\Components\PhysicsComponents.h" />
     <ClInclude Include="Engine\Components\UtilityComponents.h" />
+    <ClInclude Include="Engine\ECS\Prefab.h" />
     <ClInclude Include="Engine\GUI\ResourceManagerPanel.h" />
     <ClInclude Include="Engine\MonkeyEngine.h" />
     <ClInclude Include="Engine\Reflection\ReflectionLibrary.h" />

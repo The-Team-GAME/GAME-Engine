@@ -22,6 +22,7 @@
 #include "Entity.h"
 #include "System.h"
 #include "World.h"
+#include "Prefab.h"
 #include "Entity.inl"
 #include "World.inl"
 #include "System.inl"
