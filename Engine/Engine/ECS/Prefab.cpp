@@ -102,47 +102,32 @@ namespace Engine {
         return nullptr;
       }
 
-      // Parse and store component data once
-      struct ComponentData {
-        std::string type_name;
-        std::string json_data; // Store as string for each component
-      };
+      // Copy the JSON document so it persists beyond this function's scope
+      auto doc_copy = std::make_shared<rapidjson::Document>();
+      doc_copy->CopyFrom(doc, doc_copy->GetAllocator());
 
-      std::vector<ComponentData> component_list;
-      const auto& components_array = doc["components"].GetArray();
-
-      for (const auto& component_entry : components_array) {
-        if (!component_entry.IsObject() || !component_entry.HasMember("type") || !component_entry.HasMember("data")) {
-          continue;
+      // Create a lambda that will setup the entity with the deserialized components
+      auto setup_function = [doc_copy](Entity& entity) {
+        if (!doc_copy->HasMember("components") || !(*doc_copy)["components"].IsArray()) {
+          return;
         }
 
-        ComponentData comp_data;
-        comp_data.type_name = component_entry["type"].GetString();
+        const auto& components_array = (*doc_copy)["components"].GetArray();
 
-        // Serialize component data to string
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        component_entry["data"].Accept(writer);
-        comp_data.json_data = buffer.GetString();
-
-        component_list.push_back(std::move(comp_data));
-      }
-
-      auto setup_function = [component_list](Entity& entity) {
-        // Apply each component to the entity
-        for (const auto& comp_data : component_list) {
-          // Parse component data
-          rapidjson::Document comp_doc;
-          comp_doc.Parse(comp_data.json_data.c_str());
-
-          if (comp_doc.HasParseError()) {
+        // Iterate through each component in the JSON
+        for (const auto& component_entry : components_array) {
+          if (!component_entry.IsObject() || !component_entry.HasMember("type") || !component_entry.HasMember("data")) {
             continue;
           }
 
-          // Find and add the component
+          std::string type_name = component_entry["type"].GetString();
+          const auto& component_data = component_entry["data"];
+
+          // Find the component array by type name
           for (const auto& [type_id, component_array] : Internal::component_arrays) {
-            if (component_array->get_type_name() == comp_data.type_name && component_array->is_reflectable()) {
-              component_array->deserialize_and_add_component(entity.get_id(), comp_doc);
+            if (component_array->get_type_name() == type_name && component_array->is_reflectable()) {
+              // Deserialize and add the component
+              component_array->deserialize_and_add_component(entity.get_id(), component_data);
               Internal::entity_signatures[entity.get_id()].set(type_id);
               break;
             }
