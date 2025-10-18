@@ -20,26 +20,14 @@ namespace ReflectionLibrary
     template <typename T>
     static void for_each_field(T &obj, auto &&func, int nest_level = 0)
     {
-        if constexpr (has_reflector_v<T>)
-        {
-            auto reflector = ReflectionInfo<T>::reflect(obj);
-            std::apply([&](auto &&...field)
-                       { (([&]()
-                           {
-                        auto &val = reflector.*(field.second);
-                        func(field.first, val, nest_level); }()),
-                          ...); }, ReflectionInfo<T>::fields);
-            obj = ReflectionInfo<T>::create(reflector);
-        }
-        else
-        {
-            std::apply([&](auto &&...field)
-                       { (([&]()
-                           {
-                        auto &val = obj.*(field.second);
-                        func(field.first, val, nest_level); }()),
-                          ...); }, ReflectionInfo<T>::fields);
-        }
+        auto reflector = ReflectionInfo<T>::reflect(obj);
+        std::apply([&](auto &&...field)
+                   { (([&]()
+                       {
+                    auto &val = reflector.*(field.second);
+                    func(field.first, val, nest_level); }()),
+                      ...); }, ReflectionInfo<T>::fields);
+        obj = ReflectionInfo<T>::create(reflector);
     }
 
     template <typename T, typename U>
@@ -57,20 +45,11 @@ namespace ReflectionLibrary
             }
         };
 
-        if constexpr (has_reflector_v<T>)
-        {
-            auto reflector = ReflectionInfo<T>::reflect(obj);
-            std::apply([&](auto &&...fields)
-                       { ((setter_func(fields.first, reflector.*(fields.second))),
-                          ...); }, ReflectionInfo<T>::fields);
-            obj = ReflectionInfo<T>::create(reflector);
-        }
-        else
-        {
-            std::apply([&](auto &&...fields)
-                       { ((setter_func(fields.first, obj.*(fields.second))),
-                          ...); }, ReflectionInfo<T>::fields);
-        }
+        auto reflector = ReflectionInfo<T>::reflect(obj);
+        std::apply([&](auto &&...fields)
+                   { ((setter_func(fields.first, reflector.*(fields.second))),
+                      ...); }, ReflectionInfo<T>::fields);
+        obj = ReflectionInfo<T>::create(reflector);
     }
 
 } // namespace ReflectionLibrary
