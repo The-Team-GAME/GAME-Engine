@@ -38,11 +38,13 @@ namespace Components
   struct TextureAtlas
   {
     std::vector<Engine::Graphics::SubTexture> subTextures;
-    size_t drawIndex = 0;
+    size_t drawIndex = 0; // Current subTexture index to draw
 
+    // Constructor to initialize a texture atlas with evenly divided subTextures, works with multiple rows and columns
     TextureAtlas(int subTextureWidth, int subTextureHeight, size_t rows, size_t cols, size_t totalSubTextures = 0)
       : subTextures(), drawIndex(0)
     {
+      // If totalSubTextures is 0, fill the entire atlas
       if (totalSubTextures == 0)
       {
         totalSubTextures = rows * cols;
@@ -98,9 +100,10 @@ namespace Components
   struct Animation
   {
     std::vector<Engine::Graphics::Frame> frames;
-    f32 startTime = Engine::Time::get_time();
-    float totalDuration = 0.0f;
+    f32 startTime = Engine::Time::get_time(); // To get the elapsed time to calculate which frame to show
+    float totalDuration = 0.0f; // Total duration of the animation
 
+    // Evenly spaced frames
     Animation(size_t frameCount, float frameDuration) : frames(), startTime(0.0f), totalDuration(frameDuration* frameCount)
     {
       if (frameCount == 0)
@@ -189,22 +192,27 @@ namespace Components
     f32& b;
     f32& a;
 
+    // Default constructor - creates white color (1, 1, 1, 1)
     Color(f32 red = 1.0f, f32 green = 1.0f, f32 blue = 1.0f, f32 alpha = 1.0f)
       : Math::Vec4D(red, green, blue, alpha), r(x), g(y), b(z), a(w) {
     }
 
+    // Copy constructor
     Color(const Color& other)
       : Math::Vec4D(other), r(x), g(y), b(z), a(w) {
     }
 
+    // Copy constructor from Vec4D
     Color(const Math::Vec4D& v)
       : Math::Vec4D(v), r(x), g(y), b(z), a(w) {
     }
 
+    // Copy constructor from glm::vec4
     Color(const glm::vec4& v)
       : Math::Vec4D(v), r(x), g(y), b(z), a(w) {
     }
 
+    // Copy assignment operator
     Color& operator=(const Color& other) {
       if (this != &other) {
         Math::Vec4D::operator=(other);
@@ -212,11 +220,15 @@ namespace Components
       return *this;
     }
 
+    // Assignment from Vec4D
     Color& operator=(const Math::Vec4D& v) {
       Math::Vec4D::operator=(v);
       return *this;
     }
 
+    /* ===================== //
+    // Convenience functions //
+    // ===================== */
     void set_rgb(f32 red, f32 green, f32 blue) {
       r = red;
       g = green;
@@ -230,6 +242,7 @@ namespace Components
       a = alpha;
     }
 
+    // Clamp color values to [0, 1] range
     void clamp() {
       r = (r < 0.0f) ? 0.0f : (r > 1.0f) ? 1.0f : r;
       g = (g < 0.0f) ? 0.0f : (g > 1.0f) ? 1.0f : g;
@@ -237,6 +250,9 @@ namespace Components
       a = (a < 0.0f) ? 0.0f : (a > 1.0f) ? 1.0f : a;
     }
 
+    /* ================= //
+    // Common colors     //
+    // ================= */
     static Color White() { return Color(1.0f, 1.0f, 1.0f, 1.0f); }
     static Color Black() { return Color(0.0f, 0.0f, 0.0f, 1.0f); }
     static Color Red() { return Color(1.0f, 0.0f, 0.0f, 1.0f); }
