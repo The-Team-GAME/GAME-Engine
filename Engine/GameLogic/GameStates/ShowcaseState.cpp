@@ -48,28 +48,17 @@ void ShowcaseState::init() {
     .add_component<Components::TextureAtlas>(64, 64, 1, 5, 5)
     .add_component<Components::Animation>(5, 0.15f);
 
-  // Create banana prefab
-  auto banana_prefabs = Engine::ECS::create_prefab([this](Engine::ECS::Entity& entity) {
-    entity.add_component<Components::Tag<"ShowcaseState">>()
-      .add_component<Components::Transform2D>(1200.0f, 675.0f, 0.0f, 20.0f * 3.0f, 12.0f * 3.0f)
-      .add_component<Components::Texture>(banana_texture)
-      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-      .add_component<Components::RigidBody>();
+  // Create banana
+  banana = Engine::ECS::create_entity()
+    .add_component<Components::Tag<"ShowcaseState">>()
+    .add_component<Components::Transform2D>(1200.0f, 675.0f, 0.0f, 20.0f * 3.0f, 12.0f * 3.0f)
+    .add_component<Components::Texture>(banana_texture)
+    .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+    .add_component<Components::RigidBody>();
 
-    auto* rigid = entity.get_component<Components::RigidBody>();
-    rigid->rotation = 0.0f;
-    rigid->angular_velocity = 45.0f;
-    });
-
-  // Create banana using prefab
-  // banana = Engine::ECS::instantiate_prefab(banana_prefabs);
-
-  std::string banana_json = Engine::ECS::serialize_prefab_to_json(banana_prefabs);
-
-  std::cout << banana_json << "\n";
-
-  auto new_banana_prefab = Engine::ECS::deserialize_prefab_from_json(banana_json);
-  banana = Engine::ECS::instantiate_prefab(new_banana_prefab).add_component<Components::Tag<"ShowcaseState">>();
+  auto* rigid = banana.get_component<Components::RigidBody>();
+  rigid->rotation = 0.0f;
+  rigid->angular_velocity = 45.0f;
 
   // Create player with idle animation
   player = Engine::ECS::create_entity()
