@@ -136,5 +136,13 @@ namespace Engine {
       return components.end();
     }
 
+    template<typename T>
+    void ComponentArray<T>::visit_component(EntityID entity, std::function<void(void*)> visitor) {
+      auto it = components.find(entity);
+      if (it != components.end()) {
+        visitor(&it->second);
+      }
+    }
+
   } // namespace ECS
 } // namespace Engine

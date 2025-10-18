@@ -194,6 +194,154 @@ inline void RenderComponent(Engine::ECS::Entity& entity, const char* component_n
   }
 }
 
+// Add this helper to render and edit JSON values
+inline bool RenderEditableJsonValue(const char* label, rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator)
+{
+  bool modified = false;
+
+  if (value.IsInt())
+  {
+    int temp = value.GetInt();
+    if (ImGui::DragInt(label, &temp))
+    {
+      value.SetInt(temp);
+      modified = true;
+    }
+  }
+  else if (value.IsDouble())
+  {
+    double temp = value.GetDouble();
+    float tempFloat = static_cast<float>(temp);
+    if (ImGui::DragFloat(label, &tempFloat, 0.01f))
+    {
+      value.SetDouble(static_cast<double>(tempFloat));
+      modified = true;
+    }
+  }
+  else if (value.IsBool())
+  {
+    bool temp = value.GetBool();
+    if (ImGui::Checkbox(label, &temp))
+    {
+      value.SetBool(temp);
+      modified = true;
+    }
+  }
+  else if (value.IsString())
+  {
+    std::string temp = value.GetString();
+    char buffer[1024];
+    strncpy_s(buffer, temp.c_str(), sizeof(buffer) - 1);
+    buffer[sizeof(buffer) - 1] = '\0';
+    if (ImGui::InputText(label, buffer, sizeof(buffer)))
+    {
+      value.SetString(buffer, allocator);
+      modified = true;
+    }
+  }
+  else if (value.IsObject())
+  {
+    if (ImGui::TreeNode(label))
+    {
+      for (auto it = value.MemberBegin(); it != value.MemberEnd(); ++it)
+      {
+        std::string fieldName = it->name.GetString();
+        if (RenderEditableJsonValue(fieldName.c_str(), it->value, allocator))
+        {
+          modified = true;
+        }
+      }
+      ImGui::TreePop();
+    }
+  }
+  else if (value.IsArray())
+  {
+    if (ImGui::TreeNode(label))
+    {
+      for (rapidjson::SizeType i = 0; i < value.Size(); ++i)
+      {
+        std::string elemLabel = std::string(label) + "[" + std::to_string(i) + "]";
+        if (RenderEditableJsonValue(elemLabel.c_str(), value[i], allocator))
+        {
+          modified = true;
+        }
+      }
+      ImGui::TreePop();
+    }
+  }
+  else
+  {
+    ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%s: [unsupported type]", label);
+  }
+
+  return modified;
+}
+
+inline void RenderAllComponents(Engine::ECS::Entity& entity)
+{
+  using namespace Engine::ECS;
+
+  auto entityId = entity.get_id();
+  const auto& signature = Internal::entity_signatures[entityId];
+
+  for (const auto& [typeId, componentArray] : Internal::component_arrays)
+  {
+    if (signature.test(typeId))
+    {
+      std::string componentName = componentArray->get_type_name();
+
+      if (ImGui::TreeNode(componentName.c_str()))
+      {
+        if (componentArray->is_reflectable())
+        {
+          // Serialize component to JSON
+          rapidjson::Document doc;
+          doc.SetObject();
+          auto& allocator = doc.GetAllocator();
+          rapidjson::Value componentData(rapidjson::kObjectType);
+
+          componentArray->serialize_component(entityId, componentData, allocator);
+
+          // Render and edit fields from JSON
+          bool modified = false;
+          for (auto it = componentData.MemberBegin(); it != componentData.MemberEnd(); ++it)
+          {
+            std::string fieldName = it->name.GetString();
+            if (RenderEditableJsonValue(fieldName.c_str(), it->value, allocator))
+            {
+              modified = true;
+            }
+          }
+
+          // If any field was modified, deserialize back to component
+          if (modified)
+          {
+            // Remove and re-add component with new data
+            componentArray->remove_component(entityId);
+            componentArray->deserialize_and_add_component(entityId, componentData);
+
+            // Notify systems about component change
+            Internal::entity_component_changed(entityId);
+          }
+        }
+        else
+        {
+          ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "Non-reflectable component");
+        }
+
+        if (ImGui::Button(("Remove##" + componentName).c_str()))
+        {
+          componentArray->remove_component(entityId);
+          //signature.reset(typeId);
+          Internal::entity_component_changed(entityId);
+        }
+
+        ImGui::TreePop();
+      }
+    }
+  }
+}
+
 inline void EntityEditorPanel()
 {
   static s32 selected_entity_id = -1;
@@ -288,17 +436,10 @@ inline void EntityEditorPanel()
 
     ImGui::Separator();
 
-    // Edit Components Section - Using Reflection
+    // Edit Components Section - Automatically render all components
     if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
     {
-      RenderComponent<Components::Transform2D>(entity, "Transform2D");
-      RenderComponent<Components::ScreenTransform2D>(entity, "ScreenTransform2D");
-      RenderComponent<Components::Color>(entity, "Color");
-      RenderComponent<Components::Text>(entity, "Text");
-      RenderComponent<Components::Texture>(entity, "Texture");
-      RenderComponent<Components::TextureAtlas>(entity, "TextureAtlas");
-      RenderComponent<Components::Animation>(entity, "Animation");
-      RenderComponent<Components::Font>(entity, "Font");
+      RenderAllComponents(entity);
     }
 
     ImGui::Separator();

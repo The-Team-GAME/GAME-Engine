@@ -19,6 +19,7 @@
 #include <unordered_map>
 #include <memory>
 #include <rapidjson/document.h>
+#include <functional>
 
 namespace Engine {
   namespace ECS {
@@ -30,12 +31,14 @@ namespace Engine {
     public:
       virtual ~IComponentArray() = default;
       virtual void remove_entity(EntityID entity) = 0;
+      virtual void remove_component(EntityID entity) = 0;
       virtual size_t size() const = 0;
       virtual void clone_component(EntityID source, EntityID destination) = 0;
       virtual bool is_reflectable() const = 0;
       virtual std::string get_type_name() const = 0;
       virtual void serialize_component(EntityID entity, rapidjson::Value& json_val, rapidjson::Document::AllocatorType& allocator) const = 0;
       virtual bool deserialize_and_add_component(EntityID entity, const rapidjson::Value& json_val) = 0;
+      virtual void visit_component(EntityID entity, std::function<void(void*)> visitor) = 0;
     };
 
     /* ============================= //
@@ -68,6 +71,8 @@ namespace Engine {
       void serialize_component(EntityID entity, rapidjson::Value& json_val, rapidjson::Document::AllocatorType& allocator) const override;
 
       bool deserialize_and_add_component(EntityID entity, const rapidjson::Value& json_val) override;
+
+      void visit_component(EntityID entity, std::function<void(void*)> visitor) override;
 
       auto begin();
       auto end();
