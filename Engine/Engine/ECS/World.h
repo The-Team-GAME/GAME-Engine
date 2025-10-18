@@ -140,9 +140,6 @@ namespace Engine {
 
       void entity_component_changed(EntityID entity);
       bool system_matches_entity(const System& system, EntityID entity);
-
-      // Add component visitor support
-      void visit_entity_components(EntityID entity, std::function<void(ComponentTypeID, IComponentArray*)> visitor);
     }
   } // namespace ECS
 } // namespace Engine

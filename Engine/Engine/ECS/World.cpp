@@ -65,23 +65,6 @@ namespace Engine {
         // Then check requirements
         return (requiredSignature & entitySignature) == requiredSignature;
       }
-
-      void visit_entity_components(EntityID entity, std::function<void(ComponentTypeID, IComponentArray*)> visitor)
-      {
-        auto it = entity_signatures.find(entity);
-        if (it == entity_signatures.end())
-          return;
-
-        const auto& signature = it->second;
-
-        for (const auto& [typeId, componentArray] : component_arrays)
-        {
-          if (signature.test(typeId))
-          {
-            visitor(typeId, componentArray.get());
-          }
-        }
-      }
     } // namespace Internal
 
     Entity create_entity()
