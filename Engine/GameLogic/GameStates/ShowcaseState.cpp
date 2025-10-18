@@ -56,8 +56,9 @@ void ShowcaseState::init() {
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
     .add_component<Components::RigidBody>();
 
-  banana.get_component<Components::RigidBody>()->rotation = 0.0f;
-  banana.get_component<Components::RigidBody>()->angular_velocity = 45.0f;
+  auto* rigid = banana.get_component<Components::RigidBody>();
+  rigid->rotation = 0.0f;
+  rigid->angular_velocity = 45.0f;
 
   // Create player with idle animation
   player = Engine::ECS::create_entity()

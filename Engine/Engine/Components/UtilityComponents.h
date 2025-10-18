@@ -16,7 +16,4 @@ namespace Components
   template <fixed_string id>
   struct Tag {};
 
-  struct ObjectId : std::basic_string<char> {
-    using std::basic_string<char>::basic_string;
-  };
 }

@@ -3,11 +3,14 @@
 #include "Graphics/RendererInternal.h"
 #include "Audio/AudioPlayerInternal.h"
 #include "Logger.h"
+#include <fstream>
+#include <sstream>
 
 // Define the actual storage for the extern variables
 std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> Engine::Resources::texture_cache;
 std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::FontData>> Engine::Resources::font_cache;
 std::unordered_map<std::string, std::weak_ptr<Engine::Audio::SoundData>> Engine::Resources::sound_cache;
+std::unordered_map<std::string, std::weak_ptr<Engine::ECS::PrefabData>> Engine::Resources::prefab_cache;
 
 Engine::Graphics::Texture Engine::Resources::unit_rect;
 std::string Engine::Resources::resource_path = "";
@@ -43,6 +46,7 @@ bool Engine::Resources::exit()
   texture_cache.clear();
   font_cache.clear();
   sound_cache.clear();
+  prefab_cache.clear();
 
   // unit_rect will be automatically cleaned up when it goes out of scope
   unit_rect.reset();
@@ -62,6 +66,15 @@ void Engine::Resources::set_resource_path(const std::string& path)
   }
 
   Log::info("Resource path set to: " + resource_path);
+}
+
+std::string Engine::Resources::get_relative_path(const std::string& full_path)
+{
+  if (full_path.find(resource_path) == 0)
+  {
+    return full_path.substr(resource_path.length());
+  }
+  return full_path;
 }
 
 Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& filepath)
@@ -219,6 +232,90 @@ Engine::Graphics::Texture Engine::Resources::get_rect_texture()
   return unit_rect;
 }
 
+Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath)
+{
+  // Construct full path
+  std::string full_path = resource_path + filepath;
+
+  // Check if prefab is already in cache
+  auto it = prefab_cache.find(full_path);
+  if (it != prefab_cache.end())
+  {
+    // Try to lock the weak_ptr
+    if (auto cached = it->second.lock())
+    {
+      Log::info("Prefab loaded from cache: " + full_path);
+      return cached;
+    }
+    else
+    {
+      // Expired, remove from cache
+      prefab_cache.erase(it);
+    }
+  }
+
+  // Load prefab from file
+  std::ifstream file(full_path);
+  if (!file.is_open())
+  {
+    Log::warning("Failed to open prefab file: " + full_path);
+    return nullptr;
+  }
+
+  std::stringstream buffer;
+  buffer << file.rdbuf();
+  std::string json_content = buffer.str();
+  file.close();
+
+  // Deserialize prefab
+  Engine::ECS::Prefab prefab = Engine::ECS::deserialize_prefab_from_json(json_content);
+
+  if (!prefab || !prefab->setup_function)
+  {
+    Log::warning("Failed to deserialize prefab: " + full_path);
+    return nullptr;
+  }
+
+  // Cache the prefab
+  prefab_cache[full_path] = prefab;
+  Log::info("Prefab loaded: " + full_path);
+
+  return prefab;
+}
+
+bool Engine::Resources::save_prefab(const std::string& filepath, const Engine::ECS::Prefab& prefab)
+{
+  // Construct full path
+  std::string full_path = resource_path + filepath;
+
+  // Serialize prefab to JSON
+  std::string json_content = Engine::ECS::serialize_prefab_to_json(prefab);
+
+  if (json_content.empty() || json_content == "{}")
+  {
+    Log::warning("Failed to serialize prefab: " + full_path);
+    return false;
+  }
+
+  // Write to file
+  std::ofstream file(full_path);
+  if (!file.is_open())
+  {
+    Log::warning("Failed to open prefab file for writing: " + full_path);
+    return false;
+  }
+
+  file << json_content;
+  file.close();
+
+  Log::info("Prefab saved: " + full_path);
+
+  // Update cache
+  prefab_cache[full_path] = prefab;
+
+  return true;
+}
+
 void Engine::Resources::clear_unused_resources()
 {
   // Clear expired texture cache entries
@@ -262,6 +359,20 @@ void Engine::Resources::clear_unused_resources()
       ++it;
     }
   }
+
+  // Clear expired prefab cache entries
+  for (auto it = prefab_cache.begin(); it != prefab_cache.end();)
+  {
+    if (it->second.expired())
+    {
+      Log::info("Clearing unused prefab from cache: " + it->first);
+      it = prefab_cache.erase(it);
+    }
+    else
+    {
+      ++it;
+    }
+  }
 }
 
 Engine::Resources::ResourceStats Engine::Resources::get_resource_stats()
@@ -292,6 +403,15 @@ Engine::Resources::ResourceStats Engine::Resources::get_resource_stats()
     if (!pair.second.expired())
     {
       stats.sound_alive++;
+    }
+  }
+
+  for (const auto& pair : prefab_cache)
+  {
+    stats.prefab_count++;
+    if (!pair.second.expired())
+    {
+      stats.prefab_alive++;
     }
   }
 

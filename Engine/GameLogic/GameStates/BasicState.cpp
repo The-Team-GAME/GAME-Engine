@@ -44,7 +44,7 @@ struct Book
   std::string author;
   int pages;
 };
-REFLECT(Book, title, author, pages)
+REFLECT_FIELDS(Book, title, author, pages)
 
 struct Person
 {
@@ -54,7 +54,7 @@ struct Person
   bool is_student;
   Book favorite_book;
 };
-REFLECT(Person, name, age, height, is_student, favorite_book)
+REFLECT_FIELDS(Person, name, age, height, is_student, favorite_book)
 
 void BasicState::init()
 {

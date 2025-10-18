@@ -54,9 +54,6 @@
     <ClCompile Include="Engine\Graphics\RendererInternal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\ObjectFactory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Resources.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -111,6 +108,9 @@
     <ClCompile Include="GameLogic\WinMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\ECS\Prefab.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Audio\AudioPlayer.h">
@@ -153,12 +153,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Components\Components.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLogic\GameStates\GameObjectState.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\ObjectFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Reflection\Helpers.h">
@@ -282,6 +276,27 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Systems\Systems.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\ECS\Prefab.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Reflection\ReflectionLibrary.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Reflection\ReflectionLibrary\Concepts.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Reflection\ReflectionLibrary\Helpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Reflection\ReflectionLibrary\Json.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Reflection\ReflectionLibrary\Macros.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Reflection\ReflectionLibrary\Print.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -17,12 +17,11 @@
 #include "imgui.h"
 #include "../../Engine/MonkeyEngine.h"
 #include "../GameStates/BasicState.h"
-//#include "PhysicsTestState.h"
-#include "../GameStates/GameObjectState.h"
 #include "../GameStates/Rubric2500ParticlesState.h"
 #include "../GameStates/RectPainterState.h"
 #include "../GameStates/DevSpriteAnimationState.h"
 #include "../GameStates/ShowcaseState.h"
+#include "../GameStates/Documentation/PrefabsState.h"
 
 /*=================================================================================
 Function Brief:
@@ -53,23 +52,17 @@ inline void StateChooserPanel()
   {
     Engine::StateManager::change_state(Rubric2500ParticlesState::get());
   }
-
-  //if (ImGui::Button("PhysicsTestState"))
-  //{
-  //  Engine::StateManager::change_state(PhysicsTestState::get());
-  //}
-
   if (ImGui::Button("BasicState"))
   {
     Engine::StateManager::change_state(BasicState::get());
   }
-  if (ImGui::Button("GameObjectState"))
-  {
-    Engine::StateManager::change_state(GameObjectState::get());
-  }
   if (ImGui::Button("DevSpriteAnimationState"))
   {
     Engine::StateManager::change_state(DevSpriteAnimationState::get());
+  }
+  if (ImGui::Button("PrefabsState"))
+  {
+    Engine::StateManager::change_state(PrefabsState::get());
   }
 
 
