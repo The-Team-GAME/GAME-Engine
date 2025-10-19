@@ -15,7 +15,7 @@
 //-----------------------------------------------------------------------------------
 #include "WindowManager.h"
 #include "Core.h"
-#include "WindowEvents.h"
+#include "Events/WindowEvents.h"
 #include <iostream>
 #include "ECS/ECS.h"
 
@@ -111,7 +111,7 @@ namespace Engine {
       height = h;
 
       // Send resize event to engine (this will update Graphics viewport)
-      Engine::ECS::send_event<WindowResizeEvent>(width, height);
+      Engine::ECS::send_event<Engine::Events::WindowResizeEvent>(width, height);
     }
 
     void file_drop_callback([[maybe_unused]] GLFWwindow* win, s32 count, const char** paths)
@@ -122,7 +122,7 @@ namespace Engine {
         filePaths.push_back(paths[i]);
       }
 
-      Engine::ECS::send_event<FileDropEvent>(filePaths);
+      Engine::ECS::send_event<Engine::Events::FileDropEvent>(filePaths);
     }
   }
 }

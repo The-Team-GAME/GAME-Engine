@@ -24,6 +24,17 @@ namespace Engine {
       }
     };
 
+    // Viewport structure
+    struct Viewport {
+      int x = 0;
+      int y = 0;
+      int width = 0;
+      int height = 0;
+
+      Viewport() = default;
+      Viewport(int x_, int y_, int w, int h) : x(x_), y(y_), width(w), height(h) {}
+    };
+
     // Initialization code here (e.g., setting up OpenGL context, loading shaders)
     bool init();
 
@@ -48,6 +59,29 @@ namespace Engine {
     void set_camera_zoom(f32 zoom);
     void reset_camera();
 
+    // Viewport functions
+    void set_viewport(const Viewport& viewport);
+    Viewport get_viewport();
+
+    // Coordinate conversion functions
+    // Convert screen coordinates (actual window pixels) to virtual coordinates
+    Math::Vec2D screen_to_virtual(const Math::Vec2D& screen_pos);
+
+    // Convert virtual coordinates to screen coordinates
+    Math::Vec2D virtual_to_screen(const Math::Vec2D& virtual_pos);
+
+    // Convert virtual coordinates to world coordinates (accounting for camera)
+    Math::Vec2D virtual_to_world(const Math::Vec2D& virtual_pos);
+
+    // Convert world coordinates to virtual coordinates (accounting for camera)
+    Math::Vec2D world_to_virtual(const Math::Vec2D& world_pos);
+
+    // Convert screen coordinates directly to world coordinates
+    Math::Vec2D screen_to_world(const Math::Vec2D& screen_pos);
+
+    // Convert world coordinates directly to screen coordinates
+    Math::Vec2D world_to_screen(const Math::Vec2D& world_pos);
+
     // Drawing functions
 
     void draw_rect(const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color);
@@ -65,5 +99,5 @@ namespace Engine {
     void clear_screen(const Math::Vec4D& color);
     void clear_screen(Engine::Graphics::Texture texture);
 
-  }
-}
+  } // namespace Graphics
+} // namespace Engine

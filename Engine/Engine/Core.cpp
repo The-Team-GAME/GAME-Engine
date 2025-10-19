@@ -31,7 +31,7 @@
 #include "Audio/AudioPlayerInternal.h"
 #include "Resources.h"
 #include "ECS/ECS.h"
-#include "WindowEvents.h"
+#include "Events/WindowEvents.h"
 #include "Systems/Systems.h"
 
 namespace {
@@ -71,12 +71,14 @@ namespace Engine
       throw std::runtime_error("Failed to initialize audio manager");
     }
 
+    Engine::Graphics::set_viewport({ 0, 0, window_width, window_height });
 
-    // Register the graphics resize system
-    //Engine::ECS::add_event_listener<WindowResizeEvent>([](const WindowResizeEvent& event) {
-    //  GRAPHICS.set_viewport(event.width, event.height); //TODO: bring back when implmemented in new graphics
-    //  }
-    //);
+    // Register the graphics resize system 
+    Engine::ECS::add_event_listener<Engine::Events::WindowResizeEvent>([](const Engine::Events::WindowResizeEvent& event)
+      {
+        Engine::Graphics::set_viewport({ 0, 0, event.width, event.height });
+      }
+    );
 
     StateManager::init(initialState);
   }

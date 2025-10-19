@@ -6,6 +6,8 @@
 #include "../Resources.h"
 #include <vector>
 #include "../Perf.h"
+#include "../ECS/ECS.h"
+#include "../Events/WindowEvents.h"
 
 namespace Engine {
   namespace Graphics {
@@ -51,6 +53,8 @@ namespace Engine {
     };
 
     BatchState batch_state;
+
+    Viewport current_viewport;
 
     // Helper function to get the current projection matrix
     glm::mat4 get_projection_matrix() {
@@ -401,6 +405,99 @@ namespace Engine {
       current_camera.position = Math::Vec2D(0.0f, 0.0f);
       current_camera.rotation = 0.0f;
       current_camera.zoom = 1.0f;
+    }
+
+    void set_viewport(const Viewport& viewport) {
+      current_viewport = viewport;
+      glViewport(current_viewport.x, current_viewport.y, current_viewport.width, current_viewport.height);
+    }
+
+    Viewport get_viewport() {
+      return current_viewport;
+    }
+
+    Math::Vec2D screen_to_virtual(const Math::Vec2D& screen_pos) {
+      // Convert from screen pixels to virtual resolution coordinates
+      float scale_x = virtual_width / current_viewport.width;
+      float scale_y = virtual_height / current_viewport.height;
+
+      return Math::Vec2D(
+        screen_pos.x * scale_x,
+        screen_pos.y * scale_y
+      );
+    }
+
+    Math::Vec2D virtual_to_screen(const Math::Vec2D& virtual_pos) {
+      // Convert from virtual resolution to screen pixels
+      float scale_x = current_viewport.width / virtual_width;
+      float scale_y = current_viewport.height / virtual_height;
+
+      return Math::Vec2D(
+        virtual_pos.x * scale_x,
+        virtual_pos.y * scale_y
+      );
+    }
+
+    Math::Vec2D virtual_to_world(const Math::Vec2D& virtual_pos) {
+      // Apply inverse camera transformation
+      // Center of screen in virtual space
+      float center_x = virtual_width * 0.5f;
+      float center_y = virtual_height * 0.5f;
+
+      // Start with virtual position
+      glm::vec4 pos = glm::vec4(virtual_pos.x, virtual_pos.y, 0.0f, 1.0f);
+
+      // Apply inverse view transformation (reverse of get_view_matrix)
+      glm::mat4 inverse_view = glm::mat4(1.0f);
+
+      // Step 1: Translate to center
+      inverse_view = glm::translate(inverse_view, glm::vec3(center_x, center_y, 0.0f));
+
+      // Step 2: Apply inverse zoom
+      if (current_camera.zoom != 0.0f) {
+        inverse_view = glm::scale(inverse_view, glm::vec3(1.0f / current_camera.zoom, 1.0f / current_camera.zoom, 1.0f));
+      }
+
+      // Step 3: Apply inverse rotation
+      if (current_camera.rotation != 0.0f) {
+        inverse_view = glm::rotate(inverse_view, glm::radians(current_camera.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+      }
+
+      // Step 4: Translate back from center
+      inverse_view = glm::translate(inverse_view, glm::vec3(-center_x, -center_y, 0.0f));
+
+      // Step 5: Apply camera position offset
+      inverse_view = glm::translate(inverse_view, glm::vec3(current_camera.position.x, current_camera.position.y, 0.0f));
+
+      glm::vec4 world_pos = inverse_view * pos;
+
+      return Math::Vec2D(world_pos.x, world_pos.y);
+    }
+
+    Math::Vec2D world_to_virtual(const Math::Vec2D& world_pos) {
+      // Apply camera transformation (same as get_view_matrix)
+      float center_x = virtual_width * 0.5f;
+      float center_y = virtual_height * 0.5f;
+
+      glm::vec4 pos = glm::vec4(world_pos.x, world_pos.y, 0.0f, 1.0f);
+
+      // Apply view transformation
+      glm::mat4 view = get_view_matrix();
+      glm::vec4 virtual_pos = view * pos;
+
+      return Math::Vec2D(virtual_pos.x, virtual_pos.y);
+    }
+
+    Math::Vec2D screen_to_world(const Math::Vec2D& screen_pos) {
+      // First convert screen to virtual, then virtual to world
+      Math::Vec2D virtual_pos = screen_to_virtual(screen_pos);
+      return virtual_to_world(virtual_pos);
+    }
+
+    Math::Vec2D world_to_screen(const Math::Vec2D& world_pos) {
+      // First convert world to virtual, then virtual to screen
+      Math::Vec2D virtual_pos = world_to_virtual(world_pos);
+      return virtual_to_screen(virtual_pos);
     }
 
     void draw_rect(const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color)

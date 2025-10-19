@@ -20,6 +20,7 @@
 #include <glm/glm.hpp>
 #include "Perf.h"
 #include "WindowManager.h"
+#include "Graphics/Renderer.h"
 
 namespace
 {
@@ -73,9 +74,10 @@ namespace Engine
     f64 xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
 
+    //std::cout << "Raw Mouse Position: (" << xpos << ", " << ypos << ")\n";
+
     // Convert from window coordinates to virtual coordinates using Graphics system
-    //mousePosition = Engine::GRAPHICS.screen_to_virtual(static_cast<f32>(xpos), static_cast<f32>(ypos)); // TODO: re-enable when virtual coord is implemented in new Graphics
-    mousePosition = glm::vec2(static_cast<f32>(xpos), static_cast<f32>(ypos));
+    mousePosition = Engine::Graphics::screen_to_virtual({ static_cast<f32>(xpos), static_cast<f32>(ypos) });
 
     //std::cout << "Mouse Position: (" << mousePosition.x << ", " << mousePosition.y << ")\n";
 
@@ -93,7 +95,7 @@ namespace Engine
   }
 
   bool Input::is_key_held(s32 key)
-  { 
+  {
     return currentKeys[key];
   }
 
@@ -119,13 +121,6 @@ namespace Engine
 
   glm::vec2 Input::GetMouseWorldPosition()
   {
-    // Get the raw screen coordinates
-    GLFWwindow* window = Engine::WindowManager::get_window();
-    f64 xpos, ypos;
-    glfwGetCursorPos(window, &xpos, &ypos);
-
-    // Convert screen coordinates to world coordinates using Graphics system
-    //return Engine::GRAPHICS.screen_to_world(static_cast<f32>(xpos), static_cast<f32>(ypos)); // TODO: re-enable when world coord is implemented in new Graphics
-    return glm::vec2(static_cast<f32>(xpos), static_cast<f32>(ypos));
+    return Engine::Graphics::virtual_to_world(mousePosition);
   }
 }

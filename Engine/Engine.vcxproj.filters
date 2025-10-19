@@ -137,7 +137,7 @@
     <ClInclude Include="Engine\Systems\GraphicsSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\WindowEvents.h">
+    <ClInclude Include="Engine\Events\WindowEvents.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GameLogic\Components\Components.h">
@@ -297,6 +297,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Reflection\ReflectionLibrary\Print.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLogic\GameStates\Documentation\PrefabsState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
