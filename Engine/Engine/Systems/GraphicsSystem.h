@@ -19,12 +19,19 @@ namespace Engine
         auto* color = entity.get_component<Components::Color>();
         auto* texture = entity.get_component<Components::Texture>();
 
+        // Get parallax factor if it exists, otherwise use default (1.0, 1.0)
+        Math::Vec2D parallax(1.0f, 1.0f);
+        if (auto* pf = entity.get_component<Components::ParallaxFactor>()) {
+          parallax = *pf;
+        }
+
         Engine::Graphics::draw_texture(
           texture->texture_handle,
           Math::Vec2D(transform->position.x, transform->position.y),
           Math::Vec2D(transform->scale.x, transform->scale.y),
           transform->rotation,
-          *color
+          *color,
+          parallax
         );
       }
     };
@@ -41,6 +48,12 @@ namespace Engine
         auto* texture = entity.get_component<Components::Texture>();
         auto* atlas = entity.get_component<Components::TextureAtlas>();
 
+        // Get parallax factor if it exists, otherwise use default (1.0, 1.0)
+        Math::Vec2D parallax(1.0f, 1.0f);
+        if (auto* pf = entity.get_component<Components::ParallaxFactor>()) {
+          parallax = *pf;
+        }
+
         // Ensure drawIndex is within bounds
         if (atlas->drawIndex < atlas->subTextures.size()) {
           const auto& subTexture = atlas->subTextures[atlas->drawIndex];
@@ -51,7 +64,8 @@ namespace Engine
             Math::Vec2D(transform->position.x, transform->position.y),
             Math::Vec2D(transform->scale.x, transform->scale.y),
             transform->rotation,
-            *color
+            *color,
+            parallax
           );
         }
       }
@@ -69,6 +83,12 @@ namespace Engine
         auto* font = entity.get_component<Components::Font>();
         auto* text = entity.get_component<Components::Text>();
 
+        // Get parallax factor if it exists, otherwise use default (1.0, 1.0)
+        Math::Vec2D parallax(1.0f, 1.0f);
+        if (auto* pf = entity.get_component<Components::ParallaxFactor>()) {
+          parallax = *pf;
+        }
+
         // Use the average of scale.x and scale.y as the text scale
         float text_scale = (transform->scale.x + transform->scale.y) * 0.5f;
 
@@ -77,7 +97,8 @@ namespace Engine
           text->content,
           Math::Vec2D(transform->position.x, transform->position.y),
           text_scale,
-          *color
+          *color,
+          parallax
         );
       }
     };

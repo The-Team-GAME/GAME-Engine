@@ -280,6 +280,16 @@ namespace Components
     };
   };
 
+  struct ParallaxFactor : public Math::Vec2D {
+    f32 x_factor;
+    f32 y_factor;
+
+    // Default constructor - creates normal parallax (1.0, 1.0) (Full camera movement)
+    ParallaxFactor(f32 x = 1.0f, f32 y = 1.0f)
+      : Math::Vec2D(x, y), x_factor(this->x), y_factor(this->y) {
+    }
+  };
+
 }
 
 REFLECT_FIELDS(Components::Text, content)
@@ -288,3 +298,4 @@ REFLECT_CUSTOM(Components::Texture, path)
 REFLECT_CUSTOM(Components::Font, path, font_size)
 REFLECT_CUSTOM(Components::TextureAtlas, tex_coords_list, drawIndex)
 REFLECT_CUSTOM(Components::Animation, durations, before_times, startTime, totalDuration)
+REFLECT_FIELDS(Components::ParallaxFactor, x_factor, y_factor)

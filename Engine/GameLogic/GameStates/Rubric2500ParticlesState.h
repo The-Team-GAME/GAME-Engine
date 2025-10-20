@@ -37,12 +37,17 @@ public:
         1.0f
       );
 
+      // Calculate parallax factor based on entity index
+      // First entity (i=0) has parallax 0.2, last entity (i=2499) has parallax 1.0
+      f32 parallax_factor = 0.2f + (static_cast<f32>(i) / 2499.0f) * 0.8f;
+
       auto temp = Engine::ECS::create_entity()
         .add_component<Components::Tag<"Rubric2500ParticlesState">>()
         .add_component<Components::Transform2D>(x, y, rotation, size, size)
         .add_component<Components::Color>(color)
         .add_component<Components::RigidBody>()
-        .add_component<Components::Texture>(Engine::Resources::get_rect_texture());
+        .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
+        .add_component<Components::ParallaxFactor>(parallax_factor, parallax_factor);
 
       temp.get_component<Components::RigidBody>()->angular_velocity = 30.0f + static_cast<f32>(rand() % 90); // Random rotation speed between 30 and 120 degrees per second 
     }
