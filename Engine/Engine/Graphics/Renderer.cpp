@@ -476,8 +476,8 @@ namespace Engine {
 
     Math::Vec2D world_to_virtual(const Math::Vec2D& world_pos) {
       // Apply camera transformation (same as get_view_matrix)
-      float center_x = virtual_width * 0.5f;
-      float center_y = virtual_height * 0.5f;
+      /*float center_x = virtual_width * 0.5f;
+      float center_y = virtual_height * 0.5f;*/
 
       glm::vec4 pos = glm::vec4(world_pos.x, world_pos.y, 0.0f, 1.0f);
 
