@@ -37,6 +37,7 @@ namespace Engine {
       glm::vec2 position;
       glm::vec2 texCoord;
       glm::vec4 color;
+      glm::vec2 parallax_factor;
     };
 
     // Batch state
@@ -107,6 +108,9 @@ namespace Engine {
       shader->set_mat4("u_view", get_view_matrix());
       shader->set_mat4("u_projection", get_projection_matrix());
 
+      // Set camera position for parallax calculations
+      shader->set_vec2("u_camera_position", current_camera.position.x, current_camera.position.y);
+
       // Upload vertices to GPU
       glBindVertexArray(vao);
       glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -158,7 +162,8 @@ namespace Engine {
 
     // Helper function to draw a quad with custom texture coordinates
     void draw_quad(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size,
-      f32 rotation, const Math::Vec4D& color, const std::array<Math::Vec2D, 4>& tex_coords) {
+      f32 rotation, const Math::Vec4D& color, const std::array<Math::Vec2D, 4>& tex_coords,
+      const glm::vec2& parallax_factor = glm::vec2(1.0f, 1.0f)) {
       if (!texture || texture->id == 0) {
         Log::warning("Attempted to draw invalid texture");
         return;
@@ -199,6 +204,7 @@ namespace Engine {
         vertices[i].position = glm::vec2(transformed.x, transformed.y);
         vertices[i].texCoord = glm::vec2(tex_coords[i].x, tex_coords[i].y);
         vertices[i].color = normalized_color;
+        vertices[i].parallax_factor = parallax_factor;
       }
 
       // Add to batch instead of drawing immediately
@@ -226,21 +232,25 @@ namespace Engine {
       vertices[0].position = glm::vec2(position.x, position.y + size.y);
       vertices[0].texCoord = glm::vec2(tex_coords[0].x, tex_coords[0].y);
       vertices[0].color = normalized_color;
+      vertices[0].parallax_factor = glm::vec2(1.0f, 1.0f); // Text always at 1.0 (normal movement)
 
       // Bottom-right
       vertices[1].position = glm::vec2(position.x + size.x, position.y + size.y);
       vertices[1].texCoord = glm::vec2(tex_coords[1].x, tex_coords[1].y);
       vertices[1].color = normalized_color;
+      vertices[1].parallax_factor = glm::vec2(1.0f, 1.0f);
 
       // Top-right
       vertices[2].position = glm::vec2(position.x + size.x, position.y);
       vertices[2].texCoord = glm::vec2(tex_coords[2].x, tex_coords[2].y);
       vertices[2].color = normalized_color;
+      vertices[2].parallax_factor = glm::vec2(1.0f, 1.0f);
 
       // Top-left
       vertices[3].position = glm::vec2(position.x, position.y);
       vertices[3].texCoord = glm::vec2(tex_coords[3].x, tex_coords[3].y);
       vertices[3].color = normalized_color;
+      vertices[3].parallax_factor = glm::vec2(1.0f, 1.0f);
 
       // Add to batch instead of drawing immediately
       batch_quad(atlas_texture.id, vertices);
@@ -253,15 +263,21 @@ namespace Engine {
         layout (location = 0) in vec2 a_position;
         layout (location = 1) in vec2 a_texCoord;
         layout (location = 2) in vec4 a_color;
+        layout (location = 3) in vec2 a_parallax_factor;
         
         out vec2 v_texCoord;
         out vec4 v_color;
         
         uniform mat4 u_projection;
         uniform mat4 u_view;
+        uniform vec2 u_camera_position;
         
         void main() {
-          gl_Position = u_projection * u_view * vec4(a_position, 0.0, 1.0);
+          // Apply parallax effect to position
+          vec2 parallax_offset = u_camera_position * (1.0 - a_parallax_factor);
+          vec2 parallax_position = a_position + parallax_offset;
+          
+          gl_Position = u_projection * u_view * vec4(parallax_position, 0.0, 1.0);
           v_texCoord = a_texCoord;
           v_color = a_color;
         }
@@ -328,6 +344,10 @@ namespace Engine {
       // Color attribute
       glEnableVertexAttribArray(2);
       glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, color));
+
+      // Parallax factor attribute
+      glEnableVertexAttribArray(3);
+      glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, parallax_factor));
 
       glBindVertexArray(0);
 
@@ -514,12 +534,12 @@ namespace Engine {
         Math::Vec2D(0.0f, 0.0f)  // Top-left
       };
 
-      draw_quad(texture, position, size, rotation, color, default_tex_coords);
+      draw_quad(texture, position, size, rotation, color, default_tex_coords, glm::vec2(1.0f, 1.0f));
     }
 
     void draw_subtexture(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords,
       const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
-      draw_quad(texture, position, size, rotation, color, tex_coords);
+      draw_quad(texture, position, size, rotation, color, tex_coords, glm::vec2(1.0f, 1.0f));
     }
 
     void draw_text(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color) {
