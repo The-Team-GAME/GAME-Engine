@@ -160,7 +160,7 @@ namespace Engine {
     // Helper function to draw a quad with custom texture coordinates
     void draw_quad(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size,
       f32 rotation, const Math::Vec4D& color, const std::array<Math::Vec2D, 4>& tex_coords,
-      const glm::vec2& parallax_factor = glm::vec2(1.0f, 1.0f)) {
+      const Math::Vec2D& parallax_factor = Math::Vec2D(1.0f, 1.0f)) {
       if (!texture || texture->id == 0) {
         Log::warning("Attempted to draw invalid texture");
         return;
@@ -210,7 +210,7 @@ namespace Engine {
 
     // Helper function to draw a glyph (character) at a specific position without rotation
     void draw_glyph(const TextureData& atlas_texture, const std::array<Math::Vec2D, 4>& tex_coords,
-      const Math::Vec2D& position, const Math::Vec2D& size, const Math::Vec4D& color, const glm::vec2& parallax_factor = glm::vec2(1.0f, 1.0f)) {
+      const Math::Vec2D& position, const Math::Vec2D& size, const Math::Vec4D& color, const Math::Vec2D& parallax_factor = Math::Vec2D(1.0f, 1.0f)) {
       if (atlas_texture.id == 0) {
         return;
       }
