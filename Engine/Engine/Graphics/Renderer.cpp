@@ -210,7 +210,7 @@ namespace Engine {
 
     // Helper function to draw a glyph (character) at a specific position without rotation
     void draw_glyph(const TextureData& atlas_texture, const std::array<Math::Vec2D, 4>& tex_coords,
-      const Math::Vec2D& position, const Math::Vec2D& size, const Math::Vec4D& color) {
+      const Math::Vec2D& position, const Math::Vec2D& size, const Math::Vec4D& color, const glm::vec2& parallax_factor = glm::vec2(1.0f, 1.0f)) {
       if (atlas_texture.id == 0) {
         return;
       }
@@ -229,25 +229,25 @@ namespace Engine {
       vertices[0].position = glm::vec2(position.x, position.y + size.y);
       vertices[0].texCoord = glm::vec2(tex_coords[0].x, tex_coords[0].y);
       vertices[0].color = normalized_color;
-      vertices[0].parallax_factor = glm::vec2(1.0f, 1.0f); // Text always at 1.0 (normal movement)
+      vertices[0].parallax_factor = parallax_factor;
 
       // Bottom-right
       vertices[1].position = glm::vec2(position.x + size.x, position.y + size.y);
       vertices[1].texCoord = glm::vec2(tex_coords[1].x, tex_coords[1].y);
       vertices[1].color = normalized_color;
-      vertices[1].parallax_factor = glm::vec2(1.0f, 1.0f);
+      vertices[1].parallax_factor = parallax_factor;
 
       // Top-right
       vertices[2].position = glm::vec2(position.x + size.x, position.y);
       vertices[2].texCoord = glm::vec2(tex_coords[2].x, tex_coords[2].y);
       vertices[2].color = normalized_color;
-      vertices[2].parallax_factor = glm::vec2(1.0f, 1.0f);
+      vertices[2].parallax_factor = parallax_factor;
 
       // Top-left
       vertices[3].position = glm::vec2(position.x, position.y);
       vertices[3].texCoord = glm::vec2(tex_coords[3].x, tex_coords[3].y);
       vertices[3].color = normalized_color;
-      vertices[3].parallax_factor = glm::vec2(1.0f, 1.0f);
+      vertices[3].parallax_factor = parallax_factor;
 
       // Add to batch instead of drawing immediately
       batch_quad(atlas_texture.id, vertices);
@@ -526,9 +526,9 @@ namespace Engine {
       return virtual_to_screen(virtual_pos);
     }
 
-    void draw_rect(const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color)
+    void draw_rect(const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, const Math::Vec2D& parallax_factor)
     {
-      draw_texture(Engine::Resources::get_rect_texture(), position, size, rotation, color);
+      draw_texture(Engine::Resources::get_rect_texture(), position, size, rotation, color, parallax_factor);
     }
 
     void draw_texture(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, const Math::Vec2D& parallax_factor) {
@@ -548,7 +548,7 @@ namespace Engine {
       draw_quad(texture, position, size, rotation, color, tex_coords, glm::vec2(parallax_factor.x, parallax_factor.y));
     }
 
-    void draw_text(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color) {
+    void draw_text(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color, const Math::Vec2D& parallax_factor) {
       if (!font || font->texture_atlas.id == 0) {
         Log::warning("Attempted to draw text with invalid font");
         return;
@@ -580,9 +580,9 @@ namespace Engine {
         float w = glyph.size.x * scale;
         float h = glyph.size.y * scale;
 
-        // Draw the glyph
+        // Draw the glyph with parallax factor
         draw_glyph(font->texture_atlas, glyph.tex_coords,
-          Math::Vec2D(xpos, ypos), Math::Vec2D(w, h), color);
+          Math::Vec2D(xpos, ypos), Math::Vec2D(w, h), color, glm::vec2(parallax_factor.x, parallax_factor.y));
 
         // Advance cursor to next glyph position
         x += (glyph.advance >> 6) * scale;
