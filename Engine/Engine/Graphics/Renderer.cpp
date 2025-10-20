@@ -70,22 +70,22 @@ namespace Engine {
       float center_x = virtual_width * 0.5f;
       float center_y = virtual_height * 0.5f;
 
-      // Step 1: Translate to camera position (inverted for camera movement)
-      view = glm::translate(view, glm::vec3(-current_camera.position.x, -current_camera.position.y, 0.0f));
-
-      // Step 2: Translate to center (for rotation and zoom around center)
+      // Step 1: Translate to center (for rotation and zoom around center)
       view = glm::translate(view, glm::vec3(center_x, center_y, 0.0f));
 
-      // Step 3: Apply rotation around center
+      // Step 2: Apply rotation around center
       if (current_camera.rotation != 0.0f) {
         view = glm::rotate(view, glm::radians(-current_camera.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
       }
 
-      // Step 4: Apply zoom (scale) around center
+      // Step 3: Apply zoom (scale) around center
       view = glm::scale(view, glm::vec3(current_camera.zoom, current_camera.zoom, 1.0f));
 
-      // Step 5: Translate back from center
+      // Step 4: Translate back from center
       view = glm::translate(view, glm::vec3(-center_x, -center_y, 0.0f));
+
+      // Step 5: Translate to camera position (inverted for camera movement)
+      view = glm::translate(view, glm::vec3(-current_camera.position.x, -current_camera.position.y, 0.0f));
 
       return view;
     }
