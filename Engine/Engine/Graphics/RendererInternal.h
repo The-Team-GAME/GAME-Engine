@@ -7,6 +7,7 @@
 #include <string>
 #include "../Logger.h"
 #include "../TypeDef.h"
+#include "../Math/Vector2D.h"
 
 namespace Engine {
   namespace Graphics
@@ -23,13 +24,13 @@ namespace Engine {
     // Used by TextureAtlas and Font components
     struct SubTexture
     {
-      std::array<glm::vec2, 4> tex_coords; // UV coordinates in the atlas
+      std::array<Math::Vec2D, 4> tex_coords; // UV coordinates in the atlas
     };
 
     // Used by Font component
     struct Glyph
     {
-      std::array<glm::vec2, 4> tex_coords; // UV coordinates in the atlas
+      std::array<Math::Vec2D, 4> tex_coords; // UV coordinates in the atlas
       glm::ivec2 size;
       glm::ivec2 bearing;
       unsigned int advance;

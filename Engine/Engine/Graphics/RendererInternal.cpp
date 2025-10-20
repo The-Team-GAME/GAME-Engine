@@ -200,7 +200,7 @@ Engine::Graphics::FontData::FontData(const std::string& path, unsigned int size)
 
     // Store glyph info
     Glyph g = {
-        { glm::vec2(x0, y1), glm::vec2(x1, y1), glm::vec2(x1, y0), glm::vec2(x0, y0) }, // UV coords (bottom-left, bottom-right, top-right, top-left)
+        { Math::Vec2D(x0, y1), Math::Vec2D(x1, y1), Math::Vec2D(x1, y0), Math::Vec2D(x0, y0) }, // UV coords (bottom-left, bottom-right, top-right, top-left)
         glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
         glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
         static_cast<u32>(face->glyph->advance.x)

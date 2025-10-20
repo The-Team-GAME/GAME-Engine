@@ -158,7 +158,7 @@ namespace Engine {
 
     // Helper function to draw a quad with custom texture coordinates
     void draw_quad(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size,
-      f32 rotation, const Math::Vec4D& color, const std::array<glm::vec2, 4>& tex_coords) {
+      f32 rotation, const Math::Vec4D& color, const std::array<Math::Vec2D, 4>& tex_coords) {
       if (!texture || texture->id == 0) {
         Log::warning("Attempted to draw invalid texture");
         return;
@@ -197,7 +197,7 @@ namespace Engine {
       for (int i = 0; i < 4; i++) {
         glm::vec4 transformed = model * glm::vec4(base_positions[i], 0.0f, 1.0f);
         vertices[i].position = glm::vec2(transformed.x, transformed.y);
-        vertices[i].texCoord = tex_coords[i];
+        vertices[i].texCoord = glm::vec2(tex_coords[i].x, tex_coords[i].y);
         vertices[i].color = normalized_color;
       }
 
@@ -206,7 +206,7 @@ namespace Engine {
     }
 
     // Helper function to draw a glyph (character) at a specific position without rotation
-    void draw_glyph(const TextureData& atlas_texture, const std::array<glm::vec2, 4>& tex_coords,
+    void draw_glyph(const TextureData& atlas_texture, const std::array<Math::Vec2D, 4>& tex_coords,
       const Math::Vec2D& position, const Math::Vec2D& size, const Math::Vec4D& color) {
       if (atlas_texture.id == 0) {
         return;
@@ -224,22 +224,22 @@ namespace Engine {
 
       // Bottom-left
       vertices[0].position = glm::vec2(position.x, position.y + size.y);
-      vertices[0].texCoord = tex_coords[0];
+      vertices[0].texCoord = glm::vec2(tex_coords[0].x, tex_coords[0].y);
       vertices[0].color = normalized_color;
 
       // Bottom-right
       vertices[1].position = glm::vec2(position.x + size.x, position.y + size.y);
-      vertices[1].texCoord = tex_coords[1];
+      vertices[1].texCoord = glm::vec2(tex_coords[1].x, tex_coords[1].y);
       vertices[1].color = normalized_color;
 
       // Top-right
       vertices[2].position = glm::vec2(position.x + size.x, position.y);
-      vertices[2].texCoord = tex_coords[2];
+      vertices[2].texCoord = glm::vec2(tex_coords[2].x, tex_coords[2].y);
       vertices[2].color = normalized_color;
 
       // Top-left
       vertices[3].position = glm::vec2(position.x, position.y);
-      vertices[3].texCoord = tex_coords[3];
+      vertices[3].texCoord = glm::vec2(tex_coords[3].x, tex_coords[3].y);
       vertices[3].color = normalized_color;
 
       // Add to batch instead of drawing immediately
@@ -507,17 +507,17 @@ namespace Engine {
 
     void draw_texture(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
       // Default texture coordinates for full texture (bottom-left, bottom-right, top-right, top-left)
-      std::array<glm::vec2, 4> default_tex_coords = {
-        glm::vec2(0.0f, 1.0f), // Bottom-left
-        glm::vec2(1.0f, 1.0f), // Bottom-right
-        glm::vec2(1.0f, 0.0f), // Top-right
-        glm::vec2(0.0f, 0.0f)  // Top-left
+      std::array<Math::Vec2D, 4> default_tex_coords = {
+        Math::Vec2D(0.0f, 1.0f), // Bottom-left
+        Math::Vec2D(1.0f, 1.0f), // Bottom-right
+        Math::Vec2D(1.0f, 0.0f), // Top-right
+        Math::Vec2D(0.0f, 0.0f)  // Top-left
       };
 
       draw_quad(texture, position, size, rotation, color, default_tex_coords);
     }
 
-    void draw_subtexture(Engine::Graphics::Texture texture, const std::array<glm::vec2, 4>& tex_coords,
+    void draw_subtexture(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords,
       const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
       draw_quad(texture, position, size, rotation, color, tex_coords);
     }

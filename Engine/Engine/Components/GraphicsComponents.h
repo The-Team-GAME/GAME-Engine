@@ -70,7 +70,7 @@ namespace Components
     }
 
     struct Reflector {
-      std::vector<std::array<glm::vec2, 4>> tex_coords_list;
+      std::vector<std::array<Math::Vec2D, 4>> tex_coords_list;
       size_t drawIndex;
 
       static Reflector reflect(const TextureAtlas& atlas) {
