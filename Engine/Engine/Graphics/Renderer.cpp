@@ -108,9 +108,6 @@ namespace Engine {
       shader->set_mat4("u_view", get_view_matrix());
       shader->set_mat4("u_projection", get_projection_matrix());
 
-      // Set camera position for parallax calculations
-      shader->set_vec2("u_camera_position", current_camera.position.x, current_camera.position.y);
-
       // Upload vertices to GPU
       glBindVertexArray(vao);
       glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -270,14 +267,23 @@ namespace Engine {
         
         uniform mat4 u_projection;
         uniform mat4 u_view;
-        uniform vec2 u_camera_position;
         
         void main() {
-          // Apply parallax effect to position
-          vec2 parallax_offset = u_camera_position * (1.0 - a_parallax_factor);
-          vec2 parallax_position = a_position + parallax_offset;
+          // Apply view matrix with parallax scaling
+          // parallax_factor of 1.0 = full camera effect
+          // parallax_factor of 0.0 = no camera effect (fixed to screen)
+          // parallax_factor of 0.5 = half camera effect (distant background)
           
-          gl_Position = u_projection * u_view * vec4(parallax_position, 0.0, 1.0);
+          vec4 world_pos = vec4(a_position, 0.0, 1.0);
+          
+          // Split the view matrix effect based on parallax factor
+          mat4 parallax_view = u_view;
+          
+          // Extract translation from view matrix and scale it by parallax factor
+          parallax_view[3][0] *= a_parallax_factor.x; // X translation
+          parallax_view[3][1] *= a_parallax_factor.y; // Y translation
+          
+          gl_Position = u_projection * parallax_view * world_pos;
           v_texCoord = a_texCoord;
           v_color = a_color;
         }
@@ -525,21 +531,21 @@ namespace Engine {
       draw_texture(Engine::Resources::get_rect_texture(), position, size, rotation, color);
     }
 
-    void draw_texture(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
+    void draw_texture(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, const Math::Vec2D& parallax_factor) {
       // Default texture coordinates for full texture (bottom-left, bottom-right, top-right, top-left)
       std::array<Math::Vec2D, 4> default_tex_coords = {
-        Math::Vec2D(0.0f, 1.0f), // Bottom-left
-        Math::Vec2D(1.0f, 1.0f), // Bottom-right
-        Math::Vec2D(1.0f, 0.0f), // Top-right
-        Math::Vec2D(0.0f, 0.0f)  // Top-left
+              Math::Vec2D(0.0f, 1.0f), // Bottom-left
+              Math::Vec2D(1.0f, 1.0f), // Bottom-right
+              Math::Vec2D(1.0f, 0.0f), // Top-right
+              Math::Vec2D(0.0f, 0.0f)  // Top-left
       };
 
-      draw_quad(texture, position, size, rotation, color, default_tex_coords, glm::vec2(1.0f, 1.0f));
+      draw_quad(texture, position, size, rotation, color, default_tex_coords, glm::vec2(parallax_factor.x, parallax_factor.y));
     }
 
     void draw_subtexture(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords,
-      const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
-      draw_quad(texture, position, size, rotation, color, tex_coords, glm::vec2(1.0f, 1.0f));
+      const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, const Math::Vec2D& parallax_factor) {
+      draw_quad(texture, position, size, rotation, color, tex_coords, glm::vec2(parallax_factor.x, parallax_factor.y));
     }
 
     void draw_text(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color) {
