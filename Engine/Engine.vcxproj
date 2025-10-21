@@ -130,6 +130,9 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Engine\Components\UtilityComponents.h" />
     <ClInclude Include="Engine\ECS\Prefab.h" />
     <ClInclude Include="Engine\EventManager\EventManager.h" />
+    <ClInclude Include="Engine\Events\Events.h" />
+    <ClInclude Include="Engine\Events\InputEvents.h" />
+    <ClInclude Include="Engine\Events\WindowEvents.h" />
     <ClInclude Include="Engine\GUI\ResourceManagerPanel.h" />
     <ClInclude Include="Engine\MonkeyEngine.h" />
     <ClInclude Include="Engine\Reflection\ReflectionLibrary.h" />
