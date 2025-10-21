@@ -37,7 +37,6 @@ namespace Engine {
       glm::vec2 position;
       glm::vec2 texCoord;
       glm::vec4 color;
-      glm::vec2 parallax_factor;
     };
 
     // Batch state
@@ -239,25 +238,21 @@ namespace Engine {
       vertices[0].position = glm::vec2(position.x, position.y + size.y);
       vertices[0].texCoord = glm::vec2(tex_coords[0].x, tex_coords[0].y);
       vertices[0].color = normalized_color;
-      vertices[0].parallax_factor = parallax_factor;
 
       // Bottom-right
       vertices[1].position = glm::vec2(position.x + size.x, position.y + size.y);
       vertices[1].texCoord = glm::vec2(tex_coords[1].x, tex_coords[1].y);
       vertices[1].color = normalized_color;
-      vertices[1].parallax_factor = parallax_factor;
 
       // Top-right
       vertices[2].position = glm::vec2(position.x + size.x, position.y);
       vertices[2].texCoord = glm::vec2(tex_coords[2].x, tex_coords[2].y);
       vertices[2].color = normalized_color;
-      vertices[2].parallax_factor = parallax_factor;
 
       // Top-left
       vertices[3].position = glm::vec2(position.x, position.y);
       vertices[3].texCoord = glm::vec2(tex_coords[3].x, tex_coords[3].y);
       vertices[3].color = normalized_color;
-      vertices[3].parallax_factor = parallax_factor;
 
       // Add to batch instead of drawing immediately
       batch_quad(atlas_texture.id, vertices);
@@ -345,10 +340,6 @@ namespace Engine {
       // Color attribute
       glEnableVertexAttribArray(2);
       glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, color));
-
-      // Parallax factor attribute
-      glEnableVertexAttribArray(3);
-      glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, parallax_factor));
 
       glBindVertexArray(0);
 
