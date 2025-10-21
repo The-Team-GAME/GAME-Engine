@@ -438,13 +438,17 @@ namespace Engine {
     }
 
     Math::Vec2D screen_to_virtual(const Math::Vec2D& screen_pos) {
+      // Account for viewport offset
+      float adjusted_x = screen_pos.x - current_viewport.x;
+      float adjusted_y = screen_pos.y - current_viewport.y;
+
       // Convert from screen pixels to virtual resolution coordinates
       float scale_x = virtual_width / current_viewport.width;
       float scale_y = virtual_height / current_viewport.height;
 
       return Math::Vec2D(
-        screen_pos.x * scale_x,
-        screen_pos.y * scale_y
+        adjusted_x * scale_x,
+        adjusted_y * scale_y
       );
     }
 
@@ -454,35 +458,34 @@ namespace Engine {
       float scale_y = current_viewport.height / virtual_height;
 
       return Math::Vec2D(
-        virtual_pos.x * scale_x,
-        virtual_pos.y * scale_y
+        virtual_pos.x * scale_x + current_viewport.x,
+        virtual_pos.y * scale_y + current_viewport.y
       );
     }
 
     Math::Vec2D virtual_to_world(const Math::Vec2D& virtual_pos) {
-      // Apply inverse camera transformation
-      // Center of screen in virtual space
+      // To invert the view transformation, we need to reverse the order
+      // Original: translate to center -> rotate -> scale -> translate from center -> translate camera
+      // Inverse: translate camera inverse -> translate to center -> inverse scale -> inverse rotate -> translate from center
+
       float center_x = virtual_width * 0.5f;
       float center_y = virtual_height * 0.5f;
 
-      // Start with virtual position
       glm::vec4 pos = glm::vec4(virtual_pos.x, virtual_pos.y, 0.0f, 1.0f);
-
-      // Apply inverse view transformation (reverse order of get_view_matrix)
       glm::mat4 inverse_view = glm::mat4(1.0f);
 
-      // Step 1: Remove camera position offset first
+      // Step 1: Reverse the camera position translation
       inverse_view = glm::translate(inverse_view, glm::vec3(current_camera.position.x, current_camera.position.y, 0.0f));
 
       // Step 2: Translate to center
       inverse_view = glm::translate(inverse_view, glm::vec3(center_x, center_y, 0.0f));
 
-      // Step 3: Apply inverse zoom
+      // Step 3: Inverse scale (zoom)
       if (current_camera.zoom != 0.0f) {
         inverse_view = glm::scale(inverse_view, glm::vec3(1.0f / current_camera.zoom, 1.0f / current_camera.zoom, 1.0f));
       }
 
-      // Step 4: Apply inverse rotation
+      // Step 4: Inverse rotation (negate the angle)
       if (current_camera.rotation != 0.0f) {
         inverse_view = glm::rotate(inverse_view, glm::radians(current_camera.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
       }
@@ -491,21 +494,13 @@ namespace Engine {
       inverse_view = glm::translate(inverse_view, glm::vec3(-center_x, -center_y, 0.0f));
 
       glm::vec4 world_pos = inverse_view * pos;
-
       return Math::Vec2D(world_pos.x, world_pos.y);
     }
 
     Math::Vec2D world_to_virtual(const Math::Vec2D& world_pos) {
-      // Apply camera transformation (same as get_view_matrix)
-      /*float center_x = virtual_width * 0.5f;
-      float center_y = virtual_height * 0.5f;*/
-
       glm::vec4 pos = glm::vec4(world_pos.x, world_pos.y, 0.0f, 1.0f);
-
-      // Apply view transformation
       glm::mat4 view = get_view_matrix();
       glm::vec4 virtual_pos = view * pos;
-
       return Math::Vec2D(virtual_pos.x, virtual_pos.y);
     }
 
