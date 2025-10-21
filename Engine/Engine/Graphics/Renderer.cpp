@@ -158,8 +158,7 @@ namespace Engine {
 
     // Helper function to draw a quad with custom texture coordinates
     void draw_quad(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size,
-      f32 rotation, const Math::Vec4D& color, const std::array<Math::Vec2D, 4>& tex_coords,
-      const Math::Vec2D& parallax_factor = Math::Vec2D(1.0f, 1.0f)) {
+      f32 rotation, const Math::Vec4D& color, const std::array<Math::Vec2D, 4>& tex_coords) {
       if (!texture || texture->id == 0) {
         Log::warning("Attempted to draw invalid texture");
         return;
@@ -169,21 +168,9 @@ namespace Engine {
         Log::error("Shader is not valid");
         return;
       }
-
-      // Apply parallax offset to position on CPU
-      Math::Vec2D parallax_offset = {
-        current_camera.position.x * (1.0f - parallax_factor.x),
-        current_camera.position.y * (1.0f - parallax_factor.y)
-      };
-      Math::Vec2D parallax_position = {
-        position.x + parallax_offset.x,
-        position.y + parallax_offset.y
-      };
-
-
       // Create transformation matrix
       glm::mat4 model = glm::mat4(1.0f);
-      model = glm::translate(model, glm::vec3(parallax_position.x, parallax_position.y, 0.0f));
+      model = glm::translate(model, glm::vec3(position.x, position.y, 0.0f));
 
       if (rotation != 0.0f) {
         model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -219,7 +206,7 @@ namespace Engine {
 
     // Helper function to draw a glyph (character) at a specific position without rotation
     void draw_glyph(const TextureData& atlas_texture, const std::array<Math::Vec2D, 4>& tex_coords,
-      const Math::Vec2D& position, const Math::Vec2D& size, const Math::Vec4D& color, const Math::Vec2D& parallax_factor = Math::Vec2D(1.0f, 1.0f)) {
+      const Math::Vec2D& position, const Math::Vec2D& size, const Math::Vec4D& color) {
       if (atlas_texture.id == 0) {
         return;
       }
@@ -507,12 +494,12 @@ namespace Engine {
       return virtual_to_screen(virtual_pos);
     }
 
-    void draw_rect(const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, const Math::Vec2D& parallax_factor)
+    void draw_rect(const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color)
     {
-      draw_texture(Engine::Resources::get_rect_texture(), position, size, rotation, color, parallax_factor);
+      draw_texture(Engine::Resources::get_rect_texture(), position, size, rotation, color);
     }
 
-    void draw_texture(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, const Math::Vec2D& parallax_factor) {
+    void draw_texture(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
       // Default texture coordinates for full texture (bottom-left, bottom-right, top-right, top-left)
       std::array<Math::Vec2D, 4> default_tex_coords = {
         Math::Vec2D(0.0f, 1.0f), // Bottom-left
@@ -521,15 +508,15 @@ namespace Engine {
         Math::Vec2D(0.0f, 0.0f)  // Top-left
       };
 
-      draw_quad(texture, position, size, rotation, color, default_tex_coords, glm::vec2(parallax_factor.x, parallax_factor.y));
+      draw_quad(texture, position, size, rotation, color, default_tex_coords);
     }
 
     void draw_subtexture(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords,
-      const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, const Math::Vec2D& parallax_factor) {
-      draw_quad(texture, position, size, rotation, color, tex_coords, glm::vec2(parallax_factor.x, parallax_factor.y));
+      const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
+      draw_quad(texture, position, size, rotation, color, tex_coords);
     }
 
-    void draw_text(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color, const Math::Vec2D& parallax_factor) {
+    void draw_text(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color) {
       if (!font || font->texture_atlas.id == 0) {
         Log::warning("Attempted to draw text with invalid font");
         return;
@@ -561,9 +548,9 @@ namespace Engine {
         float w = glyph.size.x * scale;
         float h = glyph.size.y * scale;
 
-        // Draw the glyph with parallax factor
+        // Draw the glyph
         draw_glyph(font->texture_atlas, glyph.tex_coords,
-          Math::Vec2D(xpos, ypos), Math::Vec2D(w, h), color, glm::vec2(parallax_factor.x, parallax_factor.y));
+          Math::Vec2D(xpos, ypos), Math::Vec2D(w, h), color);
 
         // Advance cursor to next glyph position
         x += (glyph.advance >> 6) * scale;

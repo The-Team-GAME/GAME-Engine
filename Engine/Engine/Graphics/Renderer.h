@@ -84,15 +84,15 @@ namespace Engine {
 
     // Drawing functions
 
-    void draw_rect(const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, const Math::Vec2D& parallax_factor = Math::Vec2D(1.0f, 1.0f));
+    void draw_rect(const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color);
 
-    void draw_texture(Engine::Graphics::Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, const Math::Vec2D& parallax_factor = Math::Vec2D(1.0f, 1.0f));
+    void draw_texture(Engine::Graphics::Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color);
 
     // Draw a subtexture (part of a texture atlas) using custom texture coordinates
-    void draw_subtexture(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, const Math::Vec2D& parallax_factor = Math::Vec2D(1.0f, 1.0f));
+    void draw_subtexture(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color);
 
     // Draw text using a font
-    void draw_text(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color, const Math::Vec2D& parallax_factor = Math::Vec2D(1.0f, 1.0f));
+    void draw_text(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color);
 
     // Clear the screen with a color or texture
     void clear_screen(const Math::Vec4D& color);
