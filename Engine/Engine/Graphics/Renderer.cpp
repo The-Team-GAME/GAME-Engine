@@ -108,9 +108,6 @@ namespace Engine {
       shader->set_mat4("u_view", get_view_matrix());
       shader->set_mat4("u_projection", get_projection_matrix());
 
-      // Set camera position for parallax calculations
-      shader->set_vec2("u_camera_position", current_camera.position.x, current_camera.position.y);
-
       // Upload vertices to GPU
       glBindVertexArray(vao);
       glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -174,9 +171,20 @@ namespace Engine {
         return;
       }
 
+      // Apply parallax offset to position on CPU
+      Math::Vec2D parallax_offset = {
+        current_camera.position.x * (1.0f - parallax_factor.x),
+        current_camera.position.y * (1.0f - parallax_factor.y)
+      };
+      Math::Vec2D parallax_position = {
+        position.x + parallax_offset.x,
+        position.y + parallax_offset.y
+      };
+
+
       // Create transformation matrix
       glm::mat4 model = glm::mat4(1.0f);
-      model = glm::translate(model, glm::vec3(position.x, position.y, 0.0f));
+      model = glm::translate(model, glm::vec3(parallax_position.x, parallax_position.y, 0.0f));
 
       if (rotation != 0.0f) {
         model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -204,7 +212,6 @@ namespace Engine {
         vertices[i].position = glm::vec2(transformed.x, transformed.y);
         vertices[i].texCoord = glm::vec2(tex_coords[i].x, tex_coords[i].y);
         vertices[i].color = normalized_color;
-        vertices[i].parallax_factor = parallax_factor;
       }
 
       // Add to batch instead of drawing immediately
@@ -263,21 +270,15 @@ namespace Engine {
         layout (location = 0) in vec2 a_position;
         layout (location = 1) in vec2 a_texCoord;
         layout (location = 2) in vec4 a_color;
-        layout (location = 3) in vec2 a_parallax_factor;
         
         out vec2 v_texCoord;
         out vec4 v_color;
         
         uniform mat4 u_projection;
         uniform mat4 u_view;
-        uniform vec2 u_camera_position;
         
         void main() {
-          // Apply parallax effect to position
-          vec2 parallax_offset = u_camera_position * (1.0 - a_parallax_factor);
-          vec2 parallax_position = a_position + parallax_offset;
-          
-          gl_Position = u_projection * u_view * vec4(parallax_position, 0.0, 1.0);
+          gl_Position = u_projection * u_view * vec4(a_position, 0.0, 1.0);
           v_texCoord = a_texCoord;
           v_color = a_color;
         }
