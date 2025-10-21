@@ -7,7 +7,7 @@
 //
 // email:   chew.s@digipen.edu
 //
-// brief:   This file defines the event system for the ECS. Includes automatic event
+// brief:   This file defines the event system. Includes automatic event
 //          type ID generation and an Event wrapper class for type-safe event data
 //          storage and retrieval using std::any.
 //
@@ -15,15 +15,25 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "Types.h"
 #include <any>
 #include <functional>
 #include <unordered_map>
 #include <vector>
+#include <memory>
+#include <bitset>
+#include "../TypeDef.h"
 
 namespace Engine {
-  namespace ECS
+  namespace ECS {
+    class System;
+  }
+
+  namespace EventManager
   {
+    using EventTypeID = u32;
+    inline constexpr size_t MAX_EVENTS = 64;
+    using EventSignature = std::bitset<MAX_EVENTS>;
+    inline constexpr EventTypeID INVALID_EVENT_TYPE = 0;
 
     /* =================================== //
     // Automatic event type ID generation  //
@@ -53,6 +63,35 @@ namespace Engine {
       const T* get() const;
     };
 
-  } // namespace ECS
+    /* ================= //
+    // Event management  //
+    // ================= */
+    template <typename T, typename... Args>
+    void send_event(Args&&... args);
+
+    template <typename T>
+    void add_event_listener(std::function<void(const T&)> handler);
+
+    template <typename T>
+    void add_event_listener(std::function<void(const Event&)> handler);
+
+    void remove_event_listener(EventTypeID eventType);
+
+    template <typename T>
+    void remove_event_listener();
+
+    void update_events(const std::vector<std::unique_ptr<ECS::System>>& systems);
+
+    /* =============== //
+    // Internal state  //
+    // =============== */
+    namespace Internal
+    {
+      extern std::vector<Event> event_queue;
+      extern std::unordered_map<EventTypeID, std::vector<std::function<void(const Event&)>>> event_handlers;
+    }
+
+  } // namespace EventManager
 } // namespace Engine
 
+#include "EventManager.inl"

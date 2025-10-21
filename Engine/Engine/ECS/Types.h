@@ -28,22 +28,18 @@ namespace Engine {
     // ============== */
     using EntityID = u32;
     using ComponentTypeID = u32;
-    using EventTypeID = u32;
 
     /* =================== //
     // Constants           //
     // =================== */
     inline constexpr EntityID INVALID_ENTITY = 0;
     inline constexpr ComponentTypeID INVALID_COMPONENT_TYPE = 0;
-    inline constexpr EventTypeID INVALID_EVENT_TYPE = 0;
     inline constexpr size_t MAX_COMPONENTS = 64;
-    inline constexpr size_t MAX_EVENTS = 64;
 
     /* ======================== //
     // Bitset signatures        //
     // ======================== */
     using ComponentSignature = std::bitset<MAX_COMPONENTS>;
-    using EventSignature = std::bitset<MAX_EVENTS>;
 
   } // namespace ECS
 } // namespace Engine

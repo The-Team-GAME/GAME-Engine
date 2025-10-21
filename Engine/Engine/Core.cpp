@@ -33,6 +33,7 @@
 #include "ECS/ECS.h"
 #include "Events/WindowEvents.h"
 #include "Systems/Systems.h"
+#include "EventManager/EventManager.h"
 
 namespace {
   f64 accumulator{};
@@ -74,7 +75,7 @@ namespace Engine
     Engine::Graphics::set_viewport({ 0, 0, window_width, window_height });
 
     // Register the graphics resize system 
-    Engine::ECS::add_event_listener<Engine::Events::WindowResizeEvent>([](const Engine::Events::WindowResizeEvent& event)
+    Engine::EventManager::add_event_listener<Engine::Events::WindowResizeEvent>([](const Engine::Events::WindowResizeEvent& event)
       {
         Engine::Graphics::set_viewport({ 0, 0, event.width, event.height });
       }

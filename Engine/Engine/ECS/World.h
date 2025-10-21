@@ -21,7 +21,6 @@
 #include "ComponentArray.h"
 #include "Entity.h"
 #include "System.h"
-#include "EventManager.h"
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
@@ -82,23 +81,6 @@ namespace Engine {
     template <typename T>
     void remove_system();
 
-    /* ================= //
-    // Event management  //
-    // ================= */
-    template <typename T, typename... Args>
-    void send_event(Args&&... args);
-
-    template <typename T>
-    void add_event_listener(std::function<void(const T&)> handler);
-
-    template <typename T>
-    void add_event_listener(std::function<void(const Event&)> handler);
-
-    void remove_event_listener(EventTypeID eventType);
-
-    template <typename T>
-    void remove_event_listener();
-
     /* ==================== //
     // Main update loop     //
     // ==================== */
@@ -135,8 +117,6 @@ namespace Engine {
       extern std::unordered_map<EntityID, ComponentSignature> entity_signatures;
       extern std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> component_arrays;
       extern std::vector<std::unique_ptr<System>> systems;
-      extern std::vector<Event> event_queue;
-      extern std::unordered_map<EventTypeID, std::vector<std::function<void(const Event&)>>> event_handlers;
 
       void entity_component_changed(EntityID entity);
       bool system_matches_entity(const System& system, EntityID entity);

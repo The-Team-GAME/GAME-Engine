@@ -30,12 +30,12 @@ namespace Engine {
 
     void System::draw() {
       for (EntityID entityId : entities) {
-        const Entity entity(entityId);
+        Entity entity(entityId);
         draw_entity(entity);
       }
     }
 
-    void System::on_event([[maybe_unused]] const Event& event, [[maybe_unused]] EntityID entity) {}
+    void System::on_event([[maybe_unused]] const EventManager::Event& event, [[maybe_unused]] EntityID entity) {}
 
     void System::update_entity([[maybe_unused]] Entity& entity) {}
 
@@ -47,32 +47,14 @@ namespace Engine {
 
     void System::add_entity(EntityID entity) {
       if (entities.insert(entity).second) {
-        Entity entityHandle(entity);
-        on_entity_added(entityHandle);
+        on_entity_added(Entity(entity));
       }
     }
 
     void System::remove_entity(EntityID entity) {
       if (entities.erase(entity) > 0) {
-        Entity entityHandle(entity);
-        on_entity_removed(entityHandle);
+        on_entity_removed(Entity(entity));
       }
-    }
-
-    const std::unordered_set<EntityID>& System::get_entities() const {
-      return entities;
-    }
-
-    const ComponentSignature& System::get_required_signature() const {
-      return required_signature;
-    }
-
-    const ComponentSignature& System::get_excluded_signature() const {
-      return excluded_signature;
-    }
-
-    const EventSignature& System::get_event_signature() const {
-      return event_signature;
     }
 
   } // namespace ECS

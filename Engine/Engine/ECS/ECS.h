@@ -17,7 +17,6 @@
 
 #include "Types.h"
 #include "ComponentManager.h"
-#include "EventManager.h"
 #include "ComponentArray.h"
 #include "Entity.h"
 #include "System.h"
@@ -26,6 +25,5 @@
 #include "Entity.inl"
 #include "World.inl"
 #include "System.inl"
-#include "EventManager.inl"
 #include "ComponentManager.inl"
 #include "ComponentArray.inl"

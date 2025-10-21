@@ -111,6 +111,9 @@
     <ClCompile Include="Engine\ECS\Prefab.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\EventManager\EventManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Audio\AudioPlayer.h">
@@ -135,9 +138,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Systems\GraphicsSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Events\WindowEvents.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GameLogic\Components\Components.h">
@@ -302,6 +302,9 @@
     <ClInclude Include="GameLogic\GameStates\Documentation\PrefabsState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\EventManager\EventManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Engine\ECS\ComponentArray.inl">
@@ -320,6 +323,9 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="Engine\ECS\World.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="Engine\EventManager\EventManager.inl">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>

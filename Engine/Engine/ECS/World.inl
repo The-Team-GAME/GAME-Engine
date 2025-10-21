@@ -137,37 +137,6 @@ namespace Engine {
         Internal::systems.end());
     }
 
-    template <typename T, typename... Args>
-    void send_event(Args&&... args)
-    {
-      Internal::event_queue.emplace_back(T{ std::forward<Args>(args)... });
-    }
-
-    template <typename T>
-    void add_event_listener(std::function<void(const T&)> handler)
-    {
-      EventTypeID eventType = EventTypeManager::get_type_id<T>();
-      Internal::event_handlers[eventType].emplace_back([handler](const Event& event) {
-        if (const T* eventData = event.get<T>()) {
-          handler(*eventData);
-        }
-        });
-    }
-
-    template <typename T>
-    void add_event_listener(std::function<void(const Event&)> handler)
-    {
-      EventTypeID eventType = EventTypeManager::get_type_id<T>();
-      Internal::event_handlers[eventType].emplace_back(handler);
-    }
-
-    template <typename T>
-    void remove_event_listener()
-    {
-      EventTypeID eventType = EventTypeManager::get_type_id<T>();
-      remove_event_listener(eventType);
-    }
-
     template <typename... T>
     std::vector<Entity> get_entities_with()
     {

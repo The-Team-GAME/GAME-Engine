@@ -27,8 +27,6 @@ namespace Engine {
       std::unordered_map<EntityID, ComponentSignature> entity_signatures;
       std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> component_arrays;
       std::vector<std::unique_ptr<System>> systems;
-      std::vector<Event> event_queue;
-      std::unordered_map<EventTypeID, std::vector<std::function<void(const Event&)>>> event_handlers;
 
       void entity_component_changed(EntityID entity)
       {
@@ -122,37 +120,12 @@ namespace Engine {
       return Internal::active_entities.find(id) != Internal::active_entities.end();
     }
 
-    void remove_event_listener(EventTypeID eventType)
-    {
-      Internal::event_handlers.erase(eventType);
-    }
-
     void update()
     {
       Engine::Perf::start("ECS Update");
 
-      // Dispatch all queued events
-      for (const auto& event : Internal::event_queue)
-      {
-        auto handlerIt = Internal::event_handlers.find(event.type_id);
-        if (handlerIt != Internal::event_handlers.end()) {
-          for (const auto& handler : handlerIt->second) {
-            handler(event);
-          }
-        }
-
-        for (auto& system : Internal::systems)
-        {
-          const auto& systemEventSignature = system->get_event_signature();
-          if (systemEventSignature.test(event.type_id))
-          {
-            for (EntityID entity : system->get_entities()) {
-              system->on_event(event, entity);
-            }
-          }
-        }
-      }
-      Internal::event_queue.clear();
+      // Dispatch all queued events to handlers and systems
+      EventManager::update_events(Internal::systems);
 
       // Update all systems
       for (auto& system : Internal::systems)

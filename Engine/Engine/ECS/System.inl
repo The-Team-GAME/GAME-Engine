@@ -16,7 +16,7 @@
 #pragma once
 #include "System.h"
 #include "ComponentManager.h"
-#include "EventManager.h"
+#include "../EventManager/EventManager.h"
 
 namespace Engine {
   namespace ECS {
@@ -36,7 +36,7 @@ namespace Engine {
     template<typename... Events>
     void System::listen_to_events() {
       event_signature.reset();
-      ((event_signature.set(EventTypeManager::get_type_id<Events>())), ...);
+      ((event_signature.set(EventManager::EventTypeManager::get_type_id<Events>())), ...);
     }
 
   } // namespace ECS

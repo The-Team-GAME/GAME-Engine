@@ -72,7 +72,7 @@ void ShowcaseState::init() {
     .add_component<Components::Animation>(7, 0.15f);
 
   // Subscribe to attack events
-  Engine::ECS::add_event_listener<AttackEvent>([this](const AttackEvent& event) {
+  Engine::EventManager::add_event_listener<AttackEvent>([this](const AttackEvent& event) {
     std::cout << "Attack event! Entity " << event.attacker
       << " attacks Entity " << event.target
       << " for " << event.damage << " damage!\n";
@@ -129,7 +129,7 @@ void ShowcaseState::init() {
     });
 
   // Subscribe to collect events
-  Engine::ECS::add_event_listener<CollectEvent>([this](const CollectEvent& event) {
+  Engine::EventManager::add_event_listener<CollectEvent>([this](const CollectEvent& event) {
     std::cout << "Collect event! Entity " << event.collector
       << " collected Entity " << event.collected
       << " for " << event.points << " points!\n";
@@ -268,7 +268,7 @@ void ShowcaseState::update() {
     std::cout << "E key pressed! Player ID: " << player.get_id() << ", Enemy ID: " << enemy.get_id() << "\n";
 
     // Send attack event 
-    Engine::ECS::send_event<AttackEvent>(player.get_id(), enemy.get_id(), 10);
+    Engine::EventManager::send_event<AttackEvent>(player.get_id(), enemy.get_id(), 10);
 
     // Start punch animation
     is_punching = true;
@@ -277,7 +277,7 @@ void ShowcaseState::update() {
 
   // Collect banana with C key (using event system)
   if (Engine::Input::is_key_pressed(GLFW_KEY_C)) {
-    Engine::ECS::send_event<CollectEvent>(player.get_id(), banana.get_id(), 1);
+    Engine::EventManager::send_event<CollectEvent>(player.get_id(), banana.get_id(), 1);
   }
 }
 
@@ -338,8 +338,8 @@ void ShowcaseState::free() {
   Engine::ECS::destroy_entities_with<Components::Tag<"ShowcaseState">>();
 
   // Remove event listeners
-  Engine::ECS::remove_event_listener<AttackEvent>();
-  Engine::ECS::remove_event_listener<CollectEvent>();
+  Engine::EventManager::remove_event_listener<AttackEvent>();
+  Engine::EventManager::remove_event_listener<CollectEvent>();
 }
 
 void ShowcaseState::unload() {
