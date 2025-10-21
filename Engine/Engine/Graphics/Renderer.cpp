@@ -468,27 +468,27 @@ namespace Engine {
       // Start with virtual position
       glm::vec4 pos = glm::vec4(virtual_pos.x, virtual_pos.y, 0.0f, 1.0f);
 
-      // Apply inverse view transformation (reverse of get_view_matrix)
+      // Apply inverse view transformation (reverse order of get_view_matrix)
       glm::mat4 inverse_view = glm::mat4(1.0f);
 
-      // Step 1: Translate to center
+      // Step 1: Remove camera position offset first
+      inverse_view = glm::translate(inverse_view, glm::vec3(current_camera.position.x, current_camera.position.y, 0.0f));
+
+      // Step 2: Translate to center
       inverse_view = glm::translate(inverse_view, glm::vec3(center_x, center_y, 0.0f));
 
-      // Step 2: Apply inverse zoom
+      // Step 3: Apply inverse zoom
       if (current_camera.zoom != 0.0f) {
         inverse_view = glm::scale(inverse_view, glm::vec3(1.0f / current_camera.zoom, 1.0f / current_camera.zoom, 1.0f));
       }
 
-      // Step 3: Apply inverse rotation
+      // Step 4: Apply inverse rotation
       if (current_camera.rotation != 0.0f) {
         inverse_view = glm::rotate(inverse_view, glm::radians(current_camera.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
       }
 
-      // Step 4: Translate back from center
+      // Step 5: Translate back from center
       inverse_view = glm::translate(inverse_view, glm::vec3(-center_x, -center_y, 0.0f));
-
-      // Step 5: Apply camera position offset
-      inverse_view = glm::translate(inverse_view, glm::vec3(current_camera.position.x, current_camera.position.y, 0.0f));
 
       glm::vec4 world_pos = inverse_view * pos;
 
