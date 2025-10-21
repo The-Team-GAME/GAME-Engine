@@ -7,3 +7,4 @@
 #include "SpatialComponents.h"
 #include "CollisionComponents.h"
 #include "HierarchyComponents.h"
+#include "UIComponents.h"

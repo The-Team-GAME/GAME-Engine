@@ -212,7 +212,7 @@ void BasicState::draw()
 
   static auto move_sound = Engine::Resources::load_sound("sounds/move1.wav");
 
-  if (Engine::Input::is_key_pressed(GLFW_KEY_S)) {
+  if (Engine::Input::is_pressed(Engine::KeyCode::S)) {
     Engine::Audio::play_sound(move_sound, 0.5f, false);
   }
 

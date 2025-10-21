@@ -137,24 +137,24 @@ namespace Engine
         // World::update() won't have a chance to react before the input state is cleared on the next frame. 
         Input::update();
 
-        if (Engine::Input::is_key_pressed(GLFW_KEY_ESCAPE))
+        if (Engine::Input::is_pressed(KeyCode::Escape))
         {
           isRunning = false;
         }
 
         // Demonstrate error catching is working
-        if (Engine::Input::is_key_pressed(GLFW_KEY_F11))
+        if (Engine::Input::is_pressed(KeyCode::F11))
         {
           throw std::runtime_error("F11 was pressed");
         }
 
-        if (Engine::Input::is_key_pressed(GLFW_KEY_P))
+        if (Engine::Input::is_pressed(KeyCode::P))
         {
           physics_step_mode = !physics_step_mode;
           std::cout << "Physics Step Mode: " << (physics_step_mode ? "ON" : "OFF") << std::endl;
         }
 
-        bool shouldRunPhysics = !physics_step_mode || Engine::Input::is_key_pressed(GLFW_KEY_RIGHT_BRACKET);
+        bool shouldRunPhysics = !physics_step_mode || Engine::Input::is_pressed(KeyCode::RightBracket);
 
         if (shouldRunPhysics)
         {

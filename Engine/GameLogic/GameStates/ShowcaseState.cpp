@@ -199,16 +199,16 @@ void ShowcaseState::update() {
     f32 new_vel_x = 0.0f;
     f32 new_vel_y = 0.0f;
 
-    if (Engine::Input::is_key_held(GLFW_KEY_W)) {
+    if (Engine::Input::is_held(Engine::KeyCode::W)) {
       new_vel_y = -speed;
     }
-    if (Engine::Input::is_key_held(GLFW_KEY_S)) {
+    if (Engine::Input::is_held(Engine::KeyCode::S)) {
       new_vel_y = speed;
     }
-    if (Engine::Input::is_key_held(GLFW_KEY_A)) {
+    if (Engine::Input::is_held(Engine::KeyCode::A)) {
       new_vel_x = -speed;
     }
-    if (Engine::Input::is_key_held(GLFW_KEY_D)) {
+    if (Engine::Input::is_held(Engine::KeyCode::D)) {
       new_vel_x = speed;
     }
 
@@ -264,7 +264,7 @@ void ShowcaseState::update() {
   }
 
   // Attack enemy with E key (using event system)
-  if (Engine::Input::is_key_pressed(GLFW_KEY_E) && !is_punching) {
+  if (Engine::Input::is_pressed(Engine::KeyCode::E) && !is_punching) {
     std::cout << "E key pressed! Player ID: " << player.get_id() << ", Enemy ID: " << enemy.get_id() << "\n";
 
     // Send attack event 
@@ -276,7 +276,7 @@ void ShowcaseState::update() {
   }
 
   // Collect banana with C key (using event system)
-  if (Engine::Input::is_key_pressed(GLFW_KEY_C)) {
+  if (Engine::Input::is_pressed(Engine::KeyCode::C)) {
     Engine::EventManager::send_event<CollectEvent>(player.get_id(), banana.get_id(), 1);
   }
 }
