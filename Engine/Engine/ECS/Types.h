@@ -15,9 +15,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include <cstdint>
 #include <bitset>
-#include <iostream> //remove when not in use
 #include "../TypeDef.h"
 
 namespace Engine {

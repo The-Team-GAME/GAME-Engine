@@ -27,12 +27,19 @@ namespace Engine {
       static ComponentTypeID next_type_id;
 
     public:
+      /*=================================================================================
+      Function Brief:
+      Returns a unique type ID for component type T. Each component type gets a
+      unique ID that persists for the program's lifetime.
+
+      Parameters:
+      None (template parameter T determines the component type).
+
+      Where to call it:
+      Internally by the ECS when managing component storage and signatures.
+      ==================================================================================*/
       template<typename T>
       static ComponentTypeID get_type_id();
-
-      static ComponentTypeID get_next_available_id() {
-        return next_type_id + 1;
-      }
     };
 
   } // namespace ECS

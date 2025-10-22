@@ -57,5 +57,21 @@ namespace Engine {
       }
     }
 
+    const std::unordered_set<EntityID>& System::get_entities() const {
+      return entities;
+    }
+
+    const ComponentSignature& System::get_required_signature() const {
+      return required_signature;
+    }
+
+    const ComponentSignature& System::get_excluded_signature() const {
+      return excluded_signature;
+    }
+
+    const EventManager::EventSignature& System::get_event_signature() const {
+      return event_signature;
+    }
+
   } // namespace ECS
 } // namespace Engine
