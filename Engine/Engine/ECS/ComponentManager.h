@@ -40,20 +40,6 @@ namespace Engine {
       ==================================================================================*/
       template<typename T>
       static ComponentTypeID get_type_id();
-
-      /*=================================================================================
-      Function Brief:
-      Returns the next available component type ID that would be assigned.
-
-      Parameters:
-      None.
-
-      Where to call it:
-      When you need to know the total number of registered component types.
-      ==================================================================================*/
-      static ComponentTypeID get_next_available_id() {
-        return next_type_id + 1;
-      }
     };
 
   } // namespace ECS

@@ -27,11 +27,6 @@ namespace Engine {
     }
 
     template<typename T>
-    void ComponentArray<T>::remove_component(EntityID entity) {
-      components.erase(entity);
-    }
-
-    template<typename T>
     void ComponentArray<T>::clone_component(EntityID source, EntityID destination) {
       auto it = components.find(source);
       if (it != components.end()) {
@@ -52,7 +47,7 @@ namespace Engine {
 
     template<typename T>
     void ComponentArray<T>::remove_entity(EntityID entity) {
-      remove_component(entity);
+      components.erase(entity);
     }
 
     template<typename T>

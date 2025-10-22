@@ -77,7 +77,7 @@ namespace Engine {
       auto* array = get_component_array<T>();
       if (array)
       {
-        array->remove_component(entityId);
+        array->remove_entity(entityId);
         Internal::entity_signatures[entityId].reset(typeId);
         Internal::entity_component_changed(entityId);
       }

@@ -63,18 +63,6 @@ namespace Engine {
 
       /*=================================================================================
       Function Brief:
-      Removes a component of type T from the specified entity.
-
-      Parameters:
-      entity - The EntityID to remove the component from.
-
-      Where to call it:
-      When you need to detach a component from an entity.
-      ==================================================================================*/
-      void remove_component(EntityID entity);
-
-      /*=================================================================================
-      Function Brief:
       Clones a component from one entity to another. Creates a copy of the source
       entity's component and adds it to the destination entity.
 
@@ -113,14 +101,13 @@ namespace Engine {
 
       /*=================================================================================
       Function Brief:
-      Removes all components associated with the specified entity. Part of the
-      IComponentArray interface.
+      Removes a component of type T from the specified entity.
 
       Parameters:
-      entity - The EntityID to remove components from.
+      entity - The EntityID to remove the component from.
 
       Where to call it:
-      When an entity is being destroyed and all its components need to be cleaned up.
+      When you need to detach a component from an entity.
       ==================================================================================*/
       void remove_entity(EntityID entity) override;
 
