@@ -59,7 +59,7 @@ namespace Engine {
     void add_component(const Entity& entity, Args &&...args)
     {
       EntityID entityId = entity.get_id();
-      assert(!has_component<T>(entity) && "Entity already has this component");
+      //assert(!has_component<T>(entity) && "Entity already has this component");
       ComponentTypeID typeId = ComponentTypeManager::get_type_id<T>();
       auto* array = get_component_array<T>();
 
