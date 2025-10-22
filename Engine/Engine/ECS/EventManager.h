@@ -34,6 +34,17 @@ namespace Engine {
       static EventTypeID next_type_id;
 
     public:
+      /*=================================================================================
+      Function Brief:
+      Returns a unique type ID for event type T. Each event type gets a unique ID
+      that persists for the program's lifetime.
+
+      Parameters:
+      None (template parameter T determines the event type).
+
+      Where to call it:
+      Internally by the ECS when managing event subscriptions and dispatching.
+      ==================================================================================*/
       template <typename T>
       static EventTypeID get_type_id();
     };
@@ -46,9 +57,31 @@ namespace Engine {
       EventTypeID type_id = INVALID_EVENT_TYPE;
       std::any data;
 
+      /*=================================================================================
+      Function Brief:
+      Constructs an Event with the provided event data. Automatically determines
+      the event type ID from the data type.
+
+      Parameters:
+      eventData - The event data to store (forwarded).
+
+      Where to call it:
+      When creating an event to send through the event system.
+      ==================================================================================*/
       template <typename T>
       Event(T&& eventData);
 
+      /*=================================================================================
+      Function Brief:
+      Retrieves the event data as type T. Returns nullptr if the event type doesn't
+      match.
+
+      Parameters:
+      None (template parameter T specifies the expected event data type).
+
+      Where to call it:
+      In event handlers to access the event data.
+      ==================================================================================*/
       template <typename T>
       const T* get() const;
     };

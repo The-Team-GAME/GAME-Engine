@@ -47,31 +47,192 @@ namespace Engine {
       std::unordered_map<EntityID, T> components;
 
     public:
+      /*=================================================================================
+      Function Brief:
+      Adds a component of type T to the specified entity. If the entity already has
+      a component of this type, it will be replaced.
+
+      Parameters:
+      entity - The EntityID to add the component to.
+      component - The component instance to add (moved into storage).
+
+      Where to call it:
+      When you need to attach a new component to an entity in the ECS.
+      ==================================================================================*/
       void add_component(EntityID entity, T component);
 
+      /*=================================================================================
+      Function Brief:
+      Removes a component of type T from the specified entity.
+
+      Parameters:
+      entity - The EntityID to remove the component from.
+
+      Where to call it:
+      When you need to detach a component from an entity.
+      ==================================================================================*/
       void remove_component(EntityID entity);
 
+      /*=================================================================================
+      Function Brief:
+      Clones a component from one entity to another. Creates a copy of the source
+      entity's component and adds it to the destination entity.
+
+      Parameters:
+      source - The EntityID to copy the component from.
+      destination - The EntityID to copy the component to.
+
+      Where to call it:
+      When duplicating entities or copying component data between entities.
+      ==================================================================================*/
       void clone_component(EntityID source, EntityID destination) override;
 
+      /*=================================================================================
+      Function Brief:
+      Retrieves a pointer to the component of type T for the specified entity.
+
+      Parameters:
+      entity - The EntityID to get the component from.
+
+      Where to call it:
+      When you need to access or modify a component's data.
+      ==================================================================================*/
       T* get_component(EntityID entity);
 
+      /*=================================================================================
+      Function Brief:
+      Checks if the specified entity has a component of type T.
+
+      Parameters:
+      entity - The EntityID to check.
+
+      Where to call it:
+      When you need to verify if an entity has a specific component before accessing it.
+      ==================================================================================*/
       bool has_component(EntityID entity) const;
 
+      /*=================================================================================
+      Function Brief:
+      Removes all components associated with the specified entity. Part of the
+      IComponentArray interface.
+
+      Parameters:
+      entity - The EntityID to remove components from.
+
+      Where to call it:
+      When an entity is being destroyed and all its components need to be cleaned up.
+      ==================================================================================*/
       void remove_entity(EntityID entity) override;
 
+      /*=================================================================================
+      Function Brief:
+      Returns the total number of components stored in this array.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When you need to know how many entities have this component type.
+      ==================================================================================*/
       size_t size() const override;
 
+      /*=================================================================================
+      Function Brief:
+      Checks if the component type T is reflectable (has reflection metadata).
+
+      Parameters:
+      None.
+
+      Where to call it:
+      Before attempting to serialize or inspect component metadata.
+      ==================================================================================*/
       bool is_reflectable() const;
 
+      /*=================================================================================
+      Function Brief:
+      Returns the type name of the component as a string.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When serializing components or debugging component types.
+      ==================================================================================*/
       std::string get_type_name() const override;
 
+      /*=================================================================================
+      Function Brief:
+      Serializes the component data for a specific entity to JSON format.
+
+      Parameters:
+      entity - The EntityID whose component should be serialized.
+      json_val - The RapidJSON value to write the serialized data to.
+      allocator - The RapidJSON allocator for creating JSON objects.
+
+      Where to call it:
+      When saving entity state to JSON or transferring entity data.
+      ==================================================================================*/
       void serialize_component(EntityID entity, rapidjson::Value& json_val, rapidjson::Document::AllocatorType& allocator) const override;
 
+      /*=================================================================================
+      Function Brief:
+      Deserializes component data from JSON and adds it to the specified entity.
+
+      Parameters:
+      entity - The EntityID to add the deserialized component to.
+      json_val - The RapidJSON value containing the serialized component data.
+
+      Where to call it:
+      When loading entity state from JSON or receiving entity data.
+      ==================================================================================*/
       bool deserialize_and_add_component(EntityID entity, const rapidjson::Value& json_val) override;
 
+      /*=================================================================================
+      Function Brief:
+      Returns an iterator to the beginning of the component storage.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When iterating over all components in this array.
+      ==================================================================================*/
       auto begin();
+
+      /*=================================================================================
+      Function Brief:
+      Returns an iterator to the end of the component storage.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When iterating over all components in this array.
+      ==================================================================================*/
       auto end();
+
+      /*=================================================================================
+      Function Brief:
+      Returns a const iterator to the beginning of the component storage.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When iterating over all components in this array without modifying them.
+      ==================================================================================*/
       auto begin() const;
+
+      /*=================================================================================
+      Function Brief:
+      Returns a const iterator to the end of the component storage.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When iterating over all components in this array without modifying them.
+      ==================================================================================*/
       auto end() const;
     };
 
