@@ -16,6 +16,7 @@
 #pragma once
 #include <glm/glm.hpp>
 #include "TypeDef.h"
+#include "KeyCodes.h"  // Include the new enums
 
 namespace Engine
 {
@@ -38,58 +39,36 @@ namespace Engine
     // Keyboard input
     /**
      * @brief Checks if a key was just pressed in the current frame.
-     * @param key The key code to check (e.g., from GLFW).
+     * @param key The key code to check.
      * @return true if the key was pressed in this frame, false otherwise.
      */
-    static bool is_key_pressed(s32 key);
+    static bool is_pressed(KeyCode key);
 
     /**
      * @brief Checks if a key was just released in the current frame.
      * @param key The key code to check.
      * @return true if the key was released in this frame, false otherwise.
      */
-    static bool is_key_released(s32 key);
+    static bool is_released(KeyCode key);
 
     /**
      * @brief Checks if a key is currently being held down.
      * @param key The key code to check.
      * @return true if the key is held down, false otherwise.
      */
-    static bool is_key_held(s32 key);
-
-    // Mouse input
-    /**
-     * @brief Checks if a mouse button was just pressed in the current frame.
-     * @param button The mouse button code to check (e.g., from GLFW).
-     * @return true if the mouse button was pressed in this frame, false otherwise.
-     */
-    static bool is_mouse_button_pressed(s32 button);
-
-    /**
-     * @brief Checks if a mouse button was just released in the current frame.
-     * @param button The mouse button code to check.
-     * @return true if the mouse button was released in this frame, false otherwise.
-     */
-    static bool is_mouse_button_released(s32 button);
-
-    /**
-     * @brief Checks if a mouse button is currently being held down.
-     * @param button The mouse button code to check.
-     * @return true if the mouse button is held down, false otherwise.
-     */
-    static bool is_mouse_button_held(s32 button);
+    static bool is_held(KeyCode key);
 
     /**
      * @brief Gets the current position of the mouse cursor in window coordinates.
      * @return glm::vec2 A vector containing the x and y position of the mouse.
      */
-    static glm::vec2 GetMousePosition();
+    static glm::vec2 get_mouse_position();
 
     /**
      * @brief Gets the current position of the mouse cursor in world coordinates.
      * This accounts for camera position, zoom, and rotation.
      * @return glm::vec2 A vector containing the x and y position of the mouse in world space.
      */
-    static glm::vec2 GetMouseWorldPosition();
+    static glm::vec2 get_mouse_world_position();
   };
 }

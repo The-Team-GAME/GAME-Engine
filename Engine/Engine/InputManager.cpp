@@ -21,23 +21,37 @@
 #include "Perf.h"
 #include "WindowManager.h"
 #include "Graphics/Renderer.h"
+#include "KeyCodes.h"
 
 namespace
 {
   /* =================== //
   // Input state arrays  //
   // =================== */
-  std::array<bool, GLFW_KEY_LAST + 1> currentKeys;
-  std::array<bool, GLFW_KEY_LAST + 1> previousKeys;
-
-  // Mouse button state
-  std::array<bool, GLFW_MOUSE_BUTTON_LAST + 1> currentMouseButtons;
-  std::array<bool, GLFW_MOUSE_BUTTON_LAST + 1> previousMouseButtons;
+  std::array<bool, GLFW_MOUSE_BUTTON_LAST + GLFW_KEY_LAST + 2> currentKeys;
+  std::array<bool, GLFW_MOUSE_BUTTON_LAST + GLFW_KEY_LAST + 2> previousKeys;
 
   /* =================== //
   // Mouse state         //
   // =================== */
   glm::vec2 mousePosition;
+
+  // Helper function to convert KeyCode to array index
+  inline int key_to_index(Engine::KeyCode key)
+  {
+    int keyInt = static_cast<int>(key);
+
+    // Mouse buttons: 0-7 → index 0-7
+    if (keyInt <= GLFW_MOUSE_BUTTON_LAST)
+    {
+      return keyInt;
+    }
+    // Keyboard keys: offset by (GLFW_MOUSE_BUTTON_LAST + 1)
+    else
+    {
+      return keyInt + GLFW_MOUSE_BUTTON_LAST + 1; // Adjust for GLFW key offset
+    }
+  }
 }
 
 namespace Engine
@@ -52,23 +66,23 @@ namespace Engine
   {
     Engine::Perf::start("Input");
 
-    GLFWwindow* window = Engine::WindowManager::get_window(); //TODO: pass window as parameter in constructor
+    GLFWwindow* window = Engine::WindowManager::get_window();
 
     // Update previous states
     previousKeys = currentKeys;
-    previousMouseButtons = currentMouseButtons;
-
-    // Update current keyboard state
-    for (int key = 0; key <= GLFW_KEY_LAST; ++key)
-    {
-      currentKeys[key] = (glfwGetKey(window, key) == GLFW_PRESS);
-    }
 
     // Update current mouse button state
     for (int button = 0; button <= GLFW_MOUSE_BUTTON_LAST; ++button)
     {
-      currentMouseButtons[button] = (glfwGetMouseButton(window, button) == GLFW_PRESS);
+      currentKeys[button] = (glfwGetMouseButton(window, button) == GLFW_PRESS);
     }
+
+    // Update current keyboard state
+    for (int key = 0; key <= GLFW_KEY_LAST; ++key)
+    {
+      currentKeys[key + GLFW_MOUSE_BUTTON_LAST + 1] = (glfwGetKey(window, key) == GLFW_PRESS);
+    }
+
 
     // Update mouse position
     f64 xpos, ypos;
@@ -84,42 +98,30 @@ namespace Engine
     Engine::Perf::stop("Input");
   }
 
-  bool Input::is_key_pressed(s32 key)
+  bool Input::is_pressed(KeyCode key)
   {
-    return currentKeys[key] && !previousKeys[key];
+    int idx = key_to_index(key);
+    return currentKeys[idx] && !previousKeys[idx];
   }
 
-  bool Input::is_key_released(s32 key)
+  bool Input::is_released(KeyCode key)
   {
-    return !currentKeys[key] && previousKeys[key];
+    int idx = key_to_index(key);
+    return !currentKeys[idx] && previousKeys[idx];
   }
 
-  bool Input::is_key_held(s32 key)
+  bool Input::is_held(KeyCode key)
   {
-    return currentKeys[key];
+    int idx = key_to_index(key);
+    return currentKeys[idx];
   }
 
-  bool Input::is_mouse_button_pressed(s32 button)
-  {
-    return currentMouseButtons[button] && !previousMouseButtons[button];
-  }
-
-  bool Input::is_mouse_button_released(s32 button)
-  {
-    return !currentMouseButtons[button] && previousMouseButtons[button];
-  }
-
-  bool Input::is_mouse_button_held(s32 button)
-  {
-    return currentMouseButtons[button];
-  }
-
-  glm::vec2 Input::GetMousePosition()
+  glm::vec2 Input::get_mouse_position()
   {
     return mousePosition;
   }
 
-  glm::vec2 Input::GetMouseWorldPosition()
+  glm::vec2 Input::get_mouse_world_position()
   {
     return Engine::Graphics::virtual_to_world(mousePosition);
   }

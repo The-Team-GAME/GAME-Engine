@@ -16,8 +16,7 @@
 #pragma once
 
 #include "Types.h"
-#include "ComponentManager.h"
-#include "EventManager.h"
+#include "../EventManager/EventManager.h"
 #include <unordered_set>
 
 namespace Engine {
@@ -30,55 +29,224 @@ namespace Engine {
     // ============================================================= */
     class System {
     protected:
-      std::unordered_set<EntityID> entities;
       ComponentSignature required_signature;
       ComponentSignature excluded_signature;
-      EventSignature event_signature;
+      Engine::EventManager::EventSignature event_signature;
+      std::unordered_set<EntityID> entities;
 
     public:
       virtual ~System();
 
-      // Clean way to specify required components!
+      /*=================================================================================
+      Function Brief:
+      Specifies which component types an entity must have for this system to
+      process it. Uses variadic templates to accept multiple component types.
+
+      Parameters:
+      None (template parameters Components... specify the required component types).
+
+      Where to call it:
+      In the system's constructor to define which entities it operates on.
+      ==================================================================================*/
       template<typename... Components>
       void require_components();
 
-      // Clean way to specify excluded components!
+      /*=================================================================================
+      Function Brief:
+      Specifies which component types an entity must NOT have for this system to
+      process it. Used to exclude entities with certain components.
+
+      Parameters:
+      None (template parameters Components... specify the excluded component types).
+
+      Where to call it:
+      In the system's constructor when you need to filter out entities with
+      specific components.
+      ==================================================================================*/
       template<typename... Components>
       void exclude_components();
 
-      // Clean way to specify listened-to events!
+      /*=================================================================================
+      Function Brief:
+      Specifies which event types this system should listen to and respond to.
+
+      Parameters:
+      None (template parameters Events... specify the event types to listen for).
+
+      Where to call it:
+      In the system's constructor to define which events the system handles.
+      ==================================================================================*/
       template<typename... Events>
       void listen_to_events();
 
-      // System logic
+      /*=================================================================================
+      Function Brief:
+      Updates all entities managed by this system. Calls update_entity for each
+      entity.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      Called automatically by the ECS during the main update loop.
+      ==================================================================================*/
       virtual void update();
 
-      // Drawing/rendering logic
+      /*=================================================================================
+      Function Brief:
+      Renders all entities managed by this system. Calls draw_entity for each
+      entity.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      Called automatically by the ECS during the main draw loop.
+      ==================================================================================*/
       virtual void draw();
 
-      // Override for handling a specific event for a specific entity
-      virtual void on_event(const Event& event, EntityID entity);
+      /*=================================================================================
+      Function Brief:
+      Handles an event for a specific entity. Override to implement event handling
+      logic for this system.
 
-      // Override for per-entity logic
+      Parameters:
+      event - The event to handle.
+      entity - The entity the event is associated with.
+
+      Where to call it:
+      Called automatically by the ECS when an event this system listens to is
+      dispatched.
+      ==================================================================================*/
+      virtual void on_event(const Engine::EventManager::Event& event, EntityID entity);
+
+      /*=================================================================================
+      Function Brief:
+      Updates a single entity. Override to implement per-entity update logic.
+
+      Parameters:
+      entity - The entity to update.
+
+      Where to call it:
+      Called automatically by the system's update() method for each entity.
+      ==================================================================================*/
       virtual void update_entity(Entity& entity);
 
-      // Override for per-entity drawing logic (const reference because rendering shouldn't modify entities)
+      /*=================================================================================
+      Function Brief:
+      Renders a single entity. Override to implement per-entity drawing logic.
+
+      Parameters:
+      entity - The entity to draw (const because rendering shouldn't modify entities).
+
+      Where to call it:
+      Called automatically by the system's draw() method for each entity.
+      ==================================================================================*/
       virtual void draw_entity(const Entity& entity);
 
-      // Override for entity lifecycle events
+      /*=================================================================================
+      Function Brief:
+      Called when an entity is added to this system (matches the required
+      component signature). Override to implement initialization logic.
+
+      Parameters:
+      entity - The entity that was added.
+
+      Where to call it:
+      Called automatically by the ECS when an entity starts matching the system's
+      requirements.
+      ==================================================================================*/
       virtual void on_entity_added(const Entity& entity);
+
+      /*=================================================================================
+      Function Brief:
+      Called when an entity is removed from this system (no longer matches the
+      required component signature). Override to implement cleanup logic.
+
+      Parameters:
+      entity - The entity that was removed.
+
+      Where to call it:
+      Called automatically by the ECS when an entity stops matching the system's
+      requirements.
+      ==================================================================================*/
       virtual void on_entity_removed(const Entity& entity);
 
-      // Internal methods
+      /*=================================================================================
+      Function Brief:
+      Internal method to add an entity to this system's tracked entities.
+
+      Parameters:
+      entity - The EntityID to add.
+
+      Where to call it:
+      Called internally by the ECS when an entity matches this system's requirements.
+      ==================================================================================*/
       void add_entity(EntityID entity);
+
+      /*=================================================================================
+      Function Brief:
+      Internal method to remove an entity from this system's tracked entities.
+
+      Parameters:
+      entity - The EntityID to remove.
+
+      Where to call it:
+      Called internally by the ECS when an entity no longer matches this system's
+      requirements.
+      ==================================================================================*/
       void remove_entity(EntityID entity);
 
+      /*=================================================================================
+      Function Brief:
+      Returns the set of all entities currently tracked by this system.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When you need to access the list of entities this system is processing.
+      ==================================================================================*/
       const std::unordered_set<EntityID>& get_entities() const;
+
+      /*=================================================================================
+      Function Brief:
+      Returns the component signature representing which components entities must
+      have for this system.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      Internally by the ECS to determine if entities match this system.
+      ==================================================================================*/
       const ComponentSignature& get_required_signature() const;
+
+      /*=================================================================================
+      Function Brief:
+      Returns the component signature representing which components entities must
+      NOT have for this system.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      Internally by the ECS to determine if entities match this system.
+      ==================================================================================*/
       const ComponentSignature& get_excluded_signature() const;
-      const EventSignature& get_event_signature() const;
+
+      /*=================================================================================
+      Function Brief:
+      Returns the event signature representing which events this system listens to.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      Internally by the ECS to route events to the appropriate systems.
+      ==================================================================================*/
+      const Engine::EventManager::EventSignature& get_event_signature() const;
     };
 
   } // namespace ECS
 } // namespace Engine
-

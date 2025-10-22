@@ -72,7 +72,7 @@ void ShowcaseState::init() {
     .add_component<Components::Animation>(7, 0.15f);
 
   // Subscribe to attack events
-  Engine::ECS::add_event_listener<AttackEvent>([this](const AttackEvent& event) {
+  Engine::EventManager::add_event_listener<AttackEvent>([this](const AttackEvent& event) {
     std::cout << "Attack event! Entity " << event.attacker
       << " attacks Entity " << event.target
       << " for " << event.damage << " damage!\n";
@@ -129,7 +129,7 @@ void ShowcaseState::init() {
     });
 
   // Subscribe to collect events
-  Engine::ECS::add_event_listener<CollectEvent>([this](const CollectEvent& event) {
+  Engine::EventManager::add_event_listener<CollectEvent>([this](const CollectEvent& event) {
     std::cout << "Collect event! Entity " << event.collector
       << " collected Entity " << event.collected
       << " for " << event.points << " points!\n";
@@ -199,16 +199,16 @@ void ShowcaseState::update() {
     f32 new_vel_x = 0.0f;
     f32 new_vel_y = 0.0f;
 
-    if (Engine::Input::is_key_held(GLFW_KEY_W)) {
+    if (Engine::Input::is_held(Engine::KeyCode::W)) {
       new_vel_y = -speed;
     }
-    if (Engine::Input::is_key_held(GLFW_KEY_S)) {
+    if (Engine::Input::is_held(Engine::KeyCode::S)) {
       new_vel_y = speed;
     }
-    if (Engine::Input::is_key_held(GLFW_KEY_A)) {
+    if (Engine::Input::is_held(Engine::KeyCode::A)) {
       new_vel_x = -speed;
     }
-    if (Engine::Input::is_key_held(GLFW_KEY_D)) {
+    if (Engine::Input::is_held(Engine::KeyCode::D)) {
       new_vel_x = speed;
     }
 
@@ -264,11 +264,11 @@ void ShowcaseState::update() {
   }
 
   // Attack enemy with E key (using event system)
-  if (Engine::Input::is_key_pressed(GLFW_KEY_E) && !is_punching) {
+  if (Engine::Input::is_pressed(Engine::KeyCode::E) && !is_punching) {
     std::cout << "E key pressed! Player ID: " << player.get_id() << ", Enemy ID: " << enemy.get_id() << "\n";
 
     // Send attack event 
-    Engine::ECS::send_event<AttackEvent>(player.get_id(), enemy.get_id(), 10);
+    Engine::EventManager::send_event<AttackEvent>(player.get_id(), enemy.get_id(), 10);
 
     // Start punch animation
     is_punching = true;
@@ -276,8 +276,8 @@ void ShowcaseState::update() {
   }
 
   // Collect banana with C key (using event system)
-  if (Engine::Input::is_key_pressed(GLFW_KEY_C)) {
-    Engine::ECS::send_event<CollectEvent>(player.get_id(), banana.get_id(), 1);
+  if (Engine::Input::is_pressed(Engine::KeyCode::C)) {
+    Engine::EventManager::send_event<CollectEvent>(player.get_id(), banana.get_id(), 1);
   }
 }
 
@@ -338,8 +338,8 @@ void ShowcaseState::free() {
   Engine::ECS::destroy_entities_with<Components::Tag<"ShowcaseState">>();
 
   // Remove event listeners
-  Engine::ECS::remove_event_listener<AttackEvent>();
-  Engine::ECS::remove_event_listener<CollectEvent>();
+  Engine::EventManager::remove_event_listener<AttackEvent>();
+  Engine::EventManager::remove_event_listener<CollectEvent>();
 }
 
 void ShowcaseState::unload() {

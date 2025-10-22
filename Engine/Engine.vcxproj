@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -32,10 +31,8 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings">
-  </ImportGroup>
-  <ImportGroup Label="Shared">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="Shared" />
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -95,13 +92,13 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="Engine\Audio\AudioPlayer.cpp" />
     <ClCompile Include="Engine\Audio\AudioPlayerInternal.cpp" />
     <ClCompile Include="Engine\ECS\Prefab.cpp" />
+    <ClCompile Include="Engine\EventManager\EventManager.cpp" />
     <ClCompile Include="GameLogic\GameStates\BasicState.cpp" />
     <ClCompile Include="GameLogic\GameStates\BasicState.h" />
     <ClCompile Include="GameLogic\Config.cpp" />
     <ClCompile Include="Engine\Core.cpp" />
     <ClCompile Include="Engine\ECS\ComponentManager.cpp" />
     <ClCompile Include="Engine\ECS\Entity.cpp" />
-    <ClCompile Include="Engine\ECS\EventManager.cpp" />
     <ClCompile Include="Engine\ECS\System.cpp" />
     <ClCompile Include="Engine\ECS\World.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer.cpp" />
@@ -132,6 +129,10 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Engine\Components\PhysicsComponents.h" />
     <ClInclude Include="Engine\Components\UtilityComponents.h" />
     <ClInclude Include="Engine\ECS\Prefab.h" />
+    <ClInclude Include="Engine\EventManager\EventManager.h" />
+    <ClInclude Include="Engine\Events\Events.h" />
+    <ClInclude Include="Engine\Events\InputEvents.h" />
+    <ClInclude Include="Engine\Events\WindowEvents.h" />
     <ClInclude Include="Engine\GUI\ResourceManagerPanel.h" />
     <ClInclude Include="Engine\MonkeyEngine.h" />
     <ClInclude Include="Engine\Reflection\ReflectionLibrary.h" />
@@ -160,7 +161,6 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Engine\ECS\ComponentManager.h" />
     <ClInclude Include="Engine\ECS\ECS.h" />
     <ClInclude Include="Engine\ECS\Entity.h" />
-    <ClInclude Include="Engine\ECS\EventManager.h" />
     <ClInclude Include="Engine\ECS\System.h" />
     <ClInclude Include="Engine\ECS\Types.h" />
     <ClInclude Include="Engine\ECS\World.h" />
@@ -193,11 +193,10 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <None Include="Engine\ECS\ComponentArray.inl" />
     <None Include="Engine\ECS\ComponentManager.inl" />
     <None Include="Engine\ECS\Entity.inl" />
-    <None Include="Engine\ECS\EventManager.inl" />
     <None Include="Engine\ECS\System.inl" />
     <None Include="Engine\ECS\World.inl" />
+    <None Include="Engine\EventManager\EventManager.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

@@ -77,7 +77,7 @@ namespace Engine {
       auto* array = get_component_array<T>();
       if (array)
       {
-        array->remove_component(entityId);
+        array->remove_entity(entityId);
         Internal::entity_signatures[entityId].reset(typeId);
         Internal::entity_component_changed(entityId);
       }
@@ -135,37 +135,6 @@ namespace Engine {
             return dynamic_cast<T*>(system.get()) != nullptr;
           }),
         Internal::systems.end());
-    }
-
-    template <typename T, typename... Args>
-    void send_event(Args&&... args)
-    {
-      Internal::event_queue.emplace_back(T{ std::forward<Args>(args)... });
-    }
-
-    template <typename T>
-    void add_event_listener(std::function<void(const T&)> handler)
-    {
-      EventTypeID eventType = EventTypeManager::get_type_id<T>();
-      Internal::event_handlers[eventType].emplace_back([handler](const Event& event) {
-        if (const T* eventData = event.get<T>()) {
-          handler(*eventData);
-        }
-        });
-    }
-
-    template <typename T>
-    void add_event_listener(std::function<void(const Event&)> handler)
-    {
-      EventTypeID eventType = EventTypeManager::get_type_id<T>();
-      Internal::event_handlers[eventType].emplace_back(handler);
-    }
-
-    template <typename T>
-    void remove_event_listener()
-    {
-      EventTypeID eventType = EventTypeManager::get_type_id<T>();
-      remove_event_listener(eventType);
     }
 
     template <typename... T>

@@ -33,6 +33,7 @@
 #include "ECS/ECS.h"
 #include "Events/WindowEvents.h"
 #include "Systems/Systems.h"
+#include "EventManager/EventManager.h"
 
 namespace {
   f64 accumulator{};
@@ -74,7 +75,7 @@ namespace Engine
     Engine::Graphics::set_viewport({ 0, 0, window_width, window_height });
 
     // Register the graphics resize system 
-    Engine::ECS::add_event_listener<Engine::Events::WindowResizeEvent>([](const Engine::Events::WindowResizeEvent& event)
+    Engine::EventManager::add_event_listener<Engine::Events::WindowResizeEvent>([](const Engine::Events::WindowResizeEvent& event)
       {
         Engine::Graphics::set_viewport({ 0, 0, event.width, event.height });
       }
@@ -136,24 +137,24 @@ namespace Engine
         // World::update() won't have a chance to react before the input state is cleared on the next frame. 
         Input::update();
 
-        if (Engine::Input::is_key_pressed(GLFW_KEY_ESCAPE))
+        if (Engine::Input::is_pressed(KeyCode::Escape))
         {
           isRunning = false;
         }
 
         // Demonstrate error catching is working
-        if (Engine::Input::is_key_pressed(GLFW_KEY_F11))
+        if (Engine::Input::is_pressed(KeyCode::F11))
         {
           throw std::runtime_error("F11 was pressed");
         }
 
-        if (Engine::Input::is_key_pressed(GLFW_KEY_P))
+        if (Engine::Input::is_pressed(KeyCode::P))
         {
           physics_step_mode = !physics_step_mode;
           std::cout << "Physics Step Mode: " << (physics_step_mode ? "ON" : "OFF") << std::endl;
         }
 
-        bool shouldRunPhysics = !physics_step_mode || Engine::Input::is_key_pressed(GLFW_KEY_RIGHT_BRACKET);
+        bool shouldRunPhysics = !physics_step_mode || Engine::Input::is_pressed(KeyCode::RightBracket);
 
         if (shouldRunPhysics)
         {
