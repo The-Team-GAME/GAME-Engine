@@ -16,7 +16,7 @@
 
 
 #include "../Engine/MonkeyEngine.h"
-#include "GameStates/ShowcaseState.h"
+#include "GameStates/Dev/PhysicsTestState.h"
 #include "GUI/StateChooser.h"
 #include <exception>
 #include <stdexcept>
@@ -46,7 +46,7 @@ int main()
     s32 win_height = Config::get_win_height();
 
     // Start the engine
-    Engine::Core engine(win_width, win_height, "Monkey Stole My GPA", ShowcaseState::get());
+    Engine::Core engine(win_width, win_height, "Monkey Stole My GPA", PhysicsTestState::get());
     ImGuiManager::register_panel(StateChooserPanel);
     engine.run();
 

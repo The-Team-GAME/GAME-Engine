@@ -22,6 +22,7 @@
 #include "../GameStates/DevSpriteAnimationState.h"
 #include "../GameStates/ShowcaseState.h"
 #include "../GameStates/Documentation/PrefabsState.h"
+#include "../GameStates/Dev/PhysicsTestState.h"
 
 /*=================================================================================
 Function Brief:
@@ -63,6 +64,10 @@ inline void StateChooserPanel()
   if (ImGui::Button("PrefabsState"))
   {
     Engine::StateManager::change_state(PrefabsState::get());
+  }
+  if (ImGui::Button("PhysicsTestState"))
+  {
+    Engine::StateManager::change_state(PhysicsTestState::get());
   }
 
 
