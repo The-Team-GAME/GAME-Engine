@@ -9,7 +9,7 @@ private:
 public:
   void load() {
     Engine::Resources::set_resource_path("Assets/");
-     
+
     // Create a banana prefab
     // Engine::ECS::create_prefab takes a lambda function that sets up the entity
     auto banana_prefabs = Engine::ECS::create_prefab([this](Engine::ECS::Entity& entity) {
@@ -19,7 +19,7 @@ public:
       auto banana_texture = Engine::Resources::load_texture("images/banana.png");
 
       // Add components to the entity
-      entity.add_component<Components::Tag<"ShowcaseState">>()
+      entity.add_component<Components::Tag<"PrefabsState">>()
         .add_component<Components::Transform2D>(1200.0f, 675.0f, 0.0f, 20.0f * 3.0f, 12.0f * 3.0f)
         .add_component<Components::Texture>(banana_texture)
         .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
