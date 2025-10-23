@@ -47,25 +47,7 @@ namespace Engine {
       Entity temp_entity = create_entity();
       prefab->setup_function(temp_entity);
 
-
-      EntityID entity_id = temp_entity.get_id();
-      const auto& signature = Internal::entity_signatures[entity_id];
-
-      ReflectionLibrary::GenericValue result;
-      result["id"] = entity_id;
-
-      // Serialize each component's data
-      for (const auto& [type_id, component_array] : Internal::component_arrays) {
-        if (signature.test(type_id) && component_array->is_reflectable()) {
-          ReflectionLibrary::GenericValue component_data = component_array->to_generic_value(entity_id);
-          ReflectionLibrary::GenericValue component_entry;
-          component_entry["type"] = component_array->get_type_name();
-          component_entry["data"] = component_data;
-          result["components"].push_back(component_entry);
-        }
-      }
-
-      return result;
+      return temp_entity.to_generic_value();
     }
 
     Prefab prefab_from_generic_value(const ReflectionLibrary::GenericValue& value)
@@ -74,32 +56,9 @@ namespace Engine {
         return nullptr;
       }
 
-      // Create a lambda that will setup the entity with the deserialized components
       auto setup_function = [value](Entity& entity) {
-        const auto& components_array = value["components"].getArray();
-
-        // Iterate through each component in the JSON
-        for (const auto& component_entry : components_array) {
-          if (!component_entry.isObject() || !component_entry.has("type") || !component_entry.has("data")) {
-            continue;
-          }
-
-          std::string type_name = component_entry["type"].getString();
-          const auto& component_data = component_entry["data"];
-
-          // Find the component array by type name
-          for (const auto& [type_id, component_array] : Internal::component_arrays) {
-            if (component_array->get_type_name() == type_name && component_array->is_reflectable()) {
-              // Deserialize and add the component
-              component_array->add_component_from_generic_value(entity.get_id(), component_data);
-              Internal::entity_signatures[entity.get_id()].set(type_id);
-              break;
-            }
-          }
-        }
-
-        // Notify systems about the component changes
-        Internal::entity_component_changed(entity.get_id());
+        Entity temp_entity(value);
+        entity = temp_entity;
         };
 
       return std::make_shared<PrefabData>(setup_function);
