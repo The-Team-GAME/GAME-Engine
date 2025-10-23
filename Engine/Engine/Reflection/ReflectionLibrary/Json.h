@@ -119,7 +119,7 @@ namespace ReflectionLibrary
     return GenericValue();
   }
 
-  std::string generic_value_to_json(const GenericValue& value, bool pretty)
+  static std::string generic_value_to_json(const GenericValue& value, bool pretty)
   {
     rapidjson::Document doc;
     auto& allocator = doc.GetAllocator();
@@ -141,7 +141,7 @@ namespace ReflectionLibrary
     return buffer.GetString();
   }
 
-  std::optional<GenericValue> generic_value_from_json(const std::string& json_str)
+  static std::optional<GenericValue> generic_value_from_json(const std::string& json_str)
   {
     rapidjson::Document doc;
     doc.Parse(json_str.c_str());

@@ -124,7 +124,7 @@ namespace Engine {
     bool ComponentArray<T>::deserialize_and_add_component(EntityID entity, const std::string& json_str) {
       std::optional<ReflectionLibrary::GenericValue> generic_value_opt = ReflectionLibrary::generic_value_from_json(json_str);
       if (generic_value_opt) {
-        return add_component_from_generic_value(generic_value_opt.value());
+        return add_component_from_generic_value(entity, generic_value_opt.value());
       }
       return false;
     }

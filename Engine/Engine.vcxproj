@@ -137,6 +137,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Engine\MonkeyEngine.h" />
     <ClInclude Include="Engine\Reflection\ReflectionLibrary.h" />
     <ClInclude Include="Engine\Reflection\ReflectionLibrary\Concepts.h" />
+    <ClInclude Include="Engine\Reflection\ReflectionLibrary\GenericValue.h" />
     <ClInclude Include="Engine\Reflection\ReflectionLibrary\Helpers.h" />
     <ClInclude Include="Engine\Reflection\ReflectionLibrary\Json.h" />
     <ClInclude Include="Engine\Reflection\ReflectionLibrary\Macros.h" />
@@ -196,6 +197,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <None Include="Engine\ECS\System.inl" />
     <None Include="Engine\ECS\World.inl" />
     <None Include="Engine\EventManager\EventManager.inl" />
+    <None Include="Engine\Reflection\ReflectionLibrary\GenericValue.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
