@@ -45,6 +45,9 @@ namespace Engine {
       // Create a temporary entity and apply the prefab setup
       Entity temp_entity = prefab->setup_function();
 
+      // Clean up the temporary entity after serialization
+      temp_entity.destroy(); // TODO: This might be dangerous, even though destroy only marks for deletion, so it doesn't destroy it immediately. Think of a better solution!!
+
       return entity_to_generic_value(temp_entity);
     }
 
