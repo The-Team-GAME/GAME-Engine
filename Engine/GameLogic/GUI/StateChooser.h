@@ -16,6 +16,7 @@
 
 #include "imgui.h"
 #include "../../Engine/MonkeyEngine.h"
+#include "../GameStates/MainMenuState.h"
 #include "../GameStates/BasicState.h"
 #include "../GameStates/Rubric2500ParticlesState.h"
 #include "../GameStates/RectPainterState.h"
@@ -40,6 +41,10 @@ inline void StateChooserPanel()
   ImGui::Text("Current State: %s", typeid(*Engine::StateManager::get_current_state()).name());
 
 
+  if (ImGui::Button("MainMenuState"))
+  {
+    Engine::StateManager::change_state(MainMenuState::get());
+  }
   if (ImGui::Button("ShowcaseState"))
   {
     Engine::StateManager::change_state(ShowcaseState::get());

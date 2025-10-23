@@ -75,7 +75,7 @@ void RectPainterState::draw()
     computeCenterAndSize(dragStart_, prevMouse_, center, size);
     clampMinSize(size, minRectSizePx_);
     // preview respects snap when Shift or global snap active
-    const bool shift = Engine::Input::is_key_held(GLFW_KEY_LEFT_SHIFT) || Engine::Input::is_key_held(GLFW_KEY_RIGHT_SHIFT);
+    const bool shift = Engine::Input::is_held(Engine::KeyCode::ShiftLeft) || Engine::Input::is_held(Engine::KeyCode::ShiftRight);
     if (globalSnap_ || shift) {
       center = snapToGrid(center, snapGridPx_);
       size.x = snapScalar(size.x, snapGridPx_);
@@ -99,19 +99,19 @@ void RectPainterState::handleMouse()
 {
   ImGuiIO& io = ImGui::GetIO();
   if (io.WantCaptureMouse) {
-    prevMouse_ = Engine::Input::GetMouseWorldPosition();
+    prevMouse_ = Engine::Input::get_mouse_world_position();
     return;
   }
 
-  const glm::vec2 mouse = Engine::Input::GetMouseWorldPosition();
-  const bool lDown = Engine::Input::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_LEFT);
-  const bool lHeld = Engine::Input::is_mouse_button_held(GLFW_MOUSE_BUTTON_LEFT);
-  const bool lUp = Engine::Input::is_mouse_button_released(GLFW_MOUSE_BUTTON_LEFT);
-  const bool shift = Engine::Input::is_key_held(GLFW_KEY_LEFT_SHIFT) || Engine::Input::is_key_held(GLFW_KEY_RIGHT_SHIFT);
+  const glm::vec2 mouse = Engine::Input::get_mouse_world_position();
+  const bool lDown = Engine::Input::is_pressed(Engine::KeyCode::MouseLeft);
+  const bool lHeld = Engine::Input::is_held(Engine::KeyCode::MouseLeft);
+  const bool lUp = Engine::Input::is_released(Engine::KeyCode::MouseLeft);
+  const bool shift = Engine::Input::is_held(Engine::KeyCode::ShiftLeft) || Engine::Input::is_held(Engine::KeyCode::ShiftRight);
   const bool snap = (globalSnap_ || shift);
 
   // Esc clears selection
-  if (Engine::Input::is_key_pressed(GLFW_KEY_ESCAPE)) { selectedIndex_ = -1; dragMode_ = DragMode::None; }
+  if (Engine::Input::is_pressed(Engine::KeyCode::Escape)) { selectedIndex_ = -1; dragMode_ = DragMode::None; }
 
   // Mouse down: decide mode
   if (lDown) {
@@ -252,16 +252,16 @@ void RectPainterState::handleShortcuts()
 {
   ImGuiIO& io = ImGui::GetIO();
   if (io.WantTextInput) return; // don't steal while typing
-  const bool ctrl = Engine::Input::is_key_held(GLFW_KEY_LEFT_CONTROL) || Engine::Input::is_key_held(GLFW_KEY_RIGHT_CONTROL);
+  const bool ctrl = Engine::Input::is_held(Engine::KeyCode::CtrlLeft) || Engine::Input::is_held(Engine::KeyCode::CtrlRight);
   const bool hasSel = (selectedIndex_ >= 0 && selectedIndex_ < (int)rects_.size());
 
-  if (hasSel && Engine::Input::is_key_pressed(GLFW_KEY_DELETE)) {
+  if (hasSel && Engine::Input::is_pressed(Engine::KeyCode::Delete)) {
     Engine::ECS::destroy_entity(Engine::ECS::Entity(rects_[selectedIndex_]));
     rects_.erase(rects_.begin() + selectedIndex_);
     selectedIndex_ = -1;
   }
 
-  if (hasSel && ctrl && Engine::Input::is_key_pressed(GLFW_KEY_D)) {
+  if (hasSel && ctrl && Engine::Input::is_pressed(Engine::KeyCode::D)) {
     Engine::ECS::Entity src(rects_[selectedIndex_]);
 
     auto* translate = Engine::ECS::get_component<Components::Transform2D>(src);
@@ -280,13 +280,13 @@ void RectPainterState::handleShortcuts()
     }
   }
 
-  if (hasSel && Engine::Input::is_key_pressed(GLFW_KEY_LEFT_BRACKET))  sendToBack(selectedIndex_);
-  if (hasSel && Engine::Input::is_key_pressed(GLFW_KEY_RIGHT_BRACKET)) bringToFront(selectedIndex_);
+  if (hasSel && Engine::Input::is_pressed(Engine::KeyCode::LeftBracket))  sendToBack(selectedIndex_);
+  if (hasSel && Engine::Input::is_pressed(Engine::KeyCode::RightBracket)) bringToFront(selectedIndex_);
 
-  if (Engine::Input::is_key_pressed(GLFW_KEY_G)) globalSnap_ = !globalSnap_;
+  if (Engine::Input::is_pressed(Engine::KeyCode::G)) globalSnap_ = !globalSnap_;
 
-  //if (ctrl && Engine::Input::is_key_pressed(GLFW_KEY_S)) ;
-  //if (ctrl && Engine::Input::is_key_pressed(GLFW_KEY_O)) ;
+  //if (ctrl && Engine::Input::is_pressed(GLFW_KEY_S)) ;
+  //if (ctrl && Engine::Input::is_pressed(GLFW_KEY_O)) ;
 }
 
 void RectPainterState::runCollisionPass()

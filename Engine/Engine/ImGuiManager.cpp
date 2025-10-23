@@ -135,7 +135,7 @@ namespace ImGuiManager {
   void update()
   {
     // Toggle ImGui with F1 key
-    if (Engine::Input::is_key_pressed(GLFW_KEY_F1))
+    if (Engine::Input::is_pressed(Engine::KeyCode::F1))
     {
       gui_enabled = !gui_enabled;
     }

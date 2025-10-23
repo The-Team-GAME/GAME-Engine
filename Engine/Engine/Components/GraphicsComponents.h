@@ -279,7 +279,6 @@ namespace Components
       }
     };
   };
-
 }
 
 REFLECT_FIELDS(Components::Text, content)

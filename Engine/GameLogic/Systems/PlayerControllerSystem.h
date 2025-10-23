@@ -48,10 +48,10 @@ public:
 
 private:
   void handle_horizontal_movement(Components::RigidBody* rb, f32 accel) {
-    if (Engine::Input::is_key_held(GLFW_KEY_A)) {
+    if (Engine::Input::is_held(GLFW_KEY_A)) {
       rb->acceleration.x -= accel;
     }
-    if (Engine::Input::is_key_held(GLFW_KEY_D)) {
+    if (Engine::Input::is_held(GLFW_KEY_D)) {
       rb->acceleration.x += accel;
     }
   }
@@ -60,7 +60,7 @@ private:
     // Only jump if grounded and space is pressed
     if (rb->isGrounded) std::cout << "Grounded\n";
     else std::cout << "Airborne\n";
-    if (Engine::Input::is_key_pressed(GLFW_KEY_SPACE) && rb->isGrounded) {
+    if (Engine::Input::is_pressed(GLFW_KEY_SPACE) && rb->isGrounded) {
       std::cout << "Jump!\n";
       rb->velocity.y = -jumpVel;  // Negative if +Y is down
       //rb->isGrounded = false;
