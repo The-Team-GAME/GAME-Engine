@@ -17,6 +17,7 @@
 
 #include "../Engine/MonkeyEngine.h"
 #include "GameStates/MainMenuState.h"
+#include "GameStates/Dev/PhysicsTestState.h"
 #include "GUI/StateChooser.h"
 #include <exception>
 #include <stdexcept>
@@ -47,6 +48,7 @@ int main()
 
     // Start the engine
     Engine::Core engine(win_width, win_height, "Monkey Stole My GPA", MainMenuState::get());
+    Engine::Core engine(win_width, win_height, "Monkey Stole My GPA", PhysicsTestState::get());
     ImGuiManager::register_panel(StateChooserPanel);
     engine.run();
 
