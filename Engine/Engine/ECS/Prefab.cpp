@@ -40,7 +40,7 @@ namespace Engine {
     ReflectionLibrary::GenericValue to_generic_value(const Prefab& prefab)
     {
       if (!prefab || !prefab->setup_function) {
-        return "{}";
+        return ReflectionLibrary::GenericValue();
       }
 
       // Create a temporary entity and apply the prefab setup

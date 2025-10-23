@@ -15,6 +15,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 #include "Types.h"
+#include "../Reflection/ReflectionLibrary.h"
 
 namespace Engine {
   namespace ECS {
@@ -177,7 +178,13 @@ namespace Engine {
       When checking if two entity handles refer to different entities.
       ==================================================================================*/
       bool operator!=(const Entity& other) const;
+
+
+      Entity(const ReflectionLibrary::GenericValue& value);
+      ReflectionLibrary::GenericValue to_generic_value();
     };
+
+
 
   } // namespace ECS
 } // namespace Engine

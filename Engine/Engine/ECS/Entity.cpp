@@ -40,5 +40,59 @@ namespace Engine {
       return id != other.id;
     }
 
+    Entity::Entity(const ReflectionLibrary::GenericValue& value) {
+      if (!value.isObject() || !value.has("components") || !value["components"].isArray()) {
+        id = INVALID_ENTITY;
+        return;
+      }
+
+      const auto& components_array = value["components"].getArray();
+
+      // Iterate through each component in the JSON
+      for (const auto& component_entry : components_array) {
+        if (!component_entry.isObject() || !component_entry.has("type") || !component_entry.has("data")) {
+          continue;
+        }
+
+        std::string type_name = component_entry["type"].getString();
+        const auto& component_data = component_entry["data"];
+
+        // Find the component array by type name
+        for (const auto& [type_id, component_array] : Internal::component_arrays) {
+          if (component_array->get_type_name() == type_name && component_array->is_reflectable()) {
+            // Deserialize and add the component
+            component_array->add_component_from_generic_value(get_id(), component_data);
+            Internal::entity_signatures[get_id()].set(type_id);
+            break;
+          }
+        }
+      }
+
+      // Notify systems about the component changes
+      Internal::entity_component_changed(get_id());
+    }
+
+    ReflectionLibrary::GenericValue Entity::to_generic_value() {
+
+      EntityID entity_id = get_id();
+      const auto& signature = Internal::entity_signatures[entity_id];
+
+      ReflectionLibrary::GenericValue result;
+      result["id"] = entity_id;
+
+      // Serialize each component's data
+      for (const auto& [type_id, component_array] : Internal::component_arrays) {
+        if (signature.test(type_id) && component_array->is_reflectable()) {
+          ReflectionLibrary::GenericValue component_data = component_array->to_generic_value(entity_id);
+          ReflectionLibrary::GenericValue component_entry;
+          component_entry["type"] = component_array->get_type_name();
+          component_entry["data"] = component_data;
+          result["components"].push_back(component_entry);
+        }
+      }
+
+      return result;
+    }
+
   } // namespace ECS
 } // namespace Engine
