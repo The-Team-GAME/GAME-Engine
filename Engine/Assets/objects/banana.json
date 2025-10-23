@@ -1,9 +1,0 @@
-{
-  "entity": {
-    "id": "banana",
-    "width": 20,
-    "height": 12,
-    "texturePath": "images/banana.png",
-    "textureFilter": 0
-  }
-}
