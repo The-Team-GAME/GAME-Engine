@@ -27,7 +27,7 @@ namespace Engine {
     // PrefabData - Reusable entity template  //
     // ====================================== */
     struct PrefabData {
-      std::function<void(Entity&)> setup_function;
+      std::function<Entity(void)> setup_function;
 
       PrefabData() = default;
 
@@ -41,7 +41,7 @@ namespace Engine {
       Where to call it:
       When creating prefab data structures.
       ==================================================================================*/
-      PrefabData(std::function<void(Entity&)> setup);
+      PrefabData(std::function<Entity(void)> setup);
     };
 
     using Prefab = std::shared_ptr<PrefabData>;
@@ -61,7 +61,7 @@ namespace Engine {
     Where to call it:
     When defining reusable entity templates.
     ==================================================================================*/
-    Prefab create_prefab(std::function<void(Entity&)> setup);
+    Prefab create_prefab(std::function<Entity(void)> setup);
 
     /*=================================================================================
     Function Brief:
@@ -75,9 +75,9 @@ namespace Engine {
     ==================================================================================*/
     Entity instantiate_prefab(const Prefab& prefab);
 
-    ReflectionLibrary::GenericValue prefab_to_generic_value(const Prefab& prefab);
+    static ReflectionLibrary::GenericValue prefab_to_generic_value(const Prefab& prefab);
 
-    Prefab prefab_from_generic_value(const ReflectionLibrary::GenericValue& value);
+    static Prefab prefab_from_generic_value(const ReflectionLibrary::GenericValue& value);
 
     /*=================================================================================
     Function Brief:

@@ -180,10 +180,10 @@ namespace Engine {
       bool operator!=(const Entity& other) const;
 
 
-      Entity(const ReflectionLibrary::GenericValue& value);
-      ReflectionLibrary::GenericValue to_generic_value();
     };
 
+    Entity create_entity_from_generic_value(const ReflectionLibrary::GenericValue& value);
+    ReflectionLibrary::GenericValue entity_to_generic_value(Entity entity);
 
 
   } // namespace ECS

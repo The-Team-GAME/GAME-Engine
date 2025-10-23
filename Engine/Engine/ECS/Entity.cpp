@@ -40,11 +40,12 @@ namespace Engine {
       return id != other.id;
     }
 
-    Entity::Entity(const ReflectionLibrary::GenericValue& value) {
+    Entity create_entity_from_generic_value(const ReflectionLibrary::GenericValue& value) {
       if (!value.isObject() || !value.has("components") || !value["components"].isArray()) {
-        id = INVALID_ENTITY;
-        return;
+        return Entity(INVALID_ENTITY);
       }
+
+      Entity entity = ECS::create_entity();
 
       const auto& components_array = value["components"].getArray();
 
@@ -61,20 +62,22 @@ namespace Engine {
         for (const auto& [type_id, component_array] : Internal::component_arrays) {
           if (component_array->get_type_name() == type_name && component_array->is_reflectable()) {
             // Deserialize and add the component
-            component_array->add_component_from_generic_value(get_id(), component_data);
-            Internal::entity_signatures[get_id()].set(type_id);
+            component_array->add_component_from_generic_value(entity.get_id(), component_data);
+            Internal::entity_signatures[entity.get_id()].set(type_id);
             break;
           }
         }
       }
 
       // Notify systems about the component changes
-      Internal::entity_component_changed(get_id());
+      Internal::entity_component_changed(entity.get_id());
+
+      return entity;
     }
 
-    ReflectionLibrary::GenericValue Entity::to_generic_value() {
+    ReflectionLibrary::GenericValue entity_to_generic_value(Entity entity) {
 
-      EntityID entity_id = get_id();
+      EntityID entity_id = entity.get_id();
       const auto& signature = Internal::entity_signatures[entity_id];
 
       ReflectionLibrary::GenericValue result;

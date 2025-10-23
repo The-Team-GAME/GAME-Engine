@@ -21,20 +21,19 @@
 namespace Engine {
   namespace ECS {
 
-    PrefabData::PrefabData(std::function<void(Entity&)> setup)
+    PrefabData::PrefabData(std::function<Entity(void)> setup)
       : setup_function(std::move(setup)) {
     }
 
-    Prefab create_prefab(std::function<void(Entity&)> setup) {
+    Prefab create_prefab(std::function<Entity(void)> setup) {
       return std::make_shared<PrefabData>(std::move(setup));
     }
 
     Entity instantiate_prefab(const Prefab& prefab) {
-      Entity entity = create_entity();
       if (prefab && prefab->setup_function) {
-        prefab->setup_function(entity);
+        return prefab->setup_function();
       }
-      return entity;
+      return Entity(INVALID_ENTITY);
     }
 
     static ReflectionLibrary::GenericValue prefab_to_generic_value(const Prefab& prefab)
@@ -44,11 +43,9 @@ namespace Engine {
       }
 
       // Create a temporary entity and apply the prefab setup
-      Entity temp_entity = create_entity();
-      prefab->setup_function(temp_entity);
-      temp_entity.destroy(); // Clean up the temporary entity
+      Entity temp_entity = prefab->setup_function();
 
-      return temp_entity.to_generic_value();
+      return entity_to_generic_value(temp_entity);
     }
 
     static Prefab prefab_from_generic_value(const ReflectionLibrary::GenericValue& value)
@@ -57,11 +54,9 @@ namespace Engine {
         return nullptr;
       }
 
-      auto setup_function = [value](Entity& entity) {
-        entity = value;
-        };
-
-      return std::make_shared<PrefabData>(setup_function);
+      return create_prefab([value]() {
+        return create_entity_from_generic_value(value);
+        });
     }
 
     std::string serialize_prefab_to_json(const Prefab& prefab) {
