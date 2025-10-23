@@ -47,7 +47,10 @@ public:
     auto loaded_banana_prefab = Engine::Resources::load_prefab("prefabs/banana_prefab.json");
 
     // Instantiate the loaded prefab in the ECS world
-    Engine::ECS::instantiate_prefab(loaded_banana_prefab).add_component<Components::Tag<"PrefabsState">>();
+    auto banana = Engine::ECS::instantiate_prefab(loaded_banana_prefab).add_component<Components::Tag<"PrefabsState">>();
+
+    // print rigidbody angular velocity to verify
+    std::cout << banana.get_component<Components::RigidBody>()->angular_velocity << "\n";
 
   };
 
