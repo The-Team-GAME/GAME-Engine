@@ -37,8 +37,10 @@ namespace Engine {
     void register_component()
     {
       ComponentTypeID typeId = ComponentTypeManager::get_type_id<T>();
-      assert(Internal::component_arrays.find(typeId) == Internal::component_arrays.end() &&
-        "Component already registered");
+      if (Internal::component_arrays.find(typeId) != Internal::component_arrays.end())
+      {
+        return;
+      }
       Internal::component_arrays[typeId] = std::make_unique<ComponentArray<T>>();
     }
 
