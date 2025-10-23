@@ -45,14 +45,14 @@
         static CLASS_NAME create(CLASS_NAME &obj) { return obj; }                                                                    \
     };
 
-#define REFLECT_CUSTOM(CLASS_NAME, ...)                       \
-    REFLECT_FIELDS(CLASS_NAME::Reflector, __VA_ARGS__)                       \
-    template <>                                                                                                                     \
-    struct ReflectionLibrary::ReflectionInfo<CLASS_NAME>                                                                            \
-    {                                                                                                                               \
-        using Reflector = CLASS_NAME::Reflector;                                                                                    \
-        static constexpr const char *class_name = #CLASS_NAME;                                                                      \
-        static constexpr auto fields = std::make_tuple(EXPAND_MACROS(Reflector, FIELD_PAIR, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)); \
-        static Reflector reflect(CLASS_NAME &obj) { return Reflector::reflect(obj); }                                               \
-        static CLASS_NAME create(Reflector &r) { return Reflector::create(r); }                                                     \
+#define REFLECT_CUSTOM(CLASS_NAME, ...)                                                                                              \
+    REFLECT_FIELDS(CLASS_NAME::Reflector, __VA_ARGS__)                                                                               \
+    template <>                                                                                                                      \
+    struct ReflectionLibrary::ReflectionInfo<CLASS_NAME>                                                                             \
+    {                                                                                                                                \
+        using Reflector = CLASS_NAME::Reflector;                                                                                     \
+        static constexpr const char *class_name = #CLASS_NAME;                                                                       \
+        static constexpr auto fields = ReflectionLibrary::ReflectionInfo<Reflector>::fields;                                         \
+        static Reflector reflect(CLASS_NAME &obj) { return Reflector::reflect(obj); }                                                \
+        static CLASS_NAME create(Reflector &r) { return Reflector::create(r); }                                                      \
     };
