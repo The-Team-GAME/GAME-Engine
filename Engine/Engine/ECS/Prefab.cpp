@@ -16,6 +16,7 @@
 #include "World.h"
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/prettywriter.h>
+#include "../Reflection/ReflectionLibrary.h"
 
 namespace Engine {
   namespace ECS {
@@ -36,7 +37,8 @@ namespace Engine {
       return entity;
     }
 
-    std::string serialize_prefab_to_json(const Prefab& prefab) {
+    ReflectionLibrary::GenericValue to_generic_value(const Prefab& prefab)
+    {
       if (!prefab || !prefab->setup_function) {
         return "{}";
       }
@@ -45,86 +47,51 @@ namespace Engine {
       Entity temp_entity = create_entity();
       prefab->setup_function(temp_entity);
 
-      rapidjson::Document doc;
-      doc.SetObject();
-      auto& allocator = doc.GetAllocator();
-
-      // Create components array
-      rapidjson::Value components_array(rapidjson::kArrayType);
 
       EntityID entity_id = temp_entity.get_id();
       const auto& signature = Internal::entity_signatures[entity_id];
 
-      // Iterate through all component types and serialize the ones this entity has
+      ReflectionLibrary::GenericValue result;
+      result["id"] = entity_id;
+
+      // Serialize each component's data
       for (const auto& [type_id, component_array] : Internal::component_arrays) {
         if (signature.test(type_id) && component_array->is_reflectable()) {
-          rapidjson::Value component_entry(rapidjson::kObjectType);
-
-          // Add type name instead of type_id
-          std::string type_name = component_array->get_type_name();
-          rapidjson::Value type_name_val(type_name.c_str(), allocator);
-          component_entry.AddMember("type", type_name_val, allocator);
-
-          // Serialize component data using the component array's serialize method
-          rapidjson::Value component_data(rapidjson::kObjectType);
-          component_array->serialize_component(entity_id, component_data, allocator);
-          component_entry.AddMember("data", component_data, allocator);
-
-          components_array.PushBack(component_entry, allocator);
+          ReflectionLibrary::GenericValue component_data = component_array->to_generic_value(entity_id);
+          ReflectionLibrary::GenericValue component_entry;
+          component_entry["type"] = component_array->get_type_name();
+          component_entry["data"] = component_data;
+          result["components"].push_back(component_entry);
         }
       }
 
-      doc.AddMember("components", components_array, allocator);
-
-      // Clean up temporary entity
-      destroy_entity(temp_entity);
-
-      // Convert to string
-      rapidjson::StringBuffer buffer;
-      rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
-      doc.Accept(writer);
-
-      return buffer.GetString();
+      return result;
     }
 
-    Prefab deserialize_prefab_from_json(const std::string& json_str) {
-      rapidjson::Document doc;
-      doc.Parse(json_str.c_str());
-
-      if (doc.HasParseError() || !doc.IsObject()) {
+    Prefab from_generic_value(const ReflectionLibrary::GenericValue& value)
+    {
+      if (!value.isObject() || !value.has("components") || !value["components"].isArray()) {
         return nullptr;
       }
-
-      if (!doc.HasMember("components") || !doc["components"].IsArray()) {
-        return nullptr;
-      }
-
-      // Copy the JSON document so it persists beyond this function's scope
-      auto doc_copy = std::make_shared<rapidjson::Document>();
-      doc_copy->CopyFrom(doc, doc_copy->GetAllocator());
 
       // Create a lambda that will setup the entity with the deserialized components
-      auto setup_function = [doc_copy](Entity& entity) {
-        if (!doc_copy->HasMember("components") || !(*doc_copy)["components"].IsArray()) {
-          return;
-        }
-
-        const auto& components_array = (*doc_copy)["components"].GetArray();
+      auto setup_function = [value](Entity& entity) {
+        const auto& components_array = value["components"].getArray();
 
         // Iterate through each component in the JSON
         for (const auto& component_entry : components_array) {
-          if (!component_entry.IsObject() || !component_entry.HasMember("type") || !component_entry.HasMember("data")) {
+          if (!component_entry.isObject() || !component_entry.has("type") || !component_entry.has("data")) {
             continue;
           }
 
-          std::string type_name = component_entry["type"].GetString();
+          std::string type_name = component_entry["type"].getString();
           const auto& component_data = component_entry["data"];
 
           // Find the component array by type name
           for (const auto& [type_id, component_array] : Internal::component_arrays) {
             if (component_array->get_type_name() == type_name && component_array->is_reflectable()) {
               // Deserialize and add the component
-              component_array->deserialize_and_add_component(entity.get_id(), component_data);
+              component_array->add_component_from_generic_value(entity.get_id(), component_data);
               Internal::entity_signatures[entity.get_id()].set(type_id);
               break;
             }
@@ -136,6 +103,22 @@ namespace Engine {
         };
 
       return std::make_shared<PrefabData>(setup_function);
+    }
+
+    std::string serialize_prefab_to_json(const Prefab& prefab) {
+      if (!prefab || !prefab->setup_function) {
+        return "{}";
+      }
+      ReflectionLibrary::GenericValue generic_value = to_generic_value(prefab);
+      return ReflectionLibrary::generic_value_to_json(generic_value, true);
+    }
+
+    Prefab deserialize_prefab_from_json(const std::string& json_str) {
+      std::optional<ReflectionLibrary::GenericValue> generic_value = ReflectionLibrary::generic_value_from_json(json_str);
+      if (!generic_value) {
+        return nullptr;
+      }
+      return from_generic_value(generic_value.value());
     }
   } // namespace ECS
 } // namespace Engine

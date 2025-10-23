@@ -22,7 +22,7 @@ namespace Engine {
   namespace ECS {
 
     template<typename T>
-    void ComponentArray<T>::add_component(EntityID entity, T component) {
+    void ComponentArray<T>::add_component(EntityID entity, const T& component) {
       components.emplace(entity, std::move(component));
     }
 
@@ -71,42 +71,60 @@ namespace Engine {
     }
 
     template<typename T>
-    void ComponentArray<T>::serialize_component(EntityID entity, rapidjson::Value& json_val, rapidjson::Document::AllocatorType& allocator) const {
+    inline ReflectionLibrary::GenericValue ComponentArray<T>::to_generic_value(EntityID entity) const
+    {
       auto it = components.find(entity);
       if (it != components.end()) {
         if constexpr (ReflectionLibrary::is_reflectable_v<T>) {
           T component_copy = it->second;
           if constexpr (ReflectionLibrary::has_reflector_v<T>) {
             auto reflector = ReflectionLibrary::ReflectionInfo<T>::reflect(component_copy);
-            ReflectionLibrary::serialize_obj(reflector, json_val, allocator);
+            return ReflectionLibrary::to_generic_value(reflector);
           }
           else {
-            ReflectionLibrary::serialize_obj(component_copy, json_val, allocator);
+            return ReflectionLibrary::to_generic_value(component_copy);
           }
         }
       }
+      return ReflectionLibrary::GenericValue();
     }
 
     template<typename T>
-    bool ComponentArray<T>::deserialize_and_add_component(EntityID entity, const rapidjson::Value& json_val) {
+    inline bool ComponentArray<T>::add_component_from_generic_value(EntityID entity, const ReflectionLibrary::GenericValue& value)
+    {
       if constexpr (ReflectionLibrary::is_reflectable_v<T>) {
         if constexpr (ReflectionLibrary::has_reflector_v<T>) {
           // Component has custom reflector
-          typename T::Reflector reflector{};
-          if (ReflectionLibrary::deserialize_obj(reflector, json_val)) {
-            T component = ReflectionLibrary::ReflectionInfo<T>::create(reflector);
+          std::optional<typename T::Reflector> reflector_opt = ReflectionLibrary::from_generic_value<typename T::Reflector>(value);
+          if (reflector_opt) {
+            T component = ReflectionLibrary::ReflectionInfo<T>::create(reflector_opt.value());
             add_component(entity, std::move(component));
             return true;
           }
         }
         else {
           // Component uses direct reflection
-          T component{};
-          if (ReflectionLibrary::deserialize_obj(component, json_val)) {
-            add_component(entity, std::move(component));
+          std::optional<T> component_opt = ReflectionLibrary::from_generic_value<T>(value);
+          if (component_opt) {
+            add_component(entity, std::move(component_opt.value()));
             return true;
           }
         }
+      }
+      return false;
+    }
+
+    template<typename T>
+    void ComponentArray<T>::serialize_component(EntityID entity, bool pretty) const {
+      ReflectionLibrary::GenericValue generic_value = to_generic_value(entity);
+      ReflectionLibrary::generic_value_to_json(generic_value, pretty);
+    }
+
+    template<typename T>
+    bool ComponentArray<T>::deserialize_and_add_component(EntityID entity, const std::string& json_str) {
+      std::optional<ReflectionLibrary::GenericValue> generic_value_opt = ReflectionLibrary::generic_value_from_json(json_str);
+      if (generic_value_opt) {
+        return add_component_from_generic_value(generic_value_opt.value());
       }
       return false;
     }

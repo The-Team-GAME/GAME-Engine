@@ -19,6 +19,7 @@
 #include <memory>
 #include <string>
 #include <functional>
+#include "../Reflection/ReflectionLibrary.h"
 
 namespace Engine {
   namespace ECS {
@@ -73,6 +74,10 @@ namespace Engine {
     When spawning entities based on a prefab template.
     ==================================================================================*/
     Entity instantiate_prefab(const Prefab& prefab);
+
+    ReflectionLibrary::GenericValue to_generic_value(const Prefab& prefab);
+
+    Prefab from_generic_value(const ReflectionLibrary::GenericValue& value);
 
     /*=================================================================================
     Function Brief:
