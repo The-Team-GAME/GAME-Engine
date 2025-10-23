@@ -37,7 +37,7 @@ namespace Engine {
       return entity;
     }
 
-    ReflectionLibrary::GenericValue prefab_to_generic_value(const Prefab& prefab)
+    static ReflectionLibrary::GenericValue prefab_to_generic_value(const Prefab& prefab)
     {
       if (!prefab || !prefab->setup_function) {
         return ReflectionLibrary::GenericValue();
@@ -46,19 +46,19 @@ namespace Engine {
       // Create a temporary entity and apply the prefab setup
       Entity temp_entity = create_entity();
       prefab->setup_function(temp_entity);
+      temp_entity.destroy(); // Clean up the temporary entity
 
       return temp_entity.to_generic_value();
     }
 
-    Prefab prefab_from_generic_value(const ReflectionLibrary::GenericValue& value)
+    static Prefab prefab_from_generic_value(const ReflectionLibrary::GenericValue& value)
     {
       if (!value.isObject() || !value.has("components") || !value["components"].isArray()) {
         return nullptr;
       }
 
       auto setup_function = [value](Entity& entity) {
-        Entity temp_entity(value);
-        entity = temp_entity;
+        entity = value;
         };
 
       return std::make_shared<PrefabData>(setup_function);
