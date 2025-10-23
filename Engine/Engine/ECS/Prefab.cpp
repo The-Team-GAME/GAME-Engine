@@ -37,7 +37,7 @@ namespace Engine {
       return entity;
     }
 
-    ReflectionLibrary::GenericValue to_generic_value(const Prefab& prefab)
+    ReflectionLibrary::GenericValue prefab_to_generic_value(const Prefab& prefab)
     {
       if (!prefab || !prefab->setup_function) {
         return ReflectionLibrary::GenericValue();
@@ -68,7 +68,7 @@ namespace Engine {
       return result;
     }
 
-    Prefab from_generic_value(const ReflectionLibrary::GenericValue& value)
+    Prefab prefab_from_generic_value(const ReflectionLibrary::GenericValue& value)
     {
       if (!value.isObject() || !value.has("components") || !value["components"].isArray()) {
         return nullptr;
@@ -109,7 +109,7 @@ namespace Engine {
       if (!prefab || !prefab->setup_function) {
         return "{}";
       }
-      ReflectionLibrary::GenericValue generic_value = to_generic_value(prefab);
+      ReflectionLibrary::GenericValue generic_value = prefab_to_generic_value(prefab);
       return ReflectionLibrary::generic_value_to_json(generic_value, true);
     }
 
@@ -118,7 +118,7 @@ namespace Engine {
       if (!generic_value) {
         return nullptr;
       }
-      return from_generic_value(generic_value.value());
+      return prefab_from_generic_value(generic_value.value());
     }
   } // namespace ECS
 } // namespace Engine

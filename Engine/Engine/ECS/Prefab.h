@@ -75,9 +75,9 @@ namespace Engine {
     ==================================================================================*/
     Entity instantiate_prefab(const Prefab& prefab);
 
-    ReflectionLibrary::GenericValue to_generic_value(const Prefab& prefab);
+    ReflectionLibrary::GenericValue prefab_to_generic_value(const Prefab& prefab);
 
-    Prefab from_generic_value(const ReflectionLibrary::GenericValue& value);
+    Prefab prefab_from_generic_value(const ReflectionLibrary::GenericValue& value);
 
     /*=================================================================================
     Function Brief:
