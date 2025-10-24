@@ -35,10 +35,6 @@ namespace Engine {
       virtual std::string get_type_name() const = 0;
       virtual ReflectionLibrary::GenericValue to_generic_value(EntityID entity) const = 0;
       virtual bool add_component_from_generic_value(EntityID entity, const ReflectionLibrary::GenericValue& value) = 0;
-
-
-      virtual void serialize_component(EntityID entity, bool pretty) const = 0;
-      virtual bool deserialize_and_add_component(EntityID entity, const std::string& json_str) = 0;
     };
 
     /* ============================= //
@@ -153,10 +149,6 @@ namespace Engine {
       ReflectionLibrary::GenericValue to_generic_value(EntityID entity) const override;
 
       bool add_component_from_generic_value(EntityID entity, const ReflectionLibrary::GenericValue& value) override;
-
-      void serialize_component(EntityID entity, bool pretty) const override;
-
-      bool deserialize_and_add_component(EntityID entity, const std::string& json_str) override;
 
       /*=================================================================================
       Function Brief:

@@ -115,21 +115,6 @@ namespace Engine {
     }
 
     template<typename T>
-    void ComponentArray<T>::serialize_component(EntityID entity, bool pretty) const {
-      ReflectionLibrary::GenericValue generic_value = to_generic_value(entity);
-      ReflectionLibrary::generic_value_to_json(generic_value, pretty);
-    }
-
-    template<typename T>
-    bool ComponentArray<T>::deserialize_and_add_component(EntityID entity, const std::string& json_str) {
-      std::optional<ReflectionLibrary::GenericValue> generic_value_opt = ReflectionLibrary::generic_value_from_json(json_str);
-      if (generic_value_opt) {
-        return add_component_from_generic_value(entity, generic_value_opt.value());
-      }
-      return false;
-    }
-
-    template<typename T>
     auto ComponentArray<T>::begin() {
       return components.begin();
     }
