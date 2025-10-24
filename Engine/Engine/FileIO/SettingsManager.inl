@@ -2,6 +2,7 @@
 #include <string>
 #include <fstream>
 #include "../Logger.h"
+#include <filesystem>
 
 namespace Engine {
   namespace FileIO {
@@ -61,6 +62,28 @@ namespace Engine {
     template<typename T>
     bool SettingsManager<T>::save(const std::string& file_path)
     {
+      // Extract directory path
+      size_t last_slash = file_path.find_last_of("/\\");
+      if (last_slash != std::string::npos)
+      {
+        std::string directory = file_path.substr(0, last_slash);
+
+        // Check if directory exists, create if it doesn't
+        if (!std::filesystem::exists(directory))
+        {
+          try
+          {
+            std::filesystem::create_directories(directory);
+          }
+          catch (const std::filesystem::filesystem_error& e)
+          {
+            Log::error("Failed to create directory: " + directory + " - " + e.what());
+            return false;
+          }
+        }
+      }
+
+      // Write settings to file
       std::ofstream file(file_path);
       if (!file.is_open())
       {
