@@ -1,7 +1,7 @@
 #include "SettingsManager.h"
 #include <string>
 #include <fstream>
-#include <Logger.h>
+#include "../Logger.h"
 
 namespace Engine {
   namespace FileIO {
