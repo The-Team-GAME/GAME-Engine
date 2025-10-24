@@ -45,10 +45,13 @@ namespace Engine {
       // Create a temporary entity and apply the prefab setup
       Entity temp_entity = prefab->setup_function();
 
-      // Clean up the temporary entity after serialization
-      temp_entity.destroy(); // TODO: This might be dangerous, even though destroy only marks for deletion, so it doesn't destroy it immediately. Think of a better solution!!
+      // Serialize the temporary entity to GenericValue
+      ReflectionLibrary::GenericValue value = entity_to_generic_value(temp_entity);
 
-      return entity_to_generic_value(temp_entity);
+      // Clean up the temporary entity after serialization
+      temp_entity.destroy();
+
+      return value;
     }
 
     static Prefab prefab_from_generic_value(const ReflectionLibrary::GenericValue& value)
