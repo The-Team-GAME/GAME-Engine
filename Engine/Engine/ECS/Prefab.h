@@ -75,35 +75,8 @@ namespace Engine {
     ==================================================================================*/
     Entity instantiate_prefab(const Prefab& prefab);
 
-    static ReflectionLibrary::GenericValue prefab_to_generic_value(const Prefab& prefab);
+    ReflectionLibrary::GenericValue prefab_to_generic_value(const Prefab& prefab);
 
-    static Prefab prefab_from_generic_value(const ReflectionLibrary::GenericValue& value);
-
-    /*=================================================================================
-    Function Brief:
-    Serializes a prefab to a JSON string by creating a temporary entity,
-    applying the prefab, and serializing its components.
-
-    Parameters:
-    prefab - The prefab to serialize.
-
-    Where to call it:
-    When saving prefabs to files or transferring prefab data.
-    ==================================================================================*/
-    std::string serialize_prefab_to_json(const Prefab& prefab);
-
-    /*=================================================================================
-    Function Brief:
-    Deserializes a prefab from a JSON string, creating a prefab that will apply
-    the deserialized components to entities.
-
-    Parameters:
-    json_str - The JSON string containing the serialized prefab data.
-
-    Where to call it:
-    When loading prefabs from files or receiving prefab data.
-    ==================================================================================*/
-    Prefab deserialize_prefab_from_json(const std::string& json_str);
-
+    Prefab prefab_from_generic_value(const ReflectionLibrary::GenericValue& value);
   } // namespace ECS
 } // namespace Engine

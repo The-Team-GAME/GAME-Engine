@@ -36,7 +36,7 @@ namespace Engine {
       return Entity(INVALID_ENTITY);
     }
 
-    static ReflectionLibrary::GenericValue prefab_to_generic_value(const Prefab& prefab)
+    ReflectionLibrary::GenericValue prefab_to_generic_value(const Prefab& prefab)
     {
       if (!prefab || !prefab->setup_function) {
         return ReflectionLibrary::GenericValue();
@@ -54,7 +54,7 @@ namespace Engine {
       return value;
     }
 
-    static Prefab prefab_from_generic_value(const ReflectionLibrary::GenericValue& value)
+    Prefab prefab_from_generic_value(const ReflectionLibrary::GenericValue& value)
     {
       if (!value.isObject() || !value.has("components") || !value["components"].isArray()) {
         return nullptr;
@@ -65,20 +65,5 @@ namespace Engine {
         });
     }
 
-    std::string serialize_prefab_to_json(const Prefab& prefab) {
-      if (!prefab || !prefab->setup_function) {
-        return "{}";
-      }
-      ReflectionLibrary::GenericValue generic_value = prefab_to_generic_value(prefab);
-      return ReflectionLibrary::generic_value_to_json(generic_value, true);
-    }
-
-    Prefab deserialize_prefab_from_json(const std::string& json_str) {
-      std::optional<ReflectionLibrary::GenericValue> generic_value = ReflectionLibrary::generic_value_from_json(json_str);
-      if (!generic_value) {
-        return nullptr;
-      }
-      return prefab_from_generic_value(generic_value.value());
-    }
   } // namespace ECS
 } // namespace Engine

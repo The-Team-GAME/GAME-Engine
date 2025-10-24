@@ -43,7 +43,7 @@ public:
     );
 
     // You serialize the prefab to JSON
-    std::string banana_json = Engine::ECS::serialize_prefab_to_json(banana_prefabs);
+    std::string banana_json = Engine::FileIO::serialize_prefab_to_json(banana_prefabs);
     std::cout << banana_json << "\n";
 
     // Save the banana prefab to a JSON file
@@ -54,7 +54,7 @@ public:
 
     // Instantiate the loaded prefab in the ECS world
     auto banana = Engine::ECS::instantiate_prefab(loaded_banana_prefab).add_component<Components::Tag<"PrefabsState">>();
-    
+
     // instantiate_prefab returns an Entity, so we can we can inspect or modify it further if needed
     banana.get_component<Components::Transform2D>()->scale = { 120.0f, 72.0f };
   };
