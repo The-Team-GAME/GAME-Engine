@@ -56,12 +56,12 @@ namespace Engine
     isRunning = true;
 
     // Load engine settings
-    if (!FileIO::load_engine_settings("Assets/engine_settings.json")) {
+    if (!FileIO::load_engine_settings("Assets/settings/engine_settings.json")) {
       Log::warning("Failed to load engine settings, using defaults");
     }
 
     // Load user settings
-    if (!FileIO::load_user_settings("Assets/user_settings.json")) {
+    if (!FileIO::load_user_settings("Assets/settings/user_settings.json")) {
       Log::warning("Failed to load user settings, using defaults");
     }
 
