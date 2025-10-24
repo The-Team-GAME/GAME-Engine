@@ -30,6 +30,7 @@ namespace Engine {
       bool has_missing = false;
       for (const auto& [key, default_value] : default_settings.getObject())
       {
+        // Check if the key is missing in loaded settings
         if (!loaded_settings.has(key))
         {
           loaded_settings.getObject()[key] = default_value;

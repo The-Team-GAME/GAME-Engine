@@ -16,3 +16,6 @@ namespace Engine {
     };
   }
 }
+
+
+#include "SettingsManager.inl"

@@ -94,7 +94,6 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="Engine\ECS\Prefab.cpp" />
     <ClCompile Include="Engine\EventManager\EventManager.cpp" />
     <ClCompile Include="Engine\FileIO\PrefabsFileIO.cpp" />
-    <ClCompile Include="Engine\FileIO\SettingsManager.cpp" />
     <ClCompile Include="GameLogic\GameStates\BasicState.cpp" />
     <ClCompile Include="GameLogic\GameStates\BasicState.h" />
     <ClCompile Include="GameLogic\Config.cpp" />
@@ -204,6 +203,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <None Include="Engine\ECS\System.inl" />
     <None Include="Engine\ECS\World.inl" />
     <None Include="Engine\EventManager\EventManager.inl" />
+    <None Include="Engine\FileIO\SettingsManager.inl" />
     <None Include="Engine\Reflection\ReflectionLibrary\GenericValue.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
