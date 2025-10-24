@@ -13,8 +13,15 @@ namespace Engine {
 
       if (!file.is_open())
       {
-        Log::error("Settings file not found: " + file_path);
-        return false;
+        Log::info("Settings file not found, creating: " + file_path);
+
+        settings = T{};
+        if (!save(file_path))
+        {
+          Log::warning("Failed to create default settings file: " + file_path);
+        }
+
+        return true;
       }
 
       std::string json_str((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
@@ -87,9 +94,10 @@ namespace Engine {
       std::ofstream file(file_path);
       if (!file.is_open())
       {
+        Log::error("Failed to open settings file for writing: " + file_path);
         return false;
       }
-      std::string json_str = ReflectionLibrary::to_json<T>(settings, true);
+      std::string json_str = ReflectionLibrary::to_json(settings, true);
       file << json_str;
       return true;
     }

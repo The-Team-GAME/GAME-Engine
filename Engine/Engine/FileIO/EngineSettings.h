@@ -2,18 +2,20 @@
 
 #include <string>
 #include "SettingsManager.h"
+#include "../Reflection/ReflectionLibrary.h"
 
 namespace Engine
 {
   namespace FileIO
   {
-    namespace {
-      struct EngineSettings
-      {
-        std::string window_title = "Monkey Stole My GPA";
-      };
+    struct EngineSettings
+    {
+      std::string window_title = "Monkey Stole My GPA";
+    };
 
-      SettingsManager<EngineSettings> engine_settings_manager{};
+    // Private static instance of SettingsManager for EngineSettings
+    namespace {
+      static SettingsManager<EngineSettings> engine_settings_manager{};
     }
 
     bool load_engine_settings(const std::string& file_path)
@@ -33,3 +35,5 @@ namespace Engine
     }
   }
 }
+
+REFLECT_FIELDS(Engine::FileIO::EngineSettings, window_title)

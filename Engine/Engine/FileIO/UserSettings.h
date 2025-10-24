@@ -7,14 +7,15 @@ namespace Engine
 {
   namespace FileIO
   {
-    namespace {
-      struct UserSettings
-      {
-        int window_width = 1280;
-        int window_height = 720;
-      };
+    struct UserSettings
+    {
+      int window_width = 1280;
+      int window_height = 720;
+    };
 
-      SettingsManager<UserSettings> user_settings_manager{};
+    // Private static instance of SettingsManager for UserSettings
+    namespace {
+      static SettingsManager<UserSettings> user_settings_manager{};
     }
 
     bool load_user_settings(const std::string& file_path)
@@ -34,3 +35,5 @@ namespace Engine
     }
   }
 }
+
+REFLECT_FIELDS(Engine::FileIO::UserSettings, window_width, window_height)
