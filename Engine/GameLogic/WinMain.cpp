@@ -19,8 +19,6 @@
 #include "GameStates/MainMenuState.h"
 #include "GUI/StateChooser.h"
 #include <exception>
-#include <stdexcept>
-#include "Config.h"
 
 /*=================================================================================
 Function Brief:
@@ -44,9 +42,6 @@ int main()
     Engine::Core engine(MainMenuState::get());
     ImGuiManager::register_panel(StateChooserPanel);
     engine.run();
-
-    FileHandler::clear_json();
-
   }
   catch (const std::exception& e)
   {
