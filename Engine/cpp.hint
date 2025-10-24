@@ -1,0 +1,4 @@
+// Hint files help the Visual Studio IDE interpret Visual C++ identifiers
+// such as names of functions and macros.
+// For more information see https://go.microsoft.com/fwlink/?linkid=865984
+#define REFLECT_FIELDS(CLASS_NAME, __VA_ARGS__) template <> struct ReflectionLibrary::ReflectionInfo<CLASS_NAME> { static constexpr const char *class_name = #CLASS_NAME; static constexpr auto fields = std::make_tuple(EXPAND_MACROS(CLASS_NAME, FIELD_PAIR, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)); static CLASS_NAME &reflect(CLASS_NAME &obj) { return obj; } static CLASS_NAME create(CLASS_NAME &obj) { return obj; } };
