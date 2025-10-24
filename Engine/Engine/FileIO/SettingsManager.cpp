@@ -1,20 +1,13 @@
-#include "SettingsFileIO.h"
+#include "SettingsManager.h"
 #include <string>
 #include <fstream>
 #include <Logger.h>
 
-
-
 namespace Engine {
   namespace FileIO {
-    // Private global settings instance
-    namespace {
-      static Settings settings{};
-    }
-
-    bool load_settings(const std::string& file_path)
+    template<typename T>
+    bool SettingsManager<T>::load(const std::string& file_path)
     {
-      // Load existing settings
       std::ifstream file(file_path);
 
       if (!file.is_open())
@@ -32,12 +25,11 @@ namespace Engine {
       }
 
       ReflectionLibrary::GenericValue loaded_settings = loaded_settings_opt_value.value();
-      ReflectionLibrary::GenericValue default_settings = ReflectionLibrary::to_generic_value(Settings{});
+      ReflectionLibrary::GenericValue default_settings = ReflectionLibrary::to_generic_value(T{});
 
-      bool has_missing = false; // Only save if there are missing fields
-      for (const auto& [key, default_value] : default_settings.getObject()) // Iterate through default settings
+      bool has_missing = false;
+      for (const auto& [key, default_value] : default_settings.getObject())
       {
-        // If key is missing in loaded settings, add it with default value
         if (!loaded_settings.has(key))
         {
           loaded_settings.getObject()[key] = default_value;
@@ -47,15 +39,13 @@ namespace Engine {
 
       if (has_missing)
       {
-        // Save updated settings back to file
-        if (!save_settings(file_path))
+        if (!save(file_path))
         {
           Log::warning("Failed to save updated settings to file: " + file_path);
-          // Proceeding even if save fails
         }
       }
 
-      auto loaded_settings_opt = ReflectionLibrary::from_generic_value<Settings>(loaded_settings);
+      auto loaded_settings_opt = ReflectionLibrary::from_generic_value<T>(loaded_settings);
 
       if (!loaded_settings_opt.has_value())
       {
@@ -63,29 +53,22 @@ namespace Engine {
         return false;
       }
 
-      // Update global settings
       settings = loaded_settings_opt.value();
-
       return true;
     }
 
-    bool save_settings(const std::string& file_path)
+    template<typename T>
+    bool SettingsManager<T>::save(const std::string& file_path)
     {
       std::ofstream file(file_path);
       if (!file.is_open())
       {
         return false;
       }
-      std::string json_str = ReflectionLibrary::to_json<Settings>(settings, true);
+      std::string json_str = ReflectionLibrary::to_json<T>(settings, true);
       file << json_str;
       return true;
     }
 
-    Settings get_settings()
-    {
-      return settings;
-    }
   }
 }
-
-
