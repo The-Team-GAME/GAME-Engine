@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    SettingsManager.inl
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements the SettingsManager template class which handles
+//          loading and saving of settings to/from JSON files. Supports automatic
+//          creation of default settings and merging missing fields from defaults.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "SettingsManager.h"
 #include <string>
 #include <fstream>
@@ -6,6 +21,7 @@
 
 namespace Engine {
   namespace FileIO {
+
     template<typename T>
     bool SettingsManager<T>::load(const std::string& file_path)
     {

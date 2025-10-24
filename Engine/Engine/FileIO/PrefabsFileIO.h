@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    PrefabsFileIO.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file declares functions for serializing and deserializing ECS
+//          prefabs to/from JSON format. Enables saving and loading of entity
+//          templates with their component configurations.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include <string>
@@ -13,6 +28,9 @@ namespace Engine {
     Parameters:
     prefab - The prefab to serialize.
 
+    Returns:
+    JSON string containing the serialized prefab data, or "{}" if prefab is invalid.
+
     Where to call it:
     When saving prefabs to files or transferring prefab data.
     ==================================================================================*/
@@ -25,6 +43,9 @@ namespace Engine {
 
     Parameters:
     json_str - The JSON string containing the serialized prefab data.
+
+    Returns:
+    A prefab that can be applied to entities, or nullptr if deserialization fails.
 
     Where to call it:
     When loading prefabs from files or receiving prefab data.
