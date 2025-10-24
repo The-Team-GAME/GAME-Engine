@@ -7,32 +7,24 @@
 
 namespace Engine {
   namespace FileIO {
-
-
-    namespace {
-      std::optional<ReflectionLibrary::GenericValue> load_settings_helper(const std::string& file_path) {
-        std::ifstream file(file_path);
-
-        if (!file.is_open())
-        {
-          Log::warning("Settings file not found: " + file_path);
-          return ReflectionLibrary::GenericValue{};
-        }
-
-        std::string json_str((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-
-        return ReflectionLibrary::generic_value_from_json(json_str);
-      }
-    }
-
-
-
+    // Global settings instance
     static Settings settings{};
 
     bool load_settings(const std::string& file_path)
     {
       // Load existing settings
-      auto loaded_settings_opt_value = load_settings_helper(file_path);
+
+      std::ifstream file(file_path);
+
+      if (!file.is_open())
+      {
+        Log::error("Settings file not found: " + file_path);
+        return false;
+      }
+
+      std::string json_str((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+      auto loaded_settings_opt_value = ReflectionLibrary::generic_value_from_json(json_str);
       if (!loaded_settings_opt_value.has_value()) {
         Log::error("Failed to load settings");
         return false;
