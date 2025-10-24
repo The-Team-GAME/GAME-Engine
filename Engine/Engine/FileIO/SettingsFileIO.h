@@ -14,6 +14,7 @@ namespace Engine {
 
     bool load_settings(const std::string& file_path);
     bool save_settings(const Settings& settings, const std::string& file_path);
+    Settings get_settings();
 
   }
 }

@@ -7,13 +7,14 @@
 
 namespace Engine {
   namespace FileIO {
-    // Global settings instance
-    static Settings settings{};
+    // Private global settings instance
+    namespace {
+      static Settings settings{};
+    }
 
     bool load_settings(const std::string& file_path)
     {
       // Load existing settings
-
       std::ifstream file(file_path);
 
       if (!file.is_open())
@@ -78,6 +79,11 @@ namespace Engine {
       std::string json_str = ReflectionLibrary::to_json<Settings>(settings, true);
       file << json_str;
       return true;
+    }
+
+    Settings get_settings()
+    {
+      return settings;
     }
   }
 }
