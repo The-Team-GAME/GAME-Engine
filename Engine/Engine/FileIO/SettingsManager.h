@@ -23,17 +23,14 @@
 /*
 Settings Documentation:
 
-Settings are automatically saved to JSON files using reflection.
+Settings are automatically serialized to and from JSON files using reflection.
 
-When you add a new member to a settings struct (like `EngineSettings` or `UserSettings`),
-the new field will automatically be added to the json the next time you run the Engine!!
-So no need to add it into the json manually.
+- When you add a new member to a settings struct (e.g., `EngineSettings` in `Engine/FileIO/EngineSettings.h` or `UserSettings` in `Engine/FileIO/UserSettings.h`), the new field is **automatically included in the JSON** on the next engine run. **No manual JSON editing is required!!**
+- To add a new setting:
+  1. Add the member to the struct.
+  2. Include it in the `REFLECT_FIELDS` macro at the bottom of the file.
 
-To add a new setting:
-1. Add the member to the struct
-2. Add it to the `REFLECT_FIELDS` macro at the bottom of the file
-
-The `SettingsManager` handles loading, merging defaults, and saving automatically.
+The `SettingsManager` handles loading, merging defaults for missing fields, and saving automatically.
 */
 
 namespace Engine {
