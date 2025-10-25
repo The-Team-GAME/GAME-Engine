@@ -2,6 +2,21 @@
 
 This readme covers the basic usage of reflection that is relevant to this engine. For detailed documentation of the ReflectionLibrary, visit [https://github.com/sheeyang/Reflection](https://github.com/sheeyang/Reflection).
 
+## Table of Contents
+
+- [Reflection Documentation](#reflection-documentation)
+  - [Table of Contents](#table-of-contents)
+  - [Reflection examples](#reflection-examples)
+    - [Basic Reflection](#basic-reflection)
+    - [JSON Serialization](#json-serialization)
+  - [Custom Reflection](#custom-reflection)
+  - [Registering ECS Components](#registering-ecs-components)
+    - [Basic Component Registration](#basic-component-registration)
+    - [Custom Reflector Component Registration](#custom-reflector-component-registration)
+    - [When to Use Each Macro](#when-to-use-each-macro)
+  - [How Settings Work](#how-settings-work)
+
+
 ## Reflection examples
 
 ### Basic Reflection
