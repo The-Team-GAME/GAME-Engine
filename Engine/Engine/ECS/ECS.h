@@ -21,6 +21,7 @@
 #include "Entity.h"
 #include "System.h"
 #include "World.h"
+#include "WorldData.h"
 #include "Prefab.h"
 #include "Macros.h"
 #include "Entity.inl"

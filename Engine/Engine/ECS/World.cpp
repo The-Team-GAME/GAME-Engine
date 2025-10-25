@@ -14,6 +14,7 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "World.h"
+#include "WorldData.h"
 #include "../Perf.h"
 
 namespace Engine {
@@ -21,16 +22,10 @@ namespace Engine {
   {
     namespace Internal
     {
-      EntityID next_entity_id = 1;
-      std::unordered_set<EntityID> active_entities;
-      std::unordered_set<EntityID> entities_to_destroy;
-      std::unordered_map<EntityID, ComponentSignature> entity_signatures;
-      std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> component_arrays;
-      std::vector<std::unique_ptr<System>> systems;
-
       void entity_component_changed(EntityID entity)
       {
-        for (auto& system : systems)
+        auto& containers = get_containers();
+        for (auto& system : containers.systems)
         {
           if (system_matches_entity(*system, entity))
           {
@@ -45,11 +40,13 @@ namespace Engine {
 
       bool system_matches_entity(const System& system, EntityID entity)
       {
-        if (!is_entity_active(entity))
+        auto& containers = get_containers();
+
+        if (containers.active_entities.find(entity) == containers.active_entities.end())
           return false;
 
-        auto it = entity_signatures.find(entity);
-        if (it == entity_signatures.end())
+        auto it = containers.entity_signatures.find(entity);
+        if (it == containers.entity_signatures.end())
           return false;
 
         const auto& entitySignature = it->second;
@@ -67,15 +64,17 @@ namespace Engine {
 
     Entity create_entity()
     {
-      EntityID id = Internal::next_entity_id++;
-      Internal::active_entities.insert(id);
-      Internal::entity_signatures[id] = ComponentSignature{};
+      auto& containers = Internal::get_containers();
+      EntityID id = containers.next_entity_id++;
+      containers.active_entities.insert(id);
+      containers.entity_signatures[id] = ComponentSignature{};
       return Entity(id);
     }
 
     Entity get_entity(EntityID id)
     {
-      if (Internal::active_entities.find(id) != Internal::active_entities.end())
+      auto& containers = Internal::get_containers();
+      if (containers.active_entities.find(id) != containers.active_entities.end())
       {
         return Entity(id);
       }
@@ -84,18 +83,19 @@ namespace Engine {
 
     Entity clone_entity(const Entity& source)
     {
+      auto& containers = Internal::get_containers();
       EntityID source_id = source.get_id();
-      if (!is_entity_active(source))
+      if (containers.active_entities.find(source_id) == containers.active_entities.end())
       {
         return Entity(INVALID_ENTITY);
       }
 
       Entity newEntity = create_entity();
 
-      const auto& sourceSignature = Internal::entity_signatures.at(source_id);
-      Internal::entity_signatures[newEntity.get_id()] = sourceSignature;
+      const auto& sourceSignature = containers.entity_signatures.at(source_id);
+      containers.entity_signatures[newEntity.get_id()] = sourceSignature;
 
-      for (auto const& [typeId, componentArray] : Internal::component_arrays)
+      for (auto const& [typeId, componentArray] : containers.component_arrays)
       {
         if (sourceSignature.test(typeId))
         {
@@ -110,57 +110,61 @@ namespace Engine {
 
     void destroy_entity(const Entity& entity)
     {
+      auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
-      Internal::entities_to_destroy.insert(id);
+      containers.entities_to_destroy.insert(id);
     }
 
     bool is_entity_active(const Entity& entity)
     {
+      auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
-      return Internal::active_entities.find(id) != Internal::active_entities.end();
+      return containers.active_entities.find(id) != containers.active_entities.end();
     }
 
     void update()
     {
+      auto& containers = Internal::get_containers();
       Engine::Perf::start("ECS Update");
 
       // Dispatch all queued events to handlers and systems
-      EventManager::update_events(Internal::systems);
+      EventManager::update_events(containers.systems);
 
       // Update all systems
-      for (auto& system : Internal::systems)
+      for (auto& system : containers.systems)
       {
         system->update();
       }
 
       // Clean up destroyed entities
-      for (EntityID entityId : Internal::entities_to_destroy)
+      for (EntityID entityId : containers.entities_to_destroy)
       {
-        if (Internal::active_entities.erase(entityId))
+        if (containers.active_entities.erase(entityId))
         {
-          for (auto& [typeId, array] : Internal::component_arrays)
+          for (auto& [typeId, array] : containers.component_arrays)
           {
             array->remove_entity(entityId);
           }
 
-          Internal::entity_signatures.erase(entityId);
+          containers.entity_signatures.erase(entityId);
 
-          for (auto& system : Internal::systems)
+          for (auto& system : containers.systems)
           {
             system->remove_entity(entityId);
           }
         }
       }
-      Internal::entities_to_destroy.clear();
+      containers.entities_to_destroy.clear();
 
       Engine::Perf::stop("ECS Update");
     }
 
     void draw()
     {
+      auto& containers = Internal::get_containers();
       Engine::Perf::start("ECS Draw");
 
-      for (auto& system : Internal::systems)
+      for (auto& system : containers.systems)
       {
         system->draw();
       }
@@ -170,9 +174,10 @@ namespace Engine {
 
     std::vector<Entity> get_all_entities()
     {
+      auto& containers = Internal::get_containers();
       std::vector<Entity> result;
-      result.reserve(Internal::active_entities.size());
-      for (EntityID entityId : Internal::active_entities)
+      result.reserve(containers.active_entities.size());
+      for (EntityID entityId : containers.active_entities)
       {
         result.emplace_back(entityId);
       }
@@ -181,7 +186,8 @@ namespace Engine {
 
     size_t get_entity_count()
     {
-      return Internal::active_entities.size();
+      auto& containers = Internal::get_containers();
+      return containers.active_entities.size();
     }
   } // namespace ECS
 } // namespace Engine

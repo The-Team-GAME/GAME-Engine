@@ -14,6 +14,7 @@
 //-----------------------------------------------------------------------------------
 #include "Entity.h"
 #include "World.h"
+#include "WorldData.h"
 
 namespace Engine {
   namespace ECS {
@@ -48,6 +49,7 @@ namespace Engine {
       Entity entity = ECS::create_entity();
 
       const auto& components_array = value["components"].getArray();
+      auto& containers = Internal::get_containers();
 
       // Iterate through each component in the JSON
       for (const auto& component_entry : components_array) {
@@ -59,11 +61,11 @@ namespace Engine {
         const auto& component_data = component_entry["data"];
 
         // Find the component array by type name
-        for (const auto& [type_id, component_array] : Internal::component_arrays) {
+        for (const auto& [type_id, component_array] : containers.component_arrays) {
           if (component_array->get_type_name() == type_name && component_array->is_reflectable()) {
             // Deserialize and add the component
             component_array->add_component_from_generic_value(entity.get_id(), component_data);
-            Internal::entity_signatures[entity.get_id()].set(type_id);
+            containers.entity_signatures[entity.get_id()].set(type_id);
             break;
           }
         }
@@ -76,15 +78,16 @@ namespace Engine {
     }
 
     ReflectionLibrary::GenericValue entity_to_generic_value(Entity entity) {
+      auto& containers = Internal::get_containers();
 
       EntityID entity_id = entity.get_id();
-      const auto& signature = Internal::entity_signatures[entity_id];
+      const auto& signature = containers.entity_signatures[entity_id];
 
       ReflectionLibrary::GenericValue result;
       result["id"] = entity_id;
 
       // Serialize each component's data
-      for (const auto& [type_id, component_array] : Internal::component_arrays) {
+      for (const auto& [type_id, component_array] : containers.component_arrays) {
         if (signature.test(type_id) && component_array->is_reflectable()) {
           ReflectionLibrary::GenericValue component_data = component_array->to_generic_value(entity_id);
           ReflectionLibrary::GenericValue component_entry;
