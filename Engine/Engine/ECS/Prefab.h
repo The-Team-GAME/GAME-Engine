@@ -19,6 +19,7 @@
 #include <memory>
 #include <string>
 #include <functional>
+#include "../Reflection/ReflectionLibrary.h"
 
 namespace Engine {
   namespace ECS {
@@ -26,7 +27,7 @@ namespace Engine {
     // PrefabData - Reusable entity template  //
     // ====================================== */
     struct PrefabData {
-      std::function<void(Entity&)> setup_function;
+      std::function<Entity(void)> setup_function;
 
       PrefabData() = default;
 
@@ -40,7 +41,7 @@ namespace Engine {
       Where to call it:
       When creating prefab data structures.
       ==================================================================================*/
-      PrefabData(std::function<void(Entity&)> setup);
+      PrefabData(std::function<Entity(void)> setup);
     };
 
     using Prefab = std::shared_ptr<PrefabData>;
@@ -60,7 +61,7 @@ namespace Engine {
     Where to call it:
     When defining reusable entity templates.
     ==================================================================================*/
-    Prefab create_prefab(std::function<void(Entity&)> setup);
+    Prefab create_prefab(std::function<Entity(void)> setup);
 
     /*=================================================================================
     Function Brief:
@@ -74,31 +75,8 @@ namespace Engine {
     ==================================================================================*/
     Entity instantiate_prefab(const Prefab& prefab);
 
-    /*=================================================================================
-    Function Brief:
-    Serializes a prefab to a JSON string by creating a temporary entity,
-    applying the prefab, and serializing its components.
+    ReflectionLibrary::GenericValue prefab_to_generic_value(const Prefab& prefab);
 
-    Parameters:
-    prefab - The prefab to serialize.
-
-    Where to call it:
-    When saving prefabs to files or transferring prefab data.
-    ==================================================================================*/
-    std::string serialize_prefab_to_json(const Prefab& prefab);
-
-    /*=================================================================================
-    Function Brief:
-    Deserializes a prefab from a JSON string, creating a prefab that will apply
-    the deserialized components to entities.
-
-    Parameters:
-    json_str - The JSON string containing the serialized prefab data.
-
-    Where to call it:
-    When loading prefabs from files or receiving prefab data.
-    ==================================================================================*/
-    Prefab deserialize_prefab_from_json(const std::string& json_str);
-
+    Prefab prefab_from_generic_value(const ReflectionLibrary::GenericValue& value);
   } // namespace ECS
 } // namespace Engine

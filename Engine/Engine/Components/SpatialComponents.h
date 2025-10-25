@@ -41,5 +41,5 @@ namespace Components
   };
 }
 
-REFLECT_FIELDS(Components::Transform2D, position, rotation, scale)
-REFLECT_FIELDS(Components::ScreenTransform2D, position, rotation, scale)
+REGISTER_COMPONENT(Components::Transform2D, position, rotation, scale)
+REGISTER_COMPONENT(Components::ScreenTransform2D, position, rotation, scale)

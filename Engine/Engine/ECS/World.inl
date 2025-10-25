@@ -15,6 +15,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 #include "World.h"
+#include "WorldData.h"
 
 namespace Engine {
   namespace ECS
@@ -22,30 +23,35 @@ namespace Engine {
     template <typename T>
     ComponentArray<T>* get_component_array()
     {
+      auto& containers = Internal::get_containers();
       ComponentTypeID typeId = ComponentTypeManager::get_type_id<T>();
-      auto it = Internal::component_arrays.find(typeId);
-      if (it != Internal::component_arrays.end())
+      auto it = containers.component_arrays.find(typeId);
+      if (it != containers.component_arrays.end())
       {
         return static_cast<ComponentArray<T> *>(it->second.get());
       }
 
       register_component<T>();
-      return static_cast<ComponentArray<T> *>(Internal::component_arrays[typeId].get());
+      return static_cast<ComponentArray<T> *>(containers.component_arrays[typeId].get());
     }
 
     template <typename T>
     void register_component()
     {
+      auto& containers = Internal::get_containers();
       ComponentTypeID typeId = ComponentTypeManager::get_type_id<T>();
-      assert(Internal::component_arrays.find(typeId) == Internal::component_arrays.end() &&
-        "Component already registered");
-      Internal::component_arrays[typeId] = std::make_unique<ComponentArray<T>>();
+      if (containers.component_arrays.find(typeId) != containers.component_arrays.end())
+      {
+        return;
+      }
+      containers.component_arrays[typeId] = std::make_unique<ComponentArray<T>>();
     }
 
     template <typename... T>
     void destroy_entities_with()
     {
-      for (EntityID entityId : Internal::active_entities)
+      auto& containers = Internal::get_containers();
+      for (EntityID entityId : containers.active_entities)
       {
         Entity entity(entityId);
         if (has_components<T...>(entity))
@@ -58,27 +64,27 @@ namespace Engine {
     template <typename T, typename... Args>
     void add_component(const Entity& entity, Args &&...args)
     {
+      auto& containers = Internal::get_containers();
       EntityID entityId = entity.get_id();
-      //assert(!has_component<T>(entity) && "Entity already has this component");
       ComponentTypeID typeId = ComponentTypeManager::get_type_id<T>();
       auto* array = get_component_array<T>();
 
       array->add_component(entityId, T(std::forward<Args>(args)...));
-      Internal::entity_signatures[entityId].set(typeId);
+      containers.entity_signatures[entityId].set(typeId);
       Internal::entity_component_changed(entityId);
     }
 
     template <typename T>
     void remove_component(const Entity& entity)
     {
+      auto& containers = Internal::get_containers();
       EntityID entityId = entity.get_id();
-      //assert(has_component<T>(entity) && "Entity does not have this component");
       ComponentTypeID typeId = ComponentTypeManager::get_type_id<T>();
       auto* array = get_component_array<T>();
       if (array)
       {
         array->remove_entity(entityId);
-        Internal::entity_signatures[entityId].reset(typeId);
+        containers.entity_signatures[entityId].reset(typeId);
         Internal::entity_component_changed(entityId);
       }
     }
@@ -87,7 +93,6 @@ namespace Engine {
     T* get_component(const Entity& entity)
     {
       EntityID entityId = entity.get_id();
-      //assert(has_component<T>(entity) && "Entity does not have this component");
       auto* array = get_component_array<T>();
       return array ? array->get_component(entityId) : nullptr;
     }
@@ -95,10 +100,11 @@ namespace Engine {
     template <typename T>
     bool has_component(const Entity& entity)
     {
+      auto& containers = Internal::get_containers();
       EntityID entityId = entity.get_id();
       ComponentTypeID typeId = ComponentTypeManager::get_type_id<T>();
-      auto it = Internal::entity_signatures.find(entityId);
-      return it != Internal::entity_signatures.end() && it->second.test(typeId);
+      auto it = containers.entity_signatures.find(entityId);
+      return it != containers.entity_signatures.end() && it->second.test(typeId);
     }
 
     template <typename... T>
@@ -110,10 +116,11 @@ namespace Engine {
     template <typename T, typename... Args>
     T* add_system(Args &&...args)
     {
+      auto& containers = Internal::get_containers();
       auto system = std::make_unique<T>(std::forward<Args>(args)...);
       T* ptr = system.get();
 
-      for (EntityID entity : Internal::active_entities)
+      for (EntityID entity : containers.active_entities)
       {
         if (Internal::system_matches_entity(*system, entity))
         {
@@ -121,27 +128,29 @@ namespace Engine {
         }
       }
 
-      Internal::systems.push_back(std::move(system));
+      containers.systems.push_back(std::move(system));
       return ptr;
     }
 
     template <typename T>
     void remove_system()
     {
-      Internal::systems.erase(
-        std::remove_if(Internal::systems.begin(), Internal::systems.end(),
+      auto& containers = Internal::get_containers();
+      containers.systems.erase(
+        std::remove_if(containers.systems.begin(), containers.systems.end(),
           [](const std::unique_ptr<System>& system)
           {
             return dynamic_cast<T*>(system.get()) != nullptr;
           }),
-        Internal::systems.end());
+        containers.systems.end());
     }
 
     template <typename... T>
     std::vector<Entity> get_entities_with()
     {
+      auto& containers = Internal::get_containers();
       std::vector<Entity> result;
-      for (EntityID entityId : Internal::active_entities)
+      for (EntityID entityId : containers.active_entities)
       {
         if (has_components<T...>(entityId))
         {
@@ -154,7 +163,8 @@ namespace Engine {
     template <typename... T>
     Entity get_first_entity_with()
     {
-      for (EntityID entityId : Internal::active_entities)
+      auto& containers = Internal::get_containers();
+      for (EntityID entityId : containers.active_entities)
       {
         if (has_components<T...>(entityId))
         {

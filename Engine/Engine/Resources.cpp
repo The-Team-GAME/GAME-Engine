@@ -5,6 +5,7 @@
 #include "Logger.h"
 #include <fstream>
 #include <sstream>
+#include "FileIO/PrefabsFileIO.h"
 
 // Define the actual storage for the extern variables
 std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> Engine::Resources::texture_cache;
@@ -268,7 +269,7 @@ Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath)
   file.close();
 
   // Deserialize prefab
-  Engine::ECS::Prefab prefab = Engine::ECS::deserialize_prefab_from_json(json_content);
+  Engine::ECS::Prefab prefab = Engine::FileIO::deserialize_prefab_from_json(json_content);
 
   if (!prefab || !prefab->setup_function)
   {
@@ -289,7 +290,7 @@ bool Engine::Resources::save_prefab(const std::string& filepath, const Engine::E
   std::string full_path = resource_path + filepath;
 
   // Serialize prefab to JSON
-  std::string json_content = Engine::ECS::serialize_prefab_to_json(prefab);
+  std::string json_content = Engine::FileIO::serialize_prefab_to_json(prefab);
 
   if (json_content.empty() || json_content == "{}")
   {

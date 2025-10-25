@@ -32,7 +32,7 @@ namespace ReflectionLibrary
   concept is_iterable_v = requires(T value) { value.size(); value.begin(); value.end(); };
 
   template <typename T>
-  concept has_reflector_v = requires(const T &obj) {
+  concept has_reflector_v = requires(const T & obj) {
     typename T::Reflector;
     { T::Reflector::reflect(obj) } -> std::same_as<typename T::Reflector>;
     { T::Reflector::create(std::declval<typename T::Reflector>()) } -> std::same_as<T>;

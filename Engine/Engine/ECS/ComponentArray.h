@@ -17,7 +17,7 @@
 
 #include "Types.h"
 #include <unordered_map>
-#include <rapidjson/document.h>
+#include "../Reflection/ReflectionLibrary.h"
 
 namespace Engine {
   namespace ECS {
@@ -33,8 +33,8 @@ namespace Engine {
       virtual void clone_component(EntityID source, EntityID destination) = 0;
       virtual bool is_reflectable() const = 0;
       virtual std::string get_type_name() const = 0;
-      virtual void serialize_component(EntityID entity, rapidjson::Value& json_val, rapidjson::Document::AllocatorType& allocator) const = 0;
-      virtual bool deserialize_and_add_component(EntityID entity, const rapidjson::Value& json_val) = 0;
+      virtual ReflectionLibrary::GenericValue to_generic_value(EntityID entity) const = 0;
+      virtual bool add_component_from_generic_value(EntityID entity, const ReflectionLibrary::GenericValue& value) = 0;
     };
 
     /* ============================= //
@@ -58,7 +58,7 @@ namespace Engine {
       Where to call it:
       When you need to attach a new component to an entity in the ECS.
       ==================================================================================*/
-      void add_component(EntityID entity, T component);
+      void add_component(EntityID entity, const T& component);
 
       /*=================================================================================
       Function Brief:
@@ -146,32 +146,9 @@ namespace Engine {
       ==================================================================================*/
       std::string get_type_name() const override;
 
-      /*=================================================================================
-      Function Brief:
-      Serializes the component data for a specific entity to JSON format.
+      ReflectionLibrary::GenericValue to_generic_value(EntityID entity) const override;
 
-      Parameters:
-      entity - The EntityID whose component should be serialized.
-      json_val - The RapidJSON value to write the serialized data to.
-      allocator - The RapidJSON allocator for creating JSON objects.
-
-      Where to call it:
-      When saving entity state to JSON or transferring entity data.
-      ==================================================================================*/
-      void serialize_component(EntityID entity, rapidjson::Value& json_val, rapidjson::Document::AllocatorType& allocator) const override;
-
-      /*=================================================================================
-      Function Brief:
-      Deserializes component data from JSON and adds it to the specified entity.
-
-      Parameters:
-      entity - The EntityID to add the deserialized component to.
-      json_val - The RapidJSON value containing the serialized component data.
-
-      Where to call it:
-      When loading entity state from JSON or receiving entity data.
-      ==================================================================================*/
-      bool deserialize_and_add_component(EntityID entity, const rapidjson::Value& json_val) override;
+      bool add_component_from_generic_value(EntityID entity, const ReflectionLibrary::GenericValue& value) override;
 
       /*=================================================================================
       Function Brief:
