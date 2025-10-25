@@ -1,8 +1,10 @@
 # Reflection Documentation
 
-This readme covers the basic usage of reflection  that is relevant to this engine. For detailed documentation of the ReflectionLibrary, visit [https://github.com/sheeyang/Reflection](https://github.com/sheeyang/Reflection).
+This readme covers the basic usage of reflection that is relevant to this engine. For detailed documentation of the ReflectionLibrary, visit [https://github.com/sheeyang/Reflection](https://github.com/sheeyang/Reflection).
 
-## Basic Reflection
+## Reflection examples
+
+### Basic Reflection
 
 ```cpp
 #include <ReflectionLibrary.h>
@@ -146,7 +148,7 @@ struct Point
         }
     };
 };
-REFLECT_CUSTOM(Point, x, y)
+REFLECT_CUSTOM(Point, x, y) // only list the Reflector's fields, not the Struct's fields!! (In this case the fields are int 'x' and int 'y', not LegacyPoint 'point')
 
 int main()
 {
@@ -163,7 +165,75 @@ int main()
 }
 ```
 
+## Registering ECS Components
 
+Components in the ECS must be registered to enable serialization and automatic type management. The engine provides two macros for registering components:
+
+### Basic Component Registration
+
+Use `REGISTER_COMPONENT` for components with simple fields that can be directly reflected:
+
+```cpp
+#include "../ECS/Macros.h"
+
+struct Health
+{
+    float current;
+    float max;
+};
+
+// Register the component - automatically reflects AND registers with ECS
+REGISTER_COMPONENT(Health, current, max)
+```
+
+**Important:** Use `REGISTER_COMPONENT` instead of `REFLECT_FIELDS` for ECS components. `REGISTER_COMPONENT` both reflects the type AND registers it with the ECS automatically.
+
+### Custom Reflector Component Registration
+
+Use `REGISTER_COMPONENT_CUSTOM` for components that need custom serialization logic:
+
+```cpp
+#include "../ECS/Macros.h"
+
+struct Texture
+{
+    Engine::Graphics::Texture texture_handle; // Internal handle we don't want to serialize
+    
+    struct Reflector
+    {
+        std::string path; // Only serialize the file path
+        
+        static Reflector reflect(const Texture& tex)
+        {
+            Reflector r;
+            if (tex.texture_handle)
+            {
+                r.path = Engine::Resources::get_relative_path(tex.texture_handle->path);
+            }
+            return r;
+        }
+        
+        static Texture create(const Reflector& r)
+        {
+            return Engine::Resources::load_texture(r.path);
+        }
+    };
+};
+
+// Register with custom reflector - uses the Reflector's fields for serialization
+REGISTER_COMPONENT_CUSTOM(Texture, path)
+```
+
+### When to Use Each Macro
+
+- **`REGISTER_COMPONENT`**: Use for simple data components where all fields should be serialized as-is
+  - Examples: Position, Velocity, Health, Score
+  
+- **`REGISTER_COMPONENT_CUSTOM`**: Use when you need control over serialization
+  - Loading resources from paths instead of raw data
+  - Converting between internal and serialized representations
+  - Excluding certain fields from serialization
+  - Handling complex initialization logic
 
 ## How Settings Work
 
