@@ -10,12 +10,6 @@ public:
   void load() {
     Engine::Resources::set_resource_path("Assets/");
 
-    // Pre-register components that might be in prefabs
-    Engine::ECS::register_component<Components::Transform2D>();
-    Engine::ECS::register_component<Components::Texture>();
-    Engine::ECS::register_component<Components::Color>();
-    Engine::ECS::register_component<Components::RigidBody>();
-
     // Create a banana prefab
     // Engine::ECS::create_prefab takes a lambda function that sets up the entity
     auto banana_prefabs = Engine::ECS::create_prefab([this]() {

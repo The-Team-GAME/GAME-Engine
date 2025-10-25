@@ -284,7 +284,7 @@ namespace Components
 
 REFLECT_AND_REGISTER_COMPONENT(Components::Text, content)
 REFLECT_AND_REGISTER_COMPONENT_CUSTOM(Components::Color, r, g, b, a)
-// REFLECT_AND_REGISTER_COMPONENT_CUSTOM(Components::Texture, path)
-// REFLECT_AND_REGISTER_COMPONENT_CUSTOM(Components::Font, path, font_size)
-// REFLECT_AND_REGISTER_COMPONENT_CUSTOM(Components::TextureAtlas, tex_coords_list, drawIndex)
-// REFLECT_AND_REGISTER_COMPONENT_CUSTOM(Components::Animation, durations, before_times, startTime, totalDuration)
+REFLECT_AND_REGISTER_COMPONENT_CUSTOM(Components::Texture, path)
+REFLECT_AND_REGISTER_COMPONENT_CUSTOM(Components::Font, path, font_size)
+REFLECT_AND_REGISTER_COMPONENT_CUSTOM(Components::TextureAtlas, tex_coords_list, drawIndex)
+REFLECT_AND_REGISTER_COMPONENT_CUSTOM(Components::Animation, durations, before_times, startTime, totalDuration)
