@@ -109,6 +109,10 @@ namespace Engine {
 
       // Iterate through all component arrays
       for (auto& [type_id, array] : containers.component_arrays) {
+        if (!array->is_reflectable()) {
+          continue; // Skip non-reflectable components
+        }
+
         if (signature.test(type_id)) {
           ReflectionLibrary::GenericValue component_entry;
           component_entry["type"] = array->get_type_name();
