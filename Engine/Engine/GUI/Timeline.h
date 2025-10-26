@@ -26,6 +26,7 @@
 
 // Structure to hold the data for an image clip on the timeline
 struct TimelineClip {
+  s32 id;
   s32 texture_id;
   s32 layer;
   s32 start_frame;
@@ -33,6 +34,7 @@ struct TimelineClip {
 };
 
 class Timeline {
+
 public:
   Timeline();
 
@@ -45,15 +47,21 @@ public:
   bool is_playing = false;
   f64 lastFrameTime = 0.0;
 
+  // Method to add a clip from an external system
+  void add_clip(s32 texture_id, s32 layer, s32 start_frame, s32 duration_frames);
+
 private:
   std::vector<s32> layers;
   s32 currentFrame;
   s32 numFrames;
   f32 zoom;
 
-
   ImVec2 cellSize;  // Stores the base cell size (horizontal part is scaled by zoom)
-  std::vector<TimelineClip> clips;   // New member to store the placed image clips
+  std::vector<TimelineClip> clips;   //store the placed image clips
 
   f32 playbackSpeed;   // Playback members
+  f64 m_frameAccumulator = 0.0;
+
+  s32 m_nextClipID = 1; //Tracks the ID for the next clip created via DND
+  s32 m_clipBeingResized = 0; //Store the ID of the clip currently being resized. 0 means none
 };
