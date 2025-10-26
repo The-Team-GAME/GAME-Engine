@@ -23,102 +23,101 @@
 #include "../ECS/ECS.h"
 
 namespace {
-  // Helper to render a field in ImGui based on its type
-  template<typename T>
-  void render_field_editor(std::string_view name, T& value) {
-    using ValueType = std::decay_t<T>;
-
-    std::string label = std::string(name);
-
-    if constexpr (std::is_same_v<ValueType, bool>) {
-      ImGui::Checkbox(label.c_str(), &value);
-    }
-    else if constexpr (std::is_same_v<ValueType, s32> || std::is_same_v<ValueType, u32>) {
-      ImGui::DragInt(label.c_str(), reinterpret_cast<int*>(&value), 1.0f);
-    }
-    else if constexpr (std::is_same_v<ValueType, f32>) {
-      ImGui::DragFloat(label.c_str(), &value, 0.01f);
-    }
-    else if constexpr (std::is_same_v<ValueType, f64>) {
-      float temp = static_cast<float>(value);
-      if (ImGui::DragFloat(label.c_str(), &temp, 0.01f)) {
-        value = static_cast<double>(temp);
-      }
-    }
-    else if constexpr (std::is_same_v<ValueType, std::string>) {
-      char buffer[1024];
-      strncpy_s(buffer, value.c_str(), sizeof(buffer) - 1);
-      buffer[sizeof(buffer) - 1] = '\0';
-      if (ImGui::InputText(label.c_str(), buffer, sizeof(buffer))) {
-        value = buffer;
-      }
-    }
-    else if constexpr (ReflectionLibrary::is_reflectable_v<ValueType>) {
-      // Nested reflectable type
-      if (ImGui::TreeNode(label.c_str())) {
-        ReflectionLibrary::for_each_field(value, [](std::string_view sub_name, auto& sub_value, int) {
-          render_field_editor(sub_name, sub_value);
-          }, 0);
-        ImGui::TreePop();
-      }
-    }
-    else if constexpr (ReflectionLibrary::is_iterable_v<ValueType>) {
-      ImGui::Text("%s: [%zu elements]", label.c_str(), value.size());
-      ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
-        "Note: Collection editing not yet supported");
-    }
-    else {
-      ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-        "%s: [%s]", label.c_str(), typeid(ValueType).name());
-    }
-  }
 
   // Render component using reflection from GenericValue
   void render_component_from_generic(const std::string& component_name,
-    const ReflectionLibrary::GenericValue& component_data,
     Engine::ECS::Entity& entity,
-    Engine::ECS::ComponentTypeID type_id) {
+    Engine::ECS::IComponentArray* array) {
+
     if (ImGui::TreeNode(component_name.c_str())) {
+
+      // Get the component data as GenericValue
+      auto component_data = array->to_generic_value(entity.get_id());
+      bool modified = false;
 
       // Render fields from GenericValue
       if (component_data.isObject()) {
-        const auto& fields = component_data.getObject();
-        for (const auto& [field_name, field_value] : fields) {
-          // Simple display for now - can be enhanced to support editing
+        auto& fields = component_data.getObject();
+        for (auto& [field_name, field_value] : fields) {
           std::string display_name = field_name;
 
           if (field_value.isBool()) {
             bool val = field_value.getBool();
-            ImGui::Checkbox(display_name.c_str(), &val);
+            if (ImGui::Checkbox(display_name.c_str(), &val)) {
+              field_value = val;
+              modified = true;
+            }
           }
           else if (field_value.isInt()) {
             int val = static_cast<int>(field_value.getInt());
-            ImGui::DragInt(display_name.c_str(), &val);
+            if (ImGui::DragInt(display_name.c_str(), &val)) {
+              field_value = static_cast<ReflectionLibrary::Integer>(val);
+              modified = true;
+            }
           }
           else if (field_value.isDouble()) {
             float val = static_cast<float>(field_value.getDouble());
-            ImGui::DragFloat(display_name.c_str(), &val, 0.01f);
+            if (ImGui::DragFloat(display_name.c_str(), &val, 0.01f)) {
+              field_value = static_cast<double>(val);
+              modified = true;
+            }
           }
           else if (field_value.isString()) {
-            ImGui::Text("%s: %s", display_name.c_str(), field_value.getString().c_str());
+            char buffer[1024];
+            std::string str_val = field_value.getString();
+            strncpy_s(buffer, str_val.c_str(), sizeof(buffer) - 1);
+            buffer[sizeof(buffer) - 1] = '\0';
+            if (ImGui::InputText(display_name.c_str(), buffer, sizeof(buffer))) {
+              field_value = std::string(buffer);
+              modified = true;
+            }
           }
           else if (field_value.isObject()) {
-            ImGui::Text("%s: [Object]", display_name.c_str());
+            // Handle nested objects (like Vec2D, Vec4D)
+            if (ImGui::TreeNode(display_name.c_str())) {
+              auto& nested_fields = field_value.getObject();
+              for (auto& [nested_name, nested_value] : nested_fields) {
+                if (nested_value.isDouble()) {
+                  float nested_val = static_cast<float>(nested_value.getDouble());
+                  std::string nested_label = std::string(nested_name);
+                  if (ImGui::DragFloat(nested_label.c_str(), &nested_val, 0.01f)) {
+                    nested_value = static_cast<double>(nested_val);
+                    modified = true;
+                  }
+                }
+                else if (nested_value.isInt()) {
+                  int nested_val = static_cast<int>(nested_value.getInt());
+                  std::string nested_label = std::string(nested_name);
+                  if (ImGui::DragInt(nested_label.c_str(), &nested_val)) {
+                    nested_value = static_cast<ReflectionLibrary::Integer>(nested_val);
+                    modified = true;
+                  }
+                }
+              }
+              ImGui::TreePop();
+            }
           }
           else if (field_value.isArray()) {
             ImGui::Text("%s: [Array with %zu elements]", display_name.c_str(),
               field_value.getArray().size());
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
+              "Array editing not yet supported");
           }
         }
+      }
+
+      // Write back changes if modified
+      if (modified) {
+        array->set_component_from_generic_value(entity.get_id(), component_data);
       }
 
       ImGui::Separator();
 
       std::string remove_label = "Remove##" + component_name;
       if (ImGui::Button(remove_label.c_str())) {
-        // Need to implement component removal by type_id
-        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f),
-          "Component removal by type ID not yet implemented");
+        array->remove_entity(entity.get_id());
+        // Notify systems about component change
+        Engine::ECS::Internal::entity_component_changed(entity.get_id());
       }
 
       ImGui::TreePop();
@@ -233,14 +232,8 @@ inline void EntityEditorPanel()
     {
       // Automatically iterate through ALL components the entity has
       entity.for_each_component([&entity](const std::string& type_name, Engine::ECS::IComponentArray* array) {
-        // Get the component data as GenericValue
-        auto component_data = array->to_generic_value(entity.get_id());
-
-        // Get the type ID from the array
-        Engine::ECS::ComponentTypeID type_id = 0; // You'll need to expose this from the array
-
-        // Render the component editor
-        render_component_from_generic(type_name, component_data, entity, type_id);
+        // Render the component editor with write-back support
+        render_component_from_generic(type_name, entity, array);
         });
     }
 

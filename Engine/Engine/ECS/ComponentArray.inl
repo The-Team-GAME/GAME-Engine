@@ -108,6 +108,36 @@ namespace Engine {
     }
 
     template<typename T>
+    inline bool ComponentArray<T>::set_component_from_generic_value(EntityID entity, const ReflectionLibrary::GenericValue& value)
+    {
+      // Check if the entity has this component
+      auto it = components.find(entity);
+      if (it == components.end()) {
+        return false; // Entity doesn't have this component
+      }
+
+      if constexpr (ReflectionLibrary::is_reflectable_v<T>) {
+        if constexpr (ReflectionLibrary::has_reflector_v<T>) {
+          // Component has custom reflector
+          std::optional<typename T::Reflector> reflector_opt = ReflectionLibrary::from_generic_value<typename T::Reflector>(value);
+          if (reflector_opt) {
+            it->second = ReflectionLibrary::ReflectionInfo<T>::create(reflector_opt.value());
+            return true;
+          }
+        }
+        else {
+          // Component uses direct reflection
+          std::optional<T> component_opt = ReflectionLibrary::from_generic_value<T>(value);
+          if (component_opt) {
+            it->second = std::move(component_opt.value());
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    template<typename T>
     auto ComponentArray<T>::begin() {
       return components.begin();
     }

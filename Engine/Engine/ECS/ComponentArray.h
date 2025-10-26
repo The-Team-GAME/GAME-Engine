@@ -35,6 +35,7 @@ namespace Engine {
       virtual std::string get_type_name() const = 0;
       virtual ReflectionLibrary::GenericValue to_generic_value(EntityID entity) const = 0;
       virtual bool add_component_from_generic_value(EntityID entity, const ReflectionLibrary::GenericValue& value) = 0;
+      virtual bool set_component_from_generic_value(EntityID entity, const ReflectionLibrary::GenericValue& value) = 0;
     };
 
     /* ============================= //
@@ -146,9 +147,43 @@ namespace Engine {
       ==================================================================================*/
       std::string get_type_name() const override;
 
+      /*=================================================================================
+      Function Brief:
+      Converts a component to a GenericValue for serialization or inspection.
+
+      Parameters:
+      entity - The EntityID whose component to convert.
+
+      Where to call it:
+      When serializing component data or inspecting it at runtime.
+      ==================================================================================*/
       ReflectionLibrary::GenericValue to_generic_value(EntityID entity) const override;
 
+      /*=================================================================================
+      Function Brief:
+      Adds a new component to an entity from a GenericValue.
+
+      Parameters:
+      entity - The EntityID to add the component to.
+      value - The GenericValue containing the component data.
+
+      Where to call it:
+      When deserializing entities from JSON or creating components from runtime data.
+      ==================================================================================*/
       bool add_component_from_generic_value(EntityID entity, const ReflectionLibrary::GenericValue& value) override;
+
+      /*=================================================================================
+      Function Brief:
+      Updates an existing component's data from a GenericValue.
+
+      Parameters:
+      entity - The EntityID whose component to update.
+      value - The GenericValue containing the new component data.
+
+      Where to call it:
+      When modifying component data from UI editors or runtime updates.
+      ==================================================================================*/
+      bool set_component_from_generic_value(EntityID entity, const ReflectionLibrary::GenericValue& value) override;
 
       /*=================================================================================
       Function Brief:
