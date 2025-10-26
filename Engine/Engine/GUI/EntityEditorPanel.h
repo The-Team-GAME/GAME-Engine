@@ -8,8 +8,8 @@
 // email:   chew.s@digipen.edu
 //
 // brief:   This file defines the EntityEditorPanel ImGui interface for runtime
-//          entity and component manipulation. Provides a GUI for creating, deleting,
-//          and editing entities and their components during gameplay.
+//          entity and component manipulation. Uses reflection to automatically
+//          generate component editor fields.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
@@ -17,9 +17,108 @@
 #include "imgui.h"
 #include "Core.h"
 #include "../Components/Components.h"
+#include "../Reflection/ReflectionLibrary.h"
 #include <string>
 #include <vector>
 #include "../ECS/ECS.h"
+
+namespace {
+  // Helper to render a field in ImGui based on its type
+  template<typename T>
+  void render_field_editor(std::string_view name, T& value) {
+    using ValueType = std::decay_t<T>;
+
+    std::string label = std::string(name);
+
+    if constexpr (std::is_same_v<ValueType, bool>) {
+      ImGui::Checkbox(label.c_str(), &value);
+    }
+    else if constexpr (std::is_same_v<ValueType, s32> || std::is_same_v<ValueType, u32>) {
+      ImGui::DragInt(label.c_str(), reinterpret_cast<int*>(&value), 1.0f);
+    }
+    else if constexpr (std::is_same_v<ValueType, f32>) {
+      ImGui::DragFloat(label.c_str(), &value, 0.01f);
+    }
+    else if constexpr (std::is_same_v<ValueType, f64>) {
+      float temp = static_cast<float>(value);
+      if (ImGui::DragFloat(label.c_str(), &temp, 0.01f)) {
+        value = static_cast<double>(temp);
+      }
+    }
+    else if constexpr (std::is_same_v<ValueType, std::string>) {
+      char buffer[1024];
+      strncpy_s(buffer, value.c_str(), sizeof(buffer) - 1);
+      buffer[sizeof(buffer) - 1] = '\0';
+      if (ImGui::InputText(label.c_str(), buffer, sizeof(buffer))) {
+        value = buffer;
+      }
+    }
+    else if constexpr (ReflectionLibrary::is_reflectable_v<ValueType>) {
+      // Nested reflectable type
+      if (ImGui::TreeNode(label.c_str())) {
+        ReflectionLibrary::for_each_field(value, [](std::string_view sub_name, auto& sub_value, int) {
+          render_field_editor(sub_name, sub_value);
+          }, 0);
+        ImGui::TreePop();
+      }
+    }
+    else if constexpr (ReflectionLibrary::is_iterable_v<ValueType>) {
+      ImGui::Text("%s: [%zu elements]", label.c_str(), value.size());
+      ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
+        "Note: Collection editing not yet supported");
+    }
+    else {
+      ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+        "%s: [%s]", label.c_str(), typeid(ValueType).name());
+    }
+  }
+
+  // Render component editor using reflection
+  template<typename T>
+  void render_component_editor(Engine::ECS::Entity& entity, const char* component_name) {
+    if (!entity.has_component<T>())
+      return;
+
+    if (ImGui::TreeNode(component_name)) {
+      auto* component = entity.get_component<T>();
+
+      if constexpr (ReflectionLibrary::is_reflectable_v<T>) {
+        // Use reflection to iterate over fields
+        ReflectionLibrary::for_each_field(*component, [](std::string_view name, auto& value, int) {
+          render_field_editor(name, value);
+          }, 0);
+      }
+      else {
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
+          "Component not reflectable");
+      }
+
+      ImGui::Separator();
+
+      std::string remove_label = std::string("Remove##") + component_name;
+      if (ImGui::Button(remove_label.c_str())) {
+        entity.remove_component<T>();
+      }
+
+      ImGui::TreePop();
+    }
+  }
+
+  // Helper to add components with type checking
+  template<typename T>
+  void add_component_button(Engine::ECS::Entity& entity, const char* button_label) {
+    if (ImGui::Button(button_label)) {
+      if (!entity.has_component<T>()) {
+        if constexpr (std::is_default_constructible_v<T>) {
+          entity.add_component<T>();
+        }
+        else {
+          ImGui::OpenPopup("Cannot Add Component");
+        }
+      }
+    }
+  }
+}
 
 inline void EntityEditorPanel()
 {
@@ -92,25 +191,19 @@ inline void EntityEditorPanel()
     // Add Component Section
     if (ImGui::CollapsingHeader("Add Component"))
     {
-      if (ImGui::Button("Add Transform2D"))
-      {
-        if (!entity.has_component<Components::Transform2D>())
-          entity.add_component<Components::Transform2D>();
-      }
-
+      add_component_button<Components::Transform2D>(entity, "Add Transform2D");
       ImGui::SameLine();
+      add_component_button<Components::Color>(entity, "Add Color");
 
-      if (ImGui::Button("Add Color"))
-      {
-        if (!entity.has_component<Components::Color>())
-          entity.add_component<Components::Color>();
-      }
+      add_component_button<Components::Text>(entity, "Add Text");
+      ImGui::SameLine();
+      add_component_button<Components::Texture>(entity, "Add Texture");
 
-      if (ImGui::Button("Add Text"))
-      {
-        if (!entity.has_component<Components::Text>())
-          entity.add_component<Components::Text>("Sample Text");
-      }
+      add_component_button<Components::TextureAtlas>(entity, "Add TextureAtlas");
+      ImGui::SameLine();
+      add_component_button<Components::Animation>(entity, "Add Animation");
+
+      add_component_button<Components::Font>(entity, "Add Font");
     }
 
     ImGui::Separator();
@@ -118,218 +211,14 @@ inline void EntityEditorPanel()
     // Edit Components Section
     if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
     {
-      // Transform2D Component
-      if (entity.has_component<Components::Transform2D>())
-      {
-        if (ImGui::TreeNode("Transform2D"))
-        {
-          auto* transform = entity.get_component<Components::Transform2D>();
-
-          ImGui::Text("Position:");
-          ImGui::DragFloat("X##pos", &transform->position.x, 1.0f);
-          ImGui::DragFloat("Y##pos", &transform->position.y, 1.0f);
-
-          ImGui::Separator();
-          ImGui::Text("Rotation:");
-          ImGui::SliderFloat("Angle (degrees)", &transform->rotation, 0.0f, 360.0f);
-
-          ImGui::Separator();
-          ImGui::Text("Scale:");
-          ImGui::DragFloat("X##scale", &transform->scale.x, 0.01f, 0.01f, 10.0f);
-          ImGui::DragFloat("Y##scale", &transform->scale.y, 0.01f, 0.01f, 10.0f);
-
-          if (ImGui::Button("Reset Transform"))
-          {
-            transform->position = Math::Vec2D(0.0f, 0.0f);
-            transform->rotation = 0.0f;
-            transform->scale = Math::Vec2D(1.0f, 1.0f);
-          }
-
-          if (ImGui::Button("Remove##transform"))
-            entity.remove_component<Components::Transform2D>();
-
-          ImGui::TreePop();
-        }
-      }
-
-      // Color Component
-      if (entity.has_component<Components::Color>())
-      {
-        if (ImGui::TreeNode("Color"))
-        {
-          auto* color = entity.get_component<Components::Color>();
-          f32 colorArray[4] = {
-            color->x,
-            color->y,
-            color->z,
-            color->w
-          };
-
-          if (ImGui::ColorEdit4("RGBA", colorArray))
-          {
-            color->x = colorArray[0];
-            color->y = colorArray[1];
-            color->z = colorArray[2];
-            color->w = colorArray[3];
-          }
-
-          if (ImGui::Button("Remove##color"))
-            entity.remove_component<Components::Color>();
-
-          ImGui::TreePop();
-        }
-      }
-
-      // Text Component
-      if (entity.has_component<Components::Text>())
-      {
-        if (ImGui::TreeNode("Text"))
-        {
-          auto* text = entity.get_component<Components::Text>();
-          char buffer[1024];
-          strncpy_s(buffer, text->content.c_str(), sizeof(buffer) - 1);
-          buffer[sizeof(buffer) - 1] = '\0';
-
-          if (ImGui::InputTextMultiline("Content", buffer, sizeof(buffer)))
-          {
-            text->content = buffer;
-          }
-
-          if (ImGui::Button("Remove##text"))
-            entity.remove_component<Components::Text>();
-
-          ImGui::TreePop();
-        }
-      }
-
-      // Texture Component (Read-only)
-      if (entity.has_component<Components::Texture>())
-      {
-        if (ImGui::TreeNode("Texture"))
-        {
-          auto* texture = entity.get_component<Components::Texture>();
-
-          if (texture->texture_handle)
-          {
-            ImGui::Text("Texture ID: %u", texture->texture_handle->id);
-            ImGui::Text("Size: %dx%d", texture->texture_handle->width, texture->texture_handle->height);
-            ImGui::Text("Filter: %s",
-              texture->texture_handle->filter == Engine::Graphics::TextureFilter::Nearest ? "Nearest" : "Linear");
-          }
-          else
-          {
-            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Invalid texture");
-          }
-
-          ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
-            "Note: Texture editing not yet supported");
-
-          if (ImGui::Button("Remove##texture"))
-            entity.remove_component<Components::Texture>();
-
-          ImGui::TreePop();
-        }
-      }
-
-      // TextureAtlas Component
-      if (entity.has_component<Components::TextureAtlas>())
-      {
-        if (ImGui::TreeNode("TextureAtlas"))
-        {
-          auto* atlas = entity.get_component<Components::TextureAtlas>();
-
-          ImGui::Text("Total SubTextures: %zu", atlas->subTextures.size());
-          ImGui::Text("Current Draw Index: %zu", atlas->drawIndex);
-
-          if (atlas->subTextures.size() > 0)
-          {
-            int currentIndex = static_cast<int>(atlas->drawIndex);
-            if (ImGui::SliderInt("Frame", &currentIndex, 0, static_cast<int>(atlas->subTextures.size() - 1)))
-            {
-              atlas->drawIndex = static_cast<size_t>(currentIndex);
-            }
-          }
-
-          ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
-            "Note: Atlas editing not yet supported");
-
-          if (ImGui::Button("Remove##atlas"))
-            entity.remove_component<Components::TextureAtlas>();
-
-          ImGui::TreePop();
-        }
-      }
-
-      // Animation Component
-      if (entity.has_component<Components::Animation>())
-      {
-        if (ImGui::TreeNode("Animation"))
-        {
-          auto* anim = entity.get_component<Components::Animation>();
-
-          ImGui::Text("Total Frames: %zu", anim->frames.size());
-          ImGui::Text("Total Duration: %.2f s", anim->totalDuration);
-          ImGui::DragFloat("Start Time", &anim->startTime, 0.01f);
-
-          // Calculate current frame
-          if (anim->frames.size() > 0 && anim->totalDuration > 0.0f)
-          {
-            float elapsed = anim->startTime;
-            size_t currentFrame = 0;
-            for (size_t i = 0; i < anim->frames.size(); ++i)
-            {
-              if (elapsed >= anim->frames[i].before_time)
-                currentFrame = i;
-              else
-                break;
-            }
-            ImGui::Text("Current Frame: %zu", currentFrame);
-          }
-
-          ImGui::Separator();
-
-          if (ImGui::Button("Reset Animation"))
-          {
-            anim->startTime = 0.0f;
-          }
-
-          ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
-            "Note: Frame editing not yet supported");
-
-          if (ImGui::Button("Remove##animation"))
-            entity.remove_component<Components::Animation>();
-
-          ImGui::TreePop();
-        }
-      }
-
-      // Font Component (Read-only)
-      if (entity.has_component<Components::Font>())
-      {
-        if (ImGui::TreeNode("Font"))
-        {
-          auto* font = entity.get_component<Components::Font>();
-
-          if (font->font_handle)
-          {
-            ImGui::Text("Font Size: %u", font->font_handle->font_size);
-            ImGui::Text("Baseline: %.2f", font->font_handle->baseline);
-            ImGui::Text("Glyphs Loaded: %zu", font->font_handle->glyphs.size());
-          }
-          else
-          {
-            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Invalid font");
-          }
-
-          ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
-            "Note: Font editing not yet supported");
-
-          if (ImGui::Button("Remove##font"))
-            entity.remove_component<Components::Font>();
-
-          ImGui::TreePop();
-        }
-      }
+      // Automatically generate editors for all registered components
+      render_component_editor<Components::Transform2D>(entity, "Transform2D");
+      render_component_editor<Components::Color>(entity, "Color");
+      render_component_editor<Components::Text>(entity, "Text");
+      render_component_editor<Components::Texture>(entity, "Texture");
+      render_component_editor<Components::TextureAtlas>(entity, "TextureAtlas");
+      render_component_editor<Components::Animation>(entity, "Animation");
+      render_component_editor<Components::Font>(entity, "Font");
     }
 
     ImGui::Separator();
@@ -339,6 +228,24 @@ inline void EntityEditorPanel()
     {
       auto clonedEntity = Engine::ECS::clone_entity(entity.get_id());
       selected_entity_id = static_cast<int>(clonedEntity.get_id());
+    }
+
+    ImGui::SameLine();
+
+    // Serialize/Export Entity
+    if (ImGui::Button("Export to JSON"))
+    {
+      auto generic_value = Engine::ECS::entity_to_generic_value(entity);
+      std::string json = ReflectionLibrary::generic_value_to_json(generic_value, true);
+      ImGui::SetClipboardText(json.c_str());
+      ImGui::OpenPopup("Export Success");
+    }
+
+    // Export success popup
+    if (ImGui::BeginPopup("Export Success"))
+    {
+      ImGui::Text("Entity JSON copied to clipboard!");
+      ImGui::EndPopup();
     }
   }
   else
