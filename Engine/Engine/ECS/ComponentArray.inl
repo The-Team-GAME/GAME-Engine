@@ -137,7 +137,7 @@ namespace Engine {
     inline void ComponentArray<T>::add_default_component(EntityID entity)
     {
       if constexpr (std::is_default_constructible_v<T>) {
-        components.emplace(entity, T{});
+        Engine::ECS::add_component<T>(entity, T{});
       }
     }
 
