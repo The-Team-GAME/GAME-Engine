@@ -41,6 +41,8 @@ namespace Components
     std::vector<Engine::Graphics::SubTexture> subTextures;
     size_t drawIndex = 0; // Current subTexture index to draw
 
+    TextureAtlas() : subTextures(), drawIndex(0) {} // TODO: remove default constructor
+
     // Constructor to initialize a texture atlas with evenly divided subTextures, works with multiple rows and columns
     TextureAtlas(int subTextureWidth, int subTextureHeight, size_t rows, size_t cols, size_t totalSubTextures = 0)
       : subTextures(), drawIndex(0)
@@ -103,6 +105,8 @@ namespace Components
     std::vector<Engine::Graphics::Frame> frames;
     f32 startTime = Engine::Time::get_time(); // To get the elapsed time to calculate which frame to show
     float totalDuration = 0.0f; // Total duration of the animation
+
+    Animation() : frames(), startTime(Engine::Time::get_time()), totalDuration(0.0f) {} // TODO: remove default constructor
 
     // Evenly spaced frames
     Animation(size_t frameCount, float frameDuration) : frames(), startTime(0.0f), totalDuration(frameDuration* frameCount)

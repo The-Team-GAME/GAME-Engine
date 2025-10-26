@@ -73,49 +73,55 @@ namespace {
     }
   }
 
-  // Render component editor using reflection
-  template<typename T>
-  void render_component_editor(Engine::ECS::Entity& entity, const char* component_name) {
-    if (!entity.has_component<T>())
-      return;
+  // Render component using reflection from GenericValue
+  void render_component_from_generic(const std::string& component_name,
+    const ReflectionLibrary::GenericValue& component_data,
+    Engine::ECS::Entity& entity,
+    Engine::ECS::ComponentTypeID type_id) {
+    if (ImGui::TreeNode(component_name.c_str())) {
 
-    if (ImGui::TreeNode(component_name)) {
-      auto* component = entity.get_component<T>();
+      // Render fields from GenericValue
+      if (component_data.isObject()) {
+        const auto& fields = component_data.getObject();
+        for (const auto& [field_name, field_value] : fields) {
+          // Simple display for now - can be enhanced to support editing
+          std::string display_name = field_name;
 
-      if constexpr (ReflectionLibrary::is_reflectable_v<T>) {
-        // Use reflection to iterate over fields
-        ReflectionLibrary::for_each_field(*component, [](std::string_view name, auto& value, int) {
-          render_field_editor(name, value);
-          }, 0);
-      }
-      else {
-        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
-          "Component not reflectable");
+          if (field_value.isBool()) {
+            bool val = field_value.getBool();
+            ImGui::Checkbox(display_name.c_str(), &val);
+          }
+          else if (field_value.isInt()) {
+            int val = static_cast<int>(field_value.getInt());
+            ImGui::DragInt(display_name.c_str(), &val);
+          }
+          else if (field_value.isDouble()) {
+            float val = static_cast<float>(field_value.getDouble());
+            ImGui::DragFloat(display_name.c_str(), &val, 0.01f);
+          }
+          else if (field_value.isString()) {
+            ImGui::Text("%s: %s", display_name.c_str(), field_value.getString().c_str());
+          }
+          else if (field_value.isObject()) {
+            ImGui::Text("%s: [Object]", display_name.c_str());
+          }
+          else if (field_value.isArray()) {
+            ImGui::Text("%s: [Array with %zu elements]", display_name.c_str(),
+              field_value.getArray().size());
+          }
+        }
       }
 
       ImGui::Separator();
 
-      std::string remove_label = std::string("Remove##") + component_name;
+      std::string remove_label = "Remove##" + component_name;
       if (ImGui::Button(remove_label.c_str())) {
-        entity.remove_component<T>();
+        // Need to implement component removal by type_id
+        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f),
+          "Component removal by type ID not yet implemented");
       }
 
       ImGui::TreePop();
-    }
-  }
-
-  // Helper to add components with type checking
-  template<typename T>
-  void add_component_button(Engine::ECS::Entity& entity, const char* button_label) {
-    if (ImGui::Button(button_label)) {
-      if (!entity.has_component<T>()) {
-        if constexpr (std::is_default_constructible_v<T>) {
-          entity.add_component<T>();
-        }
-        else {
-          ImGui::OpenPopup("Cannot Add Component");
-        }
-      }
     }
   }
 }
@@ -191,34 +197,51 @@ inline void EntityEditorPanel()
     // Add Component Section
     if (ImGui::CollapsingHeader("Add Component"))
     {
-      add_component_button<Components::Transform2D>(entity, "Add Transform2D");
+      if (ImGui::Button("Add Transform2D") && !entity.has_component<Components::Transform2D>()) {
+        entity.add_component<Components::Transform2D>();
+      }
       ImGui::SameLine();
-      add_component_button<Components::Color>(entity, "Add Color");
+      if (ImGui::Button("Add Color") && !entity.has_component<Components::Color>()) {
+        entity.add_component<Components::Color>();
+      }
 
-      add_component_button<Components::Text>(entity, "Add Text");
+      if (ImGui::Button("Add Text") && !entity.has_component<Components::Text>()) {
+        entity.add_component<Components::Text>();
+      }
       ImGui::SameLine();
-      add_component_button<Components::Texture>(entity, "Add Texture");
+      if (ImGui::Button("Add Texture") && !entity.has_component<Components::Texture>()) {
+        entity.add_component<Components::Texture>();
+      }
 
-      add_component_button<Components::TextureAtlas>(entity, "Add TextureAtlas");
+      if (ImGui::Button("Add TextureAtlas") && !entity.has_component<Components::TextureAtlas>()) {
+        entity.add_component<Components::TextureAtlas>();
+      }
       ImGui::SameLine();
-      add_component_button<Components::Animation>(entity, "Add Animation");
+      if (ImGui::Button("Add Animation") && !entity.has_component<Components::Animation>()) {
+        entity.add_component<Components::Animation>();
+      }
 
-      add_component_button<Components::Font>(entity, "Add Font");
+      if (ImGui::Button("Add Font") && !entity.has_component<Components::Font>()) {
+        entity.add_component<Components::Font>();
+      }
     }
 
     ImGui::Separator();
 
-    // Edit Components Section
+    // Edit Components Section - NOW FULLY AUTOMATIC!
     if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
     {
-      // Automatically generate editors for all registered components
-      render_component_editor<Components::Transform2D>(entity, "Transform2D");
-      render_component_editor<Components::Color>(entity, "Color");
-      render_component_editor<Components::Text>(entity, "Text");
-      render_component_editor<Components::Texture>(entity, "Texture");
-      render_component_editor<Components::TextureAtlas>(entity, "TextureAtlas");
-      render_component_editor<Components::Animation>(entity, "Animation");
-      render_component_editor<Components::Font>(entity, "Font");
+      // Automatically iterate through ALL components the entity has
+      entity.for_each_component([&entity](const std::string& type_name, Engine::ECS::IComponentArray* array) {
+        // Get the component data as GenericValue
+        auto component_data = array->to_generic_value(entity.get_id());
+
+        // Get the type ID from the array
+        Engine::ECS::ComponentTypeID type_id = 0; // You'll need to expose this from the array
+
+        // Render the component editor
+        render_component_from_generic(type_name, component_data, entity, type_id);
+        });
     }
 
     ImGui::Separator();
@@ -226,7 +249,7 @@ inline void EntityEditorPanel()
     // Clone Entity
     if (ImGui::Button("Clone This Entity"))
     {
-      auto clonedEntity = Engine::ECS::clone_entity(entity.get_id());
+      auto clonedEntity = Engine::ECS::clone_entity(entity);
       selected_entity_id = static_cast<int>(clonedEntity.get_id());
     }
 

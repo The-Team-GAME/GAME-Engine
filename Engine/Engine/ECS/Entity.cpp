@@ -41,6 +41,28 @@ namespace Engine {
       return id != other.id;
     }
 
+    void Entity::for_each_component(std::function<void(const std::string&, IComponentArray*)> callback) {
+      if (!is_valid())
+        return;
+
+      auto& containers = Internal::get_containers();
+      auto sig_it = containers.entity_signatures.find(id);
+
+      if (sig_it == containers.entity_signatures.end())
+        return;
+
+      const ComponentSignature& signature = sig_it->second;
+
+      // Iterate through all component arrays
+      for (auto& [type_id, array] : containers.component_arrays) {
+        // Check if this entity has this component type
+        if (signature.test(type_id)) {
+          std::string type_name = array->get_type_name();
+          callback(type_name, array.get());
+        }
+      }
+    }
+
     Entity create_entity_from_generic_value(const ReflectionLibrary::GenericValue& value) {
       if (!value.isObject() || !value.has("components") || !value["components"].isArray()) {
         return Entity(INVALID_ENTITY);
@@ -53,19 +75,16 @@ namespace Engine {
 
       // Iterate through each component in the JSON
       for (const auto& component_entry : components_array) {
-        if (!component_entry.isObject() || !component_entry.has("type") || !component_entry.has("data")) {
+        if (!component_entry.isObject() || !component_entry.has("type")) {
           continue;
         }
 
-        std::string type_name = component_entry["type"].getString();
-        const auto& component_data = component_entry["data"];
+        std::string component_type = component_entry["type"].getString();
 
-        // Find the component array by type name
-        for (const auto& [type_id, component_array] : containers.component_arrays) {
-          if (component_array->get_type_name() == type_name && component_array->is_reflectable()) {
-            // Deserialize and add the component
-            component_array->add_component_from_generic_value(entity.get_id(), component_data);
-            containers.entity_signatures[entity.get_id()].set(type_id);
+        // Find the component array for this type
+        for (auto& [type_id, array] : containers.component_arrays) {
+          if (array->get_type_name() == component_type) {
+            array->add_component_from_generic_value(entity.get_id(), component_entry["data"]);
             break;
           }
         }
@@ -84,18 +103,21 @@ namespace Engine {
       const auto& signature = containers.entity_signatures[entity_id];
 
       ReflectionLibrary::GenericValue result;
-      result["id"] = entity_id;
+      result["id"] = static_cast<int>(entity_id);
 
-      // Serialize each component's data
-      for (const auto& [type_id, component_array] : containers.component_arrays) {
-        if (signature.test(type_id) && component_array->is_reflectable()) {
-          ReflectionLibrary::GenericValue component_data = component_array->to_generic_value(entity_id);
+      ReflectionLibrary::Array components_array;
+
+      // Iterate through all component arrays
+      for (auto& [type_id, array] : containers.component_arrays) {
+        if (signature.test(type_id)) {
           ReflectionLibrary::GenericValue component_entry;
-          component_entry["type"] = component_array->get_type_name();
-          component_entry["data"] = component_data;
-          result["components"].push_back(component_entry);
+          component_entry["type"] = array->get_type_name();
+          component_entry["data"] = array->to_generic_value(entity_id);
+          components_array.push_back(component_entry);
         }
       }
+
+      result["components"] = components_array;
 
       return result;
     }
