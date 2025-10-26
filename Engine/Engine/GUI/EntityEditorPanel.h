@@ -252,6 +252,10 @@ inline void EntityEditorPanel()
     {
       // Automatically iterate through ALL components the entity has
       entity.for_each_component([&entity](const std::string& type_name, Engine::ECS::IComponentArray* array) {
+        if (!array->is_reflectable()) {
+          return; // Skip non-reflectable components
+        }
+
         // Render the component editor with write-back support
         render_component_from_generic(type_name, entity, array);
         });

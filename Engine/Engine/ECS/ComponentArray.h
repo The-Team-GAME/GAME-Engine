@@ -30,6 +30,7 @@ namespace Engine {
       virtual ~IComponentArray() = default;
       virtual void remove_entity(EntityID entity) = 0;
       virtual void clone_component(EntityID source, EntityID destination) = 0;
+      virtual bool is_reflectable() const = 0;
       virtual std::string get_type_name() const = 0;
       virtual ReflectionLibrary::GenericValue to_generic_value(EntityID entity) const = 0;
       virtual bool add_component_from_generic_value(EntityID entity, const ReflectionLibrary::GenericValue& value) = 0;
@@ -108,6 +109,17 @@ namespace Engine {
       When you need to detach a component from an entity.
       ==================================================================================*/
       void remove_entity(EntityID entity) override;
+
+
+      /*=================================================================================
+      Function Brief:
+      Checks if the component type T is reflectable using the ReflectionLibrary.
+      Parameters:
+      None.
+      Where to call it:
+      When determining if the component can be serialized or inspected via reflection.
+      ==================================================================================*/
+      bool is_reflectable() const override;
 
       /*=================================================================================
       Function Brief:
