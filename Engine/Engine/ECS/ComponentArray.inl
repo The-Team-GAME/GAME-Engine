@@ -51,16 +51,6 @@ namespace Engine {
     }
 
     template<typename T>
-    size_t ComponentArray<T>::size() const {
-      return components.size();
-    }
-
-    template<typename T>
-    bool ComponentArray<T>::is_reflectable() const {
-      return ReflectionLibrary::is_reflectable_v<T>;
-    }
-
-    template<typename T>
     std::string ComponentArray<T>::get_type_name() const {
       if constexpr (ReflectionLibrary::is_reflectable_v<T>) {
         return std::string(ReflectionLibrary::class_name<T>);
