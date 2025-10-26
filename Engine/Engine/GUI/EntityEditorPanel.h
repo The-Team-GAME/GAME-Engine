@@ -216,32 +216,59 @@ inline void EntityEditorPanel()
     // Add Component Section
     if (ImGui::CollapsingHeader("Add Component"))
     {
-      if (ImGui::Button("Add Transform2D") && !entity.has_component<Components::Transform2D>()) {
-        entity.add_component<Components::Transform2D>();
-      }
-      ImGui::SameLine();
-      if (ImGui::Button("Add Color") && !entity.has_component<Components::Color>()) {
-        entity.add_component<Components::Color>();
+      // Get all registered component types from the ECS
+      auto& containers = Engine::ECS::Internal::get_containers();
+
+      int button_count = 0;
+      for (auto& [type_id, array] : containers.component_arrays) {
+        std::string component_name = array->get_type_name();
+
+        // Skip if component type name is unknown or not reflectable
+        if (component_name == "Unknown" || !array->is_reflectable()) {
+          continue;
+        }
+
+        // Check if entity already has this component
+        bool has_component = false;
+        entity.for_each_component([&](const std::string& type_name, Engine::ECS::IComponentArray*) {
+          if (type_name == component_name) {
+            has_component = true;
+          }
+          });
+
+        // Create add button
+        std::string button_label = "Add " + component_name;
+
+        // Add spacing between buttons (2 per row)
+        if (button_count > 0 && button_count % 2 == 0) {
+          // New row
+        }
+        else if (button_count > 0) {
+          ImGui::SameLine();
+        }
+
+        // Disable button if entity already has this component
+        if (has_component) {
+          ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f);
+          ImGui::Button(button_label.c_str());
+          ImGui::PopStyleVar();
+        }
+        else {
+          if (ImGui::Button(button_label.c_str())) {
+            // Add default component using GenericValue
+            ReflectionLibrary::GenericValue default_value;
+            array->add_component_from_generic_value(entity.get_id(), default_value);
+            // Notify systems about component change
+            Engine::ECS::Internal::entity_component_changed(entity.get_id());
+          }
+        }
+
+        button_count++;
       }
 
-      if (ImGui::Button("Add Text") && !entity.has_component<Components::Text>()) {
-        entity.add_component<Components::Text>();
-      }
-      ImGui::SameLine();
-      if (ImGui::Button("Add Texture") && !entity.has_component<Components::Texture>()) {
-        entity.add_component<Components::Texture>();
-      }
-
-      if (ImGui::Button("Add TextureAtlas") && !entity.has_component<Components::TextureAtlas>()) {
-        entity.add_component<Components::TextureAtlas>();
-      }
-      ImGui::SameLine();
-      if (ImGui::Button("Add Animation") && !entity.has_component<Components::Animation>()) {
-        entity.add_component<Components::Animation>();
-      }
-
-      if (ImGui::Button("Add Font") && !entity.has_component<Components::Font>()) {
-        entity.add_component<Components::Font>();
+      if (button_count == 0) {
+        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+          "No reflectable components available");
       }
     }
 
