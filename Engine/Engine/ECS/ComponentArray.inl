@@ -51,6 +51,12 @@ namespace Engine {
     }
 
     template<typename T>
+    inline ComponentTypeID ComponentArray<T>::get_type_id() const
+    {
+      return ComponentTypeManager::get_type_id<T>();
+    }
+
+    template<typename T>
     inline bool ComponentArray<T>::is_reflectable() const
     {
       return ReflectionLibrary::is_reflectable_v<T>;

@@ -127,11 +127,11 @@ namespace {
 
       std::string remove_label = "Remove##" + component_name;
       if (ImGui::Button(remove_label.c_str())) {
-        array->remove_entity(entity.get_id());
-        // Clear cache entry
-        component_cache.erase(cache_key);
-        // Notify systems about component change
-        Engine::ECS::Internal::entity_component_changed(entity.get_id());
+        auto& containers = Engine::ECS::Internal::get_containers();
+        Engine::ECS::EntityID entityId = entity.get_id();
+
+        // Add to removal queue instead of removing immediately
+        containers.components_to_remove.emplace_back(entityId, array->get_type_id());
       }
 
       ImGui::TreePop();

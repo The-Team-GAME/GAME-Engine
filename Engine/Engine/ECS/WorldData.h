@@ -33,6 +33,7 @@ namespace Engine {
         std::unordered_map<EntityID, ComponentSignature> entity_signatures;
         std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> component_arrays;
         std::vector<std::unique_ptr<System>> systems;
+        std::vector<std::pair<EntityID, ComponentTypeID>> components_to_remove;
       };
 
       /*=================================================================================

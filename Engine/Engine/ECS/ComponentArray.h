@@ -30,6 +30,7 @@ namespace Engine {
       virtual ~IComponentArray() = default;
       virtual void remove_entity(EntityID entity) = 0;
       virtual void clone_component(EntityID source, EntityID destination) = 0;
+      virtual ComponentTypeID get_type_id() const = 0;
       virtual bool is_reflectable() const = 0;
       virtual std::string get_type_name() const = 0;
       virtual ReflectionLibrary::GenericValue to_generic_value(EntityID entity) const = 0;
@@ -111,6 +112,17 @@ namespace Engine {
       ==================================================================================*/
       void remove_entity(EntityID entity) override;
 
+      /*=================================================================================
+      Function Brief:
+      Returns the unique type ID for component type T.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When identifying component types in the ECS.
+      ==================================================================================*/
+      ComponentTypeID get_type_id() const override;
 
       /*=================================================================================
       Function Brief:
@@ -175,13 +187,13 @@ namespace Engine {
       /*=================================================================================
       Function Brief:
       Adds a default-constructed component of type T to the specified entity.
-      
+
       Parameters:
       entity - The EntityID to add the default component to.
-      
+
       Where to call it:
       When you need to attach a default-initialized component to an entity.
-      ==================================================================================*/ 
+      ==================================================================================*/
       void add_default_component(EntityID entity);
 
       /*=================================================================================
