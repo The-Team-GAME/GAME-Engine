@@ -76,14 +76,7 @@ namespace Engine {
       auto it = components.find(entity);
       if (it != components.end()) {
         if constexpr (ReflectionLibrary::is_reflectable_v<T>) {
-          T component_copy = it->second;
-          if constexpr (ReflectionLibrary::has_reflector_v<T>) {
-            auto reflector = ReflectionLibrary::ReflectionInfo<T>::reflect(component_copy);
-            return ReflectionLibrary::to_generic_value(reflector);
-          }
-          else {
-            return ReflectionLibrary::to_generic_value(component_copy);
-          }
+          return ReflectionLibrary::to_generic_value(it->second);
         }
       }
       return ReflectionLibrary::GenericValue();
