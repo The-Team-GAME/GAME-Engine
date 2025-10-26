@@ -92,6 +92,8 @@ namespace Engine
         auto* animation = entity.get_component<Components::Animation>();
         auto* atlas = entity.get_component<Components::TextureAtlas>();
 
+        if (!animation->isPlaying) return; 
+
         if (animation->frames.empty()) {
           return;
         }

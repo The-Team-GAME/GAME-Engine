@@ -102,6 +102,8 @@ namespace Components
     std::vector<Engine::Graphics::Frame> frames;
     f32 startTime = Engine::Time::get_time(); // To get the elapsed time to calculate which frame to show
     float totalDuration = 0.0f; // Total duration of the animation
+    bool isPlaying = true;
+
 
     // Evenly spaced frames
     Animation(size_t frameCount, float frameDuration) : frames(), startTime(0.0f), totalDuration(frameDuration* frameCount)

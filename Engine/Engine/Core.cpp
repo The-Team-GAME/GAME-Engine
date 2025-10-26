@@ -34,6 +34,7 @@
 #include "Events/WindowEvents.h"
 #include "Systems/Systems.h"
 #include "EventManager/EventManager.h"
+#include "GUI/Timeline.h"
 
 namespace {
   f64 accumulator{};
@@ -80,7 +81,6 @@ namespace Engine
         Engine::Graphics::set_viewport({ 0, 0, event.width, event.height });
       }
     );
-
     StateManager::init(initialState);
   }
 

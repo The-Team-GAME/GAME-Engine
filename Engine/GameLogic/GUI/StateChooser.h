@@ -23,6 +23,7 @@
 #include "../GameStates/DevSpriteAnimationState.h"
 #include "../GameStates/ShowcaseState.h"
 #include "../GameStates/Documentation/PrefabsState.h"
+#include "../GameStates/TimelineState.h"
 
 /*=================================================================================
 Function Brief:
@@ -68,6 +69,10 @@ inline void StateChooserPanel()
   if (ImGui::Button("PrefabsState"))
   {
     Engine::StateManager::change_state(PrefabsState::get());
+  }
+  if (ImGui::Button("Timeline"))
+  {
+    Engine::StateManager::change_state(TimelineState::get());
   }
 
 
