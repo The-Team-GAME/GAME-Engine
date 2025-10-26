@@ -35,6 +35,7 @@ namespace Engine {
       virtual ReflectionLibrary::GenericValue to_generic_value(EntityID entity) const = 0;
       virtual bool add_component_from_generic_value(EntityID entity, const ReflectionLibrary::GenericValue& value) = 0;
       virtual bool set_component_from_generic_value(EntityID entity, const ReflectionLibrary::GenericValue& value) = 0;
+      virtual void add_default_component(EntityID entity) = 0;
     };
 
     /* ============================= //
@@ -170,6 +171,18 @@ namespace Engine {
       When modifying component data from UI editors or runtime updates.
       ==================================================================================*/
       bool set_component_from_generic_value(EntityID entity, const ReflectionLibrary::GenericValue& value) override;
+
+      /*=================================================================================
+      Function Brief:
+      Adds a default-constructed component of type T to the specified entity.
+      
+      Parameters:
+      entity - The EntityID to add the default component to.
+      
+      Where to call it:
+      When you need to attach a default-initialized component to an entity.
+      ==================================================================================*/ 
+      void add_default_component(EntityID entity);
 
       /*=================================================================================
       Function Brief:

@@ -134,6 +134,14 @@ namespace Engine {
     }
 
     template<typename T>
+    inline void ComponentArray<T>::add_default_component(EntityID entity)
+    {
+      if constexpr (std::is_default_constructible_v<T>) {
+        components.emplace(entity, T{});
+      }
+    }
+
+    template<typename T>
     auto ComponentArray<T>::begin() {
       return components.begin();
     }

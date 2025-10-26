@@ -255,9 +255,8 @@ inline void EntityEditorPanel()
         }
         else {
           if (ImGui::Button(button_label.c_str())) {
-            // Add default component using GenericValue
-            ReflectionLibrary::GenericValue default_value;
-            array->add_component_from_generic_value(entity.get_id(), default_value);
+            // Add default-initialized component
+            array->add_default_component(entity.get_id());
             // Notify systems about component change
             Engine::ECS::Internal::entity_component_changed(entity.get_id());
           }
