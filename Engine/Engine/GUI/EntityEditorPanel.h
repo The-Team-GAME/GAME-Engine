@@ -31,8 +31,16 @@ namespace {
 
     if (ImGui::TreeNode(component_name.c_str())) {
 
-      // Get the component data as GenericValue
-      auto component_data = array->to_generic_value(entity.get_id());
+      // Cache the component data (only fetch once per TreeNode open)
+      static std::unordered_map<std::string, ReflectionLibrary::GenericValue> component_cache;
+      std::string cache_key = std::to_string(entity.get_id()) + "_" + component_name;
+
+      // Only fetch if not in cache or if this is a new frame
+      if (component_cache.find(cache_key) == component_cache.end()) {
+        component_cache[cache_key] = array->to_generic_value(entity.get_id());
+      }
+
+      auto& component_data = component_cache[cache_key];
       bool modified = false;
 
       // Render fields from GenericValue
@@ -108,7 +116,11 @@ namespace {
 
       // Write back changes if modified
       if (modified) {
+        std::cout << "Component " << component_name << " modified on Entity "
+          << entity.get_id() << std::endl;
         array->set_component_from_generic_value(entity.get_id(), component_data);
+        // Update cache after modification
+        component_cache[cache_key] = component_data;
       }
 
       ImGui::Separator();
@@ -116,11 +128,19 @@ namespace {
       std::string remove_label = "Remove##" + component_name;
       if (ImGui::Button(remove_label.c_str())) {
         array->remove_entity(entity.get_id());
+        // Clear cache entry
+        component_cache.erase(cache_key);
         // Notify systems about component change
         Engine::ECS::Internal::entity_component_changed(entity.get_id());
       }
 
       ImGui::TreePop();
+    }
+    else {
+      // TreeNode is closed, clear cache for this component
+      static std::unordered_map<std::string, ReflectionLibrary::GenericValue> component_cache;
+      std::string cache_key = std::to_string(entity.get_id()) + "_" + component_name;
+      component_cache.erase(cache_key);
     }
   }
 }
