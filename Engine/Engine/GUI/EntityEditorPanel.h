@@ -24,6 +24,66 @@
 
 namespace {
 
+  // Forward declaration for recursion
+  bool render_generic_value_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value);
+
+  // Recursive helper to render any GenericValue field
+  bool render_generic_value_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value) {
+    bool modified = false;
+
+    if (field_value.isBool()) {
+      bool val = field_value.getBool();
+      if (ImGui::Checkbox(display_name.c_str(), &val)) {
+        field_value = val;
+        modified = true;
+      }
+    }
+    else if (field_value.isInt()) {
+      int val = static_cast<int>(field_value.getInt());
+      if (ImGui::DragInt(display_name.c_str(), &val)) {
+        field_value = static_cast<ReflectionLibrary::Integer>(val);
+        modified = true;
+      }
+    }
+    else if (field_value.isDouble()) {
+      float val = static_cast<float>(field_value.getDouble());
+      if (ImGui::DragFloat(display_name.c_str(), &val, 0.01f)) {
+        field_value = static_cast<double>(val);
+        modified = true;
+      }
+    }
+    else if (field_value.isString()) {
+      char buffer[1024];
+      std::string str_val = field_value.getString();
+      strncpy_s(buffer, str_val.c_str(), sizeof(buffer) - 1);
+      buffer[sizeof(buffer) - 1] = '\0';
+      if (ImGui::InputText(display_name.c_str(), buffer, sizeof(buffer))) {
+        field_value = std::string(buffer);
+        modified = true;
+      }
+    }
+    else if (field_value.isObject()) {
+      // Recursively handle nested objects
+      if (ImGui::TreeNode(display_name.c_str())) {
+        auto& nested_fields = field_value.getObject();
+        for (auto& [nested_name, nested_value] : nested_fields) {
+          if (render_generic_value_field(nested_name, nested_value)) {
+            modified = true;
+          }
+        }
+        ImGui::TreePop();
+      }
+    }
+    else if (field_value.isArray()) {
+      ImGui::Text("%s: [Array with %zu elements]", display_name.c_str(),
+        field_value.getArray().size());
+      ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
+        "Array editing not yet supported");
+    }
+
+    return modified;
+  }
+
   // Render component using reflection from GenericValue
   void render_component_from_generic(const std::string& component_name,
     Engine::ECS::Entity& entity,
@@ -47,69 +107,8 @@ namespace {
       if (component_data.isObject()) {
         auto& fields = component_data.getObject();
         for (auto& [field_name, field_value] : fields) {
-          std::string display_name = field_name;
-
-          if (field_value.isBool()) {
-            bool val = field_value.getBool();
-            if (ImGui::Checkbox(display_name.c_str(), &val)) {
-              field_value = val;
-              modified = true;
-            }
-          }
-          else if (field_value.isInt()) {
-            int val = static_cast<int>(field_value.getInt());
-            if (ImGui::DragInt(display_name.c_str(), &val)) {
-              field_value = static_cast<ReflectionLibrary::Integer>(val);
-              modified = true;
-            }
-          }
-          else if (field_value.isDouble()) {
-            float val = static_cast<float>(field_value.getDouble());
-            if (ImGui::DragFloat(display_name.c_str(), &val, 0.01f)) {
-              field_value = static_cast<double>(val);
-              modified = true;
-            }
-          }
-          else if (field_value.isString()) {
-            char buffer[1024];
-            std::string str_val = field_value.getString();
-            strncpy_s(buffer, str_val.c_str(), sizeof(buffer) - 1);
-            buffer[sizeof(buffer) - 1] = '\0';
-            if (ImGui::InputText(display_name.c_str(), buffer, sizeof(buffer))) {
-              field_value = std::string(buffer);
-              modified = true;
-            }
-          }
-          else if (field_value.isObject()) {
-            // Handle nested objects (like Vec2D, Vec4D)
-            if (ImGui::TreeNode(display_name.c_str())) {
-              auto& nested_fields = field_value.getObject();
-              for (auto& [nested_name, nested_value] : nested_fields) {
-                if (nested_value.isDouble()) {
-                  float nested_val = static_cast<float>(nested_value.getDouble());
-                  std::string nested_label = std::string(nested_name);
-                  if (ImGui::DragFloat(nested_label.c_str(), &nested_val, 0.01f)) {
-                    nested_value = static_cast<double>(nested_val);
-                    modified = true;
-                  }
-                }
-                else if (nested_value.isInt()) {
-                  int nested_val = static_cast<int>(nested_value.getInt());
-                  std::string nested_label = std::string(nested_name);
-                  if (ImGui::DragInt(nested_label.c_str(), &nested_val)) {
-                    nested_value = static_cast<ReflectionLibrary::Integer>(nested_val);
-                    modified = true;
-                  }
-                }
-              }
-              ImGui::TreePop();
-            }
-          }
-          else if (field_value.isArray()) {
-            ImGui::Text("%s: [Array with %zu elements]", display_name.c_str(),
-              field_value.getArray().size());
-            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
-              "Array editing not yet supported");
+          if (render_generic_value_field(field_name, field_value)) {
+            modified = true;
           }
         }
       }
