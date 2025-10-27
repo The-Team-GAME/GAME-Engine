@@ -39,33 +39,6 @@ public:
 
 
 
-
-
-
-		s32 texture_id = 0; // REPLACE with the actual method to get the ID from your texture component
-
-		// Example: If your Texture component holds a GLuint or similar:
-		// texture_id = banana.get_component<Components::Texture>()->get_raw_id(); 
-
-		// Use a placeholder ID (1) for now if you don't know the accessor
-		texture_id = 1;
-
-
-		// Add the clip to the timeline: 
-		// We'll place it on Layer 0, starting at Frame 10, with a duration of 60 frames.
-		timeline.add_clip(
-			texture_id,  // The ID of the texture resource
-			0,           // Layer (0)
-			10,          // Start Frame (10)
-			60           // Duration (60 frames)
-		);
-
-
-
-
-
-
-
 	};
 	void update() {};
 	void draw() {
