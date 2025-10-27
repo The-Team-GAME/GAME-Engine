@@ -1,0 +1,53 @@
+{
+    "id": 4,
+    "components": [
+        {
+            "data": {
+                "r": 1.0,
+                "b": 1.0,
+                "g": 1.0,
+                "a": 1.0
+            },
+            "type": "Components::Color"
+        },
+        {
+            "type": "Components::Texture",
+            "data": {
+                "path": "images/banana.png"
+            }
+        },
+        {
+            "data": {
+                "position": {
+                    "x": 1200.0,
+                    "y": 675.0
+                },
+                "rotation": 0.0,
+                "scale": {
+                    "x": 60.0,
+                    "y": 36.0
+                }
+            },
+            "type": "Components::Transform2D"
+        },
+        {
+            "type": "Components::RigidBody",
+            "data": {
+                "detect_collisions": true,
+                "rotation_terminal_velocity": 360.0,
+                "linear_velocity": {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+                "is_kinematic": false,
+                "angular_velocity": 45.0,
+                "linear_terminal_velocity": {
+                    "x": 3.4028234663852886e38,
+                    "y": 3.4028234663852886e38
+                },
+                "mass": 1.0,
+                "rotation": 0.0
+            }
+        }
+    ]
+}

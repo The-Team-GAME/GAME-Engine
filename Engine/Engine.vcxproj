@@ -92,10 +92,11 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="Engine\Audio\AudioPlayer.cpp" />
     <ClCompile Include="Engine\Audio\AudioPlayerInternal.cpp" />
     <ClCompile Include="Engine\ECS\Prefab.cpp" />
+    <ClCompile Include="Engine\ECS\WorldData.cpp" />
     <ClCompile Include="Engine\EventManager\EventManager.cpp" />
+    <ClCompile Include="Engine\FileIO\PrefabsFileIO.cpp" />
     <ClCompile Include="GameLogic\GameStates\BasicState.cpp" />
     <ClCompile Include="GameLogic\GameStates\BasicState.h" />
-    <ClCompile Include="GameLogic\Config.cpp" />
     <ClCompile Include="Engine\Core.cpp" />
     <ClCompile Include="Engine\ECS\ComponentManager.cpp" />
     <ClCompile Include="Engine\ECS\Entity.cpp" />
@@ -128,15 +129,22 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Engine\Components\GraphicsComponents.h" />
     <ClInclude Include="Engine\Components\PhysicsComponents.h" />
     <ClInclude Include="Engine\Components\UtilityComponents.h" />
+    <ClInclude Include="Engine\ECS\Macros.h" />
     <ClInclude Include="Engine\ECS\Prefab.h" />
+    <ClInclude Include="Engine\ECS\WorldData.h" />
     <ClInclude Include="Engine\EventManager\EventManager.h" />
     <ClInclude Include="Engine\Events\Events.h" />
     <ClInclude Include="Engine\Events\InputEvents.h" />
     <ClInclude Include="Engine\Events\WindowEvents.h" />
+    <ClInclude Include="Engine\FileIO\EngineSettings.h" />
+    <ClInclude Include="Engine\FileIO\PrefabsFileIO.h" />
+    <ClInclude Include="Engine\FileIO\SettingsManager.h" />
+    <ClInclude Include="Engine\FileIO\UserSettings.h" />
     <ClInclude Include="Engine\GUI\ResourceManagerPanel.h" />
     <ClInclude Include="Engine\MonkeyEngine.h" />
     <ClInclude Include="Engine\Reflection\ReflectionLibrary.h" />
     <ClInclude Include="Engine\Reflection\ReflectionLibrary\Concepts.h" />
+    <ClInclude Include="Engine\Reflection\ReflectionLibrary\GenericValue.h" />
     <ClInclude Include="Engine\Reflection\ReflectionLibrary\Helpers.h" />
     <ClInclude Include="Engine\Reflection\ReflectionLibrary\Json.h" />
     <ClInclude Include="Engine\Reflection\ReflectionLibrary\Macros.h" />
@@ -149,7 +157,6 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Engine\GUI\CameraPanel.h" />
     <ClInclude Include="Engine\Systems\GraphicsSystem.h" />
     <ClInclude Include="GameLogic\Components\Components.h" />
-    <ClInclude Include="GameLogic\Config.h" />
     <ClInclude Include="Engine\Core.h" />
     <ClInclude Include="GameLogic\GameStates\DevSpriteAnimationState.h" />
     <ClInclude Include="Engine\Components\Components.h" />
@@ -191,12 +198,15 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="GameLogic\Systems\PlayerControllerSystem.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="cpp.hint" />
     <None Include="Engine\ECS\ComponentArray.inl" />
     <None Include="Engine\ECS\ComponentManager.inl" />
     <None Include="Engine\ECS\Entity.inl" />
     <None Include="Engine\ECS\System.inl" />
     <None Include="Engine\ECS\World.inl" />
     <None Include="Engine\EventManager\EventManager.inl" />
+    <None Include="Engine\FileIO\SettingsManager.inl" />
+    <None Include="Engine\Reflection\ReflectionLibrary\GenericValue.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
