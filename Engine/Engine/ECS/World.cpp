@@ -136,6 +136,22 @@ namespace Engine {
         system->update();
       }
 
+      // Process component removals
+      for (const auto& [entityId, typeId] : containers.components_to_remove)
+      {
+        if (containers.active_entities.find(entityId) != containers.active_entities.end())
+        {
+          auto array_it = containers.component_arrays.find(typeId);
+          if (array_it != containers.component_arrays.end())
+          {
+            array_it->second->remove_entity(entityId);
+            containers.entity_signatures[entityId].reset(typeId);
+            Internal::entity_component_changed(entityId);
+          }
+        }
+      }
+      containers.components_to_remove.clear();
+
       // Clean up destroyed entities
       for (EntityID entityId : containers.entities_to_destroy)
       {

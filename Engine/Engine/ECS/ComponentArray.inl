@@ -51,12 +51,14 @@ namespace Engine {
     }
 
     template<typename T>
-    size_t ComponentArray<T>::size() const {
-      return components.size();
+    inline ComponentTypeID ComponentArray<T>::get_type_id() const
+    {
+      return ComponentTypeManager::get_type_id<T>();
     }
 
     template<typename T>
-    bool ComponentArray<T>::is_reflectable() const {
+    inline bool ComponentArray<T>::is_reflectable() const
+    {
       return ReflectionLibrary::is_reflectable_v<T>;
     }
 
@@ -76,14 +78,7 @@ namespace Engine {
       auto it = components.find(entity);
       if (it != components.end()) {
         if constexpr (ReflectionLibrary::is_reflectable_v<T>) {
-          T component_copy = it->second;
-          if constexpr (ReflectionLibrary::has_reflector_v<T>) {
-            auto reflector = ReflectionLibrary::ReflectionInfo<T>::reflect(component_copy);
-            return ReflectionLibrary::to_generic_value(reflector);
-          }
-          else {
-            return ReflectionLibrary::to_generic_value(component_copy);
-          }
+          return ReflectionLibrary::to_generic_value(it->second);
         }
       }
       return ReflectionLibrary::GenericValue();
@@ -112,6 +107,44 @@ namespace Engine {
         }
       }
       return false;
+    }
+
+    template<typename T>
+    inline bool ComponentArray<T>::set_component_from_generic_value(EntityID entity, const ReflectionLibrary::GenericValue& value)
+    {
+      // Check if the entity has this component
+      auto it = components.find(entity);
+      if (it == components.end()) {
+        return false; // Entity doesn't have this component
+      }
+
+      if constexpr (ReflectionLibrary::is_reflectable_v<T>) {
+        if constexpr (ReflectionLibrary::has_reflector_v<T>) {
+          // Component has custom reflector
+          std::optional<typename T::Reflector> reflector_opt = ReflectionLibrary::from_generic_value<typename T::Reflector>(value);
+          if (reflector_opt) {
+            it->second = ReflectionLibrary::ReflectionInfo<T>::create(reflector_opt.value());
+            return true;
+          }
+        }
+        else {
+          // Component uses direct reflection
+          std::optional<T> component_opt = ReflectionLibrary::from_generic_value<T>(value);
+          if (component_opt) {
+            it->second = std::move(component_opt.value());
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    template<typename T>
+    inline void ComponentArray<T>::add_default_component(EntityID entity)
+    {
+      if constexpr (std::is_default_constructible_v<T>) {
+        Engine::ECS::add_component<T>(entity, T{});
+      }
     }
 
     template<typename T>

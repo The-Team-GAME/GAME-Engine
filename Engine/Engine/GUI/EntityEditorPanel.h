@@ -8,8 +8,8 @@
 // email:   chew.s@digipen.edu
 //
 // brief:   This file defines the EntityEditorPanel ImGui interface for runtime
-//          entity and component manipulation. Provides a GUI for creating, deleting,
-//          and editing entities and their components during gameplay.
+//          entity and component manipulation. Uses reflection to automatically
+//          generate component editor fields.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
@@ -17,9 +17,133 @@
 #include "imgui.h"
 #include "Core.h"
 #include "../Components/Components.h"
+#include "../Reflection/ReflectionLibrary.h"
 #include <string>
 #include <vector>
 #include "../ECS/ECS.h"
+
+namespace {
+
+  // Render component using reflection from GenericValue
+  void render_component_from_generic(const std::string& component_name,
+    Engine::ECS::Entity& entity,
+    Engine::ECS::IComponentArray* array) {
+
+    if (ImGui::TreeNode(component_name.c_str())) {
+
+      // Cache the component data (only fetch once per TreeNode open)
+      static std::unordered_map<std::string, ReflectionLibrary::GenericValue> component_cache;
+      std::string cache_key = std::to_string(entity.get_id()) + "_" + component_name;
+
+      // Only fetch if not in cache or if this is a new frame
+      if (component_cache.find(cache_key) == component_cache.end()) {
+        component_cache[cache_key] = array->to_generic_value(entity.get_id());
+      }
+
+      auto& component_data = component_cache[cache_key];
+      bool modified = false;
+
+      // Render fields from GenericValue
+      if (component_data.isObject()) {
+        auto& fields = component_data.getObject();
+        for (auto& [field_name, field_value] : fields) {
+          std::string display_name = field_name;
+
+          if (field_value.isBool()) {
+            bool val = field_value.getBool();
+            if (ImGui::Checkbox(display_name.c_str(), &val)) {
+              field_value = val;
+              modified = true;
+            }
+          }
+          else if (field_value.isInt()) {
+            int val = static_cast<int>(field_value.getInt());
+            if (ImGui::DragInt(display_name.c_str(), &val)) {
+              field_value = static_cast<ReflectionLibrary::Integer>(val);
+              modified = true;
+            }
+          }
+          else if (field_value.isDouble()) {
+            float val = static_cast<float>(field_value.getDouble());
+            if (ImGui::DragFloat(display_name.c_str(), &val, 0.01f)) {
+              field_value = static_cast<double>(val);
+              modified = true;
+            }
+          }
+          else if (field_value.isString()) {
+            char buffer[1024];
+            std::string str_val = field_value.getString();
+            strncpy_s(buffer, str_val.c_str(), sizeof(buffer) - 1);
+            buffer[sizeof(buffer) - 1] = '\0';
+            if (ImGui::InputText(display_name.c_str(), buffer, sizeof(buffer))) {
+              field_value = std::string(buffer);
+              modified = true;
+            }
+          }
+          else if (field_value.isObject()) {
+            // Handle nested objects (like Vec2D, Vec4D)
+            if (ImGui::TreeNode(display_name.c_str())) {
+              auto& nested_fields = field_value.getObject();
+              for (auto& [nested_name, nested_value] : nested_fields) {
+                if (nested_value.isDouble()) {
+                  float nested_val = static_cast<float>(nested_value.getDouble());
+                  std::string nested_label = std::string(nested_name);
+                  if (ImGui::DragFloat(nested_label.c_str(), &nested_val, 0.01f)) {
+                    nested_value = static_cast<double>(nested_val);
+                    modified = true;
+                  }
+                }
+                else if (nested_value.isInt()) {
+                  int nested_val = static_cast<int>(nested_value.getInt());
+                  std::string nested_label = std::string(nested_name);
+                  if (ImGui::DragInt(nested_label.c_str(), &nested_val)) {
+                    nested_value = static_cast<ReflectionLibrary::Integer>(nested_val);
+                    modified = true;
+                  }
+                }
+              }
+              ImGui::TreePop();
+            }
+          }
+          else if (field_value.isArray()) {
+            ImGui::Text("%s: [Array with %zu elements]", display_name.c_str(),
+              field_value.getArray().size());
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
+              "Array editing not yet supported");
+          }
+        }
+      }
+
+      // Write back changes if modified
+      if (modified) {
+        std::cout << "Component " << component_name << " modified on Entity "
+          << entity.get_id() << std::endl;
+        array->set_component_from_generic_value(entity.get_id(), component_data);
+        // Update cache after modification
+        component_cache[cache_key] = component_data;
+      }
+
+      ImGui::Separator();
+
+      std::string remove_label = "Remove##" + component_name;
+      if (ImGui::Button(remove_label.c_str())) {
+        auto& containers = Engine::ECS::Internal::get_containers();
+        Engine::ECS::EntityID entityId = entity.get_id();
+
+        // Add to removal queue instead of removing immediately
+        containers.components_to_remove.emplace_back(entityId, array->get_type_id());
+      }
+
+      ImGui::TreePop();
+    }
+    else {
+      // TreeNode is closed, clear cache for this component
+      static std::unordered_map<std::string, ReflectionLibrary::GenericValue> component_cache;
+      std::string cache_key = std::to_string(entity.get_id()) + "_" + component_name;
+      component_cache.erase(cache_key);
+    }
+  }
+}
 
 inline void EntityEditorPanel()
 {
@@ -92,244 +216,73 @@ inline void EntityEditorPanel()
     // Add Component Section
     if (ImGui::CollapsingHeader("Add Component"))
     {
-      if (ImGui::Button("Add Transform2D"))
-      {
-        if (!entity.has_component<Components::Transform2D>())
-          entity.add_component<Components::Transform2D>();
+      // Get all registered component types from the ECS
+      auto& containers = Engine::ECS::Internal::get_containers();
+
+      int button_count = 0;
+      for (auto& [type_id, array] : containers.component_arrays) {
+        std::string component_name = array->get_type_name();
+
+        // Skip if component type name is unknown or not reflectable
+        if (component_name == "Unknown" || !array->is_reflectable()) {
+          continue;
+        }
+
+        // Check if entity already has this component
+        bool has_component = false;
+        entity.for_each_component([&](const std::string& type_name, Engine::ECS::IComponentArray*) {
+          if (type_name == component_name) {
+            has_component = true;
+          }
+          });
+
+        // Create add button
+        std::string button_label = "Add " + component_name;
+
+        // Add spacing between buttons (2 per row)
+        if (button_count > 0 && button_count % 2 == 0) {
+          // New row
+        }
+        else if (button_count > 0) {
+          ImGui::SameLine();
+        }
+
+        // Disable button if entity already has this component
+        if (has_component) {
+          ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f);
+          ImGui::Button(button_label.c_str());
+          ImGui::PopStyleVar();
+        }
+        else {
+          if (ImGui::Button(button_label.c_str())) {
+            // Add default-initialized component
+            array->add_default_component(entity.get_id());
+          }
+        }
+
+        button_count++;
       }
 
-      ImGui::SameLine();
-
-      if (ImGui::Button("Add Color"))
-      {
-        if (!entity.has_component<Components::Color>())
-          entity.add_component<Components::Color>();
-      }
-
-      if (ImGui::Button("Add Text"))
-      {
-        if (!entity.has_component<Components::Text>())
-          entity.add_component<Components::Text>("Sample Text");
+      if (button_count == 0) {
+        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+          "No reflectable components available");
       }
     }
 
     ImGui::Separator();
 
-    // Edit Components Section
+    // Edit Components Section - NOW FULLY AUTOMATIC!
     if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
     {
-      // Transform2D Component
-      if (entity.has_component<Components::Transform2D>())
-      {
-        if (ImGui::TreeNode("Transform2D"))
-        {
-          auto* transform = entity.get_component<Components::Transform2D>();
-
-          ImGui::Text("Position:");
-          ImGui::DragFloat("X##pos", &transform->position.x, 1.0f);
-          ImGui::DragFloat("Y##pos", &transform->position.y, 1.0f);
-
-          ImGui::Separator();
-          ImGui::Text("Rotation:");
-          ImGui::SliderFloat("Angle (degrees)", &transform->rotation, 0.0f, 360.0f);
-
-          ImGui::Separator();
-          ImGui::Text("Scale:");
-          ImGui::DragFloat("X##scale", &transform->scale.x, 0.01f, 0.01f, 10.0f);
-          ImGui::DragFloat("Y##scale", &transform->scale.y, 0.01f, 0.01f, 10.0f);
-
-          if (ImGui::Button("Reset Transform"))
-          {
-            transform->position = Math::Vec2D(0.0f, 0.0f);
-            transform->rotation = 0.0f;
-            transform->scale = Math::Vec2D(1.0f, 1.0f);
-          }
-
-          if (ImGui::Button("Remove##transform"))
-            entity.remove_component<Components::Transform2D>();
-
-          ImGui::TreePop();
+      // Automatically iterate through ALL components the entity has
+      entity.for_each_component([&entity](const std::string& type_name, Engine::ECS::IComponentArray* array) {
+        if (!array->is_reflectable()) {
+          return; // Skip non-reflectable components
         }
-      }
 
-      // Color Component
-      if (entity.has_component<Components::Color>())
-      {
-        if (ImGui::TreeNode("Color"))
-        {
-          auto* color = entity.get_component<Components::Color>();
-          f32 colorArray[4] = {
-            color->x,
-            color->y,
-            color->z,
-            color->w
-          };
-
-          if (ImGui::ColorEdit4("RGBA", colorArray))
-          {
-            color->x = colorArray[0];
-            color->y = colorArray[1];
-            color->z = colorArray[2];
-            color->w = colorArray[3];
-          }
-
-          if (ImGui::Button("Remove##color"))
-            entity.remove_component<Components::Color>();
-
-          ImGui::TreePop();
-        }
-      }
-
-      // Text Component
-      if (entity.has_component<Components::Text>())
-      {
-        if (ImGui::TreeNode("Text"))
-        {
-          auto* text = entity.get_component<Components::Text>();
-          char buffer[1024];
-          strncpy_s(buffer, text->content.c_str(), sizeof(buffer) - 1);
-          buffer[sizeof(buffer) - 1] = '\0';
-
-          if (ImGui::InputTextMultiline("Content", buffer, sizeof(buffer)))
-          {
-            text->content = buffer;
-          }
-
-          if (ImGui::Button("Remove##text"))
-            entity.remove_component<Components::Text>();
-
-          ImGui::TreePop();
-        }
-      }
-
-      // Texture Component (Read-only)
-      if (entity.has_component<Components::Texture>())
-      {
-        if (ImGui::TreeNode("Texture"))
-        {
-          auto* texture = entity.get_component<Components::Texture>();
-
-          if (texture->texture_handle)
-          {
-            ImGui::Text("Texture ID: %u", texture->texture_handle->id);
-            ImGui::Text("Size: %dx%d", texture->texture_handle->width, texture->texture_handle->height);
-            ImGui::Text("Filter: %s",
-              texture->texture_handle->filter == Engine::Graphics::TextureFilter::Nearest ? "Nearest" : "Linear");
-          }
-          else
-          {
-            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Invalid texture");
-          }
-
-          ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
-            "Note: Texture editing not yet supported");
-
-          if (ImGui::Button("Remove##texture"))
-            entity.remove_component<Components::Texture>();
-
-          ImGui::TreePop();
-        }
-      }
-
-      // TextureAtlas Component
-      if (entity.has_component<Components::TextureAtlas>())
-      {
-        if (ImGui::TreeNode("TextureAtlas"))
-        {
-          auto* atlas = entity.get_component<Components::TextureAtlas>();
-
-          ImGui::Text("Total SubTextures: %zu", atlas->subTextures.size());
-          ImGui::Text("Current Draw Index: %zu", atlas->drawIndex);
-
-          if (atlas->subTextures.size() > 0)
-          {
-            int currentIndex = static_cast<int>(atlas->drawIndex);
-            if (ImGui::SliderInt("Frame", &currentIndex, 0, static_cast<int>(atlas->subTextures.size() - 1)))
-            {
-              atlas->drawIndex = static_cast<size_t>(currentIndex);
-            }
-          }
-
-          ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
-            "Note: Atlas editing not yet supported");
-
-          if (ImGui::Button("Remove##atlas"))
-            entity.remove_component<Components::TextureAtlas>();
-
-          ImGui::TreePop();
-        }
-      }
-
-      // Animation Component
-      if (entity.has_component<Components::Animation>())
-      {
-        if (ImGui::TreeNode("Animation"))
-        {
-          auto* anim = entity.get_component<Components::Animation>();
-
-          ImGui::Text("Total Frames: %zu", anim->frames.size());
-          ImGui::Text("Total Duration: %.2f s", anim->totalDuration);
-          ImGui::DragFloat("Start Time", &anim->startTime, 0.01f);
-
-          // Calculate current frame
-          if (anim->frames.size() > 0 && anim->totalDuration > 0.0f)
-          {
-            float elapsed = anim->startTime;
-            size_t currentFrame = 0;
-            for (size_t i = 0; i < anim->frames.size(); ++i)
-            {
-              if (elapsed >= anim->frames[i].before_time)
-                currentFrame = i;
-              else
-                break;
-            }
-            ImGui::Text("Current Frame: %zu", currentFrame);
-          }
-
-          ImGui::Separator();
-
-          if (ImGui::Button("Reset Animation"))
-          {
-            anim->startTime = 0.0f;
-          }
-
-          ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
-            "Note: Frame editing not yet supported");
-
-          if (ImGui::Button("Remove##animation"))
-            entity.remove_component<Components::Animation>();
-
-          ImGui::TreePop();
-        }
-      }
-
-      // Font Component (Read-only)
-      if (entity.has_component<Components::Font>())
-      {
-        if (ImGui::TreeNode("Font"))
-        {
-          auto* font = entity.get_component<Components::Font>();
-
-          if (font->font_handle)
-          {
-            ImGui::Text("Font Size: %u", font->font_handle->font_size);
-            ImGui::Text("Baseline: %.2f", font->font_handle->baseline);
-            ImGui::Text("Glyphs Loaded: %zu", font->font_handle->glyphs.size());
-          }
-          else
-          {
-            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Invalid font");
-          }
-
-          ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
-            "Note: Font editing not yet supported");
-
-          if (ImGui::Button("Remove##font"))
-            entity.remove_component<Components::Font>();
-
-          ImGui::TreePop();
-        }
-      }
+        // Render the component editor with write-back support
+        render_component_from_generic(type_name, entity, array);
+        });
     }
 
     ImGui::Separator();
@@ -337,8 +290,26 @@ inline void EntityEditorPanel()
     // Clone Entity
     if (ImGui::Button("Clone This Entity"))
     {
-      auto clonedEntity = Engine::ECS::clone_entity(entity.get_id());
+      auto clonedEntity = Engine::ECS::clone_entity(entity);
       selected_entity_id = static_cast<int>(clonedEntity.get_id());
+    }
+
+    ImGui::SameLine();
+
+    // Serialize/Export Entity
+    if (ImGui::Button("Export to JSON"))
+    {
+      auto generic_value = Engine::ECS::entity_to_generic_value(entity);
+      std::string json = ReflectionLibrary::generic_value_to_json(generic_value, true);
+      ImGui::SetClipboardText(json.c_str());
+      ImGui::OpenPopup("Export Success");
+    }
+
+    // Export success popup
+    if (ImGui::BeginPopup("Export Success"))
+    {
+      ImGui::Text("Entity JSON copied to clipboard!");
+      ImGui::EndPopup();
     }
   }
   else

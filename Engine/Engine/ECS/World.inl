@@ -80,13 +80,9 @@ namespace Engine {
       auto& containers = Internal::get_containers();
       EntityID entityId = entity.get_id();
       ComponentTypeID typeId = ComponentTypeManager::get_type_id<T>();
-      auto* array = get_component_array<T>();
-      if (array)
-      {
-        array->remove_entity(entityId);
-        containers.entity_signatures[entityId].reset(typeId);
-        Internal::entity_component_changed(entityId);
-      }
+
+      // Add to removal queue instead of removing immediately
+      containers.components_to_remove.emplace_back(entityId, typeId);
     }
 
     template <typename T>
