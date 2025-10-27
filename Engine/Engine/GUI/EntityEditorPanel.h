@@ -91,16 +91,17 @@ namespace {
 
     if (ImGui::TreeNode(component_name.c_str())) {
 
-      // Cache the component data (only fetch once per TreeNode open)
-      static std::unordered_map<std::string, ReflectionLibrary::GenericValue> component_cache;
-      std::string cache_key = std::to_string(entity.get_id()) + "_" + component_name;
+      //// Cache the component data (only fetch once per TreeNode open)
+      //static std::unordered_map<std::string, ReflectionLibrary::GenericValue> component_cache;
+      //std::string cache_key = std::to_string(entity.get_id()) + "_" + component_name;
 
-      // Only fetch if not in cache or if this is a new frame
-      if (component_cache.find(cache_key) == component_cache.end()) {
-        component_cache[cache_key] = array->to_generic_value(entity.get_id());
-      }
+      //// Only fetch if not in cache or if this is a new frame
+      //if (component_cache.find(cache_key) == component_cache.end()) {
+      //  component_cache[cache_key] = array->to_generic_value(entity.get_id());
+      //}
+      //auto& component_data = component_cache[cache_key];
 
-      auto& component_data = component_cache[cache_key];
+      auto component_data = array->to_generic_value(entity.get_id());
       bool modified = false;
 
       // Render fields from GenericValue
@@ -118,8 +119,7 @@ namespace {
         std::cout << "Component " << component_name << " modified on Entity "
           << entity.get_id() << std::endl;
         array->set_component_from_generic_value(entity.get_id(), component_data);
-        // Update cache after modification
-        component_cache[cache_key] = component_data;
+        //component_cache[cache_key] = component_data;
       }
 
       ImGui::Separator();
@@ -137,9 +137,9 @@ namespace {
     }
     else {
       // TreeNode is closed, clear cache for this component
-      static std::unordered_map<std::string, ReflectionLibrary::GenericValue> component_cache;
-      std::string cache_key = std::to_string(entity.get_id()) + "_" + component_name;
-      component_cache.erase(cache_key);
+      //static std::unordered_map<std::string, ReflectionLibrary::GenericValue> component_cache;
+      //std::string cache_key = std::to_string(entity.get_id()) + "_" + component_name;
+      //component_cache.erase(cache_key);
     }
   }
 }
