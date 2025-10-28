@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    EntityEditorPanel.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements the EntityEditorPanel ImGui interface for runtime
+//          entity and component manipulation. Uses reflection to automatically
+//          generate component editor fields.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include <imgui.h>
 #include "EntityEditorPanel.h"
 #include "../Components/Components.h"
