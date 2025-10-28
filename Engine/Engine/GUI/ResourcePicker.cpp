@@ -143,7 +143,8 @@ namespace ResourcePicker {
 
         std::string button_id = "##tex_" + std::to_string(reinterpret_cast<uintptr_t>(texture.get()));
         if (ImGui::ImageButton(button_id.c_str(), tex_id, button_size)) {
-          selected_path = texture->path;
+          // We need to get relative path, because texture->path is absolute
+          selected_path = Engine::Resources::get_relative_path(texture->path);
           selection_made = true;
           ImGui::CloseCurrentPopup();
         }
