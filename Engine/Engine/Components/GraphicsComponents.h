@@ -171,14 +171,14 @@ namespace Components
       static Reflector reflect(const Font& font) {
         Reflector r;
         if (font.font_handle) {
-          r.path = Engine::Resources::get_relative_path(font.font_handle->path);
+          r.path = font.font_handle->path;
           r.font_size = font.font_handle->font_size;
         }
         return r;
       }
 
       static Font create(const Reflector& r) {
-        return Engine::Resources::load_font(r.path, r.font_size);
+        return Engine::Resources::load_font(r.path, r.font_size, false);
       }
     };
   };
