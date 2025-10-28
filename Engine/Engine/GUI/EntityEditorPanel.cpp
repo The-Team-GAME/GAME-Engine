@@ -17,20 +17,8 @@
 #include "EntityEditorPanel.h"
 #include "../Components/Components.h"
 
-bool EntityEditorPanelHelpers::render_generic_value_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value) {
-  bool modified = false;
-
-  if (display_name == "Components::Color") {
-    ImVec4 colorVec(field_value["r"].getDouble(), field_value["g"].getDouble(), field_value["b"].getDouble(), field_value["a"].getDouble());
-    if (ImGui::ColorEdit4("Color", (float*)&colorVec)) {
-      field_value["r"] = colorVec.x;
-      field_value["g"] = colorVec.y;
-      field_value["b"] = colorVec.z;
-      field_value["a"] = colorVec.w;
-      modified = true;
-    }
-  }
-  else if (field_value.isBool()) {
+bool EntityEditorPanelHelpers::render_generic(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified) {
+  if (field_value.isBool()) {
     bool val = field_value.getBool();
     if (ImGui::Checkbox(display_name.c_str(), &val)) {
       field_value = val;
@@ -64,7 +52,7 @@ bool EntityEditorPanelHelpers::render_generic_value_field(const std::string& dis
   else if (field_value.isObject()) {
     auto& nested_fields = field_value.getObject();
     for (auto& [nested_name, nested_value] : nested_fields) {
-      if (render_generic_value_field(display_name + "::" + nested_name, nested_value)) {
+      if (render_field(display_name + "::" + nested_name, nested_value)) {
         modified = true;
       }
     }
@@ -76,6 +64,36 @@ bool EntityEditorPanelHelpers::render_generic_value_field(const std::string& dis
       "Array editing not yet supported");
   }
 
+  // This should always return true, since we handled all generic 
+  return true;
+}
+
+bool EntityEditorPanelHelpers::render_specialized(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified) {
+  if (display_name == "Components::Color") {
+    ImVec4 colorVec(field_value["r"].getDouble(), field_value["g"].getDouble(), field_value["b"].getDouble(), field_value["a"].getDouble());
+    if (ImGui::ColorEdit4("Color", (float*)&colorVec)) {
+      field_value["r"] = colorVec.x;
+      field_value["g"] = colorVec.y;
+      field_value["b"] = colorVec.z;
+      field_value["a"] = colorVec.w;
+      modified = true;
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
+bool EntityEditorPanelHelpers::render_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value) {
+
+  bool modified = false;
+
+  // First try specialized rendering, then fallback to generic
+  if (render_specialized(display_name, field_value, modified) || render_generic(display_name, field_value, modified)) {
+    return modified;
+  }
+
   return modified;
 }
 
@@ -85,7 +103,7 @@ void EntityEditorPanelHelpers::render_component_from_generic(const std::string& 
     auto component_data = array->to_generic_value(entity.get_id());
     bool modified = false;
 
-    if (render_generic_value_field(component_name, component_data)) modified = true;
+    if (render_field(component_name, component_data)) modified = true;
 
     // Write back changes if modified
     if (modified) {
