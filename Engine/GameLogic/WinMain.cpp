@@ -17,6 +17,11 @@
 
 #include "../Engine/MonkeyEngine.h"
 #include "GameStates/ShowcaseState.h"
+#include "GameStates/BasicState.h"
+#include "GameStates/Rubric2500ParticlesState.h"
+#include "GameStates/RectPainterState.h"
+#include "GameStates/DevSpriteAnimationState.h"
+#include "GameStates/Documentation/PrefabsState.h"
 #include "GUI/StateChooser.h"
 #include <exception>
 #include <stdexcept>
@@ -45,8 +50,18 @@ int main()
     s32 win_width = Config::get_win_width();
     s32 win_height = Config::get_win_height();
 
+    Engine::SceneManager::register_scene<ShowcaseState>("ShowcaseState");
+    Engine::SceneManager::register_scene<RectPainterState>("RectPainterState");
+    Engine::SceneManager::register_scene<Rubric2500ParticlesState>("Rubric2500ParticlesState");
+    Engine::SceneManager::register_scene<BasicState>("BasicState");
+    Engine::SceneManager::register_scene<DevSpriteAnimationState>("DevSpriteAnimationState");
+    //Engine::SceneManager::register_scene<PrefabsState>("PrefabsState");
+
+
+
+
     // Start the engine
-    Engine::Core engine(win_width, win_height, "Monkey Stole My GPA", ShowcaseState::get());
+    Engine::Core engine(win_width, win_height, "Monkey Stole My GPA", "ShowcaseState");
     ImGuiManager::register_panel(StateChooserPanel);
     engine.run();
 

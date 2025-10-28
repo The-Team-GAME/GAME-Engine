@@ -37,33 +37,70 @@ inline void StateChooserPanel()
 {
   ImGui::Begin("State Chooser");
 
-  ImGui::Text("Current State: %s", typeid(*Engine::StateManager::get_current_state()).name());
+  std::string current_scene = Engine::SceneManager::get_current_scene_name();
+    ImGui::Text("Current State: %s", current_scene.c_str());
 
 
-  if (ImGui::Button("ShowcaseState"))
+   ImGui::Separator();
+  ImGui::Text("Available Scenes (%d):", (int)Engine::SceneManager::get_all_scene_names().size());
+  
+  // Get all registered scenes dynamically
+  auto scene_names = Engine::SceneManager::get_all_scene_names();
+  
+  // Loop through all scenes and create buttons
+  for (const auto& scene_name : scene_names) {
+    // Highlight current scene button
+    bool is_current = (scene_name == current_scene);
+    
+    if (is_current) {
+      ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.7f, 0.0f, 1.0f)); // Green
+      ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.8f, 0.0f, 1.0f));
+      ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 0.6f, 0.0f, 1.0f));
+    }
+    
+    // Create button for each scene
+    if (ImGui::Button(scene_name.c_str(), ImVec2(200, 0))) {
+      if (!is_current) { // Only switch if it's not the current scene
+        Engine::SceneManager::load_scene(scene_name);
+      }
+    }
+    
+    if (is_current) {
+      ImGui::PopStyleColor(3);
+      ImGui::SameLine();
+      ImGui::Text(" = Current");
+    }
+  }
+  
+  // Show helpful info
+  ImGui::Separator();
+  ImGui::TextDisabled("Scenes are loaded from SceneManager registry");
+
+
+ /* if (ImGui::Button("ShowcaseState"))
   {
-    Engine::StateManager::change_state(ShowcaseState::get());
+    Engine::SceneManager::load_scene("ShowcaseState");
   }
   if (ImGui::Button("RectPainterState"))
   {
-    Engine::StateManager::change_state(RectPainterState::get());
+    Engine::SceneManager::load_scene("RectPainterState");
   }
   if (ImGui::Button("Rubric2500ParticlesState"))
   {
-    Engine::StateManager::change_state(Rubric2500ParticlesState::get());
+    Engine::SceneManager::load_scene("Rubric2500ParticlesState");
   }
   if (ImGui::Button("BasicState"))
   {
-    Engine::StateManager::change_state(BasicState::get());
+    Engine::SceneManager::load_scene("BasicState");
   }
   if (ImGui::Button("DevSpriteAnimationState"))
   {
-    Engine::StateManager::change_state(DevSpriteAnimationState::get());
+    Engine::SceneManager::load_scene("DevSpriteAnimationState");
   }
   if (ImGui::Button("PrefabsState"))
   {
-    Engine::StateManager::change_state(PrefabsState::get());
-  }
+    Engine::SceneManager::load_scene("PrefabsState");
+  }*/
 
 
   ImGui::End();

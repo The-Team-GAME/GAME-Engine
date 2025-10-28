@@ -14,6 +14,7 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
+#include <string>
 
 // This will initialize most of the engine subsystems
 #include "Precompiled.h"
@@ -31,7 +32,7 @@ namespace Engine
     bool isRunning;
 
   public:
-    Core(s32 window_width, s32 window_height, const char* window_title, GameStateBase* initialState);
+    Core(s32 window_width, s32 window_height, const char* window_title, std::string first_scene);
     ~Core();
 
     void run();

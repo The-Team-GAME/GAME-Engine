@@ -17,7 +17,7 @@
 #include "Precompiled.h"
 #include <iostream>
 #include "FileHandler.h"
-#include "StateManager.h"
+#include "SceneManager.h"
 #include "ImGuiManager.h"
 #include "Time.h"
 #include "GUI/PerformanceViewer.h"
@@ -48,7 +48,7 @@ namespace Engine
   Constructor that initializes all engine subsystems including window, graphics,
   ImGui, audio, and the ECS World:: Loads configuration and sets up event listeners.
   ==================================================================================*/
-  Core::Core(s32 window_width, s32 window_height, const char* window_title, GameStateBase* initialState)
+  Core::Core(s32 window_width, s32 window_height, const char* window_title, std::string first_scene)
   {
     isRunning = true;
 
@@ -80,7 +80,7 @@ namespace Engine
       }
     );
 
-    StateManager::init(initialState);
+		SceneManager::load_scene(first_scene);
   }
 
   /*=================================================================================
@@ -158,7 +158,7 @@ namespace Engine
         if (shouldRunPhysics)
         {
           // Main gameloop here
-          StateManager::get_current_state()->update();
+          Engine::SceneManager::update();
           Engine::ECS::update();
         }
 
@@ -175,7 +175,7 @@ namespace Engine
 
       // Clear screen (automatically begins batch)
       // start of draw stuff
-      StateManager::get_current_state()->draw();
+      Engine::SceneManager::draw();
       Engine::ECS::draw();
 
       // end of draw stuff (flush remaining batches)
@@ -197,7 +197,7 @@ namespace Engine
   ==================================================================================*/
   Core::~Core()
   {
-    StateManager::exit();
+    Engine::SceneManager::cleanup();
     //Engine::ECS::remove_event_listener<WindowResizeEvent>();
     Engine::Audio::exit();
     Engine::Resources::exit();

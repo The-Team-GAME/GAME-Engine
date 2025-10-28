@@ -18,7 +18,7 @@
 #include "../../Engine/MonkeyEngine.h"
 #include <string>
 
-class DevSpriteAnimationState : public Engine::GameState<DevSpriteAnimationState> {
+class DevSpriteAnimationState : public Engine::Scene {
 private:
   Engine::ECS::Entity idle_lazy_monkey;
   Engine::ECS::Entity walk_lazy_monkey;
