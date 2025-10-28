@@ -86,12 +86,69 @@ void Timeline::draw() {
     ImVec2 incrementchange(5, 5);
 
     // --- Control buttons ---
+
+    //layer adding logic
     if (ImGui::Button("Add")) { //adds layer
       layers.push_back((int)layers.size());
     }
     ImGui::SameLine();
+
+    ImGui::SameLine();
     if (ImGui::Button("Remove") && !layers.empty() && layers.size() != 1) { //removes layer
-      layers.pop_back();
+
+      s32 layer_to_remove = (s32)layers.size() - 1; // Index of the layer about to be removed
+      bool clips_exist = false;
+
+      // Check for existing clips on the layer to remove
+      for (const auto& clip : clips) {
+        if (clip.layer == layer_to_remove) {
+          clips_exist = true;
+          break;
+        }
+      }
+
+      if (clips_exist) {
+        // --- Show Warning Modal ---
+        ImGui::OpenPopup("Confirm Layer Deletion");
+      }
+      else {
+        // No clips, safe to remove immediately
+        layers.pop_back();
+
+        // After removing the layer, adjust all remaining clip layers that were above it
+        // (Not needed if you only pop_back(), but good practice if removing a middle layer)
+      }
+    }
+
+    //  Layer removing logic
+    if (ImGui::BeginPopupModal("Confirm Layer Deletion", NULL, ImGuiWindowFlags_Modal | ImGuiWindowFlags_AlwaysAutoResize)) {
+      ImGui::Text("WARNING: Deleting this layer will remove all %d clips on it.",
+        std::count_if(clips.begin(), clips.end(), [&](const TimelineClip& c) {
+          return c.layer == (s32)layers.size() - 1;
+          }));
+      ImGui::Text("Are you sure you want to proceed?");
+
+      if (ImGui::Button("Yes, Delete All") && !layers.empty()) {
+        s32 layer_to_remove = (s32)layers.size() - 1;
+
+        // 1. Remove all clips associated with this layer
+        clips.erase(std::remove_if(clips.begin(), clips.end(),
+          [&](const TimelineClip& c) {
+            return c.layer == layer_to_remove;
+          }), clips.end());
+
+        // 2. Remove the layer itself
+        layers.pop_back();
+
+        // 3. Close the modal
+        ImGui::CloseCurrentPopup();
+      }
+
+      ImGui::SameLine();
+      if (ImGui::Button("Cancel")) {
+        ImGui::CloseCurrentPopup();
+      }
+      ImGui::EndPopup();
     }
 
 

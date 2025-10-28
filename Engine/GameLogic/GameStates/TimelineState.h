@@ -31,7 +31,9 @@ public:
 		//.add_component<Components::TextureAtlas>(banana.get_component<Components::Transform2D>()->scale.x, banana.get_component<Components::Transform2D>()->scale.y, 7.0f, 0.0f, 7);
 		/*.add_component<Components::RigidBody>();
 		banana.get_component<Components::RigidBody>()->angular_velocity = 10.0f;*/
-		bro.get_component<Components::Animation>()->isPlaying = true;
+
+		bro.get_component<Components::Animation>()->isPlaying = false; //for when the timeline wasnt controlling the frames(unused)
+
 		const s32 bro_layer = 0;
 		const s32 bro_start_frame = 10;
 		const s32 bro_duration = 60;
@@ -39,6 +41,7 @@ public:
 		//banana.get_component<Components::TextureAtlas>()->drawIndex = 1;
 		s32 bro_id = bro.get_id();
 		timeline.set_selected_entity_id(bro_id);
+		s32 bro_tex_id = 
 		entity_visibility[bro_id] = false;
 		timeline_entities.push_back(bro);
 
@@ -107,11 +110,31 @@ public:
 					entity_visibility[entity_id] = true;
 				}
 
-				// Optional: If you only have one clip per entity ID and you are
-				// ONLY checking existence, you could break here for that ID.
-				// But since multiple clips for one entity are possible (e.g., entity
-				// appears, disappears, reappears), it's safer to keep iterating
-				// to ensure all clips for all entities are checked.
+				Engine::ECS::Entity entity = Engine::ECS::get_entity(entity_id);
+
+				if (entity.has_component<Components::TextureAtlas>()) {
+					auto* atlas = entity.get_component<Components::TextureAtlas>();
+
+					size_t num_frames = atlas->subTextures.size();
+
+					if (num_frames > 0) {
+						// Frames passed since clip started (0-indexed)
+						s32 frames_in_clip = current_frame - clip.start_frame;
+
+						// Duration of the clip
+						s32 total_clip_duration = clip.duration_frames;
+
+						// Calculate which subTexture index to draw.
+						// This ensures the animation cycles smoothly across the clip's duration.
+						// E.g., if duration is 60 and frames is 7, each frame lasts ~8.57 timeline frames.
+
+						// Use integer division for clean frame progression
+						size_t frame_index = (size_t)std::floor((f32)frames_in_clip / total_clip_duration * num_frames);
+
+						// Clamp to the valid range [0, num_frames - 1]
+						atlas->drawIndex = std::min(frame_index, num_frames - 1);
+					}
+				}
 			}
 		}
 
