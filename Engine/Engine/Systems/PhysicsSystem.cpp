@@ -13,7 +13,6 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-
 #include "PhysicsSystem.h";
 
 using namespace Engine;
@@ -21,7 +20,7 @@ using namespace Systems;
 using phy2D = Physics2DSystem;
 
 phy2D::Physics2DSystem() {
-  require_components<Components::Transform2D, Components::RigidBody>();
+  require_components<Components::RigidBody, Components::BoxCollider>();
 }
 
 

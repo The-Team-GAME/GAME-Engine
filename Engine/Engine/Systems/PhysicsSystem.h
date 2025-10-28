@@ -25,7 +25,7 @@ namespace Engine {
   {
     class Physics2DSystem : public Engine::ECS::System {
     public:
-      Physics2DSystem();; // Default dtor that includes all the components needed for the entities called in the physics engine
+      Physics2DSystem(); // Default dtor that includes all the components needed for the entities called in the physics engine
 
       // Used to add forces to the rigid body
       void add_force(Components::RigidBody& rigid, Vec2D force);

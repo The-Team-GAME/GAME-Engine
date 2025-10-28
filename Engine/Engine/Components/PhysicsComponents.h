@@ -1,6 +1,5 @@
 #pragma once
 #include "../Math/Vector2D.h"
-#include "../typedef.h"
 
 using namespace Math;
 
@@ -8,24 +7,25 @@ namespace Components
 {
   enum Shapes {
     CIRCLE = 0,
-    RECT = 1
+    RECT = 1,
+    POLYGON = 2 // prayge we never use this
+  };
+
+  struct AABB {
+    Vec2D min; // Bottom left
+    Vec2D max; // Top right
+  };
+
+  struct Circle {
+    float radius = 1.0f;
+  };
+
+  struct Polygon {
+    std::vector<Math::Vec2D> vertices;
   };
   // https://docs.unity3d.com/ScriptReference/Rigidbody-isKinematic.html
-  /* Let the rigidbody take control and detect collisions. */
-  // rb.isKinematic = false;
-  // rb.detectCollisions = true;
-
-  /* Let animation control the rigidbody and ignore collisions. */
-  // rb.isKinematic = true;
-  // rb.detectCollisions = false;
-
-  /* Static body that is not affected by forces but will make other bodies react. (eg. static floor) */
-  // rb.isKinematic = true;
-  // rb.detectCollisions = true;
-
-  // Note to MX, feel free to change anything here im just adding this so all the demos work
-
   // https://docs.unity3d.com/ScriptReference/Rigidbody.html
+
   struct RigidBody {
     // Assume that position is the center point of the entity
     Vec2D curr_pos;
@@ -71,9 +71,11 @@ namespace Components
     f32 height;
     f32 radius;
     Shapes shape;
+    AABB aabb;
+    Polygon poly;
 
     BoxCollider(f32 width, f32 height) : width(width), height(height), shape(RECT)
-    { /* empty by design */ }
+    { /* calculate the aabb here */ }
 
     BoxCollider(f32 radius) : radius(radius), shape(CIRCLE)
     { /* empty by design */ }
