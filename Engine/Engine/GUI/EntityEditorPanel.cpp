@@ -21,10 +21,6 @@ bool EntityEditorPanelHelpers::render_generic_value_field(const std::string& dis
   bool modified = false;
 
   if (display_name == "Components::Color") {
-    /*Components::Color* colorComp = entity.get_component<Components::Color>();*/
-    //if (!colorComp) return false;
-
-
     ImVec4 colorVec(field_value["r"].getDouble(), field_value["g"].getDouble(), field_value["b"].getDouble(), field_value["a"].getDouble());
     if (ImGui::ColorEdit4("Color", (float*)&colorVec)) {
       field_value["r"] = colorVec.x;
@@ -66,16 +62,12 @@ bool EntityEditorPanelHelpers::render_generic_value_field(const std::string& dis
     }
   }
   else if (field_value.isObject()) {
-    // Recursively handle nested objects
-    //if (ImGui::TreeNode(display_name.c_str())) {
     auto& nested_fields = field_value.getObject();
     for (auto& [nested_name, nested_value] : nested_fields) {
       if (render_generic_value_field(display_name + "::" + nested_name, nested_value)) {
         modified = true;
       }
     }
-    /* ImGui::TreePop();
-   }*/
   }
   else if (field_value.isArray()) {
     ImGui::Text("%s: [Array with %zu elements]", display_name.c_str(),
@@ -90,40 +82,16 @@ bool EntityEditorPanelHelpers::render_generic_value_field(const std::string& dis
 void EntityEditorPanelHelpers::render_component_from_generic(const std::string& component_name, Engine::ECS::Entity& entity, Engine::ECS::IComponentArray* array)
 {
   if (ImGui::TreeNode(component_name.c_str())) {
-
-    //// Cache the component data (only fetch once per TreeNode open)
-    //static std::unordered_map<std::string, ReflectionLibrary::GenericValue> component_cache;
-    //std::string cache_key = std::to_string(entity.get_id()) + "_" + component_name;
-
-    //// Only fetch if not in cache or if this is a new frame
-    //if (component_cache.find(cache_key) == component_cache.end()) {
-    //  component_cache[cache_key] = array->to_generic_value(entity.get_id());
-    //}
-    //auto& component_data = component_cache[cache_key];
-
     auto component_data = array->to_generic_value(entity.get_id());
     bool modified = false;
 
-    // Render fields from GenericValue
-    /*if (component_data.isObject()) {
-      auto& fields = component_data.getObject();
-      for (auto& [field_name, field_value] : fields) {
-        if (render_generic_value_field(field_name, field_value)) {
-          modified = true;
-        }
-      }
-    }*/
-
-
     if (render_generic_value_field(component_name, component_data)) modified = true;
-
 
     // Write back changes if modified
     if (modified) {
       std::cout << "Component " << component_name << " modified on Entity "
         << entity.get_id() << std::endl;
       array->set_component_from_generic_value(entity.get_id(), component_data);
-      //component_cache[cache_key] = component_data;
     }
 
     ImGui::Separator();
@@ -133,17 +101,10 @@ void EntityEditorPanelHelpers::render_component_from_generic(const std::string& 
       auto& containers = Engine::ECS::Internal::get_containers();
       Engine::ECS::EntityID entityId = entity.get_id();
 
-      // Add to removal queue instead of removing immediately
       containers.components_to_remove.emplace_back(entityId, array->get_type_id());
     }
 
     ImGui::TreePop();
-  }
-  else {
-    // TreeNode is closed, clear cache for this component
-    //static std::unordered_map<std::string, ReflectionLibrary::GenericValue> component_cache;
-    //std::string cache_key = std::to_string(entity.get_id()) + "_" + component_name;
-    //component_cache.erase(cache_key);
   }
 }
 
