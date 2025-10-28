@@ -209,6 +209,9 @@ namespace ResourcePicker {
       // Get all loaded fonts
       auto fonts = get_all_loaded_fonts();
 
+      // Debug: Show count
+      ImGui::Text("Loaded fonts: %zu", fonts.size());
+
       if (fonts.empty()) {
         ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.0f, 1.0f), "No fonts loaded");
         ImGui::Separator();
@@ -230,6 +233,7 @@ namespace ResourcePicker {
       // Scrollable region for list
       ImGui::BeginChild("FontList", ImVec2(0, -30), true);
 
+      int rendered_count = 0;
       for (const auto& font : fonts) {
         // Extract filename from path for display
         std::filesystem::path fs_path(font->path);
@@ -244,10 +248,14 @@ namespace ResourcePicker {
           }
         }
 
+        rendered_count++;
+
         // Highlight if currently selected
         bool is_current = (font->path == current_path && font->font_size == static_cast<unsigned int>(current_size));
         if (is_current) {
           ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.6f, 1.0f, 0.8f));
+          ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.4f, 0.7f, 1.0f, 1.0f));
+          ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.8f, 1.0f, 1.0f));
         }
 
         std::string label = filename + " (" + std::to_string(font->font_size) + "px)";
@@ -261,7 +269,7 @@ namespace ResourcePicker {
         }
 
         if (is_current) {
-          ImGui::PopStyleColor();
+          ImGui::PopStyleColor(3);
         }
 
         // Tooltip with details
@@ -275,6 +283,9 @@ namespace ResourcePicker {
       }
 
       ImGui::EndChild();
+
+      // Debug: Show how many were rendered
+      ImGui::Text("Rendered: %d", rendered_count);
 
       ImGui::Separator();
       if (ImGui::Button("Close", ImVec2(120, 0))) {
