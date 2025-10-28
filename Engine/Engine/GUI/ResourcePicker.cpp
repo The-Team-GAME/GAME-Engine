@@ -71,6 +71,9 @@ namespace ResourcePicker {
       // Get all loaded textures
       auto textures = get_all_loaded_textures();
 
+      // Debug: Show count
+      ImGui::Text("Loaded textures: %zu", textures.size());
+
       if (textures.empty()) {
         ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.0f, 1.0f), "No textures loaded");
         ImGui::Separator();
@@ -93,6 +96,7 @@ namespace ResourcePicker {
       ImGui::BeginChild("TextureGrid", ImVec2(0, -30), true);
 
       int column = 0;
+      int rendered_count = 0;
       for (const auto& texture : textures) {
         // Extract filename from path for display and search
         std::filesystem::path fs_path(texture->path);
@@ -107,6 +111,7 @@ namespace ResourcePicker {
           }
         }
 
+        rendered_count++;
         ImGui::BeginGroup();
 
         // Highlight if currently selected
@@ -175,6 +180,9 @@ namespace ResourcePicker {
       }
 
       ImGui::EndChild();
+
+      // Debug: Show how many were rendered
+      ImGui::Text("Rendered: %d", rendered_count);
 
       ImGui::Separator();
       if (ImGui::Button("Close", ImVec2(120, 0))) {

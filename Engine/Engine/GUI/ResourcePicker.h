@@ -36,9 +36,9 @@ namespace ResourcePicker {
   Where to call it:
   After calling ImGui::OpenPopup() with matching popup_id.
   ==================================================================================*/
-  bool texture_picker_popup(const char* popup_id, std::string& selected_path, 
-                           const std::string& current_path = "",
-                           int grid_columns = 4, float preview_size = 64.0f);
+  bool texture_picker_popup(const char* popup_id, std::string& selected_path,
+    const std::string& current_path = "",
+    int grid_columns = 4, float preview_size = 64.0f);
 
   /*=================================================================================
   Function Brief:
@@ -55,9 +55,9 @@ namespace ResourcePicker {
   Where to call it:
   After calling ImGui::OpenPopup() with matching popup_id.
   ==================================================================================*/
-  bool font_picker_popup(const char* popup_id, std::string& selected_path, 
-                        int& selected_size, const std::string& current_path = "",
-                        int current_size = 0);
+  bool font_picker_popup(const char* popup_id, std::string& selected_path,
+    int& selected_size, const std::string& current_path = "",
+    int current_size = 0);
 
   /*=================================================================================
   Function Brief:

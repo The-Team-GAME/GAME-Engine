@@ -50,7 +50,7 @@ bool EntityEditorPanelHelpers::render_specialized(const std::string& display_nam
     if (!current_path.empty()) {
       auto texture = Engine::Resources::load_texture(current_path);
       if (texture && texture->id != 0) {
-        ImTextureID tex_id = texture->id;
+        ImTextureID tex_id = static_cast<ImTextureID>(texture->id);
         float preview_size = 128.0f;
         float aspect = static_cast<float>(texture->width) / static_cast<float>(texture->height);
         ImVec2 size;
