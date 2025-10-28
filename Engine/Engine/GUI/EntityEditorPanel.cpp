@@ -243,7 +243,7 @@ void EntityEditorPanel()
 
     ImGui::Separator();
 
-    // Edit Components Section - NOW FULLY AUTOMATIC!
+    // Edit Components Section
     if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
     {
       // Automatically iterate through ALL components the entity has
