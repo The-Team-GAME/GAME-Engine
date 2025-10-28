@@ -200,7 +200,7 @@ namespace ResourcePicker {
     int current_size) {
     bool selection_made = false;
 
-    ImGui::SetNextWindowSize(ImVec2(500, 400), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(600, 400), ImGuiCond_FirstUseEver);
 
     if (ImGui::BeginPopupModal(popup_id, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
       ImGui::Text("Select a Font");
@@ -230,10 +230,14 @@ namespace ResourcePicker {
 
       ImGui::Separator();
 
-      // Scrollable region for list
-      ImGui::BeginChild("FontList", ImVec2(0, -30), true);
+      // Scrollable region for grid
+      ImGui::BeginChild("FontGrid", ImVec2(0, -30), true);
 
+      int grid_columns = 4;
+      float preview_size = 64.0f;
+      int column = 0;
       int rendered_count = 0;
+
       for (const auto& font : fonts) {
         // Extract filename from path for display
         std::filesystem::path fs_path(font->path);
@@ -249,6 +253,7 @@ namespace ResourcePicker {
         }
 
         rendered_count++;
+        ImGui::BeginGroup();
 
         // Highlight if currently selected
         bool is_current = (font->path == current_path && font->font_size == static_cast<unsigned int>(current_size));
@@ -258,10 +263,27 @@ namespace ResourcePicker {
           ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.8f, 1.0f, 1.0f));
         }
 
-        std::string label = filename + " (" + std::to_string(font->font_size) + "px)";
-        std::string button_id = label + "##font_" + std::to_string(reinterpret_cast<uintptr_t>(font.get()));
+        // Font atlas preview button
+        ImTextureID tex_id = font->texture_atlas.id;
 
-        if (ImGui::Button(button_id.c_str(), ImVec2(-1, 0))) {
+        // Calculate aspect ratio for preview
+        float aspect = static_cast<float>(font->texture_atlas.width) / static_cast<float>(font->texture_atlas.height);
+        ImVec2 button_size;
+        if (aspect > 1.0f) {
+          button_size = ImVec2(preview_size, preview_size / aspect);
+        }
+        else {
+          button_size = ImVec2(preview_size * aspect, preview_size);
+        }
+
+        // Center the image in the preview area
+        float offset_x = (preview_size - button_size.x) * 0.5f;
+        float offset_y = (preview_size - button_size.y) * 0.5f;
+        if (offset_x > 0) ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset_x);
+        if (offset_y > 0) ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset_y);
+
+        std::string button_id = "##font_" + std::to_string(reinterpret_cast<uintptr_t>(font.get()));
+        if (ImGui::ImageButton(button_id.c_str(), tex_id, button_size)) {
           selected_path = font->path;
           selected_size = font->font_size;
           selection_made = true;
@@ -275,10 +297,28 @@ namespace ResourcePicker {
         // Tooltip with details
         if (ImGui::IsItemHovered()) {
           ImGui::BeginTooltip();
-          ImGui::Text("Font: %s", filename.c_str());
+          ImGui::Text("%s", filename.c_str());
           ImGui::Text("Size: %dpx", font->font_size);
+          ImGui::Text("Atlas: %dx%d", font->texture_atlas.width, font->texture_atlas.height);
           ImGui::Text("Path: %s", font->path.c_str());
           ImGui::EndTooltip();
+        }
+
+        // Label under preview
+        ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + preview_size);
+        ImGui::TextWrapped("%s", filename.c_str());
+        ImGui::PopTextWrapPos();
+        ImGui::Text("%dpx", font->font_size);
+
+        ImGui::EndGroup();
+
+        // Grid layout
+        column++;
+        if (column < grid_columns) {
+          ImGui::SameLine();
+        }
+        else {
+          column = 0;
         }
       }
 
