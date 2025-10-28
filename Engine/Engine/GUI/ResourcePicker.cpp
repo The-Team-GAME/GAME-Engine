@@ -261,31 +261,75 @@ namespace ResourcePicker {
           ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.8f, 1.0f, 1.0f));
         }
 
-        // Font atlas preview button
-        ImTextureID tex_id = font->texture_atlas.id;
-
-        // Calculate aspect ratio for preview
-        float aspect = static_cast<float>(font->texture_atlas.width) / static_cast<float>(font->texture_atlas.height);
-        ImVec2 button_size;
-        if (aspect > 1.0f) {
-          button_size = ImVec2(preview_size, preview_size / aspect);
-        }
-        else {
-          button_size = ImVec2(preview_size * aspect, preview_size);
-        }
-
-        // Center the image in the preview area
-        float offset_x = (preview_size - button_size.x) * 0.5f;
-        float offset_y = (preview_size - button_size.y) * 0.5f;
-        if (offset_x > 0) ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset_x);
-        if (offset_y > 0) ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset_y);
-
+        // Create a button with "ABC" text preview using the actual font
         std::string button_id = "##font_" + std::to_string(reinterpret_cast<uintptr_t>(font.get()));
-        if (ImGui::ImageButton(button_id.c_str(), tex_id, button_size)) {
+        ImVec2 button_size(preview_size, preview_size);
+
+        // Draw button background
+        ImVec2 button_pos = ImGui::GetCursorScreenPos();
+        if (ImGui::InvisibleButton(button_id.c_str(), button_size)) {
           selected_path = font->path;
           selected_size = font->font_size;
           selection_made = true;
           ImGui::CloseCurrentPopup();
+        }
+
+        // Draw "ABC" text centered in the button using the font's texture atlas
+        ImDrawList* draw_list = ImGui::GetWindowDrawList();
+        
+        // Calculate scale factor to fit text in preview
+        float base_char_height = static_cast<float>(font->font_size);
+        float base_char_width = base_char_height * 0.6f; // Approximate width per character
+        float base_total_width = base_char_width * 3; // "ABC" = 3 characters
+        
+        // Scale down if necessary to fit in preview (with some padding)
+        float max_preview_dimension = preview_size * 0.8f; // Use 80% of preview size for padding
+        float scale = 1.0f;
+        if (base_char_height > max_preview_dimension || base_total_width > max_preview_dimension) {
+          float height_scale = max_preview_dimension / base_char_height;
+          float width_scale = max_preview_dimension / base_total_width;
+          scale = std::min(height_scale, width_scale);
+        }
+        
+        float char_height = base_char_height * scale;
+        float total_width = base_total_width * scale;
+        
+        // Center the text
+        ImVec2 text_pos = ImVec2(
+          button_pos.x + (preview_size - total_width) * 0.5f,
+          button_pos.y + (preview_size - char_height) * 0.5f
+        );
+
+        // Draw "ABC" using individual glyphs from the font
+        const char* preview_text = "ABC";
+        float cursor_x = text_pos.x;
+        for (int i = 0; preview_text[i] != '\0'; ++i) {
+          auto glyph_it = font->glyphs.find(preview_text[i]);
+          if (glyph_it != font->glyphs.end()) {
+            const auto& glyph = glyph_it->second;
+
+            // Calculate glyph position and size with scaling
+            ImVec2 glyph_pos(
+              cursor_x + glyph.bearing.x * scale,
+              text_pos.y + (char_height - glyph.bearing.y * scale)
+            );
+            ImVec2 glyph_size(
+              static_cast<float>(glyph.size.x) * scale,
+              static_cast<float>(glyph.size.y) * scale
+            );
+
+            // Draw the glyph
+            draw_list->AddImage(
+              (ImTextureID)(intptr_t)font->texture_atlas.id,
+              glyph_pos,
+              ImVec2(glyph_pos.x + glyph_size.x, glyph_pos.y + glyph_size.y),
+              ImVec2(glyph.tex_coords[3].x, glyph.tex_coords[3].y), // top-left
+              ImVec2(glyph.tex_coords[1].x, glyph.tex_coords[1].y), // bottom-right
+              IM_COL32(255, 255, 255, 255)
+            );
+
+            cursor_x += (glyph.advance >> 6) * scale; // Advance is in 1/64 pixels, scaled
+          }
         }
 
         if (is_current) {
