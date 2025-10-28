@@ -25,13 +25,13 @@ namespace Components
       static Reflector reflect(const Texture& tex) {
         Reflector r;
         if (tex.texture_handle) {
-          r.path = Engine::Resources::get_relative_path(tex.texture_handle->path);
+          r.path = tex.texture_handle->path;
         }
         return r;
       }
 
       static Texture create(const Reflector& r) {
-        return Engine::Resources::load_texture(r.path);
+        return Engine::Resources::load_texture(r.path, false);
       }
     };
   };
