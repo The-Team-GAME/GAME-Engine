@@ -95,6 +95,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="Engine\ECS\WorldData.cpp" />
     <ClCompile Include="Engine\EventManager\EventManager.cpp" />
     <ClCompile Include="Engine\FileIO\PrefabsFileIO.cpp" />
+    <ClCompile Include="Engine\GUI\EntityEditorPanel.cpp" />
     <ClCompile Include="GameLogic\GameStates\BasicState.cpp" />
     <ClCompile Include="GameLogic\GameStates\BasicState.h" />
     <ClCompile Include="Engine\Core.cpp" />
