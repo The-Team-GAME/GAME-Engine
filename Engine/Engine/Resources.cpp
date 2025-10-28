@@ -78,10 +78,10 @@ std::string Engine::Resources::get_relative_path(const std::string& full_path)
   return full_path;
 }
 
-Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& filepath)
+Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& filepath, bool append_resource_path)
 {
   // Construct full path
-  std::string full_path = resource_path + filepath;
+  std::string full_path = append_resource_path ? resource_path + filepath : filepath;
 
   // Check if texture is already in cache (use full path for cache key)
   auto it = texture_cache.find(full_path);
@@ -117,10 +117,10 @@ Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& fil
   return texture;
 }
 
-Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath, u32 size)
+Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath, u32 size, bool append_resource_path)
 {
   // Construct full path
-  std::string full_path = resource_path + filepath;
+  std::string full_path = append_resource_path ? resource_path + filepath : filepath;
 
   // Create a unique key combining filepath and size
   std::string cache_key = full_path + "_" + std::to_string(size);
@@ -152,9 +152,9 @@ Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath,
   return font;
 }
 
-Engine::Audio::Sound Engine::Resources::load_sound(const std::string& filepath)
+Engine::Audio::Sound Engine::Resources::load_sound(const std::string& filepath, bool append_resource_path)
 {
-  std::string full_path = resource_path + filepath;
+  std::string full_path = append_resource_path ? resource_path + filepath : filepath;
 
   // Check if sound is already in cache
   auto it = sound_cache.find(full_path);
@@ -190,9 +190,9 @@ Engine::Audio::Sound Engine::Resources::load_sound(const std::string& filepath)
   return sound;
 }
 
-Engine::Audio::Sound Engine::Resources::load_music(const std::string& filepath)
+Engine::Audio::Sound Engine::Resources::load_music(const std::string& filepath, bool append_resource_path)
 {
-  std::string full_path = resource_path + filepath;
+  std::string full_path = append_resource_path ? resource_path + filepath : filepath;
 
   // Check if music is already in cache
   auto it = sound_cache.find(full_path);
@@ -233,10 +233,10 @@ Engine::Graphics::Texture Engine::Resources::get_rect_texture()
   return unit_rect;
 }
 
-Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath)
+Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, bool append_resource_path)
 {
   // Construct full path
-  std::string full_path = resource_path + filepath;
+  std::string full_path = append_resource_path ? resource_path + filepath : filepath;
 
   // Check if prefab is already in cache
   auto it = prefab_cache.find(full_path);
@@ -284,10 +284,10 @@ Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath)
   return prefab;
 }
 
-bool Engine::Resources::save_prefab(const std::string& filepath, const Engine::ECS::Prefab& prefab)
+bool Engine::Resources::save_prefab(const std::string& filepath, const Engine::ECS::Prefab& prefab, bool append_resource_path)
 {
   // Construct full path
-  std::string full_path = resource_path + filepath;
+  std::string full_path = append_resource_path ? resource_path + filepath : filepath;
 
   // Serialize prefab to JSON
   std::string json_content = Engine::FileIO::serialize_prefab_to_json(prefab);
