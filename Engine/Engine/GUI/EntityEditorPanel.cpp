@@ -20,7 +20,12 @@
 
 bool EntityEditorPanelHelpers::render_specialized(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified) {
   if (display_name == "Components::Color") {
-    ImVec4 colorVec(field_value["r"].getDouble(), field_value["g"].getDouble(), field_value["b"].getDouble(), field_value["a"].getDouble());
+    ImVec4 colorVec(
+      static_cast<float>(field_value["r"].getDouble()),
+      static_cast<float>(field_value["g"].getDouble()),
+      static_cast<float>(field_value["b"].getDouble()),
+      static_cast<float>(field_value["a"].getDouble())
+    );
     if (ImGui::ColorEdit4("Color", (float*)&colorVec)) {
       field_value["r"] = colorVec.x;
       field_value["g"] = colorVec.y;
