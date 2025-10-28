@@ -31,7 +31,7 @@ namespace Engine
     bool isRunning;
 
   public:
-    Core(s32 window_width, s32 window_height, const char* window_title, GameStateBase* initialState);
+    Core(GameStateBase* initialState);
     ~Core();
 
     void run();

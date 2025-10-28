@@ -23,3 +23,4 @@
 #include "Reflection/ReflectionLibrary.h"
 #include "ImGuiManager.h"
 #include "EventManager/EventManager.h"
+#include "FileIO/PrefabsFileIO.h"

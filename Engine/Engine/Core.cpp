@@ -34,6 +34,8 @@
 #include "Events/WindowEvents.h"
 #include "Systems/Systems.h"
 #include "EventManager/EventManager.h"
+#include "FileIO/EngineSettings.h"
+#include "FileIO/UserSettings.h"
 
 namespace {
   f64 accumulator{};
@@ -49,11 +51,24 @@ namespace Engine
   Constructor that initializes all engine subsystems including window, graphics,
   ImGui, audio, and the ECS World:: Loads configuration and sets up event listeners.
   ==================================================================================*/
-  Core::Core(s32 window_width, s32 window_height, const char* window_title, GameStateBase* initialState)
+  Core::Core(GameStateBase* initialState)
   {
     isRunning = true;
 
-    WindowManager::init(window_width, window_height, window_title);
+    // Load engine settings
+    if (!FileIO::load_engine_settings("Assets/settings/engine_settings.json")) {
+      Log::warning("Failed to load engine settings, using defaults");
+    }
+
+    // Load user settings
+    if (!FileIO::load_user_settings("Assets/settings/user_settings.json")) {
+      Log::warning("Failed to load user settings, using defaults");
+    }
+
+    const auto& engine_settings = FileIO::get_engine_settings();
+    const auto& user_settings = FileIO::get_user_settings();
+
+    WindowManager::init(user_settings.window_width, user_settings.window_height, engine_settings.window_title);
 
     ImGuiManager::init();
 
@@ -72,7 +87,7 @@ namespace Engine
       throw std::runtime_error("Failed to initialize audio manager");
     }
 
-    Engine::Graphics::set_viewport({ 0, 0, window_width, window_height });
+    Engine::Graphics::set_viewport({ 0, 0, user_settings.window_width, user_settings.window_height });
 
     // Register the graphics resize system 
     Engine::EventManager::add_event_listener<Engine::Events::WindowResizeEvent>([](const Engine::Events::WindowResizeEvent& event)

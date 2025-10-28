@@ -20,6 +20,7 @@
 #include "ComponentArray.h"
 #include "Entity.h"
 #include "System.h"
+#include "WorldData.h"
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
@@ -420,13 +421,6 @@ namespace Engine {
     // =============== */
     namespace Internal
     {
-      extern EntityID next_entity_id;
-      extern std::unordered_set<EntityID> active_entities;
-      extern std::unordered_set<EntityID> entities_to_destroy;
-      extern std::unordered_map<EntityID, ComponentSignature> entity_signatures;
-      extern std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> component_arrays;
-      extern std::vector<std::unique_ptr<System>> systems;
-
       /*=================================================================================
       Function Brief:
       Internal function called when an entity's components change. Updates system

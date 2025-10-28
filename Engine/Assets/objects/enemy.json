@@ -1,9 +1,0 @@
-{
-  "entity": {
-    "id": "enemy",
-    "width": 150,
-    "height": 210,
-    "texturePath": "images/monkey.png",
-    "textureFilter": 0
-  }
-}

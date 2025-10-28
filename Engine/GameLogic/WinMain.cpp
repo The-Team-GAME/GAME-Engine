@@ -17,11 +17,8 @@
 
 #include "../Engine/MonkeyEngine.h"
 #include "GameStates/MainMenuState.h"
-#include "GameStates/Dev/PhysicsTestState.h"
 #include "GUI/StateChooser.h"
 #include <exception>
-#include <stdexcept>
-#include "Config.h"
 
 /*=================================================================================
 Function Brief:
@@ -41,19 +38,10 @@ int main()
 
   try
   {
-
-    Config::load_config();
-    s32 win_width = Config::get_win_width();
-    s32 win_height = Config::get_win_height();
-
     // Start the engine
-    Engine::Core engine(win_width, win_height, "Monkey Stole My GPA", MainMenuState::get());
-    Engine::Core engine(win_width, win_height, "Monkey Stole My GPA", PhysicsTestState::get());
+    Engine::Core engine(MainMenuState::get());
     ImGuiManager::register_panel(StateChooserPanel);
     engine.run();
-
-    FileHandler::clear_json();
-
   }
   catch (const std::exception& e)
   {
