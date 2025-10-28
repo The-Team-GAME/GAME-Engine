@@ -17,6 +17,7 @@
 #include "../Resources.h"
 #include <algorithm>
 #include <filesystem>
+#include <cctype>
 
 namespace ResourcePicker {
 
@@ -88,7 +89,8 @@ namespace ResourcePicker {
       static char search_buffer[256] = "";
       ImGui::InputText("Search", search_buffer, sizeof(search_buffer));
       std::string search_str(search_buffer);
-      std::transform(search_str.begin(), search_str.end(), search_str.begin(), ::tolower);
+      std::transform(search_str.begin(), search_str.end(), search_str.begin(),
+        [](char c) { return static_cast<char>(std::tolower(static_cast<int>(c))); });
 
       ImGui::Separator();
 
@@ -105,7 +107,8 @@ namespace ResourcePicker {
         // Filter by search
         if (!search_str.empty()) {
           std::string path_lower = texture->path;
-          std::transform(path_lower.begin(), path_lower.end(), path_lower.begin(), ::tolower);
+          std::transform(path_lower.begin(), path_lower.end(), path_lower.begin(),
+            [](char c) { return static_cast<char>(std::tolower(static_cast<int>(c))); });
           if (path_lower.find(search_str) == std::string::npos) {
             continue;
           }
@@ -226,7 +229,8 @@ namespace ResourcePicker {
       static char search_buffer[256] = "";
       ImGui::InputText("Search", search_buffer, sizeof(search_buffer));
       std::string search_str(search_buffer);
-      std::transform(search_str.begin(), search_str.end(), search_str.begin(), ::tolower);
+      std::transform(search_str.begin(), search_str.end(), search_str.begin(),
+        [](char c) { return static_cast<char>(std::tolower(static_cast<int>(c))); });
 
       ImGui::Separator();
 
@@ -244,7 +248,8 @@ namespace ResourcePicker {
         // Filter by search
         if (!search_str.empty()) {
           std::string path_lower = font->path;
-          std::transform(path_lower.begin(), path_lower.end(), path_lower.begin(), ::tolower);
+          std::transform(path_lower.begin(), path_lower.end(), path_lower.begin(),
+            [](char c) { return static_cast<char>(std::tolower(static_cast<int>(c))); });
           if (path_lower.find(search_str) == std::string::npos) {
             continue;
           }
@@ -276,12 +281,12 @@ namespace ResourcePicker {
 
         // Draw "ABC" text centered in the button using the font's texture atlas
         ImDrawList* draw_list = ImGui::GetWindowDrawList();
-        
+
         // Calculate scale factor to fit text in preview
         float base_char_height = static_cast<float>(font->font_size);
         float base_char_width = base_char_height * 0.6f; // Approximate width per character
         float base_total_width = base_char_width * 3; // "ABC" = 3 characters
-        
+
         // Scale down if necessary to fit in preview (with some padding)
         float max_preview_dimension = preview_size * 0.8f; // Use 80% of preview size for padding
         float scale = 1.0f;
@@ -290,10 +295,10 @@ namespace ResourcePicker {
           float width_scale = max_preview_dimension / base_total_width;
           scale = std::min(height_scale, width_scale);
         }
-        
+
         float char_height = base_char_height * scale;
         float total_width = base_total_width * scale;
-        
+
         // Center the text
         ImVec2 text_pos = ImVec2(
           button_pos.x + (preview_size - total_width) * 0.5f,
