@@ -15,6 +15,8 @@
 //-----------------------------------------------------------------------------------
 #include <imgui.h>
 #include "EntityEditorPanel.h"
+#include "ResourcePicker.h"
+#include "../Resources.h"
 
 bool EntityEditorPanelHelpers::render_specialized(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified) {
   if (display_name == "Components::Color") {
@@ -25,6 +27,144 @@ bool EntityEditorPanelHelpers::render_specialized(const std::string& display_nam
       field_value["b"] = colorVec.z;
       field_value["a"] = colorVec.w;
       modified = true;
+    }
+
+    return true;
+  }
+
+  if (display_name == "Components::Texture") {
+    // Get current texture path
+    std::string current_path = field_value["path"].isString() ? field_value["path"].getString() : "";
+
+    // Display current texture info
+    ImGui::Text("Texture Path:");
+    ImGui::SameLine();
+    if (current_path.empty()) {
+      ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "<None>");
+    }
+    else {
+      ImGui::TextWrapped("%s", current_path.c_str());
+    }
+
+    // Preview current texture
+    if (!current_path.empty()) {
+      auto texture = Engine::Resources::load_texture(current_path);
+      if (texture && texture->id != 0) {
+        ImTextureID tex_id = texture->id;
+        float preview_size = 128.0f;
+        float aspect = static_cast<float>(texture->width) / static_cast<float>(texture->height);
+        ImVec2 size;
+        if (aspect > 1.0f) {
+          size = ImVec2(preview_size, preview_size / aspect);
+        }
+        else {
+          size = ImVec2(preview_size * aspect, preview_size);
+        }
+        ImGui::Image(tex_id, size);
+        ImGui::Text("Size: %dx%d", texture->width, texture->height);
+      }
+    }
+
+    // Button to open texture picker
+    static std::string pending_texture_path;
+    static bool show_texture_picker = false;
+
+    if (ImGui::Button("Select Texture...")) {
+      pending_texture_path = current_path;
+      show_texture_picker = true;
+      ImGui::OpenPopup("TexturePicker");
+    }
+
+    // Clear texture button
+    if (!current_path.empty()) {
+      ImGui::SameLine();
+      if (ImGui::Button("Clear")) {
+        field_value["path"] = std::string("");
+        modified = true;
+      }
+    }
+
+    // Show texture picker popup
+    if (show_texture_picker) {
+      if (ResourcePicker::texture_picker_popup("TexturePicker", pending_texture_path, current_path)) {
+        field_value["path"] = pending_texture_path;
+        modified = true;
+        show_texture_picker = false;
+      }
+
+      // Check if popup was closed without selection
+      if (!ImGui::IsPopupOpen("TexturePicker")) {
+        show_texture_picker = false;
+      }
+    }
+
+    return true;
+  }
+
+  if (display_name == "Components::Font") {
+    // Get current font path and size
+    std::string current_path = field_value["path"].isString() ? field_value["path"].getString() : "";
+    int current_size = field_value["font_size"].isInt() ? static_cast<int>(field_value["font_size"].getInt()) : 0;
+
+    // Display current font info
+    ImGui::Text("Font Path:");
+    ImGui::SameLine();
+    if (current_path.empty()) {
+      ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "<None>");
+    }
+    else {
+      ImGui::TextWrapped("%s", current_path.c_str());
+    }
+
+    ImGui::Text("Font Size:");
+    ImGui::SameLine();
+    ImGui::Text("%dpx", current_size);
+
+    // Manual font size input
+    int new_size = current_size;
+    if (ImGui::DragInt("Size##FontSize", &new_size, 1.0f, 1, 200)) {
+      if (new_size > 0) {
+        field_value["font_size"] = static_cast<ReflectionLibrary::Integer>(new_size);
+        modified = true;
+      }
+    }
+
+    // Button to open font picker
+    static std::string pending_font_path;
+    static int pending_font_size = 0;
+    static bool show_font_picker = false;
+
+    if (ImGui::Button("Select Font...")) {
+      pending_font_path = current_path;
+      pending_font_size = current_size;
+      show_font_picker = true;
+      ImGui::OpenPopup("FontPicker");
+    }
+
+    // Clear font button
+    if (!current_path.empty()) {
+      ImGui::SameLine();
+      if (ImGui::Button("Clear")) {
+        field_value["path"] = std::string("");
+        field_value["font_size"] = static_cast<ReflectionLibrary::Integer>(0);
+        modified = true;
+      }
+    }
+
+    // Show font picker popup
+    if (show_font_picker) {
+      if (ResourcePicker::font_picker_popup("FontPicker", pending_font_path, pending_font_size,
+        current_path, current_size)) {
+        field_value["path"] = pending_font_path;
+        field_value["font_size"] = static_cast<ReflectionLibrary::Integer>(pending_font_size);
+        modified = true;
+        show_font_picker = false;
+      }
+
+      // Check if popup was closed without selection
+      if (!ImGui::IsPopupOpen("FontPicker")) {
+        show_font_picker = false;
+      }
     }
 
     return true;
