@@ -51,13 +51,15 @@ namespace ResourcePicker {
   selected_size  - [out] Size of selected font (if function returns true)
   current_path   - Currently selected font path (for highlighting)
   current_size   - Currently selected font size (for highlighting)
+  grid_columns   - Number of columns in the preview grid
+  preview_size   - Size of each font atlas preview thumbnail
 
   Where to call it:
   After calling ImGui::OpenPopup() with matching popup_id.
   ==================================================================================*/
   bool font_picker_popup(const char* popup_id, std::string& selected_path,
     int& selected_size, const std::string& current_path = "",
-    int current_size = 0);
+    int current_size = 0, int grid_columns = 4, float preview_size = 64.0f);
 
   /*=================================================================================
   Function Brief:

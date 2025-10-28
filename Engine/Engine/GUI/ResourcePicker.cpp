@@ -197,7 +197,7 @@ namespace ResourcePicker {
 
   bool font_picker_popup(const char* popup_id, std::string& selected_path,
     int& selected_size, const std::string& current_path,
-    int current_size) {
+    int current_size, int grid_columns, float preview_size) {
     bool selection_made = false;
 
     ImGui::SetNextWindowSize(ImVec2(600, 400), ImGuiCond_FirstUseEver);
@@ -233,8 +233,6 @@ namespace ResourcePicker {
       // Scrollable region for grid
       ImGui::BeginChild("FontGrid", ImVec2(0, -30), true);
 
-      int grid_columns = 4;
-      float preview_size = 64.0f;
       int column = 0;
       int rendered_count = 0;
 
