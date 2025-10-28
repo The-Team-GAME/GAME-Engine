@@ -76,9 +76,13 @@ namespace ReflectionLibrary
 
     // Getters
     Boolean getBool() const;
+    Boolean& getBool();
     Integer getInt() const;
+    Integer& getInt();
     Double getDouble() const;
+    Double& getDouble();
     const String& getString() const;
+    String& getString();
     const Array& getArray() const;
     Array& getArray();
     const Object& getObject() const;
@@ -132,8 +136,11 @@ namespace ReflectionLibrary
 
     // Getters with type checking
     Boolean getBool() const;
+    Boolean& getBool();
     Integer getInt() const;
+    Integer& getInt();
     Double getDouble() const;
+    Double& getDouble();
     const String& getString() const;
     String& getString();
     const Array& getArray() const;

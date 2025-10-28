@@ -222,9 +222,13 @@ namespace ReflectionLibrary
 
   // Getters through proxy
   inline Boolean GenericValueProxy::getBool() const { return get().getBool(); }
+  inline Boolean& GenericValueProxy::getBool() { return get_writable().getBool(); }
   inline Integer GenericValueProxy::getInt() const { return get().getInt(); }
+  inline Integer& GenericValueProxy::getInt() { return get_writable().getInt(); }
   inline Double GenericValueProxy::getDouble() const { return get().getDouble(); }
+  inline Double& GenericValueProxy::getDouble() { return get_writable().getDouble(); }
   inline const String& GenericValueProxy::getString() const { return get().getString(); }
+  inline String& GenericValueProxy::getString() { return get_writable().getString(); }
   inline const Array& GenericValueProxy::getArray() const { return get().getArray(); }
   inline Array& GenericValueProxy::getArray() { return get_writable().getArray(); }
   inline const Object& GenericValueProxy::getObject() const { return get().getObject(); }
@@ -265,6 +269,13 @@ namespace ReflectionLibrary
     return std::get<Boolean>(data_);
   }
 
+  inline Boolean& GenericValue::getBool()
+  {
+    if (!isBool())
+      throw std::runtime_error("GenericValue is not a boolean");
+    return std::get<Boolean>(data_);
+  }
+
   inline Integer GenericValue::getInt() const
   {
     if (!isInt())
@@ -272,7 +283,21 @@ namespace ReflectionLibrary
     return std::get<Integer>(data_);
   }
 
+  inline Integer& GenericValue::getInt()
+  {
+    if (!isInt())
+      throw std::runtime_error("GenericValue is not an integer");
+    return std::get<Integer>(data_);
+  }
+
   inline Double GenericValue::getDouble() const
+  {
+    if (!isDouble())
+      throw std::runtime_error("GenericValue is not a double");
+    return std::get<Double>(data_);
+  }
+
+  inline Double& GenericValue::getDouble()
   {
     if (!isDouble())
       throw std::runtime_error("GenericValue is not a double");

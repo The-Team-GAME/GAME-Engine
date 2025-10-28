@@ -20,7 +20,21 @@
 bool EntityEditorPanelHelpers::render_generic_value_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value) {
   bool modified = false;
 
-  if (field_value.isBool()) {
+  if (display_name == "Components::Color") {
+    /*Components::Color* colorComp = entity.get_component<Components::Color>();*/
+    //if (!colorComp) return false;
+
+
+    ImVec4 colorVec(field_value["r"].getDouble(), field_value["g"].getDouble(), field_value["b"].getDouble(), field_value["a"].getDouble());
+    if (ImGui::ColorEdit4("Color", (float*)&colorVec)) {
+      field_value["r"] = colorVec.x;
+      field_value["g"] = colorVec.y;
+      field_value["b"] = colorVec.z;
+      field_value["a"] = colorVec.w;
+      modified = true;
+    }
+  }
+  else if (field_value.isBool()) {
     bool val = field_value.getBool();
     if (ImGui::Checkbox(display_name.c_str(), &val)) {
       field_value = val;
@@ -53,15 +67,15 @@ bool EntityEditorPanelHelpers::render_generic_value_field(const std::string& dis
   }
   else if (field_value.isObject()) {
     // Recursively handle nested objects
-    if (ImGui::TreeNode(display_name.c_str())) {
-      auto& nested_fields = field_value.getObject();
-      for (auto& [nested_name, nested_value] : nested_fields) {
-        if (render_generic_value_field(nested_name, nested_value)) {
-          modified = true;
-        }
+    //if (ImGui::TreeNode(display_name.c_str())) {
+    auto& nested_fields = field_value.getObject();
+    for (auto& [nested_name, nested_value] : nested_fields) {
+      if (render_generic_value_field(display_name + "::" + nested_name, nested_value)) {
+        modified = true;
       }
-      ImGui::TreePop();
     }
+    /* ImGui::TreePop();
+   }*/
   }
   else if (field_value.isArray()) {
     ImGui::Text("%s: [Array with %zu elements]", display_name.c_str(),
@@ -73,25 +87,7 @@ bool EntityEditorPanelHelpers::render_generic_value_field(const std::string& dis
   return modified;
 }
 
-bool EntityEditorPanelHelpers::render_component_from_generic_specialized(const std::string& component_name, Engine::ECS::Entity& entity)
-{
-  if (component_name == "Components::Color") {
-    Components::Color* colorComp = entity.get_component<Components::Color>();
-    if (!colorComp) return false;
-
-    ImVec4 colorVec(colorComp->r, colorComp->g, colorComp->b, colorComp->a);
-    if (ImGui::ColorEdit4("Color", (float*)&colorVec)) {
-      colorComp->r = colorVec.x;
-      colorComp->g = colorVec.y;
-      colorComp->b = colorVec.z;
-      colorComp->a = colorVec.w;
-    }
-    return true;
-  }
-  return false;
-}
-
-bool EntityEditorPanelHelpers::render_component_from_generic(const std::string& component_name, Engine::ECS::Entity& entity, Engine::ECS::IComponentArray* array)
+void EntityEditorPanelHelpers::render_component_from_generic(const std::string& component_name, Engine::ECS::Entity& entity, Engine::ECS::IComponentArray* array)
 {
   if (ImGui::TreeNode(component_name.c_str())) {
 
@@ -109,14 +105,18 @@ bool EntityEditorPanelHelpers::render_component_from_generic(const std::string& 
     bool modified = false;
 
     // Render fields from GenericValue
-    if (component_data.isObject()) {
+    /*if (component_data.isObject()) {
       auto& fields = component_data.getObject();
       for (auto& [field_name, field_value] : fields) {
         if (render_generic_value_field(field_name, field_value)) {
           modified = true;
         }
       }
-    }
+    }*/
+
+
+    if (render_generic_value_field(component_name, component_data)) modified = true;
+
 
     // Write back changes if modified
     if (modified) {
@@ -284,7 +284,7 @@ void EntityEditorPanel()
 
         // First try specialized rendering
         // If not handled, fallback to generic reflection-based rendering
-        EntityEditorPanelHelpers::render_component_from_generic_specialized(type_name, entity) || EntityEditorPanelHelpers::render_component_from_generic(type_name, entity, array);
+        EntityEditorPanelHelpers::render_component_from_generic(type_name, entity, array);
         });
     }
 
