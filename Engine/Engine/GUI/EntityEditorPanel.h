@@ -23,10 +23,6 @@
 #include "../ECS/ECS.h"
 
 namespace {
-
-  // Forward declaration for recursion
-  bool render_generic_value_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value);
-
   // Recursive helper to render any GenericValue field
   bool render_generic_value_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value) {
     bool modified = false;
@@ -84,10 +80,31 @@ namespace {
     return modified;
   }
 
+  // For rendering specialized components that need custom handling
+  bool render_component_from_generic_specialized(const std::string& component_name, Engine::ECS::Entity& entity)
+  {
+    if (component_name == "Components::Color") {
+      Components::Color* colorComp = entity.get_component<Components::Color>();
+      if (colorComp) {
+        ImVec4 colorVec(colorComp->r, colorComp->g, colorComp->b, colorComp->a);
+        if (ImGui::ColorEdit4("Color", (float*)&colorVec)) {
+          colorComp->r = colorVec.x;
+          colorComp->g = colorVec.y;
+          colorComp->b = colorVec.z;
+          colorComp->a = colorVec.w;
+        }
+        return true;
+      }
+      return true;
+    }
+    return false;
+  }
+
   // Render component using reflection from GenericValue
-  void render_component_from_generic(const std::string& component_name,
+  bool render_component_from_generic(const std::string& component_name,
     Engine::ECS::Entity& entity,
-    Engine::ECS::IComponentArray* array) {
+    Engine::ECS::IComponentArray* array)
+  {
 
     if (ImGui::TreeNode(component_name.c_str())) {
 
@@ -279,8 +296,9 @@ inline void EntityEditorPanel()
           return; // Skip non-reflectable components
         }
 
-        // Render the component editor with write-back support
-        render_component_from_generic(type_name, entity, array);
+        // First try specialized rendering
+        // If not handled, fallback to generic reflection-based rendering
+        render_component_from_generic_specialized(type_name, entity) || render_component_from_generic(type_name, entity, array);
         });
     }
 
