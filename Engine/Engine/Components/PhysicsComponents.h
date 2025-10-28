@@ -1,11 +1,15 @@
 #pragma once
 #include "../Math/Vector2D.h"
-#include "./typedef.h"
+#include "../typedef.h"
 
 using namespace Math;
 
 namespace Components
 {
+  enum Shapes {
+    CIRCLE = 0,
+    RECT = 1
+  };
   // https://docs.unity3d.com/ScriptReference/Rigidbody-isKinematic.html
   /* Let the rigidbody take control and detect collisions. */
   // rb.isKinematic = false;
@@ -38,10 +42,9 @@ namespace Components
     f32 rotation_terminal_velocity = 360.0f; // In degrees per second
     f32 angular_velocity = 0.0f; // In degrees per second
 
-    RigidBody(): 
-      is_kinematic(false),
-      use_gravity(false),
-      terminal_velocity(300)
+    RigidBody(bool kinematic, bool gravity): 
+      is_kinematic(kinematic),
+      use_gravity(gravity)
     { /* empty by design */ }
   };
 

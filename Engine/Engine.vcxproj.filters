@@ -27,9 +27,6 @@
     <ClCompile Include="GameLogic\GameStates\BasicState.h">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="GameLogic\Config.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Core.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -37,9 +34,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Engine\ECS\Entity.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\ECS\EventManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Engine\ECS\System.cpp">
@@ -114,6 +108,18 @@
     <ClCompile Include="Engine\EventManager\EventManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\ECS\WorldData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\FileIO\PrefabsFileIO.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Systems\PhysicsSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Systems\CollisionSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Audio\AudioPlayer.h">
@@ -141,9 +147,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GameLogic\Components\Components.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLogic\Config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Core.h">
@@ -180,9 +183,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine\ECS\Entity.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\ECS\EventManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine\ECS\System.h">
@@ -305,6 +305,39 @@
     <ClInclude Include="Engine\EventManager\EventManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\ECS\Macros.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\ECS\WorldData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Events\Events.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Events\InputEvents.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Events\WindowEvents.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\FileIO\EngineSettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\FileIO\PrefabsFileIO.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\FileIO\SettingsManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\FileIO\UserSettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Reflection\ReflectionLibrary\GenericValue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Systems\CollisionSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Engine\ECS\ComponentArray.inl">
@@ -316,9 +349,6 @@
     <None Include="Engine\ECS\Entity.inl">
       <Filter>Header Files</Filter>
     </None>
-    <None Include="Engine\ECS\EventManager.inl">
-      <Filter>Header Files</Filter>
-    </None>
     <None Include="Engine\ECS\System.inl">
       <Filter>Header Files</Filter>
     </None>
@@ -326,6 +356,13 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="Engine\EventManager\EventManager.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="cpp.hint" />
+    <None Include="Engine\FileIO\SettingsManager.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="Engine\Reflection\ReflectionLibrary\GenericValue.inl">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>
