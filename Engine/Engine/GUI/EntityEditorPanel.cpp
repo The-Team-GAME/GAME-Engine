@@ -15,7 +15,24 @@
 //-----------------------------------------------------------------------------------
 #include <imgui.h>
 #include "EntityEditorPanel.h"
-#include "../Components/Components.h"
+
+bool EntityEditorPanelHelpers::render_specialized(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified) {
+  if (display_name == "Components::Color") {
+    ImVec4 colorVec(field_value["r"].getDouble(), field_value["g"].getDouble(), field_value["b"].getDouble(), field_value["a"].getDouble());
+    if (ImGui::ColorEdit4("Color", (float*)&colorVec)) {
+      field_value["r"] = colorVec.x;
+      field_value["g"] = colorVec.y;
+      field_value["b"] = colorVec.z;
+      field_value["a"] = colorVec.w;
+      modified = true;
+    }
+
+    return true;
+  }
+
+  // Not drawn here
+  return false;
+}
 
 bool EntityEditorPanelHelpers::render_generic(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified) {
   if (field_value.isBool()) {
@@ -52,9 +69,7 @@ bool EntityEditorPanelHelpers::render_generic(const std::string& display_name, R
   else if (field_value.isObject()) {
     auto& nested_fields = field_value.getObject();
     for (auto& [nested_name, nested_value] : nested_fields) {
-      if (render_field(display_name + "::" + nested_name, nested_value)) {
-        modified = true;
-      }
+      render_field(display_name + "::" + nested_name, nested_value, modified);
     }
   }
   else if (field_value.isArray()) {
@@ -68,33 +83,10 @@ bool EntityEditorPanelHelpers::render_generic(const std::string& display_name, R
   return true;
 }
 
-bool EntityEditorPanelHelpers::render_specialized(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified) {
-  if (display_name == "Components::Color") {
-    ImVec4 colorVec(field_value["r"].getDouble(), field_value["g"].getDouble(), field_value["b"].getDouble(), field_value["a"].getDouble());
-    if (ImGui::ColorEdit4("Color", (float*)&colorVec)) {
-      field_value["r"] = colorVec.x;
-      field_value["g"] = colorVec.y;
-      field_value["b"] = colorVec.z;
-      field_value["a"] = colorVec.w;
-      modified = true;
-    }
-
-    return true;
-  }
-
-  return false;
-}
-
-bool EntityEditorPanelHelpers::render_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value) {
-
-  bool modified = false;
+void EntityEditorPanelHelpers::render_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified) {
 
   // First try specialized rendering, then fallback to generic
-  if (render_specialized(display_name, field_value, modified) || render_generic(display_name, field_value, modified)) {
-    return modified;
-  }
-
-  return modified;
+  render_specialized(display_name, field_value, modified) || render_generic(display_name, field_value, modified);
 }
 
 void EntityEditorPanelHelpers::render_component_from_generic(const std::string& component_name, Engine::ECS::Entity& entity, Engine::ECS::IComponentArray* array)
@@ -103,12 +95,11 @@ void EntityEditorPanelHelpers::render_component_from_generic(const std::string& 
     auto component_data = array->to_generic_value(entity.get_id());
     bool modified = false;
 
-    if (render_field(component_name, component_data)) modified = true;
+    render_field(component_name, component_data, modified);
 
     // Write back changes if modified
     if (modified) {
-      std::cout << "Component " << component_name << " modified on Entity "
-        << entity.get_id() << std::endl;
+      //std::cout << "Component " << component_name << " modified on Entity " << entity.get_id() << std::endl;
       array->set_component_from_generic_value(entity.get_id(), component_data);
     }
 
