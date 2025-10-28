@@ -27,8 +27,9 @@ namespace Components
 
   // https://docs.unity3d.com/ScriptReference/Rigidbody.html
   struct RigidBody {
-    bool is_kinematic = false; // If true, not affected by physics forces
-    bool use_gravity = false;
+    // Assume that position is the center point of the entity
+    Vec2D curr_pos;
+    Vec2D next_pos;
 
     f32 mass = 1.0f; // Mass in kg
     Vec2D force;
@@ -37,32 +38,44 @@ namespace Components
     // terminal velocity should be a set value instead of a vector just cuz you want to properly scale the velocity instead of capping it at set values
     f32 terminal_velocity{ 300 }; // idk i wack some value here first
 
-    // no use for these yet
+    bool is_kinematic = false;  // If true, affected by physics forces
+    bool use_gravity = false;   // If true, affected by gravity
+
+    /* 
+    no use for these yet*/
     f32 rotation = 0.0f; // In degrees
     f32 rotation_terminal_velocity = 360.0f; // In degrees per second
     f32 angular_velocity = 0.0f; // In degrees per second
+    
 
-    RigidBody(bool kinematic, bool gravity): 
-      is_kinematic(kinematic),
-      use_gravity(gravity)
+    // Ctor using vectors
+    RigidBody(Vec2D pos = {0,0}, bool kinematic = false, bool gravity = false) :
+      curr_pos(pos), is_kinematic(kinematic), use_gravity(gravity)
+    { /* empty by design */ }
+
+    // Ctor using floats
+    RigidBody(f32 pos_x, f32 pos_y, bool kinematic = false, bool gravity = false) :
+      curr_pos(Vec2D(pos_x, pos_y)), is_kinematic(kinematic), use_gravity(gravity)
     { /* empty by design */ }
   };
 
 
   // https://docs.unity3d.com/6000.2/Documentation/Manual/class-BoxCollider.html
   struct BoxCollider {
-    bool detect_collisions = false;
+    bool detect_collisions = false; // If true, affected by collisions -> will move when colliding with things
+    // NOTE: if an object with detect collisions collides with another object without detect collision,
+    // The object without detect collisions is unmovable aka a wall for all i care
+
     // measurements for rectangles and circles
     f32 width;
     f32 height;
     f32 radius;
+    Shapes shape;
 
-    Vec2D center_pos; // not sure if i wana keep this yet
-
-    BoxCollider(Vec2D center, f32 width, f32 height) : center_pos(center), width(width), height(height)
+    BoxCollider(f32 width, f32 height) : width(width), height(height), shape(RECT)
     { /* empty by design */ }
 
-    BoxCollider(Vec2D center, f32 radius) : center_pos(center), radius(radius)
+    BoxCollider(f32 radius) : radius(radius), shape(CIRCLE)
     { /* empty by design */ }
   };
 }
