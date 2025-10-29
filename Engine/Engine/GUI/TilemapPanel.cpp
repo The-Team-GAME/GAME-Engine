@@ -42,8 +42,6 @@ namespace TilemapPanel {
     Components::TextureAtlas preview_atlas;
     int atlas_rows = 1;
     int atlas_cols = 1;
-    std::string selected_texture_path;
-    int selected_texture_index = 0;
 
     // Painting state
     bool show_grid = false;
@@ -231,16 +229,15 @@ namespace TilemapPanel {
         ImGui::Text("Available Textures:");
 
         // Texture selection combo box
-        const char* preview_name = selected_texture_path.empty() ?
-          "Select texture..." : selected_texture_path.c_str();
+        const char* preview_name = preview_texture.texture_handle ?
+          preview_texture.texture_handle->path.c_str() : "Select texture...";
 
         if (ImGui::BeginCombo("##TextureSelect", preview_name)) {
           for (int i = 0; i < static_cast<int>(texture_paths.size()); ++i) {
-            bool is_selected = (i == selected_texture_index);
-            if (ImGui::Selectable(texture_paths[i].c_str(), is_selected)) {
-              selected_texture_index = i;
-              selected_texture_path = texture_paths[i];
+            bool is_selected = preview_texture.texture_handle &&
+              (preview_texture.texture_handle->path == texture_paths[i]);
 
+            if (ImGui::Selectable(texture_paths[i].c_str(), is_selected)) {
               // Load the texture
               if (auto tex = Engine::Resources::texture_cache[texture_paths[i]].lock()) {
                 preview_texture = Components::Texture(tex);
