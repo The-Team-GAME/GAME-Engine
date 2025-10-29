@@ -54,10 +54,11 @@ namespace {
     return std::to_string(grid_x) + "_" + std::to_string(grid_y) + "_" + std::to_string(z_layer);
   }
 
-  // Helper to snap position to grid
+  // Helper to snap position to grid (returns center of grid cell)
   Math::Vec2D snap_to_grid(const Math::Vec2D& pos) {
-    float snapped_x = std::floor((pos.x - tilemap_state.grid_offset.x) / tilemap_state.grid_snap) * tilemap_state.grid_snap + tilemap_state.grid_offset.x;
-    float snapped_y = std::floor((pos.y - tilemap_state.grid_offset.y) / tilemap_state.grid_snap) * tilemap_state.grid_snap + tilemap_state.grid_offset.y;
+    float half_snap = tilemap_state.grid_snap * 0.5f;
+    float snapped_x = std::floor((pos.x - tilemap_state.grid_offset.x) / tilemap_state.grid_snap) * tilemap_state.grid_snap + tilemap_state.grid_offset.x + half_snap;
+    float snapped_y = std::floor((pos.y - tilemap_state.grid_offset.y) / tilemap_state.grid_snap) * tilemap_state.grid_snap + tilemap_state.grid_offset.y + half_snap;
     return { snapped_x, snapped_y };
   }
 
