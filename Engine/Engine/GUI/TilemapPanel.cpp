@@ -338,6 +338,9 @@ namespace TilemapPanel {
             if (is_selected) {
               temp_atlas.drawIndex = selected_tile_index;
             }
+            else {
+              temp_atlas.drawIndex = -1; // No tile selected in this atlas
+            }
 
             ImGuiWidgets::TextureAtlasPreview(
               "TileSelection",

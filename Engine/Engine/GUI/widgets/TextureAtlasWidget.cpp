@@ -115,11 +115,12 @@ namespace ImGuiWidgets {
       float y1 = image_pos.y + uv_bounds[i][3] * display_height;
 
       // Draw border for each cell
-      ImU32 border_color = (i == atlas.drawIndex)
+      bool is_selected = (atlas.drawIndex >= 0 && static_cast<size_t>(atlas.drawIndex) == i);
+      ImU32 border_color = is_selected
         ? IM_COL32(255, 255, 0, 255)  // Yellow for selected
         : IM_COL32(0, 255, 0, 180);    // Green for others
 
-      float thickness = (i == atlas.drawIndex) ? 3.0f : 1.5f;
+      float thickness = is_selected ? 3.0f : 1.5f;
 
       draw_list->AddRect(ImVec2(x0, y0), ImVec2(x1, y1), border_color, 0.0f, 0, thickness);
 
@@ -134,7 +135,7 @@ namespace ImGuiWidgets {
       ImVec2 text_bg_max(text_pos.x + text_size.x + 2, text_pos.y + text_size.y + 2);
       draw_list->AddRectFilled(text_bg_min, text_bg_max, IM_COL32(0, 0, 0, 180));
 
-      ImU32 text_color = (i == atlas.drawIndex)
+      ImU32 text_color = is_selected
         ? IM_COL32(255, 255, 0, 255)
         : IM_COL32(255, 255, 255, 255);
       draw_list->AddText(text_pos, text_color, index_text);
