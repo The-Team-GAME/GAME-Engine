@@ -37,6 +37,7 @@ namespace {
     float grid_snap = 64.0f;
     float prev_grid_snap = 64.0f;  // Track previous value to detect changes
     Math::Vec2D grid_offset = { 0.0f, 0.0f };
+    Math::Vec2D prev_grid_offset = { 0.0f, 0.0f };  // Track previous offset to detect changes
     int z_layer = 0;
 
     // Track placed tiles to prevent duplicates
@@ -65,18 +66,21 @@ namespace {
   void delete_tile_at_position(const Math::Vec2D& grid_pos, int z_layer) {
     std::string pos_key = get_position_key(grid_pos, z_layer);
 
-    // Find and destroy entities at this position
+    // Find and destroy tile entities at this position
     auto all_entities = Engine::ECS::get_all_entities();
     for (auto& entity : all_entities) {
-      auto* transform = entity.get_component<Components::Transform2D>();
-      if (transform) {
-        Math::Vec2D entity_grid_pos = snap_to_grid(transform->position);
-        std::string entity_key = get_position_key(entity_grid_pos, z_layer);
+      // Only delete entities with the Tile component
+      if (entity.has_component<Components::Tile>()) {
+        auto* transform = entity.get_component<Components::Transform2D>();
+        if (transform) {
+          Math::Vec2D entity_grid_pos = snap_to_grid(transform->position);
+          std::string entity_key = get_position_key(entity_grid_pos, z_layer);
 
-        if (entity_key == pos_key) {
-          entity.destroy();
-          tilemap_state.placed_tiles.erase(pos_key);
-          break;
+          if (entity_key == pos_key) {
+            entity.destroy();
+            tilemap_state.placed_tiles.erase(pos_key);
+            break;
+          }
         }
       }
     }
@@ -278,7 +282,14 @@ void TilemapPanel() {
     ImGui::SameLine();
     ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(Updates all tiles)");
 
-    ImGui::DragFloat2("Grid Offset", &tilemap_state.grid_offset.x, 1.0f, -1000.0f, 1000.0f, "%.1f");
+    // Grid offset with change detection
+    if (ImGui::DragFloat2("Grid Offset", &tilemap_state.grid_offset.x, 1.0f, -1000.0f, 1000.0f, "%.1f")) {
+      if (tilemap_state.grid_offset.x != tilemap_state.prev_grid_offset.x ||
+        tilemap_state.grid_offset.y != tilemap_state.prev_grid_offset.y) {
+        update_all_tile_dimensions();
+        tilemap_state.prev_grid_offset = tilemap_state.grid_offset;
+      }
+    }
 
     ImGui::Separator();
 
@@ -301,7 +312,7 @@ void TilemapPanel() {
       if (ImGui::Button("Yes, Clear All", ImVec2(120, 0))) {
         auto all_entities = Engine::ECS::get_all_entities();
         for (auto& entity : all_entities) {
-          if (entity.has_components<Components::Transform2D, Components::Texture, Components::TextureAtlas>()) {
+          if (entity.has_components<Components::Tile>()) {
             entity.destroy();
           }
         }
