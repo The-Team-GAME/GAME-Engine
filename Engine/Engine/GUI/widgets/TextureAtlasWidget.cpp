@@ -24,7 +24,7 @@ namespace ImGuiWidgets {
     float preview_height,
     std::function<void(size_t)> on_index_changed
   ) {
-    ImGui::PushID(label);
+    // ImGui::PushID(label);
 
     // Validate inputs
     if (texture.texture_handle->id == 0) {
@@ -37,10 +37,10 @@ namespace ImGuiWidgets {
       ImGui::PopID();
     }
 
-    // Display info
-    ImGui::Text("Total SubTextures: %zu", atlas.subTextures.size());
+    // // Display info
+    // ImGui::Text("Total SubTextures: %zu", atlas.subTextures.size());
 
-    ImGui::Separator();
+    // ImGui::Separator();
 
     // Calculate display size while maintaining aspect ratio
     float aspect_ratio = static_cast<float>(texture.texture_handle->width) / static_cast<float>(texture.texture_handle->height);
@@ -141,22 +141,22 @@ namespace ImGuiWidgets {
       draw_list->AddText(text_pos, text_color, index_text);
     }
 
-    // Show detailed info about current subtexture
-    if (atlas.drawIndex >= 0 && atlas.drawIndex < static_cast<int>(uv_bounds.size())) {
-      ImGui::Separator();
-      ImGui::Text("Selected SubTexture [%d]:", atlas.drawIndex);
-      ImGui::Text("  UV Bounds: (%.3f, %.3f) -> (%.3f, %.3f)",
-        uv_bounds[atlas.drawIndex][0], uv_bounds[atlas.drawIndex][1],
-        uv_bounds[atlas.drawIndex][2], uv_bounds[atlas.drawIndex][3]);
+    // // Show detailed info about current subtexture
+    // if (atlas.drawIndex >= 0 && atlas.drawIndex < static_cast<int>(uv_bounds.size())) {
+    //   ImGui::Separator();
+    //   ImGui::Text("Selected SubTexture [%d]:", atlas.drawIndex);
+    //   ImGui::Text("  UV Bounds: (%.3f, %.3f) -> (%.3f, %.3f)",
+    //     uv_bounds[atlas.drawIndex][0], uv_bounds[atlas.drawIndex][1],
+    //     uv_bounds[atlas.drawIndex][2], uv_bounds[atlas.drawIndex][3]);
 
-      // Calculate pixel dimensions
-      int pixel_width = static_cast<int>((uv_bounds[atlas.drawIndex][2] - uv_bounds[atlas.drawIndex][0]) * texture.texture_handle->width);
-      int pixel_height = static_cast<int>((uv_bounds[atlas.drawIndex][3] - uv_bounds[atlas.drawIndex][1]) * texture.texture_handle->height);
+    //   // Calculate pixel dimensions
+    //   int pixel_width = static_cast<int>((uv_bounds[atlas.drawIndex][2] - uv_bounds[atlas.drawIndex][0]) * texture.texture_handle->width);
+    //   int pixel_height = static_cast<int>((uv_bounds[atlas.drawIndex][3] - uv_bounds[atlas.drawIndex][1]) * texture.texture_handle->height);
 
-      ImGui::Text("  Pixel Size: %d x %d", pixel_width, pixel_height);
-    }
+    //   ImGui::Text("  Pixel Size: %d x %d", pixel_width, pixel_height);
+    // }
 
-    ImGui::PopID();
+    // ImGui::PopID();
   }
 
 } // namespace ImGuiWidgets

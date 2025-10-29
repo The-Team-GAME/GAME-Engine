@@ -329,36 +329,34 @@ namespace TilemapPanel {
             ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.2f, 0.6f, 0.2f, 1.0f));
           }
 
-          if (ImGui::CollapsingHeader(entry.name.c_str(), ImGuiTreeNodeFlags_None)) {
-            // Create non-const copies for TextureAtlasPreview
-            Components::Texture temp_texture = entry.texture;
-            Components::TextureAtlas temp_atlas = entry.atlas;
+          // Create non-const copies for TextureAtlasPreview
+          Components::Texture temp_texture = entry.texture;
+          Components::TextureAtlas temp_atlas = entry.atlas;
 
-            // Set the drawIndex to the currently selected tile if this is the selected atlas
-            if (is_selected) {
-              temp_atlas.drawIndex = selected_tile_index;
+          // Set the drawIndex to the currently selected tile if this is the selected atlas
+          if (is_selected) {
+            temp_atlas.drawIndex = selected_tile_index;
+          }
+          else {
+            temp_atlas.drawIndex = -1; // No tile selected in this atlas
+          }
+
+          ImGuiWidgets::TextureAtlasPreview(
+            "TileSelection",
+            temp_texture,
+            temp_atlas,
+            80.0f,
+            [i](size_t tile_idx) {
+              selected_atlas_index = i;
+              selected_tile_index = static_cast<int>(tile_idx);
             }
-            else {
-              temp_atlas.drawIndex = -1; // No tile selected in this atlas
-            }
+          );
 
-            ImGuiWidgets::TextureAtlasPreview(
-              "TileSelection",
-              temp_texture,
-              temp_atlas,
-              80.0f,
-              [i](size_t tile_idx) {
-                selected_atlas_index = i;
-                selected_tile_index = static_cast<int>(tile_idx);
-              }
-            );
-
-            // Remove button
-            if (ImGui::Button("Remove Atlas", ImVec2(-1, 0))) {
-              submitted_atlases.erase(submitted_atlases.begin() + i);
-              if (selected_atlas_index >= static_cast<int>(submitted_atlases.size())) {
-                selected_atlas_index = static_cast<int>(submitted_atlases.size()) - 1;
-              }
+          // Remove button
+          if (ImGui::Button("Remove Atlas", ImVec2(-1, 0))) {
+            submitted_atlases.erase(submitted_atlases.begin() + i);
+            if (selected_atlas_index >= static_cast<int>(submitted_atlases.size())) {
+              selected_atlas_index = static_cast<int>(submitted_atlases.size()) - 1;
             }
           }
 
