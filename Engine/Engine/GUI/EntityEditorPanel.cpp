@@ -178,57 +178,17 @@ bool EntityEditorPanelHelpers::render_specialized_field(const std::string& displ
   }
 
   if (display_name == "Components::TextureAtlas") {
-    // Get the tex_coords_list array and drawIndex
-    if (!field_value["tex_coords_list"].isArray() || !field_value["drawIndex"].isInt()) {
-      ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Invalid TextureAtlas data");
-      return true;
-    }
-
-    auto& tex_coords_list_generic = field_value["tex_coords_list"].getArray();
-    int draw_index = static_cast<int>(field_value["drawIndex"].getInt());
+    // auto& tex_coords_list_generic = field_value["tex_coords_list"].getArray();
+    // int draw_index = static_cast<int>(field_value["drawIndex"].getInt());
 
     // Try to get the texture from the entity's Texture component
-    Engine::Graphics::Texture atlas_texture = nullptr;
-    if (entity.is_valid()) {
-      auto* texture_component = entity.get_component<Components::Texture>();
-      if (texture_component) {
-        atlas_texture = texture_component->texture_handle;
-      }
-    }
+    Components::Texture* texture = entity.get_component<Components::Texture>();
+    Components::TextureAtlas* atlas = entity.get_component<Components::TextureAtlas>();
 
-    // Convert GenericValue array to Math::Vec2D array for the widget
-    std::vector<std::array<Math::Vec2D, 4>> tex_coords_list;
-    for (size_t i = 0; i < tex_coords_list_generic.size(); ++i) {
-      auto& coords_array = tex_coords_list_generic[i].getArray();
-      if (coords_array.size() == 4) {
-        std::array<Math::Vec2D, 4> coords;
-
-        for (size_t j = 0; j < 4; ++j) {
-          // Try object format first (x, y fields)
-          if (coords_array[j].isObject()) {
-            auto& corner_obj = coords_array[j].getObject();
-            if (corner_obj.find("x") != corner_obj.end() && corner_obj.find("y") != corner_obj.end()) {
-              coords[j].x = static_cast<float>(corner_obj.at("x").getDouble());
-              coords[j].y = static_cast<float>(corner_obj.at("y").getDouble());
-            }
-          }
-          // Fallback: try array format [x, y]
-          else if (coords_array[j].isArray() && coords_array[j].getArray().size() == 2) {
-            coords[j].x = static_cast<float>(coords_array[j].getArray()[0].getDouble());
-            coords[j].y = static_cast<float>(coords_array[j].getArray()[1].getDouble());
-          }
-        }
-
-        tex_coords_list.push_back(coords);
-      }
-    }
-
-    // Use the reusable widget with a callback
     if (ImGuiWidgets::TextureAtlasPreview(
       "TextureAtlasPreview",
-      atlas_texture,
-      tex_coords_list,
-      draw_index,
+      *texture,
+      *atlas,
       400.0f,
       [&field_value, &modified](int new_index) {
         field_value["drawIndex"] = static_cast<ReflectionLibrary::Integer>(new_index);
@@ -236,7 +196,7 @@ bool EntityEditorPanelHelpers::render_specialized_field(const std::string& displ
       }
     )) {
       // Selection changed
-      field_value["drawIndex"] = static_cast<ReflectionLibrary::Integer>(draw_index);
+      field_value["drawIndex"] = static_cast<ReflectionLibrary::Integer>(atlas->drawIndex);
       modified = true;
     }
 
