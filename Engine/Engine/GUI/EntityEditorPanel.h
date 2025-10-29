@@ -39,7 +39,8 @@ namespace EntityEditorPanelHelpers {
   /*=================================================================================
   Function Brief:
   Renders generic UI fields for basic types (bool, int, double, string) and handles
-  nested objects and arrays (with limited array support).
+  nested objects and arrays. Arrays support add, remove, and edit operations for
+  all element types including nested objects and arrays.
   Always returns true as it handles all generic cases.
 
   Parameters:

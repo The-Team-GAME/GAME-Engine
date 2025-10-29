@@ -218,10 +218,60 @@ bool EntityEditorPanelHelpers::render_generic_field(const std::string& display_n
     }
   }
   else if (field_value.isArray()) {
-    ImGui::Text("%s: [Array with %zu elements]", display_name.c_str(),
-      field_value.getArray().size());
-    ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
-      "Array editing not yet supported");
+    auto& array = field_value.getArray();
+    std::string tree_label = display_name + " [" + std::to_string(array.size()) + " elements]";
+
+    if (ImGui::TreeNode(tree_label.c_str())) {
+      // Array controls
+      ImGui::PushID(display_name.c_str());
+
+      // Add element button
+      if (ImGui::Button("Add Element")) {
+        // Add a default element based on array type (if array has elements)
+        if (!array.empty()) {
+          // Clone the last element as template
+          array.push_back(array.back());
+        }
+        else {
+          // Add a default int element (could be made configurable)
+          array.push_back(ReflectionLibrary::GenericValue(static_cast<ReflectionLibrary::Integer>(0)));
+        }
+        modified = true;
+      }
+
+      ImGui::SameLine();
+
+      // Clear array button
+      if (ImGui::Button("Clear All")) {
+        array.clear();
+        modified = true;
+      }
+
+      ImGui::Separator();
+
+      // Render each element
+      for (size_t i = 0; i < array.size(); ++i) {
+        ImGui::PushID(static_cast<int>(i));
+
+        std::string element_label = "[" + std::to_string(i) + "]";
+
+        // Remove button for this element
+        if (ImGui::Button("Remove Element")) {
+          array.erase(array.begin() + i);
+          modified = true;
+          ImGui::PopID();
+          break; // Exit loop after erasing to avoid iterator issues
+        }
+
+        // Render the element using the generic field renderer
+        render_field(element_label, array[i], modified);
+
+        ImGui::PopID();
+      }
+
+      ImGui::PopID();
+      ImGui::TreePop();
+    }
   }
 
   // This should always return true, since we handled all generic 
