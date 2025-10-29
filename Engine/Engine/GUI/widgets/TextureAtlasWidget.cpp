@@ -91,7 +91,7 @@ namespace ImGuiWidgets {
       float rel_y = (mouse_pos.y - image_pos.y) / display_height;
 
       // Find which subtexture was clicked
-      for (size_t i = 0; i < uv_bounds.size(); ++i) {
+      for (int i = 0; i < uv_bounds.size(); ++i) {
         if (rel_x >= uv_bounds[i][0] && rel_x <= uv_bounds[i][2] &&
           rel_y >= uv_bounds[i][1] && rel_y <= uv_bounds[i][3]) {
           if (i != atlas.drawIndex) {
