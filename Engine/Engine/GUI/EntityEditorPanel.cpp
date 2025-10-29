@@ -178,12 +178,14 @@ bool EntityEditorPanelHelpers::render_specialized_field(const std::string& displ
   }
 
   if (display_name == "Components::TextureAtlas") {
-    // auto& tex_coords_list_generic = field_value["tex_coords_list"].getArray();
-    // int draw_index = static_cast<int>(field_value["drawIndex"].getInt());
-
     // Try to get the texture from the entity's Texture component
     Components::Texture* texture = entity.get_component<Components::Texture>();
     Components::TextureAtlas* atlas = entity.get_component<Components::TextureAtlas>();
+
+    if (!texture || !atlas) {
+      ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "TextureAtlas requires the Texture component.");
+      return true;
+    }
 
     if (ImGuiWidgets::TextureAtlasPreview(
       "TextureAtlasPreview",
