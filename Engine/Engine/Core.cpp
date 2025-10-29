@@ -25,6 +25,7 @@
 #include "GUI/ResourceManagerPanel.h"
 #include "GUI/EntityEditorPanel.h"
 #include "GUI/CameraPanel.h"
+#include "GUI/TilemapPanel.h"
 #include "Perf.h"
 #include "InputManager.h"
 #include "Audio/AudioPlayer.h"
@@ -188,6 +189,7 @@ namespace Engine
       ResourceManagerPanel();
       EntityEditorPanel();
       CameraPanel();
+      TilemapPanel();
 
       // Clear screen (automatically begins batch)
       // start of draw stuff
