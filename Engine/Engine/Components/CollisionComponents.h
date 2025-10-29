@@ -30,6 +30,8 @@ namespace Components
     // NOTE: if an object with detect collisions collides with another object without detect collision,
     // The object without detect collisions is unmovable aka a wall for all i care
 
+    // center of the collision box, need sync with the rigid body
+    Vec2D center;
     // measurements for rectangles and circles
     f32 width;
     f32 height;
@@ -39,13 +41,16 @@ namespace Components
     Polygon poly;
 
     // Rect box collider ctor
-    BoxCollider(f32 width, f32 height) : width(width), height(height), shape(RECT)
+    BoxCollider(Vec2D center, f32 width, f32 height) : width(width), height(height), shape(RECT)
     { 
-      /* calculate the aabb in collision systems */
+      Vec2D min = center - Vec2D(width / 2, height / 2);
+      Vec2D max = center + Vec2D(width / 2, height / 2);
+      aabb.min = min;
+      aabb.max = max;
     }
 
     // cricle box collider ctor
-    BoxCollider(f32 radius) : radius(radius), shape(CIRCLE)
+    BoxCollider(Vec2D center, f32 radius) : radius(radius), shape(CIRCLE)
     { /* empty by design */
     }
 
