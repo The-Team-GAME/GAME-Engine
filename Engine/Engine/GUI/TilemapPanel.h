@@ -55,20 +55,19 @@ namespace TilemapPanel {
 
   /*=================================================================================
   Function Brief:
-  Generates a unique string key for a grid position and z-layer combination. Used
-  to track placed tiles and prevent duplicate placement at the same location.
+  Generates a unique string key for a grid position. Used to track placed tiles
+  and prevent duplicate placement at the same location.
 
   Parameters:
-  pos     - World position to convert to grid coordinates
-  z_layer - Z-layer of the tile
+  pos - World position to convert to grid coordinates
 
   Returns:
-  String in format "gridX_gridY_zLayer"
+  String in format "gridX_gridY"
 
   Where to call it:
   Called internally when placing, checking for, or deleting tiles.
   ==================================================================================*/
-  std::string get_position_key(const Math::Vec2D& pos, int z_layer);
+  std::string get_position_key(const Math::Vec2D& pos);
 
   /*=================================================================================
   Function Brief:
@@ -88,17 +87,16 @@ namespace TilemapPanel {
 
   /*=================================================================================
   Function Brief:
-  Deletes a tile entity at the specified grid position and z-layer. Only deletes
-  entities that have the Tile component to ensure only tilemap tiles are removed.
+  Deletes a tile entity at the specified grid position. Only deletes entities
+  that have the Tile component to ensure only tilemap tiles are removed.
 
   Parameters:
   grid_pos - Snapped grid position to delete tile from
-  z_layer  - Z-layer to match for deletion
 
   Where to call it:
   Called when erasing mode is enabled and the user clicks in the world.
   ==================================================================================*/
-  void delete_tile_at_position(const Math::Vec2D& grid_pos, int z_layer);
+  void delete_tile_at_position(const Math::Vec2D& grid_pos);
 
   /*=================================================================================
   Function Brief:

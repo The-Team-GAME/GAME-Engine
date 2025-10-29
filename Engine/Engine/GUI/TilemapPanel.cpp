@@ -36,7 +36,6 @@ namespace TilemapPanel {
     float prev_grid_snap = 64.0f;  // Track previous value to detect changes
     Math::Vec2D grid_offset = { 0.0f, 0.0f };
     Math::Vec2D prev_grid_offset = { 0.0f, 0.0f };  // Track previous offset to detect changes
-    int z_layer = 0;
 
     // Atlas configuration
     int atlas_rows = 1;
@@ -75,10 +74,10 @@ namespace TilemapPanel {
     prev_atlas_cols = atlas_cols;
   }
 
-  std::string get_position_key(const Math::Vec2D& pos, int z_layer) {
+  std::string get_position_key(const Math::Vec2D& pos) {
     int grid_x = static_cast<int>(std::floor(pos.x / grid_snap));
     int grid_y = static_cast<int>(std::floor(pos.y / grid_snap));
-    return std::to_string(grid_x) + "_" + std::to_string(grid_y) + "_" + std::to_string(z_layer);
+    return std::to_string(grid_x) + "_" + std::to_string(grid_y);
   }
 
   Math::Vec2D snap_to_grid(const Math::Vec2D& pos) {
@@ -88,8 +87,8 @@ namespace TilemapPanel {
     return { snapped_x, snapped_y };
   }
 
-  void delete_tile_at_position(const Math::Vec2D& grid_pos, int z_layer) {
-    std::string pos_key = get_position_key(grid_pos, z_layer);
+  void delete_tile_at_position(const Math::Vec2D& grid_pos) {
+    std::string pos_key = get_position_key(grid_pos);
 
     auto all_entities = Engine::ECS::get_all_entities();
     for (auto& entity : all_entities) {
@@ -97,7 +96,7 @@ namespace TilemapPanel {
         auto* transform = entity.get_component<Components::Transform2D>();
         if (transform) {
           Math::Vec2D entity_grid_pos = snap_to_grid(transform->position);
-          std::string entity_key = get_position_key(entity_grid_pos, z_layer);
+          std::string entity_key = get_position_key(entity_grid_pos);
 
           if (entity_key == pos_key) {
             entity.destroy();
@@ -122,7 +121,7 @@ namespace TilemapPanel {
           transform->position = new_pos;
           transform->scale = Math::Vec2D{ grid_snap, grid_snap };
 
-          std::string pos_key = get_position_key(new_pos, z_layer);
+          std::string pos_key = get_position_key(new_pos);
           placed_tiles.insert(pos_key);
         }
       }
@@ -138,7 +137,7 @@ namespace TilemapPanel {
     }
 
     Math::Vec2D grid_pos = snap_to_grid(world_pos);
-    std::string pos_key = get_position_key(grid_pos, z_layer);
+    std::string pos_key = get_position_key(grid_pos);
 
     if (placed_tiles.find(pos_key) != placed_tiles.end()) {
       return;
@@ -322,12 +321,6 @@ namespace TilemapPanel {
 
       ImGui::Separator();
 
-      // Z-layer control
-      ImGui::DragInt("Z-Layer", &z_layer, 1.0f, -100, 100);
-      ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(Not yet implemented in rendering)");
-
-      ImGui::Separator();
-
       // Clear all tiles button
       if (ImGui::Button("Clear All Tiles", ImVec2(-1, 0))) {
         ImGui::OpenPopup("Clear Tiles Confirm");
@@ -410,7 +403,7 @@ namespace TilemapPanel {
       if (erasing_enabled && Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
         Math::Vec2D world_pos = Engine::Input::get_mouse_world_position();
         Math::Vec2D grid_pos = snap_to_grid(world_pos);
-        delete_tile_at_position(grid_pos, z_layer);
+        delete_tile_at_position(grid_pos);
       }
     }
 
