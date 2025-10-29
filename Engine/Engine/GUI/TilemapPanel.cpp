@@ -31,11 +31,11 @@ namespace TilemapPanel {
       Components::Texture texture;
       Components::TextureAtlas atlas;
       std::string name;
+      int selected_tile_index = -1; // -1 means no tile selected
     };
 
     std::vector<AtlasEntry> submitted_atlases;
     int selected_atlas_index = -1;
-    int selected_tile_index = 0;
 
     // Current preview (before submission)
     Components::Texture preview_texture;
@@ -141,8 +141,8 @@ namespace TilemapPanel {
 
     if (!atlas_entry.texture.texture_handle ||
       atlas_entry.atlas.subTextures.empty() ||
-      selected_tile_index < 0 ||
-      selected_tile_index >= static_cast<int>(atlas_entry.atlas.subTextures.size())) {
+      atlas_entry.selected_tile_index < 0 ||
+      atlas_entry.selected_tile_index >= static_cast<int>(atlas_entry.atlas.subTextures.size())) {
       return;
     }
 
@@ -181,7 +181,7 @@ namespace TilemapPanel {
       .add_component<Components::TextureAtlas>(atlas_entry.atlas)
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
 
-    tile.get_component<Components::TextureAtlas>()->drawIndex = selected_tile_index;
+    tile.get_component<Components::TextureAtlas>()->drawIndex = atlas_entry.selected_tile_index;
 
     placed_tiles.insert(pos_key);
   }
@@ -334,10 +334,8 @@ namespace TilemapPanel {
             Components::Texture temp_texture = entry.texture;
             Components::TextureAtlas temp_atlas = entry.atlas;
 
-            // Set the drawIndex to the currently selected tile if this is the selected atlas
-            if (is_selected) {
-              temp_atlas.drawIndex = selected_tile_index;
-            }
+            // Set the drawIndex to show the selected tile for this atlas (-1 means none)
+            temp_atlas.drawIndex = entry.selected_tile_index;
 
             ImGuiWidgets::TextureAtlasPreview(
               "TileSelection",
@@ -346,7 +344,7 @@ namespace TilemapPanel {
               80.0f,
               [i](size_t tile_idx) {
                 selected_atlas_index = i;
-                selected_tile_index = static_cast<int>(tile_idx);
+                submitted_atlases[i].selected_tile_index = static_cast<int>(tile_idx);
               }
             );
 
