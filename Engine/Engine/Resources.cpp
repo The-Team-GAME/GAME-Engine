@@ -90,7 +90,7 @@ Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& fil
     // Try to lock the weak_ptr
     if (auto cached = it->second.lock())
     {
-      Log::info("Texture loaded from cache: " + full_path);
+      // Log::info("Texture loaded from cache: " + full_path);
       return cached;
     }
     else
@@ -132,7 +132,7 @@ Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath,
     // Try to lock the weak_ptr
     if (auto cached = it->second.lock())
     {
-      Log::info("Font loaded from cache: " + full_path + " (size: " + std::to_string(size) + ")");
+      // Log::info("Font loaded from cache: " + full_path + " (size: " + std::to_string(size) + ")");
       return cached;
     }
     else
@@ -163,7 +163,7 @@ Engine::Audio::Sound Engine::Resources::load_sound(const std::string& filepath, 
     // Try to lock the weak_ptr
     if (auto cached = it->second.lock())
     {
-      Log::info("Sound loaded from cache: " + full_path);
+      // Log::info("Sound loaded from cache: " + full_path);
       return cached;
     }
     else
@@ -201,7 +201,7 @@ Engine::Audio::Sound Engine::Resources::load_music(const std::string& filepath, 
     // Try to lock the weak_ptr
     if (auto cached = it->second.lock())
     {
-      Log::info("Music loaded from cache: " + full_path);
+      // Log::info("Music loaded from cache: " + full_path);
       return cached;
     }
     else
@@ -245,7 +245,7 @@ Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, 
     // Try to lock the weak_ptr
     if (auto cached = it->second.lock())
     {
-      Log::info("Prefab loaded from cache: " + full_path);
+      // Log::info("Prefab loaded from cache: " + full_path);
       return cached;
     }
     else
