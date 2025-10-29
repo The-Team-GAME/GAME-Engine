@@ -21,7 +21,7 @@ namespace ImGuiWidgets {
     const char* label,
     const Components::Texture& texture,
     const Components::TextureAtlas& atlas,
-    float max_preview_size,
+    float preview_height,
     std::function<void(size_t)> on_index_changed
   ) {
     ImGui::PushID(label);
@@ -39,18 +39,13 @@ namespace ImGuiWidgets {
 
     // Display info
     ImGui::Text("Total SubTextures: %zu", atlas.subTextures.size());
- 
+
     ImGui::Separator();
 
     // Calculate display size while maintaining aspect ratio
     float aspect_ratio = static_cast<float>(texture.texture_handle->width) / static_cast<float>(texture.texture_handle->height);
-    float display_width = max_preview_size;
-    float display_height = max_preview_size / aspect_ratio;
-
-    if (display_height > max_preview_size) {
-      display_height = max_preview_size;
-      display_width = max_preview_size * aspect_ratio;
-    }
+    float display_height = preview_height;
+    float display_width = preview_height * aspect_ratio;
 
     ImVec2 image_size(display_width, display_height);
 
