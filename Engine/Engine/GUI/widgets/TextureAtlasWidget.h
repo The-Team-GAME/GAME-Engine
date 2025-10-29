@@ -22,7 +22,7 @@ namespace ImGuiWidgets {
   void TextureAtlasPreview(
     const char* label,
     const Components::Texture& texture,
-    const Components::TextureAtlas& atlas,
+    Components::TextureAtlas& atlas,
     float preview_height,
     std::function<void(size_t)> on_index_changed = nullptr
   );

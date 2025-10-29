@@ -194,7 +194,7 @@ bool EntityEditorPanelHelpers::render_specialized_field(const std::string& displ
       80.0f,
       [&atlas](size_t new_index) {
         //std::cout << "TextureAtlas index changed from " << atlas->drawIndex << " to " << new_index << std::endl;
-        atlas->drawIndex = new_index;
+        // atlas->drawIndex = new_index;
       }
     );
 
