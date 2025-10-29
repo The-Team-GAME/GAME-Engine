@@ -314,7 +314,7 @@ namespace TilemapPanel {
       if (ImGui::CollapsingHeader("Tile Selection", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::Indent();
 
-        ImGui::Text("Submitted Atlases:");
+        ImGui::Text("Tilemaps:");
         ImGui::Separator();
 
         // Display all submitted atlases
