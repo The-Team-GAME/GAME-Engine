@@ -34,9 +34,9 @@ namespace {
     bool show_grid = true;
     bool painting_enabled = false;
     bool erasing_enabled = false;
-    float tile_width = 32.0f;
-    float tile_height = 32.0f;
-    float grid_snap = 32.0f;
+    float tile_width = 64.0f;
+    float tile_height = 64.0f;
+    float grid_snap = 64.0f;
     Math::Vec2D grid_offset = { 0.0f, 0.0f };
     int z_layer = 0;
 
