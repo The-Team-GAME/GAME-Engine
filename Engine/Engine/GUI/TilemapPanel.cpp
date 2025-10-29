@@ -40,11 +40,43 @@ namespace {
     Math::Vec2D prev_grid_offset = { 0.0f, 0.0f };  // Track previous offset to detect changes
     int z_layer = 0;
 
+    // Atlas configuration
+    int atlas_rows = 1;
+    int atlas_cols = 1;
+    int prev_atlas_rows = 1;
+    int prev_atlas_cols = 1;
+    std::string selected_texture_path;
+    int selected_texture_index = 0;
+
     // Track placed tiles to prevent duplicates
     std::unordered_set<std::string> placed_tiles;
   };
 
   TilemapState tilemap_state;
+
+  // Helper to regenerate atlas from current configuration
+  void regenerate_atlas() {
+    if (!tilemap_state.selected_texture.texture_handle) {
+      return;
+    }
+
+    int texture_width = tilemap_state.selected_texture.texture_handle->width;
+    int texture_height = tilemap_state.selected_texture.texture_handle->height;
+
+    int tile_width = texture_width / tilemap_state.atlas_cols;
+    int tile_height = texture_height / tilemap_state.atlas_rows;
+
+    tilemap_state.selected_atlas = Components::TextureAtlas(
+      tile_width,
+      tile_height,
+      tilemap_state.atlas_rows,
+      tilemap_state.atlas_cols
+    );
+
+    tilemap_state.selected_tile_index = 0;
+    tilemap_state.prev_atlas_rows = tilemap_state.atlas_rows;
+    tilemap_state.prev_atlas_cols = tilemap_state.atlas_cols;
+  }
 
   // Helper to generate a unique position key
   std::string get_position_key(const Math::Vec2D& pos, int z_layer) {
@@ -166,54 +198,75 @@ void TilemapPanel() {
   if (ImGui::CollapsingHeader("Atlas Selection", ImGuiTreeNodeFlags_DefaultOpen)) {
     ImGui::Indent();
 
-    // Check if we have a valid texture and atlas
-    bool has_valid_atlas = tilemap_state.selected_texture.texture_handle &&
-      !tilemap_state.selected_atlas.subTextures.empty();
+    // Get all loaded textures from Resources
+    std::vector<std::string> texture_paths;
+    for (const auto& pair : Engine::Resources::texture_cache) {
+      if (auto texture = pair.second.lock()) {
+        texture_paths.push_back(pair.first);
+      }
+    }
 
-    if (!has_valid_atlas) {
-      ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.0f, 1.0f), "No atlas selected");
-      ImGui::Text("Select an entity with Texture and TextureAtlas");
-      ImGui::Text("components from the Entity Editor to use as tileset.");
+    if (texture_paths.empty()) {
+      ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.0f, 1.0f), "No textures loaded in Resources!");
+      ImGui::Text("Load textures first using Resources::load_texture()");
     }
     else {
-      ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Atlas loaded");
-      ImGui::Text("Texture: %dx%d",
-        tilemap_state.selected_texture.texture_handle->width,
-        tilemap_state.selected_texture.texture_handle->height);
-      ImGui::Text("Tiles: %zu", tilemap_state.selected_atlas.subTextures.size());
-      ImGui::Text("Selected tile: %d", tilemap_state.selected_tile_index);
-    }
-
-    // Button to load atlas from selected entity
-    if (ImGui::Button("Load from Selected Entity")) {
-      auto all_entities = Engine::ECS::get_all_entities();
-      bool found = false;
-
-      for (auto& entity : all_entities) {
-        auto* texture = entity.get_component<Components::Texture>();
-        auto* atlas = entity.get_component<Components::TextureAtlas>();
-
-        if (texture && atlas && texture->texture_handle && !atlas->subTextures.empty()) {
-          tilemap_state.selected_texture = *texture;
-          tilemap_state.selected_atlas = *atlas;
-          tilemap_state.selected_tile_index = 0;
-          found = true;
-          break;
+      ImGui::Text("Available Textures:");
+      
+      // Texture selection combo box
+      const char* preview_name = tilemap_state.selected_texture_path.empty() ? 
+        "Select texture..." : tilemap_state.selected_texture_path.c_str();
+      
+      if (ImGui::BeginCombo("##TextureSelect", preview_name)) {
+        for (int i = 0; i < static_cast<int>(texture_paths.size()); ++i) {
+          bool is_selected = (i == tilemap_state.selected_texture_index);
+          if (ImGui::Selectable(texture_paths[i].c_str(), is_selected)) {
+            tilemap_state.selected_texture_index = i;
+            tilemap_state.selected_texture_path = texture_paths[i];
+            
+            // Load the texture
+            if (auto tex = Engine::Resources::texture_cache[texture_paths[i]].lock()) {
+              tilemap_state.selected_texture = Components::Texture(tex);
+              regenerate_atlas();
+            }
+          }
+          if (is_selected) {
+            ImGui::SetItemDefaultFocus();
+          }
         }
+        ImGui::EndCombo();
       }
 
-      if (!found) {
-        ImGui::OpenPopup("No Atlas Found");
-      }
-    }
+      // Atlas configuration
+      if (tilemap_state.selected_texture.texture_handle) {
+        ImGui::Separator();
+        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Atlas Configuration");
+        
+        ImGui::Text("Texture: %dx%d",
+          tilemap_state.selected_texture.texture_handle->width,
+          tilemap_state.selected_texture.texture_handle->height);
 
-    // Error popup
-    if (ImGui::BeginPopupModal("No Atlas Found", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-      ImGui::Text("No entity found with both Texture and TextureAtlas components!");
-      if (ImGui::Button("OK", ImVec2(120, 0))) {
-        ImGui::CloseCurrentPopup();
+        // Rows and columns input
+        bool atlas_changed = false;
+        if (ImGui::DragInt("Rows", &tilemap_state.atlas_rows, 1.0f, 1, 100)) {
+          if (tilemap_state.atlas_rows != tilemap_state.prev_atlas_rows) {
+            atlas_changed = true;
+          }
+        }
+
+        if (ImGui::DragInt("Columns", &tilemap_state.atlas_cols, 1.0f, 1, 100)) {
+          if (tilemap_state.atlas_cols != tilemap_state.prev_atlas_cols) {
+            atlas_changed = true;
+          }
+        }
+
+        if (atlas_changed) {
+          regenerate_atlas();
+        }
+
+        ImGui::Text("Tiles: %zu", tilemap_state.selected_atlas.subTextures.size());
+        ImGui::Text("Selected tile: %d", tilemap_state.selected_tile_index);
       }
-      ImGui::EndPopup();
     }
 
     ImGui::Unindent();
@@ -233,7 +286,7 @@ void TilemapPanel() {
         "TilesetPreview",
         tilemap_state.selected_texture,
         tilemap_state.selected_atlas,
-        300.0f,
+        80.0f,
         [](size_t index) {
           tilemap_state.selected_tile_index = static_cast<int>(index);
         }
