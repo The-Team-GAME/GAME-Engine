@@ -164,7 +164,7 @@ namespace TilemapPanel {
   }
 
   // Public interface
-  void render() {
+  void draw_panel() {
     ImGui::Begin("Tilemap Editor");
 
     ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "Tilemap Painting");
@@ -399,7 +399,7 @@ namespace TilemapPanel {
     ImGui::End();
   }
 
-  void draw() {
+  void draw_overlay() {
     // === HANDLE PAINTING IN WORLD ===
     if (!ImGui::GetIO().WantCaptureMouse) {
       if (painting_enabled && Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {

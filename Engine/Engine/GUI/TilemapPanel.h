@@ -15,10 +15,8 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "../Components/Components.h"
 #include "../Math/Vector2D.h"
 #include <string>
-#include <unordered_set>
 
 namespace TilemapPanel {
   /*=================================================================================
@@ -29,7 +27,7 @@ namespace TilemapPanel {
   Where to call it:
   Called during the ImGui phase of the main game loop, before rendering begins.
   ==================================================================================*/
-  void render();
+  void draw_panel();
 
   /*=================================================================================
   Function Brief:
@@ -40,7 +38,7 @@ namespace TilemapPanel {
   Called during the rendering phase after begin_batch() has been called and before
   end_batch().
   ==================================================================================*/
-  void draw();
+  void draw_overlay();
 
   /* =============================  Helper Functions  ============================= */
 
