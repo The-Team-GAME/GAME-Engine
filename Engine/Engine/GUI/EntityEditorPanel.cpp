@@ -19,7 +19,7 @@
 #include "../Resources.h"
 #include "../Components/Components.h"
 
-bool EntityEditorPanelHelpers::render_specialized_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity* entity) {
+bool EntityEditorPanelHelpers::render_specialized_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity) {
   if (display_name == "Components::Color") {
     ImVec4 colorVec(
       static_cast<float>(field_value["r"].getDouble()),
@@ -199,11 +199,9 @@ bool EntityEditorPanelHelpers::render_specialized_field(const std::string& displ
 
     // Try to get the texture from the entity's Texture component
     Engine::Graphics::Texture atlas_texture = nullptr;
-    if (entity && entity->has_component<Components::Texture>()) {
-      auto* texture_component = entity->get_component<Components::Texture>();
-      if (texture_component) {
-        atlas_texture = texture_component->texture_handle;
-      }
+    auto* texture_component = entity.get_component<Components::Texture>();
+    if (texture_component) {
+      atlas_texture = texture_component->texture_handle;
     }
 
     if (!tex_coords_list.empty() && draw_index >= 0 && draw_index < static_cast<int>(tex_coords_list.size())) {
@@ -352,7 +350,7 @@ bool EntityEditorPanelHelpers::render_specialized_field(const std::string& displ
   return false;
 }
 
-bool EntityEditorPanelHelpers::render_generic_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity* entity) {
+bool EntityEditorPanelHelpers::render_generic_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity) {
   if (field_value.isBool()) {
     bool val = field_value.getBool();
     if (ImGui::Checkbox(display_name.c_str(), &val)) {
@@ -451,7 +449,7 @@ bool EntityEditorPanelHelpers::render_generic_field(const std::string& display_n
   return true;
 }
 
-void EntityEditorPanelHelpers::render_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity* entity) {
+void EntityEditorPanelHelpers::render_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity) {
 
   // First try specialized rendering, then fallback to generic
   render_specialized_field(display_name, field_value, modified, entity) || render_generic_field(display_name, field_value, modified, entity);
@@ -463,7 +461,7 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
     auto component_data = array->to_generic_value(entity.get_id());
     bool modified = false;
 
-    render_field(component_name, component_data, modified, &entity);
+    render_field(component_name, component_data, modified, entity);
 
     // Write back changes if modified
     if (modified) {

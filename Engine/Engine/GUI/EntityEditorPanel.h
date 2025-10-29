@@ -34,7 +34,7 @@ namespace EntityEditorPanelHelpers {
   Called from render_field to attempt specialized rendering before falling back to
   generic.
   ==================================================================================*/
-  bool render_specialized_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity* entity = nullptr);
+  bool render_specialized_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity);
 
   /*=================================================================================
   Function Brief:
@@ -52,7 +52,7 @@ namespace EntityEditorPanelHelpers {
   Where to call it:
   Called from render_field as a fallback after specialized rendering fails.
   ==================================================================================*/
-  bool render_generic_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity* entity = nullptr);
+  bool render_generic_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity);
 
 
   /*=================================================================================
@@ -70,7 +70,7 @@ namespace EntityEditorPanelHelpers {
   Called recursively for nested fields and from render_component_tree to render
   component data.
   ==================================================================================*/
-  void render_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity* entity = nullptr);
+  void render_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity);
 
   /*=================================================================================
   Function Brief:
