@@ -350,14 +350,14 @@ void TilemapPanel_Draw() {
     Engine::Graphics::Camera camera = Engine::Graphics::get_camera();
 
     // Calculate visible area in world space
-    float half_width = (virtual_res.x / 2.0f) / camera.zoom;
-    float half_height = (virtual_res.y / 2.0f) / camera.zoom;
+    // Camera position is typically top-left corner in 2D
+    float view_width = virtual_res.x / camera.zoom;
+    float view_height = virtual_res.y / camera.zoom;
 
-    Math::Vec2D camera_center = camera.position;
-    float visible_left = camera_center.x - half_width;
-    float visible_right = camera_center.x + half_width;
-    float visible_top = camera_center.y - half_height;
-    float visible_bottom = camera_center.y + half_height;
+    float visible_left = camera.position.x;
+    float visible_right = camera.position.x + view_width;
+    float visible_top = camera.position.y;
+    float visible_bottom = camera.position.y + view_height;
 
     // Calculate grid line positions
     float grid_size = tilemap_state.grid_snap;
