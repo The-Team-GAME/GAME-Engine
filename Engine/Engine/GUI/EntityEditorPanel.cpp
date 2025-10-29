@@ -17,8 +17,9 @@
 #include "EntityEditorPanel.h"
 #include "ResourcePicker.h"
 #include "../Resources.h"
+#include "../Components/Components.h"
 
-bool EntityEditorPanelHelpers::render_specialized_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified) {
+bool EntityEditorPanelHelpers::render_specialized_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity* entity) {
   if (display_name == "Components::Color") {
     ImVec4 colorVec(
       static_cast<float>(field_value["r"].getDouble()),
@@ -175,11 +176,183 @@ bool EntityEditorPanelHelpers::render_specialized_field(const std::string& displ
     return true;
   }
 
+  if (display_name == "Components::TextureAtlas") {
+    // Get the tex_coords_list array and drawIndex
+    if (!field_value["tex_coords_list"].isArray() || !field_value["drawIndex"].isInt()) {
+      ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Invalid TextureAtlas data");
+      return true;
+    }
+
+    auto& tex_coords_list = field_value["tex_coords_list"].getArray();
+    int draw_index = static_cast<int>(field_value["drawIndex"].getInt());
+
+    ImGui::Text("TextureAtlas Info:");
+    ImGui::Text("Total SubTextures: %zu", tex_coords_list.size());
+
+    // Draw index selector
+    if (ImGui::DragInt("Draw Index", &draw_index, 1.0f, 0, static_cast<int>(tex_coords_list.size()) - 1)) {
+      field_value["drawIndex"] = static_cast<ReflectionLibrary::Integer>(draw_index);
+      modified = true;
+    }
+
+    ImGui::Separator();
+
+    // Try to get the texture from the entity's Texture component
+    Engine::Graphics::Texture atlas_texture = nullptr;
+    if (entity && entity->has_component<Components::Texture>()) {
+      auto* texture_component = entity->get_component<Components::Texture>();
+      if (texture_component) {
+        atlas_texture = texture_component->texture_handle;
+      }
+    }
+
+    if (!tex_coords_list.empty() && draw_index >= 0 && draw_index < static_cast<int>(tex_coords_list.size())) {
+      if (atlas_texture && atlas_texture->id != 0) {
+        ImGui::Text("Atlas Preview:");
+
+        // Calculate display size while maintaining aspect ratio
+        float max_preview_width = 400.0f;
+        float max_preview_height = 400.0f;
+
+        float aspect_ratio = static_cast<float>(atlas_texture->width) / static_cast<float>(atlas_texture->height);
+        float display_width = max_preview_width;
+        float display_height = max_preview_width / aspect_ratio;
+
+        if (display_height > max_preview_height) {
+          display_height = max_preview_height;
+          display_width = max_preview_height * aspect_ratio;
+        }
+
+        ImVec2 image_size(display_width, display_height);
+        ImVec2 uv0(0, 0);
+        ImVec2 uv1(1, 1);
+
+        // Calculate grid based on UV coordinates FIRST
+        std::vector<std::array<float, 4>> uv_bounds; // x0, y0, x1, y1 for each subtexture
+
+        for (size_t i = 0; i < tex_coords_list.size(); ++i) {
+          auto& coords_array = tex_coords_list[i].getArray();
+          
+          // Each element is an array of 4 Vec2D objects (represented as objects with x,y)
+          // tex_coords are [bottom-left, bottom-right, top-right, top-left]
+          if (coords_array.size() == 4) {
+            std::vector<std::array<float, 2>> corners;
+            
+            for (size_t j = 0; j < 4; ++j) {
+              // Each corner should be an object with x and y fields
+              if (coords_array[j].isObject()) {
+                auto& corner_obj = coords_array[j].getObject();
+                if (corner_obj.find("x") != corner_obj.end() && corner_obj.find("y") != corner_obj.end()) {
+                  float x = static_cast<float>(corner_obj.at("x").getDouble());
+                  float y = static_cast<float>(corner_obj.at("y").getDouble());
+                  corners.push_back({x, y});
+                }
+              }
+              // Fallback: try array format [x, y]
+              else if (coords_array[j].isArray() && coords_array[j].getArray().size() == 2) {
+                float x = static_cast<float>(coords_array[j].getArray()[0].getDouble());
+                float y = static_cast<float>(coords_array[j].getArray()[1].getDouble());
+                corners.push_back({x, y});
+              }
+            }
+            
+            if (corners.size() == 4) {
+              // Find min and max for this specific subtexture
+              float min_x = corners[0][0];
+              float min_y = corners[0][1];
+              float max_x = corners[0][0];
+              float max_y = corners[0][1];
+              
+              for (size_t j = 1; j < 4; ++j) {
+                min_x = std::min(min_x, corners[j][0]);
+                min_y = std::min(min_y, corners[j][1]);
+                max_x = std::max(max_x, corners[j][0]);
+                max_y = std::max(max_y, corners[j][1]);
+              }
+              
+              uv_bounds.push_back({ min_x, min_y, max_x, max_y });
+            }
+          }
+        }
+
+        // Debug: Show how many bounds we found
+        ImGui::Text("Grid cells found: %zu", uv_bounds.size());
+
+        // Get cursor position before drawing image
+        ImVec2 image_pos = ImGui::GetCursorScreenPos();
+
+        // Draw the texture
+        ImGui::Image(
+          (ImTextureID)(intptr_t)atlas_texture->id,
+          image_size,
+          uv0, uv1,
+          ImVec4(1, 1, 1, 1),
+          ImVec4(0, 0, 0, 0)
+        );
+
+        // Draw grid lines over the texture (AFTER the Image call)
+        ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+        for (size_t i = 0; i < uv_bounds.size(); ++i) {
+          float x0 = image_pos.x + uv_bounds[i][0] * display_width;
+          float y0 = image_pos.y + uv_bounds[i][1] * display_height;
+          float x1 = image_pos.x + uv_bounds[i][2] * display_width;
+          float y1 = image_pos.y + uv_bounds[i][3] * display_height;
+
+          // Draw border for each cell
+          ImU32 border_color = (i == static_cast<size_t>(draw_index))
+            ? IM_COL32(255, 255, 0, 255)  // Yellow for selected
+            : IM_COL32(0, 255, 0, 180);    // Green for others
+
+          float thickness = (i == static_cast<size_t>(draw_index)) ? 3.0f : 1.5f;
+
+          draw_list->AddRect(ImVec2(x0, y0), ImVec2(x1, y1), border_color, 0.0f, 0, thickness);
+
+          // Draw index number in the center of each cell
+          char index_text[16];
+          snprintf(index_text, sizeof(index_text), "%zu", i);
+          ImVec2 text_size = ImGui::CalcTextSize(index_text);
+          ImVec2 text_pos((x0 + x1) * 0.5f - text_size.x * 0.5f, (y0 + y1) * 0.5f - text_size.y * 0.5f);
+
+          // Draw text background for better visibility
+          ImVec2 text_bg_min(text_pos.x - 2, text_pos.y - 2);
+          ImVec2 text_bg_max(text_pos.x + text_size.x + 2, text_pos.y + text_size.y + 2);
+          draw_list->AddRectFilled(text_bg_min, text_bg_max, IM_COL32(0, 0, 0, 180));
+
+          ImU32 text_color = (i == static_cast<size_t>(draw_index))
+            ? IM_COL32(255, 255, 0, 255)
+            : IM_COL32(255, 255, 255, 255);
+          draw_list->AddText(text_pos, text_color, index_text);
+        }
+
+        // Show detailed info about current subtexture
+        if (draw_index >= 0 && draw_index < static_cast<int>(uv_bounds.size())) {
+          ImGui::Text("Current SubTexture [%d]:", draw_index);
+          ImGui::Text("  UV Bounds: (%.3f, %.3f) -> (%.3f, %.3f)",
+            uv_bounds[draw_index][0], uv_bounds[draw_index][1],
+            uv_bounds[draw_index][2], uv_bounds[draw_index][3]);
+
+          // Calculate pixel dimensions
+          int pixel_width = static_cast<int>((uv_bounds[draw_index][2] - uv_bounds[draw_index][0]) * atlas_texture->width);
+          int pixel_height = static_cast<int>((uv_bounds[draw_index][3] - uv_bounds[draw_index][1]) * atlas_texture->height);
+
+          ImGui::Text("  Pixel Size: %d x %d", pixel_width, pixel_height);
+        }
+      }
+      else {
+        ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.0f, 1.0f), "No texture found on entity!");
+        ImGui::TextWrapped("Add a Texture component to this entity to preview the atlas.");
+      }
+    }
+
+    return true;
+  }
+
   // Not drawn here
   return false;
 }
 
-bool EntityEditorPanelHelpers::render_generic_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified) {
+bool EntityEditorPanelHelpers::render_generic_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity* entity) {
   if (field_value.isBool()) {
     bool val = field_value.getBool();
     if (ImGui::Checkbox(display_name.c_str(), &val)) {
@@ -214,7 +387,7 @@ bool EntityEditorPanelHelpers::render_generic_field(const std::string& display_n
   else if (field_value.isObject()) {
     auto& nested_fields = field_value.getObject();
     for (auto& [nested_name, nested_value] : nested_fields) {
-      render_field(display_name + "::" + nested_name, nested_value, modified);
+      render_field(display_name + "::" + nested_name, nested_value, modified, entity);
     }
   }
   else if (field_value.isArray()) {
@@ -264,7 +437,7 @@ bool EntityEditorPanelHelpers::render_generic_field(const std::string& display_n
         }
 
         // Render the element using the generic field renderer
-        render_field(element_label, array[i], modified);
+        render_field(element_label, array[i], modified, entity);
 
         ImGui::PopID();
       }
@@ -278,10 +451,10 @@ bool EntityEditorPanelHelpers::render_generic_field(const std::string& display_n
   return true;
 }
 
-void EntityEditorPanelHelpers::render_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified) {
+void EntityEditorPanelHelpers::render_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity* entity) {
 
   // First try specialized rendering, then fallback to generic
-  render_specialized_field(display_name, field_value, modified) || render_generic_field(display_name, field_value, modified);
+  render_specialized_field(display_name, field_value, modified, entity) || render_generic_field(display_name, field_value, modified, entity);
 }
 
 void EntityEditorPanelHelpers::render_component_tree(const std::string& component_name, Engine::ECS::Entity& entity, Engine::ECS::IComponentArray* array)
@@ -290,7 +463,7 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
     auto component_data = array->to_generic_value(entity.get_id());
     bool modified = false;
 
-    render_field(component_name, component_data, modified);
+    render_field(component_name, component_data, modified, &entity);
 
     // Write back changes if modified
     if (modified) {

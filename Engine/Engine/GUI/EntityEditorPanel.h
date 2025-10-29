@@ -34,7 +34,7 @@ namespace EntityEditorPanelHelpers {
   Called from render_field to attempt specialized rendering before falling back to
   generic.
   ==================================================================================*/
-  bool render_specialized_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified);
+  bool render_specialized_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity* entity = nullptr);
 
   /*=================================================================================
   Function Brief:
@@ -47,11 +47,12 @@ namespace EntityEditorPanelHelpers {
   display_name - The name to display for the field in the UI
   field_value  - Reference to the GenericValue containing the field data
   modified     - [out] Set to true if the field value was modified by user input
+  entity       - Optional pointer to the entity being edited (for accessing related components)
 
   Where to call it:
   Called from render_field as a fallback after specialized rendering fails.
   ==================================================================================*/
-  bool render_generic_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified);
+  bool render_generic_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity* entity = nullptr);
 
 
   /*=================================================================================
@@ -63,12 +64,13 @@ namespace EntityEditorPanelHelpers {
   display_name - The name to display for the field in the UI
   field_value  - Reference to the GenericValue containing the field data
   modified     - [out] Set to true if the field value was modified by user input
+  entity       - Optional pointer to the entity being edited (for accessing related components)
 
   Where to call it:
   Called recursively for nested fields and from render_component_tree to render
   component data.
   ==================================================================================*/
-  void render_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified);
+  void render_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity* entity = nullptr);
 
   /*=================================================================================
   Function Brief:
