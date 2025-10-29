@@ -143,21 +143,18 @@ namespace TilemapPanel {
       return;
     }
 
-    Engine::ECS::Entity tile = Engine::ECS::create_entity().add_component<Components::Tile>();
+    Engine::ECS::Entity tile = Engine::ECS::create_entity()
+      .add_component<Components::Tile>()
+      .add_component<Components::Transform2D>(
+        grid_pos,
+        0.0f,
+        Math::Vec2D{ grid_snap, grid_snap }
+      )
+      .add_component<Components::Texture>(selected_texture)
+      .add_component<Components::TextureAtlas>(selected_atlas)
+      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
 
-    tile.add_component<Components::Transform2D>(
-      grid_pos,
-      0.0f,
-      Math::Vec2D{ grid_snap, grid_snap }
-    );
-
-    tile.add_component<Components::Texture>(selected_texture);
-
-    Components::TextureAtlas atlas = selected_atlas;
-    atlas.drawIndex = selected_tile_index;
-    tile.add_component<Components::TextureAtlas>(atlas);
-
-    tile.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
+    tile.get_component<Components::TextureAtlas>()->drawIndex = selected_tile_index;
 
     placed_tiles.insert(pos_key);
   }
