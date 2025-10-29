@@ -34,9 +34,8 @@ namespace {
     bool show_grid = true;
     bool painting_enabled = false;
     bool erasing_enabled = false;
-    float tile_width = 64.0f;
-    float tile_height = 64.0f;
     float grid_snap = 64.0f;
+    float prev_grid_snap = 64.0f;  // Track previous value to detect changes
     Math::Vec2D grid_offset = { 0.0f, 0.0f };
     int z_layer = 0;
 
@@ -83,6 +82,21 @@ namespace {
     }
   }
 
+  // Helper to update all existing tile entities with new dimensions
+  void update_all_tile_dimensions() {
+    auto all_entities = Engine::ECS::get_all_entities();
+    for (auto& entity : all_entities) {
+      // Check if this is a tile entity (has Tile component)
+      if (entity.has_component<Components::Tile>()) {
+        auto* transform = entity.get_component<Components::Transform2D>();
+        if (transform) {
+          // Update the scale to match new grid snap size
+          transform->scale = Math::Vec2D{ tilemap_state.grid_snap, tilemap_state.grid_snap };
+        }
+      }
+    }
+  }
+
   // Helper to place tile at position
   void place_tile_at_position(const Math::Vec2D& world_pos) {
     if (!tilemap_state.selected_texture.texture_handle ||
@@ -101,13 +115,13 @@ namespace {
     }
 
     // Create new tile entity
-    Engine::ECS::Entity tile = Engine::ECS::create_entity();
+    Engine::ECS::Entity tile = Engine::ECS::create_entity().add_component<Components::Tile>();
 
-    // Add transform (scale should match the tile dimensions)
+    // Add transform (scale should match the grid snap size)
     tile.add_component<Components::Transform2D>(
       grid_pos,
       0.0f,
-      Math::Vec2D{ tilemap_state.tile_width, tilemap_state.tile_height }
+      Math::Vec2D{ tilemap_state.grid_snap, tilemap_state.grid_snap }
     );
 
     // Add texture
@@ -242,9 +256,15 @@ void TilemapPanel() {
     // Grid controls
     ImGui::Checkbox("Show Grid", &tilemap_state.show_grid);
 
-    ImGui::DragFloat("Grid Snap Size", &tilemap_state.grid_snap, 1.0f, 1.0f, 256.0f, "%.1f");
-    ImGui::DragFloat("Tile Width", &tilemap_state.tile_width, 1.0f, 1.0f, 256.0f, "%.1f");
-    ImGui::DragFloat("Tile Height", &tilemap_state.tile_height, 1.0f, 1.0f, 256.0f, "%.1f");
+    // Tile size with change detection
+    if (ImGui::DragFloat("Tile Size", &tilemap_state.grid_snap, 1.0f, 1.0f, 256.0f, "%.1f")) {
+      if (tilemap_state.grid_snap != tilemap_state.prev_grid_snap) {
+        update_all_tile_dimensions();
+        tilemap_state.prev_grid_snap = tilemap_state.grid_snap;
+      }
+    }
+    ImGui::SameLine();
+    ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(Updates all tiles)");
 
     ImGui::DragFloat2("Grid Offset", &tilemap_state.grid_offset.x, 1.0f, -1000.0f, 1000.0f, "%.1f");
 
