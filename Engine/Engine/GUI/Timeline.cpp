@@ -114,9 +114,6 @@ void Timeline::draw() {
       else {
         // No clips, safe to remove immediately
         layers.pop_back();
-
-        // After removing the layer, adjust all remaining clip layers that were above it
-        // (Not needed if you only pop_back(), but good practice if removing a middle layer)
       }
     }
 
@@ -305,6 +302,7 @@ void Timeline::draw() {
         m_activeClipID = clip.id;
         m_manipulationMode = 2; // Resize Right
         m_dragStartDuration = clip.duration_frames;
+        ImGui::ResetMouseDragDelta(0);
       }
 
       // B. Resize Left Handle (Two-sided scaling)
@@ -320,6 +318,7 @@ void Timeline::draw() {
         m_manipulationMode = 3; // Resize Left
         m_dragStartFrame = clip.start_frame;
         m_dragStartDuration = clip.duration_frames;
+        ImGui::ResetMouseDragDelta(0);
       }
 
       // C. Drag/Move Handle (Pull/Move the image)
@@ -334,6 +333,7 @@ void Timeline::draw() {
         m_activeClipID = clip.id;
         m_manipulationMode = 1; // Move
         m_dragStartFrame = clip.start_frame;
+        ImGui::ResetMouseDragDelta(0);
       }
 
       // Apply visual cursor change based on hovering
@@ -366,35 +366,55 @@ void Timeline::draw() {
       }
 
       if (activeClip) {
-        std::cout << "hello!";
-        f32 dragDeltaX = ImGui::GetMouseDragDelta(0).x;
-        s32 frameDelta = (s32)std::round(dragDeltaX / frameWidth);
+        //Get total drag delta and map to frame count
+        ImVec2 dragDelta = ImGui::GetMouseDragDelta(0);
 
-        // Calculates current frame under mouse for RESIZING
-        s32 currentDragFrame = (s32)std::round((mousePos.x - p.x) / frameWidth);
+        f32 frameFloat = (mousePos.x - p.x) / frameWidth;
+        s32 snappedDragFrame = (s32)std::round(frameFloat);
+
+        // Ensure frame index is clamped within bounds
+        snappedDragFrame = std::max(0, std::min(snappedDragFrame, numFrames));
+
 
         if (m_manipulationMode == 1) { // Move
+
+          // Calculate frame delta from drag distance
+          s32 frameDelta = (s32)std::round(dragDelta.x / frameWidth);
+
           s32 newStartFrame = m_dragStartFrame + frameDelta;
+
           activeClip->start_frame = std::max(0, newStartFrame);
+
+          ImGui::ResetMouseDragDelta(0);
         }
         else if (m_manipulationMode == 2) { // Resize Right
-          s32 newEndFrame = currentDragFrame;
+          // Use the snapped mouse position to define the new end frame
+          s32 newEndFrame = snappedDragFrame;
+
+          // The new duration is the difference between the new snapped end frame and the start frame
           s32 newDuration = newEndFrame - activeClip->start_frame;
+
+          // Clamp duration to a minimum of 1 frame
           activeClip->duration_frames = std::max(1, newDuration);
-          std::cout << "righting";
         }
         else if (m_manipulationMode == 3) { // Resize Left
-          s32 newStartFrame = currentDragFrame;
-          s32 oldEndFrame = m_dragStartFrame + m_dragStartDuration;
+          s32 oldEndFrame = m_dragStartFrame + m_dragStartDuration; // End frame is fixed during left-resize
+
+          // Use the snapped mouse position to define the new start frame
+          s32 newStartFrame = snappedDragFrame;
           s32 newDuration = oldEndFrame - newStartFrame;
 
           if (newDuration >= 1 && newStartFrame >= 0) {
             activeClip->start_frame = newStartFrame;
             activeClip->duration_frames = newDuration;
           }
-          else if (newStartFrame < 0) {
+          else if (newStartFrame < 0) { // Clamp start frame to 0
             activeClip->start_frame = 0;
             activeClip->duration_frames = oldEndFrame;
+          }
+          else if (newDuration < 1) { // Clamp duration to 1 frame minimum
+            activeClip->start_frame = oldEndFrame - 1;
+            activeClip->duration_frames = 1;
           }
         }
       }
