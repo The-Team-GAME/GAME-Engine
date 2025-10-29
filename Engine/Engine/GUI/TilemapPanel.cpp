@@ -102,11 +102,11 @@ namespace {
     // Create new tile entity
     Engine::ECS::Entity tile = Engine::ECS::create_entity();
 
-    // Add transform
+    // Add transform (scale should match the tile dimensions)
     tile.add_component<Components::Transform2D>(
       grid_pos,
       0.0f,
-      Math::Vec2D{ tilemap_state.tile_width / 32.0f, tilemap_state.tile_height / 32.0f }
+      Math::Vec2D{ tilemap_state.tile_width, tilemap_state.tile_height }
     );
 
     // Add texture
