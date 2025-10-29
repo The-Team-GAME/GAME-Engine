@@ -15,5 +15,15 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-void TilemapPanel();
-void TilemapPanel_Draw(); // Called during rendering phase to draw grid and handle painting
+#include "../Components/Components.h"
+#include "../Math/Vector2D.h"
+#include <string>
+#include <unordered_set>
+
+namespace TilemapPanel {
+  // Render the ImGui panel
+  void render();
+
+  // Called during rendering phase to draw grid and handle painting
+  void draw();
+}

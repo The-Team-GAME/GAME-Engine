@@ -189,13 +189,13 @@ namespace Engine
       ResourceManagerPanel();
       EntityEditorPanel();
       CameraPanel();
-      TilemapPanel();
+      TilemapPanel::render();
 
       // Clear screen (automatically begins batch)
       // start of draw stuff
       StateManager::get_current_state()->draw();
       Engine::ECS::draw();
-      TilemapPanel_Draw(); // Draw tilemap grid and handle painting
+      TilemapPanel::draw(); // Draw tilemap grid and handle painting
 
       // end of draw stuff (flush remaining batches)
       Engine::Graphics::end_batch();
