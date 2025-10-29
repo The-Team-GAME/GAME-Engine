@@ -29,7 +29,7 @@ namespace TilemapPanel {
     Components::Texture selected_texture;
     Components::TextureAtlas selected_atlas;
     int selected_tile_index = 0;
-    bool show_grid = true;
+    bool show_grid = false;
     bool painting_enabled = false;
     bool erasing_enabled = false;
     float grid_snap = 64.0f;
