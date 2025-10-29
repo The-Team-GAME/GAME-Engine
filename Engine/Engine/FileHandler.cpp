@@ -2,9 +2,8 @@
 // file:    FileHandler.cpp
 // project: Monkey Stole My GPA
 //
-// author:  Cheng Ming Xian (70%)
+// author:  Cheng Ming Xian (100%)
 //          Primary author
-//					Shee Yang (30%)
 //
 // email:   c.mingxian@digipen.edu, chew.s@digipen.edu
 //
@@ -117,133 +116,6 @@ namespace FileHandler {
   {
     return has_key(key) ? m_document[container.c_str()][key.c_str()].GetString()
       : default_string;
-  }
-
-  // Array support
-  bool is_array(const std::string& key)
-  {
-    if (!has_key(key)) return false;
-
-    const rj::Value& entity = m_document[container.c_str()];
-    return entity[key.c_str()].IsArray();
-  }
-
-  s32 get_array_size(const std::string& key)
-  {
-    if (!is_array(key)) return 0;
-
-    const rj::Value& entity = m_document[container.c_str()];
-    return static_cast<s32>(entity[key.c_str()].Size());
-  }
-
-  std::string get_string_from_array(const std::string& key, s32 index)
-  {
-    if (!is_array(key)) return default_string;
-
-    const rj::Value& entity = m_document[container.c_str()];
-    const rj::Value& array = entity[key.c_str()];
-
-    if (index < 0 || index >= static_cast<s32>(array.Size())) {
-      return default_string;
-    }
-
-    if (array[index].IsString()) {
-      return array[index].GetString();
-    }
-    return default_string;
-  }
-
-  f32 get_f32_from_array(const std::string& key, s32 index)
-  {
-    if (!is_array(key)) return default_f32;
-
-    const rj::Value& entity = m_document[container.c_str()];
-    const rj::Value& array = entity[key.c_str()];
-
-    if (index < 0 || index >= static_cast<s32>(array.Size())) {
-      return default_f32;
-    }
-
-    if (array[index].IsNumber()) {
-      return static_cast<f32>(array[index].GetFloat());
-    }
-    return default_f32;
-  }
-
-  s32 get_s32_from_array(const std::string& key, s32 index)
-  {
-    if (!is_array(key)) return default_s32;
-
-    const rj::Value& entity = m_document[container.c_str()];
-    const rj::Value& array = entity[key.c_str()];
-
-    if (index < 0 || index >= static_cast<s32>(array.Size())) {
-      return default_s32;
-    }
-
-    if (array[index].IsInt()) {
-      return array[index].GetInt();
-    }
-    return default_s32;
-  }
-
-  bool has_key_in_array_object(const std::string& arrayKey, s32 index, const std::string& objectKey)
-  {
-    if (!is_array(arrayKey)) return false;
-
-    const rj::Value& entity = m_document[container.c_str()];
-    const rj::Value& array = entity[arrayKey.c_str()];
-
-    if (index < 0 || index >= static_cast<s32>(array.Size())) {
-      return false;
-    }
-
-    if (array[index].IsObject()) {
-      return array[index].HasMember(objectKey.c_str());
-    }
-    return false;
-  }
-
-  std::string get_string_from_array_object(const std::string& arrayKey, s32 index, const std::string& objectKey)
-  {
-    if (!has_key_in_array_object(arrayKey, index, objectKey)) return default_string;
-
-    const rj::Value& entity = m_document[container.c_str()];
-    const rj::Value& array = entity[arrayKey.c_str()];
-    const rj::Value& value = array[index][objectKey.c_str()];
-
-    if (value.IsString()) {
-      return value.GetString();
-    }
-    return default_string;
-  }
-
-  f32 get_f32_from_array_object(const std::string& arrayKey, s32 index, const std::string& objectKey)
-  {
-    if (!has_key_in_array_object(arrayKey, index, objectKey)) return default_f32;
-
-    const rj::Value& entity = m_document[container.c_str()];
-    const rj::Value& array = entity[arrayKey.c_str()];
-    const rj::Value& value = array[index][objectKey.c_str()];
-
-    if (value.IsNumber()) {
-      return static_cast<f32>(value.GetFloat());
-    }
-    return default_f32;
-  }
-
-  s32 get_s32_from_array_object(const std::string& arrayKey, s32 index, const std::string& objectKey)
-  {
-    if (!has_key_in_array_object(arrayKey, index, objectKey)) return default_s32;
-
-    const rj::Value& entity = m_document[container.c_str()];
-    const rj::Value& array = entity[arrayKey.c_str()];
-    const rj::Value& value = array[index][objectKey.c_str()];
-
-    if (value.IsInt()) {
-      return value.GetInt();
-    }
-    return default_s32;
   }
 }
 

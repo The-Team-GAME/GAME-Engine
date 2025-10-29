@@ -7,344 +7,82 @@
 //
 // email:   chew.s@digipen.edu
 //
-// brief:   This file defines the EntityEditorPanel ImGui interface for runtime
-//          entity and component manipulation. Provides a GUI for creating, deleting,
-//          and editing entities and their components during gameplay.
+// brief:   This file declares the EntityEditorPanel ImGui interface for runtime
+//          entity and component manipulation. Uses reflection to automatically
+//          generate component editor fields.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
-#include "imgui.h"
-#include "Core.h"
-#include "../Components/Components.h"
+
 #include <string>
-#include <vector>
+#include "../Reflection/ReflectionLibrary.h"
 #include "../ECS/ECS.h"
 
-inline void EntityEditorPanel()
-{
-  static s32 selected_entity_id = -1;
-  static char entitySearchBuffer[256] = "";
+namespace EntityEditorPanelHelpers {
+  /*=================================================================================
+  Function Brief:
+  Renders specialized UI fields for specific component types (e.g., Color, Texture,
+  Font). Returns true if the field was handled and rendered, false otherwise.
 
-  ImGui::Begin("Entity Editor");
+  Parameters:
+  display_name - The name to display for the field in the UI
+  field_value  - Reference to the GenericValue containing the field data
+  modified     - [out] Set to true if the field value was modified by user input
 
-  // Section 1: Entity List
-  if (ImGui::CollapsingHeader("Entities", ImGuiTreeNodeFlags_DefaultOpen))
-  {
-    ImGui::Text("Total Entities: %zu", Engine::ECS::get_entity_count());
+  Where to call it:
+  Called from render_field to attempt specialized rendering before falling back to
+  generic.
+  ==================================================================================*/
+  bool render_specialized_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified);
 
-    // Search/Filter
-    ImGui::InputText("Search", entitySearchBuffer, 256);
+  /*=================================================================================
+  Function Brief:
+  Renders generic UI fields for basic types (bool, int, double, string) and handles
+  nested objects and arrays (with limited array support).
+  Always returns true as it handles all generic cases.
 
-    ImGui::Separator();
+  Parameters:
+  display_name - The name to display for the field in the UI
+  field_value  - Reference to the GenericValue containing the field data
+  modified     - [out] Set to true if the field value was modified by user input
 
-    // Entity list with selection
-    ImGui::BeginChild("EntityList", ImVec2(0, 200), true);
+  Where to call it:
+  Called from render_field as a fallback after specialized rendering fails.
+  ==================================================================================*/
+  bool render_generic_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified);
 
-    auto allEntities = Engine::ECS::get_all_entities();
-    for (const auto& entity : allEntities)
-    {
-      bool isSelected = (selected_entity_id == static_cast<int>(entity.get_id()));
-      std::string label = "Entity " + std::to_string(entity.get_id());
 
-      if (ImGui::Selectable(label.c_str(), isSelected))
-      {
-        selected_entity_id = static_cast<int>(entity.get_id());
-      }
-    }
+  /*=================================================================================
+  Function Brief:
+  Attempts to render a field using specialized rendering first, then falls back to
+  generic rendering.
 
-    ImGui::EndChild();
+  Parameters:
+  display_name - The name to display for the field in the UI
+  field_value  - Reference to the GenericValue containing the field data
+  modified     - [out] Set to true if the field value was modified by user input
 
-    // Create new entity button
-    if (ImGui::Button("Create New Entity"))
-    {
-      auto newEntity = Engine::ECS::create_entity();
-      selected_entity_id = static_cast<int>(newEntity.get_id());
-    }
+  Where to call it:
+  Called recursively for nested fields and from render_component_tree to render
+  component data.
+  ==================================================================================*/
+  void render_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified);
 
-    ImGui::SameLine();
+  /*=================================================================================
+  Function Brief:
+  Renders a collapsible tree node for a component, including its fields and a remove
+  button. Handles writing back modified data to the component array.
 
-    // Delete selected entity
-    if (selected_entity_id != -1 && ImGui::Button("Delete Selected"))
-    {
-      Engine::ECS::destroy_entity(selected_entity_id);
-      selected_entity_id = -1;
-    }
-  }
+  Parameters:
+  component_name - The name of the component type
+  entity         - Reference to the entity owning the component
+  array          - Pointer to the component array containing the component data
 
-  ImGui::Separator();
+  Where to call it:
+  Called from EntityEditorPanel for each reflectable component on the selected entity.
+  ==================================================================================*/
+  void render_component_tree(const std::string& component_name, Engine::ECS::Entity& entity, Engine::ECS::IComponentArray* array);
+};
 
-  // Section 2: Component Editor for Selected Entity
-  if (selected_entity_id != -1)
-  {
-    auto entity = Engine::ECS::get_entity(selected_entity_id);
-
-    if (!entity.is_valid())
-    {
-      selected_entity_id = -1;
-      ImGui::End();
-      return;
-    }
-
-    ImGui::Text("Editing Entity: %d", selected_entity_id);
-    ImGui::Separator();
-
-    // Add Component Section
-    if (ImGui::CollapsingHeader("Add Component"))
-    {
-      if (ImGui::Button("Add Transform2D"))
-      {
-        if (!entity.has_component<Components::Transform2D>())
-          entity.add_component<Components::Transform2D>();
-      }
-
-      ImGui::SameLine();
-
-      if (ImGui::Button("Add Color"))
-      {
-        if (!entity.has_component<Components::Color>())
-          entity.add_component<Components::Color>();
-      }
-
-      if (ImGui::Button("Add Text"))
-      {
-        if (!entity.has_component<Components::Text>())
-          entity.add_component<Components::Text>("Sample Text");
-      }
-    }
-
-    ImGui::Separator();
-
-    // Edit Components Section
-    if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
-    {
-      // Transform2D Component
-      if (entity.has_component<Components::Transform2D>())
-      {
-        if (ImGui::TreeNode("Transform2D"))
-        {
-          auto* transform = entity.get_component<Components::Transform2D>();
-
-          ImGui::Text("Position:");
-          ImGui::DragFloat("X##pos", &transform->position.x, 1.0f);
-          ImGui::DragFloat("Y##pos", &transform->position.y, 1.0f);
-
-          ImGui::Separator();
-          ImGui::Text("Rotation:");
-          ImGui::SliderFloat("Angle (degrees)", &transform->rotation, 0.0f, 360.0f);
-
-          ImGui::Separator();
-          ImGui::Text("Scale:");
-          ImGui::DragFloat("X##scale", &transform->scale.x, 0.01f, 0.01f, 10.0f);
-          ImGui::DragFloat("Y##scale", &transform->scale.y, 0.01f, 0.01f, 10.0f);
-
-          if (ImGui::Button("Reset Transform"))
-          {
-            transform->position = Math::Vec2D(0.0f, 0.0f);
-            transform->rotation = 0.0f;
-            transform->scale = Math::Vec2D(1.0f, 1.0f);
-          }
-
-          if (ImGui::Button("Remove##transform"))
-            entity.remove_component<Components::Transform2D>();
-
-          ImGui::TreePop();
-        }
-      }
-
-      // Color Component
-      if (entity.has_component<Components::Color>())
-      {
-        if (ImGui::TreeNode("Color"))
-        {
-          auto* color = entity.get_component<Components::Color>();
-          f32 colorArray[4] = {
-            color->x,
-            color->y,
-            color->z,
-            color->w
-          };
-
-          if (ImGui::ColorEdit4("RGBA", colorArray))
-          {
-            color->x = colorArray[0];
-            color->y = colorArray[1];
-            color->z = colorArray[2];
-            color->w = colorArray[3];
-          }
-
-          if (ImGui::Button("Remove##color"))
-            entity.remove_component<Components::Color>();
-
-          ImGui::TreePop();
-        }
-      }
-
-      // Text Component
-      if (entity.has_component<Components::Text>())
-      {
-        if (ImGui::TreeNode("Text"))
-        {
-          auto* text = entity.get_component<Components::Text>();
-          char buffer[1024];
-          strncpy_s(buffer, text->content.c_str(), sizeof(buffer) - 1);
-          buffer[sizeof(buffer) - 1] = '\0';
-
-          if (ImGui::InputTextMultiline("Content", buffer, sizeof(buffer)))
-          {
-            text->content = buffer;
-          }
-
-          if (ImGui::Button("Remove##text"))
-            entity.remove_component<Components::Text>();
-
-          ImGui::TreePop();
-        }
-      }
-
-      // Texture Component (Read-only)
-      if (entity.has_component<Components::Texture>())
-      {
-        if (ImGui::TreeNode("Texture"))
-        {
-          auto* texture = entity.get_component<Components::Texture>();
-
-          if (texture->texture_handle)
-          {
-            ImGui::Text("Texture ID: %u", texture->texture_handle->id);
-            ImGui::Text("Size: %dx%d", texture->texture_handle->width, texture->texture_handle->height);
-            ImGui::Text("Filter: %s",
-              texture->texture_handle->filter == Engine::Graphics::TextureFilter::Nearest ? "Nearest" : "Linear");
-          }
-          else
-          {
-            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Invalid texture");
-          }
-
-          ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
-            "Note: Texture editing not yet supported");
-
-          if (ImGui::Button("Remove##texture"))
-            entity.remove_component<Components::Texture>();
-
-          ImGui::TreePop();
-        }
-      }
-
-      // TextureAtlas Component
-      if (entity.has_component<Components::TextureAtlas>())
-      {
-        if (ImGui::TreeNode("TextureAtlas"))
-        {
-          auto* atlas = entity.get_component<Components::TextureAtlas>();
-
-          ImGui::Text("Total SubTextures: %zu", atlas->subTextures.size());
-          ImGui::Text("Current Draw Index: %zu", atlas->drawIndex);
-
-          if (atlas->subTextures.size() > 0)
-          {
-            int currentIndex = static_cast<int>(atlas->drawIndex);
-            if (ImGui::SliderInt("Frame", &currentIndex, 0, static_cast<int>(atlas->subTextures.size() - 1)))
-            {
-              atlas->drawIndex = static_cast<size_t>(currentIndex);
-            }
-          }
-
-          ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
-            "Note: Atlas editing not yet supported");
-
-          if (ImGui::Button("Remove##atlas"))
-            entity.remove_component<Components::TextureAtlas>();
-
-          ImGui::TreePop();
-        }
-      }
-
-      // Animation Component
-      if (entity.has_component<Components::Animation>())
-      {
-        if (ImGui::TreeNode("Animation"))
-        {
-          auto* anim = entity.get_component<Components::Animation>();
-
-          ImGui::Text("Total Frames: %zu", anim->frames.size());
-          ImGui::Text("Total Duration: %.2f s", anim->totalDuration);
-          ImGui::DragFloat("Start Time", &anim->startTime, 0.01f);
-
-          // Calculate current frame
-          if (anim->frames.size() > 0 && anim->totalDuration > 0.0f)
-          {
-            float elapsed = anim->startTime;
-            size_t currentFrame = 0;
-            for (size_t i = 0; i < anim->frames.size(); ++i)
-            {
-              if (elapsed >= anim->frames[i].before_time)
-                currentFrame = i;
-              else
-                break;
-            }
-            ImGui::Text("Current Frame: %zu", currentFrame);
-          }
-
-          ImGui::Separator();
-
-          if (ImGui::Button("Reset Animation"))
-          {
-            anim->startTime = 0.0f;
-          }
-
-          ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
-            "Note: Frame editing not yet supported");
-
-          if (ImGui::Button("Remove##animation"))
-            entity.remove_component<Components::Animation>();
-
-          ImGui::TreePop();
-        }
-      }
-
-      // Font Component (Read-only)
-      if (entity.has_component<Components::Font>())
-      {
-        if (ImGui::TreeNode("Font"))
-        {
-          auto* font = entity.get_component<Components::Font>();
-
-          if (font->font_handle)
-          {
-            ImGui::Text("Font Size: %u", font->font_handle->font_size);
-            ImGui::Text("Baseline: %.2f", font->font_handle->baseline);
-            ImGui::Text("Glyphs Loaded: %zu", font->font_handle->glyphs.size());
-          }
-          else
-          {
-            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Invalid font");
-          }
-
-          ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
-            "Note: Font editing not yet supported");
-
-          if (ImGui::Button("Remove##font"))
-            entity.remove_component<Components::Font>();
-
-          ImGui::TreePop();
-        }
-      }
-    }
-
-    ImGui::Separator();
-
-    // Clone Entity
-    if (ImGui::Button("Clone This Entity"))
-    {
-      auto clonedEntity = Engine::ECS::clone_entity(entity.get_id());
-      selected_entity_id = static_cast<int>(clonedEntity.get_id());
-    }
-  }
-  else
-  {
-    ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "No entity selected");
-  }
-
-  ImGui::End();
-}
+void EntityEditorPanel();

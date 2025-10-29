@@ -14,11 +14,16 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
+#include <functional>
+#include <string>
 #include "Types.h"
 #include "../Reflection/ReflectionLibrary.h"
 
 namespace Engine {
   namespace ECS {
+
+    // Forward declaration
+    class IComponentArray;
 
     /* ============================ //
     // Entity handle for clean API  //
@@ -179,6 +184,18 @@ namespace Engine {
       ==================================================================================*/
       bool operator!=(const Entity& other) const;
 
+      /*=================================================================================
+      Function Brief:
+      Iterates through all components attached to this entity, calling the provided
+      callback for each component.
+
+      Parameters:
+      callback - Function called for each component with (component_type_name, component_array)
+
+      Where to call it:
+      When you need to iterate through all components an entity has.
+      ==================================================================================*/
+      void for_each_component(std::function<void(const std::string&, IComponentArray*)> callback);
 
     };
 
