@@ -26,20 +26,23 @@ namespace Engine {
     public:
       Collision2DSystem(); // Default dtor that includes all the components needed for the entities called in the physics engine
 
-      // Used to add forces to the rigid body
-      void add_force(Components::RigidBody& rigid, Vec2D force);
+      // functionally the same as update_AABB but named differently for clarity sake
+      void init_AABB(Components::RigidBody const& rigid, Components::BoxCollider& box);
 
-      // Used to scale forces acting on the rigid body
-      void scale_force(Components::RigidBody& rigid, f32 scale);
+      // update the AABB of the entity after it gets transformed
+      void update_AABB(Components::RigidBody const& rigid, Components::BoxCollider& box);
 
-      // Used to reset forces acting on the rigid body
-      void zero_force(Components::RigidBody& rigid);
+      /*========================/
+      / Static Collision Checks /
+      /========================*/
+      // i think the functions explain themselves kekw
+      // read only cuz we only checking for collision and not changing any variables
+      // might swap to return an unsigned int after to show which sides are colliding
+      bool rect_rect_coll     (Components::BoxCollider const& lhs, Components::BoxCollider const& rhs);
+      bool circle_circle_coll (Components::BoxCollider const& lhs, Components::BoxCollider const& rhs);
 
-      // Update the linear velocities if said entities here
-      void update_kinematics(Components::RigidBody& rigid);
-
-      void update_transform(Components::RigidBody& rigid);
-      // Maybe we check for collision here and then do translate as the last step?
+      // in this scenario the rect should be a wall
+      bool rect_circle_coll(Components::BoxCollider const& lhs, Components::BoxCollider const& rhs);
     };
   }
 }

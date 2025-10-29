@@ -5,27 +5,8 @@ using namespace Math;
 
 namespace Components
 {
-  enum Shapes {
-    CIRCLE = 0,
-    RECT = 1,
-    POLYGON = 2 // prayge we never use this
-  };
-
-  struct AABB {
-    Vec2D min; // Bottom left
-    Vec2D max; // Top right
-  };
-
-  struct Circle {
-    float radius = 1.0f;
-  };
-
-  struct Polygon {
-    std::vector<Math::Vec2D> vertices;
-  };
   // https://docs.unity3d.com/ScriptReference/Rigidbody-isKinematic.html
   // https://docs.unity3d.com/ScriptReference/Rigidbody.html
-
   struct RigidBody {
     // Assume that position is the center point of the entity
     Vec2D curr_pos;
@@ -56,28 +37,6 @@ namespace Components
     // Ctor using floats
     RigidBody(f32 pos_x, f32 pos_y, bool kinematic = false, bool gravity = false) :
       curr_pos(Vec2D(pos_x, pos_y)), is_kinematic(kinematic), use_gravity(gravity)
-    { /* empty by design */ }
-  };
-
-
-  // https://docs.unity3d.com/6000.2/Documentation/Manual/class-BoxCollider.html
-  struct BoxCollider {
-    bool detect_collisions = false; // If true, affected by collisions -> will move when colliding with things
-    // NOTE: if an object with detect collisions collides with another object without detect collision,
-    // The object without detect collisions is unmovable aka a wall for all i care
-
-    // measurements for rectangles and circles
-    f32 width;
-    f32 height;
-    f32 radius;
-    Shapes shape;
-    AABB aabb;
-    Polygon poly;
-
-    BoxCollider(f32 width, f32 height) : width(width), height(height), shape(RECT)
-    { /* calculate the aabb here */ }
-
-    BoxCollider(f32 radius) : radius(radius), shape(CIRCLE)
     { /* empty by design */ }
   };
 }
