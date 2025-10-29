@@ -13,7 +13,7 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
- 
+
 #include <functional>
 #include "../../Components/Components.h"
 
@@ -21,10 +21,10 @@ namespace ImGuiWidgets {
 
   void TextureAtlasPreview(
     const char* label,
-    Components::Texture& texture,
-    Components::TextureAtlas& atlas,
+    const Components::Texture& texture,
+    const Components::TextureAtlas& atlas,
     float max_preview_size,
-    std::function<void(int)> on_index_changed = nullptr
+    std::function<void(size_t)> on_index_changed = nullptr
   );
 
 } // namespace ImGuiWidgets

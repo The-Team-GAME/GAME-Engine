@@ -19,10 +19,10 @@ namespace ImGuiWidgets {
 
   void TextureAtlasPreview(
     const char* label,
-    Components::Texture& texture,
-    Components::TextureAtlas& atlas,
+    const Components::Texture& texture,
+    const Components::TextureAtlas& atlas,
     float max_preview_size,
-    std::function<void(int)> on_index_changed
+    std::function<void(size_t)> on_index_changed
   ) {
     ImGui::PushID(label);
 
@@ -37,26 +37,9 @@ namespace ImGuiWidgets {
       ImGui::PopID();
     }
 
-    // Clamp current index
-    if (atlas.drawIndex < 0) atlas.drawIndex = 0;
-    if (atlas.drawIndex >= static_cast<int>(atlas.subTextures.size())) {
-      atlas.drawIndex = static_cast<int>(atlas.subTextures.size()) - 1;
-    }
-
     // Display info
     ImGui::Text("Total SubTextures: %zu", atlas.subTextures.size());
-
-    // Index selector with drag
-    int new_index = atlas.drawIndex;
-    if (ImGui::DragInt("Current Index", &new_index, 1.0f, 0, static_cast<int>(atlas.subTextures.size()) - 1)) {
-      if (new_index != atlas.drawIndex) {
-        atlas.drawIndex = new_index;
-        if (on_index_changed) {
-          on_index_changed(atlas.drawIndex);
-        }
-      }
-    }
-
+ 
     ImGui::Separator();
 
     // Calculate display size while maintaining aspect ratio
@@ -117,9 +100,8 @@ namespace ImGuiWidgets {
         if (rel_x >= uv_bounds[i][0] && rel_x <= uv_bounds[i][2] &&
           rel_y >= uv_bounds[i][1] && rel_y <= uv_bounds[i][3]) {
           if (static_cast<int>(i) != atlas.drawIndex) {
-            atlas.drawIndex = static_cast<int>(i);
             if (on_index_changed) {
-              on_index_changed(atlas.drawIndex);
+              on_index_changed(i);
             }
           }
           break;
