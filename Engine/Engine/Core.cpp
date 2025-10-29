@@ -20,12 +20,8 @@
 #include "StateManager.h"
 #include "ImGuiManager.h"
 #include "Time.h"
-#include "GUI/PerformanceViewer.h"
+#include "GUI/RegisterAllPanels.h"
 #include "WindowManager.h"
-#include "GUI/ResourceManagerPanel.h"
-#include "GUI/EntityEditorPanel.h"
-#include "GUI/CameraPanel.h"
-#include "GUI/TilemapPanel.h"
 #include "Perf.h"
 #include "InputManager.h"
 #include "Audio/AudioPlayer.h"
@@ -113,6 +109,8 @@ namespace Engine
   {
     // CORE INITIALIZATION
     register_engine_systems();
+    register_all_panels();
+
 
     while (!glfwWindowShouldClose(WindowManager::get_window()) && isRunning)
     {
@@ -186,11 +184,6 @@ namespace Engine
       }
 
       // Rendering Start ========================================
-      PerformanceViewerPanel();
-      ResourceManagerPanel();
-      EntityEditorPanel();
-      CameraPanel();
-      TilemapPanel::draw_panel();
 
       // Clear screen (automatically begins batch)
       // start of draw stuff
