@@ -179,6 +179,7 @@ namespace Engine
           Engine::ECS::update();
         }
 
+        TilemapPanel::update();
         ImGuiManager::update();
 
         // End of gameloop

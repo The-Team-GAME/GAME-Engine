@@ -160,6 +160,22 @@ namespace TilemapPanel {
   }
 
   // Public interface
+  void update() {
+    // === HANDLE PAINTING IN WORLD ===
+    if (!ImGui::GetIO().WantCaptureMouse) {
+      if (painting_enabled && Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
+        Math::Vec2D world_pos = Engine::Input::get_mouse_world_position();
+        place_tile_at_position(world_pos);
+      }
+
+      if (erasing_enabled && Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
+        Math::Vec2D world_pos = Engine::Input::get_mouse_world_position();
+        Math::Vec2D grid_pos = snap_to_grid(world_pos);
+        delete_tile_at_position(grid_pos);
+      }
+    }
+  }
+
   void draw_panel() {
     ImGui::Begin("Tilemap Editor");
 
@@ -390,20 +406,6 @@ namespace TilemapPanel {
   }
 
   void draw_overlay() {
-    // === HANDLE PAINTING IN WORLD ===
-    if (!ImGui::GetIO().WantCaptureMouse) {
-      if (painting_enabled && Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
-        Math::Vec2D world_pos = Engine::Input::get_mouse_world_position();
-        place_tile_at_position(world_pos);
-      }
-
-      if (erasing_enabled && Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
-        Math::Vec2D world_pos = Engine::Input::get_mouse_world_position();
-        Math::Vec2D grid_pos = snap_to_grid(world_pos);
-        delete_tile_at_position(grid_pos);
-      }
-    }
-
     // === DRAW GRID OVERLAY ===
     if (show_grid) {
       Math::Vec2D virtual_res = Engine::Graphics::get_virtual_resolution();

@@ -31,8 +31,18 @@ namespace TilemapPanel {
 
   /*=================================================================================
   Function Brief:
-  Handles world-space painting and grid overlay rendering. Processes mouse input
-  for tile placement/deletion and draws the grid overlay with current cell highlight.
+  Handles mouse input for tile placement and deletion. Processes clicks when not
+  over ImGui windows and places or erases tiles based on the current mode.
+
+  Where to call it:
+  Called during the update/input phase of the game loop, before rendering.
+  ==================================================================================*/
+  void update();
+
+  /*=================================================================================
+  Function Brief:
+  Draws the grid overlay and current cell highlight in world space. Renders grid
+  lines and highlights the cell under the mouse cursor when painting/erasing.
 
   Where to call it:
   Called during the rendering phase after begin_batch() has been called and before
