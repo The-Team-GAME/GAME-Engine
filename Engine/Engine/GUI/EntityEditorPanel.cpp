@@ -18,7 +18,7 @@
 #include "ResourcePicker.h"
 #include "../Resources.h"
 
-bool EntityEditorPanelHelpers::render_specialized(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified) {
+bool EntityEditorPanelHelpers::render_specialized_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified) {
   if (display_name == "Components::Color") {
     ImVec4 colorVec(
       static_cast<float>(field_value["r"].getDouble()),
@@ -179,7 +179,7 @@ bool EntityEditorPanelHelpers::render_specialized(const std::string& display_nam
   return false;
 }
 
-bool EntityEditorPanelHelpers::render_generic(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified) {
+bool EntityEditorPanelHelpers::render_generic_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified) {
   if (field_value.isBool()) {
     bool val = field_value.getBool();
     if (ImGui::Checkbox(display_name.c_str(), &val)) {
@@ -231,10 +231,10 @@ bool EntityEditorPanelHelpers::render_generic(const std::string& display_name, R
 void EntityEditorPanelHelpers::render_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified) {
 
   // First try specialized rendering, then fallback to generic
-  render_specialized(display_name, field_value, modified) || render_generic(display_name, field_value, modified);
+  render_specialized_field(display_name, field_value, modified) || render_generic_field(display_name, field_value, modified);
 }
 
-void EntityEditorPanelHelpers::render_component_from_generic(const std::string& component_name, Engine::ECS::Entity& entity, Engine::ECS::IComponentArray* array)
+void EntityEditorPanelHelpers::render_component_tree(const std::string& component_name, Engine::ECS::Entity& entity, Engine::ECS::IComponentArray* array)
 {
   if (ImGui::TreeNode(component_name.c_str())) {
     auto component_data = array->to_generic_value(entity.get_id());
@@ -399,7 +399,7 @@ void EntityEditorPanel()
 
         // First try specialized rendering
         // If not handled, fallback to generic reflection-based rendering
-        EntityEditorPanelHelpers::render_component_from_generic(type_name, entity, array);
+        EntityEditorPanelHelpers::render_component_tree(type_name, entity, array);
         });
     }
 

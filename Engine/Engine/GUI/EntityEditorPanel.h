@@ -21,13 +21,13 @@
 
 namespace EntityEditorPanelHelpers {
 
-  bool render_specialized(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified);
+  bool render_specialized_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified);
 
-  bool render_generic(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified);
+  bool render_generic_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified);
 
   void render_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified);
 
-  void render_component_from_generic(const std::string& component_name, Engine::ECS::Entity& entity, Engine::ECS::IComponentArray* array);
+  void render_component_tree(const std::string& component_name, Engine::ECS::Entity& entity, Engine::ECS::IComponentArray* array);
 };
 
 void EntityEditorPanel();
