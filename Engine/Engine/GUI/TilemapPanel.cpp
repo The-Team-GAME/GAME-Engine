@@ -26,24 +26,33 @@
 namespace TilemapPanel {
   // Internal state
   namespace {
-    Components::Texture selected_texture;
-    Components::TextureAtlas selected_atlas;
+    // Submitted atlases
+    struct AtlasEntry {
+      Components::Texture texture;
+      Components::TextureAtlas atlas;
+      std::string name;
+    };
+
+    std::vector<AtlasEntry> submitted_atlases;
+    int selected_atlas_index = -1;
     int selected_tile_index = 0;
+
+    // Current preview (before submission)
+    Components::Texture preview_texture;
+    Components::TextureAtlas preview_atlas;
+    int atlas_rows = 1;
+    int atlas_cols = 1;
+    std::string selected_texture_path;
+    int selected_texture_index = 0;
+
+    // Painting state
     bool show_grid = false;
     bool painting_enabled = false;
     bool erasing_enabled = false;
     float grid_snap = 64.0f;
-    float prev_grid_snap = 64.0f;  // Track previous value to detect changes
+    float prev_grid_snap = 64.0f;
     Math::Vec2D grid_offset = { 0.0f, 0.0f };
-    Math::Vec2D prev_grid_offset = { 0.0f, 0.0f };  // Track previous offset to detect changes
-
-    // Atlas configuration
-    int atlas_rows = 1;
-    int atlas_cols = 1;
-    int prev_atlas_rows = 1;
-    int prev_atlas_cols = 1;
-    std::string selected_texture_path;
-    int selected_texture_index = 0;
+    Math::Vec2D prev_grid_offset = { 0.0f, 0.0f };
 
     // Track placed tiles to prevent duplicates
     std::unordered_set<std::string> placed_tiles;
@@ -52,26 +61,22 @@ namespace TilemapPanel {
   // Helper functions
 
   void regenerate_atlas() {
-    if (!selected_texture.texture_handle) {
+    if (!preview_texture.texture_handle) {
       return;
     }
 
-    int texture_width = selected_texture.texture_handle->width;
-    int texture_height = selected_texture.texture_handle->height;
+    int texture_width = preview_texture.texture_handle->width;
+    int texture_height = preview_texture.texture_handle->height;
 
     int tile_width = texture_width / atlas_cols;
     int tile_height = texture_height / atlas_rows;
 
-    selected_atlas = Components::TextureAtlas(
+    preview_atlas = Components::TextureAtlas(
       tile_width,
       tile_height,
       atlas_rows,
       atlas_cols
     );
-
-    selected_tile_index = 0;
-    prev_atlas_rows = atlas_rows;
-    prev_atlas_cols = atlas_cols;
   }
 
   std::string get_position_key(const Math::Vec2D& pos) {
@@ -129,10 +134,17 @@ namespace TilemapPanel {
   }
 
   void place_tile_at_position(const Math::Vec2D& world_pos) {
-    if (!selected_texture.texture_handle ||
-      selected_atlas.subTextures.empty() ||
+    // Check if we have a valid atlas selected
+    if (selected_atlas_index < 0 || selected_atlas_index >= static_cast<int>(submitted_atlases.size())) {
+      return;
+    }
+
+    const AtlasEntry& atlas_entry = submitted_atlases[selected_atlas_index];
+
+    if (!atlas_entry.texture.texture_handle ||
+      atlas_entry.atlas.subTextures.empty() ||
       selected_tile_index < 0 ||
-      selected_tile_index >= static_cast<int>(selected_atlas.subTextures.size())) {
+      selected_tile_index >= static_cast<int>(atlas_entry.atlas.subTextures.size())) {
       return;
     }
 
@@ -167,8 +179,8 @@ namespace TilemapPanel {
         0.0f,
         Math::Vec2D{ grid_snap, grid_snap }
       )
-      .add_component<Components::Texture>(selected_texture)
-      .add_component<Components::TextureAtlas>(selected_atlas)
+      .add_component<Components::Texture>(atlas_entry.texture)
+      .add_component<Components::TextureAtlas>(atlas_entry.atlas)
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
 
     tile.get_component<Components::TextureAtlas>()->drawIndex = selected_tile_index;
@@ -231,7 +243,7 @@ namespace TilemapPanel {
 
               // Load the texture
               if (auto tex = Engine::Resources::texture_cache[texture_paths[i]].lock()) {
-                selected_texture = Components::Texture(tex);
+                preview_texture = Components::Texture(tex);
                 regenerate_atlas();
               }
             }
@@ -242,35 +254,56 @@ namespace TilemapPanel {
           ImGui::EndCombo();
         }
 
-        // Atlas configuration
-        if (selected_texture.texture_handle) {
+        // Atlas configuration and preview
+        if (preview_texture.texture_handle) {
           ImGui::Separator();
           ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Atlas Configuration");
 
           ImGui::Text("Texture: %dx%d",
-            selected_texture.texture_handle->width,
-            selected_texture.texture_handle->height);
+            preview_texture.texture_handle->width,
+            preview_texture.texture_handle->height);
 
           // Rows and columns input
-          bool atlas_changed = false;
           if (ImGui::DragInt("Rows", &atlas_rows, 1.0f, 1, 100)) {
-            if (atlas_rows != prev_atlas_rows) {
-              atlas_changed = true;
-            }
-          }
-
-          if (ImGui::DragInt("Columns", &atlas_cols, 1.0f, 1, 100)) {
-            if (atlas_cols != prev_atlas_cols) {
-              atlas_changed = true;
-            }
-          }
-
-          if (atlas_changed) {
             regenerate_atlas();
           }
 
-          ImGui::Text("Tiles: %zu", selected_atlas.subTextures.size());
-          ImGui::Text("Selected tile: %d", selected_tile_index);
+          if (ImGui::DragInt("Columns", &atlas_cols, 1.0f, 1, 100)) {
+            regenerate_atlas();
+          }
+
+          ImGui::Text("Tiles: %zu", preview_atlas.subTextures.size());
+
+          // Atlas preview
+          if (!preview_atlas.subTextures.empty()) {
+            ImGui::Separator();
+            ImGui::Text("Preview:");
+            ImGuiWidgets::TextureAtlasPreview(
+              "AtlasPreview",
+              preview_texture,
+              preview_atlas,
+              60.0f,
+              [](size_t) {} // No selection in preview
+            );
+          }
+
+          // Submit button
+          ImGui::Separator();
+          static char atlas_name[128] = "";
+          ImGui::InputText("Atlas Name", atlas_name, IM_ARRAYSIZE(atlas_name));
+
+          if (ImGui::Button("Submit Atlas", ImVec2(-1, 0))) {
+            if (strlen(atlas_name) > 0) {
+              AtlasEntry entry;
+              entry.texture = preview_texture;
+              entry.atlas = preview_atlas;
+              entry.name = std::string(atlas_name);
+              submitted_atlases.push_back(entry);
+
+              // Clear the name field
+              atlas_name[0] = '\0';
+            }
+          }
         }
       }
 
@@ -279,23 +312,63 @@ namespace TilemapPanel {
 
     ImGui::Separator();
 
-    // === TILE PREVIEW ===
-    if (selected_texture.texture_handle &&
-      !selected_atlas.subTextures.empty()) {
-
+    // === TILE SELECTION ===
+    if (!submitted_atlases.empty()) {
       if (ImGui::CollapsingHeader("Tile Selection", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::Indent();
 
-        // Use the TextureAtlasWidget for tile selection
-        ImGuiWidgets::TextureAtlasPreview(
-          "TilesetPreview",
-          selected_texture,
-          selected_atlas,
-          80.0f,
-          [](size_t index) {
-            selected_tile_index = static_cast<int>(index);
+        ImGui::Text("Submitted Atlases:");
+        ImGui::Separator();
+
+        // Display all submitted atlases
+        for (int i = 0; i < static_cast<int>(submitted_atlases.size()); ++i) {
+          const AtlasEntry& entry = submitted_atlases[i];
+
+          ImGui::PushID(i);
+
+          // Atlas name and select button
+          bool is_selected = (i == selected_atlas_index);
+          if (is_selected) {
+            ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.2f, 0.6f, 0.2f, 1.0f));
           }
-        );
+
+          if (ImGui::CollapsingHeader(entry.name.c_str(), ImGuiTreeNodeFlags_None)) {
+            // Create non-const copies for TextureAtlasPreview
+            Components::Texture temp_texture = entry.texture;
+            Components::TextureAtlas temp_atlas = entry.atlas;
+
+            // Set the drawIndex to the currently selected tile if this is the selected atlas
+            if (is_selected) {
+              temp_atlas.drawIndex = selected_tile_index;
+            }
+
+            ImGuiWidgets::TextureAtlasPreview(
+              "TileSelection",
+              temp_texture,
+              temp_atlas,
+              80.0f,
+              [i](size_t tile_idx) {
+                selected_atlas_index = i;
+                selected_tile_index = static_cast<int>(tile_idx);
+              }
+            );
+
+            // Remove button
+            if (ImGui::Button("Remove Atlas", ImVec2(-1, 0))) {
+              submitted_atlases.erase(submitted_atlases.begin() + i);
+              if (selected_atlas_index >= static_cast<int>(submitted_atlases.size())) {
+                selected_atlas_index = static_cast<int>(submitted_atlases.size()) - 1;
+              }
+            }
+          }
+
+          if (is_selected) {
+            ImGui::PopStyleColor();
+          }
+
+          ImGui::PopID();
+          ImGui::Separator();
+        }
 
         ImGui::Unindent();
       }
