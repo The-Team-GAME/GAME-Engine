@@ -187,7 +187,7 @@ bool EntityEditorPanelHelpers::render_specialized_field(const std::string& displ
       return true;
     }
 
-    if (ImGuiWidgets::TextureAtlasPreview(
+    ImGuiWidgets::TextureAtlasPreview(
       "TextureAtlasPreview",
       *texture,
       *atlas,
@@ -196,11 +196,7 @@ bool EntityEditorPanelHelpers::render_specialized_field(const std::string& displ
         field_value["drawIndex"] = static_cast<ReflectionLibrary::Integer>(new_index);
         modified = true;
       }
-    )) {
-      // Selection changed
-      field_value["drawIndex"] = static_cast<ReflectionLibrary::Integer>(atlas->drawIndex);
-      modified = true;
-    }
+    );
 
     return true;
   }

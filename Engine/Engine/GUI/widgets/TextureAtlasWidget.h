@@ -19,7 +19,7 @@
 
 namespace ImGuiWidgets {
 
-  bool TextureAtlasPreview(
+  void TextureAtlasPreview(
     const char* label,
     Components::Texture& texture,
     Components::TextureAtlas& atlas,

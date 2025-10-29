@@ -17,28 +17,24 @@
 
 namespace ImGuiWidgets {
 
-  bool TextureAtlasPreview(
+  void TextureAtlasPreview(
     const char* label,
     Components::Texture& texture,
     Components::TextureAtlas& atlas,
     float max_preview_size,
     std::function<void(int)> on_index_changed
   ) {
-    bool selection_changed = false;
-
     ImGui::PushID(label);
 
     // Validate inputs
     if (texture.texture_handle->id == 0) {
       ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.0f, 1.0f), "No texture provided!");
       ImGui::PopID();
-      return false;
     }
 
     if (atlas.subTextures.empty()) {
       ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.0f, 1.0f), "No subtextures defined!");
       ImGui::PopID();
-      return false;
     }
 
     // Clamp current index
@@ -55,7 +51,6 @@ namespace ImGuiWidgets {
     if (ImGui::DragInt("Current Index", &new_index, 1.0f, 0, static_cast<int>(atlas.subTextures.size()) - 1)) {
       if (new_index != atlas.drawIndex) {
         atlas.drawIndex = new_index;
-        selection_changed = true;
         if (on_index_changed) {
           on_index_changed(atlas.drawIndex);
         }
@@ -123,7 +118,6 @@ namespace ImGuiWidgets {
           rel_y >= uv_bounds[i][1] && rel_y <= uv_bounds[i][3]) {
           if (static_cast<int>(i) != atlas.drawIndex) {
             atlas.drawIndex = static_cast<int>(i);
-            selection_changed = true;
             if (on_index_changed) {
               on_index_changed(atlas.drawIndex);
             }
@@ -184,8 +178,6 @@ namespace ImGuiWidgets {
     }
 
     ImGui::PopID();
-
-    return selection_changed;
   }
 
 } // namespace ImGuiWidgets
