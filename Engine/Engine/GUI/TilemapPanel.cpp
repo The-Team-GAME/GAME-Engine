@@ -82,16 +82,28 @@ namespace {
     }
   }
 
-  // Helper to update all existing tile entities with new dimensions
+  // Helper to update all existing tile entities with new dimensions and positions
   void update_all_tile_dimensions() {
     auto all_entities = Engine::ECS::get_all_entities();
+
+    // Clear the placed tiles tracking since positions will change
+    tilemap_state.placed_tiles.clear();
+
     for (auto& entity : all_entities) {
       // Check if this is a tile entity (has Tile component)
       if (entity.has_component<Components::Tile>()) {
         auto* transform = entity.get_component<Components::Transform2D>();
         if (transform) {
+          // Snap the current position to the new grid
+          Math::Vec2D new_pos = snap_to_grid(transform->position);
+          transform->position = new_pos;
+
           // Update the scale to match new grid snap size
           transform->scale = Math::Vec2D{ tilemap_state.grid_snap, tilemap_state.grid_snap };
+
+          // Re-track this tile at its new position
+          std::string pos_key = get_position_key(new_pos, tilemap_state.z_layer);
+          tilemap_state.placed_tiles.insert(pos_key);
         }
       }
     }
