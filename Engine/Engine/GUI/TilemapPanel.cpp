@@ -324,7 +324,10 @@ void TilemapPanel() {
   }
 
   ImGui::End();
+}
 
+// Separate function called during rendering phase
+void TilemapPanel_Draw() {
   // === HANDLE PAINTING IN WORLD ===
   // Only process clicks when not hovering over ImGui windows
   if (!ImGui::GetIO().WantCaptureMouse) {

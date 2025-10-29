@@ -16,3 +16,4 @@
 #pragma once
 
 void TilemapPanel();
+void TilemapPanel_Draw(); // Called during rendering phase to draw grid and handle painting
