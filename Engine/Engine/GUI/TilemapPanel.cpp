@@ -139,8 +139,25 @@ namespace TilemapPanel {
     Math::Vec2D grid_pos = snap_to_grid(world_pos);
     std::string pos_key = get_position_key(grid_pos);
 
+    // If a tile already exists at this position, delete it first (overwrite behavior)
     if (placed_tiles.find(pos_key) != placed_tiles.end()) {
-      return;
+      // Find and destroy the existing tile entity 
+      for (auto& entity : Engine::ECS::get_entities_with<Components::Tile>()) {
+        // TODO: This is very inefficient, implement hashing for Transform2D so we dont have to loop all entities 
+        auto* transform = entity.get_component<Components::Transform2D>();
+        if (transform) {
+          Math::Vec2D entity_grid_pos = snap_to_grid(transform->position);
+          std::string entity_key = get_position_key(entity_grid_pos);
+
+          if (entity_key == pos_key) {
+            entity.destroy();
+            break;
+          }
+        }
+      }
+
+      // Remove from tracking set (will be re-added below)
+      placed_tiles.erase(pos_key);
     }
 
     Engine::ECS::Entity tile = Engine::ECS::create_entity()
