@@ -232,12 +232,12 @@ bool EntityEditorPanelHelpers::render_specialized_field(const std::string& displ
 
         for (size_t i = 0; i < tex_coords_list.size(); ++i) {
           auto& coords_array = tex_coords_list[i].getArray();
-          
+
           // Each element is an array of 4 Vec2D objects (represented as objects with x,y)
           // tex_coords are [bottom-left, bottom-right, top-right, top-left]
           if (coords_array.size() == 4) {
             std::vector<std::array<float, 2>> corners;
-            
+
             for (size_t j = 0; j < 4; ++j) {
               // Each corner should be an object with x and y fields
               if (coords_array[j].isObject()) {
@@ -245,31 +245,31 @@ bool EntityEditorPanelHelpers::render_specialized_field(const std::string& displ
                 if (corner_obj.find("x") != corner_obj.end() && corner_obj.find("y") != corner_obj.end()) {
                   float x = static_cast<float>(corner_obj.at("x").getDouble());
                   float y = static_cast<float>(corner_obj.at("y").getDouble());
-                  corners.push_back({x, y});
+                  corners.push_back({ x, y });
                 }
               }
               // Fallback: try array format [x, y]
               else if (coords_array[j].isArray() && coords_array[j].getArray().size() == 2) {
                 float x = static_cast<float>(coords_array[j].getArray()[0].getDouble());
                 float y = static_cast<float>(coords_array[j].getArray()[1].getDouble());
-                corners.push_back({x, y});
+                corners.push_back({ x, y });
               }
             }
-            
+
             if (corners.size() == 4) {
               // Find min and max for this specific subtexture
               float min_x = corners[0][0];
               float min_y = corners[0][1];
               float max_x = corners[0][0];
               float max_y = corners[0][1];
-              
+
               for (size_t j = 1; j < 4; ++j) {
                 min_x = std::min(min_x, corners[j][0]);
                 min_y = std::min(min_y, corners[j][1]);
                 max_x = std::max(max_x, corners[j][0]);
                 max_y = std::max(max_y, corners[j][1]);
               }
-              
+
               uv_bounds.push_back({ min_x, min_y, max_x, max_y });
             }
           }
