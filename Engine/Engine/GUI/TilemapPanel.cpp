@@ -190,12 +190,12 @@ namespace TilemapPanel {
   void update() {
     // === HANDLE PAINTING IN WORLD ===
     if (!ImGui::GetIO().WantCaptureMouse) {
-      if (painting_enabled && Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
+      if (painting_enabled && Engine::Input::is_held(Engine::KeyCode::MouseLeft)) {
         Math::Vec2D world_pos = Engine::Input::get_mouse_world_position();
         place_tile_at_position(world_pos);
       }
 
-      if (erasing_enabled && Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
+      if (erasing_enabled && Engine::Input::is_held(Engine::KeyCode::MouseLeft)) {
         Math::Vec2D world_pos = Engine::Input::get_mouse_world_position();
         Math::Vec2D grid_pos = snap_to_grid(world_pos);
         delete_tile_at_position(grid_pos);
@@ -219,7 +219,7 @@ namespace TilemapPanel {
     bool modal_open = true;
 
     if (ImGui::BeginPopupModal("Atlas Selection", &modal_open, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoDocking)) {
-      
+
       if (!modal_open) {
         ImGui::CloseCurrentPopup();
         ImGui::EndPopup();
@@ -417,7 +417,7 @@ namespace TilemapPanel {
           painting_enabled = false;
         }
       }
-      
+
 
       ImGui::SameLine();
       ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(Click in world to delete tiles)");
