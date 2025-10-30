@@ -161,6 +161,9 @@ namespace Engine
 
       glfwPollEvents();
 
+      // Update window title with FPS
+      WindowManager::update_title_with_fps();
+
       Engine::Audio::update();
       ImGuiManager::begin();
 
