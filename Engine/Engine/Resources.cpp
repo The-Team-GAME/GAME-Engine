@@ -298,6 +298,8 @@ bool Engine::Resources::save_prefab(const std::string& filepath, const Engine::E
     return false;
   }
 
+  // TODO: this needs to create the folder if it doesn't exist
+
   // Write to file
   std::ofstream file(full_path);
   if (!file.is_open())
