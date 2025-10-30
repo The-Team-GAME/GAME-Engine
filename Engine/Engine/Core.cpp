@@ -33,6 +33,8 @@
 #include "EventManager/EventManager.h"
 #include "FileIO/EngineSettings.h"
 #include "FileIO/UserSettings.h"
+#include "FileIO/LocalSettings.h"
+
 
 namespace {
   f64 accumulator{};
@@ -62,12 +64,22 @@ namespace Engine
       Log::warning("Failed to load user settings, using defaults");
     }
 
+    // Load local settings
+    if (!FileIO::load_local_settings("Assets/settings/local_settings.json")) {
+      Log::warning("Failed to load local settings, using defaults");
+    }
+
     const auto& engine_settings = FileIO::get_engine_settings();
     const auto& user_settings = FileIO::get_user_settings();
+    const auto& local_settings = FileIO::get_local_settings();
+
+
 
     WindowManager::init(user_settings.window_width, user_settings.window_height, engine_settings.window_title);
 
     ImGuiManager::init();
+
+    ImGuiManager::set_style(local_settings.imgui_theme);
 
     // Initialize graphics renderer
     if (!Engine::Graphics::init()) {
