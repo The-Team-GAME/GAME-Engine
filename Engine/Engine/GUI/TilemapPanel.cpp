@@ -210,101 +210,125 @@ namespace TilemapPanel {
     ImGui::Separator();
 
     // === TEXTURE ATLAS SELECTION ===
-    if (ImGui::CollapsingHeader("Atlas Selection", ImGuiTreeNodeFlags_DefaultOpen)) {
-      ImGui::Indent();
+    if (ImGui::Button("Create Atlas")) {
+      ImGui::OpenPopup("Atlas Selection");
+    }
+    ImGui::SetNextWindowSize(ImVec2(560, 540), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSizeConstraints(ImVec2(480, 420), ImVec2(FLT_MAX, FLT_MAX));
 
-      // Get all loaded textures from Resources
-      std::vector<std::string> texture_paths;
-      for (const auto& pair : Engine::Resources::texture_cache) {
-        if (auto texture = pair.second.lock()) {
-          texture_paths.push_back(pair.first);
+    bool modal_open = true;
+
+    if (ImGui::BeginPopupModal("Atlas Selection", &modal_open, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoDocking)) {
+      
+      if (!modal_open) {
+        ImGui::CloseCurrentPopup();
+        ImGui::EndPopup();
+        modal_open = true;
+        return;
+      }
+
+      if (ImGui::CollapsingHeader("Atlas Selection", ImGuiTreeNodeFlags_DefaultOpen)) {
+        ImGui::Indent();
+
+        // Get all loaded textures from Resources
+        std::vector<std::string> texture_paths;
+        for (const auto& pair : Engine::Resources::texture_cache) {
+          if (auto texture = pair.second.lock()) {
+            texture_paths.push_back(pair.first);
+          }
         }
-      }
 
-      if (texture_paths.empty()) {
-        ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.0f, 1.0f), "No textures loaded in Resources!");
-        ImGui::Text("Load textures first using Resources::load_texture()");
-      }
-      else {
-        ImGui::Text("Available Textures:");
+        if (texture_paths.empty()) {
+          ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.0f, 1.0f), "No textures loaded in Resources!");
+          ImGui::Text("Load textures first using Resources::load_texture()");
+        }
+        else {
+          ImGui::Text("Available Textures:");
 
-        // Texture selection combo box
-        const char* preview_name = preview_texture.texture_handle ?
-          preview_texture.texture_handle->path.c_str() : "Select texture...";
+          // Texture selection combo box
+          const char* preview_name = preview_texture.texture_handle ?
+            preview_texture.texture_handle->path.c_str() : "Select texture...";
 
-        if (ImGui::BeginCombo("##TextureSelect", preview_name)) {
-          for (int i = 0; i < static_cast<int>(texture_paths.size()); ++i) {
-            bool is_selected = preview_texture.texture_handle &&
-              (preview_texture.texture_handle->path == texture_paths[i]);
+          if (ImGui::BeginCombo("##TextureSelect", preview_name)) {
+            for (int i = 0; i < static_cast<int>(texture_paths.size()); ++i) {
+              bool is_selected = preview_texture.texture_handle &&
+                (preview_texture.texture_handle->path == texture_paths[i]);
 
-            if (ImGui::Selectable(texture_paths[i].c_str(), is_selected)) {
-              // Load the texture
-              if (auto tex = Engine::Resources::texture_cache[texture_paths[i]].lock()) {
-                preview_texture = Components::Texture(tex);
-                regenerate_atlas();
+              if (ImGui::Selectable(texture_paths[i].c_str(), is_selected)) {
+                // Load the texture
+                if (auto tex = Engine::Resources::texture_cache[texture_paths[i]].lock()) {
+                  preview_texture = Components::Texture(tex);
+                  regenerate_atlas();
+                }
+              }
+              if (is_selected) {
+                ImGui::SetItemDefaultFocus();
               }
             }
-            if (is_selected) {
-              ImGui::SetItemDefaultFocus();
-            }
-          }
-          ImGui::EndCombo();
-        }
-
-        // Atlas configuration and preview
-        if (preview_texture.texture_handle) {
-          ImGui::Separator();
-          ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Atlas Configuration");
-
-          ImGui::Text("Texture: %dx%d",
-            preview_texture.texture_handle->width,
-            preview_texture.texture_handle->height);
-
-          // Rows and columns input
-          if (ImGui::DragInt("Rows", &atlas_rows, 1.0f, 1, 100)) {
-            regenerate_atlas();
+            ImGui::EndCombo();
           }
 
-          if (ImGui::DragInt("Columns", &atlas_cols, 1.0f, 1, 100)) {
-            regenerate_atlas();
-          }
-
-          ImGui::Text("Tiles: %zu", preview_atlas.subTextures.size());
-
-          // Atlas preview
-          if (!preview_atlas.subTextures.empty()) {
+          // Atlas configuration and preview
+          if (preview_texture.texture_handle) {
             ImGui::Separator();
-            ImGui::Text("Preview:");
-            ImGuiWidgets::TextureAtlasPreview(
-              "AtlasPreview",
-              preview_texture,
-              preview_atlas,
-              60.0f,
-              [](size_t) {} // No selection in preview
-            );
-          }
+            ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Atlas Configuration");
 
-          // Submit button
-          ImGui::Separator();
-          static char atlas_name[128] = "";
-          ImGui::InputText("Atlas Name", atlas_name, IM_ARRAYSIZE(atlas_name));
+            ImGui::Text("Texture: %dx%d",
+              preview_texture.texture_handle->width,
+              preview_texture.texture_handle->height);
 
-          if (ImGui::Button("Submit Atlas", ImVec2(-1, 0))) {
-            if (strlen(atlas_name) > 0) {
-              AtlasEntry entry;
-              entry.texture = preview_texture;
-              entry.atlas = preview_atlas;
-              entry.name = std::string(atlas_name);
-              submitted_atlases.push_back(entry);
+            // Rows and columns input
+            if (ImGui::DragInt("Rows", &atlas_rows, 1.0f, 1, 100)) {
+              regenerate_atlas();
+            }
 
-              // Clear the name field
-              atlas_name[0] = '\0';
+            if (ImGui::DragInt("Columns", &atlas_cols, 1.0f, 1, 100)) {
+              regenerate_atlas();
+            }
+
+            ImGui::Text("Tiles: %zu", preview_atlas.subTextures.size());
+
+            // Atlas preview
+            if (!preview_atlas.subTextures.empty()) {
+              ImGui::Separator();
+              ImGui::Text("Preview:");
+              ImGuiWidgets::TextureAtlasPreview(
+                "AtlasPreview",
+                preview_texture,
+                preview_atlas,
+                60.0f,
+                [](size_t) {} // No selection in preview
+              );
+            }
+
+            // Submit button
+            ImGui::Separator();
+            static char atlas_name[128] = "";
+            ImGui::InputText("Atlas Name", atlas_name, IM_ARRAYSIZE(atlas_name));
+
+            if (ImGui::Button("Submit Atlas", ImVec2(-1, 0))) {
+              if (strlen(atlas_name) > 0) {
+                AtlasEntry entry;
+                entry.texture = preview_texture;
+                entry.atlas = preview_atlas;
+                entry.name = std::string(atlas_name);
+                submitted_atlases.push_back(entry);
+
+                // Clear the name field
+                atlas_name[0] = '\0';
+              }
             }
           }
         }
+
+        ImGui::Unindent();
       }
 
-      ImGui::Unindent();
+      if (ImGui::Button("Done?", ImVec2(120, 0))) {
+        ImGui::CloseCurrentPopup();
+      }
+
+      ImGui::EndPopup();
     }
 
     ImGui::Separator();
@@ -393,6 +417,8 @@ namespace TilemapPanel {
           painting_enabled = false;
         }
       }
+      
+
       ImGui::SameLine();
       ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(Click in world to delete tiles)");
 
@@ -427,10 +453,19 @@ namespace TilemapPanel {
         ImGui::OpenPopup("Clear Tiles Confirm");
       }
 
-      if (ImGui::BeginPopupModal("Clear Tiles Confirm", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+      bool modal_openb = true;
+
+      if (ImGui::BeginPopupModal("Clear Tiles Confirm", &modal_openb, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Are you sure you want to delete all placed tiles?");
         ImGui::Text("This action cannot be undone!");
         ImGui::Separator();
+
+        if (!modal_openb) {
+          ImGui::CloseCurrentPopup();
+          ImGui::EndPopup();
+          modal_openb = true;
+          return;
+        }
 
         if (ImGui::Button("Yes, Clear All", ImVec2(120, 0))) {
           auto all_entities = Engine::ECS::get_all_entities();
