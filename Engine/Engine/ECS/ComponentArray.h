@@ -29,12 +29,14 @@ namespace Engine {
     public:
       virtual ~IComponentArray() = default;
       virtual void remove_entity(EntityID entity) = 0;
-      virtual size_t size() const = 0;
       virtual void clone_component(EntityID source, EntityID destination) = 0;
+      virtual ComponentTypeID get_type_id() const = 0;
       virtual bool is_reflectable() const = 0;
       virtual std::string get_type_name() const = 0;
       virtual ReflectionLibrary::GenericValue to_generic_value(EntityID entity) const = 0;
       virtual bool add_component_from_generic_value(EntityID entity, const ReflectionLibrary::GenericValue& value) = 0;
+      virtual bool set_component_from_generic_value(EntityID entity, const ReflectionLibrary::GenericValue& value) = 0;
+      virtual void add_default_component(EntityID entity) = 0;
     };
 
     /* ============================= //
@@ -112,27 +114,25 @@ namespace Engine {
 
       /*=================================================================================
       Function Brief:
-      Returns the total number of components stored in this array.
+      Returns the unique type ID for component type T.
 
       Parameters:
       None.
 
       Where to call it:
-      When you need to know how many entities have this component type.
+      When identifying component types in the ECS.
       ==================================================================================*/
-      size_t size() const override;
+      ComponentTypeID get_type_id() const override;
 
       /*=================================================================================
       Function Brief:
-      Checks if the component type T is reflectable (has reflection metadata).
-
+      Checks if the component type T is reflectable using the ReflectionLibrary.
       Parameters:
       None.
-
       Where to call it:
-      Before attempting to serialize or inspect component metadata.
+      When determining if the component can be serialized or inspected via reflection.
       ==================================================================================*/
-      bool is_reflectable() const;
+      bool is_reflectable() const override;
 
       /*=================================================================================
       Function Brief:
@@ -146,9 +146,55 @@ namespace Engine {
       ==================================================================================*/
       std::string get_type_name() const override;
 
+      /*=================================================================================
+      Function Brief:
+      Converts a component to a GenericValue for serialization or inspection.
+
+      Parameters:
+      entity - The EntityID whose component to convert.
+
+      Where to call it:
+      When serializing component data or inspecting it at runtime.
+      ==================================================================================*/
       ReflectionLibrary::GenericValue to_generic_value(EntityID entity) const override;
 
+      /*=================================================================================
+      Function Brief:
+      Adds a new component to an entity from a GenericValue.
+
+      Parameters:
+      entity - The EntityID to add the component to.
+      value - The GenericValue containing the component data.
+
+      Where to call it:
+      When deserializing entities from JSON or creating components from runtime data.
+      ==================================================================================*/
       bool add_component_from_generic_value(EntityID entity, const ReflectionLibrary::GenericValue& value) override;
+
+      /*=================================================================================
+      Function Brief:
+      Updates an existing component's data from a GenericValue.
+
+      Parameters:
+      entity - The EntityID whose component to update.
+      value - The GenericValue containing the new component data.
+
+      Where to call it:
+      When modifying component data from UI editors or runtime updates.
+      ==================================================================================*/
+      bool set_component_from_generic_value(EntityID entity, const ReflectionLibrary::GenericValue& value) override;
+
+      /*=================================================================================
+      Function Brief:
+      Adds a default-constructed component of type T to the specified entity.
+
+      Parameters:
+      entity - The EntityID to add the default component to.
+
+      Where to call it:
+      When you need to attach a default-initialized component to an entity.
+      ==================================================================================*/
+      void add_default_component(EntityID entity);
 
       /*=================================================================================
       Function Brief:

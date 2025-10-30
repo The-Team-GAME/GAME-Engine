@@ -16,9 +16,11 @@
 #pragma once
 
 #include <functional>
-#include <vector>
+#include <string>
 
 namespace ImGuiManager {
+
+
 	void init();
 	void exit();
 
@@ -32,5 +34,7 @@ namespace ImGuiManager {
 
 	// Clear all registered panels
 	void clear_panels();
+
+	void set_style(const std::string& style_name);
 }
 

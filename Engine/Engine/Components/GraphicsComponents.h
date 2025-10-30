@@ -25,13 +25,13 @@ namespace Components
       static Reflector reflect(const Texture& tex) {
         Reflector r;
         if (tex.texture_handle) {
-          r.path = Engine::Resources::get_relative_path(tex.texture_handle->path);
+          r.path = tex.texture_handle->path;
         }
         return r;
       }
 
       static Texture create(const Reflector& r) {
-        return Engine::Resources::load_texture(r.path);
+        return Engine::Resources::load_texture(r.path, false);
       }
     };
   };
@@ -40,6 +40,8 @@ namespace Components
   {
     std::vector<Engine::Graphics::SubTexture> subTextures;
     size_t drawIndex = 0; // Current subTexture index to draw
+
+    TextureAtlas() : subTextures(), drawIndex(0) {} // TODO: remove default constructor
 
     // Constructor to initialize a texture atlas with evenly divided subTextures, works with multiple rows and columns
     TextureAtlas(int subTextureWidth, int subTextureHeight, size_t rows, size_t cols, size_t totalSubTextures = 0)
@@ -104,6 +106,8 @@ namespace Components
     f32 startTime = Engine::Time::get_time(); // To get the elapsed time to calculate which frame to show
     float totalDuration = 0.0f; // Total duration of the animation
 
+    Animation() : frames(), startTime(Engine::Time::get_time()), totalDuration(0.0f) {} // TODO: remove default constructor
+
     // Evenly spaced frames
     Animation(size_t frameCount, float frameDuration) : frames(), startTime(0.0f), totalDuration(frameDuration* frameCount)
     {
@@ -167,14 +171,14 @@ namespace Components
       static Reflector reflect(const Font& font) {
         Reflector r;
         if (font.font_handle) {
-          r.path = Engine::Resources::get_relative_path(font.font_handle->path);
+          r.path = font.font_handle->path;
           r.font_size = font.font_handle->font_size;
         }
         return r;
       }
 
       static Font create(const Reflector& r) {
-        return Engine::Resources::load_font(r.path, r.font_size);
+        return Engine::Resources::load_font(r.path, r.font_size, false);
       }
     };
   };

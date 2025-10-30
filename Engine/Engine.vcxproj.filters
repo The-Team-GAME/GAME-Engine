@@ -118,6 +118,10 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Systems\CollisionSystem.cpp">
+    <ClCompile Include="Engine\GUI\EntityEditorPanel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\GUI\ResourcePicker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -195,6 +199,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine\GUI\EntityEditorPanel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\GUI\ResourcePicker.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine\ImGuiManager.h">

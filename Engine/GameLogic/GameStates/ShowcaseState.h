@@ -51,6 +51,12 @@ private:
   Engine::ECS::Entity banana;
   Engine::ECS::Entity background_entity;
 
+  // Text entities
+  Engine::ECS::Entity title_text;
+  Engine::ECS::Entity info_text;
+  Engine::ECS::Entity banana_count_text;
+  Engine::ECS::Entity enemy_health_text;
+
   // Resources - automatically managed via shared_ptr
   Engine::Graphics::Texture player_idle_texture;
   Engine::Graphics::Texture player_punch_texture;
