@@ -34,10 +34,10 @@ namespace Components
       curr_pos(pos), is_kinematic(kinematic), use_gravity(gravity)
     { /* empty by design */ }
 
-    // Ctor using floats
-    RigidBody(f32 pos_x, f32 pos_y, bool kinematic = false, bool gravity = false) :
-      curr_pos(Vec2D(pos_x, pos_y)), is_kinematic(kinematic), use_gravity(gravity)
-    { /* empty by design */ }
+    //// Ctor using floats
+    //RigidBody(f32 pos_x, f32 pos_y, bool kinematic = false, bool gravity = false) :
+    //  curr_pos(Vec2D(pos_x, pos_y)), is_kinematic(kinematic), use_gravity(gravity)
+    //{ /* empty by design */ }
   };
 }
 

@@ -14,13 +14,13 @@ public:
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
       .add_component<Components::RigidBody>(
-        false,                    // is_kinematic (affected by physics)
-        true,                     // detect_collisions (react with other bodies with collisions)
-        true,                     // use_gravity (affected by gravity)
-        1.0f,                     // mass
-        0.0f,                     // rotation
-        Math::Vec2D(0.0f, 0.0f),  // linear_velocity
-        0.0f                      // angular_velocity
+        //false,                    // is_kinematic (affected by physics)
+        //true,                     // detect_collisions (react with other bodies with collisions)
+        //true,                     // use_gravity (affected by gravity)
+        //1.0f,                     // mass
+        //0.0f,                     // rotation
+        //Math::Vec2D(0.0f, 0.0f),  // linear_velocity
+        //0.0f                      // angular_velocity
       )
       .add_component<Components::BoxCollider>(20.0f, 20.0f); // width, height
 
@@ -30,13 +30,13 @@ public:
       .add_component<Components::Color>(0.2f, 0.8f, 0.2f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
       .add_component<Components::RigidBody>(
-        true,                     // is_kinematic (not affected by physics)
-        true,                     // detect_collisions (makes other bodies react with this body)
-        false,                    // use_gravity (not affected by gravity)
-        0.0f,                     // mass
-        0.0f,                     // rotation
-        Math::Vec2D(0.0f, 0.0f),  // linear_velocity
-        0.0f                      // angular_velocity
+        //true,                     // is_kinematic (not affected by physics)
+        //true,                     // detect_collisions (makes other bodies react with this body)
+        //false,                    // use_gravity (not affected by gravity)
+        //0.0f,                     // mass
+        //0.0f,                     // rotation
+        //Math::Vec2D(0.0f, 0.0f),  // linear_velocity
+        //0.0f                      // angular_velocity
       )
       .add_component<Components::BoxCollider>(800.0f, 50.0f); // width, height
 
