@@ -492,6 +492,17 @@ namespace TilemapPanel {
 
     ImGui::Separator();
 
+    // === EXPORT/IMPORT ===
+    if (ImGui::CollapsingHeader("Export/Import")) {
+      ImGui::Indent();
+
+      if (ImGui::Button("Export Tilemap")) {
+        // TODO: Implement export functionality in Resources first
+      }
+
+      ImGui::Unindent();
+    }
+
     // === STATISTICS ===
     if (ImGui::CollapsingHeader("Statistics", ImGuiTreeNodeFlags_DefaultOpen)) {
       ImGui::Indent();
