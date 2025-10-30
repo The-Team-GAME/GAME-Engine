@@ -215,7 +215,17 @@ namespace TilemapPanel {
     }
     ImGui::SetNextWindowSize(ImVec2(560, 540), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSizeConstraints(ImVec2(480, 420), ImVec2(FLT_MAX, FLT_MAX));
-    if (ImGui::BeginPopupModal("Atlas Selection", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoDocking)) {
+
+    bool modal_open = true;
+
+    if (ImGui::BeginPopupModal("Atlas Selection", &modal_open, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoDocking)) {
+      
+      if (!modal_open) {
+        ImGui::CloseCurrentPopup();
+        ImGui::EndPopup();
+        modal_open = true;
+        return;
+      }
 
       if (ImGui::CollapsingHeader("Atlas Selection", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::Indent();
@@ -443,10 +453,19 @@ namespace TilemapPanel {
         ImGui::OpenPopup("Clear Tiles Confirm");
       }
 
-      if (ImGui::BeginPopupModal("Clear Tiles Confirm", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+      bool modal_openb = true;
+
+      if (ImGui::BeginPopupModal("Clear Tiles Confirm", &modal_openb, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Are you sure you want to delete all placed tiles?");
         ImGui::Text("This action cannot be undone!");
         ImGui::Separator();
+
+        if (!modal_openb) {
+          ImGui::CloseCurrentPopup();
+          ImGui::EndPopup();
+          modal_openb = true;
+          return;
+        }
 
         if (ImGui::Button("Yes, Clear All", ImVec2(120, 0))) {
           auto all_entities = Engine::ECS::get_all_entities();
