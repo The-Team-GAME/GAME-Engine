@@ -111,7 +111,7 @@ namespace Engine
         for (const auto& filepath : event.filepaths)
         {
           Log::info("File dropped: " + filepath);
-          Engine::Resources::load(filepath, false);
+          Engine::Resources::load(filepath, false, true);
         }
       }
     );
