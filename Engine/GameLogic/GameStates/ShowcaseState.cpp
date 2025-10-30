@@ -71,6 +71,35 @@ void ShowcaseState::init() {
     .add_component<Components::TextureAtlas>(64, 64, 1, 7, 7)
     .add_component<Components::Animation>(7, 0.15f);
 
+  // Create text entities
+  title_text = Engine::ECS::create_entity()
+    .add_component<Components::Tag<"ShowcaseState">>()
+    .add_component<Components::Transform2D>(50.0f, 50.0f, 0.0f, 1.0f, 1.0f)
+    .add_component<Components::Font>(title_font)
+    .add_component<Components::Text>("Engine Showcase")
+    .add_component<Components::Color>(1.0f, 0.9f, 0.3f, 1.0f);
+
+  info_text = Engine::ECS::create_entity()
+    .add_component<Components::Tag<"ShowcaseState">>()
+    .add_component<Components::Transform2D>(50.0f, 140.0f, 0.0f, 0.6f, 0.6f)
+    .add_component<Components::Font>(info_font)
+    .add_component<Components::Text>("WASD: Move | E: Attack | C: Collect")
+    .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
+
+  banana_count_text = Engine::ECS::create_entity()
+    .add_component<Components::Tag<"ShowcaseState">>()
+    .add_component<Components::Transform2D>(50.0f, 200.0f, 0.0f, 0.7f, 0.7f)
+    .add_component<Components::Font>(info_font)
+    .add_component<Components::Text>("Bananas: 0")
+    .add_component<Components::Color>(1.0f, 1.0f, 0.0f, 1.0f);
+
+  enemy_health_text = Engine::ECS::create_entity()
+    .add_component<Components::Tag<"ShowcaseState">>()
+    .add_component<Components::Transform2D>(50.0f, 240.0f, 0.0f, 0.7f, 0.7f)
+    .add_component<Components::Font>(info_font)
+    .add_component<Components::Text>("Enemy HP: 50/50")
+    .add_component<Components::Color>(1.0f, 0.0f, 0.0f, 1.0f);
+
   // Subscribe to attack events
   Engine::EventManager::add_event_listener<AttackEvent>([this](const AttackEvent& event) {
     std::cout << "Attack event! Entity " << event.attacker
@@ -114,6 +143,12 @@ void ShowcaseState::init() {
 
         std::cout << "Health after damage: " << health->value << "\n";
 
+        // Update enemy health text
+        if (enemy_health_text.is_valid() && enemy_health_text.has_component<Components::Text>()) {
+          auto* text = enemy_health_text.get_component<Components::Text>();
+          text->content = "Enemy HP: " + std::to_string(health->value) + "/" + std::to_string(health->max);
+        }
+
         if (health->is_dead()) {
           std::cout << "Entity " << event.target << " has been defeated!\n";
           target_entity.destroy();
@@ -137,6 +172,12 @@ void ShowcaseState::init() {
     // Update score
     if (event.collector == player.get_id()) {
       banana_collected += event.points;
+
+      // Update banana count text
+      if (banana_count_text.is_valid() && banana_count_text.has_component<Components::Text>()) {
+        auto* text = banana_count_text.get_component<Components::Text>();
+        text->content = "Bananas: " + std::to_string(banana_collected);
+      }
     }
 
     // Respawn the collected item
@@ -284,47 +325,7 @@ void ShowcaseState::update() {
 void ShowcaseState::draw() {
   Engine::Graphics::clear_screen(background_texture);
 
-  // Draw title text (first font)
-  if (title_font && title_font->texture_atlas.id != 0) {
-    Engine::Graphics::draw_text(
-      title_font,
-      "Engine Showcase",
-      { 50.0f, 50.0f },
-      1.0f,
-      { 1.0f, 0.9f, 0.3f, 1.0f } // Gold color
-    );
-  }
-
-  // Draw info text (second font)
-  if (info_font && info_font->texture_atlas.id != 0) {
-    Engine::Graphics::draw_text(
-      info_font,
-      "WASD: Move | E: Attack | C: Collect",
-      { 50.0f, 140.0f },
-      0.6f,
-      { 1.0f, 1.0f, 1.0f, 1.0f } // White
-    );
-
-    Engine::Graphics::draw_text(
-      info_font,
-      "Bananas: " + std::to_string(banana_collected),
-      { 50.0f, 200.0f },
-      0.7f,
-      { 1.0f, 1.0f, 0.0f, 1.0f } // Yellow
-    );
-
-    // Show enemy health
-    if (enemy.is_valid() && enemy.has_component<Components::Health>()) {
-      auto* health = enemy.get_component<Components::Health>();
-      Engine::Graphics::draw_text(
-        info_font,
-        "Enemy HP: " + std::to_string(health->value) + "/" + std::to_string(health->max),
-        { 50.0f, 240.0f },
-        0.7f,
-        { 1.0f, 0.0f, 0.0f, 1.0f } // Red
-      );
-    }
-  }
+  // Text entities are now rendered automatically by the rendering system
 }
 
 void ShowcaseState::free() {

@@ -43,20 +43,20 @@ namespace Engine {
 
     std::string get_relative_path(const std::string& full_path);
 
-    Engine::Graphics::Texture load_texture(const std::string& filepath);
-    Engine::Graphics::Font load_font(const std::string& filepath, u32 size);
+    Engine::Graphics::Texture load_texture(const std::string& filepath, bool append_resource_path = true);
+    Engine::Graphics::Font load_font(const std::string& filepath, u32 size, bool append_resource_path = true);
 
     // Load sound effect (stored in memory)
-    Engine::Audio::Sound load_sound(const std::string& filepath);
+    Engine::Audio::Sound load_sound(const std::string& filepath, bool append_resource_path = true);
 
     // Load music (streamed from disk)
-    Engine::Audio::Sound load_music(const std::string& filepath);
+    Engine::Audio::Sound load_music(const std::string& filepath, bool append_resource_path = true);
 
     Engine::Graphics::Texture get_rect_texture();
 
     // Prefab loading and saving
-    Engine::ECS::Prefab load_prefab(const std::string& filepath);
-    bool save_prefab(const std::string& filepath, const Engine::ECS::Prefab& prefab);
+    Engine::ECS::Prefab load_prefab(const std::string& filepath, bool append_resource_path = true);
+    bool save_prefab(const std::string& filepath, const Engine::ECS::Prefab& prefab, bool append_resource_path = true);
 
     //optimization: clear unused resources from cache
     void clear_unused_resources();

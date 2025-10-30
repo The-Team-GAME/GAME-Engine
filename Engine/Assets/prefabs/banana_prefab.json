@@ -1,41 +1,42 @@
 {
-    "id": 24,
+    "id": 4,
     "components": [
         {
-            "type": "Components::Color",
             "data": {
-                "r": 1.0,
                 "b": 1.0,
+                "r": 1.0,
                 "g": 1.0,
                 "a": 1.0
+            },
+            "type": "Components::Color"
+        },
+        {
+            "type": "Components::Texture",
+            "data": {
+                "path": "images/banana.png"
             }
         },
         {
             "data": {
-                "path": "images/banana.png"
-            },
-            "type": "Components::Texture"
-        },
-        {
-            "type": "Components::RigidBody",
-            "data": {
                 "detect_collisions": true,
+                "rotation_terminal_velocity": 360.0,
                 "linear_velocity": {
                     "x": 0.0,
                     "y": 0.0
                 },
-                "rotation_terminal_velocity": 360.0,
                 "is_kinematic": false,
-                "mass": 1.0,
+                "angular_velocity": 45.0,
                 "linear_terminal_velocity": {
                     "x": 3.4028234663852886e38,
                     "y": 3.4028234663852886e38
                 },
-                "angular_velocity": 45.0,
+                "mass": 1.0,
                 "rotation": 0.0
-            }
+            },
+            "type": "Components::RigidBody"
         },
         {
+            "type": "Components::Transform2D",
             "data": {
                 "position": {
                     "x": 1200.0,
@@ -46,8 +47,11 @@
                     "x": 60.0,
                     "y": 36.0
                 }
-            },
-            "type": "Components::Transform2D"
+            }
+        },
+        {
+            "data": null,
+            "type": "Unknown"
         }
     ]
 }
