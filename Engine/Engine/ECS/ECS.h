@@ -16,6 +16,7 @@
 #pragma once
 
 #include "Types.h"
+#include "SparseSet.h"
 #include "ComponentManager.h"
 #include "ComponentArray.h"
 #include "Entity.h"

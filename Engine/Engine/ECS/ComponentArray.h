@@ -16,7 +16,7 @@
 #pragma once
 
 #include "Types.h"
-#include <unordered_map>
+#include "SparseSet.h"
 #include "../Reflection/ReflectionLibrary.h"
 
 namespace Engine {
@@ -45,7 +45,7 @@ namespace Engine {
     template<typename T>
     class ComponentArray : public IComponentArray {
     private:
-      std::unordered_map<EntityID, T> components;
+      SparseSet<T> components;
 
     public:
       /*=================================================================================

@@ -16,8 +16,8 @@
 #pragma once
 
 #include "Types.h"
+#include "SparseSet.h"
 #include "../EventManager/EventManager.h"
-#include <unordered_set>
 
 namespace Engine {
   namespace ECS {
@@ -32,7 +32,7 @@ namespace Engine {
       ComponentSignature required_signature;
       ComponentSignature excluded_signature;
       Engine::EventManager::EventSignature event_signature;
-      std::unordered_set<EntityID> entities;
+      SparseSet<EntityID> entities;
 
     public:
       virtual ~System();
@@ -207,7 +207,7 @@ namespace Engine {
       Where to call it:
       When you need to access the list of entities this system is processing.
       ==================================================================================*/
-      const std::unordered_set<EntityID>& get_entities() const;
+      const SparseSet<EntityID>& get_entities() const;
 
       /*=================================================================================
       Function Brief:
