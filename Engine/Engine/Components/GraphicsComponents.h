@@ -110,8 +110,6 @@ namespace Components
 
     Animation() : frames(), startTime(Engine::Time::get_time()), totalDuration(0.0f) {} // TODO: remove default constructor
 
-    Animation() : frames(), startTime(Engine::Time::get_time()), totalDuration(0.0f) {} // TODO: remove default constructor
-
     // Evenly spaced frames
     Animation(size_t frameCount, float frameDuration) : frames(), startTime(0.0f), totalDuration(frameDuration* frameCount)
     {

@@ -50,9 +50,9 @@ public:
 			.add_component<Components::Transform2D>(600.0f, 400.0f, 0.0f, 120.0f, 150.0f)
 			.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.0f)
 			.add_component<Components::Texture>(Engine::Resources::load_texture("images/monkey.png"));
-		const s32 monkey_layer = 1;
-		const s32 monkey_start_frame = 5;
-		const s32 monkey_duration = 40;
+		//const s32 monkey_layer = 1;
+		//const s32 monkey_start_frame = 5;
+		//const s32 monkey_duration = 40;
 
 		s32 monkey_id = monkey.get_id();
 		timeline.set_selected_entity_id(monkey_id);
