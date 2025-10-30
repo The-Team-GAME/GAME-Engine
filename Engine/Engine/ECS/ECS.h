@@ -30,3 +30,4 @@
 #include "System.inl"
 #include "ComponentManager.inl"
 #include "ComponentArray.inl"
+#include "Prefab.inl"

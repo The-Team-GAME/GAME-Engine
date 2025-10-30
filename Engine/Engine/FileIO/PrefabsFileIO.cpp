@@ -3,7 +3,7 @@
 namespace Engine {
   namespace FileIO {
     std::string serialize_prefab_to_json(const Engine::ECS::Prefab& prefab) {
-      if (!prefab || !prefab->setup_function) {
+      if (!prefab) {
         return "{}";
       }
       ReflectionLibrary::GenericValue generic_value = Engine::ECS::prefab_to_generic_value(prefab);

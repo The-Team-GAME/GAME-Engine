@@ -37,6 +37,7 @@ namespace Engine {
       virtual bool add_component_from_generic_value(EntityID entity, const ReflectionLibrary::GenericValue& value) = 0;
       virtual bool set_component_from_generic_value(EntityID entity, const ReflectionLibrary::GenericValue& value) = 0;
       virtual void add_default_component(EntityID entity) = 0;
+      virtual std::unique_ptr<IComponentArray> create_empty() const = 0;
     };
 
     /* ============================= //
@@ -195,6 +196,18 @@ namespace Engine {
       When you need to attach a default-initialized component to an entity.
       ==================================================================================*/
       void add_default_component(EntityID entity);
+
+      /*=================================================================================
+      Function Brief:
+      Creates an empty component array of the same type.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When you need to create a new independent storage for the same component type.
+      ==================================================================================*/
+      std::unique_ptr<IComponentArray> create_empty() const override;
 
       /*=================================================================================
       Function Brief:

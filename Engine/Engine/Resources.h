@@ -22,7 +22,7 @@ namespace Engine {
     extern std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> texture_cache;
     extern std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::FontData>> font_cache;
     extern std::unordered_map<std::string, std::weak_ptr<Engine::Audio::SoundData>> sound_cache;
-    extern std::unordered_map<std::string, std::weak_ptr<Engine::ECS::PrefabData>> prefab_cache;
+    extern std::unordered_map<std::string, std::weak_ptr<Engine::ECS::PrefabImpl>> prefab_cache;
 
     // Vector to hold shared_ptr references for persistent resources
     extern std::vector<Resource> persistent_resources;

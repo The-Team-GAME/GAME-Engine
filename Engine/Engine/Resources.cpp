@@ -13,7 +13,7 @@
 std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> Engine::Resources::texture_cache;
 std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::FontData>> Engine::Resources::font_cache;
 std::unordered_map<std::string, std::weak_ptr<Engine::Audio::SoundData>> Engine::Resources::sound_cache;
-std::unordered_map<std::string, std::weak_ptr<Engine::ECS::PrefabData>> Engine::Resources::prefab_cache;
+std::unordered_map<std::string, std::weak_ptr<Engine::ECS::PrefabImpl>> Engine::Resources::prefab_cache;
 
 // Vector to hold shared_ptr references for persistent resources
 std::vector<Engine::Resources::Resource> Engine::Resources::persistent_resources;
@@ -401,7 +401,7 @@ Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, 
   // Deserialize prefab
   Engine::ECS::Prefab prefab = Engine::FileIO::deserialize_prefab_from_json(json_content);
 
-  if (!prefab || !prefab->setup_function)
+  if (!prefab)
   {
     Log::warning("Failed to deserialize prefab: " + full_path);
     return nullptr;

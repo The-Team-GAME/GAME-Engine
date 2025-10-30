@@ -166,5 +166,11 @@ namespace Engine {
       return components.data_end();
     }
 
+    template<typename T>
+    inline std::unique_ptr<IComponentArray> ComponentArray<T>::create_empty() const
+    {
+      return std::make_unique<ComponentArray<T>>();
+    }
+
   } // namespace ECS
 } // namespace Engine
