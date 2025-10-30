@@ -15,6 +15,9 @@ std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::FontData>> Engin
 std::unordered_map<std::string, std::weak_ptr<Engine::Audio::SoundData>> Engine::Resources::sound_cache;
 std::unordered_map<std::string, std::weak_ptr<Engine::ECS::PrefabData>> Engine::Resources::prefab_cache;
 
+// Vector to hold shared_ptr references for persistent resources
+std::vector<Engine::Resources::Resource> Engine::Resources::persistent_resources;
+
 Engine::Graphics::Texture Engine::Resources::unit_rect;
 std::string Engine::Resources::resource_path = "";
 
@@ -51,6 +54,9 @@ bool Engine::Resources::exit()
   sound_cache.clear();
   prefab_cache.clear();
 
+  // Clear persistent resources
+  persistent_resources.clear();
+
   // unit_rect will be automatically cleaned up when it goes out of scope
   unit_rect.reset();
 
@@ -80,7 +86,7 @@ std::string Engine::Resources::get_relative_path(const std::string& full_path)
   return full_path;
 }
 
-Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& filepath, bool append_resource_path)
+Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& filepath, bool append_resource_path, bool persist)
 {
   // Construct full path
   std::string full_path = append_resource_path ? resource_path + filepath : filepath;
@@ -109,7 +115,15 @@ Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& fil
   if (texture->id != 0)
   {
     texture_cache[full_path] = texture;
-    Log::info("Texture loaded: " + full_path);
+    if (persist)
+    {
+      persistent_resources.push_back(texture);
+      Log::info("Texture loaded (persistent): " + full_path);
+    }
+    else
+    {
+      Log::info("Texture loaded: " + full_path);
+    }
   }
   else
   {
@@ -119,7 +133,7 @@ Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& fil
   return texture;
 }
 
-Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath, u32 size, bool append_resource_path)
+Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath, u32 size, bool append_resource_path, bool persist)
 {
   // Construct full path
   std::string full_path = append_resource_path ? resource_path + filepath : filepath;
@@ -149,12 +163,20 @@ Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath,
 
   // Cache the font
   font_cache[cache_key] = font;
-  Log::info("Font loaded: " + full_path + " (size: " + std::to_string(size) + ")");
+  if (persist)
+  {
+    persistent_resources.push_back(font);
+    Log::info("Font loaded (persistent): " + full_path + " (size: " + std::to_string(size) + ")");
+  }
+  else
+  {
+    Log::info("Font loaded: " + full_path + " (size: " + std::to_string(size) + ")");
+  }
 
   return font;
 }
 
-Engine::Audio::Sound Engine::Resources::load_sound(const std::string& filepath, bool append_resource_path)
+Engine::Audio::Sound Engine::Resources::load_sound(const std::string& filepath, bool append_resource_path, bool persist)
 {
   std::string full_path = append_resource_path ? resource_path + filepath : filepath;
 
@@ -182,7 +204,15 @@ Engine::Audio::Sound Engine::Resources::load_sound(const std::string& filepath, 
   if (sound->sound != nullptr)
   {
     sound_cache[full_path] = sound;
-    Log::info("Sound loaded: " + full_path);
+    if (persist)
+    {
+      persistent_resources.push_back(sound);
+      Log::info("Sound loaded (persistent): " + full_path);
+    }
+    else
+    {
+      Log::info("Sound loaded: " + full_path);
+    }
   }
   else
   {
@@ -192,7 +222,7 @@ Engine::Audio::Sound Engine::Resources::load_sound(const std::string& filepath, 
   return sound;
 }
 
-Engine::Audio::Sound Engine::Resources::load_music(const std::string& filepath, bool append_resource_path)
+Engine::Audio::Sound Engine::Resources::load_music(const std::string& filepath, bool append_resource_path, bool persist)
 {
   std::string full_path = append_resource_path ? resource_path + filepath : filepath;
 
@@ -220,7 +250,15 @@ Engine::Audio::Sound Engine::Resources::load_music(const std::string& filepath, 
   if (music->sound != nullptr)
   {
     sound_cache[full_path] = music;
-    Log::info("Music loaded: " + full_path);
+    if (persist)
+    {
+      persistent_resources.push_back(music);
+      Log::info("Music loaded (persistent): " + full_path);
+    }
+    else
+    {
+      Log::info("Music loaded: " + full_path);
+    }
   }
   else
   {
@@ -230,7 +268,7 @@ Engine::Audio::Sound Engine::Resources::load_music(const std::string& filepath, 
   return music;
 }
 
-Engine::Resources::Resource Engine::Resources::load(const std::string& filepath, bool append_resource_path)
+Engine::Resources::Resource Engine::Resources::load(const std::string& filepath, bool append_resource_path, bool persist)
 {
   // Construct full path
   std::string full_path = append_resource_path ? resource_path + filepath : filepath;
@@ -250,13 +288,13 @@ Engine::Resources::Resource Engine::Resources::load(const std::string& filepath,
   if (extension == "png" || extension == "jpg" || extension == "jpeg" ||
     extension == "bmp" || extension == "tga" || extension == "gif")
   {
-    return load_texture(filepath, append_resource_path);
+    return load_texture(filepath, append_resource_path, persist);
   }
 
   // Font extensions
   if (extension == "ttf" || extension == "otf")
   {
-    return load_font(filepath, 32, append_resource_path); // Default size 32
+    return load_font(filepath, 32, append_resource_path, persist); // Default size 32
   }
 
   // Audio extensions
@@ -272,10 +310,10 @@ Engine::Resources::Resource Engine::Resources::load(const std::string& filepath,
       // Files larger than 1MB are loaded as music (streamed)
       if (size > 1024 * 1024)
       {
-        return load_music(filepath, append_resource_path);
+        return load_music(filepath, append_resource_path, persist);
       }
     }
-    return load_sound(filepath, append_resource_path);
+    return load_sound(filepath, append_resource_path, persist);
   }
 
   // JSON extensions - could be prefabs
@@ -308,7 +346,7 @@ Engine::Resources::Resource Engine::Resources::load(const std::string& filepath,
     if (doc.HasMember("dataType") && doc["dataType"].IsString() &&
       std::string(doc["dataType"].GetString()) == "Entity")
     {
-      return load_prefab(filepath, append_resource_path);
+      return load_prefab(filepath, append_resource_path, persist);
     }
 
     Log::warning("Unknown JSON dataType in file: " + full_path);
@@ -324,7 +362,7 @@ Engine::Graphics::Texture Engine::Resources::get_rect_texture()
   return unit_rect;
 }
 
-Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, bool append_resource_path)
+Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, bool append_resource_path, bool persist)
 {
   // Construct full path
   std::string full_path = append_resource_path ? resource_path + filepath : filepath;
@@ -370,7 +408,15 @@ Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, 
 
   // Cache the prefab
   prefab_cache[full_path] = prefab;
-  Log::info("Prefab loaded: " + full_path);
+  if (persist)
+  {
+    persistent_resources.push_back(prefab);
+    Log::info("Prefab loaded (persistent): " + full_path);
+  }
+  else
+  {
+    Log::info("Prefab loaded: " + full_path);
+  }
 
   return prefab;
 }
