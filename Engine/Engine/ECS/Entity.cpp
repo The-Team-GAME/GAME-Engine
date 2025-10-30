@@ -103,6 +103,7 @@ namespace Engine {
       const auto& signature = containers.entity_signatures[entity_id];
 
       ReflectionLibrary::GenericValue result;
+      result["dataType"] = "Entity";
       result["id"] = static_cast<int>(entity_id);
 
       ReflectionLibrary::Array components_array;
