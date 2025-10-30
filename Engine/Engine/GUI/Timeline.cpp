@@ -244,7 +244,6 @@ void Timeline::draw() {
     if (m_activeClipID != 0 && !ImGui::IsMouseDown(0)) {
       m_activeClipID = 0;
       m_manipulationMode = 0;
-      std::cout << "oh...your pressingggg on me<3<3";
     }
 
     for (TimelineClip& clip : clips) {
@@ -265,7 +264,7 @@ void Timeline::draw() {
       draw_list->AddRect(clipMin, clipMax, IM_COL32(0, 100, 200, 255), 3.0f);
 
 
-      // *** FIX 1: Draw the small Image iteration (Thumbnail) ***
+      // Draw the small Image iteration (Thumbnail)
       ImTextureID tex_id = (ImTextureID)(intptr_t)clip.texture_id;
       float inset = 2.0f;
       float thumbSize = currentCellSize.y - inset * 2.0f; // Use height as thumb size
