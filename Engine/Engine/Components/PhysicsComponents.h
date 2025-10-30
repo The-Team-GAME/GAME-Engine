@@ -12,12 +12,13 @@ namespace Components
     Vec2D curr_pos;
     Vec2D next_pos;
 
-    f32 mass = 1.0f; // Mass in kg
+    f32 mass = 10.0f; // Mass in kg
     Vec2D force;
     Vec2D acceleration;
     Vec2D velocity; // Velocity in units per second
     // terminal velocity should be a set value instead of a vector just cuz you want to properly scale the velocity instead of capping it at set values
-    f32 terminal_velocity{ 300 }; // idk i wack some value here first
+    f32 friction{ 0.995f };
+    f32 terminal_velocity{ 300.f }; // idk i wack some value here first
 
     bool is_kinematic = false;  // If true, affected by physics forces
     bool use_gravity = false;   // If true, affected by gravity
@@ -32,7 +33,12 @@ namespace Components
     // Ctor using vectors
     RigidBody(Vec2D pos = {0,0}, bool kinematic = false, bool gravity = false) :
       curr_pos(pos), is_kinematic(kinematic), use_gravity(gravity)
-    { /* empty by design */ }
+    { 
+      if (gravity)
+      {
+        acceleration.y = 25.f;
+      }
+    }
 
     //// Ctor using floats
     //RigidBody(f32 pos_x, f32 pos_y, bool kinematic = false, bool gravity = false) :

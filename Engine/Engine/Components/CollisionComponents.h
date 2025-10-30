@@ -41,16 +41,18 @@ namespace Components
     Polygon poly;
 
     // Rect box collider ctor
-    BoxCollider(Vec2D center, f32 width, f32 height) : width(width), height(height), shape(RECT)
+    BoxCollider(f32 width, f32 height) : width(width), height(height), shape(RECT)
     { 
-      Vec2D min = center - Vec2D(width / 2, height / 2);
-      Vec2D max = center + Vec2D(width / 2, height / 2);
-      aabb.min = min;
-      aabb.max = max;
+      // For now we wont initialise the AABB cuz its gona get updated before the collision check anyways so maybe thats a good thing
+
+      //Vec2D min = center - Vec2D(width / 2, height / 2);
+      //Vec2D max = center + Vec2D(width / 2, height / 2);
+      //aabb.min = min;
+      //aabb.max = max;
     }
 
     // cricle box collider ctor
-    BoxCollider(Vec2D center, f32 radius) : radius(radius), shape(CIRCLE)
+    BoxCollider(f32 radius) : radius(radius), shape(CIRCLE)
     { /* empty by design */
     }
 

@@ -1,5 +1,5 @@
 {
-    "id": 4,
+    "id": 6,
     "components": [
         {
             "data": {
@@ -13,30 +13,10 @@
         {
             "type": "Components::Texture",
             "data": {
-                "path": "images/banana.png"
+                "path": "Assets/images/banana.png"
             }
         },
         {
-            "data": {
-                "detect_collisions": true,
-                "rotation_terminal_velocity": 360.0,
-                "linear_velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "is_kinematic": false,
-                "angular_velocity": 45.0,
-                "linear_terminal_velocity": {
-                    "x": 3.4028234663852886e38,
-                    "y": 3.4028234663852886e38
-                },
-                "mass": 1.0,
-                "rotation": 0.0
-            },
-            "type": "Components::RigidBody"
-        },
-        {
-            "type": "Components::Transform2D",
             "data": {
                 "position": {
                     "x": 1200.0,
@@ -47,11 +27,8 @@
                     "x": 60.0,
                     "y": 36.0
                 }
-            }
-        },
-        {
-            "data": null,
-            "type": "Unknown"
+            },
+            "type": "Components::Transform2D"
         }
     ]
 }

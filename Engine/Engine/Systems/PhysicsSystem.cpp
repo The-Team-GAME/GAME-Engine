@@ -19,10 +19,25 @@ using namespace Engine;
 using namespace Systems;
 using phy2D = Physics2DSystem;
 
+/*===================================/
+/ DISCLAIMER!!!                      /
+/ 0,0 is the top right of the screen /
+/ Meaning that you need to           /
+/ +y to GO DOWN and -y to GO UP      /
+/===================================*/
+
 phy2D::Physics2DSystem() {
-  require_components<Components::RigidBody, Components::BoxCollider>();
+  require_components<Components::Transform2D, Components::RigidBody, Components::BoxCollider>();
 }
 
+void phy2D::update_entity(Engine::ECS::Entity& entity){
+  Components::Transform2D* xform  = entity.get_component<Components::Transform2D>();
+  Components::RigidBody* rigid    = entity.get_component<Components::RigidBody>();
+  Components::BoxCollider* box    = entity.get_component<Components::BoxCollider>();
+  update_kinematics(*rigid);
+  update_transform(*rigid, *xform);
+  std::cout << "velocity: " << rigid->velocity << " || position: " << rigid->curr_pos << std::endl;
+}
 
 void phy2D::add_force(Components::RigidBody& rigid, Vec2D force)
 {
@@ -52,18 +67,22 @@ void phy2D::zero_force(Components::RigidBody& rigid)
 void phy2D::update_kinematics(Components::RigidBody& rigid)
 {
   // F = m x a => Force equals mass x acceleration
-  rigid.acceleration = rigid.force / rigid.mass;
+  // acceleration will contain a value if the entity is affected by gravity
+  Vec2D acc = rigid.force / rigid.mass + rigid.acceleration;
+  
   // V = a x dt => Velocity equals acceleration x delta time
-  rigid.velocity = rigid.acceleration * Time::get_fixed_dt();
+  Vec2D prev_velocity = rigid.velocity * rigid.friction;
+  rigid.velocity = prev_velocity + acc * Time::get_fixed_dt();
 
   // Checking terminal velocity here
+  // using the magnitude squared to check cuz its cheaper than sqrt-ing the value
   if (rigid.velocity.get_magnitude_sq() > pow(rigid.terminal_velocity, 2))
   {
     rigid.velocity = Math::normalise_vector(rigid.velocity) * rigid.terminal_velocity;
   }
 }
 
-void phy2D::update_transform(Components::RigidBody& rigid)
+void phy2D::update_transform(Components::RigidBody& rigid, Components::Transform2D& xform)
 {
   rigid.next_pos = rigid.curr_pos + rigid.velocity * Time::get_fixed_dt();
   // now we have the supposed next position.
@@ -74,6 +93,10 @@ void phy2D::update_transform(Components::RigidBody& rigid)
 
   // Then we set the current position after everything is done
   rigid.curr_pos = rigid.next_pos;
+
+  // Cuz for physics im using bottom left as 0,0 
+  // but graphics uses top right, theres some magic to do
+  xform.position = Vec2D(rigid.curr_pos.x, rigid.curr_pos.y);
 }
 
 // Maybe we check for collision here and then do translate as the last step?
