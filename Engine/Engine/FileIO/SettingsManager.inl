@@ -54,9 +54,11 @@ namespace Engine {
       bool has_missing = false;
       for (const auto& [key, default_value] : default_settings.getObject())
       {
+        Log::info("Checking setting key: " + key);
         // Check if the key is missing in loaded settings
         if (!loaded_settings.has(key))
         {
+          Log::info("Missing setting '" + key + "' in file. Adding default value.");
           loaded_settings.getObject()[key] = default_value;
           has_missing = true;
         }
