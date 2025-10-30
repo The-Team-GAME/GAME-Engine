@@ -105,6 +105,17 @@ namespace Engine
       }
     );
 
+    // Register file drop event to load resources
+    Engine::EventManager::add_event_listener<Engine::Events::FileDropEvent>([](const Engine::Events::FileDropEvent& event)
+      {
+        for (const auto& filepath : event.filepaths)
+        {
+          Log::info("File dropped: " + filepath);
+          Engine::Resources::load(filepath, false);
+        }
+      }
+    );
+
     StateManager::init(initialState);
   }
 

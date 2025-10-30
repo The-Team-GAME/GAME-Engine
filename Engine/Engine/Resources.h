@@ -3,12 +3,21 @@
 #include <unordered_map>
 #include <string>
 #include <memory>
+#include <variant>
 #include "Graphics/Renderer.h"
 #include "Audio/AudioPlayer.h"
 #include "ECS/Prefab.h"
 
 namespace Engine {
   namespace Resources {
+    // Variant type to hold any resource type
+    using Resource = std::variant<
+      std::monostate,  // Empty state for failed loads
+      Engine::Graphics::Texture,
+      Engine::Graphics::Font,
+      Engine::Audio::Sound,
+      Engine::ECS::Prefab
+    >;
     // Declare as extern - actual definition in Resources.cpp
     extern std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> texture_cache;
     extern std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::FontData>> font_cache;
@@ -53,6 +62,9 @@ namespace Engine {
     Engine::Audio::Sound load_music(const std::string& filepath, bool append_resource_path = true);
 
     Engine::Graphics::Texture get_rect_texture();
+
+    // Generic load function - automatically detects resource type from file extension
+    Resource load(const std::string& filepath, bool append_resource_path = true);
 
     // Prefab loading and saving
     Engine::ECS::Prefab load_prefab(const std::string& filepath, bool append_resource_path = true);

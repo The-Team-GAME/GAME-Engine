@@ -5,6 +5,8 @@
 #include "Logger.h"
 #include <fstream>
 #include <sstream>
+#include <algorithm>
+#include <rapidjson/document.h>
 #include "FileIO/PrefabsFileIO.h"
 
 // Define the actual storage for the extern variables
@@ -226,6 +228,95 @@ Engine::Audio::Sound Engine::Resources::load_music(const std::string& filepath, 
   }
 
   return music;
+}
+
+Engine::Resources::Resource Engine::Resources::load(const std::string& filepath, bool append_resource_path)
+{
+  // Construct full path
+  std::string full_path = append_resource_path ? resource_path + filepath : filepath;
+
+  // Extract file extension
+  size_t dot_pos = filepath.find_last_of('.');
+  if (dot_pos == std::string::npos)
+  {
+    Log::warning("No file extension found for: " + filepath);
+    return std::monostate{};
+  }
+
+  std::string extension = filepath.substr(dot_pos + 1);
+  std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+
+  // Image extensions (textures)
+  if (extension == "png" || extension == "jpg" || extension == "jpeg" ||
+    extension == "bmp" || extension == "tga" || extension == "gif")
+  {
+    return load_texture(filepath, append_resource_path);
+  }
+
+  // Font extensions
+  if (extension == "ttf" || extension == "otf")
+  {
+    return load_font(filepath, 32, append_resource_path); // Default size 32
+  }
+
+  // Audio extensions
+  if (extension == "wav" || extension == "mp3" || extension == "ogg" || extension == "flac")
+  {
+    // Check file size to determine if it should be streamed
+    std::ifstream file(full_path, std::ios::binary | std::ios::ate);
+    if (file.is_open())
+    {
+      std::streamsize size = file.tellg();
+      file.close();
+
+      // Files larger than 1MB are loaded as music (streamed)
+      if (size > 1024 * 1024)
+      {
+        return load_music(filepath, append_resource_path);
+      }
+    }
+    return load_sound(filepath, append_resource_path);
+  }
+
+  // JSON extensions - could be prefabs
+  if (extension == "json")
+  {
+    // Read the file to check its dataType
+    std::ifstream file(full_path);
+    if (!file.is_open())
+    {
+      Log::warning("Failed to open JSON file: " + full_path);
+      return std::monostate{};
+    }
+
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    std::string json_content = buffer.str();
+    file.close();
+
+    // Parse JSON to check dataType
+    rapidjson::Document doc;
+    doc.Parse(json_content.c_str());
+
+    if (doc.HasParseError())
+    {
+      Log::warning("Failed to parse JSON file: " + full_path);
+      return std::monostate{};
+    }
+
+    // Check if it's an Entity (prefab)
+    if (doc.HasMember("dataType") && doc["dataType"].IsString() &&
+      std::string(doc["dataType"].GetString()) == "Entity")
+    {
+      return load_prefab(filepath, append_resource_path);
+    }
+
+    Log::warning("Unknown JSON dataType in file: " + full_path);
+    return std::monostate{};
+  }
+
+  Log::warning("Unknown file extension: " + extension + " for file: " + filepath);
+  return std::monostate{};
 }
 
 Engine::Graphics::Texture Engine::Resources::get_rect_texture()
