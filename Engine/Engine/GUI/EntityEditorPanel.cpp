@@ -188,7 +188,6 @@ bool EntityEditorPanelHelpers::render_specialized_field(const std::string& displ
     }
 
     ImGuiWidgets::TextureAtlasPreview(
-      "TextureAtlasPreview",
       *texture,
       *atlas,
       80.0f

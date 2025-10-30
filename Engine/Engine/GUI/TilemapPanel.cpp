@@ -293,7 +293,6 @@ namespace TilemapPanel {
               ImGui::Separator();
               ImGui::Text("Preview:");
               ImGuiWidgets::TextureAtlasPreview(
-                "AtlasPreview",
                 preview_texture,
                 preview_atlas,
                 60.0f,
@@ -366,7 +365,6 @@ namespace TilemapPanel {
           }
 
           ImGuiWidgets::TextureAtlasPreview(
-            "TileSelection",
             temp_texture,
             temp_atlas,
             80.0f,

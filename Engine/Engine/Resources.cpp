@@ -282,7 +282,8 @@ Engine::Resources::Resource Engine::Resources::load(const std::string& filepath,
   }
 
   std::string extension = filepath.substr(dot_pos + 1);
-  std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+  std::transform(extension.begin(), extension.end(), extension.begin(),
+    [](u8 c) { return static_cast<u8>(std::tolower(c)); });
 
   // Image extensions (textures)
   if (extension == "png" || extension == "jpg" || extension == "jpeg" ||

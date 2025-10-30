@@ -18,14 +18,11 @@
 namespace ImGuiWidgets {
 
   void TextureAtlasPreview(
-    const char* label,
     const Components::Texture& texture,
     Components::TextureAtlas& atlas,
     float preview_height,
     std::function<void(size_t)> on_index_changed
   ) {
-    // ImGui::PushID(label);
-
     // Validate inputs
     if (texture.texture_handle->id == 0) {
       ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.0f, 1.0f), "No texture provided!");
@@ -156,7 +153,6 @@ namespace ImGuiWidgets {
     //   ImGui::Text("  Pixel Size: %d x %d", pixel_width, pixel_height);
     // }
 
-    // ImGui::PopID();
   }
 
 } // namespace ImGuiWidgets

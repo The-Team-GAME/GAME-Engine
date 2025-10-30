@@ -20,7 +20,6 @@
 namespace ImGuiWidgets {
 
   void TextureAtlasPreview(
-    const char* label,
     const Components::Texture& texture,
     Components::TextureAtlas& atlas,
     float preview_height,
