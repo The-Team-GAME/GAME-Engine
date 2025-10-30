@@ -20,10 +20,22 @@
 #include <backends/imgui_impl_opengl3.h>
 #include "InputManager.h"
 #include "Perf.h"
+#include "ImGuiThemes.h"
 
 namespace {
   bool gui_enabled = true;
   std::vector<std::function<void()>> registered_panels;
+
+  std::unordered_map<std::string, std::function<void()>> styles_map = {
+    {"Eggplant", SetupImGuiStyle_Eggplant},
+    {"Moonlight", SetupImGuiStyle_Moonlight},
+    {"Photoshop", SetupImGuiStyle_Photoshop},
+    {"Windark", SetupImGuiStyle_Windark},
+    {"ayu-dark", SetupImGuiStyle_ayu_dark},
+    {"Enemymouse", SetupImGuiStyle_Enemymouse},
+    {"Vullmad Dark", SetupImGuiStyle_Vullmad_Dark},
+    {"Comfortable Dark Cyan", SetupImGuiStyle_Comfortable_Dark_Cyan}
+  };
 }
 
 namespace ImGuiManager {
@@ -149,5 +161,14 @@ namespace ImGuiManager {
   void clear_panels()
   {
     registered_panels.clear();
+  }
+
+  void set_style(const std::string& style_name)
+  {
+    auto it = styles_map.find(style_name);
+    if (it != styles_map.end())
+    {
+      it->second(); // Call the style setup function
+    }
   }
 }
