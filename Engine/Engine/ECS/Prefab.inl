@@ -7,8 +7,8 @@
 //
 // email:   chew.s@digipen.edu
 //
-// brief:   This file implements the template methods for the PrefabImpl class.
-//          Provides inline implementations for adding, removing, and accessing
+// brief:   This file implements the template methods for the PrefabImpl and Prefab
+//          classes. Provides inline implementations for adding, removing, and accessing
 //          components in prefab templates.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
@@ -20,6 +20,10 @@
 
 namespace Engine {
   namespace ECS {
+
+    // ============================================================================
+    // PrefabImpl Template Implementation
+    // ============================================================================
 
     template<typename T, typename... Args>
     PrefabImpl& PrefabImpl::add_component(Args&&... args) {
@@ -88,6 +92,46 @@ namespace Engine {
     template<typename... T>
     bool PrefabImpl::has_components() const {
       return (has_component<T>() && ...);
+    }
+
+    // ============================================================================
+    // Prefab Handle Template Implementation
+    // ============================================================================
+
+    template<typename T, typename... Args>
+    Prefab& Prefab::add_component(Args&&... args) {
+      if (impl) {
+        impl->add_component<T>(std::forward<Args>(args)...);
+      }
+      return *this;
+    }
+
+    template<typename T>
+    Prefab& Prefab::remove_component() {
+      if (impl) {
+        impl->remove_component<T>();
+      }
+      return *this;
+    }
+
+    template<typename T>
+    T* Prefab::get_component() {
+      return impl ? impl->get_component<T>() : nullptr;
+    }
+
+    template<typename T>
+    const T* Prefab::get_component() const {
+      return impl ? impl->get_component<T>() : nullptr;
+    }
+
+    template<typename T>
+    bool Prefab::has_component() const {
+      return impl ? impl->has_component<T>() : false;
+    }
+
+    template<typename... T>
+    bool Prefab::has_components() const {
+      return impl ? impl->has_components<T...>() : false;
     }
 
   } // namespace ECS

@@ -376,7 +376,7 @@ Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, 
     if (auto cached = it->second.lock())
     {
       // Log::info("Prefab loaded from cache: " + full_path);
-      return cached;
+      return Engine::ECS::Prefab(cached); // Wrap in handle
     }
     else
     {
@@ -390,7 +390,7 @@ Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, 
   if (!file.is_open())
   {
     Log::warning("Failed to open prefab file: " + full_path);
-    return nullptr;
+    return Engine::ECS::Prefab(); // Return empty prefab handle
   }
 
   std::stringstream buffer;
@@ -401,14 +401,14 @@ Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, 
   // Deserialize prefab
   Engine::ECS::Prefab prefab = Engine::FileIO::deserialize_prefab_from_json(json_content);
 
-  if (!prefab)
+  if (!prefab.is_valid())
   {
     Log::warning("Failed to deserialize prefab: " + full_path);
-    return nullptr;
+    return Engine::ECS::Prefab(); // Return empty prefab handle
   }
 
-  // Cache the prefab
-  prefab_cache[full_path] = prefab;
+  // Cache the prefab implementation
+  prefab_cache[full_path] = prefab.get_impl();
   if (persist)
   {
     persistent_resources.push_back(prefab);
@@ -451,8 +451,8 @@ bool Engine::Resources::save_prefab(const std::string& filepath, const Engine::E
 
   Log::info("Prefab saved: " + full_path);
 
-  // Update cache
-  prefab_cache[full_path] = prefab;
+  // Update cache with the implementation
+  prefab_cache[full_path] = prefab.get_impl();
 
   return true;
 }

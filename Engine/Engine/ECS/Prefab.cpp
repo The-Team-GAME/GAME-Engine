@@ -22,6 +22,10 @@
 namespace Engine {
   namespace ECS {
 
+    // ============================================================================
+    // PrefabImpl Implementation
+    // ============================================================================
+
     const ComponentSignature& PrefabImpl::get_signature() const {
       return signature;
     }
@@ -46,12 +50,46 @@ namespace Engine {
       }
     }
 
+    // ============================================================================
+    // Prefab Handle Implementation
+    // ============================================================================
+
+    Prefab::Prefab(std::shared_ptr<PrefabImpl> impl) : impl(std::move(impl)) {}
+
+    bool Prefab::is_valid() const {
+      return impl != nullptr;
+    }
+
+    Prefab::operator bool() const {
+      return impl != nullptr;
+    }
+
+    std::shared_ptr<PrefabImpl> Prefab::get_impl() const {
+      return impl;
+    }
+
+    void Prefab::for_each_component(std::function<void(const std::string&, IComponentArray*)> callback) {
+      if (impl) {
+        impl->for_each_component(callback);
+      }
+    }
+
+    void Prefab::for_each_component(std::function<void(const std::string&, IComponentArray*)> callback) const {
+      if (impl) {
+        impl->for_each_component(callback);
+      }
+    }
+
+    // ============================================================================
+    // Prefab Factory Functions
+    // ============================================================================
+
     Prefab create_prefab() {
-      return std::make_shared<PrefabImpl>();
+      return Prefab(std::make_shared<PrefabImpl>());
     }
 
     Entity instantiate_prefab(const Prefab& prefab) {
-      if (!prefab) {
+      if (!prefab.is_valid()) {
         return Entity(INVALID_ENTITY);
       }
 
@@ -60,12 +98,13 @@ namespace Engine {
       EntityID entity_id = entity.get_id();
 
       auto& containers = Internal::get_containers();
+      auto prefab_impl = prefab.get_impl();
 
       // Copy signature
-      containers.entity_signatures[entity_id] = prefab->get_signature();
+      containers.entity_signatures[entity_id] = prefab_impl->get_signature();
 
       // Clone all components from prefab to entity
-      for (const auto& [type_id, prefab_array] : prefab->get_component_storage()) {
+      for (const auto& [type_id, prefab_array] : prefab_impl->get_component_storage()) {
         // Get or create component array in world
         auto it = containers.component_arrays.find(type_id);
         if (it == containers.component_arrays.end()) {
@@ -88,7 +127,7 @@ namespace Engine {
 
     Prefab entity_to_prefab(const Entity& entity) {
       if (!entity.is_valid()) {
-        return nullptr;
+        return Prefab();
       }
 
       auto& containers = Internal::get_containers();
@@ -96,7 +135,7 @@ namespace Engine {
 
       // Check if entity exists
       if (!containers.active_entities.contains(entity_id)) {
-        return nullptr;
+        return Prefab();
       }
 
       // Convert entity to generic value, then create prefab from that
@@ -108,10 +147,8 @@ namespace Engine {
 
       // Create prefab and populate it from the entity data
       return prefab_from_generic_value(entity_data);
-    }
-
-    ReflectionLibrary::GenericValue prefab_to_generic_value(const Prefab& prefab) {
-      if (!prefab) {
+    }    ReflectionLibrary::GenericValue prefab_to_generic_value(const Prefab& prefab) {
+      if (!prefab.is_valid()) {
         return ReflectionLibrary::GenericValue();
       }
 
@@ -120,7 +157,7 @@ namespace Engine {
 
       ReflectionLibrary::Array components_array;
 
-      prefab->for_each_component([&](const std::string& type_name, IComponentArray* array) {
+      prefab.for_each_component([&](const std::string& type_name, IComponentArray* array) {
         if (!array->is_reflectable()) {
           return;
         }
@@ -139,17 +176,18 @@ namespace Engine {
 
     Prefab prefab_from_generic_value(const ReflectionLibrary::GenericValue& value) {
       if (!value.isObject() || !value.has("components") || !value["components"].isArray()) {
-        return nullptr;
+        return Prefab();
       }
 
       Prefab prefab = create_prefab();
+      auto prefab_impl = prefab.get_impl();
 
       const auto& components_array = value["components"].getArray();
       auto& containers = Internal::get_containers();
 
       // Get mutable access to prefab storage and signature
-      auto& prefab_storage = prefab->get_component_storage();
-      auto& prefab_signature = prefab->get_signature();
+      auto& prefab_storage = prefab_impl->get_component_storage();
+      auto& prefab_signature = prefab_impl->get_signature();
 
       // Iterate through each component in the JSON
       for (const auto& component_entry : components_array) {
@@ -181,6 +219,5 @@ namespace Engine {
 
       return prefab;
     }
-
   } // namespace ECS
 } // namespace Engine

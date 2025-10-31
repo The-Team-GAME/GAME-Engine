@@ -17,13 +17,13 @@ public:
     auto banana_texture = Engine::Resources::load_texture("images/banana.png");
 
     // Add components to the prefab (like an entity)
-    banana_prefab->add_component<Components::Transform2D>(1200.0f, 675.0f, 0.0f, 20.0f * 3.0f, 12.0f * 3.0f)
+    banana_prefab.add_component<Components::Transform2D>(1200.0f, 675.0f, 0.0f, 20.0f * 3.0f, 12.0f * 3.0f)
       .add_component<Components::Texture>(banana_texture)
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::RigidBody>();
 
     // Set initial rotation and angular velocity on the prefab
-    auto* rigid = banana_prefab->get_component<Components::RigidBody>();
+    auto* rigid = banana_prefab.get_component<Components::RigidBody>();
     rigid->rotation = 0.0f;
     rigid->angular_velocity = 45.0f;
 
