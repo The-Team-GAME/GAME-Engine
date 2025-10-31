@@ -410,7 +410,7 @@ namespace Engine {
       auto& containers = Internal::get_containers();
 
       // Track processed pairs to avoid duplicates when entities are on multiple layers
-      std::unordered_set<u64> processed_pairs;
+      std::unordered_set<EntityPairHash> processed_pairs;
 
       // Iterate through LHS layers that match the mask
       for (LayerID lhs_layer = 0; lhs_layer < containers.layer_entities.size(); ++lhs_layer) {
@@ -430,8 +430,8 @@ namespace Engine {
               if (lhs_id == rhs_id) continue; // Skip self-pairs
 
               // Create unique pair ID (order-independent hash)
-              u64 pair_hash = (static_cast<u64>(std::min(lhs_id, rhs_id)) << 32) |
-                static_cast<u64>(std::max(lhs_id, rhs_id));
+              EntityPairHash pair_hash = (static_cast<EntityPairHash>(std::min(lhs_id, rhs_id)) << 32) |
+                static_cast<EntityPairHash>(std::max(lhs_id, rhs_id));
 
               // Skip if we've already processed this pair
               if (!processed_pairs.insert(pair_hash).second) continue;
