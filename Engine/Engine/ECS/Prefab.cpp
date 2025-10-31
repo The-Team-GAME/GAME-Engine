@@ -80,6 +80,10 @@ namespace Engine {
       }
     }
 
+    Entity Prefab::instantiate() const {
+      return instantiate_prefab(*this);
+    }
+
     // ============================================================================
     // Prefab Factory Functions
     // ============================================================================

@@ -348,6 +348,18 @@ namespace Engine {
       When processing all components in a prefab without modification.
       ==================================================================================*/
       void for_each_component(std::function<void(const std::string&, IComponentArray*)> callback) const;
+
+      /*=================================================================================
+      Function Brief:
+      Creates a new entity from this prefab, copying all its components.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When spawning entities based on this prefab template.
+      ==================================================================================*/
+      Entity instantiate() const;
     };
 
     /* ====================================== //
