@@ -448,17 +448,18 @@ namespace Engine {
     When you need to check interactions between entities on different layers
     (e.g., player/objects vs bullets for collision detection).
 
-    Example:
-    LayerSignature lhs_mask;
-    lhs_mask.set(ECS::get_layer_id("player"));
-    lhs_mask.set(ECS::get_layer_id("object"));
+    Example (inline construction):
+    LayerID player = ECS::get_layer_id("player");
+    LayerID bullet = ECS::get_layer_id("bullet");
+    LayerID object = ECS::get_layer_id("object");
 
-    LayerSignature rhs_mask;
-    rhs_mask.set(ECS::get_layer_id("bullet"));
-
-    ECS::for_each_entity_pair(lhs_mask, rhs_mask, [](Entity lhs, Entity rhs) {
-      // Check collision between lhs and rhs
-    });
+    ECS::for_each_entity_pair(
+      LayerSignature{player, object},  // LHS: player and object layers
+      LayerSignature{bullet},          // RHS: bullet layer
+      [](Entity lhs, Entity rhs) {
+        // Check collision between lhs and rhs
+      }
+    );
     ==================================================================================*/
     void for_each_entity_pair(
       const LayerSignature& lhs_mask,

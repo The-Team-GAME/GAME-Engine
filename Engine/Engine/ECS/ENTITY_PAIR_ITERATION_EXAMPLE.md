@@ -9,20 +9,26 @@ The `for_each_entity_pair` function allows you to iterate over pairs of entities
 LayerID player_layer = Engine::ECS::get_layer_id("player");
 LayerID bullet_layer = Engine::ECS::get_layer_id("bullet");
 
-// Build layer masks
+// Option 1: Inline construction with initializer list
+Engine::ECS::for_each_entity_pair(
+    Engine::ECS::LayerSignature{player_layer},  // LHS: entities on player layer
+    Engine::ECS::LayerSignature{bullet_layer},  // RHS: entities on bullet layer
+    [](Engine::ECS::Entity lhs, Engine::ECS::Entity rhs) {
+        // lhs is a player entity, rhs is a bullet entity
+        // Check collision here
+    }
+);
+
+// Option 2: Build masks explicitly
 Engine::ECS::LayerSignature lhs_mask;
 lhs_mask.set(player_layer);
 
 Engine::ECS::LayerSignature rhs_mask;
 rhs_mask.set(bullet_layer);
 
-// Check collisions between player entities and bullet entities
-Engine::ECS::for_each_entity_pair(
-    lhs_mask,  // LHS: entities on player layer
-    rhs_mask,  // RHS: entities on bullet layer
+Engine::ECS::for_each_entity_pair(lhs_mask, rhs_mask, 
     [](Engine::ECS::Entity lhs, Engine::ECS::Entity rhs) {
-        // lhs is a player entity, rhs is a bullet entity
-        // Check collision here
+        // Check collision
     }
 );
 ```
@@ -35,7 +41,18 @@ LayerID enemy_layer = Engine::ECS::get_layer_id("enemy");
 LayerID object_layer = Engine::ECS::get_layer_id("object");
 LayerID bullet_layer = Engine::ECS::get_layer_id("bullet");
 
-// Build masks for multiple layers
+// Option 1: Inline construction with initializer list (RECOMMENDED for multiple layers!)
+Engine::ECS::for_each_entity_pair(
+    Engine::ECS::LayerSignature{player_layer, enemy_layer},  // LHS: players and enemies
+    Engine::ECS::LayerSignature{bullet_layer, object_layer}, // RHS: bullets and objects
+    [](Engine::ECS::Entity lhs, Engine::ECS::Entity rhs) {
+        // lhs is either a player or enemy
+        // rhs is either a bullet or object
+        // Check collision
+    }
+);
+
+// Option 2: Build masks explicitly
 Engine::ECS::LayerSignature lhs_mask;
 lhs_mask.set(player_layer);
 lhs_mask.set(enemy_layer);
@@ -44,13 +61,8 @@ Engine::ECS::LayerSignature rhs_mask;
 rhs_mask.set(bullet_layer);
 rhs_mask.set(object_layer);
 
-// Check collisions between (players OR enemies) vs (bullets OR objects)
-Engine::ECS::for_each_entity_pair(
-    lhs_mask,  // LHS: players and enemies
-    rhs_mask,  // RHS: bullets and objects
+Engine::ECS::for_each_entity_pair(lhs_mask, rhs_mask, 
     [](Engine::ECS::Entity lhs, Engine::ECS::Entity rhs) {
-        // lhs is either a player or enemy
-        // rhs is either a bullet or object
         // Check collision
     }
 );
@@ -60,21 +72,13 @@ Engine::ECS::for_each_entity_pair(
 
 ```cpp
 void CollisionSystem::update() {
-    LayerID player_layer = Engine::ECS::get_layer_id("player");
-    LayerID enemy_layer = Engine::ECS::get_layer_id("enemy");
     LayerID bullet_layer = Engine::ECS::get_layer_id("bullet");
+    LayerID enemy_layer = Engine::ECS::get_layer_id("enemy");
     
-    // Build masks
-    Engine::ECS::LayerSignature bullet_mask;
-    bullet_mask.set(bullet_layer);
-    
-    Engine::ECS::LayerSignature enemy_mask;
-    enemy_mask.set(enemy_layer);
-    
-    // Player bullets hitting enemies
+    // Player bullets hitting enemies - clean inline syntax!
     Engine::ECS::for_each_entity_pair(
-        bullet_mask,
-        enemy_mask,
+        Engine::ECS::LayerSignature{bullet_layer},
+        Engine::ECS::LayerSignature{enemy_layer},
         [](Engine::ECS::Entity bullet, Engine::ECS::Entity enemy) {
             // Get components
             auto* bullet_transform = bullet.get_component<Components::Transform>();
@@ -106,14 +110,12 @@ void CollisionSystem::update() {
 ```cpp
 LayerID physics_layer = Engine::ECS::get_layer_id("physics");
 
-// Build mask
-Engine::ECS::LayerSignature physics_mask;
-physics_mask.set(physics_layer);
-
 // Check collisions between all physics objects
+Engine::ECS::LayerSignature physics_mask{physics_layer};
+
 Engine::ECS::for_each_entity_pair(
     physics_mask,
-    physics_mask,
+    physics_mask,  // Use the same mask for both sides
     [](Engine::ECS::Entity obj1, Engine::ECS::Entity obj2) {
         // Note: The function automatically skips self-pairs (obj1 == obj2)
         // Check collision between obj1 and obj2

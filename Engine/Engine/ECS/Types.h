@@ -16,6 +16,8 @@
 #pragma once
 
 #include <bitset>
+#include <vector>
+#include <initializer_list>
 #include "../TypeDef.h"
 
 namespace Engine {
@@ -41,7 +43,33 @@ namespace Engine {
     // Bitset signatures        //
     // ======================== */
     using ComponentSignature = std::bitset<MAX_COMPONENTS>;
-    using LayerSignature = std::bitset<MAX_LAYERS>;
+
+    /* ======================== //
+    // LayerSignature class     //
+    // ======================== */
+    class LayerSignature : public std::bitset<MAX_LAYERS> {
+    public:
+      // Default constructor
+      LayerSignature() = default;
+
+      // Constructor that takes initializer list of LayerIDs
+      LayerSignature(std::initializer_list<LayerID> layers) {
+        for (LayerID layer : layers) {
+          if (layer < MAX_LAYERS) {
+            set(layer);
+          }
+        }
+      }
+
+      // Constructor that takes vector of LayerIDs
+      LayerSignature(const std::vector<LayerID>& layers) {
+        for (LayerID layer : layers) {
+          if (layer < MAX_LAYERS) {
+            set(layer);
+          }
+        }
+      }
+    };
 
   } // namespace ECS
 } // namespace Engine
