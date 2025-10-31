@@ -52,19 +52,38 @@ void phy2D::update()
       ECS::Entity other(entity_id2);
       Components::BoxCollider* other_box = other.get_component<Components::BoxCollider>();
       Components::RigidBody* other_rigid = other.get_component<Components::RigidBody>();
-      if (col2D::rect_rect_coll(*box, *other_box))
+      if (col2D::rect_rect_coll(*box, *other_box)) //captain, it seems we have hit something
       {
-        std::cout << "TRUE    ENTITY " << entity_id << " " << entity_id2 << std::endl;
-      }
-      else
-      {
-        std::cout << "FALSE   ENTITY " << entity_id << " " << entity_id2 << std::endl;
+        // this gona be the most rabak collision resolution ever
+        std::cout << "TRUE " << box->detect_collisions << " " << other_box->detect_collisions << std::endl;
+        if (box->detect_collisions == true && other_box->detect_collisions == false)
+        {
+          std::cout << "ONE\n";
+          // other_box is the static one
+          Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
+          AABB minkowski = col2D::minkowski_AABB(*box, *other_box);
+          Vec2D pen_vec = col2D::penetrationVector(minkowski);
+          rigid->velocity = pen_vec;
+          update_transform(*rigid, *xform);
+        }
+        else if (box->detect_collisions == false && other_box->detect_collisions == true)
+        {
+          std::cout << "TWO\n";
+          // box is the static one
+          Components::Transform2D* other_xform = other.get_component<Components::Transform2D>();
+          AABB minkowski = col2D::minkowski_AABB(*other_box, *box);
+          Vec2D pen_vec = col2D::penetrationVector(minkowski);
+          other_rigid->velocity = pen_vec;
+          update_transform(*other_rigid, *other_xform);
+        }
+        // if both detect_collision is false then no point doing LOL
+        // we wont do elastic collisions yet, cuz its not needed so i skip
       }
     }
   }
 }
 void phy2D::update_entity(Engine::ECS::Entity& entity){
-  Components::Transform2D* xform  = entity.get_component<Components::Transform2D>();
+  Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
   Components::RigidBody* rigid    = entity.get_component<Components::RigidBody>();
   Components::BoxCollider* box    = entity.get_component<Components::BoxCollider>();
   //if (rigid->apply_physics) // this one is kinda wrong since its only the force part but the objects need to update based in their velocities too

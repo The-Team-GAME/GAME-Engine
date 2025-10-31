@@ -40,7 +40,7 @@ namespace Components
     Polygon poly;
 
     // Rect box collider ctor
-    BoxCollider(f32 width, f32 height) : width(width), height(height), shape(RECT)
+    BoxCollider(f32 width, f32 height, bool col) : width(width), height(height), detect_collisions(col)
     { 
       // For now we wont initialise the AABB cuz its gona get updated before the collision check anyways so maybe thats a good thing
 

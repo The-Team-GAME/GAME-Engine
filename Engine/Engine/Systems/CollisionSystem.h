@@ -32,15 +32,39 @@ namespace Engine {
       // update the AABB of the entity after it gets transformed
       static void update_AABB(Components::RigidBody const& rigid, Components::BoxCollider& box);
 
-      bool AABBMinkowski(AABB& minkowski, Components::BoxCollider const& box1, Components::BoxCollider const& box2)
+      static AABB minkowski_AABB(Components::BoxCollider const& dynamic_obj, Components::BoxCollider const& static_obj)
       {
-        minkowski.pos = box1.aabb.pos - box2.aabb.pos;
-        f32 half_width = (box1.width + box2.width) / 2;
-        f32 half_height = (box1.height + box2.height) / 2;
+        AABB minkowski;
+        // get the direction vector wrt the static object so that static obj becomes the "origin"
+        minkowski.pos = dynamic_obj.aabb.pos - static_obj.aabb.pos;
+        f32 half_width = (dynamic_obj.width + static_obj.width) / 2;
+        f32 half_height = (dynamic_obj.height + static_obj.height) / 2;
         minkowski.min = Vec2D(minkowski.pos.x - half_width, minkowski.pos.y - half_height);
         minkowski.max = Vec2D(minkowski.pos.x - half_width, minkowski.pos.y - half_height);
+        return minkowski;
+      }
 
-        return minkowski.min.x < 0 && minkowski.max.x > 0 && minkowski.min.y < 0 && minkowski.max.y > 0;
+      static Vec2D penetrationVector(AABB const& minkowski)
+      {
+        // So... how does this work.
+        // First we take the aabb and find the distance to the edges of the static object
+
+        float left = fabsf(minkowski.min.x);
+        float right = fabsf(minkowski.max.x);
+        float bottom = fabsf(minkowski.min.y);
+        float top = fabsf(minkowski.max.y);
+
+        // Then we see which side is shortest
+        float min_x = std::min(left, right);
+        float min_y = std::min(bottom, top);
+
+        // Preference to the y axis for ground collisions
+        if (min_y <= min_x) {
+          return Vec2D( 0, (bottom < top) ? minkowski.min.y : minkowski.max.y );
+        }
+        else {
+          return Vec2D( (left < right) ? minkowski.min.x : minkowski.max.x, 0 );
+        }
       }
       /*========================/
       / Static Collision Checks /
