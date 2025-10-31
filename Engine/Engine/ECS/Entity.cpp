@@ -103,16 +103,17 @@ namespace Engine {
 
       // Iterate through each component in the JSON
       for (const auto& component_entry : components_array) {
-        if (!component_entry.isObject() || !component_entry.has("type")) {
+        if (!component_entry.isObject() || !component_entry.has("type") || !component_entry.has("data")) {
           continue;
         }
 
-        std::string component_type = component_entry["type"].getString();
+        const std::string& component_type = component_entry["type"].getString();
+        const auto& component_data = component_entry["data"];
 
         // Find the component array for this type
         for (auto& [type_id, array] : containers.component_arrays) {
           if (array->get_type_name() == component_type) {
-            array->add_component_from_generic_value(entity.get_id(), component_entry["data"]);
+            array->add_component_from_generic_value(entity.get_id(), component_data);
             break;
           }
         }
