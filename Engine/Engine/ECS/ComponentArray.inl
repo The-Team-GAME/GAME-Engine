@@ -23,26 +23,25 @@ namespace Engine {
 
     template<typename T>
     void ComponentArray<T>::add_component(EntityID entity, const T& component) {
-      components.emplace(entity, std::move(component));
+      components.insert(entity, component);
     }
 
     template<typename T>
     void ComponentArray<T>::clone_component(EntityID source, EntityID destination) {
-      auto it = components.find(source);
-      if (it != components.end()) {
-        components.emplace(destination, it->second); // Assumes T is copy-constructible
+      const T* source_component = components.get(source);
+      if (source_component != nullptr) {
+        components.insert(destination, *source_component); // Assumes T is copy-constructible
       }
     }
 
     template<typename T>
     T* ComponentArray<T>::get_component(EntityID entity) {
-      auto it = components.find(entity);
-      return it != components.end() ? &it->second : nullptr;
+      return components.get(entity);
     }
 
     template<typename T>
     bool ComponentArray<T>::has_component(EntityID entity) const {
-      return components.find(entity) != components.end();
+      return components.contains(entity);
     }
 
     template<typename T>
@@ -75,10 +74,10 @@ namespace Engine {
     template<typename T>
     inline ReflectionLibrary::GenericValue ComponentArray<T>::to_generic_value(EntityID entity) const
     {
-      auto it = components.find(entity);
-      if (it != components.end()) {
+      const T* component = components.get(entity);
+      if (component != nullptr) {
         if constexpr (ReflectionLibrary::is_reflectable_v<T>) {
-          return ReflectionLibrary::to_generic_value(it->second);
+          return ReflectionLibrary::to_generic_value(*component);
         }
       }
       return ReflectionLibrary::GenericValue();
@@ -113,8 +112,8 @@ namespace Engine {
     inline bool ComponentArray<T>::set_component_from_generic_value(EntityID entity, const ReflectionLibrary::GenericValue& value)
     {
       // Check if the entity has this component
-      auto it = components.find(entity);
-      if (it == components.end()) {
+      T* component = components.get(entity);
+      if (component == nullptr) {
         return false; // Entity doesn't have this component
       }
 
@@ -123,7 +122,7 @@ namespace Engine {
           // Component has custom reflector
           std::optional<typename T::Reflector> reflector_opt = ReflectionLibrary::from_generic_value<typename T::Reflector>(value);
           if (reflector_opt) {
-            it->second = ReflectionLibrary::ReflectionInfo<T>::create(reflector_opt.value());
+            *component = ReflectionLibrary::ReflectionInfo<T>::create(reflector_opt.value());
             return true;
           }
         }
@@ -131,7 +130,7 @@ namespace Engine {
           // Component uses direct reflection
           std::optional<T> component_opt = ReflectionLibrary::from_generic_value<T>(value);
           if (component_opt) {
-            it->second = std::move(component_opt.value());
+            *component = std::move(component_opt.value());
             return true;
           }
         }
@@ -149,22 +148,28 @@ namespace Engine {
 
     template<typename T>
     auto ComponentArray<T>::begin() {
-      return components.begin();
+      return components.data_begin();
     }
 
     template<typename T>
     auto ComponentArray<T>::end() {
-      return components.end();
+      return components.data_end();
     }
 
     template<typename T>
     auto ComponentArray<T>::begin() const {
-      return components.begin();
+      return components.data_begin();
     }
 
     template<typename T>
     auto ComponentArray<T>::end() const {
-      return components.end();
+      return components.data_end();
+    }
+
+    template<typename T>
+    inline std::unique_ptr<IComponentArray> ComponentArray<T>::create_empty() const
+    {
+      return std::make_unique<ComponentArray<T>>();
     }
 
   } // namespace ECS

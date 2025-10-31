@@ -42,7 +42,7 @@ namespace Engine {
       {
         auto& containers = get_containers();
 
-        if (containers.active_entities.find(entity) == containers.active_entities.end())
+        if (!containers.active_entities.contains(entity))
           return false;
 
         auto it = containers.entity_signatures.find(entity);
@@ -74,7 +74,7 @@ namespace Engine {
     Entity get_entity(EntityID id)
     {
       auto& containers = Internal::get_containers();
-      if (containers.active_entities.find(id) != containers.active_entities.end())
+      if (containers.active_entities.contains(id))
       {
         return Entity(id);
       }
@@ -85,7 +85,7 @@ namespace Engine {
     {
       auto& containers = Internal::get_containers();
       EntityID source_id = source.get_id();
-      if (containers.active_entities.find(source_id) == containers.active_entities.end())
+      if (!containers.active_entities.contains(source_id))
       {
         return Entity(INVALID_ENTITY);
       }
@@ -119,7 +119,7 @@ namespace Engine {
     {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
-      return containers.active_entities.find(id) != containers.active_entities.end();
+      return containers.active_entities.contains(id);
     }
 
     void update()
@@ -139,7 +139,7 @@ namespace Engine {
       // Process component removals
       for (const auto& [entityId, typeId] : containers.components_to_remove)
       {
-        if (containers.active_entities.find(entityId) != containers.active_entities.end())
+        if (containers.active_entities.contains(entityId))
         {
           auto array_it = containers.component_arrays.find(typeId);
           if (array_it != containers.component_arrays.end())
@@ -155,8 +155,10 @@ namespace Engine {
       // Clean up destroyed entities
       for (EntityID entityId : containers.entities_to_destroy)
       {
-        if (containers.active_entities.erase(entityId))
+        if (containers.active_entities.contains(entityId))
         {
+          containers.active_entities.erase(entityId);
+          
           for (auto& [typeId, array] : containers.component_arrays)
           {
             array->remove_entity(entityId);

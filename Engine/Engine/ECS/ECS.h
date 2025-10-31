@@ -16,6 +16,7 @@
 #pragma once
 
 #include "Types.h"
+#include "SparseSet.h"
 #include "ComponentManager.h"
 #include "ComponentArray.h"
 #include "Entity.h"
@@ -29,3 +30,4 @@
 #include "System.inl"
 #include "ComponentManager.inl"
 #include "ComponentArray.inl"
+#include "Prefab.inl"
