@@ -490,10 +490,10 @@ void EntityEditorPanel()
       ImGui::Text("Entity is on layers:");
 
       bool has_layers = false;
-      for (Engine::ECS::LayerID layer = 0; layer < Engine::ECS::MAX_LAYERS; ++layer) {
+      for (Engine::ECS::LayerID layer = 0; layer < containers.layer_id_to_name.size(); ++layer) {
         if (entity_layers.test(layer)) {
           has_layers = true;
-          std::string layer_name = Engine::ECS::get_layer_name(layer);
+          const std::string& layer_name = containers.layer_id_to_name[layer];
           if (!layer_name.empty()) {
             ImGui::BulletText("%s (ID: %d)", layer_name.c_str(), layer);
           }
@@ -510,7 +510,12 @@ void EntityEditorPanel()
       ImGui::Text("Available Layers:");
 
       bool any_layers_registered = false;
-      for (const auto& [layer_name, layer_id] : containers.layer_name_to_id) {
+      for (Engine::ECS::LayerID layer_id = 0; layer_id < containers.layer_id_to_name.size(); ++layer_id) {
+        const std::string& layer_name = containers.layer_id_to_name[layer_id];
+
+        // Skip empty layer names (shouldn't happen, but just in case)
+        if (layer_name.empty()) continue;
+
         any_layers_registered = true;
 
         bool is_on_layer = entity_layers.test(layer_id);
