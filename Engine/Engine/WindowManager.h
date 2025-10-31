@@ -47,6 +47,16 @@ namespace Engine {
     ==================================================================================*/
     void exit();
 
+    /*=================================================================================
+    Function Brief:
+    Updates the window title to display the current FPS. Uses smoothed FPS calculation
+    over a 0.25s interval for stable display.
+
+    Where to call it:
+    Call this once per frame in the main game loop.
+    ==================================================================================*/
+    void update_title_with_fps();
+
     /* ===================== //
     // Accessors             //
     // ===================== */

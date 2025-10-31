@@ -45,7 +45,8 @@ namespace Engine {
     json_str - The JSON string containing the serialized prefab data.
 
     Returns:
-    A prefab that can be applied to entities, or nullptr if deserialization fails.
+    A prefab handle that can be used to instantiate entities, or an empty handle
+    if deserialization fails.
 
     Where to call it:
     When loading prefabs from files or receiving prefab data.

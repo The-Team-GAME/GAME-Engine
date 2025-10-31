@@ -103,8 +103,8 @@ namespace Engine
         float wrapped_time = fmod(elapsed, animation->totalDuration);
 
         // Find which frame should be displayed based on elapsed time
-        size_t current_frame = 0;
-        for (size_t i = 0; i < animation->frames.size(); ++i) {
+        int current_frame = 0;
+        for (int i = 0; i < animation->frames.size(); ++i) {
           if (wrapped_time >= animation->frames[i].before_time) {
             current_frame = i;
           }

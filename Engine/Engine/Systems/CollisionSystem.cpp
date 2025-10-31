@@ -26,12 +26,15 @@ coll2D::Collision2DSystem() {
 // update the AABB of the entity after it gets transformed
 void coll2D::update_AABB(Components::RigidBody const& rigid, Components::BoxCollider& box)
 {
-  Vec2D min = rigid.curr_pos - Vec2D(box.width / 2, box.height / 2);
-  Vec2D max = rigid.curr_pos + Vec2D(box.width / 2, box.height / 2);
-  box.aabb.min = min;
-  box.aabb.max = max;
+  box.aabb.pos = rigid.curr_pos;
+  box.aabb.min = box.aabb.pos - Vec2D(box.width / 2, box.height / 2);
+  box.aabb.max = box.aabb.pos + Vec2D(box.width / 2, box.height / 2);
   return;
 }
+
+/*============================/
+/ Static Collision Resolution /
+/============================*/
 
 /*========================/
 / Static Collision Checks /
@@ -45,13 +48,4 @@ bool coll2D::rect_rect_coll(Components::BoxCollider const& lhs, Components::BoxC
     (rhs.aabb.min.x < lhs.aabb.max.x) &&
     (lhs.aabb.max.y > rhs.aabb.min.y) &&
     (rhs.aabb.max.y > lhs.aabb.min.y);
-}
-bool coll2D::rect_circle_coll(Components::BoxCollider const& lhs, Components::BoxCollider const& rhs)
-{
-  return false;
-}
-bool coll2D::circle_circle_coll(Components::BoxCollider const& lhs, Components::BoxCollider const& rhs)
-{
-  f32 dist_sq = (lhs.center - rhs.center).get_magnitude_sq();
-  return dist_sq <= pow(lhs.radius + rhs.radius, 2);
 }

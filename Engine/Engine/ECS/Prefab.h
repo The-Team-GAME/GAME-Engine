@@ -16,35 +16,339 @@
 #pragma once
 
 #include "Entity.h"
+#include "Types.h"
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <functional>
 #include "../Reflection/ReflectionLibrary.h"
 
 namespace Engine {
   namespace ECS {
-    /* ====================================== //
-    // PrefabData - Reusable entity template  //
-    // ====================================== */
-    struct PrefabData {
-      std::function<Entity(void)> setup_function;
 
-      PrefabData() = default;
+    // Forward declarations
+    class IComponentArray;
+
+    /* ====================================== //
+    // PrefabImpl - Reusable entity template  //
+    // ====================================== */
+    class PrefabImpl {
+    private:
+      ComponentSignature signature;
+      std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> component_storage;
+
+    public:
+      PrefabImpl() = default;
 
       /*=================================================================================
       Function Brief:
-      Constructs a PrefabData with the provided setup function.
+      Adds a component to this prefab template.
 
       Parameters:
-      setup - A function that configures an entity with components.
+      args - Arguments to construct the component.
 
       Where to call it:
-      When creating prefab data structures.
+      When building a prefab with specific components.
       ==================================================================================*/
-      PrefabData(std::function<Entity(void)> setup);
+      template<typename T, typename... Args>
+      PrefabImpl& add_component(Args&&... args);
+
+      /*=================================================================================
+      Function Brief:
+      Removes a component from this prefab template.
+
+      Parameters:
+      None (template parameter T specifies the component type).
+
+      Where to call it:
+      When modifying a prefab's component configuration.
+      ==================================================================================*/
+      template<typename T>
+      PrefabImpl& remove_component();
+
+      /*=================================================================================
+      Function Brief:
+      Retrieves a component from this prefab template.
+
+      Parameters:
+      None (template parameter T specifies the component type).
+
+      Where to call it:
+      When accessing or modifying a prefab's component data.
+      ==================================================================================*/
+      template<typename T>
+      T* get_component();
+
+      /*=================================================================================
+      Function Brief:
+      Retrieves a const component from this prefab template.
+
+      Parameters:
+      None (template parameter T specifies the component type).
+
+      Where to call it:
+      When reading a prefab's component data without modification.
+      ==================================================================================*/
+      template<typename T>
+      const T* get_component() const;
+
+      /*=================================================================================
+      Function Brief:
+      Checks if this prefab has a specific component.
+
+      Parameters:
+      None (template parameter T specifies the component type).
+
+      Where to call it:
+      When querying a prefab's component configuration.
+      ==================================================================================*/
+      template<typename T>
+      bool has_component() const;
+
+      /*=================================================================================
+      Function Brief:
+      Checks if this prefab has all specified components.
+
+      Parameters:
+      None (template parameters T... specify the component types).
+
+      Where to call it:
+      When checking multiple component requirements on a prefab.
+      ==================================================================================*/
+      template<typename... T>
+      bool has_components() const;
+
+      /*=================================================================================
+      Function Brief:
+      Gets the component signature of this prefab.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      Internally when comparing or copying prefab configurations.
+      ==================================================================================*/
+      const ComponentSignature& get_signature() const;
+
+      /*=================================================================================
+      Function Brief:
+      Gets mutable access to the component signature of this prefab.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      Internally when modifying prefab configurations.
+      ==================================================================================*/
+      ComponentSignature& get_signature();
+
+      /*=================================================================================
+      Function Brief:
+      Gets the component storage map of this prefab.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      Internally when cloning components to/from entities.
+      ==================================================================================*/
+      const std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>>& get_component_storage() const;
+
+      /*=================================================================================
+      Function Brief:
+      Gets mutable access to the component storage map of this prefab.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      Internally when modifying prefab configurations.
+      ==================================================================================*/
+      std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>>& get_component_storage();
+
+      /*=================================================================================
+      Function Brief:
+      Iterates over all components in this prefab.
+
+      Parameters:
+      callback - Function to call for each component.
+
+      Where to call it:
+      When processing all components in a prefab.
+      ==================================================================================*/
+      void for_each_component(std::function<void(const std::string&, IComponentArray*)> callback);
     };
 
-    using Prefab = std::shared_ptr<PrefabData>;
+    /* ============================ //
+    // Prefab handle for clean API  //
+    // ============================ */
+    class Prefab {
+    private:
+      std::shared_ptr<PrefabImpl> impl;
+
+    public:
+      /*=================================================================================
+      Function Brief:
+      Constructs an empty Prefab handle.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When creating a null prefab handle.
+      ==================================================================================*/
+      Prefab() = default;
+
+      /*=================================================================================
+      Function Brief:
+      Constructs a Prefab handle wrapping a PrefabImpl.
+
+      Parameters:
+      impl - Shared pointer to the PrefabImpl.
+
+      Where to call it:
+      Internally when creating prefabs.
+      ==================================================================================*/
+      Prefab(std::shared_ptr<PrefabImpl> impl);
+
+      /*=================================================================================
+      Function Brief:
+      Adds a component to this prefab with builder pattern.
+
+      Parameters:
+      args - Arguments to construct the component.
+
+      Where to call it:
+      When building a prefab with specific components.
+      ==================================================================================*/
+      template<typename T, typename... Args>
+      Prefab& add_component(Args&&... args);
+
+      /*=================================================================================
+      Function Brief:
+      Removes a component from this prefab.
+
+      Parameters:
+      None (template parameter T specifies the component type).
+
+      Where to call it:
+      When modifying a prefab's component configuration.
+      ==================================================================================*/
+      template<typename T>
+      Prefab& remove_component();
+
+      /*=================================================================================
+      Function Brief:
+      Retrieves a component from this prefab.
+
+      Parameters:
+      None (template parameter T specifies the component type).
+
+      Where to call it:
+      When accessing or modifying a prefab's component data.
+      ==================================================================================*/
+      template<typename T>
+      T* get_component();
+
+      /*=================================================================================
+      Function Brief:
+      Retrieves a const component from this prefab.
+
+      Parameters:
+      None (template parameter T specifies the component type).
+
+      Where to call it:
+      When reading a prefab's component data without modification.
+      ==================================================================================*/
+      template<typename T>
+      const T* get_component() const;
+
+      /*=================================================================================
+      Function Brief:
+      Checks if this prefab has a specific component.
+
+      Parameters:
+      None (template parameter T specifies the component type).
+
+      Where to call it:
+      When querying a prefab's component configuration.
+      ==================================================================================*/
+      template<typename T>
+      bool has_component() const;
+
+      /*=================================================================================
+      Function Brief:
+      Checks if this prefab has all specified components.
+
+      Parameters:
+      None (template parameters T... specify the component types).
+
+      Where to call it:
+      When checking multiple component requirements on a prefab.
+      ==================================================================================*/
+      template<typename... T>
+      bool has_components() const;
+
+      /*=================================================================================
+      Function Brief:
+      Checks if this prefab handle is valid (not null).
+
+      Parameters:
+      None.
+
+      Where to call it:
+      Before accessing prefab data.
+      ==================================================================================*/
+      bool is_valid() const;
+
+      /*=================================================================================
+      Function Brief:
+      Allows boolean conversion to check if prefab is valid.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      In conditional statements.
+      ==================================================================================*/
+      operator bool() const;
+
+      /*=================================================================================
+      Function Brief:
+      Gets the underlying implementation pointer.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      Internally when accessing implementation details.
+      ==================================================================================*/
+      std::shared_ptr<PrefabImpl> get_impl() const;
+
+      /*=================================================================================
+      Function Brief:
+      Iterates over all components in this prefab.
+
+      Parameters:
+      callback - Function to call for each component.
+
+      Where to call it:
+      When processing all components in a prefab.
+      ==================================================================================*/
+      void for_each_component(std::function<void(const std::string&, IComponentArray*)> callback);
+
+      /*=================================================================================
+      Function Brief:
+      Iterates over all components in this prefab (const version).
+
+      Parameters:
+      callback - Function to call for each component.
+
+      Where to call it:
+      When processing all components in a prefab without modification.
+      ==================================================================================*/
+      void for_each_component(std::function<void(const std::string&, IComponentArray*)> callback) const;
+    };
 
     /* ====================================== //
     // Prefab functions                       //
@@ -52,31 +356,63 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
-    Creates a new prefab with the specified setup function. The setup function
-    will be called on each entity instantiated from this prefab.
+    Creates a new empty prefab handle.
 
     Parameters:
-    setup - A function that configures an entity with components.
+    None.
 
     Where to call it:
     When defining reusable entity templates.
     ==================================================================================*/
-    Prefab create_prefab(std::function<Entity(void)> setup);
+    Prefab create_prefab();
 
     /*=================================================================================
     Function Brief:
-    Creates a new entity and applies the prefab's setup function to it.
+    Creates a new entity and copies all components from the prefab to it.
 
     Parameters:
-    prefab - The prefab to instantiate.
+    prefab - The prefab handle to instantiate.
 
     Where to call it:
     When spawning entities based on a prefab template.
     ==================================================================================*/
     Entity instantiate_prefab(const Prefab& prefab);
 
+    /*=================================================================================
+    Function Brief:
+    Creates a prefab from an existing entity by copying its components.
+
+    Parameters:
+    entity - The entity to convert to a prefab.
+
+    Where to call it:
+    When creating a reusable template from an existing entity.
+    ==================================================================================*/
+    Prefab entity_to_prefab(const Entity& entity);
+
+    /*=================================================================================
+    Function Brief:
+    Serializes a prefab to a GenericValue for saving/loading.
+
+    Parameters:
+    prefab - The prefab handle to serialize.
+
+    Where to call it:
+    When saving prefabs to files or transmitting over network.
+    ==================================================================================*/
     ReflectionLibrary::GenericValue prefab_to_generic_value(const Prefab& prefab);
 
+    /*=================================================================================
+    Function Brief:
+    Deserializes a GenericValue to create a prefab.
+
+    Parameters:
+    value - The GenericValue containing prefab data.
+
+    Where to call it:
+    When loading prefabs from files or receiving over network.
+    ==================================================================================*/
     Prefab prefab_from_generic_value(const ReflectionLibrary::GenericValue& value);
+
   } // namespace ECS
 } // namespace Engine

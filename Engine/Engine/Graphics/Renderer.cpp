@@ -499,6 +499,25 @@ namespace Engine {
       draw_texture(Engine::Resources::get_rect_texture(), position, size, rotation, color);
     }
 
+    void draw_line(const Math::Vec2D& start, const Math::Vec2D& end, f32 thickness, const Math::Vec4D& color) {
+      // Calculate line vector and length
+      Math::Vec2D line_vec = end - start;
+      f32 length = line_vec.get_magnitude();
+
+      if (length < 0.001f) {
+        return; // Line is too short to draw
+      }
+
+      // Calculate angle of the line
+      f32 angle = std::atan2(line_vec.y, line_vec.x);
+
+      // Calculate center position of the line
+      Math::Vec2D center = start + (line_vec * 0.5f);
+
+      // Draw a rotated rectangle to represent the line
+      draw_texture(Engine::Resources::get_rect_texture(), center, Math::Vec2D(length, thickness), angle * 180.0f / 3.14159265359f, color);
+    }
+
     void draw_texture(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
       // Default texture coordinates for full texture (bottom-left, bottom-right, top-right, top-left)
       std::array<Math::Vec2D, 4> default_tex_coords = {

@@ -46,18 +46,20 @@ namespace Engine {
     void System::on_entity_removed([[maybe_unused]] const Entity& entity) {}
 
     void System::add_entity(EntityID entity) {
-      if (entities.insert(entity).second) {
+      if (!entities.contains(entity)) {
+        entities.insert(entity);
         on_entity_added(Entity(entity));
       }
     }
 
     void System::remove_entity(EntityID entity) {
-      if (entities.erase(entity) > 0) {
+      if (entities.contains(entity)) {
+        entities.erase(entity);
         on_entity_removed(Entity(entity));
       }
     }
 
-    const std::unordered_set<EntityID>& System::get_entities() const {
+    const SparseSet<EntityID>& System::get_entities() const {
       return entities;
     }
 
