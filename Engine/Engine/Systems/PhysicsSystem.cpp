@@ -58,30 +58,45 @@ void phy2D::update()
         std::cout << "TRUE " << box->detect_collisions << " " << other_box->detect_collisions << std::endl;
         if (box->detect_collisions == true && other_box->detect_collisions == false)
         {
-          std::cout << "ONE\n";
           // other_box is the static one
           Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
           AABB minkowski = col2D::minkowski_AABB(*box, *other_box);
           Vec2D pen_vec = col2D::penetrationVector(minkowski);
           // some magic right here. i understand it rn but maybe alcohol helps
 
+          std::cout << "Prev pos: " << rigid->next_pos << std::endl;
           rigid->velocity -= pen_vec;
           rigid->next_pos += pen_vec * Time::get_fixed_dt();
-          rigid->velocity.y = 0.f;
+          if (pen_vec.y == 0) // sideways collision
+          {
+            rigid->velocity.x = 0.f;
+          }
+          else // updown collision
+          {
+            rigid->velocity.y = 0.f;
+          }
           update_transform(*rigid, *xform);
+          std::cout << "New pos:  " << rigid->next_pos << std::endl;
         }
-        else if (box->detect_collisions == false && other_box->detect_collisions == true)
-        {
-          std::cout << "TWO\n";
-          // box is the static one
-          Components::Transform2D* other_xform = other.get_component<Components::Transform2D>();
-          AABB minkowski = col2D::minkowski_AABB(*other_box, *box);
-          Vec2D pen_vec = col2D::penetrationVector(minkowski);
-          other_rigid->velocity -= pen_vec;
-          other_rigid->next_pos += pen_vec * Time::get_fixed_dt();
-          other_rigid->velocity.y = 0.f;
-          update_transform(*other_rigid, *other_xform);
-        }
+        //else if (box->detect_collisions == false && other_box->detect_collisions == true)
+        //{
+        //  std::cout << "TWO\n";
+        //  // box is the static one
+        //  Components::Transform2D* other_xform = other.get_component<Components::Transform2D>();
+        //  AABB minkowski = col2D::minkowski_AABB(*other_box, *box);
+        //  Vec2D pen_vec = col2D::penetrationVector(minkowski);
+        //  other_rigid->velocity -= pen_vec;
+        //  other_rigid->next_pos += pen_vec * Time::get_fixed_dt();
+        //  if (pen_vec.y == 0) // sideways collision
+        //  {
+        //    other_rigid->velocity.x = 0.f;
+        //  }
+        //  else // updown collision
+        //  {
+        //    other_rigid->velocity.y = 0.f;
+        //  }
+        //  update_transform(*other_rigid, *other_xform);
+        //}
         // if both detect_collision is false then no point doing LOL
         // we wont do elastic collisions yet, cuz its not needed so i skip
       }
