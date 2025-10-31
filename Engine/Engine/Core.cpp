@@ -131,7 +131,6 @@ namespace Engine
   void Core::run()
   {
     // CORE INITIALIZATION
-    Engine::ECS::init_layers();
     register_engine_systems();
     register_all_panels();
 

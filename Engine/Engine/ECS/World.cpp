@@ -104,8 +104,8 @@ namespace Engine {
       containers.entity_layers[id] = LayerSignature{};
 
       // Add entity to default layer
-      containers.entity_layers[id].set(containers.default_layer_id);
-      Internal::add_entity_to_layer_set(id, containers.default_layer_id);
+      containers.entity_layers[id].set(DEFAULT_LAYER);
+      Internal::add_entity_to_layer_set(id, DEFAULT_LAYER);
 
       return Entity(id);
     }    Entity get_entity(EntityID id)
@@ -300,16 +300,6 @@ namespace Engine {
     // Layer Management Implementation
     // ============================================================================
 
-    void init_layers()
-    {
-      auto& containers = Internal::get_containers();
-
-      // Initialize default layer
-      if (containers.default_layer_id == INVALID_LAYER) {
-        containers.default_layer_id = register_layer("default");
-      }
-    }
-
     LayerID register_layer(const std::string& name)
     {
       auto& containers = Internal::get_containers();
@@ -361,8 +351,7 @@ namespace Engine {
 
     LayerID get_default_layer()
     {
-      auto& containers = Internal::get_containers();
-      return containers.default_layer_id;
+      return DEFAULT_LAYER;
     }
 
     bool is_on_layer(const Entity& entity, LayerID layer)

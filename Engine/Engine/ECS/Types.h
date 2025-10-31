@@ -36,6 +36,7 @@ namespace Engine {
     inline constexpr EntityID INVALID_ENTITY = 0;
     inline constexpr ComponentTypeID INVALID_COMPONENT_TYPE = 0;
     inline constexpr LayerID INVALID_LAYER = 0;
+    inline constexpr LayerID DEFAULT_LAYER = 1;
     inline constexpr size_t MAX_COMPONENTS = 64;
     inline constexpr size_t MAX_LAYERS = 32;
 

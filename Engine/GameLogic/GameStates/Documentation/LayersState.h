@@ -57,10 +57,10 @@ public:
 
     std::cout << "Step 0: Default Layer\n";
 
-    // The 'default' layer is automatically initialized during Core startup
-    // via Engine::ECS::init_layers() in Core::run()
+    // The 'default' layer is automatically pre-registered with ID 1
+    // in the WorldContainers constructor (no manual initialization needed)
     Engine::ECS::LayerID default_layer = Engine::ECS::get_default_layer();
-    std::cout << "  Default layer initialized in Core: 'default' (ID: " << default_layer << ")\n";
+    std::cout << "  Default layer pre-registered: 'default' (ID: " << default_layer << ")\n";
     std::cout << "  All entities are automatically added to 'default' on creation\n\n";
 
     // =======================================================================

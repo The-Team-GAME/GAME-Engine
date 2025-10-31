@@ -484,24 +484,9 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
-    Initializes the ECS layer system by registering the default layer.
-    This should be called once during engine initialization (in Core::Core()).
-
-    Parameters:
-    None.
-
-    Returns:
-    None.
-
-    Where to call it:
-    Once during Core initialization, before any entities are created.
-    ==================================================================================*/
-    void init_layers();
-
-    /*=================================================================================
-    Function Brief:
     Registers a custom layer with a name and returns its unique LayerID.
     If the layer name already exists, returns the existing LayerID.
+    Note: The 'default' layer is always pre-registered with ID 1.
 
     Parameters:
     name - The name of the layer to register.
