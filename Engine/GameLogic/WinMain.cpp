@@ -40,6 +40,15 @@ int main()
   {
     // Start the engine
     Engine::Core engine(MainMenuState::get());
+
+    // Register game layers at startup
+    Engine::ECS::register_layer("background");
+    Engine::ECS::register_layer("gameplay");
+    Engine::ECS::register_layer("foreground");
+    Engine::ECS::register_layer("ui");
+    Engine::ECS::register_layer("debug");
+    Engine::ECS::register_layer("effects");
+
     ImGuiManager::register_panel(StateChooserPanel);
     engine.run();
   }

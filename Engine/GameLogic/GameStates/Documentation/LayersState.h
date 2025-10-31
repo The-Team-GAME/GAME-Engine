@@ -64,25 +64,26 @@ public:
     std::cout << "  All entities are automatically added to 'default' on creation\n\n";
 
     // =======================================================================
-    // FEATURE 1: Layer Registration
+    // FEATURE 1: Layer Registration (already done in WinMain.cpp at startup)
     // =======================================================================
-    std::cout << "Step 1: Registering custom layers...\n";
+    std::cout << "Step 1: Retrieving layer IDs...\n";
 
-    // Register layers with descriptive names
+    // Get layer IDs (layers were registered in WinMain.cpp)
     // Lower IDs = higher priority = rendered/processed first
-    background_layer = Engine::ECS::register_layer("background");
-    gameplay_layer = Engine::ECS::register_layer("gameplay");
-    foreground_layer = Engine::ECS::register_layer("foreground");
-    ui_layer = Engine::ECS::register_layer("ui");
-    debug_layer = Engine::ECS::register_layer("debug");
-    effects_layer = Engine::ECS::register_layer("effects");
+    background_layer = Engine::ECS::get_layer_id("background");
+    gameplay_layer = Engine::ECS::get_layer_id("gameplay");
+    foreground_layer = Engine::ECS::get_layer_id("foreground");
+    ui_layer = Engine::ECS::get_layer_id("ui");
+    debug_layer = Engine::ECS::get_layer_id("debug");
+    effects_layer = Engine::ECS::get_layer_id("effects");
 
-    std::cout << "  Registered 'background' -> ID: " << background_layer << "\n";
-    std::cout << "  Registered 'gameplay' -> ID: " << gameplay_layer << "\n";
-    std::cout << "  Registered 'foreground' -> ID: " << foreground_layer << "\n";
-    std::cout << "  Registered 'ui' -> ID: " << ui_layer << "\n";
-    std::cout << "  Registered 'debug' -> ID: " << debug_layer << "\n";
-    std::cout << "  Registered 'effects' -> ID: " << effects_layer << "\n\n";
+    std::cout << "  'background' -> ID: " << background_layer << "\n";
+    std::cout << "  'gameplay' -> ID: " << gameplay_layer << "\n";
+    std::cout << "  'foreground' -> ID: " << foreground_layer << "\n";
+    std::cout << "  'ui' -> ID: " << ui_layer << "\n";
+    std::cout << "  'debug' -> ID: " << debug_layer << "\n";
+    std::cout << "  'effects' -> ID: " << effects_layer << "\n";
+    std::cout << "  (Layers registered once at startup in WinMain.cpp)\n\n";
 
     // =======================================================================
     // FEATURE 2: Entities start on default layer
