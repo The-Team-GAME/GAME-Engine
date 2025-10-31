@@ -372,7 +372,7 @@ void ShowcaseState::update() {
 
     // if player HP is full or 0 -> player dies
     if (hp->value >= hp->max || hp->value <= 0) {
-      // Stop walk SFX if needed (your pattern)
+      // Stop walk SFX if needed
       if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
         Engine::Audio::stop_channel(walk_sound_channel);
         walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
