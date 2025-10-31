@@ -18,6 +18,7 @@
 #include <bitset>
 #include <vector>
 #include <initializer_list>
+#include <string>
 #include "../TypeDef.h"
 
 namespace Engine {
@@ -55,22 +56,16 @@ namespace Engine {
       LayerSignature() = default;
 
       // Constructor that takes initializer list of LayerIDs
-      LayerSignature(std::initializer_list<LayerID> layers) {
-        for (LayerID layer : layers) {
-          if (layer < MAX_LAYERS) {
-            set(layer);
-          }
-        }
-      }
+      LayerSignature(std::initializer_list<LayerID> layers);
 
       // Constructor that takes vector of LayerIDs
-      LayerSignature(const std::vector<LayerID>& layers) {
-        for (LayerID layer : layers) {
-          if (layer < MAX_LAYERS) {
-            set(layer);
-          }
-        }
-      }
+      LayerSignature(const std::vector<LayerID>& layers);
+
+      // Constructor that takes initializer list of layer names (strings)
+      LayerSignature(std::initializer_list<const char*> layer_names);
+
+      // Constructor that takes vector of layer names (strings)
+      LayerSignature(const std::vector<std::string>& layer_names);
     };
 
   } // namespace ECS

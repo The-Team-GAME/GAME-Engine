@@ -20,6 +20,10 @@
 namespace Engine {
   namespace ECS
   {
+    // ============================================================================
+    // World Implementation
+    // ============================================================================
+
     namespace Internal
     {
       void entity_component_changed(EntityID entity)
