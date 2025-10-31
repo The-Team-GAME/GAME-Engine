@@ -9,10 +9,17 @@ The `for_each_entity_pair` function allows you to iterate over pairs of entities
 LayerID player_layer = Engine::ECS::get_layer_id("player");
 LayerID bullet_layer = Engine::ECS::get_layer_id("bullet");
 
+// Build layer masks
+Engine::ECS::LayerSignature lhs_mask;
+lhs_mask.set(player_layer);
+
+Engine::ECS::LayerSignature rhs_mask;
+rhs_mask.set(bullet_layer);
+
 // Check collisions between player entities and bullet entities
 Engine::ECS::for_each_entity_pair(
-    {player_layer},        // LHS: entities on player layer
-    {bullet_layer},        // RHS: entities on bullet layer
+    lhs_mask,  // LHS: entities on player layer
+    rhs_mask,  // RHS: entities on bullet layer
     [](Engine::ECS::Entity lhs, Engine::ECS::Entity rhs) {
         // lhs is a player entity, rhs is a bullet entity
         // Check collision here
@@ -28,10 +35,19 @@ LayerID enemy_layer = Engine::ECS::get_layer_id("enemy");
 LayerID object_layer = Engine::ECS::get_layer_id("object");
 LayerID bullet_layer = Engine::ECS::get_layer_id("bullet");
 
+// Build masks for multiple layers
+Engine::ECS::LayerSignature lhs_mask;
+lhs_mask.set(player_layer);
+lhs_mask.set(enemy_layer);
+
+Engine::ECS::LayerSignature rhs_mask;
+rhs_mask.set(bullet_layer);
+rhs_mask.set(object_layer);
+
 // Check collisions between (players OR enemies) vs (bullets OR objects)
 Engine::ECS::for_each_entity_pair(
-    {player_layer, enemy_layer},     // LHS: players and enemies
-    {bullet_layer, object_layer},    // RHS: bullets and objects
+    lhs_mask,  // LHS: players and enemies
+    rhs_mask,  // RHS: bullets and objects
     [](Engine::ECS::Entity lhs, Engine::ECS::Entity rhs) {
         // lhs is either a player or enemy
         // rhs is either a bullet or object
@@ -48,10 +64,17 @@ void CollisionSystem::update() {
     LayerID enemy_layer = Engine::ECS::get_layer_id("enemy");
     LayerID bullet_layer = Engine::ECS::get_layer_id("bullet");
     
+    // Build masks
+    Engine::ECS::LayerSignature bullet_mask;
+    bullet_mask.set(bullet_layer);
+    
+    Engine::ECS::LayerSignature enemy_mask;
+    enemy_mask.set(enemy_layer);
+    
     // Player bullets hitting enemies
     Engine::ECS::for_each_entity_pair(
-        {bullet_layer},
-        {enemy_layer},
+        bullet_mask,
+        enemy_mask,
         [](Engine::ECS::Entity bullet, Engine::ECS::Entity enemy) {
             // Get components
             auto* bullet_transform = bullet.get_component<Components::Transform>();
@@ -83,10 +106,14 @@ void CollisionSystem::update() {
 ```cpp
 LayerID physics_layer = Engine::ECS::get_layer_id("physics");
 
+// Build mask
+Engine::ECS::LayerSignature physics_mask;
+physics_mask.set(physics_layer);
+
 // Check collisions between all physics objects
 Engine::ECS::for_each_entity_pair(
-    {physics_layer},
-    {physics_layer},
+    physics_mask,
+    physics_mask,
     [](Engine::ECS::Entity obj1, Engine::ECS::Entity obj2) {
         // Note: The function automatically skips self-pairs (obj1 == obj2)
         // Check collision between obj1 and obj2
@@ -105,9 +132,17 @@ Engine::ECS::for_each_entity_pair(
 
 ```cpp
 class PhysicsSystem : public Engine::ECS::System {
+private:
+    Engine::ECS::LayerSignature player_mask;
+    Engine::ECS::LayerSignature enemy_mask;
+    
 public:
     PhysicsSystem() {
         require_components<Components::Transform, Components::Rigidbody>();
+        
+        // Cache layer masks (do this once in constructor)
+        player_mask.set(Engine::ECS::get_layer_id("player"));
+        enemy_mask.set(Engine::ECS::get_layer_id("enemy"));
     }
     
     void update() override {
@@ -115,12 +150,9 @@ public:
         Engine::ECS::System::update();
         
         // Then, check collisions between different layer groups
-        LayerID player_layer = Engine::ECS::get_layer_id("player");
-        LayerID enemy_layer = Engine::ECS::get_layer_id("enemy");
-        
         Engine::ECS::for_each_entity_pair(
-            {player_layer},
-            {enemy_layer},
+            player_mask,
+            enemy_mask,
             [this](Engine::ECS::Entity player, Engine::ECS::Entity enemy) {
                 this->check_collision(player, enemy);
             }

@@ -407,24 +407,28 @@ namespace Engine {
     // ============================================================================
 
     void for_each_entity_pair(
-      const std::vector<LayerID>& lhs_layers,
-      const std::vector<LayerID>& rhs_layers,
+      const LayerSignature& lhs_mask,
+      const LayerSignature& rhs_mask,
       std::function<void(Entity, Entity)> callback)
     {
       auto& containers = Internal::get_containers();
 
-      // Collect LHS entities from specified layers
+      // Collect LHS entities from layers in the mask
       std::vector<EntityID> lhs_entities;
-      for (LayerID layer : lhs_layers) {
-        const auto& layer_set = containers.layer_entities[layer];
-        lhs_entities.insert(lhs_entities.end(), layer_set.begin(), layer_set.end());
+      for (LayerID layer = 0; layer < MAX_LAYERS; ++layer) {
+        if (lhs_mask.test(layer)) {
+          const auto& layer_set = containers.layer_entities[layer];
+          lhs_entities.insert(lhs_entities.end(), layer_set.begin(), layer_set.end());
+        }
       }
 
-      // Collect RHS entities from specified layers
+      // Collect RHS entities from layers in the mask
       std::vector<EntityID> rhs_entities;
-      for (LayerID layer : rhs_layers) {
-        const auto& layer_set = containers.layer_entities[layer];
-        rhs_entities.insert(rhs_entities.end(), layer_set.begin(), layer_set.end());
+      for (LayerID layer = 0; layer < MAX_LAYERS; ++layer) {
+        if (rhs_mask.test(layer)) {
+          const auto& layer_set = containers.layer_entities[layer];
+          rhs_entities.insert(rhs_entities.end(), layer_set.begin(), layer_set.end());
+        }
       }
 
       // Iterate over all pairs (excluding self-pairs)
@@ -438,6 +442,5 @@ namespace Engine {
         }
       }
     }
-
   } // namespace ECS
 } // namespace Engine

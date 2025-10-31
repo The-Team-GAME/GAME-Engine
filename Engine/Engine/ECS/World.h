@@ -435,13 +435,13 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
-    Iterates over pairs of entities where LHS entities are on any of the specified
-    LHS layers and RHS entities are on any of the specified RHS layers.
+    Iterates over pairs of entities where LHS entities are on any layer in the LHS mask
+    and RHS entities are on any layer in the RHS mask.
     Calls the callback function for each valid pair (excluding self-pairs).
 
     Parameters:
-    lhs_layers - std::vector<LayerID> containing layer IDs for left-hand side entities
-    rhs_layers - std::vector<LayerID> containing layer IDs for right-hand side entities
+    lhs_mask - LayerSignature mask for left-hand side entities
+    rhs_mask - LayerSignature mask for right-hand side entities
     callback - Function to call for each pair: void(Entity lhs, Entity rhs)
 
     Where to call it:
@@ -449,25 +449,22 @@ namespace Engine {
     (e.g., player/objects vs bullets for collision detection).
 
     Example:
-    LayerID player_layer = ECS::get_layer_id("player");
-    LayerID bullet_layer = ECS::get_layer_id("bullet");
-    LayerID object_layer = ECS::get_layer_id("object");
+    LayerSignature lhs_mask;
+    lhs_mask.set(ECS::get_layer_id("player"));
+    lhs_mask.set(ECS::get_layer_id("object"));
 
-    ECS::for_each_entity_pair(
-      {player_layer, object_layer},  // LHS layers
-      {bullet_layer, object_layer},  // RHS layers
-      [](Entity lhs, Entity rhs) {
-        // Check collision between lhs and rhs
-      }
-    );
+    LayerSignature rhs_mask;
+    rhs_mask.set(ECS::get_layer_id("bullet"));
+
+    ECS::for_each_entity_pair(lhs_mask, rhs_mask, [](Entity lhs, Entity rhs) {
+      // Check collision between lhs and rhs
+    });
     ==================================================================================*/
     void for_each_entity_pair(
-      const std::vector<LayerID>& lhs_layers,
-      const std::vector<LayerID>& rhs_layers,
+      const LayerSignature& lhs_mask,
+      const LayerSignature& rhs_mask,
       std::function<void(Entity, Entity)> callback
-    );
-
-    /*=================================================================================
+    );    /*=================================================================================
     Function Brief:
     Returns the number of components of type T currently in the world.
 
