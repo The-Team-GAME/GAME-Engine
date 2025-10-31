@@ -331,6 +331,9 @@ namespace Engine {
       containers.layer_name_to_id[name] = new_id;
       containers.layer_id_to_name[new_id] = name;
 
+      // Resize layer_entities to include the new layer
+      containers.layer_entities.resize(new_id + 1);
+
       return new_id;
     }
 
@@ -417,8 +420,8 @@ namespace Engine {
 
       // Collect LHS entities from layers in the mask
       std::vector<EntityID> lhs_entities;
-      for (LayerID layer = 0; layer < MAX_LAYERS; ++layer) {
-        if (lhs_mask.test(layer) && layer < containers.layer_entities.size()) {
+      for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
+        if (lhs_mask.test(layer)) {
           const auto& layer_set = containers.layer_entities[layer];
           lhs_entities.insert(lhs_entities.end(), layer_set.begin(), layer_set.end());
         }
@@ -426,8 +429,8 @@ namespace Engine {
 
       // Collect RHS entities from layers in the mask
       std::vector<EntityID> rhs_entities;
-      for (LayerID layer = 0; layer < MAX_LAYERS; ++layer) {
-        if (rhs_mask.test(layer) && layer < containers.layer_entities.size()) {
+      for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
+        if (rhs_mask.test(layer)) {
           const auto& layer_set = containers.layer_entities[layer];
           rhs_entities.insert(rhs_entities.end(), layer_set.begin(), layer_set.end());
         }
