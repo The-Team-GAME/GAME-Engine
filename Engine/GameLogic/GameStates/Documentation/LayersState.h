@@ -182,13 +182,6 @@ public:
     // =======================================================================
     std::cout << "Step 5: Demonstrating layer priorities...\n";
 
-    Engine::ECS::LayerID highest = Engine::ECS::Internal::get_highest_priority_layer(background_entity.get_id());
-    std::cout << "  Background entity highest priority layer: " << highest
-      << " (" << Engine::ECS::get_layer_name(highest) << ")\n";
-
-    highest = Engine::ECS::Internal::get_highest_priority_layer(multi_layer_entity.get_id());
-    std::cout << "  Multi-layer entity highest priority layer: " << highest
-      << " (" << Engine::ECS::get_layer_name(highest) << ")\n";
     std::cout << "  Note: 'default' is ID " << Engine::ECS::get_default_layer()
       << ", so it has highest priority!\n";
     std::cout << "  (Entities sorted by highest priority layer for rendering)\n\n";
@@ -271,8 +264,6 @@ public:
         gameplay_entity1.add_to_layer("foreground");
         std::cout << "Moved entity to 'foreground' layer (cleared other layers)\n";
 
-        Engine::ECS::LayerID highest = Engine::ECS::Internal::get_highest_priority_layer(gameplay_entity1.get_id());
-        std::cout << "  New highest priority layer: " << Engine::ECS::get_layer_name(highest) << "\n";
       }
       else {
         // Move back to gameplay
@@ -311,12 +302,6 @@ public:
       std::cout << "  On 'gameplay' layer? " << (gameplay_entity1.is_on_layer("gameplay") ? "YES" : "NO") << "\n";
       std::cout << "  On 'foreground' layer? " << (gameplay_entity1.is_on_layer("foreground") ? "YES" : "NO") << "\n";
 
-      // Get highest priority layer
-      Engine::ECS::LayerID highest = Engine::ECS::Internal::get_highest_priority_layer(gameplay_entity1.get_id());
-      if (highest != Engine::ECS::INVALID_LAYER) {
-        std::cout << "  Highest priority layer: " << highest << " ("
-          << Engine::ECS::get_layer_name(highest) << ")\n";
-      }
 
       // Multi-layer entity info
       std::cout << "\nMulti-Layer Entity:\n";

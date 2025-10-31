@@ -75,26 +75,6 @@ namespace Engine {
         return true;
       }
 
-      LayerID get_highest_priority_layer(EntityID entity)
-      {
-        auto& containers = get_containers();
-        auto layer_it = containers.entity_layers.find(entity);
-
-        if (layer_it == containers.entity_layers.end() || layer_it->second.none())
-          return INVALID_LAYER;
-
-        // Find the lowest set bit (highest priority layer)
-        // Lower layer IDs = higher priority (rendered first)
-        const LayerSignature& layers = layer_it->second;
-        for (LayerID i = 0; i < MAX_LAYERS; ++i) {
-          if (layers.test(i)) {
-            return i;
-          }
-        }
-
-        return INVALID_LAYER;
-      }
-
       void add_entity_to_layer_set(EntityID entity, LayerID layer)
       {
         auto& containers = get_containers();
