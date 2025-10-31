@@ -97,30 +97,27 @@ namespace Engine {
     }
 
     ReflectionLibrary::GenericValue entity_to_generic_value(Entity entity) {
-      auto& containers = Internal::get_containers();
-
-      EntityID entity_id = entity.get_id();
-      const auto& signature = containers.entity_signatures[entity_id];
+      if (!entity.is_valid()) {
+        return ReflectionLibrary::GenericValue();
+      }
 
       ReflectionLibrary::GenericValue result;
       result["dataType"] = "Entity";
-      result["id"] = static_cast<int>(entity_id);
+      result["id"] = static_cast<int>(entity.get_id());
 
       ReflectionLibrary::Array components_array;
 
-      // Iterate through all component arrays
-      for (auto& [type_id, array] : containers.component_arrays) {
+      entity.for_each_component([&](const std::string& type_name, IComponentArray* array) {
         if (!array->is_reflectable()) {
-          continue; // Skip non-reflectable components
+          return;
         }
 
-        if (signature.test(type_id)) {
-          ReflectionLibrary::GenericValue component_entry;
-          component_entry["type"] = array->get_type_name();
-          component_entry["data"] = array->to_generic_value(entity_id);
-          components_array.push_back(component_entry);
-        }
-      }
+        ReflectionLibrary::GenericValue component_entry;
+        component_entry["type"] = type_name;
+        component_entry["data"] = array->to_generic_value(entity.get_id());
+
+        components_array.push_back(component_entry);
+        });
 
       result["components"] = components_array;
 
