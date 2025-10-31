@@ -63,6 +63,34 @@ namespace Engine {
       }
     }
 
+    ReflectionLibrary::GenericValue entity_to_generic_value(Entity entity) {
+      if (!entity.is_valid()) {
+        return ReflectionLibrary::GenericValue();
+      }
+
+      ReflectionLibrary::GenericValue result;
+      result["dataType"] = "Entity";
+      result["id"] = static_cast<int>(entity.get_id());
+
+      ReflectionLibrary::Array components_array;
+
+      entity.for_each_component([&](const std::string& type_name, IComponentArray* array) {
+        if (!array->is_reflectable()) {
+          return;
+        }
+
+        ReflectionLibrary::GenericValue component_entry;
+        component_entry["type"] = type_name;
+        component_entry["data"] = array->to_generic_value(entity.get_id());
+
+        components_array.push_back(component_entry);
+        });
+
+      result["components"] = components_array;
+
+      return result;
+    }
+
     Entity create_entity_from_generic_value(const ReflectionLibrary::GenericValue& value) {
       if (!value.isObject() || !value.has("components") || !value["components"].isArray()) {
         return Entity(INVALID_ENTITY);
@@ -94,34 +122,6 @@ namespace Engine {
       Internal::entity_component_changed(entity.get_id());
 
       return entity;
-    }
-
-    ReflectionLibrary::GenericValue entity_to_generic_value(Entity entity) {
-      if (!entity.is_valid()) {
-        return ReflectionLibrary::GenericValue();
-      }
-
-      ReflectionLibrary::GenericValue result;
-      result["dataType"] = "Entity";
-      result["id"] = static_cast<int>(entity.get_id());
-
-      ReflectionLibrary::Array components_array;
-
-      entity.for_each_component([&](const std::string& type_name, IComponentArray* array) {
-        if (!array->is_reflectable()) {
-          return;
-        }
-
-        ReflectionLibrary::GenericValue component_entry;
-        component_entry["type"] = type_name;
-        component_entry["data"] = array->to_generic_value(entity.get_id());
-
-        components_array.push_back(component_entry);
-        });
-
-      result["components"] = components_array;
-
-      return result;
     }
 
     // ============================================================================

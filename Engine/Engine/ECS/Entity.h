@@ -336,8 +336,8 @@ namespace Engine {
 
     };
 
-    Entity create_entity_from_generic_value(const ReflectionLibrary::GenericValue& value);
     ReflectionLibrary::GenericValue entity_to_generic_value(Entity entity);
+    Entity create_entity_from_generic_value(const ReflectionLibrary::GenericValue& value);
 
 
   } // namespace ECS
