@@ -26,6 +26,8 @@ namespace Engine {
     class Physics2DSystem : public Engine::ECS::System {
     public:
       Physics2DSystem(); // Default dtor that includes all the components needed for the entities called in the physics engine
+      
+      void update() override;
 
       void update_entity(Engine::ECS::Entity& entity) override;
 
