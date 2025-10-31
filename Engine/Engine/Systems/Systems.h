@@ -6,7 +6,7 @@
 void register_engine_systems()
 {
   // Update systems
-  Engine::ECS::add_system<Engine::Systems::Transform2DSystem>();
+  Engine::ECS::add_system<Engine::Systems::Physics2DSystem>();
   Engine::ECS::add_system<Engine::Systems::AnimationUpdateSystem>();
 
   // Draw systems
@@ -23,5 +23,5 @@ void unregister_engine_systems()
   Engine::ECS::remove_system<Engine::Systems::StaticSpriteRenderSystem>();
 
   Engine::ECS::remove_system<Engine::Systems::AnimationUpdateSystem>();
-  Engine::ECS::remove_system<Engine::Systems::Transform2DSystem>();
+  Engine::ECS::remove_system<Engine::Systems::Physics2DSystem>();
 }

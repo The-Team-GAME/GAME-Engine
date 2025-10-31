@@ -114,6 +114,10 @@
     <ClCompile Include="Engine\FileIO\PrefabsFileIO.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Systems\PhysicsSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Systems\CollisionSystem.cpp">
     <ClCompile Include="Engine\GUI\EntityEditorPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -342,6 +346,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Reflection\ReflectionLibrary\GenericValue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Systems\CollisionSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
