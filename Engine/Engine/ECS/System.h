@@ -83,8 +83,9 @@ namespace Engine {
 
       /*=================================================================================
       Function Brief:
-      Updates all entities managed by this system. Calls update_entity for each
-      entity.
+      Updates all entities managed by this system in layer order. Calls update_entity
+      for each entity, processing layers from lowest ID (highest priority) to highest ID.
+      This ensures entities are processed in the correct rendering/logic order.
 
       Parameters:
       None.
@@ -96,8 +97,9 @@ namespace Engine {
 
       /*=================================================================================
       Function Brief:
-      Renders all entities managed by this system. Calls draw_entity for each
-      entity.
+      Renders all entities managed by this system in layer order. Calls draw_entity
+      for each entity, processing layers from lowest ID (highest priority) to highest ID.
+      This ensures entities are drawn in the correct z-order.
 
       Parameters:
       None.

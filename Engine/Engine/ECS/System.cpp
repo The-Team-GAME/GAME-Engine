@@ -15,6 +15,7 @@
 //-----------------------------------------------------------------------------------
 #include "System.h"
 #include "Entity.h"
+#include "WorldData.h"
 
 namespace Engine {
   namespace ECS {
@@ -26,16 +27,44 @@ namespace Engine {
     System::~System() = default;
 
     void System::update() {
-      for (EntityID entityId : entities) {
-        Entity entity(entityId);
-        update_entity(entity);
+      // Iterate through entities in layer order (lower layer ID = higher priority = first)
+      auto& containers = Internal::get_containers();
+
+      for (LayerID layer = 0; layer < MAX_LAYERS; ++layer) {
+        // Skip if system doesn't process this layer
+        if (!active_layers.test(layer))
+          continue;
+
+        // Process entities on this layer
+        const auto& layer_set = containers.layer_entities[layer];
+        for (EntityID entityId : layer_set) {
+          // Only process if this system manages this entity
+          if (entities.contains(entityId)) {
+            Entity entity(entityId);
+            update_entity(entity);
+          }
+        }
       }
     }
 
     void System::draw() {
-      for (EntityID entityId : entities) {
-        Entity entity(entityId);
-        draw_entity(entity);
+      // Iterate through entities in layer order (lower layer ID = higher priority = first)
+      auto& containers = Internal::get_containers();
+
+      for (LayerID layer = 0; layer < MAX_LAYERS; ++layer) {
+        // Skip if system doesn't process this layer
+        if (!active_layers.test(layer))
+          continue;
+
+        // Process entities on this layer
+        const auto& layer_set = containers.layer_entities[layer];
+        for (EntityID entityId : layer_set) {
+          // Only process if this system manages this entity
+          if (entities.contains(entityId)) {
+            Entity entity(entityId);
+            draw_entity(entity);
+          }
+        }
       }
     }
 
