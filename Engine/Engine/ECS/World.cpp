@@ -409,32 +409,28 @@ namespace Engine {
     {
       auto& containers = Internal::get_containers();
 
-      // Collect LHS entities from layers in the mask
-      std::vector<EntityID> lhs_entities;
-      for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
-        if (lhs_mask.test(layer)) {
-          const auto& layer_set = containers.layer_entities[layer];
-          lhs_entities.insert(lhs_entities.end(), layer_set.begin(), layer_set.end());
-        }
-      }
+      // Iterate through LHS layers
+      for (LayerID lhs_layer = 0; lhs_layer < containers.layer_entities.size(); ++lhs_layer) {
+        if (!lhs_mask.test(lhs_layer)) continue;
 
-      // Collect RHS entities from layers in the mask
-      std::vector<EntityID> rhs_entities;
-      for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
-        if (rhs_mask.test(layer)) {
-          const auto& layer_set = containers.layer_entities[layer];
-          rhs_entities.insert(rhs_entities.end(), layer_set.begin(), layer_set.end());
-        }
-      }
+        const auto& lhs_layer_set = containers.layer_entities[lhs_layer];
 
-      // Iterate over all pairs (excluding self-pairs)
-      for (EntityID lhs_id : lhs_entities) {
-        Entity lhs(lhs_id);
-        for (EntityID rhs_id : rhs_entities) {
-          if (lhs_id == rhs_id) continue; // Skip self-pairs
+        // Iterate through RHS layers
+        for (LayerID rhs_layer = 0; rhs_layer < containers.layer_entities.size(); ++rhs_layer) {
+          if (!rhs_mask.test(rhs_layer)) continue;
 
-          Entity rhs(rhs_id);
-          callback(lhs, rhs);
+          const auto& rhs_layer_set = containers.layer_entities[rhs_layer];
+
+          // Iterate all entity pairs between these two layers
+          for (EntityID lhs_id : lhs_layer_set) {
+            Entity lhs(lhs_id);
+            for (EntityID rhs_id : rhs_layer_set) {
+              if (lhs_id == rhs_id) continue; // Skip self-pairs
+
+              Entity rhs(rhs_id);
+              callback(lhs, rhs);
+            }
+          }
         }
       }
     }
