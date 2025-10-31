@@ -24,6 +24,7 @@
 #include "../GameStates/ShowcaseState.h"
 #include "../GameStates/Documentation/PrefabsState.h"
 #include "../GameStates/Dev/PhysicsTestState.h"
+#include "../GameStates/Documentation/LayersState.h"
 
 /*=================================================================================
 Function Brief:
@@ -74,7 +75,10 @@ inline void StateChooserPanel()
   {
     Engine::StateManager::change_state(PhysicsTestState::get());
   }
-
+  if (ImGui::Button("LayersState"))
+  {
+    Engine::StateManager::change_state(LayersState::get());
+  }
 
   ImGui::End();
 }

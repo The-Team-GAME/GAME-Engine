@@ -127,5 +127,68 @@ namespace Engine {
       return result;
     }
 
+    // ============================================================================
+    // Layer Management Implementation
+    // ============================================================================
+
+    bool Entity::is_on_layer(LayerID layer) const {
+      return ECS::is_on_layer(*this, layer);
+    }
+
+    LayerSignature Entity::get_layers() const {
+      return ECS::get_entity_layers(*this);
+    }
+
+    Entity& Entity::clear_layers() {
+      ECS::clear_layers(*this);
+      return *this;
+    }
+
+    Entity& Entity::add_to_layer(const std::string& layer_name) {
+      LayerID layer = ECS::get_layer_id(layer_name);
+      if (layer != INVALID_LAYER) {
+        auto& containers = Internal::get_containers();
+        EntityID entity_id = get_id();
+
+        if (!containers.active_entities.contains(entity_id))
+          return *this;
+
+        // Only add if not already on this layer
+        if (!containers.entity_layers[entity_id].test(layer)) {
+          containers.entity_layers[entity_id].set(layer);
+          Internal::add_entity_to_layer_set(entity_id, layer);
+          Internal::entity_component_changed(entity_id);
+        }
+      }
+      return *this;
+    }
+
+    Entity& Entity::remove_from_layer(const std::string& layer_name) {
+      LayerID layer = ECS::get_layer_id(layer_name);
+      if (layer != INVALID_LAYER) {
+        auto& containers = Internal::get_containers();
+        EntityID entity_id = get_id();
+
+        if (!containers.active_entities.contains(entity_id))
+          return *this;
+
+        // Only remove if currently on this layer
+        if (containers.entity_layers[entity_id].test(layer)) {
+          containers.entity_layers[entity_id].reset(layer);
+          Internal::remove_entity_from_layer_set(entity_id, layer);
+          Internal::entity_component_changed(entity_id);
+        }
+      }
+      return *this;
+    }
+
+    bool Entity::is_on_layer(const std::string& layer_name) const {
+      LayerID layer = ECS::get_layer_id(layer_name);
+      if (layer != INVALID_LAYER) {
+        return ECS::is_on_layer(*this, layer);
+      }
+      return false;
+    }
+
   } // namespace ECS
 } // namespace Engine

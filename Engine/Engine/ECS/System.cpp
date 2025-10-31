@@ -19,6 +19,10 @@
 namespace Engine {
   namespace ECS {
 
+    System::System() {
+      active_layers.set(); // Process all layers by default
+    }
+
     System::~System() = default;
 
     void System::update() {
@@ -73,6 +77,14 @@ namespace Engine {
 
     const EventManager::EventSignature& System::get_event_signature() const {
       return event_signature;
+    }
+
+    void System::process_all_layers() {
+      active_layers.set();
+    }
+
+    const LayerSignature& System::get_layer_signature() const {
+      return active_layers;
     }
 
   } // namespace ECS

@@ -463,6 +463,85 @@ void EntityEditorPanel()
 
     ImGui::Separator();
 
+    // Layers Section
+    if (ImGui::CollapsingHeader("Layers", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+      auto& containers = Engine::ECS::Internal::get_containers();
+      Engine::ECS::LayerSignature current_layers = entity.get_layers();
+
+      ImGui::Text("Active Layers:");
+      ImGui::Separator();
+
+      // Display all possible layers
+      bool layers_modified = false;
+
+      // Show all registered layers
+      bool has_layers = false;
+      for (auto& [name, id] : containers.layer_name_to_id) {
+        has_layers = true;
+        bool is_on_layer = current_layers.test(id);
+        std::string checkbox_label = name + " (ID: " + std::to_string(id) + ")";
+
+        if (ImGui::Checkbox(checkbox_label.c_str(), &is_on_layer)) {
+          if (is_on_layer) {
+            entity.add_to_layer(name);
+          }
+          else {
+            entity.remove_from_layer(name);
+          }
+          layers_modified = true;
+        }
+      }
+
+      if (!has_layers) {
+        ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "No layers registered");
+        ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "Use Engine::ECS::register_layer(\"name\")");
+      }
+
+      ImGui::Separator();
+
+      // Quick actions
+      if (ImGui::Button("Clear All Layers")) {
+        entity.clear_layers();
+        layers_modified = true;
+      }
+
+      // Display layer summary
+      if (layers_modified) {
+        current_layers = entity.get_layers();
+      }
+
+      ImGui::Separator();
+      ImGui::Text("Layer Summary:");
+
+      // Count active layers
+      int active_count = 0;
+      for (Engine::ECS::LayerID i = 0; i < Engine::ECS::MAX_LAYERS; ++i) {
+        if (current_layers.test(i)) {
+          active_count++;
+        }
+      }
+
+      ImGui::Text("Active: %d / %d layers", active_count, Engine::ECS::MAX_LAYERS);
+
+      // Show highest priority layer
+      Engine::ECS::LayerID highest = Engine::ECS::Internal::get_highest_priority_layer(entity.get_id());
+      if (highest != Engine::ECS::INVALID_LAYER) {
+        std::string highest_name = Engine::ECS::get_layer_name(highest);
+        if (!highest_name.empty()) {
+          ImGui::Text("Highest Priority: %s (ID: %u)", highest_name.c_str(), highest);
+        }
+        else {
+          ImGui::Text("Highest Priority: Layer %u", highest);
+        }
+      }
+      else {
+        ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "Warning: Entity has no layers!");
+      }
+    }
+
+    ImGui::Separator();
+
     // Edit Components Section
     if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
     {

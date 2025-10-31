@@ -57,21 +57,75 @@ namespace Engine {
         if ((excludedSignature & entitySignature).any())
           return false;
 
-        // Then check requirements
-        return (requiredSignature & entitySignature) == requiredSignature;
+        // Check component requirements
+        if ((requiredSignature & entitySignature) != requiredSignature)
+          return false;
+
+        // Check layer requirements
+        auto layer_it = containers.entity_layers.find(entity);
+        if (layer_it != containers.entity_layers.end()) {
+          const auto& entityLayers = layer_it->second;
+          const auto& systemLayers = system.get_layer_signature();
+
+          // Entity must be on at least one of the system's layers
+          if ((entityLayers & systemLayers).none())
+            return false;
+        }
+
+        return true;
+      }
+
+      LayerID get_highest_priority_layer(EntityID entity)
+      {
+        auto& containers = get_containers();
+        auto layer_it = containers.entity_layers.find(entity);
+
+        if (layer_it == containers.entity_layers.end() || layer_it->second.none())
+          return INVALID_LAYER;
+
+        // Find the lowest set bit (highest priority layer)
+        // Lower layer IDs = higher priority (rendered first)
+        const LayerSignature& layers = layer_it->second;
+        for (LayerID i = 0; i < MAX_LAYERS; ++i) {
+          if (layers.test(i)) {
+            return i;
+          }
+        }
+
+        return INVALID_LAYER;
+      }
+
+      void add_entity_to_layer_set(EntityID entity, LayerID layer)
+      {
+        auto& containers = get_containers();
+        containers.layer_entities[layer].insert(entity);
+      }
+
+      void remove_entity_from_layer_set(EntityID entity, LayerID layer)
+      {
+        auto& containers = get_containers();
+        auto it = containers.layer_entities.find(layer);
+        if (it != containers.layer_entities.end()) {
+          it->second.erase(entity);
+        }
       }
     } // namespace Internal
 
     Entity create_entity()
     {
       auto& containers = Internal::get_containers();
+
       EntityID id = containers.next_entity_id++;
       containers.active_entities.insert(id);
       containers.entity_signatures[id] = ComponentSignature{};
-      return Entity(id);
-    }
+      containers.entity_layers[id] = LayerSignature{};
 
-    Entity get_entity(EntityID id)
+      // Add entity to default layer
+      containers.entity_layers[id].set(containers.default_layer_id);
+      Internal::add_entity_to_layer_set(id, containers.default_layer_id);
+
+      return Entity(id);
+    }    Entity get_entity(EntityID id)
     {
       auto& containers = Internal::get_containers();
       if (containers.active_entities.contains(id))
@@ -94,6 +148,20 @@ namespace Engine {
 
       const auto& sourceSignature = containers.entity_signatures.at(source_id);
       containers.entity_signatures[newEntity.get_id()] = sourceSignature;
+
+      // Clone layer signature and add to layer sets
+      auto layer_it = containers.entity_layers.find(source_id);
+      if (layer_it != containers.entity_layers.end()) {
+        const LayerSignature& source_layers = layer_it->second;
+        containers.entity_layers[newEntity.get_id()] = source_layers;
+
+        // Add cloned entity to all the source entity's layer sets
+        for (LayerID layer = 0; layer < MAX_LAYERS; ++layer) {
+          if (source_layers.test(layer)) {
+            Internal::add_entity_to_layer_set(newEntity.get_id(), layer);
+          }
+        }
+      }
 
       for (auto const& [typeId, componentArray] : containers.component_arrays)
       {
@@ -157,14 +225,26 @@ namespace Engine {
       {
         if (containers.active_entities.contains(entityId))
         {
+          // Remove entity from all layer sets
+          auto layer_it = containers.entity_layers.find(entityId);
+          if (layer_it != containers.entity_layers.end()) {
+            const LayerSignature& layers = layer_it->second;
+            for (LayerID layer = 0; layer < MAX_LAYERS; ++layer) {
+              if (layers.test(layer)) {
+                Internal::remove_entity_from_layer_set(entityId, layer);
+              }
+            }
+          }
+
           containers.active_entities.erase(entityId);
-          
+
           for (auto& [typeId, array] : containers.component_arrays)
           {
             array->remove_entity(entityId);
           }
 
           containers.entity_signatures.erase(entityId);
+          containers.entity_layers.erase(entityId);
 
           for (auto& system : containers.systems)
           {
@@ -207,5 +287,140 @@ namespace Engine {
       auto& containers = Internal::get_containers();
       return containers.active_entities.size();
     }
+
+    std::vector<Entity> get_entities_on_layer(LayerID layer)
+    {
+      auto& containers = Internal::get_containers();
+      std::vector<Entity> result;
+
+      auto it = containers.layer_entities.find(layer);
+      if (it != containers.layer_entities.end()) {
+        const auto& layer_set = it->second;
+        result.reserve(layer_set.size());
+        for (EntityID entityId : layer_set) {
+          result.emplace_back(entityId);
+        }
+      }
+
+      return result;
+    }
+
+    std::vector<Entity> get_entities_on_layer(const std::string& layer_name)
+    {
+      LayerID layer = get_layer_id(layer_name);
+      if (layer != INVALID_LAYER) {
+        return get_entities_on_layer(layer);
+      }
+      return {};
+    }
+
+    // ============================================================================
+    // Layer Management Implementation
+    // ============================================================================
+
+    void init_layers()
+    {
+      auto& containers = Internal::get_containers();
+
+      // Initialize default layer
+      if (containers.default_layer_id == INVALID_LAYER) {
+        containers.default_layer_id = register_layer("default");
+      }
+    }
+
+    LayerID register_layer(const std::string& name)
+    {
+      auto& containers = Internal::get_containers();
+
+      // Check if layer already exists
+      auto it = containers.layer_name_to_id.find(name);
+      if (it != containers.layer_name_to_id.end()) {
+        return it->second;
+      }
+
+      // Ensure we don't exceed MAX_LAYERS
+      if (containers.next_layer_id >= MAX_LAYERS) {
+        // Return INVALID_LAYER if we've run out of layer slots
+        return INVALID_LAYER;
+      }
+
+      // Register new layer
+      LayerID new_id = containers.next_layer_id++;
+      containers.layer_name_to_id[name] = new_id;
+      containers.layer_id_to_name[new_id] = name;
+
+      return new_id;
+    }
+
+    LayerID get_layer_id(const std::string& name)
+    {
+      auto& containers = Internal::get_containers();
+      auto it = containers.layer_name_to_id.find(name);
+      if (it != containers.layer_name_to_id.end()) {
+        return it->second;
+      }
+      return INVALID_LAYER;
+    }
+
+    std::string get_layer_name(LayerID id)
+    {
+      auto& containers = Internal::get_containers();
+      auto it = containers.layer_id_to_name.find(id);
+      if (it != containers.layer_id_to_name.end()) {
+        return it->second;
+      }
+      return "";
+    }
+
+    LayerID get_default_layer()
+    {
+      auto& containers = Internal::get_containers();
+      return containers.default_layer_id;
+    }
+
+    bool is_on_layer(const Entity& entity, LayerID layer)
+    {
+      auto& containers = Internal::get_containers();
+      EntityID id = entity.get_id();
+
+      auto it = containers.entity_layers.find(id);
+      if (it == containers.entity_layers.end())
+        return false;
+
+      return it->second.test(layer);
+    }
+
+    LayerSignature get_entity_layers(const Entity& entity)
+    {
+      auto& containers = Internal::get_containers();
+      EntityID id = entity.get_id();
+
+      auto it = containers.entity_layers.find(id);
+      if (it == containers.entity_layers.end())
+        return LayerSignature{};
+
+      return it->second;
+    }
+
+    void clear_layers(const Entity& entity)
+    {
+      auto& containers = Internal::get_containers();
+      EntityID id = entity.get_id();
+
+      if (!containers.active_entities.contains(id))
+        return;
+
+      // Remove entity from all layer sets
+      const LayerSignature& layers = containers.entity_layers[id];
+      for (LayerID layer = 0; layer < MAX_LAYERS; ++layer) {
+        if (layers.test(layer)) {
+          Internal::remove_entity_from_layer_set(id, layer);
+        }
+      }
+
+      containers.entity_layers[id].reset();
+      Internal::entity_component_changed(id);
+    }
+
   } // namespace ECS
 } // namespace Engine

@@ -26,18 +26,22 @@ namespace Engine {
     // ============== */
     using EntityID = u32;
     using ComponentTypeID = u32;
+    using LayerID = u32;
 
     /* =================== //
     // Constants           //
     // =================== */
     inline constexpr EntityID INVALID_ENTITY = 0;
     inline constexpr ComponentTypeID INVALID_COMPONENT_TYPE = 0;
+    inline constexpr LayerID INVALID_LAYER = 0;
     inline constexpr size_t MAX_COMPONENTS = 64;
+    inline constexpr size_t MAX_LAYERS = 32;
 
     /* ======================== //
     // Bitset signatures        //
     // ======================== */
     using ComponentSignature = std::bitset<MAX_COMPONENTS>;
+    using LayerSignature = std::bitset<MAX_LAYERS>;
 
   } // namespace ECS
 } // namespace Engine

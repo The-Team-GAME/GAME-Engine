@@ -32,9 +32,11 @@ namespace Engine {
       ComponentSignature required_signature;
       ComponentSignature excluded_signature;
       Engine::EventManager::EventSignature event_signature;
+      LayerSignature active_layers;
       SparseSet<EntityID> entities;
 
     public:
+      System();
       virtual ~System();
 
       /*=================================================================================
@@ -246,6 +248,44 @@ namespace Engine {
       Internally by the ECS to route events to the appropriate systems.
       ==================================================================================*/
       const Engine::EventManager::EventSignature& get_event_signature() const;
+
+      /*=================================================================================
+      Function Brief:
+      Specifies which layers this system should process. Systems process entities
+      that are on ANY of the specified layers (OR logic).
+
+      Parameters:
+      None (template parameters Layers... specify the layer IDs to process).
+
+      Where to call it:
+      In the system's constructor to define which layers it operates on.
+      ==================================================================================*/
+      template<LayerID... Layers>
+      void process_layers();
+
+      /*=================================================================================
+      Function Brief:
+      Disables layer filtering - system processes entities on all layers.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      In the system's constructor or when you want to process all layers.
+      ==================================================================================*/
+      void process_all_layers();
+
+      /*=================================================================================
+      Function Brief:
+      Returns the layer signature representing which layers this system processes.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      Internally by the ECS to determine if entities match this system.
+      ==================================================================================*/
+      const LayerSignature& get_layer_signature() const;
     };
 
   } // namespace ECS

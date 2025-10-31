@@ -28,12 +28,18 @@ namespace Engine {
 
       struct WorldContainers {
         EntityID next_entity_id = 1;
+        LayerID next_layer_id = 1; // Start at 1 (0 is INVALID_LAYER)
+        LayerID default_layer_id = INVALID_LAYER; // Will be set on first use
         SparseSet<EntityID> active_entities;
         SparseSet<EntityID> entities_to_destroy;
         std::unordered_map<EntityID, ComponentSignature> entity_signatures;
+        std::unordered_map<EntityID, LayerSignature> entity_layers;
         std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> component_arrays;
         std::vector<std::unique_ptr<System>> systems;
         std::vector<std::pair<EntityID, ComponentTypeID>> components_to_remove;
+        std::unordered_map<std::string, LayerID> layer_name_to_id;
+        std::unordered_map<LayerID, std::string> layer_id_to_name;
+        std::unordered_map<LayerID, SparseSet<EntityID>> layer_entities;
       };
 
       /*=================================================================================
