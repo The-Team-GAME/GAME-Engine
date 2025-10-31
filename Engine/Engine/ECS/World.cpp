@@ -139,7 +139,7 @@ namespace Engine {
         containers.entity_layers[newEntity.get_id()] = source_layers;
 
         // Add cloned entity to all the source entity's layer sets
-        for (LayerID layer = 0; layer < MAX_LAYERS; ++layer) {
+        for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
           if (source_layers.test(layer)) {
             Internal::add_entity_to_layer_set(newEntity.get_id(), layer);
           }
@@ -212,7 +212,7 @@ namespace Engine {
           auto layer_it = containers.entity_layers.find(entityId);
           if (layer_it != containers.entity_layers.end()) {
             const LayerSignature& layers = layer_it->second;
-            for (LayerID layer = 0; layer < MAX_LAYERS; ++layer) {
+            for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
               if (layers.test(layer)) {
                 Internal::remove_entity_from_layer_set(entityId, layer);
               }
@@ -397,7 +397,7 @@ namespace Engine {
 
       // Remove entity from all layer sets
       const LayerSignature& layers = containers.entity_layers[id];
-      for (LayerID layer = 0; layer < MAX_LAYERS; ++layer) {
+      for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
         if (layers.test(layer)) {
           Internal::remove_entity_from_layer_set(id, layer);
         }

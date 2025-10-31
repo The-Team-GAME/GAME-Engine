@@ -239,7 +239,7 @@ namespace Engine {
       auto& entity_layers = containers.entity_layers[id];
 
       // Remove entity from all current layer sets
-      for (LayerID layer = 0; layer < MAX_LAYERS; ++layer) {
+      for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
         if (entity_layers.test(layer)) {
           Internal::remove_entity_from_layer_set(id, layer);
         }
