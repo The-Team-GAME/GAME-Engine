@@ -4,7 +4,7 @@ namespace Components
 {
   struct Health {
     s32 value, max;
-    Health(s32 value = 100, s32 max = 100) : value(value), max(max) {}
+    Health(s32 value = 50, s32 max = 100) : value(value), max(max) {}
 
     void heal(s32 amount) {
       value = std::min(value + amount, max);

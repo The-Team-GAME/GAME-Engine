@@ -66,7 +66,7 @@ void ShowcaseState::init() {
     .add_component<Components::Transform2D>(200.0f, 655.0f, 0.0f, player_idle_width * 2.0f, player_idle_height * 2.0f)
     .add_component<Components::Texture>(player_idle_texture)
     .add_component<Components::RigidBody>()
-    .add_component<Components::Health>(100, 100)
+    .add_component<Components::Health>(50, 100)
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
     .add_component<Components::TextureAtlas>(64, 64, 1, 7, 7)
     .add_component<Components::Animation>(7, 0.15f);
@@ -100,6 +100,13 @@ void ShowcaseState::init() {
     .add_component<Components::Text>("Enemy HP: 50/50")
     .add_component<Components::Color>(1.0f, 0.0f, 0.0f, 1.0f);
 
+  player_health_text = Engine::ECS::create_entity()
+    .add_component<Components::Tag<"ShowcaseState">>()
+    .add_component<Components::Transform2D>(50.0f, 280.0f, 0.0f, 0.7f, 0.7f)
+    .add_component<Components::Font>(info_font)
+    .add_component<Components::Text>("Player HP: 50/100")
+    .add_component<Components::Color>(0.2f, 1.0f, 0.2f, 1.0f);
+
   // Subscribe to attack events
   Engine::EventManager::add_event_listener<AttackEvent>([this](const AttackEvent& event) {
     std::cout << "Attack event! Entity " << event.attacker
@@ -126,6 +133,17 @@ void ShowcaseState::init() {
         *player_atlas = Components::TextureAtlas(static_cast<s32>(player_punch_width), static_cast<s32>(player_punch_height), 1, 12, 12);
 
         std::cout << "Playing punch animation\n";
+      }
+    }
+
+    if (event.target == player.get_id()) {
+      if (player.is_valid() && player.has_component<Components::Health>()) {
+        auto* hp = player.get_component<Components::Health>();
+        hp->heal(event.damage);
+        if (player_health_text.is_valid() && player_health_text.has_component<Components::Text>()) {
+          auto* text = player_health_text.get_component<Components::Text>();
+          text->content = "Player HP: " + std::to_string(hp->value) + "/" + std::to_string(hp->max);
+        }
       }
     }
 
@@ -320,6 +338,51 @@ void ShowcaseState::update() {
   if (Engine::Input::is_pressed(Engine::KeyCode::C)) {
     Engine::EventManager::send_event<CollectEvent>(player.get_id(), banana.get_id(), 1);
   }
+
+
+  auto* hp = player.get_component<Components::Health>();
+  if (hp) {
+    const f32 dt = Engine::Time::get_fixed_dt();
+    // Rule 1: drain over time
+    f32 net = -hp_drain_per_sec * dt;
+
+
+    // Rule 2: heal while moving
+    if (is_walking) {
+      net += hp_heal_while_moving_per_sec * dt;
+    }
+
+    static float hp_carry = 0.0f;
+    hp_carry += net;
+
+    while (hp_carry >= 1.0f) {
+      hp->heal(1);
+      hp_carry -= 1.0f;
+    }
+    while (hp_carry <= -1.0f) {
+      hp->damage(1);
+      hp_carry += 1.0f;
+    }
+
+    // Update UI text
+    if (player_health_text.is_valid() && player_health_text.has_component<Components::Text>()) {
+      auto* text = player_health_text.get_component<Components::Text>();
+      text->content = "Player HP: " + std::to_string(hp->value) + "/" + std::to_string(hp->max);
+    }
+
+    // if player HP is full or 0 -> player dies
+    if (hp->value >= hp->max || hp->value <= 0) {
+      // Stop walk SFX if needed (your pattern)
+      if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
+        Engine::Audio::stop_channel(walk_sound_channel);
+        walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
+      }
+
+      std::cout << "Player died.\n";
+      player.destroy();
+    }
+  }
+
 }
 
 void ShowcaseState::draw() {

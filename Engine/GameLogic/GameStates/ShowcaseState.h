@@ -56,6 +56,7 @@ private:
   Engine::ECS::Entity info_text;
   Engine::ECS::Entity banana_count_text;
   Engine::ECS::Entity enemy_health_text;
+  Engine::ECS::Entity player_health_text;
 
   // Resources - automatically managed via shared_ptr
   Engine::Graphics::Texture player_idle_texture;
@@ -86,6 +87,11 @@ private:
   const f32 player_idle_height = 64.0f;
   const f32 player_punch_width = 96.0f;
   const f32 player_punch_height = 64.0f;
+
+  // Player health stuff
+  f32 hp_drain_per_sec = 5.0f;
+  f32 hp_heal_while_moving_per_sec = 8.0f;
+  f32 hp_carry = 0.0f;
 
 public:
   void load();
