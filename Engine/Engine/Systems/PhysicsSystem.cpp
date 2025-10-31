@@ -14,11 +14,11 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "PhysicsSystem.h";
-
+#include "CollisionSystem.h"
 using namespace Engine;
 using namespace Systems;
 using phy2D = Physics2DSystem;
-
+using col2D = Collision2DSystem;
 /*===================================/
 / DISCLAIMER!!!                      /
 / 0,0 is the top right of the screen /
@@ -30,13 +30,50 @@ phy2D::Physics2DSystem() {
   require_components<Components::Transform2D, Components::RigidBody, Components::BoxCollider>();
 }
 
+void phy2D::update()
+{
+  // so here we update all the kinematics and stuff first
+  for (ECS::EntityID entity_id : entities) {
+    ECS::Entity entity(entity_id);
+    update_entity(entity);
+  }
+  // now we check for collision and resolve them here? idk LOL
+  for (ECS::EntityID entity_id : entities)
+  {
+    ECS::Entity entity(entity_id);
+    Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    for (ECS::EntityID entity_id2 : entities)
+    {
+      if (entity_id == entity_id2)
+      {
+        continue;
+      }
+      ECS::Entity other(entity_id2);
+      Components::BoxCollider* other_box = other.get_component<Components::BoxCollider>();
+      Components::RigidBody* other_rigid = other.get_component<Components::RigidBody>();
+      if (col2D::rect_rect_coll(*box, *other_box))
+      {
+        std::cout << "TRUE    ENTITY " << entity_id << " " << entity_id2 << std::endl;
+      }
+      else
+      {
+        std::cout << "FALSE   ENTITY " << entity_id << " " << entity_id2 << std::endl;
+      }
+    }
+  }
+}
 void phy2D::update_entity(Engine::ECS::Entity& entity){
   Components::Transform2D* xform  = entity.get_component<Components::Transform2D>();
   Components::RigidBody* rigid    = entity.get_component<Components::RigidBody>();
   Components::BoxCollider* box    = entity.get_component<Components::BoxCollider>();
-  update_kinematics(*rigid);
-  update_transform(*rigid, *xform);
-  std::cout << "velocity: " << rigid->velocity << " || position: " << rigid->curr_pos << std::endl;
+  //if (rigid->apply_physics) // this one is kinda wrong since its only the force part but the objects need to update based in their velocities too
+  //{
+    update_kinematics(*rigid);
+    update_transform(*rigid, *xform);
+    col2D::update_AABB(*rigid, *box);
+    //std::cout << "velocity: " << rigid->velocity << " || position: " << rigid->curr_pos << std::endl;
+  //}
 }
 
 void phy2D::add_force(Components::RigidBody& rigid, Vec2D force)

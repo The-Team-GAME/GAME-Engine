@@ -20,7 +20,7 @@ namespace Components
     f32 friction{ 0.995f };
     f32 terminal_velocity{ 300.f }; // idk i wack some value here first
 
-    bool is_kinematic = false;  // If true, affected by physics forces
+    bool apply_physics = false;  // If true, affected by physics forces
     bool use_gravity = false;   // If true, affected by gravity
 
     /* 
@@ -32,7 +32,7 @@ namespace Components
 
     // Ctor using vectors
     RigidBody(Vec2D pos = {0,0}, bool kinematic = false, bool gravity = false) :
-      curr_pos(pos), is_kinematic(kinematic), use_gravity(gravity)
+      curr_pos(pos), apply_physics(kinematic), use_gravity(gravity)
     { 
       if (gravity)
       {
@@ -42,10 +42,10 @@ namespace Components
 
     //// Ctor using floats
     //RigidBody(f32 pos_x, f32 pos_y, bool kinematic = false, bool gravity = false) :
-    //  curr_pos(Vec2D(pos_x, pos_y)), is_kinematic(kinematic), use_gravity(gravity)
+    //  curr_pos(Vec2D(pos_x, pos_y)), apply_physics(kinematic), use_gravity(gravity)
     //{ /* empty by design */ }
   };
 }
 
-//REGISTER_COMPONENT(Components::RigidBody, detect_collisions, linear_velocity, is_kinematic, mass, linear_terminal_velocity, rotation, rotation_terminal_velocity, angular_velocity)
-//REFLECT_FIELDS(Components::RigidBody, detect_collisions, linear_velocity, is_kinematic, mass, linear_terminal_velocity, rotation, rotation_terminal_velocity, angular_velocity//
+//REGISTER_COMPONENT(Components::RigidBody, detect_collisions, linear_velocity, apply_physics, mass, linear_terminal_velocity, rotation, rotation_terminal_velocity, angular_velocity)
+//REFLECT_FIELDS(Components::RigidBody, detect_collisions, linear_velocity, apply_physics, mass, linear_terminal_velocity, rotation, rotation_terminal_velocity, angular_velocity//
