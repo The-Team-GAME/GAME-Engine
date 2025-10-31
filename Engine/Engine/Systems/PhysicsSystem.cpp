@@ -63,7 +63,11 @@ void phy2D::update()
           Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
           AABB minkowski = col2D::minkowski_AABB(*box, *other_box);
           Vec2D pen_vec = col2D::penetrationVector(minkowski);
-          rigid->velocity = pen_vec;
+          // some magic right here. i understand it rn but maybe alcohol helps
+
+          rigid->velocity -= pen_vec;
+          rigid->next_pos += pen_vec * Time::get_fixed_dt() * 2;
+          rigid->velocity.y = 0.f;
           update_transform(*rigid, *xform);
         }
         else if (box->detect_collisions == false && other_box->detect_collisions == true)
@@ -73,7 +77,9 @@ void phy2D::update()
           Components::Transform2D* other_xform = other.get_component<Components::Transform2D>();
           AABB minkowski = col2D::minkowski_AABB(*other_box, *box);
           Vec2D pen_vec = col2D::penetrationVector(minkowski);
-          other_rigid->velocity = pen_vec;
+          other_rigid->velocity -= pen_vec;
+          other_rigid->next_pos += pen_vec * Time::get_fixed_dt() * 2;
+          other_rigid->velocity.y = 0.f;
           update_transform(*other_rigid, *other_xform);
         }
         // if both detect_collision is false then no point doing LOL
@@ -136,18 +142,14 @@ void phy2D::update_kinematics(Components::RigidBody& rigid)
   {
     rigid.velocity = Math::normalise_vector(rigid.velocity) * rigid.terminal_velocity;
   }
+  // setting the next position
+  rigid.next_pos = rigid.curr_pos + rigid.velocity * Time::get_fixed_dt();
 }
 
 void phy2D::update_transform(Components::RigidBody& rigid, Components::Transform2D& xform)
 {
-  rigid.next_pos = rigid.curr_pos + rigid.velocity * Time::get_fixed_dt();
-  // now we have the supposed next position.
-  // but first we need to check if anything collides
 
-  // insert collision function here
-  // the collision function should update next_pos
-
-  // Then we set the current position after everything is done
+  // Then we set the current position as next_pos
   rigid.curr_pos = rigid.next_pos;
 
   // Cuz for physics im using bottom left as 0,0 
