@@ -681,19 +681,6 @@ namespace Engine {
 
       /*=================================================================================
       Function Brief:
-      Internal function that returns the highest priority layer for an entity.
-      Lower layer IDs have higher priority (e.g., BACKGROUND = 1 renders first).
-
-      Parameters:
-      entity - The EntityID to get the highest priority layer for.
-
-      Where to call it:
-      Called internally when sorting entities by layer priority.
-      ==================================================================================*/
-      LayerID get_highest_priority_layer(EntityID entity);
-
-      /*=================================================================================
-      Function Brief:
       Internal function that adds an entity to a layer's sparse set.
 
       Parameters:
