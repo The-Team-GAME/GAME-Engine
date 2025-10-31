@@ -265,18 +265,6 @@ namespace Engine {
 
       /*=================================================================================
       Function Brief:
-      Disables layer filtering - system processes entities on all layers.
-
-      Parameters:
-      None.
-
-      Where to call it:
-      In the system's constructor or when you want to process all layers.
-      ==================================================================================*/
-      void process_all_layers();
-
-      /*=================================================================================
-      Function Brief:
       Returns the layer signature representing which layers this system processes.
 
       Parameters:

@@ -79,10 +79,6 @@ namespace Engine {
       return event_signature;
     }
 
-    void System::process_all_layers() {
-      active_layers.set();
-    }
-
     const LayerSignature& System::get_layer_signature() const {
       return active_layers;
     }
