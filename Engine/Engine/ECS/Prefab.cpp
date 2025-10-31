@@ -151,7 +151,9 @@ namespace Engine {
 
       // Create prefab and populate it from the entity data
       return prefab_from_generic_value(entity_data);
-    }    ReflectionLibrary::GenericValue prefab_to_generic_value(const Prefab& prefab) {
+    }
+
+    ReflectionLibrary::GenericValue prefab_to_generic_value(const Prefab& prefab) {
       if (!prefab.is_valid()) {
         return ReflectionLibrary::GenericValue();
       }
