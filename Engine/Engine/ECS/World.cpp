@@ -78,15 +78,18 @@ namespace Engine {
       void add_entity_to_layer_set(EntityID entity, LayerID layer)
       {
         auto& containers = get_containers();
+        // Ensure vector is large enough
+        if (layer >= containers.layer_entities.size()) {
+          containers.layer_entities.resize(layer + 1);
+        }
         containers.layer_entities[layer].insert(entity);
       }
 
       void remove_entity_from_layer_set(EntityID entity, LayerID layer)
       {
         auto& containers = get_containers();
-        auto it = containers.layer_entities.find(layer);
-        if (it != containers.layer_entities.end()) {
-          it->second.erase(entity);
+        if (layer < containers.layer_entities.size()) {
+          containers.layer_entities[layer].erase(entity);
         }
       }
     } // namespace Internal
@@ -273,9 +276,8 @@ namespace Engine {
       auto& containers = Internal::get_containers();
       std::vector<Entity> result;
 
-      auto it = containers.layer_entities.find(layer);
-      if (it != containers.layer_entities.end()) {
-        const auto& layer_set = it->second;
+      if (layer < containers.layer_entities.size()) {
+        const auto& layer_set = containers.layer_entities[layer];
         result.reserve(layer_set.size());
         for (EntityID entityId : layer_set) {
           result.emplace_back(entityId);
@@ -416,7 +418,7 @@ namespace Engine {
       // Collect LHS entities from layers in the mask
       std::vector<EntityID> lhs_entities;
       for (LayerID layer = 0; layer < MAX_LAYERS; ++layer) {
-        if (lhs_mask.test(layer)) {
+        if (lhs_mask.test(layer) && layer < containers.layer_entities.size()) {
           const auto& layer_set = containers.layer_entities[layer];
           lhs_entities.insert(lhs_entities.end(), layer_set.begin(), layer_set.end());
         }
@@ -425,7 +427,7 @@ namespace Engine {
       // Collect RHS entities from layers in the mask
       std::vector<EntityID> rhs_entities;
       for (LayerID layer = 0; layer < MAX_LAYERS; ++layer) {
-        if (rhs_mask.test(layer)) {
+        if (rhs_mask.test(layer) && layer < containers.layer_entities.size()) {
           const auto& layer_set = containers.layer_entities[layer];
           rhs_entities.insert(rhs_entities.end(), layer_set.begin(), layer_set.end());
         }

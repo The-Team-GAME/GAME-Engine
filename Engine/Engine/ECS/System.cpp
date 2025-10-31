@@ -30,7 +30,7 @@ namespace Engine {
       // Iterate through entities in layer order (lower layer ID = higher priority = first)
       auto& containers = Internal::get_containers();
 
-      for (LayerID layer = 0; layer < MAX_LAYERS; ++layer) {
+      for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
         // Skip if system doesn't process this layer
         if (!active_layers.test(layer))
           continue;
@@ -51,7 +51,7 @@ namespace Engine {
       // Iterate through entities in layer order (lower layer ID = higher priority = first)
       auto& containers = Internal::get_containers();
 
-      for (LayerID layer = 0; layer < MAX_LAYERS; ++layer) {
+      for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
         // Skip if system doesn't process this layer
         if (!active_layers.test(layer))
           continue;

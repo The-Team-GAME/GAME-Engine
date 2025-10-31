@@ -39,7 +39,7 @@ namespace Engine {
         std::vector<std::pair<EntityID, ComponentTypeID>> components_to_remove;
         std::unordered_map<std::string, LayerID> layer_name_to_id;
         std::unordered_map<LayerID, std::string> layer_id_to_name;
-        std::unordered_map<LayerID, SparseSet<EntityID>> layer_entities;
+        std::vector<SparseSet<EntityID>> layer_entities;
       };
 
       /*=================================================================================
