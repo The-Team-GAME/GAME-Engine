@@ -66,7 +66,7 @@ void phy2D::update()
           // some magic right here. i understand it rn but maybe alcohol helps
 
           rigid->velocity -= pen_vec;
-          rigid->next_pos += pen_vec * Time::get_fixed_dt() * 2;
+          rigid->next_pos += pen_vec * Time::get_fixed_dt();
           rigid->velocity.y = 0.f;
           update_transform(*rigid, *xform);
         }
@@ -78,7 +78,7 @@ void phy2D::update()
           AABB minkowski = col2D::minkowski_AABB(*other_box, *box);
           Vec2D pen_vec = col2D::penetrationVector(minkowski);
           other_rigid->velocity -= pen_vec;
-          other_rigid->next_pos += pen_vec * Time::get_fixed_dt() * 2;
+          other_rigid->next_pos += pen_vec * Time::get_fixed_dt();
           other_rigid->velocity.y = 0.f;
           update_transform(*other_rigid, *other_xform);
         }
