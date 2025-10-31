@@ -329,6 +329,9 @@ namespace Engine {
       // Register new layer
       LayerID new_id = containers.next_layer_id++;
       containers.layer_name_to_id[name] = new_id;
+
+      // Resize vectors to include the new layer
+      containers.layer_id_to_name.resize(new_id + 1);
       containers.layer_id_to_name[new_id] = name;
 
       // Resize layer_entities to include the new layer
@@ -350,9 +353,8 @@ namespace Engine {
     std::string get_layer_name(LayerID id)
     {
       auto& containers = Internal::get_containers();
-      auto it = containers.layer_id_to_name.find(id);
-      if (it != containers.layer_id_to_name.end()) {
-        return it->second;
+      if (id < containers.layer_id_to_name.size()) {
+        return containers.layer_id_to_name[id];
       }
       return "";
     }
