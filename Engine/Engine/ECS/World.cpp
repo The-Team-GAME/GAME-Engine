@@ -402,5 +402,42 @@ namespace Engine {
       Internal::entity_component_changed(id);
     }
 
+    // ============================================================================
+    // Entity Pair Iteration
+    // ============================================================================
+
+    void for_each_entity_pair(
+      const std::vector<LayerID>& lhs_layers,
+      const std::vector<LayerID>& rhs_layers,
+      std::function<void(Entity, Entity)> callback)
+    {
+      auto& containers = Internal::get_containers();
+
+      // Collect LHS entities from specified layers
+      std::vector<EntityID> lhs_entities;
+      for (LayerID layer : lhs_layers) {
+        const auto& layer_set = containers.layer_entities[layer];
+        lhs_entities.insert(lhs_entities.end(), layer_set.begin(), layer_set.end());
+      }
+
+      // Collect RHS entities from specified layers
+      std::vector<EntityID> rhs_entities;
+      for (LayerID layer : rhs_layers) {
+        const auto& layer_set = containers.layer_entities[layer];
+        rhs_entities.insert(rhs_entities.end(), layer_set.begin(), layer_set.end());
+      }
+
+      // Iterate over all pairs (excluding self-pairs)
+      for (EntityID lhs_id : lhs_entities) {
+        Entity lhs(lhs_id);
+        for (EntityID rhs_id : rhs_entities) {
+          if (lhs_id == rhs_id) continue; // Skip self-pairs
+
+          Entity rhs(rhs_id);
+          callback(lhs, rhs);
+        }
+      }
+    }
+
   } // namespace ECS
 } // namespace Engine

@@ -435,6 +435,40 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
+    Iterates over pairs of entities where LHS entities are on any of the specified
+    LHS layers and RHS entities are on any of the specified RHS layers.
+    Calls the callback function for each valid pair (excluding self-pairs).
+
+    Parameters:
+    lhs_layers - std::vector<LayerID> containing layer IDs for left-hand side entities
+    rhs_layers - std::vector<LayerID> containing layer IDs for right-hand side entities
+    callback - Function to call for each pair: void(Entity lhs, Entity rhs)
+
+    Where to call it:
+    When you need to check interactions between entities on different layers
+    (e.g., player/objects vs bullets for collision detection).
+
+    Example:
+    LayerID player_layer = ECS::get_layer_id("player");
+    LayerID bullet_layer = ECS::get_layer_id("bullet");
+    LayerID object_layer = ECS::get_layer_id("object");
+
+    ECS::for_each_entity_pair(
+      {player_layer, object_layer},  // LHS layers
+      {bullet_layer, object_layer},  // RHS layers
+      [](Entity lhs, Entity rhs) {
+        // Check collision between lhs and rhs
+      }
+    );
+    ==================================================================================*/
+    void for_each_entity_pair(
+      const std::vector<LayerID>& lhs_layers,
+      const std::vector<LayerID>& rhs_layers,
+      std::function<void(Entity, Entity)> callback
+    );
+
+    /*=================================================================================
+    Function Brief:
     Returns the number of components of type T currently in the world.
 
     Parameters:
