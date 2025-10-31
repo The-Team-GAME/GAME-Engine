@@ -486,25 +486,25 @@ void EntityEditorPanel()
       auto& containers = Engine::ECS::Internal::get_containers();
       auto entity_layers = entity.get_layers();
 
-      // Display current layers
-      ImGui::Text("Entity is on layers:");
+      // // Display current layers
+      // ImGui::Text("Entity is on layers:");
 
-      bool has_layers = false;
-      for (Engine::ECS::LayerID layer = 0; layer < containers.layer_id_to_name.size(); ++layer) {
-        if (entity_layers.test(layer)) {
-          has_layers = true;
-          const std::string& layer_name = containers.layer_id_to_name[layer];
-          if (!layer_name.empty()) {
-            ImGui::BulletText("%s (ID: %d)", layer_name.c_str(), layer);
-          }
-        }
-      }
+      // bool has_layers = false;
+      // for (Engine::ECS::LayerID layer = 0; layer < containers.layer_id_to_name.size(); ++layer) {
+      //   if (entity_layers.test(layer)) {
+      //     has_layers = true;
+      //     const std::string& layer_name = containers.layer_id_to_name[layer];
+      //     if (!layer_name.empty()) {
+      //       ImGui::BulletText("%s (ID: %d)", layer_name.c_str(), layer);
+      //     }
+      //   }
+      // }
 
-      if (!has_layers) {
-        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  (No layers)");
-      }
+      // if (!has_layers) {
+      //   ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  (No layers)");
+      // }
 
-      ImGui::Separator();
+      // ImGui::Separator();
 
       // Get all registered layers
       ImGui::Text("Available Layers:");
