@@ -157,6 +157,36 @@ namespace Engine {
     }
 
     template <typename... T>
+    std::vector<Entity> get_entities_with(const LayerSignature& layers)
+    {
+      auto& containers = Internal::get_containers();
+      std::vector<Entity> result;
+
+      // Iterate through each layer in the signature
+      for (LayerID layer = 0; layer < MAX_LAYERS; ++layer)
+      {
+        if (!layers.test(layer))
+          continue;
+
+        // Check if this layer has any entities
+        if (layer >= containers.layer_entities.size())
+          continue;
+
+        // Iterate through entities on this layer
+        for (EntityID entityId : containers.layer_entities[layer])
+        {
+          // Check if entity has all required components
+          if (has_components<T...>(entityId))
+          {
+            result.emplace_back(entityId);
+          }
+        }
+      }
+
+      return result;
+    }
+
+    template <typename... T>
     Entity get_first_entity_with()
     {
       auto& containers = Internal::get_containers();

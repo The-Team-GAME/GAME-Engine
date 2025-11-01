@@ -368,6 +368,20 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
+    Returns all entities that have all the specified component types and match
+    the layer signature (are on at least one of the specified layers).
+
+    Parameters:
+    layers - LayerSignature specifying which layers to search.
+
+    Where to call it:
+    When you need to find all entities with specific components on specific layers.
+    ==================================================================================*/
+    template <typename... T>
+    std::vector<Entity> get_entities_with(const LayerSignature& layers);
+
+    /*=================================================================================
+    Function Brief:
     Returns the first entity found that has all the specified component types.
 
     Parameters:
