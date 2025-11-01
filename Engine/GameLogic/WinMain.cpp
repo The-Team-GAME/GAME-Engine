@@ -42,12 +42,13 @@ int main()
     Engine::Core engine(MainMenuState::get());
 
     // Register game layers at startup
-    Engine::ECS::register_layer("background");
-    Engine::ECS::register_layer("gameplay");
-    Engine::ECS::register_layer("foreground");
-    Engine::ECS::register_layer("ui");
-    Engine::ECS::register_layer("debug");
-    Engine::ECS::register_layer("effects");
+    Engine::ECS::register_layer("background"); // Static background layer
+    Engine::ECS::register_layer("tilemap_background"); // Tilemap background layer
+    Engine::ECS::register_layer("tilemap_foreground"); // Tilemap foreground layer
+    Engine::ECS::register_layer("gameplay"); // Entities, items, characters
+    Engine::ECS::register_layer("ui"); // User interface elements
+    Engine::ECS::register_layer("effects"); // Visual effects like particles
+    Engine::ECS::register_layer("debug"); // Debug overlays and information
 
     ImGuiManager::register_panel(StateChooserPanel);
     engine.run();
