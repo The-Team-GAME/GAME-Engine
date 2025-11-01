@@ -498,7 +498,9 @@ namespace TilemapPanel {
 
       if (ImGui::Button("Save Tilemap")) {
         // Get all entities with Tile component, that is in tilemap_background and tilemap_foreground layers
-        auto tilemap_entities = Engine::ECS::get_entities_with<Components::Tile>({ "tilemap_background", "tilemap_foreground" });
+        // TODO: Layer filtering
+        //auto tilemap_entities = Engine::ECS::get_entities_with<Components::Tile>({ "tilemap_background", "tilemap_foreground" });
+        auto tilemap_entities = Engine::ECS::get_entities_with<Components::Tile>();
 
         ReflectionLibrary::GenericValue prefab_array = ReflectionLibrary::Array{};
 
