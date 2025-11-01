@@ -41,6 +41,7 @@
     <ClCompile Include="GameLogic\GameStates\ShowcaseState.cpp" />
     <ClCompile Include="GameLogic\WinMain.cpp" />
     <ClCompile Include="Engine\ECS\Types.cpp" />
+    <ClCompile Include="Engine\FileIO\Helpers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -124,6 +125,7 @@
     <ClInclude Include="GameLogic\Systems\PlayerControllerSystem.h" />
     <ClInclude Include="Engine\ECS\SparseSet.h" />
     <ClInclude Include="Engine\ECS\Reflection.h" />
+    <ClInclude Include="Engine\FileIO\Helpers.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

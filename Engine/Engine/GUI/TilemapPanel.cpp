@@ -511,7 +511,7 @@ namespace TilemapPanel {
         }
 
         // Convert prefab_array to json
-        auto prefab_array_json = ReflectionLibrary::generic_value_to_json(prefab_array);
+        auto prefab_array_json = ReflectionLibrary::generic_value_to_json(prefab_array, true);
 
         // Save to file
         Engine::FileIO::write_string_to_file("tilemap_save.json", prefab_array_json);
