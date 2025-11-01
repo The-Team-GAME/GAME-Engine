@@ -23,7 +23,7 @@
 #include "../GameStates/DevSpriteAnimationState.h"
 #include "../GameStates/ShowcaseState.h"
 #include "../GameStates/Documentation/PrefabsState.h"
-#include "../GameStates/TimelineState.h"
+#include "../GameStates/Dev/PhysicsTestState.h"
 
 /*=================================================================================
 Function Brief:
@@ -70,9 +70,9 @@ inline void StateChooserPanel()
   {
     Engine::StateManager::change_state(PrefabsState::get());
   }
-  if (ImGui::Button("Timeline"))
+  if (ImGui::Button("PhysicsTestState"))
   {
-    Engine::StateManager::change_state(TimelineState::get());
+    Engine::StateManager::change_state(PhysicsTestState::get());
   }
 
 

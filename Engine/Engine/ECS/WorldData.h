@@ -15,9 +15,9 @@
 #pragma once
 
 #include "Types.h"
+#include "SparseSet.h"
 #include "ComponentArray.h"
 #include "System.h"
-#include <unordered_set>
 #include <unordered_map>
 #include <memory>
 #include <vector>
@@ -28,8 +28,8 @@ namespace Engine {
 
       struct WorldContainers {
         EntityID next_entity_id = 1;
-        std::unordered_set<EntityID> active_entities;
-        std::unordered_set<EntityID> entities_to_destroy;
+        SparseSet<EntityID> active_entities;
+        SparseSet<EntityID> entities_to_destroy;
         std::unordered_map<EntityID, ComponentSignature> entity_signatures;
         std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> component_arrays;
         std::vector<std::unique_ptr<System>> systems;

@@ -20,11 +20,8 @@
 #include "StateManager.h"
 #include "ImGuiManager.h"
 #include "Time.h"
-#include "GUI/PerformanceViewer.h"
+#include "GUI/RegisterAllPanels.h"
 #include "WindowManager.h"
-#include "GUI/ResourceManagerPanel.h"
-#include "GUI/EntityEditorPanel.h"
-#include "GUI/CameraPanel.h"
 #include "Perf.h"
 #include "InputManager.h"
 #include "Audio/AudioPlayer.h"
@@ -108,6 +105,17 @@ namespace Engine
       }
     );
 
+    // Register file drop event to load resources
+    Engine::EventManager::add_event_listener<Engine::Events::FileDropEvent>([](const Engine::Events::FileDropEvent& event)
+      {
+        for (const auto& filepath : event.filepaths)
+        {
+          Log::info("File dropped: " + filepath);
+          Engine::Resources::load(filepath, false, true);
+        }
+      }
+    );
+
     StateManager::init(initialState);
   }
 
@@ -124,6 +132,8 @@ namespace Engine
   {
     // CORE INITIALIZATION
     register_engine_systems();
+    register_all_panels();
+
 
     while (!glfwWindowShouldClose(WindowManager::get_window()) && isRunning)
     {
@@ -150,6 +160,9 @@ namespace Engine
       // END OF TIME UPDATES ================================================
 
       glfwPollEvents();
+
+      // Update window title with FPS
+      WindowManager::update_title_with_fps();
 
       Engine::Audio::update();
       ImGuiManager::begin();
@@ -190,21 +203,19 @@ namespace Engine
           Engine::ECS::update();
         }
 
+        TilemapPanel::update();
         ImGuiManager::update();
 
         // End of gameloop
       }
 
       // Rendering Start ========================================
-      PerformanceViewerPanel();
-      ResourceManagerPanel();
-      EntityEditorPanel();
-      CameraPanel();
 
       // Clear screen (automatically begins batch)
       // start of draw stuff
       StateManager::get_current_state()->draw();
       Engine::ECS::draw();
+      TilemapPanel::draw_overlay();
 
       // end of draw stuff (flush remaining batches)
       Engine::Graphics::end_batch();

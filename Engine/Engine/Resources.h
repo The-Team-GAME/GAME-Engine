@@ -3,17 +3,29 @@
 #include <unordered_map>
 #include <string>
 #include <memory>
+#include <variant>
 #include "Graphics/Renderer.h"
 #include "Audio/AudioPlayer.h"
 #include "ECS/Prefab.h"
 
 namespace Engine {
   namespace Resources {
+    // Variant type to hold any resource type
+    using Resource = std::variant<
+      std::monostate,  // Empty state for failed loads
+      Engine::Graphics::Texture,
+      Engine::Graphics::Font,
+      Engine::Audio::Sound,
+      Engine::ECS::Prefab
+    >;
     // Declare as extern - actual definition in Resources.cpp
     extern std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> texture_cache;
     extern std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::FontData>> font_cache;
     extern std::unordered_map<std::string, std::weak_ptr<Engine::Audio::SoundData>> sound_cache;
-    extern std::unordered_map<std::string, std::weak_ptr<Engine::ECS::PrefabData>> prefab_cache;
+    extern std::unordered_map<std::string, std::weak_ptr<Engine::ECS::PrefabImpl>> prefab_cache;
+
+    // Vector to hold shared_ptr references for persistent resources
+    extern std::vector<Resource> persistent_resources;
 
     struct ResourceStats {
       size_t texture_count;
@@ -43,19 +55,22 @@ namespace Engine {
 
     std::string get_relative_path(const std::string& full_path);
 
-    Engine::Graphics::Texture load_texture(const std::string& filepath, bool append_resource_path = true);
-    Engine::Graphics::Font load_font(const std::string& filepath, u32 size, bool append_resource_path = true);
+    Engine::Graphics::Texture load_texture(const std::string& filepath, bool append_resource_path = true, bool persist = false);
+    Engine::Graphics::Font load_font(const std::string& filepath, u32 size, bool append_resource_path = true, bool persist = false);
 
     // Load sound effect (stored in memory)
-    Engine::Audio::Sound load_sound(const std::string& filepath, bool append_resource_path = true);
+    Engine::Audio::Sound load_sound(const std::string& filepath, bool append_resource_path = true, bool persist = false);
 
     // Load music (streamed from disk)
-    Engine::Audio::Sound load_music(const std::string& filepath, bool append_resource_path = true);
+    Engine::Audio::Sound load_music(const std::string& filepath, bool append_resource_path = true, bool persist = false);
 
     Engine::Graphics::Texture get_rect_texture();
 
+    // Generic load function - automatically detects resource type from file extension
+    Resource load(const std::string& filepath, bool append_resource_path = true, bool persist = false);
+
     // Prefab loading and saving
-    Engine::ECS::Prefab load_prefab(const std::string& filepath, bool append_resource_path = true);
+    Engine::ECS::Prefab load_prefab(const std::string& filepath, bool append_resource_path = true, bool persist = false);
     bool save_prefab(const std::string& filepath, const Engine::ECS::Prefab& prefab, bool append_resource_path = true);
 
     //optimization: clear unused resources from cache

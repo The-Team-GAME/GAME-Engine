@@ -265,8 +265,8 @@ void ShowcaseState::update() {
     player_transform->scale.x = (facing_right ? 2.0f : -2.0f) * player_idle_width;
     player_transform->scale.y = 2.0f * player_idle_height;
 
-    rigid->linear_velocity.x = new_vel_x;
-    rigid->linear_velocity.y = new_vel_y;
+    rigid->velocity.x = new_vel_x;
+    rigid->velocity.y = new_vel_y;
 
     // Animation change based on movement
     bool shouldWalk = (new_vel_x != 0.0f || new_vel_y != 0.0f);

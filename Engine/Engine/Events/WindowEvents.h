@@ -33,7 +33,7 @@ namespace Engine {
     // File handling events   //
     // ====================== */
     struct FileDropEvent {
-      std::vector<std::string> filePaths;
+      std::vector<std::string> filepaths;
     };
 
   } // namespace Events

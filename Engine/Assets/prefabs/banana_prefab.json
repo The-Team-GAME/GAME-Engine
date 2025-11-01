@@ -1,5 +1,6 @@
 {
-    "id": 15,
+    "dataType": "Entity",
+    "id": 4,
     "components": [
         {
             "type": "Components::Color",

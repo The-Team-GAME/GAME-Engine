@@ -39,13 +39,13 @@ namespace Components
   struct TextureAtlas
   {
     std::vector<Engine::Graphics::SubTexture> subTextures;
-    size_t drawIndex = 0; // Current subTexture index to draw
+    int drawIndex = -1; // Current subTexture index to draw, -1 means disabled
 
-    TextureAtlas() : subTextures(), drawIndex(0) {} // TODO: remove default constructor
+    TextureAtlas() : subTextures(), drawIndex(-1) {} // TODO: remove default constructor
 
     // Constructor to initialize a texture atlas with evenly divided subTextures, works with multiple rows and columns
     TextureAtlas(int subTextureWidth, int subTextureHeight, size_t rows, size_t cols, size_t totalSubTextures = 0)
-      : subTextures(), drawIndex(0)
+      : subTextures(), drawIndex(-1)
     {
       // If totalSubTextures is 0, fill the entire atlas
       if (totalSubTextures == 0)
@@ -74,7 +74,7 @@ namespace Components
 
     struct Reflector {
       std::vector<std::array<Math::Vec2D, 4>> tex_coords_list;
-      size_t drawIndex;
+      int drawIndex;
 
       static Reflector reflect(const TextureAtlas& atlas) {
         Reflector r;

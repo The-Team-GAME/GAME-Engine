@@ -18,6 +18,9 @@
 #include "Events/WindowEvents.h"
 #include <iostream>
 #include "ECS/ECS.h"
+#include "Time.h"
+#include <sstream>
+#include <iomanip>
 
 namespace Engine {
   namespace WindowManager
@@ -28,6 +31,13 @@ namespace Engine {
       GLFWwindow* window = nullptr;
       s32 width = 0;
       s32 height = 0;
+      std::string base_title = "";
+
+      // FPS tracking variables
+      f32 display_fps = 0.0f;
+      f32 update_timer = 0.0f;
+      s32 frame_count = 0;
+      const f32 update_interval = 0.25f;
     }
 
     /* ===================== //
@@ -37,6 +47,7 @@ namespace Engine {
     {
       width = w;
       height = h;
+      base_title = title;
 
       if (!glfwInit())
       {
@@ -99,6 +110,31 @@ namespace Engine {
     s32 get_height()
     {
       return height;
+    }
+
+    /* ===================== //
+    // Title Update          //
+    // ===================== */
+    void update_title_with_fps()
+    {
+      if (!window) return;
+
+      update_timer += Engine::Time::get_real_dt();
+      frame_count++;
+
+      if (update_timer >= update_interval)
+      {
+        // Calculate average FPS over the interval (same as PerformanceViewerPanel)
+        display_fps = frame_count / update_timer;
+
+        // Update window title
+        std::ostringstream title_stream;
+        title_stream << base_title << " - FPS: " << std::fixed << std::setprecision(1) << display_fps;
+        glfwSetWindowTitle(window, title_stream.str().c_str());
+
+        update_timer = 0.0f;
+        frame_count = 0;
+      }
     }
 
     /* ===================== //

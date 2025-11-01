@@ -16,9 +16,11 @@
 #include <imgui.h>
 #include "EntityEditorPanel.h"
 #include "ResourcePicker.h"
+#include "widgets/TextureAtlasWidget.h"
 #include "../Resources.h"
+#include "../Components/Components.h"
 
-bool EntityEditorPanelHelpers::render_specialized_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified) {
+bool EntityEditorPanelHelpers::render_specialized_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity) {
   if (display_name == "Components::Color") {
     ImVec4 colorVec(
       static_cast<float>(field_value["r"].getDouble()),
@@ -175,11 +177,34 @@ bool EntityEditorPanelHelpers::render_specialized_field(const std::string& displ
     return true;
   }
 
+  if (display_name == "Components::TextureAtlas") {
+    // Try to get the texture from the entity's Texture component
+    Components::Texture* texture = entity.get_component<Components::Texture>();
+    Components::TextureAtlas* atlas = entity.get_component<Components::TextureAtlas>();
+
+    if (!texture || !atlas) {
+      ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "TextureAtlas requires the Texture component.");
+      return true;
+    }
+
+    ImGuiWidgets::TextureAtlasPreview(
+      *texture,
+      *atlas,
+      80.0f
+      // [&atlas](size_t new_index) {
+      //   //std::cout << "TextureAtlas index changed from " << atlas->drawIndex << " to " << new_index << std::endl;
+      //   // atlas->drawIndex = new_index;
+      // }
+    );
+
+    return true;
+  }
+
   // Not drawn here
   return false;
 }
 
-bool EntityEditorPanelHelpers::render_generic_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified) {
+bool EntityEditorPanelHelpers::render_generic_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity) {
   if (field_value.isBool()) {
     bool val = field_value.getBool();
     if (ImGui::Checkbox(display_name.c_str(), &val)) {
@@ -214,24 +239,74 @@ bool EntityEditorPanelHelpers::render_generic_field(const std::string& display_n
   else if (field_value.isObject()) {
     auto& nested_fields = field_value.getObject();
     for (auto& [nested_name, nested_value] : nested_fields) {
-      render_field(display_name + "::" + nested_name, nested_value, modified);
+      render_field(display_name + "::" + nested_name, nested_value, modified, entity);
     }
   }
   else if (field_value.isArray()) {
-    ImGui::Text("%s: [Array with %zu elements]", display_name.c_str(),
-      field_value.getArray().size());
-    ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
-      "Array editing not yet supported");
+    auto& array = field_value.getArray();
+    std::string tree_label = display_name + " [" + std::to_string(array.size()) + " elements]";
+
+    if (ImGui::TreeNode(tree_label.c_str())) {
+      // Array controls
+      ImGui::PushID(display_name.c_str());
+
+      // Add element button
+      if (ImGui::Button("Add Element")) {
+        // Add a default element based on array type (if array has elements)
+        if (!array.empty()) {
+          // Clone the last element as template
+          array.push_back(array.back());
+        }
+        else {
+          // Add a default int element (could be made configurable)
+          array.push_back(ReflectionLibrary::GenericValue(static_cast<ReflectionLibrary::Integer>(0)));
+        }
+        modified = true;
+      }
+
+      ImGui::SameLine();
+
+      // Clear array button
+      if (ImGui::Button("Clear All")) {
+        array.clear();
+        modified = true;
+      }
+
+      ImGui::Separator();
+
+      // Render each element
+      for (size_t i = 0; i < array.size(); ++i) {
+        ImGui::PushID(static_cast<int>(i));
+
+        std::string element_label = "[" + std::to_string(i) + "]";
+
+        // Remove button for this element
+        if (ImGui::Button("Remove Element")) {
+          array.erase(array.begin() + i);
+          modified = true;
+          ImGui::PopID();
+          break; // Exit loop after erasing to avoid iterator issues
+        }
+
+        // Render the element using the generic field renderer
+        render_field(element_label, array[i], modified, entity);
+
+        ImGui::PopID();
+      }
+
+      ImGui::PopID();
+      ImGui::TreePop();
+    }
   }
 
   // This should always return true, since we handled all generic 
   return true;
 }
 
-void EntityEditorPanelHelpers::render_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified) {
+void EntityEditorPanelHelpers::render_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity) {
 
   // First try specialized rendering, then fallback to generic
-  render_specialized_field(display_name, field_value, modified) || render_generic_field(display_name, field_value, modified);
+  render_specialized_field(display_name, field_value, modified, entity) || render_generic_field(display_name, field_value, modified, entity);
 }
 
 void EntityEditorPanelHelpers::render_component_tree(const std::string& component_name, Engine::ECS::Entity& entity, Engine::ECS::IComponentArray* array)
@@ -240,7 +315,7 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
     auto component_data = array->to_generic_value(entity.get_id());
     bool modified = false;
 
-    render_field(component_name, component_data, modified);
+    render_field(component_name, component_data, modified, entity);
 
     // Write back changes if modified
     if (modified) {

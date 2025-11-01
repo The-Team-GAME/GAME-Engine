@@ -8,3 +8,4 @@
 #include "CollisionComponents.h"
 #include "HierarchyComponents.h"
 #include "UIComponents.h"
+#include "TilemapComponents.h"
