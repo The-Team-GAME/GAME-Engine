@@ -490,12 +490,12 @@ namespace TilemapPanel {
 
     ImGui::Separator();
 
-    // === EXPORT/IMPORT ===
-    if (ImGui::CollapsingHeader("Export/Import")) {
+    // === SAVE/LOAD ===
+    if (ImGui::CollapsingHeader("Save/Load")) {
       ImGui::Indent();
 
-      if (ImGui::Button("Export Tilemap")) {
-        // TODO: Implement export functionality in Resources first
+      if (ImGui::Button("Save Tilemap")) {
+
       }
 
       ImGui::Unindent();
