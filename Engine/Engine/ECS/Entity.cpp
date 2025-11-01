@@ -72,6 +72,19 @@ namespace Engine {
       result["dataType"] = "Entity";
       result["id"] = static_cast<int>(entity.get_id());
 
+      // Serialize layers
+      ReflectionLibrary::Array layers_array;
+      LayerSignature entity_layers = entity.get_layers();
+      auto& containers = Internal::get_containers();
+
+      for (LayerID layer = 0; layer < containers.layer_id_to_name.size(); ++layer) {
+        if (entity_layers.test(layer)) {
+          layers_array.push_back(containers.layer_id_to_name[layer]);
+        }
+      }
+      result["layers"] = layers_array;
+
+      // Serialize components
       ReflectionLibrary::Array components_array;
 
       entity.for_each_component([&](const std::string& type_name, IComponentArray* array) {
@@ -98,22 +111,32 @@ namespace Engine {
 
       Entity entity = ECS::create_entity();
 
+      // Deserialize layers
+      if (value.has("layers") && value["layers"].isArray()) {
+        entity.clear_layers(); // Clear default layer first
+        const auto& layers_array = value["layers"].getArray();
+        for (const auto& layer_value : layers_array) {
+          if (layer_value.isString()) {
+            entity.add_to_layer(layer_value.getString());
+          }
+        }
+      }
+
       const auto& components_array = value["components"].getArray();
       auto& containers = Internal::get_containers();
 
       // Iterate through each component in the JSON
       for (const auto& component_entry : components_array) {
-        if (!component_entry.isObject() || !component_entry.has("type") || !component_entry.has("data")) {
+        if (!component_entry.isObject() || !component_entry.has("type")) {
           continue;
         }
 
-        const std::string& component_type = component_entry["type"].getString();
-        const auto& component_data = component_entry["data"];
+        std::string component_type = component_entry["type"].getString();
 
         // Find the component array for this type
         for (auto& [type_id, array] : containers.component_arrays) {
           if (array->get_type_name() == component_type) {
-            array->add_component_from_generic_value(entity.get_id(), component_data);
+            array->add_component_from_generic_value(entity.get_id(), component_entry["data"]);
             break;
           }
         }

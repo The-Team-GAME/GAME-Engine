@@ -35,6 +35,7 @@ namespace Engine {
     class PrefabImpl {
     private:
       ComponentSignature signature;
+      LayerSignature layers;
       std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> component_storage;
 
     public:
@@ -165,6 +166,30 @@ namespace Engine {
       Internally when modifying prefab configurations.
       ==================================================================================*/
       std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>>& get_component_storage();
+
+      /*=================================================================================
+      Function Brief:
+      Gets the layer signature of this prefab.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When accessing prefab layer configuration.
+      ==================================================================================*/
+      const LayerSignature& get_layers() const;
+
+      /*=================================================================================
+      Function Brief:
+      Gets mutable access to the layer signature of this prefab.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When modifying prefab layer configuration.
+      ==================================================================================*/
+      LayerSignature& get_layers();
 
       /*=================================================================================
       Function Brief:
@@ -360,6 +385,54 @@ namespace Engine {
       When spawning entities based on this prefab template.
       ==================================================================================*/
       Entity instantiate() const;
+
+      /*=================================================================================
+      Function Brief:
+      Adds this prefab to a layer by name.
+
+      Parameters:
+      layer_name - Name of the layer to add to.
+
+      Where to call it:
+      When configuring which layers the prefab's instantiated entities will be on.
+      ==================================================================================*/
+      Prefab& add_to_layer(const std::string& layer_name);
+
+      /*=================================================================================
+      Function Brief:
+      Removes this prefab from a layer by name.
+
+      Parameters:
+      layer_name - Name of the layer to remove from.
+
+      Where to call it:
+      When modifying prefab layer configuration.
+      ==================================================================================*/
+      Prefab& remove_from_layer(const std::string& layer_name);
+
+      /*=================================================================================
+      Function Brief:
+      Clears all layers from this prefab.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When resetting prefab layer configuration.
+      ==================================================================================*/
+      Prefab& clear_layers();
+
+      /*=================================================================================
+      Function Brief:
+      Gets the layer signature of this prefab.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When querying prefab layer configuration.
+      ==================================================================================*/
+      LayerSignature get_layers() const;
     };
 
     /* ====================================== //
