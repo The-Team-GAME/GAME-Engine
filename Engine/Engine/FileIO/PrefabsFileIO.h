@@ -52,5 +52,10 @@ namespace Engine {
     When loading prefabs from files or receiving prefab data.
     ==================================================================================*/
     Engine::ECS::Prefab deserialize_prefab_from_json(const std::string& json_str);
+
+
+    bool serialize_prefab_to_json_file(const std::string& filepath, const Engine::ECS::Prefab& prefab);
+
+    Engine::ECS::Prefab deserialize_prefab_from_json_file(const std::string& filepath);
   }
 }
