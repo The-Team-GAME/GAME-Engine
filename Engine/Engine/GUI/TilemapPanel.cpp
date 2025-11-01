@@ -517,6 +517,41 @@ namespace TilemapPanel {
         Engine::FileIO::write_string_to_file("tilemap_save.json", prefab_array_json);
       }
 
+      if (ImGui::Button("Load Tilemap")) {
+        // Read from file
+        std::optional<std::string> prefab_array_json_opt = Engine::FileIO::read_string_from_file("tilemap_save.json");
+
+        if (prefab_array_json_opt.has_value()) {
+          std::string prefab_array_json = prefab_array_json_opt.value();
+
+          // Parse json to GenericValue
+          std::optional<ReflectionLibrary::GenericValue> prefab_array_gen_opt = ReflectionLibrary::generic_value_from_json(prefab_array_json);
+
+          if (!prefab_array_gen_opt.has_value()) {
+            ImGui::OpenPopup("Load Error");
+            return;
+          }
+
+          ReflectionLibrary::GenericValue prefab_array_gen = prefab_array_gen_opt.value();
+
+          // Clear existing tiles
+          auto all_entities = Engine::ECS::get_all_entities();
+          for (auto& entity : all_entities) {
+            if (entity.has_components<Components::Tile>()) {
+              entity.destroy();
+            }
+          }
+          placed_tiles.clear();
+
+          // Deserialize each prefab and instantiate entity
+          const auto& prefab_array = prefab_array_gen.getArray();
+          for (const auto& prefab_gen : prefab_array) {
+            Engine::ECS::Prefab prefab = Engine::ECS::prefab_from_generic_value(prefab_gen);
+            Engine::ECS::instantiate_prefab(prefab);
+          }
+        }
+      }
+
       ImGui::Unindent();
     }
 
