@@ -23,6 +23,7 @@
 #include "widgets/TextureAtlasWidget.h"
 #include <vector>
 #include "../FileIO/PrefabsFileIO.h"
+#include "../FileIO/Helpers.h"
 
 namespace TilemapPanel {
   // Internal state
@@ -513,7 +514,7 @@ namespace TilemapPanel {
         auto prefab_array_json = ReflectionLibrary::generic_value_to_json(prefab_array);
 
         // Save to file
-        
+        Engine::FileIO::write_string_to_file("tilemap_save.json", prefab_array_json);
       }
 
       ImGui::Unindent();
