@@ -498,11 +498,22 @@ namespace TilemapPanel {
       if (ImGui::Button("Save Tilemap")) {
         // Get all entities with Tile component, that is in tilemap_background and tilemap_foreground layers
         auto tilemap_entities = Engine::ECS::get_entities_with<Components::Tile>({ "tilemap_background", "tilemap_foreground" });
+
+        ReflectionLibrary::GenericValue prefab_array;
+
         for (auto& entity : tilemap_entities) {
           // Serialize each entity to a prefab
           Engine::ECS::Prefab prefab = Engine::ECS::entity_to_prefab(entity);
-          Engine::FileIO::serialize_prefab_to_json(prefab);
+          auto prefab_gen = Engine::ECS::prefab_to_generic_value(prefab);
+
+          prefab_array.getArray().push_back(prefab_gen);
         }
+
+        // Convert prefab_array to json
+        auto prefab_array_json = ReflectionLibrary::generic_value_to_json(prefab_array);
+
+        // Save to file
+        
       }
 
       ImGui::Unindent();
