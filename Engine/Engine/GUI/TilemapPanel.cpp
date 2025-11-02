@@ -505,31 +505,8 @@ namespace TilemapPanel {
       ImGui::Text("Current file: %s", tilemap_filename);
       ImGui::Spacing();
 
-      if (ImGui::Button("Save")) {
-        // Check if filename is empty (first save) or still default
-        if (strlen(tilemap_filename) == 0 || strcmp(tilemap_filename, "tilemap_save.json") == 0) {
-          show_save_as_popup = true;
-          ImGui::OpenPopup("Save Tilemap As");
-        }
-        else {
-          // Save directly to current filename
-          auto tilemap_entities = Engine::ECS::get_entities_with<Components::Tile>();
-          ReflectionLibrary::GenericValue prefab_array = ReflectionLibrary::Array{};
 
-          for (auto& entity : tilemap_entities) {
-            Engine::ECS::Prefab prefab = Engine::ECS::entity_to_prefab(entity);
-            auto prefab_gen = Engine::ECS::prefab_to_generic_value(prefab);
-            prefab_array.getArray().push_back(prefab_gen);
-          }
-
-          auto prefab_array_json = ReflectionLibrary::generic_value_to_json(prefab_array, true);
-          Engine::FileIO::write_string_to_file(tilemap_filename, prefab_array_json);
-        }
-      }
-
-      ImGui::SameLine();
-
-      if (ImGui::Button("Save As...")) {
+      if (ImGui::Button("Save...")) {
         show_save_as_popup = true;
         ImGui::OpenPopup("Save Tilemap As");
       }
