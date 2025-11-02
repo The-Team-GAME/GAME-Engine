@@ -58,11 +58,6 @@ namespace Engine
       Log::warning("Failed to load engine settings, using defaults");
     }
 
-    // Load user settings
-    if (!Engine::FileIO::SettingsManager<Engine::FileIO::UserSettings>::load("Assets/settings/user_settings.json")) {
-      Log::warning("Failed to load user settings, using defaults");
-    }
-
     // Load local settings
     if (!Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::load("Assets/settings/local_settings.json")) {
       Log::warning("Failed to load local settings, using defaults");
@@ -72,11 +67,10 @@ namespace Engine
 
 
     const auto& engine_settings = Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get();
-    const auto& user_settings = Engine::FileIO::SettingsManager<Engine::FileIO::UserSettings>::get();
     const auto& local_settings = Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::get();
 
 
-    WindowManager::init(user_settings.window_width, user_settings.window_height, engine_settings.window_title);
+    WindowManager::init(engine_settings.window_width, engine_settings.window_height, engine_settings.window_title);
 
     ImGuiManager::init();
 
@@ -97,7 +91,7 @@ namespace Engine
       throw std::runtime_error("Failed to initialize audio manager");
     }
 
-    Engine::Graphics::set_viewport({ 0, 0, user_settings.window_width, user_settings.window_height });
+    Engine::Graphics::set_viewport({ 0, 0, engine_settings.window_width, engine_settings.window_height });
 
     // Register the graphics resize system 
     Engine::EventManager::add_event_listener<Engine::Events::WindowResizeEvent>([](const Engine::Events::WindowResizeEvent& event)
