@@ -72,7 +72,7 @@ namespace Engine
     const auto& engine_settings = FileIO::get_engine_settings();
     const auto& user_settings = FileIO::get_user_settings();
     const auto& local_settings = FileIO::get_local_settings();
-
+    const auto& project_settings = FileIO::get_engine_settings();
 
 
     WindowManager::init(user_settings.window_width, user_settings.window_height, engine_settings.window_title);

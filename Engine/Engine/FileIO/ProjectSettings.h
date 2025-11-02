@@ -17,23 +17,23 @@ namespace Engine
 
     // Private static instance of SettingsManager for ProjectSettings
     namespace {
-      static SettingsManager<ProjectSettings> engine_settings_manager{};
+      static SettingsManager<ProjectSettings> project_settings_manager{};
     }
 
-    bool load_engine_settings(const std::string& file_path)
+    bool load_project_settings(const std::string& file_path)
     {
-      return engine_settings_manager.load(file_path);
+      return project_settings_manager.load(file_path);
     }
 
-    bool save_engine_settings(const std::string& file_path)
+    bool save_project_settings(const std::string& file_path)
     {
-      return engine_settings_manager.save(file_path);
+      return project_settings_manager.save(file_path);
     }
 
-    // settings accessor (cannot be modified by caller, we don't want engine settings changed at runtime)
-    const ProjectSettings& get_engine_settings()
+    // settings accessor (can be modified by caller)
+    ProjectSettings& get_project_settings()
     {
-      return engine_settings_manager.settings;
+      return project_settings_manager.settings;
     }
   }
 }
