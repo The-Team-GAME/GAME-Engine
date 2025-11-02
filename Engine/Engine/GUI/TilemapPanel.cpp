@@ -319,7 +319,7 @@ namespace TilemapPanel {
               ImGuiWidgets::TextureAtlasPreview(
                 preview_texture,
                 preview_atlas,
-                60.0f,
+                600.0f,
                 [](size_t) {} // No selection in preview
               );
             }
