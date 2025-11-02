@@ -18,6 +18,7 @@
 #include <fstream>
 #include "../Logger.h"
 #include <filesystem>
+#include "../Reflection/ReflectionLibrary/GenericValue.inl"
 
 namespace Engine {
   namespace FileIO {

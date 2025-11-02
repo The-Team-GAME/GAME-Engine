@@ -36,8 +36,7 @@ int main()
   _CrtSetDbgFlag(tmpDbgFlag);
   _CrtSetBreakAlloc(-1);
 
-  try
-  {
+  
     // Start the engine
     Engine::Core engine(MainMenuState::get());
 
@@ -52,17 +51,7 @@ int main()
 
     ImGuiManager::register_panel(StateChooserPanel);
     engine.run();
-  }
-  catch (const std::exception& e)
-  {
-    Log::crash(std::string("Unhandled exception in main: ") + e.what());
-    return 1;
-  }
-  catch (...)
-  {
-    Log::crash("Unknown unhandled exception in main");
-    return 1;
-  }
+    
 
   return 0;
 }

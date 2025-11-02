@@ -24,7 +24,6 @@
 #include <vector>
 #include "../FileIO/PrefabsFileIO.h"
 #include "../FileIO/Helpers.h"
-#include "../FileIO/ProjectSettings.h"
 
 namespace TilemapPanel {
   // Internal state
@@ -65,9 +64,9 @@ namespace TilemapPanel {
   // Helper functions
 
   void save_loaded_tilemaps_to_project_settings() {
-    auto& project_settings = Engine::FileIO::get_project_settings();
+  /*  auto& project_settings = Engine::FileIO::get_project_settings();
     project_settings.loaded_tilemaps = loaded_tilemaps;
-    Engine::FileIO::save_project_settings("Assets/settings/project_settings.json");
+    Engine::FileIO::save_project_settings("Assets/settings/project_settings.json");*/
   }
 
   void regenerate_atlas() {
@@ -204,8 +203,8 @@ namespace TilemapPanel {
 
   // Public interface
   void init() {
-    const auto& project_settings = Engine::FileIO::get_project_settings();
-    loaded_tilemaps = project_settings.loaded_tilemaps;
+    //const auto& project_settings = Engine::FileIO::get_project_settings();
+    //loaded_tilemaps = project_settings.loaded_tilemaps;
   }
 
   void update() {
