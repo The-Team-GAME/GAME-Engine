@@ -68,7 +68,9 @@ namespace TilemapPanel {
   void save_loaded_tilemaps_to_project_settings() {
     auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get_mutable();
     project_settings.loaded_tilemaps = loaded_tilemaps;
-    Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::save("Assets/settings/project_settings.json");
+    if (!Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::save("Assets/settings/project_settings.json")) {
+      Log::warning("Failed to save project settings after updating tilemaps");
+    }
   }
 
   void regenerate_atlas() {
