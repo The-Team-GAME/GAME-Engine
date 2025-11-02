@@ -44,7 +44,7 @@ namespace Engine {
         return minkowski;
       }
 
-      static Vec2D penetrationVector(AABB const& minkowski)
+      static Vec2D penetrationVector(AABB const& minkowski) // smth wrong with the math here?
       {
         // So... how does this work.
         // First we take the aabb and find the distance to the edges of the static object
