@@ -34,6 +34,7 @@
 #include "FileIO/EngineSettings.h"
 #include "FileIO/UserSettings.h"
 #include "FileIO/LocalSettings.h"
+#include "FileIO/ProjectSettings.h"
 
 
 namespace {
@@ -69,10 +70,15 @@ namespace Engine
       Log::warning("Failed to load local settings, using defaults");
     }
 
+    // Load project settings
+    if (!FileIO::load_project_settings("Assets/settings/project_settings.json")) {
+      Log::warning("Failed to load project settings, using defaults");
+    }
+
     const auto& engine_settings = FileIO::get_engine_settings();
     const auto& user_settings = FileIO::get_user_settings();
     const auto& local_settings = FileIO::get_local_settings();
-    const auto& project_settings = FileIO::get_engine_settings();
+    // const auto& project_settings = FileIO::get_project_settings();
 
 
     WindowManager::init(user_settings.window_width, user_settings.window_height, engine_settings.window_title);

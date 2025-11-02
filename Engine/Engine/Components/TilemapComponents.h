@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../ECS/Macros.h"
 
 namespace Components {

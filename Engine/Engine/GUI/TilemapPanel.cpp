@@ -24,6 +24,7 @@
 #include <vector>
 #include "../FileIO/PrefabsFileIO.h"
 #include "../FileIO/Helpers.h"
+#include "../FileIO/ProjectSettings.h"
 
 namespace TilemapPanel {
   // Internal state
@@ -62,6 +63,12 @@ namespace TilemapPanel {
   }
 
   // Helper functions
+
+  void save_loaded_tilemaps_to_project_settings() {
+    auto& project_settings = Engine::FileIO::get_project_settings();
+    project_settings.loaded_tilemaps = loaded_tilemaps;
+    Engine::FileIO::save_project_settings("Assets/settings/project_settings.json");
+  }
 
   void regenerate_atlas() {
     if (!preview_texture.texture_handle) {
@@ -196,6 +203,11 @@ namespace TilemapPanel {
   }
 
   // Public interface
+  void init() {
+    const auto& project_settings = Engine::FileIO::get_project_settings();
+    loaded_tilemaps = project_settings.loaded_tilemaps;
+  }
+
   void update() {
     // === HANDLE PAINTING IN WORLD ===
     if (!ImGui::GetIO().WantCaptureMouse) {
@@ -322,6 +334,9 @@ namespace TilemapPanel {
                 entry.name = std::string(atlas_name);
                 loaded_tilemaps.push_back(entry);
 
+                // Save to project settings
+                save_loaded_tilemaps_to_project_settings();
+
                 // Clear the name field
                 atlas_name[0] = '\0';
               }
@@ -389,6 +404,9 @@ namespace TilemapPanel {
             if (selected_atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
               selected_atlas_index = static_cast<int>(loaded_tilemaps.size()) - 1;
             }
+
+            // Save to project settings
+            save_loaded_tilemaps_to_project_settings();
           }
 
           if (is_selected) {
