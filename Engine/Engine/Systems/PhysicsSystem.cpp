@@ -15,6 +15,7 @@
 //-----------------------------------------------------------------------------------
 #include "PhysicsSystem.h";
 #include "CollisionSystem.h"
+#include "../Perf.h"
 using namespace Engine;
 using namespace Systems;
 using phy2D = Physics2DSystem;
@@ -29,7 +30,7 @@ using col2D = Collision2DSystem;
 // eventually we'll deserialise these values from file bah
 namespace {
   f32 walking_velocity = 500.f;
-  Vec2D jumping_force(0.f, -20000.f);
+  Vec2D jumping_force(0.f, -40000.f);
 }
 phy2D::Physics2DSystem() {
   require_components<Components::Transform2D, Components::RigidBody, Components::BoxCollider>();
@@ -37,6 +38,7 @@ phy2D::Physics2DSystem() {
 
 void phy2D::update()
 {
+  Engine::Perf::start("Physics Update");
   // Basically right, we cant reset kinematic values here because the game state update() runs before this
   // Anything that we want to reset needs to be done in the gamestate, but most of it is player stuff so its fine
   // so here we update all the kinematics and stuff first
@@ -73,8 +75,8 @@ void phy2D::update()
           // some magic right here. i understand it rn but maybe alcohol helps
 
           //std::cout << "Prev pos: " << rigid->next_pos << std::endl;
-          rigid->velocity -= pen_vec;
-          rigid->next_pos += pen_vec * Time::get_fixed_dt();
+
+          rigid->next_pos -= pen_vec;
           if (pen_vec.y == 0) // sideways collision
           {
             rigid->velocity.x = 0.f;
@@ -82,40 +84,44 @@ void phy2D::update()
           else // updown collision
           {
             rigid->velocity.y = 0.f;
-            if (pen_vec.y < 0)
+            if (pen_vec.y > 0)
             {
-              // std::cout << "on ground\n";
               rigid->on_ground = true;
             }
           }
           update_transform(*rigid, *xform);
           //std::cout << "New pos:  " << rigid->next_pos << std::endl;
         }
-        /*else if (box->detect_collisions == false && other_box->detect_collisions == true)
-        {
-          std::cout << "TWO\n";
-          // box is the static one
-          Components::Transform2D* other_xform = other.get_component<Components::Transform2D>();
-          AABB minkowski = col2D::minkowski_AABB(*other_box, *box);
-          Vec2D pen_vec = col2D::penetrationVector(minkowski);
-          other_rigid->velocity -= pen_vec;
-          other_rigid->next_pos += pen_vec * Time::get_fixed_dt();
-          if (pen_vec.y == 0) // sideways collision
-          {
-            other_rigid->velocity.x = 0.f;
-          }
-          else // updown collision
-          {
-            other_rigid->velocity.y = 0.f;
-          }
-          update_transform(*other_rigid, *other_xform);
-          }*/
+        //else if (box->detect_collisions == false && other_box->detect_collisions == true)
+        //{
+        //  // box is the static one
+        //  Components::Transform2D* other_xform = other.get_component<Components::Transform2D>();
+        //  AABB minkowski = col2D::minkowski_AABB(*other_box, *box);
+        //  Vec2D pen_vec = col2D::penetrationVector(minkowski);
+        //  other_rigid->velocity -= pen_vec;
+        //  other_rigid->next_pos += pen_vec * Time::get_fixed_dt();
+        //  if (pen_vec.y == 0) // sideways collision
+        //  {
+        //    other_rigid->velocity.x = 0.f;
+        //    if (pen_vec.y < 0)
+        //    {
+        //      // std::cout << "on ground\n";
+        //      other_rigid->on_ground = true;
+        //    }
+        //  }
+        //  else // updown collision
+        //  {
+        //    other_rigid->velocity.y = 0.f;
+        //  }
+        //  update_transform(*other_rigid, *other_xform);
+        //}
         // Technically we dont need false && true also cuz that would just be duplicated... i think
         // if both detect_collision is false then no point doing LOL
         // we wont do elastic collisions yet, cuz its not needed so i skip
       }
     }
   }
+  Engine::Perf::stop("Physics Update");
 }
 void phy2D::update_entity(Engine::ECS::Entity& entity){
   Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
