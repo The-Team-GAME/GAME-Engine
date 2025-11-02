@@ -56,6 +56,11 @@ namespace TilemapPanel {
 
     // Track placed tiles to prevent duplicates
     std::unordered_set<std::string> placed_tiles;
+
+    // Save/Load state
+    char tilemap_filename[256] = "tilemap_save.json";
+    bool show_save_as_popup = false;
+    bool show_load_popup = false;
   }
 
   // Helper functions
@@ -496,62 +501,159 @@ namespace TilemapPanel {
     if (ImGui::CollapsingHeader("Save/Load")) {
       ImGui::Indent();
 
-      if (ImGui::Button("Save Tilemap")) {
-        // Get all entities with Tile component, that is in tilemap_background and tilemap_foreground layers
-        // TODO: Layer filtering
-        //auto tilemap_entities = Engine::ECS::get_entities_with<Components::Tile>({ "tilemap_background", "tilemap_foreground" });
-        auto tilemap_entities = Engine::ECS::get_entities_with<Components::Tile>();
+      // Display current filename
+      ImGui::Text("Current file: %s", tilemap_filename);
+      ImGui::Spacing();
 
-        ReflectionLibrary::GenericValue prefab_array = ReflectionLibrary::Array{};
-
-        for (auto& entity : tilemap_entities) {
-          // Serialize each entity to a prefab
-          Engine::ECS::Prefab prefab = Engine::ECS::entity_to_prefab(entity);
-          auto prefab_gen = Engine::ECS::prefab_to_generic_value(prefab);
-
-          prefab_array.getArray().push_back(prefab_gen);
+      if (ImGui::Button("Save")) {
+        // Check if filename is empty (first save) or still default
+        if (strlen(tilemap_filename) == 0 || strcmp(tilemap_filename, "tilemap_save.json") == 0) {
+          show_save_as_popup = true;
+          ImGui::OpenPopup("Save Tilemap As");
         }
+        else {
+          // Save directly to current filename
+          auto tilemap_entities = Engine::ECS::get_entities_with<Components::Tile>();
+          ReflectionLibrary::GenericValue prefab_array = ReflectionLibrary::Array{};
 
-        // Convert prefab_array to json
-        auto prefab_array_json = ReflectionLibrary::generic_value_to_json(prefab_array, true);
+          for (auto& entity : tilemap_entities) {
+            Engine::ECS::Prefab prefab = Engine::ECS::entity_to_prefab(entity);
+            auto prefab_gen = Engine::ECS::prefab_to_generic_value(prefab);
+            prefab_array.getArray().push_back(prefab_gen);
+          }
 
-        // Save to file
-        Engine::FileIO::write_string_to_file("tilemap_save.json", prefab_array_json);
+          auto prefab_array_json = ReflectionLibrary::generic_value_to_json(prefab_array, true);
+          Engine::FileIO::write_string_to_file(tilemap_filename, prefab_array_json);
+        }
       }
 
-      if (ImGui::Button("Load Tilemap")) {
-        // Read from file
-        std::optional<std::string> prefab_array_json_opt = Engine::FileIO::read_string_from_file("tilemap_save.json");
+      ImGui::SameLine();
 
-        if (prefab_array_json_opt.has_value()) {
-          std::string prefab_array_json = prefab_array_json_opt.value();
+      if (ImGui::Button("Save As...")) {
+        show_save_as_popup = true;
+        ImGui::OpenPopup("Save Tilemap As");
+      }
 
-          // Parse json to GenericValue
-          std::optional<ReflectionLibrary::GenericValue> prefab_array_gen_opt = ReflectionLibrary::generic_value_from_json(prefab_array_json);
+      // Save As popup
+      if (ImGui::BeginPopupModal("Save Tilemap As", &show_save_as_popup, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Enter filename:");
+        ImGui::InputText("##filename", tilemap_filename, sizeof(tilemap_filename));
 
-          if (!prefab_array_gen_opt.has_value()) {
-            ImGui::OpenPopup("Load Error");
-            return;
-          }
+        ImGui::Spacing();
 
-          ReflectionLibrary::GenericValue prefab_array_gen = prefab_array_gen_opt.value();
+        if (ImGui::Button("Save", ImVec2(120, 0))) {
+          if (strlen(tilemap_filename) > 0) {
+            // Perform save
+            auto tilemap_entities = Engine::ECS::get_entities_with<Components::Tile>();
+            ReflectionLibrary::GenericValue prefab_array = ReflectionLibrary::Array{};
 
-          // Clear existing tiles
-          auto all_entities = Engine::ECS::get_all_entities();
-          for (auto& entity : all_entities) {
-            if (entity.has_components<Components::Tile>()) {
-              entity.destroy();
+            for (auto& entity : tilemap_entities) {
+              Engine::ECS::Prefab prefab = Engine::ECS::entity_to_prefab(entity);
+              auto prefab_gen = Engine::ECS::prefab_to_generic_value(prefab);
+              prefab_array.getArray().push_back(prefab_gen);
             }
-          }
-          placed_tiles.clear();
 
-          // Deserialize each prefab and instantiate entity
-          const auto& prefab_array = prefab_array_gen.getArray();
-          for (const auto& prefab_gen : prefab_array) {
-            Engine::ECS::Prefab prefab = Engine::ECS::prefab_from_generic_value(prefab_gen);
-            Engine::ECS::instantiate_prefab(prefab);
+            auto prefab_array_json = ReflectionLibrary::generic_value_to_json(prefab_array, true);
+            Engine::FileIO::write_string_to_file(tilemap_filename, prefab_array_json);
+
+            show_save_as_popup = false;
+            ImGui::CloseCurrentPopup();
           }
         }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+          show_save_as_popup = false;
+          ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+      }
+
+      ImGui::SameLine();
+
+      if (ImGui::Button("Load...")) {
+        show_load_popup = true;
+        ImGui::OpenPopup("Load Tilemap");
+      }
+
+      // Load popup
+      if (ImGui::BeginPopupModal("Load Tilemap", &show_load_popup, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Enter filename to load:");
+        ImGui::InputText("##loadfilename", tilemap_filename, sizeof(tilemap_filename));
+
+        ImGui::Spacing();
+
+        if (ImGui::Button("Load", ImVec2(120, 0))) {
+          if (strlen(tilemap_filename) > 0) {
+            // Read from file
+            std::optional<std::string> prefab_array_json_opt = Engine::FileIO::read_string_from_file(tilemap_filename);
+
+            if (prefab_array_json_opt.has_value()) {
+              std::string prefab_array_json = prefab_array_json_opt.value();
+
+              // Parse json to GenericValue
+              std::optional<ReflectionLibrary::GenericValue> prefab_array_gen_opt = ReflectionLibrary::generic_value_from_json(prefab_array_json);
+
+              if (!prefab_array_gen_opt.has_value()) {
+                // TODO: Show error message in popup
+                show_load_popup = false;
+                ImGui::CloseCurrentPopup();
+                ImGui::OpenPopup("Load Error");
+              }
+              else {
+                ReflectionLibrary::GenericValue prefab_array_gen = prefab_array_gen_opt.value();
+
+                // Clear existing tiles
+                auto all_entities = Engine::ECS::get_all_entities();
+                for (auto& entity : all_entities) {
+                  if (entity.has_components<Components::Tile>()) {
+                    entity.destroy();
+                  }
+                }
+                placed_tiles.clear();
+
+                // Deserialize each prefab and instantiate entity
+                const auto& prefab_array = prefab_array_gen.getArray();
+                for (const auto& prefab_gen : prefab_array) {
+                  Engine::ECS::Prefab prefab = Engine::ECS::prefab_from_generic_value(prefab_gen);
+                  Engine::ECS::instantiate_prefab(prefab);
+                }
+
+                show_load_popup = false;
+                ImGui::CloseCurrentPopup();
+              }
+            }
+            else {
+              // File doesn't exist or couldn't be read
+              show_load_popup = false;
+              ImGui::CloseCurrentPopup();
+            }
+          }
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+          show_load_popup = false;
+          ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+      }
+
+      // Load Error popup
+      if (ImGui::BeginPopupModal("Load Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Failed to load tilemap!");
+        ImGui::Text("The file may be corrupted or invalid.");
+        ImGui::Spacing();
+
+        if (ImGui::Button("OK", ImVec2(120, 0))) {
+          ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
       }
 
       ImGui::Unindent();
