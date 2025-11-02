@@ -31,10 +31,8 @@
 #include "Events/WindowEvents.h"
 #include "Systems/Systems.h"
 #include "EventManager/EventManager.h"
-#include "FileIO/EngineSettings.h"
-#include "FileIO/UserSettings.h"
-#include "FileIO/LocalSettings.h"
-#include "FileIO/ProjectSettings.h"
+#include "FileIO/Settings.h"
+#include "FileIO/SettingsManager.h"
 
 
 namespace {
@@ -56,29 +54,29 @@ namespace Engine
     isRunning = true;
 
     // Load engine settings
-    if (!FileIO::load_engine_settings("Assets/settings/engine_settings.json")) {
+    if (!Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::load("Assets/settings/engine_settings.json")) {
       Log::warning("Failed to load engine settings, using defaults");
     }
 
     // Load user settings
-    if (!FileIO::load_user_settings("Assets/settings/user_settings.json")) {
+    if (!Engine::FileIO::SettingsManager<Engine::FileIO::UserSettings>::load("Assets/settings/user_settings.json")) {
       Log::warning("Failed to load user settings, using defaults");
     }
 
     // Load local settings
-    if (!FileIO::load_local_settings("Assets/settings/local_settings.json")) {
+    if (!Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::load("Assets/settings/local_settings.json")) {
       Log::warning("Failed to load local settings, using defaults");
     }
 
     // Load project settings
-    if (!FileIO::load_project_settings("Assets/settings/project_settings.json")) {
+    if (!Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::load("Assets/settings/project_settings.json")) {
       Log::warning("Failed to load project settings, using defaults");
     }
 
-    const auto& engine_settings = FileIO::get_engine_settings();
-    const auto& user_settings = FileIO::get_user_settings();
-    const auto& local_settings = FileIO::get_local_settings();
-    // const auto& project_settings = FileIO::get_project_settings();
+    const auto& engine_settings = Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get();
+    const auto& user_settings = Engine::FileIO::SettingsManager<Engine::FileIO::UserSettings>::get();
+    const auto& local_settings = Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::get();
+    // const auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get();
 
 
     WindowManager::init(user_settings.window_width, user_settings.window_height, engine_settings.window_title);

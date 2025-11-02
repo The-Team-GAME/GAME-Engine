@@ -57,11 +57,8 @@
     <ClInclude Include="Engine\Events\Events.h" />
     <ClInclude Include="Engine\Events\InputEvents.h" />
     <ClInclude Include="Engine\Events\WindowEvents.h" />
-    <ClInclude Include="Engine\FileIO\EngineSettings.h" />
-    <ClInclude Include="Engine\FileIO\LocalSettings.h" />
     <ClInclude Include="Engine\FileIO\PrefabsFileIO.h" />
     <ClInclude Include="Engine\FileIO\SettingsManager.h" />
-    <ClInclude Include="Engine\FileIO\UserSettings.h" />
     <ClInclude Include="Engine\GUI\ResourceManagerPanel.h" />
     <ClInclude Include="Engine\GUI\widgets\TextureAtlasWidget.h" />
     <ClInclude Include="Engine\MonkeyEngine.h" />
@@ -126,7 +123,7 @@
     <ClInclude Include="Engine\ECS\SparseSet.h" />
     <ClInclude Include="Engine\ECS\Reflection.h" />
     <ClInclude Include="Engine\FileIO\Helpers.h" />
-    <ClInclude Include="Engine\FileIO\ProjectSettings.h" />
+    <ClInclude Include="Engine\FileIO\Settings.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

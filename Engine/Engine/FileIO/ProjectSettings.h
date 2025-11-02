@@ -15,25 +15,21 @@ namespace Engine
       std::vector<Components::AtlasEntry> loaded_tilemaps{};
     };
 
-    // Private static instance of SettingsManager for ProjectSettings
-    namespace {
-      static SettingsManager<ProjectSettings> project_settings_manager{};
+    // Convenience functions for ProjectSettings
+    inline bool load_project_settings(const std::string& file_path)
+    {
+      return SettingsManager<ProjectSettings>::load(file_path);
     }
 
-    bool load_project_settings(const std::string& file_path)
+    inline bool save_project_settings(const std::string& file_path = "")
     {
-      return project_settings_manager.load(file_path);
-    }
-
-    bool save_project_settings(const std::string& file_path)
-    {
-      return project_settings_manager.save(file_path);
+      return SettingsManager<ProjectSettings>::save(file_path);
     }
 
     // settings accessor (can be modified by caller)
-    ProjectSettings& get_project_settings()
+    inline ProjectSettings& get_project_settings()
     {
-      return project_settings_manager.settings;
+      return SettingsManager<ProjectSettings>::get_mutable();
     }
   }
 }

@@ -13,25 +13,21 @@ namespace Engine
       int window_height = 720;
     };
 
-    // Private static instance of SettingsManager for UserSettings
-    namespace {
-      static SettingsManager<UserSettings> user_settings_manager{};
+    // Convenience functions for UserSettings
+    inline bool load_user_settings(const std::string& file_path)
+    {
+      return SettingsManager<UserSettings>::load(file_path);
     }
 
-    bool load_user_settings(const std::string& file_path)
+    inline bool save_user_settings(const std::string& file_path = "")
     {
-      return user_settings_manager.load(file_path);
-    }
-
-    bool save_user_settings(const std::string& file_path)
-    {
-      return user_settings_manager.save(file_path);
+      return SettingsManager<UserSettings>::save(file_path);
     }
 
     // settings accessor (can be modified by caller)
-    UserSettings& get_user_settings()
+    inline UserSettings& get_user_settings()
     {
-      return user_settings_manager.settings;
+      return SettingsManager<UserSettings>::get_mutable();
     }
   }
 }
