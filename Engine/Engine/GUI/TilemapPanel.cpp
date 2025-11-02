@@ -358,96 +358,6 @@ namespace TilemapPanel {
     }
 
     ImGui::Separator();
-
-    // === TILE SELECTION ===
-    if (!loaded_tilemaps.empty()) {
-      if (ImGui::CollapsingHeader("Tile Selection", ImGuiTreeNodeFlags_DefaultOpen)) {
-        ImGui::Indent();
-
-        ImGui::Text("Tilemaps:");
-        ImGui::Separator();
-
-        // Display all submitted atlases
-        for (int i = 0; i < static_cast<int>(loaded_tilemaps.size()); ++i) {
-          const Components::AtlasEntry& entry = loaded_tilemaps[i];
-
-          ImGui::PushID(i);
-
-          // Atlas name and select button
-          bool is_selected = (i == selected_atlas_index);
-          if (is_selected) {
-            ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.2f, 0.6f, 0.2f, 1.0f));
-          }
-
-          // Create non-const copies for TextureAtlasPreview
-          Components::Texture temp_texture = entry.texture;
-          Components::TextureAtlas temp_atlas = entry.atlas;
-
-          // Set the drawIndex to the currently selected tile if this is the selected atlas
-          if (is_selected) {
-            temp_atlas.drawIndex = selected_tile_index;
-          }
-          else {
-            temp_atlas.drawIndex = -1; // No tile selected in this atlas
-          }
-
-          // Calculate rows and cols from UV coordinates
-          int cols = 1;
-          int rows = 1;
-
-          if (!entry.atlas.subTextures.empty()) {
-            // Get the first tile's UV width to determine column count
-            const auto& first_coords = entry.atlas.subTextures[0].tex_coords;
-            float tile_uv_width = std::abs(first_coords[1].x - first_coords[0].x);
-            float tile_uv_height = std::abs(first_coords[0].y - first_coords[3].y);
-
-            if (tile_uv_width > 0.0f) {
-              cols = static_cast<int>(std::round(1.0f / tile_uv_width));
-            }
-            if (tile_uv_height > 0.0f) {
-              rows = static_cast<int>(std::round(1.0f / tile_uv_height));
-            }
-          }
-
-          // Calculate preview height to make tiles uniform size (64x64)
-          const float desired_tile_size = 64.0f;
-          float preview_height = desired_tile_size * rows;
-
-          ImGuiWidgets::TextureAtlasPreview(
-            temp_texture,
-            temp_atlas,
-            preview_height,
-            [i](size_t tile_idx) {
-              selected_atlas_index = i;
-              selected_tile_index = static_cast<int>(tile_idx);
-            }
-          );
-
-          // Remove button
-          if (ImGui::Button("Remove Atlas", ImVec2(-1, 0))) {
-            loaded_tilemaps.erase(loaded_tilemaps.begin() + i);
-            if (selected_atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
-              selected_atlas_index = static_cast<int>(loaded_tilemaps.size()) - 1;
-            }
-
-            // Save to project settings
-            save_loaded_tilemaps_to_project_settings();
-          }
-
-          if (is_selected) {
-            ImGui::PopStyleColor();
-          }
-
-          ImGui::PopID();
-          ImGui::Separator();
-        }
-
-        ImGui::Unindent();
-      }
-    }
-
-    ImGui::Separator();
-
     // === PAINTING CONTROLS ===
     if (ImGui::CollapsingHeader("Painting Controls", ImGuiTreeNodeFlags_DefaultOpen)) {
       ImGui::Indent();
@@ -718,6 +628,95 @@ namespace TilemapPanel {
 
       ImGui::Unindent();
     }
+
+    // === TILE SELECTION ===
+    if (!loaded_tilemaps.empty()) {
+      if (ImGui::CollapsingHeader("Tile Selection", ImGuiTreeNodeFlags_DefaultOpen)) {
+        ImGui::Indent();
+
+        ImGui::Text("Tilemaps:");
+        ImGui::Separator();
+
+        // Display all submitted atlases
+        for (int i = 0; i < static_cast<int>(loaded_tilemaps.size()); ++i) {
+          const Components::AtlasEntry& entry = loaded_tilemaps[i];
+
+          ImGui::PushID(i);
+
+          // Atlas name and select button
+          bool is_selected = (i == selected_atlas_index);
+          if (is_selected) {
+            ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.2f, 0.6f, 0.2f, 1.0f));
+          }
+
+          // Create non-const copies for TextureAtlasPreview
+          Components::Texture temp_texture = entry.texture;
+          Components::TextureAtlas temp_atlas = entry.atlas;
+
+          // Set the drawIndex to the currently selected tile if this is the selected atlas
+          if (is_selected) {
+            temp_atlas.drawIndex = selected_tile_index;
+          }
+          else {
+            temp_atlas.drawIndex = -1; // No tile selected in this atlas
+          }
+
+          // Calculate rows and cols from UV coordinates
+          int cols = 1;
+          int rows = 1;
+
+          if (!entry.atlas.subTextures.empty()) {
+            // Get the first tile's UV width to determine column count
+            const auto& first_coords = entry.atlas.subTextures[0].tex_coords;
+            float tile_uv_width = std::abs(first_coords[1].x - first_coords[0].x);
+            float tile_uv_height = std::abs(first_coords[0].y - first_coords[3].y);
+
+            if (tile_uv_width > 0.0f) {
+              cols = static_cast<int>(std::round(1.0f / tile_uv_width));
+            }
+            if (tile_uv_height > 0.0f) {
+              rows = static_cast<int>(std::round(1.0f / tile_uv_height));
+            }
+          }
+
+          // Calculate preview height to make tiles uniform size (64x64)
+          const float desired_tile_size = 64.0f;
+          float preview_height = desired_tile_size * rows;
+
+          ImGuiWidgets::TextureAtlasPreview(
+            temp_texture,
+            temp_atlas,
+            preview_height,
+            [i](size_t tile_idx) {
+              selected_atlas_index = i;
+              selected_tile_index = static_cast<int>(tile_idx);
+            }
+          );
+
+          // Remove button
+          if (ImGui::Button("Remove Atlas", ImVec2(-1, 0))) {
+            loaded_tilemaps.erase(loaded_tilemaps.begin() + i);
+            if (selected_atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
+              selected_atlas_index = static_cast<int>(loaded_tilemaps.size()) - 1;
+            }
+
+            // Save to project settings
+            save_loaded_tilemaps_to_project_settings();
+          }
+
+          if (is_selected) {
+            ImGui::PopStyleColor();
+          }
+
+          ImGui::PopID();
+          ImGui::Separator();
+        }
+
+        ImGui::Unindent();
+      }
+    }
+
+    ImGui::Separator();
 
     // === STATISTICS ===
     if (ImGui::CollapsingHeader("Statistics", ImGuiTreeNodeFlags_DefaultOpen)) {
