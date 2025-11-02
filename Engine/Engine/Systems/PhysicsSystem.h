@@ -32,13 +32,19 @@ namespace Engine {
       void update_entity(Engine::ECS::Entity& entity) override;
 
       // Used to add forces to the rigid body
-      void add_force(Components::RigidBody& rigid, Vec2D force);
+      static void add_force(Components::RigidBody& rigid, Vec2D force);
 
       // Used to scale forces acting on the rigid body
       void scale_force(Components::RigidBody& rigid, f32 scale);
 
       // Used to reset forces acting on the rigid body
       void zero_force(Components::RigidBody& rigid);
+
+      static void walk_left(Components::RigidBody& rigid);
+
+      static void walk_right(Components::RigidBody& rigid);
+
+      static void jump(Components::RigidBody& rigid);
 
       // Update the linear velocities if said entities here
       void update_kinematics(Components::RigidBody& rigid);
