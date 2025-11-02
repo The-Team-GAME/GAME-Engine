@@ -54,6 +54,9 @@ namespace TilemapPanel {
     Math::Vec2D grid_offset = { 0.0f, 0.0f };
     Math::Vec2D prev_grid_offset = { 0.0f, 0.0f };
 
+    // Layer selection
+    std::string selected_layer = "default";
+
     // Track placed tiles to prevent duplicates
     std::unordered_set<std::string> placed_tiles;
 
@@ -189,6 +192,10 @@ namespace TilemapPanel {
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
 
     tile.get_component<Components::TextureAtlas>()->drawIndex = selected_tile_index;
+
+    // Assign to selected layer
+    tile.clear_layers();
+    tile.add_to_layer(selected_layer);
 
     placed_tiles.insert(pos_key);
   }
@@ -497,6 +504,44 @@ namespace TilemapPanel {
 
     ImGui::Separator();
 
+    // === LAYER SELECTION ===
+    if (ImGui::CollapsingHeader("Layer Selection", ImGuiTreeNodeFlags_DefaultOpen)) {
+      ImGui::Indent();
+
+      // Get all available layers
+      auto& containers = Engine::ECS::Internal::get_containers();
+
+      ImGui::Text("Active Painting Layer:");
+
+      bool any_layers_registered = false;
+      for (Engine::ECS::LayerID layer_id = 0; layer_id < containers.layer_id_to_name.size(); ++layer_id) {
+        const std::string& layer_name = containers.layer_id_to_name[layer_id];
+
+        // Skip empty layer names
+        if (layer_name.empty()) continue;
+
+        any_layers_registered = true;
+
+        bool is_selected = (selected_layer == layer_name);
+
+        if (ImGui::RadioButton((layer_name + " (ID: " + std::to_string(layer_id) + ")").c_str(), is_selected)) {
+          selected_layer = layer_name;
+        }
+      }
+
+      if (!any_layers_registered) {
+        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  (No layers registered)");
+      }
+
+      ImGui::Separator();
+
+      ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "New tiles will be placed on this layer");
+
+      ImGui::Unindent();
+    }
+
+    ImGui::Separator();
+
     // === SAVE/LOAD ===
     if (ImGui::CollapsingHeader("Save/Load")) {
       ImGui::Indent();
@@ -690,6 +735,26 @@ namespace TilemapPanel {
 
       float start_x = std::floor((visible_left - grid_offset.x) / grid_size) * grid_size + grid_offset.x;
       float start_y = std::floor((visible_top - grid_offset.y) / grid_size) * grid_size + grid_offset.y;
+
+      // Darken tiles on non-selected layers
+      auto all_entities = Engine::ECS::get_all_entities();
+      for (auto& entity : all_entities) {
+        if (entity.has_component<Components::Tile>()) {
+          // Check if entity is not on the selected layer
+          if (!entity.is_on_layer(selected_layer)) {
+            auto* transform = entity.get_component<Components::Transform2D>();
+            if (transform) {
+              // Draw a semi-transparent dark overlay on this tile
+              Engine::Graphics::draw_rect(
+                transform->position,
+                transform->scale,
+                transform->rotation,
+                Math::Vec4D{ 0.0f, 0.0f, 0.0f, 0.5f } // Dark overlay
+              );
+            }
+          }
+        }
+      }
 
       // Draw vertical lines
       for (float x = start_x; x <= visible_right; x += grid_size) {
