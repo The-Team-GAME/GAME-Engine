@@ -18,7 +18,7 @@
 #include <fstream>
 #include "../Logger.h"
 #include <filesystem>
-#include "../Reflection/ReflectionLibrary/GenericValue.inl"
+#include "../Reflection/ReflectionLibrary.h"
 
 namespace Engine {
   namespace FileIO {
@@ -51,6 +51,24 @@ namespace Engine {
 
       ReflectionLibrary::GenericValue loaded_settings = loaded_settings_opt_value.value();
       ReflectionLibrary::GenericValue default_settings = ReflectionLibrary::to_generic_value(T{});
+
+      // Ensure both loaded_settings and default_settings are objects
+      if (!default_settings.isObject())
+      {
+        Log::error("Failed to convert default settings to object, are you sure " + std::string(typeid(T).name()) + " is reflectable?");
+        return false;
+      }
+
+      if (!loaded_settings.isObject())
+      {
+        Log::warning("Loaded settings is not an object, using defaults");
+        settings_ = T{};
+        if (!save_impl(file_path))
+        {
+          Log::warning("Failed to save default settings to file: " + file_path);
+        }
+        return true;
+      }
 
       bool has_missing = false;
       for (const auto& [key, default_value] : default_settings.getObject())

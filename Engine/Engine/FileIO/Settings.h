@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "../Components/Components.h"
+#include "../Reflection/ReflectionLibrary.h"
 
 namespace Engine
 {
@@ -30,3 +31,8 @@ namespace Engine
     };
   }
 }
+
+REFLECT_FIELDS(Engine::FileIO::UserSettings, window_width, window_height)
+REFLECT_FIELDS(Engine::FileIO::EngineSettings, window_title)
+REFLECT_FIELDS(Engine::FileIO::ProjectSettings, loaded_tilemaps)
+REFLECT_FIELDS(Engine::FileIO::LocalSettings, imgui_theme)
