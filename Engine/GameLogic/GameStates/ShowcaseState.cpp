@@ -35,6 +35,9 @@ void ShowcaseState::load() {
   // Load fonts
   title_font = Engine::Resources::load_font("fonts/PlayfairDisplay-VariableFont_wght.ttf", 82);
   info_font = Engine::Resources::load_font("fonts/Roboto-Regular.ttf", 48);
+
+  white_texture = Engine::Resources::load_texture("images/white.png");
+
 }
 
 void ShowcaseState::init() {
@@ -105,6 +108,24 @@ void ShowcaseState::init() {
     .add_component<Components::Transform2D>(50.0f, 280.0f, 0.0f, 0.7f, 0.7f)
     .add_component<Components::Font>(info_font)
     .add_component<Components::Text>("Player HP: 50/100")
+    .add_component<Components::Color>(0.2f, 1.0f, 0.2f, 1.0f);
+
+  player_hp_bg = Engine::ECS::create_entity()
+    .add_component<Components::Tag<"ShowcaseState">>()
+    .add_component<Components::Transform2D>(
+      hpbar_left + hpbar_w * 50.0f,
+      hpbar_top + hpbar_h * 50.0f,
+      0.0f, hpbar_w, hpbar_h)
+    .add_component<Components::Texture>(white_texture)
+    .add_component<Components::Color>(0.15f, 0.15f, 0.15f, 1.0f);
+
+  player_hp_fill = Engine::ECS::create_entity()
+    .add_component<Components::Tag<"ShowcaseState">>()
+    .add_component<Components::Transform2D>(
+      hpbar_left + (hpbar_w * 0.5f),
+      hpbar_top + hpbar_h * 0.5f,
+      0.0f, hpbar_w * 0.5f, hpbar_h)
+    .add_component<Components::Texture>(white_texture)
     .add_component<Components::Color>(0.2f, 1.0f, 0.2f, 1.0f);
 
   // Subscribe to attack events
@@ -339,47 +360,94 @@ void ShowcaseState::update() {
     Engine::EventManager::send_event<CollectEvent>(player.get_id(), banana.get_id(), 1);
   }
 
+  // Player health
+  if (player_hp_fill.is_valid()) {
+    auto* hp = player.get_component<Components::Health>();
+    if (hp) {
 
-  auto* hp = player.get_component<Components::Health>();
-  if (hp) {
-    const f32 dt = Engine::Time::get_fixed_dt();
-    // Rule 1: drain over time
-    f32 net = -hp_drain_per_sec * dt;
+      const f32 dt = Engine::Time::get_fixed_dt();
+      
+      //player health drop condition
+      f32 net = -hp_drain_per_sec * dt;
 
-
-    // Rule 2: heal while moving
-    if (is_walking) {
-      net += hp_heal_while_moving_per_sec * dt;
-    }
-
-    static float hp_carry = 0.0f;
-    hp_carry += net;
-
-    while (hp_carry >= 1.0f) {
-      hp->heal(1);
-      hp_carry -= 1.0f;
-    }
-    while (hp_carry <= -1.0f) {
-      hp->damage(1);
-      hp_carry += 1.0f;
-    }
-
-    // Update UI text
-    if (player_health_text.is_valid() && player_health_text.has_component<Components::Text>()) {
-      auto* text = player_health_text.get_component<Components::Text>();
-      text->content = "Player HP: " + std::to_string(hp->value) + "/" + std::to_string(hp->max);
-    }
-
-    // if player HP is full or 0 -> player dies
-    if (hp->value >= hp->max || hp->value <= 0) {
-      // Stop walk SFX if needed
-      if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
-        Engine::Audio::stop_channel(walk_sound_channel);
-        walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
+      // heal while moving
+      if (is_walking) {
+        net += hp_heal_while_moving_per_sec * dt;
       }
 
-      std::cout << "Player died.\n";
-      player.destroy();
+      static float hp_carry = 0.0f;
+      hp_carry += net;
+
+      //player health affected here
+      while (hp_carry >= 1.0f) {
+        hp->heal(1);
+        hp_carry -= 1.0f;
+      }
+      while (hp_carry <= -1.0f) {
+        hp->damage(1);
+        hp_carry += 1.0f;
+      }
+
+      //player health bar
+
+      // color of health bar (green→red)
+      if (auto* c = player_hp_fill.get_component<Components::Color>()) {
+        const float ratio = (hp->max > 0) ? (static_cast<float>(hp->value) / hp->max) : 0.0f;
+        const float t = std::clamp(ratio, 0.0f, 1.0f);
+        const float w = hpbar_w * std::clamp(ratio, 0.0f, 1.0f);
+
+        if (auto* t = player_hp_fill.get_component<Components::Transform2D>()) {
+          t->scale.x = w;
+          t->scale.y = hpbar_h;
+          t->position.x = hpbar_left + w * 0.5f;
+          t->position.y = hpbar_top + hpbar_h * 0.5f;
+        }
+
+        // Stay GREEN longer
+        const float e = t * t;
+
+        // Blend GREEN -> RED
+        const float red = e;
+        const float green = 1.0f - e;
+
+        c->r = red * 0.9f + 0.1f;
+        c->g = green * 0.9f + 0.1f;
+        c->b = 0.1f;
+        c->a = 1.0f;
+
+        // Pulse when player is approaching full health bar
+        if (t >= 0.80f) {
+          const float time = Engine::Time::get_time(); // seconds
+          const float speed = 6.0f;                     // pulse speed
+          const float s = 0.5f * (std::sin(time * speed) + 1.0f); // 0..1
+
+          // Alpha pulse
+          const float baseA = 0.65f, ampA = 0.35f;
+          c->a = baseA + ampA * s;
+
+          // Subtle brightness glow so pulse is visible even on opaque UI
+          const float glow = 0.90f + 0.10f * s;
+          c->r *= glow; c->g *= glow; c->b *= glow;
+        }
+      }
+
+      // Update UI text
+      if (player_health_text.is_valid() && player_health_text.has_component<Components::Text>()) {
+        auto* text = player_health_text.get_component<Components::Text>();
+        text->content = "Player HP: " + std::to_string(hp->value) + "/" + std::to_string(hp->max);
+      }
+
+      // if player HP is full or 0 -> player dies
+      if (hp->value >= hp->max || hp->value <= 0) {
+        // Stop walk SFX if needed
+        if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
+          Engine::Audio::stop_channel(walk_sound_channel);
+          walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
+        }
+
+        std::cout << "Player died.\n";
+        player.destroy();
+      }
     }
   }
 

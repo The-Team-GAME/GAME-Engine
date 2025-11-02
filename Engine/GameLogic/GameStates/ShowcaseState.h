@@ -50,6 +50,7 @@ private:
   Engine::ECS::Entity enemy;
   Engine::ECS::Entity banana;
   Engine::ECS::Entity background_entity;
+  Engine::ECS::Entity player_hp_bg, player_hp_fill;
 
   // Text entities
   Engine::ECS::Entity title_text;
@@ -65,6 +66,7 @@ private:
   Engine::Graphics::Texture banana_texture;
   Engine::Graphics::Texture enemy_texture;
   Engine::Graphics::Texture background_texture;
+  Engine::Graphics::Texture white_texture;
 
   Engine::Audio::Sound walk_sound;
 
@@ -92,6 +94,7 @@ private:
   f32 hp_drain_per_sec = 5.0f;
   f32 hp_heal_while_moving_per_sec = 8.0f;
   f32 hp_carry = 0.0f;
+  f32 hpbar_left = 50.0f, hpbar_top = 320.0f, hpbar_w = 220.0f, hpbar_h = 18.0f;
 
 public:
   void load();
