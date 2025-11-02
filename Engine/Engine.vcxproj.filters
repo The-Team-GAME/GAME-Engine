@@ -1,382 +1,140 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
+    <ClCompile Include="Engine\Systems\CollisionSystem.cpp" />
+    <ClCompile Include="Engine\Audio\AudioPlayer.cpp" />
+    <ClCompile Include="Engine\Audio\AudioPlayerInternal.cpp" />
+    <ClCompile Include="Engine\Systems\PhysicsSystem.cpp" />
+    <ClCompile Include="Engine\ECS\Prefab.cpp" />
+    <ClCompile Include="Engine\ECS\WorldData.cpp" />
+    <ClCompile Include="Engine\EventManager\EventManager.cpp" />
+    <ClCompile Include="Engine\FileIO\PrefabsFileIO.cpp" />
+    <ClCompile Include="Engine\GUI\EntityEditorPanel.cpp" />
+    <ClCompile Include="Engine\GUI\TilemapPanel.cpp" />
+    <ClCompile Include="Engine\GUI\ResourcePicker.cpp" />
+    <ClCompile Include="Engine\GUI\widgets\TextureAtlasWidget.cpp" />
+    <ClCompile Include="GameLogic\GameStates\BasicState.cpp" />
+    <ClCompile Include="GameLogic\GameStates\BasicState.h" />
+    <ClCompile Include="Engine\Core.cpp" />
+    <ClCompile Include="Engine\ECS\ComponentManager.cpp" />
+    <ClCompile Include="Engine\ECS\Entity.cpp" />
+    <ClCompile Include="Engine\ECS\System.cpp" />
+    <ClCompile Include="Engine\ECS\World.cpp" />
+    <ClCompile Include="Engine\Graphics\Renderer.cpp" />
+    <ClCompile Include="Engine\Graphics\RendererInternal.cpp" />
+    <ClCompile Include="Engine\Resources.cpp" />
+    <ClCompile Include="Engine\Graphics\Shader.cpp" />
+    <ClCompile Include="Engine\ImGuiManager.cpp" />
+    <ClCompile Include="Engine\InputManager.cpp" />
+    <ClCompile Include="Engine\Logger.cpp" />
+    <ClCompile Include="Engine\FileHandler.cpp" />
+    <ClCompile Include="Engine\Perf.cpp" />
+    <ClCompile Include="Engine\Precompiled.cpp" />
+    <ClCompile Include="Engine\Time.cpp" />
+    <ClCompile Include="Engine\GUI\Timeline.cpp" />
+    <ClCompile Include="Engine\Math\Vector2D.cpp" />
+    <ClCompile Include="Engine\StateManager.cpp" />
+    <ClCompile Include="Engine\Math\Vector3D.cpp" />
+    <ClCompile Include="Engine\Math\Vector4D.cpp" />
+    <ClCompile Include="Engine\WindowManager.cpp" />
+    <ClCompile Include="GameLogic\GameStates\RectPainterState.cpp" />
+    <ClCompile Include="GameLogic\GameStates\ShowcaseState.cpp" />
+    <ClCompile Include="GameLogic\WinMain.cpp" />
+    <ClCompile Include="Engine\ECS\Types.cpp" />
+    <ClCompile Include="Engine\FileIO\Helpers.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Engine\Audio\AudioPlayer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Audio\AudioPlayerInternal.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLogic\GameStates\BasicState.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLogic\GameStates\BasicState.h">
-      <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Core.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\ECS\ComponentManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\ECS\Entity.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\ECS\System.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\ECS\World.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Renderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\RendererInternal.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Resources.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Shader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\ImGuiManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\InputManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Logger.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\FileHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Perf.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Precompiled.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Time.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\GUI\Timeline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Math\Vector2D.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\StateManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Math\Vector3D.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Math\Vector4D.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\WindowManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLogic\GameStates\RectPainterState.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLogic\GameStates\ShowcaseState.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLogic\WinMain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\ECS\Prefab.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\EventManager\EventManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\ECS\WorldData.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\FileIO\PrefabsFileIO.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Systems\PhysicsSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Systems\CollisionSystem.cpp">
-    <ClCompile Include="Engine\GUI\EntityEditorPanel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\GUI\TilemapPanel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\GUI\ResourcePicker.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClInclude Include="Engine\Systems\CollisionSystem.h" />
+    <ClInclude Include="Engine\Audio\AudioPlayer.h" />
+    <ClInclude Include="Engine\Audio\AudioPlayerInternal.h" />
+    <ClInclude Include="Engine\Components\GraphicsComponents.h" />
+    <ClInclude Include="Engine\Components\PhysicsComponents.h" />
+    <ClInclude Include="Engine\Components\UtilityComponents.h" />
+    <ClInclude Include="Engine\ECS\Macros.h" />
+    <ClInclude Include="Engine\ECS\Prefab.h" />
+    <ClInclude Include="Engine\ECS\WorldData.h" />
+    <ClInclude Include="Engine\EventManager\EventManager.h" />
+    <ClInclude Include="Engine\Events\Events.h" />
+    <ClInclude Include="Engine\Events\InputEvents.h" />
+    <ClInclude Include="Engine\Events\WindowEvents.h" />
+    <ClInclude Include="Engine\FileIO\PrefabsFileIO.h" />
+    <ClInclude Include="Engine\FileIO\SettingsManager.h" />
+    <ClInclude Include="Engine\GUI\ResourceManagerPanel.h" />
+    <ClInclude Include="Engine\GUI\widgets\TextureAtlasWidget.h" />
+    <ClInclude Include="Engine\MonkeyEngine.h" />
+    <ClInclude Include="Engine\Reflection\ReflectionLibrary.h" />
+    <ClInclude Include="Engine\Reflection\ReflectionLibrary\Concepts.h" />
+    <ClInclude Include="Engine\Reflection\ReflectionLibrary\GenericValue.h" />
+    <ClInclude Include="Engine\Reflection\ReflectionLibrary\Helpers.h" />
+    <ClInclude Include="Engine\Reflection\ReflectionLibrary\Json.h" />
+    <ClInclude Include="Engine\Reflection\ReflectionLibrary\Macros.h" />
+    <ClInclude Include="Engine\Reflection\ReflectionLibrary\Print.h" />
+    <ClInclude Include="Engine\Systems\Systems.h" />
+    <ClInclude Include="GameLogic\GameStates\Documentation\LayersAdvancedState.h" />
+    <ClInclude Include="GameLogic\GameStates\Documentation\LayersState.h" />
+    <ClInclude Include="GameLogic\GameStates\Documentation\PrefabsState.h" />
+    <ClInclude Include="GameLogic\GameStates\MainMenuState.h" />
+    <ClInclude Include="GameLogic\Reflection\ImGuiHelpers.h" />
+    <ClInclude Include="Engine\Reflection\JsonHelpers.h" />
+    <ClInclude Include="Engine\GUI\CameraPanel.h" />
+    <ClInclude Include="Engine\GUI\TilemapPanel.h" />
+    <ClInclude Include="Engine\Systems\GraphicsSystem.h" />
+    <ClInclude Include="GameLogic\Components\Components.h" />
+    <ClInclude Include="Engine\Core.h" />
+    <ClInclude Include="GameLogic\GameStates\DevSpriteAnimationState.h" />
+    <ClInclude Include="Engine\Components\Components.h" />
+    <ClInclude Include="Engine\Reflection\Helpers.h" />
+    <ClInclude Include="Engine\Reflection\Reflect.h" />
+    <ClInclude Include="Engine\Resources.h" />
+    <ClInclude Include="Engine\Graphics\Shader.h" />
+    <ClInclude Include="Engine\Graphics\RendererInternal.h" />
+    <ClInclude Include="Engine\ECS\ComponentArray.h" />
+    <ClInclude Include="Engine\ECS\ComponentManager.h" />
+    <ClInclude Include="Engine\ECS\ECS.h" />
+    <ClInclude Include="Engine\ECS\Entity.h" />
+    <ClInclude Include="Engine\ECS\System.h" />
+    <ClInclude Include="Engine\ECS\Types.h" />
+    <ClInclude Include="Engine\ECS\World.h" />
+    <ClInclude Include="Engine\GUI\EntityEditorPanel.h" />
+    <ClInclude Include="Engine\GUI\ResourcePicker.h" />
+    <ClInclude Include="Engine\ImGuiManager.h" />
+    <ClInclude Include="Engine\InputManager.h" />
+    <ClInclude Include="Engine\Logger.h" />
+    <ClInclude Include="Engine\Perf.h" />
+    <ClInclude Include="Engine\GUI\PerformanceViewer.h" />
+    <ClInclude Include="Engine\Precompiled.h" />
+    <ClInclude Include="Engine\Graphics\Renderer.h" />
+    <ClInclude Include="Engine\Systems\PhysicsSystem.h" />
+    <ClInclude Include="GameLogic\GameStates\RectPainterState.h" />
+    <ClInclude Include="GameLogic\GameStates\Rubric2500ParticlesState.h" />
+    <ClInclude Include="Engine\FileHandler.h" />
+    <ClInclude Include="GameLogic\GameStates\ShowcaseState.h" />
+    <ClInclude Include="Engine\Time.h" />
+    <ClInclude Include="Engine\GUI\Timeline.h" />
+    <ClInclude Include="Engine\Math\Vector2D.h" />
+    <ClInclude Include="GameLogic\GUI\StateChooser.h" />
+    <ClInclude Include="Engine\StateManager.h" />
+    <ClInclude Include="Engine\TypeDef.h" />
+    <ClInclude Include="Engine\Math\Vector3D.h" />
+    <ClInclude Include="Engine\Math\Vector4D.h" />
+    <ClInclude Include="Engine\WindowManager.h" />
+    <ClInclude Include="GameLogic\Systems\HealthSystem.h" />
+    <ClInclude Include="GameLogic\Systems\PlayerControllerSystem.h" />
+    <ClInclude Include="Engine\ECS\SparseSet.h" />
+    <ClInclude Include="Engine\ECS\Reflection.h" />
+    <ClInclude Include="Engine\FileIO\Helpers.h" />
+    <ClInclude Include="Engine\FileIO\Settings.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Engine\Audio\AudioPlayer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Audio\AudioPlayerInternal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Components\GraphicsComponents.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Components\PhysicsComponents.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\GUI\ResourceManagerPanel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\MonkeyEngine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\GUI\CameraPanel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\GUI\TilemapPanel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Systems\GraphicsSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLogic\Components\Components.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Core.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLogic\GameStates\DevSpriteAnimationState.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Components\Components.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Reflection\Helpers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Reflection\Reflect.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Resources.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Shader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\RendererInternal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\ECS\ComponentArray.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\ECS\ComponentManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\ECS\ECS.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\ECS\Entity.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\ECS\System.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\ECS\Types.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\ECS\World.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\GUI\EntityEditorPanel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\GUI\ResourcePicker.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\ImGuiManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\InputManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Logger.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Perf.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\GUI\PerformanceViewer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Precompiled.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Renderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Systems\PhysicsSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLogic\GameStates\RectPainterState.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLogic\GameStates\Rubric2500ParticlesState.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\FileHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLogic\GameStates\ShowcaseState.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Time.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\GUI\Timeline.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Math\Vector2D.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLogic\GUI\StateChooser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\StateManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\TypeDef.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Math\Vector3D.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Math\Vector4D.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\WindowManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLogic\Systems\HealthSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLogic\Systems\PlayerControllerSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Components\UtilityComponents.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Reflection\JsonHelpers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLogic\Reflection\ImGuiHelpers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Systems\Systems.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\ECS\Prefab.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Reflection\ReflectionLibrary.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Reflection\ReflectionLibrary\Concepts.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Reflection\ReflectionLibrary\Helpers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Reflection\ReflectionLibrary\Json.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Reflection\ReflectionLibrary\Macros.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Reflection\ReflectionLibrary\Print.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLogic\GameStates\Documentation\PrefabsState.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\EventManager\EventManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\ECS\Macros.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\ECS\WorldData.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Events\Events.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Events\InputEvents.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Events\WindowEvents.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\FileIO\EngineSettings.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\FileIO\PrefabsFileIO.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\FileIO\SettingsManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\FileIO\UserSettings.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Reflection\ReflectionLibrary\GenericValue.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Systems\CollisionSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Engine\ECS\ComponentArray.inl">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="Engine\ECS\ComponentManager.inl">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="Engine\ECS\Entity.inl">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="Engine\ECS\System.inl">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="Engine\ECS\World.inl">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="Engine\EventManager\EventManager.inl">
-      <Filter>Header Files</Filter>
-    </None>
     <None Include="cpp.hint" />
-    <None Include="Engine\FileIO\SettingsManager.inl">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="Engine\Reflection\ReflectionLibrary\GenericValue.inl">
-      <Filter>Header Files</Filter>
-    </None>
+    <None Include="Engine\ECS\ComponentArray.inl" />
+    <None Include="Engine\ECS\ComponentManager.inl" />
+    <None Include="Engine\ECS\Entity.inl" />
+    <None Include="Engine\ECS\System.inl" />
+    <None Include="Engine\ECS\World.inl" />
+    <None Include="Engine\EventManager\EventManager.inl" />
+    <None Include="Engine\FileIO\SettingsManager.inl" />
+    <None Include="Engine\Reflection\ReflectionLibrary\GenericValue.inl" />
+    <None Include="Engine\ECS\Prefab.inl" />
   </ItemGroup>
 </Project>

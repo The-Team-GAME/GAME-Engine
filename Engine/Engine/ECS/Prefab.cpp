@@ -17,6 +17,7 @@
 #include "World.h"
 #include "WorldData.h"
 #include "ComponentArray.h"
+#include "Reflection.h"
 #include "../Reflection/ReflectionLibrary.h"
 
 namespace Engine {
@@ -40,6 +41,14 @@ namespace Engine {
 
     std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>>& PrefabImpl::get_component_storage() {
       return component_storage;
+    }
+
+    const LayerSignature& PrefabImpl::get_layers() const {
+      return layers;
+    }
+
+    LayerSignature& PrefabImpl::get_layers() {
+      return layers;
     }
 
     void PrefabImpl::for_each_component(std::function<void(const std::string&, IComponentArray*)> callback) {
@@ -80,12 +89,53 @@ namespace Engine {
       }
     }
 
+    Entity Prefab::instantiate() const {
+      return instantiate_prefab(*this);
+    }
+
+    Prefab& Prefab::add_to_layer(const std::string& layer_name) {
+      if (!impl) return *this;
+
+      LayerID layer = get_layer_id(layer_name);
+      if (layer != INVALID_LAYER) {
+        impl->get_layers().set(layer);
+      }
+      return *this;
+    }
+
+    Prefab& Prefab::remove_from_layer(const std::string& layer_name) {
+      if (!impl) return *this;
+
+      LayerID layer = get_layer_id(layer_name);
+      if (layer != INVALID_LAYER) {
+        impl->get_layers().reset(layer);
+      }
+      return *this;
+    }
+
+    Prefab& Prefab::clear_layers() {
+      if (impl) {
+        impl->get_layers().reset();
+      }
+      return *this;
+    }
+
+    LayerSignature Prefab::get_layers() const {
+      if (impl) {
+        return impl->get_layers();
+      }
+      return LayerSignature{};
+    }
+
     // ============================================================================
     // Prefab Factory Functions
     // ============================================================================
 
     Prefab create_prefab() {
-      return Prefab(std::make_shared<PrefabImpl>());
+      auto prefab = Prefab(std::make_shared<PrefabImpl>());
+      // Initialize prefab with default layer
+      prefab.get_impl()->get_layers().set(DEFAULT_LAYER);
+      return prefab;
     }
 
     Entity instantiate_prefab(const Prefab& prefab) {
@@ -102,6 +152,16 @@ namespace Engine {
 
       // Copy signature
       containers.entity_signatures[entity_id] = prefab_impl->get_signature();
+
+      // Copy layers
+      const LayerSignature& prefab_layers = prefab_impl->get_layers();
+      entity.clear_layers();
+      for (LayerID layer = 0; layer < containers.layer_id_to_name.size(); ++layer) {
+        if (prefab_layers.test(layer)) {
+          containers.entity_layers[entity_id].set(layer);
+          Internal::add_entity_to_layer_set(entity_id, layer);
+        }
+      }
 
       // Clone all components from prefab to entity
       for (const auto& [type_id, prefab_array] : prefab_impl->get_component_storage()) {
@@ -147,7 +207,9 @@ namespace Engine {
 
       // Create prefab and populate it from the entity data
       return prefab_from_generic_value(entity_data);
-    }    ReflectionLibrary::GenericValue prefab_to_generic_value(const Prefab& prefab) {
+    }
+
+    ReflectionLibrary::GenericValue prefab_to_generic_value(const Prefab& prefab) {
       if (!prefab.is_valid()) {
         return ReflectionLibrary::GenericValue();
       }
@@ -155,21 +217,14 @@ namespace Engine {
       ReflectionLibrary::GenericValue result;
       result["dataType"] = "Prefab";
 
-      ReflectionLibrary::Array components_array;
+      auto prefab_impl = prefab.get_impl();
 
-      prefab.for_each_component([&](const std::string& type_name, IComponentArray* array) {
-        if (!array->is_reflectable()) {
-          return;
-        }
-
-        ReflectionLibrary::GenericValue component_entry;
-        component_entry["type"] = type_name;
-        component_entry["data"] = array->to_generic_value(0); // Using dummy entity ID 0
-
-        components_array.push_back(component_entry);
-        });
-
-      result["components"] = components_array;
+      // Serialize layers and components using helper functions
+      result["layers"] = Serialization::serialize_layers(prefab_impl->get_layers());
+      result["components"] = Serialization::serialize_components(
+        [&prefab](auto callback) { prefab.for_each_component(callback); },
+        0 // Using dummy entity ID 0 for prefabs
+      );
 
       return result;
     }
@@ -182,40 +237,21 @@ namespace Engine {
       Prefab prefab = create_prefab();
       auto prefab_impl = prefab.get_impl();
 
-      const auto& components_array = value["components"].getArray();
-      auto& containers = Internal::get_containers();
+      // Deserialize layers using helper function
+      LayerSignature& prefab_layers = prefab_impl->get_layers();
+      prefab_layers = Serialization::deserialize_layers(value);
 
-      // Get mutable access to prefab storage and signature
+      // Deserialize components using helper function
+      const auto& components_array = value["components"].getArray();
       auto& prefab_storage = prefab_impl->get_component_storage();
       auto& prefab_signature = prefab_impl->get_signature();
 
-      // Iterate through each component in the JSON
-      for (const auto& component_entry : components_array) {
-        if (!component_entry.isObject() || !component_entry.has("type") || !component_entry.has("data")) {
-          continue;
-        }
-
-        const std::string& component_type = component_entry["type"].getString();
-        const auto& component_data = component_entry["data"];
-
-        // Find matching component array type in world
-        for (auto& [type_id, world_array] : containers.component_arrays) {
-          if (world_array->get_type_name() == component_type) {
-            // Create a new empty component array for the prefab
-            if (prefab_storage.find(type_id) == prefab_storage.end()) {
-              prefab_storage[type_id] = world_array->create_empty();
-            }
-
-            // Add component to prefab's storage using dummy entity ID 0
-            prefab_storage[type_id]->add_component_from_generic_value(0, component_data);
-
-            // Update prefab's signature
-            prefab_signature.set(type_id);
-
-            break;
-          }
-        }
-      }
+      Serialization::deserialize_components_to_storage(
+        components_array,
+        prefab_storage,
+        prefab_signature,
+        0 // Using dummy entity ID 0 for prefabs
+      );
 
       return prefab;
     }

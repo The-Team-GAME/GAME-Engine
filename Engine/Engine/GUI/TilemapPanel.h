@@ -19,6 +19,17 @@
 #include <string>
 
 namespace TilemapPanel {
+
+  /*=================================================================================
+  Function Brief:
+  Initializes the tilemap panel by loading saved tilemaps from project settings.
+  Must be called once during engine initialization before using the panel.
+
+  Where to call it:
+  Called during engine initialization after project settings have been loaded.
+  ==================================================================================*/
+  void init();
+
   /*=================================================================================
   Function Brief:
   Renders the ImGui panel UI for the tilemap editor. Displays texture atlas

@@ -18,12 +18,13 @@
 #include <fstream>
 #include "../Logger.h"
 #include <filesystem>
+#include "../Reflection/ReflectionLibrary.h"
 
 namespace Engine {
   namespace FileIO {
 
     template<typename T>
-    bool SettingsManager<T>::load(const std::string& file_path)
+    bool SettingsManager<T>::load_impl(const std::string& file_path)
     {
       std::ifstream file(file_path);
 
@@ -31,8 +32,8 @@ namespace Engine {
       {
         Log::info("Settings file not found, creating: " + file_path);
 
-        settings = T{};
-        if (!save(file_path))
+        settings_ = T{};
+        if (!save_impl(file_path))
         {
           Log::warning("Failed to create default settings file: " + file_path);
         }
@@ -51,6 +52,24 @@ namespace Engine {
       ReflectionLibrary::GenericValue loaded_settings = loaded_settings_opt_value.value();
       ReflectionLibrary::GenericValue default_settings = ReflectionLibrary::to_generic_value(T{});
 
+      // Ensure both loaded_settings and default_settings are objects
+      if (!default_settings.isObject())
+      {
+        Log::error("Failed to convert default settings to object, are you sure " + std::string(typeid(T).name()) + " is reflectable?");
+        return false;
+      }
+
+      if (!loaded_settings.isObject())
+      {
+        Log::warning("Loaded settings is not an object, using defaults");
+        settings_ = T{};
+        if (!save_impl(file_path))
+        {
+          Log::warning("Failed to save default settings to file: " + file_path);
+        }
+        return true;
+      }
+
       bool has_missing = false;
       for (const auto& [key, default_value] : default_settings.getObject())
       {
@@ -66,7 +85,7 @@ namespace Engine {
 
       if (has_missing)
       {
-        if (!save(file_path))
+        if (!save_impl(file_path))
         {
           Log::warning("Failed to save updated settings to file: " + file_path);
         }
@@ -80,12 +99,12 @@ namespace Engine {
         return false;
       }
 
-      settings = loaded_settings_opt.value();
+      settings_ = loaded_settings_opt.value();
       return true;
     }
 
     template<typename T>
-    bool SettingsManager<T>::save(const std::string& file_path)
+    bool SettingsManager<T>::save_impl(const std::string& file_path)
     {
       // Extract directory path
       size_t last_slash = file_path.find_last_of("/\\");
@@ -115,9 +134,53 @@ namespace Engine {
         Log::error("Failed to open settings file for writing: " + file_path);
         return false;
       }
-      std::string json_str = ReflectionLibrary::to_json(settings, true);
+      std::string json_str = ReflectionLibrary::to_json(settings_, true);
       file << json_str;
       return true;
+    }
+
+    template<typename T>
+    bool SettingsManager<T>::load(const std::string& file_path)
+    {
+      file_path_ = file_path;
+      return load_impl(file_path);
+    }
+
+    template<typename T>
+    bool SettingsManager<T>::save(const std::string& file_path)
+    {
+      std::string path = file_path.empty() ? file_path_ : file_path;
+
+      if (path.empty())
+      {
+        Log::error("No file path specified for saving settings");
+        return false;
+      }
+
+      if (!file_path.empty())
+      {
+        file_path_ = file_path;
+      }
+
+      return save_impl(path);
+    }
+
+    template<typename T>
+    const T& SettingsManager<T>::get()
+    {
+      return settings_;
+    }
+
+    template<typename T>
+    T& SettingsManager<T>::get_mutable()
+    {
+      return settings_;
+    }
+
+    template<typename T>
+    void SettingsManager<T>::reset()
+    {
+      settings_ = T{};
     }
 
   }
