@@ -68,15 +68,12 @@ namespace Engine
       Log::warning("Failed to load local settings, using defaults");
     }
 
-    // Load project settings
-    if (!Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::load("Assets/settings/project_settings.json")) {
-      Log::warning("Failed to load project settings, using defaults");
-    }
+    // Project settings will be loaded below
+
 
     const auto& engine_settings = Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get();
     const auto& user_settings = Engine::FileIO::SettingsManager<Engine::FileIO::UserSettings>::get();
     const auto& local_settings = Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::get();
-    // const auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get();
 
 
     WindowManager::init(user_settings.window_width, user_settings.window_height, engine_settings.window_title);
@@ -121,6 +118,11 @@ namespace Engine
     );
 
     StateManager::init(initialState);
+
+    // Load project settings
+    if (!Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::load("Assets/settings/project_settings.json")) {
+      Log::warning("Failed to load project settings, using defaults");
+    }
 
     // CORE INITIALIZATION
     register_engine_systems();
