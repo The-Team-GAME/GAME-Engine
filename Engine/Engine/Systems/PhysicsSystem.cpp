@@ -53,6 +53,10 @@ void phy2D::update()
     Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     rigid->on_ground = false;
+    if (box->detect_collisions == false)
+    {
+      continue;
+    }
     for (ECS::EntityID entity_id2 : entities)
     {
       if (entity_id == entity_id2)
@@ -123,6 +127,7 @@ void phy2D::update()
   }
   Engine::Perf::stop("Physics Update");
 }
+
 void phy2D::update_entity(Engine::ECS::Entity& entity){
   Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
   Components::RigidBody* rigid    = entity.get_component<Components::RigidBody>();
@@ -135,18 +140,6 @@ void phy2D::update_entity(Engine::ECS::Entity& entity){
   col2D::update_AABB(*rigid, *box);
   //std::cout << "velocity: " << rigid->velocity << " || position: " << rigid->curr_pos << std::endl;
 }
-
-
-// i leave this here first
-/*void update_entity(Engine::ECS::Entity& entity) override {
-  auto* transform = entity.get_component<Components::Transform2D>();
-  auto* rigid = entity.get_component<Components::RigidBody>();
-
-  transform->rotation += rigid->angular_velocity * Engine::Time::get_fixed_dt();
-
-  transform->position.x += rigid->linear_velocity.x * Engine::Time::get_fixed_dt();
-  transform->position.y += rigid->linear_velocity.y * Engine::Time::get_fixed_dt();
-}*/
 
 void phy2D::update_kinematics(Components::RigidBody& rigid)
 {
@@ -166,6 +159,7 @@ void phy2D::update_kinematics(Components::RigidBody& rigid)
   // acceleration will contain a value if the entity is affected by gravity
   rigid.acceleration = rigid.force / rigid.mass + rigid.gravity_acc;
   // V = a x dt => Velocity equals acceleration x delta time
+  // i increased friction for the x axis to test cuz we not sure if we want to do it like this
   Vec2D prev_velocity = Vec2D(rigid.velocity.x* 0.85f, rigid.velocity.y * rigid.friction);
   rigid.velocity = prev_velocity + rigid.acceleration * Time::get_fixed_dt();
 

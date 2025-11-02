@@ -7,11 +7,11 @@ using phy2D = Systems::Physics2DSystem;
 
 namespace {
   bool jumping = false;
+  Engine::ECS::Entity player;
 }
 class PhysicsTestState : public Engine::GameState<PhysicsTestState> {
 private:
   Engine::ECS::Entity prefab_instance;
-  Engine::ECS::Entity player;
 
 public:
   void load() {
