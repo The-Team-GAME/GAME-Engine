@@ -391,10 +391,32 @@ namespace TilemapPanel {
             temp_atlas.drawIndex = -1; // No tile selected in this atlas
           }
 
+          // Calculate rows and cols from UV coordinates
+          int cols = 1;
+          int rows = 1;
+
+          if (!entry.atlas.subTextures.empty()) {
+            // Get the first tile's UV width to determine column count
+            const auto& first_coords = entry.atlas.subTextures[0].tex_coords;
+            float tile_uv_width = std::abs(first_coords[1].x - first_coords[0].x);
+            float tile_uv_height = std::abs(first_coords[0].y - first_coords[3].y);
+
+            if (tile_uv_width > 0.0f) {
+              cols = static_cast<int>(std::round(1.0f / tile_uv_width));
+            }
+            if (tile_uv_height > 0.0f) {
+              rows = static_cast<int>(std::round(1.0f / tile_uv_height));
+            }
+          }
+
+          // Calculate preview height to make tiles uniform size (64x64)
+          const float desired_tile_size = 64.0f;
+          float preview_height = desired_tile_size * rows;
+
           ImGuiWidgets::TextureAtlasPreview(
             temp_texture,
             temp_atlas,
-            80.0f,
+            preview_height,
             [i](size_t tile_idx) {
               selected_atlas_index = i;
               selected_tile_index = static_cast<int>(tile_idx);
