@@ -2,6 +2,7 @@
 
 #include "GraphicsSystem.h"
 #include "PhysicsSystem.h"
+#include "ParticleSystem.h"
 
 void register_engine_systems()
 {
@@ -13,6 +14,7 @@ void register_engine_systems()
   Engine::ECS::add_system<Engine::Systems::StaticSpriteRenderSystem>();
   Engine::ECS::add_system<Engine::Systems::AtlasSpriteRenderSystem>();
   Engine::ECS::add_system<Engine::Systems::TextRenderSystem>();
+  Engine::ECS::add_system<Engine::Systems::ParticleSystem>();
 }
 
 void unregister_engine_systems()
@@ -24,4 +26,5 @@ void unregister_engine_systems()
 
   Engine::ECS::remove_system<Engine::Systems::AnimationUpdateSystem>();
   Engine::ECS::remove_system<Engine::Systems::Physics2DSystem>();
+  Engine::ECS::remove_system<Engine::Systems::ParticleSystem>();
 }
