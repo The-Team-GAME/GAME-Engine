@@ -30,7 +30,7 @@ namespace TilemapPanel {
   namespace {
 
 
-    std::vector<Components::AtlasEntry> submitted_atlases;
+    std::vector<Components::AtlasEntry> loaded_tilemaps;
     int selected_atlas_index = -1;
     int selected_tile_index = 0;
 
@@ -138,11 +138,11 @@ namespace TilemapPanel {
 
   void place_tile_at_position(const Math::Vec2D& world_pos) {
     // Check if we have a valid atlas selected
-    if (selected_atlas_index < 0 || selected_atlas_index >= static_cast<int>(submitted_atlases.size())) {
+    if (selected_atlas_index < 0 || selected_atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
       return;
     }
 
-    const Components::AtlasEntry& atlas_entry = submitted_atlases[selected_atlas_index];
+    const Components::AtlasEntry& atlas_entry = loaded_tilemaps[selected_atlas_index];
 
     if (!atlas_entry.texture.texture_handle ||
       atlas_entry.atlas.subTextures.empty() ||
@@ -320,7 +320,7 @@ namespace TilemapPanel {
                 entry.texture = preview_texture;
                 entry.atlas = preview_atlas;
                 entry.name = std::string(atlas_name);
-                submitted_atlases.push_back(entry);
+                loaded_tilemaps.push_back(entry);
 
                 // Clear the name field
                 atlas_name[0] = '\0';
@@ -342,7 +342,7 @@ namespace TilemapPanel {
     ImGui::Separator();
 
     // === TILE SELECTION ===
-    if (!submitted_atlases.empty()) {
+    if (!loaded_tilemaps.empty()) {
       if (ImGui::CollapsingHeader("Tile Selection", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::Indent();
 
@@ -350,8 +350,8 @@ namespace TilemapPanel {
         ImGui::Separator();
 
         // Display all submitted atlases
-        for (int i = 0; i < static_cast<int>(submitted_atlases.size()); ++i) {
-          const Components::AtlasEntry& entry = submitted_atlases[i];
+        for (int i = 0; i < static_cast<int>(loaded_tilemaps.size()); ++i) {
+          const Components::AtlasEntry& entry = loaded_tilemaps[i];
 
           ImGui::PushID(i);
 
@@ -385,9 +385,9 @@ namespace TilemapPanel {
 
           // Remove button
           if (ImGui::Button("Remove Atlas", ImVec2(-1, 0))) {
-            submitted_atlases.erase(submitted_atlases.begin() + i);
-            if (selected_atlas_index >= static_cast<int>(submitted_atlases.size())) {
-              selected_atlas_index = static_cast<int>(submitted_atlases.size()) - 1;
+            loaded_tilemaps.erase(loaded_tilemaps.begin() + i);
+            if (selected_atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
+              selected_atlas_index = static_cast<int>(loaded_tilemaps.size()) - 1;
             }
           }
 
