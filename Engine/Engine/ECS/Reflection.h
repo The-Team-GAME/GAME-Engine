@@ -19,6 +19,7 @@
 #include "ComponentArray.h"
 #include "WorldData.h"
 #include "../Reflection/ReflectionLibrary.h"
+#include "../Logger.h"
 #include <unordered_map>
 #include <memory>
 
@@ -144,9 +145,15 @@ namespace Engine {
           const std::string& component_type = component_entry["type"].getString();
           const auto& component_data = component_entry["data"];
 
+          if (component_data.isNull()) {
+            Log::warning("Deserializing component '" + component_type + "' with null data.");
+          }
+
           // Find matching component array type in world
+          bool found = false;
           for (auto& [type_id, world_array] : containers.component_arrays) {
             if (world_array->get_type_name() == component_type) {
+              found = true;
               // Create storage if it doesn't exist
               if (storage.find(type_id) == storage.end()) {
                 storage[type_id] = world_array->create_empty();
@@ -161,6 +168,11 @@ namespace Engine {
               break;
             }
           }
+
+          if (!found) {
+            Log::warning("No registered component type found for '" + component_type + "' during deserialization.");
+          }
+
         }
       }
 
