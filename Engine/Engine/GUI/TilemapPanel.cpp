@@ -524,7 +524,13 @@ namespace TilemapPanel {
             }
 
             auto prefab_array_json = ReflectionLibrary::generic_value_to_json(prefab_array, true);
-            Engine::FileIO::write_string_to_file(tilemap_filename, prefab_array_json);
+
+            // Ensure the Assets/tilemap directory exists and prepend path if needed
+            std::string filepath = tilemap_filename;
+            if (filepath.find("Assets/tilemap/") != 0) {
+              filepath = "Assets/tilemap/" + filepath;
+            }
+            Engine::FileIO::write_string_to_file(filepath, prefab_array_json);
 
             show_save_as_popup = false;
             ImGui::CloseCurrentPopup();
@@ -557,8 +563,12 @@ namespace TilemapPanel {
 
         if (ImGui::Button("Load", ImVec2(120, 0))) {
           if (strlen(tilemap_filename) > 0) {
-            // Read from file
-            std::optional<std::string> prefab_array_json_opt = Engine::FileIO::read_string_from_file(tilemap_filename);
+            // Read from file - ensure Assets/tilemap/ prefix
+            std::string filepath = tilemap_filename;
+            if (filepath.find("Assets/tilemap/") != 0) {
+              filepath = "Assets/tilemap/" + filepath;
+            }
+            std::optional<std::string> prefab_array_json_opt = Engine::FileIO::read_string_from_file(filepath);
 
             if (prefab_array_json_opt.has_value()) {
               std::string prefab_array_json = prefab_array_json_opt.value();
