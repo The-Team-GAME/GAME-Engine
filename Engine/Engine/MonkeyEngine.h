@@ -24,3 +24,4 @@
 #include "ImGuiManager.h"
 #include "EventManager/EventManager.h"
 #include "FileIO/PrefabsFileIO.h"
+#include "Lua/LuaManager.h"

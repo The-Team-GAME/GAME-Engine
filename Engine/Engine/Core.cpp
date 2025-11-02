@@ -26,6 +26,7 @@
 #include "InputManager.h"
 #include "Audio/AudioPlayer.h"
 #include "Audio/AudioPlayerInternal.h"
+#include "Lua/LuaManager.h"
 #include "Resources.h"
 #include "ECS/ECS.h"
 #include "Events/WindowEvents.h"
@@ -57,6 +58,11 @@ namespace Engine
     // Load engine settings
     if (!FileIO::load_engine_settings("Assets/settings/engine_settings.json")) {
       Log::warning("Failed to load engine settings, using defaults");
+    }
+
+    // Load user settings
+    if (!FileIO::load_user_settings("Assets/settings/user_settings.json")) {
+      Log::warning("Failed to load user settings, using defaults");
     }
 
     // Load user settings
@@ -96,6 +102,10 @@ namespace Engine
       throw std::runtime_error("Failed to initialize audio manager");
     }
 
+    if (!Engine::LuaManager::init()) {
+      throw std::runtime_error("Failed to initialize Lua manager");
+    }
+
     Engine::Graphics::set_viewport({ 0, 0, user_settings.window_width, user_settings.window_height });
 
     // Register the graphics resize system 
@@ -115,6 +125,21 @@ namespace Engine
         }
       }
     );
+
+
+// Just register one simple function
+Engine::LuaManager::register_function("log_message", [](const std::string& message) {
+  std::cout << "[Lua] " << message << std::endl;
+});
+
+// Set basic globals
+Engine::LuaManager::set_global("GAME_VERSION", "1.0.0");
+Engine::LuaManager::set_global("ENGINE_NAME", "Monkey Engine");  
+Engine::LuaManager::set_global("MAX_ENTITIES", 1000);
+
+// Load the script
+Engine::LuaManager::load_script("Assets/scripts/player_logic.lua");
+    
 
     StateManager::init(initialState);
   }
@@ -199,6 +224,8 @@ namespace Engine
         if (shouldRunPhysics)
         {
           // Main gameloop here
+
+         
           StateManager::get_current_state()->update();
           Engine::ECS::update();
         }
@@ -241,6 +268,8 @@ namespace Engine
     Engine::Audio::exit();
     Engine::Resources::exit();
     Engine::Graphics::exit();
+
+    Engine::LuaManager::cleanup();
     ImGuiManager::exit();
     WindowManager::exit();
   }
