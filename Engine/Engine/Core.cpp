@@ -117,6 +117,10 @@ namespace Engine
     );
 
     StateManager::init(initialState);
+
+    // CORE INITIALIZATION
+    register_engine_systems();
+    register_all_panels();
   }
 
   /*=================================================================================
@@ -130,11 +134,6 @@ namespace Engine
   ==================================================================================*/
   void Core::run()
   {
-    // CORE INITIALIZATION
-    register_engine_systems();
-    register_all_panels();
-
-
     while (!glfwWindowShouldClose(WindowManager::get_window()) && isRunning)
     {
       // START OF TIME UPDATES ==============================================
