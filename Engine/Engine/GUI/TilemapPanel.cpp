@@ -238,6 +238,9 @@ namespace TilemapPanel {
         delete_tile_at_position(grid_pos);
       }
     }
+
+    // Update tile colors based on selected layer
+    darken_non_selected_layer_tiles();
   }
 
   void draw_panel() {
@@ -801,26 +804,6 @@ namespace TilemapPanel {
       float start_x = std::floor((visible_left - grid_offset.x) / grid_size) * grid_size + grid_offset.x;
       float start_y = std::floor((visible_top - grid_offset.y) / grid_size) * grid_size + grid_offset.y;
 
-      // Darken tiles on non-selected layers
-      auto all_entities = Engine::ECS::get_all_entities();
-      for (auto& entity : all_entities) {
-        if (entity.has_component<Components::Tile>()) {
-          // Check if entity is not on the selected layer
-          if (!entity.is_on_layer(selected_layer)) {
-            auto* transform = entity.get_component<Components::Transform2D>();
-            if (transform) {
-              // Draw a semi-transparent dark overlay on this tile
-              Engine::Graphics::draw_rect(
-                transform->position,
-                transform->scale,
-                transform->rotation,
-                Math::Vec4D{ 0.0f, 0.0f, 0.0f, 0.5f } // Dark overlay
-              );
-            }
-          }
-        }
-      }
-
       // Draw vertical lines
       for (float x = start_x; x <= visible_right; x += grid_size) {
         Engine::Graphics::draw_line(
@@ -856,6 +839,53 @@ namespace TilemapPanel {
           0.0f,
           highlight_color
         );
+      }
+    }
+  }
+
+  void darken_non_selected_layer_tiles() {
+    // Only darken when show_grid is enabled
+    if (!show_grid) {
+      // Reset all tiles to full brightness when grid is hidden
+      for (auto& entity : Engine::ECS::get_entities_with<Components::Tile>()) {
+        auto* color = entity.get_component<Components::Color>();
+        if (!color) continue;
+
+        color->r = 1.0f;
+        color->g = 1.0f;
+        color->b = 1.0f;
+        color->a = 1.0f;
+      }
+      return;
+    }
+
+    // Get the selected layer ID
+    Engine::ECS::LayerID selected_layer_id = Engine::ECS::get_layer_id(selected_layer);
+    if (selected_layer_id == Engine::ECS::INVALID_LAYER) {
+      return;
+    }
+
+    // Iterate through all tile entities
+    for (auto& entity : Engine::ECS::get_entities_with<Components::Tile>()) {
+      auto* color = entity.get_component<Components::Color>();
+      if (!color) continue;
+
+      // Check if entity is on the selected layer
+      bool on_selected_layer = entity.is_on_layer(selected_layer_id);
+
+      if (on_selected_layer) {
+        // Reset to full brightness for tiles on selected layer
+        color->r = 1.0f;
+        color->g = 1.0f;
+        color->b = 1.0f;
+        color->a = 1.0f;
+      }
+      else {
+        // Darken tiles on other layers
+        color->r = 0.3f;
+        color->g = 0.3f;
+        color->b = 0.3f;
+        color->a = 1.0f;
       }
     }
   }

@@ -143,4 +143,14 @@ namespace TilemapPanel {
   Called when painting mode is enabled and the user clicks in the world.
   ==================================================================================*/
   void place_tile_at_position(const Math::Vec2D& world_pos);
+
+  /*=================================================================================
+  Function Brief:
+  Darkens tiles that are not on the currently selected layer. This provides visual
+  feedback about which layer is active during painting/erasing operations.
+
+  Where to call it:
+  Called internally during update() when painting or erasing mode is enabled.
+  ==================================================================================*/
+  void darken_non_selected_layer_tiles();
 }
