@@ -43,7 +43,7 @@ namespace TilemapPanel {
     int atlas_cols = 1;
 
     // Painting state
-    bool show_grid = false;
+    bool enable_tilemap_mode = false;
     bool painting_enabled = false;
     bool erasing_enabled = false;
     float grid_snap = 64.0f;
@@ -226,7 +226,8 @@ namespace TilemapPanel {
 
   void update() {
     // === HANDLE PAINTING IN WORLD ===
-    if (!ImGui::GetIO().WantCaptureMouse) {
+    // Only allow painting/erasing when tilemap mode is enabled
+    if (enable_tilemap_mode && !ImGui::GetIO().WantCaptureMouse) {
       if (painting_enabled && Engine::Input::is_held(Engine::KeyCode::MouseLeft)) {
         Math::Vec2D world_pos = Engine::Input::get_mouse_world_position();
         place_tile_at_position(world_pos);
@@ -239,14 +240,40 @@ namespace TilemapPanel {
       }
     }
 
-    // Update tile colors based on selected layer
-    darken_non_selected_layer_tiles();
+    // Update tile colors based on selected layer (only when tilemap mode is enabled)
+    if (enable_tilemap_mode) {
+      darken_non_selected_layer_tiles();
+    }
+    else {
+      // Reset all tiles to full brightness when tilemap mode is disabled
+      for (auto& entity : Engine::ECS::get_entities_with<Components::Tile>()) {
+        auto* color = entity.get_component<Components::Color>();
+        if (!color) continue;
+
+        color->r = 1.0f;
+        color->g = 1.0f;
+        color->b = 1.0f;
+        color->a = 1.0f;
+      }
+    }
   }
 
   void draw_panel() {
     ImGui::Begin("Tilemap Editor");
 
     ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "Tilemap Painting");
+    ImGui::Separator();
+
+    // === TILEMAP MODE TOGGLE ===
+    ImGui::Checkbox("Enable Tilemap Mode", &enable_tilemap_mode);
+    ImGui::SameLine();
+    ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(Toggle grid & editing)");
+
+    if (!enable_tilemap_mode) {
+      ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+      ImGui::BeginDisabled();
+    }
+
     ImGui::Separator();
 
     // === TEXTURE ATLAS SELECTION ===
@@ -400,9 +427,6 @@ namespace TilemapPanel {
 
       ImGui::Separator();
 
-      // Grid controls
-      ImGui::Checkbox("Show Grid", &show_grid);
-
       // Tile size with change detection
       if (ImGui::DragFloat("Tile Size", &grid_snap, 1.0f, 1.0f, 256.0f, "%.1f")) {
         if (grid_snap != prev_grid_snap) {
@@ -507,7 +531,7 @@ namespace TilemapPanel {
     ImGui::Separator();
 
     // === SAVE/LOAD ===
-    if (ImGui::CollapsingHeader("Save/Load")) {
+    if (ImGui::CollapsingHeader("Save/Load"), ImGuiTreeNodeFlags_DefaultOpen) {
       ImGui::Indent();
 
       // Display current filename
@@ -782,12 +806,18 @@ namespace TilemapPanel {
       ImGui::Unindent();
     }
 
+    if (!enable_tilemap_mode) {
+      ImGui::EndDisabled();
+      ImGui::PopStyleVar();
+    }
+
     ImGui::End();
   }
 
   void draw_overlay() {
     // === DRAW GRID OVERLAY ===
-    if (show_grid) {
+    // Only draw grid when tilemap mode is enabled
+    if (enable_tilemap_mode) {
       Math::Vec2D virtual_res = Engine::Graphics::get_virtual_resolution();
       Engine::Graphics::Camera camera = Engine::Graphics::get_camera();
 
@@ -844,9 +874,9 @@ namespace TilemapPanel {
   }
 
   void darken_non_selected_layer_tiles() {
-    // Only darken when show_grid is enabled
-    if (!show_grid) {
-      // Reset all tiles to full brightness when grid is hidden
+    // Only darken when tilemap mode is enabled
+    if (!enable_tilemap_mode) {
+      // Reset all tiles to full brightness when tilemap mode is disabled
       for (auto& entity : Engine::ECS::get_entities_with<Components::Tile>()) {
         auto* color = entity.get_component<Components::Color>();
         if (!color) continue;
