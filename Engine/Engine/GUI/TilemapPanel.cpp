@@ -54,8 +54,8 @@ namespace TilemapPanel {
     // Layer selection
     std::string selected_layer = "default";
 
-    // Track placed tiles to prevent duplicates
-    std::unordered_set<std::string> placed_tiles;
+    // Track placed tiles to prevent duplicates (per layer)
+    std::unordered_map<std::string, std::unordered_set<std::string>> placed_tiles_per_layer;
 
     // Save/Load state
     char tilemap_filename[256] = "tilemap_save.json";
@@ -112,13 +112,13 @@ namespace TilemapPanel {
     for (auto& entity : all_entities) {
       if (entity.has_component<Components::Tile>()) {
         auto* transform = entity.get_component<Components::Transform2D>();
-        if (transform) {
+        if (transform && entity.is_on_layer(selected_layer)) {
           Math::Vec2D entity_grid_pos = snap_to_grid(transform->position);
           std::string entity_key = get_position_key(entity_grid_pos);
 
           if (entity_key == pos_key) {
             entity.destroy();
-            placed_tiles.erase(pos_key);
+            placed_tiles_per_layer[selected_layer].erase(pos_key);
             break;
           }
         }
@@ -129,7 +129,7 @@ namespace TilemapPanel {
   void update_all_tile_dimensions() {
     auto all_entities = Engine::ECS::get_all_entities();
 
-    placed_tiles.clear();
+    placed_tiles_per_layer.clear();
 
     for (auto& entity : all_entities) {
       if (entity.has_component<Components::Tile>()) {
@@ -140,7 +140,17 @@ namespace TilemapPanel {
           transform->scale = Math::Vec2D{ grid_snap, grid_snap };
 
           std::string pos_key = get_position_key(new_pos);
-          placed_tiles.insert(pos_key);
+
+          // Track this tile for each layer it's on
+          auto layers = entity.get_layers();
+          for (Engine::ECS::LayerID layer_id = 0; layer_id < Engine::ECS::MAX_LAYERS; ++layer_id) {
+            if (layers.test(layer_id)) {
+              std::string layer_name = Engine::ECS::get_layer_name(layer_id);
+              if (!layer_name.empty()) {
+                placed_tiles_per_layer[layer_name].insert(pos_key);
+              }
+            }
+          }
         }
       }
     }
@@ -164,13 +174,16 @@ namespace TilemapPanel {
     Math::Vec2D grid_pos = snap_to_grid(world_pos);
     std::string pos_key = get_position_key(grid_pos);
 
-    // If a tile already exists at this position, delete it first (overwrite behavior)
+    // Get the placed tiles set for the current layer
+    auto& placed_tiles = placed_tiles_per_layer[selected_layer];
+
+    // If a tile already exists at this position on this layer, delete it first (overwrite behavior)
     if (placed_tiles.find(pos_key) != placed_tiles.end()) {
       // Find and destroy the existing tile entity 
       for (auto& entity : Engine::ECS::get_entities_with<Components::Tile>()) {
         // TODO: This is very inefficient, implement hashing for Transform2D so we dont have to loop all entities 
         auto* transform = entity.get_component<Components::Transform2D>();
-        if (transform) {
+        if (transform && entity.is_on_layer(selected_layer)) {
           Math::Vec2D entity_grid_pos = snap_to_grid(transform->position);
           std::string entity_key = get_position_key(entity_grid_pos);
 
@@ -434,7 +447,7 @@ namespace TilemapPanel {
               entity.destroy();
             }
           }
-          placed_tiles.clear();
+          placed_tiles_per_layer.clear();
           ImGui::CloseCurrentPopup();
         }
 
@@ -592,7 +605,7 @@ namespace TilemapPanel {
                     entity.destroy();
                   }
                 }
-                placed_tiles.clear();
+                placed_tiles_per_layer.clear();
 
                 // Deserialize each prefab and instantiate entity
                 const auto& prefab_array = prefab_array_gen.getArray();
@@ -732,7 +745,12 @@ namespace TilemapPanel {
     if (ImGui::CollapsingHeader("Statistics", ImGuiTreeNodeFlags_DefaultOpen)) {
       ImGui::Indent();
 
-      ImGui::Text("Placed tiles: %zu", placed_tiles.size());
+      size_t total_tiles = 0;
+      for (const auto& [layer, tiles] : placed_tiles_per_layer) {
+        total_tiles += tiles.size();
+      }
+      ImGui::Text("Total placed tiles: %zu", total_tiles);
+      ImGui::Text("Tiles on '%s' layer: %zu", selected_layer.c_str(), placed_tiles_per_layer[selected_layer].size());
 
       Math::Vec2D mouse_world_pos = Engine::Input::get_mouse_world_position();
       Math::Vec2D snapped_pos = snap_to_grid(mouse_world_pos);
