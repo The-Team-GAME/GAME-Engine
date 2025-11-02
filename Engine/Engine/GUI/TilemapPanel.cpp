@@ -28,14 +28,9 @@
 namespace TilemapPanel {
   // Internal state
   namespace {
-    // Submitted atlases
-    struct AtlasEntry {
-      Components::Texture texture;
-      Components::TextureAtlas atlas;
-      std::string name;
-    };
 
-    std::vector<AtlasEntry> submitted_atlases;
+
+    std::vector<Components::AtlasEntry> submitted_atlases;
     int selected_atlas_index = -1;
     int selected_tile_index = 0;
 
@@ -147,7 +142,7 @@ namespace TilemapPanel {
       return;
     }
 
-    const AtlasEntry& atlas_entry = submitted_atlases[selected_atlas_index];
+    const Components::AtlasEntry& atlas_entry = submitted_atlases[selected_atlas_index];
 
     if (!atlas_entry.texture.texture_handle ||
       atlas_entry.atlas.subTextures.empty() ||
@@ -321,7 +316,7 @@ namespace TilemapPanel {
 
             if (ImGui::Button("Submit Atlas", ImVec2(-1, 0))) {
               if (strlen(atlas_name) > 0) {
-                AtlasEntry entry;
+                Components::AtlasEntry entry;
                 entry.texture = preview_texture;
                 entry.atlas = preview_atlas;
                 entry.name = std::string(atlas_name);
@@ -337,9 +332,9 @@ namespace TilemapPanel {
         ImGui::Unindent();
       }
 
-      if (ImGui::Button("Done?", ImVec2(120, 0))) {
-        ImGui::CloseCurrentPopup();
-      }
+      // if (ImGui::Button("Done?", ImVec2(120, 0))) {
+      //   ImGui::CloseCurrentPopup();
+      // }
 
       ImGui::EndPopup();
     }
@@ -356,7 +351,7 @@ namespace TilemapPanel {
 
         // Display all submitted atlases
         for (int i = 0; i < static_cast<int>(submitted_atlases.size()); ++i) {
-          const AtlasEntry& entry = submitted_atlases[i];
+          const Components::AtlasEntry& entry = submitted_atlases[i];
 
           ImGui::PushID(i);
 
