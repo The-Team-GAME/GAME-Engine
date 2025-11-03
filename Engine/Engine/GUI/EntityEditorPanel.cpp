@@ -16,6 +16,10 @@
 #include <imgui.h>
 #include "EntityEditorPanel.h"
 #include "widgets/ReflectionFieldWidgets.h"
+#include "../FileIO/PrefabsFileIO.h"
+#include "../Path.h"
+#include "../Resources.h"
+#include <filesystem>
 
 void EntityEditorPanelHelpers::render_component_tree(const std::string& component_name, Engine::ECS::Entity& entity, Engine::ECS::IComponentArray* array)
 {
@@ -275,6 +279,74 @@ void EntityEditorPanel()
     {
       auto clonedEntity = Engine::ECS::clone_entity(entity);
       selected_entity_id = static_cast<int>(clonedEntity.get_id());
+    }
+
+    ImGui::SameLine();
+
+    // Create Prefab from Entity
+    if (ImGui::Button("Create Prefab from Entity"))
+    {
+      ImGui::OpenPopup("CreatePrefabFromEntity");
+    }
+
+    // Create Prefab popup
+    static char prefab_filename[128] = "";
+    if (ImGui::BeginPopupModal("CreatePrefabFromEntity", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+      ImGui::Text("Enter prefab filename:");
+      ImGui::InputText("##prefabfilename", prefab_filename, sizeof(prefab_filename));
+      ImGui::Text(".json");
+
+      ImGui::Separator();
+
+      if (ImGui::Button("Create", ImVec2(120, 0)))
+      {
+        if (strlen(prefab_filename) > 0)
+        {
+          std::string filename = std::string(prefab_filename);
+          if (filename.find(".json") == std::string::npos) {
+            filename += ".json";
+          }
+
+          // Create prefab from entity
+          auto prefab = Engine::ECS::entity_to_prefab(entity);
+
+          // Save to file
+          std::string relative_path = "prefabs/" + filename;
+          std::string full_path = Engine::Path(Engine::Resources::resource_path).join(relative_path).to_string();
+
+          // Ensure prefabs directory exists
+          std::string prefabs_dir = Engine::Path(Engine::Resources::resource_path).join("prefabs").to_string();
+          if (!std::filesystem::exists(prefabs_dir)) {
+            std::filesystem::create_directories(prefabs_dir);
+          }
+
+          if (Engine::FileIO::serialize_prefab_to_json_file(full_path, prefab))
+          {
+            // Clear the input and close popup
+            prefab_filename[0] = '\0';
+            ImGui::CloseCurrentPopup();
+            ImGui::OpenPopup("CreatePrefabSuccess");
+          }
+        }
+      }
+
+      ImGui::SameLine();
+
+      if (ImGui::Button("Cancel", ImVec2(120, 0)))
+      {
+        prefab_filename[0] = '\0';
+        ImGui::CloseCurrentPopup();
+      }
+
+      ImGui::EndPopup();
+    }
+
+    // Create Prefab success popup
+    if (ImGui::BeginPopup("CreatePrefabSuccess"))
+    {
+      ImGui::Text("Prefab created successfully!");
+      ImGui::EndPopup();
     }
 
     ImGui::SameLine();
