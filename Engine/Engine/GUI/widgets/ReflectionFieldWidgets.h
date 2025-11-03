@@ -77,7 +77,6 @@ namespace ImGuiWidgets {
 
   Parameters:
   entity - Optional entity to get the Texture component from
-  modified - [out] Set to true if the atlas was modified by user input
 
   Returns:
   true if the field was handled and rendered, false otherwise.
@@ -85,7 +84,7 @@ namespace ImGuiWidgets {
   Where to call it:
   From specialized field renderers for texture atlas components.
   ==================================================================================*/
-  bool render_texture_atlas_field(Engine::ECS::Entity entity, bool& modified);
+  bool render_texture_atlas_field(Engine::ECS::Entity entity);
 
   /*=================================================================================
   Function Brief:

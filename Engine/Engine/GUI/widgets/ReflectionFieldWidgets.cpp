@@ -189,7 +189,7 @@ namespace ImGuiWidgets {
     return true;
   }
 
-  bool render_texture_atlas_field(Engine::ECS::Entity entity, bool& modified) {
+  bool render_texture_atlas_field(Engine::ECS::Entity entity) {
     // Only works with valid entities
     if (!entity.is_valid()) {
       ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "TextureAtlas preview available after instantiation");
@@ -228,7 +228,7 @@ namespace ImGuiWidgets {
     }
 
     if (display_name == "Components::TextureAtlas") {
-      return render_texture_atlas_field(entity, modified);
+      return render_texture_atlas_field(entity);
     }
 
     // Not handled by specialized renderer
