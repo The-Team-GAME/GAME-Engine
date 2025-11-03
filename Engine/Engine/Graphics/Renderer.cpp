@@ -499,6 +499,56 @@ namespace Engine {
       draw_texture(Engine::Resources::get_rect_texture(), position, size, rotation, color);
     }
 
+    void draw_rect_outline(const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, f32 thickness, const Math::Vec4D& color) {
+      // If rotated, we need to draw lines around a rotated rectangle
+      if (rotation != 0.0f) {
+        // Calculate half sizes
+        f32 half_width = size.x * 0.5f;
+        f32 half_height = size.y * 0.5f;
+
+        // Convert rotation to radians
+        f32 angle_rad = rotation * 3.14159265359f / 180.0f;
+        f32 cos_angle = std::cos(angle_rad);
+        f32 sin_angle = std::sin(angle_rad);
+
+        // Calculate the four corners relative to center
+        Math::Vec2D corners[4];
+        corners[0] = Math::Vec2D(-half_width, -half_height); // Top-left
+        corners[1] = Math::Vec2D(half_width, -half_height);  // Top-right
+        corners[2] = Math::Vec2D(half_width, half_height);   // Bottom-right
+        corners[3] = Math::Vec2D(-half_width, half_height);  // Bottom-left
+
+        // Rotate and translate corners
+        for (int i = 0; i < 4; i++) {
+          f32 rotated_x = corners[i].x * cos_angle - corners[i].y * sin_angle;
+          f32 rotated_y = corners[i].x * sin_angle + corners[i].y * cos_angle;
+          corners[i] = Math::Vec2D(rotated_x + position.x, rotated_y + position.y);
+        }
+
+        // Draw the four sides
+        draw_line(corners[0], corners[1], thickness, color); // Top
+        draw_line(corners[1], corners[2], thickness, color); // Right
+        draw_line(corners[2], corners[3], thickness, color); // Bottom
+        draw_line(corners[3], corners[0], thickness, color); // Left
+      }
+      else {
+        // For non-rotated rectangles, we can optimize by drawing axis-aligned lines
+        f32 half_width = size.x * 0.5f;
+        f32 half_height = size.y * 0.5f;
+
+        Math::Vec2D top_left = Math::Vec2D(position.x - half_width, position.y - half_height);
+        Math::Vec2D top_right = Math::Vec2D(position.x + half_width, position.y - half_height);
+        Math::Vec2D bottom_right = Math::Vec2D(position.x + half_width, position.y + half_height);
+        Math::Vec2D bottom_left = Math::Vec2D(position.x - half_width, position.y + half_height);
+
+        // Draw the four sides
+        draw_line(top_left, top_right, thickness, color);      // Top
+        draw_line(top_right, bottom_right, thickness, color);  // Right
+        draw_line(bottom_right, bottom_left, thickness, color); // Bottom
+        draw_line(bottom_left, top_left, thickness, color);    // Left
+      }
+    }
+
     void draw_line(const Math::Vec2D& start, const Math::Vec2D& end, f32 thickness, const Math::Vec4D& color) {
       // Calculate line vector and length
       Math::Vec2D line_vec = end - start;

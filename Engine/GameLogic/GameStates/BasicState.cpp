@@ -200,6 +200,14 @@ void BasicState::draw()
     { 1.0f, 0.5f, 0.0f, 1.0f }
   );
 
+  Engine::Graphics::draw_rect_outline(
+    { 400.0f, 500.0f },
+    { 100.0f, 50.0f },
+    30.0f,
+    3.0f,
+    { 0.5f, 0.0f, 0.5f, 1.0f }
+  );
+
   // Normally it would be a horrible idewa to load a texture every frame like this,
   // but for demonstration purposes, we will do it here to show that the resource
   // manager caches the texture and does not reload it from disk every time.
