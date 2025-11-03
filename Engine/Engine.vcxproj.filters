@@ -14,6 +14,7 @@
     <ClCompile Include="Engine\GUI\TilemapPanel.cpp" />
     <ClCompile Include="Engine\GUI\ViewportPanel.cpp" />
     <ClCompile Include="Engine\GUI\ResourcePicker.cpp" />
+    <ClCompile Include="Engine\GUI\widgets\ReflectionFieldWidgets.cpp" />
     <ClCompile Include="Engine\GUI\widgets\TextureAtlasWidget.cpp" />
     <ClCompile Include="GameLogic\GameStates\BasicState.cpp" />
     <ClCompile Include="GameLogic\GameStates\BasicState.h" />
@@ -63,6 +64,7 @@
     <ClInclude Include="Engine\FileIO\PrefabsFileIO.h" />
     <ClInclude Include="Engine\FileIO\SettingsManager.h" />
     <ClInclude Include="Engine\GUI\ResourceManagerPanel.h" />
+    <ClInclude Include="Engine\GUI\widgets\ReflectionFieldWidgets.h" />
     <ClInclude Include="Engine\GUI\widgets\TextureAtlasWidget.h" />
     <ClInclude Include="Engine\MonkeyEngine.h" />
     <ClInclude Include="Engine\Reflection\ReflectionLibrary.h" />

@@ -22,51 +22,6 @@
 namespace PrefabEditorPanelHelpers {
   /*=================================================================================
   Function Brief:
-  Renders specialized UI fields for specific component types (e.g., Color, Texture,
-  Font). Returns true if the field was handled and rendered, false otherwise.
-
-  Parameters:
-  display_name - The name to display for the field in the UI
-  field_value  - Reference to the GenericValue containing the field data
-  modified     - [out] Set to true if the field value was modified by user input
-
-  Where to call it:
-  Called from render_field to attempt specialized rendering before falling back to
-  generic.
-  ==================================================================================*/
-  bool render_specialized_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified);
-
-  /*=================================================================================
-  Function Brief:
-  Renders generic UI fields based on the field value type (bool, int, float, string,
-  object, array).
-
-  Parameters:
-  display_name - The name to display for the field in the UI
-  field_value  - Reference to the GenericValue containing the field data
-  modified     - [out] Set to true if the field value was modified by user input
-
-  Where to call it:
-  Called from render_field when specialized rendering doesn't handle the field.
-  ==================================================================================*/
-  bool render_generic_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified);
-
-  /*=================================================================================
-  Function Brief:
-  Renders a field using specialized or generic rendering.
-
-  Parameters:
-  display_name - The name to display for the field in the UI
-  field_value  - Reference to the GenericValue containing the field data
-  modified     - [out] Set to true if the field value was modified by user input
-
-  Where to call it:
-  When rendering any component field in the prefab editor.
-  ==================================================================================*/
-  void render_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified);
-
-  /*=================================================================================
-  Function Brief:
   Renders a collapsible tree node for a component with all its fields.
 
   Parameters:
