@@ -56,7 +56,7 @@ inline void CameraPanel()
         bool is_selected = (selected_camera_id == entity.get_id());
         bool is_active = camera->is_active;
 
-        std::string label = "Entity " + std::to_string(entity.get_id());
+        std::string label = camera->name + " [Entity " + std::to_string(entity.get_id()) + "]";
         if (is_active) label += " (ACTIVE)";
 
         if (ImGui::Selectable(label.c_str(), is_selected)) {
@@ -86,11 +86,22 @@ inline void CameraPanel()
     if (selected_entity.is_valid() && selected_entity.has_component<Components::Camera>()) {
       auto* camera = selected_entity.get_component<Components::Camera>();
 
-      ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "Edit Camera: Entity %u", selected_camera_id);
+      ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "Edit Camera: %s", camera->name.c_str());
       ImGui::Separator();
 
       // Get virtual resolution
       Math::Vec2D virtual_resolution = Engine::Graphics::get_virtual_resolution();
+
+      // Camera Name
+      char name_buffer[256];
+      strncpy_s(name_buffer, camera->name.c_str(), sizeof(name_buffer) - 1);
+      name_buffer[sizeof(name_buffer) - 1] = '\0';
+
+      if (ImGui::InputText("Camera Name", name_buffer, sizeof(name_buffer))) {
+        camera->name = std::string(name_buffer);
+      }
+
+      ImGui::Separator();
 
       // Active status
       ImGui::Checkbox("Active Camera", &camera->is_active);
@@ -314,6 +325,7 @@ inline void CameraPanel()
         ImGui::Separator();
 
         ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Current Camera:");
+        ImGui::Text("  Name: %s", camera->name.c_str());
         ImGui::Text("  Position: (%.1f, %.1f)", camera->position.x, camera->position.y);
         ImGui::Text("  Zoom: %.2fx", camera->zoom);
         ImGui::Text("  Rotation: %.1f°", camera->rotation);
