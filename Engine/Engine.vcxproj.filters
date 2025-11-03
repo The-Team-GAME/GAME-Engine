@@ -129,6 +129,7 @@
     <ClInclude Include="Engine\FileIO\Helpers.h" />
     <ClInclude Include="Engine\FileIO\Settings.h" />
     <ClInclude Include="Engine\Systems\UISystem.h" />
+    <ClInclude Include="Engine\Events\RegisterAllEvents.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

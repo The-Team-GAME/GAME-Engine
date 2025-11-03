@@ -136,6 +136,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
   <ItemGroup>
     <ClInclude Include="Engine\ECS\Reflection.h" />
     <ClInclude Include="Engine\ECS\SparseSet.h" />
+    <ClInclude Include="Engine\Events\RegisterAllEvents.h" />
     <ClInclude Include="Engine\FileIO\Helpers.h" />
     <ClInclude Include="Engine\FileIO\Settings.h" />
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
