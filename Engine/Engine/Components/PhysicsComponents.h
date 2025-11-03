@@ -22,7 +22,6 @@ namespace Components
     f32 terminal_velocity{ 750.f }; // idk i wack some value here first, might split into the individual axis eventually
 
     bool apply_physics = false;  // If true, affected by physics forces
-    bool use_gravity = false;   // If true, affected by gravity
     bool on_ground = false;
 
     /* 
@@ -33,10 +32,9 @@ namespace Components
     
 
     // Ctor using vectors
-    RigidBody(Vec2D pos, bool kinematic, bool gravity) :
-      curr_pos(pos), apply_physics(kinematic), use_gravity(gravity)
+    RigidBody(Vec2D pos, bool kinematic, bool gravity) : curr_pos(pos), apply_physics(kinematic)
     { 
-      if (gravity)
+      if (gravity) // im setting the gravity acc value so i dont need to keep checking if an object is affected by gravity
       {
         gravity_acc.y = 200.f;
       }

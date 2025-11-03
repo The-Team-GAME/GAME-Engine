@@ -145,18 +145,6 @@ void phy2D::update_entity(Engine::ECS::Entity& entity){
 
 void phy2D::update_kinematics(Components::RigidBody& rigid)
 {
-#if 0
-  // F = m x a => Force equals mass x acceleration
-  // acceleration will contain a value if the entity is affected by gravity
-  Vec2D acc = rigid.force / rigid.mass + rigid.acceleration;
-  
-  // V = a x dt => Velocity equals acceleration x delta time
-  Vec2D prev_velocity = rigid.velocity * rigid.friction;
-  rigid.velocity = prev_velocity + acc * Time::get_fixed_dt();
-
-  // Checking terminal velocity here
-  // using the magnitude squared to check cuz its cheaper than sqrt-ing the value
-#else
   // F = m x a => Force equals mass x acceleration
   // acceleration will contain a value if the entity is affected by gravity
   rigid.acceleration = rigid.force / rigid.mass + rigid.gravity_acc;
@@ -167,7 +155,6 @@ void phy2D::update_kinematics(Components::RigidBody& rigid)
 
   // Checking terminal velocity here
   // using the magnitude squared to check cuz its cheaper than sqrt-ing the value
-#endif
   if (rigid.velocity.get_magnitude_sq() > pow(rigid.terminal_velocity, 2))
   {
     rigid.velocity = Math::normalise_vector(rigid.velocity) * rigid.terminal_velocity;
