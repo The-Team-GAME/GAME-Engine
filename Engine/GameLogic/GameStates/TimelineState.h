@@ -156,24 +156,30 @@ public:
 	
 
 	Engine::ECS::Entity create_timeline_entity(Engine::Graphics::Texture texture) {
-		// Implement the body here since you don't have a separate .cpp file
-		Engine::ECS::Entity entity = Engine::ECS::create_entity();
+		Engine::ECS::Entity new_entity = Engine::ECS::create_entity();
 
-		// 1. Add essential components
-		entity.add_component<Components::Transform2D>(0.0f, 0.0f, 0.0f, 100.0f, 100.0f) // Default scale/position
-			.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-			.add_component<Components::Texture>(texture);
+    // Add the Texture component (This holds the shared_ptr to the raw texture data)
+    new_entity.add_component<Components::Texture>(texture);
 
-		// 2. Add animation/atlas components for timeline control, if needed (use defaults)
-		// NOTE: You MUST check if 'texture' contains the necessary metadata (width/height/frames) 
-		// to properly set up Components::TextureAtlas and Components::Animation.
-		// For now, use basic values or skip if the Texture component is enough.
+    //// Add the Transform component (Required for positioning and scaling in the world/view)
+    //new_entity.add_component<Components::Transform2D>(
+    //    // Position, Rotation, Scale
+    //    Math::Vec3D(0.0f, 0.0f, 0.0f), 
+    //    Math::Vec3D(0.0f, 0.0f, 0.0f), 
+    //    Math::Vec3D(1.0f, 1.0f, 1.0f)
+    //);
 
-		// 3. Track the entity for cleanup
-		timeline_entities.push_back(entity);
+		//sets any non atlas texture to use a default 1x1 atlas
+    new_entity.add_component<Components::TextureAtlas>(
+        1,       // numRows
+        1,       // numColumns
+        1,       // totalSubTextures
+        0,       // currentSubTextureIndex (start at 0)
+        1        // frameDuration (can be ignored for static sprites)
+    );
 
-		return entity;
-	}
+    return new_entity;
+}
 
 
 	void free() {};

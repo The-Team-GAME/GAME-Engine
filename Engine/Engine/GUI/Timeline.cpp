@@ -42,8 +42,8 @@ Timeline::Timeline()
     m_dragStartDuration(0),
     m_selectedEntityID(0)
 {
-  // Start with 2 layers
-  for (s32 i = 0; i < 2; ++i)
+  // Start with 3 layers
+  for (s32 i = 0; i < 3; ++i)
     layers.push_back(i);
 }
 
@@ -155,7 +155,7 @@ void Timeline::draw() {
     ImGui::SameLine();
     if (ImGui::Button("-")) { //zooms out timeline
       zoom -= 0.5f;
-      // Clamp the min zoom level
+      // clamps the min zoom level
       if (zoom < 0.2f) zoom = 0.2f;
     }
     ImGui::SameLine();
@@ -165,7 +165,7 @@ void Timeline::draw() {
     ImGui::SameLine();
     if (ImGui::Button("+")) { //zooms in timeline
       zoom += 0.5f;
-      // You can clamp the max zoom level if needed
+			// clamps the max zoom level
       if (zoom > 5.0f) zoom = 5.0f;
     }
 
@@ -180,14 +180,10 @@ void Timeline::draw() {
     }
 
 
-
-
     //gets the entity
     if (m_selectedEntityID != 0) {
       auto entity = Engine::ECS::get_entity(m_selectedEntityID);
     }
-
-
 
     // --- Timeline region ---
     ImGui::BeginChild("TimelineRegion", ImVec2(0, 200), true, ImGuiWindowFlags_HorizontalScrollbar);
@@ -199,266 +195,363 @@ void Timeline::draw() {
     f32 frameWidth = currentCellSize.x;
     ImVec2 mousePos = ImGui::GetMousePos();
 
-    //Draw grid & cells (Grid logic remains here, updated to use m_frameAccumulator for clicking)
+    // ----------------------------------------------------------------------
+    // --- Grid Drawing and Animated Cell Visualization ---
+    // ----------------------------------------------------------------------
+
     for (s32 layer = 0; layer < (int)layers.size(); ++layer) {
       for (s32 frame = 0; frame < numFrames; ++frame) {
         ImVec2 cellMin = ImVec2(p.x + frame * currentCellSize.x, p.y + layer * currentCellSize.y);
         ImVec2 cellMax = ImVec2(cellMin.x + currentCellSize.x, cellMin.y + currentCellSize.y);
 
-        // Draw background rect
+        // --- Check for active clip in this cell ---
+        TimelineClip* activeClip = get_clip_at_frame(layer, frame);
+
+        // Default grid background
         draw_list->AddRect(cellMin, cellMax, IM_COL32(100, 100, 100, 255));
 
-        // Make cell clickable
-        ImGui::SetCursorScreenPos(cellMin);
-        if (ImGui::InvisibleButton(
-          (std::string("cell_") + std::to_string(layer) + "_" + std::to_string(frame)).c_str(),
-          currentCellSize))
-        {
-          currentFrame = frame;
-          m_frameAccumulator = (f64)frame; // Update accumulator too
-          is_playing = false; // Pause playback on manual selection
+        if (activeClip) {
+          // --- Clip Found: Draw Animated Frame ---
+          auto entity = Engine::ECS::get_entity(activeClip->texture_id);
+
+          if (entity.is_valid() && entity.has_component<Components::Texture>() && entity.has_component<Components::TextureAtlas>())
+          {
+            auto texture_ptr = entity.get_component<Components::Texture>()->texture_handle;
+            auto* atlas = entity.get_component<Components::TextureAtlas>();
+
+            s32 num_atlas_frames = (s32)atlas->subTextures.size();
+
+            if (texture_ptr && num_atlas_frames > 0) {
+              ImTextureID tex_id = (ImTextureID)(intptr_t)texture_ptr->id;
+
+              // Calculate which frame of the atlas should be shown in this timeline cell
+              s32 frames_in_clip = frame - activeClip->start_frame;
+              s32 total_clip_duration = activeClip->duration_frames;
+
+              // Spreads the N atlas frames evenly over the clip's duration
+              size_t frame_index = (size_t)std::floor((f32)frames_in_clip / total_clip_duration * num_atlas_frames);
+              frame_index = std::min(frame_index, (size_t)num_atlas_frames - 1);
+
+              // texture coordinates for the selected frame
+              ImVec2 uv0(atlas->subTextures[frame_index].tex_coords[3].x, atlas->subTextures[frame_index].tex_coords[3].y); // Top-Left (Index 3 in your constructor)
+              ImVec2 uv1(atlas->subTextures[frame_index].tex_coords[1].x, atlas->subTextures[frame_index].tex_coords[1].y); // Bottom-Right (Index 1 in your constructor)
+
+              // Draw the individual frame image onto the grid cell
+              draw_list->AddImage(
+                tex_id,
+                cellMin, cellMax, // Draw into the whole cell area
+                uv0, uv1,
+                IM_COL32_WHITE
+              );
+
+              // Draw a strong border around the cell
+              draw_list->AddRect(cellMin, cellMax, IM_COL32(0, 150, 255, 255));
+            }
+            else {
+              // Draw a placeholder for clips that don't have an atlas (or texture issue)
+              draw_list->AddRectFilled(cellMin, cellMax, IM_COL32(0, 150, 255, 150));
+              draw_list->AddRect(cellMin, cellMax, IM_COL32(0, 100, 200, 255));
+            }
+          }
+          else {
+            // Clip not found, default grid color already drawn
+          }
+        }
+          // Make cell clickable
+          ImVec2 cell_relative_pos = ImVec2(
+            (frame * currentCellSize.x),
+            (layer * currentCellSize.y)
+          );
+
+          // Place the ImGui cursor at the relative position.
+          ImGui::SetCursorPos(cell_relative_pos);
+          if (ImGui::InvisibleButton((std::string("cell_") + std::to_string(layer) + "_" + std::to_string(frame)).c_str(), currentCellSize))
+          {
+            currentFrame = frame;
+            m_frameAccumulator = (f64)frame;
+            is_playing = false;
+          }
         }
       }
-    }
-
-    // --- Drag-and-Drop Logic for NEW Clips ---
-    if (ImGui::BeginDragDropTarget()) {
-      if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_TEXTURE_ID")) {
-        s32 texture_id = *static_cast<s32*>(payload->Data);
-        ImVec2 dropPos = ImGui::GetMousePos();
-        ImVec2 relativePos = ImVec2(dropPos.x - p.x, dropPos.y - p.y);
-        s32 dropped_frame = (s32)std::floor(relativePos.x / currentCellSize.x);
-        s32 dropped_layer = (s32)std::floor(relativePos.y / currentCellSize.y);
-
-        dropped_frame = std::max(0, std::min(dropped_frame, numFrames - 1));
-        dropped_layer = std::max(0, std::min(dropped_layer, (s32)layers.size() - 1));
-
-        add_clip(texture_id, dropped_layer, dropped_frame, 30);
-      }
-      ImGui::EndDragDropTarget();
-    }
 
 
-    // --- Clip Drawing and Manipulation Logic ---
+      // ----------------------------------------------------------------------
+      // --- Drag-and-Drop Logic for NEW Clips ---
+      // ----------------------------------------------------------------------
 
-    // 1. Check for end of manipulation
-    if (m_activeClipID != 0 && !ImGui::IsMouseDown(0)) {
-      m_activeClipID = 0;
-      m_manipulationMode = 0;
-    }
+      if (ImGui::BeginDragDropTarget()) {
+        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_TEXTURE_ID")) {
+          s32 texture_id = *static_cast<s32*>(payload->Data);
 
-    for (TimelineClip& clip : clips) {
-      // 2. Calculate the clip's screen coordinates
-      f32 x_start = p.x + clip.start_frame * frameWidth;
-      f32 x_end = p.x + (clip.start_frame + clip.duration_frames) * frameWidth;
-      f32 y_start = p.y + clip.layer * currentCellSize.y;
-      f32 y_end = p.y + (clip.layer + 1) * currentCellSize.y;
+          //Engine::Graphics::Texture texture_object = Timeline::set_selected_entity_id(texture_id);
+          //
+          //// Create the entity, which includes the 1x1 TextureAtlas fix
+          //Engine::ECS::Entity new_entity = Engine::ECS::Entity::TimelineState::create_timeline_entity(texture_object);
 
-      ImVec2 clipMin(x_start, y_start);
-      ImVec2 clipMax(x_end, y_end);
+          //s32 entity_id = new_entity.get_id();
 
-      if (x_end < p.x || x_start > p.x + numFrames * frameWidth) continue;
+          ImVec2 dropPos = ImGui::GetMousePos();
+          ImVec2 relativePos = ImVec2(dropPos.x - p.x, dropPos.y - p.y);
+          s32 dropped_frame = (s32)std::floor(relativePos.x / currentCellSize.x);
+          s32 dropped_layer = (s32)std::floor(relativePos.y / currentCellSize.y);
 
-      // 3. Draw the clip background
-      ImU32 clipColor = IM_COL32(0, 150, 255, 150);
-      draw_list->AddRectFilled(clipMin, clipMax, clipColor, 3.0f);
-      draw_list->AddRect(clipMin, clipMax, IM_COL32(0, 100, 200, 255), 3.0f);
+          dropped_frame = std::max(0, std::min(dropped_frame, numFrames - 1));
+          dropped_layer = std::max(0, std::min(dropped_layer, (s32)layers.size() - 1));
 
-
-      // Draw the small Image iteration (Thumbnail)
-      auto entity = Engine::ECS::get_entity(clip.texture_id);
-      ImTextureID tex_id = 0;
-      if (entity.is_valid() && entity.has_component<Components::Texture>()) {
-        // 1. Get the shared pointer
-        auto texture_ptr = entity.get_component<Components::Texture>()->texture_handle;
-
-        // 2. Safely check if the pointer holds data
-        if (texture_ptr) {
-          // 3. Dereference the shared_ptr (->) and access the raw ID member (e.g., 'id')
-          // *** YOU MUST VERIFY THE NAME OF THE RAW ID MEMBER (e.g., 'id' or 'handle') ***
-          ImTextureID raw_id = (ImTextureID)(intptr_t)texture_ptr->id; // Assuming the raw ID member is 'id'
-
-          tex_id = raw_id;
+          add_clip(texture_id, dropped_layer, dropped_frame, 30);
         }
-      }
-      float inset = 2.0f;
-      float thumbSize = currentCellSize.y - inset * 2.0f;
-
-
-      draw_list->AddImage(
-        tex_id,
-        ImVec2(clipMin.x + inset, clipMin.y + inset),
-        ImVec2(clipMin.x + inset + thumbSize, clipMin.y + inset + thumbSize),
-        ImVec2(0, 0), ImVec2(1, 1),
-        IM_COL32_WHITE
-      );
-
-      ImVec2 textPos;
-      // Manually add components to offset past the thumbnail
-      textPos.x = clipMin.x + thumbSize + inset * 2.0f;
-      textPos.y = clipMin.y + inset;
-      ImGui::SetCursorScreenPos(textPos);
-
-      ImGui::Text("Entity: %d | Start: %d | Dur: %d", clip.texture_id, clip.start_frame, clip.duration_frames);
-
-
-      // --- Manipulation Handlers ---
-
-      // A. Resize Right Handle (X-Axis Scaling)
-      ImVec2 handleRMin(x_end - RIGHT_RESIZE_HANDLE_WIDTH, y_start);
-      ImVec2 handleRMax(x_end, y_end);
-
-      ImGui::SetCursorScreenPos(handleRMin);
-      std::string resizeRID = "resize_R_handle_" + std::to_string(clip.id);
-      ImGui::InvisibleButton(resizeRID.c_str(), ImVec2(RIGHT_RESIZE_HANDLE_WIDTH, currentCellSize.y));
-
-      if (ImGui::IsItemActive() && m_activeClipID == 0) {
-        m_activeClipID = clip.id;
-        m_manipulationMode = 2; // Resize Right
-        m_dragStartDuration = clip.duration_frames;
-        ImGui::ResetMouseDragDelta(0);
+        ImGui::EndDragDropTarget();
       }
 
-      // B. Resize Left Handle (Two-sided scaling)
-      ImVec2 handleLMin(x_start, y_start);
-      ImVec2 handleLMax(x_start + LEFT_RESIZE_HANDLE_WIDTH, y_end);
 
-      ImGui::SetCursorScreenPos(handleLMin);
-      std::string resizeLID = "resize_L_handle_" + std::to_string(clip.id);
-      ImGui::InvisibleButton(resizeLID.c_str(), ImVec2(LEFT_RESIZE_HANDLE_WIDTH, currentCellSize.y));
+      // ----------------------------------------------------------------------
+      // --- Clip Manipulation Logic ---
+      // ----------------------------------------------------------------------
 
-      if (ImGui::IsItemActive() && m_activeClipID == 0) {
-        m_activeClipID = clip.id;
-        m_manipulationMode = 3; // Resize Left
-        m_dragStartFrame = clip.start_frame;
-        m_dragStartDuration = clip.duration_frames;
-        ImGui::ResetMouseDragDelta(0);
+      // Check for end of manipulation
+      if (m_activeClipID != 0 && !ImGui::IsMouseDown(0)) {
+        m_activeClipID = 0;
+        m_manipulationMode = 0;
       }
 
-      // C. Drag/Move Handle (Pull/Move the image)
-      ImVec2 dragMin(x_start + LEFT_RESIZE_HANDLE_WIDTH, y_start);
-      ImVec2 dragMax(x_end - RIGHT_RESIZE_HANDLE_WIDTH, y_end);
-
-      ImGui::SetCursorScreenPos(dragMin);
-      std::string dragID = "drag_clip_" + std::to_string(clip.id);
-      ImGui::InvisibleButton(dragID.c_str(), ImVec2(dragMax.x - dragMin.x, currentCellSize.y));
-
-      if (ImGui::IsItemActive() && m_activeClipID == 0) {
-        m_activeClipID = clip.id;
-        m_manipulationMode = 1; // Move
-        m_dragStartFrame = clip.start_frame;
-        ImGui::ResetMouseDragDelta(0);
-      }
-
-      // Apply visual cursor change based on hovering
-      if (m_activeClipID == clip.id) {
-        if (m_manipulationMode == 1) { // Move
-          ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
-        }
-        else if (m_manipulationMode == 2 || m_manipulationMode == 3) { // Resize
-          ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
-        }
-      }
-      else if ((mousePos.x >= handleRMin.x && mousePos.x <= handleRMax.x && mousePos.y >= handleRMin.y && mousePos.y <= handleRMax.y) ||
-        (mousePos.x >= handleLMin.x && mousePos.x <= handleLMax.x && mousePos.y >= handleLMin.y && mousePos.y <= handleLMax.y)) {
-        ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
-      }
-      else if (mousePos.x >= dragMin.x && mousePos.x <= dragMax.x && mousePos.y >= dragMin.y && mousePos.y <= dragMax.y) {
-        ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
-      }
-    }
-
-
-    // --- 5. Global Manipulation Update Logic (applied to the active clip) ---
-    if (m_activeClipID != 0 && ImGui::IsMouseDown(0)) {
-      TimelineClip* activeClip = nullptr;
       for (TimelineClip& clip : clips) {
-        if (clip.id == m_activeClipID) {
-          activeClip = &clip;
-          break;
-        }
-      }
+        // Calculate the clip's screen coordinates
+        f32 x_start = p.x + clip.start_frame * frameWidth;
+        f32 x_end = p.x + (clip.start_frame + clip.duration_frames) * frameWidth;
+        f32 y_start = p.y + clip.layer * currentCellSize.y;
+        f32 y_end = p.y + (clip.layer + 1) * currentCellSize.y;
 
-      if (activeClip) {
-        //Get total drag delta and map to frame count
-        ImVec2 dragDelta = ImGui::GetMouseDragDelta(0);
+        ImVec2 clipMin(x_start, y_start);
+        ImVec2 clipMax(x_end, y_end);
 
-        f32 frameFloat = (mousePos.x - p.x) / frameWidth;
-        s32 snappedDragFrame = (s32)std::round(frameFloat);
+        if (x_end < p.x || x_start > p.x + numFrames * frameWidth) continue;
 
-        // Ensure frame index is clamped within bounds
-        snappedDragFrame = std::max(0, std::min(snappedDragFrame, numFrames));
+        // --- Draw Clip Text/Handles OVER the animated cells ---
+
+        // Draw a transparent overlay so manipulation handles are easier to see
+        draw_list->AddRectFilled(clipMin, clipMax, IM_COL32(255, 255, 255, 30), 3.0f); // Slight translucent overlay
+
+        // Draw Clip Text
+        ImVec2 textPos;
+        textPos.x = clipMin.x + 5.0f; // Small padding
+        textPos.y = clipMin.y + 5.0f;
+        ImGui::SetCursorScreenPos(textPos);
+
+        ImGui::Text("Entity: %d | Dur: %d", clip.texture_id, clip.duration_frames);
 
 
-        if (m_manipulationMode == 1) { // Move
+        // --- Manipulation Handlers ---
 
-          // Calculate frame delta from drag distance
-          s32 frameDelta = (s32)std::round(dragDelta.x / frameWidth);
+        // Resize Right Handle (X-Axis Scaling)
+        ImVec2 handleRMin(x_end - RIGHT_RESIZE_HANDLE_WIDTH, y_start);
+        ImVec2 handleRMax(x_end, y_end);
 
-          s32 newStartFrame = m_dragStartFrame + frameDelta;
+        ImGui::SetCursorScreenPos(handleRMin);
+        std::string resizeRID = "resize_R_handle_" + std::to_string(clip.id);
+        ImGui::InvisibleButton(resizeRID.c_str(), ImVec2(RIGHT_RESIZE_HANDLE_WIDTH, currentCellSize.y));
 
-          activeClip->start_frame = std::max(0, newStartFrame);
-
+        if (ImGui::IsItemActive() && m_activeClipID == 0) {
+          m_activeClipID = clip.id;
+          m_manipulationMode = 2; // Resize Right
+          m_dragStartDuration = clip.duration_frames;
           ImGui::ResetMouseDragDelta(0);
         }
-        else if (m_manipulationMode == 2) { // Resize Right
-          // Use the snapped mouse position to define the new end frame
-          s32 newEndFrame = snappedDragFrame;
 
-          // The new duration is the difference between the new snapped end frame and the start frame
-          s32 newDuration = newEndFrame - activeClip->start_frame;
+        // Resize Left Handle (Two-sided scaling)
+        ImVec2 handleLMin(x_start, y_start);
+        ImVec2 handleLMax(x_start + LEFT_RESIZE_HANDLE_WIDTH, y_end);
 
-          // Clamp duration to a minimum of 1 frame
-          activeClip->duration_frames = std::max(1, newDuration);
+        ImGui::SetCursorScreenPos(handleLMin);
+        std::string resizeLID = "resize_L_handle_" + std::to_string(clip.id);
+        ImGui::InvisibleButton(resizeLID.c_str(), ImVec2(LEFT_RESIZE_HANDLE_WIDTH, currentCellSize.y));
+
+        if (ImGui::IsItemActive() && m_activeClipID == 0) {
+          m_activeClipID = clip.id;
+          m_manipulationMode = 3; // Resize Left
+          m_dragStartFrame = clip.start_frame;
+          m_dragStartDuration = clip.duration_frames;
+          ImGui::ResetMouseDragDelta(0);
         }
-        else if (m_manipulationMode == 3) { // Resize Left
-          s32 oldEndFrame = m_dragStartFrame + m_dragStartDuration; // End frame is fixed during left-resize
 
-          // Use the snapped mouse position to define the new start frame
-          s32 newStartFrame = snappedDragFrame;
-          s32 newDuration = oldEndFrame - newStartFrame;
+        // Drag/Move Handle (Pull/Move the image)
+        ImVec2 dragMin(x_start + LEFT_RESIZE_HANDLE_WIDTH, y_start);
+        ImVec2 dragMax(x_end - RIGHT_RESIZE_HANDLE_WIDTH, y_end);
 
-          if (newDuration >= 1 && newStartFrame >= 0) {
-            activeClip->start_frame = newStartFrame;
-            activeClip->duration_frames = newDuration;
+        ImGui::SetCursorScreenPos(dragMin);
+        std::string dragID = "drag_clip_" + std::to_string(clip.id);
+        ImGui::InvisibleButton(dragID.c_str(), ImVec2(dragMax.x - dragMin.x, currentCellSize.y));
+
+        if (ImGui::IsItemActive() && m_activeClipID == 0) { //clicked on clip to drag
+          m_activeClipID = clip.id;
+          m_manipulationMode = 1; // Move
+          m_dragStartFrame = clip.start_frame;
+          ImGui::ResetMouseDragDelta(0);
+        }
+
+        // Apply visual cursor change based on hovering
+        if (m_activeClipID == clip.id) {
+          if (m_manipulationMode == 1) { // Move
+            ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
           }
-          else if (newStartFrame < 0) { // Clamp start frame to 0
-            activeClip->start_frame = 0;
-            activeClip->duration_frames = oldEndFrame;
+          else if (m_manipulationMode == 2 || m_manipulationMode == 3) { // Resize
+            ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
           }
-          else if (newDuration < 1) { // Clamp duration to 1 frame minimum
-            activeClip->start_frame = oldEndFrame - 1;
-            activeClip->duration_frames = 1;
+        }
+        else if ((mousePos.x >= handleRMin.x && mousePos.x <= handleRMax.x && mousePos.y >= handleRMin.y && mousePos.y <= handleRMax.y) ||
+          (mousePos.x >= handleLMin.x && mousePos.x <= handleLMax.x && mousePos.y >= handleLMin.y && mousePos.y <= handleLMax.y)) {
+          ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
+        }
+        else if (mousePos.x >= dragMin.x && mousePos.x <= dragMax.x && mousePos.y >= dragMin.y && mousePos.y <= dragMax.y) {
+          ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+        }
+      }
+
+
+      // --- Global Manipulation Update Logic ---
+      if (m_activeClipID != 0 && ImGui::IsMouseDown(0)) {
+        TimelineClip* activeClip = nullptr;
+        for (TimelineClip& clip : clips) {
+          if (clip.id == m_activeClipID) {
+            activeClip = &clip;
+            break;
+          }
+        }
+
+        if (activeClip) {
+          // Get total drag delta and map to frame count
+          ImVec2 dragDelta = ImGui::GetMouseDragDelta(0);
+
+          f32 frameFloat = (mousePos.x - p.x) / frameWidth;
+          s32 snappedDragFrame = (s32)std::round(frameFloat);
+
+          // Ensure frame index is clamped within bounds
+          snappedDragFrame = std::max(0, std::min(snappedDragFrame, numFrames));
+
+
+          if (m_manipulationMode == 1) { // Move
+
+            // Calculate frame delta from drag distance
+            s32 frameDelta = (s32)std::round(dragDelta.x / frameWidth);
+
+            s32 newStartFrame = m_dragStartFrame + frameDelta;
+
+            activeClip->start_frame = std::max(0, newStartFrame);
+
+            ImGui::ResetMouseDragDelta(0);
+          }
+          else if (m_manipulationMode == 2) { // Resize Right
+            // Use the snapped mouse position to define the new end frame
+            s32 newEndFrame = snappedDragFrame;
+
+            // The new duration is the difference between the new snapped end frame and the start frame
+            s32 newDuration = newEndFrame - activeClip->start_frame;
+
+            // Clamp duration to a minimum of 1 frame
+            activeClip->duration_frames = std::max(1, newDuration);
+          }
+          else if (m_manipulationMode == 3) { // Resize Left
+            s32 oldEndFrame = m_dragStartFrame + m_dragStartDuration; // End frame is fixed during left-resize
+
+            // Use the snapped mouse position to define the new start frame
+            s32 newStartFrame = snappedDragFrame;
+            s32 newDuration = oldEndFrame - newStartFrame;
+
+            if (newDuration >= 1 && newStartFrame >= 0) {
+              activeClip->start_frame = newStartFrame;
+              activeClip->duration_frames = newDuration;
+            }
+            else if (newStartFrame < 0) { // Clamp start frame to 0
+              activeClip->start_frame = 0;
+              activeClip->duration_frames = oldEndFrame;
+            }
+            else if (newDuration < 1) { // Clamp duration to 1 frame minimum
+              activeClip->start_frame = oldEndFrame - 1;
+              activeClip->duration_frames = 1;
+            }
           }
         }
       }
-    }
+
+      // ----------------------------------------------------------------------
+      // --- Timeline Extension Handle ---
+      // ----------------------------------------------------------------------
+
+     // Define the handle size
+      const f32 EXTENSION_HANDLE_WIDTH = 20.0f;
+      // Calculate the current total size of the grid content
+      f32 timelineContentWidth = currentCellSize.x * numFrames;
+      f32 timelineContentHeight = currentCellSize.y * (f32)layers.size();
+
+      // 1. Calculate the handle position (starting right after the last frame)
+      // Use the top-left scroll position 'p' as the origin.
+      ImVec2 handleMin(p.x + timelineContentWidth, p.y);
+      ImVec2 handleMax(handleMin.x + EXTENSION_HANDLE_WIDTH, p.y + timelineContentHeight);
+
+      // 2. Optional: Draw a visual indicator
+      draw_list->AddRectFilled(handleMin, handleMax, IM_COL32(255, 100, 100, 50)); // Semi-transparent red box
+
+      // 3. Set cursor position and create the invisible button
+      ImGui::SetCursorScreenPos(handleMin);
+      std::string extensionID = "timeline_extender";
+      ImGui::InvisibleButton(extensionID.c_str(), ImVec2(EXTENSION_HANDLE_WIDTH, timelineContentHeight));
 
 
-    // Draw playhead to place marker (updated to use m_frameAccumulator for smooth drawing)
-    ImVec2 headMin = ImVec2(p.x + (f32)m_frameAccumulator * currentCellSize.x, p.y);
-    ImVec2 headMax = ImVec2(headMin.x + 2, p.y + (int)layers.size() * currentCellSize.y);
-    draw_list->AddRectFilled(headMin, headMax, IM_COL32(255, 0, 0, 255));
+      // 4. Handle Interaction
+      if (ImGui::IsItemActive() && ImGui::IsMouseDown(0)) {
+        // Get the drag delta since the click started
+        ImVec2 dragDelta = ImGui::GetMouseDragDelta(0);
 
-    // Update playhead position if playing (updated for smooth movement/looping)
-    if (is_playing) {
-      f64 currentTime = ImGui::GetTime();
-      f64 deltaTime = (currentTime - lastFrameTime); // Use f64 for precision
+        // Convert the drag distance (in pixels) to a frame count
+        // Use the frameWidth (currentCellSize.x * zoom) for snapping
+        s32 frameDelta = (s32)std::round(dragDelta.x / frameWidth);
 
-      lastFrameTime = currentTime;
+        if (std::abs(frameDelta) > 0) {
 
-      m_frameAccumulator += (playbackSpeed * deltaTime);
+          s32 newNumFrames = numFrames + frameDelta;
 
-      if (m_frameAccumulator >= numFrames) {
-        m_frameAccumulator = std::fmod(m_frameAccumulator, (f64)numFrames); // Loop
+          // Clamp to a sensible minimum (e.g., your current default of 100 frames)
+          numFrames = std::max(100, newNumFrames);
+
+          // Reset the mouse drag delta to zero to ensure frame-snapped movement
+          ImGui::ResetMouseDragDelta(0);
+        }
+
+        ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
+      }
+      else if (ImGui::IsItemHovered()) {
+        ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
       }
 
-      currentFrame = static_cast<s32>(m_frameAccumulator);
+
+      // ----------------------------------------------------------------------
+      // --- Playhead Logic ---
+      // ----------------------------------------------------------------------
+
+      // Draw playhead to place marker (updated to use m_frameAccumulator for smooth drawing)
+      ImVec2 headMin = ImVec2(p.x + (f32)m_frameAccumulator * currentCellSize.x, p.y);
+      ImVec2 headMax = ImVec2(headMin.x + 2, p.y + (int)layers.size() * currentCellSize.y);
+      draw_list->AddRectFilled(headMin, headMax, IM_COL32(255, 0, 0, 255));
+
+      // Update playhead position if playing (updated for smooth movement/looping)
+      if (is_playing) {
+        f64 currentTime = ImGui::GetTime();
+        f64 deltaTime = (currentTime - lastFrameTime); // Use f64 for precision
+
+        lastFrameTime = currentTime;
+
+        m_frameAccumulator += (playbackSpeed * deltaTime);
+
+        if (m_frameAccumulator >= numFrames) {
+          m_frameAccumulator = std::fmod(m_frameAccumulator, (f64)numFrames); // Loop
+        }
+
+        currentFrame = static_cast<s32>(m_frameAccumulator);
+      }
+
+
+      ImGui::EndChild();
     }
-
-
-    ImGui::EndChild();
+    ImGui::End();
   }
-  ImGui::End();
-};
+
 

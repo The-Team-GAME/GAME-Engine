@@ -39,6 +39,15 @@ class Timeline {
 public:
   Timeline();
 
+  TimelineClip* get_clip_at_frame(s32 layer, s32 frame) {
+    for (TimelineClip& clip : clips) {
+      if (clip.layer == layer && frame >= clip.start_frame && frame < (clip.start_frame + clip.duration_frames)) {
+        return &clip;
+      }
+    }
+    return nullptr;
+  }
+
   void draw();
 
   s32 get_current_frame() const { return currentFrame; }
