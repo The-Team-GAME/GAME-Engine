@@ -253,7 +253,7 @@ namespace Engine
   {
     StateManager::exit();
     //Engine::ECS::remove_event_listener<WindowResizeEvent>();
-    ViewportPanel::cleanup();
+    ViewportPanel::exit();
     Engine::Audio::exit();
     Engine::Resources::exit();
     Engine::Graphics::exit();

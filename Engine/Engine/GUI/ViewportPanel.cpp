@@ -63,7 +63,7 @@ namespace ViewportPanel {
     Log::info(std::string("ViewportPanel initialized with size ") + std::to_string(fb_width) + " x " + std::to_string(fb_height));
   }
 
-  void cleanup() {
+  void exit() {
     if (framebuffer != 0) {
       glDeleteFramebuffers(1, &framebuffer);
       framebuffer = 0;

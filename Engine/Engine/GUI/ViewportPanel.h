@@ -34,7 +34,7 @@ namespace ViewportPanel {
   Where to call it:
   Called during engine shutdown.
   ==================================================================================*/
-  void cleanup();
+  void exit();
 
   /*=================================================================================
   Function Brief:
