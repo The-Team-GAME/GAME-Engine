@@ -3,6 +3,7 @@
 #include "GraphicsSystem.h"
 #include "PhysicsSystem.h"
 #include "UISystem.h"
+#include "GizmoSystem.h"
 
 void register_engine_systems()
 {
@@ -10,6 +11,8 @@ void register_engine_systems()
   Engine::ECS::add_system<Engine::Systems::Physics2DSystem>();
   Engine::ECS::add_system<Engine::Systems::AnimationUpdateSystem>();
   Engine::ECS::add_system<Engine::Systems::ClickableSystem>();
+  Engine::ECS::add_system<Engine::Systems::GizmoSelectionSystem>();
+  Engine::ECS::add_system<Engine::Systems::GizmoManipulationSystem>();
 
   // Draw systems
   Engine::ECS::add_system<Engine::Systems::StaticSpriteRenderSystem>();
@@ -24,6 +27,8 @@ void unregister_engine_systems()
   Engine::ECS::remove_system<Engine::Systems::AtlasSpriteRenderSystem>();
   Engine::ECS::remove_system<Engine::Systems::StaticSpriteRenderSystem>();
 
+  Engine::ECS::remove_system<Engine::Systems::GizmoManipulationSystem>();
+  Engine::ECS::remove_system<Engine::Systems::GizmoSelectionSystem>();
   Engine::ECS::remove_system<Engine::Systems::ClickableSystem>();
   Engine::ECS::remove_system<Engine::Systems::AnimationUpdateSystem>();
   Engine::ECS::remove_system<Engine::Systems::Physics2DSystem>();
