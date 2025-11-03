@@ -33,7 +33,7 @@ namespace Components
     
 
     // Ctor using vectors
-    RigidBody(Vec2D pos = {0,0}, bool kinematic = false, bool gravity = false) :
+    RigidBody(Vec2D pos, bool kinematic, bool gravity) :
       curr_pos(pos), apply_physics(kinematic), use_gravity(gravity)
     { 
       if (gravity)
