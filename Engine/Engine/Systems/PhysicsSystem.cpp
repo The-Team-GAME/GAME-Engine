@@ -13,7 +13,7 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-#include "PhysicsSystem.h";
+#include "PhysicsSystem.h"
 #include "CollisionSystem.h"
 #include "../Perf.h"
 using namespace Engine;
@@ -68,7 +68,6 @@ void phy2D::update()
       ECS::Entity other(entity_id2);
       Components::BoxCollider* other_box = other.get_component<Components::BoxCollider>();
       if (other_box == nullptr) { continue;  }
-      Components::RigidBody* other_rigid = other.get_component<Components::RigidBody>();
       if (col2D::rect_rect_coll(*box, *other_box)) //captain, it seems we have hit something
       {
         // this gona be the most rabak collision resolution ever
@@ -132,12 +131,9 @@ void phy2D::update()
 }
 
 void phy2D::update_entity(Engine::ECS::Entity& entity){
-  Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
   Components::RigidBody* rigid    = entity.get_component<Components::RigidBody>();
-  Components::BoxCollider* box    = entity.get_component<Components::BoxCollider>();
-
-
-  // Updating the rigid body as well as box collider
+  if (rigid->is_static) { return;  }
+  Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
   phy2D::update_kinematics(*rigid);
   phy2D::update_transform(*rigid, *xform);
   //std::cout << "velocity: " << rigid->velocity << " || position: " << rigid->curr_pos << std::endl;
