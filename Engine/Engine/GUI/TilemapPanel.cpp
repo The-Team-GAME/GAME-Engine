@@ -379,23 +379,15 @@ namespace TilemapPanel {
 
             // Submit button
             ImGui::Separator();
-            static char atlas_name[128] = "";
-            ImGui::InputText("Atlas Name", atlas_name, IM_ARRAYSIZE(atlas_name));
 
             if (ImGui::Button("Submit Atlas", ImVec2(-1, 0))) {
-              if (strlen(atlas_name) > 0) {
-                Components::AtlasEntry entry;
-                entry.texture = preview_texture;
-                entry.atlas = preview_atlas;
-                entry.name = std::string(atlas_name);
-                loaded_tilemaps.push_back(entry);
+              Components::AtlasEntry entry;
+              entry.texture = preview_texture;
+              entry.atlas = preview_atlas;
+              loaded_tilemaps.push_back(entry);
 
-                // Save to project settings
-                save_loaded_tilemaps_to_project_settings();
-
-                // Clear the name field
-                atlas_name[0] = '\0';
-              }
+              // Save to project settings
+              save_loaded_tilemaps_to_project_settings();
             }
           }
         }
