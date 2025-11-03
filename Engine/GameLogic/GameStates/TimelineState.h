@@ -87,12 +87,12 @@ public:
 		s32 current_frame = timeline.get_current_frame();
 
 
-		// 1. **RESET ALL ENTITIES to INVISIBLE**
+		//reset visibility flags
 		for (auto& pair : entity_visibility) {
 			pair.second = false;
 		}
 
-		// 2. **CHECK CLIPS TO SET VISIBILITY**
+		//checks which entities should be visible this frame
 		for (const auto& clip : timeline.get_clips()) {
 			s32 entity_id = clip.texture_id; // Using texture_id as Entity ID
 
@@ -118,10 +118,6 @@ public:
 
 						// Duration of the clip
 						s32 total_clip_duration = clip.duration_frames;
-
-						// Calculate which subTexture index to draw.
-						// This ensures the animation cycles smoothly across the clip's duration.
-						// E.g., if duration is 60 and frames is 7, each frame lasts ~8.57 timeline frames.
 
 						// Use integer division for clean frame progression
 						size_t frame_index = (size_t)std::floor((f32)frames_in_clip / total_clip_duration * num_frames);

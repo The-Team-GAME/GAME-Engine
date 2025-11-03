@@ -285,7 +285,7 @@ void Timeline::draw() {
 
           //Engine::Graphics::Texture texture_object = Timeline::set_selected_entity_id(texture_id);
           //
-          //// Create the entity, which includes the 1x1 TextureAtlas fix
+          //// Create the entity, which includes the 1x1 TextureAtlas
           //Engine::ECS::Entity new_entity = Engine::ECS::Entity::TimelineState::create_timeline_entity(texture_object);
 
           //s32 entity_id = new_entity.get_id();
