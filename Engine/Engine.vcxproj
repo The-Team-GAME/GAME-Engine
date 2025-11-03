@@ -165,6 +165,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Engine\Reflection\ReflectionLibrary\Print.h" />
     <ClInclude Include="Engine\Systems\ParticleSystem.h" />
     <ClInclude Include="Engine\Systems\Systems.h" />
+    <ClInclude Include="Engine\Systems\UISystem.h" />
     <ClInclude Include="GameLogic\GameStates\Documentation\LayersAdvancedState.h" />
     <ClInclude Include="GameLogic\GameStates\Documentation\LayersState.h" />
     <ClInclude Include="GameLogic\GameStates\Documentation\PrefabsState.h" />
