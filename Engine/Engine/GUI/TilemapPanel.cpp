@@ -20,6 +20,7 @@
 #include "../InputManager.h"
 #include "../Graphics/Renderer.h"
 #include "../Resources.h"
+#include "../Path.h"
 #include "widgets/TextureAtlasWidget.h"
 #include <vector>
 #include "../FileIO/PrefabsFileIO.h"
@@ -568,7 +569,7 @@ namespace TilemapPanel {
             // Ensure the Assets/tilemap directory exists and prepend path if needed
             std::string filepath = tilemap_filename;
             if (filepath.find("Assets/tilemap/") != 0) {
-              filepath = "Assets/tilemap/" + filepath;
+              filepath = Engine::Path("Assets/tilemap").join(filepath);
             }
             Engine::FileIO::write_string_to_file(filepath, prefab_array_json);
 
@@ -606,7 +607,7 @@ namespace TilemapPanel {
             // Read from file - ensure Assets/tilemap/ prefix
             std::string filepath = tilemap_filename;
             if (filepath.find("Assets/tilemap/") != 0) {
-              filepath = "Assets/tilemap/" + filepath;
+              filepath = Engine::Path("Assets/tilemap").join(filepath);
             }
             std::optional<std::string> prefab_array_json_opt = Engine::FileIO::read_string_from_file(filepath);
 
@@ -678,7 +679,7 @@ namespace TilemapPanel {
 
       ImGui::Unindent();
     }
-     
+
     // === TILE SELECTION ===
     if (!loaded_tilemaps.empty()) {
       if (ImGui::CollapsingHeader("Tile Selection", ImGuiTreeNodeFlags_DefaultOpen)) {
