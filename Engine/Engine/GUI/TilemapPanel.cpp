@@ -27,6 +27,7 @@
 #include "../FileIO/Helpers.h"
 #include "../FileIO/SettingsManager.h"
 #include "../FileIO/Settings.h"
+#include "ViewportPanel.h"
 
 namespace TilemapPanel {
   // Internal state
@@ -228,7 +229,18 @@ namespace TilemapPanel {
   void update() {
     // === HANDLE PAINTING IN WORLD ===
     // Only allow painting/erasing when tilemap mode is enabled
-    if (enable_tilemap_mode && !ImGui::GetIO().WantCaptureMouse) {
+    // Check if we should accept input based on viewport mode
+    bool should_accept_input = false;
+    if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled) {
+      // In viewport mode, only accept input when viewport is hovered and focused
+      should_accept_input = ViewportPanel::should_capture_input();
+    }
+    else {
+      // In fullscreen mode, accept input when ImGui doesn't want to capture mouse
+      should_accept_input = !ImGui::GetIO().WantCaptureMouse;
+    }
+
+    if (enable_tilemap_mode && should_accept_input) {
       if (painting_enabled && Engine::Input::is_held(Engine::KeyCode::MouseLeft)) {
         Math::Vec2D world_pos = Engine::Input::get_mouse_world_position();
         place_tile_at_position(world_pos);
@@ -857,7 +869,18 @@ namespace TilemapPanel {
       }
 
       // Highlight current grid cell when painting
-      if ((painting_enabled || erasing_enabled) && !ImGui::GetIO().WantCaptureMouse) {
+      // Check if we should show highlight based on viewport mode
+      bool should_show_highlight = false;
+      if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled) {
+        // In viewport mode, show highlight when viewport is hovered and focused
+        should_show_highlight = ViewportPanel::should_capture_input();
+      }
+      else {
+        // In fullscreen mode, show highlight when ImGui doesn't want to capture mouse
+        should_show_highlight = !ImGui::GetIO().WantCaptureMouse;
+      }
+
+      if ((painting_enabled || erasing_enabled) && should_show_highlight) {
         Math::Vec2D world_pos = Engine::Input::get_mouse_world_position();
         Math::Vec2D grid_pos = snap_to_grid(world_pos);
 
