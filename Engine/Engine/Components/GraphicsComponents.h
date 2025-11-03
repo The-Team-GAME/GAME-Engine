@@ -25,13 +25,13 @@ namespace Components
       static Reflector reflect(const Texture& tex) {
         Reflector r;
         if (tex.texture_handle) {
-          r.path = tex.texture_handle->path;
+          r.path = Engine::Resources::get_relative_path(tex.texture_handle->path);
         }
         return r;
       }
 
       static Texture create(const Reflector& r) {
-        return Engine::Resources::load_texture(r.path, false);
+        return Engine::Resources::load_texture(r.path, true);
       }
     };
   };
@@ -173,7 +173,7 @@ namespace Components
       static Reflector reflect(const Font& font) {
         Reflector r;
         if (font.font_handle) {
-          r.path = font.font_handle->path;
+          r.path = Engine::Resources::get_relative_path(font.font_handle->path);
           r.font_size = font.font_handle->font_size;
         }
         return r;

@@ -41,25 +41,16 @@ public:
       .add_component<Components::Transform2D>(800.0f, 700.0f, 0.0f, 192.0f * 1.5f, 64.0f * 1.5f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/Button_Start.png"))
       .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
+      .add_component<Components::Clickable>([]()
+        {
+          Engine::StateManager::change_state(ShowcaseState::get());
+        })
       .add_to_layer("ui");
   };
 
   void init() {};
 
-  void update() {
-    auto mouse_pos = Engine::Input::get_mouse_position();
-
-
-    if (mouse_pos.x >= 704.0f && mouse_pos.x <= 896.0f &&
-      mouse_pos.y >= 668.0f && mouse_pos.y <= 732.0f) {
-      // TODO: make clickable component work properly
-      if (Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
-        Engine::StateManager::change_state(ShowcaseState::get());
-      }
-    }
-
-
-  };
+  void update() {};
 
   void draw() {
     Engine::Graphics::clear_screen({ 0.0f, 0.0f, 0.0f, 1.0f });

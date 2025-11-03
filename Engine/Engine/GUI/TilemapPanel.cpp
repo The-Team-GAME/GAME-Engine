@@ -20,6 +20,7 @@
 #include "../InputManager.h"
 #include "../Graphics/Renderer.h"
 #include "../Resources.h"
+#include "../Path.h"
 #include "widgets/TextureAtlasWidget.h"
 #include <vector>
 #include "../FileIO/PrefabsFileIO.h"
@@ -325,6 +326,15 @@ namespace TilemapPanel {
                 // Load the texture
                 if (auto tex = Engine::Resources::texture_cache[texture_paths[i]].lock()) {
                   preview_texture = Components::Texture(tex);
+
+                  // Automatically calculate columns and rows by dividing by 32
+                  atlas_cols = preview_texture.texture_handle->width / 32;
+                  atlas_rows = preview_texture.texture_handle->height / 32;
+
+                  // Ensure at least 1 row and 1 column
+                  if (atlas_cols < 1) atlas_cols = 1;
+                  if (atlas_rows < 1) atlas_rows = 1;
+
                   regenerate_atlas();
                 }
               }
@@ -345,11 +355,11 @@ namespace TilemapPanel {
               preview_texture.texture_handle->height);
 
             // Rows and columns input
-            if (ImGui::DragInt("Rows", &atlas_rows, 1.0f, 1, 100)) {
+            if (ImGui::DragInt("Columns", &atlas_cols, 1.0f, 1, 100)) {
               regenerate_atlas();
             }
 
-            if (ImGui::DragInt("Columns", &atlas_cols, 1.0f, 1, 100)) {
+            if (ImGui::DragInt("Rows", &atlas_rows, 1.0f, 1, 100)) {
               regenerate_atlas();
             }
 
@@ -369,23 +379,15 @@ namespace TilemapPanel {
 
             // Submit button
             ImGui::Separator();
-            static char atlas_name[128] = "";
-            ImGui::InputText("Atlas Name", atlas_name, IM_ARRAYSIZE(atlas_name));
 
             if (ImGui::Button("Submit Atlas", ImVec2(-1, 0))) {
-              if (strlen(atlas_name) > 0) {
-                Components::AtlasEntry entry;
-                entry.texture = preview_texture;
-                entry.atlas = preview_atlas;
-                entry.name = std::string(atlas_name);
-                loaded_tilemaps.push_back(entry);
+              Components::AtlasEntry entry;
+              entry.texture = preview_texture;
+              entry.atlas = preview_atlas;
+              loaded_tilemaps.push_back(entry);
 
-                // Save to project settings
-                save_loaded_tilemaps_to_project_settings();
-
-                // Clear the name field
-                atlas_name[0] = '\0';
-              }
+              // Save to project settings
+              save_loaded_tilemaps_to_project_settings();
             }
           }
         }
@@ -568,7 +570,7 @@ namespace TilemapPanel {
             // Ensure the Assets/tilemap directory exists and prepend path if needed
             std::string filepath = tilemap_filename;
             if (filepath.find("Assets/tilemap/") != 0) {
-              filepath = "Assets/tilemap/" + filepath;
+              filepath = Engine::Path("Assets/tilemap").join(filepath);
             }
             Engine::FileIO::write_string_to_file(filepath, prefab_array_json);
 
@@ -606,7 +608,7 @@ namespace TilemapPanel {
             // Read from file - ensure Assets/tilemap/ prefix
             std::string filepath = tilemap_filename;
             if (filepath.find("Assets/tilemap/") != 0) {
-              filepath = "Assets/tilemap/" + filepath;
+              filepath = Engine::Path("Assets/tilemap").join(filepath);
             }
             std::optional<std::string> prefab_array_json_opt = Engine::FileIO::read_string_from_file(filepath);
 

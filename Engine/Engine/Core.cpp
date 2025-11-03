@@ -113,6 +113,8 @@ namespace Engine
 
     StateManager::init(initialState);
 
+    Resources::set_resource_path("Assets"); // TODO: move this to ProjectSettings
+
     // Load project settings
     if (!Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::load("Assets/settings/project_settings.json")) {
       Log::warning("Failed to load project settings, using defaults");

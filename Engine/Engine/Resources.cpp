@@ -6,8 +6,10 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#include <filesystem>
 #include <rapidjson/document.h>
 #include "FileIO/PrefabsFileIO.h"
+#include "Path.h"
 
 // Define the actual storage for the extern variables
 std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> Engine::Resources::texture_cache;
@@ -66,30 +68,22 @@ bool Engine::Resources::exit()
 
 void Engine::Resources::set_resource_path(const std::string& path)
 {
-  resource_path = path;
-
-  // Ensure the path ends with a separator
-  if (!resource_path.empty() && resource_path.back() != '/' && resource_path.back() != '\\')
-  {
-    resource_path += '/';
-  }
+  // Convert to absolute path, normalize, and ensure trailing separator
+  resource_path = Path(path).to_absolute().ensure_trailing_separator();
 
   Log::info("Resource path set to: " + resource_path);
 }
 
 std::string Engine::Resources::get_relative_path(const std::string& full_path)
 {
-  if (full_path.find(resource_path) == 0)
-  {
-    return full_path.substr(resource_path.length());
-  }
-  return full_path;
+  // Use the Path class to convert to relative path
+  return Path(full_path).to_relative(resource_path);
 }
 
 Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& filepath, bool append_resource_path, bool persist)
 {
-  // Construct full path
-  std::string full_path = append_resource_path ? resource_path + filepath : filepath;
+  // Construct full path using Path class
+  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
 
   // Check if texture is already in cache (use full path for cache key)
   auto it = texture_cache.find(full_path);
@@ -135,8 +129,8 @@ Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& fil
 
 Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath, u32 size, bool append_resource_path, bool persist)
 {
-  // Construct full path
-  std::string full_path = append_resource_path ? resource_path + filepath : filepath;
+  // Construct full path using Path class
+  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
 
   // Create a unique key combining filepath and size
   std::string cache_key = full_path + "_" + std::to_string(size);
@@ -178,7 +172,8 @@ Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath,
 
 Engine::Audio::Sound Engine::Resources::load_sound(const std::string& filepath, bool append_resource_path, bool persist)
 {
-  std::string full_path = append_resource_path ? resource_path + filepath : filepath;
+  // Construct full path using Path class
+  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
 
   // Check if sound is already in cache
   auto it = sound_cache.find(full_path);
@@ -224,7 +219,8 @@ Engine::Audio::Sound Engine::Resources::load_sound(const std::string& filepath, 
 
 Engine::Audio::Sound Engine::Resources::load_music(const std::string& filepath, bool append_resource_path, bool persist)
 {
-  std::string full_path = append_resource_path ? resource_path + filepath : filepath;
+  // Construct full path using Path class
+  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
 
   // Check if music is already in cache
   auto it = sound_cache.find(full_path);
@@ -270,18 +266,21 @@ Engine::Audio::Sound Engine::Resources::load_music(const std::string& filepath, 
 
 Engine::Resources::Resource Engine::Resources::load(const std::string& filepath, bool append_resource_path, bool persist)
 {
-  // Construct full path
-  std::string full_path = append_resource_path ? resource_path + filepath : filepath;
+  // Construct full path using Path class
+  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
 
-  // Extract file extension
-  size_t dot_pos = filepath.find_last_of('.');
-  if (dot_pos == std::string::npos)
+  // Extract file extension using Path class
+  std::string extension = Path(filepath).get_extension();
+  if (extension.empty())
   {
     Log::warning("No file extension found for: " + filepath);
     return std::monostate{};
   }
 
-  std::string extension = filepath.substr(dot_pos + 1);
+  // Remove leading dot and convert to lowercase
+  if (extension[0] == '.') {
+    extension = extension.substr(1);
+  }
   std::transform(extension.begin(), extension.end(), extension.begin(),
     [](u8 c) { return static_cast<u8>(std::tolower(c)); });
 
@@ -365,8 +364,8 @@ Engine::Graphics::Texture Engine::Resources::get_rect_texture()
 
 Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, bool append_resource_path, bool persist)
 {
-  // Construct full path
-  std::string full_path = append_resource_path ? resource_path + filepath : filepath;
+  // Construct full path using Path class
+  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
 
   // Check if prefab is already in cache
   auto it = prefab_cache.find(full_path);
@@ -411,8 +410,8 @@ Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, 
 
 bool Engine::Resources::save_prefab(const std::string& filepath, const Engine::ECS::Prefab& prefab, bool append_resource_path)
 {
-  // Construct full path
-  std::string full_path = append_resource_path ? resource_path + filepath : filepath;
+  // Construct full path using Path class
+  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
 
   if (!Engine::FileIO::serialize_prefab_to_json_file(full_path, prefab))
   {
