@@ -62,6 +62,7 @@ namespace Engine {
     }
 
     template <typename T, typename... Args>
+      requires std::is_constructible_v<T, Args...>
     void add_component(const Entity& entity, Args &&...args)
     {
       auto& containers = Internal::get_containers();

@@ -21,6 +21,7 @@
 #include "ImGuiManager.h"
 #include "Time.h"
 #include "GUI/RegisterAllPanels.h"
+#include "GUI/ViewportPanel.h"
 #include "WindowManager.h"
 #include "Perf.h"
 #include "InputManager.h"
@@ -33,6 +34,7 @@
 #include "EventManager/EventManager.h"
 #include "FileIO/Settings.h"
 #include "FileIO/SettingsManager.h"
+#include "Events/RegisterAllEvents.h"
 
 
 namespace {
@@ -93,23 +95,7 @@ namespace Engine
 
     Engine::Graphics::set_viewport({ 0, 0, engine_settings.window_width, engine_settings.window_height });
 
-    // Register the graphics resize system 
-    Engine::EventManager::add_event_listener<Engine::Events::WindowResizeEvent>([](const Engine::Events::WindowResizeEvent& event)
-      {
-        Engine::Graphics::set_viewport({ 0, 0, event.width, event.height });
-      }
-    );
-
-    // Register file drop event to load resources
-    Engine::EventManager::add_event_listener<Engine::Events::FileDropEvent>([](const Engine::Events::FileDropEvent& event)
-      {
-        for (const auto& filepath : event.filepaths)
-        {
-          Log::info("File dropped: " + filepath);
-          Engine::Resources::load(filepath, false, true);
-        }
-      }
-    );
+    Engine::Events::register_all_events();
 
     StateManager::init(initialState);
 
@@ -121,6 +107,13 @@ namespace Engine
     }
 
     // CORE INITIALIZATION
+
+    // Initialize TilemapPanel to load saved tilemaps from project settings
+    TilemapPanel::init();
+
+    // Initialize ViewportPanel
+    ViewportPanel::init();
+
     register_engine_systems();
     register_all_panels();
   }
@@ -211,6 +204,9 @@ namespace Engine
       }
 
       // Rendering Start ========================================
+      if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled) {
+        ViewportPanel::begin_render();
+      }
 
       // Clear screen (automatically begins batch)
       // start of draw stuff
@@ -221,6 +217,11 @@ namespace Engine
       // end of draw stuff (flush remaining batches)
       Engine::Graphics::end_batch();
 
+      if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled) {
+        ViewportPanel::end_render();
+      }
+
+      // Render ImGui (including viewport panel that shows the framebuffer)
       ImGuiManager::end();
       glfwSwapBuffers(WindowManager::get_window());
       // Rendering End ==========================================
@@ -239,6 +240,7 @@ namespace Engine
   {
     StateManager::exit();
     //Engine::ECS::remove_event_listener<WindowResizeEvent>();
+    ViewportPanel::exit();
     Engine::Audio::exit();
     Engine::Resources::exit();
     Engine::Graphics::exit();

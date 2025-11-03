@@ -180,7 +180,7 @@ namespace Components
       }
 
       static Font create(const Reflector& r) {
-        return Engine::Resources::load_font(r.path, r.font_size, false);
+        return Engine::Resources::load_font(r.path, r.font_size, true);
       }
     };
   };

@@ -13,7 +13,7 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-#include "PhysicsSystem.h";
+#include "PhysicsSystem.h"
 #include "CollisionSystem.h"
 #include "../Perf.h"
 using namespace Engine;
@@ -33,8 +33,8 @@ namespace {
   Vec2D jumping_force(0.f, -40000.f);
 }
 phy2D::Physics2DSystem() {
-  require_components<Components::Transform2D, Components::RigidBody, Components::BoxCollider>();
-}
+  require_components<Components::Transform2D, Components::RigidBody>();
+} //, Components::BoxCollider
 
 void phy2D::update()
 {
@@ -51,8 +51,10 @@ void phy2D::update()
   {
     ECS::Entity entity(entity_id);
     Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
+    if (box == nullptr) { continue;  }
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     rigid->on_ground = false;
+    col2D::update_AABB(*rigid, *box);
     if (box->detect_collisions == false)
     {
       continue;
@@ -65,7 +67,7 @@ void phy2D::update()
       }
       ECS::Entity other(entity_id2);
       Components::BoxCollider* other_box = other.get_component<Components::BoxCollider>();
-      Components::RigidBody* other_rigid = other.get_component<Components::RigidBody>();
+      if (other_box == nullptr) { continue;  }
       if (col2D::rect_rect_coll(*box, *other_box)) //captain, it seems we have hit something
       {
         // this gona be the most rabak collision resolution ever
@@ -129,32 +131,16 @@ void phy2D::update()
 }
 
 void phy2D::update_entity(Engine::ECS::Entity& entity){
-  Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
   Components::RigidBody* rigid    = entity.get_component<Components::RigidBody>();
-  Components::BoxCollider* box    = entity.get_component<Components::BoxCollider>();
-
-
-  // Updating the rigid body as well as box collider
+  if (rigid->is_static) { return;  }
+  Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
   phy2D::update_kinematics(*rigid);
   phy2D::update_transform(*rigid, *xform);
-  col2D::update_AABB(*rigid, *box);
   //std::cout << "velocity: " << rigid->velocity << " || position: " << rigid->curr_pos << std::endl;
 }
 
 void phy2D::update_kinematics(Components::RigidBody& rigid)
 {
-#if 0
-  // F = m x a => Force equals mass x acceleration
-  // acceleration will contain a value if the entity is affected by gravity
-  Vec2D acc = rigid.force / rigid.mass + rigid.acceleration;
-  
-  // V = a x dt => Velocity equals acceleration x delta time
-  Vec2D prev_velocity = rigid.velocity * rigid.friction;
-  rigid.velocity = prev_velocity + acc * Time::get_fixed_dt();
-
-  // Checking terminal velocity here
-  // using the magnitude squared to check cuz its cheaper than sqrt-ing the value
-#else
   // F = m x a => Force equals mass x acceleration
   // acceleration will contain a value if the entity is affected by gravity
   rigid.acceleration = rigid.force / rigid.mass + rigid.gravity_acc;
@@ -165,7 +151,6 @@ void phy2D::update_kinematics(Components::RigidBody& rigid)
 
   // Checking terminal velocity here
   // using the magnitude squared to check cuz its cheaper than sqrt-ing the value
-#endif
   if (rigid.velocity.get_magnitude_sq() > pow(rigid.terminal_velocity, 2))
   {
     rigid.velocity = Math::normalise_vector(rigid.velocity) * rigid.terminal_velocity;

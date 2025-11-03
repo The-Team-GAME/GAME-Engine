@@ -19,6 +19,7 @@
 #include "widgets/TextureAtlasWidget.h"
 #include "../Resources.h"
 #include "../Components/Components.h"
+#include "../Path.h"
 
 bool EntityEditorPanelHelpers::render_specialized_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity) {
   if (display_name == "Components::Color") {
@@ -40,7 +41,7 @@ bool EntityEditorPanelHelpers::render_specialized_field(const std::string& displ
   }
 
   if (display_name == "Components::Texture") {
-    // Get current texture path
+    // Get current texture path (stored as relative path)
     std::string current_path = field_value["path"].isString() ? field_value["path"].getString() : "";
 
     // Display current texture info
@@ -55,7 +56,8 @@ bool EntityEditorPanelHelpers::render_specialized_field(const std::string& displ
 
     // Preview current texture
     if (!current_path.empty()) {
-      auto texture = Engine::Resources::load_texture(current_path, false);
+      // Load texture using relative path with resource path appended
+      auto texture = Engine::Resources::load_texture(current_path, true);
       if (texture && texture->id != 0) {
         ImTextureID tex_id = static_cast<ImTextureID>(texture->id);
         float preview_size = 128.0f;
@@ -77,7 +79,8 @@ bool EntityEditorPanelHelpers::render_specialized_field(const std::string& displ
     static bool show_texture_picker = false;
 
     if (ImGui::Button("Select Texture...")) {
-      pending_texture_path = current_path;
+      // Convert current relative path to absolute for comparison in picker
+      pending_texture_path = current_path.empty() ? "" : Engine::Path(Engine::Resources::resource_path).join(current_path).to_string();
       show_texture_picker = true;
       ImGui::OpenPopup("TexturePicker");
     }
@@ -93,8 +96,12 @@ bool EntityEditorPanelHelpers::render_specialized_field(const std::string& displ
 
     // Show texture picker popup
     if (show_texture_picker) {
-      if (ResourcePicker::texture_picker_popup("TexturePicker", pending_texture_path, current_path)) {
-        field_value["path"] = pending_texture_path;
+      // Pass absolute path for comparison
+      std::string absolute_current = current_path.empty() ? "" : Engine::Path(Engine::Resources::resource_path).join(current_path).to_string();
+      if (ResourcePicker::texture_picker_popup("TexturePicker", pending_texture_path, absolute_current)) {
+        // Convert selected absolute path back to relative path for storage
+        std::string relative_path = Engine::Resources::get_relative_path(pending_texture_path);
+        field_value["path"] = relative_path;
         modified = true;
         show_texture_picker = false;
       }
@@ -109,7 +116,7 @@ bool EntityEditorPanelHelpers::render_specialized_field(const std::string& displ
   }
 
   if (display_name == "Components::Font") {
-    // Get current font path and size
+    // Get current font path and size (stored as relative path)
     std::string current_path = field_value["path"].isString() ? field_value["path"].getString() : "";
     int current_size = field_value["font_size"].isInt() ? static_cast<int>(field_value["font_size"].getInt()) : 0;
 
@@ -142,7 +149,8 @@ bool EntityEditorPanelHelpers::render_specialized_field(const std::string& displ
     static bool show_font_picker = false;
 
     if (ImGui::Button("Select Font...")) {
-      pending_font_path = current_path;
+      // Convert current relative path to absolute for comparison in picker
+      pending_font_path = current_path.empty() ? "" : Engine::Path(Engine::Resources::resource_path).join(current_path).to_string();
       pending_font_size = current_size;
       show_font_picker = true;
       ImGui::OpenPopup("FontPicker");
@@ -160,9 +168,13 @@ bool EntityEditorPanelHelpers::render_specialized_field(const std::string& displ
 
     // Show font picker popup
     if (show_font_picker) {
+      // Pass absolute path for comparison
+      std::string absolute_current = current_path.empty() ? "" : Engine::Path(Engine::Resources::resource_path).join(current_path).to_string();
       if (ResourcePicker::font_picker_popup("FontPicker", pending_font_path, pending_font_size,
-        current_path, current_size)) {
-        field_value["path"] = pending_font_path;
+        absolute_current, current_size)) {
+        // Convert selected absolute path back to relative path for storage
+        std::string relative_path = Engine::Resources::get_relative_path(pending_font_path);
+        field_value["path"] = relative_path;
         field_value["font_size"] = static_cast<ReflectionLibrary::Integer>(pending_font_size);
         modified = true;
         show_font_picker = false;
