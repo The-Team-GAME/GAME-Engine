@@ -22,6 +22,7 @@
     <ClCompile Include="Engine\ECS\World.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer.cpp" />
     <ClCompile Include="Engine\Graphics\RendererInternal.cpp" />
+    <ClCompile Include="Engine\Path.cpp" />
     <ClCompile Include="Engine\Resources.cpp" />
     <ClCompile Include="Engine\Graphics\Shader.cpp" />
     <ClCompile Include="Engine\ImGuiManager.cpp" />
@@ -86,6 +87,7 @@
     <ClInclude Include="Engine\Components\Components.h" />
     <ClInclude Include="Engine\Reflection\Helpers.h" />
     <ClInclude Include="Engine\Reflection\Reflect.h" />
+    <ClInclude Include="Engine\Path.h" />
     <ClInclude Include="Engine\Resources.h" />
     <ClInclude Include="Engine\Graphics\Shader.h" />
     <ClInclude Include="Engine\Graphics\RendererInternal.h" />

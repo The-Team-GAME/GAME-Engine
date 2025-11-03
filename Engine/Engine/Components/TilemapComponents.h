@@ -9,15 +9,8 @@ namespace Components {
   struct AtlasEntry {
     Components::Texture texture;
     Components::TextureAtlas atlas;
-    std::string name;
   };
 }
 
-
-
 REGISTER_COMPONENT(Components::Tile);
-REGISTER_COMPONENT(Components::AtlasEntry,
-  texture,
-  atlas,
-  name
-);
+REGISTER_COMPONENT(Components::AtlasEntry, texture, atlas);
