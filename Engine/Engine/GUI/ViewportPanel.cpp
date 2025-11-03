@@ -19,6 +19,8 @@
 #include "../Logger.h"
 #include "../Graphics/Renderer.h"
 #include "../WindowManager.h"
+#include "../Math/Vector2D.h"
+#include <algorithm>
 
 namespace ViewportPanel {
 
@@ -31,6 +33,10 @@ namespace ViewportPanel {
     int fb_height = 900;
     bool viewport_hovered = false;
     bool viewport_focused = false;
+
+    // Store viewport image bounds for input conversion
+    ImVec2 viewport_image_min = { 0, 0 };
+    ImVec2 viewport_image_max = { 0, 0 };
   }
 
   void init() {
@@ -163,6 +169,10 @@ namespace ViewportPanel {
       ImVec2(1, 0)  // Bottom-right UV (flipped)
     );
 
+    // Store the bounds after the image is drawn
+    viewport_image_min = ImGui::GetItemRectMin();
+    viewport_image_max = ImGui::GetItemRectMax();
+
     // Check if viewport is hovered or focused
     viewport_hovered = ImGui::IsItemHovered();
     viewport_focused = ImGui::IsWindowFocused();
@@ -177,6 +187,61 @@ namespace ViewportPanel {
 
   bool is_viewport_focused() {
     return viewport_focused;
+  }
+
+  Math::Vec2D screen_to_viewport_virtual(float screen_x, float screen_y) {
+    // Get viewport bounds
+    float viewport_width = viewport_image_max.x - viewport_image_min.x;
+    float viewport_height = viewport_image_max.y - viewport_image_min.y;
+
+    // Convert screen position to viewport-relative position
+    float relative_x = screen_x - viewport_image_min.x;
+    float relative_y = screen_y - viewport_image_min.y;
+
+    // Normalize to [0, 1] range
+    float normalized_x = relative_x / viewport_width;
+    float normalized_y = relative_y / viewport_height;
+
+    // Clamp to viewport bounds
+    normalized_x = std::max(0.0f, std::min(1.0f, normalized_x));
+    normalized_y = std::max(0.0f, std::min(1.0f, normalized_y));
+
+    // Get virtual resolution from graphics system
+    Math::Vec2D virtual_resolution = Engine::Graphics::get_virtual_resolution();
+
+    // Convert to virtual coordinates
+    // Note: Y is flipped because ImGui's Y is top-down, but engine Y is typically bottom-up
+    Math::Vec2D virtual_pos;
+    virtual_pos.x = normalized_x * virtual_resolution.x;
+    virtual_pos.y = normalized_y * virtual_resolution.y;
+
+    return virtual_pos;
+  }
+
+  Math::Vec2D get_viewport_mouse_position() {
+    if (!viewport_hovered) {
+      return { 0.0f, 0.0f };
+    }
+
+    ImVec2 mouse_pos = ImGui::GetMousePos();
+    return screen_to_viewport_virtual(mouse_pos.x, mouse_pos.y);
+  }
+
+  Math::Vec2D get_viewport_mouse_world_position() {
+    Math::Vec2D virtual_pos = get_viewport_mouse_position();
+
+    if (!viewport_hovered) {
+      return { 0.0f, 0.0f };
+    }
+
+    // Convert virtual coordinates to world coordinates (accounting for camera)
+    return Engine::Graphics::virtual_to_world(virtual_pos);
+  }
+
+  bool should_capture_input() {
+    // Input should be captured when the viewport is both hovered and focused
+    // This ensures the user is actively interacting with the game view
+    return viewport_hovered && viewport_focused;
   }
 
 } // namespace ViewportPanel
