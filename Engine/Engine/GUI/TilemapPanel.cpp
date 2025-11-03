@@ -678,7 +678,7 @@ namespace TilemapPanel {
 
       ImGui::Unindent();
     }
-
+     
     // === TILE SELECTION ===
     if (!loaded_tilemaps.empty()) {
       if (ImGui::CollapsingHeader("Tile Selection", ImGuiTreeNodeFlags_DefaultOpen)) {

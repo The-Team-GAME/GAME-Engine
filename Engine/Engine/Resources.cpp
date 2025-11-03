@@ -6,8 +6,10 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#include <filesystem>
 #include <rapidjson/document.h>
 #include "FileIO/PrefabsFileIO.h"
+#include "Path.h"
 
 // Define the actual storage for the extern variables
 std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> Engine::Resources::texture_cache;
@@ -66,24 +68,19 @@ bool Engine::Resources::exit()
 
 void Engine::Resources::set_resource_path(const std::string& path)
 {
-  resource_path = path;
-
+  // Convert to absolute path and normalize
+  resource_path = Path::to_absolute(path);
+  
   // Ensure the path ends with a separator
-  if (!resource_path.empty() && resource_path.back() != '/' && resource_path.back() != '\\')
-  {
-    resource_path += '/';
-  }
+  resource_path = Path::ensure_trailing_separator(resource_path);
 
   Log::info("Resource path set to: " + resource_path);
 }
 
 std::string Engine::Resources::get_relative_path(const std::string& full_path)
 {
-  if (full_path.find(resource_path) == 0)
-  {
-    return full_path.substr(resource_path.length());
-  }
-  return full_path;
+  // Use the Path class to convert to relative path
+  return Path::to_relative(full_path, resource_path);
 }
 
 Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& filepath, bool append_resource_path, bool persist)

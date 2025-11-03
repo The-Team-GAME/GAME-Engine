@@ -13,11 +13,5 @@ namespace Components {
   };
 }
 
-
-
 REGISTER_COMPONENT(Components::Tile);
-REGISTER_COMPONENT(Components::AtlasEntry,
-  texture,
-  atlas,
-  name
-);
+REGISTER_COMPONENT(Components::AtlasEntry, texture, atlas, name);
