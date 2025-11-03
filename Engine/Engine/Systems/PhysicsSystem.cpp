@@ -33,8 +33,8 @@ namespace {
   Vec2D jumping_force(0.f, -40000.f);
 }
 phy2D::Physics2DSystem() {
-  require_components<Components::Transform2D, Components::RigidBody, Components::BoxCollider>();
-}
+  require_components<Components::Transform2D, Components::RigidBody>();
+} //, Components::BoxCollider
 
 void phy2D::update()
 {
@@ -51,8 +51,10 @@ void phy2D::update()
   {
     ECS::Entity entity(entity_id);
     Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
+    if (box == nullptr) { continue;  }
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     rigid->on_ground = false;
+    col2D::update_AABB(*rigid, *box);
     if (box->detect_collisions == false)
     {
       continue;
@@ -65,6 +67,7 @@ void phy2D::update()
       }
       ECS::Entity other(entity_id2);
       Components::BoxCollider* other_box = other.get_component<Components::BoxCollider>();
+      if (other_box == nullptr) { continue;  }
       Components::RigidBody* other_rigid = other.get_component<Components::RigidBody>();
       if (col2D::rect_rect_coll(*box, *other_box)) //captain, it seems we have hit something
       {
@@ -137,7 +140,6 @@ void phy2D::update_entity(Engine::ECS::Entity& entity){
   // Updating the rigid body as well as box collider
   phy2D::update_kinematics(*rigid);
   phy2D::update_transform(*rigid, *xform);
-  col2D::update_AABB(*rigid, *box);
   //std::cout << "velocity: " << rigid->velocity << " || position: " << rigid->curr_pos << std::endl;
 }
 
