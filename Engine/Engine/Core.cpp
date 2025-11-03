@@ -122,6 +122,13 @@ namespace Engine
     }
 
     // CORE INITIALIZATION
+
+      // Initialize TilemapPanel to load saved tilemaps from project settings
+    TilemapPanel::init();
+
+    // Initialize ViewportPanel
+    ViewportPanel::init();
+
     register_engine_systems();
     register_all_panels();
   }

@@ -9,12 +9,6 @@
 
 void register_all_panels()
 {
-  // Initialize TilemapPanel to load saved tilemaps from project settings
-  TilemapPanel::init();
-
-  // Initialize ViewportPanel
-  ViewportPanel::init();
-
   ImGuiManager::register_panel(ViewportPanel::draw_panel);
   ImGuiManager::register_panel(PerformanceViewerPanel);
   ImGuiManager::register_panel(ResourceManagerPanel);
