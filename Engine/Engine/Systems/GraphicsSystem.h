@@ -3,6 +3,7 @@
 #include "../ECS/ECS.h"
 #include "../Components/Components.h"
 #include "../Graphics/Renderer.h"
+#include "../InputManager.h"
 namespace Engine
 {
   namespace Systems
@@ -135,6 +136,71 @@ namespace Engine
           renderer_camera.zoom = camera_component->zoom;
           Engine::Graphics::set_camera(renderer_camera);
         }
+      }
+    };
+
+    class CameraControlSystem : public Engine::ECS::System {
+    private:
+      bool is_dragging = false;
+      glm::vec2 last_mouse_pos = { 0.0f, 0.0f };
+
+    public:
+      CameraControlSystem() {
+        require_components<Components::Camera>();
+      }
+
+      void update() override {
+        // Check if Ctrl is held
+        bool ctrl_held = Engine::Input::is_held(Engine::KeyCode::CtrlLeft) ||
+          Engine::Input::is_held(Engine::KeyCode::CtrlRight);
+
+        // Get current mouse position
+        glm::vec2 current_mouse_pos = Engine::Input::get_mouse_position();
+
+        // Check if left mouse button is held
+        bool mouse_held = Engine::Input::is_held(Engine::KeyCode::MouseLeft);
+
+        // Start dragging
+        if (ctrl_held && Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
+          is_dragging = true;
+          last_mouse_pos = current_mouse_pos;
+        }
+
+        // Stop dragging
+        if (!mouse_held || !ctrl_held) {
+          is_dragging = false;
+        }
+
+        // Perform camera drag
+        if (is_dragging && ctrl_held && mouse_held) {
+          // Calculate mouse delta
+          glm::vec2 delta = current_mouse_pos - last_mouse_pos;
+          last_mouse_pos = current_mouse_pos;
+
+          // Find the active camera and update its position
+          Engine::ECS::Entity active_camera = get_active_camera();
+          if (active_camera.is_valid()) {
+            auto* camera = active_camera.get_component<Components::Camera>();
+            if (camera) {
+              // Move camera in opposite direction of mouse drag for intuitive feel
+              // Also account for camera zoom
+              camera->position.x -= delta.x / camera->zoom;
+              camera->position.y -= delta.y / camera->zoom;
+            }
+          }
+        }
+      }
+
+    private:
+      Engine::ECS::Entity get_active_camera() {
+        Engine::ECS::Entity result(Engine::ECS::INVALID_ENTITY);
+        Engine::ECS::for_each_entity_with<Components::Camera>([&](Engine::ECS::Entity entity) {
+          auto* camera = entity.get_component<Components::Camera>();
+          if (camera && camera->is_active) {
+            result = entity;
+          }
+          });
+        return result;
       }
     };
 
