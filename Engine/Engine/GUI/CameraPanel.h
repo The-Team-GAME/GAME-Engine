@@ -39,51 +39,41 @@ inline void CameraPanel()
 
   // Display list of camera entities
   if (ImGui::CollapsingHeader("Camera List", ImGuiTreeNodeFlags_DefaultOpen)) {
+    ImGui::Text("Total Cameras: %zu", camera_entities.size());
+    ImGui::Separator();
+
     if (camera_entities.empty()) {
-      ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "No camera entities found!");
+      ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No camera entities found");
       ImGui::TextWrapped("Create an entity and add a Camera component to it.");
     }
     else {
-      ImGui::Text("Available Cameras: %zu", camera_entities.size());
-      ImGui::Separator();
+      ImGui::BeginChild("CameraList", ImVec2(0, 150), true);
 
       for (auto& entity : camera_entities) {
         auto* camera = entity.get_component<Components::Camera>();
         if (!camera) continue;
 
-        ImGui::PushID(entity.get_id());
-
-        // Display entity info
         bool is_selected = (selected_camera_id == entity.get_id());
         bool is_active = camera->is_active;
 
-        ImVec4 color = is_active ? ImVec4(0.0f, 1.0f, 0.0f, 1.0f) : ImVec4(0.7f, 0.7f, 0.7f, 1.0f);
-        if (is_selected) {
-          color = ImVec4(0.4f, 0.8f, 1.0f, 1.0f);
-        }
-
-        ImGui::PushStyleColor(ImGuiCol_Text, color);
         std::string label = "Entity " + std::to_string(entity.get_id());
         if (is_active) label += " (ACTIVE)";
 
         if (ImGui::Selectable(label.c_str(), is_selected)) {
+          // When a camera is selected, automatically make it active
           selected_camera_id = entity.get_id();
-        }
-        ImGui::PopStyleColor();
 
-        ImGui::SameLine();
-        if (ImGui::SmallButton("Set Active")) {
           // Deactivate all cameras first
           for (auto& e : camera_entities) {
             auto* cam = e.get_component<Components::Camera>();
             if (cam) cam->is_active = false;
           }
-          // Activate this camera
+          // Activate the selected camera
           camera->is_active = true;
         }
-
-        ImGui::PopID();
       }
+
+      ImGui::EndChild();
     }
   }
 
