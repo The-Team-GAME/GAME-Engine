@@ -5,9 +5,11 @@
 #include "EntityEditorPanel.h"
 #include "CameraPanel.h"
 #include "TilemapPanel.h"
+#include "ViewportPanel.h"
 
 void register_all_panels()
 {
+  ImGuiManager::register_panel(ViewportPanel::draw_panel);
   ImGuiManager::register_panel(PerformanceViewerPanel);
   ImGuiManager::register_panel(ResourceManagerPanel);
   ImGuiManager::register_panel(EntityEditorPanel);

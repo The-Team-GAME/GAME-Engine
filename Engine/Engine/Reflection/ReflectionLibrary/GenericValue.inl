@@ -222,17 +222,17 @@ namespace ReflectionLibrary
 
   // Getters through proxy
   inline Boolean GenericValueProxy::getBool() const { return get().getBool(); }
-  inline Boolean& GenericValueProxy::getBool() { return get_writable().getBool(); }
+  inline Boolean& GenericValueProxy::getBool() { return const_cast<GenericValue&>(get()).getBool(); }
   inline Integer GenericValueProxy::getInt() const { return get().getInt(); }
-  inline Integer& GenericValueProxy::getInt() { return get_writable().getInt(); }
+  inline Integer& GenericValueProxy::getInt() { return const_cast<GenericValue&>(get()).getInt(); }
   inline Double GenericValueProxy::getDouble() const { return get().getDouble(); }
-  inline Double& GenericValueProxy::getDouble() { return get_writable().getDouble(); }
+  inline Double& GenericValueProxy::getDouble() { return const_cast<GenericValue&>(get()).getDouble(); }
   inline const String& GenericValueProxy::getString() const { return get().getString(); }
-  inline String& GenericValueProxy::getString() { return get_writable().getString(); }
+  inline String& GenericValueProxy::getString() { return const_cast<GenericValue&>(get()).getString(); }
   inline const Array& GenericValueProxy::getArray() const { return get().getArray(); }
-  inline Array& GenericValueProxy::getArray() { return get_writable().getArray(); }
+  inline Array& GenericValueProxy::getArray() { return const_cast<GenericValue&>(get()).getArray(); }
   inline const Object& GenericValueProxy::getObject() const { return get().getObject(); }
-  inline Object& GenericValueProxy::getObject() { return get_writable().getObject(); }
+  inline Object& GenericValueProxy::getObject() { return const_cast<GenericValue&>(get()).getObject(); }
 
   inline size_t GenericValueProxy::size() const { return get().size(); }
   inline bool GenericValueProxy::has(const std::string& key) const { return get().has(key); }

@@ -15,23 +15,80 @@
 //-----------------------------------------------------------------------------------
 #include "System.h"
 #include "Entity.h"
+#include "WorldData.h"
 
 namespace Engine {
   namespace ECS {
 
+    System::System() {
+      active_layers.set(); // Process all layers by default
+    }
+
     System::~System() = default;
 
     void System::update() {
-      for (EntityID entityId : entities) {
-        Entity entity(entityId);
-        update_entity(entity);
+      // Iterate through entities in layer order (lower layer ID = higher priority = first)
+      auto& containers = Internal::get_containers();
+
+      for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
+        // Skip if system doesn't process this layer
+        if (!active_layers.test(layer))
+          continue;
+
+        // Copy entity IDs to prevent iterator invalidation during update_entity()
+        // (entities may be created/destroyed during updates)
+        const auto& layer_set = containers.layer_entities[layer];
+        std::vector<EntityID> entities_to_process;
+        entities_to_process.reserve(layer_set.size());
+        
+        // TODO: this is not efficient, optimize later
+        for (EntityID entityId : layer_set) {
+          // Only process if this system manages this entity
+          if (entities.contains(entityId)) {
+            entities_to_process.push_back(entityId);
+          }
+        }
+
+        // Now iterate over the copy
+        for (EntityID entityId : entities_to_process) {
+          // Double-check entity still exists and is managed by this system
+          if (entities.contains(entityId)) {
+            Entity entity(entityId);
+            update_entity(entity);
+          }
+        }
       }
     }
 
     void System::draw() {
-      for (EntityID entityId : entities) {
-        Entity entity(entityId);
-        draw_entity(entity);
+      // Iterate through entities in layer order (lower layer ID = higher priority = first)
+      auto& containers = Internal::get_containers();
+
+      for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
+        // Skip if system doesn't process this layer
+        if (!active_layers.test(layer))
+          continue;
+
+        // Copy entity IDs to prevent iterator invalidation during draw_entity()
+        const auto& layer_set = containers.layer_entities[layer];
+        std::vector<EntityID> entities_to_draw;
+        entities_to_draw.reserve(layer_set.size());
+        
+        for (EntityID entityId : layer_set) {
+          // Only process if this system manages this entity
+          if (entities.contains(entityId)) {
+            entities_to_draw.push_back(entityId);
+          }
+        }
+
+        // Now iterate over the copy
+        for (EntityID entityId : entities_to_draw) {
+          // Double-check entity still exists and is managed by this system
+          if (entities.contains(entityId)) {
+            Entity entity(entityId);
+            draw_entity(entity);
+          }
+        }
       }
     }
 
@@ -73,6 +130,10 @@ namespace Engine {
 
     const EventManager::EventSignature& System::get_event_signature() const {
       return event_signature;
+    }
+
+    const LayerSignature& System::get_layer_signature() const {
+      return active_layers;
     }
 
   } // namespace ECS

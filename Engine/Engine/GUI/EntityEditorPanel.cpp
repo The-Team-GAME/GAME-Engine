@@ -480,6 +480,88 @@ void EntityEditorPanel()
 
     ImGui::Separator();
 
+    // Layer Editor Section
+    if (ImGui::CollapsingHeader("Layers", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+      auto& containers = Engine::ECS::Internal::get_containers();
+      auto entity_layers = entity.get_layers();
+
+      // // Display current layers
+      // ImGui::Text("Entity is on layers:");
+
+      // bool has_layers = false;
+      // for (Engine::ECS::LayerID layer = 0; layer < containers.layer_id_to_name.size(); ++layer) {
+      //   if (entity_layers.test(layer)) {
+      //     has_layers = true;
+      //     const std::string& layer_name = containers.layer_id_to_name[layer];
+      //     if (!layer_name.empty()) {
+      //       ImGui::BulletText("%s (ID: %d)", layer_name.c_str(), layer);
+      //     }
+      //   }
+      // }
+
+      // if (!has_layers) {
+      //   ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  (No layers)");
+      // }
+
+      // ImGui::Separator();
+
+      // Get all registered layers
+      ImGui::Text("Available Layers:");
+
+      bool any_layers_registered = false;
+      for (Engine::ECS::LayerID layer_id = 0; layer_id < containers.layer_id_to_name.size(); ++layer_id) {
+        const std::string& layer_name = containers.layer_id_to_name[layer_id];
+
+        // Skip empty layer names (shouldn't happen, but just in case)
+        if (layer_name.empty()) continue;
+
+        any_layers_registered = true;
+
+        bool is_on_layer = entity_layers.test(layer_id);
+
+        if (ImGui::Checkbox((layer_name + " (ID: " + std::to_string(layer_id) + ")").c_str(), &is_on_layer)) {
+          if (is_on_layer) {
+            entity.add_to_layer(layer_name);
+          }
+          else {
+            entity.remove_from_layer(layer_name);
+          }
+        }
+      }
+
+      if (!any_layers_registered) {
+        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  (No layers registered)");
+      }
+
+      ImGui::Separator();
+
+      // Add new layer section
+      static char new_layer_name[128] = "";
+      ImGui::Text("Register New Layer:");
+      ImGui::InputText("##NewLayerName", new_layer_name, sizeof(new_layer_name));
+      ImGui::SameLine();
+
+      if (ImGui::Button("Register Layer")) {
+        if (strlen(new_layer_name) > 0) {
+          Engine::ECS::LayerID new_id = Engine::ECS::register_layer(new_layer_name);
+          if (new_id != Engine::ECS::INVALID_LAYER) {
+            // Clear the input
+            new_layer_name[0] = '\0';
+          }
+        }
+      }
+
+      ImGui::Separator();
+
+      // Quick actions
+      if (ImGui::Button("Clear All Layers")) {
+        entity.clear_layers();
+      }
+    }
+
+    ImGui::Separator();
+
     // Clone Entity
     if (ImGui::Button("Clone This Entity"))
     {

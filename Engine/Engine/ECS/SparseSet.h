@@ -207,6 +207,20 @@ namespace Engine {
 
       /*=================================================================================
       Function Brief:
+      Sorts the dense array using a custom comparator function.
+
+      Parameters:
+      compare - Comparator function that takes two EntityIDs and returns true if
+                the first should come before the second.
+
+      Where to call it:
+      When you need to sort entities by a specific criteria (e.g., layer priority).
+      ==================================================================================*/
+      template<typename Compare>
+      void sort(Compare compare);
+
+      /*=================================================================================
+      Function Brief:
       Returns an iterator to the beginning of the dense entity array.
 
       Parameters:
@@ -476,6 +490,51 @@ namespace Engine {
       dense.reserve(capacity);
       if constexpr (!std::is_same_v<T, EntityID>) {
         data.reserve(capacity);
+      }
+    }
+
+    template<typename T>
+    template<typename Compare>
+    void SparseSet<T>::sort(Compare compare) {
+      // Create indices array to track the new order
+      std::vector<size_t> indices(dense.size());
+      for (size_t i = 0; i < indices.size(); ++i) {
+        indices[i] = i;
+      }
+
+      // Sort indices based on the comparator applied to dense array
+      std::sort(indices.begin(), indices.end(), [&](size_t a, size_t b) {
+        return compare(dense[a], dense[b]);
+        });
+
+      // Create temporary arrays for the sorted data
+      std::vector<EntityID> sorted_dense;
+      sorted_dense.reserve(dense.size());
+
+      std::vector<T> sorted_data;
+      if constexpr (!std::is_same_v<T, EntityID>) {
+        sorted_data.reserve(data.size());
+      }
+
+      // Copy elements in sorted order
+      for (size_t i = 0; i < indices.size(); ++i) {
+        size_t old_index = indices[i];
+        sorted_dense.push_back(dense[old_index]);
+
+        if constexpr (!std::is_same_v<T, EntityID>) {
+          sorted_data.push_back(data[old_index]);
+        }
+      }
+
+      // Replace with sorted arrays
+      dense = std::move(sorted_dense);
+      if constexpr (!std::is_same_v<T, EntityID>) {
+        data = std::move(sorted_data);
+      }
+
+      // Update sparse array to point to new indices
+      for (size_t i = 0; i < dense.size(); ++i) {
+        sparse[dense[i]] = static_cast<EntityID>(i);
       }
     }
 

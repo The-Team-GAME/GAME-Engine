@@ -1,41 +1,10 @@
 {
-    "dataType": "Entity",
-    "id": 4,
+    "dataType": "Prefab",
+    "layers": [
+        "default",
+        "gameplay"
+    ],
     "components": [
-        {
-            "type": "Components::Color",
-            "data": {
-                "r": 1.0,
-                "b": 1.0,
-                "g": 1.0,
-                "a": 1.0
-            }
-        },
-        {
-            "data": {
-                "path": "Assets/images/banana.png"
-            },
-            "type": "Components::Texture"
-        },
-        {
-            "type": "Components::RigidBody",
-            "data": {
-                "detect_collisions": true,
-                "linear_velocity": {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-                "rotation_terminal_velocity": 360.0,
-                "is_kinematic": false,
-                "mass": 1.0,
-                "linear_terminal_velocity": {
-                    "x": 3.4028234663852886e38,
-                    "y": 3.4028234663852886e38
-                },
-                "angular_velocity": 45.0,
-                "rotation": 0.0
-            }
-        },
         {
             "data": {
                 "position": {
@@ -49,6 +18,21 @@
                 }
             },
             "type": "Components::Transform2D"
+        },
+        {
+            "type": "Components::Texture",
+            "data": {
+                "path": "images/banana.png"
+            }
+        },
+        {
+            "data": {
+                "b": 1.0,
+                "r": 1.0,
+                "g": 1.0,
+                "a": 1.0
+            },
+            "type": "Components::Color"
         }
     ]
 }
