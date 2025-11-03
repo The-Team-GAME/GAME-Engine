@@ -21,6 +21,7 @@
 #include "InputManager.h"
 #include "Perf.h"
 #include "ImGuiThemes.h"
+#include "FileIO/Settings.h"
 
 namespace {
   bool gui_enabled = true;
@@ -103,9 +104,11 @@ namespace ImGuiManager {
       // Add a menu bar
       if (ImGui::BeginMenuBar())
       {
-        if (ImGui::BeginMenu("Windows"))
+        if (ImGui::BeginMenu("ImGui"))
         {
           ImGui::MenuItem("Toggle GUI (F1)", nullptr, &gui_enabled);
+          ImGui::MenuItem("ImGui Viewport Mode (F2)", nullptr, &Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().imgui_viewport_enabled);
+          
           ImGui::EndMenu();
         }
         ImGui::EndMenuBar();
@@ -150,6 +153,11 @@ namespace ImGuiManager {
     if (Engine::Input::is_pressed(Engine::KeyCode::F1))
     {
       gui_enabled = !gui_enabled;
+    }
+    if (Engine::Input::is_pressed(Engine::KeyCode::F2))
+    {
+      Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().imgui_viewport_enabled =
+        !Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled;
     }
   }
 

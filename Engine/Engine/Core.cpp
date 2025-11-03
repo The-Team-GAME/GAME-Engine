@@ -123,7 +123,7 @@ namespace Engine
 
     // CORE INITIALIZATION
 
-      // Initialize TilemapPanel to load saved tilemaps from project settings
+    // Initialize TilemapPanel to load saved tilemaps from project settings
     TilemapPanel::init();
 
     // Initialize ViewportPanel
@@ -219,9 +219,9 @@ namespace Engine
       }
 
       // Rendering Start ========================================
-
-      // Render game to framebuffer
-      ViewportPanel::begin_render();
+      if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled) {
+        ViewportPanel::begin_render();
+      }
 
       // Clear screen (automatically begins batch)
       // start of draw stuff
@@ -232,7 +232,9 @@ namespace Engine
       // end of draw stuff (flush remaining batches)
       Engine::Graphics::end_batch();
 
-      ViewportPanel::end_render();
+      if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled) {
+        ViewportPanel::end_render();
+      }
 
       // Render ImGui (including viewport panel that shows the framebuffer)
       ImGuiManager::end();

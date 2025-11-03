@@ -23,6 +23,7 @@
 #include "Graphics/Renderer.h"
 #include "KeyCodes.h"
 #include "GUI/ViewportPanel.h"
+#include "FileIO/Settings.h"
 
 namespace
 {
@@ -91,8 +92,8 @@ namespace Engine
 
     //std::cout << "Raw Mouse Position: (" << xpos << ", " << ypos << ")\n";
 
-    // Check if we should use viewport coordinates
-    if (ViewportPanel::is_viewport_hovered()) {
+    // Check if we should use viewport coordinates (only if viewport mode is enabled)
+    if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled) {
       // Use viewport-adjusted coordinates
       Math::Vec2D viewport_pos = ViewportPanel::get_viewport_mouse_position();
       mousePosition = glm::vec2(viewport_pos.x, viewport_pos.y);

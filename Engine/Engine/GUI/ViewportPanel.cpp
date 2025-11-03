@@ -20,6 +20,7 @@
 #include "../Graphics/Renderer.h"
 #include "../WindowManager.h"
 #include "../Math/Vector2D.h"
+#include "../FileIO/Settings.h"
 #include <algorithm>
 
 namespace ViewportPanel {
@@ -107,6 +108,11 @@ namespace ViewportPanel {
   }
 
   void draw_panel() {
+    // Only show the viewport panel if viewport mode is enabled
+    if (!Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled) {
+      return;
+    }
+
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
     ImGui::SetNextWindowSize(ImVec2(1280, 720), ImGuiCond_FirstUseEver);
     ImGui::Begin("Viewport");
