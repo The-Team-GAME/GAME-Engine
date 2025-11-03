@@ -102,6 +102,7 @@ namespace ViewportPanel {
 
   void draw_panel() {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::SetNextWindowSize(ImVec2(1280, 720), ImGuiCond_FirstUseEver);
     ImGui::Begin("Viewport");
 
     // Get the size of the window
