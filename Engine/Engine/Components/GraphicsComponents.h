@@ -191,6 +191,19 @@ namespace Components
     Text(const std::string& str) : content(str) {}
   };
 
+  struct Camera
+  {
+    Math::Vec2D position = { 0.0f, 0.0f };
+    f32 rotation = 0.0f;  // In degrees
+    f32 zoom = 1.0f;
+    bool is_active = false;  // Whether this camera is currently active
+
+    Camera() : position(0.0f, 0.0f), rotation(0.0f), zoom(1.0f), is_active(false) {}
+    Camera(const Math::Vec2D& pos, f32 rot = 0.0f, f32 zm = 1.0f, bool active = false)
+      : position(pos), rotation(rot), zoom(zm), is_active(active) {
+    }
+  };
+
   struct Color : public Math::Vec4D {
     f32& r;
     f32& g;
@@ -287,6 +300,7 @@ namespace Components
 }
 
 REGISTER_COMPONENT(Components::Text, content)
+REGISTER_COMPONENT(Components::Camera, position, rotation, zoom, is_active)
 REGISTER_COMPONENT_CUSTOM(Components::Color, r, g, b, a)
 REGISTER_COMPONENT_CUSTOM(Components::Texture, path)
 REGISTER_COMPONENT_CUSTOM(Components::Font, path, font_size)

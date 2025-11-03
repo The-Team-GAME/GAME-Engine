@@ -201,6 +201,46 @@ namespace Engine {
       return Entity(INVALID_ENTITY);
     }
 
+    template <typename... T>
+    void for_each_entity_with(std::function<void(Entity)> callback)
+    {
+      auto& containers = Internal::get_containers();
+      for (EntityID entityId : containers.active_entities)
+      {
+        if (has_components<T...>(entityId))
+        {
+          callback(Entity(entityId));
+        }
+      }
+    }
+
+    template <typename... T>
+    void for_each_entity_with(const LayerSignature& layers, std::function<void(Entity)> callback)
+    {
+      auto& containers = Internal::get_containers();
+
+      // Iterate through each layer in the signature
+      for (LayerID layer = 0; layer < MAX_LAYERS; ++layer)
+      {
+        if (!layers.test(layer))
+          continue;
+
+        // Check if this layer has any entities
+        if (layer >= containers.layer_entities.size())
+          continue;
+
+        // Iterate through entities on this layer
+        for (EntityID entityId : containers.layer_entities[layer])
+        {
+          // Check if entity has all required components
+          if (has_components<T...>(entityId))
+          {
+            callback(Entity(entityId));
+          }
+        }
+      }
+    }
+
     template <typename T>
     size_t get_component_count()
     {

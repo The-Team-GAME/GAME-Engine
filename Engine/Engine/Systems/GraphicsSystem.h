@@ -118,6 +118,26 @@ namespace Engine
       }
     };
 
+    class CameraSystem : public Engine::ECS::System {
+    public:
+      CameraSystem() {
+        require_components<Components::Camera>();
+      }
+
+      void update_entity(Engine::ECS::Entity& entity) override {
+        auto* camera_component = entity.get_component<Components::Camera>();
+
+        // If this camera is marked as active, apply it to the renderer
+        if (camera_component->is_active) {
+          Engine::Graphics::Camera renderer_camera;
+          renderer_camera.position = camera_component->position;
+          renderer_camera.rotation = camera_component->rotation;
+          renderer_camera.zoom = camera_component->zoom;
+          Engine::Graphics::set_camera(renderer_camera);
+        }
+      }
+    };
+
 
   } // namespace Systems
 } // namespace Engine

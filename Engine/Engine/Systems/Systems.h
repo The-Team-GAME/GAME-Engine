@@ -8,6 +8,7 @@
 void register_engine_systems()
 {
   // Update systems
+  Engine::ECS::add_system<Engine::Systems::CameraSystem>();
   Engine::ECS::add_system<Engine::Systems::Physics2DSystem>();
   Engine::ECS::add_system<Engine::Systems::AnimationUpdateSystem>();
   Engine::ECS::add_system<Engine::Systems::ClickableSystem>();
@@ -32,4 +33,5 @@ void unregister_engine_systems()
   Engine::ECS::remove_system<Engine::Systems::ClickableSystem>();
   Engine::ECS::remove_system<Engine::Systems::AnimationUpdateSystem>();
   Engine::ECS::remove_system<Engine::Systems::Physics2DSystem>();
+  Engine::ECS::remove_system<Engine::Systems::CameraSystem>();
 }

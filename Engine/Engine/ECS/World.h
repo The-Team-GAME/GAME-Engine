@@ -450,6 +450,56 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
+    Iterates over all entities that have the specified component types and calls
+    the callback function for each entity.
+
+    Parameters:
+    callback - Function to call for each entity: void(Entity entity)
+
+    Where to call it:
+    When you need to perform operations on all entities with specific components
+    without creating a temporary vector.
+
+    Example:
+    ECS::for_each_entity_with<Components::Transform2D, Components::Velocity>(
+      [](Entity entity) {
+        auto* transform = entity.get_component<Components::Transform2D>();
+        auto* velocity = entity.get_component<Components::Velocity>();
+        // Do something with the components
+      }
+    );
+    ==================================================================================*/
+    template <typename... T>
+    void for_each_entity_with(std::function<void(Entity)> callback);
+
+    /*=================================================================================
+    Function Brief:
+    Iterates over all entities that have the specified component types and are on
+    any of the specified layers, calling the callback function for each entity.
+
+    Parameters:
+    layers - LayerSignature specifying which layers to search.
+    callback - Function to call for each entity: void(Entity entity)
+
+    Where to call it:
+    When you need to perform operations on entities with specific components
+    on specific layers without creating a temporary vector.
+
+    Example:
+    LayerID player_layer = ECS::get_layer_id("player");
+    ECS::for_each_entity_with<Components::Health>(
+      LayerSignature{player_layer},
+      [](Entity entity) {
+        auto* health = entity.get_component<Components::Health>();
+        // Do something with the health component
+      }
+    );
+    ==================================================================================*/
+    template <typename... T>
+    void for_each_entity_with(const LayerSignature& layers, std::function<void(Entity)> callback);
+
+    /*=================================================================================
+    Function Brief:
     Iterates over pairs of entities where LHS entities are on any layer in the LHS mask
     and RHS entities are on any layer in the RHS mask.
     Calls the callback function for each valid pair (excluding self-pairs).
