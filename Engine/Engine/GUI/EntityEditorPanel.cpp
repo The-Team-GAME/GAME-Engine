@@ -20,6 +20,9 @@
 #include "../Path.h"
 #include "../Resources.h"
 #include <filesystem>
+#include <fstream>
+#include <sstream>
+#include <unordered_map>
 
 void EntityEditorPanelHelpers::render_component_tree(const std::string& component_name, Engine::ECS::Entity& entity, Engine::ECS::IComponentArray* array)
 {
@@ -370,6 +373,242 @@ void EntityEditorPanel()
   else
   {
     ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "No entity selected");
+  }
+
+  ImGui::Separator();
+
+  // Section 3: Bulk Export/Import
+  if (ImGui::CollapsingHeader("Bulk Export/Import"))
+  {
+    static std::unordered_map<std::string, bool> selected_components;
+    static bool initialized = false;
+
+    // Initialize component selection map
+    if (!initialized) {
+      auto& containers = Engine::ECS::Internal::get_containers();
+      for (auto& [type_id, array] : containers.component_arrays) {
+        std::string component_name = array->get_type_name();
+        if (component_name != "Unknown" && array->is_reflectable()) {
+          selected_components[component_name] = false;
+        }
+      }
+      initialized = true;
+    }
+
+    ImGui::Text("Filter by Components:");
+    ImGui::Separator();
+
+    // Component checkboxes
+    auto& containers = Engine::ECS::Internal::get_containers();
+    int checkbox_count = 0;
+    for (auto& [type_id, array] : containers.component_arrays) {
+      std::string component_name = array->get_type_name();
+      if (component_name == "Unknown" || !array->is_reflectable()) {
+        continue;
+      }
+
+      if (checkbox_count > 0 && checkbox_count % 3 == 0) {
+        // New row after 3 checkboxes
+      }
+      else if (checkbox_count > 0) {
+        ImGui::SameLine();
+      }
+
+      ImGui::Checkbox(component_name.c_str(), &selected_components[component_name]);
+      checkbox_count++;
+    }
+
+    ImGui::Separator();
+
+    // Count matching entities
+    size_t matching_count = 0;
+    auto all_entities = Engine::ECS::get_all_entities();
+    for (auto& entity : all_entities) {
+      bool matches = false;
+      for (const auto& [comp_name, is_selected] : selected_components) {
+        if (is_selected) {
+          entity.for_each_component([&](const std::string& type_name, Engine::ECS::IComponentArray*) {
+            if (type_name == comp_name) {
+              matches = true;
+            }
+            });
+          if (matches) {
+            break;
+          }
+        }
+      }
+      if (matches) {
+        matching_count++;
+      }
+    }
+
+    ImGui::Text("Matching Entities: %zu", matching_count);
+    ImGui::Separator();
+
+    // Export button
+    if (ImGui::Button("Export Matching Entities", ImVec2(-1, 0)))
+    {
+      ImGui::OpenPopup("ExportMatchingEntities");
+    }
+
+    // Export popup
+    static char export_filename[128] = "";
+    if (ImGui::BeginPopupModal("ExportMatchingEntities", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+      ImGui::Text("Export %zu entities to file:", matching_count);
+      ImGui::InputText("Filename", export_filename, sizeof(export_filename));
+      ImGui::Text(".json");
+
+      ImGui::Separator();
+
+      if (ImGui::Button("Export", ImVec2(120, 0)))
+      {
+        if (strlen(export_filename) > 0)
+        {
+          std::string filename = std::string(export_filename);
+          if (filename.find(".json") == std::string::npos) {
+            filename += ".json";
+          }
+
+          // Collect matching entities
+          ReflectionLibrary::Array entities_array;
+          for (auto& entity : all_entities) {
+            bool matches = false;
+            for (auto& [comp_name, is_selected] : selected_components) {
+              if (is_selected) {
+                entity.for_each_component([&](const std::string& type_name, Engine::ECS::IComponentArray*) {
+                  if (type_name == comp_name) {
+                    matches = true;
+                  }
+                  });
+                if (matches) {
+                  break;
+                }
+              }
+            }
+            if (matches) {
+              entities_array.push_back(Engine::ECS::entity_to_generic_value(entity));
+            }
+          }
+
+          // Create JSON object
+          ReflectionLibrary::Object json_obj;
+          json_obj["entities"] = ReflectionLibrary::GenericValue(entities_array);
+          json_obj["count"] = ReflectionLibrary::GenericValue(static_cast<ReflectionLibrary::Integer>(matching_count));
+
+          // Save to file
+          std::string relative_path = "exports/" + filename;
+          std::string full_path = Engine::Path(Engine::Resources::resource_path).join(relative_path).to_string();
+
+          // Ensure exports directory exists
+          std::string exports_dir = Engine::Path(Engine::Resources::resource_path).join("exports").to_string();
+          if (!std::filesystem::exists(exports_dir)) {
+            std::filesystem::create_directories(exports_dir);
+          }
+
+          std::string json_str = ReflectionLibrary::generic_value_to_json(ReflectionLibrary::GenericValue(json_obj), true);
+          std::ofstream file(full_path);
+          if (file.is_open()) {
+            file << json_str;
+            file.close();
+
+            export_filename[0] = '\0';
+            ImGui::CloseCurrentPopup();
+            ImGui::OpenPopup("ExportSuccess");
+          }
+        }
+      }
+
+      ImGui::SameLine();
+
+      if (ImGui::Button("Cancel", ImVec2(120, 0)))
+      {
+        export_filename[0] = '\0';
+        ImGui::CloseCurrentPopup();
+      }
+
+      ImGui::EndPopup();
+    }
+
+    // Export success popup
+    if (ImGui::BeginPopup("ExportSuccess"))
+    {
+      ImGui::Text("Entities exported successfully!");
+      ImGui::EndPopup();
+    }
+
+    // Import button
+    if (ImGui::Button("Import Entities from File", ImVec2(-1, 0)))
+    {
+      ImGui::OpenPopup("ImportEntities");
+    }
+
+    // Import popup
+    static char import_filename[128] = "";
+    if (ImGui::BeginPopupModal("ImportEntities", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+      ImGui::Text("Import entities from file:");
+      ImGui::InputText("Filename", import_filename, sizeof(import_filename));
+      ImGui::Text(".json");
+
+      ImGui::Separator();
+
+      if (ImGui::Button("Import", ImVec2(120, 0)))
+      {
+        if (strlen(import_filename) > 0)
+        {
+          std::string filename = std::string(import_filename);
+          if (filename.find(".json") == std::string::npos) {
+            filename += ".json";
+          }
+
+          std::string relative_path = "exports/" + filename;
+          std::string full_path = Engine::Path(Engine::Resources::resource_path).join(relative_path).to_string();
+
+          // Read file
+          std::ifstream file(full_path);
+          if (file.is_open()) {
+            std::stringstream buffer;
+            buffer << file.rdbuf();
+            file.close();
+
+            auto json_value = ReflectionLibrary::generic_value_from_json(buffer.str());
+            if (json_value.has_value() && json_value->isObject()) {
+              auto& obj = json_value->getObject();
+              if (obj.count("entities") && obj["entities"].isArray()) {
+                auto& entities_array = obj["entities"].getArray();
+
+                // Import each entity
+                for (const auto& entity_data : entities_array) {
+                  Engine::ECS::create_entity_from_generic_value(entity_data);
+                }
+
+                import_filename[0] = '\0';
+                ImGui::CloseCurrentPopup();
+                ImGui::OpenPopup("ImportSuccess");
+              }
+            }
+          }
+        }
+      }
+
+      ImGui::SameLine();
+
+      if (ImGui::Button("Cancel", ImVec2(120, 0)))
+      {
+        import_filename[0] = '\0';
+        ImGui::CloseCurrentPopup();
+      }
+
+      ImGui::EndPopup();
+    }
+
+    // Import success popup
+    if (ImGui::BeginPopup("ImportSuccess"))
+    {
+      ImGui::Text("Entities imported successfully!");
+      ImGui::EndPopup();
+    }
   }
 
   ImGui::End();
