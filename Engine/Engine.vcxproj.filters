@@ -126,6 +126,7 @@
     <ClInclude Include="Engine\ECS\Reflection.h" />
     <ClInclude Include="Engine\FileIO\Helpers.h" />
     <ClInclude Include="Engine\FileIO\Settings.h" />
+    <ClInclude Include="Engine\Systems\UISystem.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
