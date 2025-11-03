@@ -346,11 +346,11 @@ namespace TilemapPanel {
               preview_texture.texture_handle->height);
 
             // Rows and columns input
-            if (ImGui::DragInt("Rows", &atlas_rows, 1.0f, 1, 100)) {
+            if (ImGui::DragInt("Columns", &atlas_cols, 1.0f, 1, 100)) {
               regenerate_atlas();
             }
 
-            if (ImGui::DragInt("Columns", &atlas_cols, 1.0f, 1, 100)) {
+            if (ImGui::DragInt("Rows", &atlas_rows, 1.0f, 1, 100)) {
               regenerate_atlas();
             }
 
