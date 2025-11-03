@@ -40,11 +40,13 @@ namespace Engine {
         f32 half_width = (dynamic_obj.width + static_obj.width) / 2;
         f32 half_height = (dynamic_obj.height + static_obj.height) / 2;
         minkowski.min = Vec2D(minkowski.pos.x - half_width, minkowski.pos.y - half_height);
-        minkowski.max = Vec2D(minkowski.pos.x - half_width, minkowski.pos.y - half_height);
+        minkowski.max = Vec2D(minkowski.pos.x + half_width, minkowski.pos.y + half_height);
         return minkowski;
       }
 
-      static Vec2D penetrationVector(AABB const& minkowski) // smth wrong with the math here?
+      // This gives the vector for how deep the dynamic object has collided into the static object
+      // So u need to take the position of the obj and minus the pen-vec to get the correct location
+      static Vec2D penetrationVector(AABB const& minkowski)
       {
         // So... how does this work.
         // First we take the aabb and find the distance to the edges of the static object

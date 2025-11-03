@@ -385,21 +385,8 @@ Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, 
     }
   }
 
-  // Load prefab from file
-  std::ifstream file(full_path);
-  if (!file.is_open())
-  {
-    Log::warning("Failed to open prefab file: " + full_path);
-    return Engine::ECS::Prefab(); // Return empty prefab handle
-  }
-
-  std::stringstream buffer;
-  buffer << file.rdbuf();
-  std::string json_content = buffer.str();
-  file.close();
-
   // Deserialize prefab
-  Engine::ECS::Prefab prefab = Engine::FileIO::deserialize_prefab_from_json(json_content);
+  Engine::ECS::Prefab prefab = Engine::FileIO::deserialize_prefab_from_json_file(full_path);
 
   if (!prefab.is_valid())
   {
@@ -427,29 +414,10 @@ bool Engine::Resources::save_prefab(const std::string& filepath, const Engine::E
   // Construct full path
   std::string full_path = append_resource_path ? resource_path + filepath : filepath;
 
-  // Serialize prefab to JSON
-  std::string json_content = Engine::FileIO::serialize_prefab_to_json(prefab);
-
-  if (json_content.empty() || json_content == "{}")
+  if (!Engine::FileIO::serialize_prefab_to_json_file(full_path, prefab))
   {
-    Log::warning("Failed to serialize prefab: " + full_path);
     return false;
   }
-
-  // TODO: this needs to create the folder if it doesn't exist
-
-  // Write to file
-  std::ofstream file(full_path);
-  if (!file.is_open())
-  {
-    Log::warning("Failed to open prefab file for writing: " + full_path);
-    return false;
-  }
-
-  file << json_content;
-  file.close();
-
-  Log::info("Prefab saved: " + full_path);
 
   // Update cache with the implementation
   prefab_cache[full_path] = prefab.get_impl();

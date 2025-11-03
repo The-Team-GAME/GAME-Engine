@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="Engine\Systems\CollisionSystem.cpp" />
@@ -41,6 +41,8 @@
     <ClCompile Include="GameLogic\GameStates\ShowcaseState.cpp" />
     <ClCompile Include="GameLogic\WinMain.cpp" />
     <ClCompile Include="Engine\Systems\ParticleSystem.cpp" />
+    <ClCompile Include="Engine\ECS\Types.cpp" />
+    <ClCompile Include="Engine\FileIO\Helpers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -56,11 +58,8 @@
     <ClInclude Include="Engine\Events\Events.h" />
     <ClInclude Include="Engine\Events\InputEvents.h" />
     <ClInclude Include="Engine\Events\WindowEvents.h" />
-    <ClInclude Include="Engine\FileIO\EngineSettings.h" />
-    <ClInclude Include="Engine\FileIO\LocalSettings.h" />
     <ClInclude Include="Engine\FileIO\PrefabsFileIO.h" />
     <ClInclude Include="Engine\FileIO\SettingsManager.h" />
-    <ClInclude Include="Engine\FileIO\UserSettings.h" />
     <ClInclude Include="Engine\GUI\ResourceManagerPanel.h" />
     <ClInclude Include="Engine\GUI\widgets\TextureAtlasWidget.h" />
     <ClInclude Include="Engine\MonkeyEngine.h" />
@@ -72,7 +71,10 @@
     <ClInclude Include="Engine\Reflection\ReflectionLibrary\Macros.h" />
     <ClInclude Include="Engine\Reflection\ReflectionLibrary\Print.h" />
     <ClInclude Include="Engine\Systems\Systems.h" />
+    <ClInclude Include="GameLogic\GameStates\Documentation\LayersAdvancedState.h" />
+    <ClInclude Include="GameLogic\GameStates\Documentation\LayersState.h" />
     <ClInclude Include="GameLogic\GameStates\Documentation\PrefabsState.h" />
+    <ClInclude Include="GameLogic\GameStates\MainMenuState.h" />
     <ClInclude Include="GameLogic\Reflection\ImGuiHelpers.h" />
     <ClInclude Include="Engine\Reflection\JsonHelpers.h" />
     <ClInclude Include="Engine\GUI\CameraPanel.h" />
@@ -120,6 +122,10 @@
     <ClInclude Include="GameLogic\Systems\HealthSystem.h" />
     <ClInclude Include="GameLogic\Systems\PlayerControllerSystem.h" />
     <ClInclude Include="Engine\Systems\ParticleSystem.h" />
+    <ClInclude Include="Engine\ECS\SparseSet.h" />
+    <ClInclude Include="Engine\ECS\Reflection.h" />
+    <ClInclude Include="Engine\FileIO\Helpers.h" />
+    <ClInclude Include="Engine\FileIO\Settings.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
@@ -131,5 +137,6 @@
     <None Include="Engine\EventManager\EventManager.inl" />
     <None Include="Engine\FileIO\SettingsManager.inl" />
     <None Include="Engine\Reflection\ReflectionLibrary\GenericValue.inl" />
+    <None Include="Engine\ECS\Prefab.inl" />
   </ItemGroup>
 </Project>

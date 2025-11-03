@@ -3,12 +3,14 @@
 #include "GraphicsSystem.h"
 #include "PhysicsSystem.h"
 #include "ParticleSystem.h"
+#include "UISystem.h"
 
 void register_engine_systems()
 {
   // Update systems
   Engine::ECS::add_system<Engine::Systems::Physics2DSystem>();
   Engine::ECS::add_system<Engine::Systems::AnimationUpdateSystem>();
+  Engine::ECS::add_system<Engine::Systems::ClickableSystem>();
 
   // Draw systems
   Engine::ECS::add_system<Engine::Systems::StaticSpriteRenderSystem>();
@@ -24,6 +26,7 @@ void unregister_engine_systems()
   Engine::ECS::remove_system<Engine::Systems::AtlasSpriteRenderSystem>();
   Engine::ECS::remove_system<Engine::Systems::StaticSpriteRenderSystem>();
 
+  Engine::ECS::remove_system<Engine::Systems::ClickableSystem>();
   Engine::ECS::remove_system<Engine::Systems::AnimationUpdateSystem>();
   Engine::ECS::remove_system<Engine::Systems::Physics2DSystem>();
   Engine::ECS::remove_system<Engine::Systems::ParticleSystem>();

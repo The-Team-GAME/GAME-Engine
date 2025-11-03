@@ -7,11 +7,11 @@ using phy2D = Systems::Physics2DSystem;
 
 namespace {
   bool jumping = false;
+  Engine::ECS::Entity player;
 }
 class PhysicsTestState : public Engine::GameState<PhysicsTestState> {
 private:
   Engine::ECS::Entity prefab_instance;
-  Engine::ECS::Entity player;
 
 public:
   void load() {
@@ -31,6 +31,13 @@ public:
       .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
       .add_component<Components::RigidBody>(Vec2D(800.f, 650.f), false, false)
       .add_component<Components::BoxCollider>(800.0f, 50.0f, false); // width, height
+    // Static ground box2
+    auto object3 = Engine::ECS::create_entity().add_component<Components::Tag<"PhysicsTestState">>()
+      .add_component<Components::Transform2D>(1200.0f, 550.0f, 0.0f, 50.0f, 300.0f) // pos.x, pos.y, rotation, scale.x, scale.y
+      .add_component<Components::Color>(0.2f, 0.8f, 0.2f, 1.0f)
+      .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
+      .add_component<Components::RigidBody>(Vec2D(1200.0f, 550.0f), false, false)
+      .add_component<Components::BoxCollider>(50.0f, 300.0f, false); // width, height
   };
 
   void init() {};

@@ -16,6 +16,7 @@
 #pragma once
 
 #include "../../Engine/MonkeyEngine.h"
+#include "../../Engine/Systems/PhysicsSystem.h"
 
 class Rubric2500ParticlesState : public Engine::GameState<Rubric2500ParticlesState>
 {
@@ -41,14 +42,18 @@ public:
         .add_component<Components::Tag<"Rubric2500ParticlesState">>()
         .add_component<Components::Transform2D>(x, y, rotation, size, size)
         .add_component<Components::Color>(color)
-        .add_component<Components::RigidBody>()
+        .add_component<Components::RigidBody>(Vec2D(x,y), false, false)
+        .add_component<Components::BoxCollider>(size, size, false)
         .add_component<Components::Texture>(Engine::Resources::get_rect_texture());
 
       temp.get_component<Components::RigidBody>()->angular_velocity = 30.0f + static_cast<f32>(rand() % 90); // Random rotation speed between 30 and 120 degrees per second 
     }
   };
 
-  void update() {};
+  void update()
+  {
+
+  }
 
   void draw()
   {

@@ -87,22 +87,12 @@ namespace Engine {
     inline bool ComponentArray<T>::add_component_from_generic_value(EntityID entity, const ReflectionLibrary::GenericValue& value)
     {
       if constexpr (ReflectionLibrary::is_reflectable_v<T>) {
-        if constexpr (ReflectionLibrary::has_reflector_v<T>) {
-          // Component has custom reflector
-          std::optional<typename T::Reflector> reflector_opt = ReflectionLibrary::from_generic_value<typename T::Reflector>(value);
-          if (reflector_opt) {
-            T component = ReflectionLibrary::ReflectionInfo<T>::create(reflector_opt.value());
-            add_component(entity, std::move(component));
-            return true;
-          }
-        }
-        else {
-          // Component uses direct reflection
-          std::optional<T> component_opt = ReflectionLibrary::from_generic_value<T>(value);
-          if (component_opt) {
-            add_component(entity, std::move(component_opt.value()));
-            return true;
-          }
+        // Both components with and without reflectors use from_generic_value<T>
+        // because REFLECT_CUSTOM creates ReflectionInfo<T> with Reflector fields
+        std::optional<T> component_opt = ReflectionLibrary::from_generic_value<T>(value);
+        if (component_opt) {
+          add_component(entity, std::move(component_opt.value()));
+          return true;
         }
       }
       return false;
@@ -118,21 +108,12 @@ namespace Engine {
       }
 
       if constexpr (ReflectionLibrary::is_reflectable_v<T>) {
-        if constexpr (ReflectionLibrary::has_reflector_v<T>) {
-          // Component has custom reflector
-          std::optional<typename T::Reflector> reflector_opt = ReflectionLibrary::from_generic_value<typename T::Reflector>(value);
-          if (reflector_opt) {
-            *component = ReflectionLibrary::ReflectionInfo<T>::create(reflector_opt.value());
-            return true;
-          }
-        }
-        else {
-          // Component uses direct reflection
-          std::optional<T> component_opt = ReflectionLibrary::from_generic_value<T>(value);
-          if (component_opt) {
-            *component = std::move(component_opt.value());
-            return true;
-          }
+        // Both components with and without reflectors use from_generic_value<T>
+        // because REFLECT_CUSTOM creates ReflectionInfo<T> with Reflector fields
+        std::optional<T> component_opt = ReflectionLibrary::from_generic_value<T>(value);
+        if (component_opt) {
+          *component = std::move(component_opt.value());
+          return true;
         }
       }
       return false;
