@@ -16,6 +16,7 @@
 
 #include "imgui.h"
 #include "../../Engine/MonkeyEngine.h"
+#include "../GameStates/EmptyState.h"
 #include "../GameStates/MainMenuState.h"
 #include "../GameStates/BasicState.h"
 #include "../GameStates/Rubric2500ParticlesState.h"
@@ -24,6 +25,7 @@
 #include "../GameStates/ShowcaseState.h"
 #include "../GameStates/Documentation/PrefabsState.h"
 #include "../GameStates/Dev/PhysicsTestState.h"
+#include "../GameStates/Documentation/LayersState.h"
 
 /*=================================================================================
 Function Brief:
@@ -41,7 +43,10 @@ inline void StateChooserPanel()
 
   ImGui::Text("Current State: %s", typeid(*Engine::StateManager::get_current_state()).name());
 
-
+  if (ImGui::Button("EmptyState"))
+  {
+    Engine::StateManager::change_state(EmptyState::get());
+  }
   if (ImGui::Button("MainMenuState"))
   {
     Engine::StateManager::change_state(MainMenuState::get());
@@ -74,7 +79,10 @@ inline void StateChooserPanel()
   {
     Engine::StateManager::change_state(PhysicsTestState::get());
   }
-
+  if (ImGui::Button("LayersState"))
+  {
+    Engine::StateManager::change_state(LayersState::get());
+  }
 
   ImGui::End();
 }

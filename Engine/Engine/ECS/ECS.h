@@ -24,6 +24,7 @@
 #include "World.h"
 #include "WorldData.h"
 #include "Prefab.h"
+#include "Reflection.h"
 #include "Macros.h"
 #include "Entity.inl"
 #include "World.inl"

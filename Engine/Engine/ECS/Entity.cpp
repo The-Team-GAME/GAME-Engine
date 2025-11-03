@@ -15,6 +15,7 @@
 #include "Entity.h"
 #include "World.h"
 #include "WorldData.h"
+#include "Reflection.h"
 
 namespace Engine {
   namespace ECS {
@@ -63,68 +64,120 @@ namespace Engine {
       }
     }
 
+    ReflectionLibrary::GenericValue entity_to_generic_value(Entity entity) {
+      if (!entity.is_valid()) {
+        return ReflectionLibrary::GenericValue();
+      }
+
+      ReflectionLibrary::GenericValue result;
+      result["dataType"] = "Entity";
+      result["id"] = static_cast<int>(entity.get_id());
+
+      // Serialize layers and components using helper functions
+      result["layers"] = Serialization::serialize_layers(entity.get_layers());
+      result["components"] = Serialization::serialize_components(
+        [&entity](auto callback) { entity.for_each_component(callback); },
+        entity.get_id()
+      );
+
+      return result;
+    }
+
     Entity create_entity_from_generic_value(const ReflectionLibrary::GenericValue& value) {
       if (!value.isObject() || !value.has("components") || !value["components"].isArray()) {
         return Entity(INVALID_ENTITY);
       }
 
       Entity entity = ECS::create_entity();
+      EntityID entity_id = entity.get_id();
 
-      const auto& components_array = value["components"].getArray();
       auto& containers = Internal::get_containers();
 
-      // Iterate through each component in the JSON
-      for (const auto& component_entry : components_array) {
-        if (!component_entry.isObject() || !component_entry.has("type")) {
-          continue;
-        }
-
-        std::string component_type = component_entry["type"].getString();
-
-        // Find the component array for this type
-        for (auto& [type_id, array] : containers.component_arrays) {
-          if (array->get_type_name() == component_type) {
-            array->add_component_from_generic_value(entity.get_id(), component_entry["data"]);
-            break;
-          }
+      // Deserialize layers using helper function
+      LayerSignature layers = Serialization::deserialize_layers(value);
+      entity.clear_layers();
+      for (LayerID layer = 0; layer < containers.layer_id_to_name.size(); ++layer) {
+        if (layers.test(layer)) {
+          entity.add_to_layer(containers.layer_id_to_name[layer]);
         }
       }
 
+      // Deserialize components using helper function
+      const auto& components_array = value["components"].getArray();
+      Serialization::deserialize_components_to_storage(
+        components_array,
+        containers.component_arrays,
+        containers.entity_signatures[entity_id],
+        entity_id
+      );
+
       // Notify systems about the component changes
-      Internal::entity_component_changed(entity.get_id());
+      Internal::entity_component_changed(entity_id);
 
       return entity;
     }
 
-    ReflectionLibrary::GenericValue entity_to_generic_value(Entity entity) {
-      auto& containers = Internal::get_containers();
+    // ============================================================================
+    // Layer Management Implementation
+    // ============================================================================
 
-      EntityID entity_id = entity.get_id();
-      const auto& signature = containers.entity_signatures[entity_id];
+    bool Entity::is_on_layer(LayerID layer) const {
+      return ECS::is_on_layer(*this, layer);
+    }
 
-      ReflectionLibrary::GenericValue result;
-      result["dataType"] = "Entity";
-      result["id"] = static_cast<int>(entity_id);
+    LayerSignature Entity::get_layers() const {
+      return ECS::get_entity_layers(*this);
+    }
 
-      ReflectionLibrary::Array components_array;
+    Entity& Entity::clear_layers() {
+      ECS::clear_layers(*this);
+      return *this;
+    }
 
-      // Iterate through all component arrays
-      for (auto& [type_id, array] : containers.component_arrays) {
-        if (!array->is_reflectable()) {
-          continue; // Skip non-reflectable components
-        }
+    Entity& Entity::add_to_layer(const std::string& layer_name) {
+      LayerID layer = ECS::get_layer_id(layer_name);
+      if (layer != INVALID_LAYER) {
+        auto& containers = Internal::get_containers();
+        EntityID entity_id = get_id();
 
-        if (signature.test(type_id)) {
-          ReflectionLibrary::GenericValue component_entry;
-          component_entry["type"] = array->get_type_name();
-          component_entry["data"] = array->to_generic_value(entity_id);
-          components_array.push_back(component_entry);
+        if (!containers.active_entities.contains(entity_id))
+          return *this;
+
+        // Only add if not already on this layer
+        if (!containers.entity_layers[entity_id].test(layer)) {
+          containers.entity_layers[entity_id].set(layer);
+          Internal::add_entity_to_layer_set(entity_id, layer);
+          Internal::entity_component_changed(entity_id);
         }
       }
+      return *this;
+    }
 
-      result["components"] = components_array;
+    Entity& Entity::remove_from_layer(const std::string& layer_name) {
+      LayerID layer = ECS::get_layer_id(layer_name);
+      if (layer != INVALID_LAYER) {
+        auto& containers = Internal::get_containers();
+        EntityID entity_id = get_id();
 
-      return result;
+        if (!containers.active_entities.contains(entity_id))
+          return *this;
+
+        // Only remove if currently on this layer
+        if (containers.entity_layers[entity_id].test(layer)) {
+          containers.entity_layers[entity_id].reset(layer);
+          Internal::remove_entity_from_layer_set(entity_id, layer);
+          Internal::entity_component_changed(entity_id);
+        }
+      }
+      return *this;
+    }
+
+    bool Entity::is_on_layer(const std::string& layer_name) const {
+      LayerID layer = ECS::get_layer_id(layer_name);
+      if (layer != INVALID_LAYER) {
+        return ECS::is_on_layer(*this, layer);
+      }
+      return false;
     }
 
   } // namespace ECS
