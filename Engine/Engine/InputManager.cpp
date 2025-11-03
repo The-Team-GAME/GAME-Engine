@@ -92,16 +92,10 @@ namespace Engine
 
     //std::cout << "Raw Mouse Position: (" << xpos << ", " << ypos << ")\n";
 
-    // Check if we should use viewport coordinates (only if viewport mode is enabled)
-    if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled) {
-      // Use viewport-adjusted coordinates
-      Math::Vec2D viewport_pos = ViewportPanel::get_viewport_mouse_position();
-      mousePosition = glm::vec2(viewport_pos.x, viewport_pos.y);
-    }
-    else {
-      // Use regular screen-to-virtual conversion
-      mousePosition = Engine::Graphics::screen_to_virtual({ static_cast<f32>(xpos), static_cast<f32>(ypos) });
-    }
+    // Check if imgui viewport mode is enabled to determine mouse position calculation
+    mousePosition = Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled
+      ? ViewportPanel::get_viewport_mouse_position()
+      : Engine::Graphics::screen_to_virtual({ static_cast<f32>(xpos), static_cast<f32>(ypos) });
 
     //std::cout << "Mouse Position: (" << mousePosition.x << ", " << mousePosition.y << ")\n";
 
