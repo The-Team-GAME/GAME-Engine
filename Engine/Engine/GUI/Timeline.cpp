@@ -12,7 +12,7 @@
 //          controls, playhead movement, dynamic layer resizing, and processing of
 //          drag-and-drop events to place image clips onto the grid.
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright � 2025 DigiPen Institute of Technology Singapore.\ All rights reserved.
 //-----------------------------------------------------------------------------------
 
 #include "Timeline.h"
@@ -21,6 +21,7 @@
 #include <cmath>
 #include <iostream>
 #include "../ECS/ECS.h"
+#include "../../Engine/MonkeyEngine.h"
 
 const f32 LEFT_RESIZE_HANDLE_WIDTH = 10.0f;
 const f32 RIGHT_RESIZE_HANDLE_WIDTH = 10.0f;
@@ -265,15 +266,29 @@ void Timeline::draw() {
 
 
       // Draw the small Image iteration (Thumbnail)
-      ImTextureID tex_id = (ImTextureID)(intptr_t)clip.texture_id;
+      auto entity = Engine::ECS::get_entity(clip.texture_id);
+      ImTextureID tex_id = 0;
+      if (entity.is_valid() && entity.has_component<Components::Texture>()) {
+        // 1. Get the shared pointer
+        auto texture_ptr = entity.get_component<Components::Texture>()->texture_handle;
+
+        // 2. Safely check if the pointer holds data
+        if (texture_ptr) {
+          // 3. Dereference the shared_ptr (->) and access the raw ID member (e.g., 'id')
+          // *** YOU MUST VERIFY THE NAME OF THE RAW ID MEMBER (e.g., 'id' or 'handle') ***
+          ImTextureID raw_id = (ImTextureID)(intptr_t)texture_ptr->id; // Assuming the raw ID member is 'id'
+
+          tex_id = raw_id;
+        }
+      }
       float inset = 2.0f;
-      float thumbSize = currentCellSize.y - inset * 2.0f; // Use height as thumb size
+      float thumbSize = currentCellSize.y - inset * 2.0f;
 
 
       draw_list->AddImage(
         tex_id,
         ImVec2(clipMin.x + inset, clipMin.y + inset),
-        ImVec2(clipMin.x + inset + thumbSize, clipMin.y + inset + thumbSize), // Fixed width based on height
+        ImVec2(clipMin.x + inset + thumbSize, clipMin.y + inset + thumbSize),
         ImVec2(0, 0), ImVec2(1, 1),
         IM_COL32_WHITE
       );
@@ -284,7 +299,7 @@ void Timeline::draw() {
       textPos.y = clipMin.y + inset;
       ImGui::SetCursorScreenPos(textPos);
 
-      ImGui::Text("Tex: %d | Start: %d | Dur: %d", clip.texture_id, clip.start_frame, clip.duration_frames);
+      ImGui::Text("Entity: %d | Start: %d | Dur: %d", clip.texture_id, clip.start_frame, clip.duration_frames);
 
 
       // --- Manipulation Handlers ---

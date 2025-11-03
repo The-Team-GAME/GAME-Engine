@@ -14,6 +14,7 @@ private:
 	std::unordered_map<s32, bool> entity_visibility;
 	std::vector<Engine::ECS::Entity> timeline_entities;
 
+
 public:
 	// Declare public methods
 	void load() {};
@@ -37,10 +38,9 @@ public:
 
 
 		//banana.get_component<Components::TextureAtlas>()->drawIndex = 1;
-		s32 bro_id = bro.get_id();
-		timeline.set_selected_entity_id(bro_id);
-		s32 bro_tex_id = 
-		entity_visibility[bro_id] = false;
+		s32 bro_entity_id = bro.get_id();
+		timeline.set_selected_entity_id(bro_entity_id);
+		entity_visibility[bro_entity_id] = false;
 		timeline_entities.push_back(bro);
 
 
@@ -49,22 +49,22 @@ public:
 			.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.0f)
 			.add_component<Components::Texture>(Engine::Resources::load_texture("images/monkey.png"));
 
-		s32 monkey_id = monkey.get_id();
-		timeline.set_selected_entity_id(monkey_id);
-		entity_visibility[monkey_id] = false;
+		s32 monkey_entity_id = monkey.get_id();
+		timeline.set_selected_entity_id(monkey_entity_id);
+		entity_visibility[monkey_entity_id] = false;
 		timeline_entities.push_back(monkey);
 
 
 		// Add the clip to the timeline
 		timeline.add_clip(
-			bro_id,  // Texture ID (Placeholder)
+			bro_entity_id,  // Texture ID (Placeholder)
 			0,                  // Layer 0
 			10,                 // Start Frame 10
 			60                  // Duration 60 frames
 		);
 
 		timeline.add_clip(
-			monkey_id,  // Texture ID (Placeholder)
+			monkey_entity_id,  // Texture ID (Placeholder)
 			1,                  // Layer 0
 			5,                 // Start Frame 10
 			40                  // Duration 60 frames
@@ -153,6 +153,27 @@ public:
 		}
 
 	};
+	
+
+	Engine::ECS::Entity create_timeline_entity(Engine::Graphics::Texture texture) {
+		// Implement the body here since you don't have a separate .cpp file
+		Engine::ECS::Entity entity = Engine::ECS::create_entity();
+
+		// 1. Add essential components
+		entity.add_component<Components::Transform2D>(0.0f, 0.0f, 0.0f, 100.0f, 100.0f) // Default scale/position
+			.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+			.add_component<Components::Texture>(texture);
+
+		// 2. Add animation/atlas components for timeline control, if needed (use defaults)
+		// NOTE: You MUST check if 'texture' contains the necessary metadata (width/height/frames) 
+		// to properly set up Components::TextureAtlas and Components::Animation.
+		// For now, use basic values or skip if the Texture component is enough.
+
+		// 3. Track the entity for cleanup
+		timeline_entities.push_back(entity);
+
+		return entity;
+	}
 
 
 	void free() {};
@@ -166,4 +187,4 @@ public:
 	};
 };
 
-
+ 

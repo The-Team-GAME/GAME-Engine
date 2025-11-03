@@ -49,7 +49,7 @@ public:
   f64 lastFrameTime = 0.0;
 
   // Method to add a clip from an external system
-  void add_clip(s32 texture_id, s32 layer, s32 start_frame, s32 duration_frames);
+  void add_clip(s32 entity_id, s32 layer, s32 start_frame, s32 duration_frames);
   const std::vector<TimelineClip>& get_clips() const { return clips; } //Public getter for clips, needed by TimelineState to check frame existence
 
   //to select my entity
