@@ -25,208 +25,185 @@ namespace Engine {
   Class Brief:
   Path - A cross-platform path utility class that handles path normalization,
   conversion between absolute/relative paths, and ensures consistent path separators.
-  
+
   Key Features:
   - Normalizes path separators to forward slashes (/) for consistency
   - Converts between absolute and relative paths
   - Ensures paths end with separators when needed
   - Works seamlessly on Windows, Linux, and macOS
-  
+  - Supports method chaining for fluent API
+
   Where to use it:
   - Resource loading and serialization
   - File I/O operations
   - Any system that needs cross-platform path handling
+
+  Example Usage:
+  Path("Assets/images").join("player.png").to_string()
+  Path("C:\\Users\\file.txt").normalize().get_filename()
+  Path("Assets").to_absolute().ensure_trailing_separator()
   ==================================================================================*/
   class Path {
+  private:
+    std::string path_string;
+
   public:
+    // Constructors
+    Path() = default;
+    Path(const std::string& path) : path_string(path) {}
+    Path(const char* path) : path_string(path) {}
+    Path(const Path& other) = default;
+    Path(Path&& other) noexcept = default;
+
+    // Assignment operators
+    Path& operator=(const Path& other) = default;
+    Path& operator=(Path&& other) noexcept = default;
     /*=================================================================================
     Function Brief:
-    Normalizes a path by converting all backslashes to forward slashes.
-    This ensures consistent path representation across platforms.
-
-    Parameters:
-    - path: The path string to normalize
-
-    Returns:
-    A string with all backslashes replaced by forward slashes.
+    Normalizes the path by converting all backslashes to forward slashes.
+    Returns a new Path object for method chaining.
 
     Example:
-    "C:\\Users\\file.txt" -> "C:/Users/file.txt"
+    Path("C:\\Users\\file.txt").normalize() -> Path with "C:/Users/file.txt"
     ==================================================================================*/
-    static std::string normalize(const std::string& path);
+    Path normalize() const;
 
     /*=================================================================================
     Function Brief:
-    Converts a path to an absolute path and normalizes it.
-
-    Parameters:
-    - path: The path to convert (can be relative or absolute)
-
-    Returns:
-    The absolute path with normalized separators.
+    Converts the path to an absolute path and normalizes it.
+    Returns a new Path object for method chaining.
 
     Example:
-    "Assets/image.png" -> "C:/Projects/Game/Assets/image.png"
+    Path("Assets/image.png").to_absolute() -> Path with absolute path
     ==================================================================================*/
-    static std::string to_absolute(const std::string& path);
+    Path to_absolute() const;
 
     /*=================================================================================
     Function Brief:
-    Converts an absolute path to a relative path based on a base directory.
+    Converts this absolute path to a relative path based on a base directory.
+    Returns a new Path object for method chaining.
 
     Parameters:
-    - full_path: The absolute path to convert
     - base_path: The base directory path to make the path relative to
 
-    Returns:
-    The relative path if full_path starts with base_path, otherwise returns full_path.
-
     Example:
-    full_path = "C:/Projects/Game/Assets/image.png"
-    base_path = "C:/Projects/Game/Assets/"
-    returns   = "image.png"
+    Path("C:/Projects/Game/Assets/image.png").to_relative("C:/Projects/Game/Assets/")
+    -> Path with "image.png"
     ==================================================================================*/
-    static std::string to_relative(const std::string& full_path, const std::string& base_path);
+    Path to_relative(const std::string& base_path) const;
+    Path to_relative(const Path& base_path) const;
 
     /*=================================================================================
     Function Brief:
-    Ensures a path ends with a path separator (/).
-
-    Parameters:
-    - path: The path to process
-
-    Returns:
-    The path with a trailing separator if it didn't have one.
+    Ensures the path ends with a path separator (/).
+    Returns a new Path object for method chaining.
 
     Example:
-    "Assets" -> "Assets/"
-    "Assets/" -> "Assets/"
+    Path("Assets").ensure_trailing_separator() -> Path with "Assets/"
     ==================================================================================*/
-    static std::string ensure_trailing_separator(const std::string& path);
+    Path ensure_trailing_separator() const;
 
     /*=================================================================================
     Function Brief:
-    Removes the trailing separator from a path if it exists.
-
-    Parameters:
-    - path: The path to process
-
-    Returns:
-    The path without a trailing separator.
+    Removes the trailing separator from the path if it exists.
+    Returns a new Path object for method chaining.
 
     Example:
-    "Assets/" -> "Assets"
-    "Assets" -> "Assets"
+    Path("Assets/").remove_trailing_separator() -> Path with "Assets"
     ==================================================================================*/
-    static std::string remove_trailing_separator(const std::string& path);
+    Path remove_trailing_separator() const;
 
     /*=================================================================================
     Function Brief:
-    Joins multiple path segments into a single path with proper separators.
-
-    Parameters:
-    - segments: Variable number of path segments to join
-
-    Returns:
-    A single path with segments joined by forward slashes.
+    Joins path segments to this path.
+    Returns a new Path object for method chaining.
 
     Example:
-    join("Assets", "images", "player.png") -> "Assets/images/player.png"
+    Path("Assets").join("images", "player.png") -> Path with "Assets/images/player.png"
     ==================================================================================*/
     template<typename... Args>
-    static std::string join(const std::string& first, Args... rest);
+    Path join(Args... segments) const;
 
     /*=================================================================================
     Function Brief:
-    Gets the filename from a path (everything after the last separator).
-
-    Parameters:
-    - path: The path to extract the filename from
-
-    Returns:
-    The filename portion of the path.
+    Gets the filename from the path (everything after the last separator).
 
     Example:
-    "Assets/images/player.png" -> "player.png"
+    Path("Assets/images/player.png").get_filename() -> "player.png"
     ==================================================================================*/
-    static std::string get_filename(const std::string& path);
+    std::string get_filename() const;
 
     /*=================================================================================
     Function Brief:
-    Gets the directory portion of a path (everything before the last separator).
-
-    Parameters:
-    - path: The path to extract the directory from
-
-    Returns:
-    The directory portion of the path.
+    Gets the directory portion of the path (everything before the last separator).
 
     Example:
-    "Assets/images/player.png" -> "Assets/images"
+    Path("Assets/images/player.png").get_directory() -> Path with "Assets/images"
     ==================================================================================*/
-    static std::string get_directory(const std::string& path);
+    Path get_directory() const;
 
     /*=================================================================================
     Function Brief:
-    Gets the file extension from a path (including the dot).
-
-    Parameters:
-    - path: The path to extract the extension from
-
-    Returns:
-    The file extension including the dot, or empty string if no extension.
+    Gets the file extension from the path (including the dot).
 
     Example:
-    "player.png" -> ".png"
-    "config" -> ""
+    Path("player.png").get_extension() -> ".png"
     ==================================================================================*/
-    static std::string get_extension(const std::string& path);
+    std::string get_extension() const;
 
     /*=================================================================================
     Function Brief:
-    Checks if a path is absolute (has a root directory).
-
-    Parameters:
-    - path: The path to check
-
-    Returns:
-    True if the path is absolute, false otherwise.
+    Checks if the path is absolute (has a root directory).
 
     Example:
-    "C:/Users/file.txt" -> true (Windows)
-    "/usr/bin/file" -> true (Unix)
-    "Assets/file.txt" -> false
+    Path("C:/Users/file.txt").is_absolute() -> true (Windows)
+    Path("Assets/file.txt").is_absolute() -> false
     ==================================================================================*/
-    static bool is_absolute(const std::string& path);
+    bool is_absolute() const;
 
     /*=================================================================================
     Function Brief:
-    Checks if a file or directory exists at the given path.
-
-    Parameters:
-    - path: The path to check
-
-    Returns:
-    True if the path exists, false otherwise.
+    Checks if a file or directory exists at this path.
     ==================================================================================*/
-    static bool exists(const std::string& path);
+    bool exists() const;
+
+    /*=================================================================================
+    Function Brief:
+    Returns the underlying string representation of the path.
+    ==================================================================================*/
+    std::string to_string() const;
+    const std::string& string() const;
+
+    /*=================================================================================
+    Function Brief:
+    Implicit conversion to std::string for convenience.
+    ==================================================================================*/
+    operator std::string() const;
+
+    /*=================================================================================
+    Function Brief:
+    Comparison operators
+    ==================================================================================*/
+    bool operator==(const Path& other) const;
+    bool operator!=(const Path& other) const;
+    bool operator==(const std::string& other) const;
+    bool operator!=(const std::string& other) const;
 
   private:
     // Helper function for recursive join
-    static std::string join_impl(const std::string& result);
-
     template<typename... Args>
-    static std::string join_impl(const std::string& result, const std::string& next, Args... rest);
+    std::string join_impl(const std::string& result, const std::string& next, Args... rest) const;
+    std::string join_impl(const std::string& result) const;
   };
 
   // Template implementations
   template<typename... Args>
-  inline std::string Path::join(const std::string& first, Args... rest) {
-    return join_impl(first, rest...);
+  inline Path Path::join(Args... segments) const {
+    return Path(join_impl(path_string, segments...));
   }
 
   template<typename... Args>
-  inline std::string Path::join_impl(const std::string& result, const std::string& next, Args... rest) {
+  inline std::string Path::join_impl(const std::string& result, const std::string& next, Args... rest) const {
     std::string combined = result;
     if (!combined.empty() && combined.back() != '/' && combined.back() != '\\') {
       combined += '/';
