@@ -106,8 +106,8 @@ namespace ImGuiManager {
       {
         if (ImGui::BeginMenu("ImGui"))
         {
-          ImGui::MenuItem("Toggle GUI (F1)", nullptr, &gui_enabled);
-          ImGui::MenuItem("ImGui Viewport Mode (F2)", nullptr, &Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().imgui_viewport_enabled);
+          ImGui::MenuItem("Toggle GUI", "F1", &gui_enabled);
+          ImGui::MenuItem("ImGui Viewport Mode", "F2", &Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().imgui_viewport_enabled);
           
           ImGui::EndMenu();
         }
