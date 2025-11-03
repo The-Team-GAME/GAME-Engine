@@ -326,6 +326,15 @@ namespace TilemapPanel {
                 // Load the texture
                 if (auto tex = Engine::Resources::texture_cache[texture_paths[i]].lock()) {
                   preview_texture = Components::Texture(tex);
+
+                  // Automatically calculate columns and rows by dividing by 32
+                  atlas_cols = preview_texture.texture_handle->width / 32;
+                  atlas_rows = preview_texture.texture_handle->height / 32;
+
+                  // Ensure at least 1 row and 1 column
+                  if (atlas_cols < 1) atlas_cols = 1;
+                  if (atlas_rows < 1) atlas_rows = 1;
+
                   regenerate_atlas();
                 }
               }
