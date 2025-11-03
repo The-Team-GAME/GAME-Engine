@@ -21,6 +21,7 @@
 #include "ImGuiManager.h"
 #include "Time.h"
 #include "GUI/RegisterAllPanels.h"
+#include "GUI/ViewportPanel.h"
 #include "WindowManager.h"
 #include "Perf.h"
 #include "InputManager.h"
@@ -212,6 +213,9 @@ namespace Engine
 
       // Rendering Start ========================================
 
+      // Render game to framebuffer
+      ViewportPanel::begin_render();
+
       // Clear screen (automatically begins batch)
       // start of draw stuff
       StateManager::get_current_state()->draw();
@@ -221,6 +225,9 @@ namespace Engine
       // end of draw stuff (flush remaining batches)
       Engine::Graphics::end_batch();
 
+      ViewportPanel::end_render();
+
+      // Render ImGui (including viewport panel that shows the framebuffer)
       ImGuiManager::end();
       glfwSwapBuffers(WindowManager::get_window());
       // Rendering End ==========================================
@@ -239,6 +246,7 @@ namespace Engine
   {
     StateManager::exit();
     //Engine::ECS::remove_event_listener<WindowResizeEvent>();
+    ViewportPanel::cleanup();
     Engine::Audio::exit();
     Engine::Resources::exit();
     Engine::Graphics::exit();
