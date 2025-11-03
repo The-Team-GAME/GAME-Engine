@@ -20,6 +20,7 @@ namespace Engine {
   namespace ECS {
 
     template<typename T, typename... Args>
+      requires std::is_constructible_v<T, Args...>
     Entity& Entity::add_component(Args&&... args) {
       ECS::add_component<T>(*this, std::forward<Args>(args)...);
       return *this;

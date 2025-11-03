@@ -26,6 +26,7 @@ namespace Engine {
     // ============================================================================
 
     template<typename T, typename... Args>
+      requires std::is_constructible_v<T, Args...>
     PrefabImpl& PrefabImpl::add_component(Args&&... args) {
       ComponentTypeID type_id = ComponentTypeManager::get_type_id<T>();
 
@@ -99,6 +100,7 @@ namespace Engine {
     // ============================================================================
 
     template<typename T, typename... Args>
+      requires std::is_constructible_v<T, Args...>
     Prefab& Prefab::add_component(Args&&... args) {
       if (impl) {
         impl->add_component<T>(std::forward<Args>(args)...);

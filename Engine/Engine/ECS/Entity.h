@@ -81,6 +81,7 @@ namespace Engine {
       When attaching a new component to an entity.
       ==================================================================================*/
       template<typename T, typename... Args>
+        requires std::is_constructible_v<T, Args...>
       Entity& add_component(Args&&... args);
 
       /*=================================================================================

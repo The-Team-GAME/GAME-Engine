@@ -52,6 +52,7 @@ namespace Engine {
       When building a prefab with specific components.
       ==================================================================================*/
       template<typename T, typename... Args>
+        requires std::is_constructible_v<T, Args...>
       PrefabImpl& add_component(Args&&... args);
 
       /*=================================================================================
@@ -247,6 +248,7 @@ namespace Engine {
       When building a prefab with specific components.
       ==================================================================================*/
       template<typename T, typename... Args>
+        requires std::is_constructible_v<T, Args...>
       Prefab& add_component(Args&&... args);
 
       /*=================================================================================
