@@ -26,6 +26,7 @@
 #include "../GameStates/Documentation/PrefabsState.h"
 #include "../GameStates/Dev/PhysicsTestState.h"
 #include "../GameStates/Documentation/LayersState.h"
+#include "../GameStates/TimelineState.h"
 
 /*=================================================================================
 Function Brief:
@@ -82,6 +83,9 @@ inline void StateChooserPanel()
   if (ImGui::Button("LayersState"))
   {
     Engine::StateManager::change_state(LayersState::get());
+  }
+  if (ImGui::Button("TimlineState")) {
+    Engine::StateManager::change_state(TimelineState::get());
   }
 
   ImGui::End();

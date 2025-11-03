@@ -133,12 +133,9 @@ public:
 			}
 		}
 
-		// 3. **DRAW VISIBLE ENTITIES**
-		// This is the part that interacts with your engine's drawing system.
+		// draws visible entities
 		if (entity_visibility[bro.get_id()]) {
-			// You must call your engine's draw function for the 'bro' entity here.
-			// Assuming you have a way to draw an entity based on its ID or object.
-			// Example (replace with your actual engine call):
+
 			bro.get_component<Components::Color>()->a = 1.0f;
 		}
 
