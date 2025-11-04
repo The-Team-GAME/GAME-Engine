@@ -113,11 +113,11 @@ namespace ImGuiManager {
         }
         if (ImGui::BeginMenu("Styles"))
         {
-          for (const auto& [style_name, fn] : styles_map)
+          for (const auto& [style_name, _] : styles_map)
           {
             if (ImGui::MenuItem(style_name.c_str()))
             {
-              fn();
+              set_style(style_name);
             }
           }
           ImGui::EndMenu();
@@ -197,6 +197,10 @@ namespace ImGuiManager {
     {
       it->second(); // Call the style setup function
     }
+
+    // Update user settings
+    Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::get_mutable().imgui_theme = style_name;
+    Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::save();
   }
 
 }
