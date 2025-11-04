@@ -9,7 +9,6 @@
 #include "TilemapPanel.h"
 #include "ViewportPanel.h"
 #include "SceneChooserPanel.h"
-#include "PlaybackControlPanel.h"
 
 void register_all_panels()
 {
@@ -22,5 +21,4 @@ void register_all_panels()
   ImGuiManager::register_panel(CameraPanel);
   ImGuiManager::register_panel(TilemapPanel::draw_panel);
   ImGuiManager::register_panel(SceneChooserPanel);
-  ImGuiManager::register_panel(PlaybackControlPanel);
 }

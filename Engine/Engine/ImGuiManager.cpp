@@ -22,6 +22,8 @@
 #include "Perf.h"
 #include "ImGuiThemes.h"
 #include "FileIO/Settings.h"
+#include "Core.h"
+#include "SceneManager.h"
 
 namespace {
   bool gui_enabled = true;
@@ -126,6 +128,98 @@ namespace ImGuiManager {
       }
 
       ImGui::End();
+
+      // Playback Control Toolbar - Always on top below menu bar
+      ImGuiViewport* main_viewport = ImGui::GetMainViewport();
+      ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x, main_viewport->WorkPos.y));
+      ImGui::SetNextWindowSize(ImVec2(main_viewport->WorkSize.x, 0)); // Auto height
+      ImGui::SetNextWindowViewport(main_viewport->ID);
+
+      ImGuiWindowFlags toolbar_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | 
+                                       ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | 
+                                       ImGuiWindowFlags_NoSavedSettings;
+
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8.0f, 8.0f));
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+
+      if (ImGui::Begin("##PlaybackToolbar", nullptr, toolbar_flags))
+      {
+        bool is_paused = Engine::Core::is_paused();
+
+        // Status indicator
+        if (is_paused) {
+          ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "PAUSED");
+        }
+        else {
+          ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "PLAYING");
+        }
+
+        ImGui::SameLine();
+        ImGui::Separator();
+        ImGui::SameLine();
+
+        // Play button
+        if (is_paused) {
+          ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.2f, 0.6f));
+          ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2f, 0.8f, 0.2f, 0.8f));
+          ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.2f, 0.9f, 0.2f, 1.0f));
+        }
+        else {
+          ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1f, 0.5f, 0.1f, 1.0f));
+          ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.1f, 0.6f, 0.1f, 1.0f));
+          ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.7f, 0.1f, 1.0f));
+        }
+
+        if (ImGui::Button("Play", ImVec2(60, 0))) {
+          Engine::Core::set_paused(false);
+        }
+        ImGui::PopStyleColor(3);
+
+        ImGui::SameLine();
+
+        // Pause button
+        if (!is_paused) {
+          ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.6f, 0.1f, 0.6f));
+          ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.7f, 0.1f, 0.8f));
+          ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.8f, 0.1f, 1.0f));
+        }
+        else {
+          ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.4f, 0.0f, 1.0f));
+          ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.7f, 0.5f, 0.0f, 1.0f));
+          ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8f, 0.6f, 0.0f, 1.0f));
+        }
+
+        if (ImGui::Button("Pause", ImVec2(60, 0))) {
+          Engine::Core::set_paused(true);
+        }
+        ImGui::PopStyleColor(3);
+
+        ImGui::SameLine();
+
+        // Stop button
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.2f, 0.2f, 0.6f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.8f, 0.2f, 0.2f, 0.8f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
+
+        if (ImGui::Button("Stop", ImVec2(60, 0))) {
+          std::string current = Engine::SceneManager::get_current_scene_name();
+          Engine::SceneManager::unload_current_scene();
+          Engine::SceneManager::load_scene(current);
+          Engine::Core::set_paused(true, true);
+        }
+        ImGui::PopStyleColor(3);
+
+        ImGui::SameLine();
+        ImGui::Separator();
+        ImGui::SameLine();
+
+        // Keyboard shortcuts hint
+        ImGui::TextDisabled("(P: Play/Pause | ]: Step)");
+      }
+      ImGui::End();
+
+      ImGui::PopStyleVar(3);
 
       // Render all registered panels
       for (const auto& panel : registered_panels)
