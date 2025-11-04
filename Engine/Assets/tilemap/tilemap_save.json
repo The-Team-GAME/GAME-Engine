@@ -17,7 +17,7 @@
             {
                 "type": "Components::Texture",
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 }
             },
             {
@@ -2243,7 +2243,7 @@
             },
             {
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 },
                 "type": "Components::Texture"
             },
@@ -4471,7 +4471,7 @@
             {
                 "type": "Components::Texture",
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 }
             },
             {
@@ -6697,7 +6697,7 @@
             },
             {
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 },
                 "type": "Components::Texture"
             },
@@ -8925,7 +8925,7 @@
             {
                 "type": "Components::Texture",
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 }
             },
             {
@@ -11152,7 +11152,7 @@
             {
                 "type": "Components::Texture",
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 }
             },
             {
@@ -13378,7 +13378,7 @@
             },
             {
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 },
                 "type": "Components::Texture"
             },
@@ -15605,7 +15605,7 @@
             },
             {
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 },
                 "type": "Components::Texture"
             },
@@ -17832,7 +17832,7 @@
             },
             {
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 },
                 "type": "Components::Texture"
             },
@@ -20060,7 +20060,7 @@
             {
                 "type": "Components::Texture",
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 }
             },
             {
@@ -22287,7 +22287,7 @@
             {
                 "type": "Components::Texture",
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 }
             },
             {
@@ -24514,7 +24514,7 @@
             {
                 "type": "Components::Texture",
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 }
             },
             {
@@ -26741,7 +26741,7 @@
             {
                 "type": "Components::Texture",
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 }
             },
             {
@@ -28967,7 +28967,7 @@
             },
             {
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 },
                 "type": "Components::Texture"
             },
@@ -31194,7 +31194,7 @@
             },
             {
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 },
                 "type": "Components::Texture"
             },
@@ -33421,7 +33421,7 @@
             },
             {
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 },
                 "type": "Components::Texture"
             },
@@ -35648,7 +35648,7 @@
             },
             {
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 },
                 "type": "Components::Texture"
             },
@@ -37875,7 +37875,7 @@
             },
             {
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 },
                 "type": "Components::Texture"
             },
@@ -40102,7 +40102,7 @@
             },
             {
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 },
                 "type": "Components::Texture"
             },
@@ -42330,7 +42330,7 @@
             {
                 "type": "Components::Texture",
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 }
             },
             {
@@ -44557,7 +44557,7 @@
             {
                 "type": "Components::Texture",
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 }
             },
             {
@@ -46784,7 +46784,7 @@
             {
                 "type": "Components::Texture",
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 }
             },
             {
@@ -49011,7 +49011,7 @@
             {
                 "type": "Components::Texture",
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 }
             },
             {
@@ -51238,7 +51238,7 @@
             {
                 "type": "Components::Texture",
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 }
             },
             {
@@ -53465,7 +53465,7 @@
             {
                 "type": "Components::Texture",
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 }
             },
             {
@@ -55692,7 +55692,7 @@
             {
                 "type": "Components::Texture",
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 }
             },
             {
@@ -57919,7 +57919,7 @@
             {
                 "type": "Components::Texture",
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 }
             },
             {
@@ -60146,7 +60146,7 @@
             {
                 "type": "Components::Texture",
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 }
             },
             {
@@ -62372,7 +62372,7 @@
             },
             {
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 },
                 "type": "Components::Texture"
             },
@@ -64599,7 +64599,7 @@
             },
             {
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 },
                 "type": "Components::Texture"
             },
@@ -66826,7 +66826,7 @@
             },
             {
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 },
                 "type": "Components::Texture"
             },
@@ -69053,7 +69053,7 @@
             },
             {
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 },
                 "type": "Components::Texture"
             },
@@ -71280,7 +71280,7 @@
             },
             {
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 },
                 "type": "Components::Texture"
             },
@@ -73507,7 +73507,7 @@
             },
             {
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 },
                 "type": "Components::Texture"
             },
@@ -75734,7 +75734,7 @@
             },
             {
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 },
                 "type": "Components::Texture"
             },
@@ -77961,7 +77961,7 @@
             },
             {
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 },
                 "type": "Components::Texture"
             },
@@ -80188,7 +80188,7 @@
             },
             {
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 },
                 "type": "Components::Texture"
             },
@@ -82415,7 +82415,7 @@
             },
             {
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 },
                 "type": "Components::Texture"
             },
@@ -84642,7 +84642,7 @@
             },
             {
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 },
                 "type": "Components::Texture"
             },
@@ -86869,7 +86869,7 @@
             },
             {
                 "data": {
-                    "path": "C:\\Users\\sy\\Desktop\\GAME\\Engine\\Assets\\images\\Tilemaps\\ParWall_TilemapM1.png"
+                    "path": "images/Tilemaps/ParWall_TilemapM1.png"
                 },
                 "type": "Components::Texture"
             },
