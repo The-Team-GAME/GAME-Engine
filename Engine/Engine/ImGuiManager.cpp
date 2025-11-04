@@ -80,71 +80,55 @@ namespace ImGuiManager {
       ImGui_ImplGlfw_NewFrame();
       ImGui::NewFrame();
 
-      // Create dockspace
       ImGuiViewport* viewport = ImGui::GetMainViewport();
-      ImGui::SetNextWindowPos(viewport->WorkPos);
-      ImGui::SetNextWindowSize(viewport->WorkSize);
-      ImGui::SetNextWindowViewport(viewport->ID);
+      float top_bar_height = 0.0f;
 
-      ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-      window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse;
-      window_flags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-      window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-      window_flags |= ImGuiWindowFlags_NoBackground;
-
-      ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-      ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-
-      ImGui::Begin("DockSpace", nullptr, window_flags);
-      ImGui::PopStyleVar(3);
-
-      // DockSpace
-      ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-      ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
-
-      // Add a menu bar
-      if (ImGui::BeginMenuBar())
+      // 1. Menu Bar and Toolbar Dockspace (Combined)
       {
-        if (ImGui::BeginMenu("ImGui"))
-        {
-          ImGui::MenuItem("Toggle GUI", "F1", &gui_enabled);
-          ImGui::MenuItem("ImGui Viewport Mode", "F2", &Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().imgui_viewport_enabled);
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(ImVec2(viewport->WorkSize.x, 0)); // Auto height
+        ImGui::SetNextWindowViewport(viewport->ID);
 
-          ImGui::EndMenu();
-        }
-        if (ImGui::BeginMenu("Styles"))
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+        window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse;
+        window_flags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+        window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+        window_flags |= ImGuiWindowFlags_NoScrollbar;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+        ImGui::Begin("##MenuBarAndToolbarDockSpace", nullptr, window_flags);
+        ImGui::PopStyleVar(3);
+
+        // Add a menu bar
+        if (ImGui::BeginMenuBar())
         {
-          for (const auto& [style_name, _] : styles_map)
+          if (ImGui::BeginMenu("ImGui"))
           {
-            if (ImGui::MenuItem(style_name.c_str()))
-            {
-              set_style(style_name);
-            }
+            ImGui::MenuItem("Toggle GUI", "F1", &gui_enabled);
+            ImGui::MenuItem("ImGui Viewport Mode", "F2", &Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().imgui_viewport_enabled);
+
+            ImGui::EndMenu();
           }
-          ImGui::EndMenu();
+          if (ImGui::BeginMenu("Styles"))
+          {
+            for (const auto& [style_name, _] : styles_map)
+            {
+              if (ImGui::MenuItem(style_name.c_str()))
+              {
+                set_style(style_name);
+              }
+            }
+            ImGui::EndMenu();
+          }
+          ImGui::EndMenuBar();
         }
-        ImGui::EndMenuBar();
-      }
 
-      ImGui::End();
+        // Toolbar content below the menu bar
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8.0f, 8.0f));
 
-      // Playback Control Toolbar - Always on top below menu bar
-      ImGuiViewport* main_viewport = ImGui::GetMainViewport();
-      ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x, main_viewport->WorkPos.y));
-      ImGui::SetNextWindowSize(ImVec2(main_viewport->WorkSize.x, 0)); // Auto height
-      ImGui::SetNextWindowViewport(main_viewport->ID);
-
-      ImGuiWindowFlags toolbar_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | 
-                                       ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | 
-                                       ImGuiWindowFlags_NoSavedSettings;
-
-      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8.0f, 8.0f));
-      ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);
-      ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-
-      if (ImGui::Begin("##PlaybackToolbar", nullptr, toolbar_flags))
-      {
         bool is_paused = Engine::Core::is_paused();
 
         // Status indicator
@@ -216,10 +200,38 @@ namespace ImGuiManager {
 
         // Keyboard shortcuts hint
         ImGui::TextDisabled("(P: Play/Pause | ]: Step)");
-      }
-      ImGui::End();
 
-      ImGui::PopStyleVar(3);
+        ImGui::PopStyleVar();
+
+        top_bar_height = ImGui::GetWindowHeight();
+        ImGui::End();
+      }
+
+      // 2. Main Panels Dockspace
+      {
+        ImGui::SetNextWindowPos(ImVec2(viewport->WorkPos.x, viewport->WorkPos.y + top_bar_height));
+        ImGui::SetNextWindowSize(ImVec2(viewport->WorkSize.x, viewport->WorkSize.y - top_bar_height));
+        ImGui::SetNextWindowViewport(viewport->ID);
+
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
+        window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse;
+        window_flags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+        window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+        window_flags |= ImGuiWindowFlags_NoBackground;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+        ImGui::Begin("##PanelsDockSpace", nullptr, window_flags);
+        ImGui::PopStyleVar(3);
+
+        // DockSpace for all panels
+        ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+
+        ImGui::End();
+      }
 
       // Render all registered panels
       for (const auto& panel : registered_panels)
