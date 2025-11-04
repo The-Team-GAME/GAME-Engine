@@ -27,7 +27,14 @@
 
 namespace {
   bool gui_enabled = true;
-  std::vector<std::function<void()>> registered_panels;
+
+  struct PanelInfo {
+    std::string name;
+    std::function<void()> render_func;
+    bool visible = true;
+  };
+
+  std::vector<PanelInfo> registered_panels;
 
   std::unordered_map<std::string, std::function<void()>> styles_map = {
     {"Eggplant", SetupImGuiStyle_Eggplant},
@@ -110,6 +117,14 @@ namespace ImGuiManager {
             ImGui::MenuItem("Toggle GUI", "F1", &gui_enabled);
             ImGui::MenuItem("ImGui Viewport Mode", "F2", &Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().imgui_viewport_enabled);
 
+            ImGui::EndMenu();
+          }
+          if (ImGui::BeginMenu("Windows"))
+          {
+            for (auto& panel : registered_panels)
+            {
+              ImGui::MenuItem(panel.name.c_str(), nullptr, &panel.visible);
+            }
             ImGui::EndMenu();
           }
           if (ImGui::BeginMenu("Styles"))
@@ -207,7 +222,10 @@ namespace ImGuiManager {
       // Render all registered panels
       for (const auto& panel : registered_panels)
       {
-        panel();
+        if (panel.visible)
+        {
+          panel.render_func();
+        }
       }
     }
   }
@@ -257,9 +275,13 @@ namespace ImGuiManager {
     }
   }
 
-  void register_panel(const std::function<void()>& panel_func)
+  void register_panel(const std::string& panel_name, const std::function<void()>& panel_func)
   {
-    registered_panels.push_back(panel_func);
+    PanelInfo info;
+    info.name = panel_name;
+    info.render_func = panel_func;
+    info.visible = true;
+    registered_panels.push_back(info);
   }
 
   void clear_panels()
