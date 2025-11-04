@@ -11,7 +11,7 @@
 //          rotation angles based on rotation speed and delta time in the ECS
 //          framework.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "PhysicsSystem.h"
 #include "CollisionSystem.h"
@@ -46,93 +46,93 @@ void phy2D::update()
     ECS::Entity entity(entity_id);
     update_entity(entity);
   }
+
   // now we check for collision and resolve them here? idk LOL
   for (ECS::EntityID entity_id : entities)
   {
     ECS::Entity entity(entity_id);
     Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
-    if (box == nullptr) { continue;  }
+    if (box == nullptr) { continue; }
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     rigid->on_ground = false;
     col2D::update_AABB(*rigid, *box);
-    if (box->detect_collisions == false)
-    {
-      continue;
-    }
-    for (ECS::EntityID entity_id2 : entities)
-    {
-      if (entity_id == entity_id2)
-      {
-        continue;
-      }
-      ECS::Entity other(entity_id2);
-      Components::BoxCollider* other_box = other.get_component<Components::BoxCollider>();
-      if (other_box == nullptr) { continue;  }
-      if (col2D::rect_rect_coll(*box, *other_box)) //captain, it seems we have hit something
-      {
-        // this gona be the most rabak collision resolution ever
-        //std::cout << "TRUE " << box->detect_collisions << " " << other_box->detect_collisions << std::endl;
-        if (box->detect_collisions == true && other_box->detect_collisions == false)
-        {
-          // other_box is the static one
-          Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
-          AABB minkowski = col2D::minkowski_AABB(*box, *other_box);
-          Vec2D pen_vec = col2D::penetrationVector(minkowski);
-          // some magic right here. i understand it rn but maybe alcohol helps
-
-          //std::cout << "Prev pos: " << rigid->next_pos << std::endl;
-
-          rigid->next_pos -= pen_vec;
-          if (pen_vec.y == 0) // sideways collision
-          {
-            rigid->velocity.x = 0.f;
-          }
-          else // updown collision
-          {
-            rigid->velocity.y = 0.f;
-            if (pen_vec.y > 0)
-            {
-              rigid->on_ground = true;
-            }
-          }
-          update_transform(*rigid, *xform);
-          //std::cout << "New pos:  " << rigid->next_pos << std::endl;
-        }
-        //else if (box->detect_collisions == false && other_box->detect_collisions == true)
-        //{
-        //  // box is the static one
-        //  Components::Transform2D* other_xform = other.get_component<Components::Transform2D>();
-        //  AABB minkowski = col2D::minkowski_AABB(*other_box, *box);
-        //  Vec2D pen_vec = col2D::penetrationVector(minkowski);
-        //  other_rigid->velocity -= pen_vec;
-        //  other_rigid->next_pos += pen_vec * Time::get_fixed_dt();
-        //  if (pen_vec.y == 0) // sideways collision
-        //  {
-        //    other_rigid->velocity.x = 0.f;
-        //    if (pen_vec.y < 0)
-        //    {
-        //      // std::cout << "on ground\n";
-        //      other_rigid->on_ground = true;
-        //    }
-        //  }
-        //  else // updown collision
-        //  {
-        //    other_rigid->velocity.y = 0.f;
-        //  }
-        //  update_transform(*other_rigid, *other_xform);
-        //}
-        // Technically we dont need false && true also cuz that would just be duplicated... i think
-        // if both detect_collision is false then no point doing LOL
-        // we wont do elastic collisions yet, cuz its not needed so i skip
-      }
-    }
   }
+
+  // Second pass: check collisions using for_each_entity_pair
+  ECS::for_each_entity_pair<Components::RigidBody, Components::BoxCollider>(
+    [this](ECS::Entity entity, ECS::Entity other)
+    {
+      // Both entities are guaranteed to have RigidBody and BoxCollider
+      Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
+      Components::BoxCollider* other_box = other.get_component<Components::BoxCollider>();
+
+      if (!col2D::rect_rect_coll(*box, *other_box)) { //captain, it seems we have hit something
+        return; // No collision, skip
+      }
+
+      // this gona be the most rabak collision resolution ever
+      //std::cout << "TRUE " << box->detect_collisions << " " << other_box->detect_collisions << std::endl;
+      if (box->detect_collisions == true && other_box->detect_collisions == false)
+      {
+        // other_box is the static one
+        Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+        Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
+        AABB minkowski = col2D::minkowski_AABB(*box, *other_box);
+        Vec2D pen_vec = col2D::penetrationVector(minkowski);
+        // some magic right here. i understand it rn but maybe alcohol helps
+
+         //std::cout << "Prev pos: " << rigid->next_pos << std::endl;
+
+        rigid->next_pos -= pen_vec;
+        if (pen_vec.y == 0) // sideways collision
+        {
+          rigid->velocity.x = 0.f;
+        }
+        else // updown collision
+        {
+          rigid->velocity.y = 0.f;
+          if (pen_vec.y > 0)
+          {
+            rigid->on_ground = true;
+          }
+        }
+        update_transform(*rigid, *xform);
+        //std::cout << "New pos:  " << rigid->next_pos << std::endl;
+      }
+      //else if (box->detect_collisions == false && other_box->detect_collisions == true)
+       //{
+       //  // box is the static one
+       //  Components::Transform2D* other_xform = other.get_component<Components::Transform2D>();
+       //  AABB minkowski = col2D::minkowski_AABB(*other_box, *box);
+       //  Vec2D pen_vec = col2D::penetrationVector(minkowski);
+       //  other_rigid->velocity -= pen_vec;
+       //  other_rigid->next_pos += pen_vec * Time::get_fixed_dt();
+       //  if (pen_vec.y == 0) // sideways collision
+       //  {
+       //    other_rigid->velocity.x = 0.f;
+       //    if (pen_vec.y < 0)
+       //    {
+       //      // std::cout << "on ground\n";
+       //      other_rigid->on_ground = true;
+       //    }
+       //  }
+       //  else // updown collision
+       //  {
+       //    other_rigid->velocity.y = 0.f;
+       //  }
+       // update_transform(*other_rigid, *other_xform);
+      // }
+      // Technically we dont need false && true also cuz that would just be duplicated... i think
+      // if both detect_collision is false then no point doing LOL
+      // we wont do elastic collisions yet, cuz its not needed so i skip
+    }
+  );
   Engine::Perf::stop("Physics Update");
 }
 
-void phy2D::update_entity(Engine::ECS::Entity& entity){
-  Components::RigidBody* rigid    = entity.get_component<Components::RigidBody>();
-  if (rigid->is_static) { return;  }
+void phy2D::update_entity(Engine::ECS::Entity& entity) {
+  Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+  if (rigid->is_static) { return; }
   Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
   phy2D::update_kinematics(*rigid);
   phy2D::update_transform(*rigid, *xform);
@@ -146,7 +146,7 @@ void phy2D::update_kinematics(Components::RigidBody& rigid)
   rigid.acceleration = rigid.force / rigid.mass + rigid.gravity_acc;
   // V = a x dt => Velocity equals acceleration x delta time
   // i increased friction for the x axis to test cuz we not sure if we want to do it like this
-  Vec2D prev_velocity = Vec2D(rigid.velocity.x* 0.85f, rigid.velocity.y * rigid.friction);
+  Vec2D prev_velocity = Vec2D(rigid.velocity.x * 0.85f, rigid.velocity.y * rigid.friction);
   rigid.velocity = prev_velocity + rigid.acceleration * Time::get_fixed_dt();
 
   // Checking terminal velocity here
