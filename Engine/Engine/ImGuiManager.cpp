@@ -111,6 +111,17 @@ namespace ImGuiManager {
 
           ImGui::EndMenu();
         }
+        if (ImGui::BeginMenu("Styles"))
+        {
+          for (const auto& [style_name, fn] : styles_map)
+          {
+            if (ImGui::MenuItem(style_name.c_str()))
+            {
+              fn();
+            }
+          }
+          ImGui::EndMenu();
+        }
         ImGui::EndMenuBar();
       }
 
@@ -187,4 +198,5 @@ namespace ImGuiManager {
       it->second(); // Call the style setup function
     }
   }
+
 }
