@@ -127,8 +127,6 @@ namespace ImGuiManager {
         }
 
         // Toolbar content below the menu bar
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 12.0f));
-
         bool& is_paused = Engine::Core::is_paused();
 
         ImGui::SameLine();
@@ -156,8 +154,6 @@ namespace ImGuiManager {
           Engine::SceneManager::load_scene(current);
           is_paused = true;
         }
-
-        ImGui::PopStyleVar();
 
         top_bar_height = ImGui::GetWindowHeight();
         ImGui::End();
