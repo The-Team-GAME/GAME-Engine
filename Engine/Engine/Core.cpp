@@ -17,7 +17,7 @@
 #include "Precompiled.h"
 #include <iostream>
 #include "FileHandler.h"
-#include "StateManager.h"
+#include "SceneManager.h"
 #include "ImGuiManager.h"
 #include "Time.h"
 #include "GUI/RegisterAllPanels.h"
@@ -51,7 +51,7 @@ namespace Engine
   Constructor that initializes all engine subsystems including window, graphics,
   ImGui, audio, and the ECS World:: Loads configuration and sets up event listeners.
   ==================================================================================*/
-  Core::Core(GameStateBase* initialState)
+  Core::Core()
   {
     isRunning = true;
 
@@ -97,7 +97,6 @@ namespace Engine
 
     Engine::Events::register_all_events();
 
-    StateManager::init(initialState);
 
     Resources::set_resource_path("Assets"); // TODO: move this to ProjectSettings
 
@@ -127,8 +126,10 @@ namespace Engine
   Where to call it:
   Called once after Core construction to start the game loop.
   ==================================================================================*/
-  void Core::run()
+  void Core::run(std::string first_scene)
   {
+    SceneManager::load_scene(first_scene);
+
     while (!glfwWindowShouldClose(WindowManager::get_window()) && isRunning)
     {
       // START OF TIME UPDATES ==============================================
@@ -193,7 +194,7 @@ namespace Engine
         if (shouldRunPhysics)
         {
           // Main gameloop here
-          StateManager::get_current_state()->update();
+          Engine::SceneManager::update();
           Engine::ECS::update();
         }
 
@@ -210,7 +211,7 @@ namespace Engine
 
       // Clear screen (automatically begins batch)
       // start of draw stuff
-      StateManager::get_current_state()->draw();
+      Engine::SceneManager::draw();
       Engine::ECS::draw();
       TilemapPanel::draw_overlay();
 
@@ -238,7 +239,7 @@ namespace Engine
   ==================================================================================*/
   Core::~Core()
   {
-    StateManager::exit();
+    Engine::SceneManager::cleanup();
     //Engine::ECS::remove_event_listener<WindowResizeEvent>();
     ViewportPanel::exit();
     Engine::Audio::exit();

@@ -300,6 +300,38 @@ namespace Engine {
       return {};
     }
 
+    void for_each_entity(std::function<void(Entity&)> callback)
+    {
+      auto& containers = Internal::get_containers();
+      for (EntityID id : containers.active_entities) {
+        Entity entity(id);
+        callback(entity);
+      }
+    }
+
+    void for_each_entity_on_layer(LayerID layer, std::function<void(Entity&)> callback)
+    {
+      auto& containers = Internal::get_containers();
+      if (layer >= containers.layer_entities.size()) {
+        return;
+      }
+
+      for (EntityID id : containers.layer_entities[layer]) {
+        if (containers.active_entities.contains(id)) {
+          Entity entity(id);
+          callback(entity);
+        }
+      }
+    }
+
+    void for_each_entity_on_layer(const std::string& layer_name, std::function<void(Entity&)> callback)
+    {
+      LayerID layer = get_layer_id(layer_name);
+      if (layer != INVALID_LAYER) {
+        for_each_entity_on_layer(layer, callback);
+      }
+    }
+
     // ============================================================================
     // Layer Management Implementation
     // ============================================================================

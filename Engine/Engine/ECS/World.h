@@ -450,6 +450,93 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
+    Iterates over all active entities and calls the provided callback function for each.
+
+    Parameters:
+    callback - Function to call for each entity. Takes an Entity reference.
+
+    Where to call it:
+    When you need to perform an operation on all entities without creating a vector.
+    More efficient than get_all_entities() when you just need to iterate.
+    ==================================================================================*/
+    void for_each_entity(std::function<void(Entity&)> callback);
+
+    /*=================================================================================
+    Function Brief:
+    Iterates over entities with specific components and calls the callback for each.
+    Only entities that have ALL specified component types will be passed to the callback.
+
+    Parameters:
+    callback - Function to call for each matching entity. Takes an Entity by value.
+
+    Where to call it:
+    When you need to iterate over entities with specific component combinations.
+    More efficient than get_entities_with() when you just need to iterate.
+
+    Example:
+    for_each_entity_with<Transform, Velocity>([](Entity e) {
+      auto* transform = e.get_component<Transform>();
+      auto* velocity = e.get_component<Velocity>();
+      transform->position += velocity->value;
+    });
+    ==================================================================================*/
+    template <typename... Components>
+    void for_each_entity_with(std::function<void(Entity)> callback);
+
+    /*=================================================================================
+    Function Brief:
+    Iterates over entities on a specific layer and calls the callback for each.
+
+    Parameters:
+    layer - The LayerID to iterate over.
+    callback - Function to call for each entity on the layer.
+
+    Where to call it:
+    When you need to perform operations on entities in a specific layer.
+    ==================================================================================*/
+    void for_each_entity_on_layer(LayerID layer, std::function<void(Entity&)> callback);
+
+    /*=================================================================================
+    Function Brief:
+    Iterates over entities on a specific layer (by name) and calls the callback for each.
+
+    Parameters:
+    layer_name - The name of the layer to iterate over.
+    callback - Function to call for each entity on the layer.
+
+    Where to call it:
+    When you need to perform operations on entities in a specific layer by name.
+    ==================================================================================*/
+    void for_each_entity_on_layer(const std::string& layer_name, std::function<void(Entity&)> callback);
+
+    /*=================================================================================
+    Function Brief:
+    Iterates over all entities that have the specified component types and are on
+    any of the specified layers, calling the callback function for each entity.
+
+    Parameters:
+    layers - LayerSignature specifying which layers to search.
+    callback - Function to call for each entity: void(Entity entity)
+
+    Where to call it:
+    When you need to perform operations on entities with specific components
+    on specific layers without creating a temporary vector.
+
+    Example:
+    LayerID player_layer = ECS::get_layer_id("player");
+    ECS::for_each_entity_with<Components::Health>(
+      LayerSignature{player_layer},
+      [](Entity entity) {
+        auto* health = entity.get_component<Components::Health>();
+        // Do something with the health component
+      }
+    );
+    ==================================================================================*/
+    template <typename... T>
+    void for_each_entity_with(const LayerSignature& layers, std::function<void(Entity)> callback);
+
+    /*=================================================================================
+    Function Brief:
     Iterates over pairs of entities where LHS entities are on any layer in the LHS mask
     and RHS entities are on any layer in the RHS mask.
     Calls the callback function for each valid pair (excluding self-pairs).

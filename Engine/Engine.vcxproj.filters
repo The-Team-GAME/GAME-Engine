@@ -9,10 +9,15 @@
     <ClCompile Include="Engine\ECS\WorldData.cpp" />
     <ClCompile Include="Engine\EventManager\EventManager.cpp" />
     <ClCompile Include="Engine\FileIO\PrefabsFileIO.cpp" />
+    <ClCompile Include="Engine\FileIO\LevelFileIO.cpp" />
+    <ClCompile Include="Engine\LevelManager.cpp" />
     <ClCompile Include="Engine\GUI\EntityEditorPanel.cpp" />
+    <ClCompile Include="Engine\GUI\LevelPanel.cpp" />
+    <ClCompile Include="Engine\GUI\PrefabEditorPanel.cpp" />
     <ClCompile Include="Engine\GUI\TilemapPanel.cpp" />
     <ClCompile Include="Engine\GUI\ViewportPanel.cpp" />
     <ClCompile Include="Engine\GUI\ResourcePicker.cpp" />
+    <ClCompile Include="Engine\GUI\widgets\ReflectionFieldWidgets.cpp" />
     <ClCompile Include="Engine\GUI\widgets\TextureAtlasWidget.cpp" />
     <ClCompile Include="GameLogic\GameStates\BasicState.cpp" />
     <ClCompile Include="GameLogic\GameStates\BasicState.h" />
@@ -62,6 +67,7 @@
     <ClInclude Include="Engine\FileIO\PrefabsFileIO.h" />
     <ClInclude Include="Engine\FileIO\SettingsManager.h" />
     <ClInclude Include="Engine\GUI\ResourceManagerPanel.h" />
+    <ClInclude Include="Engine\GUI\widgets\ReflectionFieldWidgets.h" />
     <ClInclude Include="Engine\GUI\widgets\TextureAtlasWidget.h" />
     <ClInclude Include="Engine\MonkeyEngine.h" />
     <ClInclude Include="Engine\Reflection\ReflectionLibrary.h" />
@@ -99,7 +105,11 @@
     <ClInclude Include="Engine\ECS\System.h" />
     <ClInclude Include="Engine\ECS\Types.h" />
     <ClInclude Include="Engine\ECS\World.h" />
+    <ClInclude Include="Engine\FileIO\LevelFileIO.h" />
+    <ClInclude Include="Engine\LevelManager.h" />
     <ClInclude Include="Engine\GUI\EntityEditorPanel.h" />
+    <ClInclude Include="Engine\GUI\LevelPanel.h" />
+    <ClInclude Include="Engine\GUI\PrefabEditorPanel.h" />
     <ClInclude Include="Engine\GUI\ResourcePicker.h" />
     <ClInclude Include="Engine\ImGuiManager.h" />
     <ClInclude Include="Engine\InputManager.h" />

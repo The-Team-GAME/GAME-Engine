@@ -28,7 +28,7 @@ namespace Engine
     // Values that are specific to the local user/machine (e.g. ImGui theme)
     struct LocalSettings
     {
-      std::string imgui_theme = "Moonlight";
+      std::string imgui_theme = "ayu-dark";
     };
   }
 }

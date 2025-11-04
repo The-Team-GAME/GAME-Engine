@@ -2,7 +2,7 @@
 
 #include "../../Engine/MonkeyEngine.h"
 
-class PrefabsState : public Engine::GameState<PrefabsState> {
+class PrefabsState : public Engine::Scene {
 private:
   Engine::ECS::Entity prefab_instance;
 

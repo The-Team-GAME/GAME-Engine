@@ -19,9 +19,7 @@
 
 #include "../../Engine/MonkeyEngine.h"
 
-#include "ShowcaseState.h"
-
-class MainMenuState : public Engine::GameState<MainMenuState>
+class MainMenuState : public Engine::Scene
 {
 private:
 
@@ -43,7 +41,7 @@ public:
       .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
       .add_component<Components::Clickable>([]()
         {
-          Engine::StateManager::change_state(ShowcaseState::get());
+          Engine::SceneManager::load_scene("ShowcaseState");
         })
       .add_to_layer("ui");
   };
