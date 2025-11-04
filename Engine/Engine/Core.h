@@ -36,6 +36,7 @@ namespace Engine
     static s32 step_limit;
     static bool do_render;
     static bool physics_step_mode;
+    static bool force_one_update;
 
   public:
     Core();
@@ -50,5 +51,6 @@ namespace Engine
     static f64 get_accumulator() { return accumulator; }
     static s32 get_step_limit() { return step_limit; }
     static void set_step_limit(s32 limit) { step_limit = limit; }
+    static void request_forced_update() { force_one_update = true; }
   };
 }
