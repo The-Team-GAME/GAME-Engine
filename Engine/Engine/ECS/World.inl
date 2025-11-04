@@ -235,6 +235,65 @@ namespace Engine {
       return array ? array->size() : 0;
     }
 
+    template <typename... Components>
+    void for_each_entity_pair(std::function<void(Entity, Entity)> callback)
+    {
+      auto& containers = Internal::get_containers();
+
+      // Build component signature for required components
+      ComponentSignature required_signature;
+      ((required_signature.set(ComponentTypeManager::get_type_id<Components>())), ...);
+
+      // Track processed pairs to avoid duplicates
+      std::unordered_set<EntityPairHash> processed_pairs;
+
+      // Iterate through all active entities as LHS
+      for (size_t i = 0; i < containers.active_entities.size(); ++i)
+      {
+        EntityID lhs_id = containers.active_entities.entity_at(i);
+        auto lhs_it = containers.entity_signatures.find(lhs_id);
+        if (lhs_it == containers.entity_signatures.end())
+          continue;
+
+        // Check if LHS has all required components
+        const auto& lhs_sig = lhs_it->second;
+        if ((lhs_sig & required_signature) != required_signature)
+          continue;
+
+        // Iterate through all active entities as RHS
+        for (size_t j = 0; j < containers.active_entities.size(); ++j)
+        {
+          EntityID rhs_id = containers.active_entities.entity_at(j);
+          if (lhs_id == rhs_id) continue; // Skip self-pairs
+
+          auto rhs_it = containers.entity_signatures.find(rhs_id);
+          if (rhs_it == containers.entity_signatures.end())
+            continue;
+
+          // Check if RHS has all required components
+          const auto& rhs_sig = rhs_it->second;
+          if ((rhs_sig & required_signature) != required_signature)
+            continue;
+
+          // Create unique pair ID (order-independent hash)
+          // EntityPairHash pair_hash = (static_cast<EntityPairHash>(std::min(lhs_id, rhs_id)) << 32) |
+          //   static_cast<EntityPairHash>(std::max(lhs_id, rhs_id));
+
+          // Order dependent version
+          EntityPairHash pair_hash = (static_cast<EntityPairHash>(lhs_id) << 32) |
+            static_cast<EntityPairHash>(rhs_id);
+
+          // Skip if we've already processed this pair
+          if (!processed_pairs.insert(pair_hash).second)
+            continue;
+
+          Entity lhs(lhs_id);
+          Entity rhs(rhs_id);
+          callback(lhs, rhs);
+        }
+      }
+    }
+
     //template <typename... Components>
     //void for_each_entity_with(std::function<void(Entity)> callback)
     //{
