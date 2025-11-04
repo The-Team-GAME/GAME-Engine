@@ -127,11 +127,10 @@ namespace ImGuiManager {
         }
 
         // Toolbar content below the menu bar
+        ImGui::Dummy(ImVec2(0.0f, 4.0f)); // Top padding
+
         bool& is_paused = Engine::Core::is_paused();
 
-        ImGui::SameLine();
-        ImGui::Separator();
-        ImGui::SameLine();
 
         // Play/Pause toggle button
         if (is_paused) {
@@ -154,6 +153,8 @@ namespace ImGuiManager {
           Engine::SceneManager::load_scene(current);
           is_paused = true;
         }
+
+        ImGui::Dummy(ImVec2(0.0f, 4.0f)); // Bottom padding
 
         top_bar_height = ImGui::GetWindowHeight();
         ImGui::End();
