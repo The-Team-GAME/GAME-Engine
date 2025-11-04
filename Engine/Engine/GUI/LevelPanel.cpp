@@ -139,13 +139,13 @@ void LevelPanel() {
 
       Log::info("Saving " + std::to_string(level.entities.size()) + " filtered entities to level: " + level_name);
       if (Engine::FileIO::serialize_level_to_json_file(full_path, level)) {
-        Log::info("Scene saved successfully!");
+        Log::info("Level saved successfully!");
       }
     }
     else {
       // Save all entities
       if (Engine::FileIO::save_current_world_as_level(full_path, level_name)) {
-        Log::info("Scene saved successfully!");
+        Log::info("Level saved successfully!");
       }
     }
   }
@@ -161,7 +161,7 @@ void LevelPanel() {
   if (ImGui::Button("Load Level", ImVec2(-1, 0))) {
     std::string full_path = Engine::Path("Assets").join(level_path).to_string();
     if (Engine::FileIO::load_level_into_world(full_path, clear_existing)) {
-      Log::info("Scene loaded successfully!");
+      Log::info("Level loaded successfully!");
     }
   }
 
