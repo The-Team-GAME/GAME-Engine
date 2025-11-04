@@ -127,7 +127,18 @@ namespace ImGuiManager {
         }
 
         // Toolbar content below the menu bar
-        ImGui::Dummy(ImVec2(0.0f, 0.0f)); // Top padding
+        // Apply a slightly darker background than the menu bar
+        ImVec4 menubar_color = ImGui::GetStyleColorVec4(ImGuiCol_MenuBarBg);
+        ImVec4 toolbar_color = ImVec4(
+          menubar_color.x * 0.9f,  // 20% darker
+          menubar_color.y * 0.9f,
+          menubar_color.z * 0.9f,
+          menubar_color.w
+        );
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, toolbar_color);
+        ImGui::BeginChild("##Toolbar", ImVec2(0, 40), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+
+        ImGui::Dummy(ImVec2(0.0f, 2.0f)); // Top padding
 
         ImGui::Indent(8.0f); // Left padding
         bool& is_paused = Engine::Core::is_paused();
@@ -159,6 +170,9 @@ namespace ImGuiManager {
 
         ImGui::Unindent(8.0f); // Remove left padding
         ImGui::Dummy(ImVec2(0.0f, 4.0f)); // Bottom padding
+
+        ImGui::EndChild();
+        ImGui::PopStyleColor();
 
         top_bar_height = ImGui::GetWindowHeight();
         ImGui::End();
