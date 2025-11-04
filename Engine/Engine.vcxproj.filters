@@ -49,6 +49,7 @@
     <ClCompile Include="GameLogic\WinMain.cpp" />
     <ClCompile Include="Engine\ECS\Types.cpp" />
     <ClCompile Include="Engine\FileIO\Helpers.cpp" />
+    <ClCompile Include="Engine\SceneManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -140,6 +141,9 @@
     <ClInclude Include="Engine\FileIO\Settings.h" />
     <ClInclude Include="Engine\Systems\UISystem.h" />
     <ClInclude Include="Engine\Events\RegisterAllEvents.h" />
+    <ClInclude Include="Engine\GUI\PerformanceViewerPanel.h" />
+    <ClInclude Include="Engine\GUI\SceneChooserPanel.h" />
+    <ClInclude Include="Engine\SceneManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

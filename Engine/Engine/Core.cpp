@@ -37,15 +37,15 @@
 #include "Events/RegisterAllEvents.h"
 
 
-namespace {
-  f64 accumulator{};
-  s32 step_limit = 3;
-  bool do_render = false;
-  bool physics_step_mode = false;  // Toggle for step-by-step physics
-}
-
 namespace Engine
 {
+  // Static member definitions
+  f64 Core::accumulator{};
+  s32 Core::step_limit = 3;
+  bool Core::do_render = false;
+  bool Core::physics_step_mode = false;
+  bool Core::force_one_update = false;
+
   /*=================================================================================
   Function Brief:
   Constructor that initializes all engine subsystems including window, graphics,
@@ -189,13 +189,16 @@ namespace Engine
           std::cout << "Physics Step Mode: " << (physics_step_mode ? "ON" : "OFF") << std::endl;
         }
 
-        bool shouldRunPhysics = !physics_step_mode || Engine::Input::is_pressed(KeyCode::RightBracket);
+        bool shouldRunPhysics = !physics_step_mode || Engine::Input::is_pressed(KeyCode::RightBracket) || force_one_update;
 
         if (shouldRunPhysics)
         {
           // Main gameloop here
           Engine::SceneManager::update();
           Engine::ECS::update();
+          
+          // Clear the forced update flag after running
+          force_one_update = false;
         }
 
         TilemapPanel::update();
