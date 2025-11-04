@@ -51,7 +51,7 @@ namespace Engine
   Constructor that initializes all engine subsystems including window, graphics,
   ImGui, audio, and the ECS World:: Loads configuration and sets up event listeners.
   ==================================================================================*/
-  Core::Core(std::string first_scene)
+  Core::Core()
   {
     isRunning = true;
 
@@ -97,7 +97,6 @@ namespace Engine
 
     Engine::Events::register_all_events();
 
-    SceneManager::load_scene(first_scene);
 
     Resources::set_resource_path("Assets"); // TODO: move this to ProjectSettings
 
@@ -127,8 +126,10 @@ namespace Engine
   Where to call it:
   Called once after Core construction to start the game loop.
   ==================================================================================*/
-  void Core::run()
+  void Core::run(std::string first_scene)
   {
+    SceneManager::load_scene(first_scene);
+
     while (!glfwWindowShouldClose(WindowManager::get_window()) && isRunning)
     {
       // START OF TIME UPDATES ==============================================

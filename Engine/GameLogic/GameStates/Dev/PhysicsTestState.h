@@ -9,7 +9,7 @@ namespace {
   bool jumping = false;
   Engine::ECS::Entity player;
 }
-class PhysicsTestState : public Engine::GameState<PhysicsTestState> {
+class PhysicsTestState : public Engine::Scene {
 private:
   Engine::ECS::Entity prefab_instance;
 

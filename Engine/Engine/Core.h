@@ -32,10 +32,10 @@ namespace Engine
     bool isRunning;
 
   public:
-    Core(std::string first_scene);
+    Core();
     ~Core();
 
-    void run();
+    void run(std::string first_scene);
 
     void stop();
   };

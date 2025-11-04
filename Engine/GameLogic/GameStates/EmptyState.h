@@ -15,7 +15,7 @@
 
 #include "../../Engine/MonkeyEngine.h"
 
-class EmptyState : public Engine::GameState<EmptyState>
+class EmptyState : public Engine::Scene
 {
 private:
 public:
