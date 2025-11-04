@@ -302,10 +302,26 @@ namespace Engine {
 
     void for_each_entity(std::function<void(Entity&)> callback)
     {
+      // auto& containers = Internal::get_containers();
+      // for (EntityID id : containers.active_entities) {
+      //   Entity entity(id);
+      //   callback(entity);
+      // }
+
+      // In layer order, avoiding duplicates
       auto& containers = Internal::get_containers();
-      for (EntityID id : containers.active_entities) {
-        Entity entity(id);
-        callback(entity);
+      std::unordered_set<EntityID> processed; // Track processed entities to avoid duplicates
+
+      for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
+        for (EntityID id : containers.layer_entities[layer]) {
+          // Skip if already processed or not active
+          if (processed.count(id) || !containers.active_entities.contains(id))
+            continue;
+
+          processed.insert(id);
+          Entity entity(id);
+          callback(entity);
+        }
       }
     }
 
