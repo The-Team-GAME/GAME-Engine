@@ -127,7 +127,7 @@ namespace ImGuiManager {
         }
 
         // Toolbar content below the menu bar
-        ImGui::Dummy(ImVec2(0.0f, 4.0f)); // Top padding
+        ImGui::Dummy(ImVec2(0.0f, 0.0f)); // Top padding
 
         ImGui::Indent(8.0f); // Left padding
         bool& is_paused = Engine::Core::is_paused();
