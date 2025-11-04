@@ -47,7 +47,8 @@ public:
 		monkey = Engine::ECS::create_entity()
 			.add_component<Components::Transform2D>(600.0f, 400.0f, 0.0f, 120.0f, 150.0f)
 			.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.0f)
-			.add_component<Components::Texture>(Engine::Resources::load_texture("images/monkey.png"));
+			.add_component<Components::Texture>(Engine::Resources::load_texture("images/monkey.png"))
+			.add_component<Components::TextureAtlas>(600.0f, 400.0f, 1, 1, 1);
 
 		s32 monkey_entity_id = monkey.get_id();
 		timeline.set_selected_entity_id(monkey_entity_id);

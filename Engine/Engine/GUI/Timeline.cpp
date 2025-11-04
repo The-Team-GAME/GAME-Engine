@@ -129,16 +129,16 @@ void Timeline::draw() {
       if (ImGui::Button("Yes, Delete All") && !layers.empty()) {
         s32 layer_to_remove = (s32)layers.size() - 1;
 
-        // 1. Remove all clips associated with this layer
+        // Remove all clips associated with this layer
         clips.erase(std::remove_if(clips.begin(), clips.end(),
           [&](const TimelineClip& c) {
             return c.layer == layer_to_remove;
           }), clips.end());
 
-        // 2. Remove the layer itself
+        // Remove the layer itself
         layers.pop_back();
 
-        // 3. Close the modal
+        // Close the modal
         ImGui::CloseCurrentPopup();
       }
 
@@ -286,7 +286,7 @@ void Timeline::draw() {
           //Engine::Graphics::Texture texture_object = Timeline::set_selected_entity_id(texture_id);
           //
           //// Create the entity, which includes the 1x1 TextureAtlas
-          //Engine::ECS::Entity new_entity = Engine::ECS::Entity::TimelineState::create_timeline_entity(texture_object);
+          //Engine::Graphics::Texture texture_object = Engine::Graphics::TextureData();
 
           //s32 entity_id = new_entity.get_id();
 
@@ -482,21 +482,21 @@ void Timeline::draw() {
       f32 timelineContentWidth = currentCellSize.x * numFrames;
       f32 timelineContentHeight = currentCellSize.y * (f32)layers.size();
 
-      // 1. Calculate the handle position (starting right after the last frame)
+      // Calculate the handle position (starting right after the last frame)
       // Use the top-left scroll position 'p' as the origin.
       ImVec2 handleMin(p.x + timelineContentWidth, p.y);
       ImVec2 handleMax(handleMin.x + EXTENSION_HANDLE_WIDTH, p.y + timelineContentHeight);
 
-      // 2. Optional: Draw a visual indicator
+      // Optional: Draw a visual indicator
       draw_list->AddRectFilled(handleMin, handleMax, IM_COL32(255, 100, 100, 50)); // Semi-transparent red box
 
-      // 3. Set cursor position and create the invisible button
+      // Set cursor position and create the invisible button
       ImGui::SetCursorScreenPos(handleMin);
       std::string extensionID = "timeline_extender";
       ImGui::InvisibleButton(extensionID.c_str(), ImVec2(EXTENSION_HANDLE_WIDTH, timelineContentHeight));
 
 
-      // 4. Handle Interaction
+      // Handle Interaction
       if (ImGui::IsItemActive() && ImGui::IsMouseDown(0)) {
         // Get the drag delta since the click started
         ImVec2 dragDelta = ImGui::GetMouseDragDelta(0);

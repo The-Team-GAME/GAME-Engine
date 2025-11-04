@@ -1,4 +1,4 @@
-// Eggplant
+// Eggplant (black with purple docs)
 
 void SetupImGuiStyle_Eggplant()
 {
@@ -92,7 +92,7 @@ void SetupImGuiStyle_Eggplant()
 }
 
 
-// Moonlight
+// Moonlight (looks nothing like the name normal grey design with a bit of yellow)
 void SetupImGuiStyle_Moonlight()
 {
   // Moonlight style by Madam-Herta from ImThemes
@@ -371,7 +371,7 @@ void SetupImGuiStyle_Windark()
 }
 
 
-// ayu-dark
+// ayu-dark (black and orange lit font)
 void SetupImGuiStyle_ayu_dark()
 {
   // ayu-dark style by usrnatc from ImThemes
@@ -464,7 +464,7 @@ void SetupImGuiStyle_ayu_dark()
 }
 
 
-// Enemymouse
+// Enemymouse (neon blue)
 void SetupImGuiStyle_Enemymouse()
 {
   // Enemymouse style by enemymouse from ImThemes
@@ -557,7 +557,7 @@ void SetupImGuiStyle_Enemymouse()
 }
 
 
-// Vullmad Dark
+// Vullmad Dark (its just black...)
 void SetupImGuiStyle_Vullmad_Dark()
 {
   // Vullmad Dark style by ir from ImThemes
@@ -650,7 +650,7 @@ void SetupImGuiStyle_Vullmad_Dark()
 }
 
 
-// Comfortable Dark Cyan
+// Comfortable Dark Cyan (cozy sleek black)
 void SetupImGuiStyle_Comfortable_Dark_Cyan()
 {
   // Comfortable Dark Cyan style by SouthCraftX from ImThemes
