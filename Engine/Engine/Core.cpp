@@ -44,7 +44,6 @@ namespace Engine
   s32 Core::step_limit = 3;
   bool Core::do_render = false;
   bool Core::physics_step_mode = false;
-  bool Core::pause_next_frame = false;
 
   /*=================================================================================
   Function Brief:
@@ -226,12 +225,6 @@ namespace Engine
       ImGuiManager::end();
       glfwSwapBuffers(WindowManager::get_window());
       // Rendering End ==========================================
-
-      // Handle deferred pause (for Stop button - pause after scene reload completes)
-      if (pause_next_frame) {
-        physics_step_mode = true;
-        pause_next_frame = false;
-      }
     }
 
     // CORE CLEANUP

@@ -190,7 +190,7 @@ namespace ImGuiManager {
           std::string current = Engine::SceneManager::get_current_scene_name();
           Engine::SceneManager::unload_current_scene();
           Engine::SceneManager::load_scene(current);
-          Engine::Core::set_paused(true, true);
+          Engine::Core::set_paused(true);
         }
         ImGui::PopStyleColor(3);
 
