@@ -186,7 +186,7 @@ void Timeline::draw() {
     }
 
     // --- Timeline region ---
-    ImGui::BeginChild("TimelineRegion", ImVec2(0, 200), true, ImGuiWindowFlags_HorizontalScrollbar);
+    ImGui::BeginChild("TimelineRegion", ImVec2(0, 200), true, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoMove);
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
     ImVec2 p = ImGui::GetCursorScreenPos(); // Top-left corner of the scrollable region
 
@@ -308,12 +308,6 @@ void Timeline::draw() {
       // --- Clip Manipulation Logic ---
       // ----------------------------------------------------------------------
 
-      // Check for end of manipulation
-      if (m_activeClipID != 0 && !ImGui::IsMouseDown(0)) {
-        m_activeClipID = 0;
-        m_manipulationMode = 0;
-      }
-
       for (TimelineClip& clip : clips) {
         // Calculate the clip's screen coordinates
         f32 x_start = p.x + clip.start_frame * frameWidth;
@@ -353,6 +347,7 @@ void Timeline::draw() {
         if (ImGui::IsItemActive() && m_activeClipID == 0) {
           m_activeClipID = clip.id;
           m_manipulationMode = 2; // Resize Right
+          m_dragStartFrame = clip.start_frame;
           m_dragStartDuration = clip.duration_frames;
           ImGui::ResetMouseDragDelta(0);
         }
@@ -388,139 +383,238 @@ void Timeline::draw() {
           ImGui::ResetMouseDragDelta(0);
         }
 
-        // Apply visual cursor change based on hovering
-        if (m_activeClipID == clip.id) {
-          if (m_manipulationMode == 1) { // Move
+        if (clip.id == m_activeClipID && ImGui::IsMouseDown(0)) {
+
+          ImVec2 dragDelta = ImGui::GetMouseDragDelta(0);
+          f32 frame_width = frameWidth; // Use existing local variable
+
+          // --- MODE 1: Move Frame ---
+          if (m_manipulationMode == 1) {
+            std::cout << "move";
+            // Calculate total frames moved since the drag started
+            s32 frames_moved = (s32)std::round(dragDelta.x / frame_width);
+            s32 new_start_frame = m_dragStartFrame + frames_moved;
+
+            // Clamp and update the position
+            s32 clamped_start_frame = std::max(0, new_start_frame);
+            clamped_start_frame = std::min(clamped_start_frame, numFrames - clip.duration_frames);
+
+            // Crucial Snap Logic: Only update clip and reset delta if a full frame boundary was crossed
+            if (clamped_start_frame != clip.start_frame) {
+              clip.start_frame = clamped_start_frame;
+              // Reset delta to zero to prevent accumulation and jumping
+              ImGui::ResetMouseDragDelta(0);
+              // Update the drag anchor to the new snapped position
+              m_dragStartFrame = clip.start_frame;
+            }
             ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
           }
-          else if (m_manipulationMode == 2 || m_manipulationMode == 3) { // Resize
+
+          // --- MODE 2: Resize Right ---
+          else if (m_manipulationMode == 2) {
+            s32 frames_changed = (s32)std::round(dragDelta.x / frame_width);
+            s32 new_duration = m_dragStartDuration + frames_changed;
+
+            // Clamp duration to minimum 1 frame
+            clip.duration_frames = std::max(1, new_duration);
+            ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
+          }
+
+          // --- MODE 3: Resize Left ---
+          else if (m_manipulationMode == 3) {
+            s32 frames_changed = (s32)std::round(dragDelta.x / frame_width);
+            s32 old_end_frame = m_dragStartFrame + m_dragStartDuration;
+            s32 new_start_frame = m_dragStartFrame + frames_changed;
+            s32 new_duration = old_end_frame - new_start_frame;
+
+            if (new_duration >= 1 && new_start_frame >= 0) {
+              clip.start_frame = new_start_frame;
+              clip.duration_frames = new_duration;
+            }
+            else if (new_start_frame < 0) { // Clamp start frame to 0
+              clip.start_frame = 0;
+              clip.duration_frames = old_end_frame;
+            }
+            else if (new_duration < 1) { // Clamp duration to 1 frame minimum
+              clip.start_frame = old_end_frame - 1;
+              clip.duration_frames = 1;
+            }
             ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
           }
         }
-        else if ((mousePos.x >= handleRMin.x && mousePos.x <= handleRMax.x && mousePos.y >= handleRMin.y && mousePos.y <= handleRMax.y) ||
-          (mousePos.x >= handleLMin.x && mousePos.x <= handleLMax.x && mousePos.y >= handleLMin.y && mousePos.y <= handleLMax.y)) {
-          ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
-        }
-        else if (mousePos.x >= dragMin.x && mousePos.x <= dragMax.x && mousePos.y >= dragMin.y && mousePos.y <= dragMax.y) {
-          ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
-        }
-      }
-
-
-      // --- Global Manipulation Update Logic ---
-      if (m_activeClipID != 0 && ImGui::IsMouseDown(0)) {
-        TimelineClip* activeClip = nullptr;
-        for (TimelineClip& clip : clips) {
-          if (clip.id == m_activeClipID) {
-            activeClip = &clip;
-            break;
+        // --- 2. Hover Logic (Only runs if NO drag is active) ---
+        else {
+          // Original Hover Checks for Cursor
+          if ((mousePos.x >= handleRMin.x && mousePos.x <= handleRMax.x && mousePos.y >= handleRMin.y && mousePos.y <= handleRMax.y) ||
+            (mousePos.x >= handleLMin.x && mousePos.x <= handleLMax.x && mousePos.y >= handleLMin.y && mousePos.y <= handleLMax.y)) {
+            ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
           }
-        }
-
-        if (activeClip) {
-          // Get total drag delta and map to frame count
-          ImVec2 dragDelta = ImGui::GetMouseDragDelta(0);
-
-          f32 frameFloat = (mousePos.x - p.x) / frameWidth;
-          s32 snappedDragFrame = (s32)std::round(frameFloat);
-
-          // Ensure frame index is clamped within bounds
-          snappedDragFrame = std::max(0, std::min(snappedDragFrame, numFrames));
-
-
-          if (m_manipulationMode == 1) { // Move
-
-            // Calculate frame delta from drag distance
-            s32 frameDelta = (s32)std::round(dragDelta.x / frameWidth);
-
-            s32 newStartFrame = m_dragStartFrame + frameDelta;
-
-            activeClip->start_frame = std::max(0, newStartFrame);
-
-            ImGui::ResetMouseDragDelta(0);
-          }
-          else if (m_manipulationMode == 2) { // Resize Right
-            // Use the snapped mouse position to define the new end frame
-            s32 newEndFrame = snappedDragFrame;
-
-            // The new duration is the difference between the new snapped end frame and the start frame
-            s32 newDuration = newEndFrame - activeClip->start_frame;
-
-            // Clamp duration to a minimum of 1 frame
-            activeClip->duration_frames = std::max(1, newDuration);
-          }
-          else if (m_manipulationMode == 3) { // Resize Left
-            s32 oldEndFrame = m_dragStartFrame + m_dragStartDuration; // End frame is fixed during left-resize
-
-            // Use the snapped mouse position to define the new start frame
-            s32 newStartFrame = snappedDragFrame;
-            s32 newDuration = oldEndFrame - newStartFrame;
-
-            if (newDuration >= 1 && newStartFrame >= 0) {
-              activeClip->start_frame = newStartFrame;
-              activeClip->duration_frames = newDuration;
-            }
-            else if (newStartFrame < 0) { // Clamp start frame to 0
-              activeClip->start_frame = 0;
-              activeClip->duration_frames = oldEndFrame;
-            }
-            else if (newDuration < 1) { // Clamp duration to 1 frame minimum
-              activeClip->start_frame = oldEndFrame - 1;
-              activeClip->duration_frames = 1;
-            }
+          else if (mousePos.x >= dragMin.x && mousePos.x <= dragMax.x && mousePos.y >= dragMin.y && mousePos.y <= dragMax.y) {
+            ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
           }
         }
       }
 
-      // ----------------------------------------------------------------------
-      // --- Timeline Extension Handle ---
-      // ----------------------------------------------------------------------
-
-     // Define the handle size
-      const f32 EXTENSION_HANDLE_WIDTH = 20.0f;
-      // Calculate the current total size of the grid content
-      f32 timelineContentWidth = currentCellSize.x * numFrames;
-      f32 timelineContentHeight = currentCellSize.y * (f32)layers.size();
-
-      // Calculate the handle position (starting right after the last frame)
-      // Use the top-left scroll position 'p' as the origin.
-      ImVec2 handleMin(p.x + timelineContentWidth, p.y);
-      ImVec2 handleMax(handleMin.x + EXTENSION_HANDLE_WIDTH, p.y + timelineContentHeight);
-
-      // Optional: Draw a visual indicator
-      draw_list->AddRectFilled(handleMin, handleMax, IM_COL32(255, 100, 100, 50)); // Semi-transparent red box
-
-      // Set cursor position and create the invisible button
-      ImGui::SetCursorScreenPos(handleMin);
-      std::string extensionID = "timeline_extender";
-      ImGui::InvisibleButton(extensionID.c_str(), ImVec2(EXTENSION_HANDLE_WIDTH, timelineContentHeight));
+        //// Apply visual cursor change based on hovering
+        //if (m_activeClipID == clip.id) {
+        //  if (m_manipulationMode == 1) { // Move
+        //    ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+        //  }
+        //  else if (m_manipulationMode == 2 || m_manipulationMode == 3) { // Resize
+        //    ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
+        //  }
+        //}
+        //else if ((mousePos.x >= handleRMin.x && mousePos.x <= handleRMax.x && mousePos.y >= handleRMin.y && mousePos.y <= handleRMax.y) ||
+        //  (mousePos.x >= handleLMin.x && mousePos.x <= handleLMax.x && mousePos.y >= handleLMin.y && mousePos.y <= handleLMax.y)) {
+        //  ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
+        //}
+        //else if (mousePos.x >= dragMin.x && mousePos.x <= dragMax.x && mousePos.y >= dragMin.y && mousePos.y <= dragMax.y) {
+        //  ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+        //}
+      //}
 
 
-      // Handle Interaction
-      if (ImGui::IsItemActive() && ImGui::IsMouseDown(0)) {
-        // Get the drag delta since the click started
-        ImVec2 dragDelta = ImGui::GetMouseDragDelta(0);
+      //// --- Global Manipulation Update Logic ---
+      //  if (m_activeClipID != 0 && ImGui::IsMouseDown(0)) {
+      //    TimelineClip* activeClip = nullptr;
+      //    for (TimelineClip& clip : clips) {
+      //      if (clip.id == m_activeClipID) {
+      //        activeClip = &clip;
+      //        break;
+      //      }
+      //    }
 
-        // Convert the drag distance (in pixels) to a frame count
-        // Use the frameWidth (currentCellSize.x * zoom) for snapping
-        s32 frameDelta = (s32)std::round(dragDelta.x / frameWidth);
+      //    if (activeClip) {
 
-        if (std::abs(frameDelta) > 0) {
+      //      std::cout << "moving clip " << m_activeClipID << std::endl; // pls work zzzz
 
-          s32 newNumFrames = numFrames + frameDelta;
+      //      // Get total drag delta and map to frame count
+      //      ImVec2 dragDelta = ImGui::GetMouseDragDelta(0);
 
-          // Clamp to a sensible minimum (e.g., your current default of 100 frames)
-          numFrames = std::max(100, newNumFrames);
+      //      f32 frameFloat = (mousePos.x - p.x) / frameWidth;
+      //      s32 snappedDragFrame = (s32)std::round(frameFloat);
 
-          // Reset the mouse drag delta to zero to ensure frame-snapped movement
-          ImGui::ResetMouseDragDelta(0);
-        }
+      //      // Ensure frame index is clamped within bounds
+      //      snappedDragFrame = std::max(0, std::min(snappedDragFrame, numFrames));
 
-        ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
-      }
-      else if (ImGui::IsItemHovered()) {
-        ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
-      }
+
+      //      if (m_manipulationMode == 1) { // Move frames
+      //        std::cout << "moving clip " << m_activeClipID << std::endl;
+
+      //        ImVec2 dragDelta = ImGui::GetMouseDragDelta(0);
+
+      //        // 1. Calculate the snapped frame offset from the initial drag start position
+      //        f32 mouseDragFrames = dragDelta.x / frameWidth;
+      //        s32 snappedFrameOffset = (s32)std::round(mouseDragFrames);
+
+      //        // 2. Calculate the new tentative start frame
+      //        s32 tentativeNewStartFrame = m_dragStartFrame + snappedFrameOffset;
+
+      //        // 3. Check if the snapped frame has changed and is valid
+      //        if (snappedFrameOffset != 0) {
+
+      //          // Clamp the new position
+      //          s32 finalNewStartFrame = std::max(0, tentativeNewStartFrame);
+      //          finalNewStartFrame = std::min(finalNewStartFrame, numFrames - activeClip->duration_frames);
+
+      //          // If the position changed after clamping, update the clip and reset the drag delta
+      //          if (activeClip->start_frame != finalNewStartFrame) {
+      //            activeClip->start_frame = finalNewStartFrame;
+
+      //            // Update m_dragStartFrame so the next drag calculation works from the new, snapped position
+      //            m_dragStartFrame = activeClip->start_frame;
+
+      //            // Clear the current mouse drag delta to zero to ensure frame-snapped movement
+      //            ImGui::ResetMouseDragDelta(0);
+      //          }
+      //        }
+      //      }
+
+
+      //      else if (m_manipulationMode == 2) { // Resize Right
+      //        // Use the snapped mouse position to define the new end frame
+      //        s32 newEndFrame = snappedDragFrame;
+
+      //        // The new duration is the difference between the new snapped end frame and the start frame
+      //        s32 newDuration = newEndFrame - activeClip->start_frame;
+
+      //        // Clamp duration to a minimum of 1 frame
+      //        activeClip->duration_frames = std::max(1, newDuration);
+      //      }
+
+
+      //      else if (m_manipulationMode == 3) { // Resize Left
+      //        s32 oldEndFrame = m_dragStartFrame + m_dragStartDuration; // End frame is fixed during left-resize
+
+      //        // Use the snapped mouse position to define the new start frame
+      //        s32 newStartFrame = snappedDragFrame;
+      //        s32 newDuration = oldEndFrame - newStartFrame;
+
+      //        if (newDuration >= 1 && newStartFrame >= 0) {
+      //          activeClip->start_frame = newStartFrame;
+      //          activeClip->duration_frames = newDuration;
+      //        }
+      //        else if (newStartFrame < 0) { // Clamp start frame to 0
+      //          activeClip->start_frame = 0;
+      //          activeClip->duration_frames = oldEndFrame;
+      //        }
+      //        else if (newDuration < 1) { // Clamp duration to 1 frame minimum
+      //          activeClip->start_frame = oldEndFrame - 1;
+      //          activeClip->duration_frames = 1;
+      //        }
+      //      }
+      //    }
+      //  }
+
+     // // ----------------------------------------------------------------------
+     // // --- Timeline Extension Handle ---
+     // // ----------------------------------------------------------------------
+
+     //// Define the handle size
+     // const f32 EXTENSION_HANDLE_WIDTH = 20.0f;
+     // // Calculate the current total size of the grid content
+     // f32 timelineContentWidth = currentCellSize.x * numFrames;
+     // f32 timelineContentHeight = currentCellSize.y * (f32)layers.size();
+
+     // // Calculate the handle position (starting right after the last frame)
+     // // Use the top-left scroll position 'p' as the origin.
+     // ImVec2 handleMin(p.x + timelineContentWidth, p.y);
+     // ImVec2 handleMax(handleMin.x + EXTENSION_HANDLE_WIDTH, p.y + timelineContentHeight);
+
+     // // Optional: Draw a visual indicator
+     // draw_list->AddRectFilled(handleMin, handleMax, IM_COL32(255, 100, 100, 50)); // Semi-transparent red box
+
+     // // Set cursor position and create the invisible button
+     // ImGui::SetCursorScreenPos(handleMin);
+     // std::string extensionID = "timeline_extender";
+     // ImGui::InvisibleButton(extensionID.c_str(), ImVec2(EXTENSION_HANDLE_WIDTH, timelineContentHeight));
+
+
+     // // Handle Interaction
+     // if (ImGui::IsItemActive() && ImGui::IsMouseDown(0)) {
+     //   // Get the drag delta since the click started
+     //   ImVec2 dragDelta = ImGui::GetMouseDragDelta(0);
+
+     //   // Convert the drag distance (in pixels) to a frame count
+     //   // Use the frameWidth (currentCellSize.x * zoom) for snapping
+     //   s32 frameDelta = (s32)std::round(dragDelta.x / frameWidth);
+
+     //   if (std::abs(frameDelta) > 0) {
+
+     //     s32 newNumFrames = numFrames + frameDelta;
+
+     //     // Clamp to a sensible minimum (e.g., your current default of 100 frames)
+     //     numFrames = std::max(100, newNumFrames);
+
+     //     // Reset the mouse drag delta to zero to ensure frame-snapped movement
+     //     ImGui::ResetMouseDragDelta(0);
+     //   }
+
+     //   ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
+     // }
+     // else if (ImGui::IsItemHovered()) {
+     //   ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
+     // }
 
 
       // ----------------------------------------------------------------------
@@ -548,6 +642,12 @@ void Timeline::draw() {
         currentFrame = static_cast<s32>(m_frameAccumulator);
       }
 
+
+      // Check for end of manipulation
+      if (m_activeClipID != 0 && !ImGui::IsMouseDown(0)) {
+        m_activeClipID = 0;
+        m_manipulationMode = 0;
+      }
 
       ImGui::EndChild();
     }
