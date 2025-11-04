@@ -17,12 +17,19 @@
 #include "EntityEditorPanel.h"
 #include "widgets/ReflectionFieldWidgets.h"
 #include "../FileIO/PrefabsFileIO.h"
+#include "../FileIO/LevelFileIO.h"
 #include "../Path.h"
 #include "../Resources.h"
 #include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <unordered_map>
+#include "../Components/SpatialComponents.h"
+
+namespace {
+  // Shared state for entity selection
+  s32 selected_entity_id = -1;
+}
 
 void EntityEditorPanelHelpers::render_component_tree(const std::string& component_name, Engine::ECS::Entity& entity, Engine::ECS::IComponentArray* array)
 {
@@ -54,12 +61,26 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
 
 void EntityEditorPanel()
 {
-  static s32 selected_entity_id = -1;
   static char entitySearchBuffer[256] = "";
+  static bool hierarchy_mode = false; // Toggle between flat list and hierarchy view
 
   ImGui::Begin("Entity Editor");
 
-  // Section 1: Entity List
+  // Mode toggle button at the top
+  if (hierarchy_mode) {
+    if (ImGui::Button("Switch to Flat View")) {
+      hierarchy_mode = false;
+    }
+  }
+  else {
+    if (ImGui::Button("Switch to Hierarchy View")) {
+      hierarchy_mode = true;
+    }
+  }
+
+  ImGui::Separator();
+
+  // Section 1: Entity List (changes based on mode)
   if (ImGui::CollapsingHeader("Entities", ImGuiTreeNodeFlags_DefaultOpen))
   {
     ImGui::Text("Total Entities: %zu", Engine::ECS::get_entity_count());
@@ -69,18 +90,107 @@ void EntityEditorPanel()
 
     ImGui::Separator();
 
-    // Entity list with selection
+    // Entity list with selection - changes based on mode
     ImGui::BeginChild("EntityList", ImVec2(0, 200), true);
 
     auto allEntities = Engine::ECS::get_all_entities();
-    for (const auto& entity : allEntities)
-    {
-      bool isSelected = (selected_entity_id == static_cast<int>(entity.get_id()));
-      std::string label = "Entity " + std::to_string(entity.get_id());
 
-      if (ImGui::Selectable(label.c_str(), isSelected))
+    if (hierarchy_mode) {
+      // Hierarchy view - group by layers
+      std::unordered_map<std::string, std::vector<Engine::ECS::Entity>> entities_by_layer;
+
+      for (auto& entity : allEntities) {
+        Engine::ECS::LayerSignature layers = entity.get_layers();
+
+        // Get layer names
+        std::vector<std::string> layer_names;
+        for (Engine::ECS::LayerID layer_id = 0; layer_id < Engine::ECS::MAX_LAYERS; ++layer_id) {
+          if (layers.test(layer_id)) {
+            std::string layer_name = Engine::ECS::get_layer_name(layer_id);
+            layer_names.push_back(layer_name);
+          }
+        }
+
+        // If entity has no layers, put it in "default"
+        if (layer_names.empty()) {
+          layer_names.push_back("default");
+        }
+
+        // Add entity to each of its layers
+        for (const auto& layer_name : layer_names) {
+          entities_by_layer[layer_name].push_back(entity);
+        }
+      }
+
+      // Display entities grouped by layer
+      for (auto& [layer_name, entities] : entities_by_layer) {
+        ImGuiTreeNodeFlags layer_flags = ImGuiTreeNodeFlags_DefaultOpen;
+        bool layer_open = ImGui::TreeNodeEx(
+          (layer_name + " (" + std::to_string(entities.size()) + ")").c_str(),
+          layer_flags
+        );
+
+        if (layer_open) {
+          for (auto& entity : entities) {
+            if (!entity.is_valid()) continue;
+
+            // Build entity label
+            std::string entity_label = "Entity " + std::to_string(entity.get_id());
+
+            // Try to get a name from common components
+            if (entity.has_component<Components::Transform2D>()) {
+              entity_label += " (Transform)";
+            }
+
+            // Check if this entity is selected
+            bool is_selected = (selected_entity_id == static_cast<s32>(entity.get_id()));
+            ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+            if (is_selected) {
+              node_flags |= ImGuiTreeNodeFlags_Selected;
+            }
+
+            ImGui::TreeNodeEx(
+              (void*)(intptr_t)entity.get_id(),
+              node_flags,
+              "%s",
+              entity_label.c_str()
+            );
+
+            // Handle selection
+            if (ImGui::IsItemClicked()) {
+              selected_entity_id = static_cast<s32>(entity.get_id());
+            }
+
+            // Right-click context menu
+            if (ImGui::BeginPopupContextItem()) {
+              if (ImGui::MenuItem("Delete Entity")) {
+                Engine::ECS::destroy_entity(entity);
+                if (selected_entity_id == static_cast<s32>(entity.get_id())) {
+                  selected_entity_id = -1;
+                }
+              }
+              if (ImGui::MenuItem("Clone Entity")) {
+                Engine::ECS::Entity cloned = Engine::ECS::clone_entity(entity);
+                selected_entity_id = static_cast<s32>(cloned.get_id());
+              }
+              ImGui::EndPopup();
+            }
+          }
+          ImGui::TreePop();
+        }
+      }
+    }
+    else {
+      // Flat view - simple list
+      for (const auto& entity : allEntities)
       {
-        selected_entity_id = static_cast<int>(entity.get_id());
+        bool isSelected = (selected_entity_id == static_cast<int>(entity.get_id()));
+        std::string label = "Entity " + std::to_string(entity.get_id());
+
+        if (ImGui::Selectable(label.c_str(), isSelected))
+        {
+          selected_entity_id = static_cast<int>(entity.get_id());
+        }
       }
     }
 
@@ -376,240 +486,6 @@ void EntityEditorPanel()
   }
 
   ImGui::Separator();
-
-  // Section 3: Bulk Export/Import
-  if (ImGui::CollapsingHeader("Bulk Export/Import"))
-  {
-    static std::unordered_map<std::string, bool> selected_components;
-    static bool initialized = false;
-
-    // Initialize component selection map
-    if (!initialized) {
-      auto& containers = Engine::ECS::Internal::get_containers();
-      for (auto& [type_id, array] : containers.component_arrays) {
-        std::string component_name = array->get_type_name();
-        if (component_name != "Unknown" && array->is_reflectable()) {
-          selected_components[component_name] = false;
-        }
-      }
-      initialized = true;
-    }
-
-    ImGui::Text("Filter by Components:");
-    ImGui::Separator();
-
-    // Component checkboxes
-    auto& containers = Engine::ECS::Internal::get_containers();
-    int checkbox_count = 0;
-    for (auto& [type_id, array] : containers.component_arrays) {
-      std::string component_name = array->get_type_name();
-      if (component_name == "Unknown" || !array->is_reflectable()) {
-        continue;
-      }
-
-      if (checkbox_count > 0 && checkbox_count % 3 == 0) {
-        // New row after 3 checkboxes
-      }
-      else if (checkbox_count > 0) {
-        ImGui::SameLine();
-      }
-
-      ImGui::Checkbox(component_name.c_str(), &selected_components[component_name]);
-      checkbox_count++;
-    }
-
-    ImGui::Separator();
-
-    // Count matching entities
-    size_t matching_count = 0;
-    auto all_entities = Engine::ECS::get_all_entities();
-    for (auto& entity : all_entities) {
-      bool matches = false;
-      for (const auto& [comp_name, is_selected] : selected_components) {
-        if (is_selected) {
-          entity.for_each_component([&](const std::string& type_name, Engine::ECS::IComponentArray*) {
-            if (type_name == comp_name) {
-              matches = true;
-            }
-            });
-          if (matches) {
-            break;
-          }
-        }
-      }
-      if (matches) {
-        matching_count++;
-      }
-    }
-
-    ImGui::Text("Matching Entities: %zu", matching_count);
-    ImGui::Separator();
-
-    // Export button
-    if (ImGui::Button("Export Matching Entities", ImVec2(-1, 0)))
-    {
-      ImGui::OpenPopup("ExportMatchingEntities");
-    }
-
-    // Export popup
-    static char export_filename[128] = "";
-    if (ImGui::BeginPopupModal("ExportMatchingEntities", NULL, ImGuiWindowFlags_AlwaysAutoResize))
-    {
-      ImGui::Text("Export %zu entities to file:", matching_count);
-      ImGui::InputText("Filename", export_filename, sizeof(export_filename));
-      ImGui::Text(".json");
-
-      ImGui::Separator();
-
-      if (ImGui::Button("Export", ImVec2(120, 0)))
-      {
-        if (strlen(export_filename) > 0)
-        {
-          std::string filename = std::string(export_filename);
-          if (filename.find(".json") == std::string::npos) {
-            filename += ".json";
-          }
-
-          // Collect matching entities
-          ReflectionLibrary::Array entities_array;
-          for (auto& entity : all_entities) {
-            bool matches = false;
-            for (auto& [comp_name, is_selected] : selected_components) {
-              if (is_selected) {
-                entity.for_each_component([&](const std::string& type_name, Engine::ECS::IComponentArray*) {
-                  if (type_name == comp_name) {
-                    matches = true;
-                  }
-                  });
-                if (matches) {
-                  break;
-                }
-              }
-            }
-            if (matches) {
-              entities_array.push_back(Engine::ECS::entity_to_generic_value(entity));
-            }
-          }
-
-          // Create JSON object
-          ReflectionLibrary::Object json_obj;
-          json_obj["entities"] = ReflectionLibrary::GenericValue(entities_array);
-          json_obj["count"] = ReflectionLibrary::GenericValue(static_cast<ReflectionLibrary::Integer>(matching_count));
-
-          // Save to file
-          std::string relative_path = "exports/" + filename;
-          std::string full_path = Engine::Path(Engine::Resources::resource_path).join(relative_path).to_string();
-
-          // Ensure exports directory exists
-          std::string exports_dir = Engine::Path(Engine::Resources::resource_path).join("exports").to_string();
-          if (!std::filesystem::exists(exports_dir)) {
-            std::filesystem::create_directories(exports_dir);
-          }
-
-          std::string json_str = ReflectionLibrary::generic_value_to_json(ReflectionLibrary::GenericValue(json_obj), true);
-          std::ofstream file(full_path);
-          if (file.is_open()) {
-            file << json_str;
-            file.close();
-
-            export_filename[0] = '\0';
-            ImGui::CloseCurrentPopup();
-            ImGui::OpenPopup("ExportSuccess");
-          }
-        }
-      }
-
-      ImGui::SameLine();
-
-      if (ImGui::Button("Cancel", ImVec2(120, 0)))
-      {
-        export_filename[0] = '\0';
-        ImGui::CloseCurrentPopup();
-      }
-
-      ImGui::EndPopup();
-    }
-
-    // Export success popup
-    if (ImGui::BeginPopup("ExportSuccess"))
-    {
-      ImGui::Text("Entities exported successfully!");
-      ImGui::EndPopup();
-    }
-
-    // Import button
-    if (ImGui::Button("Import Entities from File", ImVec2(-1, 0)))
-    {
-      ImGui::OpenPopup("ImportEntities");
-    }
-
-    // Import popup
-    static char import_filename[128] = "";
-    if (ImGui::BeginPopupModal("ImportEntities", NULL, ImGuiWindowFlags_AlwaysAutoResize))
-    {
-      ImGui::Text("Import entities from file:");
-      ImGui::InputText("Filename", import_filename, sizeof(import_filename));
-      ImGui::Text(".json");
-
-      ImGui::Separator();
-
-      if (ImGui::Button("Import", ImVec2(120, 0)))
-      {
-        if (strlen(import_filename) > 0)
-        {
-          std::string filename = std::string(import_filename);
-          if (filename.find(".json") == std::string::npos) {
-            filename += ".json";
-          }
-
-          std::string relative_path = "exports/" + filename;
-          std::string full_path = Engine::Path(Engine::Resources::resource_path).join(relative_path).to_string();
-
-          // Read file
-          std::ifstream file(full_path);
-          if (file.is_open()) {
-            std::stringstream buffer;
-            buffer << file.rdbuf();
-            file.close();
-
-            auto json_value = ReflectionLibrary::generic_value_from_json(buffer.str());
-            if (json_value.has_value() && json_value->isObject()) {
-              auto& obj = json_value->getObject();
-              if (obj.count("entities") && obj["entities"].isArray()) {
-                auto& entities_array = obj["entities"].getArray();
-
-                // Import each entity
-                for (const auto& entity_data : entities_array) {
-                  Engine::ECS::create_entity_from_generic_value(entity_data);
-                }
-
-                import_filename[0] = '\0';
-                ImGui::CloseCurrentPopup();
-                ImGui::OpenPopup("ImportSuccess");
-              }
-            }
-          }
-        }
-      }
-
-      ImGui::SameLine();
-
-      if (ImGui::Button("Cancel", ImVec2(120, 0)))
-      {
-        import_filename[0] = '\0';
-        ImGui::CloseCurrentPopup();
-      }
-
-      ImGui::EndPopup();
-    }
-
-    // Import success popup
-    if (ImGui::BeginPopup("ImportSuccess"))
-    {
-      ImGui::Text("Entities imported successfully!");
-      ImGui::EndPopup();
-    }
-  }
 
   ImGui::End();
 }

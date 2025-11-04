@@ -202,19 +202,6 @@ namespace Engine {
     }
 
     template <typename... T>
-    void for_each_entity_with(std::function<void(Entity)> callback)
-    {
-      auto& containers = Internal::get_containers();
-      for (EntityID entityId : containers.active_entities)
-      {
-        if (has_components<T...>(entityId))
-        {
-          callback(Entity(entityId));
-        }
-      }
-    }
-
-    template <typename... T>
     void for_each_entity_with(const LayerSignature& layers, std::function<void(Entity)> callback)
     {
       auto& containers = Internal::get_containers();
@@ -246,6 +233,46 @@ namespace Engine {
     {
       auto* array = get_component_array<T>();
       return array ? array->size() : 0;
+    }
+
+    //template <typename... Components>
+    //void for_each_entity_with(std::function<void(Entity)> callback)
+    //{
+    //  auto& containers = Internal::get_containers();
+
+    //  // Build component signature for required components
+    //  ComponentSignature required_signature;
+    //  ((required_signature.set(ComponentTypeManager::get_type_id<Components>())), ...);
+
+    //  // Iterate through all active entities
+    //  for (size_t i = 0; i < containers.active_entities.size(); ++i)
+    //  {
+    //    EntityID id = containers.active_entities.entity_at(i);
+    //    auto it = containers.entity_signatures.find(id);
+    //    if (it != containers.entity_signatures.end())
+    //    {
+    //      const auto& entity_sig = it->second;
+    //      // Check if entity has all required components
+    //      if ((entity_sig & required_signature) == required_signature)
+    //      {
+    //        Entity entity(id);
+    //        callback(entity);
+    //      }
+    //    }
+    //  }
+    //}
+
+    template <typename... T>
+    void for_each_entity_with(std::function<void(Entity)> callback)
+    {
+      auto& containers = Internal::get_containers();
+      for (EntityID entityId : containers.active_entities)
+      {
+        if (has_components<T...>(entityId))
+        {
+          callback(Entity(entityId));
+        }
+      }
     }
 
     // ============================================================================

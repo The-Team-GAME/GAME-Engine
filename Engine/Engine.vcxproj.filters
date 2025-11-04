@@ -9,7 +9,9 @@
     <ClCompile Include="Engine\ECS\WorldData.cpp" />
     <ClCompile Include="Engine\EventManager\EventManager.cpp" />
     <ClCompile Include="Engine\FileIO\PrefabsFileIO.cpp" />
+    <ClCompile Include="Engine\FileIO\LevelFileIO.cpp" />
     <ClCompile Include="Engine\GUI\EntityEditorPanel.cpp" />
+    <ClCompile Include="Engine\GUI\LevelPanel.cpp" />
     <ClCompile Include="Engine\GUI\PrefabEditorPanel.cpp" />
     <ClCompile Include="Engine\GUI\TilemapPanel.cpp" />
     <ClCompile Include="Engine\GUI\ViewportPanel.cpp" />
@@ -102,7 +104,9 @@
     <ClInclude Include="Engine\ECS\System.h" />
     <ClInclude Include="Engine\ECS\Types.h" />
     <ClInclude Include="Engine\ECS\World.h" />
+    <ClInclude Include="Engine\FileIO\LevelFileIO.h" />
     <ClInclude Include="Engine\GUI\EntityEditorPanel.h" />
+    <ClInclude Include="Engine\GUI\LevelPanel.h" />
     <ClInclude Include="Engine\GUI\PrefabEditorPanel.h" />
     <ClInclude Include="Engine\GUI\ResourcePicker.h" />
     <ClInclude Include="Engine\ImGuiManager.h" />

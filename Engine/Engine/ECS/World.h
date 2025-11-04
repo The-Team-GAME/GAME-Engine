@@ -450,27 +450,64 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
-    Iterates over all entities that have the specified component types and calls
-    the callback function for each entity.
+    Iterates over all active entities and calls the provided callback function for each.
 
     Parameters:
-    callback - Function to call for each entity: void(Entity entity)
+    callback - Function to call for each entity. Takes an Entity reference.
 
     Where to call it:
-    When you need to perform operations on all entities with specific components
-    without creating a temporary vector.
+    When you need to perform an operation on all entities without creating a vector.
+    More efficient than get_all_entities() when you just need to iterate.
+    ==================================================================================*/
+    void for_each_entity(std::function<void(Entity&)> callback);
+
+    /*=================================================================================
+    Function Brief:
+    Iterates over entities with specific components and calls the callback for each.
+    Only entities that have ALL specified component types will be passed to the callback.
+
+    Parameters:
+    callback - Function to call for each matching entity. Takes an Entity by value.
+
+    Where to call it:
+    When you need to iterate over entities with specific component combinations.
+    More efficient than get_entities_with() when you just need to iterate.
 
     Example:
-    ECS::for_each_entity_with<Components::Transform2D, Components::Velocity>(
-      [](Entity entity) {
-        auto* transform = entity.get_component<Components::Transform2D>();
-        auto* velocity = entity.get_component<Components::Velocity>();
-        // Do something with the components
-      }
-    );
+    for_each_entity_with<Transform, Velocity>([](Entity e) {
+      auto* transform = e.get_component<Transform>();
+      auto* velocity = e.get_component<Velocity>();
+      transform->position += velocity->value;
+    });
     ==================================================================================*/
-    template <typename... T>
+    template <typename... Components>
     void for_each_entity_with(std::function<void(Entity)> callback);
+
+    /*=================================================================================
+    Function Brief:
+    Iterates over entities on a specific layer and calls the callback for each.
+
+    Parameters:
+    layer - The LayerID to iterate over.
+    callback - Function to call for each entity on the layer.
+
+    Where to call it:
+    When you need to perform operations on entities in a specific layer.
+    ==================================================================================*/
+    void for_each_entity_on_layer(LayerID layer, std::function<void(Entity&)> callback);
+
+    /*=================================================================================
+    Function Brief:
+    Iterates over entities on a specific layer (by name) and calls the callback for each.
+
+    Parameters:
+    layer_name - The name of the layer to iterate over.
+    callback - Function to call for each entity on the layer.
+
+    Where to call it:
+    When you need to perform operations on entities in a specific layer by name.
+    ==================================================================================*/
+    void for_each_entity_on_layer(const std::string& layer_name, std::function<void(Entity&)> callback);
 
     /*=================================================================================
     Function Brief:
