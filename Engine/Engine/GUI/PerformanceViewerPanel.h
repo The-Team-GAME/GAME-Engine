@@ -38,7 +38,7 @@ inline void PerformanceViewerPanel()
   static f32 display_fps = 0.0f;
   static f32 update_timer = 0.0f;
   static s32 frame_count = 0;
-  static const f32 update_interval = 0.25f;
+  static f32 update_interval = 0.25f; // Changed to non-const to allow adjustment
   static std::unordered_map<std::string, double> cached_percentages;
   static bool sort_by_percentage = true; // Toggle for sorting mode
 
@@ -77,8 +77,6 @@ inline void PerformanceViewerPanel()
     ImGui::SameLine();
     ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "[LOW]");
   }
-
-  ImGui::Spacing();
 
   // Tick Rate Control Section
   ImGui::SeparatorText("Tick Rate Control");
@@ -131,6 +129,19 @@ inline void PerformanceViewerPanel()
       ImGui::ProgressBar(static_cast<float>(percentage / 100.0), ImVec2(-1.0f, 0.0f), "");
       ImGui::PopStyleColor();
     }
+
+    ImGui::Separator();
+
+    if (ImGui::CollapsingHeader("Panel Settings")) {
+      // Update interval control
+      ImGui::SliderFloat("Measurement Period", &update_interval, 0.1f, 10.0f, "%.3f s");
+      ImGui::SameLine();
+      ImGui::TextDisabled("(?)");
+      if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Lower values = more responsive but less accurate average\nHigher values = more accurate average but less responsive");
+      }
+    }
+
   }
 
   ImGui::End();
