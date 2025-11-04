@@ -16,14 +16,14 @@
 
 
 #include "../Engine/MonkeyEngine.h"
+#include "GameStates/EmptyState.h"
+#include "GameStates/MainMenuState.h"
 #include "GameStates/ShowcaseState.h"
-#include "GameStates/BasicState.h"
-#include "GameStates/Rubric2500ParticlesState.h"
 #include "GameStates/RectPainterState.h"
+#include "GameStates/Rubric2500ParticlesState.h"
+#include "GameStates/BasicState.h"
 #include "GameStates/DevSpriteAnimationState.h"
 #include "GameStates/Documentation/PrefabsState.h"
-#include "GUI/StateChooser.h"
-#include <exception>
 
 /*=================================================================================
 Function Brief:
@@ -53,8 +53,6 @@ int main()
   Engine::ECS::register_layer("ui"); // User interface elements
   Engine::ECS::register_layer("effects"); // Visual effects like particles
   Engine::ECS::register_layer("debug"); // Debug overlays and information
-
-  ImGuiManager::register_panel(StateChooserPanel);
 
   Engine::SceneManager::register_scene<EmptyState>("EmptyState");
   Engine::SceneManager::register_scene<MainMenuState>("MainMenuState");

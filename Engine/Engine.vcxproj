@@ -144,6 +144,8 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Engine\Events\RegisterAllEvents.h" />
     <ClInclude Include="Engine\FileIO\Helpers.h" />
     <ClInclude Include="Engine\FileIO\Settings.h" />
+    <ClInclude Include="Engine\GUI\PerformanceViewerPanel.h" />
+    <ClInclude Include="Engine\GUI\SceneChooserPanel.h" />
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
     <ClInclude Include="Engine\Audio\AudioPlayer.h" />
     <ClInclude Include="Engine\Audio\AudioPlayerInternal.h" />

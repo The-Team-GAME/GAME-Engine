@@ -15,17 +15,6 @@
 #pragma once
 
 #include "imgui.h"
-#include "../../Engine/MonkeyEngine.h"
-#include "../GameStates/EmptyState.h"
-#include "../GameStates/MainMenuState.h"
-#include "../GameStates/BasicState.h"
-#include "../GameStates/Rubric2500ParticlesState.h"
-#include "../GameStates/RectPainterState.h"
-#include "../GameStates/DevSpriteAnimationState.h"
-#include "../GameStates/ShowcaseState.h"
-#include "../GameStates/Documentation/PrefabsState.h"
-#include "../GameStates/Dev/PhysicsTestState.h"
-#include "../GameStates/Documentation/LayersState.h"
 
 /*=================================================================================
 Function Brief:
@@ -37,7 +26,7 @@ Where to call it:
 Call this function once per frame during the ImGui rendering phase, typically
 in the Draw() or Update() function of a game state.
 ==================================================================================*/
-inline void StateChooserPanel()
+inline void SceneChooserPanel()
 {
   ImGui::Begin("State Chooser");
 
