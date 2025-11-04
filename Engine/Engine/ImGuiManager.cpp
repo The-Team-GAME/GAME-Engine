@@ -269,10 +269,15 @@ namespace ImGuiManager {
     }
 
     // Make sure that imgui_viewport_enabled is false when gui is disabled
-    if (!gui_enabled)
-    {
-      Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().imgui_viewport_enabled = false;
+    if (!gui_enabled) Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().imgui_viewport_enabled = false;
+
+    // Clear screen every frame when imgui_viewport_enabled is true
+    if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled) {
+      // use the theme color as the clear color
+      ImVec4 bg_color = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+      Engine::Graphics::clear_screen({ bg_color.x * 0.6f, bg_color.y * 0.6f, bg_color.z * 0.6f, bg_color.w });
     }
+
   }
 
   void register_panel(const std::string& panel_name, const std::function<void()>& panel_func)
