@@ -3,97 +3,7 @@
     "entities": [
         {
             "dataType": "Entity",
-            "id": 9,
-            "layers": [
-                "default"
-            ],
-            "components": [
-                {
-                    "type": "Components::Text",
-                    "data": {
-                        "content": "Enemy HP: 50/50"
-                    }
-                },
-                {
-                    "data": {
-                        "b": 0.0,
-                        "r": 1.0,
-                        "g": 0.0,
-                        "a": 1.0
-                    },
-                    "type": "Components::Color"
-                },
-                {
-                    "type": "Components::Font",
-                    "data": {
-                        "path": "fonts/Roboto-Regular.ttf",
-                        "font_size": 48
-                    }
-                },
-                {
-                    "data": {
-                        "position": {
-                            "x": 50.0,
-                            "y": 240.0
-                        },
-                        "rotation": 0.0,
-                        "scale": {
-                            "x": 0.699999988079071,
-                            "y": 0.699999988079071
-                        }
-                    },
-                    "type": "Components::Transform2D"
-                }
-            ]
-        },
-        {
-            "dataType": "Entity",
-            "id": 8,
-            "layers": [
-                "default"
-            ],
-            "components": [
-                {
-                    "data": {
-                        "content": "Bananas: 0"
-                    },
-                    "type": "Components::Text"
-                },
-                {
-                    "type": "Components::Color",
-                    "data": {
-                        "r": 1.0,
-                        "b": 0.0,
-                        "g": 1.0,
-                        "a": 1.0
-                    }
-                },
-                {
-                    "data": {
-                        "path": "fonts/Roboto-Regular.ttf",
-                        "font_size": 48
-                    },
-                    "type": "Components::Font"
-                },
-                {
-                    "type": "Components::Transform2D",
-                    "data": {
-                        "position": {
-                            "x": 50.0,
-                            "y": 200.0
-                        },
-                        "rotation": 0.0,
-                        "scale": {
-                            "x": 0.699999988079071,
-                            "y": 0.699999988079071
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "dataType": "Entity",
-            "id": 3,
+            "id": 14,
             "layers": [
                 "default"
             ],
@@ -207,7 +117,7 @@
                                 }
                             ]
                         ],
-                        "drawIndex": 0
+                        "drawIndex": 3
                     },
                     "type": "Components::TextureAtlas"
                 },
@@ -250,7 +160,7 @@
         },
         {
             "dataType": "Entity",
-            "id": 4,
+            "id": 16,
             "layers": [
                 "default"
             ],
@@ -266,49 +176,12 @@
                 },
                 {
                     "data": {
-                        "path": "images/banana.png"
+                        "path": "images/Bro_Idle_Spritesheet.png"
                     },
                     "type": "Components::Texture"
                 },
                 {
-                    "type": "Components::Transform2D",
-                    "data": {
-                        "position": {
-                            "x": 1200.0,
-                            "y": 675.0
-                        },
-                        "rotation": 48.000003814697266,
-                        "scale": {
-                            "x": 60.0,
-                            "y": 36.0
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "dataType": "Entity",
-            "id": 5,
-            "layers": [
-                "default"
-            ],
-            "components": [
-                {
-                    "data": {
-                        "b": 1.0,
-                        "r": 1.0,
-                        "g": 1.0,
-                        "a": 1.0
-                    },
-                    "type": "Components::Color"
-                },
-                {
-                    "type": "Components::Texture",
-                    "data": {
-                        "path": "images/Bro_Idle_Spritesheet.png"
-                    }
-                },
-                {
+                    "type": "Components::TextureAtlas",
                     "data": {
                         "tex_coords_list": [
                             [
@@ -438,12 +311,10 @@
                                 }
                             ]
                         ],
-                        "drawIndex": 0
-                    },
-                    "type": "Components::TextureAtlas"
+                        "drawIndex": 4
+                    }
                 },
                 {
-                    "type": "Components::Animation",
                     "data": {
                         "durations": [
                             0.15000000596046448,
@@ -465,9 +336,11 @@
                         ],
                         "startTime": 24.155662536621094,
                         "totalDuration": 1.0500000715255737
-                    }
+                    },
+                    "type": "Components::Animation"
                 },
                 {
+                    "type": "Components::Transform2D",
                     "data": {
                         "position": {
                             "x": 200.0,
@@ -477,175 +350,6 @@
                         "scale": {
                             "x": 128.0,
                             "y": 128.0
-                        }
-                    },
-                    "type": "Components::Transform2D"
-                }
-            ]
-        },
-        {
-            "dataType": "Entity",
-            "id": 6,
-            "layers": [
-                "default"
-            ],
-            "components": [
-                {
-                    "type": "Components::Text",
-                    "data": {
-                        "content": "Engine Showcase"
-                    }
-                },
-                {
-                    "data": {
-                        "b": 0.30000001192092896,
-                        "r": 1.0,
-                        "g": 0.8999999761581421,
-                        "a": 1.0
-                    },
-                    "type": "Components::Color"
-                },
-                {
-                    "type": "Components::Font",
-                    "data": {
-                        "path": "fonts/PlayfairDisplay-VariableFont_wght.ttf",
-                        "font_size": 82
-                    }
-                },
-                {
-                    "data": {
-                        "position": {
-                            "x": 50.0,
-                            "y": 50.0
-                        },
-                        "rotation": 0.0,
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0
-                        }
-                    },
-                    "type": "Components::Transform2D"
-                }
-            ]
-        },
-        {
-            "dataType": "Entity",
-            "id": 7,
-            "layers": [
-                "default"
-            ],
-            "components": [
-                {
-                    "data": {
-                        "content": "WASD: Move | E: Attack | C: Collect"
-                    },
-                    "type": "Components::Text"
-                },
-                {
-                    "type": "Components::Color",
-                    "data": {
-                        "r": 1.0,
-                        "b": 1.0,
-                        "g": 1.0,
-                        "a": 1.0
-                    }
-                },
-                {
-                    "data": {
-                        "path": "fonts/Roboto-Regular.ttf",
-                        "font_size": 48
-                    },
-                    "type": "Components::Font"
-                },
-                {
-                    "type": "Components::Transform2D",
-                    "data": {
-                        "position": {
-                            "x": 50.0,
-                            "y": 140.0
-                        },
-                        "rotation": 0.0,
-                        "scale": {
-                            "x": 0.6000000238418579,
-                            "y": 0.6000000238418579
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "dataType": "Entity",
-            "id": 18,
-            "layers": [
-                "default",
-                "ui"
-            ],
-            "components": [
-                {
-                    "type": "Components::Color",
-                    "data": {
-                        "r": 1.0,
-                        "b": 1.0,
-                        "g": 1.0,
-                        "a": 1.0
-                    }
-                },
-                {
-                    "data": {
-                        "path": "images/UI/Button_Start.png"
-                    },
-                    "type": "Components::Texture"
-                },
-                {
-                    "type": "Components::Transform2D",
-                    "data": {
-                        "position": {
-                            "x": 800.0,
-                            "y": 700.0
-                        },
-                        "rotation": 0.0,
-                        "scale": {
-                            "x": 288.0,
-                            "y": 96.0
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "dataType": "Entity",
-            "id": 17,
-            "layers": [
-                "default",
-                "background"
-            ],
-            "components": [
-                {
-                    "type": "Components::Color",
-                    "data": {
-                        "r": 1.0,
-                        "b": 1.0,
-                        "g": 1.0,
-                        "a": 1.0
-                    }
-                },
-                {
-                    "data": {
-                        "path": "images/UI/MAIN MENU.png"
-                    },
-                    "type": "Components::Texture"
-                },
-                {
-                    "type": "Components::Transform2D",
-                    "data": {
-                        "position": {
-                            "x": 800.0,
-                            "y": 450.0
-                        },
-                        "rotation": 0.0,
-                        "scale": {
-                            "x": 1600.0,
-                            "y": 900.0
                         }
                     }
                 }

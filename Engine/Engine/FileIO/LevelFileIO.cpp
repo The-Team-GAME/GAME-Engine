@@ -7,8 +7,8 @@
 //
 // email:   chew.s@digipen.edu
 //
-// brief:   This file implements the Level system for saving and loading complete
-//          game scenes with all entities and their components.
+// brief:   This file implements serialization and deserialization functions for
+//          game levels. Provides low-level JSON conversion utilities.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
@@ -22,7 +22,7 @@
 namespace Engine {
   namespace FileIO {
 
-    std::string serialize_level_to_json(const Level& level) {
+    std::string serialize_level_to_json(const Engine::LevelManager::Level& level) {
       // Create root object
       ReflectionLibrary::Object root_obj;
 
@@ -46,8 +46,8 @@ namespace Engine {
       return ReflectionLibrary::generic_value_to_json(root, true);
     }
 
-    Level deserialize_level_from_json(const std::string& json_str) {
-      Level level;
+    Engine::LevelManager::Level deserialize_level_from_json(const std::string& json_str) {
+      Engine::LevelManager::Level level;
 
       std::optional<ReflectionLibrary::GenericValue> root = ReflectionLibrary::generic_value_from_json(json_str);
       if (!root) {
@@ -79,7 +79,7 @@ namespace Engine {
       return level;
     }
 
-    bool serialize_level_to_json_file(const std::string& filepath, const Level& level) {
+    bool serialize_level_to_json_file(const std::string& filepath, const Engine::LevelManager::Level& level) {
       std::string json_content = serialize_level_to_json(level);
 
       if (write_string_to_file(filepath, json_content)) {
@@ -92,8 +92,8 @@ namespace Engine {
       }
     }
 
-    Level deserialize_level_from_json_file(const std::string& filepath) {
-      Level level;
+    Engine::LevelManager::Level deserialize_level_from_json_file(const std::string& filepath) {
+      Engine::LevelManager::Level level;
 
       std::optional<std::string> json_content = read_string_from_file(filepath);
       if (!json_content) {
@@ -104,61 +104,6 @@ namespace Engine {
       level = deserialize_level_from_json(json_content.value());
       Log::info("Level loaded from: " + filepath);
       return level;
-    }
-
-    std::vector<Engine::ECS::Entity> get_all_entities_in_world(
-      const Engine::ECS::LayerSignature& layer_filter
-    ) {
-      std::vector<Engine::ECS::Entity> entities;
-
-      // Get all entities from the world
-      Engine::ECS::for_each_entity([&](Engine::ECS::Entity entity) {
-        // If no filter specified, add all entities
-        if (layer_filter.none()) {
-          entities.push_back(entity);
-        }
-        else {
-          // Check if entity is on any of the filtered layers
-          Engine::ECS::LayerSignature entity_layers = entity.get_layers();
-          if ((entity_layers & layer_filter).any()) {
-            entities.push_back(entity);
-          }
-        }
-        });
-
-      return entities;
-    }
-
-    bool save_current_world_as_level(const std::string& filepath,
-      const std::string& level_name,
-      const Engine::ECS::LayerSignature& layer_filter) {
-      Level level(level_name);
-      level.entities = get_all_entities_in_world(layer_filter);
-
-      Log::info("Saving " + std::to_string(level.entities.size()) + " entities to level: " + level_name);
-      return serialize_level_to_json_file(filepath, level);
-    }
-
-    bool load_level_into_world(const std::string& filepath, bool clear_existing) {
-      // Clear existing entities if requested
-      if (clear_existing) {
-        Log::info("Clearing existing entities before loading level");
-        std::vector<Engine::ECS::Entity> existing_entities = get_all_entities_in_world();
-        for (auto& entity : existing_entities) {
-          Engine::ECS::destroy_entity(entity);
-        }
-      }
-
-      // Load the level
-      Level level = deserialize_level_from_json_file(filepath);
-
-      if (level.entities.empty()) {
-        Log::warning("Loaded level is empty or failed to load: " + filepath);
-        return false;
-      }
-
-      Log::info("Loaded level '" + level.name + "' with " + std::to_string(level.entities.size()) + " entities");
-      return true;
     }
 
   } // namespace FileIO

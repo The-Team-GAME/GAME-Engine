@@ -14,6 +14,7 @@
 //-----------------------------------------------------------------------------------
 #include <imgui.h>
 #include "LevelPanel.h"
+#include "../LevelManager.h"
 #include "../FileIO/LevelFileIO.h"
 #include "../Path.h"
 #include "../Logger.h"
@@ -113,38 +114,22 @@ void LevelPanel() {
     std::string full_path = Engine::Path("Assets").join(level_path).to_string();
 
     if (use_component_filter) {
-      // Create filtered level manually
-      Engine::FileIO::Level level(level_name);
-
-      // Collect entities matching the filter
-      auto all_entities = Engine::ECS::get_all_entities();
-      for (auto& entity : all_entities) {
-        bool matches = false;
-        for (const auto& [comp_name, is_selected] : level_component_filter) {
-          if (is_selected) {
-            entity.for_each_component([&](const std::string& type_name, Engine::ECS::IComponentArray*) {
-              if (type_name == comp_name) {
-                matches = true;
-              }
-              });
-            if (matches) {
-              break;
-            }
-          }
-        }
-        if (matches) {
-          level.entities.push_back(entity);
+      // Collect selected component names
+      std::vector<std::string> selected_components;
+      for (const auto& [comp_name, is_selected] : level_component_filter) {
+        if (is_selected) {
+          selected_components.push_back(comp_name);
         }
       }
 
-      Log::info("Saving " + std::to_string(level.entities.size()) + " filtered entities to level: " + level_name);
-      if (Engine::FileIO::serialize_level_to_json_file(full_path, level)) {
+      // Save with component filter
+      if (Engine::LevelManager::save_current_world_as_level_with_component_filter(full_path, level_name, selected_components)) {
         Log::info("Level saved successfully!");
       }
     }
     else {
       // Save all entities
-      if (Engine::FileIO::save_current_world_as_level(full_path, level_name)) {
+      if (Engine::LevelManager::save_current_world_as_level(full_path, level_name)) {
         Log::info("Level saved successfully!");
       }
     }
@@ -160,7 +145,7 @@ void LevelPanel() {
 
   if (ImGui::Button("Load Level", ImVec2(-1, 0))) {
     std::string full_path = Engine::Path("Assets").join(level_path).to_string();
-    if (Engine::FileIO::load_level_into_world(full_path, clear_existing)) {
+    if (Engine::LevelManager::load_level_into_world(full_path, clear_existing)) {
       Log::info("Level loaded successfully!");
     }
   }

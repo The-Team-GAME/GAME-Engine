@@ -10,6 +10,7 @@
     <ClCompile Include="Engine\EventManager\EventManager.cpp" />
     <ClCompile Include="Engine\FileIO\PrefabsFileIO.cpp" />
     <ClCompile Include="Engine\FileIO\LevelFileIO.cpp" />
+    <ClCompile Include="Engine\LevelManager.cpp" />
     <ClCompile Include="Engine\GUI\EntityEditorPanel.cpp" />
     <ClCompile Include="Engine\GUI\LevelPanel.cpp" />
     <ClCompile Include="Engine\GUI\PrefabEditorPanel.cpp" />
@@ -105,6 +106,7 @@
     <ClInclude Include="Engine\ECS\Types.h" />
     <ClInclude Include="Engine\ECS\World.h" />
     <ClInclude Include="Engine\FileIO\LevelFileIO.h" />
+    <ClInclude Include="Engine\LevelManager.h" />
     <ClInclude Include="Engine\GUI\EntityEditorPanel.h" />
     <ClInclude Include="Engine\GUI\LevelPanel.h" />
     <ClInclude Include="Engine\GUI\PrefabEditorPanel.h" />
