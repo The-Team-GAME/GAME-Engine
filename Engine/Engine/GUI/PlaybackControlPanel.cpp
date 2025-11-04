@@ -16,24 +16,13 @@
 #include <imgui.h>
 #include "PlaybackControlPanel.h"
 #include "../Core.h"
-
-namespace Engine {
-  namespace PlaybackControl {
-    bool is_paused() {
-      return Core::is_paused();
-    }
-
-    void set_paused(bool paused) {
-      Core::set_paused(paused);
-    }
-  }
-}
+#include "../SceneManager.h"
 
 void PlaybackControlPanel() {
   ImGui::Begin("Playback Control");
 
   // Get current state
-  bool is_paused = Engine::PlaybackControl::is_paused();
+  bool is_paused = Engine::Core::is_paused();
 
   // Display current state with color coding
   ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "Playback State");
@@ -65,7 +54,7 @@ void PlaybackControlPanel() {
   }
 
   if (ImGui::Button("Play", ImVec2(80, 40))) {
-    Engine::PlaybackControl::set_paused(false);
+    Engine::Core::set_paused(false);
   }
   ImGui::PopStyleColor(3);
 
@@ -84,7 +73,7 @@ void PlaybackControlPanel() {
   }
 
   if (ImGui::Button("Pause", ImVec2(80, 40))) {
-    Engine::PlaybackControl::set_paused(true);
+    Engine::Core::set_paused(true);
   }
   ImGui::PopStyleColor(3);
 
@@ -96,9 +85,13 @@ void PlaybackControlPanel() {
   ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
 
   if (ImGui::Button("Stop", ImVec2(80, 40))) {
-    // Stop = Pause + potentially reset to initial state
-    // For now, we'll just pause. You can add reset logic here if needed
-    Engine::PlaybackControl::set_paused(true);
+    // Stop = reload current scene + pause after the next frame completes
+    std::string current = Engine::SceneManager::get_current_scene_name();
+    Engine::SceneManager::unload_current_scene();
+    Engine::SceneManager::load_scene(current);
+
+    // Defer pause to next frame so the scene reload can complete and render
+    Engine::Core::set_paused(true, true);
   }
   ImGui::PopStyleColor(3);
 
@@ -106,6 +99,7 @@ void PlaybackControlPanel() {
 
   ImGui::Spacing();
   ImGui::Separator();
+
 
   // Keyboard shortcuts info
   ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "Keyboard Shortcuts:");

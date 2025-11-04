@@ -15,32 +15,6 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-namespace Engine {
-  namespace PlaybackControl {
-    /*=================================================================================
-    Function Brief:
-    Returns true if the game is currently paused (physics_step_mode is enabled).
-
-    Where to call it:
-    Can be called from any system that needs to check if game logic is paused.
-    ==================================================================================*/
-    bool is_paused();
-
-    /*=================================================================================
-    Function Brief:
-    Sets the pause state of the game (controls physics_step_mode).
-
-    Parameters:
-    paused - true to pause game logic, false to resume
-
-    Where to call it:
-    Called internally by PlaybackControlPanel or from other systems that need to
-    control game execution state.
-    ==================================================================================*/
-    void set_paused(bool paused);
-  }
-}
-
 /*=================================================================================
 Function Brief:
 Creates and renders an ImGui panel with Play, Pause, and Stop buttons for
