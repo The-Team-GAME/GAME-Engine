@@ -131,6 +131,7 @@ namespace Engine {
         return Entity(INVALID_ENTITY);
       }
 
+      // Create new entity (this automatically adds it to DEFAULT_LAYER)
       Entity newEntity = create_entity();
 
       const auto& sourceSignature = containers.entity_signatures.at(source_id);
@@ -140,6 +141,11 @@ namespace Engine {
       auto layer_it = containers.entity_layers.find(source_id);
       if (layer_it != containers.entity_layers.end()) {
         const LayerSignature& source_layers = layer_it->second;
+
+        // Remove from default layer first (added by create_entity)
+        Internal::remove_entity_from_layer_set(newEntity.get_id(), DEFAULT_LAYER);
+
+        // Set the exact layer signature from source
         containers.entity_layers[newEntity.get_id()] = source_layers;
 
         // Add cloned entity to all the source entity's layer sets

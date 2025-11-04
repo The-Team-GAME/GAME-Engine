@@ -16,6 +16,7 @@
 #include "System.h"
 #include "Entity.h"
 #include "WorldData.h"
+#include <unordered_set>
 
 namespace Engine {
   namespace ECS {
@@ -29,6 +30,7 @@ namespace Engine {
     void System::update() {
       // Iterate through entities in layer order (lower layer ID = higher priority = first)
       auto& containers = Internal::get_containers();
+      std::unordered_set<EntityID> processed; // Track processed entities to avoid duplicates
 
       for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
         // Skip if system doesn't process this layer
@@ -36,10 +38,13 @@ namespace Engine {
           continue;
 
         for (EntityID entityId : containers.layer_entities[layer]) {
-          if (entities.contains(entityId)) {
-            Entity entity(entityId);
-            update_entity(entity);
-          }
+          // Skip if already processed or not in this system's entity set
+          if (processed.count(entityId) || !entities.contains(entityId))
+            continue;
+
+          processed.insert(entityId);
+          Entity entity(entityId);
+          update_entity(entity);
         }
       }
     }
@@ -47,6 +52,7 @@ namespace Engine {
     void System::draw() {
       // Iterate through entities in layer order (lower layer ID = higher priority = first)
       auto& containers = Internal::get_containers();
+      std::unordered_set<EntityID> processed; // Track processed entities to avoid duplicates
 
       for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
         // Skip if system doesn't process this layer
@@ -54,10 +60,13 @@ namespace Engine {
           continue;
 
         for (EntityID entityId : containers.layer_entities[layer]) {
-          if (entities.contains(entityId)) {
-            Entity entity(entityId);
-            draw_entity(entity);
-          }
+          // Skip if already processed or not in this system's entity set
+          if (processed.count(entityId) || !entities.contains(entityId))
+            continue;
+
+          processed.insert(entityId);
+          Entity entity(entityId);
+          draw_entity(entity);
         }
       }
     }
