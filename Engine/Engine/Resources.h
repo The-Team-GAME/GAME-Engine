@@ -38,9 +38,6 @@ namespace Engine {
       size_t prefab_alive;
     };
 
-    // TODO: unit_rect does not need reference counting, since it's always in memory until we exit
-    extern Engine::Graphics::Texture unit_rect;
-
     // Base path for resource loading
     extern std::string resource_path;
 

@@ -102,5 +102,8 @@ namespace Engine {
     void clear_screen(const Math::Vec4D& color);
     void clear_screen(Engine::Graphics::Texture texture);
 
+    // Get the unit rectangle texture (1x1 white pixel)
+    Texture get_rect_texture();
+
   } // namespace Graphics
 } // namespace Engine
