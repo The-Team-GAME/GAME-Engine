@@ -108,6 +108,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClCompile Include="Engine\GUI\ResourcePicker.cpp" />
     <ClCompile Include="Engine\GUI\widgets\ReflectionFieldWidgets.cpp" />
     <ClCompile Include="Engine\GUI\widgets\TextureAtlasWidget.cpp" />
+    <ClCompile Include="Engine\SceneManager.cpp" />
     <ClCompile Include="GameLogic\GameStates\BasicState.cpp" />
     <ClCompile Include="GameLogic\GameStates\BasicState.h" />
     <ClCompile Include="Engine\Core.cpp" />
@@ -169,6 +170,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Engine\Reflection\ReflectionLibrary\Json.h" />
     <ClInclude Include="Engine\Reflection\ReflectionLibrary\Macros.h" />
     <ClInclude Include="Engine\Reflection\ReflectionLibrary\Print.h" />
+    <ClInclude Include="Engine\SceneManager.h" />
     <ClInclude Include="Engine\Systems\Systems.h" />
     <ClInclude Include="Engine\Systems\UISystem.h" />
     <ClInclude Include="GameLogic\GameStates\Documentation\LayersAdvancedState.h" />

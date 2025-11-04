@@ -16,7 +16,12 @@
 
 
 #include "../Engine/MonkeyEngine.h"
-#include "GameStates/MainMenuState.h"
+#include "GameStates/ShowcaseState.h"
+#include "GameStates/BasicState.h"
+#include "GameStates/Rubric2500ParticlesState.h"
+#include "GameStates/RectPainterState.h"
+#include "GameStates/DevSpriteAnimationState.h"
+#include "GameStates/Documentation/PrefabsState.h"
 #include "GUI/StateChooser.h"
 #include <exception>
 
@@ -49,7 +54,15 @@ int main()
     Engine::ECS::register_layer("effects"); // Visual effects like particles
     Engine::ECS::register_layer("debug"); // Debug overlays and information
 
-    ImGuiManager::register_panel(StateChooserPanel);
+    //ImGuiManager::register_panel(StateChooserPanel);
+
+    Engine::SceneManager::register_scene<ShowcaseState>("ShowcaseState");
+    Engine::SceneManager::register_scene<RectPainterState>("RectPainterState");
+    Engine::SceneManager::register_scene<Rubric2500ParticlesState>("Rubric2500ParticlesState");
+    Engine::SceneManager::register_scene<BasicState>("BasicState");
+    Engine::SceneManager::register_scene<DevSpriteAnimationState>("DevSpriteAnimationState");
+    //Engine::SceneManager::register_scene<PrefabsState>("PrefabsState");
+
     engine.run();
     
 
