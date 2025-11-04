@@ -129,6 +129,7 @@ namespace ImGuiManager {
         // Toolbar content below the menu bar
         ImGui::Dummy(ImVec2(0.0f, 4.0f)); // Top padding
 
+        ImGui::Indent(8.0f); // Left padding
         bool& is_paused = Engine::Core::is_paused();
 
 
@@ -154,6 +155,7 @@ namespace ImGuiManager {
           is_paused = true;
         }
 
+        ImGui::Unindent(8.0f); // Remove left padding
         ImGui::Dummy(ImVec2(0.0f, 4.0f)); // Bottom padding
 
         top_bar_height = ImGui::GetWindowHeight();
