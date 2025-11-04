@@ -35,23 +35,7 @@ namespace Engine {
         if (!active_layers.test(layer))
           continue;
 
-        // Copy entity IDs to prevent iterator invalidation during update_entity()
-        // (entities may be created/destroyed during updates)
-        const auto& layer_set = containers.layer_entities[layer];
-        std::vector<EntityID> entities_to_process;
-        entities_to_process.reserve(layer_set.size());
-        
-        // TODO: this is not efficient, optimize later
-        for (EntityID entityId : layer_set) {
-          // Only process if this system manages this entity
-          if (entities.contains(entityId)) {
-            entities_to_process.push_back(entityId);
-          }
-        }
-
-        // Now iterate over the copy
-        for (EntityID entityId : entities_to_process) {
-          // Double-check entity still exists and is managed by this system
+        for (EntityID entityId : containers.layer_entities[layer]) {
           if (entities.contains(entityId)) {
             Entity entity(entityId);
             update_entity(entity);
@@ -69,21 +53,7 @@ namespace Engine {
         if (!active_layers.test(layer))
           continue;
 
-        // Copy entity IDs to prevent iterator invalidation during draw_entity()
-        const auto& layer_set = containers.layer_entities[layer];
-        std::vector<EntityID> entities_to_draw;
-        entities_to_draw.reserve(layer_set.size());
-        
-        for (EntityID entityId : layer_set) {
-          // Only process if this system manages this entity
-          if (entities.contains(entityId)) {
-            entities_to_draw.push_back(entityId);
-          }
-        }
-
-        // Now iterate over the copy
-        for (EntityID entityId : entities_to_draw) {
-          // Double-check entity still exists and is managed by this system
+        for (EntityID entityId : containers.layer_entities[layer]) {
           if (entities.contains(entityId)) {
             Entity entity(entityId);
             draw_entity(entity);
