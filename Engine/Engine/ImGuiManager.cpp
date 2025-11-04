@@ -169,13 +169,6 @@ namespace ImGuiManager {
         }
         ImGui::PopStyleColor(3);
 
-        ImGui::SameLine();
-        ImGui::Separator();
-        ImGui::SameLine();
-
-        // Keyboard shortcuts hint
-        ImGui::TextDisabled("(P: Play/Pause | ]: Step)");
-
         ImGui::PopStyleVar();
 
         top_bar_height = ImGui::GetWindowHeight();
