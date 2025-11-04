@@ -294,6 +294,72 @@ namespace Engine {
       }
     }
 
+    template <typename... Components>
+    void for_each_entity_pair(
+      const LayerSignature& lhs_mask,
+      const LayerSignature& rhs_mask,
+      std::function<void(Entity, Entity)> callback)
+    {
+      auto& containers = Internal::get_containers();
+
+      // Build component signature for required components
+      ComponentSignature required_signature;
+      ((required_signature.set(ComponentTypeManager::get_type_id<Components>())), ...);
+
+      // Track processed pairs to avoid duplicates
+      std::unordered_set<EntityPairHash> processed_pairs;
+
+      // Iterate through LHS layers that match the mask
+      for (LayerID lhs_layer = 0; lhs_layer < containers.layer_entities.size(); ++lhs_layer) {
+        if (!lhs_mask.test(lhs_layer)) continue;
+
+        const auto& lhs_layer_set = containers.layer_entities[lhs_layer];
+
+        // Iterate through RHS layers that match the mask
+        for (LayerID rhs_layer = 0; rhs_layer < containers.layer_entities.size(); ++rhs_layer) {
+          if (!rhs_mask.test(rhs_layer)) continue;
+
+          const auto& rhs_layer_set = containers.layer_entities[rhs_layer];
+
+          // Iterate all entity pairs between these two layers
+          for (EntityID lhs_id : lhs_layer_set) {
+            // Check if LHS has all required components
+            auto lhs_it = containers.entity_signatures.find(lhs_id);
+            if (lhs_it == containers.entity_signatures.end())
+              continue;
+
+            const auto& lhs_sig = lhs_it->second;
+            if ((lhs_sig & required_signature) != required_signature)
+              continue;
+
+            for (EntityID rhs_id : rhs_layer_set) {
+              if (lhs_id == rhs_id) continue; // Skip self-pairs
+
+              // Check if RHS has all required components
+              auto rhs_it = containers.entity_signatures.find(rhs_id);
+              if (rhs_it == containers.entity_signatures.end())
+                continue;
+
+              const auto& rhs_sig = rhs_it->second;
+              if ((rhs_sig & required_signature) != required_signature)
+                continue;
+
+              // Create unique pair ID (order-independent hash)
+              EntityPairHash pair_hash = (static_cast<EntityPairHash>(std::min(lhs_id, rhs_id)) << 32) |
+                static_cast<EntityPairHash>(std::max(lhs_id, rhs_id));
+
+              // Skip if we've already processed this pair
+              if (!processed_pairs.insert(pair_hash).second) continue;
+
+              Entity lhs(lhs_id);
+              Entity rhs(rhs_id);
+              callback(lhs, rhs);
+            }
+          }
+        }
+      }
+    }
+
     //template <typename... Components>
     //void for_each_entity_with(std::function<void(Entity)> callback)
     //{

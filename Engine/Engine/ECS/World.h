@@ -598,6 +598,48 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
+    Iterates over pairs of entities where both LHS and RHS entities have all the
+    specified components AND match the layer masks. LHS entities must be on any
+    layer in the LHS mask, and RHS entities must be on any layer in the RHS mask.
+    Calls the callback function for each valid pair (excluding self-pairs).
+
+    Parameters:
+    Components... - Component types that both entities must have
+    lhs_mask - LayerSignature mask for left-hand side entities
+    rhs_mask - LayerSignature mask for right-hand side entities
+    callback - Function to call for each pair: void(Entity lhs, Entity rhs)
+
+    Where to call it:
+    When you need to check interactions between entities with specific components
+    on specific layers (e.g., player bullets vs enemy colliders).
+
+    Example:
+    LayerID player_layer = ECS::get_layer_id("player");
+    LayerID enemy_layer = ECS::get_layer_id("enemy");
+
+    ECS::for_each_entity_pair<Transform, Collider>(
+      LayerSignature{player_layer},  // LHS: player layer
+      LayerSignature{enemy_layer},   // RHS: enemy layer
+      [](Entity lhs, Entity rhs) {
+        // lhs is on player layer with Transform and Collider
+        // rhs is on enemy layer with Transform and Collider
+        auto* t1 = lhs.get_component<Transform>();
+        auto* t2 = rhs.get_component<Transform>();
+        auto* c1 = lhs.get_component<Collider>();
+        auto* c2 = rhs.get_component<Collider>();
+        // Check collision between lhs and rhs
+      }
+    );
+    ==================================================================================*/
+    template <typename... Components>
+    void for_each_entity_pair(
+      const LayerSignature& lhs_mask,
+      const LayerSignature& rhs_mask,
+      std::function<void(Entity, Entity)> callback
+    );
+
+    /*=================================================================================
+    Function Brief:
     Returns the number of components of type T currently in the world.
 
     Parameters:
