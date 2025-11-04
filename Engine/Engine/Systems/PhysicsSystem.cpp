@@ -47,7 +47,7 @@ void phy2D::update()
     update_entity(entity);
   }
 
-  // now we check for collision and resolve them here? idk LOL
+  // First pass: reset on_ground and update AABBs
   for (ECS::EntityID entity_id : entities)
   {
     ECS::Entity entity(entity_id);
@@ -58,24 +58,47 @@ void phy2D::update()
     col2D::update_AABB(*rigid, *box);
   }
 
-  // Second pass: check collisions using for_each_entity_pair
+  // Second pass: check collisions using for_each_entity_pair (NO nested loops!)
+  // Check ALL entities with RigidBody and BoxCollider against each other
   ECS::for_each_entity_pair<Components::RigidBody, Components::BoxCollider>(
     [this](ECS::Entity entity, ECS::Entity other)
     {
       // Both entities are guaranteed to have RigidBody and BoxCollider
+      Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+      Components::RigidBody* other_rigid = other.get_component<Components::RigidBody>();
       Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
       Components::BoxCollider* other_box = other.get_component<Components::BoxCollider>();
 
-      if (!col2D::rect_rect_coll(*box, *other_box)) { //captain, it seems we have hit something
-        return; // No collision, skip
+      /* START OF BUILDING COLLISION MASKS */
+
+      // Build collision masks for both entities
+      ECS::LayerSignature entity_layers = entity.get_layers();
+      ECS::LayerSignature entity_collision_mask = entity_layers;
+      entity_collision_mask |= rigid->include_layers;
+      entity_collision_mask &= ~rigid->exclude_layers;
+
+      ECS::LayerSignature other_layers = other.get_layers();
+      ECS::LayerSignature other_collision_mask = other_layers;
+      other_collision_mask |= other_rigid->include_layers;
+      other_collision_mask &= ~other_rigid->exclude_layers;
+
+      // Check if layers allow collision (bidirectional check)
+      // entity must be willing to collide with other's layers AND vice versa
+      if ((entity_collision_mask & other_layers).none() || (other_collision_mask & entity_layers).none()) {
+        return; // Layer filtering prevents collision
       }
 
-      // this gona be the most rabak collision resolution ever
-      //std::cout << "TRUE " << box->detect_collisions << " " << other_box->detect_collisions << std::endl;
-      if (box->detect_collisions == true && other_box->detect_collisions == false)
+      /* END OF BUILDING COLLISION MASKS */
+
+      // Check AABB collision
+      if (!col2D::rect_rect_coll(*box, *other_box)) {
+        return; // No collision
+      }
+
+      // Resolve collision based on detect_collisions flags
+      if (box->detect_collisions && !other_box->detect_collisions)
       {
         // other_box is the static one
-        Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
         Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
         AABB minkowski = col2D::minkowski_AABB(*box, *other_box);
         Vec2D pen_vec = col2D::penetrationVector(minkowski);
