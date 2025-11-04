@@ -108,7 +108,7 @@ namespace ImGuiManager {
         {
           ImGui::MenuItem("Toggle GUI", "F1", &gui_enabled);
           ImGui::MenuItem("ImGui Viewport Mode", "F2", &Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().imgui_viewport_enabled);
-          
+
           ImGui::EndMenu();
         }
         ImGui::EndMenuBar();
@@ -154,10 +154,18 @@ namespace ImGuiManager {
     {
       gui_enabled = !gui_enabled;
     }
+
+    // Toggle ImGui Viewport Mode with F2 key
     if (Engine::Input::is_pressed(Engine::KeyCode::F2))
     {
       Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().imgui_viewport_enabled =
         !Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled;
+    }
+
+    // Make sure that imgui_viewport_enabled is false when gui is disabled
+    if (!gui_enabled)
+    {
+      Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().imgui_viewport_enabled = false;
     }
   }
 
