@@ -37,15 +37,14 @@
 #include "Events/RegisterAllEvents.h"
 
 
-namespace {
-  f64 accumulator{};
-  s32 step_limit = 3;
-  bool do_render = false;
-  bool physics_step_mode = false;  // Toggle for step-by-step physics
-}
-
 namespace Engine
 {
+  // Static member definitions
+  f64 Core::accumulator{};
+  s32 Core::step_limit = 3;
+  bool Core::do_render = false;
+  bool Core::physics_step_mode = false;
+
   /*=================================================================================
   Function Brief:
   Constructor that initializes all engine subsystems including window, graphics,

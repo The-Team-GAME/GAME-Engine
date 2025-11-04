@@ -16,6 +16,7 @@
     <ClCompile Include="Engine\GUI\PrefabEditorPanel.cpp" />
     <ClCompile Include="Engine\GUI\TilemapPanel.cpp" />
     <ClCompile Include="Engine\GUI\ViewportPanel.cpp" />
+    <ClCompile Include="Engine\GUI\PlaybackControlPanel.cpp" />
     <ClCompile Include="Engine\GUI\ResourcePicker.cpp" />
     <ClCompile Include="Engine\GUI\widgets\ReflectionFieldWidgets.cpp" />
     <ClCompile Include="Engine\GUI\widgets\TextureAtlasWidget.cpp" />
@@ -87,6 +88,7 @@
     <ClInclude Include="Engine\GUI\CameraPanel.h" />
     <ClInclude Include="Engine\GUI\TilemapPanel.h" />
     <ClInclude Include="Engine\GUI\ViewportPanel.h" />
+    <ClInclude Include="Engine\GUI\PlaybackControlPanel.h" />
     <ClInclude Include="Engine\Systems\GraphicsSystem.h" />
     <ClInclude Include="GameLogic\Components\Components.h" />
     <ClInclude Include="Engine\Core.h" />
