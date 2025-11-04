@@ -11,7 +11,7 @@
 //          rotation angles based on rotation speed and delta time in the ECS
 //          framework.
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "PhysicsSystem.h"
 #include "CollisionSystem.h"
@@ -47,6 +47,8 @@ void phy2D::update()
     update_entity(entity);
   }
 
+  // now we check for collision and resolve them here? idk LOL
+
   // First pass: reset on_ground and update AABBs
   for (ECS::EntityID entity_id : entities)
   {
@@ -58,7 +60,7 @@ void phy2D::update()
     col2D::update_AABB(*rigid, *box);
   }
 
-  // Second pass: check collisions using for_each_entity_pair (NO nested loops!)
+  // Second pass: check collisions using for_each_entity_pair
   // Check ALL entities with RigidBody and BoxCollider against each other
   ECS::for_each_entity_pair<Components::RigidBody, Components::BoxCollider>(
     [this](ECS::Entity entity, ECS::Entity other)
@@ -95,6 +97,9 @@ void phy2D::update()
         return; // No collision
       }
 
+      // this gona be the most rabak collision resolution ever
+      //std::cout << "TRUE " << box->detect_collisions << " " << other_box->detect_collisions << std::endl;
+
       // Resolve collision based on detect_collisions flags
       if (box->detect_collisions && !other_box->detect_collisions)
       {
@@ -104,7 +109,7 @@ void phy2D::update()
         Vec2D pen_vec = col2D::penetrationVector(minkowski);
         // some magic right here. i understand it rn but maybe alcohol helps
 
-         //std::cout << "Prev pos: " << rigid->next_pos << std::endl;
+        //std::cout << "Prev pos: " << rigid->next_pos << std::endl;
 
         rigid->next_pos -= pen_vec;
         if (pen_vec.y == 0) // sideways collision
