@@ -53,21 +53,20 @@ inline void SceneChooserPanel()
 
     // Create button for each scene
     if (ImGui::Button(scene_name.c_str(), ImVec2(200, 0))) {
-      if (!is_current) { // Only switch if it's not the current scene
-        Engine::SceneManager::load_scene(scene_name);
-      }
+      // if (!is_current) { // Only switch if it's not the current scene
+      Engine::SceneManager::load_scene(scene_name);
+      // }
     }
 
-    if (is_current) {
-      ImGui::PopStyleColor(3);
-      ImGui::SameLine();
-      ImGui::Text(" = Current");
-    }
+     if (is_current) {
+       ImGui::PopStyleColor(3);
+       //ImGui::SameLine();
+       //ImGui::Text(" = Current");
+     }
   }
 
   // Show helpful info
   ImGui::Separator();
-  ImGui::TextDisabled("Scenes are loaded from SceneManager registry");
 
   ImGui::End();
 }
