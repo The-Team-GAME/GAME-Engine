@@ -129,53 +129,28 @@ namespace ImGuiManager {
         // Toolbar content below the menu bar
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8.0f, 8.0f));
 
-        bool is_paused = Engine::Core::is_paused();
-
-        // Status indicator
-        if (is_paused) {
-          ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f), "PAUSED");
-        }
-        else {
-          ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "PLAYING");
-        }
+        bool& is_paused = Engine::Core::is_paused();
 
         ImGui::SameLine();
         ImGui::Separator();
         ImGui::SameLine();
 
-        // Play button
+        // Play/Pause toggle button
         if (is_paused) {
           ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.7f, 0.2f, 0.6f));
           ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2f, 0.8f, 0.2f, 0.8f));
           ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.2f, 0.9f, 0.2f, 1.0f));
+          if (ImGui::Button("Play", ImVec2(80, 0))) {
+            is_paused = false;
+          }
         }
         else {
-          ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1f, 0.5f, 0.1f, 1.0f));
-          ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.1f, 0.6f, 0.1f, 1.0f));
-          ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.7f, 0.1f, 1.0f));
-        }
-
-        if (ImGui::Button("Play", ImVec2(60, 0))) {
-          Engine::Core::set_paused(false);
-        }
-        ImGui::PopStyleColor(3);
-
-        ImGui::SameLine();
-
-        // Pause button
-        if (!is_paused) {
           ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.6f, 0.1f, 0.6f));
           ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.7f, 0.1f, 0.8f));
           ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.8f, 0.1f, 1.0f));
-        }
-        else {
-          ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.4f, 0.0f, 1.0f));
-          ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.7f, 0.5f, 0.0f, 1.0f));
-          ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8f, 0.6f, 0.0f, 1.0f));
-        }
-
-        if (ImGui::Button("Pause", ImVec2(60, 0))) {
-          Engine::Core::set_paused(true);
+          if (ImGui::Button("Pause", ImVec2(80, 0))) {
+            is_paused = true;
+          }
         }
         ImGui::PopStyleColor(3);
 
@@ -190,7 +165,7 @@ namespace ImGuiManager {
           std::string current = Engine::SceneManager::get_current_scene_name();
           Engine::SceneManager::unload_current_scene();
           Engine::SceneManager::load_scene(current);
-          Engine::Core::set_paused(true);
+          is_paused = true;
         }
         ImGui::PopStyleColor(3);
 
