@@ -57,6 +57,11 @@ namespace Components
     // Default ctor
     RigidBody() {};
 
+    // Just to fix reflection temporarily, remove when RigidBody is closer to finalized
+    RigidBody(f32 rotation = 0.0f, f32 angular_velocity = 0.0f) : rotation(rotation), angular_velocity(angular_velocity)
+    {
+    }
+
     //// Ctor using floats
     //RigidBody(f32 pos_x, f32 pos_y, bool kinematic = false, bool gravity = false) :
     //  curr_pos(Vec2D(pos_x, pos_y)), is_static(kinematic), use_gravity(gravity)
@@ -64,5 +69,5 @@ namespace Components
   };
 }
 
-//REGISTER_COMPONENT(Components::RigidBody, detect_collisions, linear_velocity, is_static, mass, linear_terminal_velocity, rotation, rotation_terminal_velocity, angular_velocity)
+REGISTER_COMPONENT(Components::RigidBody, rotation, angular_velocity)
 //REFLECT_FIELDS(Components::RigidBody, detect_collisions, linear_velocity, is_static, mass, linear_terminal_velocity, rotation, rotation_terminal_velocity, angular_velocity//
