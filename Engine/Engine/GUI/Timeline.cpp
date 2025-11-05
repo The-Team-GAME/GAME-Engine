@@ -187,7 +187,7 @@ void Timeline::draw() {
     // ================================================================
     // Resource Picker Button and Logic
     // ================================================================
-    Engine::Resources::set_resource_path("Assets/");
+    //Engine::Resources::set_resource_path("Assets/");
 
     if (ImGui::Button("Add Texture Clip")) {
       is_texture_picker_open = true;
