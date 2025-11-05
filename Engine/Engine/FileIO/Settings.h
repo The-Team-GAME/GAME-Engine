@@ -4,6 +4,7 @@
 #include <vector>
 #include "../Components/Components.h"
 #include "../Reflection/ReflectionLibrary.h"
+#include "SettingsManager.h"
 
 namespace Engine
 {
@@ -15,6 +16,7 @@ namespace Engine
       int window_width = 1280;
       int window_height = 720;
       std::string window_title = "Monkey Stole My GPA";
+      bool imgui_viewport_enabled = true;
     };
 
     // Values that need to be loaded after intializing engine subsystems, (e.g. Textures need to wait for Graphics init)
@@ -26,7 +28,7 @@ namespace Engine
     // Values that are specific to the local user/machine (e.g. ImGui theme)
     struct LocalSettings
     {
-      std::string imgui_theme = "Moonlight";
+      std::string imgui_theme = "ayu-dark";
     };
   }
 }

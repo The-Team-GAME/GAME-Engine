@@ -15,298 +15,20 @@
 //-----------------------------------------------------------------------------------
 #include <imgui.h>
 #include "EntityEditorPanel.h"
-#include "ResourcePicker.h"
-#include "widgets/TextureAtlasWidget.h"
+#include "widgets/ReflectionFieldWidgets.h"
+#include "../FileIO/PrefabsFileIO.h"
+#include "../FileIO/LevelFileIO.h"
+#include "../Path.h"
 #include "../Resources.h"
-#include "../Components/Components.h"
+#include <filesystem>
+#include <fstream>
+#include <sstream>
+#include <unordered_map>
+#include "../Components/SpatialComponents.h"
 
-bool EntityEditorPanelHelpers::render_specialized_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity) {
-  if (display_name == "Components::Color") {
-    ImVec4 colorVec(
-      static_cast<float>(field_value["r"].getDouble()),
-      static_cast<float>(field_value["g"].getDouble()),
-      static_cast<float>(field_value["b"].getDouble()),
-      static_cast<float>(field_value["a"].getDouble())
-    );
-    if (ImGui::ColorEdit4("Color", (float*)&colorVec)) {
-      field_value["r"] = colorVec.x;
-      field_value["g"] = colorVec.y;
-      field_value["b"] = colorVec.z;
-      field_value["a"] = colorVec.w;
-      modified = true;
-    }
-
-    return true;
-  }
-
-  if (display_name == "Components::Texture") {
-    // Get current texture path
-    std::string current_path = field_value["path"].isString() ? field_value["path"].getString() : "";
-
-    // Display current texture info
-    ImGui::Text("Texture Path:");
-    ImGui::SameLine();
-    if (current_path.empty()) {
-      ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "<None>");
-    }
-    else {
-      ImGui::TextWrapped("%s", current_path.c_str());
-    }
-
-    // Preview current texture
-    if (!current_path.empty()) {
-      auto texture = Engine::Resources::load_texture(current_path, false);
-      if (texture && texture->id != 0) {
-        ImTextureID tex_id = static_cast<ImTextureID>(texture->id);
-        float preview_size = 128.0f;
-        float aspect = static_cast<float>(texture->width) / static_cast<float>(texture->height);
-        ImVec2 size;
-        if (aspect > 1.0f) {
-          size = ImVec2(preview_size, preview_size / aspect);
-        }
-        else {
-          size = ImVec2(preview_size * aspect, preview_size);
-        }
-        ImGui::Image(tex_id, size);
-        ImGui::Text("Size: %dx%d", texture->width, texture->height);
-      }
-    }
-
-    // Button to open texture picker
-    static std::string pending_texture_path;
-    static bool show_texture_picker = false;
-
-    if (ImGui::Button("Select Texture...")) {
-      pending_texture_path = current_path;
-      show_texture_picker = true;
-      ImGui::OpenPopup("TexturePicker");
-    }
-
-    // Clear texture button
-    if (!current_path.empty()) {
-      ImGui::SameLine();
-      if (ImGui::Button("Clear")) {
-        field_value["path"] = std::string("");
-        modified = true;
-      }
-    }
-
-    // Show texture picker popup
-    if (show_texture_picker) {
-      if (ResourcePicker::texture_picker_popup("TexturePicker", pending_texture_path, current_path)) {
-        field_value["path"] = pending_texture_path;
-        modified = true;
-        show_texture_picker = false;
-      }
-
-      // Check if popup was closed without selection
-      if (!ImGui::IsPopupOpen("TexturePicker")) {
-        show_texture_picker = false;
-      }
-    }
-
-    return true;
-  }
-
-  if (display_name == "Components::Font") {
-    // Get current font path and size
-    std::string current_path = field_value["path"].isString() ? field_value["path"].getString() : "";
-    int current_size = field_value["font_size"].isInt() ? static_cast<int>(field_value["font_size"].getInt()) : 0;
-
-    // Display current font info
-    ImGui::Text("Font Path:");
-    ImGui::SameLine();
-    if (current_path.empty()) {
-      ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "<None>");
-    }
-    else {
-      ImGui::TextWrapped("%s", current_path.c_str());
-    }
-
-    ImGui::Text("Font Size:");
-    ImGui::SameLine();
-    ImGui::Text("%dpx", current_size);
-
-    // Manual font size input
-    int new_size = current_size;
-    if (ImGui::DragInt("Size##FontSize", &new_size, 1.0f, 1, 200)) {
-      if (new_size > 0) {
-        field_value["font_size"] = static_cast<ReflectionLibrary::Integer>(new_size);
-        modified = true;
-      }
-    }
-
-    // Button to open font picker
-    static std::string pending_font_path;
-    static int pending_font_size = 0;
-    static bool show_font_picker = false;
-
-    if (ImGui::Button("Select Font...")) {
-      pending_font_path = current_path;
-      pending_font_size = current_size;
-      show_font_picker = true;
-      ImGui::OpenPopup("FontPicker");
-    }
-
-    // Clear font button
-    if (!current_path.empty()) {
-      ImGui::SameLine();
-      if (ImGui::Button("Clear")) {
-        field_value["path"] = std::string("");
-        field_value["font_size"] = static_cast<ReflectionLibrary::Integer>(0);
-        modified = true;
-      }
-    }
-
-    // Show font picker popup
-    if (show_font_picker) {
-      if (ResourcePicker::font_picker_popup("FontPicker", pending_font_path, pending_font_size,
-        current_path, current_size)) {
-        field_value["path"] = pending_font_path;
-        field_value["font_size"] = static_cast<ReflectionLibrary::Integer>(pending_font_size);
-        modified = true;
-        show_font_picker = false;
-      }
-
-      // Check if popup was closed without selection
-      if (!ImGui::IsPopupOpen("FontPicker")) {
-        show_font_picker = false;
-      }
-    }
-
-    return true;
-  }
-
-  if (display_name == "Components::TextureAtlas") {
-    // Try to get the texture from the entity's Texture component
-    Components::Texture* texture = entity.get_component<Components::Texture>();
-    Components::TextureAtlas* atlas = entity.get_component<Components::TextureAtlas>();
-
-    if (!texture || !atlas) {
-      ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "TextureAtlas requires the Texture component.");
-      return true;
-    }
-
-    ImGuiWidgets::TextureAtlasPreview(
-      *texture,
-      *atlas,
-      80.0f
-      // [&atlas](size_t new_index) {
-      //   //std::cout << "TextureAtlas index changed from " << atlas->drawIndex << " to " << new_index << std::endl;
-      //   // atlas->drawIndex = new_index;
-      // }
-    );
-
-    return true;
-  }
-
-  // Not drawn here
-  return false;
-}
-
-bool EntityEditorPanelHelpers::render_generic_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity) {
-  if (field_value.isBool()) {
-    bool val = field_value.getBool();
-    if (ImGui::Checkbox(display_name.c_str(), &val)) {
-      field_value = val;
-      modified = true;
-    }
-  }
-  else if (field_value.isInt()) {
-    int val = static_cast<int>(field_value.getInt());
-    if (ImGui::DragInt(display_name.c_str(), &val)) {
-      field_value = static_cast<ReflectionLibrary::Integer>(val);
-      modified = true;
-    }
-  }
-  else if (field_value.isDouble()) {
-    float val = static_cast<float>(field_value.getDouble());
-    if (ImGui::DragFloat(display_name.c_str(), &val, 0.01f)) {
-      field_value = static_cast<double>(val);
-      modified = true;
-    }
-  }
-  else if (field_value.isString()) {
-    char buffer[1024];
-    std::string str_val = field_value.getString();
-    strncpy_s(buffer, str_val.c_str(), sizeof(buffer) - 1);
-    buffer[sizeof(buffer) - 1] = '\0';
-    if (ImGui::InputText(display_name.c_str(), buffer, sizeof(buffer))) {
-      field_value = std::string(buffer);
-      modified = true;
-    }
-  }
-  else if (field_value.isObject()) {
-    auto& nested_fields = field_value.getObject();
-    for (auto& [nested_name, nested_value] : nested_fields) {
-      render_field(display_name + "::" + nested_name, nested_value, modified, entity);
-    }
-  }
-  else if (field_value.isArray()) {
-    auto& array = field_value.getArray();
-    std::string tree_label = display_name + " [" + std::to_string(array.size()) + " elements]";
-
-    if (ImGui::TreeNode(tree_label.c_str())) {
-      // Array controls
-      ImGui::PushID(display_name.c_str());
-
-      // Add element button
-      if (ImGui::Button("Add Element")) {
-        // Add a default element based on array type (if array has elements)
-        if (!array.empty()) {
-          // Clone the last element as template
-          array.push_back(array.back());
-        }
-        else {
-          // Add a default int element (could be made configurable)
-          array.push_back(ReflectionLibrary::GenericValue(static_cast<ReflectionLibrary::Integer>(0)));
-        }
-        modified = true;
-      }
-
-      ImGui::SameLine();
-
-      // Clear array button
-      if (ImGui::Button("Clear All")) {
-        array.clear();
-        modified = true;
-      }
-
-      ImGui::Separator();
-
-      // Render each element
-      for (size_t i = 0; i < array.size(); ++i) {
-        ImGui::PushID(static_cast<int>(i));
-
-        std::string element_label = "[" + std::to_string(i) + "]";
-
-        // Remove button for this element
-        if (ImGui::Button("Remove Element")) {
-          array.erase(array.begin() + i);
-          modified = true;
-          ImGui::PopID();
-          break; // Exit loop after erasing to avoid iterator issues
-        }
-
-        // Render the element using the generic field renderer
-        render_field(element_label, array[i], modified, entity);
-
-        ImGui::PopID();
-      }
-
-      ImGui::PopID();
-      ImGui::TreePop();
-    }
-  }
-
-  // This should always return true, since we handled all generic 
-  return true;
-}
-
-void EntityEditorPanelHelpers::render_field(const std::string& display_name, ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity) {
-
-  // First try specialized rendering, then fallback to generic
-  render_specialized_field(display_name, field_value, modified, entity) || render_generic_field(display_name, field_value, modified, entity);
+namespace {
+  // Shared state for entity selection
+  s32 selected_entity_id = -1;
 }
 
 void EntityEditorPanelHelpers::render_component_tree(const std::string& component_name, Engine::ECS::Entity& entity, Engine::ECS::IComponentArray* array)
@@ -315,7 +37,7 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
     auto component_data = array->to_generic_value(entity.get_id());
     bool modified = false;
 
-    render_field(component_name, component_data, modified, entity);
+    ImGuiWidgets::render_field(component_name, component_data, modified, entity);
 
     // Write back changes if modified
     if (modified) {
@@ -339,12 +61,26 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
 
 void EntityEditorPanel()
 {
-  static s32 selected_entity_id = -1;
   static char entitySearchBuffer[256] = "";
+  static bool hierarchy_mode = false; // Toggle between flat list and hierarchy view
 
   ImGui::Begin("Entity Editor");
 
-  // Section 1: Entity List
+  // Mode toggle button at the top
+  if (hierarchy_mode) {
+    if (ImGui::Button("Switch to Flat View")) {
+      hierarchy_mode = false;
+    }
+  }
+  else {
+    if (ImGui::Button("Switch to Hierarchy View")) {
+      hierarchy_mode = true;
+    }
+  }
+
+  ImGui::Separator();
+
+  // Section 1: Entity List (changes based on mode)
   if (ImGui::CollapsingHeader("Entities", ImGuiTreeNodeFlags_DefaultOpen))
   {
     ImGui::Text("Total Entities: %zu", Engine::ECS::get_entity_count());
@@ -354,18 +90,107 @@ void EntityEditorPanel()
 
     ImGui::Separator();
 
-    // Entity list with selection
+    // Entity list with selection - changes based on mode
     ImGui::BeginChild("EntityList", ImVec2(0, 200), true);
 
     auto allEntities = Engine::ECS::get_all_entities();
-    for (const auto& entity : allEntities)
-    {
-      bool isSelected = (selected_entity_id == static_cast<int>(entity.get_id()));
-      std::string label = "Entity " + std::to_string(entity.get_id());
 
-      if (ImGui::Selectable(label.c_str(), isSelected))
+    if (hierarchy_mode) {
+      // Hierarchy view - group by layers
+      std::unordered_map<std::string, std::vector<Engine::ECS::Entity>> entities_by_layer;
+
+      for (auto& entity : allEntities) {
+        Engine::ECS::LayerSignature layers = entity.get_layers();
+
+        // Get layer names
+        std::vector<std::string> layer_names;
+        for (Engine::ECS::LayerID layer_id = 0; layer_id < Engine::ECS::MAX_LAYERS; ++layer_id) {
+          if (layers.test(layer_id)) {
+            std::string layer_name = Engine::ECS::get_layer_name(layer_id);
+            layer_names.push_back(layer_name);
+          }
+        }
+
+        // If entity has no layers, put it in "default"
+        if (layer_names.empty()) {
+          layer_names.push_back("default");
+        }
+
+        // Add entity to each of its layers
+        for (const auto& layer_name : layer_names) {
+          entities_by_layer[layer_name].push_back(entity);
+        }
+      }
+
+      // Display entities grouped by layer
+      for (auto& [layer_name, entities] : entities_by_layer) {
+        ImGuiTreeNodeFlags layer_flags = ImGuiTreeNodeFlags_DefaultOpen;
+        bool layer_open = ImGui::TreeNodeEx(
+          (layer_name + " (" + std::to_string(entities.size()) + ")").c_str(),
+          layer_flags
+        );
+
+        if (layer_open) {
+          for (auto& entity : entities) {
+            if (!entity.is_valid()) continue;
+
+            // Build entity label
+            std::string entity_label = "Entity " + std::to_string(entity.get_id());
+
+            // Try to get a name from common components
+            if (entity.has_component<Components::Transform2D>()) {
+              entity_label += " (Transform)";
+            }
+
+            // Check if this entity is selected
+            bool is_selected = (selected_entity_id == static_cast<s32>(entity.get_id()));
+            ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+            if (is_selected) {
+              node_flags |= ImGuiTreeNodeFlags_Selected;
+            }
+
+            ImGui::TreeNodeEx(
+              (void*)(intptr_t)entity.get_id(),
+              node_flags,
+              "%s",
+              entity_label.c_str()
+            );
+
+            // Handle selection
+            if (ImGui::IsItemClicked()) {
+              selected_entity_id = static_cast<s32>(entity.get_id());
+            }
+
+            // Right-click context menu
+            if (ImGui::BeginPopupContextItem()) {
+              if (ImGui::MenuItem("Delete Entity")) {
+                Engine::ECS::destroy_entity(entity);
+                if (selected_entity_id == static_cast<s32>(entity.get_id())) {
+                  selected_entity_id = -1;
+                }
+              }
+              if (ImGui::MenuItem("Clone Entity")) {
+                Engine::ECS::Entity cloned = Engine::ECS::clone_entity(entity);
+                selected_entity_id = static_cast<s32>(cloned.get_id());
+              }
+              ImGui::EndPopup();
+            }
+          }
+          ImGui::TreePop();
+        }
+      }
+    }
+    else {
+      // Flat view - simple list
+      for (const auto& entity : allEntities)
       {
-        selected_entity_id = static_cast<int>(entity.get_id());
+        bool isSelected = (selected_entity_id == static_cast<int>(entity.get_id()));
+        std::string label = "Entity " + std::to_string(entity.get_id());
+
+        if (ImGui::Selectable(label.c_str(), isSelected))
+        {
+          selected_entity_id = static_cast<int>(entity.get_id());
+        }
       }
     }
 
@@ -571,6 +396,74 @@ void EntityEditorPanel()
 
     ImGui::SameLine();
 
+    // Create Prefab from Entity
+    if (ImGui::Button("Create Prefab from Entity"))
+    {
+      ImGui::OpenPopup("CreatePrefabFromEntity");
+    }
+
+    // Create Prefab popup
+    static char prefab_filename[128] = "";
+    if (ImGui::BeginPopupModal("CreatePrefabFromEntity", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+      ImGui::Text("Enter prefab filename:");
+      ImGui::InputText("##prefabfilename", prefab_filename, sizeof(prefab_filename));
+      ImGui::Text(".json");
+
+      ImGui::Separator();
+
+      if (ImGui::Button("Create", ImVec2(120, 0)))
+      {
+        if (strlen(prefab_filename) > 0)
+        {
+          std::string filename = std::string(prefab_filename);
+          if (filename.find(".json") == std::string::npos) {
+            filename += ".json";
+          }
+
+          // Create prefab from entity
+          auto prefab = Engine::ECS::entity_to_prefab(entity);
+
+          // Save to file
+          std::string relative_path = "prefabs/" + filename;
+          std::string full_path = Engine::Path(Engine::Resources::resource_path).join(relative_path).to_string();
+
+          // Ensure prefabs directory exists
+          std::string prefabs_dir = Engine::Path(Engine::Resources::resource_path).join("prefabs").to_string();
+          if (!std::filesystem::exists(prefabs_dir)) {
+            std::filesystem::create_directories(prefabs_dir);
+          }
+
+          if (Engine::FileIO::serialize_prefab_to_json_file(full_path, prefab))
+          {
+            // Clear the input and close popup
+            prefab_filename[0] = '\0';
+            ImGui::CloseCurrentPopup();
+            ImGui::OpenPopup("CreatePrefabSuccess");
+          }
+        }
+      }
+
+      ImGui::SameLine();
+
+      if (ImGui::Button("Cancel", ImVec2(120, 0)))
+      {
+        prefab_filename[0] = '\0';
+        ImGui::CloseCurrentPopup();
+      }
+
+      ImGui::EndPopup();
+    }
+
+    // Create Prefab success popup
+    if (ImGui::BeginPopup("CreatePrefabSuccess"))
+    {
+      ImGui::Text("Prefab created successfully!");
+      ImGui::EndPopup();
+    }
+
+    ImGui::SameLine();
+
     // Serialize/Export Entity
     if (ImGui::Button("Export to JSON"))
     {
@@ -591,6 +484,8 @@ void EntityEditorPanel()
   {
     ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "No entity selected");
   }
+
+  ImGui::Separator();
 
   ImGui::End();
 }

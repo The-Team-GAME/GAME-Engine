@@ -57,7 +57,7 @@ void ShowcaseState::init() {
     .add_component<Components::Transform2D>(1200.0f, 675.0f, 0.0f, 20.0f * 3.0f, 12.0f * 3.0f)
     .add_component<Components::Texture>(banana_texture)
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-    .add_component<Components::RigidBody>();
+    .add_component<Components::RigidBody>(Vec2D(1200.f,675.f), false, false);
 
   auto* rigid = banana.get_component<Components::RigidBody>();
   rigid->rotation = 0.0f;

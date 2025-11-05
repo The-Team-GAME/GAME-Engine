@@ -1,5 +1,6 @@
 #pragma once
 #include "../Math/Vector2D.h"
+#include "../ECS/Types.h"
 
 using namespace Math;
 
@@ -21,33 +22,47 @@ namespace Components
     f32 friction{ 0.99999f };
     f32 terminal_velocity{ 750.f }; // idk i wack some value here first, might split into the individual axis eventually
 
-    bool apply_physics = false;  // If true, affected by physics forces
-    bool use_gravity = false;   // If true, affected by gravity
+    bool is_static = false;  // If true, affected by physics forces
     bool on_ground = false;
 
-    /* 
+    // Layer collision filtering (like Unity's Rigidbody includeLayers/excludeLayers)
+    // Rule: Entities ALWAYS collide with others in their own layers
+    // include_layers: Additional layers this entity should collide with
+    // exclude_layers: Layers to NOT collide with (overrides own layers and include_layers)
+    // 
+    // Example: Player on "player" layer wants to collide with "enemy" but not "player_bullet"
+    //   - Player is on layer "player"
+    //   - Player.include_layers = LayerSignature{"enemy"}
+    //   - Player.exclude_layers = LayerSignature{"player_bullet"}
+    //   Result: Player collides with "player" (own layer) and "enemy", but not "player_bullet"
+    Engine::ECS::LayerSignature include_layers; // Additional layers to collide with
+    Engine::ECS::LayerSignature exclude_layers; // Layers to NOT collide with (overrides include)
+
+    /*
     no use for these yet*/
     f32 rotation = 0.0f; // In degrees
     f32 rotation_terminal_velocity = 360.0f; // In degrees per second
     f32 angular_velocity = 0.0f; // In degrees per second
-    
+
 
     // Ctor using vectors
-    RigidBody(Vec2D pos = {0,0}, bool kinematic = false, bool gravity = false) :
-      curr_pos(pos), apply_physics(kinematic), use_gravity(gravity)
-    { 
-      if (gravity)
+    RigidBody(Vec2D pos, bool kinematic, bool gravity) : curr_pos(pos), is_static(kinematic)
+    {
+      if (gravity) // im setting the gravity acc value so i dont need to keep checking if an object is affected by gravity
       {
         gravity_acc.y = 200.f;
       }
     }
 
+    // Default ctor
+    RigidBody() {};
+
     //// Ctor using floats
     //RigidBody(f32 pos_x, f32 pos_y, bool kinematic = false, bool gravity = false) :
-    //  curr_pos(Vec2D(pos_x, pos_y)), apply_physics(kinematic), use_gravity(gravity)
+    //  curr_pos(Vec2D(pos_x, pos_y)), is_static(kinematic), use_gravity(gravity)
     //{ /* empty by design */ }
   };
 }
 
-//REGISTER_COMPONENT(Components::RigidBody, detect_collisions, linear_velocity, apply_physics, mass, linear_terminal_velocity, rotation, rotation_terminal_velocity, angular_velocity)
-//REFLECT_FIELDS(Components::RigidBody, detect_collisions, linear_velocity, apply_physics, mass, linear_terminal_velocity, rotation, rotation_terminal_velocity, angular_velocity//
+//REGISTER_COMPONENT(Components::RigidBody, detect_collisions, linear_velocity, is_static, mass, linear_terminal_velocity, rotation, rotation_terminal_velocity, angular_velocity)
+//REFLECT_FIELDS(Components::RigidBody, detect_collisions, linear_velocity, is_static, mass, linear_terminal_velocity, rotation, rotation_terminal_velocity, angular_velocity//

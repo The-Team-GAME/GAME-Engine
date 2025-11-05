@@ -131,6 +131,7 @@ namespace Engine {
         return Entity(INVALID_ENTITY);
       }
 
+      // Create new entity (this automatically adds it to DEFAULT_LAYER)
       Entity newEntity = create_entity();
 
       const auto& sourceSignature = containers.entity_signatures.at(source_id);
@@ -140,6 +141,11 @@ namespace Engine {
       auto layer_it = containers.entity_layers.find(source_id);
       if (layer_it != containers.entity_layers.end()) {
         const LayerSignature& source_layers = layer_it->second;
+
+        // Remove from default layer first (added by create_entity)
+        Internal::remove_entity_from_layer_set(newEntity.get_id(), DEFAULT_LAYER);
+
+        // Set the exact layer signature from source
         containers.entity_layers[newEntity.get_id()] = source_layers;
 
         // Add cloned entity to all the source entity's layer sets
@@ -298,6 +304,54 @@ namespace Engine {
         return get_entities_on_layer(layer);
       }
       return {};
+    }
+
+    void for_each_entity(std::function<void(Entity&)> callback)
+    {
+      // auto& containers = Internal::get_containers();
+      // for (EntityID id : containers.active_entities) {
+      //   Entity entity(id);
+      //   callback(entity);
+      // }
+
+      // In layer order, avoiding duplicates
+      auto& containers = Internal::get_containers();
+      std::unordered_set<EntityID> processed; // Track processed entities to avoid duplicates
+
+      for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
+        for (EntityID id : containers.layer_entities[layer]) {
+          // Skip if already processed or not active
+          if (processed.count(id) || !containers.active_entities.contains(id))
+            continue;
+
+          processed.insert(id);
+          Entity entity(id);
+          callback(entity);
+        }
+      }
+    }
+
+    void for_each_entity_on_layer(LayerID layer, std::function<void(Entity&)> callback)
+    {
+      auto& containers = Internal::get_containers();
+      if (layer >= containers.layer_entities.size()) {
+        return;
+      }
+
+      for (EntityID id : containers.layer_entities[layer]) {
+        if (containers.active_entities.contains(id)) {
+          Entity entity(id);
+          callback(entity);
+        }
+      }
+    }
+
+    void for_each_entity_on_layer(const std::string& layer_name, std::function<void(Entity&)> callback)
+    {
+      LayerID layer = get_layer_id(layer_name);
+      if (layer != INVALID_LAYER) {
+        for_each_entity_on_layer(layer, callback);
+      }
     }
 
     // ============================================================================

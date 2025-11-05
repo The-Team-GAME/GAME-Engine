@@ -17,7 +17,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-class RectPainterState : public Engine::GameState<RectPainterState>
+class RectPainterState : public Engine::Scene
 {
 public:
   void load();

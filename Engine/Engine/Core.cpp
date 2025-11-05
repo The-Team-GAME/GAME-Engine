@@ -17,10 +17,11 @@
 #include "Precompiled.h"
 #include <iostream>
 #include "FileHandler.h"
-#include "StateManager.h"
+#include "SceneManager.h"
 #include "ImGuiManager.h"
 #include "Time.h"
 #include "GUI/RegisterAllPanels.h"
+#include "GUI/ViewportPanel.h"
 #include "WindowManager.h"
 #include "Perf.h"
 #include "InputManager.h"
@@ -33,23 +34,24 @@
 #include "EventManager/EventManager.h"
 #include "FileIO/Settings.h"
 #include "FileIO/SettingsManager.h"
+#include "Events/RegisterAllEvents.h"
 
-
-namespace {
-  f64 accumulator{};
-  s32 step_limit = 3;
-  bool do_render = false;
-  bool physics_step_mode = false;  // Toggle for step-by-step physics
-}
 
 namespace Engine
 {
+  // Static member definitions
+  f64 Core::accumulator{};
+  s32 Core::step_limit = 3;
+  bool Core::do_render = false;
+  bool Core::physics_step_mode = false;
+  bool Core::force_one_update = false;
+
   /*=================================================================================
   Function Brief:
   Constructor that initializes all engine subsystems including window, graphics,
   ImGui, audio, and the ECS World:: Loads configuration and sets up event listeners.
   ==================================================================================*/
-  Core::Core(GameStateBase* initialState)
+  Core::Core()
   {
     isRunning = true;
 
@@ -93,25 +95,8 @@ namespace Engine
 
     Engine::Graphics::set_viewport({ 0, 0, engine_settings.window_width, engine_settings.window_height });
 
-    // Register the graphics resize system 
-    Engine::EventManager::add_event_listener<Engine::Events::WindowResizeEvent>([](const Engine::Events::WindowResizeEvent& event)
-      {
-        Engine::Graphics::set_viewport({ 0, 0, event.width, event.height });
-      }
-    );
+    Engine::Events::register_all_events();
 
-    // Register file drop event to load resources
-    Engine::EventManager::add_event_listener<Engine::Events::FileDropEvent>([](const Engine::Events::FileDropEvent& event)
-      {
-        for (const auto& filepath : event.filepaths)
-        {
-          Log::info("File dropped: " + filepath);
-          Engine::Resources::load(filepath, false, true);
-        }
-      }
-    );
-
-    StateManager::init(initialState);
 
     Resources::set_resource_path("Assets"); // TODO: move this to ProjectSettings
 
@@ -121,6 +106,13 @@ namespace Engine
     }
 
     // CORE INITIALIZATION
+
+    // Initialize TilemapPanel to load saved tilemaps from project settings
+    TilemapPanel::init();
+
+    // Initialize ViewportPanel
+    ViewportPanel::init();
+
     register_engine_systems();
     register_all_panels();
   }
@@ -134,8 +126,10 @@ namespace Engine
   Where to call it:
   Called once after Core construction to start the game loop.
   ==================================================================================*/
-  void Core::run()
+  void Core::run(std::string first_scene)
   {
+    SceneManager::load_scene(first_scene);
+
     while (!glfwWindowShouldClose(WindowManager::get_window()) && isRunning)
     {
       // START OF TIME UPDATES ==============================================
@@ -195,13 +189,16 @@ namespace Engine
           std::cout << "Physics Step Mode: " << (physics_step_mode ? "ON" : "OFF") << std::endl;
         }
 
-        bool shouldRunPhysics = !physics_step_mode || Engine::Input::is_pressed(KeyCode::RightBracket);
+        bool shouldRunPhysics = !physics_step_mode || Engine::Input::is_pressed(KeyCode::RightBracket) || force_one_update;
 
         if (shouldRunPhysics)
         {
           // Main gameloop here
-          StateManager::get_current_state()->update();
+          Engine::SceneManager::update();
           Engine::ECS::update();
+          
+          // Clear the forced update flag after running
+          force_one_update = false;
         }
 
         TilemapPanel::update();
@@ -211,16 +208,24 @@ namespace Engine
       }
 
       // Rendering Start ========================================
+      if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled) {
+        ViewportPanel::begin_render();
+      }
 
       // Clear screen (automatically begins batch)
       // start of draw stuff
-      StateManager::get_current_state()->draw();
+      Engine::SceneManager::draw();
       Engine::ECS::draw();
       TilemapPanel::draw_overlay();
 
       // end of draw stuff (flush remaining batches)
       Engine::Graphics::end_batch();
 
+      if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled) {
+        ViewportPanel::end_render();
+      }
+
+      // Render ImGui (including viewport panel that shows the framebuffer)
       ImGuiManager::end();
       glfwSwapBuffers(WindowManager::get_window());
       // Rendering End ==========================================
@@ -237,8 +242,9 @@ namespace Engine
   ==================================================================================*/
   Core::~Core()
   {
-    StateManager::exit();
+    Engine::SceneManager::cleanup();
     //Engine::ECS::remove_event_listener<WindowResizeEvent>();
+    ViewportPanel::exit();
     Engine::Audio::exit();
     Engine::Resources::exit();
     Engine::Graphics::exit();

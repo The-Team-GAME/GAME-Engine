@@ -16,9 +16,16 @@
 
 
 #include "../Engine/MonkeyEngine.h"
+#include "GameStates/EmptyState.h"
 #include "GameStates/MainMenuState.h"
-#include "GUI/StateChooser.h"
-#include <exception>
+#include "GameStates/ShowcaseState.h"
+#include "GameStates/RectPainterState.h"
+#include "GameStates/Rubric2500ParticlesState.h"
+#include "GameStates/BasicState.h"
+#include "GameStates/DevSpriteAnimationState.h"
+#include "GameStates/Documentation/PrefabsState.h"
+#include "GameStates/Dev/PhysicsTestState.h"
+#include "GameStates/DistortionEffectState.h"
 
 /*=================================================================================
 Function Brief:
@@ -36,22 +43,32 @@ int main()
   _CrtSetDbgFlag(tmpDbgFlag);
   _CrtSetBreakAlloc(-1);
 
-  
-    // Start the engine
-    Engine::Core engine(MainMenuState::get());
 
-    // Register game layers at startup
-    Engine::ECS::register_layer("background"); // Static background layer
-    Engine::ECS::register_layer("tilemap_background"); // Tilemap background layer
-    Engine::ECS::register_layer("tilemap_foreground"); // Tilemap foreground layer
-    Engine::ECS::register_layer("gameplay"); // Entities, items, characters
-    Engine::ECS::register_layer("ui"); // User interface elements
-    Engine::ECS::register_layer("effects"); // Visual effects like particles
-    Engine::ECS::register_layer("debug"); // Debug overlays and information
+  // Start the engine
+  Engine::Core engine{};
 
-    ImGuiManager::register_panel(StateChooserPanel);
-    engine.run();
-    
+  // Register game layers at startup
+  Engine::ECS::register_layer("background"); // Static background layer
+  Engine::ECS::register_layer("tilemap_background"); // Tilemap background layer
+  Engine::ECS::register_layer("tilemap_foreground"); // Tilemap foreground layer
+  Engine::ECS::register_layer("gameplay"); // Entities, items, characters
+  Engine::ECS::register_layer("ui"); // User interface elements
+  Engine::ECS::register_layer("effects"); // Visual effects like particles
+  Engine::ECS::register_layer("debug"); // Debug overlays and information
+
+  Engine::SceneManager::register_scene<EmptyState>("EmptyState");
+  Engine::SceneManager::register_scene<MainMenuState>("MainMenuState");
+  Engine::SceneManager::register_scene<ShowcaseState>("ShowcaseState");
+  Engine::SceneManager::register_scene<RectPainterState>("RectPainterState");
+  Engine::SceneManager::register_scene<Rubric2500ParticlesState>("Rubric2500ParticlesState");
+  Engine::SceneManager::register_scene<BasicState>("BasicState");
+  Engine::SceneManager::register_scene<DevSpriteAnimationState>("DevSpriteAnimationState");
+  Engine::SceneManager::register_scene<PrefabsState>("PrefabsState");
+  Engine::SceneManager::register_scene<PhysicsTestState>("PhysicsTestState");
+  Engine::SceneManager::register_scene<DistortionEffectState>("DistortionEffectState");
+
+  engine.run("MainMenuState");
+
 
   return 0;
 }

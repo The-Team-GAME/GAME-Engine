@@ -44,7 +44,7 @@ struct AttackEvent {
   s32 damage;
 };
 
-class ShowcaseState : public Engine::GameState<ShowcaseState> {
+class ShowcaseState : public Engine::Scene {
 private:
   // Entities
   Engine::ECS::Entity player;

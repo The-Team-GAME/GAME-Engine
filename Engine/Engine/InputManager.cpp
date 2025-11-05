@@ -22,6 +22,8 @@
 #include "WindowManager.h"
 #include "Graphics/Renderer.h"
 #include "KeyCodes.h"
+#include "GUI/ViewportPanel.h"
+#include "FileIO/Settings.h"
 
 namespace
 {
@@ -90,8 +92,10 @@ namespace Engine
 
     //std::cout << "Raw Mouse Position: (" << xpos << ", " << ypos << ")\n";
 
-    // Convert from window coordinates to virtual coordinates using Graphics system
-    mousePosition = Engine::Graphics::screen_to_virtual({ static_cast<f32>(xpos), static_cast<f32>(ypos) });
+    // Check if imgui viewport mode is enabled to determine mouse position calculation
+    mousePosition = Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled
+      ? ViewportPanel::get_viewport_mouse_position()
+      : Engine::Graphics::screen_to_virtual({ static_cast<f32>(xpos), static_cast<f32>(ypos) });
 
     //std::cout << "Mouse Position: (" << mousePosition.x << ", " << mousePosition.y << ")\n";
 

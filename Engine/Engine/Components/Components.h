@@ -9,4 +9,5 @@
 #include "HierarchyComponents.h"
 #include "UIComponents.h"
 #include "TilemapComponents.h"
+#include "GizmoComponents.h"
 #include "HealthComponents.h"

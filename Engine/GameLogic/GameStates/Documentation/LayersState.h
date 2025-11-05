@@ -2,7 +2,7 @@
 
 #include "../../Engine/MonkeyEngine.h"
 
-class LayersState : public Engine::GameState<LayersState>
+class LayersState : public Engine::Scene
 {
 private:
   Engine::ECS::Prefab layersStatePrefab = Engine::ECS::create_prefab()
