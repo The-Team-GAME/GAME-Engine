@@ -49,6 +49,7 @@ namespace Engine {
       Shader* current_shader = nullptr;
       f32 distortion_intensity = 0.0f;
       f32 distortion_speed = 1.0f;
+      f32 distortion_mesh_intensity = 0.0f;
 
       void reset() {
         vertices.clear();
@@ -57,6 +58,7 @@ namespace Engine {
         current_shader = nullptr;
         distortion_intensity = 0.0f;
         distortion_speed = 1.0f;
+        distortion_mesh_intensity = 0.0f;
       }
     };
 
@@ -124,6 +126,7 @@ namespace Engine {
         active_shader->set_float("u_time", Engine::Time::get_time());
         active_shader->set_float("u_intensity", batch_state.distortion_intensity);
         active_shader->set_float("u_speed", batch_state.distortion_speed);
+        active_shader->set_float("u_mesh_intensity", batch_state.distortion_mesh_intensity);
       }
 
       // Upload vertices to GPU
@@ -153,7 +156,7 @@ namespace Engine {
     }
 
     // Add a quad to the batch
-    void batch_quad(GLuint texture_id, const Vertex vertices[4], Shader* use_shader = nullptr, f32 intensity = 0.0f, f32 speed = 1.0f) {
+    void batch_quad(GLuint texture_id, const Vertex vertices[4], Shader* use_shader = nullptr, f32 intensity = 0.0f, f32 speed = 1.0f, f32 mesh_intensity = 0.0f) {
       // Check if we need to flush due to texture or shader change
       if ((batch_state.current_texture_id != 0 && batch_state.current_texture_id != texture_id) ||
         (batch_state.current_shader != use_shader)) {
@@ -170,6 +173,7 @@ namespace Engine {
       batch_state.current_shader = use_shader;
       batch_state.distortion_intensity = intensity;
       batch_state.distortion_speed = speed;
+      batch_state.distortion_mesh_intensity = mesh_intensity;
 
       // Add vertices to batch
       for (int i = 0; i < 4; i++) {
@@ -684,7 +688,7 @@ namespace Engine {
     // Helper function to draw a quad with distortion effect
     void draw_quad_distortion(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size,
       f32 rotation, const Math::Vec4D& color, const std::array<Math::Vec2D, 4>& tex_coords,
-      f32 intensity, f32 speed) {
+      f32 intensity, f32 speed, f32 mesh_intensity) {
       if (!texture || texture->id == 0) {
         Log::warning("Attempted to draw invalid texture");
         return;
@@ -728,10 +732,10 @@ namespace Engine {
       }
 
       // Add to batch with distortion shader
-      batch_quad(texture->id, vertices, distortion_shader.get(), intensity, speed);
+      batch_quad(texture->id, vertices, distortion_shader.get(), intensity, speed, mesh_intensity);
     }
 
-    void draw_texture_distortion(Engine::Graphics::Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, f32 intensity, f32 speed) {
+    void draw_texture_distortion(Engine::Graphics::Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, f32 intensity, f32 speed, f32 mesh_intensity) {
       // Default texture coordinates (full texture)
       std::array<Math::Vec2D, 4> tex_coords = {
         Math::Vec2D(0.0f, 1.0f), // Bottom-left
@@ -740,11 +744,11 @@ namespace Engine {
         Math::Vec2D(0.0f, 0.0f)  // Top-left
       };
 
-      draw_quad_distortion(texture, position, size, rotation, color, tex_coords, intensity, speed);
+      draw_quad_distortion(texture, position, size, rotation, color, tex_coords, intensity, speed, mesh_intensity);
     }
 
-    void draw_subtexture_distortion(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, f32 intensity, f32 speed) {
-      draw_quad_distortion(texture, position, size, rotation, color, tex_coords, intensity, speed);
+    void draw_subtexture_distortion(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, f32 intensity, f32 speed, f32 mesh_intensity) {
+      draw_quad_distortion(texture, position, size, rotation, color, tex_coords, intensity, speed, mesh_intensity);
     }
 
   } // namespace Graphics
