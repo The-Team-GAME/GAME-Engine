@@ -17,7 +17,7 @@
 
 #include "../../Engine/MonkeyEngine.h"
 
-class BasicState : public Engine::GameState<BasicState>
+class BasicState : public Engine::Scene
 {
 private:
   // Entities for rendering

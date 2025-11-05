@@ -18,7 +18,7 @@
 #include "../../Engine/MonkeyEngine.h"
 #include "../../Engine/Systems/PhysicsSystem.h"
 
-class Rubric2500ParticlesState : public Engine::GameState<Rubric2500ParticlesState>
+class Rubric2500ParticlesState : public Engine::Scene
 {
 private:
 public:

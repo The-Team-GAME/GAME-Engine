@@ -14,7 +14,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "../../Engine/MonkeyEngine.h"
+#include "../Engine/MonkeyEngine.h"
 
 namespace Config {
 

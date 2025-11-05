@@ -201,11 +201,203 @@ namespace Engine {
       return Entity(INVALID_ENTITY);
     }
 
+    template <typename... T>
+    void for_each_entity_with(const LayerSignature& layers, std::function<void(Entity)> callback)
+    {
+      auto& containers = Internal::get_containers();
+
+      // Iterate through each layer in the signature
+      for (LayerID layer = 0; layer < MAX_LAYERS; ++layer)
+      {
+        if (!layers.test(layer))
+          continue;
+
+        // Check if this layer has any entities
+        if (layer >= containers.layer_entities.size())
+          continue;
+
+        // Iterate through entities on this layer
+        for (EntityID entityId : containers.layer_entities[layer])
+        {
+          // Check if entity has all required components
+          if (has_components<T...>(entityId))
+          {
+            callback(Entity(entityId));
+          }
+        }
+      }
+    }
+
     template <typename T>
     size_t get_component_count()
     {
       auto* array = get_component_array<T>();
       return array ? array->size() : 0;
+    }
+
+    template <typename... Components>
+    void for_each_entity_pair(std::function<void(Entity, Entity)> callback)
+    {
+      auto& containers = Internal::get_containers();
+
+      // Build component signature for required components
+      ComponentSignature required_signature;
+      ((required_signature.set(ComponentTypeManager::get_type_id<Components>())), ...);
+
+      // Track processed pairs to avoid duplicates
+      std::unordered_set<EntityPairHash> processed_pairs;
+
+      // Iterate through all active entities as LHS
+      for (size_t i = 0; i < containers.active_entities.size(); ++i)
+      {
+        EntityID lhs_id = containers.active_entities.entity_at(i);
+        auto lhs_it = containers.entity_signatures.find(lhs_id);
+        if (lhs_it == containers.entity_signatures.end())
+          continue;
+
+        // Check if LHS has all required components
+        const auto& lhs_sig = lhs_it->second;
+        if ((lhs_sig & required_signature) != required_signature)
+          continue;
+
+        // Iterate through all active entities as RHS
+        for (size_t j = 0; j < containers.active_entities.size(); ++j)
+        {
+          EntityID rhs_id = containers.active_entities.entity_at(j);
+          if (lhs_id == rhs_id) continue; // Skip self-pairs
+
+          auto rhs_it = containers.entity_signatures.find(rhs_id);
+          if (rhs_it == containers.entity_signatures.end())
+            continue;
+
+          // Check if RHS has all required components
+          const auto& rhs_sig = rhs_it->second;
+          if ((rhs_sig & required_signature) != required_signature)
+            continue;
+
+          // Create unique pair ID (order-independent hash)
+          // EntityPairHash pair_hash = (static_cast<EntityPairHash>(std::min(lhs_id, rhs_id)) << 32) |
+          //   static_cast<EntityPairHash>(std::max(lhs_id, rhs_id));
+
+          // Order dependent version
+          EntityPairHash pair_hash = (static_cast<EntityPairHash>(lhs_id) << 32) |
+            static_cast<EntityPairHash>(rhs_id);
+
+          // Skip if we've already processed this pair
+          if (!processed_pairs.insert(pair_hash).second)
+            continue;
+
+          Entity lhs(lhs_id);
+          Entity rhs(rhs_id);
+          callback(lhs, rhs);
+        }
+      }
+    }
+
+    template <typename... Components>
+    void for_each_entity_pair(
+      const LayerSignature& lhs_mask,
+      const LayerSignature& rhs_mask,
+      std::function<void(Entity, Entity)> callback)
+    {
+      auto& containers = Internal::get_containers();
+
+      // Build component signature for required components
+      ComponentSignature required_signature;
+      ((required_signature.set(ComponentTypeManager::get_type_id<Components>())), ...);
+
+      // Track processed pairs to avoid duplicates
+      std::unordered_set<EntityPairHash> processed_pairs;
+
+      // Iterate through LHS layers that match the mask
+      for (LayerID lhs_layer = 0; lhs_layer < containers.layer_entities.size(); ++lhs_layer) {
+        if (!lhs_mask.test(lhs_layer)) continue;
+
+        const auto& lhs_layer_set = containers.layer_entities[lhs_layer];
+
+        // Iterate through RHS layers that match the mask
+        for (LayerID rhs_layer = 0; rhs_layer < containers.layer_entities.size(); ++rhs_layer) {
+          if (!rhs_mask.test(rhs_layer)) continue;
+
+          const auto& rhs_layer_set = containers.layer_entities[rhs_layer];
+
+          // Iterate all entity pairs between these two layers
+          for (EntityID lhs_id : lhs_layer_set) {
+            // Check if LHS has all required components
+            auto lhs_it = containers.entity_signatures.find(lhs_id);
+            if (lhs_it == containers.entity_signatures.end())
+              continue;
+
+            const auto& lhs_sig = lhs_it->second;
+            if ((lhs_sig & required_signature) != required_signature)
+              continue;
+
+            for (EntityID rhs_id : rhs_layer_set) {
+              if (lhs_id == rhs_id) continue; // Skip self-pairs
+
+              // Check if RHS has all required components
+              auto rhs_it = containers.entity_signatures.find(rhs_id);
+              if (rhs_it == containers.entity_signatures.end())
+                continue;
+
+              const auto& rhs_sig = rhs_it->second;
+              if ((rhs_sig & required_signature) != required_signature)
+                continue;
+
+              // Create unique pair ID (order-independent hash)
+              EntityPairHash pair_hash = (static_cast<EntityPairHash>(std::min(lhs_id, rhs_id)) << 32) |
+                static_cast<EntityPairHash>(std::max(lhs_id, rhs_id));
+
+              // Skip if we've already processed this pair
+              if (!processed_pairs.insert(pair_hash).second) continue;
+
+              Entity lhs(lhs_id);
+              Entity rhs(rhs_id);
+              callback(lhs, rhs);
+            }
+          }
+        }
+      }
+    }
+
+    //template <typename... Components>
+    //void for_each_entity_with(std::function<void(Entity)> callback)
+    //{
+    //  auto& containers = Internal::get_containers();
+
+    //  // Build component signature for required components
+    //  ComponentSignature required_signature;
+    //  ((required_signature.set(ComponentTypeManager::get_type_id<Components>())), ...);
+
+    //  // Iterate through all active entities
+    //  for (size_t i = 0; i < containers.active_entities.size(); ++i)
+    //  {
+    //    EntityID id = containers.active_entities.entity_at(i);
+    //    auto it = containers.entity_signatures.find(id);
+    //    if (it != containers.entity_signatures.end())
+    //    {
+    //      const auto& entity_sig = it->second;
+    //      // Check if entity has all required components
+    //      if ((entity_sig & required_signature) == required_signature)
+    //      {
+    //        Entity entity(id);
+    //        callback(entity);
+    //      }
+    //    }
+    //  }
+    //}
+
+    template <typename... T>
+    void for_each_entity_with(std::function<void(Entity)> callback)
+    {
+      auto& containers = Internal::get_containers();
+      for (EntityID entityId : containers.active_entities)
+      {
+        if (has_components<T...>(entityId))
+        {
+          callback(Entity(entityId));
+        }
+      }
     }
 
     // ============================================================================

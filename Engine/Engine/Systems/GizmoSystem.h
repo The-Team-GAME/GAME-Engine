@@ -72,6 +72,32 @@ namespace Engine
 
         const auto mouse = Engine::Input::get_mouse_position();
 
+        // Calculate bounds
+        const float half_w = tr->scale.x * 0.5f;
+        const float half_h = tr->scale.y * 0.5f;
+        const float left = tr->position.x - half_w;
+        const float right = tr->position.x + half_w;
+        const float top = tr->position.y - half_h;
+        const float bottom = tr->position.y + half_h;
+
+        const bool inside =
+          (mouse.x >= left) && (mouse.x <= right) &&
+          (mouse.y >= top) && (mouse.y <= bottom);
+
+        // Handle starting drag on click
+        if (Engine::Input::is_pressed(KeyCode::MouseLeft)) {
+          if (inside) {
+            // Start dragging - calculate offset from entity center to mouse position
+            gizmo->drag_offset = Math::Vec2D(mouse.x - tr->position.x, mouse.y - tr->position.y);
+            gizmo->is_dragging = true;
+          }
+          else {
+            // Clicked outside - deselect (remove Gizmo)
+            entity.remove_component<Components::Gizmo>();
+            return;
+          }
+        }
+
         // Handle dragging
         if (gizmo->is_dragging) {
           if (Engine::Input::is_held(KeyCode::MouseLeft)) {
@@ -82,24 +108,6 @@ namespace Engine
           else {
             // Stop dragging when mouse is released
             gizmo->is_dragging = false;
-          }
-        }
-
-        // Deselect (remove Gizmo) when clicking outside
-        if (Engine::Input::is_pressed(KeyCode::MouseLeft)) {
-          const float half_w = tr->scale.x * 0.5f;
-          const float half_h = tr->scale.y * 0.5f;
-          const float left = tr->position.x - half_w;
-          const float right = tr->position.x + half_w;
-          const float top = tr->position.y - half_h;
-          const float bottom = tr->position.y + half_h;
-
-          const bool inside =
-            (mouse.x >= left) && (mouse.x <= right) &&
-            (mouse.y >= top) && (mouse.y <= bottom);
-
-          if (!inside) {
-            entity.remove_component<Components::Gizmo>();
           }
         }
       }

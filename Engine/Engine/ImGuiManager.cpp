@@ -22,6 +22,8 @@
 #include "Perf.h"
 #include "ImGuiThemes.h"
 #include "FileIO/Settings.h"
+#include "Core.h"
+#include "SceneManager.h"
 
 namespace {
   bool gui_enabled = true;
@@ -78,43 +80,115 @@ namespace ImGuiManager {
       ImGui_ImplGlfw_NewFrame();
       ImGui::NewFrame();
 
-      // Create dockspace
       ImGuiViewport* viewport = ImGui::GetMainViewport();
-      ImGui::SetNextWindowPos(viewport->WorkPos);
-      ImGui::SetNextWindowSize(viewport->WorkSize);
-      ImGui::SetNextWindowViewport(viewport->ID);
+      float top_bar_height = 0.0f;
 
-      ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-      window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse;
-      window_flags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-      window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-      window_flags |= ImGuiWindowFlags_NoBackground;
-
-      ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-      ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-
-      ImGui::Begin("DockSpace", nullptr, window_flags);
-      ImGui::PopStyleVar(3);
-
-      // DockSpace
-      ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-      ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
-
-      // Add a menu bar
-      if (ImGui::BeginMenuBar())
+      // 1. Menu Bar and Toolbar Dockspace (Combined)
       {
-        if (ImGui::BeginMenu("ImGui"))
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(ImVec2(viewport->WorkSize.x, 0)); // Auto height
+        ImGui::SetNextWindowViewport(viewport->ID);
+
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+        window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse;
+        window_flags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+        window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+        window_flags |= ImGuiWindowFlags_NoScrollbar;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+        ImGui::Begin("##MenuBarAndToolbarDockSpace", nullptr, window_flags);
+        ImGui::PopStyleVar(3);
+
+        // Add a menu bar
+        if (ImGui::BeginMenuBar())
         {
-          ImGui::MenuItem("Toggle GUI", "F1", &gui_enabled);
-          ImGui::MenuItem("ImGui Viewport Mode", "F2", &Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().imgui_viewport_enabled);
-          
-          ImGui::EndMenu();
+          if (ImGui::BeginMenu("ImGui"))
+          {
+            ImGui::MenuItem("Toggle GUI", "F1", &gui_enabled);
+            ImGui::MenuItem("ImGui Viewport Mode", "F2", &Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().imgui_viewport_enabled);
+
+            ImGui::EndMenu();
+          }
+          if (ImGui::BeginMenu("Styles"))
+          {
+            for (const auto& [style_name, _] : styles_map)
+            {
+              if (ImGui::MenuItem(style_name.c_str()))
+              {
+                set_style(style_name);
+              }
+            }
+            ImGui::EndMenu();
+          }
+          ImGui::EndMenuBar();
         }
-        ImGui::EndMenuBar();
+
+        // Toolbar content below the menu bar
+        ImGui::Dummy(ImVec2(0.0f, 0.0f)); // Top padding
+
+        ImGui::Indent(8.0f); // Left padding
+        bool& is_paused = Engine::Core::is_paused();
+
+
+        // Play/Pause toggle button
+        if (is_paused) {
+          if (ImGui::Button("Play", ImVec2(80, 0))) {
+            is_paused = false;
+          }
+        }
+        else {
+          if (ImGui::Button("Pause", ImVec2(80, 0))) {
+            is_paused = true;
+          }
+        }
+
+        ImGui::SameLine();
+
+        // Stop button 
+        if (ImGui::Button("Stop", ImVec2(60, 0))) {
+          std::string current = Engine::SceneManager::get_current_scene_name();
+          Engine::SceneManager::unload_current_scene();
+          Engine::SceneManager::load_scene(current);
+          is_paused = true;
+          // Force one update to process deferred entity destruction
+          Engine::Core::request_forced_update();
+        }
+
+        ImGui::Unindent(8.0f); // Remove left padding
+        ImGui::Dummy(ImVec2(0.0f, 4.0f)); // Bottom padding
+
+        top_bar_height = ImGui::GetWindowHeight();
+        ImGui::End();
       }
 
-      ImGui::End();
+      // 2. Main Panels Dockspace
+      {
+        ImGui::SetNextWindowPos(ImVec2(viewport->WorkPos.x, viewport->WorkPos.y + top_bar_height));
+        ImGui::SetNextWindowSize(ImVec2(viewport->WorkSize.x, viewport->WorkSize.y - top_bar_height));
+        ImGui::SetNextWindowViewport(viewport->ID);
+
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
+        window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse;
+        window_flags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+        window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+        window_flags |= ImGuiWindowFlags_NoBackground;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+        ImGui::Begin("##PanelsDockSpace", nullptr, window_flags);
+        ImGui::PopStyleVar(3);
+
+        // DockSpace for all panels
+        ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+
+        ImGui::End();
+      }
 
       // Render all registered panels
       for (const auto& panel : registered_panels)
@@ -154,10 +228,18 @@ namespace ImGuiManager {
     {
       gui_enabled = !gui_enabled;
     }
+
+    // Toggle ImGui Viewport Mode with F2 key
     if (Engine::Input::is_pressed(Engine::KeyCode::F2))
     {
       Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().imgui_viewport_enabled =
         !Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled;
+    }
+
+    // Make sure that imgui_viewport_enabled is false when gui is disabled
+    if (!gui_enabled)
+    {
+      Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().imgui_viewport_enabled = false;
     }
   }
 
@@ -178,5 +260,10 @@ namespace ImGuiManager {
     {
       it->second(); // Call the style setup function
     }
+
+    // Update user settings
+    Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::get_mutable().imgui_theme = style_name;
+    Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::save();
   }
+
 }

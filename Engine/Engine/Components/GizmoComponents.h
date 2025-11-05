@@ -18,4 +18,4 @@ namespace Components
   };
 }
 
-REGISTER_COMPONENT(Components::Gizmo, is_dragging, drag_offset, outline_color, outline_thickness)
+//REGISTER_COMPONENT(Components::Gizmo, is_dragging, drag_offset, outline_color, outline_thickness)
