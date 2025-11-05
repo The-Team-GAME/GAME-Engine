@@ -68,8 +68,8 @@ namespace Engine {
               tr->position.y = ui->top + ui->height * 0.5f;
             }
             if (auto* c = bar.get_component<Color>()) {
-              const float e = t * t;
-              float r = e, g = 0.1f, b = 1.0f - e, a = 1.0f;
+              const float t2 = t * t;
+              float r = t2, g = 0.1f, b = 1.0f - t2, a = 1.0f;
               if (t >= 0.80f) {
                 const float time = Engine::Time::get_time();
                 const float s = 0.5f * (std::sin(time * 6.0f) + 1.0f);
