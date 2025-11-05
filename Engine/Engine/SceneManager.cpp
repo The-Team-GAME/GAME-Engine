@@ -3,11 +3,12 @@
 
 namespace Engine
 {
-  namespace SceneManager 
+  namespace SceneManager
   {
     // Variable definitions - REQUIRED for extern variables
     Scene* current_scene = nullptr;
     std::unordered_map<std::string, std::unique_ptr<Scene>> scenes;
+    std::vector<std::string> scene_order; // name of all scenes in order of registration
 
     void load_scene(const std::string& name) {
       auto scene_it = scenes.find(name);
@@ -21,7 +22,7 @@ namespace Engine
       current_scene = scene_it->second.get();
       current_scene->load();
       current_scene->init();
-      
+
       std::cout << "Loaded scene: " << name << std::endl;
     }
 
@@ -49,6 +50,7 @@ namespace Engine
     void cleanup() {
       unload_current_scene();
       scenes.clear();
+      scene_order.clear();
       std::cout << "SceneManager cleaned up" << std::endl;
     }
 
@@ -62,11 +64,7 @@ namespace Engine
     }
 
     std::vector<std::string> get_all_scene_names() {
-      std::vector<std::string> names;
-      for (const auto& pair : scenes) {
-        names.push_back(pair.first);
-      }
-      return names;
+      return scene_order;
     }
   }
 }
