@@ -69,7 +69,7 @@ void ParticleSystem::lazy_init() {
 
 // ------------- update -------------
 void ParticleSystem::update() {
-  lazy_init();
+  //lazy_init();
 
   /*
   if (Engine::Input::is_pressed(KeyCode::MouseLeft)) {
@@ -93,6 +93,7 @@ void ParticleSystem::update() {
     if (n > 0) { spawn_accum_ -= static_cast<float>(n); spawn_burst(n); }
   }
   */
+  if (!initialized_) return;
   const float dt = Engine::Time::get_fixed_dt();
   // Sim simulation
   simulate(dt);
