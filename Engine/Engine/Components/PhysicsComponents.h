@@ -10,8 +10,8 @@ namespace Components
   // https://docs.unity3d.com/ScriptReference/Rigidbody.html
   struct RigidBody {
     // Assume that position is the center point of the entity
-    Vec2D curr_pos;
-    Vec2D next_pos;
+    /*Vec2D curr_pos;
+    Vec2D next_pos;*/
 
     f32 mass = 1.0f; // Mass in kg
     Vec2D force;
@@ -46,12 +46,17 @@ namespace Components
 
 
     // Ctor using vectors
-    RigidBody(Vec2D pos, bool kinematic, bool gravity) : curr_pos(pos), is_static(kinematic)
+    RigidBody(bool kinematic, bool gravity) : is_static(kinematic)
     {
       if (gravity) // im setting the gravity acc value so i dont need to keep checking if an object is affected by gravity
       {
         gravity_acc.y = 200.f;
       }
+    }
+
+    // Just to fix reflection temporarily, remove when RigidBody is closer to finalized
+    RigidBody(f32 rotation = 0.0f, f32 angular_velocity = 0.0f) : rotation(rotation), angular_velocity(angular_velocity)
+    {
     }
 
     //// Ctor using floats
@@ -61,5 +66,5 @@ namespace Components
   };
 }
 
-//REGISTER_COMPONENT(Components::RigidBody, detect_collisions, linear_velocity, is_static, mass, linear_terminal_velocity, rotation, rotation_terminal_velocity, angular_velocity)
+REGISTER_COMPONENT(Components::RigidBody, rotation, angular_velocity)
 //REFLECT_FIELDS(Components::RigidBody, detect_collisions, linear_velocity, is_static, mass, linear_terminal_velocity, rotation, rotation_terminal_velocity, angular_velocity//

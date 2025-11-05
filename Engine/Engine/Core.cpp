@@ -27,6 +27,7 @@
 #include "InputManager.h"
 #include "Audio/AudioPlayer.h"
 #include "Audio/AudioPlayerInternal.h"
+#include "Lua/LuaManager.h"
 #include "Resources.h"
 #include "ECS/ECS.h"
 #include "Events/WindowEvents.h"
@@ -40,6 +41,7 @@
 namespace Engine
 {
   // Static member definitions
+  bool Core::is_running = false;
   f64 Core::accumulator{};
   s32 Core::step_limit = 3;
   bool Core::do_render = false;
@@ -48,12 +50,11 @@ namespace Engine
 
   /*=================================================================================
   Function Brief:
-  Constructor that initializes all engine subsystems including window, graphics,
-  ImGui, audio, and the ECS World:: Loads configuration and sets up event listeners.
+  Initializes all engine subsystems including window, graphics, and more.
   ==================================================================================*/
-  Core::Core()
+  void Core::init()
   {
-    isRunning = true;
+    is_running = true;
 
     // Load engine settings
     if (!Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::load("Assets/settings/engine_settings.json")) {
@@ -93,6 +94,11 @@ namespace Engine
       throw std::runtime_error("Failed to initialize audio manager");
     }
 
+    // Initialize Lua manager
+    if (!Engine::LuaManager::init()) {
+      throw std::runtime_error("Failed to initialize Lua manager");
+    }
+
     Engine::Graphics::set_viewport({ 0, 0, engine_settings.window_width, engine_settings.window_height });
 
     Engine::Events::register_all_events();
@@ -115,6 +121,21 @@ namespace Engine
 
     register_engine_systems();
     register_all_panels();
+
+    // Just register one simple function
+    Engine::LuaManager::register_function("log_message", [](const std::string& message) {
+      std::cout << "[Lua] " << message << std::endl;
+      });
+
+
+    // Set basic globals
+    Engine::LuaManager::set_global("GAME_VERSION", "1.0.0");
+    Engine::LuaManager::set_global("ENGINE_NAME", "Monkey Engine");
+    Engine::LuaManager::set_global("MAX_ENTITIES", 1000);
+
+    // Load the script
+    Engine::LuaManager::load_script("Assets/scripts/player_logic.lua");
+    Engine::LuaManager::load_script("Assets/scripts/buttons_test.lua");
   }
 
   /*=================================================================================
@@ -130,7 +151,7 @@ namespace Engine
   {
     SceneManager::load_scene(first_scene);
 
-    while (!glfwWindowShouldClose(WindowManager::get_window()) && isRunning)
+    while (!glfwWindowShouldClose(WindowManager::get_window()) && is_running)
     {
       // START OF TIME UPDATES ==============================================
       // Updates the real_dt and increments the accumulator
@@ -174,7 +195,7 @@ namespace Engine
 
         if (Engine::Input::is_pressed(KeyCode::Escape))
         {
-          isRunning = false;
+          is_running = false;
         }
 
         // Demonstrate error catching is working
@@ -196,7 +217,7 @@ namespace Engine
           // Main gameloop here
           Engine::SceneManager::update();
           Engine::ECS::update();
-          
+
           // Clear the forced update flag after running
           force_one_update = false;
         }
@@ -237,10 +258,9 @@ namespace Engine
 
   /*=================================================================================
   Function Brief:
-  Destructor that cleans up all engine resources, shuts down subsystems, and
-  removes event listeners. Ensures proper cleanup before application exit.
+  Cleans up all engine resources, shuts down subsystems
   ==================================================================================*/
-  Core::~Core()
+  void Core::exit()
   {
     Engine::SceneManager::cleanup();
     //Engine::ECS::remove_event_listener<WindowResizeEvent>();
@@ -248,12 +268,14 @@ namespace Engine
     Engine::Audio::exit();
     Engine::Resources::exit();
     Engine::Graphics::exit();
+
+    Engine::LuaManager::cleanup();
     ImGuiManager::exit();
     WindowManager::exit();
   }
 
   void Core::stop()
   {
-    isRunning = false;
+    is_running = false;
   }
 }

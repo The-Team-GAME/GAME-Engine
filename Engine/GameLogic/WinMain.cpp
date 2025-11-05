@@ -21,11 +21,13 @@
 #include "GameStates/ShowcaseState.h"
 #include "GameStates/RectPainterState.h"
 #include "GameStates/Rubric2500ParticlesState.h"
+#include "GameStates/StressTestState.h"
 #include "GameStates/BasicState.h"
-#include "GameStates/DevSpriteAnimationState.h"
 #include "GameStates/Documentation/PrefabsState.h"
 #include "GameStates/Dev/PhysicsTestState.h"
 #include "GameStates/TimelineState.h"
+#include "GameStates/DistortionEffectState.h"
+#include "GameStates/LuaState.h"
 
 /*=================================================================================
 Function Brief:
@@ -45,7 +47,7 @@ int main()
 
 
   // Start the engine
-  Engine::Core engine{};
+  Engine::Core::init();
 
   // Register game layers at startup
   Engine::ECS::register_layer("background"); // Static background layer
@@ -61,13 +63,17 @@ int main()
   Engine::SceneManager::register_scene<ShowcaseState>("ShowcaseState");
   Engine::SceneManager::register_scene<RectPainterState>("RectPainterState");
   Engine::SceneManager::register_scene<Rubric2500ParticlesState>("Rubric2500ParticlesState");
+  Engine::SceneManager::register_scene<StressTestState>("StressTestState");
   Engine::SceneManager::register_scene<BasicState>("BasicState");
-  Engine::SceneManager::register_scene<DevSpriteAnimationState>("DevSpriteAnimationState");
   Engine::SceneManager::register_scene<PrefabsState>("PrefabsState");
   Engine::SceneManager::register_scene<PhysicsTestState>("PhysicsTestState");
   Engine::SceneManager::register_scene<TimelineState>("TimelineState");
+  Engine::SceneManager::register_scene<DistortionEffectState>("DistortionEffectState");
+  Engine::SceneManager::register_scene<LuaState>("LuaState");
 
-  engine.run("MainMenuState");
+  Engine::Core::run("MainMenuState");
+
+  Engine::Core::exit();
 
 
   return 0;

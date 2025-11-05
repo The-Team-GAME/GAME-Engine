@@ -1,5 +1,6 @@
 #include "Shader.h"
 #include "../Logger.h"
+#include "../FileIO/Helpers.h"
 
 namespace Engine {
   namespace Graphics {
@@ -33,6 +34,26 @@ namespace Engine {
         glDeleteProgram(program_id);
         program_id = 0;
       }
+    }
+
+    std::unique_ptr<Shader> Shader::load_from_file(const std::string& vertexPath, const std::string& fragmentPath)
+    {
+      // Read vertex shader source from file
+      auto vertexSource = Engine::FileIO::read_string_from_file(vertexPath);
+      if (!vertexSource.has_value()) {
+        Log::error("Failed to read vertex shader file: " + vertexPath);
+        return std::make_unique<Shader>("", ""); // Return invalid shader
+      }
+
+      // Read fragment shader source from file
+      auto fragmentSource = Engine::FileIO::read_string_from_file(fragmentPath);
+      if (!fragmentSource.has_value()) {
+        Log::error("Failed to read fragment shader file: " + fragmentPath);
+        return std::make_unique<Shader>("", ""); // Return invalid shader
+      }
+
+      // Create shader using the constructor
+      return std::make_unique<Shader>(vertexSource.value(), fragmentSource.value());
     }
 
     void Shader::use() const {

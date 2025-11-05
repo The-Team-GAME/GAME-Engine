@@ -8,350 +8,209 @@
 // email:   chew.s@digipen.edu
 //
 // brief:   This file defines the CameraPanel ImGui interface for controlling camera
-//          properties including position, zoom, and rotation. Provides an intuitive
-//          UI with presets and real-time camera manipulation.
+//          properties. Supports both entity-based cameras and free camera mode.
+//          Free cam mode activates when no camera entity is active.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
-#include "imgui.h"
-#include "Core.h"
-#include "Graphics/Renderer.h"
-#include "ECS/ECS.h"
-#include "Components/Components.h"
+
+#include <imgui.h>
+#include "../ECS/ECS.h"
+#include "../Components/GraphicsComponents.h"
+#include "../Components/SpatialComponents.h"
+#include "../Graphics/Renderer.h"
 #include <vector>
 
 inline void CameraPanel()
 {
+  static s32 selected_camera_id = -1;
+
   ImGui::Begin("Camera Control");
 
-  ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "Camera Entities");
-  ImGui::Separator();
-
-  // Get all entities with Camera component
+  // Collect all entities with Camera component
   std::vector<Engine::ECS::Entity> camera_entities;
+  Engine::ECS::Entity active_camera_entity(Engine::ECS::INVALID_ENTITY);
+
   Engine::ECS::for_each_entity_with<Components::Camera>([&](Engine::ECS::Entity entity) {
     camera_entities.push_back(entity);
+    auto* camera = entity.get_component<Components::Camera>();
+    if (camera && camera->is_active) {
+      active_camera_entity = entity;
+    }
     });
 
-  // Static variable to track the selected camera entity
-  static Engine::ECS::EntityID selected_camera_id = Engine::ECS::INVALID_ENTITY;
+  // Display camera count and mode
+  ImGui::Text("Total Cameras: %zu", camera_entities.size());
 
-  // Display list of camera entities
-  if (ImGui::CollapsingHeader("Camera List", ImGuiTreeNodeFlags_DefaultOpen)) {
-    ImGui::Text("Total Cameras: %zu", camera_entities.size());
+  bool is_free_cam = !active_camera_entity.is_valid();
+  if (is_free_cam) {
+    ImGui::SameLine();
+    ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.0f, 1.0f), "[FREE CAM MODE]");
+  }
+
+  ImGui::Separator();
+
+  // Entity Cameras Section
+  if (ImGui::CollapsingHeader("Cameras", ImGuiTreeNodeFlags_DefaultOpen))
+  {
+    ImGui::Text("Select a camera to edit its properties");
     ImGui::Separator();
 
+    // Camera list with selection
+    ImGui::BeginChild("CameraList", ImVec2(0, 200), true);
+
     if (camera_entities.empty()) {
-      ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No camera entities found");
-      ImGui::TextWrapped("Create an entity and add a Camera component to it.");
+      ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "No camera entities found");
     }
     else {
-      ImGui::BeginChild("CameraList", ImVec2(0, 150), true);
-
-      for (auto& entity : camera_entities) {
+      for (const auto& entity : camera_entities) {
         auto* camera = entity.get_component<Components::Camera>();
         if (!camera) continue;
 
-        bool is_selected = (selected_camera_id == entity.get_id());
-        bool is_active = camera->is_active;
+        // Build entity label with camera name
+        std::string entity_label = camera->name;
+        if (entity_label.empty() || entity_label == "Camera") {
+          entity_label = "Entity " + std::to_string(entity.get_id());
+        }
+        else {
+          entity_label += " (ID: " + std::to_string(entity.get_id()) + ")";
+        }
 
-        std::string label = camera->name + " [Entity " + std::to_string(entity.get_id()) + "]";
-        if (is_active) label += " (ACTIVE)";
+        // Add active indicator to label
+        if (camera->is_active) {
+          entity_label += " [ACTIVE]";
+        }
 
-        if (ImGui::Selectable(label.c_str(), is_selected)) {
-          // When a camera is selected, automatically make it active
-          selected_camera_id = entity.get_id();
+        bool is_selected = (selected_camera_id == static_cast<s32>(entity.get_id()));
 
-          // Deactivate all cameras first
-          for (auto& e : camera_entities) {
-            auto* cam = e.get_component<Components::Camera>();
-            if (cam) cam->is_active = false;
-          }
-          // Activate the selected camera
-          camera->is_active = true;
+        if (ImGui::Selectable(entity_label.c_str(), is_selected)) {
+          selected_camera_id = static_cast<s32>(entity.get_id());
         }
       }
+    }
 
-      ImGui::EndChild();
+    ImGui::EndChild();
+
+    // Create new camera button
+    if (ImGui::Button("Create New Camera")) {
+      Engine::ECS::Entity new_entity = Engine::ECS::create_entity();
+      new_entity.add_component<Components::Camera>("New Camera", false, Math::Vec2D(0.0f, 0.0f), 0.0f, 1.0f);
+      selected_camera_id = static_cast<s32>(new_entity.get_id());
+    }
+
+    ImGui::SameLine();
+
+    // Delete selected camera
+    if (selected_camera_id != -1 && ImGui::Button("Delete Selected")) {
+      auto entity = Engine::ECS::get_entity(selected_camera_id);
+      if (entity.is_valid()) {
+        Engine::ECS::destroy_entity(entity);
+        selected_camera_id = -1;
+      }
     }
   }
 
   ImGui::Separator();
 
-  // If a camera is selected, show its properties for editing
-  if (selected_camera_id != Engine::ECS::INVALID_ENTITY) {
-    Engine::ECS::Entity selected_entity = Engine::ECS::get_entity(selected_camera_id);
+  // Camera Editor Section for Selected Camera
+  if (selected_camera_id != -1)
+  {
+    auto entity = Engine::ECS::get_entity(selected_camera_id);
 
-    if (selected_entity.is_valid() && selected_entity.has_component<Components::Camera>()) {
-      auto* camera = selected_entity.get_component<Components::Camera>();
+    if (!entity.is_valid() || !entity.has_component<Components::Camera>())
+    {
+      ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Selected camera no longer exists!");
+      selected_camera_id = -1;
+    }
+    else
+    {
+      auto* camera = entity.get_component<Components::Camera>();
 
-      ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "Edit Camera: %s", camera->name.c_str());
+      ImGui::Text("Editing: Entity %d", selected_camera_id);
       ImGui::Separator();
 
-      // Get virtual resolution
-      Math::Vec2D virtual_resolution = Engine::Graphics::get_virtual_resolution();
+      // Active toggle
+      bool active = camera->is_active;
+      if (ImGui::Checkbox("Active", &active)) {
+        // If activating this camera, deactivate all others
+        if (active) {
+          Engine::ECS::for_each_entity_with<Components::Camera>([](Engine::ECS::Entity e) {
+            auto* cam = e.get_component<Components::Camera>();
+            if (cam) cam->is_active = false;
+            });
+        }
+        camera->is_active = active;
+      }
 
-      // Camera Name
+      ImGui::SameLine();
+      ImGui::TextDisabled("(?)");
+      if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Only one camera can be active at a time.\nActivating this will deactivate others.");
+      }
+
+      // Camera name
+      ImGui::Text("Name:");
       char name_buffer[256];
       strncpy_s(name_buffer, camera->name.c_str(), sizeof(name_buffer) - 1);
       name_buffer[sizeof(name_buffer) - 1] = '\0';
-
-      if (ImGui::InputText("Camera Name", name_buffer, sizeof(name_buffer))) {
-        camera->name = std::string(name_buffer);
+      if (ImGui::InputText("##Name", name_buffer, sizeof(name_buffer))) {
+        camera->name = name_buffer;
       }
 
       ImGui::Separator();
 
-      // Active status
-      ImGui::Checkbox("Active Camera", &camera->is_active);
-      if (camera->is_active) {
-        ImGui::SameLine();
-        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "✓ Currently Active");
+      // Position controls
+      ImGui::Text("Position:");
+      float pos[2] = { camera->position.x, camera->position.y };
+      if (ImGui::DragFloat2("##Pos", pos, 1.0f, -10000.0f, 10000.0f, "%.2f")) {
+        camera->position = { pos[0], pos[1] };
+      }
+
+      // Rotation control
+      ImGui::Text("Rotation:");
+      float rotation = camera->rotation;
+      if (ImGui::DragFloat("##Rot", &rotation, 0.5f, -360.0f, 360.0f, "%.2f°")) {
+        camera->rotation = rotation;
+      }
+
+      // Zoom control
+      ImGui::Text("Zoom:");
+      float zoom = camera->zoom;
+      if (ImGui::DragFloat("##Zoom", &zoom, 0.01f, 0.01f, 10.0f, "%.3f")) {
+        camera->zoom = zoom;
       }
 
       ImGui::Separator();
 
-      // Position Controls
-      if (ImGui::CollapsingHeader("Position", ImGuiTreeNodeFlags_DefaultOpen))
-      {
-        ImGui::DragFloat("X", &camera->position.x, 1.0f);
-        ImGui::DragFloat("Y", &camera->position.y, 1.0f);
-
-        if (ImGui::Button("Reset Position"))
-        {
-          camera->position = { 0.0f, 0.0f };
-        }
-
-        ImGui::SameLine();
-
-        if (ImGui::Button("Center on Origin"))
-        {
-          camera->position = { virtual_resolution.x / 2.0f, virtual_resolution.y / 2.0f };
-        }
-
-        // Quick position presets
-        if (ImGui::TreeNode("Quick Presets"))
-        {
-          if (ImGui::Button("Top-Left"))
-          {
-            camera->position = { 0.0f, 0.0f };
-          }
-
-          ImGui::SameLine();
-
-          if (ImGui::Button("Top-Right"))
-          {
-            camera->position = { virtual_resolution.x, 0.0f };
-          }
-
-          if (ImGui::Button("Bottom-Left"))
-          {
-            camera->position = { 0.0f, virtual_resolution.y };
-          }
-
-          ImGui::SameLine();
-
-          if (ImGui::Button("Bottom-Right"))
-          {
-            camera->position = { virtual_resolution.x, virtual_resolution.y };
-          }
-
-          ImGui::TreePop();
-        }
-      }
-
-      ImGui::Separator();
-
-      // Zoom Controls
-      if (ImGui::CollapsingHeader("Zoom", ImGuiTreeNodeFlags_DefaultOpen))
-      {
-        ImGui::SliderFloat("Zoom Level", &camera->zoom, 0.1f, 5.0f, "%.2f");
-
-        ImGui::Text("Shortcuts:");
-
-        if (ImGui::Button("Zoom In (+25%)"))
-        {
-          camera->zoom *= 1.25f;
-          if (camera->zoom > 5.0f) camera->zoom = 5.0f;
-        }
-
-        ImGui::SameLine();
-
-        if (ImGui::Button("Zoom Out (-25%)"))
-        {
-          camera->zoom *= 0.75f;
-          if (camera->zoom < 0.1f) camera->zoom = 0.1f;
-        }
-
-        if (ImGui::Button("Reset Zoom (1.0x)"))
-        {
-          camera->zoom = 1.0f;
-        }
-
-        ImGui::SameLine();
-
-        if (ImGui::Button("Fit Screen"))
-        {
-          camera->zoom = 1.0f;
-        }
-
-        // Quick zoom presets
-        if (ImGui::TreeNode("Zoom Presets"))
-        {
-          if (ImGui::Button("0.25x"))
-          {
-            camera->zoom = 0.25f;
-          }
-          ImGui::SameLine();
-          if (ImGui::Button("0.5x"))
-          {
-            camera->zoom = 0.5f;
-          }
-          ImGui::SameLine();
-          if (ImGui::Button("1.0x"))
-          {
-            camera->zoom = 1.0f;
-          }
-          ImGui::SameLine();
-          if (ImGui::Button("2.0x"))
-          {
-            camera->zoom = 2.0f;
-          }
-          ImGui::SameLine();
-          if (ImGui::Button("4.0x"))
-          {
-            camera->zoom = 4.0f;
-          }
-
-          ImGui::TreePop();
-        }
-      }
-
-      ImGui::Separator();
-
-      // Rotation Controls
-      if (ImGui::CollapsingHeader("Rotation", ImGuiTreeNodeFlags_DefaultOpen))
-      {
-        ImGui::SliderFloat("Angle (degrees)", &camera->rotation, 0.0f, 360.0f, "%.1f°");
-
-        // Wrap rotation to 0-360 range
-        while (camera->rotation < 0.0f) camera->rotation += 360.0f;
-        while (camera->rotation >= 360.0f) camera->rotation -= 360.0f;
-
-        if (ImGui::Button("Rotate +15°"))
-        {
-          camera->rotation += 15.0f;
-          if (camera->rotation >= 360.0f) camera->rotation -= 360.0f;
-        }
-
-        ImGui::SameLine();
-
-        if (ImGui::Button("Rotate -15°"))
-        {
-          camera->rotation -= 15.0f;
-          if (camera->rotation < 0.0f) camera->rotation += 360.0f;
-        }
-
-        if (ImGui::Button("Rotate +90°"))
-        {
-          camera->rotation += 90.0f;
-          if (camera->rotation >= 360.0f) camera->rotation -= 360.0f;
-        }
-
-        ImGui::SameLine();
-
-        if (ImGui::Button("Rotate -90°"))
-        {
-          camera->rotation -= 90.0f;
-          if (camera->rotation < 0.0f) camera->rotation += 360.0f;
-        }
-
-        if (ImGui::Button("Reset Rotation (0°)"))
-        {
-          camera->rotation = 0.0f;
-        }
-
-        // Quick rotation presets
-        if (ImGui::TreeNode("Rotation Presets"))
-        {
-          if (ImGui::Button("0°"))
-          {
-            camera->rotation = 0.0f;
-          }
-          ImGui::SameLine();
-          if (ImGui::Button("45°"))
-          {
-            camera->rotation = 45.0f;
-          }
-          ImGui::SameLine();
-          if (ImGui::Button("90°"))
-          {
-            camera->rotation = 90.0f;
-          }
-          ImGui::SameLine();
-          if (ImGui::Button("180°"))
-          {
-            camera->rotation = 180.0f;
-          }
-          ImGui::SameLine();
-          if (ImGui::Button("270°"))
-          {
-            camera->rotation = 270.0f;
-          }
-
-          ImGui::TreePop();
-        }
-      }
-
-      ImGui::Separator();
-
-      // Combined Reset
-      if (ImGui::Button("Reset All Camera Settings", ImVec2(-1, 0)))
-      {
+      // Quick actions
+      if (ImGui::Button("Reset Camera")) {
         camera->position = { 0.0f, 0.0f };
         camera->rotation = 0.0f;
         camera->zoom = 1.0f;
       }
 
-      ImGui::Separator();
+      ImGui::SameLine();
 
-      // Display info
-      if (ImGui::CollapsingHeader("Info", ImGuiTreeNodeFlags_DefaultOpen))
-      {
-        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Virtual Resolution:");
-        ImGui::Text("  %.0f x %.0f", virtual_resolution.x, virtual_resolution.y);
-
-        ImGui::Separator();
-
-        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Current Camera:");
-        ImGui::Text("  Name: %s", camera->name.c_str());
-        ImGui::Text("  Position: (%.1f, %.1f)", camera->position.x, camera->position.y);
-        ImGui::Text("  Zoom: %.2fx", camera->zoom);
-        ImGui::Text("  Rotation: %.1f°", camera->rotation);
-        ImGui::Text("  Active: %s", camera->is_active ? "Yes" : "No");
-
-        ImGui::Separator();
-
-        ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "Status:");
-        ImGui::TextWrapped("✓ Camera entity system is active");
-
-        ImGui::Separator();
-
-        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Tips:");
-        ImGui::TextWrapped("• Select a camera from the list above to edit it");
-        ImGui::TextWrapped("• Only one camera can be active at a time");
-        ImGui::TextWrapped("• Use 'Set Active' to switch between cameras");
-        ImGui::TextWrapped("• All changes apply in real-time to the component");
+      if (ImGui::Button("Focus at Origin")) {
+        camera->position = { 0.0f, 0.0f };
       }
     }
-    else {
-      ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "Selected camera no longer exists!");
-      selected_camera_id = Engine::ECS::INVALID_ENTITY;
-    }
   }
-  else {
-    ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Select a camera entity from the list above to edit its properties.");
+  else
+  {
+    ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "No camera selected");
+  }
+
+  ImGui::Separator();
+
+  // Info section
+  if (ImGui::CollapsingHeader("Info")) {
+    ImGui::BulletText("Hold Ctrl + Left Mouse to pan camera");
+    ImGui::BulletText("Only one entity camera can be active at a time");
+    ImGui::BulletText("Free cam mode: Active when no camera entity is active");
+    ImGui::BulletText("Zoom > 1.0 = zoomed in, < 1.0 = zoomed out");
+    ImGui::BulletText("Rotation is in degrees (clockwise positive)");
   }
 
   ImGui::End();

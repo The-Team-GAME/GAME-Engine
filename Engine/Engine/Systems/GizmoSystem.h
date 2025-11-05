@@ -23,6 +23,12 @@ namespace Engine
         auto* tr = entity.get_component<Components::Transform2D>();
         if (!tr) return;
 
+        // Don't select entities when Ctrl is held (camera control mode)
+        bool ctrl_held = Engine::Input::is_held(Engine::KeyCode::CtrlLeft) ||
+          Engine::Input::is_held(Engine::KeyCode::CtrlRight);
+
+        if (ctrl_held) return;
+
         const auto mouse = Engine::Input::get_mouse_position();
 
         // Check if mouse is inside entity bounds
@@ -69,6 +75,16 @@ namespace Engine
         auto* gizmo = entity.get_component<Components::Gizmo>();
 
         if (!tr || !gizmo) return;
+
+        // Check if Ctrl is held (camera control mode)
+        bool ctrl_held = Engine::Input::is_held(Engine::KeyCode::CtrlLeft) ||
+          Engine::Input::is_held(Engine::KeyCode::CtrlRight);
+
+        // If Ctrl is held, stop any ongoing drag but keep the gizmo visible
+        if (ctrl_held) {
+          gizmo->is_dragging = false;
+          return;
+        }
 
         const auto mouse = Engine::Input::get_mouse_position();
 

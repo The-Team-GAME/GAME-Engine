@@ -18,9 +18,9 @@ void ShowcaseState::load() {
   Engine::Resources::set_resource_path("Assets/");
 
   // Load sprite sheet textures with Nearest filter for pixel art
-  player_idle_texture = Engine::Resources::load_texture("images/Bro_Idle_Spritesheet.png");
-  player_punch_texture = Engine::Resources::load_texture("images/Bro_Punch_Spritesheet.png");
-  player_run_texture = Engine::Resources::load_texture("images/Bro_Run_Spritesheet.png");
+  player_idle_texture = Engine::Resources::load_texture("images/BroSpriteSheets/Bro_idle_spritesheet.png");
+  player_punch_texture = Engine::Resources::load_texture("images/BroSpriteSheets/Bro_threehit_spritesheet.png");
+  player_run_texture = Engine::Resources::load_texture("images/BroSpriteSheets/Bro_run_spritesheet.png");
 
   // Load object textures
   banana_texture = Engine::Resources::load_texture("images/banana.png");
@@ -54,7 +54,7 @@ void ShowcaseState::init() {
     .add_component<Components::Transform2D>(1200.0f, 675.0f, 0.0f, 20.0f * 3.0f, 12.0f * 3.0f)
     .add_component<Components::Texture>(banana_texture)
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-    .add_component<Components::RigidBody>(Vec2D(1200.f,675.f), false, false);
+    .add_component<Components::RigidBody>(false, false);
 
   auto* rigid = banana.get_component<Components::RigidBody>();
   rigid->rotation = 0.0f;
@@ -62,14 +62,14 @@ void ShowcaseState::init() {
 
   // Create player with idle animation
   player = Engine::ECS::create_entity()
-    .add_component<Components::Tag<"ShowcaseState">>()
-    .add_component<Components::Transform2D>(200.0f, 655.0f, 0.0f, player_idle_width * 2.0f, player_idle_height * 2.0f)
+    .add_component<Components::Transform2D>(200.0f, 655.0f, 0.0f, static_cast<f32>(player_idle_texture->width / 24) * 2.0f, static_cast<f32>(player_idle_texture->height) * 2.0f)
     .add_component<Components::Texture>(player_idle_texture)
-    .add_component<Components::RigidBody>(Vec2D(200.f, 655.f),false,false)
+    .add_component<Components::TextureAtlas>(static_cast<int>(player_idle_texture->width / 24), static_cast<int>(player_idle_texture->height), 1, 24, 24)
+    .add_component<Components::RigidBody>(false, false)
     .add_component<Components::Health>(100, 100)
-    .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-    .add_component<Components::TextureAtlas>(64, 64, 1, 7, 7)
-    .add_component<Components::Animation>(7, 0.15f);
+    .add_component<Components::Animation>(24, 0.1f)
+    .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
+    .add_component<Components::Tag<"ShowcaseState">>();
 
   // Create text entities
   title_text = Engine::ECS::create_entity()
@@ -122,8 +122,8 @@ void ShowcaseState::init() {
         player_texture->texture_handle = player_punch_texture;
         player_transform->scale.x = (facing_right ? 2.0f : -2.0f) * player_punch_width;
         player_transform->scale.y = 2.0f * player_punch_height;
-        *player_animation = Components::Animation(12, 0.05f);
-        *player_atlas = Components::TextureAtlas(static_cast<s32>(player_punch_width), static_cast<s32>(player_punch_height), 1, 12, 12);
+        *player_animation = Components::Animation(6, 0.05f);
+        *player_atlas = Components::TextureAtlas(static_cast<s32>(player_punch_width), static_cast<s32>(player_punch_height), 1, 19, 6); // Only play 6 frames of punch animation
 
         std::cout << "Playing punch animation\n";
       }
@@ -226,8 +226,9 @@ void ShowcaseState::update() {
         auto* player_animation = player.get_component<Components::Animation>();
         auto* player_atlas = player.get_component<Components::TextureAtlas>();
         if (player_animation && player_atlas) {
-          *player_animation = Components::Animation(7, 0.15f);
-          *player_atlas = Components::TextureAtlas(64, 64, 1, 7, 7);
+          // Restore the full idle animation (24 frames) to match the idle spritesheet
+          *player_animation = Components::Animation(24, 0.1f);
+          *player_atlas = Components::TextureAtlas(64, 64, 1, 24, 24);
         }
       }
     }
@@ -291,8 +292,8 @@ void ShowcaseState::update() {
       auto* player_animation = player.get_component<Components::Animation>();
       auto* player_atlas = player.get_component<Components::TextureAtlas>();
       if (player_animation && player_atlas) {
-        *player_animation = Components::Animation(7, 0.15f);
-        *player_atlas = Components::TextureAtlas(64, 64, 1, 7, 7);
+        *player_animation = Components::Animation(24, 0.1f);
+        *player_atlas = Components::TextureAtlas(64, 64, 1, 24, 24);
       }
 
       // Stop walk sound
@@ -315,7 +316,6 @@ void ShowcaseState::update() {
     is_punching = true;
     punch_timer = 0.0f;
   }
-
   // Collect banana with C key (using event system)
   if (Engine::Input::is_pressed(Engine::KeyCode::C)) {
     Engine::EventManager::send_event<CollectEvent>(player.get_id(), banana.get_id(), 1);
