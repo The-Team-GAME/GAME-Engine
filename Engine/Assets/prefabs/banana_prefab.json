@@ -6,6 +6,7 @@
     ],
     "components": [
         {
+            "type": "Components::Transform2D",
             "data": {
                 "position": {
                     "x": 1200.0,
@@ -16,23 +17,29 @@
                     "x": 60.0,
                     "y": 36.0
                 }
-            },
-            "type": "Components::Transform2D"
-        },
-        {
-            "type": "Components::Texture",
-            "data": {
-                "path": "images/banana.png"
             }
         },
         {
             "data": {
-                "b": 1.0,
+                "path": "images/banana.png"
+            },
+            "type": "Components::Texture"
+        },
+        {
+            "type": "Components::Color",
+            "data": {
                 "r": 1.0,
+                "b": 1.0,
                 "g": 1.0,
                 "a": 1.0
+            }
+        },
+        {
+            "data": {
+                "rotation": 0.0,
+                "angular_velocity": 45.0
             },
-            "type": "Components::Color"
+            "type": "Components::RigidBody"
         }
     ]
 }

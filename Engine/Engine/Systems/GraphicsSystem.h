@@ -139,6 +139,62 @@ namespace Engine
       }
     };
 
+    class DistortionSpriteRenderSystem : public Engine::ECS::System {
+    public:
+      DistortionSpriteRenderSystem() {
+        require_components<Components::Transform2D, Components::Color, Components::Texture, Components::Distortion>();
+        exclude_components<Components::TextureAtlas>();
+      }
+
+      void draw_entity(const Engine::ECS::Entity& entity) override {
+        auto* transform = entity.get_component<Components::Transform2D>();
+        auto* color = entity.get_component<Components::Color>();
+        auto* texture = entity.get_component<Components::Texture>();
+        auto* distortion = entity.get_component<Components::Distortion>();
+
+        Engine::Graphics::draw_texture_distortion(
+          texture->texture_handle,
+          Math::Vec2D(transform->position.x, transform->position.y),
+          Math::Vec2D(transform->scale.x, transform->scale.y),
+          transform->rotation,
+          *color,
+          distortion->intensity,
+          distortion->speed
+        );
+      }
+    };
+
+    class DistortionAtlasSpriteRenderSystem : public Engine::ECS::System {
+    public:
+      DistortionAtlasSpriteRenderSystem() {
+        require_components<Components::Transform2D, Components::Color, Components::Texture, Components::TextureAtlas, Components::Distortion>();
+      }
+
+      void draw_entity(const Engine::ECS::Entity& entity) override {
+        auto* transform = entity.get_component<Components::Transform2D>();
+        auto* color = entity.get_component<Components::Color>();
+        auto* texture = entity.get_component<Components::Texture>();
+        auto* atlas = entity.get_component<Components::TextureAtlas>();
+        auto* distortion = entity.get_component<Components::Distortion>();
+
+        // Ensure drawIndex is within bounds
+        if (atlas->drawIndex < atlas->subTextures.size()) {
+          const auto& subTexture = atlas->subTextures[atlas->drawIndex];
+
+          Engine::Graphics::draw_subtexture_distortion(
+            texture->texture_handle,
+            subTexture.tex_coords,
+            Math::Vec2D(transform->position.x, transform->position.y),
+            Math::Vec2D(transform->scale.x, transform->scale.y),
+            transform->rotation,
+            *color,
+            distortion->intensity,
+            distortion->speed
+          );
+        }
+      }
+    };
+
     class CameraControlSystem : public Engine::ECS::System {
     private:
       bool is_dragging = false;

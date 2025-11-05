@@ -22,9 +22,10 @@
 #include "GameStates/RectPainterState.h"
 #include "GameStates/Rubric2500ParticlesState.h"
 #include "GameStates/BasicState.h"
-#include "GameStates/DevSpriteAnimationState.h"
 #include "GameStates/Documentation/PrefabsState.h"
 #include "GameStates/Dev/PhysicsTestState.h"
+#include "GameStates/DistortionEffectState.h"
+#include "GameStates/LuaState.h"
 
 /*=================================================================================
 Function Brief:
@@ -61,9 +62,10 @@ int main()
   Engine::SceneManager::register_scene<RectPainterState>("RectPainterState");
   Engine::SceneManager::register_scene<Rubric2500ParticlesState>("Rubric2500ParticlesState");
   Engine::SceneManager::register_scene<BasicState>("BasicState");
-  Engine::SceneManager::register_scene<DevSpriteAnimationState>("DevSpriteAnimationState");
   Engine::SceneManager::register_scene<PrefabsState>("PrefabsState");
   Engine::SceneManager::register_scene<PhysicsTestState>("PhysicsTestState");
+  Engine::SceneManager::register_scene<DistortionEffectState>("DistortionEffectState");
+  Engine::SceneManager::register_scene<LuaState>("LuaState");
 
   engine.run("MainMenuState");
 

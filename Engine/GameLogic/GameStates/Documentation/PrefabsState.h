@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../Engine/MonkeyEngine.h"
+#include "../Engine/MonkeyEngine.h"
 
 class PrefabsState : public Engine::Scene {
 private:

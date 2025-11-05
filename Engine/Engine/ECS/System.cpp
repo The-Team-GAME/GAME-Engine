@@ -16,6 +16,8 @@
 #include "System.h"
 #include "Entity.h"
 #include "WorldData.h"
+#include <unordered_set>
+#include <unordered_map>
 
 namespace Engine {
   namespace ECS {
@@ -28,31 +30,38 @@ namespace Engine {
 
     void System::update() {
       // Iterate through entities in layer order (lower layer ID = higher priority = first)
+      // For entities on multiple layers, update them only at their highest layer
       auto& containers = Internal::get_containers();
+      std::unordered_map<EntityID, LayerID> entity_highest_layer; // Track highest layer for each entity
 
+      // First pass: find the highest layer for each entity
       for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
         // Skip if system doesn't process this layer
         if (!active_layers.test(layer))
           continue;
 
-        // Copy entity IDs to prevent iterator invalidation during update_entity()
-        // (entities may be created/destroyed during updates)
-        const auto& layer_set = containers.layer_entities[layer];
-        std::vector<EntityID> entities_to_process;
-        entities_to_process.reserve(layer_set.size());
-        
-        // TODO: this is not efficient, optimize later
-        for (EntityID entityId : layer_set) {
-          // Only process if this system manages this entity
-          if (entities.contains(entityId)) {
-            entities_to_process.push_back(entityId);
+        for (EntityID entityId : containers.layer_entities[layer]) {
+          // Only consider entities in this system's entity set
+          if (!entities.contains(entityId))
+            continue;
+
+          // Update to highest layer
+          if (entity_highest_layer.find(entityId) == entity_highest_layer.end() || layer > entity_highest_layer[entityId]) {
+            entity_highest_layer[entityId] = layer;
           }
         }
+      }
 
-        // Now iterate over the copy
-        for (EntityID entityId : entities_to_process) {
-          // Double-check entity still exists and is managed by this system
-          if (entities.contains(entityId)) {
+      // Second pass: update each entity at its highest layer
+      for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
+        // Skip if system doesn't process this layer
+        if (!active_layers.test(layer))
+          continue;
+
+        for (EntityID entityId : containers.layer_entities[layer]) {
+          // Only update if this is the entity's highest layer
+          if (entity_highest_layer.find(entityId) != entity_highest_layer.end() &&
+            entity_highest_layer[entityId] == layer) {
             Entity entity(entityId);
             update_entity(entity);
           }
@@ -62,29 +71,38 @@ namespace Engine {
 
     void System::draw() {
       // Iterate through entities in layer order (lower layer ID = higher priority = first)
+      // For entities on multiple layers, draw them only at their highest layer
       auto& containers = Internal::get_containers();
+      std::unordered_map<EntityID, LayerID> entity_highest_layer; // Track highest layer for each entity
 
+      // First pass: find the highest layer for each entity
       for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
         // Skip if system doesn't process this layer
         if (!active_layers.test(layer))
           continue;
 
-        // Copy entity IDs to prevent iterator invalidation during draw_entity()
-        const auto& layer_set = containers.layer_entities[layer];
-        std::vector<EntityID> entities_to_draw;
-        entities_to_draw.reserve(layer_set.size());
-        
-        for (EntityID entityId : layer_set) {
-          // Only process if this system manages this entity
-          if (entities.contains(entityId)) {
-            entities_to_draw.push_back(entityId);
+        for (EntityID entityId : containers.layer_entities[layer]) {
+          // Only consider entities in this system's entity set
+          if (!entities.contains(entityId))
+            continue;
+
+          // Update to highest layer
+          if (entity_highest_layer.find(entityId) == entity_highest_layer.end() || layer > entity_highest_layer[entityId]) {
+            entity_highest_layer[entityId] = layer;
           }
         }
+      }
 
-        // Now iterate over the copy
-        for (EntityID entityId : entities_to_draw) {
-          // Double-check entity still exists and is managed by this system
-          if (entities.contains(entityId)) {
+      // Second pass: draw each entity at its highest layer
+      for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
+        // Skip if system doesn't process this layer
+        if (!active_layers.test(layer))
+          continue;
+
+        for (EntityID entityId : containers.layer_entities[layer]) {
+          // Only draw if this is the entity's highest layer
+          if (entity_highest_layer.find(entityId) != entity_highest_layer.end() &&
+            entity_highest_layer[entityId] == layer) {
             Entity entity(entityId);
             draw_entity(entity);
           }

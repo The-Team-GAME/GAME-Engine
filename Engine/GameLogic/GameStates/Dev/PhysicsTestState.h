@@ -13,8 +13,8 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "../../Engine/MonkeyEngine.h"
-#include "../../Engine/Systems/PhysicsSystem.h"
+#include "../Engine/MonkeyEngine.h"
+#include "../Engine/Systems/PhysicsSystem.h"
 using namespace Engine;
 using phy2D = Systems::Physics2DSystem;
 
