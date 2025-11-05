@@ -49,6 +49,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\RapidJSON;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\Lua\include;$(SolutionDir)Dependencies\Sol2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/Zc:u8EscapeEncoding %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -74,6 +75,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
       <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\RapidJSON;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\Lua\include;$(SolutionDir)Dependencies\Sol2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/Zc:u8EscapeEncoding %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
