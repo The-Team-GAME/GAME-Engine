@@ -127,19 +127,20 @@ namespace Engine
     );
 
 
-// Just register one simple function
-Engine::LuaManager::register_function("log_message", [](const std::string& message) {
-  std::cout << "[Lua] " << message << std::endl;
-});
+    // Just register one simple function
+    Engine::LuaManager::register_function("log_message", [](const std::string& message) {
+      std::cout << "[Lua] " << message << std::endl;
+    });
 
-// Set basic globals
-Engine::LuaManager::set_global("GAME_VERSION", "1.0.0");
-Engine::LuaManager::set_global("ENGINE_NAME", "Monkey Engine");  
-Engine::LuaManager::set_global("MAX_ENTITIES", 1000);
+   
+    // Set basic globals
+    Engine::LuaManager::set_global("GAME_VERSION", "1.0.0");
+    Engine::LuaManager::set_global("ENGINE_NAME", "Monkey Engine");  
+    Engine::LuaManager::set_global("MAX_ENTITIES", 1000);
 
-// Load the script
-Engine::LuaManager::load_script("Assets/scripts/player_logic.lua");
-    
+    // Load the script
+    Engine::LuaManager::load_script("Assets/scripts/player_logic.lua");
+    Engine::LuaManager::load_script("Assets/scripts/buttons_test.lua");
 
     StateManager::init(initialState);
   }

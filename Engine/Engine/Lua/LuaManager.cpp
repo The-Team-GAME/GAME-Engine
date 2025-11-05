@@ -1,5 +1,7 @@
 #include "LuaManager.h"
+#include "GameAPI.h"
 #include <iostream>
+#include <mutex>
 
 namespace Engine
 {
@@ -8,17 +10,25 @@ namespace Engine
     // Static variables for namespace
     static sol::state lua_state;
     static std::unordered_map<std::string, bool> loaded_scripts;
+    static std::vector<std::function<void(sol::state&)>> binding_callbacks;
+    static std::mutex bindings_mutex;
 
     bool init()
     {
       try {
-        lua_state.open_libraries(sol::lib::base, 
-                                sol::lib::math, 
+        lua_state.open_libraries(sol::lib::base,
+                                sol::lib::math,
                                 sol::lib::package,
                                 sol::lib::string,
                                 sol::lib::table,
                                 sol::lib::io);
-        
+
+        // register high-level Game API
+        Engine::GameAPI::register_api(lua_state);
+
+        // run any registered binding callbacks (Game API / ECS bindings)
+        run_bindings();
+
         std::cout << "[LuaManager] Lua (sol2) initialized.\n";
         return true;
       }
@@ -31,6 +41,10 @@ namespace Engine
     void cleanup()
     {
       loaded_scripts.clear();
+      {
+        std::lock_guard<std::mutex> lk(bindings_mutex);
+        binding_callbacks.clear();
+      }
       lua_state = sol::state{};
       std::cout << "[LuaManager] Lua closed.\n";
     }
@@ -62,11 +76,19 @@ namespace Engine
       }
 
       try {
-        sol::function func = lua_state[name];
+        sol::protected_function func = lua_state[name];
         if (func.valid()) {
-          func(dt);
+          if (func.valid() && func.lua_state()) {
+            // call with one float parameter
+            sol::protected_function_result result = func(dt);
+            if (!result.valid()) {
+              sol::error err = result;
+              std::cerr << "[Lua Error] " << err.what() << std::endl;
+            }
+          }
         } else {
-          std::cerr << "[LuaManager] Function '" << name << "' not found or not callable.\n";
+          // function not present; silent or log once
+          // std::cerr << "[LuaManager] Function '" << name << "' not found.\n";
         }
       }
       catch (const sol::error& e) {
@@ -82,6 +104,28 @@ namespace Engine
     const std::unordered_map<std::string, bool>& get_loaded_scripts()
     {
       return loaded_scripts;
+    }
+
+    void register_binding(std::function<void(sol::state&)> cb)
+    {
+      std::lock_guard<std::mutex> lk(bindings_mutex);
+      binding_callbacks.emplace_back(std::move(cb));
+    }
+
+    void run_bindings()
+    {
+      std::vector<std::function<void(sol::state&)>> copy;
+      {
+        std::lock_guard<std::mutex> lk(bindings_mutex);
+        copy = binding_callbacks;
+      }
+      for (auto& cb : copy) {
+        try {
+          cb(lua_state);
+        } catch (const std::exception& e) {
+          std::cerr << "[LuaManager] binding callback error: " << e.what() << std::endl;
+        }
+      }
     }
   }
 }
