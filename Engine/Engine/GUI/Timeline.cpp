@@ -185,8 +185,8 @@ void Timeline::draw() {
     ImGui::SameLine();
 
     // ================================================================
-        // Resource Picker Button and Logic
-        // ================================================================
+    // Resource Picker Button and Logic
+    // ================================================================
     Engine::Resources::set_resource_path("Assets/");
 
     if (ImGui::Button("Add Texture Clip")) {
@@ -292,17 +292,18 @@ void Timeline::draw() {
 
         if (activeClip) {
           // --- Clip Found: Draw Animated Frame ---
-          auto entity = Engine::ECS::get_entity(activeClip->entity_id);
+          auto entity = activeClip->entity; // Access the stored ECS::Entity
 
           if (entity.is_valid() && entity.has_component<Components::Texture>() && entity.has_component<Components::TextureAtlas>())
           {
             auto texture_ptr = entity.get_component<Components::Texture>()->texture_handle;
             auto* atlas = entity.get_component<Components::TextureAtlas>();
 
+
             s32 num_atlas_frames = (s32)atlas->subTextures.size();
 
             if (texture_ptr && num_atlas_frames > 0) {
-              ImTextureID tex_id = (ImTextureID)(uintptr_t)texture_ptr.get();
+              ImTextureID tex_id = (ImTextureID)(uintptr_t)texture_ptr->id;
 
               // Calculate which frame of the atlas should be shown in this timeline cell
               s32 frames_in_clip = frame - activeClip->start_frame;
@@ -416,7 +417,7 @@ void Timeline::draw() {
         textPos.y = clipMin.y + 5.0f;
         ImGui::SetCursorScreenPos(textPos);
 
-        ImGui::Text("Layer: %d | Start: %d | Dur: %d", clip.layer, clip.start_frame, clip.duration_frames);
+        ImGui::Text("| Dur: %d |" , clip.duration_frames);
 
 
 
@@ -600,12 +601,14 @@ void Timeline::draw() {
 
       // Initialize Texture Atlas with provided counts
       s32 total_sprites = atlas_x_count * atlas_y_count;
+      f32 texture_width = (f32)texture_value->width;
+      f32 texture_height = (f32)texture_value->height;
 
       new_entity.add_component<Components::TextureAtlas>(
-        texture_value->width,
-        texture_value->height,
-        (u32)atlas_x_count,
+        (int)(texture_width / atlas_x_count),
+        (int)(texture_height / atlas_y_count),
         (u32)atlas_y_count,
+        (u32)atlas_x_count,
         (u32)total_sprites
       );
 
@@ -654,7 +657,7 @@ void Timeline::draw() {
 
             // --- Confirmation ---
             if (ImGui::Button("Create Clip", ImVec2(100, 0))) {
-                // 1. Create the ECS Entity using the standalone utility function
+                // Create the ECS Entity using the standalone utility function
               Engine::ECS::Entity new_entity = TimelineUtils::create_timeline_entity(
                 pending_texture_path,
                 config_atlas_x,
@@ -662,11 +665,11 @@ void Timeline::draw() {
               );
 
               if (new_entity.is_valid()) { // Check if creation was successful
-                // 2. Add clip to the timeline data structure, passing the entity object
+                // Add clip to the timeline data structure, passing the entity object
                 add_clip(new_entity, config_layer, config_start_frame, config_duration);
               }
 
-                // 3. Clear all temporary states and close popup
+                // Clear all temporary states and close popup
                 pending_texture_path.clear();
                 is_config_modal_open = false;
                 ImGui::CloseCurrentPopup();
