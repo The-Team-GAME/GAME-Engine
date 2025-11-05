@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="Engine\Systems\CollisionSystem.cpp" />
@@ -47,6 +47,7 @@
     <ClCompile Include="GameLogic\GameStates\RectPainterState.cpp" />
     <ClCompile Include="GameLogic\GameStates\ShowcaseState.cpp" />
     <ClCompile Include="GameLogic\WinMain.cpp" />
+    <ClCompile Include="Engine\Systems\ParticleSystem.cpp" />
     <ClCompile Include="Engine\ECS\Types.cpp" />
     <ClCompile Include="Engine\FileIO\Helpers.cpp" />
     <ClCompile Include="Engine\SceneManager.cpp" />
@@ -130,9 +131,7 @@
     <ClInclude Include="Engine\GUI\TilemapPanel.h" />
     <ClInclude Include="Engine\GUI\ViewportPanel.h" />
     <ClInclude Include="Engine\Systems\GraphicsSystem.h" />
-    <ClInclude Include="GameLogic\Components\Components.h" />
     <ClInclude Include="Engine\Core.h" />
-    <ClInclude Include="GameLogic\GameStates\DevSpriteAnimationState.h" />
     <ClInclude Include="Engine\Components\Components.h" />
     <ClInclude Include="Engine\Reflection\Helpers.h" />
     <ClInclude Include="Engine\Reflection\Reflect.h" />
@@ -176,6 +175,7 @@
     <ClInclude Include="Engine\WindowManager.h" />
     <ClInclude Include="GameLogic\Systems\HealthSystem.h" />
     <ClInclude Include="GameLogic\Systems\PlayerControllerSystem.h" />
+    <ClInclude Include="Engine\Systems\ParticleSystem.h" />
     <ClInclude Include="Engine\ECS\SparseSet.h" />
     <ClInclude Include="Engine\ECS\Reflection.h" />
     <ClInclude Include="Engine\FileIO\Helpers.h" />
@@ -185,6 +185,10 @@
     <ClInclude Include="Engine\GUI\PerformanceViewerPanel.h" />
     <ClInclude Include="Engine\GUI\SceneChooserPanel.h" />
     <ClInclude Include="Engine\SceneManager.h" />
+    <ClInclude Include="GameLogic\Components\HealthComponents.h" />
+    <ClInclude Include="GameLogic\GameStates\DistortionEffectState.h" />
+    <ClInclude Include="GameLogic\GameStates\EmptyState.h" />
+    <ClInclude Include="GameLogic\GameStates\LuaState.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -200,11 +204,8 @@
     <ClInclude Include="Engine\Events\Events.h" />
     <ClInclude Include="Engine\Events\InputEvents.h" />
     <ClInclude Include="Engine\Events\WindowEvents.h" />
-    <ClInclude Include="Engine\FileIO\EngineSettings.h" />
-    <ClInclude Include="Engine\FileIO\LocalSettings.h" />
     <ClInclude Include="Engine\FileIO\PrefabsFileIO.h" />
     <ClInclude Include="Engine\FileIO\SettingsManager.h" />
-    <ClInclude Include="Engine\FileIO\UserSettings.h" />
     <ClInclude Include="Engine\GUI\ResourceManagerPanel.h" />
     <ClInclude Include="Engine\GUI\widgets\TextureAtlasWidget.h" />
     <ClInclude Include="Engine\MonkeyEngine.h" />

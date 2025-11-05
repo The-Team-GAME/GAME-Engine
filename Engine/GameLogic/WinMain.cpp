@@ -28,6 +28,7 @@
 #include "GameStates/TimelineState.h"
 #include "GameStates/DistortionEffectState.h"
 #include "GameStates/LuaState.h"
+#include "Systems/HealthSystem.h"
 
 /*=================================================================================
 Function Brief:
@@ -58,6 +59,7 @@ int main()
   Engine::ECS::register_layer("effects"); // Visual effects like particles
   Engine::ECS::register_layer("debug"); // Debug overlays and information
 
+  // Register game scenes at startup
   Engine::SceneManager::register_scene<EmptyState>("EmptyState");
   Engine::SceneManager::register_scene<MainMenuState>("MainMenuState");
   Engine::SceneManager::register_scene<ShowcaseState>("ShowcaseState");
@@ -71,10 +73,14 @@ int main()
   Engine::SceneManager::register_scene<DistortionEffectState>("DistortionEffectState");
   Engine::SceneManager::register_scene<LuaState>("LuaState");
 
+  // Register game systems at startup
+  Engine::ECS::add_system<Engine::Systems::HealthSystem>();
+
+  // Run the main menu state
   Engine::Core::run("MainMenuState");
 
+  // Shutdown the engine
   Engine::Core::exit();
-
 
   return 0;
 }

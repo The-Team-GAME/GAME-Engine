@@ -13,6 +13,7 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "ShowcaseState.h"
+#include "../Components/HealthComponents.h"
 
 void ShowcaseState::load() {
   Engine::Resources::set_resource_path("Assets/");
@@ -35,6 +36,9 @@ void ShowcaseState::load() {
   // Load fonts
   title_font = Engine::Resources::load_font("fonts/PlayfairDisplay-VariableFont_wght.ttf", 82);
   info_font = Engine::Resources::load_font("fonts/Roboto-Regular.ttf", 48);
+
+  white_texture = Engine::Resources::get_rect_texture();
+
 }
 
 void ShowcaseState::init() {
@@ -69,7 +73,9 @@ void ShowcaseState::init() {
     .add_component<Components::Health>(100, 100)
     .add_component<Components::Animation>(24, 0.1f)
     .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
-    .add_component<Components::Tag<"ShowcaseState">>();
+    .add_component<Components::Tag<"ShowcaseState">>()
+    .add_component<Components::Health>(50, 100)
+    .add_component<Components::HealthConfig>(Components::HealthConfig{ .drain_per_sec = 5.0f, .heal_while_moving_per_sec = 10.0f, .carry = 0.0f });
 
   // Create text entities
   title_text = Engine::ECS::create_entity()
@@ -100,6 +106,38 @@ void ShowcaseState::init() {
     .add_component<Components::Text>("Enemy HP: 50/50")
     .add_component<Components::Color>(1.0f, 0.0f, 0.0f, 1.0f);
 
+  player_health_text = Engine::ECS::create_entity()
+    .add_component<Components::Tag<"ShowcaseState">>()
+    .add_component<Components::Transform2D>(50.0f, 280.0f, 0.0f, 0.7f, 0.7f)
+    .add_component<Components::Font>(info_font)
+    .add_component<Components::Text>("Player HP: 50/100")
+    .add_component<Components::Color>(0.2f, 1.0f, 0.2f, 1.0f);
+
+  player_hp_bg = Engine::ECS::create_entity()
+    .add_component<Components::Tag<"ShowcaseState">>()
+    .add_component<Components::Transform2D>(
+      hpbar_left + hpbar_w * 50.0f,
+      hpbar_top + hpbar_h * 50.0f,
+      0.0f, hpbar_w, hpbar_h)
+    .add_component<Components::Texture>(white_texture)
+    .add_component<Components::Color>(0.15f, 0.15f, 0.15f, 1.0f);
+
+  player_hp_fill = Engine::ECS::create_entity()
+    .add_component<Components::Tag<"ShowcaseState">>()
+    .add_component<Components::Transform2D>(
+      hpbar_left + (hpbar_w * 0.5f),
+      hpbar_top + hpbar_h * 0.5f,
+      0.0f, hpbar_w * 0.5f, hpbar_h)
+    .add_component<Components::Texture>(white_texture)
+    .add_component<Components::Color>(0.2f, 1.0f, 0.2f, 1.0f);
+
+  player.add_component<Components::HealthBar>(Components::HealthBar{
+    .bar_bg = player_hp_bg,
+    .bar_fill = player_hp_fill,
+    .text = player_health_text,
+    .left = hpbar_left, .top = hpbar_top, .width = hpbar_w, .height = hpbar_h
+    });
+
   // Subscribe to attack events
   Engine::EventManager::add_event_listener<AttackEvent>([this](const AttackEvent& event) {
     std::cout << "Attack event! Entity " << event.attacker
@@ -126,6 +164,17 @@ void ShowcaseState::init() {
         *player_atlas = Components::TextureAtlas(static_cast<s32>(player_punch_width), static_cast<s32>(player_punch_height), 1, 19, 6); // Only play 6 frames of punch animation
 
         std::cout << "Playing punch animation\n";
+      }
+    }
+
+    if (event.target == player.get_id()) {
+      if (player.is_valid() && player.has_component<Components::Health>()) {
+        auto* hp = player.get_component<Components::Health>();
+        hp->heal(event.damage);
+        if (player_health_text.is_valid() && player_health_text.has_component<Components::Text>()) {
+          auto* text = player_health_text.get_component<Components::Text>();
+          text->content = "Player HP: " + std::to_string(hp->value) + "/" + std::to_string(hp->max);
+        }
       }
     }
 
@@ -197,7 +246,14 @@ void ShowcaseState::update() {
   auto* rigid = player.get_component<Components::RigidBody>();
   auto* player_texture = player.get_component<Components::Texture>();
 
-  if (!player_transform || !rigid || !player_texture) return;
+  if (!player_transform || !rigid || !player_texture) {
+    if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
+      Engine::Audio::stop_channel(walk_sound_channel);
+      walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
+
+    }
+    return;
+  }
 
   // Handle punch animation timing
   if (is_punching) {
@@ -312,6 +368,10 @@ void ShowcaseState::update() {
     // Send attack event 
     Engine::EventManager::send_event<AttackEvent>(player.get_id(), enemy.get_id(), 10);
 
+    if (auto* t = enemy.get_component<Components::Transform2D>()) {
+      Engine::EventManager::send_event<Engine::Systems::SpawnParticlesEvent>(
+        Math::Vec2D{ t->position.x, t->position.y }, 96);
+    }
     // Start punch animation
     is_punching = true;
     punch_timer = 0.0f;
@@ -320,6 +380,7 @@ void ShowcaseState::update() {
   if (Engine::Input::is_pressed(Engine::KeyCode::C)) {
     Engine::EventManager::send_event<CollectEvent>(player.get_id(), banana.get_id(), 1);
   }
+
 }
 
 void ShowcaseState::draw() {

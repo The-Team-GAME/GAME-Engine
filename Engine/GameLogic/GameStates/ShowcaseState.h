@@ -16,7 +16,8 @@
 #pragma once
 
 #include "../../Engine/MonkeyEngine.h"
-#include "../Components/Components.h"
+#include "../../Engine/Systems/ParticleSystem.h"
+//#include "../Components/Components.h"
 
 /* ===================== //
 // Custom Events         //
@@ -50,12 +51,14 @@ private:
   Engine::ECS::Entity enemy;
   Engine::ECS::Entity banana;
   Engine::ECS::Entity background_entity;
+  Engine::ECS::Entity player_hp_bg, player_hp_fill;
 
   // Text entities
   Engine::ECS::Entity title_text;
   Engine::ECS::Entity info_text;
   Engine::ECS::Entity banana_count_text;
   Engine::ECS::Entity enemy_health_text;
+  Engine::ECS::Entity player_health_text;
 
   // Resources - automatically managed via shared_ptr
   Engine::Graphics::Texture player_idle_texture;
@@ -64,6 +67,7 @@ private:
   Engine::Graphics::Texture banana_texture;
   Engine::Graphics::Texture enemy_texture;
   Engine::Graphics::Texture background_texture;
+  Engine::Graphics::Texture white_texture;
 
   Engine::Audio::Sound walk_sound;
 
@@ -86,6 +90,9 @@ private:
   const f32 player_idle_height = 64.0f;
   const f32 player_punch_width = 96.0f;
   const f32 player_punch_height = 64.0f;
+
+  // Player health stuff
+  f32 hpbar_left = 50.0f, hpbar_top = 320.0f, hpbar_w = 220.0f, hpbar_h = 18.0f;
 
 public:
   void load();
