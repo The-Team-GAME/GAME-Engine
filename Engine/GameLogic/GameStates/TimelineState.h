@@ -30,7 +30,6 @@ public:
 	
 		Engine::Resources::set_resource_path("Assets/"); //default resource path
 
-		Engine::ECS::Entity create_timeline_entity(const std::string & texture_path);
 
 		// Function to draw the timeline ImGui panel (to be implemented in Timeline.cpp)
 		void draw_timeline_panel();
@@ -94,7 +93,7 @@ public:
 		//banana.get_component<Components::Transform2D>()->rotation += 100.0f;
 
 
-		s32 current_frame = timeline.get_current_frame();
+		//s32 current_frame = timeline.get_current_frame();
 
 
 		////reset visibility flags

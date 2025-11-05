@@ -27,11 +27,6 @@
 
 
 
-namespace TimelineUtils {
-  // Utility function to create (loading texture and adding components)
-  Engine::ECS::Entity create_timeline_entity(const std::string& texture_path);
-}
-
 // Structure to hold the data for an image clip on the timeline
 struct TimelineClip {
   s32 id = 0;
