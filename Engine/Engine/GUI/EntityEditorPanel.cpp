@@ -25,6 +25,7 @@
 #include <sstream>
 #include <unordered_map>
 #include "../Components/SpatialComponents.h"
+#include "../Components/UtilityComponents.h"
 
 namespace {
   // Shared state for entity selection
@@ -100,6 +101,11 @@ void EntityEditorPanel()
       std::unordered_map<std::string, std::vector<Engine::ECS::Entity>> entities_by_layer;
 
       for (auto& entity : allEntities) {
+        // Skip entities with Internal component
+        if (entity.has_component<Components::Internal>()) {
+          continue;
+        }
+
         Engine::ECS::LayerSignature layers = entity.get_layers();
 
         // Get layer names
@@ -184,6 +190,11 @@ void EntityEditorPanel()
       // Flat view - simple list
       for (const auto& entity : allEntities)
       {
+        // Skip entities with Internal component
+        if (entity.has_component<Components::Internal>()) {
+          continue;
+        }
+
         bool isSelected = (selected_entity_id == static_cast<int>(entity.get_id()));
         std::string label = "Entity " + std::to_string(entity.get_id());
 
