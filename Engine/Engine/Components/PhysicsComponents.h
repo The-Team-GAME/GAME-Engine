@@ -10,8 +10,8 @@ namespace Components
   // https://docs.unity3d.com/ScriptReference/Rigidbody.html
   struct RigidBody {
     // Assume that position is the center point of the entity
-    Vec2D curr_pos;
-    Vec2D next_pos;
+    /*Vec2D curr_pos;
+    Vec2D next_pos;*/
 
     f32 mass = 1.0f; // Mass in kg
     Vec2D force;
@@ -46,7 +46,7 @@ namespace Components
 
 
     // Ctor using vectors
-    RigidBody(Vec2D pos, bool kinematic, bool gravity) : curr_pos(pos), is_static(kinematic)
+    RigidBody(bool kinematic, bool gravity) : is_static(kinematic)
     {
       if (gravity) // im setting the gravity acc value so i dont need to keep checking if an object is affected by gravity
       {

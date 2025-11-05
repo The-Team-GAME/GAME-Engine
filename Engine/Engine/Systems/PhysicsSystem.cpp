@@ -47,116 +47,8 @@ void phy2D::update()
     ECS::Entity entity(entity_id);
     update_entity(entity);
   }
-
-  // now we check for collision and resolve them here? idk LOL
-
-  // First pass: reset on_ground and update AABBs
-  for (ECS::EntityID entity_id : entities)
-  {
-    ECS::Entity entity(entity_id);
-    Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
-    if (box == nullptr) { continue; }
-    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
-    rigid->on_ground = false;
-    col2D::update_AABB(*rigid, *box);
-  }
-
-  // Second pass: check collisions using for_each_entity_pair
-  // Check ALL entities with RigidBody and BoxCollider against each other
-  ECS::for_each_entity_pair<Components::RigidBody, Components::BoxCollider>(
-    [this](ECS::Entity entity, ECS::Entity other)
-    {
-      // Both entities are guaranteed to have RigidBody and BoxCollider
-      Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
-      Components::RigidBody* other_rigid = other.get_component<Components::RigidBody>();
-      Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
-      Components::BoxCollider* other_box = other.get_component<Components::BoxCollider>();
-
-      /* START OF BUILDING COLLISION MASKS */
-
-      // Build collision masks for both entities
-      ECS::LayerSignature entity_layers = entity.get_layers();
-      ECS::LayerSignature entity_collision_mask = entity_layers;
-      entity_collision_mask |= rigid->include_layers;
-      entity_collision_mask &= ~rigid->exclude_layers;
-
-      ECS::LayerSignature other_layers = other.get_layers();
-      ECS::LayerSignature other_collision_mask = other_layers;
-      other_collision_mask |= other_rigid->include_layers;
-      other_collision_mask &= ~other_rigid->exclude_layers;
-
-      // Check if layers allow collision (bidirectional check)
-      // entity must be willing to collide with other's layers AND vice versa
-      if ((entity_collision_mask & other_layers).none() || (other_collision_mask & entity_layers).none()) {
-        return; // Layer filtering prevents collision
-      }
-
-      /* END OF BUILDING COLLISION MASKS */
-
-      // Check AABB collision
-      if (!col2D::rect_rect_coll(*box, *other_box)) {
-        return; // No collision
-      }
-
-      // this gona be the most rabak collision resolution ever
-      //std::cout << "TRUE " << box->detect_collisions << " " << other_box->detect_collisions << std::endl;
-
-      // Resolve collision based on detect_collisions flags
-      if (box->detect_collisions && !other_box->detect_collisions)
-      {
-        // other_box is the static one
-        Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
-        AABB minkowski = col2D::minkowski_AABB(*box, *other_box);
-        Vec2D pen_vec = col2D::penetrationVector(minkowski);
-        // some magic right here. i understand it rn but maybe alcohol helps
-
-        //std::cout << "Prev pos: " << rigid->next_pos << std::endl;
-
-        rigid->next_pos -= pen_vec;
-        if (pen_vec.y == 0) // sideways collision
-        {
-          rigid->velocity.x = 0.f;
-        }
-        else // updown collision
-        {
-          rigid->velocity.y = 0.f;
-          if (pen_vec.y > 0)
-          {
-            rigid->on_ground = true;
-          }
-        }
-        update_transform(*rigid, *xform);
-        //std::cout << "New pos:  " << rigid->next_pos << std::endl;
-      }
-      //else if (box->detect_collisions == false && other_box->detect_collisions == true)
-       //{
-       //  // box is the static one
-       //  Components::Transform2D* other_xform = other.get_component<Components::Transform2D>();
-       //  AABB minkowski = col2D::minkowski_AABB(*other_box, *box);
-       //  Vec2D pen_vec = col2D::penetrationVector(minkowski);
-       //  other_rigid->velocity -= pen_vec;
-       //  other_rigid->next_pos += pen_vec * Time::get_fixed_dt();
-       //  if (pen_vec.y == 0) // sideways collision
-       //  {
-       //    other_rigid->velocity.x = 0.f;
-       //    if (pen_vec.y < 0)
-       //    {
-       //      // std::cout << "on ground\n";
-       //      other_rigid->on_ground = true;
-       //    }
-       //  }
-       //  else // updown collision
-       //  {
-       //    other_rigid->velocity.y = 0.f;
-       //  }
-       // update_transform(*other_rigid, *other_xform);
-      // }
-      // Technically we dont need false && true also cuz that would just be duplicated... i think
-      // if both detect_collision is false then no point doing LOL
-      // we wont do elastic collisions yet, cuz its not needed so i skip
-    }
-  );
   Engine::Perf::stop("Physics Update");
+  // collision check afterwards
 }
 
 void phy2D::update_entity(Engine::ECS::Entity& entity) {
@@ -166,15 +58,15 @@ void phy2D::update_entity(Engine::ECS::Entity& entity) {
 
   // Sync curr_pos with transform position at the start of the frame
   // This ensures curr_pos always reflects any external changes to transform.position
-  rigid->curr_pos = xform->position;
+  //rigid->curr_pos = xform->position;
 
-  phy2D::update_kinematics(*rigid);
-  phy2D::update_transform(*rigid, *xform);
+  phy2D::update_kinematics(*rigid, *xform);
   //std::cout << "velocity: " << rigid->velocity << " || position: " << rigid->curr_pos << std::endl;
 }
 
-void phy2D::update_kinematics(Components::RigidBody& rigid)
+void phy2D::update_kinematics(Components::RigidBody& rigid, Components::Transform2D& xform)
 {
+  Vec2D next_pos;
   // F = m x a => Force equals mass x acceleration
   // acceleration will contain a value if the entity is affected by gravity
   rigid.acceleration = rigid.force / rigid.mass + rigid.gravity_acc;
@@ -190,17 +82,10 @@ void phy2D::update_kinematics(Components::RigidBody& rigid)
     rigid.velocity = Math::normalise_vector(rigid.velocity) * rigid.terminal_velocity;
   }
   // setting the next position
-  rigid.next_pos = rigid.curr_pos + rigid.velocity * Time::get_fixed_dt();
-}
+  next_pos = xform.position + rigid.velocity * Time::get_fixed_dt();
 
-void phy2D::update_transform(Components::RigidBody& rigid, Components::Transform2D& xform)
-{
-  // Then we set the current position as next_pos
-  rigid.curr_pos = rigid.next_pos;
-
-  // Cuz for physics im using bottom left as 0,0 
-  // but graphics uses top right, theres some magic to do
-  xform.position = rigid.curr_pos;
+  // Update transform after the new position has been calculated
+  xform.position = next_pos;
   xform.rotation += rigid.angular_velocity * Engine::Time::get_fixed_dt();
 }
 

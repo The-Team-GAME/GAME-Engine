@@ -47,10 +47,7 @@ namespace Engine {
       static void jump(Components::RigidBody& rigid);
 
       // Update the linear velocities if said entities here
-      void update_kinematics(Components::RigidBody& rigid);
-
-      void update_transform(Components::RigidBody& rigid, Components::Transform2D& xform);
-      // Maybe we check for collision here and then do translate as the last step?
+      void update_kinematics(Components::RigidBody& rigid, Components::Transform2D& xform);
     };
   }
 }

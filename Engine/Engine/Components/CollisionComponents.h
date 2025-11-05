@@ -16,6 +16,7 @@ struct AABB {
 
   AABB(Vec2D pos = Vec2D(0,0), f32 width = 0.f, f32 height = 0.f) : pos(pos), half_width(width / 2), half_height(height / 2)
   {
+    // Default Ctor
     // Empty by design
   }
 
@@ -32,6 +33,20 @@ struct AABB {
   Vec2D max() const
   {
     return pos + Vec2D(half_width, half_height);
+  }
+
+  bool intersects(AABB const& rhs) const
+  {
+    // This is the logic
+    // (lhs_min.x < rhs_max.x) &&
+    // (lhs_max.x > rhs_min.x) &&
+    // (lhs_min.y < rhs_max.y) &&
+    // (lhs_max.y > rhs_min.y);
+
+    return  (pos.x - half_width < rhs.pos.x + rhs.half_width)   &&
+            (rhs.pos.x - rhs.half_width < pos.x + half_width)   &&
+            (pos.y - half_height < rhs.pos.y + rhs.half_height) &&
+            (rhs.pos.y - rhs.half_height < pos.y + half_height);
   }
 };
 

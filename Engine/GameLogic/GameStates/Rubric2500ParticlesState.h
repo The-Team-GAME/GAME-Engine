@@ -42,7 +42,7 @@ public:
         .add_component<Components::Tag<"Rubric2500ParticlesState">>()
         .add_component<Components::Transform2D>(x, y, rotation, size, size)
         .add_component<Components::Color>(color)
-        .add_component<Components::RigidBody>(Vec2D(x,y), false, false)
+        .add_component<Components::RigidBody>(false, false)
         .add_component<Components::BoxCollider>(size, size, false)
         .add_component<Components::Texture>(Engine::Resources::get_rect_texture());
 
