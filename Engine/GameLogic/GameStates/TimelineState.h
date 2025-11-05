@@ -38,7 +38,7 @@ public:
 		//animating entity
 		bro = Engine::ECS::create_entity()
 			.add_component<Components::Transform2D>(400.0f, 400.0f, 0.0f, 1000.0f/ 7.0f, 130.0f)
-			.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.0f)
+			.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
 			.add_component<Components::Texture>(Engine::Resources::load_texture("images/Bro_Idle_Spritesheet.png"))
 			.add_component<Components::TextureAtlas>(448.0f/ 7.0f, 64.0f, 1, 7, 7) //index is set default to 0 playable around with
 		  .add_component<Components::Animation>(7, 0.1);
@@ -58,7 +58,7 @@ public:
 
 		monkey = Engine::ECS::create_entity()
 			.add_component<Components::Transform2D>(600.0f, 400.0f, 0.0f, 120.0f, 150.0f)
-			.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.0f)
+			.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
 			.add_component<Components::Texture>(Engine::Resources::load_texture("images/monkey.png"))
 			.add_component<Components::TextureAtlas>(600.0f, 400.0f, 1, 1, 1);
 
@@ -97,98 +97,68 @@ public:
 		s32 current_frame = timeline.get_current_frame();
 
 
-		//reset visibility flags
-		for (auto& pair : entity_visibility) {
-			pair.second = false;
-		}
+		////reset visibility flags
+		//for (auto& pair : entity_visibility) {
+		//	pair.second = false;
+		//}
 
-		//checks which entities should be visible this frame
-		for (const auto& clip : timeline.get_clips()) {
-			s32 entity_id = clip.entity_id; // Using texture_id as Entity ID
+		////checks which entities should be visible this frame
+		//for (const auto& clip : timeline.get_clips()) {
+		//	s32 entity_id = clip.entity_id; // Using texture_id as Entity ID
 
-			s32 end_frame = clip.start_frame + clip.duration_frames;
+		//	s32 end_frame = clip.start_frame + clip.duration_frames;
 
-			if (current_frame >= clip.start_frame && current_frame < end_frame) {
-				// The entity should be visible in this frame!
-				// Set its visibility flag to true.
-				if (entity_visibility.count(entity_id)) {
-					entity_visibility[entity_id] = true;
-				}
+		//	if (current_frame >= clip.start_frame && current_frame < end_frame) {
+		//		// The entity should be visible in this frame!
+		//		// Set its visibility flag to true.
+		//		if (entity_visibility.count(entity_id)) {
+		//			entity_visibility[entity_id] = true;
+		//		}
 
-				Engine::ECS::Entity entity = Engine::ECS::get_entity(entity_id);
+		//		Engine::ECS::Entity entity = Engine::ECS::get_entity(entity_id);
 
-				if (entity.has_component<Components::TextureAtlas>()) {
-					auto* atlas = entity.get_component<Components::TextureAtlas>();
+		//		if (entity.has_component<Components::TextureAtlas>()) {
+		//			auto* atlas = entity.get_component<Components::TextureAtlas>();
 
-					size_t num_frames = atlas->subTextures.size();
+		//			size_t num_frames = atlas->subTextures.size();
 
-					if (num_frames > 0) {
-						// Frames passed since clip started (0-indexed)
-						s32 frames_in_clip = current_frame - clip.start_frame;
+		//			if (num_frames > 0) {
+		//				// Frames passed since clip started (0-indexed)
+		//				s32 frames_in_clip = current_frame - clip.start_frame;
 
-						// Duration of the clip
-						s32 total_clip_duration = clip.duration_frames;
+		//				// Duration of the clip
+		//				s32 total_clip_duration = clip.duration_frames;
 
-						// Use integer division for clean frame progression
-						size_t frame_index = (size_t)std::floor((f32)frames_in_clip / total_clip_duration * num_frames);
+		//				// Use integer division for clean frame progression
+		//				size_t frame_index = (size_t)std::floor((f32)frames_in_clip / total_clip_duration * num_frames);
 
-						// Clamp to the valid range [0, num_frames - 1]
-						atlas->drawIndex = std::min(frame_index, num_frames - 1);
-					}
-				}
-			}
-		}
+		//				// Clamp to the valid range [0, num_frames - 1]
+		//				atlas->drawIndex = std::min(frame_index, num_frames - 1);
+		//			}
+		//		}
+		//	}
+		//}
 
-		// draws visible entities
-		if (entity_visibility[bro.get_id()]) {
+		//// draws visible entities
+		//if (entity_visibility[bro.get_id()]) {
 
-			bro.get_component<Components::Color>()->a = 1.0f;
-		}
+		//	bro.get_component<Components::Color>()->a = 1.0f;
+		//}
 
-		else {
-			bro.get_component<Components::Color>()->a = 0.0f;
-		}
+		//else {
+		//	bro.get_component<Components::Color>()->a = 0.0f;
+		//}
 
-		if (entity_visibility[monkey.get_id()]) {
-			// Example (replace with your actual engine call):
-			monkey.get_component<Components::Color>()->a = 1.0f;
-		}
+		//if (entity_visibility[monkey.get_id()]) {
+		//	// Example (replace with your actual engine call):
+		//	monkey.get_component<Components::Color>()->a = 1.0f;
+		//}
 
-		else {
-			monkey.get_component<Components::Color>()->a = 0.0f;
-		}
+		//else {
+		//	monkey.get_component<Components::Color>()->a = 0.0f;
+		//}
 
 	};
-	
-
-	Engine::ECS::Entity create_timeline_entity(const std::string& texture_path) {
-		// 1. Load the texture handle (Engine::Graphics::Texture is the value type)
-		Engine::Graphics::Texture texture_value = Engine::Resources::load_texture(texture_path);
-
-		// Correct validity check: Assuming Engine::Graphics::Texture overloads operator bool or has a simple check.
-		// If texture_value overloads 'operator->' to access TextureData, we can check the pointer directly.
-		if (!texture_value.operator->()) { // Check if the underlying shared_ptr is null
-			return Engine::ECS::create_entity();
-		}
-
-		Engine::ECS::Entity new_entity = Engine::ECS::create_entity();
-
-		// 2. Add required components
-		new_entity.add_component<Components::Transform2D>(
-			400.0f, 400.0f, 0.0f, 100.0f, 100.0f);
-		new_entity.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.0f);
-
-		// Pass the texture value directly to the component constructor
-		new_entity.add_component<Components::Texture>(texture_value);
-
-		// 3. Initialize Texture Atlas. Access members of TextureData via operator->
-		new_entity.add_component<Components::TextureAtlas>(
-			(f32)texture_value->width, (f32)texture_value->height,
-			1, 1, 1
-		);
-
-		return new_entity;
-	}
 
 
 	void free() {};
