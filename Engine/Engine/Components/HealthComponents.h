@@ -6,7 +6,7 @@
 namespace Components {
 
 	
-	// Timed HP regen/drain settings (plain POD, mirrors your style)
+	// Timed HP regen/drain settings
 		
 	struct HealthConfig {
 		f32 drain_per_sec = 0.0f;
@@ -32,9 +32,9 @@ namespace Components {
 	// HUD hookups + layout
 		
 	struct HealthBar {
-		Engine::ECS::Entity bar_bg{};    // optional
-		Engine::ECS::Entity bar_fill{};  // optional
-		Engine::ECS::Entity text{};      // optional
+		Engine::ECS::Entity bar_bg{};
+		Engine::ECS::Entity bar_fill{};
+		Engine::ECS::Entity text{};
 		f32 left = 0.f, top = 0.f, width = 0.f, height = 0.f;
 	};
 
