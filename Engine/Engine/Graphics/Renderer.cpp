@@ -8,12 +8,14 @@
 #include "../Perf.h"
 #include "../ECS/ECS.h"
 #include "../Events/WindowEvents.h"
+#include "../Time.h"
 
 namespace Engine {
   namespace Graphics {
 
-    // Shader program
+    // Shader programs
     std::unique_ptr<Shader> shader;
+    std::unique_ptr<Shader> distortion_shader;
 
     // Vertex Array Object and Vertex Buffer Object
     GLuint vao = 0;
@@ -44,11 +46,17 @@ namespace Engine {
       std::vector<Vertex> vertices;
       GLuint current_texture_id = 0;
       size_t quad_count = 0;
+      Shader* current_shader = nullptr;
+      f32 distortion_intensity = 0.0f;
+      f32 distortion_speed = 1.0f;
 
       void reset() {
         vertices.clear();
         current_texture_id = 0;
         quad_count = 0;
+        current_shader = nullptr;
+        distortion_intensity = 0.0f;
+        distortion_speed = 1.0f;
       }
     };
 
@@ -98,17 +106,25 @@ namespace Engine {
         return;
       }
 
-      // Use shader
-      shader->use();
+      // Use the appropriate shader
+      Shader* active_shader = batch_state.current_shader ? batch_state.current_shader : shader.get();
+      active_shader->use();
 
       // Bind texture
       glActiveTexture(GL_TEXTURE0);
       glBindTexture(GL_TEXTURE_2D, batch_state.current_texture_id);
-      shader->set_int("u_texture", 0);
+      active_shader->set_int("u_texture", 0);
 
       // Set view and projection matrices
-      shader->set_mat4("u_view", get_view_matrix());
-      shader->set_mat4("u_projection", get_projection_matrix());
+      active_shader->set_mat4("u_view", get_view_matrix());
+      active_shader->set_mat4("u_projection", get_projection_matrix());
+
+      // If using distortion shader, set distortion uniforms
+      if (active_shader == distortion_shader.get()) {
+        active_shader->set_float("u_time", Engine::Time::get_time());
+        active_shader->set_float("u_intensity", batch_state.distortion_intensity);
+        active_shader->set_float("u_speed", batch_state.distortion_speed);
+      }
 
       // Upload vertices to GPU
       glBindVertexArray(vao);
@@ -137,9 +153,10 @@ namespace Engine {
     }
 
     // Add a quad to the batch
-    void batch_quad(GLuint texture_id, const Vertex vertices[4]) {
-      // Check if we need to flush due to texture change
-      if (batch_state.current_texture_id != 0 && batch_state.current_texture_id != texture_id) {
+    void batch_quad(GLuint texture_id, const Vertex vertices[4], Shader* use_shader = nullptr, f32 intensity = 0.0f, f32 speed = 1.0f) {
+      // Check if we need to flush due to texture or shader change
+      if ((batch_state.current_texture_id != 0 && batch_state.current_texture_id != texture_id) ||
+        (batch_state.current_shader != use_shader)) {
         flush_batch();
       }
 
@@ -148,8 +165,11 @@ namespace Engine {
         flush_batch();
       }
 
-      // Set current texture
+      // Set current texture and shader
       batch_state.current_texture_id = texture_id;
+      batch_state.current_shader = use_shader;
+      batch_state.distortion_intensity = intensity;
+      batch_state.distortion_speed = speed;
 
       // Add vertices to batch
       for (int i = 0; i < 4; i++) {
@@ -249,11 +269,19 @@ namespace Engine {
     }
 
     bool init() {
-      // Load shader from files
+      // Load default shader from files
       shader = Shader::load_from_file("Assets/shaders/default.vert", "Assets/shaders/default.frag");
 
       if (!shader->is_valid()) {
-        Log::error("Failed to create shader");
+        Log::error("Failed to create default shader");
+        return false;
+      }
+
+      // Load distortion shader from files
+      distortion_shader = Shader::load_from_file("Assets/shaders/distortion.vert", "Assets/shaders/distortion.frag");
+
+      if (!distortion_shader->is_valid()) {
+        Log::error("Failed to create distortion shader");
         return false;
       }
 
@@ -651,6 +679,72 @@ namespace Engine {
 
     Texture get_rect_texture() {
       return unit_rect;
+    }
+
+    // Helper function to draw a quad with distortion effect
+    void draw_quad_distortion(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size,
+      f32 rotation, const Math::Vec4D& color, const std::array<Math::Vec2D, 4>& tex_coords,
+      f32 intensity, f32 speed) {
+      if (!texture || texture->id == 0) {
+        Log::warning("Attempted to draw invalid texture");
+        return;
+      }
+
+      if (!distortion_shader || !distortion_shader->is_valid()) {
+        Log::error("Distortion shader is not valid");
+        return;
+      }
+
+      // Create transformation matrix
+      glm::mat4 model = glm::mat4(1.0f);
+      model = glm::translate(model, glm::vec3(position.x, position.y, 0.0f));
+
+      if (rotation != 0.0f) {
+        model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+      }
+
+      model = glm::scale(model, glm::vec3(size.x, size.y, 1.0f));
+
+      // Create quad vertices
+      Vertex vertices[4];
+
+      // Convert color from 0-1 range
+      glm::vec4 normalized_color(color.x, color.y, color.z, color.w);
+
+      // Vertices are centered around the origin
+      glm::vec2 base_positions[4] = {
+        glm::vec2(-0.5f, 0.5f),  // Bottom-left
+        glm::vec2(0.5f, 0.5f),   // Bottom-right
+        glm::vec2(0.5f, -0.5f),  // Top-right
+        glm::vec2(-0.5f, -0.5f)  // Top-left
+      };
+
+      // Transform vertices by model matrix
+      for (int i = 0; i < 4; i++) {
+        glm::vec4 transformed = model * glm::vec4(base_positions[i], 0.0f, 1.0f);
+        vertices[i].position = glm::vec2(transformed.x, transformed.y);
+        vertices[i].texCoord = glm::vec2(tex_coords[i].x, tex_coords[i].y);
+        vertices[i].color = normalized_color;
+      }
+
+      // Add to batch with distortion shader
+      batch_quad(texture->id, vertices, distortion_shader.get(), intensity, speed);
+    }
+
+    void draw_texture_distortion(Engine::Graphics::Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, f32 intensity, f32 speed) {
+      // Default texture coordinates (full texture)
+      std::array<Math::Vec2D, 4> tex_coords = {
+        Math::Vec2D(0.0f, 1.0f), // Bottom-left
+        Math::Vec2D(1.0f, 1.0f), // Bottom-right
+        Math::Vec2D(1.0f, 0.0f), // Top-right
+        Math::Vec2D(0.0f, 0.0f)  // Top-left
+      };
+
+      draw_quad_distortion(texture, position, size, rotation, color, tex_coords, intensity, speed);
+    }
+
+    void draw_subtexture_distortion(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, f32 intensity, f32 speed) {
+      draw_quad_distortion(texture, position, size, rotation, color, tex_coords, intensity, speed);
     }
 
   } // namespace Graphics
