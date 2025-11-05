@@ -65,7 +65,7 @@ void ShowcaseState::init() {
     .add_component<Components::Transform2D>(200.0f, 655.0f, 0.0f, static_cast<f32>(player_idle_texture->width / 24) * 2.0f, static_cast<f32>(player_idle_texture->height) * 2.0f)
     .add_component<Components::Texture>(player_idle_texture)
     .add_component<Components::TextureAtlas>(static_cast<int>(player_idle_texture->width / 24), static_cast<int>(player_idle_texture->height), 1, 24, 24)
-    .add_component<Components::RigidBody>(Vec2D(200.f, 655.f), false, false)
+    .add_component<Components::RigidBody>(false, false)
     .add_component<Components::Health>(100, 100)
     .add_component<Components::Animation>(24, 0.1f)
     .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
