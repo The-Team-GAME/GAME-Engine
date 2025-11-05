@@ -15,7 +15,6 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-/* EVERY CODE HERE IS TEMPORARY */
 
 #include "../../Engine/MonkeyEngine.h"
 
@@ -25,22 +24,24 @@ private:
 
 public:
   void load() {
-
-
-    auto monkey_texture = Engine::Resources::load_texture("images/monkey.png");
+    auto texture = Engine::Resources::load_texture("images/Bro_Idle_Spritesheet.png");
 
     Engine::ECS::create_entity()
       .add_component<Components::Tag<"MainMenuState">>()
-      .add_component<Components::Transform2D>(500.0f, 300.0f, 0.0f, static_cast<f32>(monkey_texture->width * 30), static_cast<f32>(monkey_texture->height * 30))
-      .add_component<Components::Texture>(monkey_texture)
+      .add_component<Components::Transform2D>(500.0f, 300.0f, 0.0f, static_cast<f32>(texture->width / 24) * 10.0f, static_cast<f32>(texture->height * 10))
+      .add_component<Components::Texture>(texture)
+      .add_component<Components::TextureAtlas>(static_cast<int>(texture->width / 24), static_cast<int>(texture->height), 1, 24, 24)
+      .add_component<Components::Animation>(24, 0.1f)
       .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
       .add_component<Components::Tag<"DistortionEffectState">>();
 
 
     Engine::ECS::create_entity()
       .add_component<Components::Tag<"MainMenuState">>()
-      .add_component<Components::Transform2D>(1000.0f, 300.0f, 0.0f, static_cast<f32>(monkey_texture->width * 30), static_cast<f32>(monkey_texture->height * 30))
-      .add_component<Components::Texture>(monkey_texture)
+      .add_component<Components::Transform2D>(1000.0f, 300.0f, 0.0f, static_cast<f32>(texture->width / 24) * 10.0f, static_cast<f32>(texture->height * 10))
+      .add_component<Components::Texture>(texture)
+      .add_component<Components::TextureAtlas>(static_cast<int>(texture->width / 24), static_cast<int>(texture->height), 1, 24, 24)
+      .add_component<Components::Animation>(24, 0.1f)
       .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
       .add_component<Components::Distortion>(0.5f, 2.0f)
       .add_component<Components::Tag<"DistortionEffectState">>();
