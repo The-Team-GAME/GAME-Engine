@@ -53,7 +53,8 @@ public:
     
     //Test function for the Lua scripts
     //Engine::LuaManager::call_function("test", static_cast<float>(Engine::Time::get_fixed_dt()));
-    Engine::LuaManager::call_function("update_menu", static_cast<float>(Engine::Time::get_fixed_dt()));
+    Engine::LuaManager::call_function("update_movement", static_cast<f32>(Engine::Time::get_fixed_dt()));
+    Engine::LuaManager::call_function("chase_button", static_cast<f32>(Engine::Time::get_fixed_dt()));
 
     if (mouse_pos.x >= 704.0f && mouse_pos.x <= 896.0f &&
       mouse_pos.y >= 668.0f && mouse_pos.y <= 732.0f) {

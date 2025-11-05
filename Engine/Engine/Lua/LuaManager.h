@@ -1,4 +1,5 @@
 #pragma once
+#include "../MonkeyEngine.h"
 #include <sol/sol.hpp>
 #include <string>
 #include <unordered_map>
@@ -15,7 +16,7 @@ namespace Engine
 
     // scripts / calling
     void load_script(const std::string& filename);
-    void call_function(const std::string& name, float dt = 0.0f);
+    void call_function(const std::string& name, f32 dt = 0.0f);
 
     // access to sol state
     sol::state& get_state();

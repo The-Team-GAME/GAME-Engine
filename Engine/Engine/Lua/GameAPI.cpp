@@ -262,7 +262,7 @@ namespace Engine
 
 
       // proxy userdata
-      lua.new_usertype<EntityProxy>("Entity",
+         lua.new_usertype<EntityProxy>("Entity",
         "id", &EntityProxy::id,
         
         // Generic component getter
