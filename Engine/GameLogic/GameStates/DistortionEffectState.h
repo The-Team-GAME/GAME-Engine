@@ -24,10 +24,9 @@ private:
 
 public:
   void load() {
-    auto texture = Engine::Resources::load_texture("images/Bro_Idle_Spritesheet.png");
+    auto texture = Engine::Resources::load_texture("images/BroSpriteSheets/Bro_Idle_Spritesheet.png");
 
     Engine::ECS::create_entity()
-      .add_component<Components::Tag<"MainMenuState">>()
       .add_component<Components::Transform2D>(500.0f, 300.0f, 0.0f, static_cast<f32>(texture->width / 24) * 10.0f, static_cast<f32>(texture->height * 10))
       .add_component<Components::Texture>(texture)
       .add_component<Components::TextureAtlas>(static_cast<int>(texture->width / 24), static_cast<int>(texture->height), 1, 24, 24)
@@ -37,7 +36,6 @@ public:
 
 
     Engine::ECS::create_entity()
-      .add_component<Components::Tag<"MainMenuState">>()
       .add_component<Components::Transform2D>(1000.0f, 300.0f, 0.0f, static_cast<f32>(texture->width / 24) * 10.0f, static_cast<f32>(texture->height * 10))
       .add_component<Components::Texture>(texture)
       .add_component<Components::TextureAtlas>(static_cast<int>(texture->width / 24), static_cast<int>(texture->height), 1, 24, 24)
