@@ -21,7 +21,7 @@ namespace {
 	chrono::nanoseconds curr_time = start_time;
 
 	f32 delta_time{};									// in seconds
-	f32 tick_rate{ 60.f };						// The tick rate is the number of times you want to game logic to update per second
+	f32 tick_rate{ 120.f };						// The tick rate is the number of times you want to game logic to update per second
 	f32 fixed_dt{ 1.f / tick_rate };	// precalulate fixed_dt so we dont have to do it every time get_tick_rate is called
 }
 

@@ -81,6 +81,7 @@ namespace Engine {
       When attaching a new component to an entity.
       ==================================================================================*/
       template<typename T, typename... Args>
+        requires std::is_constructible_v<T, Args...>
       Entity& add_component(Args&&... args);
 
       /*=================================================================================
@@ -197,10 +198,147 @@ namespace Engine {
       ==================================================================================*/
       void for_each_component(std::function<void(const std::string&, IComponentArray*)> callback);
 
+      /*=================================================================================
+      Function Brief:
+      Adds this entity to one or more layers.
+
+      Parameters:
+      None (template parameters Layers... specify which layers to add to).
+
+      Where to call it:
+      When you want to add an entity to additional layers.
+      ==================================================================================*/
+      template<LayerID... Layers>
+      Entity& add_to_layers();
+
+      /*=================================================================================
+      Function Brief:
+      Removes this entity from one or more layers.
+
+      Parameters:
+      None (template parameters Layers... specify which layers to remove from).
+
+      Where to call it:
+      When you want to remove an entity from specific layers.
+      ==================================================================================*/
+      template<LayerID... Layers>
+      Entity& remove_from_layers();
+
+      /*=================================================================================
+      Function Brief:
+      Sets the exact layers this entity belongs to (replaces existing layers).
+
+      Parameters:
+      None (template parameters Layers... specify which layers the entity should be on).
+
+      Where to call it:
+      When you want to explicitly define which layers an entity is on.
+      ==================================================================================*/
+      template<LayerID... Layers>
+      Entity& set_layers();
+
+      /*=================================================================================
+      Function Brief:
+      Checks if this entity is on a specific layer.
+
+      Parameters:
+      layer - The layer ID to check for.
+
+      Where to call it:
+      When you need to know if an entity is on a specific layer.
+      ==================================================================================*/
+      bool is_on_layer(LayerID layer) const;
+
+      /*=================================================================================
+      Function Brief:
+      Checks if this entity is on ANY of the specified layers.
+
+      Parameters:
+      None (template parameters Layers... specify which layers to check).
+
+      Where to call it:
+      When you need to know if an entity is on at least one of several layers.
+      ==================================================================================*/
+      template<LayerID... Layers>
+      bool is_on_any_layer() const;
+
+      /*=================================================================================
+      Function Brief:
+      Checks if this entity is on ALL of the specified layers.
+
+      Parameters:
+      None (template parameters Layers... specify which layers to check).
+
+      Where to call it:
+      When you need to know if an entity is on all specified layers.
+      ==================================================================================*/
+      template<LayerID... Layers>
+      bool is_on_all_layers() const;
+
+      /*=================================================================================
+      Function Brief:
+      Gets all layers this entity belongs to.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When you need the full layer signature of an entity.
+      ==================================================================================*/
+      LayerSignature get_layers() const;
+
+      /*=================================================================================
+      Function Brief:
+      Removes this entity from all layers.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When you want to remove an entity from all layers.
+      ==================================================================================*/
+      Entity& clear_layers();
+
+      /*=================================================================================
+      Function Brief:
+      Adds this entity to a layer by name.
+
+      Parameters:
+      layer_name - The name of the layer to add to.
+
+      Where to call it:
+      When you want to add an entity to a layer using its name.
+      ==================================================================================*/
+      Entity& add_to_layer(const std::string& layer_name);
+
+      /*=================================================================================
+      Function Brief:
+      Removes this entity from a layer by name.
+
+      Parameters:
+      layer_name - The name of the layer to remove from.
+
+      Where to call it:
+      When you want to remove an entity from a layer using its name.
+      ==================================================================================*/
+      Entity& remove_from_layer(const std::string& layer_name);
+
+      /*=================================================================================
+      Function Brief:
+      Checks if this entity is on a layer by name.
+
+      Parameters:
+      layer_name - The name of the layer to check for.
+
+      Where to call it:
+      When you need to know if an entity is on a specific layer by name.
+      ==================================================================================*/
+      bool is_on_layer(const std::string& layer_name) const;
+
     };
 
-    Entity create_entity_from_generic_value(const ReflectionLibrary::GenericValue& value);
     ReflectionLibrary::GenericValue entity_to_generic_value(Entity entity);
+    Entity create_entity_from_generic_value(const ReflectionLibrary::GenericValue& value);
 
 
   } // namespace ECS

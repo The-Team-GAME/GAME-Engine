@@ -39,5 +39,11 @@ namespace Engine {
       ((event_signature.set(EventManager::EventTypeManager::get_type_id<Events>())), ...);
     }
 
+    template<LayerID... Layers>
+    void System::process_layers() {
+      active_layers.reset();
+      ((active_layers.set(Layers)), ...);
+    }
+
   } // namespace ECS
 } // namespace Engine

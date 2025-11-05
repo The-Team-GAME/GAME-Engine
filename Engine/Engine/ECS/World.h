@@ -159,6 +159,7 @@ namespace Engine {
     When attaching a new component to an entity.
     ==================================================================================*/
     template <typename T, typename... Args>
+      requires std::is_constructible_v<T, Args...>
     void add_component(const Entity& entity, Args &&...args);
 
     /*=================================================================================
@@ -368,6 +369,20 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
+    Returns all entities that have all the specified component types and match
+    the layer signature (are on at least one of the specified layers).
+
+    Parameters:
+    layers - LayerSignature specifying which layers to search.
+
+    Where to call it:
+    When you need to find all entities with specific components on specific layers.
+    ==================================================================================*/
+    template <typename... T>
+    std::vector<Entity> get_entities_with(const LayerSignature& layers);
+
+    /*=================================================================================
+    Function Brief:
     Returns the first entity found that has all the specified component types.
 
     Parameters:
@@ -405,6 +420,226 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
+    Returns all entities on a specific layer.
+
+    Parameters:
+    layer - The LayerID to get entities from.
+
+    Returns:
+    std::vector<Entity> - A vector of all entities on the specified layer.
+
+    Where to call it:
+    When you need to iterate over entities on a specific layer.
+    ==================================================================================*/
+    std::vector<Entity> get_entities_on_layer(LayerID layer);
+
+    /*=================================================================================
+    Function Brief:
+    Returns all entities on a specific layer by name.
+
+    Parameters:
+    layer_name - The name of the layer to get entities from.
+
+    Returns:
+    std::vector<Entity> - A vector of all entities on the specified layer.
+
+    Where to call it:
+    When you need to iterate over entities on a specific layer by name.
+    ==================================================================================*/
+    std::vector<Entity> get_entities_on_layer(const std::string& layer_name);
+
+    /*=================================================================================
+    Function Brief:
+    Iterates over all active entities and calls the provided callback function for each.
+
+    Parameters:
+    callback - Function to call for each entity. Takes an Entity reference.
+
+    Where to call it:
+    When you need to perform an operation on all entities without creating a vector.
+    More efficient than get_all_entities() when you just need to iterate.
+    ==================================================================================*/
+    void for_each_entity(std::function<void(Entity&)> callback);
+
+    /*=================================================================================
+    Function Brief:
+    Iterates over entities with specific components and calls the callback for each.
+    Only entities that have ALL specified component types will be passed to the callback.
+
+    Parameters:
+    callback - Function to call for each matching entity. Takes an Entity by value.
+
+    Where to call it:
+    When you need to iterate over entities with specific component combinations.
+    More efficient than get_entities_with() when you just need to iterate.
+
+    Example:
+    for_each_entity_with<Transform, Velocity>([](Entity e) {
+      auto* transform = e.get_component<Transform>();
+      auto* velocity = e.get_component<Velocity>();
+      transform->position += velocity->value;
+    });
+    ==================================================================================*/
+    template <typename... Components>
+    void for_each_entity_with(std::function<void(Entity)> callback);
+
+    /*=================================================================================
+    Function Brief:
+    Iterates over entities on a specific layer and calls the callback for each.
+
+    Parameters:
+    layer - The LayerID to iterate over.
+    callback - Function to call for each entity on the layer.
+
+    Where to call it:
+    When you need to perform operations on entities in a specific layer.
+    ==================================================================================*/
+    void for_each_entity_on_layer(LayerID layer, std::function<void(Entity&)> callback);
+
+    /*=================================================================================
+    Function Brief:
+    Iterates over entities on a specific layer (by name) and calls the callback for each.
+
+    Parameters:
+    layer_name - The name of the layer to iterate over.
+    callback - Function to call for each entity on the layer.
+
+    Where to call it:
+    When you need to perform operations on entities in a specific layer by name.
+    ==================================================================================*/
+    void for_each_entity_on_layer(const std::string& layer_name, std::function<void(Entity&)> callback);
+
+    /*=================================================================================
+    Function Brief:
+    Iterates over all entities that have the specified component types and are on
+    any of the specified layers, calling the callback function for each entity.
+
+    Parameters:
+    layers - LayerSignature specifying which layers to search.
+    callback - Function to call for each entity: void(Entity entity)
+
+    Where to call it:
+    When you need to perform operations on entities with specific components
+    on specific layers without creating a temporary vector.
+
+    Example:
+    LayerID player_layer = ECS::get_layer_id("player");
+    ECS::for_each_entity_with<Components::Health>(
+      LayerSignature{player_layer},
+      [](Entity entity) {
+        auto* health = entity.get_component<Components::Health>();
+        // Do something with the health component
+      }
+    );
+    ==================================================================================*/
+    template <typename... T>
+    void for_each_entity_with(const LayerSignature& layers, std::function<void(Entity)> callback);
+
+    /*=================================================================================
+    Function Brief:
+    Iterates over pairs of entities where LHS entities are on any layer in the LHS mask
+    and RHS entities are on any layer in the RHS mask.
+    Calls the callback function for each valid pair (excluding self-pairs).
+
+    Parameters:
+    lhs_mask - LayerSignature mask for left-hand side entities
+    rhs_mask - LayerSignature mask for right-hand side entities
+    callback - Function to call for each pair: void(Entity lhs, Entity rhs)
+
+    Where to call it:
+    When you need to check interactions between entities on different layers
+    (e.g., player/objects vs bullets for collision detection).
+
+    Example (inline construction):
+    LayerID player = ECS::get_layer_id("player");
+    LayerID bullet = ECS::get_layer_id("bullet");
+    LayerID object = ECS::get_layer_id("object");
+
+    ECS::for_each_entity_pair(
+      LayerSignature{player, object},  // LHS: player and object layers
+      LayerSignature{bullet},          // RHS: bullet layer
+      [](Entity lhs, Entity rhs) {
+        // Check collision between lhs and rhs
+      }
+    );
+    ==================================================================================*/
+    void for_each_entity_pair(
+      const LayerSignature& lhs_mask,
+      const LayerSignature& rhs_mask,
+      std::function<void(Entity, Entity)> callback
+    );
+
+    /*=================================================================================
+    Function Brief:
+    Iterates over pairs of entities where both LHS and RHS entities have all the
+    specified components. Calls the callback function for each valid pair
+    (excluding self-pairs).
+
+    Parameters:
+    Components... - Component types that both entities must have
+    callback - Function to call for each pair: void(Entity lhs, Entity rhs)
+
+    Where to call it:
+    When you need to check interactions between entities with specific components
+    (e.g., physics bodies colliding with other physics bodies).
+
+    Example:
+    ECS::for_each_entity_pair<Transform, Collider>([](Entity lhs, Entity rhs) {
+      // Both lhs and rhs are guaranteed to have Transform and Collider
+      auto* t1 = lhs.get_component<Transform>();
+      auto* t2 = rhs.get_component<Transform>();
+      auto* c1 = lhs.get_component<Collider>();
+      auto* c2 = rhs.get_component<Collider>();
+      // Check collision between lhs and rhs
+    });
+    ==================================================================================*/
+    template <typename... Components>
+    void for_each_entity_pair(std::function<void(Entity, Entity)> callback);
+
+    /*=================================================================================
+    Function Brief:
+    Iterates over pairs of entities where both LHS and RHS entities have all the
+    specified components AND match the layer masks. LHS entities must be on any
+    layer in the LHS mask, and RHS entities must be on any layer in the RHS mask.
+    Calls the callback function for each valid pair (excluding self-pairs).
+
+    Parameters:
+    Components... - Component types that both entities must have
+    lhs_mask - LayerSignature mask for left-hand side entities
+    rhs_mask - LayerSignature mask for right-hand side entities
+    callback - Function to call for each pair: void(Entity lhs, Entity rhs)
+
+    Where to call it:
+    When you need to check interactions between entities with specific components
+    on specific layers (e.g., player bullets vs enemy colliders).
+
+    Example:
+    LayerID player_layer = ECS::get_layer_id("player");
+    LayerID enemy_layer = ECS::get_layer_id("enemy");
+
+    ECS::for_each_entity_pair<Transform, Collider>(
+      LayerSignature{player_layer},  // LHS: player layer
+      LayerSignature{enemy_layer},   // RHS: enemy layer
+      [](Entity lhs, Entity rhs) {
+        // lhs is on player layer with Transform and Collider
+        // rhs is on enemy layer with Transform and Collider
+        auto* t1 = lhs.get_component<Transform>();
+        auto* t2 = rhs.get_component<Transform>();
+        auto* c1 = lhs.get_component<Collider>();
+        auto* c2 = rhs.get_component<Collider>();
+        // Check collision between lhs and rhs
+      }
+    );
+    ==================================================================================*/
+    template <typename... Components>
+    void for_each_entity_pair(
+      const LayerSignature& lhs_mask,
+      const LayerSignature& rhs_mask,
+      std::function<void(Entity, Entity)> callback
+    );
+
+    /*=================================================================================
+    Function Brief:
     Returns the number of components of type T currently in the world.
 
     Parameters:
@@ -415,6 +650,175 @@ namespace Engine {
     ==================================================================================*/
     template <typename T>
     size_t get_component_count();
+
+    /* =================== //
+    // Layer management    //
+    // =================== */
+
+    /*=================================================================================
+    Function Brief:
+    Registers a custom layer with a name and returns its unique LayerID.
+    If the layer name already exists, returns the existing LayerID.
+    Note: The 'default' layer is always pre-registered with ID 1.
+
+    Parameters:
+    name - The name of the layer to register.
+
+    Returns:
+    LayerID - The unique ID assigned to this layer.
+
+    Where to call it:
+    During initialization to define custom layers for your game.
+    ==================================================================================*/
+    LayerID register_layer(const std::string& name);
+
+    /*=================================================================================
+    Function Brief:
+    Retrieves the LayerID associated with a layer name.
+
+    Parameters:
+    name - The name of the layer to look up.
+
+    Returns:
+    LayerID - The ID of the layer, or INVALID_LAYER if not found.
+
+    Where to call it:
+    When you need to get a layer ID from a layer name.
+    ==================================================================================*/
+    LayerID get_layer_id(const std::string& name);
+
+    /*=================================================================================
+    Function Brief:
+    Retrieves the name associated with a LayerID.
+
+    Parameters:
+    id - The LayerID to look up.
+
+    Returns:
+    std::string - The name of the layer, or empty string if not found.
+
+    Where to call it:
+    When you need to get a layer name from a layer ID.
+    ==================================================================================*/
+    std::string get_layer_name(LayerID id);
+
+    /*=================================================================================
+    Function Brief:
+    Gets the LayerID of the default layer that all entities are automatically
+    assigned to on creation. The default layer is initialized during Core startup.
+
+    Parameters:
+    None.
+
+    Returns:
+    LayerID - The ID of the default layer.
+
+    Where to call it:
+    When you need to reference the default layer or check if an entity is on it.
+    ==================================================================================*/
+    LayerID get_default_layer();
+
+    /*=================================================================================
+    Function Brief:
+    Adds an entity to one or more layers.
+
+    Parameters:
+    entity - The entity to add to layers.
+
+    Where to call it:
+    When you want to add an entity to additional layers.
+    ==================================================================================*/
+    template<LayerID... Layers>
+    void add_to_layers(const Entity& entity);
+
+    /*=================================================================================
+    Function Brief:
+    Removes an entity from one or more layers.
+
+    Parameters:
+    entity - The entity to remove from layers.
+
+    Where to call it:
+    When you want to remove an entity from specific layers.
+    ==================================================================================*/
+    template<LayerID... Layers>
+    void remove_from_layers(const Entity& entity);
+
+    /*=================================================================================
+    Function Brief:
+    Sets the exact layers an entity belongs to (replaces existing layers).
+
+    Parameters:
+    entity - The entity to set layers for.
+
+    Where to call it:
+    When you want to explicitly define which layers an entity is on.
+    ==================================================================================*/
+    template<LayerID... Layers>
+    void set_layers(const Entity& entity);
+
+    /*=================================================================================
+    Function Brief:
+    Checks if an entity is on a specific layer.
+
+    Parameters:
+    entity - The entity to check.
+    layer - The layer ID to check for.
+
+    Where to call it:
+    When you need to know if an entity is on a specific layer.
+    ==================================================================================*/
+    bool is_on_layer(const Entity& entity, LayerID layer);
+
+    /*=================================================================================
+    Function Brief:
+    Checks if an entity is on ANY of the specified layers.
+
+    Parameters:
+    entity - The entity to check.
+
+    Where to call it:
+    When you need to know if an entity is on at least one of several layers.
+    ==================================================================================*/
+    template<LayerID... Layers>
+    bool is_on_any_layer(const Entity& entity);
+
+    /*=================================================================================
+    Function Brief:
+    Checks if an entity is on ALL of the specified layers.
+
+    Parameters:
+    entity - The entity to check.
+
+    Where to call it:
+    When you need to know if an entity is on all specified layers.
+    ==================================================================================*/
+    template<LayerID... Layers>
+    bool is_on_all_layers(const Entity& entity);
+
+    /*=================================================================================
+    Function Brief:
+    Gets all layers an entity belongs to.
+
+    Parameters:
+    entity - The entity to get layers for.
+
+    Where to call it:
+    When you need the full layer signature of an entity.
+    ==================================================================================*/
+    LayerSignature get_entity_layers(const Entity& entity);
+
+    /*=================================================================================
+    Function Brief:
+    Removes an entity from all layers.
+
+    Parameters:
+    entity - The entity to clear layers from.
+
+    Where to call it:
+    When you want to remove an entity from all layers.
+    ==================================================================================*/
+    void clear_layers(const Entity& entity);
 
     /* =============== //
     // Internal state  //
@@ -447,6 +851,32 @@ namespace Engine {
       Called internally by the ECS when determining system membership.
       ==================================================================================*/
       bool system_matches_entity(const System& system, EntityID entity);
+
+      /*=================================================================================
+      Function Brief:
+      Internal function that adds an entity to a layer's sparse set.
+
+      Parameters:
+      entity - The EntityID to add.
+      layer - The LayerID to add the entity to.
+
+      Where to call it:
+      Called internally when an entity is added to a layer.
+      ==================================================================================*/
+      void add_entity_to_layer_set(EntityID entity, LayerID layer);
+
+      /*=================================================================================
+      Function Brief:
+      Internal function that removes an entity from a layer's sparse set.
+
+      Parameters:
+      entity - The EntityID to remove.
+      layer - The LayerID to remove the entity from.
+
+      Where to call it:
+      Called internally when an entity is removed from a layer.
+      ==================================================================================*/
+      void remove_entity_from_layer_set(EntityID entity, LayerID layer);
     }
   } // namespace ECS
 } // namespace Engine

@@ -2,7 +2,7 @@
 
 #include "../../Engine/MonkeyEngine.h"
 
-class PrefabsState : public Engine::GameState<PrefabsState> {
+class PrefabsState : public Engine::Scene {
 private:
   Engine::ECS::Entity prefab_instance;
 
@@ -17,10 +17,12 @@ public:
     auto banana_texture = Engine::Resources::load_texture("images/banana.png");
 
     // Add components to the prefab (like an entity)
+    // Can also configure layers using add_to_layer()
     banana_prefab.add_component<Components::Transform2D>(1200.0f, 675.0f, 0.0f, 20.0f * 3.0f, 12.0f * 3.0f)
       .add_component<Components::Texture>(banana_texture)
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-      .add_component<Components::RigidBody>();
+      .add_component<Components::RigidBody>((1200.f, 675.f), false, false)
+      .add_to_layer("gameplay");  // Instantiated entities will be on these layers
 
     // Set initial rotation and angular velocity on the prefab
     auto* rigid = banana_prefab.get_component<Components::RigidBody>();
@@ -55,6 +57,10 @@ public:
     // Can now instantiate multiple entities from this prefab
     auto copy1 = Engine::ECS::instantiate_prefab(entity_prefab);
     auto copy2 = Engine::ECS::instantiate_prefab(entity_prefab);
+
+    // std::string test_entity_json = Engine::FileIO::serialize_prefab_to_json(entity_prefab);
+    // std::cout << test_entity_json << "\n";
+
   };
 
   void init() {};

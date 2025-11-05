@@ -1,5 +1,9 @@
 {
     "dataType": "Prefab",
+    "layers": [
+        "default",
+        "gameplay"
+    ],
     "components": [
         {
             "data": {
@@ -18,7 +22,7 @@
         {
             "type": "Components::Texture",
             "data": {
-                "path": "Assets/images/banana.png"
+                "path": "images/banana.png"
             }
         },
         {

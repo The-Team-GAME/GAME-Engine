@@ -6,8 +6,10 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#include <filesystem>
 #include <rapidjson/document.h>
 #include "FileIO/PrefabsFileIO.h"
+#include "Path.h"
 
 // Define the actual storage for the extern variables
 std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> Engine::Resources::texture_cache;
@@ -18,30 +20,10 @@ std::unordered_map<std::string, std::weak_ptr<Engine::ECS::PrefabImpl>> Engine::
 // Vector to hold shared_ptr references for persistent resources
 std::vector<Engine::Resources::Resource> Engine::Resources::persistent_resources;
 
-Engine::Graphics::Texture Engine::Resources::unit_rect;
 std::string Engine::Resources::resource_path = "";
 
 bool Engine::Resources::init()
 {
-  // Create a 1x1 white pixel texture for unit_rect
-  unsigned char white_pixel[4] = { 255, 255, 255, 255 };
-
-  auto texture_data = std::make_shared<Engine::Graphics::TextureData>();
-  texture_data->width = 1;
-  texture_data->height = 1;
-
-  glGenTextures(1, &texture_data->id);
-  glBindTexture(GL_TEXTURE_2D, texture_data->id);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, white_pixel);
-
-  unit_rect = texture_data;
-
   Log::info("Resource manager initialized");
   return true;
 }
@@ -57,39 +39,28 @@ bool Engine::Resources::exit()
   // Clear persistent resources
   persistent_resources.clear();
 
-  // unit_rect will be automatically cleaned up when it goes out of scope
-  unit_rect.reset();
-
   Log::info("Resource manager cleaned up");
   return true;
 }
 
 void Engine::Resources::set_resource_path(const std::string& path)
 {
-  resource_path = path;
-
-  // Ensure the path ends with a separator
-  if (!resource_path.empty() && resource_path.back() != '/' && resource_path.back() != '\\')
-  {
-    resource_path += '/';
-  }
+  // Convert to absolute path, normalize, and ensure trailing separator
+  resource_path = Path(path).to_absolute().ensure_trailing_separator();
 
   Log::info("Resource path set to: " + resource_path);
 }
 
 std::string Engine::Resources::get_relative_path(const std::string& full_path)
 {
-  if (full_path.find(resource_path) == 0)
-  {
-    return full_path.substr(resource_path.length());
-  }
-  return full_path;
+  // Use the Path class to convert to relative path
+  return Path(full_path).to_relative(resource_path);
 }
 
 Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& filepath, bool append_resource_path, bool persist)
 {
-  // Construct full path
-  std::string full_path = append_resource_path ? resource_path + filepath : filepath;
+  // Construct full path using Path class
+  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
 
   // Check if texture is already in cache (use full path for cache key)
   auto it = texture_cache.find(full_path);
@@ -135,8 +106,8 @@ Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& fil
 
 Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath, u32 size, bool append_resource_path, bool persist)
 {
-  // Construct full path
-  std::string full_path = append_resource_path ? resource_path + filepath : filepath;
+  // Construct full path using Path class
+  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
 
   // Create a unique key combining filepath and size
   std::string cache_key = full_path + "_" + std::to_string(size);
@@ -178,7 +149,8 @@ Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath,
 
 Engine::Audio::Sound Engine::Resources::load_sound(const std::string& filepath, bool append_resource_path, bool persist)
 {
-  std::string full_path = append_resource_path ? resource_path + filepath : filepath;
+  // Construct full path using Path class
+  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
 
   // Check if sound is already in cache
   auto it = sound_cache.find(full_path);
@@ -224,7 +196,8 @@ Engine::Audio::Sound Engine::Resources::load_sound(const std::string& filepath, 
 
 Engine::Audio::Sound Engine::Resources::load_music(const std::string& filepath, bool append_resource_path, bool persist)
 {
-  std::string full_path = append_resource_path ? resource_path + filepath : filepath;
+  // Construct full path using Path class
+  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
 
   // Check if music is already in cache
   auto it = sound_cache.find(full_path);
@@ -270,18 +243,21 @@ Engine::Audio::Sound Engine::Resources::load_music(const std::string& filepath, 
 
 Engine::Resources::Resource Engine::Resources::load(const std::string& filepath, bool append_resource_path, bool persist)
 {
-  // Construct full path
-  std::string full_path = append_resource_path ? resource_path + filepath : filepath;
+  // Construct full path using Path class
+  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
 
-  // Extract file extension
-  size_t dot_pos = filepath.find_last_of('.');
-  if (dot_pos == std::string::npos)
+  // Extract file extension using Path class
+  std::string extension = Path(filepath).get_extension();
+  if (extension.empty())
   {
     Log::warning("No file extension found for: " + filepath);
     return std::monostate{};
   }
 
-  std::string extension = filepath.substr(dot_pos + 1);
+  // Remove leading dot and convert to lowercase
+  if (extension[0] == '.') {
+    extension = extension.substr(1);
+  }
   std::transform(extension.begin(), extension.end(), extension.begin(),
     [](u8 c) { return static_cast<u8>(std::tolower(c)); });
 
@@ -360,13 +336,13 @@ Engine::Resources::Resource Engine::Resources::load(const std::string& filepath,
 
 Engine::Graphics::Texture Engine::Resources::get_rect_texture()
 {
-  return unit_rect;
+  return Engine::Graphics::get_rect_texture();
 }
 
 Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, bool append_resource_path, bool persist)
 {
-  // Construct full path
-  std::string full_path = append_resource_path ? resource_path + filepath : filepath;
+  // Construct full path using Path class
+  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
 
   // Check if prefab is already in cache
   auto it = prefab_cache.find(full_path);
@@ -385,21 +361,8 @@ Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, 
     }
   }
 
-  // Load prefab from file
-  std::ifstream file(full_path);
-  if (!file.is_open())
-  {
-    Log::warning("Failed to open prefab file: " + full_path);
-    return Engine::ECS::Prefab(); // Return empty prefab handle
-  }
-
-  std::stringstream buffer;
-  buffer << file.rdbuf();
-  std::string json_content = buffer.str();
-  file.close();
-
   // Deserialize prefab
-  Engine::ECS::Prefab prefab = Engine::FileIO::deserialize_prefab_from_json(json_content);
+  Engine::ECS::Prefab prefab = Engine::FileIO::deserialize_prefab_from_json_file(full_path);
 
   if (!prefab.is_valid())
   {
@@ -424,32 +387,13 @@ Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, 
 
 bool Engine::Resources::save_prefab(const std::string& filepath, const Engine::ECS::Prefab& prefab, bool append_resource_path)
 {
-  // Construct full path
-  std::string full_path = append_resource_path ? resource_path + filepath : filepath;
+  // Construct full path using Path class
+  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
 
-  // Serialize prefab to JSON
-  std::string json_content = Engine::FileIO::serialize_prefab_to_json(prefab);
-
-  if (json_content.empty() || json_content == "{}")
+  if (!Engine::FileIO::serialize_prefab_to_json_file(full_path, prefab))
   {
-    Log::warning("Failed to serialize prefab: " + full_path);
     return false;
   }
-
-  // TODO: this needs to create the folder if it doesn't exist
-
-  // Write to file
-  std::ofstream file(full_path);
-  if (!file.is_open())
-  {
-    Log::warning("Failed to open prefab file for writing: " + full_path);
-    return false;
-  }
-
-  file << json_content;
-  file.close();
-
-  Log::info("Prefab saved: " + full_path);
 
   // Update cache with the implementation
   prefab_cache[full_path] = prefab.get_impl();

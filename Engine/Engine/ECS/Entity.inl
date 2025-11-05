@@ -20,6 +20,7 @@ namespace Engine {
   namespace ECS {
 
     template<typename T, typename... Args>
+      requires std::is_constructible_v<T, Args...>
     Entity& Entity::add_component(Args&&... args) {
       ECS::add_component<T>(*this, std::forward<Args>(args)...);
       return *this;
@@ -49,6 +50,38 @@ namespace Engine {
     template<typename... T>
     bool Entity::has_components() const {
       return ECS::has_components<T...>(*this);
+    }
+
+    // ============================================================================
+    // Layer Management Template Implementation
+    // ============================================================================
+
+    template<LayerID... Layers>
+    Entity& Entity::add_to_layers() {
+      ECS::add_to_layers<Layers...>(*this);
+      return *this;
+    }
+
+    template<LayerID... Layers>
+    Entity& Entity::remove_from_layers() {
+      ECS::remove_from_layers<Layers...>(*this);
+      return *this;
+    }
+
+    template<LayerID... Layers>
+    Entity& Entity::set_layers() {
+      ECS::set_layers<Layers...>(*this);
+      return *this;
+    }
+
+    template<LayerID... Layers>
+    bool Entity::is_on_any_layer() const {
+      return ECS::is_on_any_layer<Layers...>(*this);
+    }
+
+    template<LayerID... Layers>
+    bool Entity::is_on_all_layers() const {
+      return ECS::is_on_all_layers<Layers...>(*this);
     }
 
   } // namespace ECS

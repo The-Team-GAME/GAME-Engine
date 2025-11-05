@@ -25,13 +25,13 @@ namespace Components
       static Reflector reflect(const Texture& tex) {
         Reflector r;
         if (tex.texture_handle) {
-          r.path = tex.texture_handle->path;
+          r.path = Engine::Resources::get_relative_path(tex.texture_handle->path);
         }
         return r;
       }
 
       static Texture create(const Reflector& r) {
-        return Engine::Resources::load_texture(r.path, false);
+        return Engine::Resources::load_texture(r.path, true);
       }
     };
   };
@@ -171,14 +171,14 @@ namespace Components
       static Reflector reflect(const Font& font) {
         Reflector r;
         if (font.font_handle) {
-          r.path = font.font_handle->path;
+          r.path = Engine::Resources::get_relative_path(font.font_handle->path);
           r.font_size = font.font_handle->font_size;
         }
         return r;
       }
 
       static Font create(const Reflector& r) {
-        return Engine::Resources::load_font(r.path, r.font_size, false);
+        return Engine::Resources::load_font(r.path, r.font_size, true);
       }
     };
   };
@@ -189,6 +189,29 @@ namespace Components
 
     Text() : content("") {}
     Text(const std::string& str) : content(str) {}
+  };
+
+  struct Camera
+  {
+    std::string name = "Camera";
+    Math::Vec2D position = { 0.0f, 0.0f };
+    f32 rotation = 0.0f;  // In degrees
+    f32 zoom = 1.0f;
+    bool is_active = false;  // Whether this camera is currently active
+
+    Camera() : name("Camera"), position(0.0f, 0.0f), rotation(0.0f), zoom(1.0f), is_active(false) {}
+    Camera(const std::string& cam_name, const Math::Vec2D& pos = { 0.0f, 0.0f }, f32 rot = 0.0f, f32 zm = 1.0f, bool active = false)
+      : name(cam_name), position(pos), rotation(rot), zoom(zm), is_active(active) {
+    }
+  };
+
+  struct Distortion
+  {
+    f32 intensity = 1.0f;  // Strength of the distortion effect (0.0 to 1.0+)
+    f32 speed = 1.0f;      // Speed of the glitch animation
+
+    Distortion() : intensity(1.0f), speed(1.0f) {}
+    Distortion(f32 inten, f32 spd) : intensity(inten), speed(spd) {}
   };
 
   struct Color : public Math::Vec4D {
@@ -287,6 +310,8 @@ namespace Components
 }
 
 REGISTER_COMPONENT(Components::Text, content)
+REGISTER_COMPONENT(Components::Camera, name, position, rotation, zoom, is_active)
+REGISTER_COMPONENT(Components::Distortion, intensity, speed)
 REGISTER_COMPONENT_CUSTOM(Components::Color, r, g, b, a)
 REGISTER_COMPONENT_CUSTOM(Components::Texture, path)
 REGISTER_COMPONENT_CUSTOM(Components::Font, path, font_size)
