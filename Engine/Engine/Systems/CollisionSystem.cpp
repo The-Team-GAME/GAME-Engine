@@ -144,7 +144,84 @@ void col2D::update_AABB(Components::Transform2D const& xform, Components::BoxCol
 / Spatial Partitioning Attempts /
 /==============================*/
 
+// Ctor
+col2D::QuadTree::QuadTree(AABB boundary, u32 depth) : bounds(boundary), depth(depth), divided(false)
+{
+  // The bounds would be the constraint of this quad tree node.
+  // The depth would be how deep we are in the tree, with depth being the root / parent node
+  // WE GROWING PLANTS BOYS... i might be losing it LOL
+  entity_vec.reserve(max_entities);
+}
 
+// Dtor
+col2D::QuadTree::~QuadTree() = default;
+
+// Splitting the current node/ creating its child nodes
+//Before : After :
+//+-------+       +---+---+
+//|       |       | 0 | 1 | (0 = NW, 1 = NE)
+//|   1   | --->  +---+---+
+//|       |       | 2 | 3 | (2 = SW, 3 = SE)
+//+-------+       +---+---+
+void col2D::QuadTree::split()
+{
+  Vec2D mid = bounds.pos;
+  f32 hw = bounds.half_width / 2;
+  f32 hh = bounds.half_height / 2;
+
+  // remember that the top left is 0,0 :>
+
+  child_nodes[0] = std::make_unique<QuadTree>(
+    AABB(Vec2D(mid.x - hw, mid.y - hh), bounds.half_width, bounds.half_height),
+    depth + 1);
+
+  child_nodes[1] = std::make_unique<QuadTree>(
+    AABB(Vec2D(mid.x + hw, mid.y - hh), bounds.half_width, bounds.half_height),
+    depth + 1);
+
+  child_nodes[2] = std::make_unique<QuadTree>(
+    AABB(Vec2D(mid.x - hw, mid.y + hh), bounds.half_width, bounds.half_height),
+    depth + 1);
+
+  child_nodes[3] = std::make_unique<QuadTree>(
+    AABB(Vec2D(mid.x + hw, mid.y + hh), bounds.half_width, bounds.half_height),
+    depth + 1);
+}
+// Clear all entities from the tree and kills all child nodes
+// To be called at the start of each frame so that the tree can be rebuilt
+void col2D::QuadTree::clear()
+{
+  // Clearing the objects in the current node
+  entity_vec.clear();
+  // Recursively clearing all the child nodes
+  if (divided)
+  {
+    for (u32 i{}; i < 4; ++i)
+    {
+      child_nodes[i]->clear(); // Make the child clear its children
+      child_nodes[i].reset();  // HEHE MURDER *stabs*
+    }
+    divided = false;
+  }
+}
+
+// Inserts an entity into the quad tree
+bool insert(ECS::Entity& entity);
+
+// Check if an entity is fully contained within the current node's boundary
+bool contains(ECS::Entity& entity);
+
+// Returns the number of entities in the current node
+u32 col2D::QuadTree::entity_count() const
+{
+  return static_cast<u32>(entity_vec.size());
+}
+
+// Returns a bool to show if this node has been divided/ has children node already
+bool col2D::QuadTree::is_divided() const
+{
+  return divided;
+}
 /*========================/
 / Static Collision Checks /
 /========================*/
