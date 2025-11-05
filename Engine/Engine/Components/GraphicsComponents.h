@@ -195,20 +195,24 @@ namespace Components
   {
     std::string name = "Camera";
     bool is_active = false;  // Whether this camera is currently active
+    Math::Vec2D position = { 0.0f, 0.0f };  // Camera position in world space
+    f32 rotation = 0.0f;  // Camera rotation in degrees
+    f32 zoom = 1.0f;  // Camera zoom level (1.0 = normal, >1.0 = zoom in, <1.0 = zoom out)
 
-    Camera() : name("Camera"), is_active(false) {}
-    Camera(const std::string& cam_name, bool active = false)
-      : name(cam_name), is_active(active) {
+    Camera() : name("Camera"), is_active(false), position(0.0f, 0.0f), rotation(0.0f), zoom(1.0f) {}
+    Camera(const std::string& cam_name, bool active = false, const Math::Vec2D& pos = { 0.0f, 0.0f }, f32 rot = 0.0f, f32 z = 1.0f)
+      : name(cam_name), is_active(active), position(pos), rotation(rot), zoom(z) {
     }
   };
 
   struct Distortion
   {
-    f32 intensity = 1.0f;  // Strength of the distortion effect (0.0 to 1.0+)
-    f32 speed = 1.0f;      // Speed of the glitch animation
+    f32 intensity = 1.0f;      // Strength of the texture distortion effect (0.0 to 1.0+)
+    f32 speed = 1.0f;          // Speed of the glitch animation
+    f32 mesh_intensity = 0.0f; // Strength of the mesh/vertex distortion (0.0 to 1.0+)
 
-    Distortion() : intensity(1.0f), speed(1.0f) {}
-    Distortion(f32 inten, f32 spd) : intensity(inten), speed(spd) {}
+    Distortion() : intensity(1.0f), speed(1.0f), mesh_intensity(0.0f) {}
+    Distortion(f32 inten, f32 spd, f32 mesh_inten = 0.0f) : intensity(inten), speed(spd), mesh_intensity(mesh_inten) {}
   };
 
   struct Color : public Math::Vec4D {
@@ -307,8 +311,8 @@ namespace Components
 }
 
 REGISTER_COMPONENT(Components::Text, content)
-REGISTER_COMPONENT(Components::Camera, name, is_active)
-REGISTER_COMPONENT(Components::Distortion, intensity, speed)
+REGISTER_COMPONENT(Components::Camera, name, is_active, position, rotation, zoom)
+REGISTER_COMPONENT(Components::Distortion, intensity, speed, mesh_intensity)
 REGISTER_COMPONENT_CUSTOM(Components::Color, r, g, b, a)
 REGISTER_COMPONENT_CUSTOM(Components::Texture, path)
 REGISTER_COMPONENT_CUSTOM(Components::Font, path, font_size)

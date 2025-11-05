@@ -21,6 +21,7 @@
 #include "GameStates/ShowcaseState.h"
 #include "GameStates/RectPainterState.h"
 #include "GameStates/Rubric2500ParticlesState.h"
+#include "GameStates/StressTestState.h"
 #include "GameStates/BasicState.h"
 #include "GameStates/Documentation/PrefabsState.h"
 #include "GameStates/Dev/PhysicsTestState.h"
@@ -46,7 +47,7 @@ int main()
 
 
   // Start the engine
-  Engine::Core engine{};
+  Engine::Core::init();
 
   // Register game layers at startup
   Engine::ECS::register_layer("background"); // Static background layer
@@ -63,6 +64,7 @@ int main()
   Engine::SceneManager::register_scene<ShowcaseState>("ShowcaseState");
   Engine::SceneManager::register_scene<RectPainterState>("RectPainterState");
   Engine::SceneManager::register_scene<Rubric2500ParticlesState>("Rubric2500ParticlesState");
+  Engine::SceneManager::register_scene<StressTestState>("StressTestState");
   Engine::SceneManager::register_scene<BasicState>("BasicState");
   Engine::SceneManager::register_scene<PrefabsState>("PrefabsState");
   Engine::SceneManager::register_scene<PhysicsTestState>("PhysicsTestState");
@@ -72,7 +74,11 @@ int main()
   // Register game systems at startup
   Engine::ECS::add_system<Engine::Systems::HealthSystem>();
 
-  engine.run("MainMenuState");
+  // Run the main menu state
+  Engine::Core::run("MainMenuState");
+
+  // Shutdown the engine
+  Engine::Core::exit();
 
   return 0;
 }

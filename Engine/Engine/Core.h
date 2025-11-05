@@ -29,9 +29,7 @@ namespace Engine
   class Core
   {
   private:
-    bool isRunning;
-
-    // Game loop state variables
+    static bool is_running;
     static f64 accumulator;
     static s32 step_limit;
     static bool do_render;
@@ -39,12 +37,12 @@ namespace Engine
     static bool force_one_update;
 
   public:
-    Core();
-    ~Core();
+    static void init();
+    static void exit();
 
-    void run(std::string first_scene);
+    static void run(std::string first_scene);
 
-    void stop();
+    static void stop();
 
     // Getters for game loop state
     static bool& is_paused() { return physics_step_mode; }

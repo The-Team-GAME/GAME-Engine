@@ -46,23 +46,31 @@ inline void SceneChooserPanel()
     bool is_current = (scene_name == current_scene);
 
     if (is_current) {
-      ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.7f, 0.0f, 1.0f)); // Green
-      ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.0f, 0.8f, 0.0f, 1.0f));
-      ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.0f, 0.6f, 0.0f, 1.0f));
+      // Use the style's default button color and brighten it slightly so the
+      // 'current' scene stands out without hardcoding a specific color.
+      auto brighten = [](ImVec4 c, float factor) -> ImVec4 {
+        ImVec4 out = c;
+        out.x = out.x * factor; if (out.x > 1.0f) out.x = 1.0f;
+        out.y = out.y * factor; if (out.y > 1.0f) out.y = 1.0f;
+        out.z = out.z * factor; if (out.z > 1.0f) out.z = 1.0f;
+        // leave alpha as-is
+        return out;
+        };
+
+      ImVec4 base = ImGui::GetStyle().Colors[ImGuiCol_Button];
+      ImGui::PushStyleColor(ImGuiCol_Button, brighten(base, 1.50f));
+      ImGui::PushStyleColor(ImGuiCol_ButtonHovered, brighten(base, 1.50f));
+      ImGui::PushStyleColor(ImGuiCol_ButtonActive, brighten(base, 1.50f));
     }
 
     // Create button for each scene
-    if (ImGui::Button(scene_name.c_str(), ImVec2(200, 0))) {
-      // if (!is_current) { // Only switch if it's not the current scene
+    if (ImGui::Button(scene_name.c_str())) {
       Engine::SceneManager::load_scene(scene_name);
-      // }
     }
 
-     if (is_current) {
-       ImGui::PopStyleColor(3);
-       //ImGui::SameLine();
-       //ImGui::Text(" = Current");
-     }
+    if (is_current) {
+      ImGui::PopStyleColor(3);
+    }
   }
 
   // Show helpful info

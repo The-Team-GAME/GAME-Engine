@@ -21,6 +21,7 @@
 #include "Time.h"
 #include <sstream>
 #include <iomanip>
+#include "InputManager.h"
 
 namespace Engine {
   namespace WindowManager
@@ -82,6 +83,9 @@ namespace Engine {
 
       // Set up file drop callback
       glfwSetDropCallback(window, file_drop_callback);
+
+      // Set up scroll callback
+      glfwSetScrollCallback(window, scroll_callback);
     }
 
     void exit()
@@ -159,6 +163,11 @@ namespace Engine {
       }
 
       Engine::EventManager::send_event<Engine::Events::FileDropEvent>(filePaths);
+    }
+
+    void scroll_callback([[maybe_unused]] GLFWwindow* win, f64 xoffset, f64 yoffset)
+    {
+      Engine::Input::set_scroll_offset(xoffset, yoffset);
     }
   }
 }
