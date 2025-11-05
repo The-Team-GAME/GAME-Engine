@@ -70,5 +70,19 @@ namespace Engine
      * @return glm::vec2 A vector containing the x and y position of the mouse in world space.
      */
     static glm::vec2 get_mouse_world_position();
+
+    /**
+     * @brief Gets the scroll offset for the current frame.
+     * @return glm::vec2 A vector containing the x and y scroll offset (y is usually used for vertical scrolling).
+     */
+    static glm::vec2 get_scroll_offset();
+
+    /**
+     * @brief Internal callback function to update scroll offset.
+     * This is called by the GLFW scroll callback.
+     * @param xoffset The horizontal scroll offset.
+     * @param yoffset The vertical scroll offset.
+     */
+    static void set_scroll_offset(f64 xoffset, f64 yoffset);
   };
 }

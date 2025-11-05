@@ -214,6 +214,9 @@ namespace Engine
         // Get current mouse position
         glm::vec2 current_mouse_pos = Engine::Input::get_mouse_position();
 
+        // Get scroll offset
+        glm::vec2 scroll = Engine::Input::get_scroll_offset();
+
         // Check if left mouse button is held
         bool mouse_held = Engine::Input::is_held(Engine::KeyCode::MouseLeft);
 
@@ -231,6 +234,27 @@ namespace Engine
         // Find the active camera entity
         Engine::ECS::Entity active_camera = get_active_camera();
         bool has_active_camera = active_camera.is_valid();
+
+        // Handle zoom with Ctrl + Scroll
+        if (ctrl_held && scroll.y != 0.0f) {
+          //std::cout << "Zooming! Ctrl held: " << ctrl_held << ", Scroll Y: " << scroll.y << "\n";
+          float zoom_speed = 0.1f;
+          float zoom_delta = scroll.y * zoom_speed;
+
+          if (has_active_camera) {
+            auto* camera = active_camera.get_component<Components::Camera>();
+            if (camera) {
+              camera->zoom += zoom_delta;
+              // Clamp zoom to reasonable values
+              camera->zoom = glm::clamp(camera->zoom, 0.1f, 10.0f);
+            }
+          }
+          else {
+            // Free cam mode - adjust free cam zoom
+            free_cam_state.zoom += zoom_delta;
+            free_cam_state.zoom = glm::clamp(free_cam_state.zoom, 0.1f, 10.0f);
+          }
+        }
 
         // Perform camera drag
         if (is_dragging && ctrl_held && mouse_held) {

@@ -37,6 +37,7 @@ namespace
   // Mouse state         //
   // =================== */
   glm::vec2 mousePosition;
+  glm::vec2 scrollOffset;
 
   // Helper function to convert KeyCode to array index
   inline int key_to_index(Engine::KeyCode key)
@@ -128,5 +129,18 @@ namespace Engine
   glm::vec2 Input::get_mouse_world_position()
   {
     return Engine::Graphics::virtual_to_world(mousePosition);
+  }
+
+  glm::vec2 Input::get_scroll_offset()
+  {
+    glm::vec2 result = scrollOffset;
+    scrollOffset = { 0.0f, 0.0f }; // Reset after reading
+    return result;
+  }
+
+  void Input::set_scroll_offset(f64 xoffset, f64 yoffset)
+  {
+    std::cout << "Scroll Offset Callback: (" << xoffset << ", " << yoffset << ")\n";
+    scrollOffset = { static_cast<f32>(xoffset), static_cast<f32>(yoffset) };
   }
 }
