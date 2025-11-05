@@ -23,12 +23,20 @@
 #include <algorithm>
 #include "imgui.h"
 #include "../TypeDef.h"
+#include "../ECS/Entity.h"
 
+
+
+namespace TimelineUtils {
+  // Utility function to create (loading texture and adding components)
+  Engine::ECS::Entity create_timeline_entity(const std::string& texture_path);
+}
 
 // Structure to hold the data for an image clip on the timeline
 struct TimelineClip {
   s32 id = 0;
-  s32 texture_id = 0;
+  Engine::ECS::Entity entity;
+  Engine::ECS::EntityID entity_id;
   s32 layer = 0;
   s32 start_frame = 0;
   s32 duration_frames = 30; // Default duration for a new clip
@@ -58,13 +66,16 @@ public:
   f64 lastFrameTime = 0.0;
 
   // Method to add a clip from an external system
-  void add_clip(s32 entity_id, s32 layer, s32 start_frame, s32 duration_frames);
+  void add_clip(Engine::ECS::Entity entity, s32 layer, s32 start_frame, s32 duration_frames);
   const std::vector<TimelineClip>& get_clips() const { return clips; } //Public getter for clips, needed by TimelineState to check frame existence
 
   //to select my entity
   void set_selected_entity_id(s32 entity_id) { m_selectedEntityID = entity_id; };
+  
 
 private:
+  void draw_clip_config_modal();
+
   std::vector<s32> layers;
   s32 currentFrame;
   s32 numFrames;
@@ -84,4 +95,22 @@ private:
   s32 m_dragStartDuration = 0;  // Original duration on resize start
 
   s32 m_selectedEntityID = 0;
+
+
+  bool is_config_modal_open = false; // Flag to open the new configuration modal
+
+  // Default values for the new clip
+  s32 config_layer = 0;
+  s32 config_start_frame = 0;
+  s32 config_duration = 30; // Matches default TimelineClip duration
+  s32 config_atlas_x = 1;   // Sprites per row (default 1)
+  s32 config_atlas_y = 1;   // Sprites per column (default 1)
+
+  std::string pending_texture_path;
+  bool is_texture_picker_open = false;
+  std::string current_resource_path = "";
+
+  // Constants for the picker grid dimensions
+  static constexpr int RESOURCE_GRID_COLUMNS = 5;
+  static constexpr float RESOURCE_PREVIEW_SIZE = 96.0f;
 };

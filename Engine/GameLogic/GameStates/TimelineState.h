@@ -2,6 +2,7 @@
 
 #include "../../Engine/MonkeyEngine.h"
 #include "../../Engine/GUI/Timeline.h"
+#include "../../Engine/GUI/ResourcePicker.h"
 
 
 // Define the class and inherit from the GameState template
@@ -14,6 +15,13 @@ private:
 	std::unordered_map<s32, bool> entity_visibility;
 	std::vector<Engine::ECS::Entity> timeline_entities;
 
+	std::string pending_texture_path; // Path selected by the picker
+	bool is_texture_picker_open = false; // Flag to open the picker
+	std::string current_resource_path = "";
+
+	// The desired size/columns for the picker grid
+	static constexpr int RESOURCE_GRID_COLUMNS = 5;
+	static constexpr float RESOURCE_PREVIEW_SIZE = 96.0f;
 
 public:
 	// Declare public methods
@@ -21,6 +29,11 @@ public:
 	void init() {
 	
 		Engine::Resources::set_resource_path("Assets/"); //default resource path
+
+		Engine::ECS::Entity create_timeline_entity(const std::string & texture_path);
+
+		// Function to draw the timeline ImGui panel (to be implemented in Timeline.cpp)
+		void draw_timeline_panel();
 
 		//animating entity
 		bro = Engine::ECS::create_entity()
@@ -72,9 +85,6 @@ public:
 	};
 
 
-
-
-
 	void update() {};
 	void draw() {
 		Engine::Graphics::clear_screen({ 0.078f, 0.078f, 0.078f, 1.0f });
@@ -94,7 +104,7 @@ public:
 
 		//checks which entities should be visible this frame
 		for (const auto& clip : timeline.get_clips()) {
-			s32 entity_id = clip.texture_id; // Using texture_id as Entity ID
+			s32 entity_id = clip.entity_id; // Using texture_id as Entity ID
 
 			s32 end_frame = clip.start_frame + clip.duration_frames;
 
@@ -151,31 +161,34 @@ public:
 	};
 	
 
-	Engine::ECS::Entity create_timeline_entity(Engine::Graphics::Texture texture) {
+	Engine::ECS::Entity create_timeline_entity(const std::string& texture_path) {
+		// 1. Load the texture handle (Engine::Graphics::Texture is the value type)
+		Engine::Graphics::Texture texture_value = Engine::Resources::load_texture(texture_path);
+
+		// Correct validity check: Assuming Engine::Graphics::Texture overloads operator bool or has a simple check.
+		// If texture_value overloads 'operator->' to access TextureData, we can check the pointer directly.
+		if (!texture_value.operator->()) { // Check if the underlying shared_ptr is null
+			return Engine::ECS::create_entity();
+		}
+
 		Engine::ECS::Entity new_entity = Engine::ECS::create_entity();
 
-    // Add the Texture component (This holds the shared_ptr to the raw texture data)
-    new_entity.add_component<Components::Texture>(texture);
+		// 2. Add required components
+		new_entity.add_component<Components::Transform2D>(
+			400.0f, 400.0f, 0.0f, 100.0f, 100.0f);
+		new_entity.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.0f);
 
-    //// Add the Transform component (Required for positioning and scaling in the world/view)
-    //new_entity.add_component<Components::Transform2D>(
-    //    // Position, Rotation, Scale
-    //    Math::Vec3D(0.0f, 0.0f, 0.0f), 
-    //    Math::Vec3D(0.0f, 0.0f, 0.0f), 
-    //    Math::Vec3D(1.0f, 1.0f, 1.0f)
-    //);
+		// Pass the texture value directly to the component constructor
+		new_entity.add_component<Components::Texture>(texture_value);
 
-		//sets any non atlas texture to use a default 1x1 atlas
-    new_entity.add_component<Components::TextureAtlas>(
-        1,       // numRows
-        1,       // numColumns
-        1,       // totalSubTextures
-        0,       // currentSubTextureIndex (start at 0)
-        1        // frameDuration (can be ignored for static sprites)
-    );
+		// 3. Initialize Texture Atlas. Access members of TextureData via operator->
+		new_entity.add_component<Components::TextureAtlas>(
+			(f32)texture_value->width, (f32)texture_value->height,
+			1, 1, 1
+		);
 
-    return new_entity;
-}
+		return new_entity;
+	}
 
 
 	void free() {};

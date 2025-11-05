@@ -22,9 +22,11 @@
 #include <iostream>
 #include "../ECS/ECS.h"
 #include "../../Engine/MonkeyEngine.h"
+#include "ResourcePicker.h"
 
 const f32 LEFT_RESIZE_HANDLE_WIDTH = 10.0f;
 const f32 RIGHT_RESIZE_HANDLE_WIDTH = 10.0f;
+
 
 Timeline::Timeline()
   : currentFrame(0),
@@ -50,10 +52,10 @@ Timeline::Timeline()
 
 
 
-void Timeline::add_clip(s32 texture_id, s32 layer, s32 start_frame, s32 duration_frames) {
+void Timeline::add_clip(Engine::ECS::Entity entity, s32 layer, s32 start_frame, s32 duration_frames) {
   TimelineClip newClip;
-  newClip.id = m_nextClipID++; // Assign unique ID
-  newClip.texture_id = texture_id;
+  newClip.id = m_nextClipID++;
+  newClip.entity = entity; // Store the full entity object
   newClip.layer = layer;
   newClip.start_frame = start_frame;
   newClip.duration_frames = duration_frames;
@@ -63,7 +65,6 @@ void Timeline::add_clip(s32 texture_id, s32 layer, s32 start_frame, s32 duration
 
   clips.push_back(newClip);
 }
-
 
 
 
@@ -81,6 +82,7 @@ void Timeline::add_clip(s32 texture_id, s32 layer, s32 start_frame, s32 duration
 
     // --Timeline--
 void Timeline::draw() {
+
   if (ImGui::Begin("Timeline"))
   {
     ImVec2 timelineSize(cellSize.x * numFrames, cellSize.y * (int)layers.size());
@@ -180,10 +182,88 @@ void Timeline::draw() {
     }
 
 
-    //gets the entity
-    if (m_selectedEntityID != 0) {
-      auto entity = Engine::ECS::get_entity(m_selectedEntityID);
+    ImGui::SameLine();
+
+    // ================================================================
+        // Resource Picker Button and Logic
+        // ================================================================
+    Engine::Resources::set_resource_path("Assets/");
+
+    if (ImGui::Button("Add Texture Clip")) {
+      is_texture_picker_open = true;
+      pending_texture_path.clear();
+      ImGui::OpenPopup("TexturePickerPopup");
     }
+
+    // 1. Check for Resource Picker result
+    if (is_texture_picker_open) {
+      bool selection_made = ResourcePicker::texture_picker_popup(
+        "TexturePickerPopup",
+        pending_texture_path,
+        current_resource_path,
+        RESOURCE_GRID_COLUMNS,
+        RESOURCE_PREVIEW_SIZE
+      );
+
+      if (selection_made) {
+        is_texture_picker_open = false;
+        if (!pending_texture_path.empty()) {
+          // Selection made: NOW OPEN THE CONFIGURATION MODAL
+          is_config_modal_open = true;
+          // Reset config values to safe defaults/current timeline state
+          config_layer = (s32)layers.size() > 0 ? (s32)layers.size() - 1 : 0;
+          config_start_frame = currentFrame;
+          config_duration = 30;
+          config_atlas_x = 1;
+          config_atlas_y = 1;
+
+          ImGui::OpenPopup("ClipConfigurationModal");
+        }
+        else {
+          // Path was empty (shouldn't happen with the picker's return logic, but safe to reset)
+          pending_texture_path.clear();
+        }
+      }
+    }
+
+    // 2. Draw the Configuration Modal
+    draw_clip_config_modal();
+
+
+    // controls entity visibility and animation frame in the game world.
+    for (TimelineClip& clip : clips) {
+      bool is_active_in_scene = (currentFrame >= clip.start_frame &&
+        currentFrame < (clip.start_frame + clip.duration_frames));
+
+      // We use clip.entity directly, which is the correct ECS::Entity object.
+      if (clip.entity.is_valid() && clip.entity.has_component<Components::TextureAtlas>()) {
+        auto* atlas = clip.entity.get_component<Components::TextureAtlas>();
+
+        if (is_active_in_scene) {
+          // --- Calculate which atlas frame to show ---
+          s32 frames_in_clip = currentFrame - clip.start_frame;
+          s32 total_clip_duration = clip.duration_frames;
+          s32 num_atlas_frames = (s32)atlas->subTextures.size();
+
+          s32 frame_index = 0; // Default to the first frame
+
+          if (num_atlas_frames > 0) {
+            // Spreads N atlas frames evenly over the clip's duration
+            frame_index = (s32)std::floor((f32)frames_in_clip / total_clip_duration * num_atlas_frames);
+            frame_index = std::min(frame_index, num_atlas_frames - 1);
+          }
+
+          // Enables rendering by setting a valid frame index
+          atlas->drawIndex = frame_index;
+        }
+        else {
+          // Disables rendering by setting the sentinel value
+          atlas->drawIndex = -1;
+        }
+      }
+    }
+
+
 
     // --- Timeline region ---
     ImGui::BeginChild("TimelineRegion", ImVec2(0, 200), true, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoMove);
@@ -212,7 +292,7 @@ void Timeline::draw() {
 
         if (activeClip) {
           // --- Clip Found: Draw Animated Frame ---
-          auto entity = Engine::ECS::get_entity(activeClip->texture_id);
+          auto entity = Engine::ECS::get_entity(activeClip->entity_id);
 
           if (entity.is_valid() && entity.has_component<Components::Texture>() && entity.has_component<Components::TextureAtlas>())
           {
@@ -222,7 +302,7 @@ void Timeline::draw() {
             s32 num_atlas_frames = (s32)atlas->subTextures.size();
 
             if (texture_ptr && num_atlas_frames > 0) {
-              ImTextureID tex_id = (ImTextureID)(intptr_t)texture_ptr->id;
+              ImTextureID tex_id = (ImTextureID)(uintptr_t)texture_ptr.get();
 
               // Calculate which frame of the atlas should be shown in this timeline cell
               s32 frames_in_clip = frame - activeClip->start_frame;
@@ -233,8 +313,12 @@ void Timeline::draw() {
               frame_index = std::min(frame_index, (size_t)num_atlas_frames - 1);
 
               // texture coordinates for the selected frame
-              ImVec2 uv0(atlas->subTextures[frame_index].tex_coords[3].x, atlas->subTextures[frame_index].tex_coords[3].y); // Top-Left (Index 3 in your constructor)
-              ImVec2 uv1(atlas->subTextures[frame_index].tex_coords[1].x, atlas->subTextures[frame_index].tex_coords[1].y); // Bottom-Right (Index 1 in your constructor)
+              const auto& tex_coords = atlas->subTextures[frame_index].tex_coords;
+
+              // Top-Left (Index 3: (u0, v0))
+              ImVec2 uv0(tex_coords[3].x, tex_coords[3].y);
+              // Bottom-Right (Index 1: (u1, v1))
+              ImVec2 uv1(tex_coords[1].x, tex_coords[1].y);
 
               // Draw the individual frame image onto the grid cell
               draw_list->AddImage(
@@ -275,33 +359,34 @@ void Timeline::draw() {
       }
 
 
-      // ----------------------------------------------------------------------
-      // --- Drag-and-Drop Logic for NEW Clips ---
-      // ----------------------------------------------------------------------
+      //// ----------------------------------------------------------------------
+      //// --- Drag-and-Drop Logic ---
+      //// ----------------------------------------------------------------------
 
-      if (ImGui::BeginDragDropTarget()) {
-        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_TEXTURE_ID")) {
-          s32 texture_id = *static_cast<s32*>(payload->Data);
+      //if (ImGui::BeginDragDropTarget()) {
+      //  if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_TEXTURE_ID")) {
+      //    s32 texture_id = *static_cast<s32*>(payload->Data);
 
-          //Engine::Graphics::Texture texture_object = Timeline::set_selected_entity_id(texture_id);
-          //
-          //// Create the entity, which includes the 1x1 TextureAtlas
-          //Engine::Graphics::Texture texture_object = Engine::Graphics::TextureData();
+      //    //Engine::Graphics::Texture texture_object = Timeline::set_selected_entity_id(texture_id);
+      //    //
+      //    //// Create the entity, which includes the 1x1 TextureAtlas
+      //    //Engine::Graphics::Texture texture_object = Engine::Graphics::TextureData();
 
-          //s32 entity_id = new_entity.get_id();
+      //    //s32 entity_id = new_entity.get_id();
 
-          ImVec2 dropPos = ImGui::GetMousePos();
-          ImVec2 relativePos = ImVec2(dropPos.x - p.x, dropPos.y - p.y);
-          s32 dropped_frame = (s32)std::floor(relativePos.x / currentCellSize.x);
-          s32 dropped_layer = (s32)std::floor(relativePos.y / currentCellSize.y);
+      //    ImVec2 dropPos = ImGui::GetMousePos();
+      //    ImVec2 relativePos = ImVec2(dropPos.x - p.x, dropPos.y - p.y);
+      //    s32 dropped_frame = (s32)std::floor(relativePos.x / currentCellSize.x);
+      //    s32 dropped_layer = (s32)std::floor(relativePos.y / currentCellSize.y);
 
-          dropped_frame = std::max(0, std::min(dropped_frame, numFrames - 1));
-          dropped_layer = std::max(0, std::min(dropped_layer, (s32)layers.size() - 1));
+      //    dropped_frame = std::max(0, std::min(dropped_frame, numFrames - 1));
+      //    dropped_layer = std::max(0, std::min(dropped_layer, (s32)layers.size() - 1));
 
-          add_clip(texture_id, dropped_layer, dropped_frame, 30);
-        }
-        ImGui::EndDragDropTarget();
-      }
+      //    add_clip(texture_id, dropped_layer, dropped_frame, 30);
+      //  }
+      //  ImGui::EndDragDropTarget();
+      //}
+
 
 
       // ----------------------------------------------------------------------
@@ -331,7 +416,9 @@ void Timeline::draw() {
         textPos.y = clipMin.y + 5.0f;
         ImGui::SetCursorScreenPos(textPos);
 
-        ImGui::Text("Entity: %d | Dur: %d", clip.texture_id, clip.duration_frames);
+        ImGui::Text("Layer: %d | Start: %d | Dur: %d", clip.layer, clip.start_frame, clip.duration_frames);
+
+
 
 
         // --- Manipulation Handlers ---
@@ -388,7 +475,7 @@ void Timeline::draw() {
           ImVec2 dragDelta = ImGui::GetMouseDragDelta(0);
           f32 frame_width = frameWidth; // Use existing local variable
 
-          // --- MODE 1: Move Frame ---
+          // --- Move Frame ---
           if (m_manipulationMode == 1) {
             std::cout << "move";
             // Calculate total frames moved since the drag started
@@ -410,7 +497,7 @@ void Timeline::draw() {
             ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
           }
 
-          // --- MODE 2: Resize Right ---
+          // --- Resize Right ---
           else if (m_manipulationMode == 2) {
             s32 frames_changed = (s32)std::round(dragDelta.x / frame_width);
             s32 new_duration = m_dragStartDuration + frames_changed;
@@ -420,7 +507,7 @@ void Timeline::draw() {
             ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
           }
 
-          // --- MODE 3: Resize Left ---
+          // --- Resize Left ---
           else if (m_manipulationMode == 3) {
             s32 frames_changed = (s32)std::round(dragDelta.x / frame_width);
             s32 old_end_frame = m_dragStartFrame + m_dragStartDuration;
@@ -442,7 +529,7 @@ void Timeline::draw() {
             ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
           }
         }
-        // --- 2. Hover Logic (Only runs if NO drag is active) ---
+        // ---  Hover Logic ---
         else {
           // Original Hover Checks for Cursor
           if ((mousePos.x >= handleRMin.x && mousePos.x <= handleRMax.x && mousePos.y >= handleRMin.y && mousePos.y <= handleRMax.y) ||
@@ -454,167 +541,6 @@ void Timeline::draw() {
           }
         }
       }
-
-        //// Apply visual cursor change based on hovering
-        //if (m_activeClipID == clip.id) {
-        //  if (m_manipulationMode == 1) { // Move
-        //    ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
-        //  }
-        //  else if (m_manipulationMode == 2 || m_manipulationMode == 3) { // Resize
-        //    ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
-        //  }
-        //}
-        //else if ((mousePos.x >= handleRMin.x && mousePos.x <= handleRMax.x && mousePos.y >= handleRMin.y && mousePos.y <= handleRMax.y) ||
-        //  (mousePos.x >= handleLMin.x && mousePos.x <= handleLMax.x && mousePos.y >= handleLMin.y && mousePos.y <= handleLMax.y)) {
-        //  ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
-        //}
-        //else if (mousePos.x >= dragMin.x && mousePos.x <= dragMax.x && mousePos.y >= dragMin.y && mousePos.y <= dragMax.y) {
-        //  ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
-        //}
-      //}
-
-
-      //// --- Global Manipulation Update Logic ---
-      //  if (m_activeClipID != 0 && ImGui::IsMouseDown(0)) {
-      //    TimelineClip* activeClip = nullptr;
-      //    for (TimelineClip& clip : clips) {
-      //      if (clip.id == m_activeClipID) {
-      //        activeClip = &clip;
-      //        break;
-      //      }
-      //    }
-
-      //    if (activeClip) {
-
-      //      std::cout << "moving clip " << m_activeClipID << std::endl; // pls work zzzz
-
-      //      // Get total drag delta and map to frame count
-      //      ImVec2 dragDelta = ImGui::GetMouseDragDelta(0);
-
-      //      f32 frameFloat = (mousePos.x - p.x) / frameWidth;
-      //      s32 snappedDragFrame = (s32)std::round(frameFloat);
-
-      //      // Ensure frame index is clamped within bounds
-      //      snappedDragFrame = std::max(0, std::min(snappedDragFrame, numFrames));
-
-
-      //      if (m_manipulationMode == 1) { // Move frames
-      //        std::cout << "moving clip " << m_activeClipID << std::endl;
-
-      //        ImVec2 dragDelta = ImGui::GetMouseDragDelta(0);
-
-      //        // 1. Calculate the snapped frame offset from the initial drag start position
-      //        f32 mouseDragFrames = dragDelta.x / frameWidth;
-      //        s32 snappedFrameOffset = (s32)std::round(mouseDragFrames);
-
-      //        // 2. Calculate the new tentative start frame
-      //        s32 tentativeNewStartFrame = m_dragStartFrame + snappedFrameOffset;
-
-      //        // 3. Check if the snapped frame has changed and is valid
-      //        if (snappedFrameOffset != 0) {
-
-      //          // Clamp the new position
-      //          s32 finalNewStartFrame = std::max(0, tentativeNewStartFrame);
-      //          finalNewStartFrame = std::min(finalNewStartFrame, numFrames - activeClip->duration_frames);
-
-      //          // If the position changed after clamping, update the clip and reset the drag delta
-      //          if (activeClip->start_frame != finalNewStartFrame) {
-      //            activeClip->start_frame = finalNewStartFrame;
-
-      //            // Update m_dragStartFrame so the next drag calculation works from the new, snapped position
-      //            m_dragStartFrame = activeClip->start_frame;
-
-      //            // Clear the current mouse drag delta to zero to ensure frame-snapped movement
-      //            ImGui::ResetMouseDragDelta(0);
-      //          }
-      //        }
-      //      }
-
-
-      //      else if (m_manipulationMode == 2) { // Resize Right
-      //        // Use the snapped mouse position to define the new end frame
-      //        s32 newEndFrame = snappedDragFrame;
-
-      //        // The new duration is the difference between the new snapped end frame and the start frame
-      //        s32 newDuration = newEndFrame - activeClip->start_frame;
-
-      //        // Clamp duration to a minimum of 1 frame
-      //        activeClip->duration_frames = std::max(1, newDuration);
-      //      }
-
-
-      //      else if (m_manipulationMode == 3) { // Resize Left
-      //        s32 oldEndFrame = m_dragStartFrame + m_dragStartDuration; // End frame is fixed during left-resize
-
-      //        // Use the snapped mouse position to define the new start frame
-      //        s32 newStartFrame = snappedDragFrame;
-      //        s32 newDuration = oldEndFrame - newStartFrame;
-
-      //        if (newDuration >= 1 && newStartFrame >= 0) {
-      //          activeClip->start_frame = newStartFrame;
-      //          activeClip->duration_frames = newDuration;
-      //        }
-      //        else if (newStartFrame < 0) { // Clamp start frame to 0
-      //          activeClip->start_frame = 0;
-      //          activeClip->duration_frames = oldEndFrame;
-      //        }
-      //        else if (newDuration < 1) { // Clamp duration to 1 frame minimum
-      //          activeClip->start_frame = oldEndFrame - 1;
-      //          activeClip->duration_frames = 1;
-      //        }
-      //      }
-      //    }
-      //  }
-
-     // // ----------------------------------------------------------------------
-     // // --- Timeline Extension Handle ---
-     // // ----------------------------------------------------------------------
-
-     //// Define the handle size
-     // const f32 EXTENSION_HANDLE_WIDTH = 20.0f;
-     // // Calculate the current total size of the grid content
-     // f32 timelineContentWidth = currentCellSize.x * numFrames;
-     // f32 timelineContentHeight = currentCellSize.y * (f32)layers.size();
-
-     // // Calculate the handle position (starting right after the last frame)
-     // // Use the top-left scroll position 'p' as the origin.
-     // ImVec2 handleMin(p.x + timelineContentWidth, p.y);
-     // ImVec2 handleMax(handleMin.x + EXTENSION_HANDLE_WIDTH, p.y + timelineContentHeight);
-
-     // // Optional: Draw a visual indicator
-     // draw_list->AddRectFilled(handleMin, handleMax, IM_COL32(255, 100, 100, 50)); // Semi-transparent red box
-
-     // // Set cursor position and create the invisible button
-     // ImGui::SetCursorScreenPos(handleMin);
-     // std::string extensionID = "timeline_extender";
-     // ImGui::InvisibleButton(extensionID.c_str(), ImVec2(EXTENSION_HANDLE_WIDTH, timelineContentHeight));
-
-
-     // // Handle Interaction
-     // if (ImGui::IsItemActive() && ImGui::IsMouseDown(0)) {
-     //   // Get the drag delta since the click started
-     //   ImVec2 dragDelta = ImGui::GetMouseDragDelta(0);
-
-     //   // Convert the drag distance (in pixels) to a frame count
-     //   // Use the frameWidth (currentCellSize.x * zoom) for snapping
-     //   s32 frameDelta = (s32)std::round(dragDelta.x / frameWidth);
-
-     //   if (std::abs(frameDelta) > 0) {
-
-     //     s32 newNumFrames = numFrames + frameDelta;
-
-     //     // Clamp to a sensible minimum (e.g., your current default of 100 frames)
-     //     numFrames = std::max(100, newNumFrames);
-
-     //     // Reset the mouse drag delta to zero to ensure frame-snapped movement
-     //     ImGui::ResetMouseDragDelta(0);
-     //   }
-
-     //   ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
-     // }
-     // else if (ImGui::IsItemHovered()) {
-     //   ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
-     // }
 
 
       // ----------------------------------------------------------------------
@@ -653,5 +579,111 @@ void Timeline::draw() {
     }
     ImGui::End();
   }
+
+  namespace TimelineUtils {
+    Engine::ECS::Entity create_timeline_entity(const std::string& texture_path, s32 atlas_x_count, s32 atlas_y_count)
+    {
+      // Load the texture handle
+      Engine::Graphics::Texture texture_value = Engine::Resources::load_texture(texture_path, false);
+
+      // Check validity
+      if (!texture_value.operator->()) {
+        return Engine::ECS::create_entity();
+      }
+
+      Engine::ECS::Entity new_entity = Engine::ECS::create_entity();
+
+      // Add required components (Using placeholder values)
+      new_entity.add_component<Components::Transform2D>(400.0f, 400.0f, 0.0f, 100.0f, 100.0f);
+      new_entity.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
+      new_entity.add_component<Components::Texture>(texture_value);
+
+      // Initialize Texture Atlas with provided counts
+      s32 total_sprites = atlas_x_count * atlas_y_count;
+
+      new_entity.add_component<Components::TextureAtlas>(
+        texture_value->width,
+        texture_value->height,
+        (u32)atlas_x_count,
+        (u32)atlas_y_count,
+        (u32)total_sprites
+      );
+
+      Components::TextureAtlas* atlas = new_entity.get_component<Components::TextureAtlas>();
+      if (atlas) {
+        atlas->drawIndex = -1;
+      }
+
+      return new_entity;
+    }
+  }
+
+  void Timeline::draw_clip_config_modal() {
+    if (is_config_modal_open) {
+        // Set fixed size for the modal
+        ImGui::SetNextWindowSize(ImVec2(350, 300), ImGuiCond_FirstUseEver); 
+        
+        if (ImGui::BeginPopupModal("ClipConfigurationModal", &is_config_modal_open, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("Configure New Timeline Clip");
+            ImGui::Separator();
+            
+            // --- Timeline Parameters ---
+            ImGui::Text("Timeline Placement");
+            ImGui::InputInt("Layer", &config_layer);
+            config_layer = std::max(0, std::min(config_layer, (s32)layers.size() > 0 ? (s32)layers.size() - 1 : 0));
+            
+            ImGui::InputInt("Start Frame", &config_start_frame);
+            config_start_frame = std::max(0, std::min(config_start_frame, numFrames - 1));
+
+            ImGui::InputInt("Duration (Frames)", &config_duration);
+            config_duration = std::max(1, config_duration);
+
+            ImGui::Separator();
+
+            // --- Animation Atlas Parameters ---
+            ImGui::Text("Texture Atlas");
+            ImGui::TextDisabled("Path: %s", pending_texture_path.c_str());
+            
+            ImGui::InputInt("Sprites per Row (X)", &config_atlas_x);
+            config_atlas_x = std::max(1, config_atlas_x); // Min 1x1 atlas
+
+            ImGui::InputInt("Sprites per Column (Y)", &config_atlas_y);
+            config_atlas_y = std::max(1, config_atlas_y); // Min 1x1 atlas
+
+            ImGui::Separator();
+
+            // --- Confirmation ---
+            if (ImGui::Button("Create Clip", ImVec2(100, 0))) {
+                // 1. Create the ECS Entity using the standalone utility function
+              Engine::ECS::Entity new_entity = TimelineUtils::create_timeline_entity(
+                pending_texture_path,
+                config_atlas_x,
+                config_atlas_y
+              );
+
+              if (new_entity.is_valid()) { // Check if creation was successful
+                // 2. Add clip to the timeline data structure, passing the entity object
+                add_clip(new_entity, config_layer, config_start_frame, config_duration);
+              }
+
+                // 3. Clear all temporary states and close popup
+                pending_texture_path.clear();
+                is_config_modal_open = false;
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel", ImVec2(100, 0))) {
+                // Clear temporary states and close popup
+                pending_texture_path.clear();
+                is_config_modal_open = false;
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        }
+    }
+}
+
 
 
