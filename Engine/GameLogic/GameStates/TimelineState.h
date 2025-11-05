@@ -39,7 +39,7 @@ public:
 			.add_component<Components::Transform2D>(400.0f, 400.0f, 0.0f, 1000.0f/ 7.0f, 130.0f)
 			.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
 			.add_component<Components::Texture>(Engine::Resources::load_texture("images/Bro_Idle_Spritesheet.png"))
-			.add_component<Components::TextureAtlas>(448.0f/ 7.0f, 64.0f, 1, 7, 7) //index is set default to 0 playable around with
+			.add_component<Components::TextureAtlas>(448.0f/ 7.0f, 64.0f, 1.0f, 7.0f, 7.0f) //index is set default to 0 playable around with
 		  .add_component<Components::Animation>(7, 0.1);
 		//.add_component<Components::TextureAtlas>(banana.get_component<Components::Transform2D>()->scale.x, banana.get_component<Components::Transform2D>()->scale.y, 7.0f, 0.0f, 7);
 		/*.add_component<Components::RigidBody>();
@@ -59,7 +59,7 @@ public:
 			.add_component<Components::Transform2D>(600.0f, 400.0f, 0.0f, 120.0f, 150.0f)
 			.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
 			.add_component<Components::Texture>(Engine::Resources::load_texture("images/monkey.png"))
-			.add_component<Components::TextureAtlas>(600.0f, 400.0f, 1, 1, 1);
+			.add_component<Components::TextureAtlas>(600.0f, 400.0f, 1.0f, 1.0f, 1.0f);
 
 		s32 monkey_entity_id = monkey.get_id();
 		timeline.set_selected_entity_id(monkey_entity_id);
