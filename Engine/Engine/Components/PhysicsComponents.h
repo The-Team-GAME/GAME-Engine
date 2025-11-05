@@ -53,6 +53,9 @@ namespace Components
         gravity_acc.y = 200.f;
       }
     }
+    
+    // Default ctor
+    RigidBody() {};
 
     //// Ctor using floats
     //RigidBody(f32 pos_x, f32 pos_y, bool kinematic = false, bool gravity = false) :

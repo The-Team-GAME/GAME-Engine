@@ -50,63 +50,63 @@ namespace Engine
     // Add these reflection helpers
     template<typename T>
     sol::object reflect_get(T& component, sol::object key, sol::state_view lua) {
-        if (!key.is<std::string>()) return sol::nil;
-        std::string field = key.as<std::string>();
-        
-        if constexpr (std::is_same_v<T, Components::Transform2D>) {
-            if (field == "x") return sol::make_object(lua, component.position.x);
-            if (field == "y") return sol::make_object(lua, component.position.y);
-            if (field == "rotation") return sol::make_object(lua, component.rotation);
-            if (field == "sx") return sol::make_object(lua, component.scale.x);
-            if (field == "sy") return sol::make_object(lua, component.scale.y);
-        }
-        else if constexpr (std::is_same_v<T, Components::Color>) {
-            if (field == "r") return sol::make_object(lua, component.r);
-            if (field == "g") return sol::make_object(lua, component.g);
-            if (field == "b") return sol::make_object(lua, component.b);
-            if (field == "a") return sol::make_object(lua, component.a);
-        }
-        return sol::nil;
+      if (!key.is<std::string>()) return sol::nil;
+      std::string field = key.as<std::string>();
+
+      if constexpr (std::is_same_v<T, Components::Transform2D>) {
+        if (field == "x") return sol::make_object(lua, component.position.x);
+        if (field == "y") return sol::make_object(lua, component.position.y);
+        if (field == "rotation") return sol::make_object(lua, component.rotation);
+        if (field == "sx") return sol::make_object(lua, component.scale.x);
+        if (field == "sy") return sol::make_object(lua, component.scale.y);
+      }
+      else if constexpr (std::is_same_v<T, Components::Color>) {
+        if (field == "r") return sol::make_object(lua, component.r);
+        if (field == "g") return sol::make_object(lua, component.g);
+        if (field == "b") return sol::make_object(lua, component.b);
+        if (field == "a") return sol::make_object(lua, component.a);
+      }
+      return sol::nil;
     }
 
     template<typename T>
     void reflect_set(T& component, sol::object key, sol::object value) {
-        std::string field = key.as<std::string>();
-        
-        if constexpr (std::is_same_v<T, Components::Transform2D>) {
-            if (field == "x") component.position.x = value.as<f32>();
-            if (field == "y") component.position.y = value.as<f32>();
-            if (field == "rotation") component.rotation = value.as<f32>();
-            if (field == "sx") component.scale.x = value.as<f32>();
-            if (field == "sy") component.scale.y = value.as<f32>();
-        }
-        else if constexpr (std::is_same_v<T, Components::Color>) {
-            if (field == "r") component.r = value.as<f32>();
-            if (field == "g") component.g = value.as<f32>();
-            if (field == "b") component.b = value.as<f32>();
-            if (field == "a") component.a = value.as<f32>();
-        }
+      std::string field = key.as<std::string>();
+
+      if constexpr (std::is_same_v<T, Components::Transform2D>) {
+        if (field == "x") component.position.x = value.as<f32>();
+        if (field == "y") component.position.y = value.as<f32>();
+        if (field == "rotation") component.rotation = value.as<f32>();
+        if (field == "sx") component.scale.x = value.as<f32>();
+        if (field == "sy") component.scale.y = value.as<f32>();
+      }
+      else if constexpr (std::is_same_v<T, Components::Color>) {
+        if (field == "r") component.r = value.as<f32>();
+        if (field == "g") component.g = value.as<f32>();
+        if (field == "b") component.b = value.as<f32>();
+        if (field == "a") component.a = value.as<f32>();
+      }
     }
 
     template<typename T>
     T* get_component(EntityId id) {
-        auto ent = Engine::ECS::get_entity(id);
-        return ent.get_component<T>();
+      auto ent = Engine::ECS::get_entity(id);
+      return ent.get_component<T>();
     }
 
     // Helper to register component type with Lua
     template<typename T>
     void register_component_type(sol::state& lua, const std::string& name) {
-        sol::state_view sv(lua);
-        lua.new_usertype<T>(name,
-            sol::constructors<T()>(),
-            sol::meta_function::index, [sv](T& component, sol::object key) -> sol::object {
-                return reflect_get<T>(component, key, sv); // pass lua state view
-            },
-            sol::meta_function::new_index, [](T& component, sol::object key, sol::object value) {
-                reflect_set<T>(component, key, value);
-            }
-        );
+      sol::state_view sv(lua);
+      lua.new_usertype<T>(name,
+        sol::constructors<T()>(),
+        sol::meta_function::index, [sv](T& component, sol::object key) -> sol::object {
+          return reflect_get<T>(component, key, sv); // pass lua state view
+        },
+        sol::meta_function::new_index, [](T& component, sol::object key, sol::object value) {
+          reflect_set<T>(component, key, value);
+        }
+      );
     }
 
     // Create entity and return its id
@@ -127,12 +127,12 @@ namespace Engine
     void add_tag_helper(Entity& ent, const std::string& tag) {
 
       //**temp fix 
-        if (tag == "MainMenuState") {
-            ent.add_component<Components::Tag<"MainMenuState">>();
-        }
-        else {
-            std::cerr << "[GameAPI] Unknown tag type: " << tag << "\n";
-        }
+      if (tag == "MainMenuState") {
+        ent.add_component<Components::Tag<"MainMenuState">>();
+      }
+      else {
+        std::cerr << "[GameAPI] Unknown tag type: " << tag << "\n";
+      }
     }
 
     void add_transform(EntityId id, f32 x, f32 y, f32 rotation, f32 sx, f32 sy)
@@ -154,15 +154,15 @@ namespace Engine
       ent.add_component<Components::Color>(Math::Vec4D(r, g, b, a));
     }
 
-    void add_rigidbody(EntityId id, f32 mass)
+    void add_rigidbody(EntityId id)
     {
       auto ent = Engine::ECS::get_entity(id);
-      ent.add_component<Components::RigidBody>(mass);
+      ent.add_component<Components::RigidBody>();
     }
 
     void add_tag(EntityId id, const std::string& tag) {
-        auto ent = Engine::ECS::get_entity(id);
-        add_tag_helper(ent, tag);
+      auto ent = Engine::ECS::get_entity(id);
+      add_tag_helper(ent, tag);
     }
 
     EntityId create_from_table(const sol::table& t)
@@ -184,23 +184,23 @@ namespace Engine
             f32 sx = ct.get_or("sx", 1.0f);
             f32 sy = ct.get_or("sy", 1.0f);
             add_transform(id, x, y, rot, sx, sy);
-          } 
+          }
           else if (type == "Texture") {
             std::string path = ct.get_or("path", std::string{});
             add_texture(id, path);
-          } 
+          }
           else if (type == "Color") {
             f32 r = ct.get_or("r", 1.0f);
             f32 g = ct.get_or("g", 1.0f);
             f32 b = ct.get_or("b", 1.0f);
             f32 a = ct.get_or("a", 1.0f);
             add_color(id, r, g, b, a);
-          } 
+          }
           else if (type == "RigidBody") {
             f32 mass = ct.get_or("mass", 1.0f);
             //bool dyn = ct.get_or("dynamic", true);
-            add_rigidbody(id, mass);
-          } 
+            add_rigidbody(id);
+          }
           else if (type == "Tag") {
             std::string tag = ct.get_or("tag", std::string{});
             add_tag(id, tag);
@@ -235,15 +235,15 @@ namespace Engine
       game.set_function("add_color", &add_color);
       game.set_function("add_rigidbody", &add_rigidbody);
       game.set_function("add_tag", &add_tag);
-
+      
       // Add input checking functions
       game.set_function("is_key_held", [](const std::string& key) {
-          if (key == "W") return Engine::Input::is_held(Engine::KeyCode::W);
-          if (key == "A") return Engine::Input::is_held(Engine::KeyCode::A);
-          if (key == "S") return Engine::Input::is_held(Engine::KeyCode::S);
-          if (key == "D") return Engine::Input::is_held(Engine::KeyCode::D);
-          return false;
-      });      
+        if (key == "W") return Engine::Input::is_held(Engine::KeyCode::W);
+        if (key == "A") return Engine::Input::is_held(Engine::KeyCode::A);
+        if (key == "S") return Engine::Input::is_held(Engine::KeyCode::S);
+        if (key == "D") return Engine::Input::is_held(Engine::KeyCode::D);
+        return false;
+        });
 
       //Temp transform stuff (might change in future) - Ryan how
             // Register TransformData type
@@ -262,48 +262,48 @@ namespace Engine
 
 
       // proxy userdata
-         lua.new_usertype<EntityProxy>("Entity",
+      lua.new_usertype<EntityProxy>("Entity",
         "id", &EntityProxy::id,
-        
+
         // Generic component getter
         "get_component", [&lua](EntityProxy& p, const std::string& type) -> sol::object {
-            if (type == "Transform2D")
-                return sol::make_object(lua, get_component<Components::Transform2D>(p.id));
-            if (type == "Color")
-                return sol::make_object(lua, get_component<Components::Color>(p.id));
-            if (type == "Texture")
-                return sol::make_object(lua, get_component<Components::Texture>(p.id));
-            if (type == "RigidBody")
-                return sol::make_object(lua, get_component<Components::RigidBody>(p.id));
-            return sol::nil;
+          if (type == "Transform2D")
+            return sol::make_object(lua, get_component<Components::Transform2D>(p.id));
+          if (type == "Color")
+            return sol::make_object(lua, get_component<Components::Color>(p.id));
+          if (type == "Texture")
+            return sol::make_object(lua, get_component<Components::Texture>(p.id));
+          if (type == "RigidBody")
+            return sol::make_object(lua, get_component<Components::RigidBody>(p.id));
+          return sol::nil;
         },
 
         // Legacy add_* methods for backward compatibility
         "add_transform", [](EntityProxy& p, f32 x, f32 y, f32 rot, f32 sx, f32 sy) {
-            add_transform(p.id, x, y, rot, sx, sy); 
+          add_transform(p.id, x, y, rot, sx, sy);
         },
-        "add_texture", [](EntityProxy& p, const std::string& path) { 
-            add_texture(p.id, path); 
+        "add_texture", [](EntityProxy& p, const std::string& path) {
+          add_texture(p.id, path);
         },
         "add_color", [](EntityProxy& p, f32 r, f32 g, f32 b, f32 a) {
-            add_color(p.id, r, g, b, a); 
+          add_color(p.id, r, g, b, a);
         },
-        "add_tag", [](EntityProxy& p, const std::string& tag) { 
-            add_tag(p.id, tag); 
+        "add_tag", [](EntityProxy& p, const std::string& tag) {
+          add_tag(p.id, tag);
         }
         //temp stuff
         // "get_transform", [](EntityProxy& p) { return get_transform(p.id); },
         // "set_transform", [](EntityProxy& p, const TransformData& t) { set_transform(p.id, t); }
       );
-      
+
       game.set_function("create_entity", []() {
         EntityProxy p; p.id = create_entity(); return p;
-      });
+        });
 
 
       game.set_function("get_entity_proxy", [](EntityId id) {
         EntityProxy p; p.id = id; return p;
-      });
+        });
 
       lua["Game"] = game;
       std::cout << "[GameAPI] Registered Game API in Lua\n";
