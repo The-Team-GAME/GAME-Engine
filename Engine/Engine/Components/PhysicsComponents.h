@@ -53,9 +53,6 @@ namespace Components
         gravity_acc.y = 200.f;
       }
     }
-    
-    // Default ctor
-    RigidBody() {};
 
     // Just to fix reflection temporarily, remove when RigidBody is closer to finalized
     RigidBody(f32 rotation = 0.0f, f32 angular_velocity = 0.0f) : rotation(rotation), angular_velocity(angular_velocity)
