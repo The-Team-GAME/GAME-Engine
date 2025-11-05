@@ -1,15 +1,15 @@
 //-----------------------------------------------------------------------------------
-// file:    RotationSystem.h
+// file:    ParticleSystem.cpp
 // project: Monkey Stole My GPA
 //
-// author:   (100%)
+// author:  Ong Zi Ming (100%)
 //          Primary author
 //
-// email:   @digipen.edu
+// email:   o.ziming@digipen.edu
 //
-// brief:   This file defines a system that handles entity rotation by updating
-//          rotation angles based on rotation speed and delta time in the ECS
-//          framework.
+// brief:   Implementation of the listener-based particle system. 
+//          Each particle uses the engine's rect texture; 
+//          entities are destroyed as they fade out.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
@@ -21,9 +21,11 @@ using namespace Engine;
 using namespace Systems;
 
 // ---------------- RNG ----------------
-static std::mt19937& rng() { static thread_local std::mt19937 g{ std::random_device{}() }; return g; }
-float ParticleSystem::rand01() { static thread_local std::uniform_real_distribution<float> d(0.0f, 1.0f); return d(rng()); }
-float ParticleSystem::rand_range(float a, float b) { return a + (b - a) * rand01(); }
+namespace {
+  std::mt19937& rng() { static thread_local std::mt19937 g{ std::random_device{}() }; return g; }
+  float rand01() { static thread_local std::uniform_real_distribution<float> d(0.f, 1.f); return d(rng()); }
+  float rand_range(float a, float b) { return a + (b - a) * rand01(); }
+}
 
 // ------------- ctor / init -------------
 ParticleSystem::ParticleSystem() {
@@ -43,146 +45,118 @@ ParticleSystem::~ParticleSystem() {
   }
 }
 
+// ------------- init -------------
 void ParticleSystem::lazy_init() {
   if (initialized_) return;
   initialized_ = true;
+  pool_.assign(pool_size_, ParticleSlot{});
+}
 
-  // Assets
+bool ParticleSystem::ensure_entity(ParticleSlot& s) {
+  if (s.entity.is_valid()) return true;
+
   const auto white = Engine::Resources::get_rect_texture();
-  const auto font = Engine::Resources::load_font("fonts/Roboto-Regular.ttf", 16);
+  s.entity = Engine::ECS::create_entity()
+    .add_component<Components::Tag<"Particle">>()
+    .add_component<Components::Transform2D>(emitter_.position.x, emitter_.position.y, 0.f, 3.f, 3.f)
+    .add_component<Components::Texture>(white)
+    .add_component<Components::Color>(1.f, 1.f, 1.f, 1.f);
+  return s.entity.is_valid();
+}
 
-  // Pool
-  pool_.resize(pool_size_);
-  free_list_.reserve(pool_size_);
-  for (int i = 0; i < pool_size_; ++i) {
-    auto e = Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(emitter_.position.x, emitter_.position.y, 0.0f, emitter_.size0, emitter_.size0)
-      .add_component<Components::Texture>(white)
-      .add_component<Components::Color>(1.f, 1.f, 1.f, 0.f) // hidden when free
-      .add_component<Components::Tag<"Particle">>();
-    pool_[i].e = e;
-    pool_[i].alive = false;
-    free_list_.push_back(i);
+// ------------- spawning -------------
+void ParticleSystem::spawn_one(ParticleSlot& s) {
+  if (!ensure_entity(s)) return;
+
+  // reset transform/color/life
+  if (auto* t = s.entity.get_component<Components::Transform2D>()) {
+    t->position.x = emitter_.position.x;
+    t->position.y = emitter_.position.y;
+    t->scale.x = 3.f; t->scale.y = 3.f;
+    t->rotation = 0.f;
+  }
+  if (auto* c = s.entity.get_component<Components::Color>()) {
+    c->r = 1.f; c->g = 0.6f; c->b = 0.1f; c->a = 1.f;
   }
 
+  // velocity from cone with randomized speed
+  const float ang0 = deg2rad(emitter_.angle_deg);
+  const float half = deg2rad(emitter_.spread_deg * 0.5f);
+  const float ang = ang0 + rand_range(-half, half);
+  const float spd = rand_range(emitter_.speed_min, emitter_.speed_max);
+  s.velocity.x = std::cos(ang) * spd;
+  s.velocity.y = -std::sin(ang) * spd;   // up is negative Y if screen coords
+
+  s.life = rand_range(emitter_.life_min, emitter_.life_max);
+}
+
+void ParticleSystem::spawn_burst(int n) {
+  if (pool_.empty()) return;
+
+  int spawned = 0;
+  for (auto& s : pool_) {
+    if (!s.entity.is_valid() || s.life <= 0.f) {
+      spawn_one(s);
+      if (++spawned >= n) break;
+    }
+  }
+}
+
+// ------------- simulation -------------
+void ParticleSystem::simulate(float dt) {
+  for (auto& s : pool_) {
+    if (!s.entity.is_valid() || s.life <= 0.f) continue;
+
+    // life
+    s.life -= dt;
+    if (s.life <= 0.f) {
+      if (s.entity.is_valid()) s.entity.destroy();
+      s.entity = {};
+      s.life = 0.f;
+      s.velocity = { 0.f, 0.f };
+      continue;
+    }
+
+    // forces
+    s.velocity.y += emitter_.gravity * dt;
+    s.velocity *= std::max(0.f, 1.f - emitter_.drag * dt);
+
+    // integrate
+    if (auto* t = s.entity.get_component<Components::Transform2D>()) {
+      t->position.x += s.velocity.x * dt;
+      t->position.y += s.velocity.y * dt;
+      t->scale.x = std::max(0.f, t->scale.x - emitter_.shrink_rate * dt);
+      t->scale.y = std::max(0.f, t->scale.y - emitter_.shrink_rate * dt);
+    }
+
+    // fade
+    bool invisible = false;
+    if (auto* c = s.entity.get_component<Components::Color>()) {
+      c->a = std::max(0.f, c->a - emitter_.fade_rate * dt);
+      invisible = (c->a <= 0.f);
+    }
+
+    if (invisible) {
+      if (s.entity.is_valid()) s.entity.destroy();
+      s.entity = {};
+      s.life = 0.f;
+      s.velocity = { 0.f, 0.f };
+    }
+  }
 }
 
 // ------------- update -------------
 void ParticleSystem::update() {
-  //lazy_init();
 
-  /*
-  if (Engine::Input::is_pressed(KeyCode::MouseLeft)) {
-    auto m = Engine::Input::get_mouse_position();
-    Engine::EventManager::send_event<SpawnParticlesEvent>(Math::Vec2D{ m.x, m.y }, 64);
-  }
-  if (Engine::Input::is_pressed(KeyCode::Space)) emitter_.playing = !emitter_.playing;
-
-  const float move = 180.0f * dt;
-  if (Engine::Input::is_held(KeyCode::Left))  emitter_.position.x -= move;
-  if (Engine::Input::is_held(KeyCode::Right)) emitter_.position.x += move;
-  if (Engine::Input::is_held(KeyCode::Up))    emitter_.position.y -= move;
-  if (Engine::Input::is_held(KeyCode::Down))  emitter_.position.y += move;
-
-
+  if (!initialized_) return;
   const float dt = Engine::Time::get_fixed_dt();
-  // Continuous spawning
-  if (emitter_.playing && emitter_.rate > 0.0f) {
-    spawn_accum_ += emitter_.rate * dt;         // particles to spawn (fractional)
+
+  if (emitter_.playing && emitter_.rate > 0.f) {
+    spawn_accum_ += emitter_.rate * dt;
     int n = static_cast<int>(spawn_accum_);
     if (n > 0) { spawn_accum_ -= static_cast<float>(n); spawn_burst(n); }
   }
-  */
-  if (!initialized_) return;
-  const float dt = Engine::Time::get_fixed_dt();
+
   // Sim simulation
   simulate(dt);
-}
-
-// ------------- spawn / simulate -------------
-void ParticleSystem::spawn_burst(int count) {
-  for (int i = 0; i < count; ++i) spawn_one();
-}
-
-void ParticleSystem::spawn_one() {
-  if (free_list_.empty()) return;
-  const int idx = free_list_.back();
-  free_list_.pop_back();
-  Particle& p = pool_[idx];
-
-  // Velocity cone
-  const float ang0 = deg2rad(emitter_.angle_deg);
-  const float half = deg2rad(emitter_.spread_deg);
-  const float ang = ang0 + (rand01() * 2.f - 1.f) * half;
-  const float spd = rand_range(emitter_.speed_min, emitter_.speed_max);
-
-  p.alive = true;
-  p.life = rand_range(emitter_.life_min, emitter_.life_max);
-  p.max_life = p.life;
-  p.pos = emitter_.position;
-  p.vel = { std::cos(ang) * spd, -std::sin(ang) * spd }; // y-up
-  p.rot = rand_range(-10.f, 10.f);
-  p.ang_vel = rand_range(-180.f, 180.f);
-
-  p.size0 = emitter_.size0; p.size1 = emitter_.size1;
-  p.start = emitter_.color0; p.end = emitter_.color1;
-  p.gravity = emitter_.gravity; p.drag = emitter_.drag;
-
-  if (auto* t = p.e.get_component<Components::Transform2D>()) {
-    t->position.x = p.pos.x; t->position.y = p.pos.y;
-    t->rotation = p.rot;
-    t->scale.x = p.size0; t->scale.y = p.size0;
-  }
-  if (auto* c = p.e.get_component<Components::Color>()) {
-    c->r = p.start.r; c->g = p.start.g; c->b = p.start.b; c->a = p.start.a;
-  }
-}
-
-static inline Components::Color LerpColor(const Components::Color& a, const Components::Color& b, float t) {
-  return {
-    a.r + (b.r - a.r) * t,
-    a.g + (b.g - a.g) * t,
-    a.b + (b.b - a.b) * t,
-    a.a + (b.a - a.a) * t
-  };
-}
-
-void ParticleSystem::simulate(float dt) {
-  for (int i = 0; i < pool_size_; ++i) {
-    Particle& p = pool_[i];
-    if (!p.alive) continue;
-
-    // Lifetime
-    p.life -= dt;
-    if (p.life <= 0.f) {
-      p.alive = false;
-      if (auto* c = p.e.get_component<Components::Color>()) c->a = 0.f; // hide
-      free_list_.push_back(i);
-      continue;
-    }
-
-    const float t = 1.0f - (p.life / p.max_life); // 0..1
-
-    // Forces: gravity + drag
-    p.vel.y += p.gravity * dt;
-    p.vel *= std::max(0.f, 1.f - p.drag * dt);
-
-    // Integrate
-    p.pos += p.vel * dt;
-    p.rot += p.ang_vel * dt;
-
-    // Curves
-    const float size = p.size0 + (p.size1 - p.size0) * t;
-    const Components::Color col = LerpColor(p.start, p.end, t);
-
-    // Write back to ECS
-    if (auto* tr = p.e.get_component<Components::Transform2D>()) {
-      tr->position.x = p.pos.x; tr->position.y = p.pos.y;
-      tr->rotation = p.rot;
-      tr->scale.x = size; tr->scale.y = size;
-    }
-    if (auto* c = p.e.get_component<Components::Color>()) {
-      c->r = col.r; c->g = col.g; c->b = col.b; c->a = col.a;
-    }
-  }
 }
