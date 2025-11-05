@@ -33,7 +33,7 @@ namespace Engine {
       ComponentSignature excluded_signature;
       Engine::EventManager::EventSignature event_signature;
       LayerSignature active_layers;
-      SparseSet<EntityID> entities; // TODO: Holiday: remove this, just check layer_entities in WorldData every update/draw
+      SparseSet<EntityID> entities;
 
     public:
       System();

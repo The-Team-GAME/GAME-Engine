@@ -56,9 +56,6 @@ namespace Engine {
 
     Viewport current_viewport;
 
-    // Unit rectangle texture (1x1 white pixel)
-    Texture unit_rect;
-
     // Helper function to get the current projection matrix
     glm::mat4 get_projection_matrix() {
       return glm::ortho(0.0f, virtual_width, virtual_height, 0.0f, -1.0f, 1.0f);
@@ -343,25 +340,6 @@ namespace Engine {
       // Reserve space for batch vertices
       batch_state.vertices.reserve(MAX_VERTEX_COUNT);
 
-      // Create a 1x1 white pixel texture for unit_rect
-      unsigned char white_pixel[4] = { 255, 255, 255, 255 };
-
-      auto texture_data = std::make_shared<TextureData>();
-      texture_data->width = 1;
-      texture_data->height = 1;
-
-      glGenTextures(1, &texture_data->id);
-      glBindTexture(GL_TEXTURE_2D, texture_data->id);
-
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, white_pixel);
-
-      unit_rect = texture_data;
-
       Log::info("Renderer initialized with batching (max " + std::to_string(MAX_QUAD_COUNT) + " quads per batch)");
       Log::info("Virtual resolution: " + std::to_string((int)virtual_width) + "x" + std::to_string((int)virtual_height));
       return true;
@@ -386,9 +364,6 @@ namespace Engine {
 
       // Delete shader
       shader.reset();
-
-      // Clean up unit_rect texture
-      unit_rect.reset();
 
       Log::info("Renderer cleaned up");
       return true;
@@ -682,10 +657,6 @@ namespace Engine {
         0.0f, // No rotation
         Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f) // White (no tint)
       );
-    }
-
-    Texture get_rect_texture() {
-      return unit_rect;
     }
 
   } // namespace Graphics

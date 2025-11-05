@@ -30,7 +30,7 @@ namespace ImGuiManager {
 	void update();
 
 	// Register a panel function to be called every frame
-	void register_panel(const std::string& panel_name, const std::function<void()>& panel_func);
+	void register_panel(const std::function<void()>& panel_func);
 
 	// Clear all registered panels
 	void clear_panels();

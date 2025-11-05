@@ -27,14 +27,7 @@
 
 namespace {
   bool gui_enabled = true;
-
-  struct PanelInfo {
-    std::string name;
-    std::function<void()> render_func;
-    bool visible = true;
-  };
-
-  std::vector<PanelInfo> registered_panels;
+  std::vector<std::function<void()>> registered_panels;
 
   std::unordered_map<std::string, std::function<void()>> styles_map = {
     {"Eggplant", SetupImGuiStyle_Eggplant},
@@ -119,14 +112,6 @@ namespace ImGuiManager {
 
             ImGui::EndMenu();
           }
-          if (ImGui::BeginMenu("Windows"))
-          {
-            for (auto& panel : registered_panels)
-            {
-              ImGui::MenuItem(panel.name.c_str(), nullptr, &panel.visible);
-            }
-            ImGui::EndMenu();
-          }
           if (ImGui::BeginMenu("Styles"))
           {
             for (const auto& [style_name, _] : styles_map)
@@ -142,18 +127,7 @@ namespace ImGuiManager {
         }
 
         // Toolbar content below the menu bar
-        // Apply a slightly darker background than the menu bar
-        ImVec4 menubar_color = ImGui::GetStyleColorVec4(ImGuiCol_MenuBarBg);
-        ImVec4 toolbar_color = ImVec4(
-          menubar_color.x * 0.9f,  // 20% darker
-          menubar_color.y * 0.9f,
-          menubar_color.z * 0.9f,
-          menubar_color.w
-        );
-        ImGui::PushStyleColor(ImGuiCol_ChildBg, toolbar_color);
-        ImGui::BeginChild("##Toolbar", ImVec2(0, 40), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-
-        ImGui::Dummy(ImVec2(0.0f, 2.0f)); // Top padding
+        ImGui::Dummy(ImVec2(0.0f, 0.0f)); // Top padding
 
         ImGui::Indent(8.0f); // Left padding
         bool& is_paused = Engine::Core::is_paused();
@@ -185,9 +159,6 @@ namespace ImGuiManager {
 
         ImGui::Unindent(8.0f); // Remove left padding
         ImGui::Dummy(ImVec2(0.0f, 4.0f)); // Bottom padding
-
-        ImGui::EndChild();
-        ImGui::PopStyleColor();
 
         top_bar_height = ImGui::GetWindowHeight();
         ImGui::End();
@@ -222,10 +193,7 @@ namespace ImGuiManager {
       // Render all registered panels
       for (const auto& panel : registered_panels)
       {
-        if (panel.visible)
-        {
-          panel.render_func();
-        }
+        panel();
       }
     }
   }
@@ -269,24 +237,15 @@ namespace ImGuiManager {
     }
 
     // Make sure that imgui_viewport_enabled is false when gui is disabled
-    if (!gui_enabled) Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().imgui_viewport_enabled = false;
-
-    // Clear screen every frame when imgui_viewport_enabled is true
-    if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled) {
-      // use the theme color as the clear color
-      ImVec4 bg_color = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
-      Engine::Graphics::clear_screen({ bg_color.x * 0.6f, bg_color.y * 0.6f, bg_color.z * 0.6f, bg_color.w });
+    if (!gui_enabled)
+    {
+      Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().imgui_viewport_enabled = false;
     }
-
   }
 
-  void register_panel(const std::string& panel_name, const std::function<void()>& panel_func)
+  void register_panel(const std::function<void()>& panel_func)
   {
-    PanelInfo info;
-    info.name = panel_name;
-    info.render_func = panel_func;
-    info.visible = true;
-    registered_panels.push_back(info);
+    registered_panels.push_back(panel_func);
   }
 
   void clear_panels()
