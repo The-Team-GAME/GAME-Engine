@@ -57,17 +57,17 @@ namespace Engine {
         float rate{ 0.f };
 
         float life_min{ 1.5f };
-        float life_max{ 3.0f };
+        float life_max{ 10.0f };
 
         float speed_min{ 160.f };
         float speed_max{ 300.f };
-        float angle_deg{ -90.f };
+        float angle_deg{ 0.f };
         float spread_deg{ 80.f };
 
         float gravity{ 520.f };
         float drag{ 0.15f };
         float fade_rate{ 0.9f };
-        float shrink_rate{ 20.f };
+        float shrink_rate{ 5.f };
 
       };
 
