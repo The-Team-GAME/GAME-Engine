@@ -197,7 +197,7 @@ namespace Engine
             add_color(id, r, g, b, a);
           }
           else if (type == "RigidBody") {
-            f32 mass = ct.get_or("mass", 1.0f);
+            //f32 mass = ct.get_or("mass", 1.0f);
             //bool dyn = ct.get_or("dynamic", true);
             add_rigidbody(id);
           }
