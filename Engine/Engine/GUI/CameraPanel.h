@@ -41,13 +41,13 @@ inline void CameraPanel()
 
   // Display camera count and mode
   ImGui::Text("Total Cameras: %zu", camera_entities.size());
-  
+
   bool is_free_cam = !active_camera_entity.is_valid();
   if (is_free_cam) {
     ImGui::SameLine();
     ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.0f, 1.0f), "[FREE CAM MODE]");
   }
-  
+
   ImGui::Separator();
 
   // Entity Cameras Section

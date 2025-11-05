@@ -249,18 +249,24 @@ namespace Engine
             }
           }
           else {
-            // Free cam mode - move the renderer camera directly
-            Engine::Graphics::Camera current = Engine::Graphics::get_camera();
-            current.position.x -= delta.x / current.zoom;
-            current.position.y -= delta.y / current.zoom;
-            Engine::Graphics::set_camera(current);
-            free_cam_state = current; // Store the free cam state
+            // Free cam mode - move the free cam state
+            free_cam_state.position.x -= delta.x / free_cam_state.zoom;
+            free_cam_state.position.y -= delta.y / free_cam_state.zoom;
           }
         }
 
-        // If no active camera entity exists, apply free cam state
-        if (!has_active_camera) {
-          // Keep applying the free cam state (in case it was reset elsewhere)
+        // Sync free cam state with active camera, or apply it to renderer if no active camera
+        if (has_active_camera) {
+          // Update free cam state to match the active camera
+          auto* camera = active_camera.get_component<Components::Camera>();
+          if (camera) {
+            free_cam_state.position = camera->position;
+            free_cam_state.rotation = camera->rotation;
+            free_cam_state.zoom = camera->zoom;
+          }
+        }
+        else {
+          // Apply free cam state to renderer
           Engine::Graphics::set_camera(free_cam_state);
         }
       }
