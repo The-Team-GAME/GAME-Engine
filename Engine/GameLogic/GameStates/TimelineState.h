@@ -27,7 +27,7 @@ public:
 	// Declare public methods
 	void load() {};
 	void init() {
-	
+
 		Engine::Resources::set_resource_path("Assets/"); //default resource path
 
 
@@ -36,11 +36,11 @@ public:
 
 		//animating entity
 		bro = Engine::ECS::create_entity()
-			.add_component<Components::Transform2D>(400.0f, 400.0f, 0.0f, 1000.0f/ 7.0f, 130.0f)
+			.add_component<Components::Transform2D>(400.0f, 400.0f, 0.0f, 1000.0f / 7.0f, 130.0f)
 			.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
 			.add_component<Components::Texture>(Engine::Resources::load_texture("images/Bro_Idle_Spritesheet.png"))
-			.add_component<Components::TextureAtlas>((s32)(448/ 7), (s32)64, (s32)1, (s32)7, (s32)7) //index is set default to 0 playable around with
-		  .add_component<Components::Animation>(7, 0.1f);
+			.add_component<Components::TextureAtlas>(448 / 7, 64, 1, 7, 7) //index is set default to 0 playable around with
+			.add_component<Components::Animation>(7, 0.1f);
 		//.add_component<Components::TextureAtlas>(banana.get_component<Components::Transform2D>()->scale.x, banana.get_component<Components::Transform2D>()->scale.y, 7.0f, 0.0f, 7);
 		/*.add_component<Components::RigidBody>();
 		banana.get_component<Components::RigidBody>()->angular_velocity = 10.0f;*/
@@ -59,7 +59,7 @@ public:
 			.add_component<Components::Transform2D>(600.0f, 400.0f, 0.0f, 120.0f, 150.0f)
 			.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
 			.add_component<Components::Texture>(Engine::Resources::load_texture("images/monkey.png"))
-			.add_component<Components::TextureAtlas>(600, 400, (s32)1, (s32)1, (s32)1);
+			.add_component<Components::TextureAtlas>(600, 400, 1, 1, 1);
 
 		s32 monkey_entity_id = monkey.get_id();
 		timeline.set_selected_entity_id(monkey_entity_id);
@@ -70,16 +70,16 @@ public:
 		// Add the clip to the timeline
 		timeline.add_clip(
 			bro_entity_id,  // Texture ID (Placeholder)
-			(s32)0,                  // Layer 0
-			(s32)10,                 // Start Frame 10
-			(s32)60                  // Duration 60 frames
+			0,                  // Layer 0
+			10,                 // Start Frame 10
+			60                  // Duration 60 frames
 		);
 
 		timeline.add_clip(
 			monkey_entity_id,  // Texture ID (Placeholder)
-			(s32)1,                  // Layer 0
-			(s32)5,                 // Start Frame 10
-			(s32)40                  // Duration 60 frames
+			1,                  // Layer 0
+			5,                 // Start Frame 10
+			40                  // Duration 60 frames
 		);
 	};
 
@@ -88,7 +88,7 @@ public:
 	void draw() {
 		Engine::Graphics::clear_screen({ 0.078f, 0.078f, 0.078f, 1.0f });
 		timeline.draw();
-		
+
 
 		//banana.get_component<Components::Transform2D>()->rotation += 100.0f;
 
@@ -171,4 +171,4 @@ public:
 	};
 };
 
- 
+
