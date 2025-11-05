@@ -136,7 +136,6 @@ namespace Engine
     // Load the script
     Engine::LuaManager::load_script("Assets/scripts/player_logic.lua");
     Engine::LuaManager::load_script("Assets/scripts/buttons_test.lua");
-
   }
 
   /*=================================================================================

@@ -199,10 +199,11 @@ namespace Engine
     private:
       bool is_dragging = false;
       glm::vec2 last_mouse_pos = { 0.0f, 0.0f };
+      Engine::Graphics::Camera free_cam_state; // Free camera state when no entity camera is active
 
     public:
       CameraControlSystem() {
-        require_components<Components::Camera>();
+        // No component requirements - this system works globally
       }
 
       void update() override {
@@ -227,15 +228,18 @@ namespace Engine
           is_dragging = false;
         }
 
+        // Find the active camera entity
+        Engine::ECS::Entity active_camera = get_active_camera();
+        bool has_active_camera = active_camera.is_valid();
+
         // Perform camera drag
         if (is_dragging && ctrl_held && mouse_held) {
           // Calculate mouse delta
           glm::vec2 delta = current_mouse_pos - last_mouse_pos;
           last_mouse_pos = current_mouse_pos;
 
-          // Find the active camera and update its position
-          Engine::ECS::Entity active_camera = get_active_camera();
-          if (active_camera.is_valid()) {
+          if (has_active_camera) {
+            // Move the active camera entity
             auto* camera = active_camera.get_component<Components::Camera>();
             if (camera) {
               // Move camera in opposite direction of mouse drag for intuitive feel
@@ -244,6 +248,20 @@ namespace Engine
               camera->position.y -= delta.y / camera->zoom;
             }
           }
+          else {
+            // Free cam mode - move the renderer camera directly
+            Engine::Graphics::Camera current = Engine::Graphics::get_camera();
+            current.position.x -= delta.x / current.zoom;
+            current.position.y -= delta.y / current.zoom;
+            Engine::Graphics::set_camera(current);
+            free_cam_state = current; // Store the free cam state
+          }
+        }
+
+        // If no active camera entity exists, apply free cam state
+        if (!has_active_camera) {
+          // Keep applying the free cam state (in case it was reset elsewhere)
+          Engine::Graphics::set_camera(free_cam_state);
         }
       }
 

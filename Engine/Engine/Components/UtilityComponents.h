@@ -16,4 +16,6 @@ namespace Components
   template <fixed_string id>
   struct Tag {};
 
+  // Entities with this should not be modifyable by game dev
+  struct Internal {};
 }
