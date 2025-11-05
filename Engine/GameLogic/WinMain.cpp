@@ -26,6 +26,7 @@
 #include "GameStates/Documentation/PrefabsState.h"
 #include "GameStates/Dev/PhysicsTestState.h"
 #include "GameStates/DistortionEffectState.h"
+#include "GameStates/LuaState.h"
 
 /*=================================================================================
 Function Brief:
@@ -66,6 +67,7 @@ int main()
   Engine::SceneManager::register_scene<PrefabsState>("PrefabsState");
   Engine::SceneManager::register_scene<PhysicsTestState>("PhysicsTestState");
   Engine::SceneManager::register_scene<DistortionEffectState>("DistortionEffectState");
+  Engine::SceneManager::register_scene<LuaState>("LuaState");
 
   engine.run("MainMenuState");
 

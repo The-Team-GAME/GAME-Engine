@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------------
-// file:    BasicState.h
+// file:    MainMenuState.h
 // project: Monkey Stole My GPA
 //
 // author:  Chew Shee Yang (100%)
@@ -7,9 +7,7 @@
 //
 // email:   chew.s@digipen.edu
 //
-// brief:   This file defines the BasicState which demonstrates basic rendering
-//          capabilities including shapes, text, and audio playback. Serves as
-//          a test state for fundamental engine features.
+// brief:   
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------

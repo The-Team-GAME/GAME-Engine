@@ -11,16 +11,16 @@ local quad_transform = nil
 
 -- I am going to locally store the translate of the button
 
-function create_menu_background()
-    return Game.create_from_table{
-        components = {
-            { _type = "Transform", x = 800.0, y = 450.0, rotation = 0.0, sx = 1600.0, sy = 900.0 },
-            { _type = "Texture", path = "images/UI/MAIN MENU.png" },
-            { _type = "Color", r = 1.0, g = 1.0, b = 1.0, a = 1.0 },
-            { _type = "Tag", tag = "MainMenuState"}
-        }
-    }
-end
+-- function create_menu_background()
+--     return Game.create_from_table{
+--         components = {
+--             { _type = "Transform", x = 800.0, y = 450.0, rotation = 0.0, sx = 1600.0, sy = 900.0 },
+--             { _type = "Texture", path = "images/UI/MAIN MENU.png" },
+--             { _type = "Color", r = 1.0, g = 1.0, b = 1.0, a = 1.0 },
+--             { _type = "Tag", tag = "MainMenuState"}
+--         }
+--     }
+-- end
 
 function create_quad()
     local temp = Game.create_entity()
@@ -96,7 +96,7 @@ function update_movement(dt)
 end
 
 function create_menu_entities()
-    create_menu_background()
+    -- create_menu_background()
     create_quad()
     create_start_button()
     log_message("Menu entities created from Lua!")
