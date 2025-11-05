@@ -3,6 +3,7 @@
 #include "../Precompiled.h"
 #include <string>
 #include <unordered_map>
+#include <memory>
 #include <glm/glm.hpp>
 
 namespace Engine {
@@ -15,6 +16,9 @@ namespace Engine {
 
       // Destructor
       ~Shader();
+
+      // Load shader from files
+      static std::unique_ptr<Shader> load_from_file(const std::string& vertexPath, const std::string& fragmentPath);
 
       // Delete copy constructor and assignment operator
       Shader(const Shader&) = delete;
