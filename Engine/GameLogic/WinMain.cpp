@@ -25,6 +25,7 @@
 #include "GameStates/BasicState.h"
 #include "GameStates/Documentation/PrefabsState.h"
 #include "GameStates/Dev/PhysicsTestState.h"
+#include "GameStates/TimelineState.h"
 #include "GameStates/DistortionEffectState.h"
 #include "GameStates/LuaState.h"
 
@@ -66,6 +67,7 @@ int main()
   Engine::SceneManager::register_scene<BasicState>("BasicState");
   Engine::SceneManager::register_scene<PrefabsState>("PrefabsState");
   Engine::SceneManager::register_scene<PhysicsTestState>("PhysicsTestState");
+  Engine::SceneManager::register_scene<TimelineState>("TimelineState");
   Engine::SceneManager::register_scene<DistortionEffectState>("DistortionEffectState");
   Engine::SceneManager::register_scene<LuaState>("LuaState");
 
