@@ -84,7 +84,6 @@ void ParticleSystem::update() {
   if (Engine::Input::is_held(KeyCode::Up))    emitter_.position.y -= move;
   if (Engine::Input::is_held(KeyCode::Down))  emitter_.position.y += move;
 
-  */
 
   const float dt = Engine::Time::get_fixed_dt();
   // Continuous spawning
@@ -93,7 +92,8 @@ void ParticleSystem::update() {
     int n = static_cast<int>(spawn_accum_);
     if (n > 0) { spawn_accum_ -= static_cast<float>(n); spawn_burst(n); }
   }
-
+  */
+  const float dt = Engine::Time::get_fixed_dt();
   // Sim simulation
   simulate(dt);
 }
