@@ -131,9 +131,7 @@
     <ClInclude Include="Engine\GUI\TilemapPanel.h" />
     <ClInclude Include="Engine\GUI\ViewportPanel.h" />
     <ClInclude Include="Engine\Systems\GraphicsSystem.h" />
-    <ClInclude Include="GameLogic\Components\Components.h" />
     <ClInclude Include="Engine\Core.h" />
-    <ClInclude Include="GameLogic\GameStates\DevSpriteAnimationState.h" />
     <ClInclude Include="Engine\Components\Components.h" />
     <ClInclude Include="Engine\Reflection\Helpers.h" />
     <ClInclude Include="Engine\Reflection\Reflect.h" />
@@ -187,8 +185,10 @@
     <ClInclude Include="Engine\GUI\PerformanceViewerPanel.h" />
     <ClInclude Include="Engine\GUI\SceneChooserPanel.h" />
     <ClInclude Include="Engine\SceneManager.h" />
-    <ClInclude Include="Engine\Components\HealthComponents.h" />
-    <ClInclude Include="Engine\Systems\HealthSystems.h" />
+    <ClInclude Include="GameLogic\Components\HealthComponents.h" />
+    <ClInclude Include="GameLogic\GameStates\DistortionEffectState.h" />
+    <ClInclude Include="GameLogic\GameStates\EmptyState.h" />
+    <ClInclude Include="GameLogic\GameStates\LuaState.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -204,11 +204,8 @@
     <ClInclude Include="Engine\Events\Events.h" />
     <ClInclude Include="Engine\Events\InputEvents.h" />
     <ClInclude Include="Engine\Events\WindowEvents.h" />
-    <ClInclude Include="Engine\FileIO\EngineSettings.h" />
-    <ClInclude Include="Engine\FileIO\LocalSettings.h" />
     <ClInclude Include="Engine\FileIO\PrefabsFileIO.h" />
     <ClInclude Include="Engine\FileIO\SettingsManager.h" />
-    <ClInclude Include="Engine\FileIO\UserSettings.h" />
     <ClInclude Include="Engine\GUI\ResourceManagerPanel.h" />
     <ClInclude Include="Engine\GUI\widgets\TextureAtlasWidget.h" />
     <ClInclude Include="Engine\MonkeyEngine.h" />

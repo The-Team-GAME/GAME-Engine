@@ -13,6 +13,7 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "ShowcaseState.h"
+#include "../Components/HealthComponents.h"
 
 void ShowcaseState::load() {
   Engine::Resources::set_resource_path("Assets/");

@@ -151,7 +151,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClCompile Include="Engine\Lua\LuaManager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Engine\Components\HealthComponents.h" />
+    <ClInclude Include="GameLogic\Components\HealthComponents.h" />
     <ClInclude Include="Engine\ECS\Reflection.h" />
     <ClInclude Include="Engine\ECS\SparseSet.h" />
     <ClInclude Include="Engine\Events\RegisterAllEvents.h" />
@@ -188,7 +188,6 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="Engine\Reflection\ReflectionLibrary\Print.h" />
     <ClInclude Include="Engine\LevelManager.h" />
     <ClInclude Include="Engine\SceneManager.h" />
-    <ClInclude Include="Engine\Systems\HealthSystems.h" />
     <ClInclude Include="Engine\Systems\ParticleSystem.h" />
     <ClInclude Include="Engine\Systems\Systems.h" />
     <ClInclude Include="Engine\Systems\UISystem.h" />
@@ -205,7 +204,6 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="Engine\GUI\TilemapPanel.h" />
     <ClInclude Include="Engine\GUI\ViewportPanel.h" />
     <ClInclude Include="Engine\Systems\GraphicsSystem.h" />
-    <ClInclude Include="GameLogic\Components\Components.h" />
     <ClInclude Include="Engine\Core.h" />
     <ClInclude Include="Engine\Components\Components.h" />
     <ClInclude Include="Engine\Reflection\Helpers.h" />
