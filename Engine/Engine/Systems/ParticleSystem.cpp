@@ -16,7 +16,6 @@
 #include "ParticleSystem.h"
 #include <random>
 #include <algorithm>
-#include <cmath>
 
 using namespace Engine;
 using namespace Systems;
@@ -28,7 +27,20 @@ float ParticleSystem::rand_range(float a, float b) { return a + (b - a) * rand01
 
 // ------------- ctor / init -------------
 ParticleSystem::ParticleSystem() {
+  Engine::EventManager::add_event_listener<SpawnParticlesEvent>(
+    [this](const SpawnParticlesEvent& e) {
+      if (!initialized_) lazy_init();
+      emitter_.position = e.pos;
+      spawn_burst(std::max(0, e.count));
+      });
+  subscribed_ = true;
+}
 
+ParticleSystem::~ParticleSystem() {
+  if (subscribed_) { 
+    Engine::EventManager::remove_event_listener<SpawnParticlesEvent>(); 
+    subscribed_ = false; 
+  }
 }
 
 void ParticleSystem::lazy_init() {
@@ -36,7 +48,7 @@ void ParticleSystem::lazy_init() {
   initialized_ = true;
 
   // Assets
-  const auto white = Engine::Resources::load_texture("images/white.png");
+  const auto white = Engine::Resources::get_rect_texture();
   const auto font = Engine::Resources::load_font("fonts/Roboto-Regular.ttf", 16);
 
   // Pool
@@ -59,22 +71,22 @@ void ParticleSystem::lazy_init() {
 void ParticleSystem::update() {
   lazy_init();
 
-  // Controls
-  if (Engine::Input::is_pressed(KeyCode::Space)) {
-    emitter_.playing = !emitter_.playing;
-  }
+  /*
   if (Engine::Input::is_pressed(KeyCode::MouseLeft)) {
     auto m = Engine::Input::get_mouse_position();
-    emitter_.position = { m.x, m.y };
-    spawn_burst(64);
+    Engine::EventManager::send_event<SpawnParticlesEvent>(Math::Vec2D{ m.x, m.y }, 64);
   }
-  const float dt = Engine::Time::get_fixed_dt();
+  if (Engine::Input::is_pressed(KeyCode::Space)) emitter_.playing = !emitter_.playing;
+
   const float move = 180.0f * dt;
   if (Engine::Input::is_held(KeyCode::Left))  emitter_.position.x -= move;
   if (Engine::Input::is_held(KeyCode::Right)) emitter_.position.x += move;
   if (Engine::Input::is_held(KeyCode::Up))    emitter_.position.y -= move;
   if (Engine::Input::is_held(KeyCode::Down))  emitter_.position.y += move;
 
+  */
+
+  const float dt = Engine::Time::get_fixed_dt();
   // Continuous spawning
   if (emitter_.playing && emitter_.rate > 0.0f) {
     spawn_accum_ += emitter_.rate * dt;         // particles to spawn (fractional)

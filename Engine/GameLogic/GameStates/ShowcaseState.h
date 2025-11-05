@@ -16,7 +16,8 @@
 #pragma once
 
 #include "../../Engine/MonkeyEngine.h"
-#include "../Components/Components.h"
+#include "../../Engine/Systems/ParticleSystem.h"
+//#include "../Components/Components.h"
 
 /* ===================== //
 // Custom Events         //
@@ -91,9 +92,6 @@ private:
   const f32 player_punch_height = 64.0f;
 
   // Player health stuff
-  f32 hp_drain_per_sec = 5.0f;
-  f32 hp_heal_while_moving_per_sec = 10.0f;
-  f32 hp_carry = 0.0f;
   f32 hpbar_left = 50.0f, hpbar_top = 320.0f, hpbar_w = 220.0f, hpbar_h = 18.0f;
 
 public:

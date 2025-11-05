@@ -20,16 +20,22 @@
 #include "../Resources.h"
 #include "../InputManager.h"
 #include "../Time.h"
+#include "../EventManager/EventManager.h"
 
 
 namespace Engine {
 	namespace Systems {
 
+		// Event for decoupled particle spawning.
+		struct SpawnParticlesEvent {
+			Math::Vec2D pos{ 0.f,0.f };
+			int count{ 0 };
+		};
 
 		class ParticleSystem final : public Engine::ECS::System {
 		public:
 			ParticleSystem();
-			~ParticleSystem() override = default;
+			~ParticleSystem() override;
 
 
 			// Runs the particle simulation, spawns new particles, and writes back to ECS.
@@ -70,7 +76,7 @@ namespace Engine {
 				Math::Vec2D position{ 480.f, 260.f };
 				float rate{ 220.f }; // particles/sec
 				int burst{ 0 }; // one-shot count
-				bool playing{ true };
+				bool playing{ false };
 
 
 				// initial velocity cone
@@ -121,6 +127,8 @@ namespace Engine {
 			EmitterDesc emitter_{};
 			float spawn_accum_{ 0.f };
 			bool initialized_{ false };
+
+			bool subscribed_{ false };
 
 		};
 
