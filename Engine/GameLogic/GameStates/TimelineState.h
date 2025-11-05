@@ -5,7 +5,7 @@
 
 
 // Define the class and inherit from the GameState template
-class TimelineState : public Engine::GameState<TimelineState> {
+class TimelineState : public Engine::Scene {
 private:
 	// Declare member variable
 	Timeline timeline;
@@ -33,7 +33,6 @@ public:
 		/*.add_component<Components::RigidBody>();
 		banana.get_component<Components::RigidBody>()->angular_velocity = 10.0f;*/
 
-		bro.get_component<Components::Animation>()->isPlaying = false; //for when the timeline wasnt controlling the frames(unused)
 		//ImTextureID bro_texture_handle = (ImTextureID)(intptr_t)bro.get_component<Components::Texture>()->texture_handle;
 
 
