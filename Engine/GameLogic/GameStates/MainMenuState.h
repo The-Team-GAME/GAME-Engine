@@ -31,12 +31,6 @@ public:
       .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
       .add_to_layer("background");
 
-    // Engine::ECS::create_entity()
-    //   .add_component<Components::Tag<"MainMenuState">>()
-    //   .add_component<Components::Transform2D>(800.0f, 700.0f, 0.0f, 192.0f * 1.5f, 64.0f * 1.5f)
-    //   .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/Button_Start.png"))
-    //   .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f));
-
     Engine::ECS::create_entity()
       .add_component<Components::Tag<"MainMenuState">>()
       .add_component<Components::Transform2D>(800.0f, 700.0f, 0.0f, 192.0f * 1.5f, 64.0f * 1.5f)
