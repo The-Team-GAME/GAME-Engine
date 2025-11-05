@@ -46,7 +46,7 @@ int main()
 
 
   // Start the engine
-  Engine::Core engine{};
+  Engine::Core::init();
 
   // Register game layers at startup
   Engine::ECS::register_layer("background"); // Static background layer
@@ -69,7 +69,9 @@ int main()
   Engine::SceneManager::register_scene<DistortionEffectState>("DistortionEffectState");
   Engine::SceneManager::register_scene<LuaState>("LuaState");
 
-  engine.run("MainMenuState");
+  Engine::Core::run("MainMenuState");
+
+  Engine::Core::exit();
 
 
   return 0;
