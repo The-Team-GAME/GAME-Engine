@@ -95,8 +95,7 @@ inline void CameraPanel()
     // Create new camera button
     if (ImGui::Button("Create New Camera")) {
       Engine::ECS::Entity new_entity = Engine::ECS::create_entity();
-      new_entity.add_component<Components::Camera>("New Camera", false);
-      new_entity.add_component<Components::Transform2D>(Math::Vec2D(0.0f, 0.0f), 0.0f, Math::Vec2D(1.0f, 1.0f));
+      new_entity.add_component<Components::Camera>("New Camera", false, Math::Vec2D(0.0f, 0.0f), 0.0f, 1.0f);
       selected_camera_id = static_cast<s32>(new_entity.get_id());
     }
 
@@ -127,80 +126,74 @@ inline void CameraPanel()
     else
     {
       auto* camera = entity.get_component<Components::Camera>();
-      auto* transform = entity.get_component<Components::Transform2D>();
 
-      if (!transform) {
-        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Camera entity missing Transform2D component!");
+      ImGui::Text("Editing: Entity %d", selected_camera_id);
+      ImGui::Separator();
+
+      // Active toggle
+      bool active = camera->is_active;
+      if (ImGui::Checkbox("Active", &active)) {
+        // If activating this camera, deactivate all others
+        if (active) {
+          Engine::ECS::for_each_entity_with<Components::Camera>([](Engine::ECS::Entity e) {
+            auto* cam = e.get_component<Components::Camera>();
+            if (cam) cam->is_active = false;
+            });
+        }
+        camera->is_active = active;
       }
-      else {
-        ImGui::Text("Editing: Entity %d", selected_camera_id);
-        ImGui::Separator();
 
-        // Active toggle
-        bool active = camera->is_active;
-        if (ImGui::Checkbox("Active", &active)) {
-          // If activating this camera, deactivate all others
-          if (active) {
-            Engine::ECS::for_each_entity_with<Components::Camera>([](Engine::ECS::Entity e) {
-              auto* cam = e.get_component<Components::Camera>();
-              if (cam) cam->is_active = false;
-              });
-          }
-          camera->is_active = active;
-        }
+      ImGui::SameLine();
+      ImGui::TextDisabled("(?)");
+      if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Only one camera can be active at a time.\nActivating this will deactivate others.");
+      }
 
-        ImGui::SameLine();
-        ImGui::TextDisabled("(?)");
-        if (ImGui::IsItemHovered()) {
-          ImGui::SetTooltip("Only one camera can be active at a time.\nActivating this will deactivate others.");
-        }
+      // Camera name
+      ImGui::Text("Name:");
+      char name_buffer[256];
+      strncpy_s(name_buffer, camera->name.c_str(), sizeof(name_buffer) - 1);
+      name_buffer[sizeof(name_buffer) - 1] = '\0';
+      if (ImGui::InputText("##Name", name_buffer, sizeof(name_buffer))) {
+        camera->name = name_buffer;
+      }
 
-        // Camera name
-        ImGui::Text("Name:");
-        char name_buffer[256];
-        strncpy_s(name_buffer, camera->name.c_str(), sizeof(name_buffer) - 1);
-        name_buffer[sizeof(name_buffer) - 1] = '\0';
-        if (ImGui::InputText("##Name", name_buffer, sizeof(name_buffer))) {
-          camera->name = name_buffer;
-        }
+      ImGui::Separator();
 
-        ImGui::Separator();
+      // Position controls
+      ImGui::Text("Position:");
+      float pos[2] = { camera->position.x, camera->position.y };
+      if (ImGui::DragFloat2("##Pos", pos, 1.0f, -10000.0f, 10000.0f, "%.2f")) {
+        camera->position = { pos[0], pos[1] };
+      }
 
-        // Position controls
-        ImGui::Text("Position:");
-        float pos[2] = { transform->position.x, transform->position.y };
-        if (ImGui::DragFloat2("##Pos", pos, 1.0f, -10000.0f, 10000.0f, "%.2f")) {
-          transform->position = { pos[0], pos[1] };
-        }
+      // Rotation control
+      ImGui::Text("Rotation:");
+      float rotation = camera->rotation;
+      if (ImGui::DragFloat("##Rot", &rotation, 0.5f, -360.0f, 360.0f, "%.2f°")) {
+        camera->rotation = rotation;
+      }
 
-        // Rotation control
-        ImGui::Text("Rotation:");
-        float rotation = transform->rotation;
-        if (ImGui::DragFloat("##Rot", &rotation, 0.5f, -360.0f, 360.0f, "%.2f°")) {
-          transform->rotation = rotation;
-        }
+      // Zoom control
+      ImGui::Text("Zoom:");
+      float zoom = camera->zoom;
+      if (ImGui::DragFloat("##Zoom", &zoom, 0.01f, 0.01f, 10.0f, "%.3f")) {
+        camera->zoom = zoom;
+      }
 
-        // Zoom control (using scale.x)
-        ImGui::Text("Zoom:");
-        float zoom = transform->scale.x;
-        if (ImGui::DragFloat("##Zoom", &zoom, 0.01f, 0.01f, 10.0f, "%.3f")) {
-          transform->scale.x = zoom;
-        }
+      ImGui::Separator();
 
-        ImGui::Separator();
+      // Quick actions
+      if (ImGui::Button("Reset Camera")) {
+        camera->position = { 0.0f, 0.0f };
+        camera->rotation = 0.0f;
+        camera->zoom = 1.0f;
+      }
 
-        // Quick actions
-        if (ImGui::Button("Reset Camera")) {
-          transform->position = { 0.0f, 0.0f };
-          transform->rotation = 0.0f;
-          transform->scale.x = 1.0f;
-        }
+      ImGui::SameLine();
 
-        ImGui::SameLine();
-
-        if (ImGui::Button("Focus at Origin")) {
-          transform->position = { 0.0f, 0.0f };
-        }
+      if (ImGui::Button("Focus at Origin")) {
+        camera->position = { 0.0f, 0.0f };
       }
     }
   }

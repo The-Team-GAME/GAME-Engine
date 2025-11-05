@@ -122,19 +122,18 @@ namespace Engine
     class CameraSystem : public Engine::ECS::System {
     public:
       CameraSystem() {
-        require_components<Components::Camera, Components::Transform2D>();
+        require_components<Components::Camera>();
       }
 
       void update_entity(Engine::ECS::Entity& entity) override {
         auto* camera_component = entity.get_component<Components::Camera>();
-        auto* transform = entity.get_component<Components::Transform2D>();
 
         // If this camera is marked as active, apply it to the renderer
         if (camera_component->is_active) {
           Engine::Graphics::Camera renderer_camera;
-          renderer_camera.position = transform->position;
-          renderer_camera.rotation = transform->rotation;
-          renderer_camera.zoom = transform->scale.x; // Use scale.x as zoom
+          renderer_camera.position = camera_component->position;
+          renderer_camera.rotation = camera_component->rotation;
+          renderer_camera.zoom = camera_component->zoom;
           Engine::Graphics::set_camera(renderer_camera);
         }
       }
@@ -240,13 +239,13 @@ namespace Engine
           last_mouse_pos = current_mouse_pos;
 
           if (has_active_camera) {
-            // Move the active camera entity using its Transform2D
-            auto* transform = active_camera.get_component<Components::Transform2D>();
-            if (transform) {
+            // Move the active camera entity using its Camera component
+            auto* camera = active_camera.get_component<Components::Camera>();
+            if (camera) {
               // Move camera in opposite direction of mouse drag for intuitive feel
-              // Also account for camera zoom (scale.x)
-              transform->position.x -= delta.x / transform->scale.x;
-              transform->position.y -= delta.y / transform->scale.x;
+              // Also account for camera zoom
+              camera->position.x -= delta.x / camera->zoom;
+              camera->position.y -= delta.y / camera->zoom;
             }
           }
           else {
@@ -258,12 +257,12 @@ namespace Engine
 
         // Sync free cam state with active camera, or apply it to renderer if no active camera
         if (has_active_camera) {
-          // Update free cam state to match the active camera's Transform2D
-          auto* transform = active_camera.get_component<Components::Transform2D>();
-          if (transform) {
-            free_cam_state.position = transform->position;
-            free_cam_state.rotation = transform->rotation;
-            free_cam_state.zoom = transform->scale.x; // Use scale.x as zoom
+          // Update free cam state to match the active camera
+          auto* camera = active_camera.get_component<Components::Camera>();
+          if (camera) {
+            free_cam_state.position = camera->position;
+            free_cam_state.rotation = camera->rotation;
+            free_cam_state.zoom = camera->zoom;
           }
         }
         else {
