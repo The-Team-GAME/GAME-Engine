@@ -1,3 +1,16 @@
+//-----------------------------------------------------------------------------------
+// file:    PhysicsTestState.h
+// project: Monkey Stole My GPA
+//
+// author:  Cheng Ming Xian (100%)
+//          Primary author
+//
+// email:   c.mingxian@digipen.edu
+//
+// brief:   This file defines a gamestate used to test out physics and collision logic.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "../../Engine/MonkeyEngine.h"

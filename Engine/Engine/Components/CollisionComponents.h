@@ -10,8 +10,29 @@ enum Shapes {
 
 struct AABB {
   Vec2D pos;
-  Vec2D min; // Bottom left
-  Vec2D max; // Top right
+  // Adding this afterwards
+  f32 half_width;
+  f32 half_height;
+
+  AABB(Vec2D pos = Vec2D(0,0), f32 width = 0.f, f32 height = 0.f) : pos(pos), half_width(width / 2), half_height(height / 2)
+  {
+    // Empty by design
+  }
+
+  AABB(f32 width, f32 height) : pos(0,0), half_width(width / 2), half_height(height / 2)
+  {
+    // For the old style of AABB so it wont return any problems b4 M2 submissions
+    // Empty by design
+  }
+
+  Vec2D min() const
+  {
+    return pos - Vec2D(half_width, half_height);
+  }
+  Vec2D max() const
+  {
+    return pos + Vec2D(half_width, half_height);
+  }
 };
 
 struct Circle {
@@ -35,23 +56,17 @@ namespace Components
     f32 width;
     f32 height;
     f32 radius;
-    Shapes shape;
     AABB aabb;
-    Polygon poly;
 
     // Rect box collider ctor
     BoxCollider(f32 width, f32 height, bool col) : width(width), height(height), detect_collisions(col)
     { 
-      // For now we wont initialise the AABB cuz its gona get updated before the collision check anyways so maybe thats a good thing
-
-      //Vec2D min = center - Vec2D(width / 2, height / 2);
-      //Vec2D max = center + Vec2D(width / 2, height / 2);
-      //aabb.min = min;
-      //aabb.max = max;
+      aabb.half_width = width / 2;
+      aabb.half_height = height / 2;
     }
 
     // cricle box collider ctor (not used for now)
-    BoxCollider(f32 radius) : radius(radius), shape(CIRCLE)
+    BoxCollider(f32 radius) : radius(radius)
     { 
       /* empty by design */
     }

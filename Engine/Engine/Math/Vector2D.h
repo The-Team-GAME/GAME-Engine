@@ -28,6 +28,8 @@ namespace Math {
     f32 x, y;
 
     Vec2D(f32 x_vec = 0, f32 y_vec = 0) : x{ x_vec }, y{ y_vec } {}; //(default)ctor
+    template <typename T1, typename T2>
+    Vec2D(T1 x_vec, T2 y_vec) : x{ static_cast<f32>(x_vec) }, y{ static_cast<f32>(y_vec) } {}; //int ctor for when im lazy to type .f so i let the template convert to float for me
     Vec2D(Vec2D const&) = default; //copy constructor
 
     // Constructor from glm::vec2
