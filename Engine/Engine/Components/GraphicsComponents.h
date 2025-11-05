@@ -205,6 +205,15 @@ namespace Components
     }
   };
 
+  struct Distortion
+  {
+    f32 intensity = 1.0f;  // Strength of the distortion effect (0.0 to 1.0+)
+    f32 speed = 1.0f;      // Speed of the glitch animation
+
+    Distortion() : intensity(1.0f), speed(1.0f) {}
+    Distortion(f32 inten, f32 spd) : intensity(inten), speed(spd) {}
+  };
+
   struct Color : public Math::Vec4D {
     f32& r;
     f32& g;
@@ -302,6 +311,7 @@ namespace Components
 
 REGISTER_COMPONENT(Components::Text, content)
 REGISTER_COMPONENT(Components::Camera, name, position, rotation, zoom, is_active)
+REGISTER_COMPONENT(Components::Distortion, intensity, speed)
 REGISTER_COMPONENT_CUSTOM(Components::Color, r, g, b, a)
 REGISTER_COMPONENT_CUSTOM(Components::Texture, path)
 REGISTER_COMPONENT_CUSTOM(Components::Font, path, font_size)
