@@ -9,6 +9,14 @@ local move_speed = 300.0  -- pixels per second
 local quad = nil
 local quad_transform = nil
 
+local PLAYER_WIDTH = 20.0
+local PLAYER_HEIGHT = 12.0
+local PLAYER_SCALE = 3.0
+
+local CHASER_WIDTH = 64.0
+local CHASER_HEIGHT = 64.0
+local CHASER_SCALE = 2.0
+
 -- I am going to locally store the translate of the button
 
 -- function create_menu_background()
@@ -22,12 +30,14 @@ local quad_transform = nil
 --     }
 -- end
 
-function create_quad()
+function create_chaser()
     local temp = Game.create_entity()
-    temp:add_transform(350.0, 700.0, 0.0, 100.0, 100.0)
+    temp:add_transform(350.0, 700.0, 0.0, 
+        CHASER_WIDTH * CHASER_SCALE, 
+        CHASER_HEIGHT * CHASER_SCALE)
     temp:add_texture("images/monkey.png")
     temp:add_color(1.0, 1.0, 1.0, 1.0)
-    temp:add_tag("MainMenuState")
+    temp:add_tag("LuaState")
 
     quad = temp  -- Store reference
     quad_transform = temp:get_component("Transform2D")
@@ -35,23 +45,38 @@ function create_quad()
     return temp;
 end
 
-function create_start_button()
-    local btn = Game.create_entity()
-    btn:add_transform(800.0, 700.0, 0.0, 100.0, 100.0)
-    btn:add_texture("images/banana.png")
-    btn:add_color(1.0, 1.0, 1.0, 1.0)
-    btn:add_tag("MainMenuState")
+function create_player()
+    local player = Game.create_entity()
+    player:add_transform(800.0, 700.0, 0.0, 
+        PLAYER_WIDTH * PLAYER_SCALE,
+        PLAYER_HEIGHT * PLAYER_SCALE)
+    player:add_texture("images/banana.png")
+    player:add_color(1.0, 1.0, 1.0, 1.0)
+    player:add_tag("LuaState")
 
-    start_button = btn  -- Store reference
-    
+    start_button = player  -- Store reference
+
     --Set the trasform here
 
-    transform = btn:get_component("Transform2D")
+    transform = player:get_component("Transform2D")
 
     return btn
 end
 
-function chase_button(dt)
+function free_resources()
+    -- Get all entities and destroy them
+    local entities = Game.get_all_entities()
+    for _, entity in ipairs(entities) do
+        Game.destroy_entity(entity.id)
+    end
+    
+    -- Clear our global references
+    start_button = nil
+    quad = nil
+    menu_background = nil
+end
+
+function chase(dt)
     if not quad or not start_button then return end
 
     local q = quad:get_component("Transform2D")
@@ -95,9 +120,9 @@ function update_movement(dt)
     end
 end
 
-function create_menu_entities()
+function create_test()
     -- create_menu_background()
-    create_quad()
-    create_start_button()
+    create_chaser()
+    create_player()
     log_message("Menu entities created from Lua!")
 end

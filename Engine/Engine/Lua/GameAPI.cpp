@@ -109,6 +109,17 @@ namespace Engine
       );
     }
 
+     std::vector<EntityProxy> get_all_entities() {
+        std::vector<EntityProxy> proxies;
+        auto entities = Engine::ECS::get_all_entities();
+        for (auto& ent : entities) {
+            EntityProxy p;
+            p.id = ent.get_id();
+            proxies.push_back(p);
+        }
+        return proxies;
+    }
+
     // Create entity and return its id
     EntityId create_entity()
     {
@@ -299,6 +310,9 @@ namespace Engine
       game.set_function("create_entity", []() {
         EntityProxy p; p.id = create_entity(); return p;
         });
+
+
+      game.set_function("get_all_entities", &get_all_entities);
 
 
       game.set_function("get_entity_proxy", [](EntityId id) {

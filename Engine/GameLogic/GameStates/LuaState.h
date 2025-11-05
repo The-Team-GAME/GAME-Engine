@@ -26,22 +26,25 @@ public:
   void load() {
     Engine::Resources::set_resource_path("Assets/");
 
-    Engine::LuaManager::call_function("create_menu_entities");
+    Engine::LuaManager::call_function("create_test");
   };
 
   void init() {};
 
   void update() {
     Engine::LuaManager::call_function("update_movement", static_cast<f32>(Engine::Time::get_fixed_dt()));
-    Engine::LuaManager::call_function("chase_button", static_cast<f32>(Engine::Time::get_fixed_dt()));
+    Engine::LuaManager::call_function("chase", static_cast<f32>(Engine::Time::get_fixed_dt()));
   };
 
   void draw() {
     Engine::Graphics::clear_screen({ 0.2f, 0.2f, 0.2f, 1.0f });
   };
 
-  void free() {};
+  void free() {
+  };
 
   void unload() {
+    Engine::ECS::destroy_entities_with<Components::Tag<"LuaState">>();
+    Engine::LuaManager::call_function("free_resources");
   };
 };

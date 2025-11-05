@@ -17,6 +17,10 @@ namespace Engine
 
     // Register Game API into Sol state
     void register_api(sol::state& lua);
+    std::vector<EntityProxy> get_all_entities();
+    
+    template<typename T>
+    T* get_component(EntityId id);
 
     // Low-level wrappers (call your ECS/Resources APIs)
     EntityId create_entity();
