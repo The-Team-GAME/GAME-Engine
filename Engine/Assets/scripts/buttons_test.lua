@@ -13,8 +13,8 @@ local PLAYER_WIDTH = 20.0
 local PLAYER_HEIGHT = 12.0
 local PLAYER_SCALE = 3.0
 
-local CHASER_WIDTH = 64.0
-local CHASER_HEIGHT = 64.0
+local CHASER_WIDTH = 60.0
+local CHASER_HEIGHT = 84.0
 local CHASER_SCALE = 2.0
 
 -- I am going to locally store the translate of the button
