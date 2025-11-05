@@ -51,7 +51,17 @@ namespace Engine {
     void destroy_entities_with()
     {
       auto& containers = Internal::get_containers();
+      
+      // Create a vector copy to avoid iterator invalidation
+      std::vector<EntityID> entities_to_check;
+      entities_to_check.reserve(containers.active_entities.size());
       for (EntityID entityId : containers.active_entities)
+      {
+        entities_to_check.push_back(entityId);
+      }
+      
+      // Now iterate over the copy and destroy matching entities
+      for (EntityID entityId : entities_to_check)
       {
         Entity entity(entityId);
         if (has_components<T...>(entity))

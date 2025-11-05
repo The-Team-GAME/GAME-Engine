@@ -27,6 +27,7 @@
 #include "InputManager.h"
 #include "Audio/AudioPlayer.h"
 #include "Audio/AudioPlayerInternal.h"
+#include "Lua/LuaManager.h"
 #include "Resources.h"
 #include "ECS/ECS.h"
 #include "Events/WindowEvents.h"
@@ -93,6 +94,11 @@ namespace Engine
       throw std::runtime_error("Failed to initialize audio manager");
     }
 
+    // Initialize Lua manager
+    if (!Engine::LuaManager::init()) {
+      throw std::runtime_error("Failed to initialize Lua manager");
+    }
+
     Engine::Graphics::set_viewport({ 0, 0, engine_settings.window_width, engine_settings.window_height });
 
     Engine::Events::register_all_events();
@@ -115,6 +121,21 @@ namespace Engine
 
     register_engine_systems();
     register_all_panels();
+
+    // Just register one simple function
+    Engine::LuaManager::register_function("log_message", [](const std::string& message) {
+      std::cout << "[Lua] " << message << std::endl;
+    });
+
+   
+    // Set basic globals
+    Engine::LuaManager::set_global("GAME_VERSION", "1.0.0");
+    Engine::LuaManager::set_global("ENGINE_NAME", "Monkey Engine");  
+    Engine::LuaManager::set_global("MAX_ENTITIES", 1000);
+
+    // Load the script
+    Engine::LuaManager::load_script("Assets/scripts/player_logic.lua");
+    Engine::LuaManager::load_script("Assets/scripts/buttons_test.lua");
   }
 
   /*=================================================================================
@@ -248,6 +269,8 @@ namespace Engine
     Engine::Audio::exit();
     Engine::Resources::exit();
     Engine::Graphics::exit();
+
+    Engine::LuaManager::cleanup();
     ImGuiManager::exit();
     WindowManager::exit();
   }

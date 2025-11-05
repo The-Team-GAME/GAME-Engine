@@ -26,11 +26,12 @@ namespace Engine {
     public:
       Collision2DSystem(); // Default dtor that includes all the components needed for the entities called in the physics engine
 
-      // functionally the same as update_AABB but named differently for clarity sake
-      // void init_AABB(Components::RigidBody const& rigid, Components::BoxCollider& box);
+      void update() override;
+
+      void update_entity(Engine::ECS::Entity& entity) override;
 
       // update the AABB of the entity after it gets transformed
-      static void update_AABB(Components::RigidBody const& rigid, Components::BoxCollider& box);
+      static void update_AABB(Components::Transform2D const& xform, Components::BoxCollider& box);
 
       /*=========================/
       / Minkowski AABB Collision /
@@ -53,6 +54,32 @@ namespace Engine {
 
       // in this scenario the rect should be a wall
       bool rect_circle_coll(Components::BoxCollider const& lhs, Components::BoxCollider const& rhs);
+
+      /*==============/
+      / Quad Tree UwU /
+      /==============*/
+      // Ok so we are going to use a quad tree to settle our collisions to reduce the number of checks we need to make so that the engine runs smoother
+
+      enum { // enum for the quadrants in the quad tree
+        NE, NW, SE, SW
+      };
+      class QuadTree 
+      {
+      private:
+        AABB boundary; // The "size" of that quadrant to check (initial quadrant will basically be the size of the world, screen for now cuz we just testing)
+        std::vector<AABB> entity_vec; // Vector of objects stored at the current node of the quad tree
+        QuadTree* children[4]; // NW, NE, SW, SE child nodes
+
+        u32 const max_entities = 10; // The max number of entities that can be in this node before the tree is split again
+        u32 const max_depth = 10; // We are capping the number of times the tree can split :>
+
+
+        bool divided; // To check if the current node has been split
+        int depth; // Current depth of tree
+
+      public:
+
+      };
     };
   }
 }

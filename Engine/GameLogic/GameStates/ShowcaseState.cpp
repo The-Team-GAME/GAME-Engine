@@ -57,7 +57,7 @@ void ShowcaseState::init() {
     .add_component<Components::Transform2D>(1200.0f, 675.0f, 0.0f, 20.0f * 3.0f, 12.0f * 3.0f)
     .add_component<Components::Texture>(banana_texture)
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-    .add_component<Components::RigidBody>(Vec2D(1200.f, 675.f), false, false);
+    .add_component<Components::RigidBody>(false, false);
 
   auto* rigid = banana.get_component<Components::RigidBody>();
   rigid->rotation = 0.0f;
@@ -68,7 +68,7 @@ void ShowcaseState::init() {
     .add_component<Components::Transform2D>(200.0f, 655.0f, 0.0f, static_cast<f32>(player_idle_texture->width / 24) * 2.0f, static_cast<f32>(player_idle_texture->height) * 2.0f)
     .add_component<Components::Texture>(player_idle_texture)
     .add_component<Components::TextureAtlas>(static_cast<int>(player_idle_texture->width / 24), static_cast<int>(player_idle_texture->height), 1, 24, 24)
-    .add_component<Components::RigidBody>(Vec2D(200.f, 655.f), false, false)
+    .add_component<Components::RigidBody>(false, false)
     .add_component<Components::Health>(100, 100)
     .add_component<Components::Animation>(24, 0.1f)
     .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
@@ -375,7 +375,6 @@ void ShowcaseState::update() {
     is_punching = true;
     punch_timer = 0.0f;
   }
-
   // Collect banana with C key (using event system)
   if (Engine::Input::is_pressed(Engine::KeyCode::C)) {
     Engine::EventManager::send_event<CollectEvent>(player.get_id(), banana.get_id(), 1);

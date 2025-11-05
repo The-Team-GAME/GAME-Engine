@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------------
-// file:    BasicState.h
+// file:    MainMenuState.h
 // project: Monkey Stole My GPA
 //
 // author:  Chew Shee Yang (100%)
@@ -7,9 +7,7 @@
 //
 // email:   chew.s@digipen.edu
 //
-// brief:   This file defines the BasicState which demonstrates basic rendering
-//          capabilities including shapes, text, and audio playback. Serves as
-//          a test state for fundamental engine features.
+// brief:   
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
@@ -32,7 +30,6 @@ public:
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MAIN MENU.png"))
       .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
       .add_to_layer("background");
-
 
     Engine::ECS::create_entity()
       .add_component<Components::Tag<"MainMenuState">>()
