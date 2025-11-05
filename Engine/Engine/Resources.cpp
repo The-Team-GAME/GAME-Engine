@@ -20,30 +20,10 @@ std::unordered_map<std::string, std::weak_ptr<Engine::ECS::PrefabImpl>> Engine::
 // Vector to hold shared_ptr references for persistent resources
 std::vector<Engine::Resources::Resource> Engine::Resources::persistent_resources;
 
-Engine::Graphics::Texture Engine::Resources::unit_rect;
 std::string Engine::Resources::resource_path = "";
 
 bool Engine::Resources::init()
 {
-  // Create a 1x1 white pixel texture for unit_rect
-  unsigned char white_pixel[4] = { 255, 255, 255, 255 };
-
-  auto texture_data = std::make_shared<Engine::Graphics::TextureData>();
-  texture_data->width = 1;
-  texture_data->height = 1;
-
-  glGenTextures(1, &texture_data->id);
-  glBindTexture(GL_TEXTURE_2D, texture_data->id);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, white_pixel);
-
-  unit_rect = texture_data;
-
   Log::info("Resource manager initialized");
   return true;
 }
@@ -58,9 +38,6 @@ bool Engine::Resources::exit()
 
   // Clear persistent resources
   persistent_resources.clear();
-
-  // unit_rect will be automatically cleaned up when it goes out of scope
-  unit_rect.reset();
 
   Log::info("Resource manager cleaned up");
   return true;
@@ -359,7 +336,7 @@ Engine::Resources::Resource Engine::Resources::load(const std::string& filepath,
 
 Engine::Graphics::Texture Engine::Resources::get_rect_texture()
 {
-  return unit_rect;
+  return Engine::Graphics::get_rect_texture();
 }
 
 Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, bool append_resource_path, bool persist)
