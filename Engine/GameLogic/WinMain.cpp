@@ -25,6 +25,7 @@
 #include "GameStates/DevSpriteAnimationState.h"
 #include "GameStates/Documentation/PrefabsState.h"
 #include "GameStates/Dev/PhysicsTestState.h"
+#include "GameStates/DistortionEffectState.h"
 
 /*=================================================================================
 Function Brief:
@@ -64,6 +65,7 @@ int main()
   Engine::SceneManager::register_scene<DevSpriteAnimationState>("DevSpriteAnimationState");
   Engine::SceneManager::register_scene<PrefabsState>("PrefabsState");
   Engine::SceneManager::register_scene<PhysicsTestState>("PhysicsTestState");
+  Engine::SceneManager::register_scene<DistortionEffectState>("DistortionEffectState");
 
   engine.run("MainMenuState");
 
