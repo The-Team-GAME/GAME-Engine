@@ -26,12 +26,12 @@ namespace ImGuiWidgets {
     // Validate inputs
     if (texture.texture_handle->id == 0) {
       ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.0f, 1.0f), "No texture provided!");
-      return;
+      ImGui::PopID();
     }
 
     if (atlas.subTextures.empty()) {
       ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.0f, 1.0f), "No subtextures defined!");
-      return;
+      ImGui::PopID();
     }
 
     // // Display info

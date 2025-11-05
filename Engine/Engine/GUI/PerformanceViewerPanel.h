@@ -38,9 +38,8 @@ inline void PerformanceViewerPanel()
   static f32 display_fps = 0.0f;
   static f32 update_timer = 0.0f;
   static s32 frame_count = 0;
-  static f32 update_interval = 0.25f; // Changed to non-const to allow adjustment
+  static const f32 update_interval = 0.25f;
   static std::unordered_map<std::string, double> cached_percentages;
-  static bool sort_by_percentage = true; // Toggle for sorting mode
 
   update_timer += Engine::Time::get_real_dt();
   frame_count++;
@@ -78,6 +77,8 @@ inline void PerformanceViewerPanel()
     ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "[LOW]");
   }
 
+  ImGui::Spacing();
+
   // Tick Rate Control Section
   ImGui::SeparatorText("Tick Rate Control");
   f32 tick_rate_input = Engine::Time::get_tick_rate();
@@ -94,30 +95,12 @@ inline void PerformanceViewerPanel()
   if (!cached_percentages.empty()) {
     ImGui::SeparatorText("Performance Profiling");
 
-    // Sorting toggle
-    ImGui::Checkbox("Sort by Percentage", &sort_by_percentage);
-    ImGui::SameLine();
-    ImGui::TextDisabled("(?)");
-    if (ImGui::IsItemHovered()) {
-      ImGui::SetTooltip("Toggle between sorting by percentage (descending) or alphabetically");
-    }
-    ImGui::Spacing();
-
-    // Sort based on toggle
+    // Sort by percentage (descending)
     std::vector<std::pair<std::string, double>> sorted_percentages(
       cached_percentages.begin(), cached_percentages.end()
     );
-
-    if (sort_by_percentage) {
-      // Sort by percentage (descending)
-      std::sort(sorted_percentages.begin(), sorted_percentages.end(),
-        [](const auto& a, const auto& b) { return a.second > b.second; });
-    }
-    else {
-      // Sort alphabetically (ascending)
-      std::sort(sorted_percentages.begin(), sorted_percentages.end(),
-        [](const auto& a, const auto& b) { return a.first < b.first; });
-    }
+    std::sort(sorted_percentages.begin(), sorted_percentages.end(),
+      [](const auto& a, const auto& b) { return a.second > b.second; });
 
     for (const auto& [label, percentage] : sorted_percentages) {
       ImGui::Text("%s:", label.c_str());
@@ -129,19 +112,6 @@ inline void PerformanceViewerPanel()
       ImGui::ProgressBar(static_cast<float>(percentage / 100.0), ImVec2(-1.0f, 0.0f), "");
       ImGui::PopStyleColor();
     }
-
-    ImGui::Separator();
-
-    if (ImGui::CollapsingHeader("Panel Settings")) {
-      // Update interval control
-      ImGui::SliderFloat("Measurement Period", &update_interval, 0.1f, 10.0f, "%.3f s");
-      ImGui::SameLine();
-      ImGui::TextDisabled("(?)");
-      if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip("Lower values = more responsive but less accurate average\nHigher values = more accurate average but less responsive");
-      }
-    }
-
   }
 
   ImGui::End();

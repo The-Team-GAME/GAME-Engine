@@ -27,11 +27,10 @@ namespace Engine
   };
 
 
-  namespace SceneManager {
+   namespace SceneManager {
     // Declare as extern - actual definition in SceneManager.cpp
     extern Scene* current_scene;
     extern std::unordered_map<std::string, std::unique_ptr<Scene>> scenes;
-    extern std::vector<std::string> scene_order;
 
     // Template function must be defined in header
     template<typename T>
@@ -39,9 +38,8 @@ namespace Engine
       static_assert(std::is_base_of<Scene, T>::value,
         "T must derive from Scene");
       scenes[name] = std::make_unique<T>();
-      scene_order.push_back(name);
     }
-
+    
     // Function declarations
     void load_scene(const std::string& name);
     void unload_current_scene();
