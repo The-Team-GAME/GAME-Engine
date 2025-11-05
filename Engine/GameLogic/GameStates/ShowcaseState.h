@@ -83,7 +83,7 @@ private:
   bool facing_right = true;
   s32 banana_collected = 0;
   f32 punch_timer = 0.0f;
-  const f32 punch_duration = 0.6f; // 12 frames * 0.05s
+  const f32 punch_duration = 6.0f * 0.05f; // 6 frames * 0.05s
 
   // Player dimensions
   const f32 player_idle_width = 64.0f;

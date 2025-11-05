@@ -181,9 +181,11 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Engine\Systems\ParticleSystem.h" />
     <ClInclude Include="Engine\Systems\Systems.h" />
     <ClInclude Include="Engine\Systems\UISystem.h" />
+    <ClInclude Include="GameLogic\GameStates\DistortionEffectState.h" />
     <ClInclude Include="GameLogic\GameStates\Documentation\LayersAdvancedState.h" />
     <ClInclude Include="GameLogic\GameStates\Documentation\LayersState.h" />
     <ClInclude Include="GameLogic\GameStates\Documentation\PrefabsState.h" />
+    <ClInclude Include="GameLogic\GameStates\EmptyState.h" />
     <ClInclude Include="GameLogic\GameStates\MainMenuState.h" />
     <ClInclude Include="GameLogic\Reflection\ImGuiHelpers.h" />
     <ClInclude Include="Engine\Reflection\JsonHelpers.h" />
@@ -193,7 +195,6 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q</Co
     <ClInclude Include="Engine\Systems\GraphicsSystem.h" />
     <ClInclude Include="GameLogic\Components\Components.h" />
     <ClInclude Include="Engine\Core.h" />
-    <ClInclude Include="GameLogic\GameStates\DevSpriteAnimationState.h" />
     <ClInclude Include="Engine\Components\Components.h" />
     <ClInclude Include="Engine\Reflection\Helpers.h" />
     <ClInclude Include="Engine\Reflection\Reflect.h" />
