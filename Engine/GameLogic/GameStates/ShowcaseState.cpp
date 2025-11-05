@@ -316,7 +316,6 @@ void ShowcaseState::update() {
     is_punching = true;
     punch_timer = 0.0f;
   }
-
   // Collect banana with C key (using event system)
   if (Engine::Input::is_pressed(Engine::KeyCode::C)) {
     Engine::EventManager::send_event<CollectEvent>(player.get_id(), banana.get_id(), 1);
