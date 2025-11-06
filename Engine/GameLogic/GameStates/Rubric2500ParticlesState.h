@@ -43,6 +43,7 @@ public:
         .add_component<Components::Transform2D>(x, y, rotation, size, size)
         .add_component<Components::Color>(color)
         .add_component<Components::RigidBody>(false, false)
+        //.add_component<Components::BoxCollider>(size, size, false)
         .add_component<Components::Texture>(Engine::Resources::get_rect_texture());
       // .add_to_layer("tilemap_background")
       // .add_to_layer("tilemap_foreground")
