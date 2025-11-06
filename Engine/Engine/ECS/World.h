@@ -720,6 +720,84 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
+    Enables a layer, allowing systems to process entities on it.
+
+    Parameters:
+    layer - The LayerID to enable.
+
+    Where to call it:
+    When you want to activate a layer that was previously disabled.
+    ==================================================================================*/
+    void enable_layer(LayerID layer);
+
+    /*=================================================================================
+    Function Brief:
+    Disables a layer, preventing systems from processing entities on it.
+
+    Parameters:
+    layer - The LayerID to disable.
+
+    Where to call it:
+    When you want to temporarily pause/hide entities on a specific layer.
+    ==================================================================================*/
+    void disable_layer(LayerID layer);
+
+    /*=================================================================================
+    Function Brief:
+    Enables a layer by name, allowing systems to process entities on it.
+
+    Parameters:
+    layer_name - The name of the layer to enable.
+
+    Where to call it:
+    When you want to activate a layer using its string name.
+    ==================================================================================*/
+    void enable_layer(const std::string& layer_name);
+
+    /*=================================================================================
+    Function Brief:
+    Disables a layer by name, preventing systems from processing entities on it.
+
+    Parameters:
+    layer_name - The name of the layer to disable.
+
+    Where to call it:
+    When you want to temporarily pause/hide entities on a specific layer by name.
+    ==================================================================================*/
+    void disable_layer(const std::string& layer_name);
+
+    /*=================================================================================
+    Function Brief:
+    Checks if a layer is currently active/enabled.
+
+    Parameters:
+    layer - The LayerID to check.
+
+    Returns:
+    bool - True if the layer is active, false otherwise.
+
+    Where to call it:
+    When you need to know if a layer is currently being processed.
+    ==================================================================================*/
+    bool is_layer_active(LayerID layer);
+
+    /*=================================================================================
+    Function Brief:
+    Checks if a layer is currently active/enabled by name.
+
+    Parameters:
+    layer_name - The name of the layer to check.
+
+    Returns:
+    bool - True if the layer is active, false otherwise.
+
+    Where to call it:
+    When you need to know if a layer is currently being processed.
+    ==================================================================================*/
+    bool is_layer_active(const std::string& layer_name);
+
+    /*=================================================================================
+    Function Brief:
     Adds an entity to one or more layers.
 
     Parameters:
