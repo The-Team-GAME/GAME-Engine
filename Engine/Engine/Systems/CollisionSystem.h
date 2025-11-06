@@ -40,8 +40,8 @@ namespace Engine {
       std::vector<ECS::Entity> entity_vec; // Vector of objects stored at the current node of the quad tree
       std::array<std::unique_ptr<QuadTree>, 4> child_nodes; // NW, NE, SW, SE child nodes
 
-      u32 const max_entities = 10; // The max number of entities that can be in this node before the tree is split again
-      u32 const max_depth = 10; // We are capping the number of times the tree can split :>
+      u32 const max_entities = 4; // The max number of entities that can be in this node before the tree is split again
+      u32 const max_depth = 6; // We are capping the number of times the tree can split :>
 
 
       bool divided; // To check if the current node has been split

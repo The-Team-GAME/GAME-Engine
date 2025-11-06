@@ -26,7 +26,7 @@ public:
 
   void init()
   {
-    for (s32 i = 0; i < 2500; ++i) {
+    for (s32 i = 0; i < 1000; ++i) {
       f32 x = static_cast<f32>(rand() % 1600); // Random x position within window width
       f32 y = static_cast<f32>(rand() % 900); // Random y position within window height
       f32 size = static_cast<f32>((rand() % 20) + 5); // Random size between 5 and 25

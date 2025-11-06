@@ -67,7 +67,7 @@ void col2D::update()
     // Query nearby entities using quadtree
     std::vector<ECS::Entity> nearby;
     // In the future the range for the find near entity could be expanded to the range that entity could travel in that frame, but for now ill double the current entity's aabb
-    spatial_tree->find_near_entity(AABB(box->aabb.pos, box->width * 1.5f, box->height * 1.5f), nearby);
+    spatial_tree->find_near_entity(AABB(box->aabb.pos, box->width, box->height), nearby);
 
     // Check collision only with nearby entities
     for (ECS::Entity& other : nearby)
@@ -271,7 +271,6 @@ void col2D::QuadTree::split()
   Vec2D mid = bounds.pos;
   f32 hw = bounds.half_width / 2;
   f32 hh = bounds.half_height / 2;
-  std::cout << "splitting at depth: " << this->depth << std::endl;
   // remember that the top left is 0,0 :>
 
   child_nodes[0] = std::make_unique<QuadTree>(
@@ -289,6 +288,8 @@ void col2D::QuadTree::split()
   child_nodes[3] = std::make_unique<QuadTree>(
     AABB(Vec2D(mid.x + hw, mid.y + hh), bounds.half_width, bounds.half_height),
     depth + 1);
+
+  divided = true;
 }
 // Clear all entities from the tree and kills all child nodes
 // To be called at the start of each frame so that the tree can be rebuilt
