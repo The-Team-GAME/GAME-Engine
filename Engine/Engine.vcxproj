@@ -49,7 +49,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\RapidJSON;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\Lua\include;$(SolutionDir)Dependencies\Sol2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalOptions>/Zc:u8EscapeEncoding %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zc:u8EscapeEncoding /bigobj %(AdditionalOptions)</AdditionalOptions>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
     </ClCompile>
@@ -197,6 +197,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="Engine\Systems\ParticleSystem.h" />
     <ClInclude Include="Engine\Systems\Systems.h" />
     <ClInclude Include="Engine\Systems\UISystem.h" />
+    <ClInclude Include="GameLogic\GameStates\BehaviourState.h" />
     <ClInclude Include="GameLogic\GameStates\DistortionEffectState.h" />
     <ClInclude Include="GameLogic\GameStates\Documentation\LayersAdvancedState.h" />
     <ClInclude Include="GameLogic\GameStates\Documentation\LayersState.h" />
@@ -258,6 +259,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="Engine\Lua\LuaManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\scripts\behaviour_test.lua" />
     <None Include="Assets\scripts\buttons_test.lua" />
     <None Include="Assets\scripts\player_logic.lua" />
     <None Include="cpp.hint" />

@@ -1,3 +1,25 @@
+//-----------------------------------------------------------------------------------
+// file:    LuaManager.h
+// project: Monkey Stole My GPA
+//
+// author:  How Hong Chin Ryan (100%)
+//          Primary author
+//
+// email:   hongchinryan.how@digipen.edu
+//
+// brief:   Provides a singleton-style interface for managing the Lua scripting
+//          environment. Handles initialization, cleanup, script loading, function
+//          calls, global variable access, and C++/Lua bindings for the game engine.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
+
+// I used https://www.lua.org/docs.html to understand the different functions on how to load
+// and run different scripts and functions in Lua from C++.
+
+// I also used the Sol2 documentation https://sol2.readthedocs.io/en/latest/ for reference on how to use Sol2 to bind C++ functions
+// and types to Lua.
+
 #pragma once
 #include "../MonkeyEngine.h"
 #include <sol/sol.hpp>
@@ -6,42 +28,83 @@
 #include <functional>
 #include <vector>
 
-#define SOL_ALL_SAFETIES_ON 1
-#define SOL_USING_CXX_LUA 1
-#define SOL_CXX_17_OR_GREATER 1
-
 namespace Engine
 {
   namespace LuaManager
   {
-    // lifecycle
+    /**
+     * @brief Initializes the Lua scripting environment and runs registered bindings.
+     * @return True if initialization succeeded, false otherwise.
+     */
     bool init();
+
+    /**
+     * @brief Cleans up the Lua environment and releases resources.
+     */
     void cleanup();
 
-    // scripts / calling
+    /**
+     * @brief Loads and executes a Lua script file.
+     * @param filename Path to the Lua script file.
+     */
     void load_script(const std::string& filename);
+
+    /**
+     * @brief Calls a global Lua function by name, optionally passing delta time.
+     * @param name Name of the Lua function to call.
+     * @param dt Optional delta time parameter (default: 0.0f).
+     */
     void call_function(const std::string& name, f32 dt = 0.0f);
 
-    // access to sol state
+    /**
+     * @brief Gets a reference to the underlying sol::state Lua interpreter.
+     * @return Reference to the sol::state object.
+     */
     sol::state& get_state();
 
-    // info
+    /**
+     * @brief Gets a map of loaded script filenames and their load status.
+     * @return Unordered map of script filenames to boolean loaded status.
+     */
     const std::unordered_map<std::string, bool>& get_loaded_scripts();
 
-    // register a C++ function into Lua (template - implemented below)
+    /**
+     * @brief Registers a C++ function into the Lua environment.
+     * @tparam F Function type.
+     * @param name Name to expose the function as in Lua.
+     * @param func Function object or pointer.
+     */
     template<typename F>
     void register_function(const std::string& name, F&& func);
 
-    // set / get Lua globals (templates)
+    /**
+     * @brief Sets a global variable in the Lua environment.
+     * @tparam T Variable type.
+     * @param name Name of the global variable.
+     * @param value Value to set.
+     */
     template<typename T>
     void set_global(const std::string& name, T&& value);
 
+    /**
+     * @brief Gets a global variable from the Lua environment.
+     * @tparam T Variable type.
+     * @param name Name of the global variable.
+     * @param default_value Value to return if the variable is not found or conversion fails.
+     * @return Value of the global variable or default_value.
+     */
     template<typename T>
     T get_global(const std::string& name, T&& default_value = T{});
 
-    // allow registering binding callbacks (e.g. GameAPI::register_api)
-    // Callbacks are invoked during init() automatically; you may also call run_bindings() manually
+    /**
+     * @brief Registers a binding callback to be run during initialization.
+     * @param cb Callback function taking a sol::state&.
+     */
     void register_binding(std::function<void(sol::state&)> cb);
+
+    /**
+     * @brief Runs all registered binding callbacks.
+     */
     void run_bindings();
   }
 }
@@ -51,6 +114,12 @@ namespace Engine
 {
   namespace LuaManager
   {
+    /**
+     * @brief Registers a C++ function into the Lua environment.
+     * @tparam F Function type.
+     * @param name Name to expose the function as in Lua.
+     * @param func Function object or pointer.
+     */
     template<typename F>
     void register_function(const std::string& name, F&& func) {
       sol::state& lua = get_state();
@@ -61,6 +130,12 @@ namespace Engine
       lua.set_function(name, std::forward<F>(func));
     }
 
+    /**
+     * @brief Sets a global variable in the Lua environment.
+     * @tparam T Variable type.
+     * @param name Name of the global variable.
+     * @param value Value to set.
+     */
     template<typename T>
     void set_global(const std::string& name, T&& value) {
       sol::state& lua = get_state();
@@ -71,6 +146,13 @@ namespace Engine
       lua[name] = std::forward<T>(value);
     }
 
+    /**
+     * @brief Gets a global variable from the Lua environment.
+     * @tparam T Variable type.
+     * @param name Name of the global variable.
+     * @param default_value Value to return if the variable is not found or conversion fails.
+     * @return Value of the global variable or default_value.
+     */
     template<typename T>
     T get_global(const std::string& name, T&& default_value) {
       sol::state& lua = get_state();

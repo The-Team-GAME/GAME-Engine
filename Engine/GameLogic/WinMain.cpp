@@ -28,6 +28,7 @@
 #include "GameStates/TimelineState.h"
 #include "GameStates/DistortionEffectState.h"
 #include "GameStates/LuaState.h"
+#include "GameStates/BehaviourState.h"
 #include "Systems/HealthSystem.h"
 
 /*=================================================================================
@@ -72,6 +73,7 @@ int main()
   Engine::SceneManager::register_scene<TimelineState>("TimelineState");
   Engine::SceneManager::register_scene<DistortionEffectState>("DistortionEffectState");
   Engine::SceneManager::register_scene<LuaState>("LuaState");
+  // Engine::SceneManager::register_scene<BehaviourState>("BehaviourState");
 
   // Register game systems at startup
   Engine::ECS::add_system<Engine::Systems::HealthSystem>();
