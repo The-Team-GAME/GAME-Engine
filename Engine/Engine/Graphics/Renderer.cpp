@@ -490,7 +490,7 @@ namespace Engine {
       virtual_pos.x = normalized_x * virtual_width;
       virtual_pos.y = normalized_y * virtual_height;
 
-      std::cout << "Viewport Mouse Position: (" << virtual_pos.x << ", " << virtual_pos.y << ")\n";
+      // std::cout << "Viewport Mouse Position: (" << virtual_pos.x << ", " << virtual_pos.y << ")\n";
 
       return { virtual_pos, is_in_viewport };
     }
