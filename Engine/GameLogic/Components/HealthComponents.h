@@ -1,3 +1,17 @@
+//-----------------------------------------------------------------------------------
+// file:    HealthComponents.h
+// project: Monkey Stole My GPA
+//
+// author:  Ong Zi Ming (100%)
+//          Primary author
+//
+// email:   o.ziming@digipen.edu
+//
+// brief:   This file defines struts required for the health system.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
+
 #pragma once
 
 #include "../../Engine/MonkeyEngine.h"

@@ -1,15 +1,14 @@
 //-----------------------------------------------------------------------------------
-// file:    HealthSystems.h
+// file:    HealthSystem.h
 // project: Monkey Stole My GPA
 //
-// author:   (100%)
+// author:  Ong Zi Ming (100%)
 //          Primary author
 //
-// email:   @digipen.edu
+// email:   o.ziming@digipen.edu
 //
-// brief:   This file defines a system that handles entity rotation by updating
-//          rotation angles based on rotation speed and delta time in the ECS
-//          framework.
+// brief:   This file defines a system that handles the game logic of the health system
+//          for the player and other entities in the game.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
