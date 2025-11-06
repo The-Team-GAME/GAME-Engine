@@ -18,7 +18,6 @@
 #include "Time.h"
 #include <iostream>
 #include <imgui.h>
-#include "../Reflection/ImGuiHelpers.h"
 
 void BasicState::load()
 {
@@ -37,24 +36,6 @@ void BasicState::load()
     std::cout << "Failed to load playfair font for BasicState.\n";
   }
 }
-
-struct Book
-{
-  std::string title;
-  std::string author;
-  int pages;
-};
-REFLECT_FIELDS(Book, title, author, pages)
-
-struct Person
-{
-  std::string name;
-  int age;
-  double height;
-  bool is_student;
-  Book favorite_book;
-};
-REFLECT_FIELDS(Person, name, age, height, is_student, favorite_book)
 
 void BasicState::init()
 {
@@ -139,23 +120,7 @@ void BasicState::init()
     )
     .add_component<Components::Font>(font_roboto)
     .add_component<Components::Text>("Press 'S' to play sound");
-
-
-  // Trying reflection system
-
-  // auto col1 = rect_center.get_component<Components::Color>();
-
-  // // Serialize 
-  // std::string json = serialize_to_json(*col1);
-  // std::cout << "Serialized: " << json << "\n\n";
-
-  // // Deserialize
-  // Components::Color col2;
-  // if (deserialize_from_json(col2, json))
-  // {
-  //   std::cout << "Deserialized successfully:\n";
-  //   print_struct_fields(col2);
-  // }
+   
 }
 
 void BasicState::update()
@@ -230,37 +195,6 @@ void BasicState::draw()
   if (Engine::Input::is_pressed(Engine::KeyCode::S)) {
     Engine::Audio::play_sound(move_sound, 0.5f, false);
   }
-
-  ImGui::Begin("Reflection Demo");
-
-  auto col1 = rect_center.get_component<Components::Color>();
-  if (col1)
-  {
-    if (ImGui::CollapsingHeader("Center Rectangle Color"))
-    {
-      display_struct_in_imgui(*col1);
-    }
-  }
-
-  auto transform = rect_center.get_component<Components::Transform2D>();
-  if (transform)
-  {
-    if (ImGui::CollapsingHeader("Center Rectangle Transform"))
-    {
-      display_struct_in_imgui(*transform);
-    }
-  }
-
-  auto text = text_instruction.get_component<Components::Text>();
-  if (text)
-  {
-    if (ImGui::CollapsingHeader("Instruction Text"))
-    {
-      display_struct_in_imgui(*text);
-    }
-  }
-
-  ImGui::End();
 }
 
 void BasicState::free()
