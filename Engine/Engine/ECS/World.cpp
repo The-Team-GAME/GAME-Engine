@@ -179,7 +179,7 @@ namespace Engine {
     void destroy_all_entities()
     {
       auto& containers = Internal::get_containers();
-      
+
       // Mark all active entities for destruction
       for (EntityID entityId : containers.active_entities)
       {
