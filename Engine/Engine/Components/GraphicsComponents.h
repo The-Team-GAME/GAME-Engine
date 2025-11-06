@@ -8,7 +8,7 @@
 #include "../ECS/Macros.h"  // Add this line
 #include "../Time.h"
 #include "../Resources.h"
-
+#include "../Logger.h"
 
 namespace Components
 {
@@ -308,6 +308,31 @@ namespace Components
       }
     };
   };
+
+  // Stores a map of animation states by name
+  struct AnimationState
+  {
+    struct StateData {
+      Texture texture;
+      TextureAtlas texture_atlas;
+      Animation animation;
+    };
+
+    bool dirty = false; // Whether the state has been modified
+    std::string current_state;
+    std::unordered_map<std::string, StateData> states;
+
+    void add_state(const std::string& name, const Texture& texture, const TextureAtlas& atlas, const Animation& animation) {
+      states[name] = { texture, atlas, animation };
+    }
+
+    void set_entity_state(const std::string& name) {
+      // Log::info("Switching to animation state: " + name);
+      current_state = name;
+      dirty = true;
+    }
+  };
+
 }
 
 REGISTER_COMPONENT(Components::Text, content)
@@ -318,3 +343,4 @@ REGISTER_COMPONENT_CUSTOM(Components::Texture, path)
 REGISTER_COMPONENT_CUSTOM(Components::Font, path, font_size)
 REGISTER_COMPONENT_CUSTOM(Components::TextureAtlas, tex_coords_list, drawIndex)
 REGISTER_COMPONENT_CUSTOM(Components::Animation, durations, before_times, startTime, totalDuration)
+REGISTER_COMPONENT(Components::AnimationState, dirty, current_state, states)

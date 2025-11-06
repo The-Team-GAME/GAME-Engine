@@ -312,5 +312,36 @@ namespace Engine
     };
 
 
-  } // namespace Systems
+    class AnimationStateSystem : public Engine::ECS::System {
+    public:
+      AnimationStateSystem() {
+        require_components<Components::AnimationState, Components::Texture, Components::TextureAtlas, Components::Animation>();
+      }
+
+      void update_entity(Engine::ECS::Entity& entity) override {
+        auto* anim_state = entity.get_component<Components::AnimationState>();
+        auto* texture = entity.get_component<Components::Texture>();
+        auto* atlas = entity.get_component<Components::TextureAtlas>();
+        auto* animation = entity.get_component<Components::Animation>();
+
+        if (anim_state->dirty) { // Update only if state is marked dirty
+          // Log::info("Updating animation state for entity: " + std::to_string(entity.get_id()));
+          auto it = anim_state->states.find(anim_state->current_state);
+          if (it != anim_state->states.end()) {
+            // Log::info("Found animation state: " + anim_state->current_state);
+            const auto& state_data = it->second;
+            texture->texture_handle = state_data.texture.texture_handle;
+            atlas->subTextures = state_data.texture_atlas.subTextures;
+            atlas->drawIndex = state_data.texture_atlas.drawIndex;
+            animation->frames = state_data.animation.frames;
+            animation->startTime = state_data.animation.startTime;
+            animation->totalDuration = state_data.animation.totalDuration;
+          }
+          anim_state->dirty = false; // Clear dirty flag after update
+        }
+      }
+    };
+
+
+  }; // namespace Systems
 } // namespace Engine

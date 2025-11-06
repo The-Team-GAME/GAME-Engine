@@ -25,6 +25,10 @@ private:
   Engine::Graphics::Texture lazy_monkey_texture;
   Engine::Graphics::Texture player_run_texture;
 
+  // Animation state names
+  const std::string MONKEY_STATE = "monkey";
+  const std::string PLAYER_STATE = "player";
+
   // Animation parameters for lazy monkey (6 frames, 64x64, 384x64 total)
   const s32 monkey_frame_width = 64;
   const s32 monkey_frame_height = 64;
@@ -36,9 +40,6 @@ private:
   const s32 player_frame_height = 64;
   const s32 player_frame_count = 8;
   const f32 player_anim_speed = 0.1f;
-
-  // Current sprite mode (true = monkey, false = player)
-  bool using_monkey_sprite = true;
 
 public:
   void load();
