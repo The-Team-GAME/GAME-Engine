@@ -17,6 +17,7 @@
 
 #include "../../Engine/MonkeyEngine.h"
 #include "../../Engine/Systems/ParticleSystem.h"
+#include "../../Engine/Systems/PhysicsSystem.h"
 //#include "../Components/Components.h"
 
 /* ===================== //
@@ -83,6 +84,7 @@ private:
 
   // Player state
   bool facing_right = true;
+  bool jumping = false;
   s32 banana_collected = 0;
 
   // Player dimensions

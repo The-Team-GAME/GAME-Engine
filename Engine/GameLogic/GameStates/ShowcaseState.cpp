@@ -119,7 +119,8 @@ void ShowcaseState::init() {
     .add_component<Components::Transform2D>(960.0f, 770.0f, 0.0f, 1920.0f, 100.0f)
     .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
     .add_component<Components::Color>(0.3f, 0.8f, 0.3f, 1.0f)
-    .add_component<Components::RigidBody>(true, false);
+    .add_component<Components::RigidBody>(true, false)
+    .add_component<Components::BoxCollider>(1920.0f, 100.0f, false);
 
   // Create text entities
   title_text = Engine::ECS::create_entity()
@@ -133,7 +134,7 @@ void ShowcaseState::init() {
     .add_component<Components::Tag<"ShowcaseState">>()
     .add_component<Components::Transform2D>(50.0f, 140.0f, 0.0f, 0.6f, 0.6f)
     .add_component<Components::Font>(info_font)
-    .add_component<Components::Text>("WASD: Move | E: Attack | C: Collect")
+    .add_component<Components::Text>("A/D: Move | Space: Jump | E: Attack | C: Collect")
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
 
   banana_count_text = Engine::ECS::create_entity()
@@ -299,25 +300,37 @@ void ShowcaseState::update() {
 
   // Only handle movement and animation changes if not punching
   if (anim_state->current_state != PUNCH_STATE) {
-    // Player movement input
-    f32 speed = 300.0f;
-    f32 new_vel_x = 0.0f;
-    f32 new_vel_y = 0.0f;
+    // Reset forces before applying new ones
+    rigid->force.zero();
 
-    if (Engine::Input::is_held(Engine::KeyCode::W)) new_vel_y = -speed;
-    if (Engine::Input::is_held(Engine::KeyCode::S)) new_vel_y = speed;
-    if (Engine::Input::is_held(Engine::KeyCode::A)) new_vel_x = -speed;
-    if (Engine::Input::is_held(Engine::KeyCode::D)) new_vel_x = speed;
+    // Player movement input using physics forces
+    bool moving_horizontally = false;
 
-    // Update facing direction based on horizontal movement
-    if (new_vel_x > 0.0f) facing_right = true;
-    else if (new_vel_x < 0.0f) facing_right = false;
+    if (Engine::Input::is_held(Engine::KeyCode::A)) {
+      Engine::Systems::Physics2DSystem::walk_left(*rigid);
+      facing_right = false;
+      moving_horizontally = true;
+    }
+    if (Engine::Input::is_held(Engine::KeyCode::D)) {
+      Engine::Systems::Physics2DSystem::walk_right(*rigid);
+      facing_right = true;
+      moving_horizontally = true;
+    }
 
-    rigid->velocity.x = new_vel_x;
-    rigid->velocity.y = new_vel_y;
+    // Jump with Space when on ground
+    if (Engine::Input::is_held(Engine::KeyCode::Space) && rigid->on_ground && !jumping) {
+      jumping = true;
+      Engine::Systems::Physics2DSystem::jump(*rigid);
+      Engine::Audio::play_sound(jump_sound);
+    }
+
+    // Reset jumping flag when space is released
+    if (Engine::Input::is_released(Engine::KeyCode::Space) && jumping) {
+      jumping = false;
+    }
 
     // Animation change based on movement
-    bool should_walk = (new_vel_x != 0.0f || new_vel_y != 0.0f);
+    bool should_walk = moving_horizontally;
 
     if (should_walk && anim_state->current_state != RUN_STATE) {
       anim_state->set_entity_state(RUN_STATE);
@@ -353,11 +366,6 @@ void ShowcaseState::update() {
   // Collect banana with C key (using event system)
   if (Engine::Input::is_pressed(Engine::KeyCode::C)) {
     Engine::EventManager::send_event<CollectEvent>(player.get_id(), banana.get_id(), 1);
-  }
-
-  // Play jump sound with Space key
-  if (Engine::Input::is_pressed(Engine::KeyCode::Space)) {
-    Engine::Audio::play_sound(jump_sound);
   }
 
   // Camera follow player
