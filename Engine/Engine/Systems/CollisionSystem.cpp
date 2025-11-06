@@ -208,8 +208,36 @@ void col2D::QuadTree::clear()
 // Inserts an entity into the quad tree
 bool insert(ECS::Entity& entity);
 
-// Check if an entity is fully contained within the current node's boundary
-bool contains(ECS::Entity& entity);
+// Check if an entity can be fully contained within the current node's boundary
+bool col2D::QuadTree::can_contain(ECS::Entity& entity) const
+{
+  Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
+  Vec2D box_min = box->aabb.min();
+  Vec2D box_max = box->aabb.max();
+  Vec2D bounds_min = bounds.min();
+  Vec2D bounds_max = bounds.max();
+
+  return box_min.x >= bounds_min.x &&
+    box_min.y >= bounds_min.y &&
+    box_max.x <= bounds_max.x &&
+    box_max.y <= bounds_max.y;
+}
+
+// Insert an entity into a child node
+bool col2D::QuadTree::insert_in_child_node(ECS::Entity& entity)
+{
+  // Try to find a child that fully contains the rectangle
+  for (u32 i{}; i < 4; ++i) 
+  {
+    if (child_nodes[i]->can_contain(entity)) {
+      // If child can fully contain it, insert recursively
+      return child_nodes[i]->insert(entity);
+    }
+  }
+
+  // No single child can contain it (spans multiple quadrants)
+  return false;
+}
 
 // Returns the number of entities in the current node
 u32 col2D::QuadTree::entity_count() const

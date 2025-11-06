@@ -81,10 +81,8 @@ namespace Engine {
 
         // This function splits the current node into 
         // Private cuz we dont want users to anyhow split the node
-        void split()
-        {
+        void split();
 
-        }
       public:
         // Ctor
         QuadTree(AABB boundary, u32 depth = 0);
@@ -103,8 +101,11 @@ namespace Engine {
         // Inserts an entity into the quad tree
         bool insert(ECS::Entity& entity);
 
+        // Insert an entity into a child node
+        bool insert_in_child_node(ECS::Entity& entity);
+
         // Check if an entity is fully contained within the current node's boundary
-        bool contains(ECS::Entity& entity);
+        bool can_contain(ECS::Entity& entity) const;
 
         // Returns the number of entities in the current node
         u32 entity_count() const;
