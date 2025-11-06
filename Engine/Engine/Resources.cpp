@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    Resources.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Implementation of the resource management system for the game engine.
+//          Handles loading, caching, and management of textures, fonts, sounds,
+//          and prefabs. Provides resource deduplication, automatic cleanup of
+//          unused resources, and support for drag-and-drop resource loading.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "Resources.h"
 #include <memory>
 #include "Graphics/RendererInternal.h"

@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    Renderer.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Public interface for the graphics rendering system. Defines camera
+//          and viewport structures, texture/font types, and rendering functions.
+//          Provides high-level drawing APIs for textures, sprites, text, and
+//          geometric shapes with camera transformations and batching support.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "../Math/Vector2D.h" 

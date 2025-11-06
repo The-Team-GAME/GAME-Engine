@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    GenericValue.inl
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Inline implementation of GenericValue methods and JSON serialization
+//          functionality. Contains the detailed implementation of type conversions,
+//          variant handling, and RapidJSON integration for the reflection system.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "GenericValue.h"

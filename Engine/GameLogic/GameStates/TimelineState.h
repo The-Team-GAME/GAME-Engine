@@ -1,3 +1,20 @@
+//-----------------------------------------------------------------------------------
+// file:    TimelineState.h
+// project: Monkey Stole My GPA
+//
+// author:  Ryan Ang An Kiat (100%)
+//          Primary author
+//
+// email:   a.ryanankiat@digipen.edu
+//
+// brief:   This file defines the TimelineState scene for demonstrating the timeline
+//          editor system. It manages entity visibility and animation based on timeline
+//          clips, allowing frame-based sequencing of entities (bro and monkey sprites).
+//          The state handles timeline playback, clip management, and entity lifecycle
+//          within the timeline context.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "../../Engine/MonkeyEngine.h"
@@ -5,7 +22,7 @@
 #include "../../Engine/GUI/ResourcePicker.h"
 
 
-// Define the class and inherit from the GameState template
+// Define the class and inherit from the Scene template
 class TimelineState : public Engine::Scene {
 private:
 	// Declare member variable

@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    RendererInternal.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Internal implementation details of the graphics renderer.
+//          Contains FreeType font library management, texture data structures,
+//          and low-level graphics utilities. Handles font loading and rendering
+//          through the FreeType library integration.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "RendererInternal.h"
 #include <stdexcept>
 

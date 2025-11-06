@@ -1,3 +1,20 @@
+//-----------------------------------------------------------------------------------
+// file:    GraphicsSystem.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Implementation of ECS graphics systems for rendering different types
+//          of visual components. Includes systems for static sprites, animated
+//          sprites, text rendering, distortion effects, and particle systems.
+//          Each system handles specific component combinations for efficient
+//          batched rendering.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "../ECS/ECS.h"

@@ -1,3 +1,20 @@
+//-----------------------------------------------------------------------------------
+// file:    Systems.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Central header file that includes all ECS system headers and provides
+//          the register_engine_systems() function to initialize all core engine
+//          systems. This includes update systems (physics, collision, animation)
+//          and draw systems (rendering, particles, UI) that make up the engine's
+//          core functionality.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "GraphicsSystem.h"

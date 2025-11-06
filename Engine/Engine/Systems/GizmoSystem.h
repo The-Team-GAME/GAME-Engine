@@ -1,3 +1,20 @@
+//-----------------------------------------------------------------------------------
+// file:    GizmoSystem.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Implementation of the gizmo system for entity selection and manipulation
+//          in the game editor. Provides mouse-based selection of entities, visual
+//          feedback for selected entities, and drag-and-drop repositioning.
+//          Integrates with the input system and event manager for seamless
+//          editor interaction.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "../ECS/ECS.h"

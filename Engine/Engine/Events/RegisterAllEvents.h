@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    RegisterAllEvents.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Central event registration for the engine's event system.
+//          Registers all core event listeners including window resize handling,
+//          file drop processing for resource loading, and entity selection
+//          synchronization between viewport and editor interfaces.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 #include "../EventManager/EventManager.h"
 #include "WindowEvents.h"
@@ -42,7 +58,7 @@ namespace Engine {
             auto entity = Engine::ECS::get_entity(event.entity_id);
             if (entity.is_valid() && entity.has_component<Components::Transform2D>()) {
               auto* transform = entity.get_component<Components::Transform2D>();
-              
+
               entity.add_component<Components::Gizmo>(
                 Math::Vec4D(0.0f, 1.0f, 0.0f, 1.0f), // Green outline
                 2.0f                                   // Thickness
@@ -56,7 +72,8 @@ namespace Engine {
                   const auto mouse = Engine::Input::get_mouse_world_position();
                   gizmo->drag_offset = Math::Vec2D(mouse.x - transform->position.x, mouse.y - transform->position.y);
                   gizmo->is_dragging = true;
-                } else {
+                }
+                else {
                   // Initialize drag offset to zero - will be set on first update if needed
                   gizmo->drag_offset = Math::Vec2D(0.0f, 0.0f);
                   gizmo->is_dragging = false;

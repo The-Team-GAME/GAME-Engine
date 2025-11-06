@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    Print.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Debug printing utilities for the reflection library. Provides
+//          formatted output of reflectable objects and their fields for
+//          debugging and development purposes. Handles various data types
+//          including primitives, containers, and nested structures.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include <string>

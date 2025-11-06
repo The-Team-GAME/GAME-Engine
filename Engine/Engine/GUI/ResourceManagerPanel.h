@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    ResourceManagerPanel.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   ImGui panel implementation for the resource manager interface.
+//          Displays loaded resources (textures, fonts, sounds, prefabs) with
+//          statistics and management controls. Provides resource cleanup
+//          functionality and integrates with the audio system for sound preview.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "../Resources.h"
 #include "../Logger.h"
 #include <imgui.h>

@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    Macros.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Macro definitions for the reflection library's code generation system.
+//          Provides variadic macro expansion capabilities to automatically generate
+//          reflection information for classes with up to 16 fields. Enables the
+//          REFLECT macro system used throughout the engine.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 // Count arguments (supports 0 to 20)

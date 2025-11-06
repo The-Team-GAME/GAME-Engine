@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    Components.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Main header file that includes all ECS component definitions.
+//          Provides access to utility, graphics, physics, spatial, collision,
+//          hierarchy, UI, tilemap, and gizmo components used throughout the engine.
+//          This is the central include for all component types.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 

@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    PrefabsFileIO.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   File I/O implementation for prefab serialization and deserialization.
+//          Provides JSON-based save/load functionality for ECS prefabs using
+//          the reflection library. Handles file operations, error checking,
+//          and integration with the prefab system for game asset management.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "../ECS/ECS.h"
 #include "PrefabsFileIO.h"
 #include <fstream>

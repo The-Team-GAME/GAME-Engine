@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    RegisterAllPanels.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Central registration point for all ImGui panels in the engine.
+//          Includes headers for all panel implementations and provides the
+//          register_all_panels() function to initialize the editor interface
+//          with all available panels (viewport, performance, resources, etc.).
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "ImGuiManager.h"
 
 #include "PerformanceViewerPanel.h"

@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    GraphicsComponents.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   ECS component definitions for graphics rendering. Includes Texture,
+//          Color, Animation, TextureAtlas, Text, and Distortion components.
+//          Provides the data structures needed for sprite rendering, text display,
+//          animation playback, and visual effects in the graphics pipeline.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "../Graphics/RendererInternal.h"

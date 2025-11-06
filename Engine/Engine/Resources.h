@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    Resources.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Header file defining the resource management system interface for the
+//          game engine. Provides functions for loading and managing textures,
+//          fonts, sounds, and prefabs with automatic caching and memory management.
+//          Supports resource statistics tracking and cleanup operations.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 #include "TypeDef.h"
 #include <unordered_map>

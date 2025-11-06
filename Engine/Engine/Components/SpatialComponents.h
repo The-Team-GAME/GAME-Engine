@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    SpatialComponents.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   ECS component definitions for spatial transformations and positioning.
+//          Includes Transform2D for position, rotation, and scale; ZIndex for
+//          rendering order; and ScreenTransform2D for screen-space coordinates.
+//          Provides the foundation for entity positioning and hierarchy.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "../Math/Vector2D.h"

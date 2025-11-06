@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    RendererInternal.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Internal data structures and utilities for the graphics renderer.
+//          Defines Frame, SubTexture, Glyph, and other internal structures used
+//          by animation, texture atlas, and font rendering systems. Provides
+//          FreeType library access for font processing.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "../Precompiled.h"

@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    Concepts.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Defines C++20 concepts used throughout the reflection library.
+//          Provides compile-time type checking for reflectable types, tuples,
+//          pairs, and other data structures. Enables template metaprogramming
+//          for automatic reflection capabilities.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include <type_traits>

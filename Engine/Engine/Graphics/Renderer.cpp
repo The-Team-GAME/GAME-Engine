@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    Renderer.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Core graphics rendering implementation for the game engine.
+//          Handles OpenGL rendering pipeline, shader management, batching,
+//          camera transformations, and virtual resolution scaling. Provides
+//          drawing functions for textures, sprites, text, and distortion effects.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "Renderer.h"
 #include "Shader.h"
 #include "../Logger.h"

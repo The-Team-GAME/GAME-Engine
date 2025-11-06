@@ -1,3 +1,20 @@
+//-----------------------------------------------------------------------------------
+// file:    TimelineState.h
+// project: Monkey Stole My GPA
+//
+// author:  Ryan Ang An Kiat (100%)
+//          Primary author
+//
+// email:   a.ryanankiat@digipen.edu
+//
+// brief:   This file defines an alternative implementation of the TimelineState for
+//          the game engine. It demonstrates timeline-based entity management with
+//          frame-accurate visibility control and animation sequencing. Entities are
+//          shown/hidden based on timeline clips, and sprite animations are controlled
+//          by the current frame position within each clip's duration.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "../../Engine/MonkeyEngine.h"
@@ -19,16 +36,16 @@ public:
 	// Declare public methods
 	void load() {};
 	void init() {
-	
+
 		Engine::Resources::set_resource_path("Assets/"); //default resource path
 
 		//animating entity
 		bro = Engine::ECS::create_entity()
-			.add_component<Components::Transform2D>(400.0f, 400.0f, 0.0f, 1000.0f/ 7.0f, 130.0f)
+			.add_component<Components::Transform2D>(400.0f, 400.0f, 0.0f, 1000.0f / 7.0f, 130.0f)
 			.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.0f)
 			.add_component<Components::Texture>(Engine::Resources::load_texture("images/Bro_Idle_Spritesheet.png"))
-			.add_component<Components::TextureAtlas>(448.0f/ 7.0f, 64.0f, 1, 7, 7) //index is set default to 0 playable around with
-		  .add_component<Components::Animation>(7, 0.1);
+			.add_component<Components::TextureAtlas>(448.0f / 7.0f, 64.0f, 1, 7, 7) //index is set default to 0 playable around with
+			.add_component<Components::Animation>(7, 0.1);
 		//.add_component<Components::TextureAtlas>(banana.get_component<Components::Transform2D>()->scale.x, banana.get_component<Components::Transform2D>()->scale.y, 7.0f, 0.0f, 7);
 		/*.add_component<Components::RigidBody>();
 		banana.get_component<Components::RigidBody>()->angular_velocity = 10.0f;*/
@@ -80,7 +97,7 @@ public:
 	void draw() {
 		Engine::Graphics::clear_screen({ 0.078f, 0.078f, 0.078f, 1.0f });
 		timeline.draw();
-		
+
 
 		//banana.get_component<Components::Transform2D>()->rotation += 100.0f;
 
@@ -150,33 +167,33 @@ public:
 		}
 
 	};
-	
+
 
 	Engine::ECS::Entity create_timeline_entity(Engine::Graphics::Texture texture) {
 		Engine::ECS::Entity new_entity = Engine::ECS::create_entity();
 
-    // Add the Texture component (This holds the shared_ptr to the raw texture data)
-    new_entity.add_component<Components::Texture>(texture);
+		// Add the Texture component (This holds the shared_ptr to the raw texture data)
+		new_entity.add_component<Components::Texture>(texture);
 
-    //// Add the Transform component (Required for positioning and scaling in the world/view)
-    //new_entity.add_component<Components::Transform2D>(
-    //    // Position, Rotation, Scale
-    //    Math::Vec3D(0.0f, 0.0f, 0.0f), 
-    //    Math::Vec3D(0.0f, 0.0f, 0.0f), 
-    //    Math::Vec3D(1.0f, 1.0f, 1.0f)
-    //);
+		//// Add the Transform component (Required for positioning and scaling in the world/view)
+		//new_entity.add_component<Components::Transform2D>(
+		//    // Position, Rotation, Scale
+		//    Math::Vec3D(0.0f, 0.0f, 0.0f), 
+		//    Math::Vec3D(0.0f, 0.0f, 0.0f), 
+		//    Math::Vec3D(1.0f, 1.0f, 1.0f)
+		//);
 
-		//sets any non atlas texture to use a default 1x1 atlas
-    new_entity.add_component<Components::TextureAtlas>(
-        1,       // numRows
-        1,       // numColumns
-        1,       // totalSubTextures
-        0,       // currentSubTextureIndex (start at 0)
-        1        // frameDuration (can be ignored for static sprites)
-    );
+			//sets any non atlas texture to use a default 1x1 atlas
+		new_entity.add_component<Components::TextureAtlas>(
+			1,       // numRows
+			1,       // numColumns
+			1,       // totalSubTextures
+			0,       // currentSubTextureIndex (start at 0)
+			1        // frameDuration (can be ignored for static sprites)
+		);
 
-    return new_entity;
-}
+		return new_entity;
+	}
 
 
 	void free() {};
@@ -190,4 +207,4 @@ public:
 	};
 };
 
- 
+
