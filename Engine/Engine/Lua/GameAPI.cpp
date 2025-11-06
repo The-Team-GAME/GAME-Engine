@@ -1,7 +1,26 @@
+//-----------------------------------------------------------------------------------
+// file:    GameAPI.cpp
+// project: Monkey Stole My GPA
+//
+// author:  How Hong Chin Ryan (100%)
+//          Primary author
+//
+// email:   hongchinryan.how@digipen.edu
+//
+// brief:   Implementation of the Lua-C++ binding layer for the game engine.
+//          Provides component reflection system, entity manipulation, physics
+//          integration, and resource management. Handles registration of engine
+//          functionality to Lua state and supports dynamic component access.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
+
 #include "GameAPI.h"
 #include <iostream>
 #include <sol/sol.hpp>
 #include <type_traits>
+
+// ...existing code...
 
 // Adapt these includes to your project layout
 #include "../ECS/ECS.h"           // Engine::ECS::create_entity(), get_entity_by_id(), destroy_entity_by_id()

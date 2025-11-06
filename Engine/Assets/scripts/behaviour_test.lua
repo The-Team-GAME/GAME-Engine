@@ -1,3 +1,20 @@
+------------------------------------------------------------------------------
+-- file:    behaviour_test.lua
+-- project: Monkey Stole My GPA
+--
+-- author:  How Hong Chin Ryan (100%)
+--          Primary author
+--
+-- email:   hongchinryan.how@digipen.edu
+--
+-- brief:   Physics test implementation in Lua. Creates and manages physical
+--          entities including dynamic and static bodies. Handles player
+--          movement, collision responses, and physics-based interactions.
+--
+-- Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+-------------------------------------------------------------------------------
+
+
 -- Constants for entity sizes
 local PLAYER_SIZE = 20.0
 local GROUND_WIDTH = 800.0
@@ -36,7 +53,6 @@ function create_physics_entities()
     return player  -- Return player if you need to reference it later
 end
 
--- ...existing code...
 
 function free_resources()
     local entities = Game.get_all_entities()

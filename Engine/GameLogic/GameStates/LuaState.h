@@ -1,13 +1,15 @@
 //-----------------------------------------------------------------------------------
-// file:    LuaState.h
+// file:    LuaManager.h
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (100%)
+// author:  How Hong Chin Ryan (100%)
 //          Primary author
 //
-// email:   chew.s@digipen.edu
+// email:   hongchinryan.how@digipen.edu
 //
-// brief:   This file
+// brief:   Provides a singleton-style interface for managing the Lua scripting
+//          environment. Handles initialization, cleanup, script loading, function
+//          calls, global variable access, and C++/Lua bindings for the game engine.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
