@@ -25,6 +25,7 @@ namespace Engine {
     // ======================= */
     struct SelectEntityEvent {
       Engine::ECS::EntityID entity_id;
+      bool start_dragging = false; // If true, start dragging immediately
     };
 
   } // namespace Events

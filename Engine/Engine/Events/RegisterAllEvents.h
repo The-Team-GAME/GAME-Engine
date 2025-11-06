@@ -5,6 +5,7 @@
 #include "../Graphics/Renderer.h"
 #include "../Resources.h"
 #include "../Components/GizmoComponents.h"
+#include "../InputManager.h"
 
 
 namespace Engine {
@@ -40,6 +41,8 @@ namespace Engine {
           if (event.entity_id != Engine::ECS::INVALID_ENTITY) {
             auto entity = Engine::ECS::get_entity(event.entity_id);
             if (entity.is_valid() && entity.has_component<Components::Transform2D>()) {
+              auto* transform = entity.get_component<Components::Transform2D>();
+              
               entity.add_component<Components::Gizmo>(
                 Math::Vec4D(0.0f, 1.0f, 0.0f, 1.0f), // Green outline
                 2.0f                                   // Thickness
@@ -47,10 +50,17 @@ namespace Engine {
 
               auto* gizmo = entity.get_component<Components::Gizmo>();
 
-              // Initialize drag offset to zero - will be set on first update if needed
-              if (gizmo) {
-                gizmo->drag_offset = Math::Vec2D(0.0f, 0.0f);
-                gizmo->is_dragging = false;
+              if (gizmo && transform) {
+                if (event.start_dragging) {
+                  // Calculate drag offset from current mouse position
+                  const auto mouse = Engine::Input::get_mouse_world_position();
+                  gizmo->drag_offset = Math::Vec2D(mouse.x - transform->position.x, mouse.y - transform->position.y);
+                  gizmo->is_dragging = true;
+                } else {
+                  // Initialize drag offset to zero - will be set on first update if needed
+                  gizmo->drag_offset = Math::Vec2D(0.0f, 0.0f);
+                  gizmo->is_dragging = false;
+                }
               }
             }
           }
