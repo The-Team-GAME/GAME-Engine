@@ -16,7 +16,8 @@
 #pragma once
 #include <glm/glm.hpp>
 #include "TypeDef.h"
-#include "KeyCodes.h"  // Include the new enums
+#include "KeyCodes.h"
+#include <optional>
 
 namespace Engine
 {

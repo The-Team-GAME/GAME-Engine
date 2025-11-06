@@ -229,15 +229,18 @@ namespace TilemapPanel {
   void update() {
     // === HANDLE PAINTING IN WORLD ===
     // Only allow painting/erasing when tilemap mode is enabled
+    auto world_pos_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
 
     if (enable_tilemap_mode) {
-      if (painting_enabled && Engine::Input::is_held(Engine::KeyCode::MouseLeft)) {
-        Math::Vec2D world_pos = Engine::Input::get_mouse_world_position();
+      if (!world_pos_opt.has_value()) {
+        /// Empty by design: if mouse is outside viewport, do nothing
+      }
+      else if (painting_enabled && Engine::Input::is_held(Engine::KeyCode::MouseLeft)) {
+        Math::Vec2D world_pos = world_pos_opt.value();
         place_tile_at_position(world_pos);
       }
-
-      if (erasing_enabled && Engine::Input::is_held(Engine::KeyCode::MouseLeft)) {
-        Math::Vec2D world_pos = Engine::Input::get_mouse_world_position();
+      else if (erasing_enabled && Engine::Input::is_held(Engine::KeyCode::MouseLeft)) {
+        Math::Vec2D world_pos = world_pos_opt.value();
         Math::Vec2D grid_pos = snap_to_grid(world_pos);
         delete_tile_at_position(grid_pos);
       }
@@ -860,7 +863,13 @@ namespace TilemapPanel {
 
       // Highlight current grid cell when painting 
       if ((painting_enabled || erasing_enabled)) {
-        Math::Vec2D world_pos = Engine::Input::get_mouse_world_position();
+        auto world_pos_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+
+        if (!world_pos_opt.has_value()) {
+          return;
+        }
+
+        Math::Vec2D world_pos = world_pos_opt.value();
         Math::Vec2D grid_pos = snap_to_grid(world_pos);
 
         Math::Vec4D highlight_color = painting_enabled ?
