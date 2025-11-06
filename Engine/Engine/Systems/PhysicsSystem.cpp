@@ -30,7 +30,7 @@ using col2D = Collision2DSystem;
 
 // eventually we'll deserialise these values from file bah
 namespace {
-  f32 walking_velocity = 500.f;
+  f32 walking_velocity = 200.f;
   Vec2D jumping_force(0.f, -15000.f);
 }
 phy2D::Physics2DSystem() {

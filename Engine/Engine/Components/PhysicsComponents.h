@@ -64,7 +64,7 @@ namespace Components
     {
       if (gravity) // im setting the gravity acc value so i dont need to keep checking if an object is affected by gravity
       {
-        gravity_acc.y = 200.f;
+        gravity_acc.y = 300.f;
       }
     }
 
