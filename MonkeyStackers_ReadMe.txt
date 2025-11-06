@@ -96,31 +96,34 @@ Level files contains the Object Prefab JSON file paths, and position of the obje
 Things that works in any state:
 -----------------------------------------------------------------------------------------------------------
 
-Step by Step Physics mode:
-
-P key to enable
-] key to go to next step
-
-NOTE: Recommened to use in PhysicsTestState
-NOTE: Tick rate can be adjusted using the slider in the Performance Viewer ImGui window
-
------------------------------------------------------------------------------------------------------------
-
 Entity Editor (ImGui window):
 
-- Entities can be cloned, select an entity in the editor, then click Clone This Entity. (Modify the
-  Position using the Entity Editor to see the newly created entity.)
-- Can use Entity Editor to scale entities (with Scale component added)
-- Can use Entity Editor to rotate entities (with Rotate component added)
+- Entities can be cloned: select an entity in the editor, then click "Clone This Entity" or right-click and 
+  select "Clone Entity". The cloned entity will be selected automatically.
+- Entities can be deleted: select an entity and click "Delete Selected" or right-click and select "Delete 
+  Entity".
+- Can use Entity Editor to scale entities (with Scale component added).
+- Can use Entity Editor to rotate entities (with Rotate component added).
+- Entities can be viewed in Flat View (simple list) or Hierarchy View (grouped by layers).
+- Entities can be searched/filtered using the search bar.
+- Components can be added to selected entities by selecting from the "Add Component" section (only 
+  reflectable components are shown, and buttons are disabled if the component is already present).
+- Components can be edited in the "Components" section, with fields automatically generated via reflection. 
+  Changes are applied in real-time.
+- Components can be removed by clicking the "Remove" button under each component tree node.
+- Entities can be assigned to layers in the "Layers" section, with checkboxes to add/remove from registered 
+  layers. New layers can be registered, and all layers can be cleared.
+- Entities can be cloned via the "Clone This Entity" button.
+- Prefabs can be created from entities by clicking "Create Prefab from Entity", entering a filename, and 
+  saving to the prefabs directory.
+- Entities can be exported to JSON by clicking "Export to JSON", which copies the JSON representation to 
+  the clipboard.
 
-Entities can be created
+Entities can be created in any state.
 Steps to create a Rect entity:
-- Go to ShowcaseState using the State Chooser ImGui panel
-- Under the ImGui Entity Editor, press Create New Entity
-- With the new entity selected, add:
-      Position
-      Size
-      Color
+- Under the ImGui Entity Editor, press "Create New Entity".
+- With the new entity selected, add components such as Position, Size, and Color from the "Add Component" 
+  section.
 
 -----------------------------------------------------------------------------------------------------------
 
