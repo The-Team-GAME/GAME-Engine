@@ -125,11 +125,12 @@ void ShowcaseState::init() {
     .add_component<Components::Health>(50, 100)
     .add_component<Components::HealthConfig>(Components::HealthConfig{ .drain_per_sec = 5.0f, .heal_while_moving_per_sec = 10.0f, .carry = 0.0f });
 
+  // Create floor
   auto floor = Engine::ECS::create_entity()
     .add_component<Components::Tag<"ShowcaseState">>()
     .add_component<Components::Transform2D>(960.0f, 770.0f, 0.0f, 1920.0f, 100.0f)
     .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
-    .add_component<Components::Color>(0.3f, 0.8f, 0.3f, 1.0f)
+    .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 0.0f)
     .add_component<Components::RigidBody>(true, false)
     .add_component<Components::BoxCollider>(1920.0f, 100.0f, false);
 
@@ -333,7 +334,7 @@ void ShowcaseState::update() {
       Engine::Systems::Physics2DSystem::jump(*rigid);
       Engine::Audio::play_sound(jump_sound);
       anim_state->set_entity_state(JUMP_STATE);
-      
+
       // Stop walking sound when jumping
       if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
         Engine::Audio::stop_channel(walk_sound_channel);
@@ -346,7 +347,7 @@ void ShowcaseState::update() {
       // In the air - use jump animation
       if (anim_state->current_state != JUMP_STATE) {
         anim_state->set_entity_state(JUMP_STATE);
-        
+
         // Stop walking sound when in air
         if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
           Engine::Audio::stop_channel(walk_sound_channel);
