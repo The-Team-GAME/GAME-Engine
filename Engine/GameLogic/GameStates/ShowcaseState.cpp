@@ -23,6 +23,9 @@ void ShowcaseState::load() {
 
   // Load audio
   walk_sound = Engine::Resources::load_sound("sounds/move1.wav");
+  jump_sound = Engine::Resources::load_sound("sounds/jump.wav");
+  punch_sound = Engine::Resources::load_sound("sounds/Punch.wav");
+  bgm_sound = Engine::Resources::load_sound("sounds/A STORY TO TELL - Jazz MSCLJZ2_26.wav");
 
   // Load fonts
   title_font = Engine::Resources::load_font("fonts/PlayfairDisplay-VariableFont_wght.ttf", 82);
@@ -185,6 +188,9 @@ void ShowcaseState::init() {
         walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
       }
 
+      // Play punch sound
+      Engine::Audio::play_sound(punch_sound);
+
       // Switch to punch animation state
       auto* anim_state = player.get_component<Components::AnimationState>();
       if (anim_state) {
@@ -265,6 +271,9 @@ void ShowcaseState::init() {
       }
     }
     });
+
+  // Start playing background music (looped)
+  bgm_channel = Engine::Audio::play_sound(bgm_sound, 0.5f, true);
 }
 
 void ShowcaseState::update() {
@@ -338,6 +347,11 @@ void ShowcaseState::update() {
     Engine::EventManager::send_event<CollectEvent>(player.get_id(), banana.get_id(), 1);
   }
 
+  // Play jump sound with Space key
+  if (Engine::Input::is_pressed(Engine::KeyCode::Space)) {
+    Engine::Audio::play_sound(jump_sound);
+  }
+
   // Camera follow player
   auto* camera_comp = camera.get_component<Components::Camera>();
   if (camera_comp) {
@@ -358,6 +372,11 @@ void ShowcaseState::free() {
     walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
   }
 
+  if (bgm_channel != Engine::Audio::INVALID_CHANNEL) {
+    Engine::Audio::stop_channel(bgm_channel);
+    bgm_channel = Engine::Audio::INVALID_CHANNEL;
+  }
+
   // Cleanup entities
   Engine::ECS::destroy_entities_with<Components::Tag<"ShowcaseState">>();
 
@@ -369,6 +388,9 @@ void ShowcaseState::free() {
 void ShowcaseState::unload() {
   // Resources are automatically cleaned up when shared_ptrs go out of scope
   walk_sound.reset();
+  jump_sound.reset();
+  punch_sound.reset();
+  bgm_sound.reset();
 
   // Clear unused resources from cache
   Engine::Resources::clear_unused_resources();

@@ -65,12 +65,16 @@ private:
   Engine::Graphics::Texture background_texture;
 
   Engine::Audio::Sound walk_sound;
+  Engine::Audio::Sound jump_sound;
+  Engine::Audio::Sound punch_sound;
+  Engine::Audio::Sound bgm_sound;
 
   Engine::Graphics::Font title_font;
   Engine::Graphics::Font info_font;
 
   // Audio channel handles
   Engine::Audio::ChannelHandle walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
+  Engine::Audio::ChannelHandle bgm_channel = Engine::Audio::INVALID_CHANNEL;
 
   // Animation state names
   const std::string IDLE_STATE = "idle";
