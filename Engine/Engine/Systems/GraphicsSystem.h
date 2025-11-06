@@ -166,7 +166,7 @@ namespace Engine
       CameraControlSystem() {
       }
 
-      void update_entity(Engine::ECS::Entity& entity) override {
+      void update() override {
 
       }
     };
