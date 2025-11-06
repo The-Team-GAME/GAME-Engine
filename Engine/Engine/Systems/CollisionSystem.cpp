@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------------
-// file:    CollisionSystem.h
+// file:    CollisionSystem.cpp
 // project: Monkey Stole My GPA
 //
 // author:   (100%)
@@ -7,9 +7,9 @@
 //
 // email:   @digipen.edu
 //
-// brief:   This file defines a system that handles entity rotation by updating
-//          rotation angles based on rotation speed and delta time in the ECS
-//          framework.
+// brief:   This file defines a system that handles the collision detection and
+//          collision resolution for entities that contain the components of
+//          Transform2D, RigidBody and BoxCollider
 //
 // Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------------
-// file:    PhysicsSystem.h
+// file:    DebugDrawSystem.h
 // project: Monkey Stole My GPA
 //
 // author:  Cheng Ming Xian (100%)
@@ -7,11 +7,10 @@
 //
 // email:   c.mingxian@digipen.edu
 //
-// brief:   This file defines a system that handles debug illustrations.
-//          Currently used for debugging collision. Only processes entities
-//          on the debug layer.
+// brief:   This file declares a system containing functions that will allow the 
+//					developers to debug the engine using visual aids.
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
