@@ -30,6 +30,7 @@
 #pragma once
 
 #include "../Math/Vector2D.h"
+#include "../Math/Vector4D.h"
 
 namespace ViewportPanel {
 
@@ -84,16 +85,13 @@ namespace ViewportPanel {
   Function Brief:
   Gets the viewport bounds in screen coordinates (pixels).
 
-  Parameters:
-  min_x - Output: Left edge of viewport in screen space
-  min_y - Output: Top edge of viewport in screen space
-  max_x - Output: Right edge of viewport in screen space
-  max_y - Output: Bottom edge of viewport in screen space
+  Returns:
+  Math::Vec4D - Viewport bounds (x: min_x, y: min_y, z: max_x, w: max_y)
 
   Where to call it:
   Call this to get the actual pixel bounds of the viewport panel for coordinate
   conversion and input handling.
   ==================================================================================*/
-  void get_viewport_bounds(float& min_x, float& min_y, float& max_x, float& max_y);
+  Math::Vec4D get_viewport_bounds();
 
 } // namespace ViewportPanel

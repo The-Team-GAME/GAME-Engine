@@ -186,13 +186,11 @@ namespace ViewportPanel {
     ImGui::End();
     ImGui::PopStyleVar();
   }
-   
 
-  void get_viewport_bounds(float& min_x, float& min_y, float& max_x, float& max_y) {
-    min_x = viewport_image_min.x;
-    min_y = viewport_image_min.y;
-    max_x = viewport_image_max.x;
-    max_y = viewport_image_max.y;
+
+  Math::Vec4D get_viewport_bounds() {
+    return Math::Vec4D(viewport_image_min.x, viewport_image_min.y,
+      viewport_image_max.x, viewport_image_max.y);
   }
 
 } // namespace ViewportPanel

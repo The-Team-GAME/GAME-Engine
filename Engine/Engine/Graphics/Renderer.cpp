@@ -462,17 +462,16 @@ namespace Engine {
         return screen_to_virtual(screen_pos);
       }
 
-      // Get viewport bounds from ViewportPanel
-      float min_x, min_y, max_x, max_y;
-      ViewportPanel::get_viewport_bounds(min_x, min_y, max_x, max_y);
+      // Get viewport bounds from ViewportPanel (x: min_x, y: min_y, z: max_x, w: max_y)
+      Math::Vec4D bounds = ViewportPanel::get_viewport_bounds();
 
       // Calculate viewport dimensions
-      float viewport_width = max_x - min_x;
-      float viewport_height = max_y - min_y;
+      float viewport_width = bounds.z - bounds.x;
+      float viewport_height = bounds.w - bounds.y;
 
       // Convert screen position to viewport-relative position
-      float relative_x = screen_pos.x - min_x;
-      float relative_y = screen_pos.y - min_y;
+      float relative_x = screen_pos.x - bounds.x;
+      float relative_y = screen_pos.y - bounds.y;
 
       // Normalize to [0, 1] range
       float normalized_x = relative_x / viewport_width;
@@ -486,6 +485,8 @@ namespace Engine {
       Math::Vec2D virtual_pos;
       virtual_pos.x = normalized_x * virtual_width;
       virtual_pos.y = normalized_y * virtual_height;
+
+      // std::cout << virtual_pos << "\n";
 
       return virtual_pos;
     }
