@@ -105,13 +105,21 @@ void ShowcaseState::init() {
     .add_component<Components::Transform2D>(200.0f, 655.0f, 0.0f, player_idle_width * 2.0f, player_idle_height * 2.0f)
     .add_component<Components::Texture>(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_idle_spritesheet.png"))
     .add_component<Components::TextureAtlas>(64, 64, 1, 24, 24)
-    .add_component<Components::RigidBody>(false, false)
+    .add_component<Components::RigidBody>(false, true)
+    .add_component<Components::BoxCollider>(player_idle_width * 2.0f, player_idle_height * 2.0f, true)
     .add_component<Components::Animation>(24, 0.1f)
     .add_component<Components::AnimationState>(player_anim_state)
     .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
     .add_component<Components::Tag<"ShowcaseState">>()
     .add_component<Components::Health>(50, 100)
     .add_component<Components::HealthConfig>(Components::HealthConfig{ .drain_per_sec = 5.0f, .heal_while_moving_per_sec = 10.0f, .carry = 0.0f });
+
+  auto floor = Engine::ECS::create_entity()
+    .add_component<Components::Tag<"ShowcaseState">>()
+    .add_component<Components::Transform2D>(960.0f, 770.0f, 0.0f, 1920.0f, 100.0f)
+    .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
+    .add_component<Components::Color>(0.3f, 0.8f, 0.3f, 1.0f)
+    .add_component<Components::RigidBody>(true, false);
 
   // Create text entities
   title_text = Engine::ECS::create_entity()
