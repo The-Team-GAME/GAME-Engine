@@ -67,31 +67,37 @@ void ShowcaseState::init() {
   // Create AnimationState for player with all three animation states
   Components::AnimationState player_anim_state;
 
-  // Add idle state (24 frames) with base scale
+  // Add idle state (24 frames) - looping, no auto-transition
   player_anim_state.add_state(
     IDLE_STATE,
     Components::Texture(player_idle_texture),
     Components::TextureAtlas(64, 64, 1, 24, 24),
     Components::Animation(24, 0.1f),
-    Math::Vec2D(player_idle_width * 2.0f, player_idle_height * 2.0f)
+    Math::Vec2D(player_idle_width * 2.0f, player_idle_height * 2.0f),
+    true,  // is_looping
+    std::nullopt  // no next_state (looping animations don't auto-transition)
   );
 
-  // Add run state (8 frames) with base scale
+  // Add run state (8 frames) - looping, no auto-transition
   player_anim_state.add_state(
     RUN_STATE,
     Components::Texture(player_run_texture),
     Components::TextureAtlas(64, 64, 1, 8, 8),
     Components::Animation(8, 0.1f),
-    Math::Vec2D(player_idle_width * 2.0f, player_idle_height * 2.0f)
+    Math::Vec2D(player_idle_width * 2.0f, player_idle_height * 2.0f),
+    true,  // is_looping
+    std::nullopt  // no next_state
   );
 
-  // Add punch state (6 frames of 19-frame spritesheet) with punch scale
+  // Add punch state (6 frames) - one-shot, auto-transitions to idle
   player_anim_state.add_state(
     PUNCH_STATE,
     Components::Texture(player_punch_texture),
     Components::TextureAtlas(96, 64, 1, 19, 6),
     Components::Animation(6, 0.05f),
-    Math::Vec2D(player_punch_width * 2.0f, player_punch_height * 2.0f)
+    Math::Vec2D(player_punch_width * 2.0f, player_punch_height * 2.0f),
+    false,  // is_looping = false (one-shot animation)
+    IDLE_STATE  // next_state = auto-transition to idle when done
   );
 
   // Set initial state to idle
@@ -280,17 +286,6 @@ void ShowcaseState::update() {
     return;
   }
 
-  // Handle punch animation timing
-  if (anim_state->current_state == PUNCH_STATE) {
-    punch_timer += Engine::Time::get_fixed_dt();
-    if (punch_timer >= punch_duration) {
-      // Punch animation finished, return to idle or run based on movement
-      punch_timer = 0.0f;
-      bool is_moving = (rigid->velocity.x != 0.0f || rigid->velocity.y != 0.0f);
-      anim_state->set_entity_state(is_moving ? RUN_STATE : IDLE_STATE);
-    }
-  }
-
   // Only handle movement and animation changes if not punching
   if (anim_state->current_state != PUNCH_STATE) {
     // Player movement input
@@ -342,8 +337,7 @@ void ShowcaseState::update() {
       Engine::EventManager::send_event<Engine::Systems::SpawnParticlesEvent>(
         Math::Vec2D{ t->position.x, t->position.y }, 96);
     }
-    // Start punch animation
-    punch_timer = 0.0f;
+    // Punch animation will auto-transition to idle when done (handled by AnimationStateSystem)
   }
   // Collect banana with C key (using event system)
   if (Engine::Input::is_pressed(Engine::KeyCode::C)) {
@@ -354,8 +348,6 @@ void ShowcaseState::update() {
 
 void ShowcaseState::draw() {
   Engine::Graphics::clear_screen(background_texture);
-
-  // Text entities are now rendered automatically by the rendering system
 }
 
 void ShowcaseState::free() {

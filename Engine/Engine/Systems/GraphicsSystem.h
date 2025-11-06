@@ -324,7 +324,8 @@ namespace Engine
         auto* atlas = entity.get_component<Components::TextureAtlas>();
         auto* animation = entity.get_component<Components::Animation>();
 
-        if (anim_state->dirty) { // Update only if state is marked dirty
+        // Apply state changes when dirty flag is set
+        if (anim_state->dirty) {
           // Log::info("Updating animation state for entity: " + std::to_string(entity.get_id()));
           auto it = anim_state->states.find(anim_state->current_state);
           if (it != anim_state->states.end()) {
@@ -334,7 +335,7 @@ namespace Engine
             atlas->subTextures = state_data.texture_atlas.subTextures;
             atlas->drawIndex = state_data.texture_atlas.drawIndex;
             animation->frames = state_data.animation.frames;
-            animation->startTime = state_data.animation.startTime;
+            animation->startTime = Engine::Time::get_time(); // Reset start time to NOW when transitioning
             animation->totalDuration = state_data.animation.totalDuration;
 
             // Apply scale if provided
@@ -346,6 +347,22 @@ namespace Engine
             }
           }
           anim_state->dirty = false; // Clear dirty flag after update
+        }
+
+        // Check for non-looping animation completion and auto-transition
+        auto it = anim_state->states.find(anim_state->current_state);
+        if (it != anim_state->states.end()) {
+          const auto& state_data = it->second;
+
+          // Only check for completion if animation is non-looping and has a next state
+          if (!state_data.is_looping && state_data.next_state.has_value()) {
+            // Check if animation has completed
+            float elapsed = Engine::Time::get_time() - animation->startTime;
+            if (elapsed >= animation->totalDuration) {
+              // Animation finished, transition to next state
+              anim_state->set_entity_state(state_data.next_state.value());
+            }
+          }
         }
       }
     };
