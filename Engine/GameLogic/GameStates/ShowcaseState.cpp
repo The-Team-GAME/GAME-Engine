@@ -67,28 +67,31 @@ void ShowcaseState::init() {
   // Create AnimationState for player with all three animation states
   Components::AnimationState player_anim_state;
 
-  // Add idle state (24 frames)
+  // Add idle state (24 frames) with base scale
   player_anim_state.add_state(
     IDLE_STATE,
     Components::Texture(player_idle_texture),
     Components::TextureAtlas(64, 64, 1, 24, 24),
-    Components::Animation(24, 0.1f)
+    Components::Animation(24, 0.1f),
+    Math::Vec2D(player_idle_width * 2.0f, player_idle_height * 2.0f)
   );
 
-  // Add run state (8 frames)
+  // Add run state (8 frames) with base scale
   player_anim_state.add_state(
     RUN_STATE,
     Components::Texture(player_run_texture),
     Components::TextureAtlas(64, 64, 1, 8, 8),
-    Components::Animation(8, 0.1f)
+    Components::Animation(8, 0.1f),
+    Math::Vec2D(player_idle_width * 2.0f, player_idle_height * 2.0f)
   );
 
-  // Add punch state (6 frames of 19-frame spritesheet)
+  // Add punch state (6 frames of 19-frame spritesheet) with punch scale
   player_anim_state.add_state(
     PUNCH_STATE,
     Components::Texture(player_punch_texture),
     Components::TextureAtlas(96, 64, 1, 19, 6),
-    Components::Animation(6, 0.05f)
+    Components::Animation(6, 0.05f),
+    Math::Vec2D(player_punch_width * 2.0f, player_punch_height * 2.0f)
   );
 
   // Set initial state to idle
@@ -184,12 +187,8 @@ void ShowcaseState::init() {
 
       // Switch to punch animation state
       auto* anim_state = player.get_component<Components::AnimationState>();
-      auto* player_transform = player.get_component<Components::Transform2D>();
-      if (anim_state && player_transform) {
+      if (anim_state) {
         anim_state->set_entity_state(PUNCH_STATE);
-        // Update scale for punch sprite dimensions
-        player_transform->scale.x = (facing_right ? 2.0f : -2.0f) * player_punch_width;
-        player_transform->scale.y = 2.0f * player_punch_height;
         std::cout << "Playing punch animation\n";
       }
     }
@@ -281,67 +280,32 @@ void ShowcaseState::update() {
     return;
   }
 
-  // Get current animation state
-  std::string current_state = anim_state->current_state;
-  bool is_punching = (current_state == PUNCH_STATE);
-  bool is_walking = (current_state == RUN_STATE);
-
   // Handle punch animation timing
-  if (is_punching) {
+  if (anim_state->current_state == PUNCH_STATE) {
     punch_timer += Engine::Time::get_fixed_dt();
     if (punch_timer >= punch_duration) {
       // Punch animation finished, return to idle or run based on movement
       punch_timer = 0.0f;
-
-      // Check if currently moving
-      f32 vel_x = rigid->velocity.x;
-      f32 vel_y = rigid->velocity.y;
-      bool is_moving = (vel_x != 0.0f || vel_y != 0.0f);
-
-      if (is_moving) {
-        anim_state->set_entity_state(RUN_STATE);
-        player_transform->scale.x = (facing_right ? 2.0f : -2.0f) * player_idle_width;
-        player_transform->scale.y = 2.0f * player_idle_height;
-      }
-      else {
-        anim_state->set_entity_state(IDLE_STATE);
-        player_transform->scale.x = (facing_right ? 2.0f : -2.0f) * player_idle_width;
-        player_transform->scale.y = 2.0f * player_idle_height;
-      }
+      bool is_moving = (rigid->velocity.x != 0.0f || rigid->velocity.y != 0.0f);
+      anim_state->set_entity_state(is_moving ? RUN_STATE : IDLE_STATE);
     }
   }
 
   // Only handle movement and animation changes if not punching
-  if (!is_punching) {
+  if (anim_state->current_state != PUNCH_STATE) {
     // Player movement input
     f32 speed = 300.0f;
     f32 new_vel_x = 0.0f;
     f32 new_vel_y = 0.0f;
 
-    if (Engine::Input::is_held(Engine::KeyCode::W)) {
-      new_vel_y = -speed;
-    }
-    if (Engine::Input::is_held(Engine::KeyCode::S)) {
-      new_vel_y = speed;
-    }
-    if (Engine::Input::is_held(Engine::KeyCode::A)) {
-      new_vel_x = -speed;
-    }
-    if (Engine::Input::is_held(Engine::KeyCode::D)) {
-      new_vel_x = speed;
-    }
+    if (Engine::Input::is_held(Engine::KeyCode::W)) new_vel_y = -speed;
+    if (Engine::Input::is_held(Engine::KeyCode::S)) new_vel_y = speed;
+    if (Engine::Input::is_held(Engine::KeyCode::A)) new_vel_x = -speed;
+    if (Engine::Input::is_held(Engine::KeyCode::D)) new_vel_x = speed;
 
     // Update facing direction based on horizontal movement
-    if (new_vel_x > 0.0f) {
-      facing_right = true;
-    }
-    else if (new_vel_x < 0.0f) {
-      facing_right = false;
-    }
-
-    // Apply scale to flip sprite horizontally
-    player_transform->scale.x = (facing_right ? 2.0f : -2.0f) * player_idle_width;
-    player_transform->scale.y = 2.0f * player_idle_height;
+    if (new_vel_x > 0.0f) facing_right = true;
+    else if (new_vel_x < 0.0f) facing_right = false;
 
     rigid->velocity.x = new_vel_x;
     rigid->velocity.y = new_vel_y;
@@ -349,18 +313,13 @@ void ShowcaseState::update() {
     // Animation change based on movement
     bool should_walk = (new_vel_x != 0.0f || new_vel_y != 0.0f);
 
-    if (should_walk && !is_walking) {
-      // Switch to run animation state
+    if (should_walk && anim_state->current_state != RUN_STATE) {
       anim_state->set_entity_state(RUN_STATE);
-
-      // Start playing walk sound on loop
       walk_sound_channel = Engine::Audio::play_sound(walk_sound, 1.0f, true);
     }
-    else if (!should_walk && is_walking) {
-      // Switch to idle animation state
+    else if (!should_walk && anim_state->current_state == RUN_STATE) {
       anim_state->set_entity_state(IDLE_STATE);
 
-      // Stop walk sound
       if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
         Engine::Audio::stop_channel(walk_sound_channel);
         walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
@@ -368,8 +327,12 @@ void ShowcaseState::update() {
     }
   }
 
+  // Apply facing direction to scale (flip sprite horizontally)
+  // The AnimationStateSystem handles base scale, we just apply the sign
+  player_transform->scale.x = std::abs(player_transform->scale.x) * (facing_right ? 1.0f : -1.0f);
+
   // Attack enemy with E key (using event system)
-  if (Engine::Input::is_pressed(Engine::KeyCode::E) && !is_punching) {
+  if (Engine::Input::is_pressed(Engine::KeyCode::E) && anim_state->current_state != PUNCH_STATE) {
     std::cout << "E key pressed! Player ID: " << player.get_id() << ", Enemy ID: " << enemy.get_id() << "\n";
 
     // Send attack event 

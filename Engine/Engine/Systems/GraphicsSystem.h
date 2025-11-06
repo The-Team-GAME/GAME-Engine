@@ -336,6 +336,14 @@ namespace Engine
             animation->frames = state_data.animation.frames;
             animation->startTime = state_data.animation.startTime;
             animation->totalDuration = state_data.animation.totalDuration;
+
+            // Apply scale if provided
+            if (state_data.scale.has_value()) {
+              auto* transform = entity.get_component<Components::Transform2D>();
+              if (transform) {
+                transform->scale = state_data.scale.value();
+              }
+            }
           }
           anim_state->dirty = false; // Clear dirty flag after update
         }

@@ -316,14 +316,15 @@ namespace Components
       Texture texture;
       TextureAtlas texture_atlas;
       Animation animation;
+      std::optional<Math::Vec2D> scale; // Optional scale override for this state
     };
 
     bool dirty = false; // Whether the state has been modified
     std::string current_state;
     std::unordered_map<std::string, StateData> states;
 
-    void add_state(const std::string& name, const Texture& texture, const TextureAtlas& atlas, const Animation& animation) {
-      states[name] = { texture, atlas, animation };
+    void add_state(const std::string& name, const Texture& texture, const TextureAtlas& atlas, const Animation& animation, std::optional<Math::Vec2D> scale = std::nullopt) {
+      states[name] = { texture, atlas, animation, scale };
     }
 
     void set_entity_state(const std::string& name) {
