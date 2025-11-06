@@ -11,7 +11,7 @@
 //          rotation angles based on rotation speed and delta time in the ECS
 //          framework.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "CollisionSystem.h"
 #include "../Perf.h"
@@ -28,8 +28,10 @@ std::unique_ptr<col2D::QuadTree> col2D::spatial_tree = nullptr;
 col2D::Collision2DSystem() {
   require_components<Components::Transform2D, Components::RigidBody, Components::BoxCollider>();
   // i know i should use world bounds but ill use screen bounds for now for testing put
-  f32 win_width = static_cast<f32>(settings::get().window_width);
-  f32 win_height = static_cast<f32>(settings::get().window_height);
+  Math::Vec2D win_size = Engine::Graphics::screen_to_virtual({ settings::get().window_width, settings::get().window_height });
+
+  f32 win_width = win_size.x;
+  f32 win_height = win_size.y;
   Vec2D mid_point(win_width / 2, win_height / 2);
   world_bounds = AABB(mid_point, win_width, win_height);
   spatial_tree = std::make_unique<QuadTree>(world_bounds, 0);
@@ -43,7 +45,7 @@ void col2D::update()
   spatial_tree->clear();
 
   // update the entities from last frame and chuck them into the spatial tree
-  for (ECS::EntityID entity_id : entities) 
+  for (ECS::EntityID entity_id : entities)
   {
     ECS::Entity entity(entity_id);
     update_entity(entity);
@@ -65,13 +67,13 @@ void col2D::update()
     // Query nearby entities using quadtree
     std::vector<ECS::Entity> nearby;
     // In the future the range for the find near entity could be expanded to the range that entity could travel in that frame, but for now ill double the current entity's aabb
-    spatial_tree->find_near_entity(AABB(box->aabb.pos,box->width * 1.5f, box->height * 1.5f), nearby);
+    spatial_tree->find_near_entity(AABB(box->aabb.pos, box->width * 1.5f, box->height * 1.5f), nearby);
 
     // Check collision only with nearby entities
     for (ECS::Entity& other : nearby)
     {
       // Skip self-collision
-      if (entity == other ) { continue; }
+      if (entity == other) { continue; }
 
       Components::RigidBody* other_rigid = other.get_component<Components::RigidBody>();
       Components::BoxCollider* other_box = other.get_component<Components::BoxCollider>();
@@ -84,7 +86,7 @@ void col2D::update()
 
       // Layer filtering (bidirectional check)
       if ((entity_collision_mask & other_layers).none() ||
-          (other_collision_mask & entity_layers).none()) 
+        (other_collision_mask & entity_layers).none())
       {
         continue;
       }
@@ -97,7 +99,7 @@ void col2D::update()
       }
 
       // Collision resolution
-      if (box->detect_collisions && !other_box->detect_collisions) 
+      if (box->detect_collisions && !other_box->detect_collisions)
       {
         Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
 
@@ -105,14 +107,14 @@ void col2D::update()
         Vec2D pen_vec = col2D::penetrationVector(minkowski);
 
         xform->position -= pen_vec;
-        if (pen_vec.y == 0) 
+        if (pen_vec.y == 0)
         {  // Sideways collision
           rigid->velocity.x = 0.f;
         }
-        else 
+        else
         {  // Up/down collision
           rigid->velocity.y = 0.f;
-          if (pen_vec.y > 0) 
+          if (pen_vec.y > 0)
           {
             rigid->on_ground = true;
           }
@@ -234,7 +236,7 @@ void col2D::update_AABB(Components::Transform2D const& xform, Components::BoxCol
 
 void col2D::draw_quad_tree()
 {
-  if (spatial_tree) 
+  if (spatial_tree)
   {
     spatial_tree->draw_tree_node();
   }
@@ -309,7 +311,7 @@ void col2D::QuadTree::clear()
 // Inserts an entity into the quad tree
 bool col2D::QuadTree::insert(ECS::Entity& entity)
 {
-  Components::BoxCollider*box = entity.get_component<Components::BoxCollider>();
+  Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
   // Check if the entity intersects with this node of the quad tree
   if (!bounds.intersects(box->aabb))
   {
@@ -383,7 +385,7 @@ bool col2D::QuadTree::can_contain(ECS::Entity& entity) const
 bool col2D::QuadTree::insert_in_child_node(ECS::Entity& entity)
 {
   // Try to find a child that fully contains the rectangle
-  for (u32 i{}; i < 4; ++i) 
+  for (u32 i{}; i < 4; ++i)
   {
     if (child_nodes[i]->can_contain(entity)) {
       // If child can fully contain it, insert recursively
@@ -406,7 +408,7 @@ void col2D::QuadTree::find_near_entity(AABB const& range, std::vector<ECS::Entit
   // Step 2: Check all objects stored at this level
   for (ECS::Entity entity : entity_vec) {
     Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
-    if (range.intersects(box->aabb)) 
+    if (range.intersects(box->aabb))
     {
       nearby.push_back(entity);
     }
@@ -439,11 +441,11 @@ void col2D::QuadTree::draw_tree_node() const
   f32 thickness = 2.f;
   // Color based on entity count - green for entities, gray for empty
   Vec4D color;
-  if (entity_vec.empty()) 
+  if (entity_vec.empty())
   {
     color = Vec4D(1.f, 1.f, 1.f, 0.7f);  // Gray for empty nodes
   }
-  else 
+  else
   {
     color = Vec4D(0.0f, 1.0f, 0.0f, 0.7f);  // Green =  Entities
   }
