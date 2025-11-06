@@ -128,17 +128,37 @@ namespace Engine
 
         const auto mouse = Engine::Input::get_mouse_world_position();
 
-        // Calculate bounds
-        const float half_w = tr->scale.x * 0.5f;
-        const float half_h = tr->scale.y * 0.5f;
-        const float left = tr->position.x - half_w;
-        const float right = tr->position.x + half_w;
-        const float top = tr->position.y - half_h;
-        const float bottom = tr->position.y + half_h;
+        // Check if this is a text entity
+        auto* text = entity.get_component<Components::Text>();
+        auto* font = entity.get_component<Components::Font>();
 
-        const bool inside =
-          (mouse.x >= left) && (mouse.x <= right) &&
-          (mouse.y >= top) && (mouse.y <= bottom);
+        bool inside = false;
+
+        if (text && font) {
+          // Calculate bounds for text entity (top-left aligned)
+          float text_scale = (tr->scale.x + tr->scale.y) * 0.5f;
+          Math::Vec2D text_size = Engine::Graphics::measure_text(font->font_handle, text->content, text_scale);
+
+          const float left = tr->position.x;
+          const float right = tr->position.x + text_size.x;
+          const float top = tr->position.y;
+          const float bottom = tr->position.y + text_size.y;
+
+          inside = (mouse.x >= left) && (mouse.x <= right) &&
+            (mouse.y >= top) && (mouse.y <= bottom);
+        }
+        else {
+          // Calculate bounds for sprite entity (centered)
+          const float half_w = tr->scale.x * 0.5f;
+          const float half_h = tr->scale.y * 0.5f;
+          const float left = tr->position.x - half_w;
+          const float right = tr->position.x + half_w;
+          const float top = tr->position.y - half_h;
+          const float bottom = tr->position.y + half_h;
+
+          inside = (mouse.x >= left) && (mouse.x <= right) &&
+            (mouse.y >= top) && (mouse.y <= bottom);
+        }
 
         // Handle starting drag on click
         if (Engine::Input::is_pressed(KeyCode::MouseLeft)) {
