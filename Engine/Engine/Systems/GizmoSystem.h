@@ -6,6 +6,7 @@
 #include "../Graphics/Renderer.h"
 #include "../EventManager/EventManager.h"
 #include "../Events/EngineEvents.h"
+#include <imgui.h>
 
 // TODO: M2: NEED TO WORK WITH THINGS WITH RIGIDBODY
 
@@ -104,9 +105,12 @@ namespace Engine
             gizmo->is_dragging = true;
           }
           else {
-            // Clicked outside - deselect (send deselection event)
-            Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
-            return;
+            // Only deselect if click was NOT on an ImGui window
+            if (!ImGui::GetIO().WantCaptureMouse) {
+              // Clicked outside - deselect (send deselection event)
+              Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
+              return;
+            }
           }
         }
 
