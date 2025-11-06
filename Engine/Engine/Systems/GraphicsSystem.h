@@ -145,7 +145,7 @@ namespace Engine
         Engine::Graphics::set_camera(camera);
       }
 
-      static void reset_camera() {
+      static void unactivate_all_cameras() {
         // Mark all cameras as inactive
         Engine::ECS::for_each_entity_with<Components::Camera>(
           [](Engine::ECS::Entity entity) {
@@ -153,11 +153,20 @@ namespace Engine
             camera_component->is_active = false;
           }
         );
+      }
+
+      static void reset_camera() {
+        unactivate_all_cameras();
 
         camera.position = Math::Vec2D(0.0f, 0.0f);
         camera.rotation = 0.0f;
         camera.zoom = 1.0f;
         Engine::Graphics::set_camera(camera);
+      }
+
+
+      static Engine::Graphics::Camera& get_camera() {
+        return camera;
       }
     };
 
