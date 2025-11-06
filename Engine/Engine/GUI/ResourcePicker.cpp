@@ -24,6 +24,10 @@ namespace ResourcePicker {
   std::vector<Engine::Graphics::Texture> get_all_loaded_textures() {
     std::vector<Engine::Graphics::Texture> textures;
 
+    textures.reserve(Engine::Resources::texture_cache.size() + 1); // +1 for unit_rect
+
+    textures.push_back(Engine::Graphics::get_rect_texture());
+
     for (const auto& [path, weak_tex] : Engine::Resources::texture_cache) {
       if (auto tex = weak_tex.lock()) {
         textures.push_back(tex);
@@ -31,14 +35,10 @@ namespace ResourcePicker {
     }
 
     // Sort by path for consistent ordering
-    std::sort(textures.begin(), textures.end(),
+    std::sort(textures.begin() + 1, textures.end(), // +1 to skip unit_rect
       [](const Engine::Graphics::Texture& a, const Engine::Graphics::Texture& b) {
         return a->path < b->path;
       });
-
-    // Add unit_rect texture at the start
-    auto unit_rect = Engine::Graphics::get_rect_texture();
-    textures.insert(textures.begin(), unit_rect);
 
     return textures;
   }
