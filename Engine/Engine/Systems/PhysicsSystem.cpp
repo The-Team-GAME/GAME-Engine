@@ -55,10 +55,7 @@ void phy2D::update_entity(Engine::ECS::Entity& entity) {
   Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
   Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
 
-  // Sync curr_pos with transform position at the start of the frame
-  // This ensures curr_pos always reflects any external changes to transform.position
-  //rigid->curr_pos = xform->position;
-
+  rigid->on_ground = false;
   phy2D::update_kinematics(*rigid, *xform);
   //std::cout << "velocity: " << rigid->velocity << " || position: " << rigid->curr_pos << std::endl;
 }
@@ -117,5 +114,6 @@ void phy2D::walk_right(Components::RigidBody& rigid)
 
 void phy2D::jump(Components::RigidBody& rigid)
 {
+  rigid.on_ground = false;
   phy2D::add_force(rigid, jumping_force);
 }

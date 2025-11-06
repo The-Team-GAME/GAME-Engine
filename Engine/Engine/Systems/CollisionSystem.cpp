@@ -221,9 +221,7 @@ void col2D::update()
 void col2D::update_entity(Engine::ECS::Entity& entity)
 {
   Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
-  Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
   Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
-  rigid->on_ground = false;
   col2D::update_AABB(*xform, *box);
 }
 
