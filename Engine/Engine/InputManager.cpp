@@ -95,7 +95,7 @@ namespace Engine
 
     // Check if imgui viewport mode is enabled to determine mouse position calculation
     mousePosition = Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled
-      ? ViewportPanel::get_viewport_mouse_position()
+      ? Engine::Graphics::screen_to_viewport({ static_cast<f32>(xpos), static_cast<f32>(ypos) })
       : Engine::Graphics::screen_to_virtual({ static_cast<f32>(xpos), static_cast<f32>(ypos) });
 
     //std::cout << "Mouse Position: (" << mousePosition.x << ", " << mousePosition.y << ")\n";

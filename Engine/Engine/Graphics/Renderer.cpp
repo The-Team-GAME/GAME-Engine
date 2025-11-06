@@ -9,6 +9,8 @@
 #include "../ECS/ECS.h"
 #include "../Events/WindowEvents.h"
 #include "../Time.h"
+#include "../GUI/ViewportPanel.h"
+#include "../FileIO/Settings.h"
 
 namespace Engine {
   namespace Graphics {
@@ -451,6 +453,41 @@ namespace Engine {
         adjusted_x * scale_x,
         adjusted_y * scale_y
       );
+    }
+
+    Math::Vec2D screen_to_viewport(const Math::Vec2D& screen_pos) {
+
+      if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled == false) {
+        // This means that imgui viewport mode is disabled, so we can just return the virtual coordinates
+        return screen_to_virtual(screen_pos);
+      }
+
+      // Get viewport bounds from ViewportPanel
+      float min_x, min_y, max_x, max_y;
+      ViewportPanel::get_viewport_bounds(min_x, min_y, max_x, max_y);
+
+      // Calculate viewport dimensions
+      float viewport_width = max_x - min_x;
+      float viewport_height = max_y - min_y;
+
+      // Convert screen position to viewport-relative position
+      float relative_x = screen_pos.x - min_x;
+      float relative_y = screen_pos.y - min_y;
+
+      // Normalize to [0, 1] range
+      float normalized_x = relative_x / viewport_width;
+      float normalized_y = relative_y / viewport_height;
+
+      // Clamp to viewport bounds
+      normalized_x = std::max(0.0f, std::min(1.0f, normalized_x));
+      normalized_y = std::max(0.0f, std::min(1.0f, normalized_y));
+
+      // Convert to virtual coordinates
+      Math::Vec2D virtual_pos;
+      virtual_pos.x = normalized_x * virtual_width;
+      virtual_pos.y = normalized_y * virtual_height;
+
+      return virtual_pos;
     }
 
     Math::Vec2D virtual_to_screen(const Math::Vec2D& virtual_pos) {
