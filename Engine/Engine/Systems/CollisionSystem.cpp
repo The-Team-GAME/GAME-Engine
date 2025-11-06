@@ -15,12 +15,20 @@
 //-----------------------------------------------------------------------------------
 #include "CollisionSystem.h"
 #include "../Perf.h"
+#include "../../Engine/FileIO/Settings.h"
 using namespace Engine;
 using namespace Systems;
 using col2D = Collision2DSystem;
+using settings = Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>;
 
 col2D::Collision2DSystem() {
   require_components<Components::Transform2D, Components::RigidBody, Components::BoxCollider>();
+  // i know i should use world bounds but ill use screen bounds for now for testing put
+  f32 win_width = settings::get().window_width;
+  f32 win_height = settings::get().window_height;
+  Vec2D mid_point(win_width / 2, win_height / 2);
+  world_bounds = AABB(mid_point, win_width, win_height);
+  spatial_tree = std::make_unique<QuadTree>(world_bounds, 0);
 }
 
 void col2D::update()
@@ -206,7 +214,62 @@ void col2D::QuadTree::clear()
 }
 
 // Inserts an entity into the quad tree
-bool insert(ECS::Entity& entity);
+bool col2D::QuadTree::insert(ECS::Entity& entity)
+{
+  Components::BoxCollider*box = entity.get_component<Components::BoxCollider>();
+  // Check if the entity intersects with this node of the quad tree
+  if (!bounds.intersects(box->aabb))
+  {
+    // If u reach here then the object shouldnt even be in this node LOL
+
+    return false;
+  }
+
+  // Next we check if the node has already been divided before
+  // If it hasnt, we check if there is enough space to store it
+  if (!divided && entity_vec.size() < max_entities)
+  {
+    entity_vec.push_back(entity);
+    return true;
+    // Ok problem solved :>
+  }
+
+  // If we have reached this part, it means that the node is not divided and we have hit capacity
+  // So now we need to split the node, provided we havent hit our max depth
+  if (!divided && depth < max_depth)
+  {
+    // Now we split kekw
+    this->split();
+    std::vector<ECS::Entity> remaining_entities;
+    for (ECS::Entity& existing_entity : entity_vec)
+    {
+      // Try to insert the existing entities into the child nodes that have been created
+      if (!insert_in_child_node(existing_entity))
+      {
+        // insert_in_child_node will return true if the existing entity can fit inside the child node
+        // else it will return false and we enter this part :>
+        remaining_entities.push_back(existing_entity);
+      }
+    }
+    // then now the vector will only be filled with objects that can only fit at this depth as it is too big for the child nodes
+    entity_vec = std::move(remaining_entities);
+  }
+
+  // So after we split (or not), its time to insert the current entity
+  // In this case theres a child node
+  if (divided)
+  {
+    if (insert_in_child_node(entity))
+    {
+      // insertion successful
+      return true;
+    }
+  }
+
+  // I guess this means we max depth LUL
+  entity_vec.push_back(entity);
+  return true;
+}
 
 // Check if an entity can be fully contained within the current node's boundary
 bool col2D::QuadTree::can_contain(ECS::Entity& entity) const
@@ -237,6 +300,31 @@ bool col2D::QuadTree::insert_in_child_node(ECS::Entity& entity)
 
   // No single child can contain it (spans multiple quadrants)
   return false;
+}
+
+void col2D::QuadTree::find_near_entity(AABB const& range, std::vector<ECS::Entity>& nearby)
+{
+  // Exit if search range doesn't intersect this node
+  // Cuz remember this function is called recursively so this is the exit criteria
+  if (!bounds.intersects(range)) {
+    return;
+  }
+
+  // Step 2: Check all objects stored at this level
+  for (ECS::Entity entity : entity_vec) {
+    Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
+    if (range.intersects(box->aabb)) 
+    {
+      nearby.push_back(entity);
+    }
+  }
+
+  // Step 3: Recursively check all children
+  if (divided) {
+    for (u32 i = 0; i < 4; i++) {
+      child_nodes[i]->find_near_entity(range, nearby);
+    }
+  }
 }
 
 // Returns the number of entities in the current node
