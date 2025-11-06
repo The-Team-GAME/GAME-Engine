@@ -77,9 +77,12 @@ private:
   // Audio channel handles
   Engine::Audio::ChannelHandle walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
 
+  // Animation state names
+  const std::string IDLE_STATE = "idle";
+  const std::string RUN_STATE = "run";
+  const std::string PUNCH_STATE = "punch";
+
   // Player state
-  bool is_walking = false;
-  bool is_punching = false;
   bool facing_right = true;
   s32 banana_collected = 0;
   f32 punch_timer = 0.0f;
