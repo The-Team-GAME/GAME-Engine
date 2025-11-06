@@ -269,7 +269,7 @@ void col2D::QuadTree::split()
   Vec2D mid = bounds.pos;
   f32 hw = bounds.half_width / 2;
   f32 hh = bounds.half_height / 2;
-
+  std::cout << "splitting at depth: " << this->depth << std::endl;
   // remember that the top left is 0,0 :>
 
   child_nodes[0] = std::make_unique<QuadTree>(
