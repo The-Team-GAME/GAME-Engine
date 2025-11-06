@@ -4,6 +4,7 @@
 #include "PhysicsSystem.h"
 #include "CollisionSystem.h"
 #include "ParticleSystem.h"
+#include "DebugDrawSystem.h"
 #include "UISystem.h"
 #include "GizmoSystem.h"
 
@@ -27,11 +28,14 @@ void register_engine_systems()
   Engine::ECS::add_system<Engine::Systems::DistortionAtlasSpriteRenderSystem>();
   Engine::ECS::add_system<Engine::Systems::DistortionSpriteRenderSystem>();
   Engine::ECS::add_system<Engine::Systems::ParticleSystem>();
+  Engine::ECS::add_system<Engine::Systems::DebugDrawSystem>();
 }
 
 void unregister_engine_systems()
 {
   // unregister in reverse order
+  Engine::ECS::remove_system<Engine::Systems::DebugDrawSystem>();
+  Engine::ECS::remove_system<Engine::Systems::ParticleSystem>();
   Engine::ECS::remove_system<Engine::Systems::DistortionSpriteRenderSystem>();
   Engine::ECS::remove_system<Engine::Systems::DistortionAtlasSpriteRenderSystem>();
   Engine::ECS::remove_system<Engine::Systems::TextRenderSystem>();
@@ -47,5 +51,4 @@ void unregister_engine_systems()
   Engine::ECS::remove_system<Engine::Systems::Physics2DSystem>();
   Engine::ECS::remove_system<Engine::Systems::CameraControlSystem>();
   Engine::ECS::remove_system<Engine::Systems::CameraSystem>();
-  Engine::ECS::remove_system<Engine::Systems::ParticleSystem>();
 }

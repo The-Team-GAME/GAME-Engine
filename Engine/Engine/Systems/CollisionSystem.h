@@ -45,7 +45,7 @@ namespace Engine {
 
 
       bool divided; // To check if the current node has been split
-      int depth; // Current depth of tree
+      u32 depth; // Current depth of tree
 
       // This function splits the current node into 
       // Private cuz we dont want users to anyhow split the node
@@ -84,14 +84,14 @@ namespace Engine {
       // Returns a bool to show if this node has been divided/ has children node already
       bool is_divided() const;
 
-      void draw_quad_tree() const;
+      void draw_tree_node() const;
     };
     /*=================/
     / End of Quad Tree /
     /=================*/
 
     private:
-      std::unique_ptr<QuadTree> spatial_tree;
+      static std::unique_ptr<QuadTree> spatial_tree;
       AABB world_bounds;
     public:
       Collision2DSystem(); // Default dtor that includes all the components needed for the entities called in the physics engine
@@ -102,6 +102,8 @@ namespace Engine {
 
       // update the AABB of the entity after it gets transformed
       static void update_AABB(Components::Transform2D const& xform, Components::BoxCollider& box);
+
+      static void draw_quad_tree();
 
       /*=========================/
       / Minkowski AABB Collision /

@@ -22,11 +22,14 @@ using namespace Systems;
 using col2D = Collision2DSystem;
 using settings = Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>;
 
+// Need to define cuz we made spatial tree static so we could make a static function to call its draw function in another system
+std::unique_ptr<col2D::QuadTree> col2D::spatial_tree = nullptr;
+
 col2D::Collision2DSystem() {
   require_components<Components::Transform2D, Components::RigidBody, Components::BoxCollider>();
   // i know i should use world bounds but ill use screen bounds for now for testing put
-  f32 win_width = settings::get().window_width;
-  f32 win_height = settings::get().window_height;
+  f32 win_width = static_cast<f32>(settings::get().window_width);
+  f32 win_height = static_cast<f32>(settings::get().window_height);
   Vec2D mid_point(win_width / 2, win_height / 2);
   world_bounds = AABB(mid_point, win_width, win_height);
   spatial_tree = std::make_unique<QuadTree>(world_bounds, 0);
@@ -62,7 +65,7 @@ void col2D::update()
     // Query nearby entities using quadtree
     std::vector<ECS::Entity> nearby;
     // In the future the range for the find near entity could be expanded to the range that entity could travel in that frame, but for now ill double the current entity's aabb
-    spatial_tree->find_near_entity(AABB(box->aabb.pos,box->width * 1.5f, box->width * 1.5f), nearby);
+    spatial_tree->find_near_entity(AABB(box->aabb.pos,box->width * 1.5f, box->height * 1.5f), nearby);
 
     // Check collision only with nearby entities
     for (ECS::Entity& other : nearby)
@@ -229,7 +232,15 @@ void col2D::update_AABB(Components::Transform2D const& xform, Components::BoxCol
   return;
 }
 
-// collision resolution will be in the physics system cuz it makes more sense there :>
+void col2D::draw_quad_tree()
+{
+  if (spatial_tree) 
+  {
+    spatial_tree->draw_tree_node();
+  }
+}
+
+#pragma region QuadTree
 /*==============================/
 / Spatial Partitioning Attempts /
 /==============================*/
@@ -421,19 +432,31 @@ bool col2D::QuadTree::is_divided() const
   return divided;
 }
 
-void col2D::QuadTree::draw_quad_tree() const
+void col2D::QuadTree::draw_tree_node() const
 {
   Vec2D dimensions(bounds.half_width * 2, bounds.half_height * 2);
   f32 rotation = 0.f;
-  f32 thickness = 0.2f;
-  Vec4D color(1.0f, 1.0f, 1.0f, 0.3f);  // White with 30% transparency
+  f32 thickness = 2.f;
+  // Color based on entity count - green for entities, gray for empty
+  Vec4D color;
+  if (entity_vec.empty()) 
+  {
+    color = Vec4D(1.f, 1.f, 1.f, 0.7f);  // Gray for empty nodes
+  }
+  else 
+  {
+    color = Vec4D(0.0f, 1.0f, 0.0f, 0.7f);  // Green =  Entities
+  }
   Graphics::draw_rect_outline(bounds.pos, dimensions, rotation, thickness, color);
   if (divided) {
     for (u32 i = 0; i < 4; ++i) {
-      child_nodes[i]->draw_quad_tree();
+      child_nodes[i]->draw_tree_node();
     }
   }
 }
+
+#pragma endregion Quad Tree Implementation
+
 /*========================/
 / Static Collision Checks /
 /========================*/
