@@ -96,18 +96,18 @@ namespace Engine
 
     // Helper to register component type with Lua
     template<typename T>
-    void register_component_type(sol::state& lua, const std::string& name) {
-      sol::state_view sv(lua);
-      lua.new_usertype<T>(name,
-        sol::constructors<T()>(),
+void register_component_type(sol::state& lua, const std::string& name) {
+    sol::state_view sv(lua);
+    lua.new_usertype<T>(name,
+        sol::no_constructor,  // Don't try to construct components directly from Lua
         sol::meta_function::index, [sv](T& component, sol::object key) -> sol::object {
-          return reflect_get<T>(component, key, sv); // pass lua state view
+            return reflect_get<T>(component, key, sv);
         },
         sol::meta_function::new_index, [](T& component, sol::object key, sol::object value) {
-          reflect_set<T>(component, key, value);
+            reflect_set<T>(component, key, value);
         }
-      );
-    }
+    );
+}
 
      std::vector<EntityProxy> get_all_entities() {
         std::vector<EntityProxy> proxies;
@@ -141,6 +141,15 @@ namespace Engine
       if (tag == "MainMenuState") {
         ent.add_component<Components::Tag<"MainMenuState">>();
       }
+      else if (tag == "LuaState") {
+        ent.add_component<Components::Tag<"LuaState">>();
+      }
+      else if (tag == "PhysicsTestState") {
+        ent.add_component<Components::Tag<"PhysicsTestState">>();
+      }
+      else if (tag == "BehaviourState") {
+        ent.add_component<Components::Tag<"BehaviourState">>();
+      }
       else {
         std::cerr << "[GameAPI] Unknown tag type: " << tag << "\n";
       }
@@ -159,23 +168,38 @@ namespace Engine
       ent.add_component<Components::Texture>(tex);
     }
 
+		// Overloaded version to add a default rectangle texture
+    void add_texture_quad(EntityId id)
+    {
+      auto ent = Engine::ECS::get_entity(id);
+      ent.add_component<Components::Texture>(Engine::Resources::get_rect_texture());
+    }
+
     void add_color(EntityId id, f32 r, f32 g, f32 b, f32 a)
     {
       auto ent = Engine::ECS::get_entity(id);
       ent.add_component<Components::Color>(Math::Vec4D(r, g, b, a));
     }
 
-    void add_rigidbody(EntityId id)
+    void add_rigidbody(EntityId id, bool is_kinematic, bool is_gravity)
     {
       auto ent = Engine::ECS::get_entity(id);
-      ent.add_component<Components::RigidBody>();
+      ent.add_component<Components::RigidBody>(is_kinematic, is_gravity);
     }
+
+    void add_box_collider(EntityId id, f32 width, f32 height, bool is_static)
+    {
+      auto ent = Engine::ECS::get_entity(id);
+      ent.add_component<Components::BoxCollider>(width, height, is_static);
+		}
 
     void add_tag(EntityId id, const std::string& tag) {
       auto ent = Engine::ECS::get_entity(id);
       add_tag_helper(ent, tag);
     }
 
+		// This one creates from a table 
+    // which means that u can serialize this easily <3 - Ryanh
     EntityId create_from_table(const sol::table& t)
     {
       EntityId id = create_entity();
@@ -209,8 +233,16 @@ namespace Engine
           }
           else if (type == "RigidBody") {
             //f32 mass = ct.get_or("mass", 1.0f);
-            //bool dyn = ct.get_or("dynamic", true);
-            add_rigidbody(id);
+            bool kinematic = ct.get_or("isKinematic", true);
+            bool gravity = ct.get_or("isGravity", true);
+            add_rigidbody(id, kinematic, gravity);
+          }
+          else if (type == "BoxCollider") {
+            //f32 mass = ct.get_or("mass", 1.0f);
+            f32 width = ct.get_or("width", 0.0f);
+            f32 height = ct.get_or("height", 0.0f);
+						bool isStatic = ct.get_or("isStatic", true);
+            add_box_collider(id, width, height, isStatic);
           }
           else if (type == "Tag") {
             std::string tag = ct.get_or("tag", std::string{});
@@ -235,6 +267,8 @@ namespace Engine
       register_component_type<Components::Color>(lua, "Color");
       register_component_type<Components::Texture>(lua, "Texture");
       register_component_type<Components::RigidBody>(lua, "RigidBody");
+      register_component_type<Components::BoxCollider>(lua, "BoxCollider");
+			//register_component_type<Components::Tag<"MainMenuState">>(lua, "Tag_MainMenuState");
 
       game.set_function("create_entity", &create_entity);
       game.set_function("destroy_entity", &destroy_entity);
@@ -243,8 +277,10 @@ namespace Engine
       // old stuff 
       game.set_function("add_transform", &add_transform);
       game.set_function("add_texture", &add_texture);
+      game.set_function("add_texture_quad", &add_texture_quad);
       game.set_function("add_color", &add_color);
       game.set_function("add_rigidbody", &add_rigidbody);
+			game.set_function("add_box_collider", &add_box_collider);
       game.set_function("add_tag", &add_tag);
       
       // Add input checking functions
@@ -276,7 +312,7 @@ namespace Engine
       lua.new_usertype<EntityProxy>("Entity",
         "id", &EntityProxy::id,
 
-        // Generic component getter
+        // Generic component getter 
         "get_component", [&lua](EntityProxy& p, const std::string& type) -> sol::object {
           if (type == "Transform2D")
             return sol::make_object(lua, get_component<Components::Transform2D>(p.id));
@@ -286,6 +322,10 @@ namespace Engine
             return sol::make_object(lua, get_component<Components::Texture>(p.id));
           if (type == "RigidBody")
             return sol::make_object(lua, get_component<Components::RigidBody>(p.id));
+          if (type == "BoxCollider")
+            return sol::make_object(lua, get_component<Components::BoxCollider>(p.id));
+          // if (type == "Tag")
+          //   return sol::make_object(lua, add_tag(p.id));
           return sol::nil;
         },
 
@@ -293,15 +333,25 @@ namespace Engine
         "add_transform", [](EntityProxy& p, f32 x, f32 y, f32 rot, f32 sx, f32 sy) {
           add_transform(p.id, x, y, rot, sx, sy);
         },
+        "add_color", [](EntityProxy& p, f32 r, f32 g, f32 b, f32 a) {
+          add_color(p.id, r, g, b, a);
+        },
         "add_texture", [](EntityProxy& p, const std::string& path) {
           add_texture(p.id, path);
         },
-        "add_color", [](EntityProxy& p, f32 r, f32 g, f32 b, f32 a) {
-          add_color(p.id, r, g, b, a);
+        "add_texture_quad", [](EntityProxy& p) {
+          add_texture_quad(p.id);
+        },
+        "add_rigidbody", [](EntityProxy& p, bool is_kinematic, bool is_gravity) {
+          add_rigidbody(p.id, is_kinematic, is_gravity);
+        },
+        "add_box_collider", [](EntityProxy& p, f32 width, f32 height, bool is_trigger) {
+          add_box_collider(p.id, width, height, is_trigger);
         },
         "add_tag", [](EntityProxy& p, const std::string& tag) {
           add_tag(p.id, tag);
         }
+        
         //temp stuff
         // "get_transform", [](EntityProxy& p) { return get_transform(p.id); },
         // "set_transform", [](EntityProxy& p, const TransformData& t) { set_transform(p.id, t); }

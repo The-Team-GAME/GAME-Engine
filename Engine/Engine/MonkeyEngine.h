@@ -25,5 +25,6 @@
 #include "ImGuiManager.h"
 #include "EventManager/EventManager.h"
 #include "FileIO/PrefabsFileIO.h"
+#include "Systems/PhysicsSystem.h"
 #include "Lua/LuaManager.h"
 #include "FileIO/Settings.h" // May not want to expose this in the future
