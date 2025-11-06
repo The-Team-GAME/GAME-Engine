@@ -300,6 +300,7 @@ namespace Engine
       }
     };
 
+    // NOT FINALIZED, STILL EXPERIMENTAL
     class AnimationStateSystem : public Engine::ECS::System {
     public:
       AnimationStateSystem() {

@@ -310,6 +310,7 @@ namespace Components
   };
 
   // Stores a map of animation states by name
+  // NOT FINALIZED, STILL EXPERIMENTAL
   struct AnimationState
   {
     struct StateData {
