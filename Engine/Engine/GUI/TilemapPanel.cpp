@@ -2,10 +2,10 @@
 // file:    TilemapPanel.cpp
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (100%)
+// author:  Ong Zi Ming (100%)
 //          Primary author
 //
-// email:   chew.s@digipen.edu
+// email:   o.ziming@digipen.edu
 //
 // brief:   Implementation of TilemapPanel for painting tiles on the world using
 //          TextureAtlas. Provides tile selection, grid overlay, and mouse-based
