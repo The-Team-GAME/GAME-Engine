@@ -649,6 +649,43 @@ namespace Engine {
       }
     }
 
+    Math::Vec2D measure_text(Engine::Graphics::Font font, const std::string& text, f32 scale) {
+      if (!font || font->texture_atlas.id == 0) {
+        Log::warning("Attempted to measure text with invalid font");
+        return Math::Vec2D(0.0f, 0.0f);
+      }
+
+      if (text.empty()) {
+        return Math::Vec2D(0.0f, 0.0f);
+      }
+
+      float width = 0.0f;
+      float height = font->baseline * scale; // Use baseline as the standard height
+
+      // Iterate through all characters in the text
+      for (char c : text) {
+        // Get the glyph for this character
+        auto it = font->glyphs.find(static_cast<unsigned int>(c));
+
+        if (it == font->glyphs.end()) {
+          continue;
+        }
+
+        const Glyph& glyph = it->second;
+
+        // Advance cursor to next glyph position
+        width += (glyph.advance >> 6) * scale;
+
+        // Track the maximum height needed
+        float glyph_height = glyph.size.y * scale;
+        if (glyph_height > height) {
+          height = glyph_height;
+        }
+      }
+
+      return Math::Vec2D(width, height);
+    }
+
     void clear_screen(const Math::Vec4D& color) {
       // Flush any pending batches before clearing
       end_batch();
