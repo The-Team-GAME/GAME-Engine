@@ -173,60 +173,69 @@ namespace Engine
     class CameraControlSystem : public Engine::ECS::System {
     private:
       bool is_dragging = false;
-      Math::Vec2D last_mouse_pos = { 0.0f, 0.0f };
+      glm::vec2 last_mouse_pos = { 0.0f, 0.0f };
 
     public:
       CameraControlSystem() {
+        // No component requirements - this system works globally
       }
 
       void update() override {
+        // Check if Ctrl is held
+        bool ctrl_held = Engine::Input::is_held(Engine::KeyCode::CtrlLeft) ||
+          Engine::Input::is_held(Engine::KeyCode::CtrlRight);
 
-        // Handle camera dragging with Ctrl + Left Mouse Button
-        if (Engine::Input::is_held(Engine::KeyCode::CtrlLeft) ||
-          Engine::Input::is_held(Engine::KeyCode::CtrlRight)) {
+        // Get current mouse position
+        glm::vec2 current_mouse_pos = Engine::Input::get_mouse_position();
 
-          // Unactivate all cameras first to ensure we're controlling the global camera
+        // Get scroll offset
+        glm::vec2 scroll = Engine::Input::get_scroll_offset();
+
+        // Check if left mouse button is held
+        bool mouse_held = Engine::Input::is_held(Engine::KeyCode::MouseLeft);
+
+        // Start dragging
+        if (ctrl_held && Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
+          is_dragging = true;
+          last_mouse_pos = current_mouse_pos;
+        }
+
+        // Stop dragging
+        if (!mouse_held || !ctrl_held) {
+          is_dragging = false;
+        }
+
+        // Only process camera controls if Ctrl is held
+        if (ctrl_held) {
+          // Unactivate all cameras to use the global camera
           CameraSystem::unactivate_all_cameras();
 
           auto& camera = CameraSystem::get_camera();
 
-          // Camera panning with mouse drag
-          if (Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
-            is_dragging = true;
-            last_mouse_pos = Engine::Input::get_mouse_world_position();
-          }
-
-          if (is_dragging && Engine::Input::is_held(Engine::KeyCode::MouseLeft)) {
-            Math::Vec2D current_mouse_pos = Engine::Input::get_mouse_world_position();
-            Math::Vec2D delta = last_mouse_pos - current_mouse_pos;
-
-            camera.position.x += delta.x;
-            camera.position.y += delta.y;
-
-            last_mouse_pos = current_mouse_pos;
-          }
-
-          // Camera zoom with scroll wheel
-          Math::Vec2D scroll = Engine::Input::get_scroll_offset();
+          // Handle zoom with Ctrl + Scroll
           if (scroll.y != 0.0f) {
-            // Zoom in when scrolling up, zoom out when scrolling down
-            f32 zoom_delta = scroll.y * 0.1f;
+            float zoom_speed = 0.1f;
+            float zoom_delta = scroll.y * zoom_speed;
             camera.zoom += zoom_delta;
-
             // Clamp zoom to reasonable values
-            if (camera.zoom < 0.1f) camera.zoom = 0.1f;
-            if (camera.zoom > 10.0f) camera.zoom = 10.0f;
+            camera.zoom = glm::clamp(camera.zoom, 0.1f, 10.0f);
+          }
+
+          // Perform camera drag
+          if (is_dragging && mouse_held) {
+            // Calculate mouse delta
+            glm::vec2 delta = current_mouse_pos - last_mouse_pos;
+            last_mouse_pos = current_mouse_pos;
+
+            // Move camera in opposite direction of mouse drag for intuitive feel
+            // Also account for camera zoom
+            camera.position.x -= delta.x / camera.zoom;
+            camera.position.y -= delta.y / camera.zoom;
           }
 
           // Update the camera in the graphics system
           Engine::Graphics::set_camera(camera);
         }
-
-        // Stop dragging when mouse button is released
-        if (Engine::Input::is_released(Engine::KeyCode::MouseLeft)) {
-          is_dragging = false;
-        }
-
       }
     };
 
