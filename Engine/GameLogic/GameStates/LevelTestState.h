@@ -35,5 +35,10 @@ public:
 
   void free() {};
 
-  void unload() {};
+  void unload() {
+
+    // destroy all entities
+    Engine::ECS::destroy_all_entities();
+
+  };
 };

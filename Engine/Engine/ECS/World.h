@@ -119,6 +119,20 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
+    Marks all active entities for destruction. All entities will be removed at
+    the end of the current update frame.
+
+    Parameters:
+    None.
+
+    Where to call it:
+    When clearing the entire world, transitioning between game states, or resetting
+    the game.
+    ==================================================================================*/
+    void destroy_all_entities();
+
+    /*=================================================================================
+    Function Brief:
     Destroys all entities that have the specified component types.
 
     Parameters:

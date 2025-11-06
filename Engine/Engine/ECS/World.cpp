@@ -176,6 +176,17 @@ namespace Engine {
       containers.entities_to_destroy.insert(id);
     }
 
+    void destroy_all_entities()
+    {
+      auto& containers = Internal::get_containers();
+      
+      // Mark all active entities for destruction
+      for (EntityID entityId : containers.active_entities)
+      {
+        containers.entities_to_destroy.insert(entityId);
+      }
+    }
+
     bool is_entity_active(const Entity& entity)
     {
       auto& containers = Internal::get_containers();
