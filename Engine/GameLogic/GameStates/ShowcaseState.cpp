@@ -86,6 +86,17 @@ void ShowcaseState::init() {
     std::nullopt  // no next_state
   );
 
+  // Add jump state (8 frames) - looping, uses run animation
+  player_anim_state.add_state(
+    JUMP_STATE,
+    Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_run_spritesheet.png")),
+    Components::TextureAtlas(64, 64, 1, 8, 8),
+    Components::Animation(8, 0.1f),
+    Math::Vec2D(player_idle_width * 2.0f, player_idle_height * 2.0f),
+    true,  // is_looping
+    std::nullopt  // no next_state
+  );
+
   // Add punch state (6 frames) - one-shot, auto-transitions to idle
   player_anim_state.add_state(
     PUNCH_STATE,
@@ -318,30 +329,47 @@ void ShowcaseState::update() {
     }
 
     // Jump with Space when on ground
-    if (Engine::Input::is_held(Engine::KeyCode::Space) && rigid->on_ground && !jumping) {
-      jumping = true;
+    if (Engine::Input::is_pressed(Engine::KeyCode::Space) && rigid->on_ground) {
       Engine::Systems::Physics2DSystem::jump(*rigid);
       Engine::Audio::play_sound(jump_sound);
-    }
-
-    // Reset jumping flag when space is released
-    if (Engine::Input::is_released(Engine::KeyCode::Space) && jumping) {
-      jumping = false;
-    }
-
-    // Animation change based on movement
-    bool should_walk = moving_horizontally;
-
-    if (should_walk && anim_state->current_state != RUN_STATE) {
-      anim_state->set_entity_state(RUN_STATE);
-      walk_sound_channel = Engine::Audio::play_sound(walk_sound, 1.0f, true);
-    }
-    else if (!should_walk && anim_state->current_state == RUN_STATE) {
-      anim_state->set_entity_state(IDLE_STATE);
-
+      anim_state->set_entity_state(JUMP_STATE);
+      
+      // Stop walking sound when jumping
       if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
         Engine::Audio::stop_channel(walk_sound_channel);
         walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
+      }
+    }
+
+    // Animation state logic based on ground state and movement
+    if (!rigid->on_ground) {
+      // In the air - use jump animation
+      if (anim_state->current_state != JUMP_STATE) {
+        anim_state->set_entity_state(JUMP_STATE);
+        
+        // Stop walking sound when in air
+        if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
+          Engine::Audio::stop_channel(walk_sound_channel);
+          walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
+        }
+      }
+    }
+    else if (moving_horizontally) {
+      // On ground and moving - use run animation
+      if (anim_state->current_state != RUN_STATE) {
+        anim_state->set_entity_state(RUN_STATE);
+        walk_sound_channel = Engine::Audio::play_sound(walk_sound, 1.0f, true);
+      }
+    }
+    else {
+      // On ground and not moving - use idle animation
+      if (anim_state->current_state != IDLE_STATE) {
+        anim_state->set_entity_state(IDLE_STATE);
+
+        if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
+          Engine::Audio::stop_channel(walk_sound_channel);
+          walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
+        }
       }
     }
   }

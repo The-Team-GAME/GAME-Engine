@@ -80,11 +80,11 @@ private:
   // Animation state names
   const std::string IDLE_STATE = "idle";
   const std::string RUN_STATE = "run";
+  const std::string JUMP_STATE = "jump";
   const std::string PUNCH_STATE = "punch";
 
   // Player state
   bool facing_right = true;
-  bool jumping = false;
   s32 banana_collected = 0;
 
   // Player dimensions
