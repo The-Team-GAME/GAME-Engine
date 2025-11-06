@@ -36,11 +36,11 @@ public:
 
 		//animating entity
 		bro = Engine::ECS::create_entity()
-			.add_component<Components::Transform2D>(400.0f, 400.0f, 0.0f, 1000.0f / 7.0f, 130.0f)
+			.add_component<Components::Transform2D>(400.0f, 400.0f, 0.0f, 3000.0f / 24.0f, 130.0f)
 			.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-			.add_component<Components::Texture>(Engine::Resources::load_texture("images/Bro_Idle_Spritesheet.png"))
-			.add_component<Components::TextureAtlas>(448 / 7, 64, 1, 7, 7) //index is set default to 0 playable around with
-			.add_component<Components::Animation>(7, 0.1f);
+			.add_component<Components::Texture>(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_Idle_Spritesheet.png"))
+			.add_component<Components::TextureAtlas>(1536 / 24, 64, 1, 24, 24) //index is set default to 0 playable around with
+			.add_component<Components::Animation>(24, 0.1f);
 		//.add_component<Components::TextureAtlas>(banana.get_component<Components::Transform2D>()->scale.x, banana.get_component<Components::Transform2D>()->scale.y, 7.0f, 0.0f, 7);
 		/*.add_component<Components::RigidBody>();
 		banana.get_component<Components::RigidBody>()->angular_velocity = 10.0f;*/
