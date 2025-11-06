@@ -4,6 +4,8 @@
 #include "../Components/Components.h"
 #include "../InputManager.h"
 #include "../Graphics/Renderer.h"
+#include "../EventManager/EventManager.h"
+#include "../Events/EngineEvents.h"
 
 // TODO: M2: NEED TO WORK WITH THINGS WITH RIGIDBODY
 
@@ -45,20 +47,8 @@ namespace Engine
 
         // Add Gizmo component when clicked
         if (inside && Engine::Input::is_pressed(KeyCode::MouseLeft)) {
-          // Calculate offset from entity center to mouse position
-          Math::Vec2D offset = Math::Vec2D(mouse.x - tr->position.x, mouse.y - tr->position.y);
-
-          entity.add_component<Components::Gizmo>(
-            Math::Vec4D(0.0f, 1.0f, 0.0f, 1.0f), // Green outline
-            2.0f                                   // Thickness
-          );
-
-          // Set the drag offset
-          auto* gizmo = entity.get_component<Components::Gizmo>();
-          if (gizmo) {
-            gizmo->drag_offset = offset;
-            gizmo->is_dragging = true;
-          }
+          // Send selection event - this will add Gizmo component via the event listener
+          Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(entity.get_id());
         }
       }
     };
@@ -75,6 +65,12 @@ namespace Engine
         auto* gizmo = entity.get_component<Components::Gizmo>();
 
         if (!tr || !gizmo) return;
+
+        // Initialize drag offset if not set (first frame after selection)
+        if (gizmo->drag_offset.x == 0.0f && gizmo->drag_offset.y == 0.0f && !gizmo->is_dragging) {
+          const auto mouse = Engine::Input::get_mouse_world_position();
+          gizmo->drag_offset = Math::Vec2D(mouse.x - tr->position.x, mouse.y - tr->position.y);
+        }
 
         // Check if Ctrl is held (camera control mode)
         bool ctrl_held = Engine::Input::is_held(Engine::KeyCode::CtrlLeft) ||
@@ -108,8 +104,8 @@ namespace Engine
             gizmo->is_dragging = true;
           }
           else {
-            // Clicked outside - deselect (remove Gizmo)
-            entity.remove_component<Components::Gizmo>();
+            // Clicked outside - deselect (send deselection event)
+            Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
             return;
           }
         }
