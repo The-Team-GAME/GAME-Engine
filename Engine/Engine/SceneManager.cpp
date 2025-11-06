@@ -1,5 +1,6 @@
 #include "SceneManager.h"
 #include <iostream>
+#include "Systems/GraphicsSystem.h"
 
 namespace Engine
 {
@@ -22,6 +23,8 @@ namespace Engine
       current_scene = scene_it->second.get();
       current_scene->load();
       current_scene->init();
+
+      Engine::Systems::CameraControlSystem::reset_camera();
 
       std::cout << "Loaded scene: " << name << std::endl;
     }

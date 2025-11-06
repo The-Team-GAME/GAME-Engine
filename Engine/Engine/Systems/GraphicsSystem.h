@@ -121,22 +121,53 @@ namespace Engine
     };
 
     class CameraSystem : public Engine::ECS::System {
+    private:
+      inline static Engine::Graphics::Camera camera{}; // this is the camera that will be sent to the renderer
+
     public:
       CameraSystem() {
-        require_components<Components::Camera>();
+      }
+
+      void update() override {
+        Engine::ECS::for_each_entity_with<Components::Camera>(
+          [this](Engine::ECS::Entity entity) {
+            auto* camera_component = entity.get_component<Components::Camera>();
+
+            // If this camera is marked as active, use its parameters
+            if (camera_component->is_active) {
+              camera.position = camera_component->position;
+              camera.rotation = camera_component->rotation;
+              camera.zoom = camera_component->zoom;
+            }
+          }
+        );
+
+        Engine::Graphics::set_camera(camera);
+      }
+
+      static void reset_camera() {
+        // Mark all cameras as inactive
+        Engine::ECS::for_each_entity_with<Components::Camera>(
+          [](Engine::ECS::Entity entity) {
+            auto* camera_component = entity.get_component<Components::Camera>();
+            camera_component->is_active = false;
+          }
+        );
+
+        camera.position = Math::Vec2D(0.0f, 0.0f);
+        camera.rotation = 0.0f;
+        camera.zoom = 1.0f;
+        Engine::Graphics::set_camera(camera);
+      }
+    };
+
+    class CameraControlSystem : public Engine::ECS::System {
+    public:
+      CameraControlSystem() {
       }
 
       void update_entity(Engine::ECS::Entity& entity) override {
-        auto* camera_component = entity.get_component<Components::Camera>();
 
-        // If this camera is marked as active, apply it to the renderer
-        if (camera_component->is_active) {
-          Engine::Graphics::Camera renderer_camera;
-          renderer_camera.position = camera_component->position;
-          renderer_camera.rotation = camera_component->rotation;
-          renderer_camera.zoom = camera_component->zoom;
-          Engine::Graphics::set_camera(renderer_camera);
-        }
       }
     };
 
@@ -196,35 +227,6 @@ namespace Engine
           );
         }
       }
-    };
-
-    class CameraControlSystem : public Engine::ECS::System {
-    private:
-      Engine::Graphics::Camera camera{}; // this is the camera that will be sent to the renderer
-
-    public:
-      CameraControlSystem() {
-      }
-
-      void update() override {
-        Engine::ECS::for_each_entity_with<Components::Camera>(
-          [this](Engine::ECS::Entity entity) {
-            auto* camera_component = entity.get_component<Components::Camera>();
-
-            // If this camera is marked as active, use its parameters
-            if (camera_component->is_active) {
-              camera.position = camera_component->position;
-              camera.rotation = camera_component->rotation;
-              camera.zoom = camera_component->zoom;
-            }
-          }
-        );
-
-        Engine::Graphics::set_camera(camera);
-
-
-      }
-
     };
 
     class AnimationStateSystem : public Engine::ECS::System {
