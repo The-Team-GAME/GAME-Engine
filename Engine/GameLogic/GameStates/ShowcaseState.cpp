@@ -279,7 +279,7 @@ void ShowcaseState::init() {
 }
 
 void ShowcaseState::update() {
-  auto* camera_transform = camera.get_component<Components::Transform2D>();
+  auto* camera_component = camera.get_component<Components::Camera>();
   auto* player_transform = player.get_component<Components::Transform2D>();
   auto* rigid = player.get_component<Components::RigidBody>();
   auto* anim_state = player.get_component<Components::AnimationState>();
@@ -351,10 +351,10 @@ void ShowcaseState::update() {
   }
 
   // Center camera on player
-  if (camera_transform && player_transform) {
-    camera_transform->position = player_transform->position;
+  if (camera_component && player_transform) {
+    camera_component->position.x = player_transform->position.x - Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().window_width / 2.0f;
+    // camera_component->position.y = player_transform->position.y - Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().window_height / 2.0f;
   }
-
 }
 
 void ShowcaseState::draw() {
