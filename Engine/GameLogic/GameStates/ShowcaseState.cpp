@@ -25,7 +25,7 @@ void ShowcaseState::load() {
 
   // Load object textures
   banana_texture = Engine::Resources::load_texture("images/banana.png");
-  enemy_texture = Engine::Resources::load_texture("images/LazyMonkey_Idle_Spritesheet.png");
+  enemy_texture = Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Idle_Spritesheet.png");
 
   // Load background texture with Linear filter for smooth backgrounds
   background_texture = Engine::Resources::load_texture("images/sample_bg.png");
@@ -42,6 +42,11 @@ void ShowcaseState::load() {
 }
 
 void ShowcaseState::init() {
+  // Create camera
+  camera = Engine::ECS::create_entity()
+    .add_component<Components::Tag<"ShowcaseState">>()
+    .add_component<Components::Camera>("player_camera", true);
+
   // Create enemy
   enemy = Engine::ECS::create_entity()
     .add_component<Components::Tag<"ShowcaseState">>()
@@ -274,6 +279,7 @@ void ShowcaseState::init() {
 }
 
 void ShowcaseState::update() {
+  auto* camera_transform = camera.get_component<Components::Transform2D>();
   auto* player_transform = player.get_component<Components::Transform2D>();
   auto* rigid = player.get_component<Components::RigidBody>();
   auto* anim_state = player.get_component<Components::AnimationState>();
@@ -342,6 +348,11 @@ void ShowcaseState::update() {
   // Collect banana with C key (using event system)
   if (Engine::Input::is_pressed(Engine::KeyCode::C)) {
     Engine::EventManager::send_event<CollectEvent>(player.get_id(), banana.get_id(), 1);
+  }
+
+  // Center camera on player
+  if (camera_transform && player_transform) {
+    camera_transform->position = player_transform->position;
   }
 
 }
