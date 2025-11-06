@@ -29,7 +29,7 @@ private:
 public:
   void load() {
     // Free falling box
-    Vec2D player_pos(800.0f, 300.0f);
+    Vec2D player_pos(800.0f, 100.0f);
     player = Engine::ECS::create_entity().add_component<Components::Tag<"PhysicsTestState">>()
       .add_component<Components::Transform2D>(player_pos.x, player_pos.y, 0.0f, 20.0f, 20.0f) // pos.x, pos.y, rotation, scale.x, scale.y
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)

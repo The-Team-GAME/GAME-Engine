@@ -83,6 +83,8 @@ namespace Engine {
 
       // Returns a bool to show if this node has been divided/ has children node already
       bool is_divided() const;
+
+      void draw_quad_tree() const;
     };
     /*=================/
     / End of Quad Tree /

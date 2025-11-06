@@ -15,7 +15,8 @@
 //-----------------------------------------------------------------------------------
 #include "CollisionSystem.h"
 #include "../Perf.h"
-#include "../../Engine/FileIO/Settings.h"
+#include "../FileIO/Settings.h"
+#include "../Graphics/Renderer.h" // for picturing the quad tree
 using namespace Engine;
 using namespace Systems;
 using col2D = Collision2DSystem;
@@ -60,8 +61,8 @@ void col2D::update()
 
     // Query nearby entities using quadtree
     std::vector<ECS::Entity> nearby;
-    // In the future the range for the find near entity could be expanded to the range that entity could travel in that frame
-    spatial_tree->find_near_entity(box->aabb, nearby);
+    // In the future the range for the find near entity could be expanded to the range that entity could travel in that frame, but for now ill double the current entity's aabb
+    spatial_tree->find_near_entity(AABB(box->aabb.pos,box->width * 1.5f, box->width * 1.5f), nearby);
 
     // Check collision only with nearby entities
     for (ECS::Entity& other : nearby)
@@ -418,6 +419,20 @@ u32 col2D::QuadTree::entity_count() const
 bool col2D::QuadTree::is_divided() const
 {
   return divided;
+}
+
+void col2D::QuadTree::draw_quad_tree() const
+{
+  Vec2D dimensions(bounds.half_width * 2, bounds.half_height * 2);
+  f32 rotation = 0.f;
+  f32 thickness = 0.2f;
+  Vec4D color(1.0f, 1.0f, 1.0f, 0.3f);  // White with 30% transparency
+  Graphics::draw_rect_outline(bounds.pos, dimensions, rotation, thickness, color);
+  if (divided) {
+    for (u32 i = 0; i < 4; ++i) {
+      child_nodes[i]->draw_quad_tree();
+    }
+  }
 }
 /*========================/
 / Static Collision Checks /
