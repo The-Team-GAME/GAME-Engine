@@ -129,9 +129,25 @@ namespace Engine
     return mousePosition;
   }
 
+  std::optional<glm::vec2> Input::get_mouse_position_if_in_viewport()
+  {
+    if (is_cursor_in_viewport)
+      return mousePosition;
+    else
+      return std::nullopt;
+  }
+
   glm::vec2 Input::get_mouse_world_position()
   {
     return Engine::Graphics::virtual_to_world(mousePosition);
+  }
+
+  std::optional<glm::vec2> Input::get_mouse_world_position_if_in_viewport()
+  {
+    if (is_cursor_in_viewport)
+      return Engine::Graphics::virtual_to_world(mousePosition);
+    else
+      return std::nullopt;
   }
 
   glm::vec2 Input::get_scroll_offset()

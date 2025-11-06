@@ -64,12 +64,16 @@ namespace Engine
      */
     static glm::vec2 get_mouse_position();
 
+    static std::optional<glm::vec2> get_mouse_position_if_in_viewport();
+
     /**
      * @brief Gets the current position of the mouse cursor in world coordinates.
      * This accounts for camera position, zoom, and rotation.
      * @return glm::vec2 A vector containing the x and y position of the mouse in world space.
      */
     static glm::vec2 get_mouse_world_position();
+
+    static std::optional<glm::vec2> get_mouse_world_position_if_in_viewport();
 
     /**
      * @brief Gets the scroll offset for the current frame.
