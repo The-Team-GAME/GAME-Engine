@@ -61,14 +61,8 @@ private:
   Engine::ECS::Entity enemy_health_text;
   Engine::ECS::Entity player_health_text;
 
-  // Resources - automatically managed via shared_ptr
-  Engine::Graphics::Texture player_idle_texture;
-  Engine::Graphics::Texture player_punch_texture;
-  Engine::Graphics::Texture player_run_texture;
-  Engine::Graphics::Texture banana_texture;
-  Engine::Graphics::Texture enemy_texture;
+
   Engine::Graphics::Texture background_texture;
-  Engine::Graphics::Texture white_texture;
 
   Engine::Audio::Sound walk_sound;
 

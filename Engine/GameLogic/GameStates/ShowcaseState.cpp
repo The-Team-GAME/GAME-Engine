@@ -18,16 +18,7 @@
 void ShowcaseState::load() {
   Engine::Resources::set_resource_path("Assets/");
 
-  // Load sprite sheet textures with Nearest filter for pixel art
-  player_idle_texture = Engine::Resources::load_texture("images/BroSpriteSheets/Bro_idle_spritesheet.png");
-  player_punch_texture = Engine::Resources::load_texture("images/BroSpriteSheets/Bro_threehit_spritesheet.png");
-  player_run_texture = Engine::Resources::load_texture("images/BroSpriteSheets/Bro_run_spritesheet.png");
 
-  // Load object textures
-  banana_texture = Engine::Resources::load_texture("images/banana.png");
-  enemy_texture = Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Idle_Spritesheet.png");
-
-  // Load background texture with Linear filter for smooth backgrounds
   background_texture = Engine::Resources::load_texture("images/sample_bg.png");
 
   // Load audio
@@ -37,7 +28,6 @@ void ShowcaseState::load() {
   title_font = Engine::Resources::load_font("fonts/PlayfairDisplay-VariableFont_wght.ttf", 82);
   info_font = Engine::Resources::load_font("fonts/Roboto-Regular.ttf", 48);
 
-  white_texture = Engine::Resources::get_rect_texture();
 
 }
 
@@ -51,7 +41,7 @@ void ShowcaseState::init() {
   enemy = Engine::ECS::create_entity()
     .add_component<Components::Tag<"ShowcaseState">>()
     .add_component<Components::Transform2D>(800.0f, 655.0f, 0.0f, 64.0f * 2.0f, 64.0f * 2.0f)
-    .add_component<Components::Texture>(enemy_texture)
+    .add_component<Components::Texture>(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Idle_Spritesheet.png"))
     .add_component<Components::Health>(50, 50)
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
     .add_component<Components::TextureAtlas>(64, 64, 1, 5, 5)
@@ -61,7 +51,7 @@ void ShowcaseState::init() {
   banana = Engine::ECS::create_entity()
     .add_component<Components::Tag<"ShowcaseState">>()
     .add_component<Components::Transform2D>(1200.0f, 675.0f, 0.0f, 20.0f * 3.0f, 12.0f * 3.0f)
-    .add_component<Components::Texture>(banana_texture)
+    .add_component<Components::Texture>(Engine::Resources::load_texture("images/banana.png"))
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
     .add_component<Components::RigidBody>(false, false);
 
@@ -75,7 +65,7 @@ void ShowcaseState::init() {
   // Add idle state (24 frames) - looping, no auto-transition
   player_anim_state.add_state(
     IDLE_STATE,
-    Components::Texture(player_idle_texture),
+    Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_idle_spritesheet.png")),
     Components::TextureAtlas(64, 64, 1, 24, 24),
     Components::Animation(24, 0.1f),
     Math::Vec2D(player_idle_width * 2.0f, player_idle_height * 2.0f),
@@ -86,7 +76,7 @@ void ShowcaseState::init() {
   // Add run state (8 frames) - looping, no auto-transition
   player_anim_state.add_state(
     RUN_STATE,
-    Components::Texture(player_run_texture),
+    Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_run_spritesheet.png")),
     Components::TextureAtlas(64, 64, 1, 8, 8),
     Components::Animation(8, 0.1f),
     Math::Vec2D(player_idle_width * 2.0f, player_idle_height * 2.0f),
@@ -97,7 +87,7 @@ void ShowcaseState::init() {
   // Add punch state (6 frames) - one-shot, auto-transitions to idle
   player_anim_state.add_state(
     PUNCH_STATE,
-    Components::Texture(player_punch_texture),
+    Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_threehit_spritesheet.png")),
     Components::TextureAtlas(96, 64, 1, 19, 6),
     Components::Animation(6, 0.05f),
     Math::Vec2D(player_punch_width * 2.0f, player_punch_height * 2.0f),
@@ -111,7 +101,7 @@ void ShowcaseState::init() {
   // Create player with AnimationState
   player = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(200.0f, 655.0f, 0.0f, player_idle_width * 2.0f, player_idle_height * 2.0f)
-    .add_component<Components::Texture>(player_idle_texture)
+    .add_component<Components::Texture>(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_idle_spritesheet.png"))
     .add_component<Components::TextureAtlas>(64, 64, 1, 24, 24)
     .add_component<Components::RigidBody>(false, false)
     .add_component<Components::Animation>(24, 0.1f)
@@ -163,7 +153,7 @@ void ShowcaseState::init() {
       hpbar_left + hpbar_w * 50.0f,
       hpbar_top + hpbar_h * 50.0f,
       0.0f, hpbar_w, hpbar_h)
-    .add_component<Components::Texture>(white_texture)
+    .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
     .add_component<Components::Color>(0.15f, 0.15f, 0.15f, 1.0f);
 
   player_hp_fill = Engine::ECS::create_entity()
@@ -172,7 +162,7 @@ void ShowcaseState::init() {
       hpbar_left + (hpbar_w * 0.5f),
       hpbar_top + hpbar_h * 0.5f,
       0.0f, hpbar_w * 0.5f, hpbar_h)
-    .add_component<Components::Texture>(white_texture)
+    .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
     .add_component<Components::Color>(0.2f, 1.0f, 0.2f, 1.0f);
 
   player.add_component<Components::HealthBar>(Components::HealthBar{
