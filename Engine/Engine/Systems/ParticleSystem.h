@@ -7,8 +7,9 @@
 //
 // email:   o.ziming@digipen.edu
 //
-// brief:   This file defines a Event-driven particle system (no input). Emits quads on demand and
-//          destroys them when life run out.
+// brief:   This file defines a Event-driven particle system. Emits quads on demand and
+//          sets the direction and movement of the particle then destroys them when 
+//          life run out.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------

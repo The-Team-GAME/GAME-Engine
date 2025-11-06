@@ -1,5 +1,5 @@
-//-----------------------------------------------------------------------------------
-// file:    CollisionSystem.h
+ï»¿//-----------------------------------------------------------------------------------
+// file:    CollisionSystem.cpp
 // project: Monkey Stole My GPA
 //
 // author:   (100%)
@@ -7,11 +7,14 @@
 //
 // email:   @digipen.edu
 //
-// brief:   This file defines a system that handles entity rotation by updating
-//          rotation angles based on rotation speed and delta time in the ECS
-//          framework.
+// brief:   This file declares the functions in the system that handles the 
+//          collision detection and collision resolution for entities that contain 
+//          the components of Transform2D, RigidBody and BoxCollider.
+//          As well as the declaration of a QuadTree class that is to be used for 
+//          spatial partitioning to ease the number of collision checks that the 
+//          engine needs to run.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
@@ -40,12 +43,12 @@ namespace Engine {
       std::vector<ECS::Entity> entity_vec; // Vector of objects stored at the current node of the quad tree
       std::array<std::unique_ptr<QuadTree>, 4> child_nodes; // NW, NE, SW, SE child nodes
 
-      u32 const max_entities = 10; // The max number of entities that can be in this node before the tree is split again
-      u32 const max_depth = 10; // We are capping the number of times the tree can split :>
+      u32 const max_entities = 4; // The max number of entities that can be in this node before the tree is split again
+      u32 const max_depth = 6; // We are capping the number of times the tree can split :>
 
 
       bool divided; // To check if the current node has been split
-      int depth; // Current depth of tree
+      u32 depth; // Current depth of tree
 
       // This function splits the current node into 
       // Private cuz we dont want users to anyhow split the node
@@ -83,13 +86,15 @@ namespace Engine {
 
       // Returns a bool to show if this node has been divided/ has children node already
       bool is_divided() const;
+
+      void draw_tree_node() const;
     };
     /*=================/
     / End of Quad Tree /
     /=================*/
 
     private:
-      std::unique_ptr<QuadTree> spatial_tree;
+      static std::unique_ptr<QuadTree> spatial_tree;
       AABB world_bounds;
     public:
       Collision2DSystem(); // Default dtor that includes all the components needed for the entities called in the physics engine
@@ -100,6 +105,8 @@ namespace Engine {
 
       // update the AABB of the entity after it gets transformed
       static void update_AABB(Components::Transform2D const& xform, Components::BoxCollider& box);
+
+      static void draw_quad_tree();
 
       /*=========================/
       / Minkowski AABB Collision /

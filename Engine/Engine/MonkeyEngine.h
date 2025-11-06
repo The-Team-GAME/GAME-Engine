@@ -27,4 +27,4 @@
 #include "FileIO/PrefabsFileIO.h"
 #include "Systems/PhysicsSystem.h"
 #include "Lua/LuaManager.h"
-#include "FileIO/Settings.h" // May not want to expose this in the future
+#include "FileIO/Settings.h" // Remove in the future, we should not expose this directly

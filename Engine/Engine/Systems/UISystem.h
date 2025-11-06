@@ -1,3 +1,20 @@
+//-----------------------------------------------------------------------------------
+// file:    UISystem.h
+// project: Monkey Stole My GPA
+//
+// author:  Ong Zi Ming (100%)
+//          Primary author
+//
+// email:   o.ziming@digipen.edu
+//
+// brief:   This file defines a Event-driven Clickable System that checks for entities
+//          that has the clickable component and gets the mouse position of when the
+//          object was clicked.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
+
+
 #pragma once
 
 #include "../ECS/ECS.h"

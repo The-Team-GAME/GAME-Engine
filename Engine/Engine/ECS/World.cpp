@@ -412,6 +412,56 @@ namespace Engine {
       return DEFAULT_LAYER;
     }
 
+    void enable_layer(LayerID layer)
+    {
+      auto& containers = Internal::get_containers();
+      if (layer < MAX_LAYERS) {
+        containers.layer_active_state.set(layer);
+      }
+    }
+
+    void disable_layer(LayerID layer)
+    {
+      auto& containers = Internal::get_containers();
+      if (layer < MAX_LAYERS) {
+        containers.layer_active_state.reset(layer);
+      }
+    }
+
+    void enable_layer(const std::string& layer_name)
+    {
+      LayerID layer = get_layer_id(layer_name);
+      if (layer != INVALID_LAYER) {
+        enable_layer(layer);
+      }
+    }
+
+    void disable_layer(const std::string& layer_name)
+    {
+      LayerID layer = get_layer_id(layer_name);
+      if (layer != INVALID_LAYER) {
+        disable_layer(layer);
+      }
+    }
+
+    bool is_layer_active(LayerID layer)
+    {
+      auto& containers = Internal::get_containers();
+      if (layer < MAX_LAYERS) {
+        return containers.layer_active_state.test(layer);
+      }
+      return false;
+    }
+
+    bool is_layer_active(const std::string& layer_name)
+    {
+      LayerID layer = get_layer_id(layer_name);
+      if (layer != INVALID_LAYER) {
+        return is_layer_active(layer);
+      }
+      return false;
+    }
+
     bool is_on_layer(const Entity& entity, LayerID layer)
     {
       auto& containers = Internal::get_containers();

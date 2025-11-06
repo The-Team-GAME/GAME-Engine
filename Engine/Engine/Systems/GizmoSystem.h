@@ -29,7 +29,7 @@ namespace Engine
 
         if (ctrl_held) return;
 
-        const auto mouse = Engine::Input::get_mouse_position();
+        const auto mouse = Engine::Input::get_mouse_world_position();
 
         // Check if mouse is inside entity bounds
         const float half_w = tr->scale.x * 0.5f;
@@ -86,7 +86,7 @@ namespace Engine
           return;
         }
 
-        const auto mouse = Engine::Input::get_mouse_position();
+        const auto mouse = Engine::Input::get_mouse_world_position();
 
         // Calculate bounds
         const float half_w = tr->scale.x * 0.5f;

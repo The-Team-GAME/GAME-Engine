@@ -194,10 +194,10 @@ namespace Engine
         // World::update() won't have a chance to react before the input state is cleared on the next frame. 
         Input::update();
 
-        if (Engine::Input::is_pressed(KeyCode::Escape))
-        {
-          is_running = false;
-        }
+        // if (Engine::Input::is_pressed(KeyCode::Escape))
+        // {
+        //   is_running = false;
+        // }
 
         // Demonstrate error catching is working
         if (Engine::Input::is_pressed(KeyCode::F11))

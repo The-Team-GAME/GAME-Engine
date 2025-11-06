@@ -346,6 +346,7 @@ namespace Engine {
       auto texture_data = std::make_shared<TextureData>();
       texture_data->width = 1;
       texture_data->height = 1;
+      texture_data->path = "UNIT_RECT";
 
       glGenTextures(1, &texture_data->id);
       glBindTexture(GL_TEXTURE_2D, texture_data->id);

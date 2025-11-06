@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------------
-// file:    CollisionSystem.h
+// file:    CollisionSystem.cpp
 // project: Monkey Stole My GPA
 //
 // author:   (100%)
@@ -7,25 +7,31 @@
 //
 // email:   @digipen.edu
 //
-// brief:   This file defines a system that handles entity rotation by updating
-//          rotation angles based on rotation speed and delta time in the ECS
-//          framework.
+// brief:   This file defines a system that handles the collision detection and
+//          collision resolution for entities that contain the components of
+//          Transform2D, RigidBody and BoxCollider
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "CollisionSystem.h"
 #include "../Perf.h"
-#include "../../Engine/FileIO/Settings.h"
+#include "../FileIO/Settings.h"
+#include "../Graphics/Renderer.h" // for picturing the quad tree
 using namespace Engine;
 using namespace Systems;
 using col2D = Collision2DSystem;
 using settings = Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>;
 
+// Need to define cuz we made spatial tree static so we could make a static function to call its draw function in another system
+std::unique_ptr<col2D::QuadTree> col2D::spatial_tree = nullptr;
+
 col2D::Collision2DSystem() {
   require_components<Components::Transform2D, Components::RigidBody, Components::BoxCollider>();
   // i know i should use world bounds but ill use screen bounds for now for testing put
-  f32 win_width = settings::get().window_width;
-  f32 win_height = settings::get().window_height;
+  Math::Vec2D win_size = Engine::Graphics::screen_to_virtual({ settings::get().window_width, settings::get().window_height });
+
+  f32 win_width = win_size.x;
+  f32 win_height = win_size.y;
   Vec2D mid_point(win_width / 2, win_height / 2);
   world_bounds = AABB(mid_point, win_width, win_height);
   spatial_tree = std::make_unique<QuadTree>(world_bounds, 0);
@@ -34,109 +40,188 @@ col2D::Collision2DSystem() {
 void col2D::update()
 {
   Engine::Perf::start("Collision Update");
-  for (ECS::EntityID entity_id : entities) {
+
+  // reset the tree from last frame
+  spatial_tree->clear();
+
+  // update the entities from last frame and chuck them into the spatial tree
+  for (ECS::EntityID entity_id : entities)
+  {
     ECS::Entity entity(entity_id);
     update_entity(entity);
+    spatial_tree->insert(entity);
   }
-  ECS::for_each_entity_pair<Components::RigidBody, Components::BoxCollider>(
-    [this](ECS::Entity entity, ECS::Entity other)
-    // so [this](ECS::Entity entity, ECS::Entity other) is the callback function
+
+  for (ECS::EntityID entity_id : entities)
+  {
+    ECS::Entity entity(entity_id);
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
+
+    // Build collision mask for this entity
+    ECS::LayerSignature entity_layers = entity.get_layers();
+    ECS::LayerSignature entity_collision_mask = entity_layers;
+    entity_collision_mask |= rigid->include_layers;
+    entity_collision_mask &= ~rigid->exclude_layers;
+
+    // Query nearby entities using quadtree
+    std::vector<ECS::Entity> nearby;
+    // In the future the range for the find near entity could be expanded to the range that entity could travel in that frame, but for now ill double the current entity's aabb
+    spatial_tree->find_near_entity(AABB(box->aabb.pos, box->width, box->height), nearby);
+
+    // Check collision only with nearby entities
+    for (ECS::Entity& other : nearby)
     {
-      // Both entities are guaranteed to have RigidBody and BoxCollider
-      Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+      // Skip self-collision
+      if (entity == other) { continue; }
+
       Components::RigidBody* other_rigid = other.get_component<Components::RigidBody>();
-      Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
       Components::BoxCollider* other_box = other.get_component<Components::BoxCollider>();
 
-      /* START OF BUILDING COLLISION MASKS */
-
-      // Build collision masks for both entities
-      ECS::LayerSignature entity_layers = entity.get_layers();
-      ECS::LayerSignature entity_collision_mask = entity_layers;
-      entity_collision_mask |= rigid->include_layers;
-      entity_collision_mask &= ~rigid->exclude_layers;
-
+      // Build collision mask for other entity
       ECS::LayerSignature other_layers = other.get_layers();
       ECS::LayerSignature other_collision_mask = other_layers;
       other_collision_mask |= other_rigid->include_layers;
       other_collision_mask &= ~other_rigid->exclude_layers;
 
-      // Check if layers allow collision (bidirectional check)
-      // entity must be willing to collide with other's layers AND vice versa
-      if ((entity_collision_mask & other_layers).none() || (other_collision_mask & entity_layers).none()) {
-        return; // Layer filtering prevents collision
+      // Layer filtering (bidirectional check)
+      if ((entity_collision_mask & other_layers).none() ||
+        (other_collision_mask & entity_layers).none())
+      {
+        continue;
       }
 
-      /* END OF BUILDING COLLISION MASKS */
-
-      // Check AABB collision
-      if (!col2D::rect_rect_coll(*box, *other_box)) {
-        return; // No collision
+      // Check if both entities intersect
+      if (!box->aabb.intersects(other_box->aabb))
+      {
+        // skip other_entity if they dont collide
+        continue;
       }
 
-      // this gona be the most rabak collision resolution ever
-      //std::cout << "TRUE " << box->detect_collisions << " " << other_box->detect_collisions << std::endl;
-
-      // Resolve collision based on detect_collisions flags
+      // Collision resolution
       if (box->detect_collisions && !other_box->detect_collisions)
       {
-        // other_box is the static one
         Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
+
         AABB minkowski = col2D::minkowski_AABB(*box, *other_box);
         Vec2D pen_vec = col2D::penetrationVector(minkowski);
 
         xform->position -= pen_vec;
-        if (pen_vec.y == 0) // sideways collision
-        {
+        if (pen_vec.y == 0)
+        {  // Sideways collision
           rigid->velocity.x = 0.f;
         }
-        else // updown collision
-        {
+        else
+        {  // Up/down collision
           rigid->velocity.y = 0.f;
           if (pen_vec.y > 0)
           {
             rigid->on_ground = true;
           }
         }
-        //std::cout << "New pos:  " << rigid->next_pos << std::endl;
       }
-      //else if (box->detect_collisions == false && other_box->detect_collisions == true)
-       //{
-       //  // box is the static one
-       //  Components::Transform2D* other_xform = other.get_component<Components::Transform2D>();
-       //  AABB minkowski = col2D::minkowski_AABB(*other_box, *box);
-       //  Vec2D pen_vec = col2D::penetrationVector(minkowski);
-       //  other_rigid->velocity -= pen_vec;
-       //  other_rigid->next_pos += pen_vec * Time::get_fixed_dt();
-       //  if (pen_vec.y == 0) // sideways collision
-       //  {
-       //    other_rigid->velocity.x = 0.f;
-       //    if (pen_vec.y < 0)
-       //    {
-       //      // std::cout << "on ground\n";
-       //      other_rigid->on_ground = true;
-       //    }
-       //  }
-       //  else // updown collision
-       //  {
-       //    other_rigid->velocity.y = 0.f;
-       //  }
-       // update_transform(*other_rigid, *other_xform);
-      // }
-      // Technically we dont need false && true also cuz that would just be duplicated... i think
-      // if both detect_collision is false then no point doing LOL
-      // we wont do elastic collisions yet, cuz its not needed so i skip
     }
-  );
+  }
+
+#if 0
+  //ECS::for_each_entity_pair<Components::RigidBody, Components::BoxCollider>(
+  //  [this](ECS::Entity entity, ECS::Entity other)
+  //  // so [this](ECS::Entity entity, ECS::Entity other) is the callback function
+  //  {
+  //    // Both entities are guaranteed to have RigidBody and BoxCollider
+  //    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+  //    Components::RigidBody* other_rigid = other.get_component<Components::RigidBody>();
+  //    Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
+  //    Components::BoxCollider* other_box = other.get_component<Components::BoxCollider>();
+
+  //    /* START OF BUILDING COLLISION MASKS */
+
+  //    // Build collision masks for both entities
+  //    ECS::LayerSignature entity_layers = entity.get_layers();
+  //    ECS::LayerSignature entity_collision_mask = entity_layers;
+  //    entity_collision_mask |= rigid->include_layers;
+  //    entity_collision_mask &= ~rigid->exclude_layers;
+
+  //    ECS::LayerSignature other_layers = other.get_layers();
+  //    ECS::LayerSignature other_collision_mask = other_layers;
+  //    other_collision_mask |= other_rigid->include_layers;
+  //    other_collision_mask &= ~other_rigid->exclude_layers;
+
+  //    // Check if layers allow collision (bidirectional check)
+  //    // entity must be willing to collide with other's layers AND vice versa
+  //    if ((entity_collision_mask & other_layers).none() || (other_collision_mask & entity_layers).none()) {
+  //      return; // Layer filtering prevents collision
+  //    }
+
+  //    /* END OF BUILDING COLLISION MASKS */
+
+  //    // Check AABB collision
+  //    if (!col2D::rect_rect_coll(*box, *other_box)) {
+  //      return; // No collision
+  //    }
+
+  //    // this gona be the most rabak collision resolution ever
+  //    //std::cout << "TRUE " << box->detect_collisions << " " << other_box->detect_collisions << std::endl;
+
+  //    // Resolve collision based on detect_collisions flags
+  //    if (box->detect_collisions && !other_box->detect_collisions)
+  //    {
+  //      // other_box is the static one
+  //      Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
+  //      AABB minkowski = col2D::minkowski_AABB(*box, *other_box);
+  //      Vec2D pen_vec = col2D::penetrationVector(minkowski);
+
+  //      xform->position -= pen_vec;
+  //      if (pen_vec.y == 0) // sideways collision
+  //      {
+  //        rigid->velocity.x = 0.f;
+  //      }
+  //      else // updown collision
+  //      {
+  //        rigid->velocity.y = 0.f;
+  //        if (pen_vec.y > 0)
+  //        {
+  //          rigid->on_ground = true;
+  //        }
+  //      }
+  //      //std::cout << "New pos:  " << rigid->next_pos << std::endl;
+  //    }
+  //    //else if (box->detect_collisions == false && other_box->detect_collisions == true)
+  //     //{
+  //     //  // box is the static one
+  //     //  Components::Transform2D* other_xform = other.get_component<Components::Transform2D>();
+  //     //  AABB minkowski = col2D::minkowski_AABB(*other_box, *box);
+  //     //  Vec2D pen_vec = col2D::penetrationVector(minkowski);
+  //     //  other_rigid->velocity -= pen_vec;
+  //     //  other_rigid->next_pos += pen_vec * Time::get_fixed_dt();
+  //     //  if (pen_vec.y == 0) // sideways collision
+  //     //  {
+  //     //    other_rigid->velocity.x = 0.f;
+  //     //    if (pen_vec.y < 0)
+  //     //    {
+  //     //      // std::cout << "on ground\n";
+  //     //      other_rigid->on_ground = true;
+  //     //    }
+  //     //  }
+  //     //  else // updown collision
+  //     //  {
+  //     //    other_rigid->velocity.y = 0.f;
+  //     //  }
+  //     // update_transform(*other_rigid, *other_xform);
+  //    // }
+  //    // Technically we dont need false && true also cuz that would just be duplicated... i think
+  //    // if both detect_collision is false then no point doing LOL
+  //    // we wont do elastic collisions yet, cuz its not needed so i skip
+  //  }
+  //);
+#endif
   Engine::Perf::stop("Collision Update");
 }
 
 void col2D::update_entity(Engine::ECS::Entity& entity)
 {
   Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
-  Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
   Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
-  rigid->on_ground = false;
   col2D::update_AABB(*xform, *box);
 }
 
@@ -147,7 +232,15 @@ void col2D::update_AABB(Components::Transform2D const& xform, Components::BoxCol
   return;
 }
 
-// collision resolution will be in the physics system cuz it makes more sense there :>
+void col2D::draw_quad_tree()
+{
+  if (spatial_tree)
+  {
+    spatial_tree->draw_tree_node();
+  }
+}
+
+#pragma region QuadTree
 /*==============================/
 / Spatial Partitioning Attempts /
 /==============================*/
@@ -176,7 +269,6 @@ void col2D::QuadTree::split()
   Vec2D mid = bounds.pos;
   f32 hw = bounds.half_width / 2;
   f32 hh = bounds.half_height / 2;
-
   // remember that the top left is 0,0 :>
 
   child_nodes[0] = std::make_unique<QuadTree>(
@@ -194,6 +286,8 @@ void col2D::QuadTree::split()
   child_nodes[3] = std::make_unique<QuadTree>(
     AABB(Vec2D(mid.x + hw, mid.y + hh), bounds.half_width, bounds.half_height),
     depth + 1);
+
+  divided = true;
 }
 // Clear all entities from the tree and kills all child nodes
 // To be called at the start of each frame so that the tree can be rebuilt
@@ -216,7 +310,7 @@ void col2D::QuadTree::clear()
 // Inserts an entity into the quad tree
 bool col2D::QuadTree::insert(ECS::Entity& entity)
 {
-  Components::BoxCollider*box = entity.get_component<Components::BoxCollider>();
+  Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
   // Check if the entity intersects with this node of the quad tree
   if (!bounds.intersects(box->aabb))
   {
@@ -290,7 +384,7 @@ bool col2D::QuadTree::can_contain(ECS::Entity& entity) const
 bool col2D::QuadTree::insert_in_child_node(ECS::Entity& entity)
 {
   // Try to find a child that fully contains the rectangle
-  for (u32 i{}; i < 4; ++i) 
+  for (u32 i{}; i < 4; ++i)
   {
     if (child_nodes[i]->can_contain(entity)) {
       // If child can fully contain it, insert recursively
@@ -313,7 +407,7 @@ void col2D::QuadTree::find_near_entity(AABB const& range, std::vector<ECS::Entit
   // Step 2: Check all objects stored at this level
   for (ECS::Entity entity : entity_vec) {
     Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
-    if (range.intersects(box->aabb)) 
+    if (range.intersects(box->aabb))
     {
       nearby.push_back(entity);
     }
@@ -338,6 +432,32 @@ bool col2D::QuadTree::is_divided() const
 {
   return divided;
 }
+
+void col2D::QuadTree::draw_tree_node() const
+{
+  Vec2D dimensions(bounds.half_width * 2, bounds.half_height * 2);
+  f32 rotation = 0.f;
+  f32 thickness = 2.f;
+  // Color based on entity count - green for entities, gray for empty
+  Vec4D color;
+  if (entity_vec.empty())
+  {
+    color = Vec4D(1.f, 1.f, 1.f, 0.7f);  // Gray for empty nodes
+  }
+  else
+  {
+    color = Vec4D(0.0f, 1.0f, 0.0f, 0.7f);  // Green =  Entities
+  }
+  Graphics::draw_rect_outline(bounds.pos, dimensions, rotation, thickness, color);
+  if (divided) {
+    for (u32 i = 0; i < 4; ++i) {
+      child_nodes[i]->draw_tree_node();
+    }
+  }
+}
+
+#pragma endregion Quad Tree Implementation
+
 /*========================/
 / Static Collision Checks /
 /========================*/
