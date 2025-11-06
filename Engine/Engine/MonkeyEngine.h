@@ -28,3 +28,4 @@
 #include "Systems/PhysicsSystem.h"
 #include "Lua/LuaManager.h"
 #include "FileIO/Settings.h" // Remove in the future, we should not expose this directly
+#include "LevelManager.h"
