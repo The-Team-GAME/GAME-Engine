@@ -26,10 +26,25 @@
 #include <unordered_map>
 #include "../Components/SpatialComponents.h"
 #include "../Components/UtilityComponents.h"
+#include "../EventManager/EventManager.h"
+#include "../Events/EngineEvents.h"
 
 namespace {
   // Shared state for entity selection
   s32 selected_entity_id = -1;
+  bool selection_initialized = false;
+
+  // Event listener to sync selection from other sources (like Gizmo system)
+  void init_selection_listener() {
+    if (selection_initialized) return;
+    selection_initialized = true;
+
+    Engine::EventManager::add_event_listener<Engine::Events::SelectEntityEvent>(
+      [](const Engine::Events::SelectEntityEvent& event) {
+        selected_entity_id = static_cast<s32>(event.entity_id);
+      }
+    );
+  }
 }
 
 void EntityEditorPanelHelpers::render_component_tree(const std::string& component_name, Engine::ECS::Entity& entity, Engine::ECS::IComponentArray* array)
@@ -64,6 +79,9 @@ void EntityEditorPanel()
 {
   static char entitySearchBuffer[256] = "";
   static bool hierarchy_mode = false; // Toggle between flat list and hierarchy view
+
+  // Initialize event listener on first call
+  init_selection_listener();
 
   ImGui::Begin("Entity Editor");
 
@@ -165,6 +183,7 @@ void EntityEditorPanel()
             // Handle selection
             if (ImGui::IsItemClicked()) {
               selected_entity_id = static_cast<s32>(entity.get_id());
+              Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(entity.get_id());
             }
 
             // Right-click context menu
@@ -173,11 +192,13 @@ void EntityEditorPanel()
                 Engine::ECS::destroy_entity(entity);
                 if (selected_entity_id == static_cast<s32>(entity.get_id())) {
                   selected_entity_id = -1;
+                  Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
                 }
               }
               if (ImGui::MenuItem("Clone Entity")) {
                 Engine::ECS::Entity cloned = Engine::ECS::clone_entity(entity);
                 selected_entity_id = static_cast<s32>(cloned.get_id());
+                Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(cloned.get_id());
               }
               ImGui::EndPopup();
             }
@@ -201,6 +222,7 @@ void EntityEditorPanel()
         if (ImGui::Selectable(label.c_str(), isSelected))
         {
           selected_entity_id = static_cast<int>(entity.get_id());
+          Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(entity.get_id());
         }
       }
     }
@@ -212,6 +234,7 @@ void EntityEditorPanel()
     {
       auto newEntity = Engine::ECS::create_entity();
       selected_entity_id = static_cast<int>(newEntity.get_id());
+      Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(newEntity.get_id());
     }
 
     ImGui::SameLine();
@@ -221,6 +244,7 @@ void EntityEditorPanel()
     {
       Engine::ECS::destroy_entity(selected_entity_id);
       selected_entity_id = -1;
+      Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
     }
   }
 
@@ -403,6 +427,7 @@ void EntityEditorPanel()
     {
       auto clonedEntity = Engine::ECS::clone_entity(entity);
       selected_entity_id = static_cast<int>(clonedEntity.get_id());
+      Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(clonedEntity.get_id());
     }
 
     ImGui::SameLine();
