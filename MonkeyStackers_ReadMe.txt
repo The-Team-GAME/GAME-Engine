@@ -18,10 +18,12 @@ ONG Zi Ming | Programmer | Programmer | Tools Champion
 ===========================================================================================================
 Global controls:
 
-Press F1 to turn of the ImGui windows
-Press F11 to simulate a an uncaught runtime exception (crash.log will be generated)
-Press P to turn on Step by Step physics mode
-Press ] to go to the next steps when in Step by Step physics mode
+Press F1 to turn off the ImGui windows
+Press F2 to toggle between normal viewport mode or ImGui viewport mode
+Press P toggle pause/play
+Press ] to go to the next step when paused
+Ctrl + click drag to move the camera
+Ctrl + scroll to zoom the camera
 
 Demo states can be accessed under the ImGui window "State Chooser"
 ===========================================================================================================
@@ -45,7 +47,7 @@ This state demonstrates:
 Banana and LazyMonkey game objects loaded from a JSON into an ObjectPrefab using the ResourceManager
 AttackEvent and CollectEvent are sent when you attack or collect banana
 Sound plays when the player walks
-Textures, Fonts, Audio, and ObjectPrefabs are loaded using ResourceManager
+Textures, Fonts, Audio, and ObjectPrefabs are loaded using the Resource Manager (Resources.cpp)
 ECS use is demonstrated in this state
 Animation is done using Sprite Sheets
 Animation changes when the player walks or punches
@@ -59,23 +61,16 @@ Rubrics2500ParticlesState.h:
 This state demonstrates:
 2500 particles running above 60 FPS
 
-Note: you can see the FPS in the ImGui window Performance Viewer
-Note: you can zoom out using the ImGui Window Camera Control to ensure that all the particles are in
-      the viewport
-
------------------------------------------------------------------------------------------------------------
-
-DevManySpriteStates:
-
-This state demonstrates:
-2500 sprites running above 60 FPS
+Note: you can see the FPS in the titlebar OR in the ImGui window Performance Viewer
+Note: you can zoom out by [ctrl+scrolling down], or use the ImGui Window Camera Control to ensure that all
+      the particles are in the viewport
 
 -----------------------------------------------------------------------------------------------------------
 
 PhysicsTestState:
 
 Instructions:
-Player can move around using WASD
+Player can move around using W and D to go left and right
 Player can jump using Space
 
 This state demonstrates:
@@ -101,31 +96,34 @@ Level files contains the Object Prefab JSON file paths, and position of the obje
 Things that works in any state:
 -----------------------------------------------------------------------------------------------------------
 
-Step by Step Physics mode:
-
-P key to enable
-] key to go to next step
-
-NOTE: Recommened to use in PhysicsTestState
-NOTE: Tick rate can be adjusted using the slider in the Performance Viewer ImGui window
-
------------------------------------------------------------------------------------------------------------
-
 Entity Editor (ImGui window):
 
-- Entities can be cloned, select an entity in the editor, then click Clone This Entity. (Modify the
-  Position using the Entity Editor to see the newly created entity.)
-- Can use Entity Editor to scale entities (with Scale component added)
-- Can use Entity Editor to rotate entities (with Rotate component added)
+- Entities can be cloned: select an entity in the editor, then click "Clone This Entity" or right-click and 
+  select "Clone Entity". The cloned entity will be selected automatically.
+- Entities can be deleted: select an entity and click "Delete Selected" or right-click and select "Delete 
+  Entity".
+- Can use Entity Editor to scale entities (with Scale component added).
+- Can use Entity Editor to rotate entities (with Rotate component added).
+- Entities can be viewed in Flat View (simple list) or Hierarchy View (grouped by layers).
+- Entities can be searched/filtered using the search bar.
+- Components can be added to selected entities by selecting from the "Add Component" section (only 
+  reflectable components are shown, and buttons are disabled if the component is already present).
+- Components can be edited in the "Components" section, with fields automatically generated via reflection. 
+  Changes are applied in real-time.
+- Components can be removed by clicking the "Remove" button under each component tree node.
+- Entities can be assigned to layers in the "Layers" section, with checkboxes to add/remove from registered 
+  layers. New layers can be registered, and all layers can be cleared.
+- Entities can be cloned via the "Clone This Entity" button.
+- Prefabs can be created from entities by clicking "Create Prefab from Entity", entering a filename, and 
+  saving to the prefabs directory.
+- Entities can be exported to JSON by clicking "Export to JSON", which copies the JSON representation to 
+  the clipboard.
 
-Entities can be created
+Entities can be created in any state.
 Steps to create a Rect entity:
-- Go to ShowcaseState using the State Chooser ImGui panel
-- Under the ImGui Entity Editor, press Create New Entity
-- With the new entity selected, add:
-      Position
-      Size
-      Color
+- Under the ImGui Entity Editor, press "Create New Entity".
+- With the new entity selected, add components such as Position, Size, and Color from the "Add Component" 
+  section.
 
 -----------------------------------------------------------------------------------------------------------
 
@@ -137,6 +135,7 @@ You can see the system time consumption info of the systems of our engine
 
 Camera Control (ImGui window):
 Can be used to zoom, rotate and translate the camera.
+You can also ctrl click drag to move and ctrl scroll to zoom the camera.
 
 -----------------------------------------------------------------------------------------------------------
 
