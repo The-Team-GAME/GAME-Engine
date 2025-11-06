@@ -32,7 +32,11 @@ namespace Engine
 
         if (ctrl_held) return;
 
-        const auto mouse = Engine::Input::get_mouse_world_position();
+        const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+
+        if (!mouse_opt.has_value()) return;
+
+        const auto mouse = mouse_opt.value();
 
         // Check if mouse is inside entity bounds
         const float half_w = tr->scale.x * 0.5f;
@@ -75,7 +79,11 @@ namespace Engine
 
         if (ctrl_held) return;
 
-        const auto mouse = Engine::Input::get_mouse_world_position();
+        const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+
+        if (!mouse_opt.has_value()) return;
+
+        const auto mouse = mouse_opt.value();
 
         // Accurately measure text dimensions
         // Text scale is calculated as (scale.x + scale.y) * 0.5
@@ -126,7 +134,11 @@ namespace Engine
           return;
         }
 
-        const auto mouse = Engine::Input::get_mouse_world_position();
+        const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+
+        if (!mouse_opt.has_value()) return;
+
+        const auto mouse = mouse_opt.value();
 
         // Check if this is a text entity
         auto* text = entity.get_component<Components::Text>();
