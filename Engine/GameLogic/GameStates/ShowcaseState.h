@@ -47,7 +47,6 @@ struct AttackEvent {
 class ShowcaseState : public Engine::Scene {
 private:
   // Entities
-  Engine::ECS::Entity camera;
   Engine::ECS::Entity player;
   Engine::ECS::Entity enemy;
   Engine::ECS::Entity banana;
