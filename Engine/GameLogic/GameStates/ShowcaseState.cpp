@@ -31,12 +31,7 @@ void ShowcaseState::load() {
 
 }
 
-void ShowcaseState::init() {
-  // Create camera
-  camera = Engine::ECS::create_entity()
-    .add_component<Components::Tag<"ShowcaseState">>()
-    .add_component<Components::Camera>("player_camera", true);
-
+void ShowcaseState::init() { 
   // Create enemy
   enemy = Engine::ECS::create_entity()
     .add_component<Components::Tag<"ShowcaseState">>()
@@ -269,7 +264,6 @@ void ShowcaseState::init() {
 }
 
 void ShowcaseState::update() {
-  auto* camera_component = camera.get_component<Components::Camera>();
   auto* player_transform = player.get_component<Components::Transform2D>();
   auto* rigid = player.get_component<Components::RigidBody>();
   auto* anim_state = player.get_component<Components::AnimationState>();
@@ -338,13 +332,7 @@ void ShowcaseState::update() {
   // Collect banana with C key (using event system)
   if (Engine::Input::is_pressed(Engine::KeyCode::C)) {
     Engine::EventManager::send_event<CollectEvent>(player.get_id(), banana.get_id(), 1);
-  }
-
-  // Center camera on player
-  if (camera_component && player_transform) {
-    camera_component->position.x = player_transform->position.x - Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().window_width / 2.0f;
-    // camera_component->position.y = player_transform->position.y - Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().window_height / 2.0f;
-  }
+  } 
 }
 
 void ShowcaseState::draw() {
