@@ -84,5 +84,11 @@ namespace Engine
      * @param yoffset The vertical scroll offset.
      */
     static void set_scroll_offset(f64 xoffset, f64 yoffset);
+
+    /**
+     * @brief Checks if the mouse cursor is currently within the viewport area.
+     * @return true if the cursor is in the viewport, false otherwise.
+     */
+    static bool is_in_viewport();
   };
 }

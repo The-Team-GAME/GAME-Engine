@@ -455,11 +455,11 @@ namespace Engine {
       );
     }
 
-    Math::Vec2D screen_to_viewport(const Math::Vec2D& screen_pos) {
+    std::pair<Math::Vec2D, bool> screen_to_viewport(const Math::Vec2D& screen_pos) {
 
-      if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled == false) {
+      if (!Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled) {
         // This means that imgui viewport mode is disabled, so we can just return the virtual coordinates
-        return screen_to_virtual(screen_pos);
+        return { screen_to_virtual(screen_pos), true };
       }
 
       // Get viewport bounds from ViewportPanel (x: min_x, y: min_y, z: max_x, w: max_y)
@@ -477,18 +477,22 @@ namespace Engine {
       float normalized_x = relative_x / viewport_width;
       float normalized_y = relative_y / viewport_height;
 
+      // Check if mouse is within viewport bounds
+      bool is_in_viewport = (normalized_x >= 0.0f && normalized_x <= 1.0f &&
+        normalized_y >= 0.0f && normalized_y <= 1.0f);
+
       // Clamp to viewport bounds
-      normalized_x = std::max(0.0f, std::min(1.0f, normalized_x));
-      normalized_y = std::max(0.0f, std::min(1.0f, normalized_y));
+      // normalized_x = std::max(0.0f, std::min(1.0f, normalized_x));
+      // normalized_y = std::max(0.0f, std::min(1.0f, normalized_y));
 
       // Convert to virtual coordinates
       Math::Vec2D virtual_pos;
       virtual_pos.x = normalized_x * virtual_width;
       virtual_pos.y = normalized_y * virtual_height;
 
-      // std::cout << virtual_pos << "\n";
+      std::cout << "Viewport Mouse Position: (" << virtual_pos.x << ", " << virtual_pos.y << ")\n";
 
-      return virtual_pos;
+      return { virtual_pos, is_in_viewport };
     }
 
     Math::Vec2D virtual_to_screen(const Math::Vec2D& virtual_pos) {

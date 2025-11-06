@@ -39,6 +39,8 @@ namespace
   glm::vec2 mousePosition;
   glm::vec2 scrollOffset;
 
+  bool is_cursor_in_viewport = false;
+
   // Helper function to convert KeyCode to array index
   inline int key_to_index(Engine::KeyCode key)
   {
@@ -94,7 +96,10 @@ namespace Engine
     //std::cout << "Raw Mouse Position: (" << xpos << ", " << ypos << ")\n";
 
     // Check if imgui viewport mode is enabled to determine mouse position calculation
-    mousePosition = Engine::Graphics::screen_to_viewport({ static_cast<f32>(xpos), static_cast<f32>(ypos) });
+    // auto [mousePosition, is_in_viewport] = Engine::Graphics::screen_to_viewport({ static_cast<f32>(xpos), static_cast<f32>(ypos) });
+    auto result = Engine::Graphics::screen_to_viewport({ static_cast<f32>(xpos), static_cast<f32>(ypos) });
+    mousePosition = result.first;
+    is_cursor_in_viewport = result.second;
 
     //std::cout << "Mouse Position: (" << mousePosition.x << ", " << mousePosition.y << ")\n";
 
@@ -140,5 +145,10 @@ namespace Engine
   {
     std::cout << "Scroll Offset Callback: (" << xoffset << ", " << yoffset << ")\n";
     scrollOffset = { static_cast<f32>(xoffset), static_cast<f32>(yoffset) };
+  }
+
+  bool Input::is_in_viewport()
+  {
+    return is_cursor_in_viewport;
   }
 }
