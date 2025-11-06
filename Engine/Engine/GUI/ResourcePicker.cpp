@@ -36,6 +36,10 @@ namespace ResourcePicker {
         return a->path < b->path;
       });
 
+    // Add unit_rect texture at the start
+    auto unit_rect = Engine::Graphics::get_rect_texture();
+    textures.insert(textures.begin(), unit_rect);
+
     return textures;
   }
 
