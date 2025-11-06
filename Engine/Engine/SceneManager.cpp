@@ -24,7 +24,7 @@ namespace Engine
       current_scene->load();
       current_scene->init();
 
-      Engine::Systems::CameraControlSystem::reset_camera();
+      Engine::Systems::CameraSystem::reset_camera();
 
       std::cout << "Loaded scene: " << name << std::endl;
     }

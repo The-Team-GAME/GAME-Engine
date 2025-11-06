@@ -171,11 +171,61 @@ namespace Engine
     };
 
     class CameraControlSystem : public Engine::ECS::System {
+    private:
+      bool is_dragging = false;
+      Math::Vec2D last_mouse_pos = { 0.0f, 0.0f };
+
     public:
       CameraControlSystem() {
       }
 
       void update() override {
+
+        // Handle camera dragging with Ctrl + Left Mouse Button
+        if (Engine::Input::is_held(Engine::KeyCode::CtrlLeft) ||
+          Engine::Input::is_held(Engine::KeyCode::CtrlRight)) {
+
+          // Unactivate all cameras first to ensure we're controlling the global camera
+          CameraSystem::unactivate_all_cameras();
+
+          auto& camera = CameraSystem::get_camera();
+
+          // Camera panning with mouse drag
+          if (Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
+            is_dragging = true;
+            last_mouse_pos = Engine::Input::get_mouse_world_position();
+          }
+
+          if (is_dragging && Engine::Input::is_held(Engine::KeyCode::MouseLeft)) {
+            Math::Vec2D current_mouse_pos = Engine::Input::get_mouse_world_position();
+            Math::Vec2D delta = last_mouse_pos - current_mouse_pos;
+
+            camera.position.x += delta.x;
+            camera.position.y += delta.y;
+
+            last_mouse_pos = current_mouse_pos;
+          }
+
+          // Camera zoom with scroll wheel
+          Math::Vec2D scroll = Engine::Input::get_scroll_offset();
+          if (scroll.y != 0.0f) {
+            // Zoom in when scrolling up, zoom out when scrolling down
+            f32 zoom_delta = scroll.y * 0.1f;
+            camera.zoom += zoom_delta;
+
+            // Clamp zoom to reasonable values
+            if (camera.zoom < 0.1f) camera.zoom = 0.1f;
+            if (camera.zoom > 10.0f) camera.zoom = 10.0f;
+          }
+
+          // Update the camera in the graphics system
+          Engine::Graphics::set_camera(camera);
+        }
+
+        // Stop dragging when mouse button is released
+        if (Engine::Input::is_released(Engine::KeyCode::MouseLeft)) {
+          is_dragging = false;
+        }
 
       }
     };
