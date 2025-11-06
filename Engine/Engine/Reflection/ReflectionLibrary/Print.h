@@ -11,7 +11,20 @@ namespace ReflectionLibrary
   {
     std::string indent(2 + nest_level * 2, ' ');
     using ValueType = std::decay_t<T>;
-    if constexpr (std::is_same_v<ValueType, bool>)
+    if constexpr (is_optional_v<ValueType>)
+    {
+      // Handle std::optional
+      if (!value.has_value())
+      {
+        std::cout << indent << name << " = <null>\n";
+      }
+      else
+      {
+        auto& inner_value = value.value();
+        print_value(name, inner_value, nest_level);
+      }
+    }
+    else if constexpr (std::is_same_v<ValueType, bool>)
     {
       std::cout << indent << name << " = " << (value ? "true" : "false") << "\n";
     }

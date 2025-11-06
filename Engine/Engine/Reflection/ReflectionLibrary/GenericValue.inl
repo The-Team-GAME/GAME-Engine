@@ -450,7 +450,16 @@ namespace ReflectionLibrary
   {
     using ValueType = std::decay_t<T>;
 
-    if constexpr (std::is_same_v<ValueType, bool>)
+    if constexpr (is_optional_v<ValueType>)
+    {
+      // Handle std::optional - convert to null if empty, otherwise convert the value
+      if (!obj.has_value())
+      {
+        return GenericValue(); // null
+      }
+      return to_generic_value(obj.value());
+    }
+    else if constexpr (std::is_same_v<ValueType, bool>)
     {
       return GenericValue(obj);
     }
@@ -530,7 +539,21 @@ namespace ReflectionLibrary
   {
     using ValueType = std::decay_t<T>;
 
-    if constexpr (std::is_same_v<ValueType, bool>)
+    if constexpr (is_optional_v<ValueType>)
+    {
+      // Handle std::optional - if null, set to nullopt, otherwise convert the value
+      if (value.isNull())
+      {
+        obj = std::nullopt;
+        return true;
+      }
+      typename ValueType::value_type inner_value{};
+      if (!from_generic_value(inner_value, value))
+        return false;
+      obj = std::move(inner_value);
+      return true;
+    }
+    else if constexpr (std::is_same_v<ValueType, bool>)
     {
       if (!value.isBool())
         return false;
