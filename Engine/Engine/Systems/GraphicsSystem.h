@@ -207,13 +207,13 @@ namespace Engine
 
         // Only process camera controls if Ctrl is held
         if (ctrl_held) {
-          // Unactivate all cameras to use the global camera
-          CameraSystem::unactivate_all_cameras();
-
           auto& camera = CameraSystem::get_camera();
 
           // Handle zoom with Ctrl + Scroll
           if (scroll.y != 0.0f) {
+            // Unactivate all cameras to use the free camera
+            CameraSystem::unactivate_all_cameras();
+
             float zoom_speed = 0.1f;
             float zoom_delta = scroll.y * zoom_speed;
             camera.zoom += zoom_delta;
@@ -223,6 +223,9 @@ namespace Engine
 
           // Perform camera drag
           if (is_dragging && mouse_held) {
+            // Unactivate all cameras to use the free camera
+            CameraSystem::unactivate_all_cameras();
+
             // Calculate mouse delta
             glm::vec2 delta = current_mouse_pos - last_mouse_pos;
             last_mouse_pos = current_mouse_pos;

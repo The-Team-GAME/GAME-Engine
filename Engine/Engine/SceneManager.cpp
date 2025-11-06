@@ -20,11 +20,11 @@ namespace Engine
 
       unload_current_scene();
 
+      Engine::Systems::CameraSystem::reset_camera();
+
       current_scene = scene_it->second.get();
       current_scene->load();
       current_scene->init();
-
-      Engine::Systems::CameraSystem::reset_camera();
 
       std::cout << "Loaded scene: " << name << std::endl;
     }
