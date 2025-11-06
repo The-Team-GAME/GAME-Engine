@@ -116,6 +116,9 @@ namespace ImGuiManager {
           {
             ImGui::MenuItem("Toggle GUI", "F1", &gui_enabled);
             ImGui::MenuItem("ImGui Viewport Mode", "F2", &Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().imgui_viewport_enabled);
+            if (ImGui::MenuItem("Toggle Debug Layer", "F3", Engine::ECS::is_layer_active("debug"))) {
+              Engine::ECS::is_layer_active("debug") ? Engine::ECS::disable_layer("debug") : Engine::ECS::enable_layer("debug");
+            }
 
             ImGui::EndMenu();
           }
@@ -276,6 +279,12 @@ namespace ImGuiManager {
       // use the theme color as the clear color
       ImVec4 bg_color = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
       Engine::Graphics::clear_screen({ bg_color.x * 0.6f, bg_color.y * 0.6f, bg_color.z * 0.6f, bg_color.w });
+    }
+
+    // Toggle debug layer with F3 key
+    if (Engine::Input::is_pressed(Engine::KeyCode::F3))
+    {
+      Engine::ECS::is_layer_active("debug") ? Engine::ECS::disable_layer("debug") : Engine::ECS::enable_layer("debug");
     }
 
   }

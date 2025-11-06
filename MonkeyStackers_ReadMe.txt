@@ -20,6 +20,7 @@ Global controls:
 
 Press F1 to toggle ImGui windows on/off
 Press F2 to toggle between normal viewport mode and ImGui viewport mode
+Press F3 to toggle debug layer visibility
 Press P to toggle pause/play
 Press ] to step forward one frame when paused
 Ctrl + Click and drag to enter free camera mode (detach from active camera)
