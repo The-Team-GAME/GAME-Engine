@@ -39,6 +39,7 @@ namespace Engine {
         std::unordered_map<std::string, LayerID> layer_name_to_id;
         std::vector<std::string> layer_id_to_name;
         std::vector<SparseSet<EntityID>> layer_entities;
+        std::bitset<MAX_LAYERS> layer_active_state; // Track which layers are active/enabled
 
         // Constructor to initialize default layer
         WorldContainers() {
@@ -47,6 +48,7 @@ namespace Engine {
           layer_id_to_name.resize(2); // Resize to hold ID 0 (unused) and ID 1 (default)
           layer_id_to_name[DEFAULT_LAYER] = "default";
           layer_entities.resize(2); // Resize to hold layer 0 (unused) and layer 1 (default)
+          layer_active_state.set(); // All layers are active by default
         }
       };
 

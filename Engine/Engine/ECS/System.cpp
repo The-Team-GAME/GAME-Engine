@@ -40,6 +40,10 @@ namespace Engine {
         if (!active_layers.test(layer))
           continue;
 
+        // Skip if layer is disabled
+        if (!containers.layer_active_state.test(layer))
+          continue;
+
         for (EntityID entityId : containers.layer_entities[layer]) {
           // Only consider entities in this system's entity set
           if (!entities.contains(entityId))
@@ -56,6 +60,10 @@ namespace Engine {
       for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
         // Skip if system doesn't process this layer
         if (!active_layers.test(layer))
+          continue;
+
+        // Skip if layer is disabled
+        if (!containers.layer_active_state.test(layer))
           continue;
 
         for (EntityID entityId : containers.layer_entities[layer]) {
@@ -81,6 +89,10 @@ namespace Engine {
         if (!active_layers.test(layer))
           continue;
 
+        // Skip if layer is disabled
+        if (!containers.layer_active_state.test(layer))
+          continue;
+
         for (EntityID entityId : containers.layer_entities[layer]) {
           // Only consider entities in this system's entity set
           if (!entities.contains(entityId))
@@ -97,6 +109,10 @@ namespace Engine {
       for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
         // Skip if system doesn't process this layer
         if (!active_layers.test(layer))
+          continue;
+
+        // Skip if layer is disabled
+        if (!containers.layer_active_state.test(layer))
           continue;
 
         for (EntityID entityId : containers.layer_entities[layer]) {

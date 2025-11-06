@@ -8,9 +8,10 @@
 // email:   c.mingxian@digipen.edu
 //
 // brief:   This file defines a system that handles debug illustrations.
-//          Currently used for debugging collision
+//          Currently used for debugging collision. Only processes entities
+//          on the debug layer.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
@@ -18,10 +19,10 @@
 #include "CollisionSystem.h"
 namespace Engine {
   namespace Systems {
-    class DebugDrawSystem : public Engine::ECS::System 
+    class DebugDrawSystem : public Engine::ECS::System
     {
-      public:
-        void draw() override;
+    public:
+      void draw() override;
     };
   }
 }
