@@ -31,7 +31,11 @@ void ShowcaseState::load() {
 
 }
 
-void ShowcaseState::init() { 
+void ShowcaseState::init() {
+  camera = Engine::ECS::create_entity()
+    .add_component<Components::Tag<"ShowcaseState">>()
+    .add_component<Components::Camera>("Main Camera", true);
+
   // Create enemy
   enemy = Engine::ECS::create_entity()
     .add_component<Components::Tag<"ShowcaseState">>()
@@ -332,7 +336,15 @@ void ShowcaseState::update() {
   // Collect banana with C key (using event system)
   if (Engine::Input::is_pressed(Engine::KeyCode::C)) {
     Engine::EventManager::send_event<CollectEvent>(player.get_id(), banana.get_id(), 1);
-  } 
+  }
+
+  // Camera follow player
+  auto* camera_comp = camera.get_component<Components::Camera>();
+  if (camera_comp) {
+    camera_comp->position.x = player_transform->position.x - Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().window_width / 2.0f;
+    //camera_comp->position.y = player_transform->position.y - Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().window_height / 2.0f;
+  }
+
 }
 
 void ShowcaseState::draw() {

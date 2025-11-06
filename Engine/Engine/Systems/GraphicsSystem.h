@@ -121,21 +121,123 @@ namespace Engine
     };
 
     class CameraSystem : public Engine::ECS::System {
+    private:
+      inline static Engine::Graphics::Camera camera{}; // this is the camera that will be sent to the renderer
+
     public:
       CameraSystem() {
-        require_components<Components::Camera>();
       }
 
-      void update_entity(Engine::ECS::Entity& entity) override {
-        auto* camera_component = entity.get_component<Components::Camera>();
+      void update() override {
+        Engine::ECS::for_each_entity_with<Components::Camera>(
+          [this](Engine::ECS::Entity entity) {
+            auto* camera_component = entity.get_component<Components::Camera>();
 
-        // If this camera is marked as active, apply it to the renderer
-        if (camera_component->is_active) {
-          Engine::Graphics::Camera renderer_camera;
-          renderer_camera.position = camera_component->position;
-          renderer_camera.rotation = camera_component->rotation;
-          renderer_camera.zoom = camera_component->zoom;
-          Engine::Graphics::set_camera(renderer_camera);
+            // If this camera is marked as active, use its parameters
+            if (camera_component->is_active) {
+              camera.position = camera_component->position;
+              camera.rotation = camera_component->rotation;
+              camera.zoom = camera_component->zoom;
+            }
+          }
+        );
+
+        Engine::Graphics::set_camera(camera);
+      }
+
+      static void unactivate_all_cameras() {
+        // Mark all cameras as inactive
+        Engine::ECS::for_each_entity_with<Components::Camera>(
+          [](Engine::ECS::Entity entity) {
+            auto* camera_component = entity.get_component<Components::Camera>();
+            camera_component->is_active = false;
+          }
+        );
+      }
+
+      static void reset_camera() {
+        unactivate_all_cameras();
+
+        camera.position = Math::Vec2D(0.0f, 0.0f);
+        camera.rotation = 0.0f;
+        camera.zoom = 1.0f;
+        Engine::Graphics::set_camera(camera);
+      }
+
+
+      static Engine::Graphics::Camera& get_camera() {
+        return camera;
+      }
+    };
+
+    class CameraControlSystem : public Engine::ECS::System {
+    private:
+      bool is_dragging = false;
+      glm::vec2 last_mouse_pos = { 0.0f, 0.0f };
+
+    public:
+      CameraControlSystem() {
+        // No component requirements - this system works globally
+      }
+
+      void update() override {
+        // Check if Ctrl is held
+        bool ctrl_held = Engine::Input::is_held(Engine::KeyCode::CtrlLeft) ||
+          Engine::Input::is_held(Engine::KeyCode::CtrlRight);
+
+        // Get current mouse position
+        glm::vec2 current_mouse_pos = Engine::Input::get_mouse_position();
+
+        // Get scroll offset
+        glm::vec2 scroll = Engine::Input::get_scroll_offset();
+
+        // Check if left mouse button is held
+        bool mouse_held = Engine::Input::is_held(Engine::KeyCode::MouseLeft);
+
+        // Start dragging
+        if (ctrl_held && Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
+          is_dragging = true;
+          last_mouse_pos = current_mouse_pos;
+        }
+
+        // Stop dragging
+        if (!mouse_held || !ctrl_held) {
+          is_dragging = false;
+        }
+
+        // Only process camera controls if Ctrl is held
+        if (ctrl_held) {
+          auto& camera = CameraSystem::get_camera();
+
+          // Handle zoom with Ctrl + Scroll
+          if (scroll.y != 0.0f) {
+            // Unactivate all cameras to use the free camera
+            CameraSystem::unactivate_all_cameras();
+
+            float zoom_speed = 0.1f;
+            float zoom_delta = scroll.y * zoom_speed;
+            camera.zoom += zoom_delta;
+            // Clamp zoom to reasonable values
+            camera.zoom = glm::clamp(camera.zoom, 0.1f, 10.0f);
+          }
+
+          // Perform camera drag
+          if (is_dragging && mouse_held) {
+            // Unactivate all cameras to use the free camera
+            CameraSystem::unactivate_all_cameras();
+
+            // Calculate mouse delta
+            glm::vec2 delta = current_mouse_pos - last_mouse_pos;
+            last_mouse_pos = current_mouse_pos;
+
+            // Move camera in opposite direction of mouse drag for intuitive feel
+            // Also account for camera zoom
+            camera.position.x -= delta.x / camera.zoom;
+            camera.position.y -= delta.y / camera.zoom;
+          }
+
+          // Update the camera in the graphics system
+          Engine::Graphics::set_camera(camera);
         }
       }
     };
@@ -197,120 +299,6 @@ namespace Engine
         }
       }
     };
-
-    class CameraControlSystem : public Engine::ECS::System {
-    private:
-      bool is_dragging = false;
-      glm::vec2 last_mouse_pos = { 0.0f, 0.0f };
-      Engine::Graphics::Camera free_cam_state; // Free camera state when no entity camera is active
-
-    public:
-      CameraControlSystem() {
-        // No component requirements - this system works globally
-      }
-
-      void update() override {
-        // Check if Ctrl is held
-        bool ctrl_held = Engine::Input::is_held(Engine::KeyCode::CtrlLeft) ||
-          Engine::Input::is_held(Engine::KeyCode::CtrlRight);
-
-        // Get current mouse position
-        glm::vec2 current_mouse_pos = Engine::Input::get_mouse_position();
-
-        // Get scroll offset
-        glm::vec2 scroll = Engine::Input::get_scroll_offset();
-
-        // Check if left mouse button is held
-        bool mouse_held = Engine::Input::is_held(Engine::KeyCode::MouseLeft);
-
-        // Start dragging
-        if (ctrl_held && Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
-          is_dragging = true;
-          last_mouse_pos = current_mouse_pos;
-        }
-
-        // Stop dragging
-        if (!mouse_held || !ctrl_held) {
-          is_dragging = false;
-        }
-
-        // Find the active camera entity
-        Engine::ECS::Entity active_camera = get_active_camera();
-        bool has_active_camera = active_camera.is_valid();
-
-        // Handle zoom with Ctrl + Scroll
-        if (ctrl_held && scroll.y != 0.0f) {
-          //std::cout << "Zooming! Ctrl held: " << ctrl_held << ", Scroll Y: " << scroll.y << "\n";
-          float zoom_speed = 0.1f;
-          float zoom_delta = scroll.y * zoom_speed;
-
-          if (has_active_camera) {
-            auto* camera = active_camera.get_component<Components::Camera>();
-            if (camera) {
-              camera->zoom += zoom_delta;
-              // Clamp zoom to reasonable values
-              camera->zoom = glm::clamp(camera->zoom, 0.1f, 10.0f);
-            }
-          }
-          else {
-            // Free cam mode - adjust free cam zoom
-            free_cam_state.zoom += zoom_delta;
-            free_cam_state.zoom = glm::clamp(free_cam_state.zoom, 0.1f, 10.0f);
-          }
-        }
-
-        // Perform camera drag
-        if (is_dragging && ctrl_held && mouse_held) {
-          // Calculate mouse delta
-          glm::vec2 delta = current_mouse_pos - last_mouse_pos;
-          last_mouse_pos = current_mouse_pos;
-
-          if (has_active_camera) {
-            // Move the active camera entity using its Camera component
-            auto* camera = active_camera.get_component<Components::Camera>();
-            if (camera) {
-              // Move camera in opposite direction of mouse drag for intuitive feel
-              // Also account for camera zoom
-              camera->position.x -= delta.x / camera->zoom;
-              camera->position.y -= delta.y / camera->zoom;
-            }
-          }
-          else {
-            // Free cam mode - move the free cam state
-            free_cam_state.position.x -= delta.x / free_cam_state.zoom;
-            free_cam_state.position.y -= delta.y / free_cam_state.zoom;
-          }
-        }
-
-        // Sync free cam state with active camera, or apply it to renderer if no active camera
-        if (has_active_camera) {
-          // Update free cam state to match the active camera
-          auto* camera = active_camera.get_component<Components::Camera>();
-          if (camera) {
-            free_cam_state.position = camera->position;
-            free_cam_state.rotation = camera->rotation;
-            free_cam_state.zoom = camera->zoom;
-          }
-        }
-        else {
-          // Apply free cam state to renderer
-          Engine::Graphics::set_camera(free_cam_state);
-        }
-      }
-
-    private:
-      Engine::ECS::Entity get_active_camera() {
-        Engine::ECS::Entity result(Engine::ECS::INVALID_ENTITY);
-        Engine::ECS::for_each_entity_with<Components::Camera>([&](Engine::ECS::Entity entity) {
-          auto* camera = entity.get_component<Components::Camera>();
-          if (camera && camera->is_active) {
-            result = entity;
-          }
-          });
-        return result;
-      }
-    };
-
 
     class AnimationStateSystem : public Engine::ECS::System {
     public:
