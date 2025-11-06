@@ -82,44 +82,6 @@ namespace ViewportPanel {
 
   /*=================================================================================
   Function Brief:
-  Returns true if the mouse is currently hovering over the viewport window.
-
-  Returns:
-  bool - True if viewport is hovered, false otherwise
-
-  Where to call it:
-  Can be called to check if input should be handled by the viewport.
-  ==================================================================================*/
-  bool is_viewport_hovered();
-
-  /*=================================================================================
-  Function Brief:
-  Returns true if the viewport window is currently focused.
-
-  Returns:
-  bool - True if viewport is focused, false otherwise
-
-  Where to call it:
-  Can be called to check if input should be handled by the viewport.
-  ==================================================================================*/
-  bool is_viewport_focused();
-
-  /*=================================================================================
-  Function Brief:
-  Returns whether game input should be processed. This is true when the viewport
-  is both hovered and focused, indicating the user is interacting with the game.
-
-  Returns:
-  bool - True if game input should be processed, false otherwise
-
-  Where to call it:
-  Call this before processing game input to check if the viewport is active.
-  Useful for conditionally handling clicks, keyboard input, etc.
-  ==================================================================================*/
-  bool should_capture_input();
-
-  /*=================================================================================
-  Function Brief:
   Gets the viewport bounds in screen coordinates (pixels).
 
   Parameters:

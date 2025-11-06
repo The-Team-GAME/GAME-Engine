@@ -186,22 +186,7 @@ namespace ViewportPanel {
     ImGui::End();
     ImGui::PopStyleVar();
   }
-
-  bool is_viewport_hovered() {
-    return viewport_hovered;
-  }
-
-  bool is_viewport_focused() {
-    return viewport_focused;
-  }
-
-
-
-  bool should_capture_input() {
-    // Input should be captured when the viewport is both hovered and focused
-    // This ensures the user is actively interacting with the game view
-    return viewport_hovered && viewport_focused;
-  }
+   
 
   void get_viewport_bounds(float& min_x, float& min_y, float& max_x, float& max_y) {
     min_x = viewport_image_min.x;
