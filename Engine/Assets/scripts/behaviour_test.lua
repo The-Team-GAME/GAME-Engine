@@ -55,10 +55,10 @@ end
 
 
 function free_resources()
-    local entities = Game.get_all_entities()
+    --[[ local entities = Game.get_all_entities()
     for _, entity in ipairs(entities) do
         if entity:has_tag("BehaviourState") then
             Game.destroy_entity(entity.id)
         end
-    end
+    end ]]
 end
