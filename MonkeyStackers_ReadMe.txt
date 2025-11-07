@@ -35,6 +35,27 @@ Demo states can be accessed under the ImGui window "State Chooser"
 Demo states
 -----------------------------------------------------------------------------------------------------------
 
+EmptyState:
+
+This is a blank state used for testing and creating entities from scratch.
+
+Recommended for:
+- Testing tilemap editor
+- Testing prefab instantiation
+- Creating entities without interference from other scene objects
+
+-----------------------------------------------------------------------------------------------------------
+
+MainMenuState:
+
+This state demonstrates:
+- START button - navigates to ShowcaseState
+- EXIT button - closes the game
+- UI button system using Clickable component and ClickableSystem
+- Layer system (buttons on "ui" layer, background on "background" layer)
+
+-----------------------------------------------------------------------------------------------------------
+
 ShowcaseState:
 
 Instructions:
@@ -58,13 +79,11 @@ This state demonstrates:
 
 -----------------------------------------------------------------------------------------------------------
 
-MainMenuState:
+RectPainterState:
 
 This state demonstrates:
-- START button - navigates to ShowcaseState
-- EXIT button - closes the game
-- UI button system using Clickable component and ClickableSystem
-- Layer system (buttons on "ui" layer, background on "background" layer)
+- Basic rectangle rendering and painting functionality
+- Only works in normal viewport mode for currently (press F2 to toggle viewport mode)
 
 -----------------------------------------------------------------------------------------------------------
 
@@ -80,6 +99,35 @@ Note: You can see the FPS in the titlebar OR in the ImGui window "Performance Vi
 Note: You can zoom out by [ctrl+scrolling down] or use the ImGui "Camera Control" panel to ensure all
       particles are in the viewport
 Note: Green grid lines in this state show quad tree nodes with entities, grey/white show empty nodes
+
+-----------------------------------------------------------------------------------------------------------
+
+StressTestState:
+
+Instructions:
+Press Space to switch between monkey and player sprites
+
+This state demonstrates:
+- 1000 animated sprites of monkey walking
+- Can switch to player running sprite by pressing Space
+- Batched rendering performance
+- Sprite animation at scale
+
+-----------------------------------------------------------------------------------------------------------
+
+BasicState:
+
+This state demonstrates:
+- Basic ECS entity creation and component usage
+- As well as non-entity based graphics rendering to demonstrate how to use the graphics library without
+  creating entities
+
+-----------------------------------------------------------------------------------------------------------
+
+PrefabsState:
+
+This state demonstrates:
+- Prefab loading and instantiation
 
 -----------------------------------------------------------------------------------------------------------
 
@@ -102,25 +150,15 @@ Note: You can click on the player rect int he viewport, then in Entity Editor, u
 
 -----------------------------------------------------------------------------------------------------------
 
-LevelTestState:
+TimelineState:
 
 This state demonstrates:
-- Complete level loaded from JSON file
-- All entities, positions, and components loaded from JSON
-- Level serialization and deserialization
+- Timeline editor for sequencing animations and entity visibility
+- Entity visibility toggling based on timeline playback
+- Frame-based animation control
+- Multiple entities on different timeline layers
 
------------------------------------------------------------------------------------------------------------
-
-StressTestState:
-
-Instructions:
-Press Space to switch between monkey and player sprites
-
-This state demonstrates:
-- 1000 animated sprites of monkey walking
-- Can switch to player running sprite by pressing Space
-- Batched rendering performance
-- Sprite animation at scale
+Note: Work in progress - full timeline functionality under development
 
 -----------------------------------------------------------------------------------------------------------
 
@@ -150,26 +188,22 @@ Assets used: Assets/scripts/buttons_test.lua
 
 -----------------------------------------------------------------------------------------------------------
 
-TimelineState:
+LevelTestState:
 
 This state demonstrates:
-- Timeline editor for sequencing animations and entity visibility
-- Entity visibility toggling based on timeline playback
-- Frame-based animation control
-- Multiple entities on different timeline layers
-
-Note: Work in progress - full timeline functionality under development
+- Complete level loaded from JSON file
+- All entities, positions, and components loaded from JSON
+- Level serialization and deserialization
 
 -----------------------------------------------------------------------------------------------------------
 
-EmptyState:
+BehaviourState:
 
-This is a blank state used for testing and creating entities from scratch.
-
-Recommended for:
-- Testing tilemap editor
-- Testing prefab instantiation
-- Creating entities without interference from other scene objects
+This state demonstrates:
+- Lua scripting integration with the physics system
+- Entity creation and behavior logic controlled by Lua scripts
+- Physics simulation working in Lua scripts
+- Resource management and cleanup of physics-related entities
 
 -----------------------------------------------------------------------------------------------------------
 ===========================================================================================================
