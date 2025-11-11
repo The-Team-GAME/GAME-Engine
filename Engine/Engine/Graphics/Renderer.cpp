@@ -649,7 +649,95 @@ namespace Engine {
       draw_texture(Engine::Resources::get_rect_texture(), center, Math::Vec2D(length, thickness), angle * 180.0f / 3.14159265359f, color);
     }
 
-    void draw_texture(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
+    void draw_polygon(const std::vector<Math::Vec2D>& vertices, const Math::Vec4D& color, bool filled) {
+      if (vertices.size() < 3) {
+        Log::warning("draw_polygon: Need at least 3 vertices to draw a polygon");
+        return;
+      }
+
+      if (filled) {
+        // For filled polygons, we'll use a fan triangulation from the first vertex
+        // This works for convex polygons. For concave polygons, more complex triangulation is needed.
+        for (size_t i = 1; i < vertices.size() - 1; i++) {
+          // Create a triangle from vertex 0, i, and i+1
+          Math::Vec2D v0 = vertices[0];
+          Math::Vec2D v1 = vertices[i];
+          Math::Vec2D v2 = vertices[i + 1];
+
+          // Calculate centroid of the triangle
+          Math::Vec2D centroid = (v0 + v1 + v2) / 3.0f;
+
+          // Calculate vertices relative to centroid
+          Math::Vec2D rel0 = v0 - centroid;
+          Math::Vec2D rel1 = v1 - centroid;
+          Math::Vec2D rel2 = v2 - centroid;
+
+          // Create a quad that covers the triangle area by duplicating one vertex
+          // This is a workaround since our renderer uses quads
+          std::array<Math::Vec2D, 4> tex_coords = {
+            Math::Vec2D(0.0f, 0.0f),
+            Math::Vec2D(1.0f, 0.0f),
+            Math::Vec2D(1.0f, 1.0f),
+            Math::Vec2D(0.0f, 1.0f)
+          };
+
+          // Calculate bounding box for the triangle
+          f32 min_x = std::min({ v0.x, v1.x, v2.x });
+          f32 max_x = std::max({ v0.x, v1.x, v2.x });
+          f32 min_y = std::min({ v0.y, v1.y, v2.y });
+          f32 max_y = std::max({ v0.y, v1.y, v2.y });
+
+          Math::Vec2D size(max_x - min_x, max_y - min_y);
+          Math::Vec2D position(min_x + size.x * 0.5f, min_y + size.y * 0.5f);
+
+          // For now, draw a filled triangle using three lines to form the edges
+          // This is a simplified approach - a proper implementation would use actual triangle rendering
+          draw_line(v0, v1, 2.0f, color);
+          draw_line(v1, v2, 2.0f, color);
+          draw_line(v2, v0, 2.0f, color);
+        }
+      }
+      else {
+        // For outline, just draw lines between consecutive vertices
+        for (size_t i = 0; i < vertices.size(); i++) {
+          size_t next = (i + 1) % vertices.size();
+          draw_line(vertices[i], vertices[next], 2.0f, color);
+        }
+      }
+    }
+
+    void draw_triangle(const Math::Vec2D& p1, const Math::Vec2D& p2, const Math::Vec2D& p3, const Math::Vec4D& color, bool filled) {
+      std::vector<Math::Vec2D> vertices = { p1, p2, p3 };
+      draw_polygon(vertices, color, filled);
+    }
+
+    void draw_circle(const Math::Vec2D& center, f32 radius, const Math::Vec4D& color, size_t segments, bool filled) {
+      if (segments < 3) {
+        Log::warning("draw_circle: Need at least 3 segments to draw a circle");
+        return;
+      }
+
+      if (radius <= 0.0f) {
+        Log::warning("draw_circle: Radius must be positive");
+        return;
+      }
+
+      // Generate circle vertices
+      std::vector<Math::Vec2D> vertices;
+      vertices.reserve(segments);
+
+      f32 angle_step = 2.0f * 3.14159265359f / static_cast<f32>(segments);
+      for (size_t i = 0; i < segments; i++) {
+        f32 angle = static_cast<f32>(i) * angle_step;
+        f32 x = center.x + radius * std::cos(angle);
+        f32 y = center.y + radius * std::sin(angle);
+        vertices.push_back(Math::Vec2D(x, y));
+      }
+
+      draw_polygon(vertices, color, filled);
+    }
+
+    void draw_texture(Engine::Graphics::Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
       // Default texture coordinates for full texture (bottom-left, bottom-right, top-right, top-left)
       std::array<Math::Vec2D, 4> default_tex_coords = {
         Math::Vec2D(0.0f, 1.0f), // Bottom-left

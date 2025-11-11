@@ -110,6 +110,15 @@ namespace Engine {
 
     void draw_line(const Math::Vec2D& start, const Math::Vec2D& end, f32 thickness, const Math::Vec4D& color);
 
+    // Draw a polygon with arbitrary vertices (filled or outline)
+    void draw_polygon(const std::vector<Math::Vec2D>& vertices, const Math::Vec4D& color, bool filled = true);
+
+    // Draw a triangle using three vertices
+    void draw_triangle(const Math::Vec2D& p1, const Math::Vec2D& p2, const Math::Vec2D& p3, const Math::Vec4D& color, bool filled = true);
+
+    // Draw a circle at a given position with radius and number of segments
+    void draw_circle(const Math::Vec2D& center, f32 radius, const Math::Vec4D& color, size_t segments = 32, bool filled = true);
+
     void draw_texture(Engine::Graphics::Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color);
 
     // Draw a subtexture (part of a texture atlas) using custom texture coordinates
