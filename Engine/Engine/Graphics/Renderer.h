@@ -21,6 +21,7 @@
 #include "RendererInternal.h"
 #include <array>
 #include <string>
+#include <vector>
 
 namespace Engine {
   namespace Graphics {
@@ -109,6 +110,15 @@ namespace Engine {
     void draw_rect_outline(const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, f32 thickness, const Math::Vec4D& color);
 
     void draw_line(const Math::Vec2D& start, const Math::Vec2D& end, f32 thickness, const Math::Vec4D& color);
+
+    // Draw a polygon with specified vertices (filled)
+    void draw_polygon(const std::vector<Math::Vec2D>& vertices, const Math::Vec2D& position, f32 rotation, const Math::Vec4D& color);
+
+    // Draw a triangle (filled)
+    void draw_triangle(const Math::Vec2D& position, f32 radius, f32 rotation, const Math::Vec4D& color);
+
+    // Draw a circle (filled)
+    void draw_circle(const Math::Vec2D& position, f32 radius, const Math::Vec4D& color, int segments = 32);
 
     void draw_texture(Engine::Graphics::Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color);
 

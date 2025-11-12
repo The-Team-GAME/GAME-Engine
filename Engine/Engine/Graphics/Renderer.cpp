@@ -649,6 +649,122 @@ namespace Engine {
       draw_texture(Engine::Resources::get_rect_texture(), center, Math::Vec2D(length, thickness), angle * 180.0f / 3.14159265359f, color);
     }
 
+    void draw_polygon(const std::vector<Math::Vec2D>& vertices, const Math::Vec2D& position, f32 rotation, const Math::Vec4D& color) {
+      if (vertices.size() < 3) {
+        Log::warning("Attempted to draw polygon with less than 3 vertices");
+        return;
+      }
+
+      // Convert rotation to radians
+      f32 angle_rad = rotation * 3.14159265359f / 180.0f;
+      f32 cos_angle = std::cos(angle_rad);
+      f32 sin_angle = std::sin(angle_rad);
+
+      // Transform and rotate vertices
+      std::vector<Math::Vec2D> transformed_vertices;
+      transformed_vertices.reserve(vertices.size());
+
+      for (const auto& vertex : vertices) {
+        // Apply rotation around origin
+        f32 rotated_x = vertex.x * cos_angle - vertex.y * sin_angle;
+        f32 rotated_y = vertex.x * sin_angle + vertex.y * cos_angle;
+
+        // Translate to position
+        transformed_vertices.push_back(Math::Vec2D(rotated_x + position.x, rotated_y + position.y));
+      }
+
+      // Get the unit rect texture for drawing filled triangles
+      auto texture = Engine::Resources::get_rect_texture();
+      if (!texture || texture->id == 0) {
+        return;
+      }
+
+      // Calculate centroid of the polygon
+      Math::Vec2D centroid(0.0f, 0.0f);
+      for (const auto& vertex : transformed_vertices) {
+        centroid = centroid + vertex;
+      }
+      centroid = centroid * (1.0f / transformed_vertices.size());
+
+      // Triangulate from centroid to each edge
+      // This works for both convex and concave polygons (like stars)
+      for (size_t i = 0; i < transformed_vertices.size(); ++i) {
+        size_t next_i = (i + 1) % transformed_vertices.size();
+        
+        Math::Vec2D v0 = centroid;
+        Math::Vec2D v1 = transformed_vertices[i];
+        Math::Vec2D v2 = transformed_vertices[next_i];
+
+        // Create vertices for a filled triangle using the quad batching system
+        Vertex tri_vertices[4];
+
+        // Convert color from 0-1 range
+        glm::vec4 normalized_color(color.x, color.y, color.z, color.w);
+
+        // Use the three triangle vertices and repeat the last one to make a quad
+        // This creates a degenerate quad that approximates the triangle
+        tri_vertices[0].position = glm::vec2(v0.x, v0.y);
+        tri_vertices[0].texCoord = glm::vec2(0.5f, 0.5f);  // Center texture
+        tri_vertices[0].color = normalized_color;
+
+        tri_vertices[1].position = glm::vec2(v1.x, v1.y);
+        tri_vertices[1].texCoord = glm::vec2(0.5f, 0.5f);
+        tri_vertices[1].color = normalized_color;
+
+        tri_vertices[2].position = glm::vec2(v2.x, v2.y);
+        tri_vertices[2].texCoord = glm::vec2(0.5f, 0.5f);
+        tri_vertices[2].color = normalized_color;
+
+        tri_vertices[3].position = glm::vec2(v2.x, v2.y);  // Repeat last vertex
+        tri_vertices[3].texCoord = glm::vec2(0.5f, 0.5f);
+        tri_vertices[3].color = normalized_color;
+
+        // Add to batch
+        batch_quad(texture->id, tri_vertices);
+      }
+    }    void draw_triangle(const Math::Vec2D& position, f32 radius, f32 rotation, const Math::Vec4D& color) {
+      // Create vertices for an equilateral triangle centered at origin
+      std::vector<Math::Vec2D> vertices;
+      vertices.reserve(3);
+
+      // Triangle points at 0°, 120°, and 240° (pointing up by default)
+      for (int i = 0; i < 3; ++i) {
+        f32 angle = (i * 120.0f - 90.0f) * 3.14159265359f / 180.0f; // -90 to point up
+        vertices.push_back(Math::Vec2D(
+          std::cos(angle) * radius,
+          std::sin(angle) * radius
+        ));
+      }
+
+      draw_polygon(vertices, position, rotation, color);
+    }
+
+    void draw_circle(const Math::Vec2D& position, f32 radius, const Math::Vec4D& color, int segments) {
+      if (segments < 3) {
+        segments = 3; // Minimum for a visible shape
+      }
+
+      if (radius <= 0.0f) {
+        return; // Invalid radius
+      }
+
+      // Create vertices for a circle
+      std::vector<Math::Vec2D> vertices;
+      vertices.reserve(segments);
+
+      f32 angle_step = (2.0f * 3.14159265359f) / segments;
+
+      for (int i = 0; i < segments; ++i) {
+        f32 angle = i * angle_step;
+        vertices.push_back(Math::Vec2D(
+          std::cos(angle) * radius,
+          std::sin(angle) * radius
+        ));
+      }
+
+      draw_polygon(vertices, position, 0.0f, color);
+    }
+
     void draw_texture(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
       // Default texture coordinates for full texture (bottom-left, bottom-right, top-right, top-left)
       std::array<Math::Vec2D, 4> default_tex_coords = {
