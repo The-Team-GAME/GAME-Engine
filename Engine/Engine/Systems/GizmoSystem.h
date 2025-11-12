@@ -495,7 +495,7 @@ namespace Engine
 
           // shaft
           Graphics::draw_rect_outline(shaft_center, { len_x, gizmo->arrow_thickness }, 0.0f, gizmo->arrow_thickness, col);
-          // head (two slanted rectangles to suggest a triangle)
+          // head
           const float hs = gizmo->arrow_head_size;
           const Math::Vec2D head_center = to;
           Graphics::draw_rect_outline({ head_center.x - hs * 0.35f, head_center.y }, { hs, gizmo->arrow_thickness }, 45.0f, gizmo->arrow_thickness, col);
