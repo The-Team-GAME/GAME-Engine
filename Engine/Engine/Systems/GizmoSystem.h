@@ -135,6 +135,22 @@ namespace Engine
         require_components<Components::Transform2D, Components::Gizmo>();
       }
 
+      static inline bool point_in_rect(const Math::Vec2D& p, const Math::Vec2D& c, const Math::Vec2D& size) {
+        const float hw = size.x * 0.5f, hh = size.y * 0.5f;
+        return (p.x >= c.x - hw) && (p.x <= c.x + hw) && (p.y >= c.y - hh) && (p.y <= c.y + hh);
+      }
+
+      static inline float dist_to_segment(const Math::Vec2D& p, const Math::Vec2D& a, const Math::Vec2D& b) {
+        const float vx = b.x - a.x, vy = b.y - a.y;
+        const float wx = p.x - a.x, wy = p.y - a.y;
+        const float vv = vx * vx + vy * vy;
+        float t = vv > 0.f ? (wx * vx + wy * vy) / vv : 0.f;
+        t = std::max(0.f, std::min(1.f, t));
+        const float px = a.x + t * vx, py = a.y + t * vy;
+        const float dx = p.x - px, dy = p.y - py;
+        return std::sqrt(dx * dx + dy * dy);
+      }
+
       void update_entity(Engine::ECS::Entity& entity) override {
         auto* tr = entity.get_component<Components::Transform2D>();
         auto* gizmo = entity.get_component<Components::Gizmo>();
@@ -148,6 +164,7 @@ namespace Engine
         // If Ctrl is held, stop any ongoing drag but keep the gizmo visible
         if (ctrl_held) {
           gizmo->is_dragging = false;
+          gizmo->active_handle = Components::GizmoHandleType::None;
           return;
         }
 
@@ -160,9 +177,13 @@ namespace Engine
         // Check if this is a text entity
         auto* text = entity.get_component<Components::Text>();
         auto* font = entity.get_component<Components::Font>();
+        bool is_text = (text && font);
+        //bool inside = false;
 
-        bool inside = false;
+        Math::Vec2D rect_center{}, rect_size{};
+        Math::Vec2D tl{}, trc{}, br{}, bl{};
 
+        /*
         if (text && font) {
           // Calculate bounds for text entity (top-left aligned)
           float text_scale = (tr->scale.x + tr->scale.y) * 0.5f;
@@ -218,6 +239,162 @@ namespace Engine
             gizmo->is_dragging = false;
           }
         }
+        */
+
+        if (is_text) {
+          float ts = (tr->scale.x + tr->scale.y) * 0.5f;
+          Math::Vec2D sz = Engine::Graphics::measure_text(font->font_handle, text->content, ts);
+          rect_center = { tr->position.x + sz.x * 0.5f, tr->position.y + sz.y * 0.5f };
+          rect_size = sz;
+          tl = { tr->position.x, tr->position.y };
+          trc = { tr->position.x + sz.x, tr->position.y };
+          br = { tr->position.x + sz.x, tr->position.y + sz.y };
+          bl = { tr->position.x, tr->position.y + sz.y };
+        }
+        else {
+          rect_center = tr->position;
+          rect_size = tr->scale;
+          const float hw = tr->scale.x * 0.5f, hh = tr->scale.y * 0.5f;
+          tl = { tr->position.x - hw, tr->position.y - hh };
+          trc = { tr->position.x + hw, tr->position.y - hh };
+          br = { tr->position.x + hw, tr->position.y + hh };
+          bl = { tr->position.x - hw, tr->position.y + hh };
+        }
+        Math::Vec2D mid_top{ (tl.x + trc.x) * 0.5f, (tl.y + trc.y) * 0.5f };
+        Math::Vec2D mid_right{ (trc.x + br.x) * 0.5f, (trc.y + br.y) * 0.5f };
+        const float len_x = std::max(12.0f, rect_size.x * gizmo->arrow_length_factor) + gizmo->arrow_outside_extra;
+        const float len_y = std::max(12.0f, rect_size.y * gizmo->arrow_length_factor) + gizmo->arrow_outside_extra;
+
+        const Math::Vec2D x_from = mid_right;
+        const Math::Vec2D x_to{ mid_right.x + len_x, mid_right.y };
+        const Math::Vec2D y_from = mid_top;
+        const Math::Vec2D y_to{ mid_top.x, mid_top.y - len_y };
+
+        // hit-test
+        gizmo->hover_handle = Components::GizmoHandleType::None;
+
+        // Build small handle rects
+        const Math::Vec2D hsize{ gizmo->handle_size, gizmo->handle_size };
+        if (point_in_rect(mouse, tl, hsize)) 
+          gizmo->hover_handle = Components::GizmoHandleType::ScaleTL;
+        else if (point_in_rect(mouse, trc, hsize)) 
+          gizmo->hover_handle = Components::GizmoHandleType::ScaleTR;
+        else if (point_in_rect(mouse, br, hsize)) 
+          gizmo->hover_handle = Components::GizmoHandleType::ScaleBR;
+        else if (point_in_rect(mouse, bl, hsize)) 
+          gizmo->hover_handle = Components::GizmoHandleType::ScaleBL;
+        else {
+          // arrow shaft tolerance
+          const float tol = std::max(6.0f, gizmo->arrow_thickness * 2.0f);
+          const bool over_x = dist_to_segment(mouse, x_from, x_to) <= tol;
+          const bool over_y = dist_to_segment(mouse, y_from, y_to) <= tol;
+          if (over_x) 
+            gizmo->hover_handle = Components::GizmoHandleType::AxisX;
+          else if (over_y) 
+            gizmo->hover_handle = Components::GizmoHandleType::AxisY;
+          else if (point_in_rect(mouse, rect_center, rect_size))
+            gizmo->hover_handle = Components::GizmoHandleType::Body;
+        }
+
+        // Press: pick handle
+        if (Engine::Input::is_pressed(KeyCode::MouseLeft)) {
+          if (gizmo->hover_handle != Components::GizmoHandleType::None) {
+            gizmo->active_handle = gizmo->hover_handle;
+            gizmo->start_mouse_world = mouse;
+            gizmo->start_pos = tr->position;
+            gizmo->start_scale = tr->scale;
+            gizmo->drag_offset = { mouse.x - tr->position.x, mouse.y - tr->position.y };
+            switch (gizmo->active_handle) {
+            case Components::GizmoHandleType::ScaleTL: gizmo->scale_anchor = br;  break;
+            case Components::GizmoHandleType::ScaleTR: gizmo->scale_anchor = bl;  break;
+            case Components::GizmoHandleType::ScaleBR: gizmo->scale_anchor = tl;  break;
+            case Components::GizmoHandleType::ScaleBL: gizmo->scale_anchor = trc; break;
+            default: break;
+            }
+            // cache text size at press
+            if (is_text) {
+              float tscale0 = (tr->scale.x + tr->scale.y) * 0.5f;
+              gizmo->text_start_size = Engine::Graphics::measure_text(font->font_handle, text->content, tscale0);
+              if (gizmo->text_start_size.x <= 0.f) gizmo->text_start_size.x = 1.f;
+              if (gizmo->text_start_size.y <= 0.f) gizmo->text_start_size.y = 1.f;
+            }
+          }
+          else if (!ImGui::GetIO().WantCaptureMouse) {
+            Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
+            return;
+          }
+        }
+
+        // Drag
+        const bool held = Engine::Input::is_held(KeyCode::MouseLeft);
+        if (!held) {
+          gizmo->is_dragging = false;
+          gizmo->active_handle = Components::GizmoHandleType::None;
+          return;
+        }
+        else if (gizmo->active_handle != Components::GizmoHandleType::None) {
+          const bool shift = Engine::Input::is_held(KeyCode::ShiftLeft) || Engine::Input::is_held(KeyCode::ShiftRight);
+
+          switch (gizmo->active_handle) {
+          case Components::GizmoHandleType::Body: {
+            tr->position.x = mouse.x - gizmo->drag_offset.x;
+            tr->position.y = mouse.y - gizmo->drag_offset.y;
+          } break;
+
+          case Components::GizmoHandleType::AxisX: {
+            float target_x = mouse.x - gizmo->drag_offset.x;
+            tr->position.x = gizmo->start_pos.x + (target_x - gizmo->start_pos.x) * gizmo->axis_move_slow_factor;
+            tr->position.y = gizmo->start_pos.y;
+          } break;
+
+          case Components::GizmoHandleType::AxisY: {
+            float target_y = mouse.y - gizmo->drag_offset.y;
+            tr->position.x = gizmo->start_pos.x;
+            tr->position.y = gizmo->start_pos.y + (target_y - gizmo->start_pos.y) * gizmo->axis_move_slow_factor;
+          } break;
+
+          case Components::GizmoHandleType::ScaleTL:
+          case Components::GizmoHandleType::ScaleTR:
+          case Components::GizmoHandleType::ScaleBR:
+          case Components::GizmoHandleType::ScaleBL: {
+            if (!is_text) {
+              Math::Vec2D half{ (mouse.x - gizmo->scale_anchor.x) * 0.5f,
+                                (mouse.y - gizmo->scale_anchor.y) * 0.5f };
+              Math::Vec2D new_center{ gizmo->scale_anchor.x + half.x, gizmo->scale_anchor.y + half.y };
+              Math::Vec2D new_size{ std::max(4.0f, std::abs(half.x) * 2.0f),
+                                    std::max(4.0f, std::abs(half.y) * 2.0f) };
+              if (shift) {
+                float aspect = (gizmo->start_scale.y != 0.f) ? (gizmo->start_scale.x / gizmo->start_scale.y) : 1.f;
+                if (new_size.y > 0.f) new_size.x = std::max(4.0f, std::abs(new_size.y * aspect));
+              }
+              tr->position = new_center;
+              tr->scale = new_size;
+            }
+            else {
+              // Desired box from mouse + anchor
+              const float minx = std::min(gizmo->scale_anchor.x, mouse.x);
+              const float miny = std::min(gizmo->scale_anchor.y, mouse.y);
+              const float maxx = std::max(gizmo->scale_anchor.x, mouse.x);
+              const float maxy = std::max(gizmo->scale_anchor.y, mouse.y);
+              Math::Vec2D desired{ std::max(4.0f, maxx - minx), std::max(4.0f, maxy - miny) };
+
+              // Convert to scale factors
+              float sx = desired.x / gizmo->text_start_size.x;
+              float sy = desired.y / gizmo->text_start_size.y;
+              if (shift) { float s = std::max(sx, sy); sx = sy = s; }
+
+              // Apply as multiplicative factors on the original scale
+              tr->scale.x = gizmo->start_scale.x * sx;
+              tr->scale.y = gizmo->start_scale.y * sy;
+
+              // Reposition to the top-left of the new box
+              tr->position = { minx, miny };
+            }
+          } break;
+
+          default: break;
+          }
+        }
       }
 
       void draw_entity(const Engine::ECS::Entity& entity) override {
@@ -229,7 +406,9 @@ namespace Engine
         // Check if this is a text entity
         auto* text = entity.get_component<Components::Text>();
         auto* font = entity.get_component<Components::Font>();
+        bool is_text = (text && font);
 
+        /*
         if (text && font) {
           // Draw outline for text entity using accurate text bounds
           float text_scale = (tr->scale.x + tr->scale.y) * 0.5f;
@@ -260,8 +439,86 @@ namespace Engine
             gizmo->outline_color
           );
         }
+        */
+
+        Math::Vec2D rect_center{}, rect_size{};
+        if (is_text) {
+          float ts = (tr->scale.x + tr->scale.y) * 0.5f;
+          Math::Vec2D sz = Engine::Graphics::measure_text(font->font_handle, text->content, ts);
+          rect_center = { tr->position.x + sz.x * 0.5f, tr->position.y + sz.y * 0.5f };
+          rect_size = sz;
+        }
+        else {
+          rect_center = tr->position;
+          rect_size = tr->scale;
+        }
+
+        Engine::Graphics::draw_rect_outline(
+          rect_center, rect_size, is_text ? 0.0f : tr->rotation,
+          gizmo->outline_thickness, gizmo->outline_color);
+
+        const float hw = rect_size.x * 0.5f, hh = rect_size.y * 0.5f;
+        Math::Vec2D tl{ rect_center.x - hw, rect_center.y - hh };
+        Math::Vec2D trc{ rect_center.x + hw, rect_center.y - hh };
+        Math::Vec2D br{ rect_center.x + hw, rect_center.y + hh };
+        Math::Vec2D bl{ rect_center.x - hw, rect_center.y + hh };
+        if (is_text) {
+          float ts = (tr->scale.x + tr->scale.y) * 0.5f;
+          Math::Vec2D sz = Engine::Graphics::measure_text(font->font_handle, text->content, ts);
+          tl = { tr->position.x,          tr->position.y };
+          trc = { tr->position.x + sz.x,   tr->position.y };
+          br = { tr->position.x + sz.x,   tr->position.y + sz.y };
+          bl = { tr->position.x,          tr->position.y + sz.y };
+        }
+
+        auto draw_handle = [&](const Math::Vec2D& c, bool hovered) {
+          const Math::Vec4D col = hovered ? gizmo->handle_hover_color : gizmo->handle_color;
+          Graphics::draw_rect_outline(c, { gizmo->handle_size, gizmo->handle_size }, 0.0f, 2.0f, col);
+          };
+        draw_handle(tl, gizmo->hover_handle == Components::GizmoHandleType::ScaleTL);
+        draw_handle(trc, gizmo->hover_handle == Components::GizmoHandleType::ScaleTR);
+        draw_handle(br, gizmo->hover_handle == Components::GizmoHandleType::ScaleBR);
+        draw_handle(bl, gizmo->hover_handle == Components::GizmoHandleType::ScaleBL);
+
+        // arrows
+        const Math::Vec2D mid_top{ (tl.x + trc.x) * 0.5f, (tl.y + trc.y) * 0.5f };
+        const Math::Vec2D mid_right{ (trc.x + br.x) * 0.5f, (trc.y + br.y) * 0.5f };
+        const float len_x = std::max(12.0f, rect_size.x * gizmo->arrow_length_factor) + gizmo->arrow_outside_extra;
+        const float len_y = std::max(12.0f, rect_size.y * gizmo->arrow_length_factor) + gizmo->arrow_outside_extra;
+
+        // X axis
+        {
+          Math::Vec2D from = mid_right;
+          Math::Vec2D to{ mid_right.x + len_x, mid_right.y };
+          Math::Vec2D shaft_center{ (from.x + to.x) * 0.5f, from.y };
+          Math::Vec4D col = (gizmo->hover_handle == Components::GizmoHandleType::AxisX) ? gizmo->handle_hover_color : gizmo->handle_color;
+
+          // shaft
+          Graphics::draw_rect_outline(shaft_center, { len_x, gizmo->arrow_thickness }, 0.0f, gizmo->arrow_thickness, col);
+          // head (two slanted rectangles to suggest a triangle)
+          const float hs = gizmo->arrow_head_size;
+          const Math::Vec2D head_center = to;
+          Graphics::draw_rect_outline({ head_center.x - hs * 0.35f, head_center.y }, { hs, gizmo->arrow_thickness }, 45.0f, gizmo->arrow_thickness, col);
+          Graphics::draw_rect_outline({ head_center.x - hs * 0.35f, head_center.y }, { hs, gizmo->arrow_thickness }, -45.0f, gizmo->arrow_thickness, col);
+        }
+
+        // Y axis
+        {
+          Math::Vec2D from = mid_top;
+          Math::Vec2D to{ mid_top.x, mid_top.y - len_y };
+          Math::Vec2D shaft_center{ from.x, (from.y + to.y) * 0.5f };
+          Math::Vec4D col = (gizmo->hover_handle == Components::GizmoHandleType::AxisY) ? gizmo->handle_hover_color : gizmo->handle_color;
+
+          // shaft
+          Graphics::draw_rect_outline(shaft_center, { gizmo->arrow_thickness, len_y }, 0.0f, gizmo->arrow_thickness, col);
+          // head
+          const float hs = gizmo->arrow_head_size;
+          const Math::Vec2D head_center = to;
+          Graphics::draw_rect_outline({ head_center.x, head_center.y + hs * 0.35f }, { hs, gizmo->arrow_thickness }, 45.0f, gizmo->arrow_thickness, col);
+          Graphics::draw_rect_outline({ head_center.x, head_center.y + hs * 0.35f }, { hs, gizmo->arrow_thickness }, -45.0f, gizmo->arrow_thickness, col);
+        }
       }
-    };
+  };
 
   } // namespace Systems
 } // namespace Engine
