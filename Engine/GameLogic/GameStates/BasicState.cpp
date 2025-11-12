@@ -230,6 +230,61 @@ void BasicState::draw()
     );
   }
 
+  // Draw outline shapes below
+  // Triangle outline
+  Engine::Graphics::draw_triangle_outline(
+    { 600.0f, 600.0f },   // position
+    40.0f,                // radius
+    rotation,             // rotation (animated)
+    3.0f,                 // thickness
+    { 1.0f, 0.5f, 0.0f, 1.0f }  // orange color
+  );
+
+  // Circle outline
+  Engine::Graphics::draw_circle_outline(
+    { 700.0f, 600.0f },   // position
+    35.0f,                // radius
+    2.5f,                 // thickness
+    { 0.0f, 1.0f, 0.5f, 1.0f },  // cyan color
+    32                    // segments
+  );
+
+  // Hexagon outline
+  {
+    std::vector<Math::Vec2D> hexagon_vertices;
+    for (int i = 0; i < 6; ++i) {
+      float angle = i * (360.0f / 6.0f) * 3.14159265359f / 180.0f;
+      hexagon_vertices.push_back(Math::Vec2D(std::cos(angle) * 40.0f, std::sin(angle) * 40.0f));
+    }
+    Engine::Graphics::draw_polygon_outline(
+      hexagon_vertices,
+      { 800.0f, 600.0f },  // position
+      rotation * 0.5f,     // slower rotation
+      2.0f,                // thickness
+      { 1.0f, 1.0f, 0.0f, 1.0f }  // yellow color
+    );
+  }
+
+  // Star outline
+  {
+    std::vector<Math::Vec2D> star_vertices;
+    int points = 5;
+    float outer_radius = 40.0f;
+    float inner_radius = 18.0f;
+    for (int i = 0; i < points * 2; ++i) {
+      float angle = i * (360.0f / (points * 2.0f)) * 3.14159265359f / 180.0f - 3.14159265359f / 2.0f;
+      float radius = (i % 2 == 0) ? outer_radius : inner_radius;
+      star_vertices.push_back(Math::Vec2D(std::cos(angle) * radius, std::sin(angle) * radius));
+    }
+    Engine::Graphics::draw_polygon_outline(
+      star_vertices,
+      { 900.0f, 600.0f },  // position
+      -rotation,           // reverse rotation
+      2.5f,                // thickness
+      { 1.0f, 0.8f, 0.0f, 1.0f }  // gold color
+    );
+  }
+
   // Normally it would be a horrible idewa to load a texture every frame like this,
   // but for demonstration purposes, we will do it here to show that the resource
   // manager caches the texture and does not reload it from disk every time.
