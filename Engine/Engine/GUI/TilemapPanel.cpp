@@ -211,6 +211,32 @@ namespace TilemapPanel {
       .add_component<Components::TextureAtlas>(atlas_entry.atlas)
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
 
+
+
+    // RYAN HOW
+    
+    //// Place tiles example
+    //Engine::ECS::Entity tile;
+    //auto place_tile_action = Engine::UndoManager::add(Action(
+    //  [tile]() {
+    //    tile = Engine::ECS::create_entity()
+    //      .add_component<Components::Tile>()
+    //      .add_component<Components::Transform2D>(
+    //        Math::Vec2D{ 5, 10 },
+    //        0.0f,
+    //        Math::Vec2D{ 32.0f, 32.0f }
+    //      )
+    //      .add_component<Components::Texture>(some_texture)
+    //      .add_component<Components::TextureAtlas>(some_atlas)
+    //      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
+    //  },
+    //  [tile]() {
+    //    Engine::ECS::destroy_entity(tile);
+    //  }
+    //));
+
+    //place_tile_action.do_action();
+
     tile.get_component<Components::TextureAtlas>()->drawIndex = selected_tile_index;
 
     // Assign to selected layer
