@@ -25,7 +25,7 @@
 #include "StateManager.h"
 #include "SceneManager.h"
 #include "TypeDef.h"
-#include "InputManager.h"
+#include "Input/InputManager.h"
 #include "Time.h"
 #include "Perf.h"
 #include "Audio/AudioPlayer.h"

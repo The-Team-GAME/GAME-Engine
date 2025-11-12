@@ -21,7 +21,7 @@
 #include "Time.h"
 #include <sstream>
 #include <iomanip>
-#include "InputManager.h"
+#include "Input/InputManager.h"
 
 namespace Engine {
   namespace WindowManager

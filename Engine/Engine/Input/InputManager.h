@@ -14,8 +14,8 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
-#include <glm/glm.hpp>
-#include "TypeDef.h"
+#include "../Precompiled.h"
+#include "../TypeDef.h"
 #include "KeyCodes.h"
 #include <optional>
 

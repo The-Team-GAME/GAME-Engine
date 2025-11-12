@@ -24,7 +24,7 @@
 #include "GUI/ViewportPanel.h"
 #include "WindowManager.h"
 #include "Perf.h"
-#include "InputManager.h"
+#include "Input/InputManager.h"
 #include "Audio/AudioPlayer.h"
 #include "Audio/AudioPlayerInternal.h"
 #include "Lua/LuaManager.h"

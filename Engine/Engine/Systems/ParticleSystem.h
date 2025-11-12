@@ -20,7 +20,7 @@
 #include "../ECS/ECS.h"
 #include "../Components/Components.h"
 #include "../Resources.h"
-#include "../InputManager.h"
+#include "../Input/InputManager.h"
 #include "../Time.h"
 #include "../EventManager/EventManager.h"
 

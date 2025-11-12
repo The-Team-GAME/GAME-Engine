@@ -20,7 +20,8 @@
 #include "../ECS/ECS.h"
 #include "../Components/Components.h"
 #include "../Graphics/Renderer.h"
-#include "../InputManager.h"
+#include "../Input/InputManager.h"
+
 namespace Engine
 {
   namespace Systems

@@ -21,7 +21,7 @@
 #include "../Graphics/Renderer.h"
 #include "../Resources.h"
 #include "../Components/GizmoComponents.h"
-#include "../InputManager.h"
+#include "../Input/InputManager.h"
 
 
 namespace Engine {

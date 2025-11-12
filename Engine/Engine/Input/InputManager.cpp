@@ -14,16 +14,16 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "InputManager.h"
-#include "Core.h"
-#include "Precompiled.h"
+#include "../Core.h"
+#include "../Precompiled.h"
 #include <array>
 #include <glm/glm.hpp>
-#include "Perf.h"
-#include "WindowManager.h"
-#include "Graphics/Renderer.h"
+#include "../Perf.h"
+#include "../WindowManager.h"
+#include "../Graphics/Renderer.h"
 #include "KeyCodes.h"
-#include "GUI/ViewportPanel.h"
-#include "FileIO/Settings.h"
+#include "../GUI/ViewportPanel.h"
+#include "../FileIO/Settings.h"
 
 namespace
 {

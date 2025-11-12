@@ -19,7 +19,7 @@
 
 #include "../ECS/ECS.h"
 #include "../Components/Components.h"
-#include "../InputManager.h"
+#include "../Input/InputManager.h"
 
 namespace Engine
 {

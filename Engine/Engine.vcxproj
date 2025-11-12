@@ -137,7 +137,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClCompile Include="Engine\Resources.cpp" />
     <ClCompile Include="Engine\Graphics\Shader.cpp" />
     <ClCompile Include="Engine\ImGuiManager.cpp" />
-    <ClCompile Include="Engine\InputManager.cpp" />
+    <ClCompile Include="Engine\Input\InputManager.cpp" />
     <ClCompile Include="Engine\Logger.cpp" />
     <ClCompile Include="Engine\FileHandler.cpp" />
     <ClCompile Include="Engine\Perf.cpp" />
@@ -156,6 +156,8 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClCompile Include="Engine\Lua\LuaManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\Input\Keybinds.h" />
+    <ClInclude Include="Engine\Input\KeyCodes.h" />
     <ClInclude Include="Engine\Systems\DebugDrawSystem.h" />
     <ClInclude Include="GameLogic\Components\HealthComponents.h" />
     <ClInclude Include="Engine\ECS\Reflection.h" />
@@ -233,7 +235,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="Engine\GUI\PrefabEditorPanel.h" />
     <ClInclude Include="Engine\GUI\ResourcePicker.h" />
     <ClInclude Include="Engine\ImGuiManager.h" />
-    <ClInclude Include="Engine\InputManager.h" />
+    <ClInclude Include="Engine\Input\InputManager.h" />
     <ClInclude Include="Engine\Logger.h" />
     <ClInclude Include="Engine\Perf.h" />
     <ClInclude Include="Engine\GUI\PerformanceViewer.h" />
