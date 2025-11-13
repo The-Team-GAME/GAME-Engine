@@ -99,10 +99,10 @@ void Engine::Resources::load_all_assets()
       if (entry.is_regular_file())
       {
         // Get relative path from resource_path
-        std::string relative_path = Path(entry.path().string()).to_relative(resource_path);
+        std::string relative_path = Engine::Path(entry.path().string()).to_relative(resource_path);
 
         // Load the resource (persist=true to keep it loaded)
-        Resource resource = load(relative_path, true, true);
+        Engine::Resources::Resource resource = Engine::Resources::load(relative_path, true, true);
 
         // Check if load was successful (not monostate)
         if (!std::holds_alternative<std::monostate>(resource))
@@ -123,7 +123,7 @@ void Engine::Resources::load_all_assets()
 std::string Engine::Resources::copy_to_resources(const std::string& filepath)
 {
   // Normalize the input path
-  std::string normalized_path = Path(filepath).normalize();
+  std::string normalized_path = Engine::Path(filepath).normalize();
 
   // Check if file exists
   if (!std::filesystem::exists(normalized_path))
@@ -133,21 +133,21 @@ std::string Engine::Resources::copy_to_resources(const std::string& filepath)
   }
 
   // Get absolute resource path
-  std::string abs_resource_path = Path(resource_path).to_absolute();
-  std::string abs_file_path = Path(normalized_path).to_absolute();
+  std::string abs_resource_path = Engine::Path(resource_path).to_absolute();
+  std::string abs_file_path = Engine::Path(normalized_path).to_absolute();
 
   // Check if the file is already within the resource folder
   if (abs_file_path.find(abs_resource_path) == 0)
   {
     // File is already in resources, return relative path
-    return Path(abs_file_path).to_relative(abs_resource_path);
+    return Engine::Path(abs_file_path).to_relative(abs_resource_path);
   }
 
   // Extract just the filename (no directory path)
-  std::string filename = Path(normalized_path).get_filename();
+  std::string filename = Engine::Path(normalized_path).get_filename();
 
   // Construct destination path in resource root
-  std::string dest_path = Path(abs_resource_path).join(filename);
+  std::string dest_path = Engine::Path(abs_resource_path).join(filename);
 
   // Check if a file with this name already exists in resources
   if (std::filesystem::exists(dest_path))
@@ -160,7 +160,7 @@ std::string Engine::Resources::copy_to_resources(const std::string& filepath)
     }
 
     // Different file with same name - append number to make it unique
-    std::string extension = Path(filename).get_extension();
+    std::string extension = Engine::Path(filename).get_extension();
     std::string base_name = filename;
 
     // Remove extension from base_name if it exists
@@ -174,7 +174,7 @@ std::string Engine::Resources::copy_to_resources(const std::string& filepath)
     do
     {
       filename = base_name + "_" + std::to_string(counter) + extension;
-      dest_path = Path(abs_resource_path).join(filename);
+      dest_path = Engine::Path(abs_resource_path).join(filename);
       counter++;
     } while (std::filesystem::exists(dest_path));
 
@@ -204,7 +204,7 @@ std::string Engine::Resources::get_relative_path(const std::string& full_path)
   }
 
   // Use the Path class to convert to relative path
-  return Path(full_path).to_relative(resource_path);
+  return Engine::Path(full_path).to_relative(resource_path);
 }
 
 Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& filepath, bool append_resource_path, bool persist)
@@ -216,17 +216,17 @@ Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& fil
   }
 
   // Construct full path using Path class
-  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+  std::string full_path = append_resource_path ? Engine::Path(resource_path).join(filepath) : Engine::Path(filepath).normalize();
 
   // If loading from outside resources and not appending resource path, copy to resources
   std::string actual_filepath = filepath;
   if (!append_resource_path)
   {
-    std::string copied_path = copy_to_resources(filepath);
+    std::string copied_path = Engine::Resources::copy_to_resources(filepath);
     if (!copied_path.empty())
     {
       actual_filepath = copied_path;
-      full_path = Path(resource_path).join(actual_filepath);
+      full_path = Engine::Path(resource_path).join(actual_filepath);
     }
   }
 
@@ -275,17 +275,17 @@ Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& fil
 Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath, u32 size, bool append_resource_path, bool persist)
 {
   // Construct full path using Path class
-  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+  std::string full_path = append_resource_path ? Engine::Path(resource_path).join(filepath) : Engine::Path(filepath).normalize();
 
   // If loading from outside resources and not appending resource path, copy to resources
   std::string actual_filepath = filepath;
   if (!append_resource_path)
   {
-    std::string copied_path = copy_to_resources(filepath);
+    std::string copied_path = Engine::Resources::copy_to_resources(filepath);
     if (!copied_path.empty())
     {
       actual_filepath = copied_path;
-      full_path = Path(resource_path).join(actual_filepath);
+      full_path = Engine::Path(resource_path).join(actual_filepath);
     }
   }
 
@@ -330,17 +330,17 @@ Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath,
 Engine::Audio::Sound Engine::Resources::load_sound(const std::string& filepath, bool append_resource_path, bool persist)
 {
   // Construct full path using Path class
-  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+  std::string full_path = append_resource_path ? Engine::Path(resource_path).join(filepath) : Engine::Path(filepath).normalize();
 
   // If loading from outside resources and not appending resource path, copy to resources
   std::string actual_filepath = filepath;
   if (!append_resource_path)
   {
-    std::string copied_path = copy_to_resources(filepath);
+    std::string copied_path = Engine::Resources::copy_to_resources(filepath);
     if (!copied_path.empty())
     {
       actual_filepath = copied_path;
-      full_path = Path(resource_path).join(actual_filepath);
+      full_path = Engine::Path(resource_path).join(actual_filepath);
     }
   }
 
@@ -389,17 +389,17 @@ Engine::Audio::Sound Engine::Resources::load_sound(const std::string& filepath, 
 Engine::Audio::Sound Engine::Resources::load_music(const std::string& filepath, bool append_resource_path, bool persist)
 {
   // Construct full path using Path class
-  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+  std::string full_path = append_resource_path ? Engine::Path(resource_path).join(filepath) : Engine::Path(filepath).normalize();
 
   // If loading from outside resources and not appending resource path, copy to resources
   std::string actual_filepath = filepath;
   if (!append_resource_path)
   {
-    std::string copied_path = copy_to_resources(filepath);
+    std::string copied_path = Engine::Resources::copy_to_resources(filepath);
     if (!copied_path.empty())
     {
       actual_filepath = copied_path;
-      full_path = Path(resource_path).join(actual_filepath);
+      full_path = Engine::Path(resource_path).join(actual_filepath);
     }
   }
 
@@ -546,17 +546,17 @@ Engine::Graphics::Texture Engine::Resources::get_rect_texture()
 Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, bool append_resource_path, bool persist)
 {
   // Construct full path using Path class
-  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+  std::string full_path = append_resource_path ? Engine::Path(resource_path).join(filepath) : Engine::Path(filepath).normalize();
 
   // If loading from outside resources and not appending resource path, copy to resources
   std::string actual_filepath = filepath;
   if (!append_resource_path)
   {
-    std::string copied_path = copy_to_resources(filepath);
+    std::string copied_path = Engine::Resources::copy_to_resources(filepath);
     if (!copied_path.empty())
     {
       actual_filepath = copied_path;
-      full_path = Path(resource_path).join(actual_filepath);
+      full_path = Engine::Path(resource_path).join(actual_filepath);
     }
   }
 
