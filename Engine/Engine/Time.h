@@ -84,6 +84,17 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
+    This function returns the total unscaled elapsed time since the engine started
+
+    Where to call it:
+    This function can be called anywhere you need real-time tracking that continues
+    even when the game is paused (time_scale = 0), such as for UI animations or
+    debug timers
+    ==================================================================================*/
+    f32 get_unscaled_time(void);
+
+    /*=================================================================================
+    Function Brief:
     This function is an accessor for the current fps of the game based off the real_dt
 
     Where to call it:

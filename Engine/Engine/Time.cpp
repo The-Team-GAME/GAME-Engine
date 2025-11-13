@@ -76,6 +76,13 @@ namespace Engine {
       return elapsed_time;
     }
 
+    // Returns the total unscaled elapsed time since engine start
+    f32 get_unscaled_time(void)
+    {
+      chrono::nanoseconds elapsed = curr_time - start_time;
+      return static_cast<f32>(elapsed.count()) * 1e-9f;
+    }
+
     f32 calc_fps(f32 dt)
     {
       return 1.f / dt;
