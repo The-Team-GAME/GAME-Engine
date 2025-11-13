@@ -101,6 +101,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
   <ItemGroup>
     <ClCompile Include="Engine\GUI\ResourceExplorerPanel.cpp" />
     <ClCompile Include="Engine\Level.cpp" />
+    <ClCompile Include="Engine\ProjectSaveManager.cpp" />
     <ClCompile Include="Engine\Systems\DebugDrawSystem.cpp" />
     <ClCompile Include="Engine\Lua\GameAPI.cpp" />
     <ClCompile Include="Engine\ECS\Types.cpp" />
@@ -162,7 +163,9 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="Engine\ImGuiThemes.h" />
     <ClInclude Include="Engine\KeyCodes.h" />
     <ClInclude Include="Engine\Level.h" />
+    <ClInclude Include="Engine\ProjectSaveManager.h" />
     <ClInclude Include="Engine\Systems\DebugDrawSystem.h" />
+    <ClInclude Include="Engine\TimelineState.h" />
     <ClInclude Include="GameLogic\Components\HealthComponents.h" />
     <ClInclude Include="Engine\ECS\Reflection.h" />
     <ClInclude Include="Engine\ECS\SparseSet.h" />

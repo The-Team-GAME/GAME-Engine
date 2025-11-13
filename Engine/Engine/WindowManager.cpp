@@ -22,6 +22,7 @@
 #include <sstream>
 #include <iomanip>
 #include "InputManager.h"
+#include "ProjectSaveManager.h"
 
 namespace Engine {
   namespace WindowManager
@@ -119,7 +120,7 @@ namespace Engine {
     /* ===================== //
     // Title Update          //
     // ===================== */
-    void update_title_with_fps()
+    void update_title()
     {
       if (!window) return;
 
@@ -131,9 +132,11 @@ namespace Engine {
         // Calculate average FPS over the interval (same as PerformanceViewerPanel)
         display_fps = frame_count / update_timer;
 
+        bool is_unsaved = Engine::ProjectSaveManager::get_is_any_dirty();
+
         // Update window title
         std::ostringstream title_stream;
-        title_stream << base_title << " - FPS: " << std::fixed << std::setprecision(1) << display_fps;
+        title_stream << (is_unsaved ? "[*] " : "") << base_title << " - FPS: " << std::fixed << std::setprecision(1) << display_fps;
         glfwSetWindowTitle(window, title_stream.str().c_str());
 
         update_timer = 0.0f;

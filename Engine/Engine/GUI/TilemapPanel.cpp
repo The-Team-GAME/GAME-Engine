@@ -28,6 +28,7 @@
 #include "../FileIO/SettingsManager.h"
 #include "../FileIO/Settings.h"
 #include "ViewportPanel.h"
+#include "../ProjectSaveManager.h"
 
 namespace TilemapPanel {
   // Internal state
@@ -70,9 +71,10 @@ namespace TilemapPanel {
   void save_loaded_tilemaps_to_project_settings() {
     auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get_mutable();
     project_settings.loaded_tilemaps = loaded_tilemaps;
-    if (!Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::save("Assets/settings/project_settings.json")) {
-      Log::warning("Failed to save project settings after updating tilemaps");
-    }
+    // if (!Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::save("Assets/settings/project_settings.json")) {
+    //   Log::warning("Failed to save project settings after updating tilemaps");
+    // }
+    Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::Dirty::ProjectSettings); // Mark dirty for saving later
   }
 
   void regenerate_atlas() {
@@ -214,7 +216,7 @@ namespace TilemapPanel {
 
 
     // RYAN HOW
-    
+
     //// Place tiles example
     //Engine::ECS::Entity tile;
     //auto place_tile_action = Engine::UndoManager::add(Action(
