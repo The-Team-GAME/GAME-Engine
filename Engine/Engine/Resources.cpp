@@ -120,6 +120,81 @@ void Engine::Resources::load_all_assets()
   }
 }
 
+std::string Engine::Resources::copy_to_resources(const std::string& filepath)
+{
+  // Normalize the input path
+  std::string normalized_path = Path(filepath).normalize();
+
+  // Check if file exists
+  if (!std::filesystem::exists(normalized_path))
+  {
+    Log::warning("Cannot copy to resources - file does not exist: " + normalized_path);
+    return "";
+  }
+
+  // Get absolute resource path
+  std::string abs_resource_path = Path(resource_path).to_absolute();
+  std::string abs_file_path = Path(normalized_path).to_absolute();
+
+  // Check if the file is already within the resource folder
+  if (abs_file_path.find(abs_resource_path) == 0)
+  {
+    // File is already in resources, return relative path
+    return Path(abs_file_path).to_relative(abs_resource_path);
+  }
+
+  // Extract just the filename (no directory path)
+  std::string filename = Path(normalized_path).get_filename();
+
+  // Construct destination path in resource root
+  std::string dest_path = Path(abs_resource_path).join(filename);
+
+  // Check if a file with this name already exists in resources
+  if (std::filesystem::exists(dest_path))
+  {
+    // File already exists - check if it's the same file
+    if (std::filesystem::equivalent(abs_file_path, dest_path))
+    {
+      Log::info("File already exists in resources: " + filename);
+      return filename;
+    }
+
+    // Different file with same name - append number to make it unique
+    std::string extension = Path(filename).get_extension();
+    std::string base_name = filename;
+
+    // Remove extension from base_name if it exists
+    if (!extension.empty())
+    {
+      base_name = filename.substr(0, filename.length() - extension.length());
+    }
+
+    int counter = 1;
+
+    do
+    {
+      filename = base_name + "_" + std::to_string(counter) + extension;
+      dest_path = Path(abs_resource_path).join(filename);
+      counter++;
+    } while (std::filesystem::exists(dest_path));
+
+    Log::info("File renamed to avoid conflict: " + filename);
+  }
+
+  // Copy the file
+  try
+  {
+    std::filesystem::copy_file(abs_file_path, dest_path);
+    Log::info("Copied file to resources: " + filename);
+    return filename;
+  }
+  catch (const std::filesystem::filesystem_error& e)
+  {
+    Log::error("Failed to copy file to resources: " + std::string(e.what()));
+    return "";
+  }
+}
+
 std::string Engine::Resources::get_relative_path(const std::string& full_path)
 {
   // Special handling for unit_rect texture
@@ -142,6 +217,18 @@ Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& fil
 
   // Construct full path using Path class
   std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+
+  // If loading from outside resources and not appending resource path, copy to resources
+  std::string actual_filepath = filepath;
+  if (!append_resource_path)
+  {
+    std::string copied_path = copy_to_resources(filepath);
+    if (!copied_path.empty())
+    {
+      actual_filepath = copied_path;
+      full_path = Path(resource_path).join(actual_filepath);
+    }
+  }
 
   // Check if texture is already in cache (use full path for cache key)
   auto it = texture_cache.find(full_path);
@@ -190,6 +277,18 @@ Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath,
   // Construct full path using Path class
   std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
 
+  // If loading from outside resources and not appending resource path, copy to resources
+  std::string actual_filepath = filepath;
+  if (!append_resource_path)
+  {
+    std::string copied_path = copy_to_resources(filepath);
+    if (!copied_path.empty())
+    {
+      actual_filepath = copied_path;
+      full_path = Path(resource_path).join(actual_filepath);
+    }
+  }
+
   // Create a unique key combining filepath and size
   std::string cache_key = full_path + "_" + std::to_string(size);
 
@@ -232,6 +331,18 @@ Engine::Audio::Sound Engine::Resources::load_sound(const std::string& filepath, 
 {
   // Construct full path using Path class
   std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+
+  // If loading from outside resources and not appending resource path, copy to resources
+  std::string actual_filepath = filepath;
+  if (!append_resource_path)
+  {
+    std::string copied_path = copy_to_resources(filepath);
+    if (!copied_path.empty())
+    {
+      actual_filepath = copied_path;
+      full_path = Path(resource_path).join(actual_filepath);
+    }
+  }
 
   // Check if sound is already in cache
   auto it = sound_cache.find(full_path);
@@ -279,6 +390,18 @@ Engine::Audio::Sound Engine::Resources::load_music(const std::string& filepath, 
 {
   // Construct full path using Path class
   std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+
+  // If loading from outside resources and not appending resource path, copy to resources
+  std::string actual_filepath = filepath;
+  if (!append_resource_path)
+  {
+    std::string copied_path = copy_to_resources(filepath);
+    if (!copied_path.empty())
+    {
+      actual_filepath = copied_path;
+      full_path = Path(resource_path).join(actual_filepath);
+    }
+  }
 
   // Check if music is already in cache
   auto it = sound_cache.find(full_path);
@@ -424,6 +547,18 @@ Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, 
 {
   // Construct full path using Path class
   std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+
+  // If loading from outside resources and not appending resource path, copy to resources
+  std::string actual_filepath = filepath;
+  if (!append_resource_path)
+  {
+    std::string copied_path = copy_to_resources(filepath);
+    if (!copied_path.empty())
+    {
+      actual_filepath = copied_path;
+      full_path = Path(resource_path).join(actual_filepath);
+    }
+  }
 
   // Check if prefab is already in cache
   auto it = prefab_cache.find(full_path);

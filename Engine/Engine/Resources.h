@@ -72,6 +72,9 @@ namespace Engine {
     // Load all assets from the resource path and its subfolders
     void load_all_assets();
 
+    // Copy a file to the resource folder root if it's not already there
+    std::string copy_to_resources(const std::string& filepath);
+
     std::string get_relative_path(const std::string& full_path);
 
     Engine::Graphics::Texture load_texture(const std::string& filepath, bool append_resource_path = true, bool persist = false);
