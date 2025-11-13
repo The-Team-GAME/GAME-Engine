@@ -9,16 +9,18 @@
 namespace Engine {
   namespace ProjectSaveManager {
 
-    // Different types of dirty states, each with their own data
-    struct ProjectSettingsDirty {};
 
-    struct LevelDirty {
-      std::string level_name;
-      explicit LevelDirty(std::string name) : level_name(std::move(name)) {}
-    };
+    // Different types of dirty states, each with their own data
+    namespace DirtyStates {
+      struct ProjectSettings {};
+      struct Level {
+        std::string level_name;
+        explicit Level(std::string name) : level_name(std::move(name)) {}
+      };
+    }
 
     // Variant that can hold any dirty state type
-    using DirtyState = std::variant<ProjectSettingsDirty, LevelDirty>;
+    using DirtyState = std::variant<DirtyStates::ProjectSettings, DirtyStates::Level>;
 
     void set_dirty(DirtyState state);
 

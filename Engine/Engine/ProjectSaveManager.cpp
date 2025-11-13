@@ -18,10 +18,10 @@ void Engine::ProjectSaveManager::set_dirty(DirtyState state)
         using T = std::decay_t<decltype(s)>;
 
         if (const T* existing_ptr = std::get_if<T>(&existing)) {
-          if constexpr (std::is_same_v<T, ProjectSettingsDirty>) {
+          if constexpr (std::is_same_v<T, DirtyStates::ProjectSettings>) {
             return true; // ProjectSettings is always the same
           }
-          else if constexpr (std::is_same_v<T, LevelDirty>) {
+          else if constexpr (std::is_same_v<T, DirtyStates::Level>) {
             return existing_ptr->level_name == s.level_name;
           }
           return false;
@@ -41,7 +41,7 @@ void Engine::ProjectSaveManager::save_all_dirty()
     std::visit([](const auto& s) {
       using T = std::decay_t<decltype(s)>;
 
-      if constexpr (std::is_same_v<T, ProjectSettingsDirty>) {
+      if constexpr (std::is_same_v<T, DirtyStates::ProjectSettings>) {
         // Save project settings
         if (Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::save("Assets/settings/project_settings.json"))
         {
@@ -52,7 +52,7 @@ void Engine::ProjectSaveManager::save_all_dirty()
           Log::error("Failed to save project settings.");
         }
       }
-      else if constexpr (std::is_same_v<T, LevelDirty>) {
+      else if constexpr (std::is_same_v<T, DirtyStates::Level>) {
         // Save specific level
         Log::info("Saving level: " + s.level_name);
         // TODO: Implement level saving logic here

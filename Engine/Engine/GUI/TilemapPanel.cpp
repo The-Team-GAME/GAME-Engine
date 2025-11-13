@@ -74,7 +74,7 @@ namespace TilemapPanel {
     // if (!Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::save("Assets/settings/project_settings.json")) {
     //   Log::warning("Failed to save project settings after updating tilemaps");
     // }
-    Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::ProjectSettingsDirty()); // Mark dirty for saving later
+    Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings()); // Mark dirty for saving later
   }
 
   void regenerate_atlas() {
