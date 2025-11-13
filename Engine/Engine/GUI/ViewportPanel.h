@@ -30,6 +30,7 @@
 #pragma once
 
 #include "../Math/Vector2D.h"
+#include "../Math/Vector4D.h"
 
 namespace ViewportPanel {
 
@@ -82,86 +83,15 @@ namespace ViewportPanel {
 
   /*=================================================================================
   Function Brief:
-  Returns true if the mouse is currently hovering over the viewport window.
+  Gets the viewport bounds in screen coordinates (pixels).
 
   Returns:
-  bool - True if viewport is hovered, false otherwise
+  Math::Vec4D - Viewport bounds (x: min_x, y: min_y, z: max_x, w: max_y)
 
   Where to call it:
-  Can be called to check if input should be handled by the viewport.
+  Call this to get the actual pixel bounds of the viewport panel for coordinate
+  conversion and input handling.
   ==================================================================================*/
-  bool is_viewport_hovered();
-
-  /*=================================================================================
-  Function Brief:
-  Returns true if the viewport window is currently focused.
-
-  Returns:
-  bool - True if viewport is focused, false otherwise
-
-  Where to call it:
-  Can be called to check if input should be handled by the viewport.
-  ==================================================================================*/
-  bool is_viewport_focused();
-
-  /*=================================================================================
-  Function Brief:
-  Converts mouse position from screen coordinates to viewport virtual coordinates.
-  Takes into account the viewport's position, size, and aspect ratio.
-
-  Parameters:
-  screen_x - Mouse X position in screen coordinates (pixels)
-  screen_y - Mouse Y position in screen coordinates (pixels)
-
-  Returns:
-  Math::Vec2D - Mouse position in virtual coordinates (engine coordinate space)
-
-  Where to call it:
-  Call this when you need to convert mouse input to game coordinates while using
-  the viewport panel.
-  ==================================================================================*/
-  Math::Vec2D screen_to_viewport_virtual(float screen_x, float screen_y);
-
-  /*=================================================================================
-  Function Brief:
-  Gets the mouse position in viewport virtual coordinates if the mouse is over
-  the viewport. Returns the position adjusted for the viewport's bounds.
-
-  Returns:
-  Math::Vec2D - Mouse position in virtual coordinates, or {0,0} if not hovering
-
-  Where to call it:
-  Call this to get properly adjusted mouse coordinates for game input when using
-  the viewport panel.
-  ==================================================================================*/
-  Math::Vec2D get_viewport_mouse_position();
-
-  /*=================================================================================
-  Function Brief:
-  Gets the mouse position in world coordinates (accounting for camera) if the
-  mouse is over the viewport.
-
-  Returns:
-  Math::Vec2D - Mouse position in world coordinates, or {0,0} if not hovering
-
-  Where to call it:
-  Call this to get world-space mouse coordinates for game input when using
-  the viewport panel.
-  ==================================================================================*/
-  Math::Vec2D get_viewport_mouse_world_position();
-
-  /*=================================================================================
-  Function Brief:
-  Returns whether game input should be processed. This is true when the viewport
-  is both hovered and focused, indicating the user is interacting with the game.
-
-  Returns:
-  bool - True if game input should be processed, false otherwise
-
-  Where to call it:
-  Call this before processing game input to check if the viewport is active.
-  Useful for conditionally handling clicks, keyboard input, etc.
-  ==================================================================================*/
-  bool should_capture_input();
+  Math::Vec4D get_viewport_bounds();
 
 } // namespace ViewportPanel

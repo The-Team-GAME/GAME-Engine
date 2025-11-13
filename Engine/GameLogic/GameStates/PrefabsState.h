@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    PrefabsState.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines the PrefabsState scene for demonstrating the prefab
+//          system in the ECS. It shows how to create prefabs from scratch, convert
+//          entities to prefabs, serialize prefabs to JSON, save/load prefabs from
+//          files, and instantiate multiple entities from prefabs with modifications.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "../Engine/MonkeyEngine.h"

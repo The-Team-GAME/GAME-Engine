@@ -2,10 +2,10 @@
 // file:    TilemapPanel.cpp
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (100%)
+// author:  Ong Zi Ming (100%)
 //          Primary author
 //
-// email:   chew.s@digipen.edu
+// email:   o.ziming@digipen.edu
 //
 // brief:   Implementation of TilemapPanel for painting tiles on the world using
 //          TextureAtlas. Provides tile selection, grid overlay, and mouse-based
@@ -211,6 +211,32 @@ namespace TilemapPanel {
       .add_component<Components::TextureAtlas>(atlas_entry.atlas)
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
 
+
+
+    // RYAN HOW
+    
+    //// Place tiles example
+    //Engine::ECS::Entity tile;
+    //auto place_tile_action = Engine::UndoManager::add(Action(
+    //  [tile]() {
+    //    tile = Engine::ECS::create_entity()
+    //      .add_component<Components::Tile>()
+    //      .add_component<Components::Transform2D>(
+    //        Math::Vec2D{ 5, 10 },
+    //        0.0f,
+    //        Math::Vec2D{ 32.0f, 32.0f }
+    //      )
+    //      .add_component<Components::Texture>(some_texture)
+    //      .add_component<Components::TextureAtlas>(some_atlas)
+    //      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
+    //  },
+    //  [tile]() {
+    //    Engine::ECS::destroy_entity(tile);
+    //  }
+    //));
+
+    //place_tile_action.do_action();
+
     tile.get_component<Components::TextureAtlas>()->drawIndex = selected_tile_index;
 
     // Assign to selected layer
@@ -229,25 +255,18 @@ namespace TilemapPanel {
   void update() {
     // === HANDLE PAINTING IN WORLD ===
     // Only allow painting/erasing when tilemap mode is enabled
-    // Check if we should accept input based on viewport mode
-    bool should_accept_input = false;
-    if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled) {
-      // In viewport mode, only accept input when viewport is hovered and focused
-      should_accept_input = ViewportPanel::should_capture_input();
-    }
-    else {
-      // In fullscreen mode, accept input when ImGui doesn't want to capture mouse
-      should_accept_input = !ImGui::GetIO().WantCaptureMouse;
-    }
+    auto world_pos_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
 
-    if (enable_tilemap_mode && should_accept_input) {
-      if (painting_enabled && Engine::Input::is_held(Engine::KeyCode::MouseLeft)) {
-        Math::Vec2D world_pos = Engine::Input::get_mouse_world_position();
+    if (enable_tilemap_mode) {
+      if (!world_pos_opt.has_value()) {
+        /// Empty by design: if mouse is outside viewport, do nothing
+      }
+      else if (painting_enabled && Engine::Input::is_held(Engine::KeyCode::MouseLeft)) {
+        Math::Vec2D world_pos = world_pos_opt.value();
         place_tile_at_position(world_pos);
       }
-
-      if (erasing_enabled && Engine::Input::is_held(Engine::KeyCode::MouseLeft)) {
-        Math::Vec2D world_pos = Engine::Input::get_mouse_world_position();
+      else if (erasing_enabled && Engine::Input::is_held(Engine::KeyCode::MouseLeft)) {
+        Math::Vec2D world_pos = world_pos_opt.value();
         Math::Vec2D grid_pos = snap_to_grid(world_pos);
         delete_tile_at_position(grid_pos);
       }
@@ -868,20 +887,15 @@ namespace TilemapPanel {
         );
       }
 
-      // Highlight current grid cell when painting
-      // Check if we should show highlight based on viewport mode
-      bool should_show_highlight = false;
-      if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled) {
-        // In viewport mode, show highlight when viewport is hovered and focused
-        should_show_highlight = ViewportPanel::should_capture_input();
-      }
-      else {
-        // In fullscreen mode, show highlight when ImGui doesn't want to capture mouse
-        should_show_highlight = !ImGui::GetIO().WantCaptureMouse;
-      }
+      // Highlight current grid cell when painting 
+      if ((painting_enabled || erasing_enabled)) {
+        auto world_pos_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
 
-      if ((painting_enabled || erasing_enabled) && should_show_highlight) {
-        Math::Vec2D world_pos = Engine::Input::get_mouse_world_position();
+        if (!world_pos_opt.has_value()) {
+          return;
+        }
+
+        Math::Vec2D world_pos = world_pos_opt.value();
         Math::Vec2D grid_pos = snap_to_grid(world_pos);
 
         Math::Vec4D highlight_color = painting_enabled ?

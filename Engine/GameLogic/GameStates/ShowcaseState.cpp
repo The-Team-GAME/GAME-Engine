@@ -13,36 +13,37 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "ShowcaseState.h"
+#include "../Components/HealthComponents.h"
 
 void ShowcaseState::load() {
   Engine::Resources::set_resource_path("Assets/");
 
-  // Load sprite sheet textures with Nearest filter for pixel art
-  player_idle_texture = Engine::Resources::load_texture("images/BroSpriteSheets/Bro_idle_spritesheet.png");
-  player_punch_texture = Engine::Resources::load_texture("images/BroSpriteSheets/Bro_threehit_spritesheet.png");
-  player_run_texture = Engine::Resources::load_texture("images/BroSpriteSheets/Bro_run_spritesheet.png");
 
-  // Load object textures
-  banana_texture = Engine::Resources::load_texture("images/banana.png");
-  enemy_texture = Engine::Resources::load_texture("images/LazyMonkey_Idle_Spritesheet.png");
-
-  // Load background texture with Linear filter for smooth backgrounds
   background_texture = Engine::Resources::load_texture("images/sample_bg.png");
 
   // Load audio
   walk_sound = Engine::Resources::load_sound("sounds/move1.wav");
+  jump_sound = Engine::Resources::load_sound("sounds/jump.wav");
+  punch_sound = Engine::Resources::load_sound("sounds/Punch.wav");
+  bgm_sound = Engine::Resources::load_sound("sounds/A STORY TO TELL - Jazz MSCLJZ2_26.wav");
 
   // Load fonts
   title_font = Engine::Resources::load_font("fonts/PlayfairDisplay-VariableFont_wght.ttf", 82);
   info_font = Engine::Resources::load_font("fonts/Roboto-Regular.ttf", 48);
+
+
 }
 
 void ShowcaseState::init() {
+  camera = Engine::ECS::create_entity()
+    .add_component<Components::Tag<"ShowcaseState">>()
+    .add_component<Components::Camera>("Main Camera", true);
+
   // Create enemy
   enemy = Engine::ECS::create_entity()
     .add_component<Components::Tag<"ShowcaseState">>()
     .add_component<Components::Transform2D>(800.0f, 655.0f, 0.0f, 64.0f * 2.0f, 64.0f * 2.0f)
-    .add_component<Components::Texture>(enemy_texture)
+    .add_component<Components::Texture>(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Idle_Spritesheet.png"))
     .add_component<Components::Health>(50, 50)
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
     .add_component<Components::TextureAtlas>(64, 64, 1, 5, 5)
@@ -52,7 +53,7 @@ void ShowcaseState::init() {
   banana = Engine::ECS::create_entity()
     .add_component<Components::Tag<"ShowcaseState">>()
     .add_component<Components::Transform2D>(1200.0f, 675.0f, 0.0f, 20.0f * 3.0f, 12.0f * 3.0f)
-    .add_component<Components::Texture>(banana_texture)
+    .add_component<Components::Texture>(Engine::Resources::load_texture("images/banana.png"))
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
     .add_component<Components::RigidBody>(false, false);
 
@@ -60,16 +61,78 @@ void ShowcaseState::init() {
   rigid->rotation = 0.0f;
   rigid->angular_velocity = 45.0f;
 
-  // Create player with idle animation
+  // Create AnimationState for player with all three animation states
+  Components::AnimationState player_anim_state;
+
+  // Add idle state (24 frames) - looping, no auto-transition
+  player_anim_state.add_state(
+    IDLE_STATE,
+    Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_idle_spritesheet.png")),
+    Components::TextureAtlas(64, 64, 1, 24, 24),
+    Components::Animation(24, 0.1f),
+    Math::Vec2D(player_idle_width * 2.0f, player_idle_height * 2.0f),
+    true,  // is_looping
+    std::nullopt  // no next_state (looping animations don't auto-transition)
+  );
+
+  // Add run state (8 frames) - looping, no auto-transition
+  player_anim_state.add_state(
+    RUN_STATE,
+    Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_run_spritesheet.png")),
+    Components::TextureAtlas(64, 64, 1, 8, 8),
+    Components::Animation(8, 0.1f),
+    Math::Vec2D(player_idle_width * 2.0f, player_idle_height * 2.0f),
+    true,  // is_looping
+    std::nullopt  // no next_state
+  );
+
+  // Add jump state (8 frames) - looping, uses run animation
+  player_anim_state.add_state(
+    JUMP_STATE,
+    Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_run_spritesheet.png")),
+    Components::TextureAtlas(64, 64, 1, 8, 8),
+    Components::Animation(8, 0.1f),
+    Math::Vec2D(player_idle_width * 2.0f, player_idle_height * 2.0f),
+    true,  // is_looping
+    std::nullopt  // no next_state
+  );
+
+  // Add punch state (6 frames) - one-shot, auto-transitions to idle
+  player_anim_state.add_state(
+    PUNCH_STATE,
+    Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_threehit_spritesheet.png")),
+    Components::TextureAtlas(96, 64, 1, 19, 6),
+    Components::Animation(6, 0.05f),
+    Math::Vec2D(player_punch_width * 2.0f, player_punch_height * 2.0f),
+    false,  // is_looping = false (one-shot animation)
+    IDLE_STATE  // next_state = auto-transition to idle when done
+  );
+
+  // Set initial state to idle
+  player_anim_state.set_entity_state(IDLE_STATE);
+
+  // Create player with AnimationState
   player = Engine::ECS::create_entity()
-    .add_component<Components::Transform2D>(200.0f, 655.0f, 0.0f, static_cast<f32>(player_idle_texture->width / 24) * 2.0f, static_cast<f32>(player_idle_texture->height) * 2.0f)
-    .add_component<Components::Texture>(player_idle_texture)
-    .add_component<Components::TextureAtlas>(static_cast<int>(player_idle_texture->width / 24), static_cast<int>(player_idle_texture->height), 1, 24, 24)
-    .add_component<Components::RigidBody>(false, false)
-    .add_component<Components::Health>(100, 100)
+    .add_component<Components::Transform2D>(200.0f, 655.0f, 0.0f, player_idle_width * 2.0f, player_idle_height * 2.0f)
+    .add_component<Components::Texture>(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_idle_spritesheet.png"))
+    .add_component<Components::TextureAtlas>(64, 64, 1, 24, 24)
+    .add_component<Components::RigidBody>(false, true)
+    .add_component<Components::BoxCollider>(player_idle_width * 2.0f, player_idle_height * 2.0f, true)
     .add_component<Components::Animation>(24, 0.1f)
+    .add_component<Components::AnimationState>(player_anim_state)
     .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
-    .add_component<Components::Tag<"ShowcaseState">>();
+    .add_component<Components::Tag<"ShowcaseState">>()
+    .add_component<Components::Health>(50, 100)
+    .add_component<Components::HealthConfig>(Components::HealthConfig{ .drain_per_sec = 5.0f, .heal_while_moving_per_sec = 10.0f, .carry = 0.0f });
+
+  // Create floor
+  auto floor = Engine::ECS::create_entity()
+    .add_component<Components::Tag<"ShowcaseState">>()
+    .add_component<Components::Transform2D>(960.0f, 770.0f, 0.0f, 1920.0f, 100.0f)
+    .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
+    .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 0.0f)
+    .add_component<Components::RigidBody>(true, false)
+    .add_component<Components::BoxCollider>(1920.0f, 100.0f, false);
 
   // Create text entities
   title_text = Engine::ECS::create_entity()
@@ -83,7 +146,7 @@ void ShowcaseState::init() {
     .add_component<Components::Tag<"ShowcaseState">>()
     .add_component<Components::Transform2D>(50.0f, 140.0f, 0.0f, 0.6f, 0.6f)
     .add_component<Components::Font>(info_font)
-    .add_component<Components::Text>("WASD: Move | E: Attack | C: Collect")
+    .add_component<Components::Text>("A/D: Move | Space: Jump | E: Attack | C: Collect")
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
 
   banana_count_text = Engine::ECS::create_entity()
@@ -100,6 +163,38 @@ void ShowcaseState::init() {
     .add_component<Components::Text>("Enemy HP: 50/50")
     .add_component<Components::Color>(1.0f, 0.0f, 0.0f, 1.0f);
 
+  player_health_text = Engine::ECS::create_entity()
+    .add_component<Components::Tag<"ShowcaseState">>()
+    .add_component<Components::Transform2D>(50.0f, 280.0f, 0.0f, 0.7f, 0.7f)
+    .add_component<Components::Font>(info_font)
+    .add_component<Components::Text>("Player HP: 50/100")
+    .add_component<Components::Color>(0.2f, 1.0f, 0.2f, 1.0f);
+
+  player_hp_bg = Engine::ECS::create_entity()
+    .add_component<Components::Tag<"ShowcaseState">>()
+    .add_component<Components::Transform2D>(
+      hpbar_left + hpbar_w * 50.0f,
+      hpbar_top + hpbar_h * 50.0f,
+      0.0f, hpbar_w, hpbar_h)
+    .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
+    .add_component<Components::Color>(0.15f, 0.15f, 0.15f, 1.0f);
+
+  player_hp_fill = Engine::ECS::create_entity()
+    .add_component<Components::Tag<"ShowcaseState">>()
+    .add_component<Components::Transform2D>(
+      hpbar_left + (hpbar_w * 0.5f),
+      hpbar_top + hpbar_h * 0.5f,
+      0.0f, hpbar_w * 0.5f, hpbar_h)
+    .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
+    .add_component<Components::Color>(0.2f, 1.0f, 0.2f, 1.0f);
+
+  player.add_component<Components::HealthBar>(Components::HealthBar{
+    .bar_bg = player_hp_bg,
+    .bar_fill = player_hp_fill,
+    .text = player_health_text,
+    .left = hpbar_left, .top = hpbar_top, .width = hpbar_w, .height = hpbar_h
+    });
+
   // Subscribe to attack events
   Engine::EventManager::add_event_listener<AttackEvent>([this](const AttackEvent& event) {
     std::cout << "Attack event! Entity " << event.attacker
@@ -114,18 +209,25 @@ void ShowcaseState::init() {
         walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
       }
 
-      auto* player_texture = player.get_component<Components::Texture>();
-      auto* player_transform = player.get_component<Components::Transform2D>();
-      auto* player_animation = player.get_component<Components::Animation>();
-      auto* player_atlas = player.get_component<Components::TextureAtlas>();
-      if (player_texture && player_transform && player_animation) {
-        player_texture->texture_handle = player_punch_texture;
-        player_transform->scale.x = (facing_right ? 2.0f : -2.0f) * player_punch_width;
-        player_transform->scale.y = 2.0f * player_punch_height;
-        *player_animation = Components::Animation(6, 0.05f);
-        *player_atlas = Components::TextureAtlas(static_cast<s32>(player_punch_width), static_cast<s32>(player_punch_height), 1, 19, 6); // Only play 6 frames of punch animation
+      // Play punch sound
+      Engine::Audio::play_sound(punch_sound);
 
+      // Switch to punch animation state
+      auto* anim_state = player.get_component<Components::AnimationState>();
+      if (anim_state) {
+        anim_state->set_entity_state(PUNCH_STATE);
         std::cout << "Playing punch animation\n";
+      }
+    }
+
+    if (event.target == player.get_id()) {
+      if (player.is_valid() && player.has_component<Components::Health>()) {
+        auto* hp = player.get_component<Components::Health>();
+        hp->heal(event.damage);
+        if (player_health_text.is_valid() && player_health_text.has_component<Components::Text>()) {
+          auto* text = player_health_text.get_component<Components::Text>();
+          text->content = "Player HP: " + std::to_string(hp->value) + "/" + std::to_string(hp->max);
+        }
       }
     }
 
@@ -190,142 +292,122 @@ void ShowcaseState::init() {
       }
     }
     });
+
+  // Start playing background music (looped)
+  bgm_channel = Engine::Audio::play_sound(bgm_sound, 0.5f, true);
 }
 
 void ShowcaseState::update() {
   auto* player_transform = player.get_component<Components::Transform2D>();
   auto* rigid = player.get_component<Components::RigidBody>();
-  auto* player_texture = player.get_component<Components::Texture>();
+  auto* anim_state = player.get_component<Components::AnimationState>();
 
-  if (!player_transform || !rigid || !player_texture) return;
-
-  // Handle punch animation timing
-  if (is_punching) {
-    punch_timer += Engine::Time::get_fixed_dt();
-    if (punch_timer >= punch_duration) {
-      // Punch animation finished, return to idle or walk
-      is_punching = false;
-      punch_timer = 0.0f;
-
-      // Return to appropriate animation state
-      if (is_walking) {
-        player_texture->texture_handle = player_run_texture;
-        player_transform->scale.x = (facing_right ? 2.0f : -2.0f) * player_idle_width;
-        player_transform->scale.y = 2.0f * player_idle_height;
-        auto* player_animation = player.get_component<Components::Animation>();
-        auto* player_atlas = player.get_component<Components::TextureAtlas>();
-        if (player_animation && player_atlas) {
-          *player_animation = Components::Animation(8, 0.1f);
-          *player_atlas = Components::TextureAtlas(64, 64, 1, 8, 8);
-        }
-      }
-      else {
-        player_texture->texture_handle = player_idle_texture;
-        player_transform->scale.x = (facing_right ? 2.0f : -2.0f) * player_idle_width;
-        player_transform->scale.y = 2.0f * player_idle_height;
-        auto* player_animation = player.get_component<Components::Animation>();
-        auto* player_atlas = player.get_component<Components::TextureAtlas>();
-        if (player_animation && player_atlas) {
-          // Restore the full idle animation (24 frames) to match the idle spritesheet
-          *player_animation = Components::Animation(24, 0.1f);
-          *player_atlas = Components::TextureAtlas(64, 64, 1, 24, 24);
-        }
-      }
+  if (!player_transform || !rigid || !anim_state) {
+    if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
+      Engine::Audio::stop_channel(walk_sound_channel);
+      walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
     }
+    return;
   }
 
   // Only handle movement and animation changes if not punching
-  if (!is_punching) {
-    // Player movement input
-    f32 speed = 300.0f;
-    f32 new_vel_x = 0.0f;
-    f32 new_vel_y = 0.0f;
+  if (anim_state->current_state != PUNCH_STATE) {
+    // Reset forces before applying new ones
+    rigid->force.zero();
 
-    if (Engine::Input::is_held(Engine::KeyCode::W)) {
-      new_vel_y = -speed;
-    }
-    if (Engine::Input::is_held(Engine::KeyCode::S)) {
-      new_vel_y = speed;
-    }
+    // Player movement input using physics forces
+    bool moving_horizontally = false;
+
     if (Engine::Input::is_held(Engine::KeyCode::A)) {
-      new_vel_x = -speed;
+      Engine::Systems::Physics2DSystem::walk_left(*rigid);
+      facing_right = false;
+      moving_horizontally = true;
     }
     if (Engine::Input::is_held(Engine::KeyCode::D)) {
-      new_vel_x = speed;
-    }
-
-    // Update facing direction based on horizontal movement
-    if (new_vel_x > 0.0f) {
+      Engine::Systems::Physics2DSystem::walk_right(*rigid);
       facing_right = true;
-    }
-    else if (new_vel_x < 0.0f) {
-      facing_right = false;
+      moving_horizontally = true;
     }
 
-    // Apply scale to flip sprite horizontally
-    player_transform->scale.x = (facing_right ? 2.0f : -2.0f) * player_idle_width;
-    player_transform->scale.y = 2.0f * player_idle_height;
+    // Jump with Space when on ground
+    if (Engine::Input::is_pressed(Engine::KeyCode::Space) && rigid->on_ground) {
+      Engine::Systems::Physics2DSystem::jump(*rigid);
+      Engine::Audio::play_sound(jump_sound);
+      anim_state->set_entity_state(JUMP_STATE);
 
-    rigid->velocity.x = new_vel_x;
-    rigid->velocity.y = new_vel_y;
-
-    // Animation change based on movement
-    bool shouldWalk = (new_vel_x != 0.0f || new_vel_y != 0.0f);
-
-    if (shouldWalk && !is_walking) {
-      // Switch to walking animation (8 frames)
-      player_texture->texture_handle = player_run_texture;
-      auto* player_animation = player.get_component<Components::Animation>();
-      auto* player_atlas = player.get_component<Components::TextureAtlas>();
-      if (player_animation && player_atlas) {
-        *player_animation = Components::Animation(8, 0.1f);
-        *player_atlas = Components::TextureAtlas(64, 64, 1, 8, 8);
-      }
-
-      // Start playing walk sound on loop
-      walk_sound_channel = Engine::Audio::play_sound(walk_sound, 1.0f, true);
-      is_walking = true;
-    }
-    else if (!shouldWalk && is_walking) {
-      // Switch to idle animation (7 frames)
-      player_texture->texture_handle = player_idle_texture;
-      auto* player_animation = player.get_component<Components::Animation>();
-      auto* player_atlas = player.get_component<Components::TextureAtlas>();
-      if (player_animation && player_atlas) {
-        *player_animation = Components::Animation(24, 0.1f);
-        *player_atlas = Components::TextureAtlas(64, 64, 1, 24, 24);
-      }
-
-      // Stop walk sound
+      // Stop walking sound when jumping
       if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
         Engine::Audio::stop_channel(walk_sound_channel);
         walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
       }
-      is_walking = false;
+    }
+
+    // Animation state logic based on ground state and movement
+    if (!rigid->on_ground) {
+      // In the air - use jump animation
+      if (anim_state->current_state != JUMP_STATE) {
+        anim_state->set_entity_state(JUMP_STATE);
+
+        // Stop walking sound when in air
+        if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
+          Engine::Audio::stop_channel(walk_sound_channel);
+          walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
+        }
+      }
+    }
+    else if (moving_horizontally) {
+      // On ground and moving - use run animation
+      if (anim_state->current_state != RUN_STATE) {
+        anim_state->set_entity_state(RUN_STATE);
+        walk_sound_channel = Engine::Audio::play_sound(walk_sound, 1.0f, true);
+      }
+    }
+    else {
+      // On ground and not moving - use idle animation
+      if (anim_state->current_state != IDLE_STATE) {
+        anim_state->set_entity_state(IDLE_STATE);
+
+        if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
+          Engine::Audio::stop_channel(walk_sound_channel);
+          walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
+        }
+      }
     }
   }
 
+  // Apply facing direction to scale (flip sprite horizontally)
+  // The AnimationStateSystem handles base scale, we just apply the sign
+  player_transform->scale.x = std::abs(player_transform->scale.x) * (facing_right ? 1.0f : -1.0f);
+
   // Attack enemy with E key (using event system)
-  if (Engine::Input::is_pressed(Engine::KeyCode::E) && !is_punching) {
+  if (Engine::Input::is_pressed(Engine::KeyCode::E) && anim_state->current_state != PUNCH_STATE) {
     std::cout << "E key pressed! Player ID: " << player.get_id() << ", Enemy ID: " << enemy.get_id() << "\n";
 
     // Send attack event 
     Engine::EventManager::send_event<AttackEvent>(player.get_id(), enemy.get_id(), 10);
 
-    // Start punch animation
-    is_punching = true;
-    punch_timer = 0.0f;
+    if (auto* t = enemy.get_component<Components::Transform2D>()) {
+      Engine::EventManager::send_event<Engine::Systems::SpawnParticlesEvent>(
+        Math::Vec2D{ t->position.x, t->position.y }, 96);
+    }
+    // Punch animation will auto-transition to idle when done (handled by AnimationStateSystem)
   }
   // Collect banana with C key (using event system)
   if (Engine::Input::is_pressed(Engine::KeyCode::C)) {
     Engine::EventManager::send_event<CollectEvent>(player.get_id(), banana.get_id(), 1);
   }
+
+  // Camera follow player
+  auto* camera_comp = camera.get_component<Components::Camera>();
+  if (camera_comp) {
+    camera_comp->position.x = player_transform->position.x - Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().window_width / 2.0f;
+    //camera_comp->position.y = player_transform->position.y - Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().window_height / 2.0f;
+  }
+
 }
 
 void ShowcaseState::draw() {
   Engine::Graphics::clear_screen(background_texture);
-
-  // Text entities are now rendered automatically by the rendering system
 }
 
 void ShowcaseState::free() {
@@ -333,6 +415,11 @@ void ShowcaseState::free() {
   if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
     Engine::Audio::stop_channel(walk_sound_channel);
     walk_sound_channel = Engine::Audio::INVALID_CHANNEL;
+  }
+
+  if (bgm_channel != Engine::Audio::INVALID_CHANNEL) {
+    Engine::Audio::stop_channel(bgm_channel);
+    bgm_channel = Engine::Audio::INVALID_CHANNEL;
   }
 
   // Cleanup entities
@@ -346,6 +433,9 @@ void ShowcaseState::free() {
 void ShowcaseState::unload() {
   // Resources are automatically cleaned up when shared_ptrs go out of scope
   walk_sound.reset();
+  jump_sound.reset();
+  punch_sound.reset();
+  bgm_sound.reset();
 
   // Clear unused resources from cache
   Engine::Resources::clear_unused_resources();

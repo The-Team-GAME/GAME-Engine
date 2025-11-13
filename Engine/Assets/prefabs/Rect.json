@@ -1,0 +1,37 @@
+{
+    "dataType": "Prefab",
+    "layers": [
+        "default"
+    ],
+    "components": [
+        {
+            "data": {
+                "b": 1.0,
+                "r": 1.0,
+                "g": 1.0,
+                "a": 1.0
+            },
+            "type": "Components::Color"
+        },
+        {
+            "type": "Components::Texture",
+            "data": {
+                "path": "UNIT_RECT"
+            }
+        },
+        {
+            "data": {
+                "position": {
+                    "x": 800.0,
+                    "y": 450.0
+                },
+                "rotation": 0.0,
+                "scale": {
+                    "x": 50.0,
+                    "y": 50.0
+                }
+            },
+            "type": "Components::Transform2D"
+        }
+    ]
+}

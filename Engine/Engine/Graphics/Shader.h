@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    Shader.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   OpenGL shader program class definition. Provides shader loading,
+//          compilation, and uniform setting functionality. Supports loading
+//          from source strings or files, with automatic resource management
+//          and error handling for the graphics pipeline.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "../Precompiled.h"

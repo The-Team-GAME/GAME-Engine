@@ -23,11 +23,14 @@
 #include "GameStates/Rubric2500ParticlesState.h"
 #include "GameStates/StressTestState.h"
 #include "GameStates/BasicState.h"
-#include "GameStates/Documentation/PrefabsState.h"
-#include "GameStates/Dev/PhysicsTestState.h"
+#include "GameStates/PrefabsState.h"
+#include "GameStates/PhysicsTestState.h"
 #include "GameStates/TimelineState.h"
 #include "GameStates/DistortionEffectState.h"
 #include "GameStates/LuaState.h"
+#include "GameStates/BehaviourState.h"
+#include "Systems/HealthSystem.h"
+#include "GameStates/LevelTestState.h"
 
 /*=================================================================================
 Function Brief:
@@ -58,6 +61,7 @@ int main()
   Engine::ECS::register_layer("effects"); // Visual effects like particles
   Engine::ECS::register_layer("debug"); // Debug overlays and information
 
+  // Register game scenes at startup
   Engine::SceneManager::register_scene<EmptyState>("EmptyState");
   Engine::SceneManager::register_scene<MainMenuState>("MainMenuState");
   Engine::SceneManager::register_scene<ShowcaseState>("ShowcaseState");
@@ -70,11 +74,17 @@ int main()
   Engine::SceneManager::register_scene<TimelineState>("TimelineState");
   Engine::SceneManager::register_scene<DistortionEffectState>("DistortionEffectState");
   Engine::SceneManager::register_scene<LuaState>("LuaState");
+  Engine::SceneManager::register_scene<LevelTestState>("LevelTestState");
+  Engine::SceneManager::register_scene<BehaviourState>("BehaviourState");
 
+  // Register game systems at startup
+  Engine::ECS::add_system<Engine::Systems::HealthSystem>();
+
+  // Run the main menu state
   Engine::Core::run("MainMenuState");
 
+  // Shutdown the engine
   Engine::Core::exit();
-
 
   return 0;
 }

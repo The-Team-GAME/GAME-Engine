@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    Helpers.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Utility functions and templates for the reflection library.
+//          Provides compile-time field counting, class name retrieval,
+//          and iteration over reflected fields. Enables generic operations
+//          on reflectable types through template metaprogramming.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include <string_view>

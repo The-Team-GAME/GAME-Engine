@@ -176,6 +176,17 @@ namespace Engine {
       containers.entities_to_destroy.insert(id);
     }
 
+    void destroy_all_entities()
+    {
+      auto& containers = Internal::get_containers();
+
+      // Mark all active entities for destruction
+      for (EntityID entityId : containers.active_entities)
+      {
+        containers.entities_to_destroy.insert(entityId);
+      }
+    }
+
     bool is_entity_active(const Entity& entity)
     {
       auto& containers = Internal::get_containers();
@@ -410,6 +421,56 @@ namespace Engine {
     LayerID get_default_layer()
     {
       return DEFAULT_LAYER;
+    }
+
+    void enable_layer(LayerID layer)
+    {
+      auto& containers = Internal::get_containers();
+      if (layer < MAX_LAYERS) {
+        containers.layer_active_state.set(layer);
+      }
+    }
+
+    void disable_layer(LayerID layer)
+    {
+      auto& containers = Internal::get_containers();
+      if (layer < MAX_LAYERS) {
+        containers.layer_active_state.reset(layer);
+      }
+    }
+
+    void enable_layer(const std::string& layer_name)
+    {
+      LayerID layer = get_layer_id(layer_name);
+      if (layer != INVALID_LAYER) {
+        enable_layer(layer);
+      }
+    }
+
+    void disable_layer(const std::string& layer_name)
+    {
+      LayerID layer = get_layer_id(layer_name);
+      if (layer != INVALID_LAYER) {
+        disable_layer(layer);
+      }
+    }
+
+    bool is_layer_active(LayerID layer)
+    {
+      auto& containers = Internal::get_containers();
+      if (layer < MAX_LAYERS) {
+        return containers.layer_active_state.test(layer);
+      }
+      return false;
+    }
+
+    bool is_layer_active(const std::string& layer_name)
+    {
+      LayerID layer = get_layer_id(layer_name);
+      if (layer != INVALID_LAYER) {
+        return is_layer_active(layer);
+      }
+      return false;
     }
 
     bool is_on_layer(const Entity& entity, LayerID layer)

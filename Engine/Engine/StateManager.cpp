@@ -1,19 +1,22 @@
-////-----------------------------------------------------------------------------------
-//// file:    StateManager.cpp
-//// project: Monkey Stole My GPA
-////
-//// author:  Chew Shee Yang (100%)
-////          Primary author
-////
-//// email:   chew.s@digipen.edu
-////
-//// brief:   This file implements the game state management system, including state
-////          stack operations for transitions, push/pop functionality, and lifecycle
-////          management for handling state initialization and cleanup.
-////
-//// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
-////-----------------------------------------------------------------------------------
+// DEPRECATED FILE - DO NOT USE
+//-----------------------------------------------------------------------------------
+// file:    StateManager.cpp
+// project: Monkey Stole My GPA
 //
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements the game state management system, including state
+//          stack operations for transitions, push/pop functionality, and lifecycle
+//          management for handling state initialization and cleanup.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
+// DEPRECATED FILE - DO NOT USE
+
+
 //#include "StateManager.h" 
 //#include <memory> 
 //

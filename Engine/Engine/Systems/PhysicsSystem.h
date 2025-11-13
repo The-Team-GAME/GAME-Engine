@@ -2,14 +2,15 @@
 // file:    PhysicsSystem.h
 // project: Monkey Stole My GPA
 //
-// author:   (100%)
+// author:  Cheng Ming Xian (100%)
 //          Primary author
 //
-// email:   @digipen.edu
+// email:   c.mingxian@digipen.edu
 //
-// brief:   This file defines a system that handles entity rotation by updating
-//          rotation angles based on rotation speed and delta time in the ECS
-//          framework.
+// brief:   This file defines a system that handles the physics updates for all 
+//          entities tht contain rigidbody and transform2d components.
+//          Entities will have their rigidbody updated which in turn updates the
+//          transform2d component as well.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
@@ -23,7 +24,8 @@
 namespace Engine {
   namespace Systems
   {
-    class Physics2DSystem : public Engine::ECS::System {
+    class Physics2DSystem : public Engine::ECS::System 
+    {
     public:
       Physics2DSystem(); // Default dtor that includes all the components needed for the entities called in the physics engine
       

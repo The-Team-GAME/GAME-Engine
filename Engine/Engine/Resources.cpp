@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    Resources.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Implementation of the resource management system for the game engine.
+//          Handles loading, caching, and management of textures, fonts, sounds,
+//          and prefabs. Provides resource deduplication, automatic cleanup of
+//          unused resources, and support for drag-and-drop resource loading.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "Resources.h"
 #include <memory>
 #include "Graphics/RendererInternal.h"
@@ -53,12 +69,24 @@ void Engine::Resources::set_resource_path(const std::string& path)
 
 std::string Engine::Resources::get_relative_path(const std::string& full_path)
 {
+  // Special handling for unit_rect texture
+  if (full_path == Engine::Graphics::get_rect_texture()->path)
+  {
+    return "UNIT_RECT";
+  }
+
   // Use the Path class to convert to relative path
   return Path(full_path).to_relative(resource_path);
 }
 
 Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& filepath, bool append_resource_path, bool persist)
 {
+  // Special handling for unit_rect texture
+  if (filepath == Engine::Graphics::get_rect_texture()->path)
+  {
+    return Engine::Graphics::get_rect_texture();
+  }
+
   // Construct full path using Path class
   std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
 

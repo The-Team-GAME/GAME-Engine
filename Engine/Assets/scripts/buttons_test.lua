@@ -1,3 +1,21 @@
+-----------------------------------------------------------------------------
+-- file:    buttons_test.lua
+-- project: Monkey Stole My GPA
+--
+-- author:  How Hong Chin Ryan (100%)
+--          Primary author
+--
+-- email:   hongchinryan.how@digipen.edu
+--
+-- brief:   Menu system implementation in Lua. Handles creation and management
+--          of menu entities including buttons and interactive elements.
+--          Provides update logic for menu interactions and animations.
+--
+-- Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+-------------------------------------------------------------------------------
+
+-- ...existing code...
+
 -- This is an example of Scripting using .lua files
 -- using mainmenustate as an example
 

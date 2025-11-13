@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    GraphicsComponents.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   ECS component definitions for graphics rendering. Includes Texture,
+//          Color, Animation, TextureAtlas, Text, and Distortion components.
+//          Provides the data structures needed for sprite rendering, text display,
+//          animation playback, and visual effects in the graphics pipeline.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "../Graphics/RendererInternal.h"
@@ -8,7 +24,7 @@
 #include "../ECS/Macros.h"  // Add this line
 #include "../Time.h"
 #include "../Resources.h"
-
+#include "../Logger.h"
 
 namespace Components
 {
@@ -308,6 +324,43 @@ namespace Components
       }
     };
   };
+
+  // Stores a map of animation states by name
+  // NOT FINALIZED, STILL EXPERIMENTAL
+  struct AnimationState
+  {
+    struct StateData {
+      Texture texture;
+      TextureAtlas texture_atlas;
+      Animation animation;
+      std::optional<Math::Vec2D> scale; // Optional scale override for this state
+      bool is_looping = true; // Does the animation loop continuously?
+      std::optional<std::string> next_state; // Auto-transition to this state when non-looping animation completes
+    };
+
+    bool dirty = false; // Whether the state has been modified
+    std::string current_state;
+    std::unordered_map<std::string, StateData> states;
+
+    void add_state(
+      const std::string& name,
+      const Texture& texture,
+      const TextureAtlas& atlas,
+      const Animation& animation,
+      std::optional<Math::Vec2D> scale = std::nullopt,
+      bool is_looping = true,
+      std::optional<std::string> next_state = std::nullopt
+    ) {
+      states[name] = { texture, atlas, animation, scale, is_looping, next_state };
+    }
+
+    void set_entity_state(const std::string& name) {
+      // Log::info("Switching to animation state: " + name);
+      current_state = name;
+      dirty = true;
+    }
+  };
+
 }
 
 REGISTER_COMPONENT(Components::Text, content)
@@ -318,3 +371,5 @@ REGISTER_COMPONENT_CUSTOM(Components::Texture, path)
 REGISTER_COMPONENT_CUSTOM(Components::Font, path, font_size)
 REGISTER_COMPONENT_CUSTOM(Components::TextureAtlas, tex_coords_list, drawIndex)
 REGISTER_COMPONENT_CUSTOM(Components::Animation, durations, before_times, startTime, totalDuration)
+REFLECT_FIELDS(Components::AnimationState::StateData, texture, texture_atlas, animation, scale, is_looping, next_state)
+REGISTER_COMPONENT(Components::AnimationState, dirty, current_state, states)

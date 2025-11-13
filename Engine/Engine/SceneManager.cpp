@@ -1,5 +1,22 @@
+//-----------------------------------------------------------------------------------
+// file:    SceneManager.cpp
+// project: Monkey Stole My GPA
+//
+// author:  How Hong Chin Ryan (100%)
+//          Primary author
+//
+// email:   hongchinryan.how@digipen.edu
+//
+// brief:   Implements the SceneManager for the game engine. Handles scene registration,
+//          loading, unloading, updating, drawing, and cleanup. Manages the current scene
+//          pointer and provides access to scene names and order.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
+
 #include "SceneManager.h"
 #include <iostream>
+#include "Systems/GraphicsSystem.h"
 
 namespace Engine
 {
@@ -18,6 +35,8 @@ namespace Engine
       }
 
       unload_current_scene();
+
+      Engine::Systems::CameraSystem::reset_camera();
 
       current_scene = scene_it->second.get();
       current_scene->load();

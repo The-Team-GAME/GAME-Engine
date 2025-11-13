@@ -39,6 +39,8 @@ namespace
   glm::vec2 mousePosition;
   glm::vec2 scrollOffset;
 
+  bool is_cursor_in_viewport = false;
+
   // Helper function to convert KeyCode to array index
   inline int key_to_index(Engine::KeyCode key)
   {
@@ -94,9 +96,10 @@ namespace Engine
     //std::cout << "Raw Mouse Position: (" << xpos << ", " << ypos << ")\n";
 
     // Check if imgui viewport mode is enabled to determine mouse position calculation
-    mousePosition = Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled
-      ? ViewportPanel::get_viewport_mouse_position()
-      : Engine::Graphics::screen_to_virtual({ static_cast<f32>(xpos), static_cast<f32>(ypos) });
+    // auto [mousePosition, is_in_viewport] = Engine::Graphics::screen_to_viewport({ static_cast<f32>(xpos), static_cast<f32>(ypos) });
+    auto result = Engine::Graphics::screen_to_viewport({ static_cast<f32>(xpos), static_cast<f32>(ypos) });
+    mousePosition = result.first;
+    is_cursor_in_viewport = result.second;
 
     //std::cout << "Mouse Position: (" << mousePosition.x << ", " << mousePosition.y << ")\n";
 
@@ -126,9 +129,25 @@ namespace Engine
     return mousePosition;
   }
 
+  std::optional<glm::vec2> Input::get_mouse_position_if_in_viewport()
+  {
+    if (is_cursor_in_viewport)
+      return mousePosition;
+    else
+      return std::nullopt;
+  }
+
   glm::vec2 Input::get_mouse_world_position()
   {
     return Engine::Graphics::virtual_to_world(mousePosition);
+  }
+
+  std::optional<glm::vec2> Input::get_mouse_world_position_if_in_viewport()
+  {
+    if (is_cursor_in_viewport)
+      return Engine::Graphics::virtual_to_world(mousePosition);
+    else
+      return std::nullopt;
   }
 
   glm::vec2 Input::get_scroll_offset()
@@ -142,5 +161,10 @@ namespace Engine
   {
     std::cout << "Scroll Offset Callback: (" << xoffset << ", " << yoffset << ")\n";
     scrollOffset = { static_cast<f32>(xoffset), static_cast<f32>(yoffset) };
+  }
+
+  bool Input::is_in_viewport()
+  {
+    return is_cursor_in_viewport;
   }
 }

@@ -2,12 +2,14 @@
 // file:    LuaState.h
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (100%)
+// author:  How Hong Chin Ryan (100%)
 //          Primary author
 //
-// email:   chew.s@digipen.edu
+// email:   hongchinryan.how@digipen.edu
 //
-// brief:   This file
+// brief:   Declares the LuaState scene for the game engine. Integrates Lua scripting
+//          for entity creation and behavior logic. Handles resource management, scene
+//          lifecycle, and cleanup of LuaState-tagged entities.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------

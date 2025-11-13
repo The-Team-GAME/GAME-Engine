@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    Macros.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Macro definitions for ECS component registration and reflection.
+//          Provides REGISTER_COMPONENT and REGISTER_COMPONENT_CUSTOM macros
+//          that automatically register components with the ECS system and
+//          set up reflection information for the editor interface.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "../Reflection/ReflectionLibrary.h"

@@ -1,8 +1,27 @@
+//-----------------------------------------------------------------------------------
+// file:    Systems.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Central header file that includes all ECS system headers and provides
+//          the register_engine_systems() function to initialize all core engine
+//          systems. This includes update systems (physics, collision, animation)
+//          and draw systems (rendering, particles, UI) that make up the engine's
+//          core functionality.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "GraphicsSystem.h"
 #include "PhysicsSystem.h"
 #include "CollisionSystem.h"
+#include "ParticleSystem.h"
+#include "DebugDrawSystem.h"
 #include "UISystem.h"
 #include "GizmoSystem.h"
 
@@ -13,9 +32,11 @@ void register_engine_systems()
   Engine::ECS::add_system<Engine::Systems::CameraControlSystem>();
   Engine::ECS::add_system<Engine::Systems::Physics2DSystem>();
   Engine::ECS::add_system<Engine::Systems::Collision2DSystem>();
+  Engine::ECS::add_system<Engine::Systems::AnimationStateSystem>();
   Engine::ECS::add_system<Engine::Systems::AnimationUpdateSystem>();
   Engine::ECS::add_system<Engine::Systems::ClickableSystem>();
   Engine::ECS::add_system<Engine::Systems::GizmoSelectionSystem>();
+  Engine::ECS::add_system<Engine::Systems::GizmoTextSelectionSystem>();
   Engine::ECS::add_system<Engine::Systems::GizmoManipulationSystem>();
 
   // Draw systems
@@ -24,11 +45,15 @@ void register_engine_systems()
   Engine::ECS::add_system<Engine::Systems::TextRenderSystem>();
   Engine::ECS::add_system<Engine::Systems::DistortionAtlasSpriteRenderSystem>();
   Engine::ECS::add_system<Engine::Systems::DistortionSpriteRenderSystem>();
+  Engine::ECS::add_system<Engine::Systems::ParticleSystem>();
+  Engine::ECS::add_system<Engine::Systems::DebugDrawSystem>();
 }
 
 void unregister_engine_systems()
 {
   // unregister in reverse order
+  Engine::ECS::remove_system<Engine::Systems::DebugDrawSystem>();
+  Engine::ECS::remove_system<Engine::Systems::ParticleSystem>();
   Engine::ECS::remove_system<Engine::Systems::DistortionSpriteRenderSystem>();
   Engine::ECS::remove_system<Engine::Systems::DistortionAtlasSpriteRenderSystem>();
   Engine::ECS::remove_system<Engine::Systems::TextRenderSystem>();
@@ -36,9 +61,11 @@ void unregister_engine_systems()
   Engine::ECS::remove_system<Engine::Systems::StaticSpriteRenderSystem>();
 
   Engine::ECS::remove_system<Engine::Systems::GizmoManipulationSystem>();
+  Engine::ECS::remove_system<Engine::Systems::GizmoTextSelectionSystem>();
   Engine::ECS::remove_system<Engine::Systems::GizmoSelectionSystem>();
   Engine::ECS::remove_system<Engine::Systems::ClickableSystem>();
   Engine::ECS::remove_system<Engine::Systems::AnimationUpdateSystem>();
+  Engine::ECS::remove_system<Engine::Systems::AnimationStateSystem>();
   Engine::ECS::remove_system<Engine::Systems::Collision2DSystem>();
   Engine::ECS::remove_system<Engine::Systems::Physics2DSystem>();
   Engine::ECS::remove_system<Engine::Systems::CameraControlSystem>();

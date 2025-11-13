@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    AudioPlayer.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Public interface for the FMOD-based audio system. Provides sound
+//          loading, playback control, and spatial audio functionality.
+//          Supports 2D and 3D audio positioning with volume and looping controls.
+//          Integrates with the resource management system for automatic cleanup.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "../Math/Vector2D.h"
@@ -24,11 +40,11 @@ namespace Engine {
     // Playback functions
     ChannelHandle play_sound(Sound sound, f32 volume = 1.0f, bool loop = false);
     ChannelHandle play_sound_at(Sound sound, const Math::Vec2D& position, f32 volume = 1.0f, bool loop = false);
-    
+
     void stop_channel(ChannelHandle channel);
     void pause_channel(ChannelHandle channel);
     void resume_channel(ChannelHandle channel);
-    
+
     // Channel properties
     void set_channel_volume(ChannelHandle channel, f32 volume);
     void set_channel_position(ChannelHandle channel, const Math::Vec2D& position);
@@ -38,7 +54,7 @@ namespace Engine {
     void set_master_volume(f32 volume);
     void set_listener_position(const Math::Vec2D& position);
     void set_listener_forward(const Math::Vec2D& forward);
-    
+
     f32 get_master_volume();
     Math::Vec2D get_listener_position();
 

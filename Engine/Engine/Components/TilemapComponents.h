@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    TilemapComponents.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   ECS component definitions for the tilemap system. Includes Tile
+//          component for marking tile entities and AtlasEntry for storing
+//          texture atlas information used in tilemap editing and serialization.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "../ECS/Macros.h"

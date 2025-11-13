@@ -1,19 +1,23 @@
+// DEPRECATED FILE - DO NOT USE
+//-----------------------------------------------------------------------------------
+// file:    StateManager.h
+// project: Monkey Stole My GPA
 //
-////-----------------------------------------------------------------------------------
-//// file:    StateManager.h
-//// project: Monkey Stole My GPA
-////
-//// author:  Chew Shee Yang (100%)
-////          Primary author
-////
-//// email:   chew.s@digipen.edu
-////
-//// brief:   This file defines the game state management system, including the base
-////          state interface, template for state implementation, and the StateManager
-////          class for handling state transitions and game lifecycle.
-////
-//// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
-////-----------------------------------------------------------------------------------
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines the game state management system, including the base
+//          state interface, template for state implementation, and the StateManager
+//          class for handling state transitions and game lifecycle.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
+// DEPRECATED FILE - DO NOT USE
+
+
+
 //#pragma once
 //
 //#include <memory> 

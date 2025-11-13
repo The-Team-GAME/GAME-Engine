@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    Json.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   JSON serialization and deserialization functionality for the reflection
+//          library. Provides conversion between GenericValue objects and RapidJSON
+//          documents, enabling save/load functionality for reflectable components
+//          and game state persistence.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include <rapidjson/document.h>

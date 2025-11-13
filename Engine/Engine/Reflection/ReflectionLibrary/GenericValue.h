@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    GenericValue.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Implementation of a generic value system for runtime type handling
+//          in the reflection library. Provides a variant-based container that
+//          can hold any reflectable type with automatic conversion and proxy
+//          access. Enables dynamic property manipulation and serialization.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include <variant>

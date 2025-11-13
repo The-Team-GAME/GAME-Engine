@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    AudioPlayerInternal.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Internal implementation details of the FMOD audio system.
+//          Handles FMOD system initialization, channel management, and low-level
+//          audio operations. Provides the foundation for the public audio APIs
+//          with proper resource management and error handling.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "AudioPlayerInternal.h"
 #include <fmod.hpp>
 #include <stdexcept>

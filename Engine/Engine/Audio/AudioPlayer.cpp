@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    AudioPlayer.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   FMOD-based audio playback implementation for the game engine.
+//          Handles sound loading, playback, 2D spatial audio, and master volume
+//          control. Provides high-level audio APIs for music and sound effects
+//          with automatic resource management and error handling.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "AudioPlayer.h"
 #include "AudioPlayerInternal.h"
 #include "../Logger.h"

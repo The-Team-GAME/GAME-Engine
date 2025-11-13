@@ -136,6 +136,7 @@ namespace Engine
     // Load the script
     Engine::LuaManager::load_script("Assets/scripts/player_logic.lua");
     Engine::LuaManager::load_script("Assets/scripts/buttons_test.lua");
+    Engine::LuaManager::load_script("Assets/scripts/behaviour_test.lua");
   }
 
   /*=================================================================================
@@ -192,17 +193,6 @@ namespace Engine
         // Update input right before the main gameloop. This needs to be here because if it is out side the while loop,
         // World::update() won't have a chance to react before the input state is cleared on the next frame. 
         Input::update();
-
-        if (Engine::Input::is_pressed(KeyCode::Escape))
-        {
-          is_running = false;
-        }
-
-        // Demonstrate error catching is working
-        if (Engine::Input::is_pressed(KeyCode::F11))
-        {
-          throw std::runtime_error("F11 was pressed");
-        }
 
         if (Engine::Input::is_pressed(KeyCode::P))
         {

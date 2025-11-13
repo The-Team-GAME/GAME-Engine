@@ -1,3 +1,20 @@
+//-----------------------------------------------------------------------------------
+// file:    TimelineState.h
+// project: Monkey Stole My GPA
+//
+// author:  Ryan Ang An Kiat (100%)
+//          Primary author
+//
+// email:   a.ryanankiat@digipen.edu
+//
+// brief:   This file defines the TimelineState scene for demonstrating the timeline
+//          editor system. It manages entity visibility and animation based on timeline
+//          clips, allowing frame-based sequencing of entities (bro and monkey sprites).
+//          The state handles timeline playback, clip management, and entity lifecycle
+//          within the timeline context.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "../../Engine/MonkeyEngine.h"
@@ -5,7 +22,7 @@
 #include "../../Engine/GUI/ResourcePicker.h"
 
 
-// Define the class and inherit from the GameState template
+// Define the class and inherit from the Scene template
 class TimelineState : public Engine::Scene {
 private:
 	// Declare member variable
@@ -36,11 +53,11 @@ public:
 
 		//animating entity
 		bro = Engine::ECS::create_entity()
-			.add_component<Components::Transform2D>(400.0f, 400.0f, 0.0f, 3000.0f / 24.0f, 130.0f)
+			.add_component<Components::Transform2D>(400.0f, 400.0f, 0.0f, 1000.0f / 7.0f, 130.0f)
 			.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-			.add_component<Components::Texture>(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_Idle_Spritesheet.png"))
-			.add_component<Components::TextureAtlas>(1536 / 24, 64, 1, 24, 24) //index is set default to 0 playable around with
-			.add_component<Components::Animation>(24, 0.1f);
+			.add_component<Components::Texture>(Engine::Resources::load_texture("images/Bro_Idle_Spritesheet.png"))
+			.add_component<Components::TextureAtlas>(448 / 7, 64, 1, 7, 7) //index is set default to 0 playable around with
+			.add_component<Components::Animation>(7, 0.1f);
 		//.add_component<Components::TextureAtlas>(banana.get_component<Components::Transform2D>()->scale.x, banana.get_component<Components::Transform2D>()->scale.y, 7.0f, 0.0f, 7);
 		/*.add_component<Components::RigidBody>();
 		banana.get_component<Components::RigidBody>()->angular_velocity = 10.0f;*/

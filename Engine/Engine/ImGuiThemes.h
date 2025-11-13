@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    ImGuiThemes.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Collection of ImGui style themes for the game engine's editor interface.
+//          Contains predefined visual themes including Eggplant, Dark, Light, and
+//          other color schemes that can be applied to customize the appearance
+//          of ImGui windows and controls throughout the engine.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 // Eggplant
 
 void SetupImGuiStyle_Eggplant()

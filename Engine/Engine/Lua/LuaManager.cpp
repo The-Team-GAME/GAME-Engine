@@ -1,3 +1,20 @@
+//-----------------------------------------------------------------------------------
+// file:    LuaManager.cpp
+// project: Monkey Stole My GPA
+//
+// author:  How Hong Chin Ryan (100%)
+//          Primary author
+//
+// email:   hongchinryan.how@digipen.edu
+//
+// brief:   Implements the LuaManager namespace for managing the Lua scripting
+//          environment. Handles initialization, cleanup, script loading, function
+//          calls, global variable access, and C++/Lua bindings for the game engine.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
+
+
 #include "LuaManager.h"
 #include "GameAPI.h"
 #include <iostream>

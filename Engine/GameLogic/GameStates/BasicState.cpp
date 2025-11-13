@@ -18,7 +18,6 @@
 #include "Time.h"
 #include <iostream>
 #include <imgui.h>
-#include "../Reflection/ImGuiHelpers.h"
 
 void BasicState::load()
 {
@@ -37,24 +36,6 @@ void BasicState::load()
     std::cout << "Failed to load playfair font for BasicState.\n";
   }
 }
-
-struct Book
-{
-  std::string title;
-  std::string author;
-  int pages;
-};
-REFLECT_FIELDS(Book, title, author, pages)
-
-struct Person
-{
-  std::string name;
-  int age;
-  double height;
-  bool is_student;
-  Book favorite_book;
-};
-REFLECT_FIELDS(Person, name, age, height, is_student, favorite_book)
 
 void BasicState::init()
 {
@@ -140,22 +121,6 @@ void BasicState::init()
     .add_component<Components::Font>(font_roboto)
     .add_component<Components::Text>("Press 'S' to play sound");
 
-
-  // Trying reflection system
-
-  // auto col1 = rect_center.get_component<Components::Color>();
-
-  // // Serialize 
-  // std::string json = serialize_to_json(*col1);
-  // std::cout << "Serialized: " << json << "\n\n";
-
-  // // Deserialize
-  // Components::Color col2;
-  // if (deserialize_from_json(col2, json))
-  // {
-  //   std::cout << "Deserialized successfully:\n";
-  //   print_struct_fields(col2);
-  // }
 }
 
 void BasicState::update()
@@ -208,6 +173,118 @@ void BasicState::draw()
     { 0.5f, 0.0f, 0.5f, 1.0f }
   );
 
+  // Draw a triangle (equilateral)
+  Engine::Graphics::draw_triangle(
+    { 600.0f, 450.0f },   // position
+    40.0f,                // radius
+    rotation,             // rotation (animated)
+    { 1.0f, 0.5f, 0.0f, 1.0f }  // orange color
+  );
+
+  // Draw a circle with default segments (32)
+  Engine::Graphics::draw_circle(
+    { 700.0f, 450.0f },   // position
+    35.0f,                // radius
+    { 0.0f, 1.0f, 0.5f, 1.0f }  // cyan color
+  );
+
+  // Draw a circle with more segments for smoother appearance
+  Engine::Graphics::draw_circle(
+    { 800.0f, 450.0f },   // position
+    35.0f,                // radius
+    { 0.5f, 0.0f, 1.0f, 1.0f },  // purple color
+    64                    // more segments = smoother
+  );
+
+  // Draw a custom polygon (hexagon)
+  {
+    std::vector<Math::Vec2D> hexagon_vertices;
+    for (int i = 0; i < 6; ++i) {
+      float angle = i * (360.0f / 6.0f) * 3.14159265359f / 180.0f;
+      hexagon_vertices.push_back(Math::Vec2D(std::cos(angle) * 40.0f, std::sin(angle) * 40.0f));
+    }
+    Engine::Graphics::draw_polygon(
+      hexagon_vertices,
+      { 900.0f, 450.0f },  // position
+      rotation * 0.5f,     // slower rotation
+      { 1.0f, 1.0f, 0.0f, 1.0f }  // yellow color
+    );
+  }
+
+  // Draw a custom polygon (star shape)
+  {
+    std::vector<Math::Vec2D> star_vertices;
+    int points = 5;
+    float outer_radius = 40.0f;
+    float inner_radius = 18.0f;
+    for (int i = 0; i < points * 2; ++i) {
+      float angle = i * (360.0f / (points * 2.0f)) * 3.14159265359f / 180.0f - 3.14159265359f / 2.0f;
+      float radius = (i % 2 == 0) ? outer_radius : inner_radius;
+      star_vertices.push_back(Math::Vec2D(std::cos(angle) * radius, std::sin(angle) * radius));
+    }
+    Engine::Graphics::draw_polygon(
+      star_vertices,
+      { 1000.0f, 450.0f }, // position
+      -rotation,           // reverse rotation
+      { 1.0f, 0.8f, 0.0f, 1.0f }  // gold color
+    );
+  }
+
+  // Draw outline shapes below
+  // Triangle outline
+  Engine::Graphics::draw_triangle_outline(
+    { 600.0f, 600.0f },   // position
+    40.0f,                // radius
+    rotation,             // rotation (animated)
+    3.0f,                 // thickness
+    { 1.0f, 0.5f, 0.0f, 1.0f }  // orange color
+  );
+
+  // Circle outline
+  Engine::Graphics::draw_circle_outline(
+    { 700.0f, 600.0f },   // position
+    35.0f,                // radius
+    2.5f,                 // thickness
+    { 0.0f, 1.0f, 0.5f, 1.0f },  // cyan color
+    32                    // segments
+  );
+
+  // Hexagon outline
+  {
+    std::vector<Math::Vec2D> hexagon_vertices;
+    for (int i = 0; i < 6; ++i) {
+      float angle = i * (360.0f / 6.0f) * 3.14159265359f / 180.0f;
+      hexagon_vertices.push_back(Math::Vec2D(std::cos(angle) * 40.0f, std::sin(angle) * 40.0f));
+    }
+    Engine::Graphics::draw_polygon_outline(
+      hexagon_vertices,
+      { 800.0f, 600.0f },  // position
+      rotation * 0.5f,     // slower rotation
+      2.0f,                // thickness
+      { 1.0f, 1.0f, 0.0f, 1.0f }  // yellow color
+    );
+  }
+
+  // Star outline
+  {
+    std::vector<Math::Vec2D> star_vertices;
+    int points = 5;
+    float outer_radius = 40.0f;
+    float inner_radius = 18.0f;
+    for (int i = 0; i < points * 2; ++i) {
+      float angle = i * (360.0f / (points * 2.0f)) * 3.14159265359f / 180.0f - 3.14159265359f / 2.0f;
+      float radius = (i % 2 == 0) ? outer_radius : inner_radius;
+      star_vertices.push_back(Math::Vec2D(std::cos(angle) * radius, std::sin(angle) * radius));
+    }
+    Engine::Graphics::draw_polygon_outline(
+      star_vertices,
+      { 900.0f, 600.0f },  // position
+      -rotation,           // reverse rotation
+      2.5f,                // thickness
+      { 1.0f, 0.8f, 0.0f, 1.0f }  // gold color
+    );
+  }
+
   // Normally it would be a horrible idewa to load a texture every frame like this,
   // but for demonstration purposes, we will do it here to show that the resource
   // manager caches the texture and does not reload it from disk every time.
@@ -230,37 +307,6 @@ void BasicState::draw()
   if (Engine::Input::is_pressed(Engine::KeyCode::S)) {
     Engine::Audio::play_sound(move_sound, 0.5f, false);
   }
-
-  ImGui::Begin("Reflection Demo");
-
-  auto col1 = rect_center.get_component<Components::Color>();
-  if (col1)
-  {
-    if (ImGui::CollapsingHeader("Center Rectangle Color"))
-    {
-      display_struct_in_imgui(*col1);
-    }
-  }
-
-  auto transform = rect_center.get_component<Components::Transform2D>();
-  if (transform)
-  {
-    if (ImGui::CollapsingHeader("Center Rectangle Transform"))
-    {
-      display_struct_in_imgui(*transform);
-    }
-  }
-
-  auto text = text_instruction.get_component<Components::Text>();
-  if (text)
-  {
-    if (ImGui::CollapsingHeader("Instruction Text"))
-    {
-      display_struct_in_imgui(*text);
-    }
-  }
-
-  ImGui::End();
 }
 
 void BasicState::free()

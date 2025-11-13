@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    Renderer.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Public interface for the graphics rendering system. Defines camera
+//          and viewport structures, texture/font types, and rendering functions.
+//          Provides high-level drawing APIs for textures, sprites, text, and
+//          geometric shapes with camera transformations and batching support.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "../Math/Vector2D.h" 
@@ -5,6 +21,7 @@
 #include "RendererInternal.h"
 #include <array>
 #include <string>
+#include <vector>
 
 namespace Engine {
   namespace Graphics {
@@ -67,6 +84,10 @@ namespace Engine {
     // Convert screen coordinates (actual window pixels) to virtual coordinates
     Math::Vec2D screen_to_virtual(const Math::Vec2D& screen_pos);
 
+    // Convert screen coordinates to viewport-relative virtual coordinates (for ImGui viewport mode)
+    // Returns a pair: first = virtual coordinates, second = whether mouse is in viewport
+    std::pair<Math::Vec2D, bool> screen_to_viewport(const Math::Vec2D& screen_pos);
+
     // Convert virtual coordinates to screen coordinates
     Math::Vec2D virtual_to_screen(const Math::Vec2D& virtual_pos);
 
@@ -90,6 +111,24 @@ namespace Engine {
 
     void draw_line(const Math::Vec2D& start, const Math::Vec2D& end, f32 thickness, const Math::Vec4D& color);
 
+    // Draw a polygon with specified vertices (filled)
+    void draw_polygon(const std::vector<Math::Vec2D>& vertices, const Math::Vec2D& position, f32 rotation, const Math::Vec4D& color);
+
+    // Draw a polygon outline with specified vertices
+    void draw_polygon_outline(const std::vector<Math::Vec2D>& vertices, const Math::Vec2D& position, f32 rotation, f32 thickness, const Math::Vec4D& color);
+
+    // Draw a triangle (filled)
+    void draw_triangle(const Math::Vec2D& position, f32 radius, f32 rotation, const Math::Vec4D& color);
+
+    // Draw a triangle outline
+    void draw_triangle_outline(const Math::Vec2D& position, f32 radius, f32 rotation, f32 thickness, const Math::Vec4D& color);
+
+    // Draw a circle (filled)
+    void draw_circle(const Math::Vec2D& position, f32 radius, const Math::Vec4D& color, int segments = 32);
+
+    // Draw a circle outline
+    void draw_circle_outline(const Math::Vec2D& position, f32 radius, f32 thickness, const Math::Vec4D& color, int segments = 32);
+
     void draw_texture(Engine::Graphics::Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color);
 
     // Draw a subtexture (part of a texture atlas) using custom texture coordinates
@@ -103,6 +142,9 @@ namespace Engine {
 
     // Draw text using a font
     void draw_text(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color);
+
+    // Measure text dimensions
+    Math::Vec2D measure_text(Engine::Graphics::Font font, const std::string& text, f32 scale);
 
     // Clear the screen with a color or texture
     void clear_screen(const Math::Vec4D& color);

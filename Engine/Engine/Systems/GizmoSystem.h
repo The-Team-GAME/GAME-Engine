@@ -1,9 +1,29 @@
+//-----------------------------------------------------------------------------------
+// file:    GizmoSystem.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Implementation of the gizmo system for entity selection and manipulation
+//          in the game editor. Provides mouse-based selection of entities, visual
+//          feedback for selected entities, and drag-and-drop repositioning.
+//          Integrates with the input system and event manager for seamless
+//          editor interaction.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "../ECS/ECS.h"
 #include "../Components/Components.h"
 #include "../InputManager.h"
 #include "../Graphics/Renderer.h"
+#include "../EventManager/EventManager.h"
+#include "../Events/EngineEvents.h"
+#include <imgui.h>
 
 // TODO: M2: NEED TO WORK WITH THINGS WITH RIGIDBODY
 
@@ -16,7 +36,7 @@ namespace Engine
     public:
       GizmoSelectionSystem() {
         require_components<Components::Transform2D>();
-        exclude_components<Components::Gizmo>(); // Only process entities without Gizmo
+        exclude_components<Components::Gizmo, Components::Text>(); // Only process entities without Gizmo and without Text
       }
 
       void update_entity(Engine::ECS::Entity& entity) override {
@@ -29,7 +49,11 @@ namespace Engine
 
         if (ctrl_held) return;
 
-        const auto mouse = Engine::Input::get_mouse_position();
+        const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+
+        if (!mouse_opt.has_value()) return;
+
+        const auto mouse = mouse_opt.value();
 
         // Check if mouse is inside entity bounds
         const float half_w = tr->scale.x * 0.5f;
@@ -45,20 +69,61 @@ namespace Engine
 
         // Add Gizmo component when clicked
         if (inside && Engine::Input::is_pressed(KeyCode::MouseLeft)) {
-          // Calculate offset from entity center to mouse position
-          Math::Vec2D offset = Math::Vec2D(mouse.x - tr->position.x, mouse.y - tr->position.y);
+          // Send selection event with start_dragging = true for immediate drag
+          Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(entity.get_id(), true);
+        }
+      }
+    };
 
-          entity.add_component<Components::Gizmo>(
-            Math::Vec4D(0.0f, 1.0f, 0.0f, 1.0f), // Green outline
-            2.0f                                   // Thickness
-          );
+    // System to select text entities when clicked
+    class GizmoTextSelectionSystem : public Engine::ECS::System {
+    public:
+      GizmoTextSelectionSystem() {
+        require_components<Components::Transform2D, Components::Text, Components::Font>();
+        exclude_components<Components::Gizmo>(); // Only process entities without Gizmo
+      }
 
-          // Set the drag offset
-          auto* gizmo = entity.get_component<Components::Gizmo>();
-          if (gizmo) {
-            gizmo->drag_offset = offset;
-            gizmo->is_dragging = true;
-          }
+      void update_entity(Engine::ECS::Entity& entity) override {
+        auto* tr = entity.get_component<Components::Transform2D>();
+        auto* text = entity.get_component<Components::Text>();
+        auto* font = entity.get_component<Components::Font>();
+
+        if (!tr || !text || !font) return;
+
+        // Don't select entities when Ctrl is held (camera control mode)
+        bool ctrl_held = Engine::Input::is_held(Engine::KeyCode::CtrlLeft) ||
+          Engine::Input::is_held(Engine::KeyCode::CtrlRight);
+
+        if (ctrl_held) return;
+
+        const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+
+        if (!mouse_opt.has_value()) return;
+
+        const auto mouse = mouse_opt.value();
+
+        // Accurately measure text dimensions
+        // Text scale is calculated as (scale.x + scale.y) * 0.5
+        float text_scale = (tr->scale.x + tr->scale.y) * 0.5f;
+        Math::Vec2D text_size = Engine::Graphics::measure_text(font->font_handle, text->content, text_scale);
+
+        float text_width = text_size.x;
+        float text_height = text_size.y;
+
+        // Use text dimensions for bounding box (top-left aligned)
+        const float left = tr->position.x;
+        const float right = tr->position.x + text_width;
+        const float top = tr->position.y;
+        const float bottom = tr->position.y + text_height;
+
+        const bool inside =
+          (mouse.x >= left) && (mouse.x <= right) &&
+          (mouse.y >= top) && (mouse.y <= bottom);
+
+        // Add Gizmo component when clicked
+        if (inside && Engine::Input::is_pressed(KeyCode::MouseLeft)) {
+          // Send selection event with start_dragging = true for immediate drag
+          Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(entity.get_id(), true);
         }
       }
     };
@@ -86,19 +151,43 @@ namespace Engine
           return;
         }
 
-        const auto mouse = Engine::Input::get_mouse_position();
+        const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
 
-        // Calculate bounds
-        const float half_w = tr->scale.x * 0.5f;
-        const float half_h = tr->scale.y * 0.5f;
-        const float left = tr->position.x - half_w;
-        const float right = tr->position.x + half_w;
-        const float top = tr->position.y - half_h;
-        const float bottom = tr->position.y + half_h;
+        if (!mouse_opt.has_value()) return;
 
-        const bool inside =
-          (mouse.x >= left) && (mouse.x <= right) &&
-          (mouse.y >= top) && (mouse.y <= bottom);
+        const auto mouse = mouse_opt.value();
+
+        // Check if this is a text entity
+        auto* text = entity.get_component<Components::Text>();
+        auto* font = entity.get_component<Components::Font>();
+
+        bool inside = false;
+
+        if (text && font) {
+          // Calculate bounds for text entity (top-left aligned)
+          float text_scale = (tr->scale.x + tr->scale.y) * 0.5f;
+          Math::Vec2D text_size = Engine::Graphics::measure_text(font->font_handle, text->content, text_scale);
+
+          const float left = tr->position.x;
+          const float right = tr->position.x + text_size.x;
+          const float top = tr->position.y;
+          const float bottom = tr->position.y + text_size.y;
+
+          inside = (mouse.x >= left) && (mouse.x <= right) &&
+            (mouse.y >= top) && (mouse.y <= bottom);
+        }
+        else {
+          // Calculate bounds for sprite entity (centered)
+          const float half_w = tr->scale.x * 0.5f;
+          const float half_h = tr->scale.y * 0.5f;
+          const float left = tr->position.x - half_w;
+          const float right = tr->position.x + half_w;
+          const float top = tr->position.y - half_h;
+          const float bottom = tr->position.y + half_h;
+
+          inside = (mouse.x >= left) && (mouse.x <= right) &&
+            (mouse.y >= top) && (mouse.y <= bottom);
+        }
 
         // Handle starting drag on click
         if (Engine::Input::is_pressed(KeyCode::MouseLeft)) {
@@ -108,9 +197,12 @@ namespace Engine
             gizmo->is_dragging = true;
           }
           else {
-            // Clicked outside - deselect (remove Gizmo)
-            entity.remove_component<Components::Gizmo>();
-            return;
+            // Only deselect if click was NOT on an ImGui window
+            if (!ImGui::GetIO().WantCaptureMouse) {
+              // Clicked outside - deselect (send deselection event)
+              Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
+              return;
+            }
           }
         }
 
@@ -134,14 +226,40 @@ namespace Engine
 
         if (!tr || !gizmo) return;
 
-        // Draw outline around selected entity
-        Engine::Graphics::draw_rect_outline(
-          tr->position,
-          tr->scale,
-          tr->rotation,
-          gizmo->outline_thickness,
-          gizmo->outline_color
-        );
+        // Check if this is a text entity
+        auto* text = entity.get_component<Components::Text>();
+        auto* font = entity.get_component<Components::Font>();
+
+        if (text && font) {
+          // Draw outline for text entity using accurate text bounds
+          float text_scale = (tr->scale.x + tr->scale.y) * 0.5f;
+          Math::Vec2D text_size = Engine::Graphics::measure_text(font->font_handle, text->content, text_scale);
+
+          float text_width = text_size.x;
+          float text_height = text_size.y;
+
+          // Draw outline at text position (top-left aligned)
+          Math::Vec2D outline_center(tr->position.x + text_width * 0.5f, tr->position.y + text_height * 0.5f);
+          Math::Vec2D outline_size(text_width, text_height);
+
+          Engine::Graphics::draw_rect_outline(
+            outline_center,
+            outline_size,
+            0.0f, // Text doesn't rotate
+            gizmo->outline_thickness,
+            gizmo->outline_color
+          );
+        }
+        else {
+          // Draw outline for regular sprite entity
+          Engine::Graphics::draw_rect_outline(
+            tr->position,
+            tr->scale,
+            tr->rotation,
+            gizmo->outline_thickness,
+            gizmo->outline_color
+          );
+        }
       }
     };
 

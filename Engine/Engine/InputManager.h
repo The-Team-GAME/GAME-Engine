@@ -16,7 +16,8 @@
 #pragma once
 #include <glm/glm.hpp>
 #include "TypeDef.h"
-#include "KeyCodes.h"  // Include the new enums
+#include "KeyCodes.h"
+#include <optional>
 
 namespace Engine
 {
@@ -64,12 +65,16 @@ namespace Engine
      */
     static glm::vec2 get_mouse_position();
 
+    static std::optional<glm::vec2> get_mouse_position_if_in_viewport();
+
     /**
      * @brief Gets the current position of the mouse cursor in world coordinates.
      * This accounts for camera position, zoom, and rotation.
      * @return glm::vec2 A vector containing the x and y position of the mouse in world space.
      */
     static glm::vec2 get_mouse_world_position();
+
+    static std::optional<glm::vec2> get_mouse_world_position_if_in_viewport();
 
     /**
      * @brief Gets the scroll offset for the current frame.
@@ -84,5 +89,11 @@ namespace Engine
      * @param yoffset The vertical scroll offset.
      */
     static void set_scroll_offset(f64 xoffset, f64 yoffset);
+
+    /**
+     * @brief Checks if the mouse cursor is currently within the viewport area.
+     * @return true if the cursor is in the viewport, false otherwise.
+     */
+    static bool is_in_viewport();
   };
 }

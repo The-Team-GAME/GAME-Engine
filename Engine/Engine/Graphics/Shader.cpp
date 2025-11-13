@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    Shader.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   OpenGL shader program implementation for the graphics renderer.
+//          Handles shader compilation, linking, and uniform management.
+//          Supports vertex and fragment shaders with error logging and
+//          resource cleanup for the rendering pipeline.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "Shader.h"
 #include "../Logger.h"
 #include "../FileIO/Helpers.h"

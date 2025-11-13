@@ -1,3 +1,19 @@
+//-----------------------------------------------------------------------------------
+// file:    Print.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   Debug printing utilities for the reflection library. Provides
+//          formatted output of reflectable objects and their fields for
+//          debugging and development purposes. Handles various data types
+//          including primitives, containers, and nested structures.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include <string>
@@ -11,7 +27,20 @@ namespace ReflectionLibrary
   {
     std::string indent(2 + nest_level * 2, ' ');
     using ValueType = std::decay_t<T>;
-    if constexpr (std::is_same_v<ValueType, bool>)
+    if constexpr (is_optional_v<ValueType>)
+    {
+      // Handle std::optional
+      if (!value.has_value())
+      {
+        std::cout << indent << name << " = <null>\n";
+      }
+      else
+      {
+        auto& inner_value = value.value();
+        print_value(name, inner_value, nest_level);
+      }
+    }
+    else if constexpr (std::is_same_v<ValueType, bool>)
     {
       std::cout << indent << name << " = " << (value ? "true" : "false") << "\n";
     }
