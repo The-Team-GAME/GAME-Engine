@@ -15,8 +15,6 @@
 #include "StressTestState.h"
 
 void StressTestState::load() {
-  Engine::Resources::set_resource_path("Assets/");
-
   // Load sprite sheet textures
   lazy_monkey_texture = Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Walk_Spritesheet.png");
   player_run_texture = Engine::Resources::load_texture("images/BroSpriteSheets/Bro_run_spritesheet.png");

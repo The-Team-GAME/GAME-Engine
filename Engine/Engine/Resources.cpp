@@ -41,9 +41,12 @@ std::vector<Engine::Resources::Resource> Engine::Resources::persistent_resources
 
 std::string Engine::Resources::resource_path = "";
 
-bool Engine::Resources::init()
+bool Engine::Resources::init(const std::string& initial_resource_path)
 {
   Log::info("Resource manager initialized");
+
+  set_resource_path(initial_resource_path);
+
   return true;
 }
 

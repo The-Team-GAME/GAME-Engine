@@ -36,9 +36,6 @@ public:
 	// Declare public methods
 	void load() {};
 	void init() {
-
-		Engine::Resources::set_resource_path("Assets/"); //default resource path
-
 		//animating entity
 		bro = Engine::ECS::create_entity()
 			.add_component<Components::Transform2D>(400.0f, 400.0f, 0.0f, 1000.0f / 7.0f, 130.0f)

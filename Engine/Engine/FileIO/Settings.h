@@ -60,6 +60,7 @@ namespace Engine
       int window_height = 720;
       std::string window_title = "Monkey Stole My GPA";
       bool imgui_viewport_enabled = true;
+      bool load_all_assets_on_startup = true;
     };
 
     // Values that need to be loaded after intializing engine subsystems, (e.g. Textures need to wait for Graphics init)

@@ -61,7 +61,7 @@ namespace Engine {
     extern std::string resource_path;
 
     // Initialization code here (e.g., setting up resource maps, loading default resources)
-    bool init();
+    bool init(const std::string& initial_resource_path = "");
 
     // Cleanup code here (e.g., unloading all resources, clearing maps)
     bool exit();

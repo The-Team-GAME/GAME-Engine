@@ -83,7 +83,7 @@ namespace Engine
     }
 
     // Initialize resource manager
-    if (!Engine::Resources::init()) {
+    if (!Engine::Resources::init("Assets")) { // TODO: move initial resource path to ProjectSettings
       throw std::runtime_error("Failed to initialize resource manager");
     }
 
@@ -100,9 +100,6 @@ namespace Engine
     Engine::Graphics::set_viewport({ 0, 0, engine_settings.window_width, engine_settings.window_height });
 
     Engine::Events::register_all_events();
-
-
-    Resources::set_resource_path("Assets"); // TODO: move this to ProjectSettings
 
     // Load project settings
     if (!Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::load("Assets/settings/project_settings.json")) {
