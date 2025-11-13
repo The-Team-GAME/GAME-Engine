@@ -23,6 +23,7 @@
 #include "Graphics/Renderer.h"
 #include "Audio/AudioPlayer.h"
 #include "ECS/Prefab.h"
+#include "Level.h"
 
 namespace Engine {
   namespace Resources {
@@ -32,13 +33,15 @@ namespace Engine {
       Engine::Graphics::Texture,
       Engine::Graphics::Font,
       Engine::Audio::Sound,
-      Engine::ECS::Prefab
+      Engine::ECS::Prefab,
+      Engine::Level
     >;
     // Declare as extern - actual definition in Resources.cpp
     extern std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> texture_cache;
     extern std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::FontData>> font_cache;
     extern std::unordered_map<std::string, std::weak_ptr<Engine::Audio::SoundData>> sound_cache;
     extern std::unordered_map<std::string, std::weak_ptr<Engine::ECS::PrefabImpl>> prefab_cache;
+    extern std::unordered_map<std::string, Engine::Level> level_cache;
 
     // Vector to hold shared_ptr references for persistent resources
     extern std::vector<Resource> persistent_resources;
@@ -86,8 +89,17 @@ namespace Engine {
     Engine::ECS::Prefab load_prefab(const std::string& filepath, bool append_resource_path = true, bool persist = false);
     bool save_prefab(const std::string& filepath, const Engine::ECS::Prefab& prefab, bool append_resource_path = true);
 
+    // Level loading and saving
+    Engine::Level load_level(const std::string& filepath, bool append_resource_path = true, bool persist = false);
+    bool save_level(const std::string& filepath, const Engine::Level& level, bool append_resource_path = true);
+
+
+
     //optimization: clear unused resources from cache
     void clear_unused_resources();
+
+
+
 
     ResourceStats get_resource_stats();
   }

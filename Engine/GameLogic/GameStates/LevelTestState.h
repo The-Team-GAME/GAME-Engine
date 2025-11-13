@@ -20,12 +20,8 @@ class LevelTestState : public Engine::Scene
 private:
 public:
   void load() {
-
-
-    auto level = Engine::FileIO::deserialize_level_from_json("Assets/levels/LevelTest.json");
-
+    auto level = Engine::Resources::load_level("Assets/levels/test_level.json");
     level.instantiate_into_world();
-
   };
 
   void init() {};

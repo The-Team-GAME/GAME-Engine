@@ -26,12 +26,15 @@
 #include <rapidjson/document.h>
 #include "FileIO/PrefabsFileIO.h"
 #include "Path.h"
+#include "Level.h"
+#include "FileIO/LevelFileIO.h"
 
 // Define the actual storage for the extern variables
 std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> Engine::Resources::texture_cache;
 std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::FontData>> Engine::Resources::font_cache;
 std::unordered_map<std::string, std::weak_ptr<Engine::Audio::SoundData>> Engine::Resources::sound_cache;
 std::unordered_map<std::string, std::weak_ptr<Engine::ECS::PrefabImpl>> Engine::Resources::prefab_cache;
+std::unordered_map<std::string, Engine::Level> Engine::Resources::level_cache;
 
 // Vector to hold shared_ptr references for persistent resources
 std::vector<Engine::Resources::Resource> Engine::Resources::persistent_resources;
@@ -51,6 +54,7 @@ bool Engine::Resources::exit()
   font_cache.clear();
   sound_cache.clear();
   prefab_cache.clear();
+  level_cache.clear();
 
   // Clear persistent resources
   persistent_resources.clear();
@@ -428,6 +432,54 @@ bool Engine::Resources::save_prefab(const std::string& filepath, const Engine::E
 
   return true;
 }
+
+Engine::Level Engine::Resources::load_level(const std::string& filepath, bool append_resource_path, bool persist)
+{
+  // Construct full path using Path class
+  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+
+  // Check if level is already in cache
+  auto it = level_cache.find(full_path);
+  if (it != level_cache.end())
+  {
+    // Log::info("Level loaded from cache: " + full_path);
+    return it->second;
+  }
+
+  // Deserialize level
+  Engine::Level level = Engine::FileIO::deserialize_level_from_json_file(full_path);
+
+  // Cache the level
+  level_cache[full_path] = level;
+  if (persist)
+  {
+    persistent_resources.push_back(level);
+    Log::info("Level loaded (persistent): " + full_path);
+  }
+  else
+  {
+    Log::info("Level loaded: " + full_path);
+  }
+
+  return level;
+}
+
+bool Engine::Resources::save_level(const std::string& filepath, const Engine::Level& level, bool append_resource_path)
+{
+  // Construct full path using Path class
+  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+
+  if (!Engine::FileIO::serialize_level_to_json_file(full_path, level))
+  {
+    return false;
+  }
+
+  // Update cache with the level
+  level_cache[full_path] = level;
+
+  return true;
+}
+
 
 void Engine::Resources::clear_unused_resources()
 {

@@ -56,5 +56,25 @@ namespace Engine {
       return level;
     }
 
+    bool serialize_level_to_json_file(const std::string& filepath, const Engine::Level& level)
+    {
+      std::string json_str = serialize_level_to_json(level);
+      return Engine::FileIO::write_string_to_file(filepath, json_str);
+    }
+
+    Engine::Level deserialize_level_from_json_file(const std::string& filepath)
+    {
+      auto json_str = Engine::FileIO::read_string_from_file(filepath);
+
+      if (!json_str.has_value()) {
+        Log::warning("Failed to read level file: " + filepath);
+        return Engine::Level();
+      }
+
+      return deserialize_level_from_json(json_str.value());
+    }
+
+
+
   } // namespace FileIO
 } // namespace Engine

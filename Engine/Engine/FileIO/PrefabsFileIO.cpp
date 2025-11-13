@@ -39,6 +39,9 @@ namespace Engine {
 
     bool serialize_prefab_to_json_file(const std::string& filepath, const Engine::ECS::Prefab& prefab)
     {
+
+      // TODO: use Helpers::write_string_to_file
+
       // Serialize prefab to JSON
       std::string json_content = Engine::FileIO::serialize_prefab_to_json(prefab);
 
@@ -69,6 +72,8 @@ namespace Engine {
 
     Engine::ECS::Prefab deserialize_prefab_from_json_file(const std::string& filepath)
     {
+      //TODO: use Helpers::read_string_from_file
+
       // Load prefab from file
       std::ifstream file(filepath);
       if (!file.is_open())

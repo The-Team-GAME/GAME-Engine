@@ -52,5 +52,9 @@ namespace Engine {
     Engine::Level deserialize_level_from_json(const std::string& json_str);
 
 
+    bool serialize_level_to_json_file(const std::string& filepath, const Engine::Level& level);
+    Engine::Level deserialize_level_from_json_file(const std::string& filepath);
+
+
   } // namespace FileIO
 } // namespace Engine
