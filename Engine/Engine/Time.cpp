@@ -24,6 +24,7 @@ namespace {
   f32 tick_rate{ 60.f };            // The tick rate is the number of times you want to game logic to update per second
   f32 fixed_dt{ 1.f / tick_rate };  // precalulate fixed_dt so we dont have to do it every time get_tick_rate is called
   f32 time_scale{ 1.f };            // time scale multiplier
+  f32 elapsed_time{};               // total scaled time since engine start
 }
 
 namespace Engine {
@@ -34,6 +35,9 @@ namespace Engine {
       // Convert nanoseconds to seconds
       delta_time = static_cast<f32>((new_time - curr_time).count()) * 1e-9f; // multiply instead of divide because division is veryyy slow
       curr_time = new_time;
+
+      // Accumulate scaled time
+      elapsed_time += delta_time * time_scale;
     }
 
     void set_tick_rate(f32 new_tick_rate)
@@ -66,11 +70,10 @@ namespace Engine {
       return delta_time;
     }
 
-    // Returns the total elapsed time since engine start
+    // Returns the total scaled elapsed time since engine start
     f32 get_time(void)
     {
-      chrono::nanoseconds elapsed = curr_time - start_time;
-      return static_cast<f32>(elapsed.count()) * 1e-9f; // Convert nanoseconds to seconds
+      return elapsed_time;
     }
 
     f32 calc_fps(f32 dt)
