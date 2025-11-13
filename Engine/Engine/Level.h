@@ -1,6 +1,8 @@
+#pragma once
+
 #include <string>
 #include <vector>
-#include "GenericValue.h"
+#include "Reflection/ReflectionLibrary/GenericValue.h"
 #include "ECS/ECS.h"
 
 

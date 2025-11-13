@@ -21,7 +21,10 @@ private:
 public:
   void load() {
 
-    Engine::LevelManager::load_level_into_world("Assets/levels/LevelTest.json", true);
+
+    auto level = Engine::FileIO::deserialize_level_from_json("Assets/levels/LevelTest.json");
+
+    level.instantiate_into_world();
 
   };
 
