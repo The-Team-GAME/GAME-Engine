@@ -112,6 +112,14 @@ namespace ImGuiManager {
         // Add a menu bar
         if (ImGui::BeginMenuBar())
         {
+          if (ImGui::BeginMenu("File"))
+          {
+            if (ImGui::MenuItem("Save", "Ctrl+S")) {
+              Engine::Level level = Engine::Level::from_world();
+              Engine::Resources::save_level("levels/level.json", level);
+            }
+            ImGui::EndMenu();
+          }
           if (ImGui::BeginMenu("ImGui"))
           {
             ImGui::MenuItem("Toggle GUI", "F1", &gui_enabled);
