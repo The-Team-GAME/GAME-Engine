@@ -182,8 +182,6 @@ namespace ImGuiManager {
           Engine::SceneManager::unload_current_scene();
           Engine::SceneManager::load_scene(current);
           is_paused = true;
-          // Force one update to process deferred entity destruction
-          Engine::Core::request_forced_update();
         }
 
         ImGui::Unindent(8.0f); // Remove left padding

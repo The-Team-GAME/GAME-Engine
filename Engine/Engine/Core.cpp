@@ -46,7 +46,6 @@ namespace Engine
   s32 Core::step_limit = 3;
   bool Core::do_render = false;
   bool Core::physics_step_mode = false;
-  bool Core::force_one_update = false;
 
   /*=================================================================================
   Function Brief:
@@ -200,17 +199,18 @@ namespace Engine
           std::cout << "Physics Step Mode: " << (physics_step_mode ? "ON" : "OFF") << std::endl;
         }
 
-        bool shouldRunPhysics = !physics_step_mode || Engine::Input::is_pressed(KeyCode::RightBracket) || force_one_update;
+        bool shouldRunPhysics = !physics_step_mode || Engine::Input::is_pressed(KeyCode::RightBracket);
 
         if (shouldRunPhysics)
         {
           // Main gameloop here
           Engine::SceneManager::update();
           Engine::ECS::update();
-
-          // Clear the forced update flag after running
-          force_one_update = false;
         }
+
+        // Always process ECS housekeeping (entity deletions, component modifications)
+        // even when paused so entities can be created/destroyed in the editor
+        Engine::ECS::process_housekeeping();
 
         TilemapPanel::update();
         ImGuiManager::update();

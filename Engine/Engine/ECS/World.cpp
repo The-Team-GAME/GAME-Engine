@@ -208,6 +208,14 @@ namespace Engine {
         system->update();
       }
 
+      Engine::Perf::stop("ECS Update");
+    }
+
+    void process_housekeeping()
+    {
+      auto& containers = Internal::get_containers();
+      Engine::Perf::start("ECS Housekeeping");
+
       // Process component removals
       for (const auto& [entityId, typeId] : containers.components_to_remove)
       {
@@ -258,7 +266,7 @@ namespace Engine {
       }
       containers.entities_to_destroy.clear();
 
-      Engine::Perf::stop("ECS Update");
+      Engine::Perf::stop("ECS Housekeeping");
     }
 
     void draw()
