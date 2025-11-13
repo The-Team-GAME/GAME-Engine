@@ -653,6 +653,8 @@ bool Engine::Resources::save_level(const std::string& filepath, const Engine::Le
   // Construct full path using Path class
   std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
 
+  std::cout << "Saving level to: " << full_path << std::endl;
+
   if (!Engine::FileIO::serialize_level_to_json_file(full_path, level))
   {
     return false;

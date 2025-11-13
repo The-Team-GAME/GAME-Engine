@@ -12,10 +12,14 @@ namespace Engine {
     std::string name;
     std::vector<ReflectionLibrary::GenericValue> entities;
 
-    static Level from_world();
+    static Level from_world(const std::string& level_name = "");
 
     void instantiate_into_world();
 
   };
+
+  namespace LevelManager {
+    std::string get_current_level_name();
+  }
 
 }

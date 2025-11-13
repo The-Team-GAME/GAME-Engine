@@ -15,7 +15,7 @@ namespace Engine {
       struct ProjectSettings {};
       struct Level {
         std::string level_name;
-        explicit Level(std::string name) : level_name(std::move(name)) {}
+        Level(const std::string& level_name) : level_name(level_name) {}
       };
     }
 

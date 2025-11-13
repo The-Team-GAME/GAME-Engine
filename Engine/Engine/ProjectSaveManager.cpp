@@ -55,8 +55,8 @@ void Engine::ProjectSaveManager::save_all_dirty()
       else if constexpr (std::is_same_v<T, DirtyStates::Level>) {
         // Save specific level
         Log::info("Saving level: " + s.level_name);
-        // TODO: Implement level saving logic here
-        // Engine::Resources::save_level(s.level_name, level);
+        Engine::Level level = Engine::Level::from_world(s.level_name);
+        Engine::Resources::save_level("levels/" + s.level_name, level, true);
       }
       }, state);
   }

@@ -120,6 +120,7 @@ namespace TilemapPanel {
           if (entity_key == pos_key) {
             entity.destroy();
             placed_tiles_per_layer[selected_layer].erase(pos_key);
+            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_name()));
             break;
           }
         }
@@ -243,6 +244,9 @@ namespace TilemapPanel {
     tile.add_to_layer(selected_layer);
 
     placed_tiles.insert(pos_key);
+
+    // Mark level as dirty for saving later
+    Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_name()));
   }
 
   // Public interface
@@ -504,6 +508,7 @@ namespace TilemapPanel {
           for (auto& entity : all_entities) {
             if (entity.has_components<Components::Tile>()) {
               entity.destroy();
+              Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_name()));
             }
           }
           placed_tiles_per_layer.clear();
