@@ -159,18 +159,18 @@ namespace ImGuiManager {
         ImGui::Dummy(ImVec2(0.0f, 2.0f)); // Top padding
 
         ImGui::Indent(8.0f); // Left padding
-        bool is_paused = Engine::Core::get_paused();
+        bool is_paused = Engine::Time::get_paused();
 
 
         // Play/Pause toggle button
         if (is_paused) {
           if (ImGui::Button("Play", ImVec2(80, 0))) {
-            Engine::Core::set_paused(false);
+            Engine::Time::set_paused(false);
           }
         }
         else {
           if (ImGui::Button("Pause", ImVec2(80, 0))) {
-            Engine::Core::set_paused(true);
+            Engine::Time::set_paused(true);
           }
         }
 

@@ -16,78 +16,85 @@
 #include "TypeDef.h"
 
 namespace Engine {
-	namespace Time {
+  namespace Time {
 
-		/*=================================================================================
-		Function Brief:
-		This function calculates and updates the real delta time between gameloops
+    /*=================================================================================
+    Function Brief:
+    This function calculates and updates the real delta time between gameloops
 
-		Where to call it:
-		This function is to be the first function to be called in the game loop under
-		Core::run() as the sunsequent functions like logic, physics or rendering will have
-		to rely on the delta time values to accurately perform calculations
-		==================================================================================*/
-		void update_time(void);
+    Where to call it:
+    This function is to be the first function to be called in the game loop under
+    Core::run() as the sunsequent functions like logic, physics or rendering will have
+    to rely on the delta time values to accurately perform calculations
+    ==================================================================================*/
+    void update_time(void);
 
-		/*=================================================================================
-		Function Brief:
-		This function is a mutator to change the tick rate of the game
+    /*=================================================================================
+    Function Brief:
+    This function is a mutator to change the tick rate of the game
 
-		Where to call it:
-		This function normally should not be called as the tick rate of the game generally
-		does not need to be changed. However, for debug purposes, this can be called where
-		the programmer intends to mmodify the tick rate
-		==================================================================================*/
-		void set_tick_rate(f32 new_tick_rate);
+    Where to call it:
+    This function normally should not be called as the tick rate of the game generally
+    does not need to be changed. However, for debug purposes, this can be called where
+    the programmer intends to mmodify the tick rate
+    ==================================================================================*/
+    void set_tick_rate(f32 new_tick_rate);
 
-		/*=================================================================================
-		Function Brief:
-		This function is an accessor for the tick rate of the game
+    /*=================================================================================
+    Function Brief:
+    This function is an accessor for the tick rate of the game
 
-		Where to call it:
-		This function normally should be called where the user wants to see the current
-		tick rate of the game
-		==================================================================================*/
-		f32 get_tick_rate();
+    Where to call it:
+    This function normally should be called where the user wants to see the current
+    tick rate of the game
+    ==================================================================================*/
+    f32 get_tick_rate();
 
-		/*=================================================================================
-		Function Brief:
-		This function is an accessor for the fixed delta time
+    /*=================================================================================
+    Function Brief:
+    This function is an accessor for the fixed delta time
 
-		Where to call it:
-		This function should be the one that is called whenever delta time calculations
-		are required as this engine runs on a fixed_dt time loop for the logic updates
-		==================================================================================*/
-		f32 get_fixed_dt(void);
+    Where to call it:
+    This function should be the one that is called whenever delta time calculations
+    are required as this engine runs on a fixed_dt time loop for the logic updates
+    ==================================================================================*/
+    f32 get_fixed_dt(void);
 
-		/*=================================================================================
-		Function Brief:
-		This function is an accessor for the real delta time between gameloops
+    /*=================================================================================
+    Function Brief:
+    This function is an accessor for the real delta time between gameloops
 
-		Where to call it:
-		This function should only be called in Core::run() where it is used to increment
-		the accumulator for the fixed_dt time loop and SHOULD NOT BE USED FOR CALCULATIONS
-		==================================================================================*/
-		f32 get_real_dt(void);
+    Where to call it:
+    This function should only be called in Core::run() where it is used to increment
+    the accumulator for the fixed_dt time loop and SHOULD NOT BE USED FOR CALCULATIONS
+    ==================================================================================*/
+    f32 get_real_dt(void);
 
-		/*=================================================================================
-		Function Brief:
-		This function returns the total elapsed time since the engine started
+    /*=================================================================================
+    Function Brief:
+    This function returns the total elapsed time since the engine started
 
-		Where to call it:
-		This function can be called anywhere you need to know the current time, such as
-		for animations, timers, or any time-based game logic
-		==================================================================================*/
-		f32 get_time(void);
+    Where to call it:
+    This function can be called anywhere you need to know the current time, such as
+    for animations, timers, or any time-based game logic
+    ==================================================================================*/
+    f32 get_time(void);
 
-		/*=================================================================================
-		Function Brief:
-		This function is an accessor for the current fps of the game based off the real_dt
+    /*=================================================================================
+    Function Brief:
+    This function is an accessor for the current fps of the game based off the real_dt
 
-		Where to call it:
-		This function normally should be called where the user wants to see the current
-		fps(frames per second) of the game
-		==================================================================================*/
-		f32 calc_fps(f32 dt);
-	}
+    Where to call it:
+    This function normally should be called where the user wants to see the current
+    fps(frames per second) of the game
+    ==================================================================================*/
+    f32 calc_fps(f32 dt);
+
+    // True if time_scale is 0 (paused), false otherwise
+    bool get_paused();
+
+    bool set_paused(bool paused);
+
+    bool toggle_paused();
+  }
 }
