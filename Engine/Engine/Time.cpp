@@ -78,6 +78,16 @@ namespace Engine {
       return 1.f / dt;
     }
 
+    f32 get_time_scale()
+    {
+      return time_scale;
+    }
+
+    void set_time_scale(f32 scale)
+    {
+      time_scale = scale;
+    }
+
     bool get_paused()
     {
       return time_scale == 0.0f;

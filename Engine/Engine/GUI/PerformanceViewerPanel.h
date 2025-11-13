@@ -86,6 +86,14 @@ inline void PerformanceViewerPanel()
     Engine::Time::set_tick_rate(tick_rate_input);
   }
 
+  // Time scale
+  ImGui::SeparatorText("Time Scale");
+  f32 time_scale = Engine::Time::get_time_scale();
+  if (ImGui::SliderFloat("Time Scale", &time_scale, 0.0f, 5.0f, "%.2f x")) {
+    Engine::Time::set_time_scale(time_scale);
+  }
+
+
   ImGui::Text("Frame Time: %.2f ms", 1000.0f / tick_rate_input);
 
   ImGui::Spacing();

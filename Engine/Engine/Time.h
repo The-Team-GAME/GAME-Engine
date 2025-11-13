@@ -92,11 +92,16 @@ namespace Engine {
     ==================================================================================*/
     f32 calc_fps(f32 dt);
 
+    f32 get_time_scale();
+
+    void set_time_scale(f32 scale);
+
     // True if time_scale is 0 (paused), false otherwise
     bool get_paused();
 
     bool set_paused(bool paused);
 
     bool toggle_paused();
+
   }
 }
