@@ -33,6 +33,7 @@ namespace Engine
     static f64 accumulator;
     static s32 step_limit;
     static bool do_render;
+    static bool single_step_requested;
 
   public:
     static void init();

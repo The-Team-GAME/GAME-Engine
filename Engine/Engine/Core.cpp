@@ -44,6 +44,7 @@ namespace Engine
   bool Core::is_running = false;
   f64 Core::accumulator{};
   s32 Core::step_limit = 3;
+  bool Core::single_step_requested = false;
 
   /*=================================================================================
   Function Brief:
@@ -190,6 +191,18 @@ namespace Engine
           std::cout << "Physics Step Mode: " << (Engine::Time::get_paused() ? "ON" : "OFF") << std::endl;
         }
 
+        // Single-step when paused
+        if (Engine::Input::is_pressed(KeyCode::RightBracket) && Engine::Time::get_paused())
+        {
+          single_step_requested = true;
+        }
+
+        // Temporarily enable time for single-step
+        if (single_step_requested)
+        {
+          Engine::Time::set_time_scale(1.0f);
+        }
+
         // Main gameloop here
         Engine::SceneManager::update();
         Engine::ECS::update();
@@ -197,6 +210,13 @@ namespace Engine
         // Always process ECS housekeeping (entity deletions, component modifications)
         // even when paused so entities can be created/destroyed in the editor
         Engine::ECS::process_housekeeping();
+
+        // Restore paused state after single-step
+        if (single_step_requested)
+        {
+          Engine::Time::set_time_scale(0.0f);
+          single_step_requested = false;
+        }
 
         TilemapPanel::update();
         ImGuiManager::update();
