@@ -1,0 +1,16 @@
+#include <string>
+#include <vector>
+#include "GenericValue.h"
+#include "ECS/ECS.h"
+
+
+namespace Engine {
+
+  struct Level {
+    std::string name;
+    std::vector<ReflectionLibrary::GenericValue> entities;
+
+    static Level from_world();
+  };
+
+}
