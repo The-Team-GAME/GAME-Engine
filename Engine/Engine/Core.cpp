@@ -87,6 +87,12 @@ namespace Engine
       throw std::runtime_error("Failed to initialize resource manager");
     }
 
+    // Load all assets if enabled in settings
+    if (engine_settings.load_all_assets_on_startup)
+    {
+      Engine::Resources::load_all_assets();
+    }
+
     // Initialize audio manager
     if (!Engine::Audio::init()) {
       throw std::runtime_error("Failed to initialize audio manager");

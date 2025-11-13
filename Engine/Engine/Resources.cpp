@@ -74,6 +74,52 @@ void Engine::Resources::set_resource_path(const std::string& path)
   Log::info("Resource path set to: " + resource_path);
 }
 
+void Engine::Resources::load_all_assets()
+{
+  if (resource_path.empty())
+  {
+    Log::warning("Resource path is empty, cannot load all assets");
+    return;
+  }
+
+  if (!std::filesystem::exists(resource_path))
+  {
+    Log::warning("Resource path does not exist: " + resource_path);
+    return;
+  }
+
+  Log::info("Loading all assets from: " + resource_path);
+  size_t loaded_count = 0;
+
+  try
+  {
+    // Recursively iterate through all files in the resource path
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(resource_path))
+    {
+      if (entry.is_regular_file())
+      {
+        // Get relative path from resource_path
+        std::string relative_path = Path(entry.path().string()).to_relative(resource_path);
+
+        // Load the resource (persist=true to keep it loaded)
+        Resource resource = load(relative_path, true, true);
+
+        // Check if load was successful (not monostate)
+        if (!std::holds_alternative<std::monostate>(resource))
+        {
+          loaded_count++;
+        }
+      }
+    }
+
+    Log::info("Finished loading all assets. Total loaded: " + std::to_string(loaded_count));
+  }
+  catch (const std::filesystem::filesystem_error& e)
+  {
+    Log::error("Error while loading all assets: " + std::string(e.what()));
+  }
+}
+
 std::string Engine::Resources::get_relative_path(const std::string& full_path)
 {
   // Special handling for unit_rect texture

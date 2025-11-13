@@ -69,6 +69,9 @@ namespace Engine {
     // Set the base path for resource loading
     void set_resource_path(const std::string& path);
 
+    // Load all assets from the resource path and its subfolders
+    void load_all_assets();
+
     std::string get_relative_path(const std::string& full_path);
 
     Engine::Graphics::Texture load_texture(const std::string& filepath, bool append_resource_path = true, bool persist = false);

@@ -77,6 +77,6 @@ namespace Engine
   }
 }
 
-REFLECT_FIELDS(Engine::FileIO::EngineSettings, window_title, window_width, window_height)
+REFLECT_FIELDS(Engine::FileIO::EngineSettings, window_title, window_width, window_height, imgui_viewport_enabled, load_all_assets_on_startup)
 REFLECT_FIELDS(Engine::FileIO::ProjectSettings, loaded_tilemaps)
 REFLECT_FIELDS(Engine::FileIO::LocalSettings, imgui_theme)
