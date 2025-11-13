@@ -21,88 +21,38 @@
 
 namespace Engine {
   namespace FileIO {
+    std::string serialize_level_to_json(const Engine::Level& level)
+    {
 
-    std::string serialize_level_to_json(const Engine::LevelManager::Level& level) {
-      // Create root object
-      ReflectionLibrary::Object root_obj;
+      ReflectionLibrary::GenericValue level_value = ReflectionLibrary::GenericValue().getObject();
 
-      // Add level name
-      root_obj["name"] = ReflectionLibrary::GenericValue(level.name);
-
-      // Add entities array
-      ReflectionLibrary::Array entities_array;
-
-      for (const auto& entity : level.entities) {
-        if (entity.is_valid()) {
-          ReflectionLibrary::GenericValue entity_value = Engine::ECS::entity_to_generic_value(entity);
-          entities_array.push_back(entity_value);
-        }
+      level_value.getObject().at("name") = ReflectionLibrary::GenericValue(level.name);
+      ReflectionLibrary::GenericValue entities_array = ReflectionLibrary::GenericValue().getArray();
+      for (const auto& entity_value : level.entities) {
+        entities_array.getArray().push_back(entity_value);
       }
+      level_value.getObject().at("entities") = entities_array;
 
-      root_obj["entities"] = ReflectionLibrary::GenericValue(std::move(entities_array));
-
-      // Convert to JSON string
-      ReflectionLibrary::GenericValue root(std::move(root_obj));
-      return ReflectionLibrary::generic_value_to_json(root, true);
+      return ReflectionLibrary::generic_value_to_json(level_value, true);
     }
 
-    Engine::LevelManager::Level deserialize_level_from_json(const std::string& json_str) {
-      Engine::LevelManager::Level level;
-
-      std::optional<ReflectionLibrary::GenericValue> root = ReflectionLibrary::generic_value_from_json(json_str);
-      if (!root) {
-        Log::error("Failed to parse level JSON");
-        return level;
+    Engine::Level deserialize_level_from_json(const std::string& json_str)
+    {
+      std::optional<ReflectionLibrary::GenericValue> level_value_opt = ReflectionLibrary::generic_value_from_json(json_str);
+      if (!level_value_opt) {
+        Log::warning("Failed to parse level JSON");
+        return Engine::Level();
       }
+      ReflectionLibrary::GenericValue level_value = level_value_opt.value();
 
-      // Get level name
-      if (root->has("name") && (*root)["name"].isString()) {
-        level.name = (*root)["name"].getString();
-      }
+      Engine::Level level;
+      level.name = level_value.getObject().at("name").getString();
 
-      // Get entities array
-      if (!root->has("entities") || !(*root)["entities"].isArray()) {
-        Log::error("Level JSON missing 'entities' array");
-        return level;
-      }
-
-      const auto& entities_array = (*root)["entities"].getArray();
-      level.entities.reserve(entities_array.size());
-
+      const auto& entities_array = level_value.getObject().at("entities").getArray();
       for (const auto& entity_value : entities_array) {
-        Engine::ECS::Entity entity = Engine::ECS::create_entity_from_generic_value(entity_value);
-        if (entity.is_valid()) {
-          level.entities.push_back(entity);
-        }
+        level.entities.push_back(entity_value);
       }
 
-      return level;
-    }
-
-    bool serialize_level_to_json_file(const std::string& filepath, const Engine::LevelManager::Level& level) {
-      std::string json_content = serialize_level_to_json(level);
-
-      if (write_string_to_file(filepath, json_content)) {
-        Log::info("Level saved to: " + filepath);
-        return true;
-      }
-      else {
-        Log::error("Failed to save level to: " + filepath);
-        return false;
-      }
-    }
-
-    Engine::LevelManager::Level deserialize_level_from_json_file(const std::string& filepath) {
-      Engine::LevelManager::Level level;
-
-      std::optional<std::string> json_content = read_string_from_file(filepath);
-      if (!json_content) {
-        Log::error("Failed to read level file: " + filepath);
-        return level;
-      }
-
-      level = deserialize_level_from_json(json_content.value());
-      Log::info("Level loaded from: " + filepath);
       return level;
     }
 
