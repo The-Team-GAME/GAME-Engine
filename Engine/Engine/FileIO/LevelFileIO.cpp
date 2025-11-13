@@ -24,14 +24,14 @@ namespace Engine {
     std::string serialize_level_to_json(const Engine::Level& level)
     {
 
-      ReflectionLibrary::GenericValue level_value = ReflectionLibrary::GenericValue().getObject();
+      ReflectionLibrary::GenericValue level_value = ReflectionLibrary::Object();
 
-      level_value.getObject().at("name") = ReflectionLibrary::GenericValue(level.name);
-      ReflectionLibrary::GenericValue entities_array = ReflectionLibrary::GenericValue().getArray();
+      level_value.getObject()["name"] = ReflectionLibrary::GenericValue(level.name);
+      ReflectionLibrary::GenericValue entities_array = ReflectionLibrary::Array();
       for (const auto& entity_value : level.entities) {
         entities_array.getArray().push_back(entity_value);
       }
-      level_value.getObject().at("entities") = entities_array;
+      level_value.getObject()["entities"] = entities_array;
 
       return ReflectionLibrary::generic_value_to_json(level_value, true);
     }
