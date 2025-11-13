@@ -33,7 +33,7 @@ namespace Engine
     static f64 accumulator;
     static s32 step_limit;
     static bool do_render;
-    static bool physics_step_mode;
+    static bool is_paused;
 
   public:
     static void init();
@@ -44,9 +44,12 @@ namespace Engine
     static void stop();
 
     // Getters for game loop state
-    static bool& is_paused() { return physics_step_mode; }
+    static bool get_paused() { return is_paused; }
     static f64 get_accumulator() { return accumulator; }
     static s32 get_step_limit() { return step_limit; }
     static void set_step_limit(s32 limit) { step_limit = limit; }
+
+    static void set_paused(bool paused) { is_paused = paused; }
+    static void toggle_pause() { is_paused = !is_paused; }
   };
 }

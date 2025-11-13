@@ -45,7 +45,7 @@ namespace Engine
   f64 Core::accumulator{};
   s32 Core::step_limit = 3;
   bool Core::do_render = false;
-  bool Core::physics_step_mode = false;
+  bool Core::is_paused = false;
 
   /*=================================================================================
   Function Brief:
@@ -157,7 +157,7 @@ namespace Engine
       // Updates the real_dt and increments the accumulator
       Time::update_time();
 
-      if (!physics_step_mode)
+      if (!is_paused)
       {
         // In normal mode, accumulate real delta time
         accumulator += Time::get_real_dt();
@@ -195,11 +195,11 @@ namespace Engine
 
         if (Engine::Input::is_pressed(KeyCode::P))
         {
-          physics_step_mode = !physics_step_mode;
-          std::cout << "Physics Step Mode: " << (physics_step_mode ? "ON" : "OFF") << std::endl;
+          is_paused = !is_paused;
+          std::cout << "Physics Step Mode: " << (is_paused ? "ON" : "OFF") << std::endl;
         }
 
-        bool shouldRunPhysics = !physics_step_mode || Engine::Input::is_pressed(KeyCode::RightBracket);
+        bool shouldRunPhysics = !is_paused || Engine::Input::is_pressed(KeyCode::RightBracket);
 
         if (shouldRunPhysics)
         {
