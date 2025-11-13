@@ -29,6 +29,13 @@ namespace Components
     AxisY  // move-only along +Y/-Y
   };
 
+  enum class GizmoMode {
+    GrabMove = 0,       // free move
+    ArrowMove = 1,      // axis-only move
+    Rotate = 2,         // rotation with top circle handle
+    Scale = 3           // scaling
+  };
+
   struct Gizmo
   {
     // Interaction state
@@ -62,6 +69,14 @@ namespace Components
     float arrow_outside_extra = 18.0f;  // extra past the edge
     float arrow_head_size = 12.0f;      // head length
     float arrow_thickness = 3.0f;       // shaft thickness
+
+    // Rotate visuals
+    float rotate_handle_offset = 24.0f; // how far above the top edge
+    float rotate_handle_radius = 8.0f;  // circle radius
+
+    // Tool palette
+    GizmoMode mode = GizmoMode::GrabMove;
+    bool toolbar_open = false;
 
     Gizmo() = default;
     Gizmo(const Math::Vec4D& color, float thickness = 2.0f)
