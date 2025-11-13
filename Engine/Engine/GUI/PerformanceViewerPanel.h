@@ -82,7 +82,7 @@ inline void PerformanceViewerPanel()
   ImGui::SeparatorText("Tick Rate Control");
   f32 tick_rate_input = Engine::Time::get_tick_rate();
 
-  if (ImGui::SliderFloat("Tick Rate", &tick_rate_input, 45.0f, 144.0f, "%.1f Hz")) {
+  if (ImGui::SliderFloat("Tick Rate", &tick_rate_input, 10.0f, 144.0f, "%.1f Hz")) {
     Engine::Time::set_tick_rate(tick_rate_input);
   }
 

@@ -51,6 +51,11 @@ namespace Engine {
     // This returns the fixed dt based on the set framerate
     f32 get_fixed_dt(void)
     {
+      return fixed_dt * time_scale;
+    }
+
+    f32 get_unscaled_fixed_dt(void)
+    {
       return fixed_dt;
     }
 

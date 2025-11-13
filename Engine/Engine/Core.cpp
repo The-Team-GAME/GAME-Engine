@@ -44,7 +44,6 @@ namespace Engine
   bool Core::is_running = false;
   f64 Core::accumulator{};
   s32 Core::step_limit = 3;
-  bool Core::do_render = false;
 
   /*=================================================================================
   Function Brief:
@@ -156,15 +155,8 @@ namespace Engine
       // Updates the real_dt and increments the accumulator
       Time::update_time();
 
-      if (!Engine::Time::get_paused())
-      {
-        // In normal mode, accumulate real delta time
-        accumulator += Time::get_real_dt();
-      }
-      else {
-        // In step mode, always allow at least one iteration to check input
-        accumulator = Time::get_fixed_dt();
-      }
+      accumulator += Time::get_real_dt();
+
 
       if (accumulator > Time::get_fixed_dt() * step_limit)
       {
@@ -183,10 +175,10 @@ namespace Engine
       ImGuiManager::begin();
 
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
-      while (accumulator >= Time::get_fixed_dt())
+      while (accumulator >= Time::get_unscaled_fixed_dt())
       {
         // To decrement the accumulator when each gameloop runs
-        accumulator -= Time::get_fixed_dt();
+        accumulator -= Time::get_unscaled_fixed_dt();
 
         // Update input right before the main gameloop. This needs to be here because if it is out side the while loop,
         // World::update() won't have a chance to react before the input state is cleared on the next frame. 
@@ -198,14 +190,9 @@ namespace Engine
           std::cout << "Physics Step Mode: " << (Engine::Time::get_paused() ? "ON" : "OFF") << std::endl;
         }
 
-        bool shouldRunPhysics = !Engine::Time::get_paused() || Engine::Input::is_pressed(KeyCode::RightBracket);
-
-        if (shouldRunPhysics)
-        {
-          // Main gameloop here
-          Engine::SceneManager::update();
-          Engine::ECS::update();
-        }
+        // Main gameloop here
+        Engine::SceneManager::update();
+        Engine::ECS::update();
 
         // Always process ECS housekeeping (entity deletions, component modifications)
         // even when paused so entities can be created/destroyed in the editor

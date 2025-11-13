@@ -60,6 +60,8 @@ namespace Engine {
     ==================================================================================*/
     f32 get_fixed_dt(void);
 
+    f32 get_unscaled_fixed_dt(void);
+
     /*=================================================================================
     Function Brief:
     This function is an accessor for the real delta time between gameloops
