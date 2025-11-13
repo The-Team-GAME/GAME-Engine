@@ -27,13 +27,13 @@ namespace Components
     /*Vec2D curr_pos;
     Vec2D next_pos;*/
 
-    f32 mass = 1.0f; // Mass in kg
+    f32 mass = 100.0f; // Mass in kg
     Vec2D force;
     Vec2D acceleration;
     Vec2D gravity_acc;
     Vec2D velocity; // Velocity in units per second
     // terminal velocity should be a set value instead of a vector just cuz you want to properly scale the velocity instead of capping it at set values
-    f32 friction{ 0.99999f };
+    f32 friction{ 0.99f };
     f32 terminal_velocity{ 750.f }; // idk i wack some value here first, might split into the individual axis eventually
 
     bool is_static = false;  // If true, affected by physics forces
@@ -64,7 +64,7 @@ namespace Components
     {
       if (gravity) // im setting the gravity acc value so i dont need to keep checking if an object is affected by gravity
       {
-        gravity_acc.y = 300.f;
+        gravity_acc.y = 1400.f;
       }
     }
 
