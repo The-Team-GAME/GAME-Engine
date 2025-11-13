@@ -2,16 +2,25 @@
 
 #pragma once
 
-#include <bitset>
+#include <variant>
+#include <string>
 
 
 namespace Engine {
   namespace ProjectSaveManager {
-    enum class Dirty {
-      ProjectSettings = 0,
+
+    // Different types of dirty states, each with their own data
+    struct ProjectSettingsDirty {};
+
+    struct LevelDirty {
+      std::string level_name;
+      explicit LevelDirty(std::string name) : level_name(std::move(name)) {}
     };
 
-    void set_dirty(Dirty type);
+    // Variant that can hold any dirty state type
+    using DirtyState = std::variant<ProjectSettingsDirty, LevelDirty>;
+
+    void set_dirty(DirtyState state);
 
     void save_all_dirty();
 

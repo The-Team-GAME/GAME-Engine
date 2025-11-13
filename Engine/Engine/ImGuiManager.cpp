@@ -24,6 +24,7 @@
 #include "FileIO/Settings.h"
 #include "Core.h"
 #include "SceneManager.h"
+#include "ProjectSaveManager.h"
 
 namespace {
   bool gui_enabled = true;
@@ -115,8 +116,7 @@ namespace ImGuiManager {
           if (ImGui::BeginMenu("File"))
           {
             if (ImGui::MenuItem("Save", "Ctrl+S")) {
-              Engine::Level level = Engine::Level::from_world();
-              Engine::Resources::save_level("levels/level.json", level);
+              Engine::ProjectSaveManager::save_all_dirty();
             }
             ImGui::EndMenu();
           }
@@ -264,6 +264,12 @@ namespace ImGuiManager {
 
   void update()
   {
+    // Save
+    if (Engine::Input::is_held(Engine::KeyCode::CtrlLeft) && Engine::Input::is_pressed(Engine::KeyCode::S))
+    {
+      Engine::ProjectSaveManager::save_all_dirty();
+    }
+
     // Toggle ImGui with F1 key
     if (Engine::Input::is_pressed(Engine::KeyCode::F1))
     {
