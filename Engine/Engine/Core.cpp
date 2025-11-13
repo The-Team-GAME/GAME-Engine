@@ -158,10 +158,10 @@ namespace Engine
       accumulator += Time::get_real_dt();
 
 
-      if (accumulator > Time::get_fixed_dt() * step_limit)
+      if (accumulator > Time::get_unscaled_fixed_dt() * step_limit)
       {
         // Caps the accumulator so each gameloop will only go through 3 loops max
-        accumulator = Time::get_fixed_dt() * step_limit;
+        accumulator = Time::get_unscaled_fixed_dt() * step_limit;
       }
       //std::cout << "DT: " << Time::get_real_dt() << " FPS: " << Time::calc_fps(Time::get_real_dt()) << std::endl;
       // END OF TIME UPDATES ================================================
