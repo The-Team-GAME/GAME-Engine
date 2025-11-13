@@ -11,3 +11,11 @@ Engine::Level Engine::Level::from_world()
 
   return level;
 }
+
+void Engine::Level::instantiate_into_world()
+{
+  for (const auto& entity_value : entities) {
+    Engine::ECS::create_entity_from_generic_value(entity_value);
+    // TODO: we need a way to mark the entities as belonging to a specific level
+  }
+}

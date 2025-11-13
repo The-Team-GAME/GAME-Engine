@@ -11,6 +11,9 @@ namespace Engine {
     std::vector<ReflectionLibrary::GenericValue> entities;
 
     static Level from_world();
+
+    void instantiate_into_world();
+
   };
 
 }
