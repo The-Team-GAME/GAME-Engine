@@ -25,7 +25,7 @@ void LayerManagerPanel()
 
   auto& containers = Engine::ECS::Internal::get_containers();
 
-  // Section 1: Layer Statistics
+  // Layer Statistics
   if (ImGui::CollapsingHeader("Layer Statistics", ImGuiTreeNodeFlags_DefaultOpen))
   {
     ImGui::Text("Total Registered Layers: %zu", containers.layer_id_to_name.size());
@@ -42,7 +42,7 @@ void LayerManagerPanel()
 
   ImGui::Separator();
 
-  // Section 2: Layer List with Enable/Disable Controls
+  // Layer List with Enable/Disable Controls
   if (ImGui::CollapsingHeader("Layer Control", ImGuiTreeNodeFlags_DefaultOpen))
   {
     ImGui::BeginChild("LayerList", ImVec2(0, 300), true);
@@ -129,7 +129,7 @@ void LayerManagerPanel()
 
   ImGui::Separator();
 
-  // Section 3: Quick Actions
+  // Quick Actions
   if (ImGui::CollapsingHeader("Quick Actions"))
   {
     if (ImGui::Button("Enable All Layers")) {
@@ -169,7 +169,7 @@ void LayerManagerPanel()
 
   ImGui::Separator();
 
-  // Section 5: Layer Details
+  // Layer Details
   static int selected_layer_id = -1;
 
   if (ImGui::CollapsingHeader("Layer Details"))
