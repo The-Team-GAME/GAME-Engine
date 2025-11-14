@@ -20,6 +20,7 @@ namespace Engine {
 
   namespace LevelManager {
     std::string get_current_level_name();
+    void set_current_level_name(const std::string& level_name); // Only used in SceneManager, when loading scenes instead of levels
   }
 
 }
