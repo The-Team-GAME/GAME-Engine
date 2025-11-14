@@ -359,7 +359,8 @@ void ResourceExplorerPanel() {
         // Count items in directory
         try {
           size_t item_count = 0;
-          for (const auto& entry : std::filesystem::directory_iterator(full_path)) {
+          for (const auto& entry [[maybe_unused]] : std::filesystem::directory_iterator(full_path)) {
+
             item_count++;
           }
           ImGui::Text("Items: %zu", item_count);

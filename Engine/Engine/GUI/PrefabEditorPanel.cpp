@@ -265,8 +265,6 @@ void PrefabEditorPanel()
         else {
           if (ImGui::Button(button_label.c_str())) {
             // Add default-constructed component to prefab by name
-            Engine::ECS::Prefab selected_prefab = PrefabEditorPanelHelpers::get_prefab_from_resources(selected_prefab_path);
-
             if (selected_prefab.add_component_by_name(component_name)) {
               // Mark prefab as dirty
               Engine::ProjectSaveManager::set_dirty(
