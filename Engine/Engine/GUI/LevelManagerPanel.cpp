@@ -205,22 +205,22 @@ void LevelManagerPanel()
       //   Log::info("Updated level from world: " + level.name);
       // }
 
-      ImGui::SameLine();
+      // ImGui::SameLine();
 
-      // Export to JSON
-      if (ImGui::Button("Export to JSON (Clipboard)"))
-      {
-        std::string json = Engine::FileIO::serialize_level_to_json(level);
-        ImGui::SetClipboardText(json.c_str());
-        ImGui::OpenPopup("Export Success");
-      }
+      // // Export to JSON
+      // if (ImGui::Button("Export to JSON (Clipboard)"))
+      // {
+      //   std::string json = Engine::FileIO::serialize_level_to_json(level);
+      //   ImGui::SetClipboardText(json.c_str());
+      //   ImGui::OpenPopup("Export Success");
+      // }
 
-      // Export success popup
-      if (ImGui::BeginPopup("Export Success"))
-      {
-        ImGui::Text("Level JSON copied to clipboard!");
-        ImGui::EndPopup();
-      }
+      // // Export success popup
+      // if (ImGui::BeginPopup("Export Success"))
+      // {
+      //   ImGui::Text("Level JSON copied to clipboard!");
+      //   ImGui::EndPopup();
+      // }
     }
     else {
       ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.5f, 1.0f), "Level not found in cache!");
