@@ -19,9 +19,9 @@
 #include "../FileIO/PrefabsFileIO.h"
 #include "../Path.h"
 #include "../Resources.h"
-#include <filesystem>
+#include "../ProjectSaveManager.h"
 
-void PrefabEditorPanelHelpers::render_component_tree(const std::string& component_name, Engine::ECS::Prefab& prefab, Engine::ECS::IComponentArray* array)
+void PrefabEditorPanelHelpers::render_component_tree(const std::string& component_name, Engine::ECS::Prefab& prefab, Engine::ECS::IComponentArray* array, const std::string& prefab_path)
 {
   if (ImGui::TreeNode(component_name.c_str())) {
     auto component_data = array->to_generic_value(0); // Prefabs use entity ID 0
@@ -32,6 +32,13 @@ void PrefabEditorPanelHelpers::render_component_tree(const std::string& componen
     // Write back changes if modified
     if (modified) {
       array->set_component_from_generic_value(0, component_data);
+
+      // Mark prefab as dirty
+      if (!prefab_path.empty()) {
+        Engine::ProjectSaveManager::set_dirty(
+          Engine::ProjectSaveManager::DirtyStates::Prefab(prefab_path)
+        );
+      }
     }
 
     ImGui::Separator();
@@ -47,6 +54,13 @@ void PrefabEditorPanelHelpers::render_component_tree(const std::string& componen
         if (it != storage.end()) {
           storage.erase(it);
           signature.reset(array->get_type_id());
+
+          // Mark prefab as dirty
+          if (!prefab_path.empty()) {
+            Engine::ProjectSaveManager::set_dirty(
+              Engine::ProjectSaveManager::DirtyStates::Prefab(prefab_path)
+            );
+          }
         }
       }
     }
@@ -55,11 +69,33 @@ void PrefabEditorPanelHelpers::render_component_tree(const std::string& componen
   }
 }
 
+Engine::ECS::Prefab PrefabEditorPanelHelpers::get_prefab_from_resources(const std::string& prefab_path)
+{
+  Engine::ECS::Prefab selected_prefab;
+
+  // Construct full path from relative path
+  std::string full_path = Engine::Path(Engine::Resources::resource_path).join(prefab_path);
+
+  auto it = Engine::Resources::prefab_cache.find(full_path);
+
+  if (it != Engine::Resources::prefab_cache.end()) {
+    if (auto prefab_ptr = it->second.lock()) {
+      selected_prefab = Engine::ECS::Prefab(prefab_ptr);
+    }
+    else {
+      Log::error("PrefabEditorPanel: Prefab expired in cache: " + prefab_path);
+    }
+  }
+  else {
+    Log::error("PrefabEditorPanel: Failed to find prefab in cache: " + prefab_path);
+  }
+
+  return selected_prefab;
+}
+
 void PrefabEditorPanel()
 {
-  static Engine::ECS::Prefab selected_prefab;
-  static std::string selected_prefab_path;
-  static bool prefab_modified = false;
+  static std::string selected_prefab_path = "";
   static char prefabSearchBuffer[256] = "";
 
   ImGui::Begin("Prefab Editor");
@@ -75,31 +111,32 @@ void PrefabEditorPanel()
     // List available prefab files
     ImGui::BeginChild("PrefabList", ImVec2(0, 200), true);
 
-    std::string prefabs_dir = Engine::Path(Engine::Resources::resource_path).join("prefabs").to_string();
+    // Get prefabs from resource cache
+    std::vector<std::pair<std::string, Engine::ECS::Prefab>> prefab_list;
 
-    if (std::filesystem::exists(prefabs_dir)) {
-      for (const auto& entry : std::filesystem::directory_iterator(prefabs_dir)) {
-        if (entry.is_regular_file() && entry.path().extension() == ".json") {
-          std::string filename = entry.path().filename().string();
-          std::string relative_path = "prefabs/" + filename;
+    for (const auto& [path, weak_prefab] : Engine::Resources::prefab_cache) {
+      if (auto prefab = weak_prefab.lock()) {
+        // Get relative path for display
+        std::string relative_path = Engine::Resources::get_relative_path(path);
 
-          // Apply search filter
-          if (strlen(prefabSearchBuffer) > 0 && filename.find(prefabSearchBuffer) == std::string::npos) {
-            continue;
-          }
-
-          bool isSelected = (selected_prefab_path == relative_path);
-
-          if (ImGui::Selectable(filename.c_str(), isSelected)) {
-            // Load the prefab
-            auto loaded_prefab = Engine::Resources::load_prefab(relative_path);
-            if (loaded_prefab.is_valid()) {
-              selected_prefab = loaded_prefab;
-              selected_prefab_path = relative_path;
-              prefab_modified = false;
-            }
-          }
+        // Apply search filter
+        if (strlen(prefabSearchBuffer) > 0 && relative_path.find(prefabSearchBuffer) == std::string::npos) {
+          continue;
         }
+
+        prefab_list.push_back({ relative_path, Engine::ECS::Prefab(prefab) });
+      }
+    }
+
+    // Sort by path for consistent ordering
+    std::sort(prefab_list.begin(), prefab_list.end(),
+      [](const auto& a, const auto& b) { return a.first < b.first; });
+
+    for (const auto& [relative_path, prefab] : prefab_list) {
+      bool isSelected = (selected_prefab_path == relative_path);
+
+      if (ImGui::Selectable(relative_path.c_str(), isSelected)) {
+        selected_prefab_path = relative_path;
       }
     }
 
@@ -107,93 +144,23 @@ void PrefabEditorPanel()
 
     // Create new prefab button
     if (ImGui::Button("Create New Prefab")) {
-      selected_prefab = Engine::ECS::create_prefab();
-      selected_prefab_path = "";
-      prefab_modified = true;
+      // TODO: implement
     }
+
+    // Create New Prefab popup
 
     ImGui::SameLine();
 
-    // Save prefab button
-    if (selected_prefab.is_valid()) {
-      if (ImGui::Button("Save Prefab")) {
-        if (selected_prefab_path.empty()) {
-          ImGui::OpenPopup("SavePrefabAs");
-        }
-        else {
-          // Save to existing path
-          std::string full_path = Engine::Path(Engine::Resources::resource_path).join(selected_prefab_path).to_string();
-          if (Engine::FileIO::serialize_prefab_to_json_file(full_path, selected_prefab)) {
-            prefab_modified = false;
-          }
-        }
-      }
-
-      ImGui::SameLine();
-
-      // Save As button
-      if (ImGui::Button("Save As...")) {
-        ImGui::OpenPopup("SavePrefabAs");
-      }
-
-      ImGui::SameLine();
-
-      // Instantiate prefab button
-      if (ImGui::Button("Instantiate")) {
-        Engine::ECS::instantiate_prefab(selected_prefab);
-      }
-    }
-
-    // Save As popup
-    static char save_filename[128] = "";
-    if (ImGui::BeginPopupModal("SavePrefabAs", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-      ImGui::Text("Enter prefab filename:");
-      ImGui::InputText("##filename", save_filename, sizeof(save_filename));
-      ImGui::Text(".json");
-
-      ImGui::Separator();
-
-      if (ImGui::Button("Save", ImVec2(120, 0))) {
-        if (strlen(save_filename) > 0) {
-          std::string filename = std::string(save_filename);
-          if (filename.find(".json") == std::string::npos) {
-            filename += ".json";
-          }
-
-          std::string relative_path = "prefabs/" + filename;
-          std::string full_path = Engine::Path(Engine::Resources::resource_path).join(relative_path).to_string();
-
-          // Create prefabs directory if it doesn't exist
-          std::filesystem::create_directories(Engine::Path(Engine::Resources::resource_path).join("prefabs").to_string());
-
-          if (Engine::FileIO::serialize_prefab_to_json_file(full_path, selected_prefab)) {
-            selected_prefab_path = relative_path;
-            prefab_modified = false;
-            save_filename[0] = '\0';
-            ImGui::CloseCurrentPopup();
-          }
-        }
-      }
-
-      ImGui::SameLine();
-
-      if (ImGui::Button("Cancel", ImVec2(120, 0))) {
-        save_filename[0] = '\0';
-        ImGui::CloseCurrentPopup();
-      }
-
-      ImGui::EndPopup();
-    }
-
-    if (prefab_modified) {
-      ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "* Unsaved changes");
+    // Instantiate prefab button
+    if (ImGui::Button("Instantiate")) {
+      Engine::ECS::instantiate_prefab(PrefabEditorPanelHelpers::get_prefab_from_resources(selected_prefab_path));
     }
   }
 
   ImGui::Separator();
 
   // Section 2: Prefab Editor for Selected Prefab
-  if (selected_prefab.is_valid())
+  if (!selected_prefab_path.empty())
   {
     if (!selected_prefab_path.empty()) {
       ImGui::Text("Editing: %s", selected_prefab_path.c_str());
@@ -220,6 +187,9 @@ void PrefabEditorPanel()
 
         // Check if prefab already has this component
         bool has_component = false;
+
+        Engine::ECS::Prefab selected_prefab = PrefabEditorPanelHelpers::get_prefab_from_resources(selected_prefab_path);
+
         selected_prefab.for_each_component([&](const std::string& type_name, Engine::ECS::IComponentArray*) {
           if (type_name == component_name) {
             has_component = true;
@@ -259,7 +229,13 @@ void PrefabEditorPanel()
               // Add default component to prefab's storage
               storage[type_id]->add_default_component(0); // Prefabs use entity ID 0
               signature.set(type_id);
-              prefab_modified = true;
+
+              // Mark prefab as dirty
+              if (!selected_prefab_path.empty()) {
+                Engine::ProjectSaveManager::set_dirty(
+                  Engine::ProjectSaveManager::DirtyStates::Prefab(selected_prefab_path)
+                );
+              }
             }
           }
         }
@@ -278,6 +254,8 @@ void PrefabEditorPanel()
     // Edit Components Section
     if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
     {
+      Engine::ECS::Prefab selected_prefab = PrefabEditorPanelHelpers::get_prefab_from_resources(selected_prefab_path);
+
       // Automatically iterate through ALL components the prefab has
       selected_prefab.for_each_component([&](const std::string& type_name, Engine::ECS::IComponentArray* array) {
         if (!array->is_reflectable()) {
@@ -285,7 +263,7 @@ void PrefabEditorPanel()
         }
 
         // Render component tree
-        PrefabEditorPanelHelpers::render_component_tree(type_name, selected_prefab, array);
+        PrefabEditorPanelHelpers::render_component_tree(type_name, selected_prefab, array, selected_prefab_path);
         });
     }
 
@@ -294,6 +272,8 @@ void PrefabEditorPanel()
     // Layer Editor Section
     if (ImGui::CollapsingHeader("Layers", ImGuiTreeNodeFlags_DefaultOpen))
     {
+      Engine::ECS::Prefab selected_prefab = PrefabEditorPanelHelpers::get_prefab_from_resources(selected_prefab_path);
+
       auto& containers = Engine::ECS::Internal::get_containers();
       auto prefab_layers = selected_prefab.get_layers();
 
@@ -318,7 +298,13 @@ void PrefabEditorPanel()
           else {
             selected_prefab.remove_from_layer(layer_name);
           }
-          prefab_modified = true;
+
+          // Mark prefab as dirty
+          if (!selected_prefab_path.empty()) {
+            Engine::ProjectSaveManager::set_dirty(
+              Engine::ProjectSaveManager::DirtyStates::Prefab(selected_prefab_path)
+            );
+          }
         }
       }
 
@@ -349,7 +335,13 @@ void PrefabEditorPanel()
       // Quick actions
       if (ImGui::Button("Clear All Layers")) {
         selected_prefab.clear_layers();
-        prefab_modified = true;
+
+        // Mark prefab as dirty
+        if (!selected_prefab_path.empty()) {
+          Engine::ProjectSaveManager::set_dirty(
+            Engine::ProjectSaveManager::DirtyStates::Prefab(selected_prefab_path)
+          );
+        }
       }
     }
 
@@ -358,6 +350,8 @@ void PrefabEditorPanel()
     // Export to JSON
     if (ImGui::Button("Export to JSON (Clipboard)"))
     {
+      Engine::ECS::Prefab selected_prefab = PrefabEditorPanelHelpers::get_prefab_from_resources(selected_prefab_path);
+
       auto generic_value = Engine::ECS::prefab_to_generic_value(selected_prefab);
       std::string json = ReflectionLibrary::generic_value_to_json(generic_value, true);
       ImGui::SetClipboardText(json.c_str());
@@ -373,34 +367,37 @@ void PrefabEditorPanel()
 
     ImGui::SameLine();
 
-    // Import from JSON
-    if (ImGui::Button("Import from JSON (Clipboard)"))
-    {
-      const char* clipboard_text = ImGui::GetClipboardText();
-      if (clipboard_text && strlen(clipboard_text) > 0) {
-        try {
-          auto generic_value_opt = ReflectionLibrary::generic_value_from_json(clipboard_text);
-          if (generic_value_opt.has_value()) {
-            auto imported_prefab = Engine::ECS::prefab_from_generic_value(generic_value_opt.value());
-            if (imported_prefab.is_valid()) {
-              selected_prefab = imported_prefab;
-              selected_prefab_path = "";
-              prefab_modified = true;
-              ImGui::OpenPopup("Import Success");
-            }
-            else {
-              ImGui::OpenPopup("Import Failed");
-            }
-          }
-          else {
-            ImGui::OpenPopup("Import Failed");
-          }
-        }
-        catch (...) {
-          ImGui::OpenPopup("Import Failed");
-        }
-      }
-    }
+    // // Import from JSON
+    // if (ImGui::Button("Import from JSON (Clipboard)"))
+    // {
+    //   const char* clipboard_text = ImGui::GetClipboardText();
+    //   if (clipboard_text && strlen(clipboard_text) > 0) {
+    //     try {
+    //       auto generic_value_opt = ReflectionLibrary::generic_value_from_json(clipboard_text);
+    //       if (generic_value_opt.has_value()) {
+    //         auto imported_prefab = Engine::ECS::prefab_from_generic_value(generic_value_opt.value());
+    //         if (imported_prefab.is_valid()) {
+    //           selected_prefab = imported_prefab;
+    //           selected_prefab_path = "";
+
+    //           // Don't mark as dirty since it's a new import without a path
+    //           // User needs to create/save it first
+
+    //           ImGui::OpenPopup("Import Success");
+    //         }
+    //         else {
+    //           ImGui::OpenPopup("Import Failed");
+    //         }
+    //       }
+    //       else {
+    //         ImGui::OpenPopup("Import Failed");
+    //       }
+    //     }
+    //     catch (...) {
+    //       ImGui::OpenPopup("Import Failed");
+    //     }
+    //   }
+    // }
 
     // Import success popup
     if (ImGui::BeginPopup("Import Success"))

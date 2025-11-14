@@ -95,6 +95,9 @@ namespace Engine {
     Engine::ECS::Prefab load_prefab(const std::string& filepath, bool append_resource_path = true, bool persist = false);
     bool save_prefab(const std::string& filepath, const Engine::ECS::Prefab& prefab, bool append_resource_path = true);
 
+    // Add prefab to cache without saving to disk
+    void cache_prefab(const std::string& filepath, const Engine::ECS::Prefab& prefab, bool append_resource_path = true, bool persist = false);
+
     // Level loading and saving
     Engine::Level load_level(const std::string& filepath, bool append_resource_path = true, bool persist = false);
     bool save_level(const std::string& filepath, const Engine::Level& level, bool append_resource_path = true);

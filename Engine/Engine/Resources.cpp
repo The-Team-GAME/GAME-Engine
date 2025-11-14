@@ -624,6 +624,23 @@ bool Engine::Resources::save_prefab(const std::string& filepath, const Engine::E
   return true;
 }
 
+void Engine::Resources::cache_prefab(const std::string& filepath, const Engine::ECS::Prefab& prefab, bool append_resource_path, bool persist)
+{
+  // Construct full path using Path class
+  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+
+  // Add to cache without saving to disk
+  prefab_cache[full_path] = prefab.get_impl();
+
+  if (persist)
+  {
+    persistent_resources.push_back(prefab);
+    Log::info("Level loaded (persistent): " + full_path);
+  }
+
+  Log::info("Prefab cached: " + full_path);
+}
+
 Engine::Level Engine::Resources::load_level(const std::string& filepath, bool append_resource_path, bool persist)
 {
   // Construct full path using Path class

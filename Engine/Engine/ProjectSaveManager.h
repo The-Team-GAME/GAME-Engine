@@ -4,6 +4,7 @@
 
 #include <variant>
 #include <string>
+#include "ECS/Prefab.h"
 
 
 namespace Engine {
@@ -17,10 +18,14 @@ namespace Engine {
         std::string level_name;
         Level(const std::string& level_name) : level_name(level_name) {}
       };
+      struct Prefab {
+        std::string prefab_path;
+        Prefab(const std::string& path) : prefab_path(path) {}
+      };
     }
 
     // Variant that can hold any dirty state type
-    using DirtyState = std::variant<DirtyStates::ProjectSettings, DirtyStates::Level>;
+    using DirtyState = std::variant<DirtyStates::ProjectSettings, DirtyStates::Level, DirtyStates::Prefab>;
 
     void set_dirty(DirtyState state);
 

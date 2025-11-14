@@ -28,11 +28,14 @@ namespace PrefabEditorPanelHelpers {
   component_name - The name of the component type
   prefab         - The prefab being edited
   array          - The component array to read/write component data
+  prefab_path    - The path of the prefab (for marking as dirty)
 
   Where to call it:
   For each component in the selected prefab.
   ==================================================================================*/
-  void render_component_tree(const std::string& component_name, Engine::ECS::Prefab& prefab, Engine::ECS::IComponentArray* array);
+  void render_component_tree(const std::string& component_name, Engine::ECS::Prefab& prefab, Engine::ECS::IComponentArray* array, const std::string& prefab_path);
+
+  Engine::ECS::Prefab get_prefab_from_resources(const std::string& prefab_path);
 };
 
 void PrefabEditorPanel();

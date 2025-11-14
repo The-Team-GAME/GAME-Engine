@@ -24,6 +24,9 @@ void Engine::ProjectSaveManager::set_dirty(DirtyState state)
           else if constexpr (std::is_same_v<T, DirtyStates::Level>) {
             return existing_ptr->level_name == s.level_name;
           }
+          else if constexpr (std::is_same_v<T, DirtyStates::Prefab>) {
+            return existing_ptr->prefab_path == s.prefab_path;
+          }
           return false;
         }
         return false;
@@ -57,6 +60,14 @@ void Engine::ProjectSaveManager::save_all_dirty()
         Log::info("Saving level: " + s.level_name);
         Engine::Level level = Engine::Level::from_world(s.level_name);
         Engine::Resources::save_level("levels/" + s.level_name, level, true);
+      }
+      else if constexpr (std::is_same_v<T, DirtyStates::Prefab>) {
+        // Save specific prefab
+        Log::info("Saving prefab: " + s.prefab_path);
+
+        auto prefab = Engine::Resources::prefab_cache[s.prefab_path].lock();
+
+        Engine::Resources::save_prefab(s.prefab_path, prefab, true);
       }
       }, state);
   }
