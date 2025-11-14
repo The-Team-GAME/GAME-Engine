@@ -525,9 +525,16 @@ Engine::Resources::Resource Engine::Resources::load(const std::string& filepath,
 
     // Check if it's an Entity (prefab)
     if (doc.HasMember("dataType") && doc["dataType"].IsString() &&
-      std::string(doc["dataType"].GetString()) == "Entity")
+      std::string(doc["dataType"].GetString()) == "Prefab")
     {
       return load_prefab(filepath, append_resource_path, persist);
+    }
+
+    // Check if it's a Level
+    if (doc.HasMember("dataType") && doc["dataType"].IsString() &&
+      std::string(doc["dataType"].GetString()) == "Level")
+    {
+      return load_level(filepath, append_resource_path, persist);
     }
 
     Log::warning("Unknown JSON dataType in file: " + full_path);
