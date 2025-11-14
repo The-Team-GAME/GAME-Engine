@@ -19,7 +19,7 @@ namespace Engine {
   namespace ECS {
     namespace LayerRegistry {
 
-      void enable_collision(LayerID layer_a, LayerID layer_b) {
+      void enable_layer_collision(LayerID layer_a, LayerID layer_b) {
         auto& containers = Internal::get_containers();
         if (layer_a < MAX_LAYERS && layer_b < MAX_LAYERS) {
           containers.collision_matrix[layer_a].set(layer_b);
@@ -27,16 +27,16 @@ namespace Engine {
         }
       }
 
-      void enable_collision(const std::string& layer_a_name, const std::string& layer_b_name) {
+      void enable_layer_collision(const std::string& layer_a_name, const std::string& layer_b_name) {
         LayerID layer_a = get_layer_id(layer_a_name);
         LayerID layer_b = get_layer_id(layer_b_name);
 
         if (layer_a != INVALID_LAYER && layer_b != INVALID_LAYER) {
-          enable_collision(layer_a, layer_b);
+          enable_layer_collision(layer_a, layer_b);
         }
       }
 
-      void disable_collision(LayerID layer_a, LayerID layer_b) {
+      void disable_layer_collision(LayerID layer_a, LayerID layer_b) {
         auto& containers = Internal::get_containers();
         if (layer_a < MAX_LAYERS && layer_b < MAX_LAYERS) {
           containers.collision_matrix[layer_a].reset(layer_b);
@@ -44,16 +44,16 @@ namespace Engine {
         }
       }
 
-      void disable_collision(const std::string& layer_a_name, const std::string& layer_b_name) {
+      void disable_layer_collision(const std::string& layer_a_name, const std::string& layer_b_name) {
         LayerID layer_a = get_layer_id(layer_a_name);
         LayerID layer_b = get_layer_id(layer_b_name);
 
         if (layer_a != INVALID_LAYER && layer_b != INVALID_LAYER) {
-          disable_collision(layer_a, layer_b);
+          disable_layer_collision(layer_a, layer_b);
         }
       }
 
-      bool should_collide(LayerID layer_a, LayerID layer_b) {
+      bool should_layers_collide(LayerID layer_a, LayerID layer_b) {
         auto& containers = Internal::get_containers();
         if (layer_a >= MAX_LAYERS || layer_b >= MAX_LAYERS) {
           return false;
@@ -61,7 +61,7 @@ namespace Engine {
         return containers.collision_matrix[layer_a].test(layer_b);
       }
 
-      bool should_collide(const LayerSignature& signature_a, const LayerSignature& signature_b) {
+      bool should_layers_collide(const LayerSignature& signature_a, const LayerSignature& signature_b) {
         // Check if any layer in signature_a collides with any layer in signature_b
         for (LayerID layer_a = 0; layer_a < MAX_LAYERS; ++layer_a) {
           if (!signature_a.test(layer_a)) continue;
@@ -69,7 +69,7 @@ namespace Engine {
           for (LayerID layer_b = 0; layer_b < MAX_LAYERS; ++layer_b) {
             if (!signature_b.test(layer_b)) continue;
 
-            if (should_collide(layer_a, layer_b)) {
+            if (should_layers_collide(layer_a, layer_b)) {
               return true;
             }
           }

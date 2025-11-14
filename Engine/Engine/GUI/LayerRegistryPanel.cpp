@@ -103,7 +103,7 @@ void LayerRegistryPanel()
           ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.3f);
         }
 
-        bool collides = Engine::ECS::LayerRegistry::should_collide(row_layer, col_layer);
+        bool collides = Engine::ECS::LayerRegistry::should_layers_collide(row_layer, col_layer);
         std::string checkbox_id = "##" + std::to_string(row_layer) + "_" + std::to_string(col_layer);
 
         if (is_diagonal) {
@@ -114,10 +114,10 @@ void LayerRegistryPanel()
         else {
           if (ImGui::Checkbox(checkbox_id.c_str(), &collides)) {
             if (collides) {
-              Engine::ECS::LayerRegistry::enable_collision(row_layer, col_layer);
+              Engine::ECS::LayerRegistry::enable_layer_collision(row_layer, col_layer);
             }
             else {
-              Engine::ECS::LayerRegistry::disable_collision(row_layer, col_layer);
+              Engine::ECS::LayerRegistry::disable_layer_collision(row_layer, col_layer);
             }
           }
         }
@@ -173,7 +173,7 @@ void LayerRegistryPanel()
     // List all layers this layer collides with
     for (size_t i = 0; i < layer_ids.size(); ++i) {
       Engine::ECS::LayerID other_layer = layer_ids[i];
-      bool collides = Engine::ECS::LayerRegistry::should_collide(selected_layer, other_layer);
+      bool collides = Engine::ECS::LayerRegistry::should_layers_collide(selected_layer, other_layer);
 
       // Don't allow disabling self-collision
       if (selected_layer == other_layer) {
@@ -183,10 +183,10 @@ void LayerRegistryPanel()
       else {
         if (ImGui::Checkbox(layer_names[i].c_str(), &collides)) {
           if (collides) {
-            Engine::ECS::LayerRegistry::enable_collision(selected_layer, other_layer);
+            Engine::ECS::LayerRegistry::enable_layer_collision(selected_layer, other_layer);
           }
           else {
-            Engine::ECS::LayerRegistry::disable_collision(selected_layer, other_layer);
+            Engine::ECS::LayerRegistry::disable_layer_collision(selected_layer, other_layer);
           }
         }
       }
@@ -197,14 +197,14 @@ void LayerRegistryPanel()
     // Quick actions for this layer
     if (ImGui::Button("Enable All for This Layer")) {
       for (Engine::ECS::LayerID other_layer : layer_ids) {
-        Engine::ECS::LayerRegistry::enable_collision(selected_layer, other_layer);
+        Engine::ECS::LayerRegistry::enable_layer_collision(selected_layer, other_layer);
       }
     }
     ImGui::SameLine();
     if (ImGui::Button("Disable All for This Layer")) {
       for (Engine::ECS::LayerID other_layer : layer_ids) {
         if (other_layer != selected_layer) { // Keep self-collision
-          Engine::ECS::LayerRegistry::disable_collision(selected_layer, other_layer);
+          Engine::ECS::LayerRegistry::disable_layer_collision(selected_layer, other_layer);
         }
       }
     }

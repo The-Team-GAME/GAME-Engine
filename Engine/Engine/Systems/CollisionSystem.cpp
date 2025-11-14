@@ -79,7 +79,7 @@ void col2D::update()
       ECS::LayerSignature other_layers = other.get_layers();
 
       // Check if these entities' layers should collide using the global collision matrix
-      if (!ECS::should_layers_collide(entity_layers, other_layers))
+      if (!ECS::LayerRegistry::should_layers_collide(entity_layers, other_layers))
       {
         continue;
       }

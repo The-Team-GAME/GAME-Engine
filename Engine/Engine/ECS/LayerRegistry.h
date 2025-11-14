@@ -36,7 +36,7 @@ namespace Engine {
       Where to call it:
       During initialization or when dynamically configuring collision relationships.
       ==================================================================================*/
-      void enable_collision(LayerID layer_a, LayerID layer_b);
+      void enable_layer_collision(LayerID layer_a, LayerID layer_b);
 
       /*=================================================================================
       Function Brief:
@@ -49,7 +49,7 @@ namespace Engine {
       Where to call it:
       During initialization or when dynamically configuring collision relationships.
       ==================================================================================*/
-      void enable_collision(const std::string& layer_a_name, const std::string& layer_b_name);
+      void enable_layer_collision(const std::string& layer_a_name, const std::string& layer_b_name);
 
       /*=================================================================================
       Function Brief:
@@ -63,7 +63,7 @@ namespace Engine {
       Where to call it:
       When dynamically changing collision relationships.
       ==================================================================================*/
-      void disable_collision(LayerID layer_a, LayerID layer_b);
+      void disable_layer_collision(LayerID layer_a, LayerID layer_b);
 
       /*=================================================================================
       Function Brief:
@@ -76,7 +76,7 @@ namespace Engine {
       Where to call it:
       When dynamically changing collision relationships.
       ==================================================================================*/
-      void disable_collision(const std::string& layer_a_name, const std::string& layer_b_name);
+      void disable_layer_collision(const std::string& layer_a_name, const std::string& layer_b_name);
 
       /*=================================================================================
       Function Brief:
@@ -92,7 +92,7 @@ namespace Engine {
       Where to call it:
       In collision detection to filter collisions based on layers.
       ==================================================================================*/
-      bool should_collide(LayerID layer_a, LayerID layer_b);
+      bool should_layers_collide(LayerID layer_a, LayerID layer_b);
 
       /*=================================================================================
       Function Brief:
@@ -108,7 +108,7 @@ namespace Engine {
       Where to call it:
       In collision detection when checking if two entities should collide.
       ==================================================================================*/
-      bool should_collide(const LayerSignature& signature_a, const LayerSignature& signature_b);
+      bool should_layers_collide(const LayerSignature& signature_a, const LayerSignature& signature_b);
 
       /*=================================================================================
       Function Brief:

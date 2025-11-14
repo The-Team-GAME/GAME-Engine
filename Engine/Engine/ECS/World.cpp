@@ -526,40 +526,6 @@ namespace Engine {
     }
 
     // ============================================================================
-    // Layer Collision Registry API
-    // ============================================================================
-
-    void enable_layer_collision(LayerID layer_a, LayerID layer_b)
-    {
-      LayerRegistry::enable_collision(layer_a, layer_b);
-    }
-
-    void enable_layer_collision(const std::string& layer_a_name, const std::string& layer_b_name)
-    {
-      LayerRegistry::enable_collision(layer_a_name, layer_b_name);
-    }
-
-    void disable_layer_collision(LayerID layer_a, LayerID layer_b)
-    {
-      LayerRegistry::disable_collision(layer_a, layer_b);
-    }
-
-    void disable_layer_collision(const std::string& layer_a_name, const std::string& layer_b_name)
-    {
-      LayerRegistry::disable_collision(layer_a_name, layer_b_name);
-    }
-
-    bool should_layers_collide(LayerID layer_a, LayerID layer_b)
-    {
-      return LayerRegistry::should_collide(layer_a, layer_b);
-    }
-
-    bool should_layers_collide(const LayerSignature& signature_a, const LayerSignature& signature_b)
-    {
-      return LayerRegistry::should_collide(signature_a, signature_b);
-    }
-
-    // ============================================================================
     // Entity Pair Iteration
     // ============================================================================
 
