@@ -22,9 +22,12 @@
 #include <memory>
 #include <vector>
 #include <array>
+#include <functional>
 
 namespace Engine {
   namespace ECS {
+    class Entity; // Forward declaration
+
     namespace Internal {
 
       struct WorldContainers {
@@ -45,6 +48,11 @@ namespace Engine {
         // Collision matrix: collision_matrix[layerA][layerB] = true if they should collide
         // Matrix is symmetric: collision_matrix[A][B] == collision_matrix[B][A]
         std::array<std::bitset<MAX_LAYERS>, MAX_LAYERS> collision_matrix;
+
+        // Collision callbacks: map from layer pair key to callback function
+        // Key is created by make_layer_pair_key(LayerID, LayerID) to ensure symmetric access
+        // u64 key = (min_layer << 32) | max_layer
+        std::unordered_map<u64, std::function<void(Entity, Entity)>> collision_callbacks;
 
         // Constructor to initialize default layer
         WorldContainers() {

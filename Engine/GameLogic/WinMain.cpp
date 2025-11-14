@@ -61,6 +61,16 @@ int main()
   Engine::ECS::register_layer("effects"); // Visual effects like particles
   Engine::ECS::register_layer("debug"); // Debug overlays and information
 
+  Engine::ECS::CollisionCallbacks::register_callback("gameplay", "ui",
+    [](Engine::ECS::Entity entityA, Engine::ECS::Entity entityB)
+    {
+      // Example callback: Print entity IDs on collision
+      // In practice, you would handle damage, effects, etc. here
+      std::cout << "Collision detected between Entity "
+        << entityA.get_id() << " and Entity "
+        << entityB.get_id() << std::endl;
+    });
+
   // Register game scenes at startup
   Engine::SceneManager::register_scene<EmptyState>("EmptyState");
   Engine::SceneManager::register_scene<MainMenuState>("MainMenuState");

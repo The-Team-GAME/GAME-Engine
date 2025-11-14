@@ -26,6 +26,7 @@
     <ClCompile Include="Engine\ECS\ComponentManager.cpp" />
     <ClCompile Include="Engine\ECS\Entity.cpp" />
     <ClCompile Include="Engine\ECS\LayerRegistry.cpp" />
+    <ClCompile Include="Engine\ECS\CollisionCallbacks.cpp" />
     <ClCompile Include="Engine\ECS\System.cpp" />
     <ClCompile Include="Engine\ECS\World.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer.cpp" />
@@ -150,6 +151,7 @@
     <ClInclude Include="Engine\ECS\ECS.h" />
     <ClInclude Include="Engine\ECS\Entity.h" />
     <ClInclude Include="Engine\ECS\LayerRegistry.h" />
+    <ClInclude Include="Engine\ECS\CollisionCallbacks.h" />
     <ClInclude Include="Engine\ECS\System.h" />
     <ClInclude Include="Engine\ECS\Types.h" />
     <ClInclude Include="Engine\ECS\World.h" />
