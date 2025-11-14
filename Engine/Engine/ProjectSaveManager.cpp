@@ -100,7 +100,7 @@ void Engine::ProjectSaveManager::save_all_dirty()
   dirty_states.clear();
 }
 
-bool Engine::ProjectSaveManager::get_is_any_dirty()
+bool Engine::ProjectSaveManager::is_any_dirty()
 {
   return !dirty_states.empty();
 }

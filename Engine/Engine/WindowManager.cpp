@@ -132,7 +132,7 @@ namespace Engine {
         // Calculate average FPS over the interval (same as PerformanceViewerPanel)
         display_fps = frame_count / update_timer;
 
-        bool is_unsaved = Engine::ProjectSaveManager::get_is_any_dirty();
+        bool is_unsaved = Engine::ProjectSaveManager::is_any_dirty();
 
         // Update window title
         std::ostringstream title_stream;

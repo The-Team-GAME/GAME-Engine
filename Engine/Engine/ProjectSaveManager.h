@@ -33,7 +33,7 @@ namespace Engine {
 
     void save_all_dirty();
 
-    bool get_is_any_dirty();
+    bool is_any_dirty();
 
   }
 }
