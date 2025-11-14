@@ -28,6 +28,7 @@
 #include "../FileIO/SettingsManager.h"
 #include "../FileIO/Settings.h"
 #include "ViewportPanel.h"
+#include "../UndoManager/UndoManager.h"
 
 namespace TilemapPanel {
   // Internal state
@@ -200,20 +201,45 @@ namespace TilemapPanel {
       placed_tiles.erase(pos_key);
     }
 
-    Engine::ECS::Entity tile = Engine::ECS::create_entity()
-      .add_component<Components::Tile>()
-      .add_component<Components::Transform2D>(
-        grid_pos,
-        0.0f,
-        Math::Vec2D{ grid_snap, grid_snap }
-      )
-      .add_component<Components::Texture>(atlas_entry.texture)
-      .add_component<Components::TextureAtlas>(atlas_entry.atlas)
-      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
+    // Engine::ECS::Entity tile = Engine::ECS::create_entity()
+    //   .add_component<Components::Tile>()
+    //   .add_component<Components::Transform2D>(
+    //     grid_pos,
+    //     0.0f,
+    //     Math::Vec2D{ grid_snap, grid_snap }
+    //   )
+    //   .add_component<Components::Texture>(atlas_entry.texture)
+    //   .add_component<Components::TextureAtlas>(atlas_entry.atlas)
+    //   .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
 
 
-
+    // is this 
     // RYAN HOW
+
+    // Engine::ECS::Entity tile;
+    // auto place_tile_action = std::make_unique<Engine::Action>(
+    //     [&tile, grid_pos, atlas_entry,
+    //      grid_snap_value = grid_snap,
+    //      selected_tile_index_value = selected_tile_index,
+    //      selected_layer_value = selected_layer]() mutable {
+    //         tile = Engine::ECS::create_entity()
+    //             .add_component<Components::Tile>()
+    //             .add_component<Components::Transform2D>(grid_pos, 0.0f, Math::Vec2D{ grid_snap_value, grid_snap_value })
+    //             .add_component<Components::Texture>(atlas_entry.texture)
+    //             .add_component<Components::TextureAtlas>(atlas_entry.atlas)
+    //             .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
+    //         tile.get_component<Components::TextureAtlas>()->drawIndex = selected_tile_index_value;
+    //         tile.clear_layers();
+    //         tile.add_to_layer(selected_layer_value);
+    //     },
+    //     [&tile]() mutable {
+    //         if (tile.is_valid()) {
+    //             Engine::ECS::destroy_entity(tile);
+    //         }
+    //     }
+    // );
+
+    //Engine::UndoManager::add(std::move(place_tile_action));
     
     //// Place tiles example
     //Engine::ECS::Entity tile;
@@ -237,12 +263,53 @@ namespace TilemapPanel {
 
     //place_tile_action.do_action();
 
-    tile.get_component<Components::TextureAtlas>()->drawIndex = selected_tile_index;
+    //tile.get_component<Components::TextureAtlas>()->drawIndex = selected_tile_index;
 
     // Assign to selected layer
-    tile.clear_layers();
-    tile.add_to_layer(selected_layer);
+    //tile.clear_layers();
+    //tile.add_to_layer(selected_layer);
 
+    //Special do and undo for placing tile
+
+auto tile_id = std::make_shared<Engine::ECS::EntityID>(0); // Use 0 or your engine's invalid ID
+
+auto place_tile_action = std::make_unique<Engine::Action>(
+  // --- DO ---
+  [tile_id, grid_pos, atlas_entry,
+  grid_snap_value = grid_snap,
+  selected_tile_index_value = selected_tile_index,
+  selected_layer_value = selected_layer]()
+  {
+    auto tile = Engine::ECS::create_entity()
+      .add_component<Components::Tile>()
+      .add_component<Components::Transform2D>(grid_pos, 0.0f,
+        Math::Vec2D{ grid_snap_value, grid_snap_value })
+      .add_component<Components::Texture>(atlas_entry.texture)
+      .add_component<Components::TextureAtlas>(atlas_entry.atlas)
+      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
+
+    tile.get_component<Components::TextureAtlas>()->drawIndex =
+      selected_tile_index_value;
+
+    tile.clear_layers();
+    tile.add_to_layer(selected_layer_value);
+
+    *tile_id = tile.get_id();   // always update stored ID
+  },
+
+  // --- UNDO ---
+  [tile_id]()
+  {
+    if (*tile_id != Engine::ECS::INVALID_ENTITY)
+    {
+      Engine::ECS::destroy_entity(*tile_id);
+    }
+  }
+);
+
+Engine::UndoManager::add(std::move(place_tile_action));
+
+    
     placed_tiles.insert(pos_key);
   }
 
@@ -288,7 +355,10 @@ namespace TilemapPanel {
         color->a = 1.0f;
       }
     }
+
+
   }
+
 
   void draw_panel() {
     ImGui::Begin("Tilemap Editor");

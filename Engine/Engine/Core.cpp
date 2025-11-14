@@ -36,7 +36,7 @@
 #include "FileIO/Settings.h"
 #include "FileIO/SettingsManager.h"
 #include "Events/RegisterAllEvents.h"
-
+#include "UndoManager/UndoManager.h"
 
 namespace Engine
 {
@@ -198,6 +198,12 @@ namespace Engine
         {
           physics_step_mode = !physics_step_mode;
           std::cout << "Physics Step Mode: " << (physics_step_mode ? "ON" : "OFF") << std::endl;
+        }
+
+        if (Engine::Input::is_pressed(Engine::KeyCode::Z) && Engine::Input::is_held(Engine::KeyCode::CtrlLeft))
+        {
+          std::cout << "Undoing last action\n";
+          Engine::UndoManager::undo();
         }
 
         bool shouldRunPhysics = !physics_step_mode || Engine::Input::is_pressed(KeyCode::RightBracket) || force_one_update;

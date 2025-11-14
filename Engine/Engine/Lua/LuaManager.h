@@ -21,7 +21,7 @@
 // and types to Lua.
 
 #pragma once
-#include "../MonkeyEngine.h"
+#include "../TypeDef.h"
 #include <sol/sol.hpp>
 #include <string>
 #include <unordered_map>
