@@ -215,7 +215,7 @@ namespace Engine {
       }
 
       ReflectionLibrary::GenericValue result;
-      result["dataType"] = "Prefab";
+      // result["dataType"] = "Prefab";
 
       auto prefab_impl = prefab.get_impl();
 

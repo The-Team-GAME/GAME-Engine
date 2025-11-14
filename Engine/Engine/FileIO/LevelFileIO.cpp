@@ -26,12 +26,13 @@ namespace Engine {
 
       ReflectionLibrary::GenericValue level_value = ReflectionLibrary::Object();
 
-      level_value.getObject()["name"] = ReflectionLibrary::GenericValue(level.name);
-      ReflectionLibrary::GenericValue entities_array = ReflectionLibrary::Array();
+      level_value["dataType"] = "Level";
+      level_value["data"]["entities"] = ReflectionLibrary::Array();
+      level_value["data"]["name"] = ReflectionLibrary::GenericValue(level.name);
+
       for (const auto& entity_value : level.entities) {
-        entities_array.getArray().push_back(entity_value);
+        level_value["data"]["entities"].push_back(entity_value);
       }
-      level_value.getObject()["entities"] = entities_array;
 
       return ReflectionLibrary::generic_value_to_json(level_value, true);
     }
@@ -46,9 +47,9 @@ namespace Engine {
       ReflectionLibrary::GenericValue level_value = level_value_opt.value();
 
       Engine::Level level;
-      level.name = level_value.getObject().at("name").getString();
+      level.name = level_value["data"]["name"].getString();
 
-      const auto& entities_array = level_value.getObject().at("entities").getArray();
+      const auto& entities_array = level_value["data"]["entities"].getArray();
       for (const auto& entity_value : entities_array) {
         level.entities.push_back(entity_value);
       }

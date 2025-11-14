@@ -1,0 +1,119 @@
+{
+    "data": {
+        "entities": [
+            {
+                "layers": [
+                    "default",
+                    "background"
+                ],
+                "components": [
+                    {
+                        "type": "Components::Color",
+                        "data": {
+                            "r": 1.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "a": 1.0
+                        }
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/MAIN MENU.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "type": "Components::Transform2D",
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 900.0
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "layers": [
+                    "default",
+                    "ui"
+                ],
+                "components": [
+                    {
+                        "type": "Components::Color",
+                        "data": {
+                            "r": 1.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "a": 1.0
+                        }
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/Button_Start.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "type": "Components::Transform2D",
+                        "data": {
+                            "position": {
+                                "x": 625.0,
+                                "y": 700.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 288.0,
+                                "y": 96.0
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "layers": [
+                    "default",
+                    "ui"
+                ],
+                "components": [
+                    {
+                        "type": "Components::Color",
+                        "data": {
+                            "r": 1.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "a": 1.0
+                        }
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/Button_Exit.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "type": "Components::Transform2D",
+                        "data": {
+                            "position": {
+                                "x": 975.0,
+                                "y": 700.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 288.0,
+                                "y": 96.0
+                            }
+                        }
+                    }
+                ]
+            }
+        ],
+        "name": ""
+    },
+    "dataType": "Level"
+}
