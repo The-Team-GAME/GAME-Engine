@@ -143,11 +143,60 @@ void PrefabEditorPanel()
     ImGui::EndChild();
 
     // Create new prefab button
+    static char newPrefabNameBuffer[256] = "";
     if (ImGui::Button("Create New Prefab")) {
-      // TODO: implement
+      ImGui::OpenPopup("Create New Prefab");
+      // Clear buffer when opening popup
+      newPrefabNameBuffer[0] = '\0';
     }
 
     // Create New Prefab popup
+    if (ImGui::BeginPopup("Create New Prefab"))
+    {
+      ImGui::Text("Enter prefab name:");
+      ImGui::InputText("##NewPrefabName", newPrefabNameBuffer, sizeof(newPrefabNameBuffer));
+
+      ImGui::Separator();
+
+      if (ImGui::Button("Create")) {
+        std::string prefab_name = std::string(newPrefabNameBuffer);
+
+        if (!prefab_name.empty()) {
+          // Add .json extension if not present
+          if (prefab_name.find(".json") == std::string::npos) {
+            prefab_name += ".json";
+          }
+
+          // Construct the relative path (prefabs folder)
+          std::string relative_path = "prefabs/" + prefab_name;
+
+          // Create a new empty prefab
+          Engine::ECS::Prefab new_prefab = Engine::ECS::create_prefab();
+
+          // Add to cache without saving to disk
+          Engine::Resources::cache_prefab(relative_path, new_prefab, true, true);
+
+          // Mark as dirty in ProjectSaveManager
+          Engine::ProjectSaveManager::set_dirty(
+            Engine::ProjectSaveManager::DirtyStates::Prefab(relative_path)
+          );
+
+          // Select the newly created prefab
+          selected_prefab_path = relative_path;
+
+          Log::info("Created new prefab: " + relative_path);
+          ImGui::CloseCurrentPopup();
+        }
+      }
+
+      ImGui::SameLine();
+
+      if (ImGui::Button("Cancel")) {
+        ImGui::CloseCurrentPopup();
+      }
+
+      ImGui::EndPopup();
+    }
 
     ImGui::SameLine();
 
