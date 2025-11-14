@@ -18,10 +18,10 @@
 #include "SparseSet.h"
 #include "ComponentArray.h"
 #include "System.h"
-#include "LayerRegistry.h"
 #include <unordered_map>
 #include <memory>
 #include <vector>
+#include <array>
 
 namespace Engine {
   namespace ECS {
@@ -41,7 +41,10 @@ namespace Engine {
         std::vector<std::string> layer_id_to_name;
         std::vector<SparseSet<EntityID>> layer_entities;
         std::bitset<MAX_LAYERS> layer_active_state; // Track which layers are active/enabled
-        LayerRegistry layer_registry; // Collision matrix for layer-based collision filtering
+
+        // Collision matrix: collision_matrix[layerA][layerB] = true if they should collide
+        // Matrix is symmetric: collision_matrix[A][B] == collision_matrix[B][A]
+        std::array<std::bitset<MAX_LAYERS>, MAX_LAYERS> collision_matrix;
 
         // Constructor to initialize default layer
         WorldContainers() {
@@ -51,6 +54,11 @@ namespace Engine {
           layer_id_to_name[DEFAULT_LAYER] = "default";
           layer_entities.resize(2); // Resize to hold layer 0 (unused) and layer 1 (default)
           layer_active_state.set(); // All layers are active by default
+
+          // Initialize collision matrix: all layers collide with all layers by default
+          for (auto& row : collision_matrix) {
+            row.set();
+          }
         }
       };
 

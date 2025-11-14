@@ -931,18 +931,6 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
-    Gets a reference to the global LayerRegistry for configuring collision relationships.
-
-    Returns:
-    LayerRegistry& - Reference to the collision matrix registry.
-
-    Where to call it:
-    When you need direct access to the collision registry for advanced configuration.
-    ==================================================================================*/
-    LayerRegistry& get_layer_registry();
-
-    /*=================================================================================
-    Function Brief:
     Enables collision between two layers.
 
     Parameters:

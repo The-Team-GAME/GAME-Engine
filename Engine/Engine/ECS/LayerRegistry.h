@@ -7,33 +7,22 @@
 //
 // email:   chew.s@digipen.edu
 //
-// brief:   This file defines the LayerRegistry which manages a collision matrix
-//          that determines which layers should collide with which other layers.
-//          Provides an efficient way to control layer-based collision filtering.
+// brief:   This file defines the LayerRegistry namespace which provides functions
+//          for managing the collision matrix that determines which layers should
+//          collide with which other layers. The collision matrix data is stored
+//          in WorldData.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
 #include "Types.h"
-#include <array>
 #include <string>
 #include <bitset>
 
 namespace Engine {
   namespace ECS {
-
-    /* ============================================== //
-    // LayerRegistry - Collision matrix management   //
-    // ============================================== */
-    class LayerRegistry {
-    private:
-      // Collision matrix: collision_matrix[layerA][layerB] = true if they should collide
-      // Matrix is symmetric: collision_matrix[A][B] == collision_matrix[B][A]
-      std::array<std::bitset<MAX_LAYERS>, MAX_LAYERS> collision_matrix;
-
-    public:
-      LayerRegistry();
+    namespace LayerRegistry {
 
       /*=================================================================================
       Function Brief:
@@ -103,7 +92,7 @@ namespace Engine {
       Where to call it:
       In collision detection to filter collisions based on layers.
       ==================================================================================*/
-      bool should_collide(LayerID layer_a, LayerID layer_b) const;
+      bool should_collide(LayerID layer_a, LayerID layer_b);
 
       /*=================================================================================
       Function Brief:
@@ -119,7 +108,7 @@ namespace Engine {
       Where to call it:
       In collision detection when checking if two entities should collide.
       ==================================================================================*/
-      bool should_collide(const LayerSignature& signature_a, const LayerSignature& signature_b) const;
+      bool should_collide(const LayerSignature& signature_a, const LayerSignature& signature_b);
 
       /*=================================================================================
       Function Brief:
@@ -147,7 +136,7 @@ namespace Engine {
       Where to call it:
       When querying collision configuration or for debugging.
       ==================================================================================*/
-      std::bitset<MAX_LAYERS> get_layer_collisions(LayerID layer) const;
+      std::bitset<MAX_LAYERS> get_layer_collisions(LayerID layer);
 
       /*=================================================================================
       Function Brief:
@@ -166,7 +155,7 @@ namespace Engine {
       When starting fresh with collision configuration.
       ==================================================================================*/
       void clear_all();
-    };
 
+    } // namespace LayerRegistry
   } // namespace ECS
 } // namespace Engine
