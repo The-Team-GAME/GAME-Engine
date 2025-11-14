@@ -26,6 +26,7 @@
 #include "ViewportPanel.h"
 #include "SceneChooserPanel.h"
 #include "LayerManagerPanel.h"
+#include "LevelManagerPanel.h"
 
 void register_all_panels()
 {
@@ -39,4 +40,5 @@ void register_all_panels()
   ImGuiManager::register_panel("Tilemap", TilemapPanel::draw_panel);
   ImGuiManager::register_panel("Scene Chooser", SceneChooserPanel);
   ImGuiManager::register_panel("Layer Manager", LayerManagerPanel);
+  ImGuiManager::register_panel("Level Manager", LevelManagerPanel);
 }
