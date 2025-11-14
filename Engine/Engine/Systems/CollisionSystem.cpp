@@ -58,11 +58,8 @@ void col2D::update()
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
 
-    // Build collision mask for this entity
+    // Get entity's layers
     ECS::LayerSignature entity_layers = entity.get_layers();
-    ECS::LayerSignature entity_collision_mask = entity_layers;
-    entity_collision_mask |= box->include_layers;
-    entity_collision_mask &= ~box->exclude_layers;
 
     // Query nearby entities using quadtree
     std::vector<ECS::Entity> nearby;
@@ -78,15 +75,11 @@ void col2D::update()
       Components::RigidBody* other_rigid = other.get_component<Components::RigidBody>();
       Components::BoxCollider* other_box = other.get_component<Components::BoxCollider>();
 
-      // Build collision mask for other entity
+      // Get other entity's layers
       ECS::LayerSignature other_layers = other.get_layers();
-      ECS::LayerSignature other_collision_mask = other_layers;
-      other_collision_mask |= other_box->include_layers;
-      other_collision_mask &= ~other_box->exclude_layers;
 
-      // Layer filtering (bidirectional check)
-      if ((entity_collision_mask & other_layers).none() ||
-        (other_collision_mask & entity_layers).none())
+      // Check if these entities' layers should collide using the global collision matrix
+      if (!ECS::should_layers_collide(entity_layers, other_layers))
       {
         continue;
       }

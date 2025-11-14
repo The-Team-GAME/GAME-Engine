@@ -12,6 +12,7 @@
     <ClCompile Include="Engine\FileIO\LevelFileIO.cpp" />
     <ClCompile Include="Engine\LevelManager.cpp" />
     <ClCompile Include="Engine\GUI\EntityEditorPanel.cpp" />
+    <ClCompile Include="Engine\GUI\LayerRegistryPanel.cpp" />
     <ClCompile Include="Engine\GUI\LevelPanel.cpp" />
     <ClCompile Include="Engine\GUI\PrefabEditorPanel.cpp" />
     <ClCompile Include="Engine\GUI\TilemapPanel.cpp" />
@@ -24,6 +25,7 @@
     <ClCompile Include="Engine\Core.cpp" />
     <ClCompile Include="Engine\ECS\ComponentManager.cpp" />
     <ClCompile Include="Engine\ECS\Entity.cpp" />
+    <ClCompile Include="Engine\ECS\LayerRegistry.cpp" />
     <ClCompile Include="Engine\ECS\System.cpp" />
     <ClCompile Include="Engine\ECS\World.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer.cpp" />
@@ -147,12 +149,14 @@
     <ClInclude Include="Engine\ECS\ComponentManager.h" />
     <ClInclude Include="Engine\ECS\ECS.h" />
     <ClInclude Include="Engine\ECS\Entity.h" />
+    <ClInclude Include="Engine\ECS\LayerRegistry.h" />
     <ClInclude Include="Engine\ECS\System.h" />
     <ClInclude Include="Engine\ECS\Types.h" />
     <ClInclude Include="Engine\ECS\World.h" />
     <ClInclude Include="Engine\FileIO\LevelFileIO.h" />
     <ClInclude Include="Engine\LevelManager.h" />
     <ClInclude Include="Engine\GUI\EntityEditorPanel.h" />
+    <ClInclude Include="Engine\GUI\LayerRegistryPanel.h" />
     <ClInclude Include="Engine\GUI\LevelPanel.h" />
     <ClInclude Include="Engine\GUI\PrefabEditorPanel.h" />
     <ClInclude Include="Engine\GUI\ResourcePicker.h" />

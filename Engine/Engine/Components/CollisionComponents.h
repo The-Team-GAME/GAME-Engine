@@ -10,7 +10,7 @@
 // brief:   This file contains the definition of the data structures that will be
 //          needed for collision related logic / calculations
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 #include "../Math/Vector2D.h"
@@ -21,13 +21,13 @@ struct AABB {
   f32 half_width;
   f32 half_height;
 
-  AABB(Vec2D pos = Vec2D(0,0), f32 width = 0.f, f32 height = 0.f) : pos(pos), half_width(width / 2), half_height(height / 2)
+  AABB(Vec2D pos = Vec2D(0, 0), f32 width = 0.f, f32 height = 0.f) : pos(pos), half_width(width / 2), half_height(height / 2)
   {
     // Default Ctor
     // Empty by design
   }
 
-  AABB(f32 width, f32 height) : pos(0,0), half_width(width / 2), half_height(height / 2)
+  AABB(f32 width, f32 height) : pos(0, 0), half_width(width / 2), half_height(height / 2)
   {
     // For the old style of AABB so it wont return any problems b4 M2 submissions
     // Empty by design
@@ -50,10 +50,10 @@ struct AABB {
     // (lhs_min.y < rhs_max.y) &&
     // (lhs_max.y > rhs_min.y);
 
-    return  (pos.x - half_width < rhs.pos.x + rhs.half_width)   &&
-            (rhs.pos.x - rhs.half_width < pos.x + half_width)   &&
-            (pos.y - half_height < rhs.pos.y + rhs.half_height) &&
-            (rhs.pos.y - rhs.half_height < pos.y + half_height);
+    return  (pos.x - half_width < rhs.pos.x + rhs.half_width) &&
+      (rhs.pos.x - rhs.half_width < pos.x + half_width) &&
+      (pos.y - half_height < rhs.pos.y + rhs.half_height) &&
+      (rhs.pos.y - rhs.half_height < pos.y + half_height);
   }
 };
 
@@ -71,19 +71,6 @@ namespace Components
   // https://docs.unity3d.com/6000.2/Documentation/Manual/class-BoxCollider.html
   struct BoxCollider {
 
-    // Layer collision filtering (like Unity's Rigidbody includeLayers/excludeLayers)
-    // Rule: Entities ALWAYS collide with others in their own layers
-    // include_layers: Additional layers this entity should collide with
-    // exclude_layers: Layers to NOT collide with (overrides own layers and include_layers)
-    // 
-    // Example: Player on "player" layer wants to collide with "enemy" but not "player_bullet"
-    //   - Player is on layer "player"
-    //   - Player.include_layers = LayerSignature{"enemy"}
-    //   - Player.exclude_layers = LayerSignature{"player_bullet"}
-    //   Result: Player collides with "player" (own layer) and "enemy", but not "player_bullet"
-    Engine::ECS::LayerSignature include_layers; // Additional layers to collide with
-    Engine::ECS::LayerSignature exclude_layers; // Layers to NOT collide with (overrides include)
-
     // If a object has resolve_collisions set to true,that means that other objects that 
     // collide into the current object needs to be snapped out of the current object
     bool resolve_collisions = false;
@@ -95,14 +82,14 @@ namespace Components
 
     // Rect box collider ctor
     BoxCollider(f32 width, f32 height, bool collide) : width(width), height(height), resolve_collisions(collide)
-    { 
+    {
       aabb.half_width = width / 2;
       aabb.half_height = height / 2;
     }
 
     // cricle box collider ctor (not used for now)
     BoxCollider(f32 radius) : radius(radius)
-    { 
+    {
       /* empty by design */
     }
 

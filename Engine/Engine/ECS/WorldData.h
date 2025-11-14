@@ -18,6 +18,7 @@
 #include "SparseSet.h"
 #include "ComponentArray.h"
 #include "System.h"
+#include "LayerRegistry.h"
 #include <unordered_map>
 #include <memory>
 #include <vector>
@@ -40,6 +41,7 @@ namespace Engine {
         std::vector<std::string> layer_id_to_name;
         std::vector<SparseSet<EntityID>> layer_entities;
         std::bitset<MAX_LAYERS> layer_active_state; // Track which layers are active/enabled
+        LayerRegistry layer_registry; // Collision matrix for layer-based collision filtering
 
         // Constructor to initialize default layer
         WorldContainers() {
