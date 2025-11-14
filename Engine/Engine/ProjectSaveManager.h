@@ -29,6 +29,8 @@ namespace Engine {
 
     void set_dirty(DirtyState state);
 
+    bool check_dirty(const DirtyState& state);
+
     void save_all_dirty();
 
     bool get_is_any_dirty();

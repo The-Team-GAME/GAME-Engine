@@ -12,7 +12,14 @@ namespace {
 void Engine::ProjectSaveManager::set_dirty(DirtyState state)
 {
   // Check if this state already exists to avoid duplicates
-  bool already_exists = std::any_of(dirty_states.begin(), dirty_states.end(),
+  if (!check_dirty(state)) {
+    dirty_states.push_back(std::move(state));
+  }
+}
+
+bool Engine::ProjectSaveManager::check_dirty(const DirtyState& state)
+{
+  return std::any_of(dirty_states.begin(), dirty_states.end(),
     [&state](const DirtyState& existing) {
       // Compare based on type and content
       return std::visit([&existing](const auto& s) -> bool {
@@ -33,10 +40,6 @@ void Engine::ProjectSaveManager::set_dirty(DirtyState state)
         return false;
         }, state);
     });
-
-  if (!already_exists) {
-    dirty_states.push_back(std::move(state));
-  }
 }
 
 void Engine::ProjectSaveManager::save_all_dirty()
@@ -59,10 +62,10 @@ void Engine::ProjectSaveManager::save_all_dirty()
       else if constexpr (std::is_same_v<T, DirtyStates::Level>) {
         // Save specific level
         Log::info("Saving level: " + s.level_path);
-        
+
         // Construct full path from relative path
         std::string full_path = Engine::Path(Engine::Resources::resource_path).join(s.level_path);
-        
+
         auto it = Engine::Resources::level_cache.find(full_path);
         if (it != Engine::Resources::level_cache.end()) {
           Engine::Resources::save_level(s.level_path, it->second, true);
@@ -77,7 +80,7 @@ void Engine::ProjectSaveManager::save_all_dirty()
 
         // Construct full path from relative path
         std::string full_path = Engine::Path(Engine::Resources::resource_path).join(s.prefab_path);
-        
+
         auto it = Engine::Resources::prefab_cache.find(full_path);
         if (it != Engine::Resources::prefab_cache.end()) {
           if (auto prefab = it->second.lock()) {
