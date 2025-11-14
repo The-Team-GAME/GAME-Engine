@@ -115,7 +115,7 @@ void LayerRegistryPanel()
     for (size_t col = 0; col < layer_names.size(); ++col) {
       // Use the measured checkbox position
       ImVec2 pos;
-      pos.x = checkbox_x_positions[col] + (ImGui::GetFrameHeight() * 0.5f); // Center on checkbox
+      pos.x = checkbox_x_positions[col] + (ImGui::GetFrameHeight() * 0.25f); // Center on checkbox
       pos.y = header_start_pos.y + max_rotated_height + 5.0f; // Start from bottom
 
       // Rotation matrix
