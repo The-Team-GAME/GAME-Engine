@@ -97,37 +97,23 @@ void LayerRegistryPanel()
 
         ImGui::SameLine();
 
-        // Disable checkbox for diagonal (layer with itself)
-        bool is_diagonal = (row == col);
-        if (is_diagonal) {
-          ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.3f);
-        }
 
         bool collides = Engine::ECS::LayerRegistry::should_layers_collide(row_layer, col_layer);
         std::string checkbox_id = "##" + std::to_string(row_layer) + "_" + std::to_string(col_layer);
 
-        if (is_diagonal) {
-          // Always show diagonal as checked but disabled
-          bool always_true = true;
-          ImGui::Checkbox(checkbox_id.c_str(), &always_true);
-        }
-        else {
-          if (ImGui::Checkbox(checkbox_id.c_str(), &collides)) {
-            if (collides) {
-              Engine::ECS::LayerRegistry::enable_layer_collision(row_layer, col_layer);
-            }
-            else {
-              Engine::ECS::LayerRegistry::disable_layer_collision(row_layer, col_layer);
-            }
+        if (ImGui::Checkbox(checkbox_id.c_str(), &collides)) {
+          if (collides) {
+            Engine::ECS::LayerRegistry::enable_layer_collision(row_layer, col_layer);
+          }
+          else {
+            Engine::ECS::LayerRegistry::disable_layer_collision(row_layer, col_layer);
           }
         }
 
-        if (is_diagonal) {
-          ImGui::PopStyleVar();
-        }
+
 
         // Tooltip on hover
-        if (ImGui::IsItemHovered() && !is_diagonal) {
+        if (ImGui::IsItemHovered()) {
           ImGui::BeginTooltip();
           ImGui::Text("%s <-> %s", layer_names[row].c_str(), layer_names[col].c_str());
           if (collides) {
@@ -175,19 +161,12 @@ void LayerRegistryPanel()
       Engine::ECS::LayerID other_layer = layer_ids[i];
       bool collides = Engine::ECS::LayerRegistry::should_layers_collide(selected_layer, other_layer);
 
-      // Don't allow disabling self-collision
-      if (selected_layer == other_layer) {
-        bool always_true = true;
-        ImGui::Checkbox((layer_names[i] + " (self)").c_str(), &always_true);
-      }
-      else {
-        if (ImGui::Checkbox(layer_names[i].c_str(), &collides)) {
-          if (collides) {
-            Engine::ECS::LayerRegistry::enable_layer_collision(selected_layer, other_layer);
-          }
-          else {
-            Engine::ECS::LayerRegistry::disable_layer_collision(selected_layer, other_layer);
-          }
+      if (ImGui::Checkbox(layer_names[i].c_str(), &collides)) {
+        if (collides) {
+          Engine::ECS::LayerRegistry::enable_layer_collision(selected_layer, other_layer);
+        }
+        else {
+          Engine::ECS::LayerRegistry::disable_layer_collision(selected_layer, other_layer);
         }
       }
     }
@@ -203,9 +182,7 @@ void LayerRegistryPanel()
     ImGui::SameLine();
     if (ImGui::Button("Disable All for This Layer")) {
       for (Engine::ECS::LayerID other_layer : layer_ids) {
-        if (other_layer != selected_layer) { // Keep self-collision
-          Engine::ECS::LayerRegistry::disable_layer_collision(selected_layer, other_layer);
-        }
+        Engine::ECS::LayerRegistry::disable_layer_collision(selected_layer, other_layer);
       }
     }
   }
