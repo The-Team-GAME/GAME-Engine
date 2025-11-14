@@ -24,7 +24,8 @@ void LayerRegistryPanel()
   ImGui::Begin("Layer Collision Registry");
 
   // Rotation angle control (in degrees)
-  static float rotation_angle = 90.0f;
+  static float rotation_angle = 45.0f;
+  static float char_spacing = 1.6f;
 
   auto& containers = Engine::ECS::Internal::get_containers();
 
@@ -68,15 +69,6 @@ void LayerRegistryPanel()
   if (ImGui::CollapsingHeader("Collision Matrix", ImGuiTreeNodeFlags_DefaultOpen))
   {
     ImGui::Text("Matrix: Rows vs Columns");
-
-    // Rotation angle slider
-    ImGui::SetNextItemWidth(200.0f);
-    ImGui::SliderFloat("Column Label Rotation", &rotation_angle, 0.0f, 90.0f, "%.1f°");
-
-    // Calculate dimensions
-    float cell_size = 25.0f;
-    float label_width = 150.0f;
-    float char_spacing = 1.8f; // Multiplier for gap between characters
 
     // Convert rotation angle to radians
     float rad = rotation_angle * 3.14159265f / 180.0f;
@@ -127,12 +119,12 @@ void LayerRegistryPanel()
       pos.y = header_start_pos.y + max_rotated_height + 5.0f; // Start from bottom
 
       // Rotation matrix
-      float cos_a = cosf(rad);
-      float sin_a = sinf(rad);
+      cos_a = cosf(rad);
+      sin_a = sinf(rad);
 
       // Draw rotated text with anchor at the end (last character)
       const char* text = layer_names[col].c_str();
-      int text_len = strlen(text);
+      int text_len = static_cast<int>(strlen(text));
 
       for (int i = 0; i < text_len; i++) {
         char c[2] = { text[i], '\0' };
@@ -254,6 +246,11 @@ void LayerRegistryPanel()
         Engine::ECS::LayerRegistry::disable_layer_collision(selected_layer, other_layer);
       }
     }
+  }
+
+  if (ImGui::CollapsingHeader("Panel settings")) {
+    ImGui::SliderFloat("Column Label Rotation", &rotation_angle, 0.0f, 90.0f, "%.1f°");
+    ImGui::SliderFloat("Char Spacing", &char_spacing, 1.0f, 3.0f, "%.1f");
   }
 
   ImGui::End();
