@@ -92,6 +92,10 @@
     <ClCompile Include="GameLogic\WinMain.cpp" />
     <ClCompile Include="Engine\Lua\LuaManager.cpp" />
     <ClCompile Include="Engine\Lua\GameAPI.cpp" />
+    <ClCompile Include="Engine\Systems\DebugDrawSystem.cpp" />
+    <ClCompile Include="Engine\GUI\LayerManagerPanel.cpp" />
+    <ClCompile Include="GameLogic\GameStates\StressTestState.cpp" />
+    <ClCompile Include="Engine\Systems\LogicSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -189,6 +193,10 @@
     <ClInclude Include="GameLogic\GameStates\DistortionEffectState.h" />
     <ClInclude Include="GameLogic\GameStates\EmptyState.h" />
     <ClInclude Include="GameLogic\GameStates\LuaState.h" />
+    <ClInclude Include="Engine\Systems\DebugDrawSystem.h" />
+    <ClInclude Include="Engine\GUI\LayerManagerPanel.h" />
+    <ClInclude Include="GameLogic\GameStates\StressTestState.h" />
+    <ClInclude Include="Engine\Systems\LogicSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -223,9 +231,7 @@
     <ClInclude Include="Engine\GUI\CameraPanel.h" />
     <ClInclude Include="Engine\GUI\TilemapPanel.h" />
     <ClInclude Include="Engine\Systems\GraphicsSystem.h" />
-    <ClInclude Include="GameLogic\Components\Components.h" />
     <ClInclude Include="Engine\Core.h" />
-    <ClInclude Include="GameLogic\GameStates\DevSpriteAnimationState.h" />
     <ClInclude Include="Engine\Components\Components.h" />
     <ClInclude Include="Engine\Reflection\Helpers.h" />
     <ClInclude Include="Engine\Reflection\Reflect.h" />

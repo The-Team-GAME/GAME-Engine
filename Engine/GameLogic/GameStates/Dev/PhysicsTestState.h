@@ -37,7 +37,7 @@ public:
       .add_component<Components::Transform2D>(player_pos.x, player_pos.y, 0.0f, 20.0f, 20.0f) // pos.x, pos.y, rotation, scale.x, scale.y
       .add_component<Components::Color>(blue)
       .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
-      .add_component<Components::RigidBody>(false, true)
+      .add_component<Components::RigidBody>(Components::RigidBody(false, true))
       .add_component<Components::BoxCollider>(20.0f, 20.0f, true); // width, height
 
     // Walling the player in
@@ -163,7 +163,7 @@ public:
     if (Input::is_held(KeyCode::Space) && player_rigid->on_ground && !jumping)
     {
       //jump
-      std::cout << "JUMP\n";
+      // std::cout << "JUMP\n";
       jumping = true;
       phy2D::jump(*player_rigid);
       std::cout << player_rigid->force << std::endl;
