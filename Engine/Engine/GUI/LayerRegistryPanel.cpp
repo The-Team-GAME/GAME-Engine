@@ -23,6 +23,9 @@ void LayerRegistryPanel()
 {
   ImGui::Begin("Layer Collision Registry");
 
+  // Rotation angle control (in degrees)
+  static float rotation_angle = 90.0f;
+
   auto& containers = Engine::ECS::Internal::get_containers();
 
   // Get all registered layers
@@ -65,22 +68,88 @@ void LayerRegistryPanel()
   if (ImGui::CollapsingHeader("Collision Matrix", ImGuiTreeNodeFlags_DefaultOpen))
   {
     ImGui::Text("Matrix: Rows vs Columns");
-    ImGui::Separator();
+
+    // Rotation angle slider
+    ImGui::SetNextItemWidth(200.0f);
+    ImGui::SliderFloat("Column Label Rotation", &rotation_angle, 0.0f, 90.0f, "%.1f°");
 
     // Calculate dimensions
     float cell_size = 25.0f;
     float label_width = 150.0f;
+    float char_spacing = 1.8f; // Multiplier for gap between characters
 
-    // Header row - column labels (vertical)
-    ImGui::Dummy(ImVec2(label_width, cell_size));
+    // Convert rotation angle to radians
+    float rad = rotation_angle * 3.14159265f / 180.0f;
+    float cos_a = cosf(rad);
+    float sin_a = sinf(rad);
+
+    // Calculate maximum rotated text height
+    float max_rotated_height = 0.0f;
+    for (const auto& name : layer_names) {
+      ImVec2 text_size = ImGui::CalcTextSize(name.c_str());
+      float text_width = text_size.x * char_spacing; // Total width with spacing
+
+      // Calculate the height of the rotated text using rotation matrix
+      // Height = abs(width * sin(angle)) + abs(text_height * cos(angle))
+      float rotated_height = fabsf(text_width * sin_a) + fabsf(text_size.y * cos_a);
+      max_rotated_height = std::max(max_rotated_height, rotated_height);
+    }
+
+    // Header row - column labels (rotated)
+    // Start position after the row label width
+    ImVec2 header_start_pos = ImGui::GetCursorScreenPos();
+
+    // First, render a dummy row to measure checkbox positions (invisible)
+    ImGui::PushID("measure_row");
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.0f); // Make completely invisible
+    ImGui::Text("%-20s", ""); // Empty label same width as row labels
+
+    std::vector<float> checkbox_x_positions;
     for (size_t col = 0; col < layer_names.size(); ++col) {
       ImGui::SameLine();
-      // Rotate text by rendering vertically
-      ImGui::BeginGroup();
-      ImGui::Dummy(ImVec2(cell_size, 0));
-      ImGui::Text("%s", layer_names[col].c_str());
-      ImGui::EndGroup();
+      ImVec2 checkbox_pos = ImGui::GetCursorScreenPos();
+      checkbox_x_positions.push_back(checkbox_pos.x);
+
+      // Render invisible checkbox to advance cursor
+      bool dummy = false;
+      ImGui::Checkbox(("##dummy_" + std::to_string(col)).c_str(), &dummy);
     }
+    ImGui::PopStyleVar(); // Restore alpha
+    ImGui::PopID();
+
+    // Now draw the actual column headers at the correct positions
+    ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+    for (size_t col = 0; col < layer_names.size(); ++col) {
+      // Use the measured checkbox position
+      ImVec2 pos;
+      pos.x = checkbox_x_positions[col] + (ImGui::GetFrameHeight() * 0.5f); // Center on checkbox
+      pos.y = header_start_pos.y + max_rotated_height + 5.0f; // Start from bottom
+
+      // Rotation matrix
+      float cos_a = cosf(rad);
+      float sin_a = sinf(rad);
+
+      // Draw rotated text with anchor at the end (last character)
+      const char* text = layer_names[col].c_str();
+      int text_len = strlen(text);
+
+      for (int i = 0; i < text_len; i++) {
+        char c[2] = { text[i], '\0' };
+        ImVec2 char_size = ImGui::CalcTextSize(c);
+
+        // Calculate offset from the END of the text (reverse direction)
+        float offset = (text_len - 1 - i) * char_size.x * char_spacing;
+        ImVec2 char_pos;
+        char_pos.x = pos.x - offset * cos_a;
+        char_pos.y = pos.y - offset * sin_a;
+
+        draw_list->AddText(char_pos, ImGui::GetColorU32(ImGuiCol_Text), c);
+      }
+    }
+
+    // Add spacing for the header
+    ImGui::Dummy(ImVec2(0, max_rotated_height));
 
     ImGui::Separator();
 
