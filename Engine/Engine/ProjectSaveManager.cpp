@@ -1,6 +1,7 @@
 #include "ProjectSaveManager.h"
 #include "Logger.h"
 #include "FileIO/Settings.h"
+#include "Path.h"
 #include <vector>
 #include <algorithm>
 
@@ -65,9 +66,21 @@ void Engine::ProjectSaveManager::save_all_dirty()
         // Save specific prefab
         Log::info("Saving prefab: " + s.prefab_path);
 
-        auto prefab = Engine::Resources::prefab_cache[s.prefab_path].lock();
-
-        Engine::Resources::save_prefab(s.prefab_path, prefab, true);
+        // Construct full path from relative path
+        std::string full_path = Engine::Path(Engine::Resources::resource_path).join(s.prefab_path);
+        
+        auto it = Engine::Resources::prefab_cache.find(full_path);
+        if (it != Engine::Resources::prefab_cache.end()) {
+          if (auto prefab = it->second.lock()) {
+            Engine::Resources::save_prefab(s.prefab_path, Engine::ECS::Prefab(prefab), true);
+          }
+          else {
+            Log::error("Failed to save prefab - expired in cache: " + s.prefab_path);
+          }
+        }
+        else {
+          Log::error("Failed to save prefab - not found in cache: " + s.prefab_path);
+        }
       }
       }, state);
   }
