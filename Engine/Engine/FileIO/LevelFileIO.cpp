@@ -28,7 +28,6 @@ namespace Engine {
 
       level_value["dataType"] = "Level";
       level_value["data"]["entities"] = ReflectionLibrary::Array();
-      level_value["data"]["name"] = ReflectionLibrary::GenericValue(level.name);
 
       for (const auto& entity_value : level.entities) {
         level_value["data"]["entities"].push_back(entity_value);
@@ -47,7 +46,6 @@ namespace Engine {
       ReflectionLibrary::GenericValue level_value = level_value_opt.value();
 
       Engine::Level level;
-      level.name = level_value["data"]["name"].getString();
 
       const auto& entities_array = level_value["data"]["entities"].getArray();
       for (const auto& entity_value : entities_array) {

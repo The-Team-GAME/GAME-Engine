@@ -23,7 +23,7 @@ void Engine::ProjectSaveManager::set_dirty(DirtyState state)
             return true; // ProjectSettings is always the same
           }
           else if constexpr (std::is_same_v<T, DirtyStates::Level>) {
-            return existing_ptr->level_name == s.level_name;
+            return existing_ptr->level_path == s.level_path;
           }
           else if constexpr (std::is_same_v<T, DirtyStates::Prefab>) {
             return existing_ptr->prefab_path == s.prefab_path;
@@ -58,9 +58,18 @@ void Engine::ProjectSaveManager::save_all_dirty()
       }
       else if constexpr (std::is_same_v<T, DirtyStates::Level>) {
         // Save specific level
-        Log::info("Saving level: " + s.level_name);
-        Engine::Level level = Engine::Level::from_world(s.level_name);
-        Engine::Resources::save_level("levels/" + s.level_name, level, true);
+        Log::info("Saving level: " + s.level_path);
+        
+        // Construct full path from relative path
+        std::string full_path = Engine::Path(Engine::Resources::resource_path).join(s.level_path);
+        
+        auto it = Engine::Resources::level_cache.find(full_path);
+        if (it != Engine::Resources::level_cache.end()) {
+          Engine::Resources::save_level(s.level_path, it->second, true);
+        }
+        else {
+          Log::error("Failed to save level - not found in cache: " + s.level_path);
+        }
       }
       else if constexpr (std::is_same_v<T, DirtyStates::Prefab>) {
         // Save specific prefab

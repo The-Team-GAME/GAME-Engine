@@ -27,7 +27,6 @@
 
 void LevelManagerPanel()
 {
-  static std::string selected_level_path = "";
   static char levelSearchBuffer[256] = "";
 
   ImGui::Begin("Level Manager");
@@ -35,13 +34,13 @@ void LevelManagerPanel()
   // Section 1: Current Level Info
   if (ImGui::CollapsingHeader("Current Level", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    std::string current_level_name = Engine::LevelManager::get_current_level_name();
+    std::string current_level_path = Engine::LevelManager::get_current_level_path();
 
-    if (current_level_name.empty()) {
+    if (current_level_path.empty()) {
       ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No level currently loaded");
     }
     else {
-      ImGui::Text("Active Level: %s", current_level_name.c_str());
+      ImGui::Text("Active Level: %s", current_level_path.c_str());
     }
   }
 
@@ -78,16 +77,13 @@ void LevelManagerPanel()
       [](const auto& a, const auto& b) { return a.first < b.first; });
 
     for (const auto& [relative_path, level] : level_list) {
-      bool isSelected = (selected_level_path == relative_path);
+      bool isSelected = (Engine::LevelManager::get_current_level_path() == relative_path);
 
       std::string display_label = relative_path;
-      if (!level.name.empty()) {
-        display_label += " (" + level.name + ")";
-      }
       display_label += " [" + std::to_string(level.entities.size()) + " entities]";
 
       if (ImGui::Selectable(display_label.c_str(), isSelected)) {
-        selected_level_path = relative_path;
+        Engine::LevelManager::set_current_level_path(relative_path);
       }
     }
 
@@ -122,19 +118,18 @@ void LevelManagerPanel()
           std::string relative_path = "levels/" + level_name;
 
           // Create a new empty level from current world
-          Engine::Level new_level = Engine::Level::from_world(level_name);
+          Engine::Level new_level = Engine::Level::from_world();
 
           // Add to cache without saving to disk
-          std::string full_path = Engine::Path(Engine::Resources::resource_path).join(relative_path);
-          Engine::Resources::level_cache[full_path] = new_level;
+          Engine::Resources::cache_level(relative_path, new_level, true, false);
 
-          // Mark as dirty in ProjectSaveManager
+          // Mark as dirty in ProjectSaveManager (use relative path)
           Engine::ProjectSaveManager::set_dirty(
-            Engine::ProjectSaveManager::DirtyStates::Level(level_name)
+            Engine::ProjectSaveManager::DirtyStates::Level(relative_path)
           );
 
           // Select the newly created level
-          selected_level_path = relative_path;
+          Engine::LevelManager::set_current_level_path(relative_path);
 
           Log::info("Created new level: " + relative_path);
           ImGui::CloseCurrentPopup();
@@ -153,17 +148,19 @@ void LevelManagerPanel()
     ImGui::SameLine();
 
     // Load selected level button
-    if (!selected_level_path.empty() && ImGui::Button("Load Selected")) {
+    std::string current_level_path = Engine::LevelManager::get_current_level_path();
+    if (!current_level_path.empty() && ImGui::Button("Load Selected")) {
       // Construct full path
-      std::string full_path = Engine::Path(Engine::Resources::resource_path).join(selected_level_path);
+      std::string full_path = Engine::Path(Engine::Resources::resource_path).join(current_level_path);
 
       auto it = Engine::Resources::level_cache.find(full_path);
       if (it != Engine::Resources::level_cache.end()) {
         it->second.instantiate_into_world();
-        Log::info("Loaded level: " + selected_level_path);
+        Engine::LevelManager::set_current_level_path(current_level_path);
+        Log::info("Loaded level: " + current_level_path);
       }
       else {
-        Log::error("Failed to load level - not found in cache: " + selected_level_path);
+        Log::error("Failed to load level - not found in cache: " + current_level_path);
       }
     }
   }
@@ -171,12 +168,13 @@ void LevelManagerPanel()
   ImGui::Separator();
 
   // Section 3: Level Editor for Selected Level
-  if (!selected_level_path.empty())
+  std::string current_level_path = Engine::LevelManager::get_current_level_path();
+  if (!current_level_path.empty())
   {
-    ImGui::Text("Editing: %s", selected_level_path.c_str());
+    ImGui::Text("Editing: %s", current_level_path.c_str());
 
     // Get the level from cache
-    std::string full_path = Engine::Path(Engine::Resources::resource_path).join(selected_level_path);
+    std::string full_path = Engine::Path(Engine::Resources::resource_path).join(current_level_path);
     auto it = Engine::Resources::level_cache.find(full_path);
 
     if (it != Engine::Resources::level_cache.end()) {
@@ -184,7 +182,7 @@ void LevelManagerPanel()
 
       ImGui::Separator();
 
-      ImGui::Text("Level Name: %s", level.name.c_str());
+      ImGui::Text("Level Path: %s", current_level_path.c_str());
       ImGui::Text("Entity Count: %zu", level.entities.size());
 
       ImGui::Separator();

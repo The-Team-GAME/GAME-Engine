@@ -3,14 +3,13 @@
 
 namespace
 {
-  std::string current_level_name = "";
+  std::string current_level_path = "";
 }
 
 
-Engine::Level Engine::Level::from_world(const std::string& level_name)
+Engine::Level Engine::Level::from_world()
 {
   Level level;
-  level.name = level_name;
 
   Engine::ECS::for_each_entity([&](Engine::ECS::Entity entity) {
     ReflectionLibrary::GenericValue entity_value = Engine::ECS::entity_to_generic_value(entity);
@@ -32,16 +31,14 @@ void Engine::Level::instantiate_into_world()
     Engine::ECS::create_entity_from_generic_value(entity_value);
     // TODO: we need a way to mark the entities as belonging to a specific level
   }
-
-  current_level_name = name;
 }
 
-std::string Engine::LevelManager::get_current_level_name()
+std::string Engine::LevelManager::get_current_level_path()
 {
-  return current_level_name;
+  return current_level_path;
 }
 
-void Engine::LevelManager::set_current_level_name(const std::string& level_name)
+void Engine::LevelManager::set_current_level_path(const std::string& level_name)
 {
-  current_level_name = level_name;
+  current_level_path = level_name;
 }

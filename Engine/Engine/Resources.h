@@ -102,6 +102,9 @@ namespace Engine {
     Engine::Level load_level(const std::string& filepath, bool append_resource_path = true, bool persist = false);
     bool save_level(const std::string& filepath, const Engine::Level& level, bool append_resource_path = true);
 
+    // Add level to cache without saving to disk
+    void cache_level(const std::string& filepath, const Engine::Level& level, bool append_resource_path = true, bool persist = false);
+
 
 
     //optimization: clear unused resources from cache

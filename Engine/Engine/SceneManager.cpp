@@ -42,7 +42,7 @@ namespace Engine
       current_scene->load();
       current_scene->init();
 
-      Engine::LevelManager::set_current_level_name(""); // TODO: very hacky, we need a better way to manage levels vs scenes
+      Engine::LevelManager::set_current_level_path(""); // TODO: very hacky, we need a better way to manage levels vs scenes
 
       std::cout << "Loaded scene: " << name << std::endl;
     }

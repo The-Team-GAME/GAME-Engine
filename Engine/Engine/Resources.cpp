@@ -690,6 +690,23 @@ bool Engine::Resources::save_level(const std::string& filepath, const Engine::Le
   return true;
 }
 
+void Engine::Resources::cache_level(const std::string& filepath, const Engine::Level& level, bool append_resource_path, bool persist)
+{
+  // Construct full path using Path class
+  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+
+  // Add to cache without saving to disk
+  level_cache[full_path] = level;
+
+  if (persist)
+  {
+    persistent_resources.push_back(level);
+    Log::info("Level cached (persistent): " + full_path);
+  }
+
+  Log::info("Level cached: " + full_path);
+}
+
 
 void Engine::Resources::clear_unused_resources()
 {

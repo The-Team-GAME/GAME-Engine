@@ -15,8 +15,8 @@ namespace Engine {
     namespace DirtyStates {
       struct ProjectSettings {};
       struct Level {
-        std::string level_name;
-        Level(const std::string& level_name) : level_name(level_name) {}
+        std::string level_path;
+        Level(const std::string& level_path) : level_path(level_path) {}
       };
       struct Prefab {
         std::string prefab_path;
