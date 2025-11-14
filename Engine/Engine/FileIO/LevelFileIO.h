@@ -16,39 +16,45 @@
 #pragma once
 
 #include <string>
-#include "../LevelManager.h"
+#include "../Level.h"
 
 namespace Engine {
   namespace FileIO {
 
-    /**
-     * @brief Serializes a level to JSON string
-     * @param level The level to serialize
-     * @return JSON string representation of the level
-     */
-    std::string serialize_level_to_json(const Engine::LevelManager::Level& level);
+    /*=================================================================================
+    Function Brief:
+    Serializes a Level object to a JSON string.
 
-    /**
-     * @brief Deserializes a level from JSON string
-     * @param json_str The JSON string to deserialize
-     * @return The deserialized level
-     */
-    Engine::LevelManager::Level deserialize_level_from_json(const std::string& json_str);
+    Parameters:
+    level - The Level object to serialize.
 
-    /**
-     * @brief Saves a level to a JSON file
-     * @param filepath Path to save the level file
-     * @param level The level to save
-     * @return true if successful, false otherwise
-     */
-    bool serialize_level_to_json_file(const std::string& filepath, const Engine::LevelManager::Level& level);
+    Returns:
+    JSON string containing the serialized level data.
 
-    /**
-     * @brief Loads a level from a JSON file
-     * @param filepath Path to the level file
-     * @return The loaded level
-     */
-    Engine::LevelManager::Level deserialize_level_from_json_file(const std::string& filepath);
+    Where to call it:
+    When saving levels to files or transferring level data.
+    ==================================================================================*/
+    std::string serialize_level_to_json(const Engine::Level& level);
+
+    /*=================================================================================
+    Function Brief:
+    Deserializes a Level object from a JSON string.
+
+    Parameters:
+    json_str - The JSON string containing the serialized level data.
+
+    Returns:
+    A Level object reconstructed from the JSON data.
+
+    Where to call it:
+    When loading levels from files or receiving level data.
+    ==================================================================================*/
+    Engine::Level deserialize_level_from_json(const std::string& json_str);
+
+
+    bool serialize_level_to_json_file(const std::string& filepath, const Engine::Level& level);
+    Engine::Level deserialize_level_from_json_file(const std::string& filepath);
+
 
   } // namespace FileIO
 } // namespace Engine

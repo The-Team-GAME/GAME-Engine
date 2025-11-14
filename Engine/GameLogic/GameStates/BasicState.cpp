@@ -21,8 +21,6 @@
 
 void BasicState::load()
 {
-  Engine::Resources::set_resource_path("Assets/");
-
   // Load fonts using the new resource manager
   font_roboto = Engine::Resources::load_font("fonts/Roboto-Regular.ttf", 48);
   if (!font_roboto)
@@ -39,8 +37,6 @@ void BasicState::load()
 
 void BasicState::init()
 {
-  // Set resource path for loading assets
-  Engine::Resources::set_resource_path("Assets/");
 
   // Create rectangle entities
   // Top left, Red

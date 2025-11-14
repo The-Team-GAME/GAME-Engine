@@ -24,8 +24,6 @@ private:
 
 public:
   void load() {
-    Engine::Resources::set_resource_path("Assets/");
-
     // Create a banana prefab directly with components
     auto banana_prefab = Engine::ECS::create_prefab();
 

@@ -44,10 +44,6 @@ public:
 	// Declare public methods
 	void load() {};
 	void init() {
-
-		Engine::Resources::set_resource_path("Assets/"); //default resource path
-
-
 		// Function to draw the timeline ImGui panel (to be implemented in Timeline.cpp)
 		void draw_timeline_panel();
 
