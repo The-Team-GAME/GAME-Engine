@@ -61,7 +61,8 @@ int main()
   Engine::ECS::register_layer("effects"); // Visual effects like particles
   Engine::ECS::register_layer("debug"); // Debug overlays and information
 
-  Engine::ECS::CollisionCallbacks::register_callback("gameplay", "ui",
+  // Example: Register a collision callback between gameplay and ui layers
+  Engine::ECS::LayerRegistry::register_collision_callback("gameplay", "ui",
     [](Engine::ECS::Entity entityA, Engine::ECS::Entity entityB)
     {
       // Example callback: Print entity IDs on collision

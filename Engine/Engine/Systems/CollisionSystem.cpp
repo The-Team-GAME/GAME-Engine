@@ -17,7 +17,6 @@
 #include "../Perf.h"
 #include "../FileIO/Settings.h"
 #include "../Graphics/Renderer.h" // for picturing the quad tree
-#include "../ECS/CollisionCallbacks.h"
 using namespace Engine;
 using namespace Systems;
 using col2D = Collision2DSystem;
@@ -126,7 +125,7 @@ void col2D::update()
       / Start of Callbacks /
       ====================*/
       // Invoke any registered collision callbacks for these layer pairs
-      ECS::CollisionCallbacks::invoke_callbacks(entity, other);
+      ECS::LayerRegistry::invoke_collision_callbacks(entity, other);
       /*==================
       / End of Callbacks /
       ==================*/
