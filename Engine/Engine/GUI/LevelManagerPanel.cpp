@@ -42,31 +42,6 @@ void LevelManagerPanel()
     }
     else {
       ImGui::Text("Active Level: %s", current_level_name.c_str());
-
-      ImGui::Separator();
-
-      // Save current level button
-      if (ImGui::Button("Save Current Level")) {
-        Engine::Level current_level = Engine::Level::from_world(current_level_name);
-        std::string level_path = "levels/" + current_level_name;
-
-        if (Engine::Resources::save_level(level_path, current_level, true)) {
-          Log::info("Saved current level: " + current_level_name);
-        }
-        else {
-          Log::error("Failed to save current level: " + current_level_name);
-        }
-      }
-
-      ImGui::SameLine();
-
-      // Mark current level as dirty
-      if (ImGui::Button("Mark as Dirty")) {
-        Engine::ProjectSaveManager::set_dirty(
-          Engine::ProjectSaveManager::DirtyStates::Level(current_level_name)
-        );
-        Log::info("Marked level as dirty: " + current_level_name);
-      }
     }
   }
 
@@ -191,26 +166,6 @@ void LevelManagerPanel()
         Log::error("Failed to load level - not found in cache: " + selected_level_path);
       }
     }
-
-    ImGui::SameLine();
-
-    // Save selected level button
-    if (!selected_level_path.empty() && ImGui::Button("Save Selected")) {
-      std::string full_path = Engine::Path(Engine::Resources::resource_path).join(selected_level_path);
-
-      auto it = Engine::Resources::level_cache.find(full_path);
-      if (it != Engine::Resources::level_cache.end()) {
-        if (Engine::Resources::save_level(selected_level_path, it->second, true)) {
-          Log::info("Saved level: " + selected_level_path);
-        }
-        else {
-          Log::error("Failed to save level: " + selected_level_path);
-        }
-      }
-      else {
-        Log::error("Failed to save level - not found in cache: " + selected_level_path);
-      }
-    }
   }
 
   ImGui::Separator();
@@ -234,21 +189,21 @@ void LevelManagerPanel()
 
       ImGui::Separator();
 
-      // Update level from world button
-      if (ImGui::Button("Update from Current World")) {
-        // Create level from current world state
-        Engine::Level updated_level = Engine::Level::from_world(level.name);
+      // // Update level from world button
+      // if (ImGui::Button("Update from Current World")) {
+      //   // Create level from current world state
+      //   Engine::Level updated_level = Engine::Level::from_world(level.name);
 
-        // Update in cache
-        Engine::Resources::level_cache[full_path] = updated_level;
+      //   // Update in cache
+      //   Engine::Resources::level_cache[full_path] = updated_level;
 
-        // Mark as dirty
-        Engine::ProjectSaveManager::set_dirty(
-          Engine::ProjectSaveManager::DirtyStates::Level(level.name)
-        );
+      //   // Mark as dirty
+      //   Engine::ProjectSaveManager::set_dirty(
+      //     Engine::ProjectSaveManager::DirtyStates::Level(level.name)
+      //   );
 
-        Log::info("Updated level from world: " + level.name);
-      }
+      //   Log::info("Updated level from world: " + level.name);
+      // }
 
       ImGui::SameLine();
 
