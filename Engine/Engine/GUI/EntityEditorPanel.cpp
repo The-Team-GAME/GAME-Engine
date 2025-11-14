@@ -307,8 +307,13 @@ void EntityEditorPanel()
         }
         else {
           if (ImGui::Button(button_label.c_str())) {
-            // Add default-initialized component
-            array->add_default_component(entity.get_id());
+            // Add default-constructed component to entity by name
+            if (entity.add_component_by_name(component_name)) {
+              Log::info("Added component '" + component_name + "' to entity " + std::to_string(entity.get_id()));
+            }
+            else {
+              Log::error("Failed to add component '" + component_name + "' to entity " + std::to_string(entity.get_id()));
+            }
           }
         }
 

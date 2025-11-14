@@ -264,27 +264,18 @@ void PrefabEditorPanel()
         }
         else {
           if (ImGui::Button(button_label.c_str())) {
-            // Add default-initialized component to prefab
-            auto prefab_impl = selected_prefab.get_impl();
-            if (prefab_impl) {
-              auto& storage = prefab_impl->get_component_storage();
-              auto& signature = prefab_impl->get_signature();
+            // Add default-constructed component to prefab by name
+            Engine::ECS::Prefab selected_prefab = PrefabEditorPanelHelpers::get_prefab_from_resources(selected_prefab_path);
 
-              // Create component storage if it doesn't exist in prefab
-              if (storage.find(type_id) == storage.end()) {
-                storage[type_id] = array->create_empty();
-              }
-
-              // Add default component to prefab's storage
-              storage[type_id]->add_default_component(0); // Prefabs use entity ID 0
-              signature.set(type_id);
-
+            if (selected_prefab.add_component_by_name(component_name)) {
               // Mark prefab as dirty
-              if (!selected_prefab_path.empty()) {
-                Engine::ProjectSaveManager::set_dirty(
-                  Engine::ProjectSaveManager::DirtyStates::Prefab(selected_prefab_path)
-                );
-              }
+              Engine::ProjectSaveManager::set_dirty(
+                Engine::ProjectSaveManager::DirtyStates::Prefab(selected_prefab_path)
+              );
+              Log::info("Added component '" + component_name + "' to prefab: " + selected_prefab_path);
+            }
+            else {
+              Log::error("Failed to add component '" + component_name + "' to prefab: " + selected_prefab_path);
             }
           }
         }
