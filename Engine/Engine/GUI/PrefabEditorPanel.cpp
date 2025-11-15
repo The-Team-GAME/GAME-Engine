@@ -16,6 +16,7 @@
 #include <imgui.h>
 #include "PrefabEditorPanel.h"
 #include "widgets/ReflectionFieldWidgets.h"
+#include "../UndoManager/UndoManager.h"
 #include "../FileIO/PrefabsFileIO.h"
 #include "../Path.h"
 #include "../Resources.h"
@@ -29,8 +30,23 @@ void PrefabEditorPanelHelpers::render_component_tree(const std::string& componen
 
     ImGuiWidgets::render_field(component_name, component_data, modified);
 
-    // Write back changes if modified
+     // Undo/redo for editing component
     if (modified) {
+      auto prev_value = array->to_generic_value(0); // Get previous value before change
+      auto new_value = component_data;              // New value after change
+
+      auto undo_action = std::make_unique<Engine::Action>(
+        // Do lambda: apply new value
+        [array, new_value]() {
+          array->set_component_from_generic_value(0, new_value);
+        },
+        // Undo lambda: restore previous value
+        [array, prev_value]() {
+          array->set_component_from_generic_value(0, prev_value);
+        }
+      );
+      Engine::UndoManager::add(std::move(undo_action));
+
       array->set_component_from_generic_value(0, component_data);
     }
 

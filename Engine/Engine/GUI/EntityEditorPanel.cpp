@@ -28,6 +28,7 @@
 #include "../Components/UtilityComponents.h"
 #include "../EventManager/EventManager.h"
 #include "../Events/EngineEvents.h"
+#include "../UndoManager/UndoManager.h"
 
 namespace {
   // Shared state for entity selection
@@ -55,9 +56,23 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
 
     ImGuiWidgets::render_field(component_name, component_data, modified, entity);
 
-    // Write back changes if modified
+    // Undo/redo for editing component
     if (modified) {
-      //std::cout << "Component " << component_name << " modified on Entity " << entity.get_id() << std::endl;
+      auto prev_value = array->to_generic_value(entity.get_id());
+      auto new_value = component_data;
+
+      auto undo_action = std::make_unique<Engine::Action>(
+        // Do lambda: apply new value
+        [array, entity_id = entity.get_id(), new_value]() {
+          array->set_component_from_generic_value(entity_id, new_value);
+        },
+        // Undo lambda: restore previous value
+        [array, entity_id = entity.get_id(), prev_value]() {
+          array->set_component_from_generic_value(entity_id, prev_value);
+        }
+      );
+      Engine::UndoManager::add(std::move(undo_action));
+
       array->set_component_from_generic_value(entity.get_id(), component_data);
     }
 
@@ -65,10 +80,24 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
 
     std::string remove_label = "Remove##" + component_name;
     if (ImGui::Button(remove_label.c_str())) {
-      auto& containers = Engine::ECS::Internal::get_containers();
-      Engine::ECS::EntityID entityId = entity.get_id();
+      auto prev_value = array->to_generic_value(entity.get_id());
 
-      containers.components_to_remove.emplace_back(entityId, array->get_type_id());
+      auto undo_action = std::make_unique<Engine::Action>(
+        // Do lambda: remove component
+        [entity_id = entity.get_id(), type_id = array->get_type_id()]() {
+          auto& containers = Engine::ECS::Internal::get_containers();
+          containers.components_to_remove.emplace_back(entity_id, type_id);
+        },
+        // Undo lambda: restore component
+        [array, entity_id = entity.get_id(), prev_value]() {
+          array->add_default_component(entity_id);
+          array->set_component_from_generic_value(entity_id, prev_value);
+        }
+      );
+      Engine::UndoManager::add(std::move(undo_action));
+
+      auto& containers = Engine::ECS::Internal::get_containers();
+      containers.components_to_remove.emplace_back(entity.get_id(), array->get_type_id());
     }
 
     ImGui::TreePop();
