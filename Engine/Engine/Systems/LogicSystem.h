@@ -13,8 +13,8 @@ enum entity_state {
   JUMPING,
 
   // ENEMY SPECIFIC STATES
-  PATROL,
-  CHASE,
+  PATROL, // Move left to right, within given boundary
+  CHASE,  // Chase the player within given boundary
 };
 
 namespace Components
@@ -22,8 +22,25 @@ namespace Components
   struct Logic
   {
     entity_state state;
+    // For NPCs
+    f32 direction = 1.f;
+    f32 left_bound;
+    f32 right_bound;
+    // The patrol limit, pls set it a little under the length of the platform
+    
 
+
+    // Player ctor
     Logic(entity_state starting_state) : state(starting_state) {};
+
+    // Enemy ctor
+    Logic(entity_state starting_state, f32 min_bound, f32 max_bound): 
+      state(starting_state), 
+      left_bound(min_bound), 
+      right_bound(max_bound)
+    {
+      //Empty by default
+    };
   };
 }
 

@@ -70,7 +70,7 @@ void phy2D::update_kinematics(Components::RigidBody& rigid, Components::Transfor
   rigid.acceleration = rigid.force / rigid.mass + rigid.gravity_acc;
   // V = a x dt => Velocity equals acceleration x delta time
   // i increased friction for the x axis to test cuz we not sure if we want to do it like this
-  Vec2D prev_velocity = Vec2D(rigid.velocity.x * 0.70f, rigid.velocity.y * rigid.friction);
+  Vec2D prev_velocity = Vec2D(rigid.velocity.x * 0.80f, rigid.velocity.y * rigid.friction);
   rigid.velocity = prev_velocity + rigid.acceleration * Time::get_fixed_dt();
 
   // Checking terminal velocity here

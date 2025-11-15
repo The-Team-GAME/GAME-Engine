@@ -13,27 +13,20 @@ namespace { // in the cpp file
   / Movement stuff /
   /===============*/
   f32 walking_x_vel = 400.f;
+  Vec2D patrol_speed(300.f, 0.f);
   Vec2D jumping_force(0.f, -3500000.f);
 
-  /*==============/
-  / Damage Values /
-  ===============*/
-  f32 player_dmg;         // How much damage the player deals
-  f32 enemy_dmg;          // How much damage the enemy deals
+  /*==================/
+  / Enemy Logic stuff /
+  /==================*/
 
-  /*=================/
-  / Knockback Values /
-  ==================*/
-  Vec2D player_knockback; // How much the player gets knockbacked
-  Vec2D enemy_knockback;  // How much the enemy gets knockbacked
-
-
+  //TODO after m3: maybe add logic so that they cant walk past their platform
 }
 
 // Might need to include animation stuff here too
 logi::LogicSystem()
 {
-  require_components<Components::RigidBody, Components::Logic>();
+  require_components<Components::Transform2D, Components::RigidBody, Components::Logic>();
 }
 
 void logi::load_values()
@@ -75,18 +68,13 @@ void logi::take_input(ECS::Entity player)
   {
     player_logic->state = MOVING_RIGHT;
   }
-  else // no inputs
-  {
-    player_logic->state = IDLE;
-  }
-
-
 }
 
 void logi::run_state(ECS::Entity entity)
 {
-  Components::RigidBody*  rigid = entity.get_component<Components::RigidBody>();
-  Components::Logic*      logic = entity.get_component<Components::Logic>();
+  Components::Transform2D*  xform = entity.get_component<Components::Transform2D>();
+  Components::RigidBody*    rigid = entity.get_component<Components::RigidBody>();
+  Components::Logic*        logic = entity.get_component<Components::Logic>();
   switch (logic->state)
   {
   case entity_state::IDLE:
@@ -120,10 +108,25 @@ void logi::run_state(ECS::Entity entity)
 
   // ENEMY SPECIFIC STATES
   case entity_state::PATROL:
-    // Enemy AI here
+    // Condition to swap into CHASE state here
+
+    // Patrol behaviour
+    if (xform->position.x >= logic->right_bound) // Moved past right bound
+    {
+      xform->position.x = logic->right_bound;
+      logic->direction = -1.f;
+    }
+    else if (xform->position.x <= logic->left_bound) // Moved past left bound
+    {
+      xform->position.x = logic->left_bound;
+      logic->direction = 1.f;
+    }
+    rigid->velocity = patrol_speed * logic->direction;
     break;
   case entity_state::CHASE:
-    // Enemy AI here
+    // Condition to swap into PATROL state here
+
+    // Chase behaviour
     break;
   }
 }
