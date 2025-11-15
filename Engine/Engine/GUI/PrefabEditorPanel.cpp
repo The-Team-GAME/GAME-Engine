@@ -29,6 +29,7 @@ void PrefabEditorPanelHelpers::render_component_tree(const std::string& componen
     // Track the value before any modifications
     static std::unordered_map<std::string, ReflectionLibrary::GenericValue> component_edit_start_values;
     static std::unordered_map<std::string, bool> component_being_edited;
+    static std::unordered_map<std::string, bool> component_was_active_last_frame;
 
     std::string component_key = component_name + "_" + prefab_path;
 
@@ -37,9 +38,9 @@ void PrefabEditorPanelHelpers::render_component_tree(const std::string& componen
 
     ImGuiWidgets::render_field(component_name, component_data, modified);
 
-    // Check if user just started editing (mouse pressed on a widget)
+    // Check if user is currently editing (any widget is active in this component)
     bool is_any_item_active = ImGui::IsAnyItemActive();
-    bool mouse_released = Engine::Input::is_released(Engine::KeyCode::MouseLeft);
+    bool was_active_last_frame = component_was_active_last_frame[component_key];
 
     // Start tracking when editing begins
     if (is_any_item_active && !component_being_edited[component_key]) {
@@ -52,8 +53,8 @@ void PrefabEditorPanelHelpers::render_component_tree(const std::string& componen
       array->set_component_from_generic_value(0, component_data);
     }
 
-    // Record to undo manager only when mouse is released after editing
-    if (component_being_edited[component_key] && mouse_released && !is_any_item_active) {
+    // Record to undo manager only when editing just finished (was active, now inactive)
+    if (component_being_edited[component_key] && was_active_last_frame && !is_any_item_active) {
       auto prev_value = component_edit_start_values[component_key];
       auto new_value = component_data;
 
@@ -78,6 +79,9 @@ void PrefabEditorPanelHelpers::render_component_tree(const std::string& componen
       component_being_edited[component_key] = false;
       component_edit_start_values.erase(component_key);
     }
+
+    // Update last frame state
+    component_was_active_last_frame[component_key] = is_any_item_active;
 
     ImGui::Separator();
 
