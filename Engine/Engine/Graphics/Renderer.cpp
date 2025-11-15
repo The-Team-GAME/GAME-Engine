@@ -290,6 +290,140 @@ namespace Engine {
       batch_quad(atlas_texture.id, vertices);
     }
 
+    // UI-specific helper functions (no camera transformation)
+
+    // Helper function to draw a quad in UI space (no view matrix applied)
+    void draw_ui_quad(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size,
+      f32 rotation, const Math::Vec4D& color, const std::array<Math::Vec2D, 4>& tex_coords) {
+      if (!texture || texture->id == 0) {
+        Log::warning("Attempted to draw invalid texture");
+        return;
+      }
+
+      if (!shader || !shader->is_valid()) {
+        Log::error("Shader is not valid");
+        return;
+      }
+
+      // Flush current batch if texture changed
+      if (batch_state.current_texture_id != 0 && batch_state.current_texture_id != texture->id) {
+        flush_batch();
+      }
+
+      // Check if we need to flush due to batch size
+      if (batch_state.quad_count >= MAX_QUAD_COUNT) {
+        flush_batch();
+      }
+
+      // Set current texture
+      batch_state.current_texture_id = texture->id;
+
+      // Create transformation matrix
+      glm::mat4 model = glm::mat4(1.0f);
+      model = glm::translate(model, glm::vec3(position.x, position.y, 0.0f));
+
+      if (rotation != 0.0f) {
+        model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+      }
+
+      model = glm::scale(model, glm::vec3(size.x, size.y, 1.0f));
+
+      // Create quad vertices
+      Vertex vertices[4];
+
+      // Convert color from 0-1 range
+      glm::vec4 normalized_color(color.x, color.y, color.z, color.w);
+
+      // Vertices are centered around the origin
+      glm::vec2 base_positions[4] = {
+        glm::vec2(-0.5f, 0.5f),  // Bottom-left
+        glm::vec2(0.5f, 0.5f),   // Bottom-right
+        glm::vec2(0.5f, -0.5f),  // Top-right
+        glm::vec2(-0.5f, -0.5f)  // Top-left
+      };
+
+      // Transform vertices by model matrix only (no view matrix)
+      for (int i = 0; i < 4; i++) {
+        glm::vec4 transformed = model * glm::vec4(base_positions[i], 0.0f, 1.0f);
+        vertices[i].position = glm::vec2(transformed.x, transformed.y);
+        vertices[i].texCoord = glm::vec2(tex_coords[i].x, tex_coords[i].y);
+        vertices[i].color = normalized_color;
+      }
+
+      // Manually add vertices to batch (avoiding camera transformation)
+      // Reserve space for new vertices
+      size_t vertex_offset = batch_state.vertices.size();
+      batch_state.vertices.resize(vertex_offset + 4);
+
+      for (int i = 0; i < 4; i++) {
+        batch_state.vertices[vertex_offset + i] = vertices[i];
+      }
+
+      batch_state.quad_count++;
+    }
+
+    // Helper function to draw a UI glyph (character) at a specific position without camera transformation
+    void draw_ui_glyph(const TextureData& atlas_texture, const std::array<Math::Vec2D, 4>& tex_coords,
+      const Math::Vec2D& position, const Math::Vec2D& size, const Math::Vec4D& color) {
+      if (atlas_texture.id == 0) {
+        return;
+      }
+
+      if (!shader || !shader->is_valid()) {
+        return;
+      }
+
+      // Flush current batch if texture changed
+      if (batch_state.current_texture_id != 0 && batch_state.current_texture_id != atlas_texture.id) {
+        flush_batch();
+      }
+
+      // Check if we need to flush due to batch size
+      if (batch_state.quad_count >= MAX_QUAD_COUNT) {
+        flush_batch();
+      }
+
+      // Set current texture
+      batch_state.current_texture_id = atlas_texture.id;
+
+      // Create quad vertices (no rotation for text glyphs)
+      Vertex vertices[4];
+
+      // Convert color from 0-1 range
+      glm::vec4 normalized_color(color.x, color.y, color.z, color.w);
+
+      // Bottom-left
+      vertices[0].position = glm::vec2(position.x, position.y + size.y);
+      vertices[0].texCoord = glm::vec2(tex_coords[0].x, tex_coords[0].y);
+      vertices[0].color = normalized_color;
+
+      // Bottom-right
+      vertices[1].position = glm::vec2(position.x + size.x, position.y + size.y);
+      vertices[1].texCoord = glm::vec2(tex_coords[1].x, tex_coords[1].y);
+      vertices[1].color = normalized_color;
+
+      // Top-right
+      vertices[2].position = glm::vec2(position.x + size.x, position.y);
+      vertices[2].texCoord = glm::vec2(tex_coords[2].x, tex_coords[2].y);
+      vertices[2].color = normalized_color;
+
+      // Top-left
+      vertices[3].position = glm::vec2(position.x, position.y);
+      vertices[3].texCoord = glm::vec2(tex_coords[3].x, tex_coords[3].y);
+      vertices[3].color = normalized_color;
+
+      // Manually add vertices to batch (avoiding camera transformation)
+      size_t vertex_offset = batch_state.vertices.size();
+      batch_state.vertices.resize(vertex_offset + 4);
+
+      for (int i = 0; i < 4; i++) {
+        batch_state.vertices[vertex_offset + i] = vertices[i];
+      }
+
+      batch_state.quad_count++;
+    }
+
+
     bool init() {
       // Load default shader from files
       shader = Shader::load_from_file("Assets/shaders/default.vert", "Assets/shaders/default.frag");
@@ -1056,6 +1190,364 @@ namespace Engine {
 
     void draw_subtexture_distortion(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, f32 intensity, f32 speed, f32 mesh_intensity) {
       draw_quad_distortion(texture, position, size, rotation, color, tex_coords, intensity, speed, mesh_intensity);
+    }
+
+    // UI Drawing functions (no camera transformation)
+
+    void draw_rect_ui(const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color)
+    {
+      draw_texture_ui(Engine::Resources::get_rect_texture(), position, size, rotation, color);
+    }
+
+    void draw_rect_outline_ui(const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, f32 thickness, const Math::Vec4D& color) {
+      // If rotated, we need to draw lines around a rotated rectangle
+      if (rotation != 0.0f) {
+        // Calculate half sizes
+        f32 half_width = size.x * 0.5f;
+        f32 half_height = size.y * 0.5f;
+
+        // Convert rotation to radians
+        f32 angle_rad = rotation * 3.14159265359f / 180.0f;
+        f32 cos_angle = std::cos(angle_rad);
+        f32 sin_angle = std::sin(angle_rad);
+
+        // Calculate the four corners relative to center
+        Math::Vec2D corners[4];
+        corners[0] = Math::Vec2D(-half_width, -half_height); // Top-left
+        corners[1] = Math::Vec2D(half_width, -half_height);  // Top-right
+        corners[2] = Math::Vec2D(half_width, half_height);   // Bottom-right
+        corners[3] = Math::Vec2D(-half_width, half_height);  // Bottom-left
+
+        // Rotate and translate corners
+        for (int i = 0; i < 4; i++) {
+          f32 rotated_x = corners[i].x * cos_angle - corners[i].y * sin_angle;
+          f32 rotated_y = corners[i].x * sin_angle + corners[i].y * cos_angle;
+          corners[i] = Math::Vec2D(rotated_x + position.x, rotated_y + position.y);
+        }
+
+        // Draw the four sides
+        draw_line_ui(corners[0], corners[1], thickness, color); // Top
+        draw_line_ui(corners[1], corners[2], thickness, color); // Right
+        draw_line_ui(corners[2], corners[3], thickness, color); // Bottom
+        draw_line_ui(corners[3], corners[0], thickness, color); // Left
+      }
+      else {
+        // For non-rotated rectangles, we can optimize by drawing axis-aligned lines
+        f32 half_width = size.x * 0.5f;
+        f32 half_height = size.y * 0.5f;
+
+        Math::Vec2D top_left = Math::Vec2D(position.x - half_width, position.y - half_height);
+        Math::Vec2D top_right = Math::Vec2D(position.x + half_width, position.y - half_height);
+        Math::Vec2D bottom_right = Math::Vec2D(position.x + half_width, position.y + half_height);
+        Math::Vec2D bottom_left = Math::Vec2D(position.x - half_width, position.y + half_height);
+
+        // Draw the four sides
+        draw_line_ui(top_left, top_right, thickness, color);      // Top
+        draw_line_ui(top_right, bottom_right, thickness, color);  // Right
+        draw_line_ui(bottom_right, bottom_left, thickness, color); // Bottom
+        draw_line_ui(bottom_left, top_left, thickness, color);    // Left
+      }
+    }
+
+    void draw_line_ui(const Math::Vec2D& start, const Math::Vec2D& end, f32 thickness, const Math::Vec4D& color) {
+      // Flush current batch before drawing lines
+      flush_batch();
+
+      // Enable line rendering
+      glLineWidth(thickness);
+
+      // Set up shader (no view matrix for UI)
+      shader->use();
+      shader->set_mat4("u_projection", get_projection_matrix());
+      shader->set_mat4("u_view", glm::mat4(1.0f)); // Identity matrix - no camera transformation
+      shader->set_int("u_texture", 0);
+
+      // Bind white texture for solid color
+      glBindTexture(GL_TEXTURE_2D, unit_rect->id);
+
+      // Create line vertices
+      Vertex line_vertices[2];
+      line_vertices[0].position = glm::vec2(start.x, start.y);
+      line_vertices[0].texCoord = glm::vec2(0.5f, 0.5f);
+      line_vertices[0].color = glm::vec4(color.x, color.y, color.z, color.w);
+
+      line_vertices[1].position = glm::vec2(end.x, end.y);
+      line_vertices[1].texCoord = glm::vec2(0.5f, 0.5f);
+      line_vertices[1].color = glm::vec4(color.x, color.y, color.z, color.w);
+
+      // Upload vertices
+      glBindVertexArray(vao);
+      glBindBuffer(GL_ARRAY_BUFFER, vbo);
+      glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(line_vertices), line_vertices);
+
+      // Draw line
+      glDrawArrays(GL_LINES, 0, 2);
+
+      // Reset line width to default
+      glLineWidth(1.0f);
+    }
+
+    void draw_polygon_ui(const std::vector<Math::Vec2D>& vertices, const Math::Vec2D& position, f32 rotation, const Math::Vec4D& color) {
+      if (vertices.size() < 3) {
+        Log::warning("Attempted to draw UI polygon with less than 3 vertices");
+        return;
+      }
+
+      // Convert rotation to radians
+      f32 angle_rad = rotation * 3.14159265359f / 180.0f;
+      f32 cos_angle = std::cos(angle_rad);
+      f32 sin_angle = std::sin(angle_rad);
+
+      // Transform and rotate vertices
+      std::vector<Math::Vec2D> transformed_vertices;
+      transformed_vertices.reserve(vertices.size());
+
+      for (const auto& vertex : vertices) {
+        // Apply rotation around origin
+        f32 rotated_x = vertex.x * cos_angle - vertex.y * sin_angle;
+        f32 rotated_y = vertex.x * sin_angle + vertex.y * cos_angle;
+
+        // Translate to position
+        transformed_vertices.push_back(Math::Vec2D(rotated_x + position.x, rotated_y + position.y));
+      }
+
+      // Get the unit rect texture for drawing filled triangles
+      auto texture = Engine::Resources::get_rect_texture();
+      if (!texture || texture->id == 0) {
+        return;
+      }
+
+      // Calculate centroid of the polygon
+      Math::Vec2D centroid(0.0f, 0.0f);
+      for (const auto& vertex : transformed_vertices) {
+        centroid = centroid + vertex;
+      }
+      centroid = centroid * (1.0f / transformed_vertices.size());
+
+      // Triangulate from centroid to each edge
+      for (size_t i = 0; i < transformed_vertices.size(); ++i) {
+        size_t next_i = (i + 1) % transformed_vertices.size();
+
+        Math::Vec2D v0 = centroid;
+        Math::Vec2D v1 = transformed_vertices[i];
+        Math::Vec2D v2 = transformed_vertices[next_i];
+
+        // Create vertices for a filled triangle using the quad batching system
+        Vertex tri_vertices[4];
+
+        // Convert color from 0-1 range
+        glm::vec4 normalized_color(color.x, color.y, color.z, color.w);
+
+        // Use the three triangle vertices and repeat the last one to make a quad
+        tri_vertices[0].position = glm::vec2(v0.x, v0.y);
+        tri_vertices[0].texCoord = glm::vec2(0.5f, 0.5f);
+        tri_vertices[0].color = normalized_color;
+
+        tri_vertices[1].position = glm::vec2(v1.x, v1.y);
+        tri_vertices[1].texCoord = glm::vec2(0.5f, 0.5f);
+        tri_vertices[1].color = normalized_color;
+
+        tri_vertices[2].position = glm::vec2(v2.x, v2.y);
+        tri_vertices[2].texCoord = glm::vec2(0.5f, 0.5f);
+        tri_vertices[2].color = normalized_color;
+
+        tri_vertices[3].position = glm::vec2(v2.x, v2.y);
+        tri_vertices[3].texCoord = glm::vec2(0.5f, 0.5f);
+        tri_vertices[3].color = normalized_color;
+
+        // Flush current batch if texture changed
+        if (batch_state.current_texture_id != 0 && batch_state.current_texture_id != texture->id) {
+          flush_batch();
+        }
+
+        // Check if we need to flush due to batch size
+        if (batch_state.quad_count >= MAX_QUAD_COUNT) {
+          flush_batch();
+        }
+
+        // Set current texture
+        batch_state.current_texture_id = texture->id;
+
+        // Manually add vertices to batch (avoiding camera transformation)
+        size_t vertex_offset = batch_state.vertices.size();
+        batch_state.vertices.resize(vertex_offset + 4);
+
+        for (int j = 0; j < 4; j++) {
+          batch_state.vertices[vertex_offset + j] = tri_vertices[j];
+        }
+
+        batch_state.quad_count++;
+      }
+    }
+
+    void draw_triangle_ui(const Math::Vec2D& position, f32 radius, f32 rotation, const Math::Vec4D& color) {
+      // Create vertices for an equilateral triangle centered at origin
+      std::vector<Math::Vec2D> vertices;
+      vertices.reserve(3);
+
+      // Triangle points at 0°, 120°, and 240° (pointing up by default)
+      for (int i = 0; i < 3; ++i) {
+        f32 angle = (i * 120.0f - 90.0f) * 3.14159265359f / 180.0f;
+        vertices.push_back(Math::Vec2D(
+          std::cos(angle) * radius,
+          std::sin(angle) * radius
+        ));
+      }
+
+      draw_polygon_ui(vertices, position, rotation, color);
+    }
+
+    void draw_circle_ui(const Math::Vec2D& position, f32 radius, const Math::Vec4D& color, int segments) {
+      if (segments < 3) {
+        segments = 3;
+      }
+
+      if (radius <= 0.0f) {
+        return;
+      }
+
+      // Create vertices for a circle
+      std::vector<Math::Vec2D> vertices;
+      vertices.reserve(segments);
+
+      f32 angle_step = (2.0f * 3.14159265359f) / segments;
+
+      for (int i = 0; i < segments; ++i) {
+        f32 angle = i * angle_step;
+        vertices.push_back(Math::Vec2D(
+          std::cos(angle) * radius,
+          std::sin(angle) * radius
+        ));
+      }
+
+      draw_polygon_ui(vertices, position, 0.0f, color);
+    }
+
+    void draw_polygon_outline_ui(const std::vector<Math::Vec2D>& vertices, const Math::Vec2D& position, f32 rotation, f32 thickness, const Math::Vec4D& color) {
+      if (vertices.size() < 3) {
+        Log::warning("Attempted to draw UI polygon outline with less than 3 vertices");
+        return;
+      }
+
+      // Convert rotation to radians
+      f32 angle_rad = rotation * 3.14159265359f / 180.0f;
+      f32 cos_angle = std::cos(angle_rad);
+      f32 sin_angle = std::sin(angle_rad);
+
+      // Transform and rotate vertices
+      std::vector<Math::Vec2D> transformed_vertices;
+      transformed_vertices.reserve(vertices.size());
+
+      for (const auto& vertex : vertices) {
+        // Apply rotation around origin
+        f32 rotated_x = vertex.x * cos_angle - vertex.y * sin_angle;
+        f32 rotated_y = vertex.x * sin_angle + vertex.y * cos_angle;
+
+        // Translate to position
+        transformed_vertices.push_back(Math::Vec2D(rotated_x + position.x, rotated_y + position.y));
+      }
+
+      // Draw lines between consecutive vertices
+      for (size_t i = 0; i < transformed_vertices.size(); ++i) {
+        size_t next_i = (i + 1) % transformed_vertices.size();
+        draw_line_ui(transformed_vertices[i], transformed_vertices[next_i], thickness, color);
+      }
+    }
+
+    void draw_triangle_outline_ui(const Math::Vec2D& position, f32 radius, f32 rotation, f32 thickness, const Math::Vec4D& color) {
+      // Create vertices for an equilateral triangle centered at origin
+      std::vector<Math::Vec2D> vertices;
+      vertices.reserve(3);
+
+      // Triangle points at 0°, 120°, and 240° (pointing up by default)
+      for (int i = 0; i < 3; ++i) {
+        f32 angle = (i * 120.0f - 90.0f) * 3.14159265359f / 180.0f;
+        vertices.push_back(Math::Vec2D(
+          std::cos(angle) * radius,
+          std::sin(angle) * radius
+        ));
+      }
+
+      draw_polygon_outline_ui(vertices, position, rotation, thickness, color);
+    }
+
+    void draw_circle_outline_ui(const Math::Vec2D& position, f32 radius, f32 thickness, const Math::Vec4D& color, int segments) {
+      if (segments < 3) {
+        segments = 3;
+      }
+
+      if (radius <= 0.0f) {
+        return;
+      }
+
+      // Create vertices for a circle
+      std::vector<Math::Vec2D> vertices;
+      vertices.reserve(segments);
+
+      f32 angle_step = (2.0f * 3.14159265359f) / segments;
+
+      for (int i = 0; i < segments; ++i) {
+        f32 angle = i * angle_step;
+        vertices.push_back(Math::Vec2D(
+          std::cos(angle) * radius,
+          std::sin(angle) * radius
+        ));
+      }
+
+      draw_polygon_outline_ui(vertices, position, 0.0f, thickness, color);
+    }
+
+    void draw_texture_ui(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
+      // Default texture coordinates for full texture
+      std::array<Math::Vec2D, 4> default_tex_coords = {
+        Math::Vec2D(0.0f, 1.0f), // Bottom-left
+        Math::Vec2D(1.0f, 1.0f), // Bottom-right
+        Math::Vec2D(1.0f, 0.0f), // Top-right
+        Math::Vec2D(0.0f, 0.0f)  // Top-left
+      };
+
+      draw_ui_quad(texture, position, size, rotation, color, default_tex_coords);
+    }
+
+    void draw_subtexture_ui(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords,
+      const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
+      draw_ui_quad(texture, position, size, rotation, color, tex_coords);
+    }
+
+    void draw_text_ui(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color) {
+      if (!font || font->texture_atlas.id == 0) {
+        Log::warning("Attempted to draw UI text with invalid font");
+        return;
+      }
+
+      if (text.empty()) {
+        return;
+      }
+
+      f32 x = position.x;
+      f32 y = position.y;
+
+      // Iterate through all characters
+      for (char c : text) {
+        auto it = font->glyphs.find(c);
+        if (it == font->glyphs.end()) {
+          continue; // Skip characters not in font
+        }
+
+        const Graphics::Glyph& glyph = it->second;
+
+        f32 xpos = x + glyph.bearing.x * scale;
+        f32 ypos = y + (font->baseline - glyph.bearing.y) * scale;
+
+        f32 w = glyph.size.x * scale;
+        f32 h = glyph.size.y * scale;
+
+        // Draw the glyph using UI rendering (no camera transformation)
+        draw_ui_glyph(font->texture_atlas, glyph.tex_coords, Math::Vec2D(xpos, ypos), Math::Vec2D(w, h), color);
+
+        // Advance cursor to next glyph
+        x += (glyph.advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64)
+      }
     }
 
   } // namespace Graphics
