@@ -30,7 +30,7 @@ void PrefabEditorPanelHelpers::render_component_tree(const std::string& componen
 
     ImGuiWidgets::render_field(component_name, component_data, modified);
 
-     // Undo/redo for editing component
+    // Undo/redo for editing component
     if (modified) {
       auto prev_value = array->to_generic_value(0); // Get previous value before change
       auto new_value = component_data;              // New value after change
@@ -45,7 +45,7 @@ void PrefabEditorPanelHelpers::render_component_tree(const std::string& componen
           array->set_component_from_generic_value(0, prev_value);
         }
       );
-      Engine::UndoManager::add(std::move(undo_action));
+      Engine::UndoManager::execute(std::move(undo_action));
 
       array->set_component_from_generic_value(0, component_data);
 

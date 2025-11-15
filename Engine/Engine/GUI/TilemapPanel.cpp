@@ -238,7 +238,7 @@ namespace TilemapPanel {
       }
     );
 
-    Engine::UndoManager::add(std::move(place_tile_action));
+    Engine::UndoManager::execute(std::move(place_tile_action));
 
 
     placed_tiles.insert(pos_key);

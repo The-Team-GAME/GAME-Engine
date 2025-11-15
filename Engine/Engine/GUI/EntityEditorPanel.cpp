@@ -71,7 +71,7 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
           array->set_component_from_generic_value(entity_id, prev_value);
         }
       );
-      Engine::UndoManager::add(std::move(undo_action));
+      Engine::UndoManager::execute(std::move(undo_action));
 
       array->set_component_from_generic_value(entity.get_id(), component_data);
     }
@@ -94,7 +94,7 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
           array->set_component_from_generic_value(entity_id, prev_value);
         }
       );
-      Engine::UndoManager::add(std::move(undo_action));
+      Engine::UndoManager::execute(std::move(undo_action));
 
       auto& containers = Engine::ECS::Internal::get_containers();
       containers.components_to_remove.emplace_back(entity.get_id(), array->get_type_id());
