@@ -142,7 +142,6 @@ void logi::run_state(ECS::Entity entity)
     }
     else if (xform->position.x < logic->left_patrol_bound && logic->direction == -1.f) // Moved past left bound
     {
-      //xform->position.x = logic->left_patrol_bound;
       logic->direction = 1.f;
       logic->pause_timer = 1.f;
       rigid->velocity.x = 0.f;

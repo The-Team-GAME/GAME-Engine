@@ -29,7 +29,7 @@ namespace Components
     // For NPCs
     f32 pause_timer = 1.5f;
     f32 direction = 1.f;
-    f32 sight_distance = 100.f;
+    f32 sight_distance = 250.f;
     f32 left_patrol_bound;
     f32 right_patrol_bound;
     f32 left_chase_bound;
