@@ -854,65 +854,69 @@ namespace TilemapPanel {
   void draw_overlay() {
     // === DRAW GRID OVERLAY ===
     // Only draw grid when tilemap mode is enabled
-    if (enable_tilemap_mode) {
-      Math::Vec2D virtual_res = Engine::Graphics::get_virtual_resolution();
-      Engine::Graphics::Camera camera = Engine::Graphics::get_camera();
+    if (!enable_tilemap_mode) {
+      return;
+    }
 
-      float view_width = virtual_res.x / camera.zoom;
-      float view_height = virtual_res.y / camera.zoom;
+    // Get screen bounds in world space using the helper functions
+    auto virtual_res = Engine::Graphics::get_virtual_resolution();
+    
+    // Convert the four corners of the screen from virtual to world space
+    Math::Vec2D top_left_world = Engine::Graphics::virtual_to_world(Math::Vec2D{ 0.0f, 0.0f });
+    Math::Vec2D bottom_right_world = Engine::Graphics::virtual_to_world(Math::Vec2D{ virtual_res.x, virtual_res.y });
+    
+    float left = top_left_world.x;
+    float right = bottom_right_world.x;
+    float top = top_left_world.y;
+    float bottom = bottom_right_world.y;
+    
+    // Calculate grid line positions aligned to grid_offset
+    float start_x = std::floor((left - grid_offset.x) / grid_snap) * grid_snap + grid_offset.x;
+    float start_y = std::floor((top - grid_offset.y) / grid_snap) * grid_snap + grid_offset.y;
+    
+    Math::Vec4D grid_color = Math::Vec4D{ 1.0f, 1.0f, 1.0f, 0.3f }; // White with transparency
 
-      float visible_left = camera.position.x;
-      float visible_right = camera.position.x + view_width;
-      float visible_top = camera.position.y;
-      float visible_bottom = camera.position.y + view_height;
+    // Draw vertical lines (loop from left until right)
+    for (float x = start_x; x <= right; x += grid_snap) {
+      Engine::Graphics::draw_line(
+        Math::Vec2D{ x, top },
+        Math::Vec2D{ x, bottom },
+        1.0f,
+        grid_color
+      );
+    }
 
-      float grid_size = grid_snap;
+    // Draw horizontal lines (loop from top until bottom)
+    for (float y = start_y; y <= bottom; y += grid_snap) {
+      Engine::Graphics::draw_line(
+        Math::Vec2D{ left, y },
+        Math::Vec2D{ right, y },
+        1.0f,
+        grid_color
+      );
+    }
 
-      float start_x = std::floor((visible_left - grid_offset.x) / grid_size) * grid_size + grid_offset.x;
-      float start_y = std::floor((visible_top - grid_offset.y) / grid_size) * grid_size + grid_offset.y;
+    // Highlight hovered layer tiles
+    if ((painting_enabled || erasing_enabled)) {
+      auto world_pos_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
 
-      // Draw vertical lines
-      for (float x = start_x; x <= visible_right; x += grid_size) {
-        Engine::Graphics::draw_line(
-          Math::Vec2D{ x, visible_top },
-          Math::Vec2D{ x, visible_bottom },
-          1.0f,
-          Math::Vec4D{ 0.5f, 0.5f, 0.5f, 0.3f }
-        );
+      if (!world_pos_opt.has_value()) {
+        return;
       }
 
-      // Draw horizontal lines
-      for (float y = start_y; y <= visible_bottom; y += grid_size) {
-        Engine::Graphics::draw_line(
-          Math::Vec2D{ visible_left, y },
-          Math::Vec2D{ visible_right, y },
-          1.0f,
-          Math::Vec4D{ 0.5f, 0.5f, 0.5f, 0.3f }
-        );
-      }
+      Math::Vec2D world_pos = world_pos_opt.value();
+      Math::Vec2D grid_pos = snap_to_grid(world_pos);
 
-      // Highlight current grid cell when painting 
-      if ((painting_enabled || erasing_enabled)) {
-        auto world_pos_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+      Math::Vec4D highlight_color = painting_enabled ?
+        Math::Vec4D{ 0.0f, 1.0f, 0.0f, 0.4f } :
+        Math::Vec4D{ 1.0f, 0.0f, 0.0f, 0.4f };
 
-        if (!world_pos_opt.has_value()) {
-          return;
-        }
-
-        Math::Vec2D world_pos = world_pos_opt.value();
-        Math::Vec2D grid_pos = snap_to_grid(world_pos);
-
-        Math::Vec4D highlight_color = painting_enabled ?
-          Math::Vec4D{ 0.0f, 1.0f, 0.0f, 0.4f } :
-          Math::Vec4D{ 1.0f, 0.0f, 0.0f, 0.4f };
-
-        Engine::Graphics::draw_rect(
-          grid_pos,
-          Math::Vec2D{ grid_size, grid_size },
-          0.0f,
-          highlight_color
-        );
-      }
+      Engine::Graphics::draw_rect(
+        grid_pos,
+        Math::Vec2D{ grid_snap, grid_snap },
+        0.0f,
+        highlight_color
+      );
     }
   }
 
