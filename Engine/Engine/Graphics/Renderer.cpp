@@ -741,7 +741,9 @@ namespace Engine {
         // Add to batch
         batch_quad(texture->id, tri_vertices);
       }
-    }    void draw_triangle(const Math::Vec2D& position, f32 radius, f32 rotation, const Math::Vec4D& color) {
+    }
+
+    void draw_triangle(const Math::Vec2D& position, f32 radius, f32 rotation, const Math::Vec4D& color) {
       // Create vertices for an equilateral triangle centered at origin
       std::vector<Math::Vec2D> vertices;
       vertices.reserve(3);
