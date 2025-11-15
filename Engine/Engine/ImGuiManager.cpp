@@ -189,7 +189,7 @@ namespace ImGuiManager {
           std::string current = Engine::SceneManager::get_current_scene_name();
           Engine::SceneManager::unload_current_scene();
           Engine::SceneManager::load_scene(current);
-          is_paused = true;
+          Engine::Time::set_paused(true);
         }
 
         ImGui::Unindent(8.0f); // Remove left padding
