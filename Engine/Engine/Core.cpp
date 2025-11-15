@@ -36,7 +36,7 @@
 #include "FileIO/Settings.h"
 #include "FileIO/SettingsManager.h"
 #include "Events/RegisterAllEvents.h"
-
+#include "UndoManager/UndoManager.h"
 
 namespace Engine
 {
@@ -198,6 +198,13 @@ namespace Engine
         if (Engine::Input::is_pressed(KeyCode::RightBracket) && Engine::Time::get_paused())
         {
           single_step_requested = true;
+        }
+
+        // Undo last action
+        if (Engine::Input::is_pressed(Engine::KeyCode::Z) && Engine::Input::is_held(Engine::KeyCode::CtrlLeft))
+        {
+          std::cout << "Undoing last action\n";
+          Engine::UndoManager::undo();
         }
 
         // Temporarily enable time for single-step

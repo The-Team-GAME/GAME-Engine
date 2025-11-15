@@ -28,6 +28,8 @@
 #include "../Components/UtilityComponents.h"
 #include "../EventManager/EventManager.h"
 #include "../Events/EngineEvents.h"
+#include "../UndoManager/UndoManager.h"
+#include "../InputManager.h"
 
 namespace {
   // Shared state for entity selection
@@ -50,25 +52,80 @@ namespace {
 void EntityEditorPanelHelpers::render_component_tree(const std::string& component_name, Engine::ECS::Entity& entity, Engine::ECS::IComponentArray* array)
 {
   if (ImGui::TreeNode(component_name.c_str())) {
+    // Track the value before any modifications
+    static std::unordered_map<std::string, ReflectionLibrary::GenericValue> component_edit_start_values;
+    static std::unordered_map<std::string, bool> component_being_edited;
+    static std::unordered_map<std::string, bool> component_was_active_last_frame;
+
+    std::string component_key = component_name + "_" + std::to_string(entity.get_id());
+
     auto component_data = array->to_generic_value(entity.get_id());
     bool modified = false;
 
     ImGuiWidgets::render_field(component_name, component_data, modified, entity);
 
-    // Write back changes if modified
+    // Check if user is currently editing (any widget is active in this component)
+    bool is_any_item_active = ImGui::IsAnyItemActive();
+    bool was_active_last_frame = component_was_active_last_frame[component_key];
+
+    // Start tracking when editing begins
+    if (is_any_item_active && !component_being_edited[component_key]) {
+      component_being_edited[component_key] = true;
+      component_edit_start_values[component_key] = array->to_generic_value(entity.get_id());
+    }
+
+    // Apply changes in real-time
     if (modified) {
-      //std::cout << "Component " << component_name << " modified on Entity " << entity.get_id() << std::endl;
       array->set_component_from_generic_value(entity.get_id(), component_data);
     }
+
+    // Record to undo manager only when editing just finished (was active, now inactive)
+    if (component_being_edited[component_key] && was_active_last_frame && !is_any_item_active) {
+      auto prev_value = component_edit_start_values[component_key];
+      auto new_value = component_data;
+
+      // Only record if the value actually changed
+      if (prev_value != new_value) {
+        Engine::UndoManager::record(
+          // Do lambda: apply new value
+          [array, entity_id = entity.get_id(), new_value]() {
+            array->set_component_from_generic_value(entity_id, new_value);
+          },
+          // Undo lambda: restore previous value
+          [array, entity_id = entity.get_id(), prev_value]() {
+            array->set_component_from_generic_value(entity_id, prev_value);
+          }
+        );
+      }
+
+      component_being_edited[component_key] = false;
+      component_edit_start_values.erase(component_key);
+    }
+
+    // Update last frame state
+    component_was_active_last_frame[component_key] = is_any_item_active;
 
     ImGui::Separator();
 
     std::string remove_label = "Remove##" + component_name;
     if (ImGui::Button(remove_label.c_str())) {
-      auto& containers = Engine::ECS::Internal::get_containers();
-      Engine::ECS::EntityID entityId = entity.get_id();
+      auto prev_value = array->to_generic_value(entity.get_id());
 
-      containers.components_to_remove.emplace_back(entityId, array->get_type_id());
+      Engine::UndoManager::record(
+        // Do lambda: remove component
+        [entity_id = entity.get_id(), type_id = array->get_type_id()]() {
+          auto& containers = Engine::ECS::Internal::get_containers();
+          containers.components_to_remove.emplace_back(entity_id, type_id);
+        },
+        // Undo lambda: restore component
+        [array, entity_id = entity.get_id(), prev_value]() {
+          array->add_default_component(entity_id);
+          array->set_component_from_generic_value(entity_id, prev_value);
+        }
+      );
+
+      auto& containers = Engine::ECS::Internal::get_containers();
+      containers.components_to_remove.emplace_back(entity.get_id(), array->get_type_id());
     }
 
     ImGui::TreePop();

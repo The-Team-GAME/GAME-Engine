@@ -16,6 +16,7 @@
 #include <imgui.h>
 #include "ReflectionFieldWidgets.h"
 #include "TextureAtlasWidget.h"
+#include "../../UndoManager/UndoManager.h"
 #include "../ResourcePicker.h"
 #include "../../Resources.h"
 #include "../../Components/Components.h"
@@ -189,6 +190,42 @@ namespace ImGuiWidgets {
     return true;
   }
 
+  bool render_transform2d_field(ReflectionLibrary::GenericValue& field_value, bool& modified) {
+    // Position
+    float pos[2] = {
+        static_cast<float>(field_value["position"]["x"].getDouble()),
+        static_cast<float>(field_value["position"]["y"].getDouble())
+    };
+    ImGui::Text("Position");
+    if (ImGui::DragFloat2("##Position", pos, 0.1f)) {
+      field_value["position"]["x"] = pos[0];
+      field_value["position"]["y"] = pos[1];
+      modified = true;
+    }
+
+    // Rotation
+    float rotation = static_cast<float>(field_value["rotation"].getDouble());
+    ImGui::Text("Rotation");
+    if (ImGui::DragFloat("##Rotation", &rotation, 0.1f)) {
+      field_value["rotation"] = rotation;
+      modified = true;
+    }
+
+    // Scale
+    float scale[2] = {
+        static_cast<float>(field_value["scale"]["x"].getDouble()),
+        static_cast<float>(field_value["scale"]["y"].getDouble())
+    };
+    ImGui::Text("Scale");
+    if (ImGui::DragFloat2("##Scale", scale, 0.1f)) {
+      field_value["scale"]["x"] = scale[0];
+      field_value["scale"]["y"] = scale[1];
+      modified = true;
+    }
+
+    return true;
+  }
+
   bool render_texture_atlas_field(Engine::ECS::Entity entity) {
     // Only works with valid entities
     if (!entity.is_valid()) {
@@ -227,9 +264,15 @@ namespace ImGuiWidgets {
       return render_font_field(field_value, modified);
     }
 
+    if (display_name == "Components::Transform2D") {
+      return render_transform2d_field(field_value, modified);
+    }
+
     if (display_name == "Components::TextureAtlas") {
       return render_texture_atlas_field(entity);
     }
+
+
 
     // Not handled by specialized renderer
     return false;
