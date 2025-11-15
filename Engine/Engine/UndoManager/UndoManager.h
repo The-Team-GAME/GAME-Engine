@@ -30,6 +30,7 @@ namespace Engine {
       while (undo_stack.size() > MAX_HISTORY)
         undo_stack.pop_front();
       redo_stack.clear();
+      std::cout << "Adding to list\n";
     }
 
     // Takes lambdas directly but does not execute them
@@ -46,7 +47,7 @@ namespace Engine {
     inline void execute(std::unique_ptr<Action> action) {
       action->do_action();
       record(std::move(action));
-      std::cout << "Adding to list\n";
+      std::cout << "Adding to list and executing\n";
     }
 
     // Take lambdas directly and executes immediately

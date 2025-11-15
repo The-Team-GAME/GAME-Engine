@@ -36,14 +36,6 @@ namespace {
   s32 selected_entity_id = -1;
   bool selection_initialized = false;
 
-  // Helper function to compare GenericValues by serializing to JSON
-  bool are_generic_values_equal(const ReflectionLibrary::GenericValue& a, const ReflectionLibrary::GenericValue& b) {
-    // Very hacky but wtv
-    std::string json_a = ReflectionLibrary::generic_value_to_json(a, false);
-    std::string json_b = ReflectionLibrary::generic_value_to_json(b, false);
-    return json_a == json_b;
-  }
-
   // Event listener to sync selection from other sources (like Gizmo system)
   void init_selection_listener() {
     if (selection_initialized) return;
@@ -93,7 +85,7 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
       auto new_value = component_data;
 
       // Only record if the value actually changed
-      if (!are_generic_values_equal(prev_value, new_value)) {
+      if (prev_value != new_value) {
         Engine::UndoManager::record(
           // Do lambda: apply new value
           [array, entity_id = entity.get_id(), new_value]() {
