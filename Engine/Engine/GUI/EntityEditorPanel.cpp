@@ -84,7 +84,7 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
       auto prev_value = component_edit_start_values[component_key];
       auto new_value = component_data;
 
-      Engine::UndoManager::execute(
+      Engine::UndoManager::record(
         // Do lambda: apply new value
         [array, entity_id = entity.get_id(), new_value]() {
           array->set_component_from_generic_value(entity_id, new_value);
@@ -108,7 +108,7 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
     if (ImGui::Button(remove_label.c_str())) {
       auto prev_value = array->to_generic_value(entity.get_id());
 
-      Engine::UndoManager::execute(
+      Engine::UndoManager::record(
         // Do lambda: remove component
         [entity_id = entity.get_id(), type_id = array->get_type_id()]() {
           auto& containers = Engine::ECS::Internal::get_containers();
