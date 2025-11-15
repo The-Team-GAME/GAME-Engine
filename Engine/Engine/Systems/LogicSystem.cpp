@@ -12,7 +12,7 @@ namespace { // in the cpp file
   /*===============/
   / Movement stuff /
   /===============*/
-  f32 walking_x_vel = 200.f;
+  f32 walking_x_vel = 400.f;
   Vec2D jumping_force(0.f, -3500000.f);
 
   /*==============/
@@ -41,30 +41,46 @@ void logi::load_values()
   // Fill up soon
 }
 
+void logi::update_entity(Engine::ECS::Entity& entity)
+{
+  run_state(entity);
+
+}
+
 void logi::take_input(ECS::Entity player)
 {
   Components::RigidBody* player_rigid = player.get_component<Components::RigidBody>();
   Components::Logic* player_logic = player.get_component<Components::Logic>();
-  if (Input::is_pressed(KeyCode::A) || Input::is_held(KeyCode::A))
+
+  // resettng the state
+  player_logic->state = IDLE;
+  // put this first because we need to reset the flag if possible
+  if (Input::is_released(KeyCode::Space) && player_rigid->is_jumping)
   {
-    player_logic->state = MOVING_LEFT;
+    player_rigid->is_jumping = false;
   }
-  if (Input::is_held(KeyCode::D))
-  {
-    player_logic->state = MOVING_RIGHT;
-  }
-  if (Input::is_held(KeyCode::Space) 
-    && player_rigid->on_ground 
+
+  if (Input::is_held(KeyCode::Space)
+    && player_rigid->on_ground
     && !player_rigid->is_jumping)
   {
     player_logic->state = JUMPING;
     player_rigid->is_jumping = true;
   }
-
-  if (Input::is_released(KeyCode::Space) && player_rigid->is_jumping)
+  else if (Input::is_pressed(KeyCode::A) || Input::is_held(KeyCode::A))
   {
-    player_rigid->is_jumping = false;
+    player_logic->state = MOVING_LEFT;
   }
+  else if (Input::is_held(KeyCode::D))
+  {
+    player_logic->state = MOVING_RIGHT;
+  }
+  else // no inputs
+  {
+    player_logic->state = IDLE;
+  }
+
+
 }
 
 void logi::run_state(ECS::Entity entity)
@@ -74,6 +90,7 @@ void logi::run_state(ECS::Entity entity)
   switch (logic->state)
   {
   case entity_state::IDLE:
+    rigid->velocity.x = 0.f;
     // Animation here
     break;
   case entity_state::ATTACK:

@@ -20,6 +20,7 @@
 #include "GraphicsSystem.h"
 #include "PhysicsSystem.h"
 #include "CollisionSystem.h"
+#include "LogicSystem.h"
 #include "ParticleSystem.h"
 #include "DebugDrawSystem.h"
 #include "UISystem.h"
@@ -30,6 +31,7 @@ void register_engine_systems()
   // Update systems
   Engine::ECS::add_system<Engine::Systems::CameraSystem>();
   Engine::ECS::add_system<Engine::Systems::CameraControlSystem>();
+  Engine::ECS::add_system<Engine::Systems::LogicSystem>();
   Engine::ECS::add_system<Engine::Systems::Physics2DSystem>();
   Engine::ECS::add_system<Engine::Systems::Collision2DSystem>();
   Engine::ECS::add_system<Engine::Systems::AnimationStateSystem>();
@@ -68,6 +70,7 @@ void unregister_engine_systems()
   Engine::ECS::remove_system<Engine::Systems::AnimationStateSystem>();
   Engine::ECS::remove_system<Engine::Systems::Collision2DSystem>();
   Engine::ECS::remove_system<Engine::Systems::Physics2DSystem>();
+  Engine::ECS::remove_system<Engine::Systems::LogicSystem>();
   Engine::ECS::remove_system<Engine::Systems::CameraControlSystem>();
   Engine::ECS::remove_system<Engine::Systems::CameraSystem>();
 }

@@ -15,8 +15,10 @@
 
 #include "../Engine/MonkeyEngine.h"
 #include "../Engine/Systems/PhysicsSystem.h"
+#include "../Engine/Systems/LogicSystem.h"
 using namespace Engine;
 using phy2D = Systems::Physics2DSystem;
+using logi = Systems::LogicSystem;
 
 namespace {
   bool jumping = false;
@@ -38,7 +40,8 @@ public:
       .add_component<Components::Color>(blue)
       .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
       .add_component<Components::RigidBody>(Components::RigidBody(false, true))
-      .add_component<Components::BoxCollider>(20.0f, 20.0f, true); // width, height
+      .add_component<Components::BoxCollider>(20.0f, 20.0f, true) // width, height
+      .add_component<Components::Logic>(IDLE);
 
     // Walling the player in
     Engine::ECS::create_entity().add_component<Components::Tag<"PhysicsTestState">>()
@@ -146,33 +149,35 @@ public:
 
     if (!player_xform || !player_rigid || !player_box) return;
 
+    logi::take_input(player);
     // idt Input::is_pressed(KeyCode::A) || Input::is_held(KeyCode::A) and just is held only makes much of a difference
 
     //player_rigid->force.zero();
 
-    if (Input::is_pressed(KeyCode::A) || Input::is_held(KeyCode::A))
-    {
-      //walk left
-      phy2D::walk_left(*player_rigid);
-    }
-    if (Input::is_held(KeyCode::D))
-    {
-      //walk right
-      phy2D::walk_right(*player_rigid);
-    }
-    if (Input::is_held(KeyCode::Space) && player_rigid->on_ground && !jumping)
-    {
-      //jump
-      // std::cout << "JUMP\n";
-      jumping = true;
-      phy2D::jump(*player_rigid);
-      std::cout << player_rigid->force << std::endl;
-    }
+    //if (Input::is_pressed(KeyCode::A) || Input::is_held(KeyCode::A))
+    //{
+    //  //walk left
+    //  phy2D::walk_left(*player_rigid);
+    //}
+    //if (Input::is_held(KeyCode::D))
+    //{
+    //  //walk right
+    //  phy2D::walk_right(*player_rigid);
+    //}
+    //if (Input::is_held(KeyCode::Space) && player_rigid->on_ground && !jumping)
+    //{
+    //  //jump
+    //  // std::cout << "JUMP\n";
+    //  jumping = true;
+    //  phy2D::jump(*player_rigid);
+    //  std::cout << player_rigid->force << std::endl;
+    //}
 
-    if (Input::is_released(KeyCode::Space) && jumping)
-    {
-      jumping = false;
-    }
+    //if (Input::is_released(KeyCode::Space) && jumping)
+    //{
+    //  jumping = false;
+    //}
+
   }
 
   void draw() {

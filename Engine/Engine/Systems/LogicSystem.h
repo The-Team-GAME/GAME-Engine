@@ -32,12 +32,15 @@ namespace Engine {
   {
     class LogicSystem : public Engine::ECS::System
     {
+    public:
       // Might need to include animation stuff here too
       LogicSystem();
 
       static void load_values();
 
-      void take_input(ECS::Entity player);
+      void update_entity(Engine::ECS::Entity& entity) override;
+
+      static void take_input(ECS::Entity player);
 
       void run_state(ECS::Entity entity);
 
