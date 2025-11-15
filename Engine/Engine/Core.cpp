@@ -207,8 +207,6 @@ namespace Engine
           Engine::UndoManager::undo();
         }
 
-        bool shouldRunPhysics = !physics_step_mode || Engine::Input::is_pressed(KeyCode::RightBracket) || force_one_update;
-
         // Temporarily enable time for single-step
         if (single_step_requested)
         {
