@@ -24,12 +24,28 @@ namespace Engine {
     inline std::deque<std::unique_ptr<Action>> undo_stack;
     inline std::deque<std::unique_ptr<Action>> redo_stack;
 
-    inline void execute(std::unique_ptr<Action> action) {
-      action->do_action();
+    // Takes an Action but does not execute it
+    inline void record(std::unique_ptr<Action> action) {
       undo_stack.push_back(std::move(action));
       while (undo_stack.size() > MAX_HISTORY)
         undo_stack.pop_front();
       redo_stack.clear();
+    }
+
+    // Takes lambdas directly but does not execute them
+    template<typename DoFunc, typename UndoFunc>
+    inline void record(DoFunc&& do_func, UndoFunc&& undo_func) {
+      auto action = std::make_unique<Action>(
+        std::forward<DoFunc>(do_func),
+        std::forward<UndoFunc>(undo_func)
+      );
+      record(std::move(action));
+    }
+
+    // Takes an Action and executes it immediately
+    inline void execute(std::unique_ptr<Action> action) {
+      action->do_action();
+      record(std::move(action));
       std::cout << "Adding to list\n";
     }
 
