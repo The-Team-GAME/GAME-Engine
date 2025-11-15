@@ -180,9 +180,9 @@ namespace TilemapPanel {
     // Get the placed tiles set for the current layer
     auto& placed_tiles = placed_tiles_per_layer[selected_layer];
 
-    // If a tile already exists at this position on this layer, delete it first (overwrite behavior)
+    // If a tile already exists at this position on this layer, check if it's different before overwriting
     if (placed_tiles.find(pos_key) != placed_tiles.end()) {
-      // Find and destroy the existing tile entity 
+      // Find the existing tile entity
       for (auto& entity : Engine::ECS::get_entities_with<Components::Tile>()) {
         // TODO: This is very inefficient, implement hashing for Transform2D so we dont have to loop all entities 
         auto* transform = entity.get_component<Components::Transform2D>();
@@ -191,55 +191,72 @@ namespace TilemapPanel {
           std::string entity_key = get_position_key(entity_grid_pos);
 
           if (entity_key == pos_key) {
-            entity.destroy();
+            // Check if the tile is different from what we want to place
+            auto* existing_texture = entity.get_component<Components::Texture>();
+            auto* existing_atlas = entity.get_component<Components::TextureAtlas>();
+
+            bool is_different = false;
+
+            // Check if texture is different
+            if (!existing_texture ||
+              !existing_texture->texture_handle ||
+              !atlas_entry.texture.texture_handle ||
+              existing_texture->texture_handle->path != atlas_entry.texture.texture_handle->path) {
+              is_different = true;
+            }
+            // Check if atlas tile index is different
+            else if (!existing_atlas || existing_atlas->drawIndex != selected_tile_index) {
+              is_different = true;
+            }
+
+            // Only destroy and recreate if the tile is different
+            if (is_different) {
+              entity.destroy();
+              placed_tiles.erase(pos_key);
+            }
+            else {
+              // Tile is the same, no need to do anything
+              return;
+            }
+
             break;
           }
         }
       }
-
-      // Remove from tracking set (will be re-added below)
-      placed_tiles.erase(pos_key);
     }
 
     // Special do and undo for placing tile
-    auto tile_id = std::make_shared<Engine::ECS::EntityID>(0); // Use 0 or your engine's invalid ID
+    // Use shared_ptr so both lambdas can access the same entity state
+    auto placed_tile_entity = std::make_shared<Engine::ECS::Entity>(Engine::ECS::INVALID_ENTITY);
 
     Engine::UndoManager::execute(
-      // --- DO ---
-      [tile_id, grid_pos, atlas_entry,
-      grid_snap_value = grid_snap,
-      selected_tile_index_value = selected_tile_index,
-      selected_layer_value = selected_layer]()
-      {
-        auto tile = Engine::ECS::create_entity()
+      [placed_tile_entity, grid_pos, atlas_entry, &placed_tiles, pos_key]() mutable {
+        *placed_tile_entity = Engine::ECS::create_entity()
           .add_component<Components::Tile>()
           .add_component<Components::Transform2D>(grid_pos, 0.0f,
-            Math::Vec2D{ grid_snap_value, grid_snap_value })
+            Math::Vec2D{ grid_snap, grid_snap })
           .add_component<Components::Texture>(atlas_entry.texture)
           .add_component<Components::TextureAtlas>(atlas_entry.atlas)
           .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
 
-        tile.get_component<Components::TextureAtlas>()->drawIndex =
-          selected_tile_index_value;
+        placed_tile_entity->get_component<Components::TextureAtlas>()->drawIndex = selected_tile_index;
 
-        tile.clear_layers();
-        tile.add_to_layer(selected_layer_value);
+        placed_tile_entity->clear_layers();
+        placed_tile_entity->add_to_layer(selected_layer);
+        placed_tiles.insert(pos_key);
 
-        *tile_id = tile.get_id();   // always update stored ID
       },
-
-      // --- UNDO ---
-      [tile_id]()
-      {
-        if (*tile_id != Engine::ECS::INVALID_ENTITY)
-        {
-          Engine::ECS::destroy_entity(*tile_id);
+      [placed_tile_entity, &placed_tiles, pos_key]() mutable {
+        if (placed_tile_entity->is_valid()) {
+          placed_tile_entity->destroy();
+          placed_tiles.erase(pos_key);
+        }
+        else {
+          std::cout << "Warning: Attempted to undo tile placement but entity is invalid.\n";
         }
       }
     );
 
-
-    placed_tiles.insert(pos_key);
 
     // Mark level as dirty for saving later
     Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
