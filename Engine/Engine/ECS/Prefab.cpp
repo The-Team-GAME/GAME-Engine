@@ -89,6 +89,42 @@ namespace Engine {
       }
     }
 
+    bool Prefab::add_component_by_name(const std::string& component_name) {
+      if (!impl)
+        return false;
+
+      auto& containers = Internal::get_containers();
+      auto& prefab_storage = impl->get_component_storage();
+      auto& prefab_signature = impl->get_signature();
+
+      // Find the component array with matching type name
+      for (auto& [type_id, world_array] : containers.component_arrays) {
+        if (world_array->get_type_name() == component_name) {
+          // Check if prefab already has this component
+          if (prefab_signature.test(type_id)) {
+            return false; // Already has this component
+          }
+
+          // Create or get component array in prefab storage
+          if (prefab_storage.find(type_id) == prefab_storage.end()) {
+            prefab_storage[type_id] = world_array->create_empty();
+          }
+
+          // Create a default-constructed component using GenericValue
+          ReflectionLibrary::GenericValue default_value = ReflectionLibrary::Object();
+
+          // Add the component to prefab (using entity ID 0 for prefabs)
+          if (prefab_storage[type_id]->add_component_from_generic_value(0, default_value)) {
+            prefab_signature.set(type_id);
+            return true;
+          }
+          return false;
+        }
+      }
+
+      return false; // Component type not found
+    }
+
     Entity Prefab::instantiate() const {
       return instantiate_prefab(*this);
     }
@@ -215,7 +251,7 @@ namespace Engine {
       }
 
       ReflectionLibrary::GenericValue result;
-      result["dataType"] = "Prefab";
+      // result["dataType"] = "Prefab";
 
       auto prefab_impl = prefab.get_impl();
 

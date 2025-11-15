@@ -55,7 +55,7 @@ namespace Engine {
     Where to call it:
     Call this once per frame in the main game loop.
     ==================================================================================*/
-    void update_title_with_fps();
+    void update_title();
 
     /* ===================== //
     // Accessors             //

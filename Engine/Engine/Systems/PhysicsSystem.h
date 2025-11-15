@@ -48,6 +48,7 @@ namespace Engine {
 
       static void jump(Components::RigidBody& rigid);
 
+      // void knockback(Components::RigidBody& rigid, Vec2D force);
       // Update the linear velocities if said entities here
       void update_kinematics(Components::RigidBody& rigid, Components::Transform2D& xform);
     };

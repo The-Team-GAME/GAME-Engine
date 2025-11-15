@@ -44,9 +44,7 @@ namespace Engine
   bool Core::is_running = false;
   f64 Core::accumulator{};
   s32 Core::step_limit = 3;
-  bool Core::do_render = false;
-  bool Core::physics_step_mode = false;
-  bool Core::force_one_update = false;
+  bool Core::single_step_requested = false;
 
   /*=================================================================================
   Function Brief:
@@ -85,8 +83,14 @@ namespace Engine
     }
 
     // Initialize resource manager
-    if (!Engine::Resources::init()) {
+    if (!Engine::Resources::init("Assets")) { // TODO: move initial resource path to ProjectSettings
       throw std::runtime_error("Failed to initialize resource manager");
+    }
+
+    // Load all assets if enabled in settings
+    if (engine_settings.load_all_assets_on_startup)
+    {
+      Engine::Resources::load_all_assets();
     }
 
     // Initialize audio manager
@@ -102,9 +106,6 @@ namespace Engine
     Engine::Graphics::set_viewport({ 0, 0, engine_settings.window_width, engine_settings.window_height });
 
     Engine::Events::register_all_events();
-
-
-    Resources::set_resource_path("Assets"); // TODO: move this to ProjectSettings
 
     // Load project settings
     if (!Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::load("Assets/settings/project_settings.json")) {
@@ -158,20 +159,13 @@ namespace Engine
       // Updates the real_dt and increments the accumulator
       Time::update_time();
 
-      if (!physics_step_mode)
-      {
-        // In normal mode, accumulate real delta time
-        accumulator += Time::get_real_dt();
-      }
-      else {
-        // In step mode, always allow at least one iteration to check input
-        accumulator = Time::get_fixed_dt();
-      }
+      accumulator += Time::get_real_dt();
 
-      if (accumulator > Time::get_fixed_dt() * step_limit)
+
+      if (accumulator > Time::get_unscaled_fixed_dt() * step_limit)
       {
         // Caps the accumulator so each gameloop will only go through 3 loops max
-        accumulator = Time::get_fixed_dt() * step_limit;
+        accumulator = Time::get_unscaled_fixed_dt() * step_limit;
       }
       //std::cout << "DT: " << Time::get_real_dt() << " FPS: " << Time::calc_fps(Time::get_real_dt()) << std::endl;
       // END OF TIME UPDATES ================================================
@@ -179,16 +173,16 @@ namespace Engine
       glfwPollEvents();
 
       // Update window title with FPS
-      WindowManager::update_title_with_fps();
+      WindowManager::update_title();
 
       Engine::Audio::update();
       ImGuiManager::begin();
 
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
-      while (accumulator >= Time::get_fixed_dt())
+      while (accumulator >= Time::get_unscaled_fixed_dt())
       {
         // To decrement the accumulator when each gameloop runs
-        accumulator -= Time::get_fixed_dt();
+        accumulator -= Time::get_unscaled_fixed_dt();
 
         // Update input right before the main gameloop. This needs to be here because if it is out side the while loop,
         // World::update() won't have a chance to react before the input state is cleared on the next frame. 
@@ -196,10 +190,17 @@ namespace Engine
 
         if (Engine::Input::is_pressed(KeyCode::P))
         {
-          physics_step_mode = !physics_step_mode;
-          std::cout << "Physics Step Mode: " << (physics_step_mode ? "ON" : "OFF") << std::endl;
+          Engine::Time::toggle_paused();
+          std::cout << "Physics Step Mode: " << (Engine::Time::get_paused() ? "ON" : "OFF") << std::endl;
         }
 
+        // Single-step when paused
+        if (Engine::Input::is_pressed(KeyCode::RightBracket) && Engine::Time::get_paused())
+        {
+          single_step_requested = true;
+        }
+
+        // Undo last action
         if (Engine::Input::is_pressed(Engine::KeyCode::Z) && Engine::Input::is_held(Engine::KeyCode::CtrlLeft))
         {
           std::cout << "Undoing last action\n";
@@ -208,14 +209,25 @@ namespace Engine
 
         bool shouldRunPhysics = !physics_step_mode || Engine::Input::is_pressed(KeyCode::RightBracket) || force_one_update;
 
-        if (shouldRunPhysics)
+        // Temporarily enable time for single-step
+        if (single_step_requested)
         {
-          // Main gameloop here
-          Engine::SceneManager::update();
-          Engine::ECS::update();
+          Engine::Time::set_time_scale(1.0f);
+        }
 
-          // Clear the forced update flag after running
-          force_one_update = false;
+        // Main gameloop here
+        Engine::SceneManager::update();
+        Engine::ECS::update();
+
+        // Always process ECS housekeeping (entity deletions, component modifications)
+        // even when paused so entities can be created/destroyed in the editor
+        Engine::ECS::process_housekeeping();
+
+        // Restore paused state after single-step
+        if (single_step_requested)
+        {
+          Engine::Time::set_time_scale(0.0f);
+          single_step_requested = false;
         }
 
         TilemapPanel::update();

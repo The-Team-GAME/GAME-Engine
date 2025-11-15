@@ -23,7 +23,6 @@ private:
 
 public:
   void load() {
-    Engine::Resources::set_resource_path("Assets/");
     Engine::ECS::create_entity()
       .add_component<Components::Tag<"MainMenuState">>()
       .add_component<Components::Transform2D>(800.0f, 450.0f, 0.0f, 1600.0f, 900.0f)

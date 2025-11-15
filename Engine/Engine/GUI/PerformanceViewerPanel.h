@@ -82,9 +82,17 @@ inline void PerformanceViewerPanel()
   ImGui::SeparatorText("Tick Rate Control");
   f32 tick_rate_input = Engine::Time::get_tick_rate();
 
-  if (ImGui::SliderFloat("Tick Rate", &tick_rate_input, 45.0f, 144.0f, "%.1f Hz")) {
+  if (ImGui::SliderFloat("Tick Rate", &tick_rate_input, 10.0f, 144.0f, "%.1f Hz")) {
     Engine::Time::set_tick_rate(tick_rate_input);
   }
+
+  // Time scale
+  ImGui::SeparatorText("Time Scale");
+  f32 time_scale = Engine::Time::get_time_scale();
+  if (ImGui::SliderFloat("Time Scale", &time_scale, 0.0f, 5.0f, "%.2f x")) {
+    Engine::Time::set_time_scale(time_scale);
+  }
+
 
   ImGui::Text("Frame Time: %.2f ms", 1000.0f / tick_rate_input);
 

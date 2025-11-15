@@ -347,6 +347,19 @@ namespace Engine {
     ==================================================================================*/
     void update();
 
+    /*=================================================================================
+    Function Brief:
+    Processes pending entity deletions and component modifications. Called every frame
+    even when physics is paused to ensure ECS state changes are applied.
+
+    Parameters:
+    None.
+
+    Where to call it:
+    In the main game loop, called every frame regardless of pause state.
+    ==================================================================================*/
+    void process_housekeeping();
+
     /* ================ //
     // Main draw loop   //
     // ================ */

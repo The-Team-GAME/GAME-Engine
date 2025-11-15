@@ -99,6 +99,11 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Engine\GUI\LayerManagerPanel.cpp" />
+    <ClCompile Include="Engine\GUI\LevelManagerPanel.cpp" />
+    <ClCompile Include="Engine\GUI\ResourceExplorerPanel.cpp" />
+    <ClCompile Include="Engine\Level.cpp" />
+    <ClCompile Include="Engine\ProjectSaveManager.cpp" />
     <ClCompile Include="Engine\Systems\DebugDrawSystem.cpp" />
     <ClCompile Include="Engine\Lua\GameAPI.cpp" />
     <ClCompile Include="Engine\ECS\Types.cpp" />
@@ -113,10 +118,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClCompile Include="Engine\EventManager\EventManager.cpp" />
     <ClCompile Include="Engine\FileIO\PrefabsFileIO.cpp" />
     <ClCompile Include="Engine\FileIO\LevelFileIO.cpp" />
-    <ClCompile Include="Engine\LevelManager.cpp" />
     <ClCompile Include="Engine\GUI\EntityEditorPanel.cpp" />
-    <ClCompile Include="Engine\GUI\LayerManagerPanel.cpp" />
-    <ClCompile Include="Engine\GUI\LevelPanel.cpp" />
     <ClCompile Include="Engine\GUI\PrefabEditorPanel.cpp" />
     <ClCompile Include="Engine\GUI\TilemapPanel.cpp" />
     <ClCompile Include="Engine\GUI\ViewportPanel.cpp" />
@@ -154,9 +156,18 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClCompile Include="GameLogic\GameStates\StressTestState.cpp" />
     <ClCompile Include="GameLogic\WinMain.cpp" />
     <ClCompile Include="Engine\Lua\LuaManager.cpp" />
+    <ClCompile Include="Engine\Systems\LogicSystem.cpp" />
     <ClCompile Include="Engine\UndoManager\UndoManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\GUI\LayerManagerPanel.h" />
+    <ClInclude Include="Engine\GUI\LevelManagerPanel.h" />
+    <ClInclude Include="Engine\GUI\RegisterAllPanels.h" />
+    <ClInclude Include="Engine\GUI\ResourceExplorerPanel.h" />
+    <ClInclude Include="Engine\ImGuiThemes.h" />
+    <ClInclude Include="Engine\KeyCodes.h" />
+    <ClInclude Include="Engine\Level.h" />
+    <ClInclude Include="Engine\ProjectSaveManager.h" />
     <ClInclude Include="Engine\Systems\DebugDrawSystem.h" />
     <ClInclude Include="Engine\UndoManager\Commands\Commands.h" />
     <ClInclude Include="GameLogic\Components\HealthComponents.h" />
@@ -194,7 +205,6 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="Engine\Reflection\ReflectionLibrary\Json.h" />
     <ClInclude Include="Engine\Reflection\ReflectionLibrary\Macros.h" />
     <ClInclude Include="Engine\Reflection\ReflectionLibrary\Print.h" />
-    <ClInclude Include="Engine\LevelManager.h" />
     <ClInclude Include="Engine\SceneManager.h" />
     <ClInclude Include="Engine\Systems\ParticleSystem.h" />
     <ClInclude Include="Engine\Systems\Systems.h" />
@@ -230,8 +240,6 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="Engine\ECS\World.h" />
     <ClInclude Include="Engine\FileIO\LevelFileIO.h" />
     <ClInclude Include="Engine\GUI\EntityEditorPanel.h" />
-    <ClInclude Include="Engine\GUI\LayerManagerPanel.h" />
-    <ClInclude Include="Engine\GUI\LevelPanel.h" />
     <ClInclude Include="Engine\GUI\PrefabEditorPanel.h" />
     <ClInclude Include="Engine\GUI\ResourcePicker.h" />
     <ClInclude Include="Engine\ImGuiManager.h" />
@@ -259,6 +267,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="GameLogic\Systems\HealthSystem.h" />
     <ClInclude Include="GameLogic\Systems\PlayerControllerSystem.h" />
     <ClInclude Include="Engine\Lua\LuaManager.h" />
+    <ClInclude Include="Engine\Systems\LogicSystem.h" />
     <ClInclude Include="Engine\UndoManager\UndoManager.h" />
   </ItemGroup>
   <ItemGroup>
