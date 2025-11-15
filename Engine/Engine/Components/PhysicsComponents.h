@@ -40,6 +40,7 @@ namespace Components
 
     bool is_static = false;  // If true, not affected by physics forces
     bool on_ground = false;
+    bool is_jumping = false;
 
     // Is the rigidbody facing left or right
     // This should be updated in the script

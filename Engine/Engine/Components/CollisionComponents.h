@@ -57,14 +57,6 @@ struct AABB {
   }
 };
 
-enum entity_type
-{
-  STATIC, // A wall, non responsive
-  ATTACK,
-  RECEIVE,
-  IDLE,
-  PARRY
-};
 namespace Components
 {
 

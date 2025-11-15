@@ -1,59 +1,54 @@
 #pragma once
 #include "../ECS/ECS.h"
 #include "../Components/Components.h"
-#include "../Math/Vector2D.h"
-namespace { // in the cpp file
-  // Values to be loaded from file
 
-  /*===============
-  / Damage Values /
-  ===============*/
-  f32 player_dmg;         // How much damage the player deals
-  f32 enemy_dmg;          // How much damage the enemy deals
+enum entity_state {
+  IDLE,
+  ATTACK,
+  STUN,
 
-  /*==================
-  / Knockback Values /
-  ==================*/
-  Vec2D player_knockback; // How much the player gets knockbacked
-  Vec2D enemy_knockback;  // How much the enemy gets knockbacked
+  // PLAYER SPECIFIC STATES
+  MOVING_LEFT,
+  MOVING_RIGHT,
+  JUMPING,
+
+  // ENEMY SPECIFIC STATES
+  PATROL,
+  CHASE,
+};
+
+namespace Components
+{
+  struct Logic
+  {
+    entity_state state;
+
+    Logic(entity_state starting_state) : state(starting_state) {};
+  };
 }
+
 namespace Engine {
   namespace Systems
   {
     class LogicSystem : public Engine::ECS::System
     {
       // Might need to include animation stuff here too
-      LogicSystem()
-      {
-        require_components<Components::RigidBody>();
-      }
+      LogicSystem();
 
       static void load_values();
 
-#pragma region Callbacks 
-      /*==================
-      / Callback Section /
-      ==================*/
+      void take_input(ECS::Entity player);
 
-      // Damage to give to the recieving party
-      static void player_atk() //put in the enemy's health component here
-      {
-        // No Physics Portion
-      }
+      void run_state(ECS::Entity entity);
 
-      // Damage to give to the recieving party
-      static void enemy_atk()
-      {
-        // No Physics Portion
-      }
+      void move_left(Components::RigidBody& rigid);
 
-      static void recieve_atk(ECS::Entity& entity)
-      {
-        // No Physics Portion
-      }
-#pragma endregion
+      void move_right(Components::RigidBody& rigid);
+
+      void jump(Components::RigidBody& rigid);
     };
-
   }
 }
+
+
 

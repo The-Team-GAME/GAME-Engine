@@ -104,7 +104,7 @@ public:
       .add_component<Components::Color>(grey)
       .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
       .add_component<Components::RigidBody>(true, false)
-      .add_component<Components::BoxCollider>(800.0f, 50.0f, false); // width, height
+      .add_component<Components::BoxCollider>(300.0f, 50.0f, false); // width, height
 
     // the jummping blocks
     Engine::ECS::create_entity().add_component<Components::Tag<"PhysicsTestState">>()
@@ -148,7 +148,7 @@ public:
 
     // idt Input::is_pressed(KeyCode::A) || Input::is_held(KeyCode::A) and just is held only makes much of a difference
 
-    player_rigid->force.zero();
+    //player_rigid->force.zero();
 
     if (Input::is_pressed(KeyCode::A) || Input::is_held(KeyCode::A))
     {
