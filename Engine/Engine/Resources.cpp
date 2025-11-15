@@ -26,21 +26,27 @@
 #include <rapidjson/document.h>
 #include "FileIO/PrefabsFileIO.h"
 #include "Path.h"
+#include "Level.h"
+#include "FileIO/LevelFileIO.h"
 
 // Define the actual storage for the extern variables
 std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> Engine::Resources::texture_cache;
 std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::FontData>> Engine::Resources::font_cache;
 std::unordered_map<std::string, std::weak_ptr<Engine::Audio::SoundData>> Engine::Resources::sound_cache;
 std::unordered_map<std::string, std::weak_ptr<Engine::ECS::PrefabImpl>> Engine::Resources::prefab_cache;
+std::unordered_map<std::string, Engine::Level> Engine::Resources::level_cache;
 
 // Vector to hold shared_ptr references for persistent resources
 std::vector<Engine::Resources::Resource> Engine::Resources::persistent_resources;
 
 std::string Engine::Resources::resource_path = "";
 
-bool Engine::Resources::init()
+bool Engine::Resources::init(const std::string& initial_resource_path)
 {
   Log::info("Resource manager initialized");
+
+  set_resource_path(initial_resource_path);
+
   return true;
 }
 
@@ -51,6 +57,7 @@ bool Engine::Resources::exit()
   font_cache.clear();
   sound_cache.clear();
   prefab_cache.clear();
+  level_cache.clear();
 
   // Clear persistent resources
   persistent_resources.clear();
@@ -67,6 +74,127 @@ void Engine::Resources::set_resource_path(const std::string& path)
   Log::info("Resource path set to: " + resource_path);
 }
 
+void Engine::Resources::load_all_assets()
+{
+  if (resource_path.empty())
+  {
+    Log::warning("Resource path is empty, cannot load all assets");
+    return;
+  }
+
+  if (!std::filesystem::exists(resource_path))
+  {
+    Log::warning("Resource path does not exist: " + resource_path);
+    return;
+  }
+
+  Log::info("Loading all assets from: " + resource_path);
+  size_t loaded_count = 0;
+
+  try
+  {
+    // Recursively iterate through all files in the resource path
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(resource_path))
+    {
+      if (entry.is_regular_file())
+      {
+        // Get relative path from resource_path
+        std::string relative_path = Engine::Path(entry.path().string()).to_relative(resource_path);
+
+        // Load the resource (persist=true to keep it loaded)
+        Engine::Resources::Resource resource = Engine::Resources::load(relative_path, true, true);
+
+        // Check if load was successful (not monostate)
+        if (!std::holds_alternative<std::monostate>(resource))
+        {
+          loaded_count++;
+        }
+      }
+    }
+
+    Log::info("Finished loading all assets. Total loaded: " + std::to_string(loaded_count));
+  }
+  catch (const std::filesystem::filesystem_error& e)
+  {
+    Log::error("Error while loading all assets: " + std::string(e.what()));
+  }
+}
+
+std::string Engine::Resources::copy_to_resources(const std::string& filepath)
+{
+  // Normalize the input path
+  std::string normalized_path = Engine::Path(filepath).normalize();
+
+  // Check if file exists
+  if (!std::filesystem::exists(normalized_path))
+  {
+    Log::warning("Cannot copy to resources - file does not exist: " + normalized_path);
+    return "";
+  }
+
+  // Get absolute resource path
+  std::string abs_resource_path = Engine::Path(resource_path).to_absolute();
+  std::string abs_file_path = Engine::Path(normalized_path).to_absolute();
+
+  // Check if the file is already within the resource folder
+  if (abs_file_path.find(abs_resource_path) == 0)
+  {
+    // File is already in resources, return relative path
+    return Engine::Path(abs_file_path).to_relative(abs_resource_path);
+  }
+
+  // Extract just the filename (no directory path)
+  std::string filename = Engine::Path(normalized_path).get_filename();
+
+  // Construct destination path in resource root
+  std::string dest_path = Engine::Path(abs_resource_path).join(filename);
+
+  // Check if a file with this name already exists in resources
+  if (std::filesystem::exists(dest_path))
+  {
+    // File already exists - check if it's the same file
+    if (std::filesystem::equivalent(abs_file_path, dest_path))
+    {
+      Log::info("File already exists in resources: " + filename);
+      return filename;
+    }
+
+    // Different file with same name - append number to make it unique
+    std::string extension = Engine::Path(filename).get_extension();
+    std::string base_name = filename;
+
+    // Remove extension from base_name if it exists
+    if (!extension.empty())
+    {
+      base_name = filename.substr(0, filename.length() - extension.length());
+    }
+
+    int counter = 1;
+
+    do
+    {
+      filename = base_name + "_" + std::to_string(counter) + extension;
+      dest_path = Engine::Path(abs_resource_path).join(filename);
+      counter++;
+    } while (std::filesystem::exists(dest_path));
+
+    Log::info("File renamed to avoid conflict: " + filename);
+  }
+
+  // Copy the file
+  try
+  {
+    std::filesystem::copy_file(abs_file_path, dest_path);
+    Log::info("Copied file to resources: " + filename);
+    return filename;
+  }
+  catch (const std::filesystem::filesystem_error& e)
+  {
+    Log::error("Failed to copy file to resources: " + std::string(e.what()));
+    return "";
+  }
+}
+
 std::string Engine::Resources::get_relative_path(const std::string& full_path)
 {
   // Special handling for unit_rect texture
@@ -76,7 +204,7 @@ std::string Engine::Resources::get_relative_path(const std::string& full_path)
   }
 
   // Use the Path class to convert to relative path
-  return Path(full_path).to_relative(resource_path);
+  return Engine::Path(full_path).to_relative(resource_path);
 }
 
 Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& filepath, bool append_resource_path, bool persist)
@@ -88,7 +216,19 @@ Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& fil
   }
 
   // Construct full path using Path class
-  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+  std::string full_path = append_resource_path ? Engine::Path(resource_path).join(filepath) : Engine::Path(filepath).normalize();
+
+  // If loading from outside resources and not appending resource path, copy to resources
+  std::string actual_filepath = filepath;
+  if (!append_resource_path)
+  {
+    std::string copied_path = Engine::Resources::copy_to_resources(filepath);
+    if (!copied_path.empty())
+    {
+      actual_filepath = copied_path;
+      full_path = Engine::Path(resource_path).join(actual_filepath);
+    }
+  }
 
   // Check if texture is already in cache (use full path for cache key)
   auto it = texture_cache.find(full_path);
@@ -135,7 +275,19 @@ Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& fil
 Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath, u32 size, bool append_resource_path, bool persist)
 {
   // Construct full path using Path class
-  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+  std::string full_path = append_resource_path ? Engine::Path(resource_path).join(filepath) : Engine::Path(filepath).normalize();
+
+  // If loading from outside resources and not appending resource path, copy to resources
+  std::string actual_filepath = filepath;
+  if (!append_resource_path)
+  {
+    std::string copied_path = Engine::Resources::copy_to_resources(filepath);
+    if (!copied_path.empty())
+    {
+      actual_filepath = copied_path;
+      full_path = Engine::Path(resource_path).join(actual_filepath);
+    }
+  }
 
   // Create a unique key combining filepath and size
   std::string cache_key = full_path + "_" + std::to_string(size);
@@ -178,7 +330,19 @@ Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath,
 Engine::Audio::Sound Engine::Resources::load_sound(const std::string& filepath, bool append_resource_path, bool persist)
 {
   // Construct full path using Path class
-  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+  std::string full_path = append_resource_path ? Engine::Path(resource_path).join(filepath) : Engine::Path(filepath).normalize();
+
+  // If loading from outside resources and not appending resource path, copy to resources
+  std::string actual_filepath = filepath;
+  if (!append_resource_path)
+  {
+    std::string copied_path = Engine::Resources::copy_to_resources(filepath);
+    if (!copied_path.empty())
+    {
+      actual_filepath = copied_path;
+      full_path = Engine::Path(resource_path).join(actual_filepath);
+    }
+  }
 
   // Check if sound is already in cache
   auto it = sound_cache.find(full_path);
@@ -225,7 +389,19 @@ Engine::Audio::Sound Engine::Resources::load_sound(const std::string& filepath, 
 Engine::Audio::Sound Engine::Resources::load_music(const std::string& filepath, bool append_resource_path, bool persist)
 {
   // Construct full path using Path class
-  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+  std::string full_path = append_resource_path ? Engine::Path(resource_path).join(filepath) : Engine::Path(filepath).normalize();
+
+  // If loading from outside resources and not appending resource path, copy to resources
+  std::string actual_filepath = filepath;
+  if (!append_resource_path)
+  {
+    std::string copied_path = Engine::Resources::copy_to_resources(filepath);
+    if (!copied_path.empty())
+    {
+      actual_filepath = copied_path;
+      full_path = Engine::Path(resource_path).join(actual_filepath);
+    }
+  }
 
   // Check if music is already in cache
   auto it = sound_cache.find(full_path);
@@ -349,9 +525,16 @@ Engine::Resources::Resource Engine::Resources::load(const std::string& filepath,
 
     // Check if it's an Entity (prefab)
     if (doc.HasMember("dataType") && doc["dataType"].IsString() &&
-      std::string(doc["dataType"].GetString()) == "Entity")
+      std::string(doc["dataType"].GetString()) == "Prefab")
     {
       return load_prefab(filepath, append_resource_path, persist);
+    }
+
+    // Check if it's a Level
+    if (doc.HasMember("dataType") && doc["dataType"].IsString() &&
+      std::string(doc["dataType"].GetString()) == "Level")
+    {
+      return load_level(filepath, append_resource_path, persist);
     }
 
     Log::warning("Unknown JSON dataType in file: " + full_path);
@@ -370,7 +553,19 @@ Engine::Graphics::Texture Engine::Resources::get_rect_texture()
 Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, bool append_resource_path, bool persist)
 {
   // Construct full path using Path class
-  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+  std::string full_path = append_resource_path ? Engine::Path(resource_path).join(filepath) : Engine::Path(filepath).normalize();
+
+  // If loading from outside resources and not appending resource path, copy to resources
+  std::string actual_filepath = filepath;
+  if (!append_resource_path)
+  {
+    std::string copied_path = Engine::Resources::copy_to_resources(filepath);
+    if (!copied_path.empty())
+    {
+      actual_filepath = copied_path;
+      full_path = Engine::Path(resource_path).join(actual_filepath);
+    }
+  }
 
   // Check if prefab is already in cache
   auto it = prefab_cache.find(full_path);
@@ -428,6 +623,90 @@ bool Engine::Resources::save_prefab(const std::string& filepath, const Engine::E
 
   return true;
 }
+
+void Engine::Resources::cache_prefab(const std::string& filepath, const Engine::ECS::Prefab& prefab, bool append_resource_path, bool persist)
+{
+  // Construct full path using Path class
+  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+
+  // Add to cache without saving to disk
+  prefab_cache[full_path] = prefab.get_impl();
+
+  if (persist)
+  {
+    persistent_resources.push_back(prefab);
+    Log::info("Level loaded (persistent): " + full_path);
+  }
+
+  Log::info("Prefab cached: " + full_path);
+}
+
+Engine::Level Engine::Resources::load_level(const std::string& filepath, bool append_resource_path, bool persist)
+{
+  // Construct full path using Path class
+  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+
+  // Check if level is already in cache
+  auto it = level_cache.find(full_path);
+  if (it != level_cache.end())
+  {
+    // Log::info("Level loaded from cache: " + full_path);
+    return it->second;
+  }
+
+  // Deserialize level
+  Engine::Level level = Engine::FileIO::deserialize_level_from_json_file(full_path);
+
+  // Cache the level
+  level_cache[full_path] = level;
+  if (persist)
+  {
+    persistent_resources.push_back(level);
+    Log::info("Level loaded (persistent): " + full_path);
+  }
+  else
+  {
+    Log::info("Level loaded: " + full_path);
+  }
+
+  return level;
+}
+
+bool Engine::Resources::save_level(const std::string& filepath, const Engine::Level& level, bool append_resource_path)
+{
+  // Construct full path using Path class
+  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+
+  std::cout << "Saving level to: " << full_path << std::endl;
+
+  if (!Engine::FileIO::serialize_level_to_json_file(full_path, level))
+  {
+    return false;
+  }
+
+  // Update cache with the level
+  level_cache[full_path] = level;
+
+  return true;
+}
+
+void Engine::Resources::cache_level(const std::string& filepath, const Engine::Level& level, bool append_resource_path, bool persist)
+{
+  // Construct full path using Path class
+  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+
+  // Add to cache without saving to disk
+  level_cache[full_path] = level;
+
+  if (persist)
+  {
+    persistent_resources.push_back(level);
+    Log::info("Level cached (persistent): " + full_path);
+  }
+
+  Log::info("Level cached: " + full_path);
+}
+
 
 void Engine::Resources::clear_unused_resources()
 {

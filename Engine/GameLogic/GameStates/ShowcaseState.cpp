@@ -16,9 +16,6 @@
 #include "../Components/HealthComponents.h"
 
 void ShowcaseState::load() {
-  Engine::Resources::set_resource_path("Assets/");
-
-
   background_texture = Engine::Resources::load_texture("images/sample_bg.png");
 
   // Load audio

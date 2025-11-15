@@ -24,6 +24,7 @@
 #include "FileIO/Settings.h"
 #include "Core.h"
 #include "SceneManager.h"
+#include "ProjectSaveManager.h"
 
 namespace {
   bool gui_enabled = true;
@@ -112,6 +113,13 @@ namespace ImGuiManager {
         // Add a menu bar
         if (ImGui::BeginMenuBar())
         {
+          if (ImGui::BeginMenu("File"))
+          {
+            if (ImGui::MenuItem("Save", "Ctrl+S")) {
+              Engine::ProjectSaveManager::save_all_dirty();
+            }
+            ImGui::EndMenu();
+          }
           if (ImGui::BeginMenu("ImGui"))
           {
             ImGui::MenuItem("Toggle GUI", "F1", &gui_enabled);
@@ -159,18 +167,18 @@ namespace ImGuiManager {
         ImGui::Dummy(ImVec2(0.0f, 2.0f)); // Top padding
 
         ImGui::Indent(8.0f); // Left padding
-        bool& is_paused = Engine::Core::is_paused();
+        bool is_paused = Engine::Time::get_paused();
 
 
         // Play/Pause toggle button
         if (is_paused) {
           if (ImGui::Button("Play", ImVec2(80, 0))) {
-            is_paused = false;
+            Engine::Time::set_paused(false);
           }
         }
         else {
           if (ImGui::Button("Pause", ImVec2(80, 0))) {
-            is_paused = true;
+            Engine::Time::set_paused(true);
           }
         }
 
@@ -181,7 +189,7 @@ namespace ImGuiManager {
           std::string current = Engine::SceneManager::get_current_scene_name();
           Engine::SceneManager::unload_current_scene();
           Engine::SceneManager::load_scene(current);
-          is_paused = true;
+          Engine::Time::set_paused(true);
         }
 
         ImGui::Unindent(8.0f); // Remove left padding
@@ -256,6 +264,12 @@ namespace ImGuiManager {
 
   void update()
   {
+    // Save
+    if (Engine::Input::is_held(Engine::KeyCode::CtrlLeft) && Engine::Input::is_pressed(Engine::KeyCode::S))
+    {
+      Engine::ProjectSaveManager::save_all_dirty();
+    }
+
     // Toggle ImGui with F1 key
     if (Engine::Input::is_pressed(Engine::KeyCode::F1))
     {
