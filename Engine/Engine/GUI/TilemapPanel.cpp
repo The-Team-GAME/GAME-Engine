@@ -201,115 +201,46 @@ namespace TilemapPanel {
       placed_tiles.erase(pos_key);
     }
 
-    // Engine::ECS::Entity tile = Engine::ECS::create_entity()
-    //   .add_component<Components::Tile>()
-    //   .add_component<Components::Transform2D>(
-    //     grid_pos,
-    //     0.0f,
-    //     Math::Vec2D{ grid_snap, grid_snap }
-    //   )
-    //   .add_component<Components::Texture>(atlas_entry.texture)
-    //   .add_component<Components::TextureAtlas>(atlas_entry.atlas)
-    //   .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
+    // Special do and undo for placing tile
+    auto tile_id = std::make_shared<Engine::ECS::EntityID>(0); // Use 0 or your engine's invalid ID
+
+    auto place_tile_action = std::make_unique<Engine::Action>(
+      // --- DO ---
+      [tile_id, grid_pos, atlas_entry,
+      grid_snap_value = grid_snap,
+      selected_tile_index_value = selected_tile_index,
+      selected_layer_value = selected_layer]()
+      {
+        auto tile = Engine::ECS::create_entity()
+          .add_component<Components::Tile>()
+          .add_component<Components::Transform2D>(grid_pos, 0.0f,
+            Math::Vec2D{ grid_snap_value, grid_snap_value })
+          .add_component<Components::Texture>(atlas_entry.texture)
+          .add_component<Components::TextureAtlas>(atlas_entry.atlas)
+          .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
+
+        tile.get_component<Components::TextureAtlas>()->drawIndex =
+          selected_tile_index_value;
+
+        tile.clear_layers();
+        tile.add_to_layer(selected_layer_value);
+
+        *tile_id = tile.get_id();   // always update stored ID
+      },
+
+      // --- UNDO ---
+      [tile_id]()
+      {
+        if (*tile_id != Engine::ECS::INVALID_ENTITY)
+        {
+          Engine::ECS::destroy_entity(*tile_id);
+        }
+      }
+    );
+
+    Engine::UndoManager::add(std::move(place_tile_action));
 
 
-    // is this 
-    // RYAN HOW
-
-    // Engine::ECS::Entity tile;
-    // auto place_tile_action = std::make_unique<Engine::Action>(
-    //     [&tile, grid_pos, atlas_entry,
-    //      grid_snap_value = grid_snap,
-    //      selected_tile_index_value = selected_tile_index,
-    //      selected_layer_value = selected_layer]() mutable {
-    //         tile = Engine::ECS::create_entity()
-    //             .add_component<Components::Tile>()
-    //             .add_component<Components::Transform2D>(grid_pos, 0.0f, Math::Vec2D{ grid_snap_value, grid_snap_value })
-    //             .add_component<Components::Texture>(atlas_entry.texture)
-    //             .add_component<Components::TextureAtlas>(atlas_entry.atlas)
-    //             .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
-    //         tile.get_component<Components::TextureAtlas>()->drawIndex = selected_tile_index_value;
-    //         tile.clear_layers();
-    //         tile.add_to_layer(selected_layer_value);
-    //     },
-    //     [&tile]() mutable {
-    //         if (tile.is_valid()) {
-    //             Engine::ECS::destroy_entity(tile);
-    //         }
-    //     }
-    // );
-
-    //Engine::UndoManager::add(std::move(place_tile_action));
-    
-    //// Place tiles example
-    //Engine::ECS::Entity tile;
-    //auto place_tile_action = Engine::UndoManager::add(Action(
-    //  [tile]() {
-    //    tile = Engine::ECS::create_entity()
-    //      .add_component<Components::Tile>()
-    //      .add_component<Components::Transform2D>(
-    //        Math::Vec2D{ 5, 10 },
-    //        0.0f,
-    //        Math::Vec2D{ 32.0f, 32.0f }
-    //      )
-    //      .add_component<Components::Texture>(some_texture)
-    //      .add_component<Components::TextureAtlas>(some_atlas)
-    //      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
-    //  },
-    //  [tile]() {
-    //    Engine::ECS::destroy_entity(tile);
-    //  }
-    //));
-
-    //place_tile_action.do_action();
-
-    //tile.get_component<Components::TextureAtlas>()->drawIndex = selected_tile_index;
-
-    // Assign to selected layer
-    //tile.clear_layers();
-    //tile.add_to_layer(selected_layer);
-
-    //Special do and undo for placing tile
-
-auto tile_id = std::make_shared<Engine::ECS::EntityID>(0); // Use 0 or your engine's invalid ID
-
-auto place_tile_action = std::make_unique<Engine::Action>(
-  // --- DO ---
-  [tile_id, grid_pos, atlas_entry,
-  grid_snap_value = grid_snap,
-  selected_tile_index_value = selected_tile_index,
-  selected_layer_value = selected_layer]()
-  {
-    auto tile = Engine::ECS::create_entity()
-      .add_component<Components::Tile>()
-      .add_component<Components::Transform2D>(grid_pos, 0.0f,
-        Math::Vec2D{ grid_snap_value, grid_snap_value })
-      .add_component<Components::Texture>(atlas_entry.texture)
-      .add_component<Components::TextureAtlas>(atlas_entry.atlas)
-      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
-
-    tile.get_component<Components::TextureAtlas>()->drawIndex =
-      selected_tile_index_value;
-
-    tile.clear_layers();
-    tile.add_to_layer(selected_layer_value);
-
-    *tile_id = tile.get_id();   // always update stored ID
-  },
-
-  // --- UNDO ---
-  [tile_id]()
-  {
-    if (*tile_id != Engine::ECS::INVALID_ENTITY)
-    {
-      Engine::ECS::destroy_entity(*tile_id);
-    }
-  }
-);
-
-Engine::UndoManager::add(std::move(place_tile_action));
-
-    
     placed_tiles.insert(pos_key);
 
     // Mark level as dirty for saving later
@@ -930,20 +861,20 @@ Engine::UndoManager::add(std::move(place_tile_action));
 
     // Get screen bounds in world space using the helper functions
     auto virtual_res = Engine::Graphics::get_virtual_resolution();
-    
+
     // Convert the four corners of the screen from virtual to world space
     Math::Vec2D top_left_world = Engine::Graphics::virtual_to_world(Math::Vec2D{ 0.0f, 0.0f });
     Math::Vec2D bottom_right_world = Engine::Graphics::virtual_to_world(Math::Vec2D{ virtual_res.x, virtual_res.y });
-    
+
     float left = top_left_world.x;
     float right = bottom_right_world.x;
     float top = top_left_world.y;
     float bottom = bottom_right_world.y;
-    
+
     // Calculate grid line positions aligned to grid_offset
     float start_x = std::floor((left - grid_offset.x) / grid_snap) * grid_snap + grid_offset.x;
     float start_y = std::floor((top - grid_offset.y) / grid_snap) * grid_snap + grid_offset.y;
-    
+
     Math::Vec4D grid_color = Math::Vec4D{ 1.0f, 1.0f, 1.0f, 0.3f }; // White with transparency
 
     // Draw vertical lines (loop from left until right)
