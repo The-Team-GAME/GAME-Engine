@@ -153,6 +153,20 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
+    Replaces the file extension with a new extension.
+    Returns a new Path object for method chaining.
+
+    Parameters:
+    - new_extension: The new extension (with or without leading dot)
+
+    Example:
+    Path("player.png").replace_extension(".jpg") -> Path with "player.jpg"
+    Path("shader.vert").replace_extension("frag") -> Path with "shader.frag"
+    ==================================================================================*/
+    Path replace_extension(const std::string& new_extension) const;
+
+    /*=================================================================================
+    Function Brief:
     Checks if the path is absolute (has a root directory).
 
     Example:
