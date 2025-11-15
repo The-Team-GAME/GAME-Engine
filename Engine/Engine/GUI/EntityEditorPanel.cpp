@@ -61,7 +61,7 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
       auto prev_value = array->to_generic_value(entity.get_id());
       auto new_value = component_data;
 
-      auto undo_action = std::make_unique<Engine::Action>(
+      Engine::UndoManager::execute(
         // Do lambda: apply new value
         [array, entity_id = entity.get_id(), new_value]() {
           array->set_component_from_generic_value(entity_id, new_value);
@@ -71,7 +71,6 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
           array->set_component_from_generic_value(entity_id, prev_value);
         }
       );
-      Engine::UndoManager::execute(std::move(undo_action));
 
       array->set_component_from_generic_value(entity.get_id(), component_data);
     }
@@ -82,7 +81,7 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
     if (ImGui::Button(remove_label.c_str())) {
       auto prev_value = array->to_generic_value(entity.get_id());
 
-      auto undo_action = std::make_unique<Engine::Action>(
+      Engine::UndoManager::execute(
         // Do lambda: remove component
         [entity_id = entity.get_id(), type_id = array->get_type_id()]() {
           auto& containers = Engine::ECS::Internal::get_containers();
@@ -94,7 +93,6 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
           array->set_component_from_generic_value(entity_id, prev_value);
         }
       );
-      Engine::UndoManager::execute(std::move(undo_action));
 
       auto& containers = Engine::ECS::Internal::get_containers();
       containers.components_to_remove.emplace_back(entity.get_id(), array->get_type_id());

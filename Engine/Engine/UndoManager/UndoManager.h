@@ -33,6 +33,16 @@ namespace Engine {
       std::cout << "Adding to list\n";
     }
 
+    // Take lambdas directly and executes immediately
+    template<typename DoFunc, typename UndoFunc>
+    inline void execute(DoFunc&& do_func, UndoFunc&& undo_func) {
+      auto action = std::make_unique<Action>(
+        std::forward<DoFunc>(do_func),
+        std::forward<UndoFunc>(undo_func)
+      );
+      execute(std::move(action));
+    }
+
     inline void undo() {
       if (!undo_stack.empty()) {
         auto action = std::move(undo_stack.back());

@@ -35,7 +35,7 @@ void PrefabEditorPanelHelpers::render_component_tree(const std::string& componen
       auto prev_value = array->to_generic_value(0); // Get previous value before change
       auto new_value = component_data;              // New value after change
 
-      auto undo_action = std::make_unique<Engine::Action>(
+      Engine::UndoManager::execute(
         // Do lambda: apply new value
         [array, new_value]() {
           array->set_component_from_generic_value(0, new_value);
@@ -45,7 +45,6 @@ void PrefabEditorPanelHelpers::render_component_tree(const std::string& componen
           array->set_component_from_generic_value(0, prev_value);
         }
       );
-      Engine::UndoManager::execute(std::move(undo_action));
 
       array->set_component_from_generic_value(0, component_data);
 

@@ -204,7 +204,7 @@ namespace TilemapPanel {
     // Special do and undo for placing tile
     auto tile_id = std::make_shared<Engine::ECS::EntityID>(0); // Use 0 or your engine's invalid ID
 
-    auto place_tile_action = std::make_unique<Engine::Action>(
+    Engine::UndoManager::execute(
       // --- DO ---
       [tile_id, grid_pos, atlas_entry,
       grid_snap_value = grid_snap,
@@ -237,8 +237,6 @@ namespace TilemapPanel {
         }
       }
     );
-
-    Engine::UndoManager::execute(std::move(place_tile_action));
 
 
     placed_tiles.insert(pos_key);
