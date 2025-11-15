@@ -631,22 +631,41 @@ namespace Engine {
     }
 
     void draw_line(const Math::Vec2D& start, const Math::Vec2D& end, f32 thickness, const Math::Vec4D& color) {
-      // Calculate line vector and length
-      Math::Vec2D line_vec = end - start;
-      f32 length = line_vec.get_magnitude();
+      // Flush current batch before drawing lines
+      flush_batch();
 
-      if (length < 0.001f) {
-        return; // Line is too short to draw
-      }
+      // Enable line rendering
+      glLineWidth(thickness);
 
-      // Calculate angle of the line
-      f32 angle = std::atan2(line_vec.y, line_vec.x);
+      // Set up shader
+      shader->use();
+      shader->set_mat4("u_projection", get_projection_matrix());
+      shader->set_mat4("u_view", get_view_matrix());
+      shader->set_int("u_texture", 0);
 
-      // Calculate center position of the line
-      Math::Vec2D center = start + (line_vec * 0.5f);
+      // Bind white texture for solid color
+      glBindTexture(GL_TEXTURE_2D, unit_rect->id);
 
-      // Draw a rotated rectangle to represent the line
-      draw_texture(Engine::Resources::get_rect_texture(), center, Math::Vec2D(length, thickness), angle * 180.0f / 3.14159265359f, color);
+      // Create line vertices
+      Vertex line_vertices[2];
+      line_vertices[0].position = glm::vec2(start.x, start.y);
+      line_vertices[0].texCoord = glm::vec2(0.5f, 0.5f);
+      line_vertices[0].color = glm::vec4(color.x, color.y, color.z, color.w);
+
+      line_vertices[1].position = glm::vec2(end.x, end.y);
+      line_vertices[1].texCoord = glm::vec2(0.5f, 0.5f);
+      line_vertices[1].color = glm::vec4(color.x, color.y, color.z, color.w);
+
+      // Upload vertices
+      glBindVertexArray(vao);
+      glBindBuffer(GL_ARRAY_BUFFER, vbo);
+      glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(line_vertices), line_vertices);
+
+      // Draw line
+      glDrawArrays(GL_LINES, 0, 2);
+
+      // Reset line width to default
+      glLineWidth(1.0f);
     }
 
     void draw_polygon(const std::vector<Math::Vec2D>& vertices, const Math::Vec2D& position, f32 rotation, const Math::Vec4D& color) {
@@ -690,7 +709,7 @@ namespace Engine {
       // This works for both convex and concave polygons (like stars)
       for (size_t i = 0; i < transformed_vertices.size(); ++i) {
         size_t next_i = (i + 1) % transformed_vertices.size();
-        
+
         Math::Vec2D v0 = centroid;
         Math::Vec2D v1 = transformed_vertices[i];
         Math::Vec2D v2 = transformed_vertices[next_i];
