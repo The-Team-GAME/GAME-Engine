@@ -29,6 +29,7 @@
 #include "../EventManager/EventManager.h"
 #include "../Events/EngineEvents.h"
 #include "../UndoManager/UndoManager.h"
+#include "../InputManager.h"
 
 namespace {
   // Shared state for entity selection
@@ -51,14 +52,35 @@ namespace {
 void EntityEditorPanelHelpers::render_component_tree(const std::string& component_name, Engine::ECS::Entity& entity, Engine::ECS::IComponentArray* array)
 {
   if (ImGui::TreeNode(component_name.c_str())) {
+    // Track the value before any modifications
+    static std::unordered_map<std::string, ReflectionLibrary::GenericValue> component_edit_start_values;
+    static std::unordered_map<std::string, bool> component_being_edited;
+
+    std::string component_key = component_name + "_" + std::to_string(entity.get_id());
+
     auto component_data = array->to_generic_value(entity.get_id());
     bool modified = false;
 
     ImGuiWidgets::render_field(component_name, component_data, modified, entity);
 
-    // Undo/redo for editing component
+    // Check if user just started editing (mouse pressed on a widget)
+    bool is_any_item_active = ImGui::IsAnyItemActive();
+    bool mouse_released = Engine::Input::is_released(Engine::KeyCode::MouseLeft);
+
+    // Start tracking when editing begins
+    if (is_any_item_active && !component_being_edited[component_key]) {
+      component_being_edited[component_key] = true;
+      component_edit_start_values[component_key] = array->to_generic_value(entity.get_id());
+    }
+
+    // Apply changes in real-time
     if (modified) {
-      auto prev_value = array->to_generic_value(entity.get_id());
+      array->set_component_from_generic_value(entity.get_id(), component_data);
+    }
+
+    // Record to undo manager only when mouse is released after editing
+    if (component_being_edited[component_key] && mouse_released && !is_any_item_active) {
+      auto prev_value = component_edit_start_values[component_key];
       auto new_value = component_data;
 
       Engine::UndoManager::execute(
@@ -72,7 +94,8 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
         }
       );
 
-      array->set_component_from_generic_value(entity.get_id(), component_data);
+      component_being_edited[component_key] = false;
+      component_edit_start_values.erase(component_key);
     }
 
     ImGui::Separator();

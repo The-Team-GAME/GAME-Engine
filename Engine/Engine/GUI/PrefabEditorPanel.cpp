@@ -21,19 +21,41 @@
 #include "../Path.h"
 #include "../Resources.h"
 #include "../ProjectSaveManager.h"
+#include "../InputManager.h"
 
 void PrefabEditorPanelHelpers::render_component_tree(const std::string& component_name, Engine::ECS::Prefab& prefab, Engine::ECS::IComponentArray* array, const std::string& prefab_path)
 {
   if (ImGui::TreeNode(component_name.c_str())) {
+    // Track the value before any modifications
+    static std::unordered_map<std::string, ReflectionLibrary::GenericValue> component_edit_start_values;
+    static std::unordered_map<std::string, bool> component_being_edited;
+
+    std::string component_key = component_name + "_" + prefab_path;
+
     auto component_data = array->to_generic_value(0); // Prefabs use entity ID 0
     bool modified = false;
 
     ImGuiWidgets::render_field(component_name, component_data, modified);
 
-    // Undo/redo for editing component
+    // Check if user just started editing (mouse pressed on a widget)
+    bool is_any_item_active = ImGui::IsAnyItemActive();
+    bool mouse_released = Engine::Input::is_released(Engine::KeyCode::MouseLeft);
+
+    // Start tracking when editing begins
+    if (is_any_item_active && !component_being_edited[component_key]) {
+      component_being_edited[component_key] = true;
+      component_edit_start_values[component_key] = array->to_generic_value(0);
+    }
+
+    // Apply changes in real-time
     if (modified) {
-      auto prev_value = array->to_generic_value(0); // Get previous value before change
-      auto new_value = component_data;              // New value after change
+      array->set_component_from_generic_value(0, component_data);
+    }
+
+    // Record to undo manager only when mouse is released after editing
+    if (component_being_edited[component_key] && mouse_released && !is_any_item_active) {
+      auto prev_value = component_edit_start_values[component_key];
+      auto new_value = component_data;
 
       Engine::UndoManager::execute(
         // Do lambda: apply new value
@@ -46,14 +68,15 @@ void PrefabEditorPanelHelpers::render_component_tree(const std::string& componen
         }
       );
 
-      array->set_component_from_generic_value(0, component_data);
-
       // Mark prefab as dirty
       if (!prefab_path.empty()) {
         Engine::ProjectSaveManager::set_dirty(
           Engine::ProjectSaveManager::DirtyStates::Prefab(prefab_path)
         );
       }
+
+      component_being_edited[component_key] = false;
+      component_edit_start_values.erase(component_key);
     }
 
     ImGui::Separator();
