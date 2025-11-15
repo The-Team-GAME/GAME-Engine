@@ -64,14 +64,45 @@ namespace Engine {
       }
     }
 
+    bool Entity::add_component_by_name(const std::string& component_name) {
+      if (!is_valid())
+        return false;
+
+      auto& containers = Internal::get_containers();
+
+      // Find the component array with matching type name
+      for (auto& [type_id, array] : containers.component_arrays) {
+        if (array->get_type_name() == component_name) {
+          // Check if entity already has this component
+          auto sig_it = containers.entity_signatures.find(id);
+          if (sig_it != containers.entity_signatures.end() && sig_it->second.test(type_id)) {
+            return false; // Already has this component
+          }
+
+          // Create a default-constructed component using GenericValue
+          ReflectionLibrary::GenericValue default_value = ReflectionLibrary::Object();
+
+          // Add the component
+          if (array->add_component_from_generic_value(id, default_value)) {
+            containers.entity_signatures[id].set(type_id);
+            Internal::entity_component_changed(id);
+            return true;
+          }
+          return false;
+        }
+      }
+
+      return false; // Component type not found
+    }
+
     ReflectionLibrary::GenericValue entity_to_generic_value(Entity entity) {
       if (!entity.is_valid()) {
         return ReflectionLibrary::GenericValue();
       }
 
       ReflectionLibrary::GenericValue result;
-      result["dataType"] = "Entity";
-      result["id"] = static_cast<int>(entity.get_id());
+      // result["dataType"] = "Entity";
+      // result["id"] = static_cast<int>(entity.get_id());
 
       // Serialize layers and components using helper functions
       result["layers"] = Serialization::serialize_layers(entity.get_layers());

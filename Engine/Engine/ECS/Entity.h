@@ -86,6 +86,23 @@ namespace Engine {
 
       /*=================================================================================
       Function Brief:
+      Adds a component to this entity by component type name at runtime.
+      Creates a default-constructed instance of the component.
+
+      Parameters:
+      component_name - The registered name of the component type.
+
+      Returns:
+      True if the component was successfully added, false if the component type
+      was not found or could not be added.
+
+      Where to call it:
+      When attaching a component to an entity using a string name (e.g., from UI).
+      ==================================================================================*/
+      bool add_component_by_name(const std::string& component_name);
+
+      /*=================================================================================
+      Function Brief:
       Removes a component of type T from this entity.
 
       Parameters:

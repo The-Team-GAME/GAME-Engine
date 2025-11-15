@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------------
-// file:    LevelPanel.h
+// file:    LevelManagerPanel.h
 // project: Monkey Stole My GPA
 //
 // author:  Chew Shee Yang (100%)
@@ -7,14 +7,14 @@
 //
 // email:   chew.s@digipen.edu
 //
-// brief:   This file declares the LevelPanel ImGui interface for saving and loading
-//          game levels with optional component filtering.
+// brief:   This file declares the LevelManagerPanel ImGui interface for managing
+//          game levels. Provides functionality to create, load, save, and switch
+//          between levels at runtime.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
-/**
- * @brief Renders the Level Management panel for saving/loading levels
- */
-void LevelPanel();
+#include <string>
+
+void LevelManagerPanel();

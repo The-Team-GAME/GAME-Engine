@@ -23,6 +23,7 @@
 #include "Graphics/Renderer.h"
 #include "Audio/AudioPlayer.h"
 #include "ECS/Prefab.h"
+#include "Level.h"
 
 namespace Engine {
   namespace Resources {
@@ -32,13 +33,15 @@ namespace Engine {
       Engine::Graphics::Texture,
       Engine::Graphics::Font,
       Engine::Audio::Sound,
-      Engine::ECS::Prefab
+      Engine::ECS::Prefab,
+      Engine::Level
     >;
     // Declare as extern - actual definition in Resources.cpp
     extern std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> texture_cache;
     extern std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::FontData>> font_cache;
     extern std::unordered_map<std::string, std::weak_ptr<Engine::Audio::SoundData>> sound_cache;
     extern std::unordered_map<std::string, std::weak_ptr<Engine::ECS::PrefabImpl>> prefab_cache;
+    extern std::unordered_map<std::string, Engine::Level> level_cache;
 
     // Vector to hold shared_ptr references for persistent resources
     extern std::vector<Resource> persistent_resources;
@@ -58,13 +61,19 @@ namespace Engine {
     extern std::string resource_path;
 
     // Initialization code here (e.g., setting up resource maps, loading default resources)
-    bool init();
+    bool init(const std::string& initial_resource_path = "");
 
     // Cleanup code here (e.g., unloading all resources, clearing maps)
     bool exit();
 
     // Set the base path for resource loading
     void set_resource_path(const std::string& path);
+
+    // Load all assets from the resource path and its subfolders
+    void load_all_assets();
+
+    // Copy a file to the resource folder root if it's not already there
+    std::string copy_to_resources(const std::string& filepath);
 
     std::string get_relative_path(const std::string& full_path);
 
@@ -86,8 +95,23 @@ namespace Engine {
     Engine::ECS::Prefab load_prefab(const std::string& filepath, bool append_resource_path = true, bool persist = false);
     bool save_prefab(const std::string& filepath, const Engine::ECS::Prefab& prefab, bool append_resource_path = true);
 
+    // Add prefab to cache without saving to disk
+    void cache_prefab(const std::string& filepath, const Engine::ECS::Prefab& prefab, bool append_resource_path = true, bool persist = false);
+
+    // Level loading and saving
+    Engine::Level load_level(const std::string& filepath, bool append_resource_path = true, bool persist = false);
+    bool save_level(const std::string& filepath, const Engine::Level& level, bool append_resource_path = true);
+
+    // Add level to cache without saving to disk
+    void cache_level(const std::string& filepath, const Engine::Level& level, bool append_resource_path = true, bool persist = false);
+
+
+
     //optimization: clear unused resources from cache
     void clear_unused_resources();
+
+
+
 
     ResourceStats get_resource_stats();
   }

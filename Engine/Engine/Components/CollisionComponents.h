@@ -15,12 +15,6 @@
 #pragma once
 #include "../Math/Vector2D.h"
 
-enum Shapes {
-  CIRCLE = 0,
-  RECT = 1,
-  POLYGON = 2 // prayge we never use this
-};
-
 struct AABB {
   Vec2D pos;
   // Adding this afterwards
@@ -63,23 +57,36 @@ struct AABB {
   }
 };
 
-struct Circle {
-  float radius = 1.0f;
-};
-
-struct Polygon {
-  std::vector<Math::Vec2D> vertices;
+enum entity_type
+{
+  STATIC, // A wall, non responsive
+  ATTACK,
+  RECEIVE,
+  IDLE,
+  PARRY
 };
 namespace Components
 {
 
   // https://docs.unity3d.com/6000.2/Documentation/Manual/class-BoxCollider.html
   struct BoxCollider {
-    bool detect_collisions = false; // If true, affected by collisions -> will move when colliding with things
-    // NOTE: if an object with detect collisions collides with another object without detect collision,
-    // The object without detect collisions is unmovable aka a wall for all i care
 
-    // measurements for rectangles and circles
+    // Layer collision filtering (like Unity's Rigidbody includeLayers/excludeLayers)
+    // Rule: Entities ALWAYS collide with others in their own layers
+    // include_layers: Additional layers this entity should collide with
+    // exclude_layers: Layers to NOT collide with (overrides own layers and include_layers)
+    // 
+    // Example: Player on "player" layer wants to collide with "enemy" but not "player_bullet"
+    //   - Player is on layer "player"
+    //   - Player.include_layers = LayerSignature{"enemy"}
+    //   - Player.exclude_layers = LayerSignature{"player_bullet"}
+    //   Result: Player collides with "player" (own layer) and "enemy", but not "player_bullet"
+    Engine::ECS::LayerSignature include_layers; // Additional layers to collide with
+    Engine::ECS::LayerSignature exclude_layers; // Layers to NOT collide with (overrides include)
+
+    // If a object has resolve_collisions set to true,that means that other objects that 
+    // collide into the current object needs to be snapped out of the current object
+    bool resolve_collisions = false;
 
     f32 width;
     f32 height;
@@ -87,7 +94,7 @@ namespace Components
     AABB aabb;
 
     // Rect box collider ctor
-    BoxCollider(f32 width, f32 height, bool col) : width(width), height(height), detect_collisions(col)
+    BoxCollider(f32 width, f32 height, bool collide) : width(width), height(height), resolve_collisions(collide)
     { 
       aabb.half_width = width / 2;
       aabb.half_height = height / 2;
