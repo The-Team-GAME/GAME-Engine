@@ -23,6 +23,16 @@
 #include "../ProjectSaveManager.h"
 #include "../InputManager.h"
 
+namespace {
+  // Helper function to compare GenericValues by serializing to JSON
+  bool are_generic_values_equal(const ReflectionLibrary::GenericValue& a, const ReflectionLibrary::GenericValue& b) {
+    // Very hacky but wtv
+    std::string json_a = ReflectionLibrary::generic_value_to_json(a, false);
+    std::string json_b = ReflectionLibrary::generic_value_to_json(b, false);
+    return json_a == json_b;
+  }
+}
+
 void PrefabEditorPanelHelpers::render_component_tree(const std::string& component_name, Engine::ECS::Prefab& prefab, Engine::ECS::IComponentArray* array, const std::string& prefab_path)
 {
   if (ImGui::TreeNode(component_name.c_str())) {
@@ -58,22 +68,25 @@ void PrefabEditorPanelHelpers::render_component_tree(const std::string& componen
       auto prev_value = component_edit_start_values[component_key];
       auto new_value = component_data;
 
-      Engine::UndoManager::record(
-        // Do lambda: apply new value
-        [array, new_value]() {
-          array->set_component_from_generic_value(0, new_value);
-        },
-        // Undo lambda: restore previous value
-        [array, prev_value]() {
-          array->set_component_from_generic_value(0, prev_value);
-        }
-      );
-
-      // Mark prefab as dirty
-      if (!prefab_path.empty()) {
-        Engine::ProjectSaveManager::set_dirty(
-          Engine::ProjectSaveManager::DirtyStates::Prefab(prefab_path)
+      // Only record if the value actually changed
+      if (!are_generic_values_equal(prev_value, new_value)) {
+        Engine::UndoManager::record(
+          // Do lambda: apply new value
+          [array, new_value]() {
+            array->set_component_from_generic_value(0, new_value);
+          },
+          // Undo lambda: restore previous value
+          [array, prev_value]() {
+            array->set_component_from_generic_value(0, prev_value);
+          }
         );
+
+        // Mark prefab as dirty
+        if (!prefab_path.empty()) {
+          Engine::ProjectSaveManager::set_dirty(
+            Engine::ProjectSaveManager::DirtyStates::Prefab(prefab_path)
+          );
+        }
       }
 
       component_being_edited[component_key] = false;
