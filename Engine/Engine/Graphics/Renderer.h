@@ -153,5 +153,39 @@ namespace Engine {
     // Get the unit rectangle texture (1x1 white pixel)
     Texture get_rect_texture();
 
+    // UI Drawing functions (no camera transformation, drawn in screen space)
+
+    void draw_rect_ui(const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color);
+
+    void draw_rect_outline_ui(const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, f32 thickness, const Math::Vec4D& color);
+
+    void draw_line_ui(const Math::Vec2D& start, const Math::Vec2D& end, f32 thickness, const Math::Vec4D& color);
+
+    // Draw a UI polygon with specified vertices (filled)
+    void draw_polygon_ui(const std::vector<Math::Vec2D>& vertices, const Math::Vec2D& position, f32 rotation, const Math::Vec4D& color);
+
+    // Draw a UI polygon outline with specified vertices
+    void draw_polygon_outline_ui(const std::vector<Math::Vec2D>& vertices, const Math::Vec2D& position, f32 rotation, f32 thickness, const Math::Vec4D& color);
+
+    // Draw a UI triangle (filled)
+    void draw_triangle_ui(const Math::Vec2D& position, f32 radius, f32 rotation, const Math::Vec4D& color);
+
+    // Draw a UI triangle outline
+    void draw_triangle_outline_ui(const Math::Vec2D& position, f32 radius, f32 rotation, f32 thickness, const Math::Vec4D& color);
+
+    // Draw a UI circle (filled)
+    void draw_circle_ui(const Math::Vec2D& position, f32 radius, const Math::Vec4D& color, int segments = 32);
+
+    // Draw a UI circle outline
+    void draw_circle_outline_ui(const Math::Vec2D& position, f32 radius, f32 thickness, const Math::Vec4D& color, int segments = 32);
+
+    void draw_texture_ui(Engine::Graphics::Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color);
+
+    // Draw a UI subtexture (part of a texture atlas) using custom texture coordinates
+    void draw_subtexture_ui(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color);
+
+    // Draw UI text using a font
+    void draw_text_ui(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color);
+
   } // namespace Graphics
 } // namespace Engine

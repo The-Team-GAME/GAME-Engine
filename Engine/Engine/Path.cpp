@@ -127,6 +127,37 @@ namespace Engine {
     return filename.substr(pos);
   }
 
+  Path Path::replace_extension(const std::string& new_extension) const {
+    std::string normalized = normalize().path_string;
+    size_t last_slash = normalized.find_last_of('/');
+    size_t last_dot = normalized.find_last_of('.');
+
+    // Only consider the dot if it's in the filename (after the last slash)
+    if (last_dot == std::string::npos ||
+      (last_slash != std::string::npos && last_dot < last_slash) ||
+      last_dot == 0) {
+      // No extension to replace, just append
+      std::string result = normalized;
+      if (!new_extension.empty()) {
+        if (new_extension[0] != '.') {
+          result += '.';
+        }
+        result += new_extension;
+      }
+      return Path(result);
+    }
+
+    // Remove old extension and add new one
+    std::string result = normalized.substr(0, last_dot);
+    if (!new_extension.empty()) {
+      if (new_extension[0] != '.') {
+        result += '.';
+      }
+      result += new_extension;
+    }
+    return Path(result);
+  }
+
   bool Path::is_absolute() const {
     if (path_string.empty()) {
       return false;
