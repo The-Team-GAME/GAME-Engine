@@ -187,28 +187,28 @@ namespace ImGuiWidgets {
       }
     }
 
-    return true;  
+    return true;
   }
 
-bool render_transform2d_field(ReflectionLibrary::GenericValue& field_value, bool& modified) {
+  bool render_transform2d_field(ReflectionLibrary::GenericValue& field_value, bool& modified) {
     // Position
     float pos[2] = {
         static_cast<float>(field_value["position"]["x"].getDouble()),
         static_cast<float>(field_value["position"]["y"].getDouble())
     };
     ImGui::Text("Position");
-    if (ImGui::InputFloat2("##Position", pos)) {
-        field_value["position"]["x"] = pos[0];
-        field_value["position"]["y"] = pos[1];
-        modified = true;
+    if (ImGui::DragFloat2("##Position", pos, 0.1f)) {
+      field_value["position"]["x"] = pos[0];
+      field_value["position"]["y"] = pos[1];
+      modified = true;
     }
 
     // Rotation
     float rotation = static_cast<float>(field_value["rotation"].getDouble());
     ImGui::Text("Rotation");
-    if (ImGui::InputFloat("##Rotation", &rotation)) {
-        field_value["rotation"] = rotation;
-        modified = true;
+    if (ImGui::DragFloat("##Rotation", &rotation, 0.1f)) {
+      field_value["rotation"] = rotation;
+      modified = true;
     }
 
     // Scale
@@ -217,14 +217,14 @@ bool render_transform2d_field(ReflectionLibrary::GenericValue& field_value, bool
         static_cast<float>(field_value["scale"]["y"].getDouble())
     };
     ImGui::Text("Scale");
-    if (ImGui::InputFloat2("##Scale", scale)) { 
-        field_value["scale"]["x"] = scale[0];
-        field_value["scale"]["y"] = scale[1];
-        modified = true;
+    if (ImGui::DragFloat2("##Scale", scale, 0.1f)) {
+      field_value["scale"]["x"] = scale[0];
+      field_value["scale"]["y"] = scale[1];
+      modified = true;
     }
 
     return true;
-}
+  }
 
   bool render_texture_atlas_field(Engine::ECS::Entity entity) {
     // Only works with valid entities
@@ -272,7 +272,7 @@ bool render_transform2d_field(ReflectionLibrary::GenericValue& field_value, bool
       return render_texture_atlas_field(entity);
     }
 
-    
+
 
     // Not handled by specialized renderer
     return false;
