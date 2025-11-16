@@ -18,6 +18,7 @@
 #include "../ECS/ECS.h"
 #include <string>
 #include <vector>
+#include <algorithm>
 
 void LayerManagerPanel()
 {
@@ -260,12 +261,23 @@ void LayerManagerPanel()
 
     ImGui::Separator();
 
+    // Calculate the maximum layer name length for proper alignment (only once)
+    static size_t max_name_length = [&layer_names]() {
+      auto max_it = std::max_element(layer_names.begin(), layer_names.end(),
+        [](const std::string& a, const std::string& b) {
+          return a.length() < b.length();
+        });
+
+      std::cout << "Max layer name length: " << (max_it != layer_names.end() ? max_it->length() : 0) << std::endl;
+      return (max_it != layer_names.end() ? max_it->length() : 0) + 1; // Add padding
+      }();
+
     // Matrix rows
     for (size_t row = 0; row < layer_ids.size(); ++row) {
       Engine::ECS::LayerID row_layer = layer_ids[row];
 
-      // Row label
-      ImGui::Text("%-20s", layer_names[row].c_str());
+      // Row label with dynamic width
+      ImGui::Text("%-*s", static_cast<int>(max_name_length), layer_names[row].c_str());
 
       // Checkboxes for this row
       for (size_t col = 0; col < layer_ids.size(); ++col) {
