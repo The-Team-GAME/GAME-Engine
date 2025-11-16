@@ -100,7 +100,6 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Engine\GUI\LayerManagerPanel.cpp" />
-    <ClCompile Include="Engine\GUI\LevelManagerPanel.cpp" />
     <ClCompile Include="Engine\GUI\ResourceExplorerPanel.cpp" />
     <ClCompile Include="Engine\Level.cpp" />
     <ClCompile Include="Engine\ProjectSaveManager.cpp" />
@@ -162,7 +161,6 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\GUI\LayerManagerPanel.h" />
-    <ClInclude Include="Engine\GUI\LevelManagerPanel.h" />
     <ClInclude Include="Engine\GUI\RegisterAllPanels.h" />
     <ClInclude Include="Engine\GUI\ResourceExplorerPanel.h" />
     <ClInclude Include="Engine\ImGuiThemes.h" />

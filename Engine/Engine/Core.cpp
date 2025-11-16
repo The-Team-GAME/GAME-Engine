@@ -207,6 +207,13 @@ namespace Engine
           Engine::UndoManager::undo();
         }
 
+        // Redo last undone action
+        if (Engine::Input::is_pressed(Engine::KeyCode::Y) && Engine::Input::is_held(Engine::KeyCode::CtrlLeft))
+        {
+          std::cout << "Redoing last undone action\n";
+          Engine::UndoManager::redo();
+        }
+
         // Temporarily enable time for single-step
         if (single_step_requested)
         {

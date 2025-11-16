@@ -284,9 +284,12 @@ void ResourceExplorerPanel() {
           preview_texture = nullptr;
         }
         else {
-          // Load resource
-          Engine::Resources::load(entry.path, true, false);
-          Log::info("Loaded resource: " + entry.path);
+          // Try to open the resource (e.g., instantiate level)
+          if (!Engine::Resources::open(entry.path, true)) {
+            // If open fails or is not supported, fall back to loading
+            Engine::Resources::load(entry.path, true, false);
+            Log::info("Loaded resource: " + entry.path);
+          }
         }
       }
     }
@@ -301,6 +304,12 @@ void ResourceExplorerPanel() {
         }
       }
       else {
+        if (ImGui::MenuItem("Open")) {
+          if (!Engine::Resources::open(entry.path, true)) {
+            Log::warning("Cannot open this resource type");
+          }
+        }
+
         if (ImGui::MenuItem("Load Resource")) {
           Engine::Resources::load(entry.path, true, false);
           Log::info("Loaded resource: " + entry.path);

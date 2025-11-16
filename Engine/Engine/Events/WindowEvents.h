@@ -29,6 +29,11 @@ namespace Engine {
       s32 height;
     };
 
+    struct WindowCloseRequestedEvent {
+      // This event is sent when the user attempts to close the window
+      // The ImGuiManager will show a confirmation dialog
+    };
+
     /* ====================== //
     // File handling events   //
     // ====================== */

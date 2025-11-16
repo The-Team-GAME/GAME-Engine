@@ -25,9 +25,11 @@
 #include <filesystem>
 #include <rapidjson/document.h>
 #include "FileIO/PrefabsFileIO.h"
+#include "FileIO/Helpers.h"
 #include "Path.h"
 #include "Level.h"
 #include "FileIO/LevelFileIO.h"
+#include "Reflection/ReflectionLibrary.h"
 
 // Define the actual storage for the extern variables
 std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> Engine::Resources::texture_cache;
@@ -501,47 +503,39 @@ Engine::Resources::Resource Engine::Resources::load(const std::string& filepath,
   if (extension == "json")
   {
     // Read the file to check its dataType
-    std::ifstream file(full_path);
-    if (!file.is_open())
+    std::string json_content = Engine::FileIO::read_string_from_file(full_path).value_or("");
+
+    if (json_content.empty())
     {
-      Log::warning("Failed to open JSON file: " + full_path);
+      Log::warning("Failed to read JSON file: " + full_path);
       return std::monostate{};
     }
 
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    std::string json_content = buffer.str();
-    file.close();
+    std::optional<ReflectionLibrary::GenericValue> value_opt = ReflectionLibrary::generic_value_from_json(json_content);
 
-    // Parse JSON to check dataType
-    rapidjson::Document doc;
-    doc.Parse(json_content.c_str());
-
-    if (doc.HasParseError())
+    if (!value_opt.has_value() || !value_opt->isObject())
     {
-      Log::warning("Failed to parse JSON file: " + full_path);
+      Log::warning("Invalid JSON format in file: " + full_path);
       return std::monostate{};
     }
 
-    // Check if the parsed JSON is an object (not an array or primitive)
-    if (!doc.IsObject())
-    {
-      Log::warning("JSON file is not an object: " + full_path);
-      return std::monostate{};
-    }
+    ReflectionLibrary::GenericValue& value = value_opt.value();
 
-    // Check if it's an Entity (prefab)
-    if (doc.HasMember("dataType") && doc["dataType"].IsString() &&
-      std::string(doc["dataType"].GetString()) == "Prefab")
+    if (value.has("dataType") && value["dataType"].isString())
     {
-      return load_prefab(filepath, append_resource_path, persist);
-    }
+      std::string data_type = value["dataType"].getString();
 
-    // Check if it's a Level
-    if (doc.HasMember("dataType") && doc["dataType"].IsString() &&
-      std::string(doc["dataType"].GetString()) == "Level")
-    {
-      return load_level(filepath, append_resource_path, persist);
+      // Check if it's an Entity (prefab)
+      if (data_type == "Prefab")
+      {
+        return load_prefab(filepath, append_resource_path, persist);
+      }
+
+      // Check if it's a Level
+      if (data_type == "Level")
+      {
+        return load_level(filepath, append_resource_path, persist);
+      }
     }
 
     Log::warning("Unknown JSON dataType in file: " + full_path);
@@ -712,6 +706,78 @@ void Engine::Resources::cache_level(const std::string& filepath, const Engine::L
   }
 
   Log::info("Level cached: " + full_path);
+}
+
+bool Engine::Resources::open_level(const std::string& filepath, bool append_resource_path)
+{
+  // Load the level
+  Engine::Level level = load_level(filepath, append_resource_path, false);
+
+  // Check if level is empty (failed to load)
+  if (level.entities.empty()) {
+    Log::warning("Failed to open level (empty or invalid): " + filepath);
+    return false;
+  }
+
+  // Instantiate the level into the world
+  level.instantiate_into_world();
+
+  // Update the current level path
+  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+  Engine::LevelManager::set_current_level_path(full_path);
+
+  Log::info("Opened level: " + filepath);
+  return true;
+}
+
+bool Engine::Resources::open(const std::string& filepath, bool append_resource_path)
+{
+  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+
+  // Get file extension
+  std::string extension = Path(filepath).get_extension();
+  std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+
+  // For JSON files, we need to check the dataType
+  if (extension == ".json") {
+    // Read the file to check dataType
+    auto json_str = Engine::FileIO::read_string_from_file(full_path);
+
+    if (!json_str.has_value()) {
+      Log::warning("Failed to read file for opening: " + filepath);
+      return false;
+    }
+
+    // Parse JSON to check dataType
+    std::optional<ReflectionLibrary::GenericValue> value_opt = ReflectionLibrary::generic_value_from_json(json_str.value());
+
+    if (!value_opt) {
+      Log::warning("Failed to parse JSON file: " + filepath);
+      return false;
+    }
+
+    ReflectionLibrary::GenericValue value = value_opt.value();
+
+    // Check if it has a dataType field
+    if (value.has("dataType")) {
+      std::string data_type = value["dataType"].getString();
+
+      if (data_type == "Level") {
+        return open_level(filepath, append_resource_path);
+      }
+      else {
+        Log::warning("Unknown dataType in JSON file: " + data_type);
+        return false;
+      }
+    }
+    else {
+      Log::warning("JSON file missing dataType field: " + filepath);
+      return false;
+    }
+  }
+
+  Log::warning("Unsupported file type for opening: " + extension);
+  return false;
 }
 
 

@@ -119,9 +119,53 @@ namespace TilemapPanel {
           std::string entity_key = get_position_key(entity_grid_pos);
 
           if (entity_key == pos_key) {
-            entity.destroy();
-            placed_tiles_per_layer[selected_layer].erase(pos_key);
-            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+            // Capture the tile's data before deletion for undo
+            auto* texture = entity.get_component<Components::Texture>();
+            auto* atlas = entity.get_component<Components::TextureAtlas>();
+            auto* color = entity.get_component<Components::Color>();
+
+            // Store the full component data we need to recreate the tile
+            Components::Texture captured_texture = texture ? *texture : Components::Texture();
+            Components::TextureAtlas captured_atlas = atlas ? *atlas : Components::TextureAtlas();
+            Math::Vec2D captured_position = transform->position;
+            float captured_rotation = transform->rotation;
+            Math::Vec2D captured_scale = transform->scale;
+            Components::Color captured_color = color ? *color : Components::Color(1.0f, 1.0f, 1.0f, 1.0f);
+            std::string captured_layer = selected_layer;
+
+            // Use shared_ptr so both lambdas can access the same entity state
+            auto deleted_tile_entity = std::make_shared<Engine::ECS::Entity>(entity);
+
+            Engine::UndoManager::execute(
+              [deleted_tile_entity, pos_key, captured_layer]() mutable {
+                if (deleted_tile_entity->is_valid()) {
+                  deleted_tile_entity->destroy();
+                  placed_tiles_per_layer[captured_layer].erase(pos_key);
+                  Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+                }
+              },
+              [deleted_tile_entity, pos_key, captured_texture, captured_atlas,
+              captured_position, captured_rotation, captured_scale, captured_color, captured_layer]() mutable {
+                // Recreate the tile entity
+                *deleted_tile_entity = Engine::ECS::create_entity()
+                  .add_component<Components::Tile>()
+                  .add_component<Components::Transform2D>(captured_position, captured_rotation, captured_scale)
+                  .add_component<Components::Color>(captured_color.r, captured_color.g, captured_color.b, captured_color.a);
+
+                // Add texture and atlas components after entity is created
+                auto* new_texture = deleted_tile_entity->add_component<Components::Texture>().get_component<Components::Texture>();
+                *new_texture = captured_texture;
+
+                auto* new_atlas = deleted_tile_entity->add_component<Components::TextureAtlas>().get_component<Components::TextureAtlas>();
+                *new_atlas = captured_atlas;
+
+                deleted_tile_entity->clear_layers();
+                deleted_tile_entity->add_to_layer(captured_layer);
+                placed_tiles_per_layer[captured_layer].insert(pos_key);
+                Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+              }
+            );
+
             break;
           }
         }
@@ -228,9 +272,10 @@ namespace TilemapPanel {
     // Special do and undo for placing tile
     // Use shared_ptr so both lambdas can access the same entity state
     auto placed_tile_entity = std::make_shared<Engine::ECS::Entity>(Engine::ECS::INVALID_ENTITY);
+    std::string current_layer = selected_layer;
 
     Engine::UndoManager::execute(
-      [placed_tile_entity, grid_pos, atlas_entry, &placed_tiles, pos_key]() mutable {
+      [placed_tile_entity, grid_pos, atlas_entry, current_layer, pos_key]() mutable {
         *placed_tile_entity = Engine::ECS::create_entity()
           .add_component<Components::Tile>()
           .add_component<Components::Transform2D>(grid_pos, 0.0f,
@@ -242,14 +287,17 @@ namespace TilemapPanel {
         placed_tile_entity->get_component<Components::TextureAtlas>()->drawIndex = selected_tile_index;
 
         placed_tile_entity->clear_layers();
-        placed_tile_entity->add_to_layer(selected_layer);
-        placed_tiles.insert(pos_key);
+        placed_tile_entity->add_to_layer(current_layer);
+        placed_tiles_per_layer[current_layer].insert(pos_key);
 
+        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
       },
-      [placed_tile_entity, &placed_tiles, pos_key]() mutable {
+      [placed_tile_entity, current_layer, pos_key]() mutable {
         if (placed_tile_entity->is_valid()) {
           placed_tile_entity->destroy();
-          placed_tiles.erase(pos_key);
+          placed_tiles_per_layer[current_layer].erase(pos_key);
+
+          Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
         }
         else {
           std::cout << "Warning: Attempted to undo tile placement but entity is invalid.\n";
@@ -258,8 +306,6 @@ namespace TilemapPanel {
     );
 
 
-    // Mark level as dirty for saving later
-    Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
   }
 
   // Public interface
