@@ -68,6 +68,9 @@ namespace TilemapPanel {
 
     // Track placed tiles to prevent duplicates (per layer)
     std::unordered_map<std::string, std::unordered_set<std::string>> placed_tiles_per_layer;
+
+    // Tilemap entity per layer (stores IntegerMap component)
+    std::unordered_map<std::string, Engine::ECS::Entity> tilemap_entities_per_layer;
   }
 
   // Helper functions
@@ -115,100 +118,242 @@ namespace TilemapPanel {
     return { snapped_x, snapped_y };
   }
 
-  void delete_tile_at_position(const Math::Vec2D& grid_pos) {
-    std::string pos_key = get_position_key(grid_pos);
+  // Get or create tilemap entity for a layer
+  Engine::ECS::Entity get_or_create_tilemap_entity(const std::string& layer_name) {
+    auto it = tilemap_entities_per_layer.find(layer_name);
+    if (it != tilemap_entities_per_layer.end() && it->second.is_valid()) {
+      return it->second;
+    }
 
+    // Create new tilemap entity
+    auto entity = Engine::ECS::create_entity()
+      .add_component<Components::IntegerMap>();
+
+    entity.clear_layers();
+    entity.add_to_layer(layer_name);
+
+    auto* int_map = entity.get_component<Components::IntegerMap>();
+    int_map->grid_size = grid_snap;
+    int_map->atlas_index = selected_atlas_index;
+
+    tilemap_entities_per_layer[layer_name] = entity;
+    return entity;
+  }
+
+  // Convert world position to grid coordinates
+  void world_to_grid(const Math::Vec2D& world_pos, int& grid_x, int& grid_y) {
+    grid_x = static_cast<int>(std::floor((world_pos.x - grid_offset.x) / grid_snap));
+    grid_y = static_cast<int>(std::floor((world_pos.y - grid_offset.y) / grid_snap));
+  }
+
+  // Convert grid coordinates to world position (center of tile)
+  Math::Vec2D grid_to_world(int grid_x, int grid_y) {
+    float half_snap = grid_snap * 0.5f;
+    return {
+      grid_x * grid_snap + grid_offset.x + half_snap,
+      grid_y * grid_snap + grid_offset.y + half_snap
+    };
+  }
+
+  struct Rectangle {
+    int x, y, width, height;
+    int tile_index;
+  };
+
+  // Find the largest rectangle of the same tile starting at (start_x, start_y)
+  Rectangle find_largest_rectangle(const Components::IntegerMap& int_map, int start_x, int start_y,
+    std::unordered_set<std::string>& processed) {
+    int tile_index = int_map.get_tile(start_x, start_y);
+    if (tile_index < 0) {
+      return { start_x, start_y, 0, 0, -1 };
+    }
+
+    // Find the maximum width at this row
+    int max_width = 0;
+    for (int x = start_x; ; ++x) {
+      std::string key = std::to_string(x) + "_" + std::to_string(start_y);
+      if (processed.count(key) || int_map.get_tile(x, start_y) != tile_index) {
+        break;
+      }
+      max_width++;
+    }
+
+    if (max_width == 0) {
+      return { start_x, start_y, 0, 0, -1 };
+    }
+
+    // Expand downward while maintaining the width
+    int height = 1;
+    for (int y = start_y + 1; ; ++y) {
+      bool can_expand = true;
+      for (int x = start_x; x < start_x + max_width; ++x) {
+        std::string key = std::to_string(x) + "_" + std::to_string(y);
+        if (processed.count(key) || int_map.get_tile(x, y) != tile_index) {
+          can_expand = false;
+          break;
+        }
+      }
+      if (!can_expand) break;
+      height++;
+    }
+
+    // Mark all tiles in this rectangle as processed
+    for (int y = start_y; y < start_y + height; ++y) {
+      for (int x = start_x; x < start_x + max_width; ++x) {
+        std::string key = std::to_string(x) + "_" + std::to_string(y);
+        processed.insert(key);
+      }
+    }
+
+    return { start_x, start_y, max_width, height, tile_index };
+  }
+
+  // Rebuild all tile entities from IntegerMap
+  void rebuild_tilemap_entities() {
+    // Destroy all existing tile entities on the current layer
     auto all_entities = Engine::ECS::get_all_entities();
     for (auto& entity : all_entities) {
-      if (entity.has_component<Components::Tile>()) {
-        auto* transform = entity.get_component<Components::Transform2D>();
-        if (transform && entity.is_on_layer(selected_layer)) {
-          Math::Vec2D entity_grid_pos = snap_to_grid(transform->position);
-          std::string entity_key = get_position_key(entity_grid_pos);
+      if (entity.has_component<Components::Tile>() && entity.is_on_layer(selected_layer)) {
+        entity.destroy();
+      }
+    }
+    placed_tiles_per_layer[selected_layer].clear();
 
-          if (entity_key == pos_key) {
-            // Capture the tile's data before deletion for undo
-            auto* texture = entity.get_component<Components::Texture>();
-            auto* atlas = entity.get_component<Components::TextureAtlas>();
-            auto* color = entity.get_component<Components::Color>();
+    // Get the tilemap entity for this layer
+    auto it = tilemap_entities_per_layer.find(selected_layer);
+    if (it == tilemap_entities_per_layer.end() || !it->second.is_valid()) {
+      return;
+    }
 
-            // Store the full component data we need to recreate the tile
-            Components::Texture captured_texture = texture ? *texture : Components::Texture();
-            Components::TextureAtlas captured_atlas = atlas ? *atlas : Components::TextureAtlas();
-            Math::Vec2D captured_position = transform->position;
-            float captured_rotation = transform->rotation;
-            Math::Vec2D captured_scale = transform->scale;
-            Components::Color captured_color = color ? *color : Components::Color(1.0f, 1.0f, 1.0f, 1.0f);
-            std::string captured_layer = selected_layer;
+    auto* int_map = it->second.get_component<Components::IntegerMap>();
+    if (!int_map || int_map->tiles.empty()) {
+      return;
+    }
 
-            // Use shared_ptr so both lambdas can access the same entity state
-            auto deleted_tile_entity = std::make_shared<Engine::ECS::Entity>(entity);
+    // Get atlas info
+    if (int_map->atlas_index < 0 || int_map->atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
+      return;
+    }
 
-            Engine::UndoManager::execute(
-              [deleted_tile_entity, pos_key, captured_layer]() mutable {
-                if (deleted_tile_entity->is_valid()) {
-                  deleted_tile_entity->destroy();
-                  placed_tiles_per_layer[captured_layer].erase(pos_key);
-                  Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
-                }
-              },
-              [deleted_tile_entity, pos_key, captured_texture, captured_atlas,
-              captured_position, captured_rotation, captured_scale, captured_color, captured_layer]() mutable {
-                // Recreate the tile entity
-                *deleted_tile_entity = Engine::ECS::create_entity()
-                  .add_component<Components::Tile>()
-                  .add_component<Components::Transform2D>(captured_position, captured_rotation, captured_scale)
-                  .add_component<Components::Color>(captured_color.r, captured_color.g, captured_color.b, captured_color.a);
+    const Components::AtlasEntry& atlas_entry = loaded_tilemaps[int_map->atlas_index];
 
-                // Add texture and atlas components after entity is created
-                auto* new_texture = deleted_tile_entity->add_component<Components::Texture>().get_component<Components::Texture>();
-                *new_texture = captured_texture;
+    // Find all rectangles using greedy algorithm
+    std::unordered_set<std::string> processed;
+    std::vector<Rectangle> rectangles;
 
-                auto* new_atlas = deleted_tile_entity->add_component<Components::TextureAtlas>().get_component<Components::TextureAtlas>();
-                *new_atlas = captured_atlas;
+    // Sort tiles by position for consistent processing
+    std::vector<std::pair<int, int>> tile_positions;
+    for (const auto& [key, tile_idx] : int_map->tiles) {
+      size_t underscore = key.find('_');
+      if (underscore != std::string::npos) {
+        int x = std::stoi(key.substr(0, underscore));
+        int y = std::stoi(key.substr(underscore + 1));
+        tile_positions.push_back({ x, y });
+      }
+    }
+    std::sort(tile_positions.begin(), tile_positions.end());
 
-                deleted_tile_entity->clear_layers();
-                deleted_tile_entity->add_to_layer(captured_layer);
-                placed_tiles_per_layer[captured_layer].insert(pos_key);
-                Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
-              }
-            );
+    // Find rectangles
+    for (const auto& [x, y] : tile_positions) {
+      std::string key = std::to_string(x) + "_" + std::to_string(y);
+      if (processed.count(key)) continue;
 
-            break;
-          }
+      Rectangle rect = find_largest_rectangle(*int_map, x, y, processed);
+      if (rect.width > 0 && rect.height > 0) {
+        rectangles.push_back(rect);
+      }
+    }
+
+    // Create entities for each rectangle
+    for (const Rectangle& rect : rectangles) {
+      // Calculate the world position for the bottom-left corner of the rectangle
+      float center_x = rect.x * grid_snap + grid_offset.x + (rect.width * grid_snap) * 0.5f;
+      float center_y = rect.y * grid_snap + grid_offset.y + (rect.height * grid_snap) * 0.5f;
+      Math::Vec2D center_world = { center_x, center_y };
+      Math::Vec2D scale = { rect.width * grid_snap, rect.height * grid_snap };
+
+      auto entity = Engine::ECS::create_entity()
+        .add_component<Components::Tile>()
+        .add_component<Components::Transform2D>(center_world, 0.0f, scale)
+        .add_component<Components::Texture>(atlas_entry.texture)
+        .add_component<Components::TextureAtlas>(atlas_entry.atlas)
+        .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
+
+      entity.get_component<Components::TextureAtlas>()->drawIndex = rect.tile_index;
+      entity.clear_layers();
+      entity.add_to_layer(selected_layer);
+
+      // Mark all positions in this rectangle as placed
+      for (int y = rect.y; y < rect.y + rect.height; ++y) {
+        for (int x = rect.x; x < rect.x + rect.width; ++x) {
+          Math::Vec2D tile_world = grid_to_world(x, y);
+          std::string pos_key = get_position_key(tile_world);
+          placed_tiles_per_layer[selected_layer].insert(pos_key);
         }
       }
     }
   }
 
+  void delete_tile_at_position(const Math::Vec2D& world_pos) {
+    int grid_x, grid_y;
+    world_to_grid(world_pos, grid_x, grid_y);
+
+    // Get the tilemap entity
+    auto tilemap_entity = get_or_create_tilemap_entity(selected_layer);
+    auto* int_map = tilemap_entity.get_component<Components::IntegerMap>();
+    if (!int_map) return;
+
+    int old_tile = int_map->get_tile(grid_x, grid_y);
+    if (old_tile < 0) return; // Nothing to delete
+
+    // Capture state for undo
+    int captured_grid_x = grid_x;
+    int captured_grid_y = grid_y;
+    int captured_tile = old_tile;
+    std::string captured_layer = selected_layer;
+
+    Engine::UndoManager::execute(
+      [captured_grid_x, captured_grid_y, captured_layer]() {
+        auto entity = get_or_create_tilemap_entity(captured_layer);
+        auto* map = entity.get_component<Components::IntegerMap>();
+        if (map) {
+          map->set_tile(captured_grid_x, captured_grid_y, -1);
+          rebuild_tilemap_entities();
+          Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+        }
+      },
+      [captured_grid_x, captured_grid_y, captured_tile, captured_layer]() {
+        auto entity = get_or_create_tilemap_entity(captured_layer);
+        auto* map = entity.get_component<Components::IntegerMap>();
+        if (map) {
+          map->set_tile(captured_grid_x, captured_grid_y, captured_tile);
+          rebuild_tilemap_entities();
+          Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+        }
+      }
+    );
+  }
+
   void update_all_tile_dimensions() {
-    auto all_entities = Engine::ECS::get_all_entities();
-
-    placed_tiles_per_layer.clear();
-
-    for (auto& entity : all_entities) {
-      if (entity.has_component<Components::Tile>()) {
-        auto* transform = entity.get_component<Components::Transform2D>();
-        if (transform) {
-          Math::Vec2D new_pos = snap_to_grid(transform->position);
-          transform->position = new_pos;
-          transform->scale = Math::Vec2D{ grid_snap, grid_snap };
-
-          std::string pos_key = get_position_key(new_pos);
-
-          // Track this tile for each layer it's on
-          auto layers = entity.get_layers();
-          for (Engine::ECS::LayerID layer_id = 0; layer_id < Engine::ECS::MAX_LAYERS; ++layer_id) {
-            if (layers.test(layer_id)) {
-              std::string layer_name = Engine::ECS::get_layer_name(layer_id);
-              if (!layer_name.empty()) {
-                placed_tiles_per_layer[layer_name].insert(pos_key);
-              }
-            }
-          }
+    // Update grid size in all tilemap entities and rebuild
+    for (auto& [layer_name, entity] : tilemap_entities_per_layer) {
+      if (entity.is_valid()) {
+        auto* int_map = entity.get_component<Components::IntegerMap>();
+        if (int_map) {
+          int_map->grid_size = grid_snap;
         }
       }
     }
+
+    // Rebuild all layers
+    std::string original_layer = selected_layer;
+    for (auto& [layer_name, entity] : tilemap_entities_per_layer) {
+      if (entity.is_valid()) {
+        selected_layer = layer_name;
+        rebuild_tilemap_entities();
+      }
+    }
+    selected_layer = original_layer;
   }
 
   void place_tile_at_position(const Math::Vec2D& world_pos) {
@@ -226,100 +371,71 @@ namespace TilemapPanel {
       return;
     }
 
-    Math::Vec2D grid_pos = snap_to_grid(world_pos);
-    std::string pos_key = get_position_key(grid_pos);
+    int grid_x, grid_y;
+    world_to_grid(world_pos, grid_x, grid_y);
 
-    // Get the placed tiles set for the current layer
-    auto& placed_tiles = placed_tiles_per_layer[selected_layer];
+    // Get the tilemap entity
+    auto tilemap_entity = get_or_create_tilemap_entity(selected_layer);
+    auto* int_map = tilemap_entity.get_component<Components::IntegerMap>();
+    if (!int_map) return;
 
-    // If a tile already exists at this position on this layer, check if it's different before overwriting
-    if (placed_tiles.find(pos_key) != placed_tiles.end()) {
-      // Find the existing tile entity
-      for (auto& entity : Engine::ECS::get_entities_with<Components::Tile>()) {
-        // TODO: This is very inefficient, implement hashing for Transform2D so we dont have to loop all entities 
-        auto* transform = entity.get_component<Components::Transform2D>();
-        if (transform && entity.is_on_layer(selected_layer)) {
-          Math::Vec2D entity_grid_pos = snap_to_grid(transform->position);
-          std::string entity_key = get_position_key(entity_grid_pos);
-
-          if (entity_key == pos_key) {
-            // Check if the tile is different from what we want to place
-            auto* existing_texture = entity.get_component<Components::Texture>();
-            auto* existing_atlas = entity.get_component<Components::TextureAtlas>();
-
-            bool is_different = false;
-
-            // Check if texture is different
-            if (!existing_texture ||
-              !existing_texture->texture_handle ||
-              !atlas_entry.texture.texture_handle ||
-              existing_texture->texture_handle->path != atlas_entry.texture.texture_handle->path) {
-              is_different = true;
-            }
-            // Check if atlas tile index is different
-            else if (!existing_atlas || existing_atlas->drawIndex != selected_tile_index) {
-              is_different = true;
-            }
-
-            // Only destroy and recreate if the tile is different
-            if (is_different) {
-              entity.destroy();
-              placed_tiles.erase(pos_key);
-            }
-            else {
-              // Tile is the same, no need to do anything
-              return;
-            }
-
-            break;
-          }
-        }
-      }
+    // Update atlas index if it changed
+    if (int_map->atlas_index != selected_atlas_index) {
+      int_map->atlas_index = selected_atlas_index;
     }
 
-    // Special do and undo for placing tile
-    // Use shared_ptr so both lambdas can access the same entity state
-    auto placed_tile_entity = std::make_shared<Engine::ECS::Entity>(Engine::ECS::INVALID_ENTITY);
-    std::string current_layer = selected_layer;
+    // Check if the tile is already the same
+    int current_tile = int_map->get_tile(grid_x, grid_y);
+    if (current_tile == selected_tile_index) {
+      return; // Same tile, nothing to do
+    }
+
+    // Capture state for undo
+    int captured_grid_x = grid_x;
+    int captured_grid_y = grid_y;
+    int captured_old_tile = current_tile;
+    int captured_new_tile = selected_tile_index;
+    std::string captured_layer = selected_layer;
 
     Engine::UndoManager::execute(
-      [placed_tile_entity, grid_pos, atlas_entry, current_layer, pos_key]() mutable {
-        *placed_tile_entity = Engine::ECS::create_entity()
-          .add_component<Components::Tile>()
-          .add_component<Components::Transform2D>(grid_pos, 0.0f,
-            Math::Vec2D{ grid_snap, grid_snap })
-          .add_component<Components::Texture>(atlas_entry.texture)
-          .add_component<Components::TextureAtlas>(atlas_entry.atlas)
-          .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
-
-        placed_tile_entity->get_component<Components::TextureAtlas>()->drawIndex = selected_tile_index;
-
-        placed_tile_entity->clear_layers();
-        placed_tile_entity->add_to_layer(current_layer);
-        placed_tiles_per_layer[current_layer].insert(pos_key);
-
-        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
-      },
-      [placed_tile_entity, current_layer, pos_key]() mutable {
-        if (placed_tile_entity->is_valid()) {
-          placed_tile_entity->destroy();
-          placed_tiles_per_layer[current_layer].erase(pos_key);
-
+      [captured_grid_x, captured_grid_y, captured_new_tile, captured_layer]() {
+        auto entity = get_or_create_tilemap_entity(captured_layer);
+        auto* map = entity.get_component<Components::IntegerMap>();
+        if (map) {
+          map->set_tile(captured_grid_x, captured_grid_y, captured_new_tile);
+          rebuild_tilemap_entities();
           Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
         }
-        else {
-          std::cout << "Warning: Attempted to undo tile placement but entity is invalid.\n";
+      },
+      [captured_grid_x, captured_grid_y, captured_old_tile, captured_layer]() {
+        auto entity = get_or_create_tilemap_entity(captured_layer);
+        auto* map = entity.get_component<Components::IntegerMap>();
+        if (map) {
+          map->set_tile(captured_grid_x, captured_grid_y, captured_old_tile);
+          rebuild_tilemap_entities();
+          Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
         }
       }
     );
-
-
   }
 
   // Public interface
   void init() {
     const auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get();
     loaded_tilemaps = project_settings.loaded_tilemaps;
+
+    // Find existing IntegerMap entities
+    for (auto& entity : Engine::ECS::get_entities_with<Components::IntegerMap>()) {
+      auto layers = entity.get_layers();
+      for (Engine::ECS::LayerID layer_id = 0; layer_id < Engine::ECS::MAX_LAYERS; ++layer_id) {
+        if (layers.test(layer_id)) {
+          std::string layer_name = Engine::ECS::get_layer_name(layer_id);
+          if (!layer_name.empty()) {
+            tilemap_entities_per_layer[layer_name] = entity;
+          }
+        }
+      }
+    }
   }
 
   void update() {
@@ -379,8 +495,7 @@ namespace TilemapPanel {
           // TODO: Implement picker tool (pick tile under cursor)
         }
         else if (active_tool == ToolMode::Eraser) {
-          Math::Vec2D grid_pos = snap_to_grid(world_pos);
-          delete_tile_at_position(grid_pos);
+          delete_tile_at_position(world_pos);
         }
       }
     }

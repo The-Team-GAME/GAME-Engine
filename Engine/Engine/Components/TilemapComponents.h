@@ -16,6 +16,8 @@
 #pragma once
 
 #include "../ECS/Macros.h"
+#include <unordered_map>
+#include <string>
 
 namespace Components {
   struct Tile {};
@@ -25,7 +27,34 @@ namespace Components {
     Components::Texture texture;
     Components::TextureAtlas atlas;
   };
+
+  // IntegerMap stores a 2D grid of tile indices
+  // Key format: "x_y" where x and y are grid coordinates
+  // Value: tile index in the atlas (-1 means empty)
+  struct IntegerMap {
+    std::unordered_map<std::string, int> tiles;
+    float grid_size = 64.0f;
+    int atlas_index = -1; // Which atlas this tilemap uses
+
+    // Helper to get/set tile at grid position
+    int get_tile(int x, int y) const {
+      auto key = std::to_string(x) + "_" + std::to_string(y);
+      auto it = tiles.find(key);
+      return (it != tiles.end()) ? it->second : -1;
+    }
+
+    void set_tile(int x, int y, int tile_index) {
+      auto key = std::to_string(x) + "_" + std::to_string(y);
+      if (tile_index < 0) {
+        tiles.erase(key);
+      }
+      else {
+        tiles[key] = tile_index;
+      }
+    }
+  };
 }
 
 REGISTER_COMPONENT(Components::Tile);
 REGISTER_COMPONENT(Components::AtlasEntry, texture, atlas);
+REFLECT_FIELDS(Components::IntegerMap, tiles, grid_size, atlas_index);
