@@ -424,7 +424,8 @@ namespace TilemapPanel {
     const auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get();
     loaded_tilemaps = project_settings.loaded_tilemaps;
 
-    // Find existing IntegerMap entities
+    // Find existing IntegerMap entities and rebuild their tile entities
+    tilemap_entities_per_layer.clear();
     for (auto& entity : Engine::ECS::get_entities_with<Components::IntegerMap>()) {
       auto layers = entity.get_layers();
       for (Engine::ECS::LayerID layer_id = 0; layer_id < Engine::ECS::MAX_LAYERS; ++layer_id) {
@@ -432,6 +433,12 @@ namespace TilemapPanel {
           std::string layer_name = Engine::ECS::get_layer_name(layer_id);
           if (!layer_name.empty()) {
             tilemap_entities_per_layer[layer_name] = entity;
+
+            // Rebuild tile entities for this layer
+            std::string original_layer = selected_layer;
+            selected_layer = layer_name;
+            rebuild_tilemap_entities();
+            selected_layer = original_layer;
           }
         }
       }

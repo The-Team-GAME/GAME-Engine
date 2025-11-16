@@ -12,6 +12,11 @@ Engine::Level Engine::Level::from_world()
   Level level;
 
   Engine::ECS::for_each_entity([&](Engine::ECS::Entity entity) {
+    // Skip tile entities - they are temporary and rebuilt from IntegerMap
+    if (entity.has_component<Components::Tile>()) {
+      return;
+    }
+
     ReflectionLibrary::GenericValue entity_value = Engine::ECS::entity_to_generic_value(entity);
     level.entities.push_back(std::move(entity_value));
     });
@@ -31,6 +36,9 @@ void Engine::Level::instantiate_into_world()
     Engine::ECS::create_entity_from_generic_value(entity_value);
     // TODO: we need a way to mark the entities as belonging to a specific level
   }
+
+  // After loading all entities, rebuild tile entities from IntegerMap components
+  // This is done in TilemapPanel::init() which gets called after level load
 }
 
 std::string Engine::LevelManager::get_current_level_path()
