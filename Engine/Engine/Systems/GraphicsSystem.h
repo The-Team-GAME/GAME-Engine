@@ -201,6 +201,9 @@ namespace Engine
         // Get current mouse position if in viewport
         auto mouse_pos_opt = Engine::Input::get_mouse_position_if_in_viewport();
 
+        // Get scroll offset first (to consume it)
+        glm::vec2 scroll = Engine::Input::get_scroll_offset();
+
         // Early exit if mouse is not in viewport
         if (!mouse_pos_opt.has_value()) {
           is_dragging = false;
@@ -208,9 +211,6 @@ namespace Engine
         }
 
         glm::vec2 current_mouse_pos = mouse_pos_opt.value();
-
-        // Get scroll offset
-        glm::vec2 scroll = Engine::Input::get_scroll_offset();
 
         // Check if middle mouse button is held
         bool mouse_middle_held = Engine::Input::is_held(Engine::KeyCode::MouseMiddle);
