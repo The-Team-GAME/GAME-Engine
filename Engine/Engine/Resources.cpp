@@ -523,6 +523,13 @@ Engine::Resources::Resource Engine::Resources::load(const std::string& filepath,
       return std::monostate{};
     }
 
+    // Check if the parsed JSON is an object (not an array or primitive)
+    if (!doc.IsObject())
+    {
+      Log::warning("JSON file is not an object: " + full_path);
+      return std::monostate{};
+    }
+
     // Check if it's an Entity (prefab)
     if (doc.HasMember("dataType") && doc["dataType"].IsString() &&
       std::string(doc["dataType"].GetString()) == "Prefab")
