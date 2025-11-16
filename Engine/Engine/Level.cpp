@@ -1,5 +1,6 @@
 #include "Level.h"
 #include "SceneManager.h"
+#include "Components/Components.h"
 
 namespace
 {
@@ -13,7 +14,7 @@ Engine::Level Engine::Level::from_world()
 
   Engine::ECS::for_each_entity([&](Engine::ECS::Entity entity) {
     // Skip tile entities - they are temporary and rebuilt from IntegerMap
-    if (entity.has_component<Components::Tile>()) {
+    if (entity.has_components<Components::Tile>()) {
       return;
     }
 

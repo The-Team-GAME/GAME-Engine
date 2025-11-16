@@ -125,6 +125,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClCompile Include="Engine\GUI\widgets\ReflectionFieldWidgets.cpp" />
     <ClCompile Include="Engine\GUI\widgets\TextureAtlasWidget.cpp" />
     <ClCompile Include="Engine\SceneManager.cpp" />
+    <ClCompile Include="Engine\TIlemapManager.cpp" />
     <ClCompile Include="GameLogic\GameStates\BasicState.cpp" />
     <ClCompile Include="GameLogic\GameStates\BasicState.h" />
     <ClCompile Include="Engine\Core.cpp" />
@@ -168,6 +169,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="Engine\Level.h" />
     <ClInclude Include="Engine\ProjectSaveManager.h" />
     <ClInclude Include="Engine\Systems\DebugDrawSystem.h" />
+    <ClInclude Include="Engine\TIlemapManager.h" />
     <ClInclude Include="Engine\UndoManager\Commands\Commands.h" />
     <ClInclude Include="GameLogic\Components\HealthComponents.h" />
     <ClInclude Include="Engine\ECS\Reflection.h" />
