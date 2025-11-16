@@ -3,11 +3,11 @@
 #include "../Components/Components.h"
 
 enum entity_state {
-  IDLE,
   ATTACK,
   STUN,
 
   // PLAYER SPECIFIC STATES
+  IDLE,
   MOVING_LEFT,
   MOVING_RIGHT,
   JUMPING,
@@ -19,13 +19,21 @@ enum entity_state {
 
 namespace Components
 {
+  struct Player
+  {
+    // Exists just to identify the player
+  };
   struct Logic
   {
     entity_state state;
     // For NPCs
+    f32 pause_timer = 1.5f;
     f32 direction = 1.f;
-    f32 left_bound;
-    f32 right_bound;
+    f32 sight_distance = 250.f;
+    f32 left_patrol_bound;
+    f32 right_patrol_bound;
+    f32 left_chase_bound;
+    f32 right_chase_bound;
     // The patrol limit, pls set it a little under the length of the platform
     
 
@@ -34,10 +42,10 @@ namespace Components
     Logic(entity_state starting_state) : state(starting_state) {};
 
     // Enemy ctor
-    Logic(entity_state starting_state, f32 min_bound, f32 max_bound): 
+    Logic(entity_state starting_state, f32 left_chase_bound, f32 left_patrol_bound, f32 right_patrol_bound, f32 right_chase_bound):
       state(starting_state), 
-      left_bound(min_bound), 
-      right_bound(max_bound)
+      left_patrol_bound(left_patrol_bound), right_patrol_bound(right_patrol_bound),
+      left_chase_bound(left_chase_bound), right_chase_bound(right_chase_bound)
     {
       //Empty by default
     };

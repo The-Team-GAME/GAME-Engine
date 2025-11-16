@@ -39,11 +39,12 @@ namespace {
       .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
       .add_component<Components::RigidBody>(Components::RigidBody(false, true))
       .add_component<Components::BoxCollider>(scale.x, scale.y, false) // width, height
-      .add_component<Components::Logic>(IDLE);
+      .add_component<Components::Logic>(IDLE)
+      .add_component<Components::Player>();
     return ret;
   }
 
-  ECS::Entity make_npc(Vec2D position, Vec2D scale, f32 left_bound, f32 right_bound)
+  ECS::Entity make_npc(Vec2D position, Vec2D scale, f32 left_chase_bound, f32 left_patrol_bound, f32 right_patrol_bound, f32 right_chase_bound)
   {
     ECS::Entity ret = Engine::ECS::create_entity().add_component<Components::Tag<"PhysicsTestState">>()
       .add_component<Components::Transform2D>(position.x, position.y, 0.0f, scale.x, scale.y) // pos.x, pos.y, rotation, scale.x, scale.y
@@ -51,7 +52,7 @@ namespace {
       .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
       .add_component<Components::RigidBody>(Components::RigidBody(false, true))
       .add_component<Components::BoxCollider>(scale.x, scale.y, false) // width, height
-      .add_component<Components::Logic>(PATROL, left_bound, right_bound);
+      .add_component<Components::Logic>(PATROL, left_chase_bound, left_patrol_bound, right_patrol_bound, right_chase_bound);
     return ret;
   }
 
@@ -73,7 +74,7 @@ public:
   void load() {
     // Free falling box
     player = make_player(player_pos, npc_scale);
-    make_npc(Vec2D{ 1000.f, 825.f }, npc_scale, 600.f, 1200.f);
+    make_npc(Vec2D{ 1000.f, 825.f }, npc_scale, 600.f, 750.f, 1050.f, 1200.f);
 
     // Walling the player in
     make_wall(Vec2D(800.0f, 875.0f), Vec2D(1600.0f, 50.0f));
