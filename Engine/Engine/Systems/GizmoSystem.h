@@ -655,7 +655,12 @@ namespace Engine
 
               if (ImGui::RadioButton("Grab / Move", mode == 0)) mode = 0;
               if (ImGui::RadioButton("Arrows (X/Y)", mode == 1)) mode = 1;
+              
+              //Disable rotation for text
+              if (is_text) ImGui::BeginDisabled();
               if (ImGui::RadioButton("Rotate", mode == 2)) mode = 2;
+              if (is_text) ImGui::EndDisabled();
+
               if (ImGui::RadioButton("Scale", mode == 3)) mode = 3;
 
               ImGui::Separator();
