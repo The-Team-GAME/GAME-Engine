@@ -22,5 +22,11 @@ namespace Components
   struct Clickable
   {
     std::function<void()> on_click;
+
+    bool is_hovered = false;
+
+    glm::vec2 original_scale;
+    glm::vec2 target_scale;
+    float scale_timer = 0.0f;
   };
 }
