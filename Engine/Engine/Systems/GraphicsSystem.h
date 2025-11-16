@@ -29,7 +29,7 @@ namespace Engine
     public:
       StaticSpriteRenderSystem() {
         require_components<Components::Transform2D, Components::Color, Components::Texture>();
-        exclude_components<Components::TextureAtlas, Components::Distortion>();
+        exclude_components<Components::TextureAtlas, Components::Distortion, Components::Tile>();
       }
 
       void draw_entity(const Engine::ECS::Entity& entity) override {
@@ -51,7 +51,7 @@ namespace Engine
     public:
       AtlasSpriteRenderSystem() {
         require_components<Components::Transform2D, Components::Color, Components::Texture, Components::TextureAtlas>();
-        exclude_components<Components::Distortion>();
+        exclude_components<Components::Distortion, Components::Tile>();
       }
 
       void draw_entity(const Engine::ECS::Entity& entity) override {
@@ -264,7 +264,7 @@ namespace Engine
     public:
       DistortionSpriteRenderSystem() {
         require_components<Components::Transform2D, Components::Color, Components::Texture, Components::Distortion>();
-        exclude_components<Components::TextureAtlas>();
+        exclude_components<Components::TextureAtlas, Components::Tile>();
       }
 
       void draw_entity(const Engine::ECS::Entity& entity) override {
@@ -290,6 +290,7 @@ namespace Engine
     public:
       DistortionAtlasSpriteRenderSystem() {
         require_components<Components::Transform2D, Components::Color, Components::Texture, Components::TextureAtlas, Components::Distortion>();
+        exclude_components<Components::Tile>();
       }
 
       void draw_entity(const Engine::ECS::Entity& entity) override {
