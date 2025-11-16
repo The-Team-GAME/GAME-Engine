@@ -244,18 +244,18 @@ void ResourceExplorerPanel() {
   static int selected_file_type = 0; // 0 = Level
   if (ImGui::BeginPopupModal("CreateFile", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
     ImGui::Text("Create new file in current directory");
-    
+
     ImGui::Separator();
     ImGui::Text("File Type:");
     ImGui::RadioButton("Level (.json)", &selected_file_type, 0);
     // Add more file types here in the future
-    
+
     ImGui::Separator();
     ImGui::InputText("File Name", new_file_name, sizeof(new_file_name));
 
     if (ImGui::Button("Create", ImVec2(120, 0))) {
       std::string filename = std::string(new_file_name);
-      
+
       // Handle different file types
       if (selected_file_type == 0) { // Level
         // Add .json extension if not present
@@ -271,7 +271,7 @@ void ResourceExplorerPanel() {
 
         // Create an empty level
         Engine::Level empty_level;
-        
+
         if (Engine::FileIO::serialize_level_to_json_file(full_path, empty_level)) {
           Log::info("Created level: " + file_path);
         }
