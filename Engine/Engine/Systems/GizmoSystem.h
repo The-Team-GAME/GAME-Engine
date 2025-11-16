@@ -68,7 +68,7 @@ namespace Engine
           (mouse.y >= top) && (mouse.y <= bottom);
 
         // Add Gizmo component when clicked
-        if (inside && Engine::Input::is_pressed(KeyCode::MouseLeft)) {
+        if (inside && Engine::Input::is_pressed(KeyCode::MouseLeft) && !TilemapPanel::is_tilemap_mode_enabled()) {
           // Send selection event with start_dragging = true for immediate drag
           Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(entity.get_id(), true);
         }
@@ -121,7 +121,7 @@ namespace Engine
           (mouse.y >= top) && (mouse.y <= bottom);
 
         // Add Gizmo component when clicked
-        if (inside && Engine::Input::is_pressed(KeyCode::MouseLeft)) {
+        if (inside && Engine::Input::is_pressed(KeyCode::MouseLeft) && !TilemapPanel::is_tilemap_mode_enabled()) {
           // Send selection event with start_dragging = true for immediate drag
           Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(entity.get_id(), true);
         }
@@ -140,6 +140,12 @@ namespace Engine
         auto* gizmo = entity.get_component<Components::Gizmo>();
 
         if (!tr || !gizmo) return;
+
+        // if tilemap mode is enabled, remove gizmo and return
+        if (TilemapPanel::is_tilemap_mode_enabled()) {
+          entity.remove_component<Components::Gizmo>();
+          return;
+        }
 
         // Check if Ctrl is held (camera control mode)
         bool ctrl_held = Engine::Input::is_held(Engine::KeyCode::CtrlLeft) ||

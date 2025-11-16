@@ -1028,4 +1028,8 @@ namespace TilemapPanel {
       }
     }
   }
+  bool is_tilemap_mode_enabled()
+  {
+    return enable_tilemap_mode;
+  }
 } // namespace TilemapPanel
