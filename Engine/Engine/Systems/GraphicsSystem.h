@@ -198,8 +198,16 @@ namespace Engine
       }
 
       void update() override {
-        // Get current mouse position
-        glm::vec2 current_mouse_pos = Engine::Input::get_mouse_position();
+        // Get current mouse position if in viewport
+        auto mouse_pos_opt = Engine::Input::get_mouse_position_if_in_viewport();
+
+        // Early exit if mouse is not in viewport
+        if (!mouse_pos_opt.has_value()) {
+          is_dragging = false;
+          return;
+        }
+
+        glm::vec2 current_mouse_pos = mouse_pos_opt.value();
 
         // Get scroll offset
         glm::vec2 scroll = Engine::Input::get_scroll_offset();
