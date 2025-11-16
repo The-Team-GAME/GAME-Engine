@@ -196,68 +196,9 @@ namespace Engine
         auto* text = entity.get_component<Components::Text>();
         auto* font = entity.get_component<Components::Font>();
         bool is_text = (text && font);
-        //bool inside = false;
 
         Math::Vec2D rect_center{}, rect_size{};
         Math::Vec2D tl{}, trc{}, br{}, bl{};
-
-        /*
-        if (text && font) {
-          // Calculate bounds for text entity (top-left aligned)
-          float text_scale = (tr->scale.x + tr->scale.y) * 0.5f;
-          Math::Vec2D text_size = Engine::Graphics::measure_text(font->font_handle, text->content, text_scale);
-
-          const float left = tr->position.x;
-          const float right = tr->position.x + text_size.x;
-          const float top = tr->position.y;
-          const float bottom = tr->position.y + text_size.y;
-
-          inside = (mouse.x >= left) && (mouse.x <= right) &&
-            (mouse.y >= top) && (mouse.y <= bottom);
-        }
-        else {
-          // Calculate bounds for sprite entity (centered)
-          const float half_w = tr->scale.x * 0.5f;
-          const float half_h = tr->scale.y * 0.5f;
-          const float left = tr->position.x - half_w;
-          const float right = tr->position.x + half_w;
-          const float top = tr->position.y - half_h;
-          const float bottom = tr->position.y + half_h;
-
-          inside = (mouse.x >= left) && (mouse.x <= right) &&
-            (mouse.y >= top) && (mouse.y <= bottom);
-        }
-
-        // Handle starting drag on click
-        if (Engine::Input::is_pressed(KeyCode::MouseLeft)) {
-          if (inside) {
-            // Start dragging - calculate offset from entity center to mouse position
-            gizmo->drag_offset = Math::Vec2D(mouse.x - tr->position.x, mouse.y - tr->position.y);
-            gizmo->is_dragging = true;
-          }
-          else {
-            // Only deselect if click was NOT on an ImGui window
-            if (!ImGui::GetIO().WantCaptureMouse) {
-              // Clicked outside - deselect (send deselection event)
-              Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
-              return;
-            }
-          }
-        }
-
-        // Handle dragging
-        if (gizmo->is_dragging) {
-          if (Engine::Input::is_held(KeyCode::MouseLeft)) {
-            // Update position while dragging (accounting for offset)
-            tr->position.x = mouse.x - gizmo->drag_offset.x;
-            tr->position.y = mouse.y - gizmo->drag_offset.y;
-          }
-          else {
-            // Stop dragging when mouse is released
-            gizmo->is_dragging = false;
-          }
-        }
-        */
 
         if (is_text) {
           float ts = (tr->scale.x + tr->scale.y) * 0.5f;
@@ -500,39 +441,6 @@ namespace Engine
         auto* text = entity.get_component<Components::Text>();
         auto* font = entity.get_component<Components::Font>();
         bool is_text = (text && font);
-
-        /*
-        if (text && font) {
-          // Draw outline for text entity using accurate text bounds
-          float text_scale = (tr->scale.x + tr->scale.y) * 0.5f;
-          Math::Vec2D text_size = Engine::Graphics::measure_text(font->font_handle, text->content, text_scale);
-
-          float text_width = text_size.x;
-          float text_height = text_size.y;
-
-          // Draw outline at text position (top-left aligned)
-          Math::Vec2D outline_center(tr->position.x + text_width * 0.5f, tr->position.y + text_height * 0.5f);
-          Math::Vec2D outline_size(text_width, text_height);
-
-          Engine::Graphics::draw_rect_outline(
-            outline_center,
-            outline_size,
-            0.0f, // Text doesn't rotate
-            gizmo->outline_thickness,
-            gizmo->outline_color
-          );
-        }
-        else {
-          // Draw outline for regular sprite entity
-          Engine::Graphics::draw_rect_outline(
-            tr->position,
-            tr->scale,
-            tr->rotation,
-            gizmo->outline_thickness,
-            gizmo->outline_color
-          );
-        }
-        */
 
         Math::Vec2D rect_center{}, rect_size{};
         if (is_text) {
