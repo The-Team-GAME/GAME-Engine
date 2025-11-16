@@ -28,6 +28,8 @@
 #include "../FileIO/SettingsManager.h"
 #include "../FileIO/Settings.h"
 #include "ViewportPanel.h"
+#include "../ProjectSaveManager.h"
+#include "../UndoManager/UndoManager.h"
 
 namespace TilemapPanel {
   // Internal state
@@ -58,21 +60,19 @@ namespace TilemapPanel {
 
     // Track placed tiles to prevent duplicates (per layer)
     std::unordered_map<std::string, std::unordered_set<std::string>> placed_tiles_per_layer;
-
-    // Save/Load state
-    char tilemap_filename[256] = "tilemap_save.json";
-    bool show_save_as_popup = false;
-    bool show_load_popup = false;
   }
 
   // Helper functions
 
+  // Doesnt actually save to file yet, just updates project settings in memory
+  // TODO: rename to be more accurate
   void save_loaded_tilemaps_to_project_settings() {
     auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get_mutable();
     project_settings.loaded_tilemaps = loaded_tilemaps;
-    if (!Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::save("Assets/settings/project_settings.json")) {
-      Log::warning("Failed to save project settings after updating tilemaps");
-    }
+    // if (!Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::save("Assets/settings/project_settings.json")) {
+    //   Log::warning("Failed to save project settings after updating tilemaps");
+    // }
+    Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings()); // Mark dirty for saving later
   }
 
   void regenerate_atlas() {
@@ -119,8 +119,53 @@ namespace TilemapPanel {
           std::string entity_key = get_position_key(entity_grid_pos);
 
           if (entity_key == pos_key) {
-            entity.destroy();
-            placed_tiles_per_layer[selected_layer].erase(pos_key);
+            // Capture the tile's data before deletion for undo
+            auto* texture = entity.get_component<Components::Texture>();
+            auto* atlas = entity.get_component<Components::TextureAtlas>();
+            auto* color = entity.get_component<Components::Color>();
+
+            // Store the full component data we need to recreate the tile
+            Components::Texture captured_texture = texture ? *texture : Components::Texture();
+            Components::TextureAtlas captured_atlas = atlas ? *atlas : Components::TextureAtlas();
+            Math::Vec2D captured_position = transform->position;
+            float captured_rotation = transform->rotation;
+            Math::Vec2D captured_scale = transform->scale;
+            Components::Color captured_color = color ? *color : Components::Color(1.0f, 1.0f, 1.0f, 1.0f);
+            std::string captured_layer = selected_layer;
+
+            // Use shared_ptr so both lambdas can access the same entity state
+            auto deleted_tile_entity = std::make_shared<Engine::ECS::Entity>(entity);
+
+            Engine::UndoManager::execute(
+              [deleted_tile_entity, pos_key, captured_layer]() mutable {
+                if (deleted_tile_entity->is_valid()) {
+                  deleted_tile_entity->destroy();
+                  placed_tiles_per_layer[captured_layer].erase(pos_key);
+                  Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+                }
+              },
+              [deleted_tile_entity, pos_key, captured_texture, captured_atlas,
+              captured_position, captured_rotation, captured_scale, captured_color, captured_layer]() mutable {
+                // Recreate the tile entity
+                *deleted_tile_entity = Engine::ECS::create_entity()
+                  .add_component<Components::Tile>()
+                  .add_component<Components::Transform2D>(captured_position, captured_rotation, captured_scale)
+                  .add_component<Components::Color>(captured_color.r, captured_color.g, captured_color.b, captured_color.a);
+
+                // Add texture and atlas components after entity is created
+                auto* new_texture = deleted_tile_entity->add_component<Components::Texture>().get_component<Components::Texture>();
+                *new_texture = captured_texture;
+
+                auto* new_atlas = deleted_tile_entity->add_component<Components::TextureAtlas>().get_component<Components::TextureAtlas>();
+                *new_atlas = captured_atlas;
+
+                deleted_tile_entity->clear_layers();
+                deleted_tile_entity->add_to_layer(captured_layer);
+                placed_tiles_per_layer[captured_layer].insert(pos_key);
+                Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+              }
+            );
+
             break;
           }
         }
@@ -179,9 +224,9 @@ namespace TilemapPanel {
     // Get the placed tiles set for the current layer
     auto& placed_tiles = placed_tiles_per_layer[selected_layer];
 
-    // If a tile already exists at this position on this layer, delete it first (overwrite behavior)
+    // If a tile already exists at this position on this layer, check if it's different before overwriting
     if (placed_tiles.find(pos_key) != placed_tiles.end()) {
-      // Find and destroy the existing tile entity 
+      // Find the existing tile entity
       for (auto& entity : Engine::ECS::get_entities_with<Components::Tile>()) {
         // TODO: This is very inefficient, implement hashing for Transform2D so we dont have to loop all entities 
         auto* transform = entity.get_component<Components::Transform2D>();
@@ -190,60 +235,77 @@ namespace TilemapPanel {
           std::string entity_key = get_position_key(entity_grid_pos);
 
           if (entity_key == pos_key) {
-            entity.destroy();
+            // Check if the tile is different from what we want to place
+            auto* existing_texture = entity.get_component<Components::Texture>();
+            auto* existing_atlas = entity.get_component<Components::TextureAtlas>();
+
+            bool is_different = false;
+
+            // Check if texture is different
+            if (!existing_texture ||
+              !existing_texture->texture_handle ||
+              !atlas_entry.texture.texture_handle ||
+              existing_texture->texture_handle->path != atlas_entry.texture.texture_handle->path) {
+              is_different = true;
+            }
+            // Check if atlas tile index is different
+            else if (!existing_atlas || existing_atlas->drawIndex != selected_tile_index) {
+              is_different = true;
+            }
+
+            // Only destroy and recreate if the tile is different
+            if (is_different) {
+              entity.destroy();
+              placed_tiles.erase(pos_key);
+            }
+            else {
+              // Tile is the same, no need to do anything
+              return;
+            }
+
             break;
           }
         }
       }
-
-      // Remove from tracking set (will be re-added below)
-      placed_tiles.erase(pos_key);
     }
 
-    Engine::ECS::Entity tile = Engine::ECS::create_entity()
-      .add_component<Components::Tile>()
-      .add_component<Components::Transform2D>(
-        grid_pos,
-        0.0f,
-        Math::Vec2D{ grid_snap, grid_snap }
-      )
-      .add_component<Components::Texture>(atlas_entry.texture)
-      .add_component<Components::TextureAtlas>(atlas_entry.atlas)
-      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
+    // Special do and undo for placing tile
+    // Use shared_ptr so both lambdas can access the same entity state
+    auto placed_tile_entity = std::make_shared<Engine::ECS::Entity>(Engine::ECS::INVALID_ENTITY);
+    std::string current_layer = selected_layer;
+
+    Engine::UndoManager::execute(
+      [placed_tile_entity, grid_pos, atlas_entry, current_layer, pos_key]() mutable {
+        *placed_tile_entity = Engine::ECS::create_entity()
+          .add_component<Components::Tile>()
+          .add_component<Components::Transform2D>(grid_pos, 0.0f,
+            Math::Vec2D{ grid_snap, grid_snap })
+          .add_component<Components::Texture>(atlas_entry.texture)
+          .add_component<Components::TextureAtlas>(atlas_entry.atlas)
+          .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
+
+        placed_tile_entity->get_component<Components::TextureAtlas>()->drawIndex = selected_tile_index;
+
+        placed_tile_entity->clear_layers();
+        placed_tile_entity->add_to_layer(current_layer);
+        placed_tiles_per_layer[current_layer].insert(pos_key);
+
+        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+      },
+      [placed_tile_entity, current_layer, pos_key]() mutable {
+        if (placed_tile_entity->is_valid()) {
+          placed_tile_entity->destroy();
+          placed_tiles_per_layer[current_layer].erase(pos_key);
+
+          Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+        }
+        else {
+          std::cout << "Warning: Attempted to undo tile placement but entity is invalid.\n";
+        }
+      }
+    );
 
 
-
-    // RYAN HOW
-    
-    //// Place tiles example
-    //Engine::ECS::Entity tile;
-    //auto place_tile_action = Engine::UndoManager::add(Action(
-    //  [tile]() {
-    //    tile = Engine::ECS::create_entity()
-    //      .add_component<Components::Tile>()
-    //      .add_component<Components::Transform2D>(
-    //        Math::Vec2D{ 5, 10 },
-    //        0.0f,
-    //        Math::Vec2D{ 32.0f, 32.0f }
-    //      )
-    //      .add_component<Components::Texture>(some_texture)
-    //      .add_component<Components::TextureAtlas>(some_atlas)
-    //      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
-    //  },
-    //  [tile]() {
-    //    Engine::ECS::destroy_entity(tile);
-    //  }
-    //));
-
-    //place_tile_action.do_action();
-
-    tile.get_component<Components::TextureAtlas>()->drawIndex = selected_tile_index;
-
-    // Assign to selected layer
-    tile.clear_layers();
-    tile.add_to_layer(selected_layer);
-
-    placed_tiles.insert(pos_key);
   }
 
   // Public interface
@@ -288,7 +350,10 @@ namespace TilemapPanel {
         color->a = 1.0f;
       }
     }
+
+
   }
+
 
   void draw_panel() {
     ImGui::Begin("Tilemap Editor");
@@ -505,6 +570,7 @@ namespace TilemapPanel {
           for (auto& entity : all_entities) {
             if (entity.has_components<Components::Tile>()) {
               entity.destroy();
+              Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
             }
           }
           placed_tiles_per_layer.clear();
@@ -563,154 +629,154 @@ namespace TilemapPanel {
 
     ImGui::Separator();
 
-    // === SAVE/LOAD ===
-    if (ImGui::CollapsingHeader("Save/Load"), ImGuiTreeNodeFlags_DefaultOpen) {
-      ImGui::Indent();
+    // // === SAVE/LOAD ===
+    // if (ImGui::CollapsingHeader("Save/Load"), ImGuiTreeNodeFlags_DefaultOpen) {
+    //   ImGui::Indent();
 
-      // Display current filename
-      ImGui::Text("Current file: %s", tilemap_filename);
-      ImGui::Spacing();
+    //   // Display current filename
+    //   ImGui::Text("Current file: %s", tilemap_filename);
+    //   ImGui::Spacing();
 
 
-      if (ImGui::Button("Save...")) {
-        show_save_as_popup = true;
-        ImGui::OpenPopup("Save Tilemap As");
-      }
+    //   if (ImGui::Button("Save...")) {
+    //     show_save_as_popup = true;
+    //     ImGui::OpenPopup("Save Tilemap As");
+    //   }
 
-      // Save As popup
-      if (ImGui::BeginPopupModal("Save Tilemap As", &show_save_as_popup, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::Text("Enter filename:");
-        ImGui::InputText("##filename", tilemap_filename, sizeof(tilemap_filename));
+    //   // Save As popup
+    //   if (ImGui::BeginPopupModal("Save Tilemap As", &show_save_as_popup, ImGuiWindowFlags_AlwaysAutoResize)) {
+    //     ImGui::Text("Enter filename:");
+    //     ImGui::InputText("##filename", tilemap_filename, sizeof(tilemap_filename));
 
-        ImGui::Spacing();
+    //     ImGui::Spacing();
 
-        if (ImGui::Button("Save", ImVec2(120, 0))) {
-          if (strlen(tilemap_filename) > 0) {
-            // Perform save
-            auto tilemap_entities = Engine::ECS::get_entities_with<Components::Tile>();
-            ReflectionLibrary::GenericValue prefab_array = ReflectionLibrary::Array{};
+    //     if (ImGui::Button("Save", ImVec2(120, 0))) {
+    //       if (strlen(tilemap_filename) > 0) {
+    //         // Perform save
+    //         auto tilemap_entities = Engine::ECS::get_entities_with<Components::Tile>();
+    //         ReflectionLibrary::GenericValue prefab_array = ReflectionLibrary::Array{};
 
-            for (auto& entity : tilemap_entities) {
-              Engine::ECS::Prefab prefab = Engine::ECS::entity_to_prefab(entity);
-              auto prefab_gen = Engine::ECS::prefab_to_generic_value(prefab);
-              prefab_array.getArray().push_back(prefab_gen);
-            }
+    //         for (auto& entity : tilemap_entities) {
+    //           Engine::ECS::Prefab prefab = Engine::ECS::entity_to_prefab(entity);
+    //           auto prefab_gen = Engine::ECS::prefab_to_generic_value(prefab);
+    //           prefab_array.getArray().push_back(prefab_gen);
+    //         }
 
-            auto prefab_array_json = ReflectionLibrary::generic_value_to_json(prefab_array, true);
+    //         auto prefab_array_json = ReflectionLibrary::generic_value_to_json(prefab_array, true);
 
-            // Ensure the Assets/tilemap directory exists and prepend path if needed
-            std::string filepath = tilemap_filename;
-            if (filepath.find("Assets/tilemap/") != 0) {
-              filepath = Engine::Path("Assets/tilemap").join(filepath);
-            }
-            Engine::FileIO::write_string_to_file(filepath, prefab_array_json);
+    //         // Ensure the Assets/tilemap directory exists and prepend path if needed
+    //         std::string filepath = tilemap_filename;
+    //         if (filepath.find("Assets/tilemap/") != 0) {
+    //           filepath = Engine::Path("Assets/tilemap").join(filepath);
+    //         }
+    //         Engine::FileIO::write_string_to_file(filepath, prefab_array_json);
 
-            show_save_as_popup = false;
-            ImGui::CloseCurrentPopup();
-          }
-        }
+    //         show_save_as_popup = false;
+    //         ImGui::CloseCurrentPopup();
+    //       }
+    //     }
 
-        ImGui::SameLine();
+    //     ImGui::SameLine();
 
-        if (ImGui::Button("Cancel", ImVec2(120, 0))) {
-          show_save_as_popup = false;
-          ImGui::CloseCurrentPopup();
-        }
+    //     if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+    //       show_save_as_popup = false;
+    //       ImGui::CloseCurrentPopup();
+    //     }
 
-        ImGui::EndPopup();
-      }
+    //     ImGui::EndPopup();
+    //   }
 
-      ImGui::SameLine();
+    //   ImGui::SameLine();
 
-      if (ImGui::Button("Load...")) {
-        show_load_popup = true;
-        ImGui::OpenPopup("Load Tilemap");
-      }
+    //   if (ImGui::Button("Load...")) {
+    //     show_load_popup = true;
+    //     ImGui::OpenPopup("Load Tilemap");
+    //   }
 
-      // Load popup
-      if (ImGui::BeginPopupModal("Load Tilemap", &show_load_popup, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::Text("Enter filename to load:");
-        ImGui::InputText("##loadfilename", tilemap_filename, sizeof(tilemap_filename));
+    //   // Load popup
+    //   if (ImGui::BeginPopupModal("Load Tilemap", &show_load_popup, ImGuiWindowFlags_AlwaysAutoResize)) {
+    //     ImGui::Text("Enter filename to load:");
+    //     ImGui::InputText("##loadfilename", tilemap_filename, sizeof(tilemap_filename));
 
-        ImGui::Spacing();
+    //     ImGui::Spacing();
 
-        if (ImGui::Button("Load", ImVec2(120, 0))) {
-          if (strlen(tilemap_filename) > 0) {
-            // Read from file - ensure Assets/tilemap/ prefix
-            std::string filepath = tilemap_filename;
-            if (filepath.find("Assets/tilemap/") != 0) {
-              filepath = Engine::Path("Assets/tilemap").join(filepath);
-            }
-            std::optional<std::string> prefab_array_json_opt = Engine::FileIO::read_string_from_file(filepath);
+    //     if (ImGui::Button("Load", ImVec2(120, 0))) {
+    //       if (strlen(tilemap_filename) > 0) {
+    //         // Read from file - ensure Assets/tilemap/ prefix
+    //         std::string filepath = tilemap_filename;
+    //         if (filepath.find("Assets/tilemap/") != 0) {
+    //           filepath = Engine::Path("Assets/tilemap").join(filepath);
+    //         }
+    //         std::optional<std::string> prefab_array_json_opt = Engine::FileIO::read_string_from_file(filepath);
 
-            if (prefab_array_json_opt.has_value()) {
-              std::string prefab_array_json = prefab_array_json_opt.value();
+    //         if (prefab_array_json_opt.has_value()) {
+    //           std::string prefab_array_json = prefab_array_json_opt.value();
 
-              // Parse json to GenericValue
-              std::optional<ReflectionLibrary::GenericValue> prefab_array_gen_opt = ReflectionLibrary::generic_value_from_json(prefab_array_json);
+    //           // Parse json to GenericValue
+    //           std::optional<ReflectionLibrary::GenericValue> prefab_array_gen_opt = ReflectionLibrary::generic_value_from_json(prefab_array_json);
 
-              if (!prefab_array_gen_opt.has_value()) {
-                // TODO: Show error message in popup
-                show_load_popup = false;
-                ImGui::CloseCurrentPopup();
-                ImGui::OpenPopup("Load Error");
-              }
-              else {
-                ReflectionLibrary::GenericValue prefab_array_gen = prefab_array_gen_opt.value();
+    //           if (!prefab_array_gen_opt.has_value()) {
+    //             // TODO: Show error message in popup
+    //             show_load_popup = false;
+    //             ImGui::CloseCurrentPopup();
+    //             ImGui::OpenPopup("Load Error");
+    //           }
+    //           else {
+    //             ReflectionLibrary::GenericValue prefab_array_gen = prefab_array_gen_opt.value();
 
-                // Clear existing tiles
-                auto all_entities = Engine::ECS::get_all_entities();
-                for (auto& entity : all_entities) {
-                  if (entity.has_components<Components::Tile>()) {
-                    entity.destroy();
-                  }
-                }
-                placed_tiles_per_layer.clear();
+    //             // Clear existing tiles
+    //             auto all_entities = Engine::ECS::get_all_entities();
+    //             for (auto& entity : all_entities) {
+    //               if (entity.has_components<Components::Tile>()) {
+    //                 entity.destroy();
+    //               }
+    //             }
+    //             placed_tiles_per_layer.clear();
 
-                // Deserialize each prefab and instantiate entity
-                const auto& prefab_array = prefab_array_gen.getArray();
-                for (const auto& prefab_gen : prefab_array) {
-                  Engine::ECS::Prefab prefab = Engine::ECS::prefab_from_generic_value(prefab_gen);
-                  Engine::ECS::instantiate_prefab(prefab);
-                }
+    //             // Deserialize each prefab and instantiate entity
+    //             const auto& prefab_array = prefab_array_gen.getArray();
+    //             for (const auto& prefab_gen : prefab_array) {
+    //               Engine::ECS::Prefab prefab = Engine::ECS::prefab_from_generic_value(prefab_gen);
+    //               Engine::ECS::instantiate_prefab(prefab);
+    //             }
 
-                show_load_popup = false;
-                ImGui::CloseCurrentPopup();
-              }
-            }
-            else {
-              // File doesn't exist or couldn't be read
-              show_load_popup = false;
-              ImGui::CloseCurrentPopup();
-            }
-          }
-        }
+    //             show_load_popup = false;
+    //             ImGui::CloseCurrentPopup();
+    //           }
+    //         }
+    //         else {
+    //           // File doesn't exist or couldn't be read
+    //           show_load_popup = false;
+    //           ImGui::CloseCurrentPopup();
+    //         }
+    //       }
+    //     }
 
-        ImGui::SameLine();
+    //     ImGui::SameLine();
 
-        if (ImGui::Button("Cancel", ImVec2(120, 0))) {
-          show_load_popup = false;
-          ImGui::CloseCurrentPopup();
-        }
+    //     if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+    //       show_load_popup = false;
+    //       ImGui::CloseCurrentPopup();
+    //     }
 
-        ImGui::EndPopup();
-      }
+    //     ImGui::EndPopup();
+    //   }
 
-      // Load Error popup
-      if (ImGui::BeginPopupModal("Load Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::Text("Failed to load tilemap!");
-        ImGui::Text("The file may be corrupted or invalid.");
-        ImGui::Spacing();
+    //   // Load Error popup
+    //   if (ImGui::BeginPopupModal("Load Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+    //     ImGui::Text("Failed to load tilemap!");
+    //     ImGui::Text("The file may be corrupted or invalid.");
+    //     ImGui::Spacing();
 
-        if (ImGui::Button("OK", ImVec2(120, 0))) {
-          ImGui::CloseCurrentPopup();
-        }
+    //     if (ImGui::Button("OK", ImVec2(120, 0))) {
+    //       ImGui::CloseCurrentPopup();
+    //     }
 
-        ImGui::EndPopup();
-      }
+    //     ImGui::EndPopup();
+    //   }
 
-      ImGui::Unindent();
-    }
+    //   ImGui::Unindent();
+    // }
 
     // === TILE SELECTION ===
     if (!loaded_tilemaps.empty()) {
@@ -850,65 +916,69 @@ namespace TilemapPanel {
   void draw_overlay() {
     // === DRAW GRID OVERLAY ===
     // Only draw grid when tilemap mode is enabled
-    if (enable_tilemap_mode) {
-      Math::Vec2D virtual_res = Engine::Graphics::get_virtual_resolution();
-      Engine::Graphics::Camera camera = Engine::Graphics::get_camera();
+    if (!enable_tilemap_mode) {
+      return;
+    }
 
-      float view_width = virtual_res.x / camera.zoom;
-      float view_height = virtual_res.y / camera.zoom;
+    // Get screen bounds in world space using the helper functions
+    auto virtual_res = Engine::Graphics::get_virtual_resolution();
 
-      float visible_left = camera.position.x;
-      float visible_right = camera.position.x + view_width;
-      float visible_top = camera.position.y;
-      float visible_bottom = camera.position.y + view_height;
+    // Convert the four corners of the screen from virtual to world space
+    Math::Vec2D top_left_world = Engine::Graphics::virtual_to_world(Math::Vec2D{ 0.0f, 0.0f });
+    Math::Vec2D bottom_right_world = Engine::Graphics::virtual_to_world(Math::Vec2D{ virtual_res.x, virtual_res.y });
 
-      float grid_size = grid_snap;
+    float left = top_left_world.x;
+    float right = bottom_right_world.x;
+    float top = top_left_world.y;
+    float bottom = bottom_right_world.y;
 
-      float start_x = std::floor((visible_left - grid_offset.x) / grid_size) * grid_size + grid_offset.x;
-      float start_y = std::floor((visible_top - grid_offset.y) / grid_size) * grid_size + grid_offset.y;
+    // Calculate grid line positions aligned to grid_offset
+    float start_x = std::floor((left - grid_offset.x) / grid_snap) * grid_snap + grid_offset.x;
+    float start_y = std::floor((top - grid_offset.y) / grid_snap) * grid_snap + grid_offset.y;
 
-      // Draw vertical lines
-      for (float x = start_x; x <= visible_right; x += grid_size) {
-        Engine::Graphics::draw_line(
-          Math::Vec2D{ x, visible_top },
-          Math::Vec2D{ x, visible_bottom },
-          1.0f,
-          Math::Vec4D{ 0.5f, 0.5f, 0.5f, 0.3f }
-        );
+    Math::Vec4D grid_color = Math::Vec4D{ 1.0f, 1.0f, 1.0f, 0.3f }; // White with transparency
+
+    // Draw vertical lines (loop from left until right)
+    for (float x = start_x; x <= right; x += grid_snap) {
+      Engine::Graphics::draw_line(
+        Math::Vec2D{ x, top },
+        Math::Vec2D{ x, bottom },
+        1.0f,
+        grid_color
+      );
+    }
+
+    // Draw horizontal lines (loop from top until bottom)
+    for (float y = start_y; y <= bottom; y += grid_snap) {
+      Engine::Graphics::draw_line(
+        Math::Vec2D{ left, y },
+        Math::Vec2D{ right, y },
+        1.0f,
+        grid_color
+      );
+    }
+
+    // Highlight hovered layer tiles
+    if ((painting_enabled || erasing_enabled)) {
+      auto world_pos_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+
+      if (!world_pos_opt.has_value()) {
+        return;
       }
 
-      // Draw horizontal lines
-      for (float y = start_y; y <= visible_bottom; y += grid_size) {
-        Engine::Graphics::draw_line(
-          Math::Vec2D{ visible_left, y },
-          Math::Vec2D{ visible_right, y },
-          1.0f,
-          Math::Vec4D{ 0.5f, 0.5f, 0.5f, 0.3f }
-        );
-      }
+      Math::Vec2D world_pos = world_pos_opt.value();
+      Math::Vec2D grid_pos = snap_to_grid(world_pos);
 
-      // Highlight current grid cell when painting 
-      if ((painting_enabled || erasing_enabled)) {
-        auto world_pos_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+      Math::Vec4D highlight_color = painting_enabled ?
+        Math::Vec4D{ 0.0f, 1.0f, 0.0f, 0.4f } :
+        Math::Vec4D{ 1.0f, 0.0f, 0.0f, 0.4f };
 
-        if (!world_pos_opt.has_value()) {
-          return;
-        }
-
-        Math::Vec2D world_pos = world_pos_opt.value();
-        Math::Vec2D grid_pos = snap_to_grid(world_pos);
-
-        Math::Vec4D highlight_color = painting_enabled ?
-          Math::Vec4D{ 0.0f, 1.0f, 0.0f, 0.4f } :
-          Math::Vec4D{ 1.0f, 0.0f, 0.0f, 0.4f };
-
-        Engine::Graphics::draw_rect(
-          grid_pos,
-          Math::Vec2D{ grid_size, grid_size },
-          0.0f,
-          highlight_color
-        );
-      }
+      Engine::Graphics::draw_rect(
+        grid_pos,
+        Math::Vec2D{ grid_snap, grid_snap },
+        0.0f,
+        highlight_color
+      );
     }
   }
 

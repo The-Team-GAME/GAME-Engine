@@ -24,9 +24,13 @@
 #include "FileIO/Settings.h"
 #include "Core.h"
 #include "SceneManager.h"
+#include "ProjectSaveManager.h"
+#include "Events/WindowEvents.h"
+#include "EventManager/EventManager.h"
 
 namespace {
   bool gui_enabled = true;
+  bool show_exit_confirmation = false;
 
   struct PanelInfo {
     std::string name;
@@ -70,6 +74,13 @@ namespace ImGuiManager {
 
     ImGui_ImplGlfw_InitForOpenGL(Engine::WindowManager::get_window(), true);
     ImGui_ImplOpenGL3_Init();
+
+    // Register event listener for window close requests
+    Engine::EventManager::add_event_listener<Engine::Events::WindowCloseRequestedEvent>(
+      [](const Engine::Events::WindowCloseRequestedEvent&) {
+        show_exit_confirmation = true;
+      }
+    );
   }
 
   void exit()
@@ -112,6 +123,13 @@ namespace ImGuiManager {
         // Add a menu bar
         if (ImGui::BeginMenuBar())
         {
+          if (ImGui::BeginMenu("File"))
+          {
+            if (ImGui::MenuItem("Save", "Ctrl+S")) {
+              Engine::ProjectSaveManager::save_all_dirty();
+            }
+            ImGui::EndMenu();
+          }
           if (ImGui::BeginMenu("ImGui"))
           {
             ImGui::MenuItem("Toggle GUI", "F1", &gui_enabled);
@@ -159,18 +177,18 @@ namespace ImGuiManager {
         ImGui::Dummy(ImVec2(0.0f, 2.0f)); // Top padding
 
         ImGui::Indent(8.0f); // Left padding
-        bool& is_paused = Engine::Core::is_paused();
+        bool is_paused = Engine::Time::get_paused();
 
 
         // Play/Pause toggle button
         if (is_paused) {
           if (ImGui::Button("Play", ImVec2(80, 0))) {
-            is_paused = false;
+            Engine::Time::set_paused(false);
           }
         }
         else {
           if (ImGui::Button("Pause", ImVec2(80, 0))) {
-            is_paused = true;
+            Engine::Time::set_paused(true);
           }
         }
 
@@ -181,7 +199,7 @@ namespace ImGuiManager {
           std::string current = Engine::SceneManager::get_current_scene_name();
           Engine::SceneManager::unload_current_scene();
           Engine::SceneManager::load_scene(current);
-          is_paused = true;
+          Engine::Time::set_paused(true);
         }
 
         ImGui::Unindent(8.0f); // Remove left padding
@@ -228,6 +246,88 @@ namespace ImGuiManager {
           panel.render_func();
         }
       }
+
+      // Show exit confirmation popup
+      if (show_exit_confirmation)
+      {
+        ImGui::OpenPopup("Exit Confirmation");
+        show_exit_confirmation = false; // Reset flag after opening
+      }
+
+      // Always place the popup at the center of the viewport
+      ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+      ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+      if (ImGui::BeginPopupModal("Exit Confirmation", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+      {
+        bool has_unsaved_changes = Engine::ProjectSaveManager::is_any_dirty();
+
+        if (has_unsaved_changes)
+        {
+          ImGui::Text("You have unsaved changes!");
+          ImGui::Spacing();
+          ImGui::Text("Do you want to save before exiting?");
+        }
+        else
+        {
+          ImGui::Text("Are you sure you want to exit?");
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        // Button layout
+        f32 button_width = 120.0f;
+        f32 total_width = has_unsaved_changes ? (button_width * 3 + ImGui::GetStyle().ItemSpacing.x * 2)
+          : (button_width * 2 + ImGui::GetStyle().ItemSpacing.x);
+        f32 window_width = ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x;
+        f32 offset = (window_width - total_width) * 0.5f;
+
+        if (offset > 0.0f)
+          ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
+
+        if (has_unsaved_changes)
+        {
+          // Save and Exit button
+          if (ImGui::Button("Save and Exit", ImVec2(button_width, 0)))
+          {
+            Engine::ProjectSaveManager::save_all_dirty();
+            Engine::Core::stop();
+            ImGui::CloseCurrentPopup();
+          }
+
+          ImGui::SameLine();
+
+          // Don't Save button
+          if (ImGui::Button("Don't Save", ImVec2(button_width, 0)))
+          {
+            Engine::Core::stop();
+            ImGui::CloseCurrentPopup();
+          }
+
+          ImGui::SameLine();
+        }
+        else
+        {
+          // Exit button
+          if (ImGui::Button("Exit", ImVec2(button_width, 0)))
+          {
+            Engine::Core::stop();
+            ImGui::CloseCurrentPopup();
+          }
+
+          ImGui::SameLine();
+        }
+
+        // Cancel button
+        if (ImGui::Button("Cancel", ImVec2(button_width, 0)))
+        {
+          ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+      }
     }
   }
 
@@ -256,6 +356,12 @@ namespace ImGuiManager {
 
   void update()
   {
+    // Save
+    if (Engine::Input::is_held(Engine::KeyCode::CtrlLeft) && Engine::Input::is_pressed(Engine::KeyCode::S))
+    {
+      Engine::ProjectSaveManager::save_all_dirty();
+    }
+
     // Toggle ImGui with F1 key
     if (Engine::Input::is_pressed(Engine::KeyCode::F1))
     {

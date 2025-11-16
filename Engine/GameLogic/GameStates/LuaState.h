@@ -26,8 +26,6 @@ private:
 
 public:
   void load() {
-    Engine::Resources::set_resource_path("Assets/");
-
     Engine::LuaManager::call_function("create_test");
   };
 

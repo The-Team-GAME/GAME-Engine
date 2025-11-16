@@ -14,9 +14,9 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-#include "PhysicsSystem.h"
-#include "CollisionSystem.h"
 #include "../Perf.h"
+#include "CollisionSystem.h"
+#include "PhysicsSystem.h"
 using namespace Engine;
 using namespace Systems;
 using phy2D = Physics2DSystem;
@@ -30,8 +30,9 @@ using col2D = Collision2DSystem;
 
 // eventually we'll deserialise these values from file bah
 namespace {
-  f32 walking_velocity = 200.f;
-  Vec2D jumping_force(0.f, -15000.f);
+
+  
+  Vec2D knockback_force{ -1000000.f, 50000.f };
 }
 phy2D::Physics2DSystem() {
   require_components<Components::Transform2D, Components::RigidBody>();
@@ -51,12 +52,13 @@ void phy2D::update()
   // collision check afterwards
 }
 
-void phy2D::update_entity(Engine::ECS::Entity& entity) {
+void phy2D::update_entity(ECS::Entity& entity) {
   Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
   Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
 
   rigid->on_ground = false;
   phy2D::update_kinematics(*rigid, *xform);
+  rigid->force.zero();
   //std::cout << "velocity: " << rigid->velocity << " || position: " << rigid->curr_pos << std::endl;
 }
 
@@ -68,7 +70,7 @@ void phy2D::update_kinematics(Components::RigidBody& rigid, Components::Transfor
   rigid.acceleration = rigid.force / rigid.mass + rigid.gravity_acc;
   // V = a x dt => Velocity equals acceleration x delta time
   // i increased friction for the x axis to test cuz we not sure if we want to do it like this
-  Vec2D prev_velocity = Vec2D(rigid.velocity.x * 0.85f, rigid.velocity.y * rigid.friction);
+  Vec2D prev_velocity = Vec2D(rigid.velocity.x * 0.80f, rigid.velocity.y * rigid.friction);
   rigid.velocity = prev_velocity + rigid.acceleration * Time::get_fixed_dt();
 
   // Checking terminal velocity here
@@ -104,16 +106,23 @@ void phy2D::zero_force(Components::RigidBody& rigid)
 
 void phy2D::walk_left(Components::RigidBody& rigid)
 {
-  rigid.velocity.x = -walking_velocity;
+  rigid.velocity.x = -200.f;
 }
 
 void phy2D::walk_right(Components::RigidBody& rigid)
 {
-  rigid.velocity.x = walking_velocity;
+  rigid.velocity.x = 200.f;
 }
 
 void phy2D::jump(Components::RigidBody& rigid)
 {
   rigid.on_ground = false;
-  phy2D::add_force(rigid, jumping_force);
+  phy2D::add_force(rigid, Vec2D(0.f, -3500000.f));
 }
+
+//void phy2D::knockback(ECS::Entity& victim, Vec2D force)
+//{
+//  Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+//  Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
+//  if (rigid.direction == LEFT)
+//}

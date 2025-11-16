@@ -55,7 +55,7 @@ namespace Engine {
     Where to call it:
     Call this once per frame in the main game loop.
     ==================================================================================*/
-    void update_title_with_fps();
+    void update_title();
 
     /* ===================== //
     // Accessors             //
@@ -70,5 +70,6 @@ namespace Engine {
     void framebuffer_resize_callback(GLFWwindow* window, s32 width, s32 height);
     void file_drop_callback(GLFWwindow* window, s32 count, const char** paths);
     void scroll_callback(GLFWwindow* window, f64 xoffset, f64 yoffset);
+    void window_close_callback(GLFWwindow* window);
   }
 }
