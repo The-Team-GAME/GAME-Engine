@@ -83,7 +83,6 @@ namespace Components
 
     // Tool palette
     GizmoMode mode = GizmoMode::GrabMove;
-    bool toolbar_open = false;
 
     Gizmo() = default;
     Gizmo(const Math::Vec4D& color, float thickness = 2.0f)

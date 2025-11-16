@@ -162,11 +162,11 @@ namespace Engine
         return std::sqrt(dx * dx + dy * dy);
       }
 
-      static inline float dot(const Math::Vec2D& a, const Math::Vec2D& b) { 
-        return a.x * b.x + a.y * b.y; 
+      static inline float dot(const Math::Vec2D& a, const Math::Vec2D& b) {
+        return a.x * b.x + a.y * b.y;
       }
       static inline Math::Vec2D mul_add(const Math::Vec2D& a, float k, const Math::Vec2D& b) {
-        return { a.x + k * b.x, a.y + k * b.y }; 
+        return { a.x + k * b.x, a.y + k * b.y };
       }
 
       void update_entity(Engine::ECS::Entity& entity) override {
@@ -219,7 +219,7 @@ namespace Engine
           br = { tr->position.x + hw, tr->position.y + hh };
           bl = { tr->position.x - hw, tr->position.y + hh };
         }
-        
+
         // Local axes from rotation
         const float ang = tr->rotation * 3.14159265358979323846f / 180.0f;
         const Math::Vec2D xdir{ std::cos(ang), std::sin(ang) };     // local +X
@@ -233,25 +233,24 @@ namespace Engine
         const Math::Vec2D bl_r = { rect_center.x + (-hw) * xdir.x + (hh)*ydir.x, rect_center.y + (-hw) * xdir.y + (hh)*ydir.y };
         const Math::Vec2D mid_top_w{ (tl_r.x + tr_r.x) * 0.5f, (tl_r.y + tr_r.y) * 0.5f };
         const Math::Vec2D mid_right_w{ (tr_r.x + br_r.x) * 0.5f, (tr_r.y + br_r.y) * 0.5f };
-        
+
         // Rotation ring geometry (ring always centered; knob along -ydir)
         const float ring_radius = 0.5f * std::max(rect_size.x, rect_size.y) + gizmo->rotate_ring_padding;
         const Math::Vec2D ring_center = rect_center;
         const Math::Vec2D knob_center = { ring_center.x - ydir.x * (ring_radius + gizmo->rotate_knob_offset),
                                           ring_center.y - ydir.y * (ring_radius + gizmo->rotate_knob_offset) };
-        
+
         // Decide which handles are enabled for the current tool mode
         const bool allow_scale = (gizmo->mode == Components::GizmoMode::Scale);
         const bool allow_axes = (gizmo->mode == Components::GizmoMode::ArrowMove);
         const bool allow_body = (gizmo->mode == Components::GizmoMode::GrabMove);
         const bool allow_rot = (gizmo->mode == Components::GizmoMode::Rotate);
 
-        if (!gizmo->toolbar_open && Input::is_pressed(KeyCode::MouseLeft)) {
+        if (Input::is_pressed(KeyCode::MouseLeft)) {
           // inside check via local-space AABB
           Math::Vec2D local = rot_deg(mouse, rect_center, -tr->rotation);
           bool inside = (local.x >= rect_center.x - hw) && (local.x <= rect_center.x + hw) &&
             (local.y >= rect_center.y - hh) && (local.y <= rect_center.y + hh);
-          if (inside && !ImGui::GetIO().WantCaptureMouse) gizmo->toolbar_open = true;
         }
 
         // ---------------- Hover picking ----------------
@@ -264,13 +263,13 @@ namespace Engine
           };
 
         if (allow_scale) {
-          if (over_corner(tl_r)) 
+          if (over_corner(tl_r))
             gizmo->hover_handle = Components::GizmoHandleType::ScaleTL;
-          else if (over_corner(tr_r)) 
+          else if (over_corner(tr_r))
             gizmo->hover_handle = Components::GizmoHandleType::ScaleTR;
-          else if (over_corner(br_r)) 
+          else if (over_corner(br_r))
             gizmo->hover_handle = Components::GizmoHandleType::ScaleBR;
-          else if (over_corner(bl_r)) 
+          else if (over_corner(bl_r))
             gizmo->hover_handle = Components::GizmoHandleType::ScaleBL;
         }
         if (gizmo->hover_handle == Components::GizmoHandleType::None && allow_axes) {
@@ -307,19 +306,19 @@ namespace Engine
             gizmo->start_scale = tr->scale;
             gizmo->start_rotation = tr->rotation;
             gizmo->drag_offset = { mouse.x - tr->position.x, mouse.y - tr->position.y };
-            
+
             switch (gizmo->active_handle) {
-            case Components::GizmoHandleType::ScaleTL: 
-              gizmo->scale_anchor = br_r;  
+            case Components::GizmoHandleType::ScaleTL:
+              gizmo->scale_anchor = br_r;
               break;
-            case Components::GizmoHandleType::ScaleTR: 
-              gizmo->scale_anchor = bl_r;  
+            case Components::GizmoHandleType::ScaleTR:
+              gizmo->scale_anchor = bl_r;
               break;
-            case Components::GizmoHandleType::ScaleBR: 
-              gizmo->scale_anchor = tl_r;  
+            case Components::GizmoHandleType::ScaleBR:
+              gizmo->scale_anchor = tl_r;
               break;
-            case Components::GizmoHandleType::ScaleBL: 
-              gizmo->scale_anchor = tr_r;  
+            case Components::GizmoHandleType::ScaleBL:
+              gizmo->scale_anchor = tr_r;
               break;
             case Components::GizmoHandleType::RotateHandle:
               gizmo->rotate_pivot = rect_center;
@@ -333,8 +332,6 @@ namespace Engine
               if (gizmo->text_start_size.x <= 0.f) gizmo->text_start_size.x = 1.f;
               if (gizmo->text_start_size.y <= 0.f) gizmo->text_start_size.y = 1.f;
             }
-
-            gizmo->toolbar_open = true;
           }
           else if (!ImGui::GetIO().WantCaptureMouse) {
             Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
@@ -357,10 +354,10 @@ namespace Engine
           break;
 
         case Components::GizmoHandleType::AxisX: {
-          if (!allow_axes) 
+          if (!allow_axes)
             break;
-          Math::Vec2D delta{ 
-            mouse.x - gizmo->start_mouse_world.x, mouse.y - gizmo->start_mouse_world.y 
+          Math::Vec2D delta{
+            mouse.x - gizmo->start_mouse_world.x, mouse.y - gizmo->start_mouse_world.y
           };
           float t = dot(delta, xdir);                      // project on local X
           tr->position = mul_add(gizmo->start_pos, t, xdir);
@@ -368,8 +365,8 @@ namespace Engine
 
         case Components::GizmoHandleType::AxisY: {
           if (!allow_axes) break;
-          Math::Vec2D delta{ 
-            mouse.x - gizmo->start_mouse_world.x, mouse.y - gizmo->start_mouse_world.y 
+          Math::Vec2D delta{
+            mouse.x - gizmo->start_mouse_world.x, mouse.y - gizmo->start_mouse_world.y
           };
           float t = dot(delta, ydir);                      // project on local Y
           tr->position = mul_add(gizmo->start_pos, t, ydir);
@@ -379,9 +376,9 @@ namespace Engine
           if (!allow_rot) break;
           float ang_now = std::atan2(mouse.y - gizmo->rotate_pivot.y, mouse.x - gizmo->rotate_pivot.x);
           float delta_deg = (ang_now - gizmo->start_angle_rad) * (180.0f / 3.14159265359f);
-          if (shift) { 
-            const float snap = 15.0f; 
-            delta_deg = std::round(delta_deg / snap) * snap; 
+          if (shift) {
+            const float snap = 15.0f;
+            delta_deg = std::round(delta_deg / snap) * snap;
           }
           tr->rotation = gizmo->start_rotation + delta_deg;
         } break;
@@ -389,7 +386,7 @@ namespace Engine
         case Components::GizmoHandleType::ScaleTL:
         case Components::GizmoHandleType::ScaleTR:
         case Components::GizmoHandleType::ScaleBR:
-        case Components::GizmoHandleType::ScaleBL: 
+        case Components::GizmoHandleType::ScaleBL:
         {
           if (!allow_scale) break;
           // local-space scale so the dragged corner follows mouse
@@ -417,8 +414,8 @@ namespace Engine
             Math::Vec2D desired{ std::max(4.0f, maxx - minx), std::max(4.0f, maxy - miny) };
             float sx = desired.x / gizmo->text_start_size.x;
             float sy = desired.y / gizmo->text_start_size.y;
-            if (shift) { 
-              float s = std::max(sx, sy); sx = sy = s; 
+            if (shift) {
+              float s = std::max(sx, sy); sx = sy = s;
             }
             tr->scale.x = gizmo->start_scale.x * sx;
             tr->scale.y = gizmo->start_scale.y * sy;
@@ -546,44 +543,39 @@ namespace Engine
         {
           Components::Gizmo* gizmo_nc = const_cast<Components::Gizmo*>(gizmo);
 
-          if (gizmo_nc->toolbar_open) {
-            bool open = gizmo_nc->toolbar_open; // local mutable copy for ImGui
 
-            ImGui::SetNextWindowBgAlpha(0.9f);
-            ImGui::SetNextWindowSize(ImVec2(160, 200), ImGuiCond_Once);
+          ImGui::SetNextWindowBgAlpha(0.9f);
+          ImGui::SetNextWindowSize(ImVec2(160, 200), ImGuiCond_Once);
 
-            if (ImGui::Begin("Gizmo Tools", &open,
-              ImGuiWindowFlags_NoSavedSettings |
-              ImGuiWindowFlags_AlwaysAutoResize))
-            {
-              int mode = static_cast<int>(gizmo_nc->mode);
+          if (ImGui::Begin("Gizmo Tools", nullptr,
+            ImGuiWindowFlags_NoSavedSettings |
+            ImGuiWindowFlags_AlwaysAutoResize))
+          {
+            int mode = static_cast<int>(gizmo_nc->mode);
 
-              ImGui::TextUnformatted("Select Tool");
-              ImGui::Separator();
+            ImGui::TextUnformatted("Select Tool");
+            ImGui::Separator();
 
-              if (ImGui::RadioButton("Grab / Move", mode == 0)) mode = 0;
-              if (ImGui::RadioButton("Arrows (X/Y)", mode == 1)) mode = 1;
-              
-              //Disable rotation for text
-              if (is_text) ImGui::BeginDisabled();
-              if (ImGui::RadioButton("Rotate", mode == 2)) mode = 2;
-              if (is_text) ImGui::EndDisabled();
+            if (ImGui::RadioButton("Grab / Move", mode == 0)) mode = 0;
+            if (ImGui::RadioButton("Arrows (X/Y)", mode == 1)) mode = 1;
 
-              if (ImGui::RadioButton("Scale", mode == 3)) mode = 3;
+            //Disable rotation for text
+            if (is_text) ImGui::BeginDisabled();
+            if (ImGui::RadioButton("Rotate", mode == 2)) mode = 2;
+            if (is_text) ImGui::EndDisabled();
 
-              ImGui::Separator();
+            if (ImGui::RadioButton("Scale", mode == 3)) mode = 3;
 
-              gizmo_nc->mode = static_cast<Components::GizmoMode>(mode);
-            }
-            ImGui::End();
+            ImGui::Separator();
 
-            // reflect close button / toggles
-            gizmo_nc->toolbar_open = open;
+            gizmo_nc->mode = static_cast<Components::GizmoMode>(mode);
           }
+          ImGui::End();
+
         }
 
       }
-  };
+    };
 
   } // namespace Systems
 } // namespace Engine
