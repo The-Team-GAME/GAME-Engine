@@ -23,6 +23,7 @@
 #include <iomanip>
 #include "InputManager.h"
 #include "ProjectSaveManager.h"
+#include "Level.h"
 
 namespace Engine {
   namespace WindowManager
@@ -139,7 +140,7 @@ namespace Engine {
 
         // Update window title
         std::ostringstream title_stream;
-        title_stream << (is_unsaved ? "[*] " : "") << base_title << " - FPS: " << std::fixed << std::setprecision(1) << display_fps;
+        title_stream << (is_unsaved ? "[*] " : "") << base_title << " - " << Engine::LevelManager::get_current_level_path() << " - FPS: " << std::fixed << std::setprecision(1) << display_fps;
         glfwSetWindowTitle(window, title_stream.str().c_str());
 
         update_timer = 0.0f;
