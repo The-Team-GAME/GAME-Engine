@@ -159,7 +159,7 @@ namespace Engine
 
   void Input::set_scroll_offset(f64 xoffset, f64 yoffset)
   {
-    std::cout << "Scroll Offset Callback: (" << xoffset << ", " << yoffset << ")\n";
+    //std::cout << "Scroll Offset Callback: (" << xoffset << ", " << yoffset << ")\n";
     scrollOffset = { static_cast<f32>(xoffset), static_cast<f32>(yoffset) };
   }
 

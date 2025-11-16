@@ -40,10 +40,11 @@ namespace Components
 
     bool is_static = false;  // If true, not affected by physics forces
     bool on_ground = false;
+    bool is_jumping = false;
 
     // Is the rigidbody facing left or right
     // This should be updated in the script
-    dir direction; 
+    dir direction; // not sure if its needed
 
     /*
     no use for these yet*/
@@ -53,7 +54,7 @@ namespace Components
 
 
     // Ctor using vectors
-    RigidBody(bool affected_by_forces, bool affected_by_gravity) : is_static(affected_by_forces)
+    RigidBody(bool not_affected_by_forces, bool affected_by_gravity) : is_static(not_affected_by_forces)
     {
       if (affected_by_gravity) // im setting the gravity acc value so i dont need to keep checking if an object is affected by gravity
       {

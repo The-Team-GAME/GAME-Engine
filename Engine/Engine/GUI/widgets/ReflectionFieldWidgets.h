@@ -72,6 +72,22 @@ namespace ImGuiWidgets {
 
   /*=================================================================================
   Function Brief:
+	Renders a 2D transform editor for Components::Transform2D fields.
+
+  Parameters:
+  field_value - Reference to the GenericValue containing font path and size data
+  modified    - [out] Set to true if the font was modified by user input
+
+  Returns:
+  true if the field was handled and rendered, false otherwise.
+
+  Where to call it:
+	From specialized field renderers for Transform2D components.
+  ==================================================================================*/
+  bool render_transform2d_field(ReflectionLibrary::GenericValue& field_value, bool& modified);
+
+  /*=================================================================================
+  Function Brief:
   Renders a texture atlas preview widget for Components::TextureAtlas fields.
   Only works when an entity is provided (requires Texture component).
 

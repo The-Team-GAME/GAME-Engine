@@ -29,6 +29,7 @@
 #include "../FileIO/Settings.h"
 #include "ViewportPanel.h"
 #include "../ProjectSaveManager.h"
+#include "../UndoManager/UndoManager.h"
 
 namespace TilemapPanel {
   // Internal state
@@ -179,9 +180,9 @@ namespace TilemapPanel {
     // Get the placed tiles set for the current layer
     auto& placed_tiles = placed_tiles_per_layer[selected_layer];
 
-    // If a tile already exists at this position on this layer, delete it first (overwrite behavior)
+    // If a tile already exists at this position on this layer, check if it's different before overwriting
     if (placed_tiles.find(pos_key) != placed_tiles.end()) {
-      // Find and destroy the existing tile entity 
+      // Find the existing tile entity
       for (auto& entity : Engine::ECS::get_entities_with<Components::Tile>()) {
         // TODO: This is very inefficient, implement hashing for Transform2D so we dont have to loop all entities 
         auto* transform = entity.get_component<Components::Transform2D>();
@@ -190,60 +191,72 @@ namespace TilemapPanel {
           std::string entity_key = get_position_key(entity_grid_pos);
 
           if (entity_key == pos_key) {
-            entity.destroy();
+            // Check if the tile is different from what we want to place
+            auto* existing_texture = entity.get_component<Components::Texture>();
+            auto* existing_atlas = entity.get_component<Components::TextureAtlas>();
+
+            bool is_different = false;
+
+            // Check if texture is different
+            if (!existing_texture ||
+              !existing_texture->texture_handle ||
+              !atlas_entry.texture.texture_handle ||
+              existing_texture->texture_handle->path != atlas_entry.texture.texture_handle->path) {
+              is_different = true;
+            }
+            // Check if atlas tile index is different
+            else if (!existing_atlas || existing_atlas->drawIndex != selected_tile_index) {
+              is_different = true;
+            }
+
+            // Only destroy and recreate if the tile is different
+            if (is_different) {
+              entity.destroy();
+              placed_tiles.erase(pos_key);
+            }
+            else {
+              // Tile is the same, no need to do anything
+              return;
+            }
+
             break;
           }
         }
       }
-
-      // Remove from tracking set (will be re-added below)
-      placed_tiles.erase(pos_key);
     }
 
-    Engine::ECS::Entity tile = Engine::ECS::create_entity()
-      .add_component<Components::Tile>()
-      .add_component<Components::Transform2D>(
-        grid_pos,
-        0.0f,
-        Math::Vec2D{ grid_snap, grid_snap }
-      )
-      .add_component<Components::Texture>(atlas_entry.texture)
-      .add_component<Components::TextureAtlas>(atlas_entry.atlas)
-      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
+    // Special do and undo for placing tile
+    // Use shared_ptr so both lambdas can access the same entity state
+    auto placed_tile_entity = std::make_shared<Engine::ECS::Entity>(Engine::ECS::INVALID_ENTITY);
 
+    Engine::UndoManager::execute(
+      [placed_tile_entity, grid_pos, atlas_entry, &placed_tiles, pos_key]() mutable {
+        *placed_tile_entity = Engine::ECS::create_entity()
+          .add_component<Components::Tile>()
+          .add_component<Components::Transform2D>(grid_pos, 0.0f,
+            Math::Vec2D{ grid_snap, grid_snap })
+          .add_component<Components::Texture>(atlas_entry.texture)
+          .add_component<Components::TextureAtlas>(atlas_entry.atlas)
+          .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
 
+        placed_tile_entity->get_component<Components::TextureAtlas>()->drawIndex = selected_tile_index;
 
-    // RYAN HOW
+        placed_tile_entity->clear_layers();
+        placed_tile_entity->add_to_layer(selected_layer);
+        placed_tiles.insert(pos_key);
 
-    //// Place tiles example
-    //Engine::ECS::Entity tile;
-    //auto place_tile_action = Engine::UndoManager::add(Action(
-    //  [tile]() {
-    //    tile = Engine::ECS::create_entity()
-    //      .add_component<Components::Tile>()
-    //      .add_component<Components::Transform2D>(
-    //        Math::Vec2D{ 5, 10 },
-    //        0.0f,
-    //        Math::Vec2D{ 32.0f, 32.0f }
-    //      )
-    //      .add_component<Components::Texture>(some_texture)
-    //      .add_component<Components::TextureAtlas>(some_atlas)
-    //      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
-    //  },
-    //  [tile]() {
-    //    Engine::ECS::destroy_entity(tile);
-    //  }
-    //));
+      },
+      [placed_tile_entity, &placed_tiles, pos_key]() mutable {
+        if (placed_tile_entity->is_valid()) {
+          placed_tile_entity->destroy();
+          placed_tiles.erase(pos_key);
+        }
+        else {
+          std::cout << "Warning: Attempted to undo tile placement but entity is invalid.\n";
+        }
+      }
+    );
 
-    //place_tile_action.do_action();
-
-    tile.get_component<Components::TextureAtlas>()->drawIndex = selected_tile_index;
-
-    // Assign to selected layer
-    tile.clear_layers();
-    tile.add_to_layer(selected_layer);
-
-    placed_tiles.insert(pos_key);
 
     // Mark level as dirty for saving later
     Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
@@ -291,7 +304,10 @@ namespace TilemapPanel {
         color->a = 1.0f;
       }
     }
+
+
   }
+
 
   void draw_panel() {
     ImGui::Begin("Tilemap Editor");
@@ -854,65 +870,69 @@ namespace TilemapPanel {
   void draw_overlay() {
     // === DRAW GRID OVERLAY ===
     // Only draw grid when tilemap mode is enabled
-    if (enable_tilemap_mode) {
-      Math::Vec2D virtual_res = Engine::Graphics::get_virtual_resolution();
-      Engine::Graphics::Camera camera = Engine::Graphics::get_camera();
+    if (!enable_tilemap_mode) {
+      return;
+    }
 
-      float view_width = virtual_res.x / camera.zoom;
-      float view_height = virtual_res.y / camera.zoom;
+    // Get screen bounds in world space using the helper functions
+    auto virtual_res = Engine::Graphics::get_virtual_resolution();
 
-      float visible_left = camera.position.x;
-      float visible_right = camera.position.x + view_width;
-      float visible_top = camera.position.y;
-      float visible_bottom = camera.position.y + view_height;
+    // Convert the four corners of the screen from virtual to world space
+    Math::Vec2D top_left_world = Engine::Graphics::virtual_to_world(Math::Vec2D{ 0.0f, 0.0f });
+    Math::Vec2D bottom_right_world = Engine::Graphics::virtual_to_world(Math::Vec2D{ virtual_res.x, virtual_res.y });
 
-      float grid_size = grid_snap;
+    float left = top_left_world.x;
+    float right = bottom_right_world.x;
+    float top = top_left_world.y;
+    float bottom = bottom_right_world.y;
 
-      float start_x = std::floor((visible_left - grid_offset.x) / grid_size) * grid_size + grid_offset.x;
-      float start_y = std::floor((visible_top - grid_offset.y) / grid_size) * grid_size + grid_offset.y;
+    // Calculate grid line positions aligned to grid_offset
+    float start_x = std::floor((left - grid_offset.x) / grid_snap) * grid_snap + grid_offset.x;
+    float start_y = std::floor((top - grid_offset.y) / grid_snap) * grid_snap + grid_offset.y;
 
-      // Draw vertical lines
-      for (float x = start_x; x <= visible_right; x += grid_size) {
-        Engine::Graphics::draw_line(
-          Math::Vec2D{ x, visible_top },
-          Math::Vec2D{ x, visible_bottom },
-          1.0f,
-          Math::Vec4D{ 0.5f, 0.5f, 0.5f, 0.3f }
-        );
+    Math::Vec4D grid_color = Math::Vec4D{ 1.0f, 1.0f, 1.0f, 0.3f }; // White with transparency
+
+    // Draw vertical lines (loop from left until right)
+    for (float x = start_x; x <= right; x += grid_snap) {
+      Engine::Graphics::draw_line(
+        Math::Vec2D{ x, top },
+        Math::Vec2D{ x, bottom },
+        1.0f,
+        grid_color
+      );
+    }
+
+    // Draw horizontal lines (loop from top until bottom)
+    for (float y = start_y; y <= bottom; y += grid_snap) {
+      Engine::Graphics::draw_line(
+        Math::Vec2D{ left, y },
+        Math::Vec2D{ right, y },
+        1.0f,
+        grid_color
+      );
+    }
+
+    // Highlight hovered layer tiles
+    if ((painting_enabled || erasing_enabled)) {
+      auto world_pos_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+
+      if (!world_pos_opt.has_value()) {
+        return;
       }
 
-      // Draw horizontal lines
-      for (float y = start_y; y <= visible_bottom; y += grid_size) {
-        Engine::Graphics::draw_line(
-          Math::Vec2D{ visible_left, y },
-          Math::Vec2D{ visible_right, y },
-          1.0f,
-          Math::Vec4D{ 0.5f, 0.5f, 0.5f, 0.3f }
-        );
-      }
+      Math::Vec2D world_pos = world_pos_opt.value();
+      Math::Vec2D grid_pos = snap_to_grid(world_pos);
 
-      // Highlight current grid cell when painting 
-      if ((painting_enabled || erasing_enabled)) {
-        auto world_pos_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+      Math::Vec4D highlight_color = painting_enabled ?
+        Math::Vec4D{ 0.0f, 1.0f, 0.0f, 0.4f } :
+        Math::Vec4D{ 1.0f, 0.0f, 0.0f, 0.4f };
 
-        if (!world_pos_opt.has_value()) {
-          return;
-        }
-
-        Math::Vec2D world_pos = world_pos_opt.value();
-        Math::Vec2D grid_pos = snap_to_grid(world_pos);
-
-        Math::Vec4D highlight_color = painting_enabled ?
-          Math::Vec4D{ 0.0f, 1.0f, 0.0f, 0.4f } :
-          Math::Vec4D{ 1.0f, 0.0f, 0.0f, 0.4f };
-
-        Engine::Graphics::draw_rect(
-          grid_pos,
-          Math::Vec2D{ grid_size, grid_size },
-          0.0f,
-          highlight_color
-        );
-      }
+      Engine::Graphics::draw_rect(
+        grid_pos,
+        Math::Vec2D{ grid_snap, grid_snap },
+        0.0f,
+        highlight_color
+      );
     }
   }
 

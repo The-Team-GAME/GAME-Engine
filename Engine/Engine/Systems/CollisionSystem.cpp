@@ -103,7 +103,7 @@ void col2D::update()
       ===============================*/
       // There should be no case where 2 static objects (walls collide)
       // If there is then ill cross the bridge when i come to it
-      if (box->resolve_collisions && !other_box->resolve_collisions)
+      if (!box->resolve_collisions && other_box->resolve_collisions)
       {
         Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
 
