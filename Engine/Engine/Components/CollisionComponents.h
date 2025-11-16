@@ -57,6 +57,29 @@ struct AABB {
   }
 };
 
+struct Polygon
+{
+  std::vector<Vec2D> vertices; // In local space (wrt to position)
+  Vec2D position;              // World position
+  f32 rotation;                // Rotation in radians
+
+  Polygon(Vec2D world_pos) : position(world_pos), rotation() {};
+
+  // Helper to create a box polygon
+  static Polygon create_box(Vec2D pos, f32 width, f32 height)
+  {
+    Polygon poly(pos);
+    f32 hw = width / 2;
+    f32 hh = height / 2;
+    poly.vertices = {
+        Vec2D(-hw, -hh),  // Bottom-left
+        Vec2D( hw, -hh),  // Bottom-right
+        Vec2D( hw,  hh),  // Top-right
+        Vec2D(-hw,  hh)   // Top-left
+    };
+    return poly;
+  }
+};
 namespace Components
 {
 

@@ -386,7 +386,7 @@ bool col2D::rect_rect_coll(Components::BoxCollider const& lhs, Components::BoxCo
 {
   return lhs.aabb.intersects(rhs.aabb);
 }
-
+#pragma region minkowski
 AABB col2D::minkowski_AABB(Components::BoxCollider const& dynamic_obj, Components::BoxCollider const& static_obj)
 {
   AABB minkowski;
@@ -428,3 +428,4 @@ Vec2D col2D::penetrationVector(AABB const& minkowski)
     return Vec2D((left < right) ? min.x : max.x, 0);
   }
 }
+#pragma endregion
