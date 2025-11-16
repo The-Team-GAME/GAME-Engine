@@ -26,7 +26,8 @@ namespace Components
     Body,
     ScaleTL, ScaleTR, ScaleBR, ScaleBL,
     AxisX, // move-only along +X/-X
-    AxisY  // move-only along +Y/-Y
+    AxisY,  // move-only along +Y/-Y
+    RotateHandle
   };
 
   enum class GizmoMode {
@@ -49,6 +50,11 @@ namespace Components
     Math::Vec2D start_pos;                     // original entity pos
     Math::Vec2D start_scale;                   // original entity scale
     Math::Vec2D scale_anchor;                  // world anchor point for scaling
+    float       start_rotation = 0.0f;
+
+    // Rotation cache
+    Math::Vec2D rotate_pivot{ 0.f, 0.f };      // rect center at press
+    float       start_angle_rad = 0.0f;        // angle(pivot->mouse) at press
 
     // Text scaling cache
     Math::Vec2D text_start_size{ 1.0f, 1.0f };
@@ -61,9 +67,6 @@ namespace Components
     Math::Vec4D handle_color = { 0.1f, 0.8f, 1.0f, 1.0f };
     Math::Vec4D handle_hover_color = { 1.0f, 0.9f, 0.1f, 1.0f };
 
-    // Axis drag damping
-    float axis_move_slow_factor = 0.25f;
-
     // Arrow visuals
     float arrow_length_factor = 0.6f;   // portion of rect edge
     float arrow_outside_extra = 18.0f;  // extra past the edge
@@ -73,6 +76,10 @@ namespace Components
     // Rotate visuals
     float rotate_handle_offset = 24.0f; // how far above the top edge
     float rotate_handle_radius = 8.0f;  // circle radius
+
+    float rotate_ring_padding = 10.0f;  // extra radius beyond half extents
+    float rotate_ring_thickness = 2.0f; // ring line thickness
+    float rotate_knob_offset = 8.0f;    // how far the knob sits above the ring
 
     // Tool palette
     GizmoMode mode = GizmoMode::GrabMove;
