@@ -198,64 +198,57 @@ namespace Engine
       }
 
       void update() override {
-        // Check if Ctrl is held
-        bool ctrl_held = Engine::Input::is_held(Engine::KeyCode::CtrlLeft) ||
-          Engine::Input::is_held(Engine::KeyCode::CtrlRight);
-
         // Get current mouse position
         glm::vec2 current_mouse_pos = Engine::Input::get_mouse_position();
 
         // Get scroll offset
         glm::vec2 scroll = Engine::Input::get_scroll_offset();
 
-        // Check if left mouse button is held
-        bool mouse_held = Engine::Input::is_held(Engine::KeyCode::MouseLeft);
+        // Check if middle mouse button is held
+        bool mouse_middle_held = Engine::Input::is_held(Engine::KeyCode::MouseMiddle);
 
-        // Start dragging
-        if (ctrl_held && Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
+        // Start dragging with middle mouse button
+        if (Engine::Input::is_pressed(Engine::KeyCode::MouseMiddle)) {
           is_dragging = true;
           last_mouse_pos = current_mouse_pos;
         }
 
         // Stop dragging
-        if (!mouse_held || !ctrl_held) {
+        if (!mouse_middle_held) {
           is_dragging = false;
         }
 
-        // Only process camera controls if Ctrl is held
-        if (ctrl_held) {
-          auto& camera = CameraSystem::get_camera();
+        auto& camera = CameraSystem::get_camera();
 
-          // Handle zoom with Ctrl + Scroll
-          if (scroll.y != 0.0f) {
-            // Unactivate all cameras to use the free camera
-            CameraSystem::unactivate_all_cameras();
+        // Handle zoom with scroll (no Ctrl required)
+        if (scroll.y != 0.0f) {
+          // Unactivate all cameras to use the free camera
+          CameraSystem::unactivate_all_cameras();
 
-            float zoom_speed = 0.1f;
-            float zoom_delta = scroll.y * zoom_speed;
-            camera.zoom += zoom_delta;
-            // Clamp zoom to reasonable values
-            camera.zoom = glm::clamp(camera.zoom, 0.1f, 10.0f);
-          }
-
-          // Perform camera drag
-          if (is_dragging && mouse_held) {
-            // Unactivate all cameras to use the free camera
-            CameraSystem::unactivate_all_cameras();
-
-            // Calculate mouse delta
-            glm::vec2 delta = current_mouse_pos - last_mouse_pos;
-            last_mouse_pos = current_mouse_pos;
-
-            // Move camera in opposite direction of mouse drag for intuitive feel
-            // Also account for camera zoom
-            camera.position.x -= delta.x / camera.zoom;
-            camera.position.y -= delta.y / camera.zoom;
-          }
-
-          // Update the camera in the graphics system
-          Engine::Graphics::set_camera(camera);
+          float zoom_speed = 0.1f;
+          float zoom_delta = scroll.y * zoom_speed;
+          camera.zoom += zoom_delta;
+          // Clamp zoom to reasonable values
+          camera.zoom = glm::clamp(camera.zoom, 0.1f, 10.0f);
         }
+
+        // Perform camera drag with middle mouse button
+        if (is_dragging && mouse_middle_held) {
+          // Unactivate all cameras to use the free camera
+          CameraSystem::unactivate_all_cameras();
+
+          // Calculate mouse delta
+          glm::vec2 delta = current_mouse_pos - last_mouse_pos;
+          last_mouse_pos = current_mouse_pos;
+
+          // Move camera in opposite direction of mouse drag for intuitive feel
+          // Also account for camera zoom
+          camera.position.x -= delta.x / camera.zoom;
+          camera.position.y -= delta.y / camera.zoom;
+        }
+
+        // Update the camera in the graphics system
+        Engine::Graphics::set_camera(camera);
       }
     };
 
