@@ -374,6 +374,35 @@ namespace Engine
       }
     };
 
+    class TileRenderSystem : public Engine::ECS::System {
+    public:
+      TileRenderSystem() {
+        require_components<Components::Tile, Components::Transform2D, Components::Color, Components::Texture, Components::TextureAtlas>();
+      }
+
+      void draw_entity(const Engine::ECS::Entity& entity) override {
+        auto* transform = entity.get_component<Components::Transform2D>();
+        auto* color = entity.get_component<Components::Color>();
+        auto* texture = entity.get_component<Components::Texture>();
+        auto* atlas = entity.get_component<Components::TextureAtlas>();
+
+        // Ensure drawIndex is within bounds
+        if (atlas->drawIndex >= 0 && atlas->drawIndex < atlas->subTextures.size()) {
+          const auto& subTexture = atlas->subTextures[atlas->drawIndex];
+
+          // Use tiled rendering for tiles
+          Engine::Graphics::draw_subtexture_tiled(
+            texture->texture_handle,
+            subTexture.tex_coords,
+            Math::Vec2D(transform->position.x, transform->position.y),
+            Math::Vec2D(transform->scale.x, transform->scale.y),
+            transform->rotation,
+            *color
+          );
+        }
+      }
+    };
+
 
   }; // namespace Systems
 } // namespace Engine

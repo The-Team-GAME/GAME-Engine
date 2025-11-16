@@ -1011,6 +1011,32 @@ namespace Engine {
       draw_quad(texture, position, size, rotation, color, tex_coords);
     }
 
+    void draw_subtexture_tiled(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords,
+      const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
+
+      // Calculate the size of one tile based on the subtexture coordinates
+      f32 tex_width = std::abs(tex_coords[1].x - tex_coords[0].x);
+      f32 tex_height = std::abs(tex_coords[0].y - tex_coords[2].y);
+
+      // Get the actual pixel size of the subtexture
+      f32 tile_width = tex_width * texture->width;
+      f32 tile_height = tex_height * texture->height;
+
+      // Calculate how many tiles we need in each direction
+      f32 num_tiles_x = size.x / tile_width;
+      f32 num_tiles_y = size.y / tile_height;
+
+      // Calculate tiled texture coordinates by scaling the UV range
+      std::array<Math::Vec2D, 4> tiled_coords = {
+        Math::Vec2D(tex_coords[0].x, tex_coords[0].y + tex_height * num_tiles_y),  // Bottom-left
+        Math::Vec2D(tex_coords[0].x + tex_width * num_tiles_x, tex_coords[0].y + tex_height * num_tiles_y),  // Bottom-right
+        Math::Vec2D(tex_coords[0].x + tex_width * num_tiles_x, tex_coords[0].y),  // Top-right
+        Math::Vec2D(tex_coords[0].x, tex_coords[0].y)   // Top-left
+      };
+
+      draw_quad(texture, position, size, rotation, color, tiled_coords);
+    }
+
     void draw_text(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color) {
       if (!font || font->texture_atlas.id == 0) {
         Log::warning("Attempted to draw text with invalid font");
@@ -1512,6 +1538,32 @@ namespace Engine {
     void draw_subtexture_ui(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords,
       const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
       draw_ui_quad(texture, position, size, rotation, color, tex_coords);
+    }
+
+    void draw_subtexture_tiled_ui(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords,
+      const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
+
+      // Calculate the size of one tile based on the subtexture coordinates
+      f32 tex_width = std::abs(tex_coords[1].x - tex_coords[0].x);
+      f32 tex_height = std::abs(tex_coords[0].y - tex_coords[2].y);
+
+      // Get the actual pixel size of the subtexture
+      f32 tile_width = tex_width * texture->width;
+      f32 tile_height = tex_height * texture->height;
+
+      // Calculate how many tiles we need in each direction
+      f32 num_tiles_x = size.x / tile_width;
+      f32 num_tiles_y = size.y / tile_height;
+
+      // Calculate tiled texture coordinates by scaling the UV range
+      std::array<Math::Vec2D, 4> tiled_coords = {
+        Math::Vec2D(tex_coords[0].x, tex_coords[0].y + tex_height * num_tiles_y),  // Bottom-left
+        Math::Vec2D(tex_coords[0].x + tex_width * num_tiles_x, tex_coords[0].y + tex_height * num_tiles_y),  // Bottom-right
+        Math::Vec2D(tex_coords[0].x + tex_width * num_tiles_x, tex_coords[0].y),  // Top-right
+        Math::Vec2D(tex_coords[0].x, tex_coords[0].y)   // Top-left
+      };
+
+      draw_ui_quad(texture, position, size, rotation, color, tiled_coords);
     }
 
     void draw_text_ui(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color) {
