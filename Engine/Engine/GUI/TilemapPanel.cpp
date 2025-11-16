@@ -374,11 +374,9 @@ namespace TilemapPanel {
         }
         else if (active_tool == ToolMode::BoxFill) {
           // TODO: Implement box fill tool
-          place_tile_at_position(world_pos); // For now, acts like paintbrush
         }
         else if (active_tool == ToolMode::Picker) {
           // TODO: Implement picker tool (pick tile under cursor)
-          // For now, do nothing
         }
         else if (active_tool == ToolMode::Eraser) {
           Math::Vec2D grid_pos = snap_to_grid(world_pos);
