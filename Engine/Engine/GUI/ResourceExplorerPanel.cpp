@@ -18,6 +18,7 @@
 #include "../Resources.h"
 #include "../Path.h"
 #include "../Logger.h"
+#include "../FileIO/LevelFileIO.h"
 #include <filesystem>
 #include <vector>
 #include <string>
@@ -192,6 +193,12 @@ void ResourceExplorerPanel() {
 
   ImGui::SameLine();
 
+  if (ImGui::Button("New File")) {
+    ImGui::OpenPopup("CreateFile");
+  }
+
+  ImGui::SameLine();
+
   if (ImGui::Button("Refresh")) {
     // Just triggers a re-read on next frame
   }
@@ -218,6 +225,59 @@ void ResourceExplorerPanel() {
       }
       catch (const std::filesystem::filesystem_error& e) {
         Log::error("Failed to create folder: " + std::string(e.what()));
+      }
+
+      ImGui::CloseCurrentPopup();
+    }
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+      ImGui::CloseCurrentPopup();
+    }
+
+    ImGui::EndPopup();
+  }
+
+  // Create file popup
+  static char new_file_name[128] = "NewFile";
+  static int selected_file_type = 0; // 0 = Level
+  if (ImGui::BeginPopupModal("CreateFile", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+    ImGui::Text("Create new file in current directory");
+
+    ImGui::Separator();
+    ImGui::Text("File Type:");
+    ImGui::RadioButton("Level (.json)", &selected_file_type, 0);
+    // Add more file types here in the future
+
+    ImGui::Separator();
+    ImGui::InputText("File Name", new_file_name, sizeof(new_file_name));
+
+    if (ImGui::Button("Create", ImVec2(120, 0))) {
+      std::string filename = std::string(new_file_name);
+
+      // Handle different file types
+      if (selected_file_type == 0) { // Level
+        // Add .json extension if not present
+        if (Engine::Path(filename).get_extension() != ".json") {
+          filename += ".json";
+        }
+
+        std::string file_path = current_directory.empty() ?
+          filename :
+          Engine::Path(current_directory).join(filename).to_string();
+
+        std::string full_path = Engine::Path(Engine::Resources::resource_path).join(file_path).to_string();
+
+        // Create an empty level
+        Engine::Level empty_level;
+
+        if (Engine::FileIO::serialize_level_to_json_file(full_path, empty_level)) {
+          Log::info("Created level: " + file_path);
+        }
+        else {
+          Log::error("Failed to create level: " + file_path);
+        }
       }
 
       ImGui::CloseCurrentPopup();

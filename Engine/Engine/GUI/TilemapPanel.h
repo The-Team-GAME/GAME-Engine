@@ -153,4 +153,6 @@ namespace TilemapPanel {
   Called internally during update() when painting or erasing mode is enabled.
   ==================================================================================*/
   void darken_non_selected_layer_tiles();
+
+  bool is_tilemap_mode_enabled();
 }
