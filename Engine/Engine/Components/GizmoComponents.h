@@ -20,12 +20,69 @@
 
 namespace Components
 {
+
+  enum class GizmoHandleType {
+    None,
+    Body,
+    ScaleTL, ScaleTR, ScaleBR, ScaleBL,
+    AxisX, // move-only along +X/-X
+    AxisY,  // move-only along +Y/-Y
+    RotateHandle
+  };
+
+  enum class GizmoMode {
+    GrabMove = 0,       // free move
+    ArrowMove = 1,      // axis-only move
+    Rotate = 2,         // rotation with top circle handle
+    Scale = 3           // scaling
+  };
+
   struct Gizmo
   {
+    // Interaction state
     bool is_dragging = false;
-    Math::Vec2D drag_offset; // Offset from entity position to mouse click position
+    GizmoHandleType active_handle = GizmoHandleType::None;
+    GizmoHandleType hover_handle = GizmoHandleType::None;
+
+    // Cached on press
+    Math::Vec2D drag_offset;                   // Offset from entity position to mouse click position
+    Math::Vec2D start_mouse_world;             // pressed mouse position
+    Math::Vec2D start_pos;                     // original entity pos
+    Math::Vec2D start_scale;                   // original entity scale
+    Math::Vec2D scale_anchor;                  // world anchor point for scaling
+    float       start_rotation = 0.0f;
+
+    // Rotation cache
+    Math::Vec2D rotate_pivot{ 0.f, 0.f };      // rect center at press
+    float       start_angle_rad = 0.0f;        // angle(pivot->mouse) at press
+
+    // Text scaling cache
+    Math::Vec2D text_start_size{ 1.0f, 1.0f };
+
     Math::Vec4D outline_color = { 0.0f, 1.0f, 0.0f, 1.0f }; // Green outline by default
     float outline_thickness = 2.0f;
+
+    // Handle visuals/geometry (world units)
+    float handle_size = 10.0f;                 // square size of corner/axis handles
+    Math::Vec4D handle_color = { 0.1f, 0.8f, 1.0f, 1.0f };
+    Math::Vec4D handle_hover_color = { 1.0f, 0.9f, 0.1f, 1.0f };
+
+    // Arrow visuals
+    float arrow_length_factor = 0.6f;   // portion of rect edge
+    float arrow_outside_extra = 18.0f;  // extra past the edge
+    float arrow_head_size = 12.0f;      // head length
+    float arrow_thickness = 3.0f;       // shaft thickness
+
+    // Rotate visuals
+    float rotate_handle_offset = 24.0f; // how far above the top edge
+    float rotate_handle_radius = 8.0f;  // circle radius
+
+    float rotate_ring_padding = 10.0f;  // extra radius beyond half extents
+    float rotate_ring_thickness = 2.0f; // ring line thickness
+    float rotate_knob_offset = 8.0f;    // how far the knob sits above the ring
+
+    // Tool palette
+    GizmoMode mode = GizmoMode::GrabMove;
 
     Gizmo() = default;
     Gizmo(const Math::Vec4D& color, float thickness = 2.0f)
