@@ -87,6 +87,9 @@ namespace Engine {
 
       // Set up scroll callback
       glfwSetScrollCallback(window, scroll_callback);
+
+      // Set up window close callback
+      glfwSetWindowCloseCallback(window, window_close_callback);
     }
 
     void exit()
@@ -171,6 +174,15 @@ namespace Engine {
     void scroll_callback([[maybe_unused]] GLFWwindow* win, f64 xoffset, f64 yoffset)
     {
       Engine::Input::set_scroll_offset(xoffset, yoffset);
+    }
+
+    void window_close_callback(GLFWwindow* win)
+    {
+      // Cancel the close - we'll handle it through ImGui popup
+      glfwSetWindowShouldClose(win, GLFW_FALSE);
+
+      // Set flag to show the exit confirmation popup
+      Engine::EventManager::send_event<Engine::Events::WindowCloseRequestedEvent>();
     }
   }
 }
