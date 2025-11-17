@@ -17,6 +17,7 @@
 #include "ProjectSaveManager.h"
 #include "Level.h"
 #include <algorithm>
+#include "FileIO/Settings.h"
 
 namespace TilemapManager {
   namespace {
@@ -105,8 +106,13 @@ namespace TilemapManager {
 
   void rebuild_tilemap_for_layer(const std::string& layer_name,
     const std::vector<Components::AtlasEntry>& loaded_tilemaps) {
-    // The rendering is now handled by TilemapRenderSystem using the IntegerMap directly
-    // This function is kept for compatibility but doesn't need to create individual tile entities anymore
+    // Destroy all existing tile entities on this layer
+    auto all_entities = Engine::ECS::get_all_entities();
+    for (auto& entity : all_entities) {
+      if (entity.has_component<Components::Tile>() && entity.is_on_layer(layer_name)) {
+        entity.destroy();
+      }
+    }
 
     // Get the tilemap entity for this layer
     auto it = tilemap_entities_per_layer.find(layer_name);
@@ -115,16 +121,114 @@ namespace TilemapManager {
     }
 
     auto* int_map = it->second.get_component<Components::IntegerMap>();
-    if (!int_map) {
+    if (!int_map || int_map->is_empty()) {
       return;
     }
 
     // Update the tile size and grid offset to match current settings
     int_map->tile_size = { grid_snap, grid_snap };
     int_map->grid_offset = grid_offset;
-  }
 
-  void place_tile(const Math::Vec2D& world_pos, const std::string& layer_name,
+    // Get atlas info
+    if (int_map->atlas_index < 0 || int_map->atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
+      return;
+    }
+
+    const Components::AtlasEntry& atlas_entry = loaded_tilemaps[int_map->atlas_index];
+
+    // Find all rectangles using greedy algorithm
+    int height = int_map->get_height();
+    int width = int_map->get_width();
+
+    if (width == 0 || height == 0) {
+      return;
+    }
+
+    // Helper struct for rectangle merging
+    struct Rectangle {
+      int x, y, width, height;
+      int tile_index;
+    };
+
+    // Track processed tiles
+    std::vector<std::vector<bool>> processed(height, std::vector<bool>(width, false));
+    std::vector<Rectangle> rectangles;
+
+    // Find all rectangles using greedy algorithm
+    for (int y = 0; y < height; ++y) {
+      int row_width = static_cast<int>(int_map->tiles[y].size());
+      for (int x = 0; x < row_width && x < width; ++x) {
+        if (processed[y][x]) continue;
+
+        int tile_index = int_map->get_tile(x, y);
+        if (tile_index < 0) {
+          processed[y][x] = true;
+          continue;
+        }
+
+        // Find maximum width at this row
+        int max_width = 0;
+        for (int w = x; w < row_width && w < width; ++w) {
+          if (processed[y][w] || int_map->get_tile(w, y) != tile_index) {
+            break;
+          }
+          max_width++;
+        }
+
+        if (max_width == 0) {
+          processed[y][x] = true;
+          continue;
+        }
+
+        // Expand downward while maintaining the width
+        int rect_height = 1;
+        for (int h = y + 1; h < height; ++h) {
+          bool can_expand = true;
+          int next_row_width = static_cast<int>(int_map->tiles[h].size());
+          for (int w = x; w < x + max_width; ++w) {
+            if (w >= next_row_width || processed[h][w] || int_map->get_tile(w, h) != tile_index) {
+              can_expand = false;
+              break;
+            }
+          }
+          if (!can_expand) break;
+          rect_height++;
+        }
+
+        // Mark all tiles in this rectangle as processed
+        for (int h = y; h < y + rect_height; ++h) {
+          for (int w = x; w < x + max_width; ++w) {
+            processed[h][w] = true;
+          }
+        }
+
+        rectangles.push_back({ x, y, max_width, rect_height, tile_index });
+      }
+    }
+
+    // Create collision entities for each rectangle
+    for (const Rectangle& rect : rectangles) {
+      // Calculate the world position for the center of the rectangle
+      float center_x = grid_offset.x + rect.x * grid_snap + (rect.width * grid_snap) * 0.5f;
+      float center_y = grid_offset.y + rect.y * grid_snap + (rect.height * grid_snap) * 0.5f;
+      Math::Vec2D center_world = { center_x, center_y };
+      Math::Vec2D scale = { rect.width * grid_snap, rect.height * grid_snap };
+
+      // Create entity with collision components and rendering components
+      auto entity = Engine::ECS::create_entity()
+        .add_component<Components::Tile>()
+        .add_component<Components::Transform2D>(center_world, 0.0f, scale)
+        .add_component<Components::RigidBody>(true, false) // is_static = true, no gravity
+        .add_component<Components::BoxCollider>(scale.x, scale.y, true) // resolve_collisions = true
+        .add_component<Components::Texture>(atlas_entry.texture)
+        .add_component<Components::TextureAtlas>(atlas_entry.atlas)
+        .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
+
+      entity.get_component<Components::TextureAtlas>()->drawIndex = rect.tile_index;
+      entity.clear_layers();
+      entity.add_to_layer(layer_name);
+    }
+  }  void place_tile(const Math::Vec2D& world_pos, const std::string& layer_name,
     int atlas_index, int tile_index,
     const std::vector<Components::AtlasEntry>& loaded_tilemaps) {
     int grid_x, grid_y;
@@ -153,6 +257,9 @@ namespace TilemapManager {
     int_map->tile_size = { grid_snap, grid_snap };
     int_map->grid_offset = grid_offset;
 
+    // Rebuild the tilemap to create collision entities
+    rebuild_tilemap_for_layer(layer_name, loaded_tilemaps);
+
     // Mark level as dirty
     Engine::ProjectSaveManager::set_dirty(
       Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path())
@@ -178,6 +285,10 @@ namespace TilemapManager {
     // Delete the tile
     int_map->set_tile(grid_x, grid_y, -1);
 
+    // We need to pass loaded_tilemaps to rebuild, get it from project settings
+    const auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get();
+    rebuild_tilemap_for_layer(layer_name, project_settings.loaded_tilemaps);
+
     // Mark level as dirty
     Engine::ProjectSaveManager::set_dirty(
       Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path())
@@ -185,7 +296,7 @@ namespace TilemapManager {
   }
 
   void update_all_tile_dimensions(const std::vector<Components::AtlasEntry>& loaded_tilemaps) {
-    // Update tile size and grid offset in all tilemap entities
+    // Update tile size and grid offset in all tilemap entities and rebuild collision entities
     for (auto& [layer_name, entity] : tilemap_entities_per_layer) {
       if (entity.is_valid()) {
         auto* int_map = entity.get_component<Components::IntegerMap>();
@@ -193,6 +304,7 @@ namespace TilemapManager {
           int_map->tile_size = { grid_snap, grid_snap };
           int_map->grid_offset = grid_offset;
         }
+        rebuild_tilemap_for_layer(layer_name, loaded_tilemaps);
       }
     }
   }

@@ -44,7 +44,6 @@ void register_engine_systems()
   // Draw systems
   Engine::ECS::add_system<Engine::Systems::StaticSpriteRenderSystem>();
   Engine::ECS::add_system<Engine::Systems::AtlasSpriteRenderSystem>();
-  Engine::ECS::add_system<Engine::Systems::TilemapRenderSystem>();
   Engine::ECS::add_system<Engine::Systems::TileRenderSystem>();
   Engine::ECS::add_system<Engine::Systems::TextRenderSystem>();
   Engine::ECS::add_system<Engine::Systems::DistortionAtlasSpriteRenderSystem>();
@@ -62,7 +61,6 @@ void unregister_engine_systems()
   Engine::ECS::remove_system<Engine::Systems::DistortionAtlasSpriteRenderSystem>();
   Engine::ECS::remove_system<Engine::Systems::TextRenderSystem>();
   Engine::ECS::remove_system<Engine::Systems::TileRenderSystem>();
-  Engine::ECS::remove_system<Engine::Systems::TilemapRenderSystem>();
   Engine::ECS::remove_system<Engine::Systems::AtlasSpriteRenderSystem>();
   Engine::ECS::remove_system<Engine::Systems::StaticSpriteRenderSystem>();
 
