@@ -127,6 +127,36 @@ namespace TilemapPanel {
     TilemapManager::update_all_tile_dimensions(loaded_tilemaps);
   }
 
+  void pick_tile_at_position(const Math::Vec2D& world_pos) {
+    int grid_x, grid_y;
+    TilemapManager::world_to_grid(world_pos, grid_x, grid_y);
+
+    // Get the tile at this position on the selected layer
+    int tile_index = TilemapManager::get_tile_at(selected_layer, grid_x, grid_y);
+    if (tile_index < 0) {
+      return; // No tile at this position
+    }
+
+    // Get the tilemap entity for this layer to find the atlas index
+    auto tilemap_entity = TilemapManager::get_or_create_tilemap_entity(selected_layer, 0);
+    auto* int_map = tilemap_entity.get_component<Components::IntegerMap>();
+    if (!int_map || int_map->atlas_index < 0) {
+      return; // No valid atlas
+    }
+
+    // Verify the atlas index is valid
+    if (int_map->atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
+      return;
+    }
+
+    // Set the selected atlas and tile
+    selected_atlas_index = int_map->atlas_index;
+    selected_tile_index = tile_index;
+
+    // Switch back to Paintbrush tool after picking
+    current_tool = ToolMode::Paintbrush;
+  }
+
   void fill_box_with_tiles(const Math::Vec2D& start_pos, const Math::Vec2D& end_pos) {
     // Check if we have a valid atlas selected
     if (selected_atlas_index < 0 || selected_atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
@@ -161,7 +191,7 @@ namespace TilemapPanel {
     for (int y = start_grid_y; y <= end_grid_y; ++y) {
       for (int x = start_grid_x; x <= end_grid_x; ++x) {
         int old_tile = TilemapManager::get_tile_at(selected_layer, x, y);
-        old_tiles.push_back({x, y, old_tile});
+        old_tiles.push_back({ x, y, old_tile });
       }
     }
 
@@ -341,7 +371,7 @@ namespace TilemapPanel {
           }
         }
         else if (active_tool == ToolMode::Picker) {
-          // TODO: Implement picker tool (pick tile under cursor)
+          pick_tile_at_position(world_pos);
         }
         else if (active_tool == ToolMode::Eraser) {
           delete_tile_at_position(world_pos);
