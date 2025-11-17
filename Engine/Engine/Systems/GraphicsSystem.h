@@ -382,6 +382,7 @@ namespace Engine
       }
 
       void draw_entity(const Engine::ECS::Entity& entity) override {
+        auto* tile = entity.get_component<Components::Tile>();
         auto* transform = entity.get_component<Components::Transform2D>();
         auto* color = entity.get_component<Components::Color>();
         auto* texture = entity.get_component<Components::Texture>();
@@ -397,6 +398,7 @@ namespace Engine
             subTexture.tex_coords,
             Math::Vec2D(transform->position.x, transform->position.y),
             Math::Vec2D(transform->scale.x, transform->scale.y),
+            tile->size,
             transform->rotation,
             *color
           );

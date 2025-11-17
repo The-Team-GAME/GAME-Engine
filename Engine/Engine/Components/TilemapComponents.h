@@ -20,7 +20,9 @@
 #include <string>
 
 namespace Components {
-  struct Tile {};
+  struct Tile {
+    Math::Vec2D size = { 64.0f, 64.0f };
+  };
 
   // Only used in TilemapPanel and ProjectSettings for saving/loading tilemaps
   struct AtlasEntry {
@@ -55,6 +57,6 @@ namespace Components {
   };
 }
 
-REGISTER_COMPONENT(Components::Tile);
-REGISTER_COMPONENT(Components::AtlasEntry, texture, atlas);
-REFLECT_FIELDS(Components::IntegerMap, tiles, grid_size, atlas_index);
+// REGISTER_COMPONENT(Components::Tile, size);
+// REGISTER_COMPONENT(Components::AtlasEntry, texture, atlas);
+REGISTER_COMPONENT(Components::IntegerMap, tiles, grid_size, atlas_index);
