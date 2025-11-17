@@ -137,6 +137,20 @@ namespace Engine {
     // Draw a tiled subtexture that repeats instead of scaling
     void draw_subtexture_tiled(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& position, const Math::Vec2D& size, const Math::Vec2D& tile_size, f32 rotation, const Math::Vec4D& color);
 
+    // Draw tilemap from integer map with automatic rectangle merging for optimization
+    // integerMap: 2D array of tile indices (row-major order)
+    // atlas: Texture atlas containing all tile sprites
+    // texture: The texture handle for the atlas
+    // tileSize: Size of each tile in world units
+    // gridOffset: World position offset for the tilemap origin
+    // color: Tint color to apply to all tiles
+    void draw_tilemap(const std::vector<std::vector<int>>& integerMap,
+      const std::vector<Engine::Graphics::SubTexture>& atlas,
+      Engine::Graphics::Texture texture,
+      const Math::Vec2D& tileSize,
+      const Math::Vec2D& gridOffset,
+      const Math::Vec4D& color);
+
     // Draw texture with distortion effect
     void draw_texture_distortion(Engine::Graphics::Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, f32 intensity, f32 speed, f32 mesh_intensity = 0.0f);
 

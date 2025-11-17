@@ -26,78 +26,11 @@ namespace TilemapManager {
 
     // Tilemap entity per layer (stores IntegerMap component)
     std::unordered_map<std::string, Engine::ECS::Entity> tilemap_entities_per_layer;
-
-    // Track placed tiles to prevent duplicates (per layer)
-    std::unordered_map<std::string, std::unordered_set<std::string>> placed_tiles_per_layer;
-
-    // Helper struct for rectangle merging
-    struct Rectangle {
-      int x, y, width, height;
-      int tile_index;
-    };
-
-    // Helper to get position key
-    std::string get_position_key(const Math::Vec2D& pos) {
-      int grid_x = static_cast<int>(std::floor(pos.x / grid_snap));
-      int grid_y = static_cast<int>(std::floor(pos.y / grid_snap));
-      return std::to_string(grid_x) + "_" + std::to_string(grid_y);
-    }
-
-    // Find the largest rectangle of the same tile starting at (start_x, start_y)
-    Rectangle find_largest_rectangle(const Components::IntegerMap& int_map, int start_x, int start_y,
-      std::unordered_set<std::string>& processed) {
-      int tile_index = int_map.get_tile(start_x, start_y);
-      if (tile_index < 0) {
-        return { start_x, start_y, 0, 0, -1 };
-      }
-
-      // Find the maximum width at this row
-      int max_width = 0;
-      for (int x = start_x; ; ++x) {
-        std::string key = std::to_string(x) + "_" + std::to_string(start_y);
-        if (processed.count(key) || int_map.get_tile(x, start_y) != tile_index) {
-          break;
-        }
-        max_width++;
-      }
-
-      if (max_width == 0) {
-        return { start_x, start_y, 0, 0, -1 };
-      }
-
-      // Expand downward while maintaining the width
-      int height = 1;
-      for (int y = start_y + 1; ; ++y) {
-        bool can_expand = true;
-        for (int x = start_x; x < start_x + max_width; ++x) {
-          std::string key = std::to_string(x) + "_" + std::to_string(y);
-          if (processed.count(key) || int_map.get_tile(x, y) != tile_index) {
-            can_expand = false;
-            break;
-          }
-        }
-        if (!can_expand) break;
-        height++;
-      }
-
-      // Mark all tiles in this rectangle as processed
-      for (int y = start_y; y < start_y + height; ++y) {
-        for (int x = start_x; x < start_x + max_width; ++x) {
-          std::string key = std::to_string(x) + "_" + std::to_string(y);
-          processed.insert(key);
-        }
-      }
-
-      return { start_x, start_y, max_width, height, tile_index };
-    }
   } // anonymous namespace
 
   void init() {
-    // Find existing IntegerMap entities and rebuild their tile entities
+    // Find existing IntegerMap entities
     tilemap_entities_per_layer.clear();
-
-    // We'll rebuild all tilemaps after init is called from TilemapPanel
-    // which has access to loaded_tilemaps
   }
 
   void set_grid_size(float size) {
@@ -150,7 +83,8 @@ namespace TilemapManager {
     entity.add_to_layer(layer_name);
 
     auto* int_map = entity.get_component<Components::IntegerMap>();
-    int_map->grid_size = grid_snap;
+    int_map->tile_size = { grid_snap, grid_snap };
+    int_map->grid_offset = grid_offset;
     int_map->atlas_index = atlas_index;
 
     tilemap_entities_per_layer[layer_name] = entity;
@@ -171,14 +105,8 @@ namespace TilemapManager {
 
   void rebuild_tilemap_for_layer(const std::string& layer_name,
     const std::vector<Components::AtlasEntry>& loaded_tilemaps) {
-    // Destroy all existing tile entities on this layer
-    auto all_entities = Engine::ECS::get_all_entities();
-    for (auto& entity : all_entities) {
-      if (entity.has_component<Components::Tile>() && entity.is_on_layer(layer_name)) {
-        entity.destroy();
-      }
-    }
-    placed_tiles_per_layer[layer_name].clear();
+    // The rendering is now handled by TilemapRenderSystem using the IntegerMap directly
+    // This function is kept for compatibility but doesn't need to create individual tile entities anymore
 
     // Get the tilemap entity for this layer
     auto it = tilemap_entities_per_layer.find(layer_name);
@@ -187,72 +115,13 @@ namespace TilemapManager {
     }
 
     auto* int_map = it->second.get_component<Components::IntegerMap>();
-    if (!int_map || int_map->tiles.empty()) {
+    if (!int_map) {
       return;
     }
 
-    // Get atlas info
-    if (int_map->atlas_index < 0 || int_map->atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
-      return;
-    }
-
-    const Components::AtlasEntry& atlas_entry = loaded_tilemaps[int_map->atlas_index];
-
-    // Find all rectangles using greedy algorithm
-    std::unordered_set<std::string> processed;
-    std::vector<Rectangle> rectangles;
-
-    // Sort tiles by position for consistent processing
-    std::vector<std::pair<int, int>> tile_positions;
-    for (const auto& [key, tile_idx] : int_map->tiles) {
-      size_t underscore = key.find('_');
-      if (underscore != std::string::npos) {
-        int x = std::stoi(key.substr(0, underscore));
-        int y = std::stoi(key.substr(underscore + 1));
-        tile_positions.push_back({ x, y });
-      }
-    }
-    std::sort(tile_positions.begin(), tile_positions.end());
-
-    // Find rectangles
-    for (const auto& [x, y] : tile_positions) {
-      std::string key = std::to_string(x) + "_" + std::to_string(y);
-      if (processed.count(key)) continue;
-
-      Rectangle rect = find_largest_rectangle(*int_map, x, y, processed);
-      if (rect.width > 0 && rect.height > 0) {
-        rectangles.push_back(rect);
-      }
-    }
-
-    // Create entities for each rectangle
-    for (const Rectangle& rect : rectangles) {
-      // Calculate the world position for the center of the rectangle
-      float center_x = rect.x * grid_snap + grid_offset.x + (rect.width * grid_snap) * 0.5f;
-      float center_y = rect.y * grid_snap + grid_offset.y + (rect.height * grid_snap) * 0.5f;
-      Math::Vec2D center_world = { center_x, center_y };
-      Math::Vec2D scale = { rect.width * grid_snap, rect.height * grid_snap };
-
-      auto entity = Engine::ECS::create_entity()
-        .add_component<Components::Tile>()
-        .add_component<Components::Transform2D>(center_world, 0.0f, scale)
-        .add_component<Components::Texture>(atlas_entry.texture)
-        .add_component<Components::TextureAtlas>(atlas_entry.atlas)
-        .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
-
-      entity.get_component<Components::TextureAtlas>()->drawIndex = rect.tile_index;
-      entity.clear_layers();
-      entity.add_to_layer(layer_name);
-
-      // Mark all positions in this rectangle as placed
-      for (int y = rect.y; y < rect.y + rect.height; ++y) {
-        for (int x = rect.x; x < rect.x + rect.width; ++x) {
-          Math::Vec2D tile_world = grid_to_world(x, y);
-          std::string pos_key = get_position_key(tile_world);
-          placed_tiles_per_layer[layer_name].insert(pos_key);
-        }
-      }
-    }
+    // Update the tile size and grid offset to match current settings
+    int_map->tile_size = { grid_snap, grid_snap };
+    int_map->grid_offset = grid_offset;
   }
 
   void place_tile(const Math::Vec2D& world_pos, const std::string& layer_name,
@@ -280,8 +149,9 @@ namespace TilemapManager {
     // Set the tile
     int_map->set_tile(grid_x, grid_y, tile_index);
 
-    // Rebuild the tilemap for this layer
-    rebuild_tilemap_for_layer(layer_name, loaded_tilemaps);
+    // Update tile size and grid offset
+    int_map->tile_size = { grid_snap, grid_snap };
+    int_map->grid_offset = grid_offset;
 
     // Mark level as dirty
     Engine::ProjectSaveManager::set_dirty(
@@ -315,20 +185,14 @@ namespace TilemapManager {
   }
 
   void update_all_tile_dimensions(const std::vector<Components::AtlasEntry>& loaded_tilemaps) {
-    // Update grid size in all tilemap entities
+    // Update tile size and grid offset in all tilemap entities
     for (auto& [layer_name, entity] : tilemap_entities_per_layer) {
       if (entity.is_valid()) {
         auto* int_map = entity.get_component<Components::IntegerMap>();
         if (int_map) {
-          int_map->grid_size = grid_snap;
+          int_map->tile_size = { grid_snap, grid_snap };
+          int_map->grid_offset = grid_offset;
         }
-      }
-    }
-
-    // Rebuild all layers
-    for (auto& [layer_name, entity] : tilemap_entities_per_layer) {
-      if (entity.is_valid()) {
-        rebuild_tilemap_for_layer(layer_name, loaded_tilemaps);
       }
     }
   }

@@ -1564,6 +1564,103 @@ namespace Engine {
       }
     }
 
+    void draw_tilemap(const std::vector<std::vector<int>>& integerMap,
+      const std::vector<Engine::Graphics::SubTexture>& atlas,
+      Engine::Graphics::Texture texture,
+      const Math::Vec2D& tileSize,
+      const Math::Vec2D& gridOffset,
+      const Math::Vec4D& color) {
+
+      if (integerMap.empty() || atlas.empty() || !texture) {
+        return;
+      }
+
+      int height = static_cast<int>(integerMap.size());
+      int width = height > 0 ? static_cast<int>(integerMap[0].size()) : 0;
+
+      if (width == 0 || height == 0) {
+        return;
+      }
+
+      // Helper struct for rectangle merging
+      struct Rectangle {
+        int x, y, width, height;
+        int tile_index;
+      };
+
+      // Track processed tiles
+      std::vector<std::vector<bool>> processed(height, std::vector<bool>(width, false));
+      std::vector<Rectangle> rectangles;
+
+      // Find all rectangles using greedy algorithm
+      for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+          if (processed[y][x]) continue;
+
+          int tile_index = integerMap[y][x];
+          if (tile_index < 0 || tile_index >= static_cast<int>(atlas.size())) {
+            processed[y][x] = true;
+            continue;
+          }
+
+          // Find maximum width at this row
+          int max_width = 0;
+          for (int w = x; w < width; ++w) {
+            if (processed[y][w] || integerMap[y][w] != tile_index) {
+              break;
+            }
+            max_width++;
+          }
+
+          if (max_width == 0) {
+            processed[y][x] = true;
+            continue;
+          }
+
+          // Expand downward while maintaining the width
+          int rect_height = 1;
+          for (int h = y + 1; h < height; ++h) {
+            bool can_expand = true;
+            for (int w = x; w < x + max_width; ++w) {
+              if (processed[h][w] || integerMap[h][w] != tile_index) {
+                can_expand = false;
+                break;
+              }
+            }
+            if (!can_expand) break;
+            rect_height++;
+          }
+
+          // Mark all tiles in this rectangle as processed
+          for (int h = y; h < y + rect_height; ++h) {
+            for (int w = x; w < x + max_width; ++w) {
+              processed[h][w] = true;
+            }
+          }
+
+          rectangles.push_back({ x, y, max_width, rect_height, tile_index });
+        }
+      }
+
+      // Draw each rectangle
+      for (const Rectangle& rect : rectangles) {
+        if (rect.tile_index < 0 || rect.tile_index >= static_cast<int>(atlas.size())) {
+          continue;
+        }
+
+        const auto& subTexture = atlas[rect.tile_index];
+
+        // Calculate the world position for the center of the rectangle
+        f32 center_x = gridOffset.x + rect.x * tileSize.x + (rect.width * tileSize.x) * 0.5f;
+        f32 center_y = gridOffset.y + rect.y * tileSize.y + (rect.height * tileSize.y) * 0.5f;
+        Math::Vec2D center_world = { center_x, center_y };
+        Math::Vec2D scale = { rect.width * tileSize.x, rect.height * tileSize.y };
+
+        // Draw the merged rectangle as a single tiled subtexture
+        draw_subtexture_tiled(texture, subTexture.tex_coords, center_world, scale, tileSize, 0.0f, color);
+      }
+    }
+
     void draw_text_ui(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color) {
       if (!font || font->texture_atlas.id == 0) {
         Log::warning("Attempted to draw UI text with invalid font");

@@ -21,6 +21,8 @@
 #include "../Components/Components.h"
 #include "../Graphics/Renderer.h"
 #include "../InputManager.h"
+#include "../FileIO/SettingsManager.h"
+#include "../FileIO/Settings.h"
 namespace Engine
 {
   namespace Systems
@@ -73,6 +75,40 @@ namespace Engine
             *color
           );
         }
+      }
+    };
+
+    class TilemapRenderSystem : public Engine::ECS::System {
+    public:
+      TilemapRenderSystem() {
+        require_components<Components::IntegerMap>();
+      }
+
+      void draw_entity(const Engine::ECS::Entity& entity) override {
+        auto* int_map = entity.get_component<Components::IntegerMap>();
+
+        // Skip if tilemap is empty or invalid
+        if (!int_map || int_map->is_empty() || int_map->atlas_index < 0) {
+          return;
+        }
+
+        // Get the atlas entry from project settings
+        const auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get();
+        if (int_map->atlas_index >= static_cast<int>(project_settings.loaded_tilemaps.size())) {
+          return;
+        }
+
+        const Components::AtlasEntry& atlas_entry = project_settings.loaded_tilemaps[int_map->atlas_index];
+
+        // Draw the tilemap using the optimized renderer function
+        Engine::Graphics::draw_tilemap(
+          int_map->tiles,
+          atlas_entry.atlas.subTextures,
+          atlas_entry.texture.texture_handle,
+          int_map->tile_size,
+          int_map->grid_offset,
+          Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f) // White color
+        );
       }
     };
 
