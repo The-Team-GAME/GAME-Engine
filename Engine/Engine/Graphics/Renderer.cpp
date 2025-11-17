@@ -1594,7 +1594,8 @@ namespace Engine {
 
       // Find all rectangles using greedy algorithm
       for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
+        int row_width = static_cast<int>(integerMap[y].size());
+        for (int x = 0; x < row_width && x < width; ++x) {
           if (processed[y][x]) continue;
 
           int tile_index = integerMap[y][x];
@@ -1605,7 +1606,7 @@ namespace Engine {
 
           // Find maximum width at this row
           int max_width = 0;
-          for (int w = x; w < width; ++w) {
+          for (int w = x; w < row_width && w < width; ++w) {
             if (processed[y][w] || integerMap[y][w] != tile_index) {
               break;
             }
@@ -1621,8 +1622,9 @@ namespace Engine {
           int rect_height = 1;
           for (int h = y + 1; h < height; ++h) {
             bool can_expand = true;
+            int next_row_width = static_cast<int>(integerMap[h].size());
             for (int w = x; w < x + max_width; ++w) {
-              if (processed[h][w] || integerMap[h][w] != tile_index) {
+              if (w >= next_row_width || processed[h][w] || integerMap[h][w] != tile_index) {
                 can_expand = false;
                 break;
               }
