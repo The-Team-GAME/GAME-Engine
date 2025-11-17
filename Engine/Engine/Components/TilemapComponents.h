@@ -57,6 +57,6 @@ namespace Components {
   };
 }
 
-// REGISTER_COMPONENT(Components::Tile, size);
-// REGISTER_COMPONENT(Components::AtlasEntry, texture, atlas);
+REFLECT_FIELDS(Components::Tile, size);
+REFLECT_FIELDS(Components::AtlasEntry, texture, atlas);
 REGISTER_COMPONENT(Components::IntegerMap, tiles, grid_size, atlas_index);
