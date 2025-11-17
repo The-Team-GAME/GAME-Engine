@@ -60,6 +60,11 @@ namespace TilemapPanel {
 
     // Layer selection
     std::string selected_layer = "default";
+
+    // BoxFill state
+    bool box_fill_dragging = false;
+    Math::Vec2D box_fill_start;
+    Math::Vec2D box_fill_end;
   }
 
   // Helper functions
@@ -120,6 +125,83 @@ namespace TilemapPanel {
 
   void update_all_tile_dimensions() {
     TilemapManager::update_all_tile_dimensions(loaded_tilemaps);
+  }
+
+  void fill_box_with_tiles(const Math::Vec2D& start_pos, const Math::Vec2D& end_pos) {
+    // Check if we have a valid atlas selected
+    if (selected_atlas_index < 0 || selected_atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
+      return;
+    }
+
+    const Components::AtlasEntry& atlas_entry = loaded_tilemaps[selected_atlas_index];
+
+    if (!atlas_entry.texture.texture_handle ||
+      atlas_entry.atlas.subTextures.empty() ||
+      selected_tile_index < 0 ||
+      selected_tile_index >= static_cast<int>(atlas_entry.atlas.subTextures.size())) {
+      return;
+    }
+
+    // Convert to grid coordinates
+    int start_grid_x, start_grid_y, end_grid_x, end_grid_y;
+    TilemapManager::world_to_grid(start_pos, start_grid_x, start_grid_y);
+    TilemapManager::world_to_grid(end_pos, end_grid_x, end_grid_y);
+
+    // Ensure start is less than end
+    if (start_grid_x > end_grid_x) std::swap(start_grid_x, end_grid_x);
+    if (start_grid_y > end_grid_y) std::swap(start_grid_y, end_grid_y);
+
+    // Capture state for undo
+    struct TileState {
+      int x, y, old_tile;
+    };
+    std::vector<TileState> old_tiles;
+
+    // Collect old tile states
+    for (int y = start_grid_y; y <= end_grid_y; ++y) {
+      for (int x = start_grid_x; x <= end_grid_x; ++x) {
+        int old_tile = TilemapManager::get_tile_at(selected_layer, x, y);
+        old_tiles.push_back({x, y, old_tile});
+      }
+    }
+
+    // Capture variables for lambda
+    int captured_start_x = start_grid_x;
+    int captured_start_y = start_grid_y;
+    int captured_end_x = end_grid_x;
+    int captured_end_y = end_grid_y;
+    int captured_tile_index = selected_tile_index;
+    int captured_atlas_index = selected_atlas_index;
+    std::string captured_layer = selected_layer;
+    std::vector<TileState> captured_old_tiles = old_tiles;
+
+    Engine::UndoManager::execute(
+      [captured_start_x, captured_start_y, captured_end_x, captured_end_y, captured_tile_index, captured_atlas_index, captured_layer]() {
+        // Fill the box with new tiles
+        for (int y = captured_start_y; y <= captured_end_y; ++y) {
+          for (int x = captured_start_x; x <= captured_end_x; ++x) {
+            Math::Vec2D world_pos = TilemapManager::grid_to_world(x, y);
+            TilemapManager::place_tile(world_pos, captured_layer, captured_atlas_index, captured_tile_index, loaded_tilemaps);
+          }
+        }
+        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+      },
+      [captured_old_tiles, captured_atlas_index, captured_layer]() {
+        // Restore old tiles
+        for (const auto& tile_state : captured_old_tiles) {
+          Math::Vec2D restore_pos = TilemapManager::grid_to_world(tile_state.x, tile_state.y);
+          if (tile_state.old_tile < 0) {
+            // Tile didn't exist, delete it
+            TilemapManager::delete_tile(restore_pos, captured_layer);
+          }
+          else {
+            // Restore the old tile
+            TilemapManager::place_tile(restore_pos, captured_layer, captured_atlas_index, tile_state.old_tile, loaded_tilemaps);
+          }
+        }
+        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+      }
+    );
   }
 
   void place_tile_at_position(const Math::Vec2D& world_pos) {
@@ -247,13 +329,33 @@ namespace TilemapPanel {
           place_tile_at_position(world_pos);
         }
         else if (active_tool == ToolMode::BoxFill) {
-          // TODO: Implement box fill tool
+          // BoxFill: Start dragging on mouse press
+          if (!box_fill_dragging) {
+            box_fill_dragging = true;
+            box_fill_start = world_pos;
+            box_fill_end = world_pos;
+          }
+          else {
+            // Update end position while dragging
+            box_fill_end = world_pos;
+          }
         }
         else if (active_tool == ToolMode::Picker) {
           // TODO: Implement picker tool (pick tile under cursor)
         }
         else if (active_tool == ToolMode::Eraser) {
           delete_tile_at_position(world_pos);
+        }
+      }
+      else if (box_fill_dragging) {
+        // Mouse released - execute the box fill
+        fill_box_with_tiles(box_fill_start, box_fill_end);
+        box_fill_dragging = false;
+      }
+      else {
+        // Mouse not held and not dragging - reset box fill state
+        if (box_fill_dragging) {
+          box_fill_dragging = false;
         }
       }
     }
@@ -902,31 +1004,78 @@ namespace TilemapPanel {
       );
     }
 
-    // Highlight hovered cell based on current tool
-    auto world_pos_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+    // Draw box fill preview if dragging
+    if (box_fill_dragging) {
+      int start_grid_x, start_grid_y, end_grid_x, end_grid_y;
+      TilemapManager::world_to_grid(box_fill_start, start_grid_x, start_grid_y);
+      TilemapManager::world_to_grid(box_fill_end, end_grid_x, end_grid_y);
 
-    if (world_pos_opt.has_value()) {
-      Math::Vec2D world_pos = world_pos_opt.value();
-      Math::Vec2D grid_pos = TilemapManager::snap_to_grid(world_pos);
+      // Ensure start is less than end
+      if (start_grid_x > end_grid_x) std::swap(start_grid_x, end_grid_x);
+      if (start_grid_y > end_grid_y) std::swap(start_grid_y, end_grid_y);
 
-      // Different highlight colors for different tools
-      Math::Vec4D highlight_color;
-      if (current_tool == ToolMode::Paintbrush || current_tool == ToolMode::BoxFill) {
-        highlight_color = Math::Vec4D{ 0.0f, 1.0f, 0.0f, 0.4f }; // Green for painting
-      }
-      else if (current_tool == ToolMode::Eraser) {
-        highlight_color = Math::Vec4D{ 1.0f, 0.0f, 0.0f, 0.4f }; // Red for erasing
-      }
-      else if (current_tool == ToolMode::Picker) {
-        highlight_color = Math::Vec4D{ 0.0f, 0.5f, 1.0f, 0.4f }; // Blue for picker
-      }
+      // Calculate box dimensions in world space
+      Math::Vec2D box_start_world = TilemapManager::grid_to_world(start_grid_x, start_grid_y);
+      Math::Vec2D box_end_world = TilemapManager::grid_to_world(end_grid_x, end_grid_y);
 
+      Math::Vec2D box_center = {
+        (box_start_world.x + box_end_world.x) * 0.5f,
+        (box_start_world.y + box_end_world.y) * 0.5f
+      };
+      Math::Vec2D box_size = {
+        (end_grid_x - start_grid_x + 1) * grid_snap,
+        (end_grid_y - start_grid_y + 1) * grid_snap
+      };
+
+      // Draw semi-transparent box preview
       Engine::Graphics::draw_rect(
-        grid_pos,
-        Math::Vec2D{ grid_snap, grid_snap },
+        box_center,
+        box_size,
         0.0f,
-        highlight_color
+        Math::Vec4D{ 0.0f, 1.0f, 0.0f, 0.3f }
       );
+
+      // Draw border for better visibility
+      float half_width = box_size.x * 0.5f;
+      float half_height = box_size.y * 0.5f;
+      Math::Vec2D top_left = { box_center.x - half_width, box_center.y - half_height };
+      Math::Vec2D top_right = { box_center.x + half_width, box_center.y - half_height };
+      Math::Vec2D bottom_left = { box_center.x - half_width, box_center.y + half_height };
+      Math::Vec2D bottom_right = { box_center.x + half_width, box_center.y + half_height };
+
+      Math::Vec4D border_color = Math::Vec4D{ 0.0f, 1.0f, 0.0f, 0.8f };
+      Engine::Graphics::draw_line(top_left, top_right, 2.0f, border_color);
+      Engine::Graphics::draw_line(top_right, bottom_right, 2.0f, border_color);
+      Engine::Graphics::draw_line(bottom_right, bottom_left, 2.0f, border_color);
+      Engine::Graphics::draw_line(bottom_left, top_left, 2.0f, border_color);
+    }
+    // Highlight hovered cell based on current tool (only when not box filling)
+    else {
+      auto world_pos_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+
+      if (world_pos_opt.has_value()) {
+        Math::Vec2D world_pos = world_pos_opt.value();
+        Math::Vec2D grid_pos = TilemapManager::snap_to_grid(world_pos);
+
+        // Different highlight colors for different tools
+        Math::Vec4D highlight_color;
+        if (current_tool == ToolMode::Paintbrush || current_tool == ToolMode::BoxFill) {
+          highlight_color = Math::Vec4D{ 0.0f, 1.0f, 0.0f, 0.4f }; // Green for painting
+        }
+        else if (current_tool == ToolMode::Eraser) {
+          highlight_color = Math::Vec4D{ 1.0f, 0.0f, 0.0f, 0.4f }; // Red for erasing
+        }
+        else if (current_tool == ToolMode::Picker) {
+          highlight_color = Math::Vec4D{ 0.0f, 0.5f, 1.0f, 0.4f }; // Blue for picker
+        }
+
+        Engine::Graphics::draw_rect(
+          grid_pos,
+          Math::Vec2D{ grid_snap, grid_snap },
+          0.0f,
+          highlight_color
+        );
+      }
     }
   }
 
