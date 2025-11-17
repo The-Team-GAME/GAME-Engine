@@ -106,7 +106,7 @@ namespace TilemapManager {
 
   void rebuild_tilemap_for_layer(const std::string& layer_name,
     const std::vector<Components::AtlasEntry>& loaded_tilemaps) {
-    // Destroy all existing tile entities on this layer
+    // Destroy all existing tile collision entities on this layer
     auto all_entities = Engine::ECS::get_all_entities();
     for (auto& entity : all_entities) {
       if (entity.has_component<Components::Tile>() && entity.is_on_layer(layer_name)) {
@@ -134,9 +134,7 @@ namespace TilemapManager {
       return;
     }
 
-    const Components::AtlasEntry& atlas_entry = loaded_tilemaps[int_map->atlas_index];
-
-    // Find all rectangles using greedy algorithm
+    // Find all rectangles using greedy algorithm (merge any tiles regardless of texture)
     int height = int_map->get_height();
     int width = int_map->get_width();
 
@@ -147,14 +145,13 @@ namespace TilemapManager {
     // Helper struct for rectangle merging
     struct Rectangle {
       int x, y, width, height;
-      int tile_index;
     };
 
     // Track processed tiles
     std::vector<std::vector<bool>> processed(height, std::vector<bool>(width, false));
     std::vector<Rectangle> rectangles;
 
-    // Find all rectangles using greedy algorithm
+    // Find all rectangles using greedy algorithm (merge any non-empty tiles)
     for (int y = 0; y < height; ++y) {
       int row_width = static_cast<int>(int_map->tiles[y].size());
       for (int x = 0; x < row_width && x < width; ++x) {
@@ -166,10 +163,10 @@ namespace TilemapManager {
           continue;
         }
 
-        // Find maximum width at this row
+        // Find maximum width at this row (any non-empty tile)
         int max_width = 0;
         for (int w = x; w < row_width && w < width; ++w) {
-          if (processed[y][w] || int_map->get_tile(w, y) != tile_index) {
+          if (processed[y][w] || int_map->get_tile(w, y) < 0) {
             break;
           }
           max_width++;
@@ -180,13 +177,13 @@ namespace TilemapManager {
           continue;
         }
 
-        // Expand downward while maintaining the width
+        // Expand downward while maintaining the width (any non-empty tile)
         int rect_height = 1;
         for (int h = y + 1; h < height; ++h) {
           bool can_expand = true;
           int next_row_width = static_cast<int>(int_map->tiles[h].size());
           for (int w = x; w < x + max_width; ++w) {
-            if (w >= next_row_width || processed[h][w] || int_map->get_tile(w, h) != tile_index) {
+            if (w >= next_row_width || processed[h][w] || int_map->get_tile(w, h) < 0) {
               can_expand = false;
               break;
             }
@@ -202,11 +199,11 @@ namespace TilemapManager {
           }
         }
 
-        rectangles.push_back({ x, y, max_width, rect_height, tile_index });
+        rectangles.push_back({ x, y, max_width, rect_height });
       }
     }
 
-    // Create collision entities for each rectangle
+    // Create collision-only entities for each rectangle (no rendering components)
     for (const Rectangle& rect : rectangles) {
       // Calculate the world position for the center of the rectangle
       float center_x = grid_offset.x + rect.x * grid_snap + (rect.width * grid_snap) * 0.5f;
@@ -214,17 +211,13 @@ namespace TilemapManager {
       Math::Vec2D center_world = { center_x, center_y };
       Math::Vec2D scale = { rect.width * grid_snap, rect.height * grid_snap };
 
-      // Create entity with collision components and rendering components
+      // Create collision-only entity (no rendering components)
       auto entity = Engine::ECS::create_entity()
-        .add_component<Components::Tile>()
+        .add_component<Components::Tile>() // Marker component to identify tile collision entities
         .add_component<Components::Transform2D>(center_world, 0.0f, scale)
         .add_component<Components::RigidBody>(true, false) // is_static = true, no gravity
-        .add_component<Components::BoxCollider>(scale.x, scale.y, true) // resolve_collisions = true
-        .add_component<Components::Texture>(atlas_entry.texture)
-        .add_component<Components::TextureAtlas>(atlas_entry.atlas)
-        .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
+        .add_component<Components::BoxCollider>(scale.x, scale.y, true); // resolve_collisions = true
 
-      entity.get_component<Components::TextureAtlas>()->drawIndex = rect.tile_index;
       entity.clear_layers();
       entity.add_to_layer(layer_name);
     }
