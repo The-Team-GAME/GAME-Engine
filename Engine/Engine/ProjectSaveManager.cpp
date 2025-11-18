@@ -3,6 +3,7 @@
 #include "FileIO/Settings.h"
 #include "FileIO/FileDialog.h"
 #include "Path.h"
+#include "Resources.h"
 #include <vector>
 #include <algorithm>
 
@@ -72,7 +73,8 @@ void Engine::ProjectSaveManager::save_all_dirty()
             "Save Level As",
             "untitled.json",
             "Level Files (*.json)\0*.json\0All Files\0*.*\0",
-            "json"
+            "json",
+            Engine::Resources::resource_path  // Start in the resource folder
           );
 
           if (!selected_path.has_value()) {

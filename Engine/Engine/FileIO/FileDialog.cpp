@@ -24,7 +24,8 @@ namespace Engine {
       const std::string& title,
       const std::string& default_filename,
       const char* filter,
-      const std::string& default_extension
+      const std::string& default_extension,
+      const std::string& initial_dir
     )
     {
       OPENFILENAMEA ofn;
@@ -45,7 +46,7 @@ namespace Engine {
       ofn.nFilterIndex = 1;
       ofn.lpstrFileTitle = NULL;
       ofn.nMaxFileTitle = 0;
-      ofn.lpstrInitialDir = NULL;
+      ofn.lpstrInitialDir = initial_dir.empty() ? NULL : initial_dir.c_str();
       ofn.lpstrTitle = title.c_str();
       ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
 
@@ -73,7 +74,8 @@ namespace Engine {
 
     std::optional<std::string> show_open_file_dialog(
       const std::string& title,
-      const char* filter
+      const char* filter,
+      const std::string& initial_dir
     )
     {
       OPENFILENAMEA ofn;
@@ -89,7 +91,7 @@ namespace Engine {
       ofn.nFilterIndex = 1;
       ofn.lpstrFileTitle = NULL;
       ofn.nMaxFileTitle = 0;
-      ofn.lpstrInitialDir = NULL;
+      ofn.lpstrInitialDir = initial_dir.empty() ? NULL : initial_dir.c_str();
       ofn.lpstrTitle = title.c_str();
       ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 

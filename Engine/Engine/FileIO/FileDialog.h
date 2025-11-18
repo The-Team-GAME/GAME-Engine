@@ -29,6 +29,7 @@ namespace Engine {
     default_filename - Default filename to show in the dialog
     filter - File type filter (e.g., "Level Files (*.json)\0*.json\0All Files\0*.*\0")
     default_extension - Default file extension to append if user doesn't specify one
+    initial_dir - Initial directory to open the dialog in (optional)
 
     Returns:
     std::optional<std::string> containing the selected file path if user confirmed,
@@ -41,7 +42,8 @@ namespace Engine {
       const std::string& title = "Save File",
       const std::string& default_filename = "untitled",
       const char* filter = "All Files\0*.*\0",
-      const std::string& default_extension = ""
+      const std::string& default_extension = "",
+      const std::string& initial_dir = ""
     );
 
     /*=================================================================================
@@ -51,6 +53,7 @@ namespace Engine {
     Parameters:
     title - Dialog window title
     filter - File type filter (e.g., "Level Files (*.json)\0*.json\0All Files\0*.*\0")
+    initial_dir - Initial directory to open the dialog in (optional)
 
     Returns:
     std::optional<std::string> containing the selected file path if user confirmed,
@@ -61,7 +64,8 @@ namespace Engine {
     ==================================================================================*/
     std::optional<std::string> show_open_file_dialog(
       const std::string& title = "Open File",
-      const char* filter = "All Files\0*.*\0"
+      const char* filter = "All Files\0*.*\0",
+      const std::string& initial_dir = ""
     );
 
   } // namespace FileIO
