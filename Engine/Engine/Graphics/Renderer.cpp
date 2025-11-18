@@ -1539,14 +1539,14 @@ namespace Engine {
       draw_ui_quad(texture, position, size, rotation, color, tex_coords);
     }
 
-    void draw_tilemap(const std::unordered_map<int64_t, int>& integerMap,
+    void draw_tilemap(const std::unordered_map<int64_t, int>& tileMap,
       const std::vector<Engine::Graphics::SubTexture>& atlas,
       Engine::Graphics::Texture texture,
       const Math::Vec2D& tileSize,
       const Math::Vec2D& gridOffset,
       const Math::Vec4D& color) {
 
-      if (integerMap.empty() || atlas.empty() || !texture) {
+      if (tileMap.empty() || atlas.empty() || !texture) {
         return;
       }
 
@@ -1554,7 +1554,7 @@ namespace Engine {
       int min_x = INT_MAX, min_y = INT_MAX;
       int max_x = INT_MIN, max_y = INT_MIN;
 
-      for (const auto& [key, tile_index] : integerMap) {
+      for (const auto& [key, tile_index] : tileMap) {
         if (tile_index < 0) continue;
 
         int x, y;
@@ -1588,8 +1588,8 @@ namespace Engine {
       // Helper lambda to get tile from hashmap
       auto get_tile = [&](int x, int y) -> int {
         int64_t key = (static_cast<int64_t>(y) << 32) | (static_cast<uint32_t>(x));
-        auto it = integerMap.find(key);
-        return (it != integerMap.end()) ? it->second : -1;
+        auto it = tileMap.find(key);
+        return (it != tileMap.end()) ? it->second : -1;
         };
 
       // Find all rectangles using greedy algorithm
