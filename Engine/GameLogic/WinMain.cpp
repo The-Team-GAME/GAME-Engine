@@ -54,12 +54,31 @@ int main()
 
   // Register game layers at startup
   Engine::ECS::register_layer("background"); // Static background layer
-  Engine::ECS::register_layer("tilemap_background"); // Tilemap background layer
-  Engine::ECS::register_layer("tilemap_foreground"); // Tilemap foreground layer
-  Engine::ECS::register_layer("gameplay"); // Entities, items, characters
+  Engine::ECS::register_layer("tilemap_background_far");  // Tilemap background far layer (e.g., distant cityscape, outside window)
+  Engine::ECS::register_layer("tilemap_background_mid");  // Tilemap background mid layer (e.g., MRT carriage, trees, hills, pillars)
+  Engine::ECS::register_layer("tilemap_background_near"); // Tilemap background near layer (e.g., bushes, fences)
+  // Engine::ECS::register_layer("tilemap_foreground_far"); // Tilemap foreground far layer (don't need it for now)
+  // Engine::ECS::register_layer("tilemap_foreground_mid"); // Tilemap foreground mid layer (don't need it for now)
+  Engine::ECS::register_layer("tilemap_foreground_near"); // Tilemap foreground near layer (e.g., things that needs to collide with player, ground, platforms)
+  Engine::ECS::register_layer("hazard"); // Hazard layer (e.g., spikes, lava) 
+  Engine::ECS::register_layer("player"); // Player character layer
+  Engine::ECS::register_layer("enemy"); // Enemy characters layer
+  Engine::ECS::register_layer("player_attack"); // Player attack layer (contains the hitboxes for player attacks)
+  Engine::ECS::register_layer("enemy_attack"); // Enemy attack layer (contains the hitboxes for enemy attacks)
+  Engine::ECS::register_layer("effect"); // Visual effects like particles
   Engine::ECS::register_layer("ui"); // User interface elements
-  Engine::ECS::register_layer("effects"); // Visual effects like particles
   Engine::ECS::register_layer("debug"); // Debug overlays and information
+
+  // Example: Register a collision callback between gameplay and ui layers
+  Engine::ECS::LayerRegistry::register_collision_callback("gameplay", "ui",
+    [](Engine::ECS::Entity entityA, Engine::ECS::Entity entityB)
+    {
+      // Example callback: Print entity IDs on collision
+      // In practice, you would handle damage, effects, etc. here
+      std::cout << "Collision detected between Entity "
+        << entityA.get_id() << " and Entity "
+        << entityB.get_id() << std::endl;
+    });
 
   // Register game scenes at startup
   Engine::SceneManager::register_scene<EmptyState>("EmptyState");

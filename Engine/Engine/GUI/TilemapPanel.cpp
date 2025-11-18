@@ -48,8 +48,16 @@ namespace TilemapPanel {
 
     // Painting state
     bool enable_tilemap_mode = false;
-    bool painting_enabled = false;
-    bool erasing_enabled = false;
+
+    // Tool modes
+    enum class ToolMode {
+      Paintbrush,
+      BoxFill,
+      Picker,
+      Eraser
+    };
+    ToolMode current_tool = ToolMode::Paintbrush;
+
     float grid_snap = 64.0f;
     float prev_grid_snap = 64.0f;
     Math::Vec2D grid_offset = { 0.0f, 0.0f };
@@ -119,9 +127,53 @@ namespace TilemapPanel {
           std::string entity_key = get_position_key(entity_grid_pos);
 
           if (entity_key == pos_key) {
-            entity.destroy();
-            placed_tiles_per_layer[selected_layer].erase(pos_key);
-            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+            // Capture the tile's data before deletion for undo
+            auto* texture = entity.get_component<Components::Texture>();
+            auto* atlas = entity.get_component<Components::TextureAtlas>();
+            auto* color = entity.get_component<Components::Color>();
+
+            // Store the full component data we need to recreate the tile
+            Components::Texture captured_texture = texture ? *texture : Components::Texture();
+            Components::TextureAtlas captured_atlas = atlas ? *atlas : Components::TextureAtlas();
+            Math::Vec2D captured_position = transform->position;
+            float captured_rotation = transform->rotation;
+            Math::Vec2D captured_scale = transform->scale;
+            Components::Color captured_color = color ? *color : Components::Color(1.0f, 1.0f, 1.0f, 1.0f);
+            std::string captured_layer = selected_layer;
+
+            // Use shared_ptr so both lambdas can access the same entity state
+            auto deleted_tile_entity = std::make_shared<Engine::ECS::Entity>(entity);
+
+            Engine::UndoManager::execute(
+              [deleted_tile_entity, pos_key, captured_layer]() mutable {
+                if (deleted_tile_entity->is_valid()) {
+                  deleted_tile_entity->destroy();
+                  placed_tiles_per_layer[captured_layer].erase(pos_key);
+                  Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+                }
+              },
+              [deleted_tile_entity, pos_key, captured_texture, captured_atlas,
+              captured_position, captured_rotation, captured_scale, captured_color, captured_layer]() mutable {
+                // Recreate the tile entity
+                *deleted_tile_entity = Engine::ECS::create_entity()
+                  .add_component<Components::Tile>()
+                  .add_component<Components::Transform2D>(captured_position, captured_rotation, captured_scale)
+                  .add_component<Components::Color>(captured_color.r, captured_color.g, captured_color.b, captured_color.a);
+
+                // Add texture and atlas components after entity is created
+                auto* new_texture = deleted_tile_entity->add_component<Components::Texture>().get_component<Components::Texture>();
+                *new_texture = captured_texture;
+
+                auto* new_atlas = deleted_tile_entity->add_component<Components::TextureAtlas>().get_component<Components::TextureAtlas>();
+                *new_atlas = captured_atlas;
+
+                deleted_tile_entity->clear_layers();
+                deleted_tile_entity->add_to_layer(captured_layer);
+                placed_tiles_per_layer[captured_layer].insert(pos_key);
+                Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+              }
+            );
+
             break;
           }
         }
@@ -228,9 +280,10 @@ namespace TilemapPanel {
     // Special do and undo for placing tile
     // Use shared_ptr so both lambdas can access the same entity state
     auto placed_tile_entity = std::make_shared<Engine::ECS::Entity>(Engine::ECS::INVALID_ENTITY);
+    std::string current_layer = selected_layer;
 
     Engine::UndoManager::execute(
-      [placed_tile_entity, grid_pos, atlas_entry, &placed_tiles, pos_key]() mutable {
+      [placed_tile_entity, grid_pos, atlas_entry, current_layer, pos_key]() mutable {
         *placed_tile_entity = Engine::ECS::create_entity()
           .add_component<Components::Tile>()
           .add_component<Components::Transform2D>(grid_pos, 0.0f,
@@ -242,14 +295,17 @@ namespace TilemapPanel {
         placed_tile_entity->get_component<Components::TextureAtlas>()->drawIndex = selected_tile_index;
 
         placed_tile_entity->clear_layers();
-        placed_tile_entity->add_to_layer(selected_layer);
-        placed_tiles.insert(pos_key);
+        placed_tile_entity->add_to_layer(current_layer);
+        placed_tiles_per_layer[current_layer].insert(pos_key);
 
+        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
       },
-      [placed_tile_entity, &placed_tiles, pos_key]() mutable {
+      [placed_tile_entity, current_layer, pos_key]() mutable {
         if (placed_tile_entity->is_valid()) {
           placed_tile_entity->destroy();
-          placed_tiles.erase(pos_key);
+          placed_tiles_per_layer[current_layer].erase(pos_key);
+
+          Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
         }
         else {
           std::cout << "Warning: Attempted to undo tile placement but entity is invalid.\n";
@@ -258,8 +314,6 @@ namespace TilemapPanel {
     );
 
 
-    // Mark level as dirty for saving later
-    Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
   }
 
   // Public interface
@@ -269,6 +323,23 @@ namespace TilemapPanel {
   }
 
   void update() {
+    // === KEYBOARD SHORTCUTS FOR TOOLS ===
+    if (enable_tilemap_mode) {
+      // Tool selection shortcuts
+      if (Engine::Input::is_pressed(Engine::KeyCode::B)) {
+        current_tool = ToolMode::Paintbrush;
+      }
+      else if (Engine::Input::is_pressed(Engine::KeyCode::U)) {
+        current_tool = ToolMode::BoxFill;
+      }
+      else if (Engine::Input::is_pressed(Engine::KeyCode::I)) {
+        current_tool = ToolMode::Picker;
+      }
+      else if (Engine::Input::is_pressed(Engine::KeyCode::D)) {
+        current_tool = ToolMode::Eraser;
+      }
+    }
+
     // === HANDLE PAINTING IN WORLD ===
     // Only allow painting/erasing when tilemap mode is enabled
     auto world_pos_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
@@ -277,14 +348,40 @@ namespace TilemapPanel {
       if (!world_pos_opt.has_value()) {
         /// Empty by design: if mouse is outside viewport, do nothing
       }
-      else if (painting_enabled && Engine::Input::is_held(Engine::KeyCode::MouseLeft)) {
+      else if (Engine::Input::is_held(Engine::KeyCode::MouseLeft)) {
         Math::Vec2D world_pos = world_pos_opt.value();
-        place_tile_at_position(world_pos);
-      }
-      else if (erasing_enabled && Engine::Input::is_held(Engine::KeyCode::MouseLeft)) {
-        Math::Vec2D world_pos = world_pos_opt.value();
-        Math::Vec2D grid_pos = snap_to_grid(world_pos);
-        delete_tile_at_position(grid_pos);
+
+        // Check for temporary tool modifiers
+        ToolMode active_tool = current_tool;
+
+        // Ctrl temporarily switches to Picker (unless already in Eraser mode)
+        if (Engine::Input::is_held(Engine::KeyCode::CtrlLeft) || Engine::Input::is_held(Engine::KeyCode::CtrlRight)) {
+          if (current_tool == ToolMode::Paintbrush || current_tool == ToolMode::BoxFill) {
+            active_tool = ToolMode::Picker;
+          }
+        }
+
+        // Shift temporarily switches to Eraser
+        if (Engine::Input::is_held(Engine::KeyCode::ShiftLeft) || Engine::Input::is_held(Engine::KeyCode::ShiftRight)) {
+          if (current_tool == ToolMode::Paintbrush || current_tool == ToolMode::BoxFill) {
+            active_tool = ToolMode::Eraser;
+          }
+        }
+
+        // Execute tool action
+        if (active_tool == ToolMode::Paintbrush) {
+          place_tile_at_position(world_pos);
+        }
+        else if (active_tool == ToolMode::BoxFill) {
+          // TODO: Implement box fill tool
+        }
+        else if (active_tool == ToolMode::Picker) {
+          // TODO: Implement picker tool (pick tile under cursor)
+        }
+        else if (active_tool == ToolMode::Eraser) {
+          Math::Vec2D grid_pos = snap_to_grid(world_pos);
+          delete_tile_at_position(grid_pos);
+        }
       }
     }
 
@@ -457,25 +554,28 @@ namespace TilemapPanel {
     if (ImGui::CollapsingHeader("Painting Controls", ImGuiTreeNodeFlags_DefaultOpen)) {
       ImGui::Indent();
 
-      // Painting mode toggle
-      if (ImGui::Checkbox("Enable Painting", &painting_enabled)) {
-        if (painting_enabled) {
-          erasing_enabled = false;
-        }
+      // Tool selection
+      ImGui::Text("Tool:");
+
+      int tool_index = static_cast<int>(current_tool);
+      if (ImGui::RadioButton("Paintbrush (B)", &tool_index, static_cast<int>(ToolMode::Paintbrush))) {
+        current_tool = ToolMode::Paintbrush;
       }
       ImGui::SameLine();
-      ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(Click in world to place tiles)");
-
-      // Erasing mode toggle
-      if (ImGui::Checkbox("Enable Erasing", &erasing_enabled)) {
-        if (erasing_enabled) {
-          painting_enabled = false;
-        }
+      if (ImGui::RadioButton("Box Fill (U)", &tool_index, static_cast<int>(ToolMode::BoxFill))) {
+        current_tool = ToolMode::BoxFill;
       }
 
-
+      if (ImGui::RadioButton("Picker (I)", &tool_index, static_cast<int>(ToolMode::Picker))) {
+        current_tool = ToolMode::Picker;
+      }
       ImGui::SameLine();
-      ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(Click in world to delete tiles)");
+      if (ImGui::RadioButton("Eraser (D)", &tool_index, static_cast<int>(ToolMode::Eraser))) {
+        current_tool = ToolMode::Eraser;
+      }
+
+      ImGui::Spacing();
+      ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Tip: Hold Ctrl for Picker, Shift for Eraser");
 
       ImGui::Separator();
 
@@ -912,20 +1012,24 @@ namespace TilemapPanel {
       );
     }
 
-    // Highlight hovered layer tiles
-    if ((painting_enabled || erasing_enabled)) {
-      auto world_pos_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+    // Highlight hovered cell based on current tool
+    auto world_pos_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
 
-      if (!world_pos_opt.has_value()) {
-        return;
-      }
-
+    if (world_pos_opt.has_value()) {
       Math::Vec2D world_pos = world_pos_opt.value();
       Math::Vec2D grid_pos = snap_to_grid(world_pos);
 
-      Math::Vec4D highlight_color = painting_enabled ?
-        Math::Vec4D{ 0.0f, 1.0f, 0.0f, 0.4f } :
-        Math::Vec4D{ 1.0f, 0.0f, 0.0f, 0.4f };
+      // Different highlight colors for different tools
+      Math::Vec4D highlight_color;
+      if (current_tool == ToolMode::Paintbrush || current_tool == ToolMode::BoxFill) {
+        highlight_color = Math::Vec4D{ 0.0f, 1.0f, 0.0f, 0.4f }; // Green for painting
+      }
+      else if (current_tool == ToolMode::Eraser) {
+        highlight_color = Math::Vec4D{ 1.0f, 0.0f, 0.0f, 0.4f }; // Red for erasing
+      }
+      else if (current_tool == ToolMode::Picker) {
+        highlight_color = Math::Vec4D{ 0.0f, 0.5f, 1.0f, 0.4f }; // Blue for picker
+      }
 
       Engine::Graphics::draw_rect(
         grid_pos,
@@ -981,5 +1085,9 @@ namespace TilemapPanel {
         color->a = 1.0f;
       }
     }
+  }
+  bool is_tilemap_mode_enabled()
+  {
+    return enable_tilemap_mode;
   }
 } // namespace TilemapPanel

@@ -72,6 +72,16 @@ namespace Engine {
                   const auto mouse = Engine::Input::get_mouse_world_position();
                   gizmo->drag_offset = Math::Vec2D(mouse.x - transform->position.x, mouse.y - transform->position.y);
                   gizmo->is_dragging = true;
+                  
+                  // Set active handle to Body for immediate dragging
+                  gizmo->active_handle = Components::GizmoHandleType::Body;
+                  gizmo->hover_handle = Components::GizmoHandleType::Body;
+                  
+                  // Cache initial state for dragging
+                  gizmo->start_mouse_world = mouse;
+                  gizmo->start_pos = transform->position;
+                  gizmo->start_scale = transform->scale;
+                  gizmo->start_rotation = transform->rotation;
                 }
                 else {
                   // Initialize drag offset to zero - will be set on first update if needed
