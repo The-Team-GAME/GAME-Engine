@@ -254,6 +254,9 @@ void ResourceExplorerPanel() {
     ImGui::InputText("File Name", new_file_name, sizeof(new_file_name));
 
     if (ImGui::Button("Create", ImVec2(120, 0))) {
+      // Close the popup FIRST before doing any file operations
+      ImGui::CloseCurrentPopup();
+
       std::string filename = std::string(new_file_name);
 
       // Handle different file types
@@ -279,8 +282,6 @@ void ResourceExplorerPanel() {
           Log::error("Failed to create level: " + file_path);
         }
       }
-
-      ImGui::CloseCurrentPopup();
     }
 
     ImGui::SameLine();
@@ -387,12 +388,19 @@ void ResourceExplorerPanel() {
         std::string full_path = Engine::Path(Engine::Resources::resource_path).join(entry.path).to_string();
         try {
           if (entry.is_directory) {
+            // For directories, recursively remove all cached resources within
             std::filesystem::remove_all(full_path);
+            Log::info("Deleted directory: " + entry.path);
+            // TODO: Could iterate through all files in directory and remove from cache
           }
           else {
+            // Remove from resource caches first
+            Engine::Resources::remove_from_cache(entry.path, true);
+
+            // Then delete the file
             std::filesystem::remove(full_path);
+            Log::info("Deleted file: " + entry.path);
           }
-          Log::info("Deleted: " + entry.path);
 
           if (selected_item == entry.path) {
             selected_item = "";

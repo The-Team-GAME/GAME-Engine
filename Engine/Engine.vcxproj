@@ -106,6 +106,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClCompile Include="Engine\Systems\DebugDrawSystem.cpp" />
     <ClCompile Include="Engine\Lua\GameAPI.cpp" />
     <ClCompile Include="Engine\ECS\Types.cpp" />
+    <ClCompile Include="Engine\FileIO\FileDialog.cpp" />
     <ClCompile Include="Engine\FileIO\Helpers.cpp" />
     <ClCompile Include="Engine\Systems\CollisionSystem.cpp" />
     <ClCompile Include="Engine\Audio\AudioPlayer.cpp" />
@@ -125,6 +126,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClCompile Include="Engine\GUI\widgets\ReflectionFieldWidgets.cpp" />
     <ClCompile Include="Engine\GUI\widgets\TextureAtlasWidget.cpp" />
     <ClCompile Include="Engine\SceneManager.cpp" />
+    <ClCompile Include="Engine\TIlemapManager.cpp" />
     <ClCompile Include="GameLogic\GameStates\BasicState.cpp" />
     <ClCompile Include="GameLogic\GameStates\BasicState.h" />
     <ClCompile Include="Engine\Core.cpp" />
@@ -168,11 +170,13 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="Engine\Level.h" />
     <ClInclude Include="Engine\ProjectSaveManager.h" />
     <ClInclude Include="Engine\Systems\DebugDrawSystem.h" />
+    <ClInclude Include="Engine\TIlemapManager.h" />
     <ClInclude Include="Engine\UndoManager\Commands\Commands.h" />
     <ClInclude Include="GameLogic\Components\HealthComponents.h" />
     <ClInclude Include="Engine\ECS\Reflection.h" />
     <ClInclude Include="Engine\ECS\SparseSet.h" />
     <ClInclude Include="Engine\Events\RegisterAllEvents.h" />
+    <ClInclude Include="Engine\FileIO\FileDialog.h" />
     <ClInclude Include="Engine\FileIO\Helpers.h" />
     <ClInclude Include="Engine\FileIO\Settings.h" />
     <ClInclude Include="Engine\GUI\PerformanceViewerPanel.h" />

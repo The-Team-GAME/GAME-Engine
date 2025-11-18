@@ -29,7 +29,7 @@ private:
 	Timeline timeline;
 	Engine::ECS::Entity bro;
 	Engine::ECS::Entity monkey;
-	std::unordered_map<s32, bool> entity_visibility;
+	std::unordered_map<size_t, bool> entity_visibility;
 	std::vector<Engine::ECS::Entity> timeline_entities;
 
 	std::string pending_texture_path; // Path selected by the picker
@@ -62,7 +62,7 @@ public:
 
 
 		//banana.get_component<Components::TextureAtlas>()->drawIndex = 1;
-		s32 bro_entity_id = bro.get_id();
+		size_t bro_entity_id = bro.get_id();
 		timeline.set_selected_entity_id(bro_entity_id);
 		entity_visibility[bro_entity_id] = false;
 		timeline_entities.push_back(bro);
@@ -74,7 +74,7 @@ public:
 			.add_component<Components::Texture>(Engine::Resources::load_texture("images/monkey.png"))
 			.add_component<Components::TextureAtlas>(600, 400, 1, 1, 1);
 
-		s32 monkey_entity_id = monkey.get_id();
+		size_t monkey_entity_id = monkey.get_id();
 		timeline.set_selected_entity_id(monkey_entity_id);
 		entity_visibility[monkey_entity_id] = false;
 		timeline_entities.push_back(monkey);

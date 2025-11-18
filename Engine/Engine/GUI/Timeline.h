@@ -65,7 +65,7 @@ public:
   const std::vector<TimelineClip>& get_clips() const { return clips; } //Public getter for clips, needed by TimelineState to check frame existence
 
   //to select my entity
-  void set_selected_entity_id(s32 entity_id) { m_selectedEntityID = entity_id; };
+  void set_selected_entity_id(size_t entity_id) { m_selectedEntityID = entity_id; };
   
 
 private:
@@ -89,7 +89,7 @@ private:
   s32 m_dragStartFrame = 0;     // Original start frame on drag/resize start
   s32 m_dragStartDuration = 0;  // Original duration on resize start
 
-  s32 m_selectedEntityID = 0;
+  size_t m_selectedEntityID = 0;
 
 
   bool is_config_modal_open = false; // Flag to open the new configuration modal

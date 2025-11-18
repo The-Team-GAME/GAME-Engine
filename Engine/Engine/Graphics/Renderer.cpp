@@ -605,11 +605,11 @@ namespace Engine {
       );
     }
 
-    std::pair<Math::Vec2D, bool> screen_to_viewport(const Math::Vec2D& screen_pos) {
+    Math::Vec2D screen_to_viewport(const Math::Vec2D& screen_pos) {
 
-      if (!Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled) {
-        // This means that imgui viewport mode is disabled, so we can just return the virtual coordinates
-        return { screen_to_virtual(screen_pos), true };
+      if (!Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode) {
+        // This means that panel viewport mode is disabled, so we can just return the virtual coordinates
+        return screen_to_virtual(screen_pos);
       }
 
       // Get viewport bounds from ViewportPanel (x: min_x, y: min_y, z: max_x, w: max_y)
@@ -627,22 +627,12 @@ namespace Engine {
       float normalized_x = relative_x / viewport_width;
       float normalized_y = relative_y / viewport_height;
 
-      // Check if mouse is within viewport bounds
-      bool is_in_viewport = (normalized_x >= 0.0f && normalized_x <= 1.0f &&
-        normalized_y >= 0.0f && normalized_y <= 1.0f);
-
-      // Clamp to viewport bounds
-      // normalized_x = std::max(0.0f, std::min(1.0f, normalized_x));
-      // normalized_y = std::max(0.0f, std::min(1.0f, normalized_y));
-
       // Convert to virtual coordinates
       Math::Vec2D virtual_pos;
       virtual_pos.x = normalized_x * virtual_width;
       virtual_pos.y = normalized_y * virtual_height;
 
-      // std::cout << "Viewport Mouse Position: (" << virtual_pos.x << ", " << virtual_pos.y << ")\n";
-
-      return { virtual_pos, is_in_viewport };
+      return virtual_pos;
     }
 
     Math::Vec2D virtual_to_screen(const Math::Vec2D& virtual_pos) {
@@ -1009,6 +999,31 @@ namespace Engine {
     void draw_subtexture(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords,
       const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
       draw_quad(texture, position, size, rotation, color, tex_coords);
+    }
+
+    void draw_subtexture_tiled(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords,
+      const Math::Vec2D& position, const Math::Vec2D& size, const Math::Vec2D& tile_size, f32 rotation, const Math::Vec4D& color) {
+
+      // For tiled rendering, we need to draw multiple instances of the same tile
+      // Calculate how many tiles we need in each direction
+      int num_tiles_x = static_cast<int>(std::ceil(size.x / tile_size.x));
+      int num_tiles_y = static_cast<int>(std::ceil(size.y / tile_size.y));
+
+      // Calculate top-left corner of the tiled area
+      f32 start_x = position.x - size.x * 0.5f;
+      f32 start_y = position.y - size.y * 0.5f;
+
+      // Draw each tile instance
+      for (int y = 0; y < num_tiles_y; ++y) {
+        for (int x = 0; x < num_tiles_x; ++x) {
+          // Calculate position for this tile
+          f32 tile_x = start_x + x * tile_size.x + tile_size.x * 0.5f;
+          f32 tile_y = start_y + y * tile_size.y + tile_size.y * 0.5f;
+
+          // Draw the tile at this position
+          draw_quad(texture, Math::Vec2D(tile_x, tile_y), tile_size, rotation, color, tex_coords);
+        }
+      }
     }
 
     void draw_text(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color) {
@@ -1512,6 +1527,149 @@ namespace Engine {
     void draw_subtexture_ui(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords,
       const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
       draw_ui_quad(texture, position, size, rotation, color, tex_coords);
+    }
+
+    void draw_tilemap(const std::unordered_map<int64_t, Tile>& tileMap,
+      const std::vector<AtlasEntry>& loaded_tilemaps,
+      const Math::Vec2D& tileSize,
+      const Math::Vec2D& gridOffset,
+      const Math::Vec4D& color) {
+
+      if (tileMap.empty() || loaded_tilemaps.empty()) {
+        return;
+      }
+
+      // Get bounds of the tilemap
+      int min_x = INT_MAX, min_y = INT_MAX;
+      int max_x = INT_MIN, max_y = INT_MIN;
+
+      for (const auto& [key, tile] : tileMap) {
+        if (!tile.is_valid()) continue;
+
+        int x, y;
+        // Decode key: y is upper 32 bits, x is lower 32 bits
+        y = static_cast<int>(key >> 32);
+        x = static_cast<int>(key & 0xFFFFFFFF);
+
+        min_x = std::min(min_x, x);
+        min_y = std::min(min_y, y);
+        max_x = std::max(max_x, x);
+        max_y = std::max(max_y, y);
+      }
+
+      if (min_x == INT_MAX) {
+        return; // No valid tiles
+      }
+
+      int width = max_x - min_x + 1;
+      int height = max_y - min_y + 1;
+
+      // Helper struct for rectangle merging
+      struct Rectangle {
+        int x, y, width, height;
+        Tile tile;
+      };
+
+      // Track processed tiles
+      std::vector<std::vector<bool>> processed(height, std::vector<bool>(width, false));
+      std::vector<Rectangle> rectangles;
+
+      // Helper lambda to get tile from hashmap
+      auto get_tile = [&](int x, int y) -> Tile {
+        int64_t key = (static_cast<int64_t>(y) << 32) | (static_cast<uint32_t>(x));
+        auto it = tileMap.find(key);
+        return (it != tileMap.end()) ? it->second : Tile();
+        };
+
+      // Find all rectangles using greedy algorithm
+      // Tiles can only merge if they have the same atlas_index AND tile_index
+      for (int rel_y = 0; rel_y < height; ++rel_y) {
+        for (int rel_x = 0; rel_x < width; ++rel_x) {
+          if (processed[rel_y][rel_x]) continue;
+
+          int abs_x = min_x + rel_x;
+          int abs_y = min_y + rel_y;
+          Tile tile = get_tile(abs_x, abs_y);
+
+          if (!tile.is_valid() || tile.atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
+            processed[rel_y][rel_x] = true;
+            continue;
+          }
+
+          const auto& atlas_entry = loaded_tilemaps[tile.atlas_index];
+          if (tile.tile_index >= static_cast<int>(atlas_entry.subTextures.size())) {
+            processed[rel_y][rel_x] = true;
+            continue;
+          }
+
+          // Find maximum width at this row (same tile only)
+          int max_width = 0;
+          for (int w = 0; rel_x + w < width; ++w) {
+            Tile check_tile = get_tile(abs_x + w, abs_y);
+            if (processed[rel_y][rel_x + w] ||
+              check_tile.atlas_index != tile.atlas_index ||
+              check_tile.tile_index != tile.tile_index) {
+              break;
+            }
+            max_width++;
+          }
+
+          if (max_width == 0) {
+            processed[rel_y][rel_x] = true;
+            continue;
+          }
+
+          // Expand downward while maintaining the width
+          int rect_height = 1;
+          for (int h = 1; rel_y + h < height; ++h) {
+            bool can_expand = true;
+            for (int w = 0; w < max_width; ++w) {
+              Tile check_tile = get_tile(abs_x + w, abs_y + h);
+              if (processed[rel_y + h][rel_x + w] ||
+                check_tile.atlas_index != tile.atlas_index ||
+                check_tile.tile_index != tile.tile_index) {
+                can_expand = false;
+                break;
+              }
+            }
+            if (!can_expand) break;
+            rect_height++;
+          }
+
+          // Mark all tiles in this rectangle as processed
+          for (int h = 0; h < rect_height; ++h) {
+            for (int w = 0; w < max_width; ++w) {
+              processed[rel_y + h][rel_x + w] = true;
+            }
+          }
+
+          // Store rectangle with absolute coordinates and tile info
+          rectangles.push_back({ abs_x, abs_y, max_width, rect_height, tile });
+        }
+      }
+
+      // Draw each rectangle
+      for (const Rectangle& rect : rectangles) {
+        if (!rect.tile.is_valid() || rect.tile.atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
+          continue;
+        }
+
+        const auto& atlas_entry = loaded_tilemaps[rect.tile.atlas_index];
+        if (rect.tile.tile_index >= static_cast<int>(atlas_entry.subTextures.size())) {
+          continue;
+        }
+
+        const auto& subTexture = atlas_entry.subTextures[rect.tile.tile_index];
+
+        // Calculate the world position for the center of the rectangle
+        f32 center_x = gridOffset.x + rect.x * tileSize.x + (rect.width * tileSize.x) * 0.5f;
+        f32 center_y = gridOffset.y + rect.y * tileSize.y + (rect.height * tileSize.y) * 0.5f;
+        Math::Vec2D center_world = { center_x, center_y };
+        Math::Vec2D scale = { rect.width * tileSize.x, rect.height * tileSize.y };
+
+        // Draw the merged rectangle as a single tiled subtexture
+        draw_subtexture_tiled(atlas_entry.texture_handle, subTexture.tex_coords, center_world, scale, tileSize, 0.0f, color);
+      }
     }
 
     void draw_text_ui(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color) {

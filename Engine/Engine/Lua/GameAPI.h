@@ -32,7 +32,7 @@ namespace Engine
   namespace GameAPI
   {
 
-    using EntityId = uint32_t;
+    using EntityId = size_t;
 
     struct EntityProxy
     {

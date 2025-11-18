@@ -27,10 +27,10 @@ namespace Engine {
     /* ============== //
     // Type aliases   //
     // ============== */
-    using EntityID = u32;
-    using ComponentTypeID = u32;
-    using LayerID = u32;
-    using EntityPairHash = u64; // Used for hashing entity pairs in for_each_entity_pair
+    using EntityID = size_t;
+    using ComponentTypeID = size_t;
+    using LayerID = size_t;
+    using EntityPairHash = size_t; // Used for hashing entity pairs in for_each_entity_pair
 
     /* =================== //
     // Constants           //

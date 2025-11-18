@@ -108,8 +108,8 @@ namespace ViewportPanel {
   }
 
   void draw_panel() {
-    // Only show the viewport panel if viewport mode is enabled
-    if (!Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled) {
+    // Only show the viewport panel if panel viewport mode is enabled
+    if (!Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode) {
       return;
     }
 
@@ -191,6 +191,10 @@ namespace ViewportPanel {
   Math::Vec4D get_viewport_bounds() {
     return Math::Vec4D(viewport_image_min.x, viewport_image_min.y,
       viewport_image_max.x, viewport_image_max.y);
+  }
+
+  bool is_viewport_hovered() {
+    return viewport_hovered;
   }
 
 } // namespace ViewportPanel

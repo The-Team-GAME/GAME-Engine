@@ -21,6 +21,8 @@
 #include "../Components/Components.h"
 #include "../Graphics/Renderer.h"
 #include "../InputManager.h"
+#include "../FileIO/SettingsManager.h"
+#include "../FileIO/Settings.h"
 namespace Engine
 {
   namespace Systems
@@ -29,7 +31,7 @@ namespace Engine
     public:
       StaticSpriteRenderSystem() {
         require_components<Components::Transform2D, Components::Color, Components::Texture>();
-        exclude_components<Components::TextureAtlas, Components::Distortion>();
+        exclude_components<Components::TextureAtlas, Components::Distortion >();
       }
 
       void draw_entity(const Engine::ECS::Entity& entity) override {
@@ -51,7 +53,7 @@ namespace Engine
     public:
       AtlasSpriteRenderSystem() {
         require_components<Components::Transform2D, Components::Color, Components::Texture, Components::TextureAtlas>();
-        exclude_components<Components::Distortion>();
+        exclude_components<Components::Distortion >();
       }
 
       void draw_entity(const Engine::ECS::Entity& entity) override {
@@ -73,6 +75,34 @@ namespace Engine
             *color
           );
         }
+      }
+    };
+
+    class TilemapRenderSystem : public Engine::ECS::System {
+    public:
+      TilemapRenderSystem() {
+        require_components<Components::TileMap>();
+      }
+
+      void draw_entity(const Engine::ECS::Entity& entity) override {
+        auto* int_map = entity.get_component<Components::TileMap>();
+
+        // Skip if tilemap is empty
+        if (!int_map || int_map->is_empty()) {
+          return;
+        }
+
+        // Get the atlas entries from project settings
+        const auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get();
+
+        // Draw the tilemap using the optimized renderer function with multiple atlases
+        Engine::Graphics::draw_tilemap(
+          int_map->tiles,
+          project_settings.loaded_tilemaps,
+          int_map->tile_size,
+          int_map->grid_offset,
+          Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f) // White color
+        );
       }
     };
 
@@ -373,7 +403,6 @@ namespace Engine
         }
       }
     };
-
 
   }; // namespace Systems
 } // namespace Engine
