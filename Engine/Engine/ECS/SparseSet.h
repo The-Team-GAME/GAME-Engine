@@ -76,6 +76,33 @@ namespace Engine {
 
       /*=================================================================================
       Function Brief:
+      Inserts a key with associated data into the sparse set (move version).
+
+      Parameters:
+      key - The key to insert.
+      value - The data to move and associate with the key.
+
+      Where to call it:
+      When adding data associated with a key using move semantics for efficiency.
+      ==================================================================================*/
+      void insert(size_t key, T&& value);
+
+      /*=================================================================================
+      Function Brief:
+      Constructs data in-place for a key.
+
+      Parameters:
+      key - The key to insert.
+      args - Arguments forwarded to the constructor of T.
+
+      Where to call it:
+      When constructing component data directly without creating a temporary.
+      ==================================================================================*/
+      template<typename... Args>
+      void emplace(size_t key, Args&&... args);
+
+      /*=================================================================================
+      Function Brief:
       Removes a key from the sparse set using swap-and-pop for O(1) removal.
 
       Parameters:
@@ -96,7 +123,7 @@ namespace Engine {
       Where to call it:
       When verifying if a key exists in the set (e.g., if an entity has a specific component).
       ==================================================================================*/
-      bool contains(size_t key) const;
+      bool contains(size_t key) const noexcept;
 
       /*=================================================================================
       Function Brief:
@@ -108,7 +135,7 @@ namespace Engine {
       Where to call it:
       When accessing data associated with a key (e.g., a component's data from an entity).
       ==================================================================================*/
-      T* get(size_t key);
+      T* get(size_t key) noexcept;
 
       /*=================================================================================
       Function Brief:
@@ -120,7 +147,7 @@ namespace Engine {
       Where to call it:
       When accessing data associated with a key without modifying it (e.g., a component's data from an entity).
       ==================================================================================*/
-      const T* get(size_t key) const;
+      const T* get(size_t key) const noexcept;
 
       /*=================================================================================
       Function Brief:
@@ -168,7 +195,7 @@ namespace Engine {
       Where to call it:
       When checking how many entities have a specific component.
       ==================================================================================*/
-      size_t size() const;
+      size_t size() const noexcept;
 
       /*=================================================================================
       Function Brief:
@@ -180,7 +207,7 @@ namespace Engine {
       Where to call it:
       When checking if any entities have a specific component.
       ==================================================================================*/
-      bool empty() const;
+      bool empty() const noexcept;
 
       /*=================================================================================
       Function Brief:
@@ -205,6 +232,33 @@ namespace Engine {
       When you know the maximum entity ID in advance.
       ==================================================================================*/
       void reserve(size_t capacity);
+
+      /*=================================================================================
+      Function Brief:
+      Inserts a range of keys into the sparse set.
+
+      Parameters:
+      begin - Iterator to the beginning of the range.
+      end - Iterator to the end of the range.
+
+      Where to call it:
+      When bulk inserting multiple keys at once.
+      ==================================================================================*/
+      template<typename Iterator>
+      void insert_range(Iterator begin, Iterator end);
+
+      /*=================================================================================
+      Function Brief:
+      Removes all keys that satisfy a predicate.
+
+      Parameters:
+      predicate - Function that returns true for keys to remove.
+
+      Where to call it:
+      When conditionally removing multiple elements.
+      ==================================================================================*/
+      template<typename Predicate>
+      void erase_if(Predicate predicate);
 
       /*=================================================================================
       Function Brief:
@@ -315,6 +369,68 @@ namespace Engine {
       When iterating over all component data without modifying them.
       ==================================================================================*/
       auto data_end() const { return data.end(); }
+
+      /*=================================================================================
+      Function Brief:
+      Returns a range view of all keys in the set.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When iterating over keys using range-based for loops.
+      ==================================================================================*/
+      const std::vector<size_t>& keys() const noexcept { return dense; }
+
+      /*=================================================================================
+      Function Brief:
+      Returns a range view of all values in the set.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When iterating over values using range-based for loops.
+      ==================================================================================*/
+      const std::vector<T>& values() const noexcept requires (!std::is_same_v<T, size_t>) { return data; }
+      std::vector<T>& values() noexcept requires (!std::is_same_v<T, size_t>) { return data; }
+    };
+
+    // ============================================================================
+    // SparseSet<void> - Key-only specialization (no data storage)
+    // ============================================================================
+    template<>
+    class SparseSet<void> {
+    private:
+      std::vector<size_t> sparse;
+      std::vector<size_t> dense;
+      static constexpr size_t NULL_INDEX = std::numeric_limits<size_t>::max();
+
+    public:
+      SparseSet(size_t reserve_size = 0);
+      void insert(size_t key);
+      void erase(size_t key);
+      bool contains(size_t key) const noexcept;
+      size_t key_at(size_t index) const;
+      size_t size() const noexcept;
+      bool empty() const noexcept;
+      void clear();
+      void reserve(size_t capacity);
+
+      template<typename Iterator>
+      void insert_range(Iterator begin, Iterator end);
+
+      template<typename Predicate>
+      void erase_if(Predicate predicate);
+
+      template<typename Compare>
+      void sort(Compare compare);
+
+      auto begin() { return dense.begin(); }
+      auto end() { return dense.end(); }
+      auto begin() const { return dense.begin(); }
+      auto end() const { return dense.end(); }
+      const std::vector<size_t>& keys() const noexcept { return dense; }
     };
 
     // ============================================================================
@@ -376,6 +492,59 @@ namespace Engine {
     }
 
     template<typename T>
+    void SparseSet<T>::insert(size_t key, T&& value) {
+      if (contains(key)) {
+        // Update existing value
+        size_t index = sparse[key];
+        if constexpr (!std::is_same_v<T, size_t>) {
+          data[index] = std::move(value);
+        }
+        return;
+      }
+
+      // Expand sparse array if needed
+      if (key >= sparse.size()) {
+        sparse.resize(key + 1, NULL_INDEX);
+      }
+
+      // Add to dense array and update sparse mapping
+      sparse[key] = dense.size();
+      dense.push_back(key);
+
+      // Add data
+      if constexpr (!std::is_same_v<T, size_t>) {
+        data.push_back(std::move(value));
+      }
+    }
+
+    template<typename T>
+    template<typename... Args>
+    void SparseSet<T>::emplace(size_t key, Args&&... args) {
+      if (contains(key)) {
+        // Update existing value
+        size_t index = sparse[key];
+        if constexpr (!std::is_same_v<T, size_t>) {
+          data[index] = T(std::forward<Args>(args)...);
+        }
+        return;
+      }
+
+      // Expand sparse array if needed
+      if (key >= sparse.size()) {
+        sparse.resize(key + 1, NULL_INDEX);
+      }
+
+      // Add to dense array and update sparse mapping
+      sparse[key] = dense.size();
+      dense.push_back(key);
+
+      // Emplace data
+      if constexpr (!std::is_same_v<T, size_t>) {
+        data.emplace_back(std::forward<Args>(args)...);
+      }
+    }
+
+    template<typename T>
     void SparseSet<T>::erase(size_t key) {
       if (!contains(key)) {
         return; // Key not in set
@@ -400,12 +569,12 @@ namespace Engine {
     }
 
     template<typename T>
-    bool SparseSet<T>::contains(size_t key) const {
+    bool SparseSet<T>::contains(size_t key) const noexcept {
       return key < sparse.size() && sparse[key] != NULL_INDEX;
     }
 
     template<typename T>
-    T* SparseSet<T>::get(size_t key) {
+    T* SparseSet<T>::get(size_t key) noexcept {
       if (!contains(key)) {
         return nullptr;
       }
@@ -419,7 +588,7 @@ namespace Engine {
     }
 
     template<typename T>
-    const T* SparseSet<T>::get(size_t key) const {
+    const T* SparseSet<T>::get(size_t key) const noexcept {
       if (!contains(key)) {
         return nullptr;
       }
@@ -438,9 +607,11 @@ namespace Engine {
         throw std::runtime_error("Cannot access data when T == size_t");
       }
       else {
+#ifdef _DEBUG
         if (index >= data.size()) {
           throw std::out_of_range("Index out of range");
         }
+#endif
         return data[index];
       }
     }
@@ -451,28 +622,32 @@ namespace Engine {
         throw std::runtime_error("Cannot access data when T == size_t");
       }
       else {
+#ifdef _DEBUG
         if (index >= data.size()) {
           throw std::out_of_range("Index out of range");
         }
+#endif
         return data[index];
       }
     }
 
     template<typename T>
     size_t SparseSet<T>::key_at(size_t index) const {
+#ifdef _DEBUG
       if (index >= dense.size()) {
         throw std::out_of_range("Index out of range");
       }
+#endif
       return dense[index];
     }
 
     template<typename T>
-    size_t SparseSet<T>::size() const {
+    size_t SparseSet<T>::size() const noexcept {
       return dense.size();
     }
 
     template<typename T>
-    bool SparseSet<T>::empty() const {
+    bool SparseSet<T>::empty() const noexcept {
       return dense.empty();
     }
 
@@ -487,10 +662,31 @@ namespace Engine {
 
     template<typename T>
     void SparseSet<T>::reserve(size_t capacity) {
-      sparse.resize(capacity, NULL_INDEX);
+      if (capacity > sparse.size()) {
+        sparse.resize(capacity, NULL_INDEX);
+      }
       dense.reserve(capacity);
       if constexpr (!std::is_same_v<T, size_t>) {
         data.reserve(capacity);
+      }
+    }
+
+    template<typename T>
+    template<typename Iterator>
+    void SparseSet<T>::insert_range(Iterator begin, Iterator end) {
+      for (auto it = begin; it != end; ++it) {
+        insert(*it);
+      }
+    }
+
+    template<typename T>
+    template<typename Predicate>
+    void SparseSet<T>::erase_if(Predicate predicate) {
+      // Iterate backwards to avoid invalidation issues
+      for (size_t i = dense.size(); i-- > 0; ) {
+        if (predicate(dense[i])) {
+          erase(dense[i]);
+        }
       }
     }
 
@@ -508,32 +704,130 @@ namespace Engine {
         return compare(dense[a], dense[b]);
         });
 
-      // Create temporary arrays for the sorted data
-      std::vector<size_t> sorted_dense;
-      sorted_dense.reserve(dense.size());
-
-      std::vector<T> sorted_data;
-      if constexpr (!std::is_same_v<T, size_t>) {
-        sorted_data.reserve(data.size());
-      }
-
-      // Copy elements in sorted order
+      // Apply permutation in-place using cycles
       for (size_t i = 0; i < indices.size(); ++i) {
-        size_t old_index = indices[i];
-        sorted_dense.push_back(dense[old_index]);
-
-        if constexpr (!std::is_same_v<T, size_t>) {
-          sorted_data.push_back(data[old_index]);
+        while (indices[i] != i) {
+          size_t target = indices[i];
+          std::swap(dense[i], dense[target]);
+          if constexpr (!std::is_same_v<T, size_t>) {
+            std::swap(data[i], data[target]);
+          }
+          std::swap(indices[i], indices[target]);
         }
       }
 
-      // Replace with sorted arrays
-      dense = std::move(sorted_dense);
-      if constexpr (!std::is_same_v<T, size_t>) {
-        data = std::move(sorted_data);
+      // Update sparse array to point to new indices
+      for (size_t i = 0; i < dense.size(); ++i) {
+        sparse[dense[i]] = i;
+      }
+    }
+
+    // ============================================================================
+    // SparseSet<void> Implementation
+    // ============================================================================
+
+    inline SparseSet<void>::SparseSet(size_t reserve_size) {
+      if (reserve_size > 0) {
+        sparse.resize(reserve_size, NULL_INDEX);
+      }
+    }
+
+    inline void SparseSet<void>::insert(size_t key) {
+      if (contains(key)) {
+        return;
       }
 
-      // Update sparse array to point to new indices
+      if (key >= sparse.size()) {
+        sparse.resize(key + 1, NULL_INDEX);
+      }
+
+      sparse[key] = dense.size();
+      dense.push_back(key);
+    }
+
+    inline void SparseSet<void>::erase(size_t key) {
+      if (!contains(key)) {
+        return;
+      }
+
+      size_t index = sparse[key];
+      size_t last = dense.back();
+
+      dense[index] = last;
+      sparse[last] = index;
+
+      dense.pop_back();
+      sparse[key] = NULL_INDEX;
+    }
+
+    inline bool SparseSet<void>::contains(size_t key) const noexcept {
+      return key < sparse.size() && sparse[key] != NULL_INDEX;
+    }
+
+    inline size_t SparseSet<void>::key_at(size_t index) const {
+#ifdef _DEBUG
+      if (index >= dense.size()) {
+        throw std::out_of_range("Index out of range");
+      }
+#endif
+      return dense[index];
+    }
+
+    inline size_t SparseSet<void>::size() const noexcept {
+      return dense.size();
+    }
+
+    inline bool SparseSet<void>::empty() const noexcept {
+      return dense.empty();
+    }
+
+    inline void SparseSet<void>::clear() {
+      sparse.clear();
+      dense.clear();
+    }
+
+    inline void SparseSet<void>::reserve(size_t capacity) {
+      if (capacity > sparse.size()) {
+        sparse.resize(capacity, NULL_INDEX);
+      }
+      dense.reserve(capacity);
+    }
+
+    template<typename Iterator>
+    void SparseSet<void>::insert_range(Iterator begin, Iterator end) {
+      for (auto it = begin; it != end; ++it) {
+        insert(*it);
+      }
+    }
+
+    template<typename Predicate>
+    void SparseSet<void>::erase_if(Predicate predicate) {
+      for (size_t i = dense.size(); i-- > 0; ) {
+        if (predicate(dense[i])) {
+          erase(dense[i]);
+        }
+      }
+    }
+
+    template<typename Compare>
+    void SparseSet<void>::sort(Compare compare) {
+      std::vector<size_t> indices(dense.size());
+      for (size_t i = 0; i < indices.size(); ++i) {
+        indices[i] = i;
+      }
+
+      std::sort(indices.begin(), indices.end(), [&](size_t a, size_t b) {
+        return compare(dense[a], dense[b]);
+        });
+
+      for (size_t i = 0; i < indices.size(); ++i) {
+        while (indices[i] != i) {
+          size_t target = indices[i];
+          std::swap(dense[i], dense[target]);
+          std::swap(indices[i], indices[target]);
+        }
+      }
+
       for (size_t i = 0; i < dense.size(); ++i) {
         sparse[dense[i]] = i;
       }
