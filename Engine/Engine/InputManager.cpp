@@ -24,6 +24,7 @@
 #include "KeyCodes.h"
 #include "GUI/ViewportPanel.h"
 #include "FileIO/Settings.h"
+#include <imgui.h>
 
 namespace
 {
@@ -131,6 +132,10 @@ namespace Engine
 
   std::optional<glm::vec2> Input::get_mouse_position_if_in_viewport()
   {
+    // Don't return mouse position if ImGui is capturing the mouse
+    if (ImGui::GetIO().WantCaptureMouse)
+      return std::nullopt;
+
     if (is_cursor_in_viewport)
       return mousePosition;
     else
@@ -144,6 +149,10 @@ namespace Engine
 
   std::optional<glm::vec2> Input::get_mouse_world_position_if_in_viewport()
   {
+    // Don't return mouse position if ImGui is capturing the mouse
+    if (ImGui::GetIO().WantCaptureMouse)
+      return std::nullopt;
+
     if (is_cursor_in_viewport)
       return Engine::Graphics::virtual_to_world(mousePosition);
     else
