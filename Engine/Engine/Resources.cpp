@@ -713,11 +713,6 @@ bool Engine::Resources::open_level(const std::string& filepath, bool append_reso
   // Load the level
   Engine::Level level = load_level(filepath, append_resource_path, false);
 
-  // Check if level is empty (failed to load)
-  if (level.entities.empty()) {
-    Log::warning("Failed to open level (empty or invalid): " + filepath);
-    return false;
-  }
 
   // Instantiate the level into the world
   level.instantiate_into_world();
