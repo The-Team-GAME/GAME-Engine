@@ -63,15 +63,18 @@ void Engine::ProjectSaveManager::save_all_dirty()
         // Save specific level
         Log::info("Saving level: " + s.level_path);
 
-        // Construct full path from relative path
-        std::string full_path = Engine::Path(Engine::Resources::resource_path).join(s.level_path);
+        // Generate level from current world state
+        Engine::Level level = Engine::Level::from_world();
 
-        auto it = Engine::Resources::level_cache.find(full_path);
-        if (it != Engine::Resources::level_cache.end()) {
-          Engine::Resources::save_level(s.level_path, it->second, true);
+        // Get relative path for saving
+        std::string relative_path = Engine::Resources::get_relative_path(s.level_path);
+
+        // Save the level
+        if (Engine::Resources::save_level(relative_path, level, true)) {
+          Log::info("Level saved successfully: " + relative_path);
         }
         else {
-          Log::error("Failed to save level - not found in cache: " + s.level_path);
+          Log::error("Failed to save level: " + relative_path);
         }
       }
       else if constexpr (std::is_same_v<T, DirtyStates::Prefab>) {
