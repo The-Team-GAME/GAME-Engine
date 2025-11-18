@@ -51,7 +51,7 @@ namespace Engine {
     void destroy_entities_with()
     {
       auto& containers = Internal::get_containers();
-      
+
       // Create a vector copy to avoid iterator invalidation
       std::vector<EntityID> entities_to_check;
       entities_to_check.reserve(containers.active_entities.size());
@@ -59,7 +59,7 @@ namespace Engine {
       {
         entities_to_check.push_back(entityId);
       }
-      
+
       // Now iterate over the copy and destroy matching entities
       for (EntityID entityId : entities_to_check)
       {
@@ -264,7 +264,7 @@ namespace Engine {
       // Iterate through all active entities as LHS
       for (size_t i = 0; i < containers.active_entities.size(); ++i)
       {
-        EntityID lhs_id = containers.active_entities.entity_at(i);
+        EntityID lhs_id = containers.active_entities.key_at(i);
         auto lhs_it = containers.entity_signatures.find(lhs_id);
         if (lhs_it == containers.entity_signatures.end())
           continue;
@@ -277,7 +277,7 @@ namespace Engine {
         // Iterate through all active entities as RHS
         for (size_t j = 0; j < containers.active_entities.size(); ++j)
         {
-          EntityID rhs_id = containers.active_entities.entity_at(j);
+          EntityID rhs_id = containers.active_entities.key_at(j);
           if (lhs_id == rhs_id) continue; // Skip self-pairs
 
           auto rhs_it = containers.entity_signatures.find(rhs_id);
@@ -386,7 +386,7 @@ namespace Engine {
     //  // Iterate through all active entities
     //  for (size_t i = 0; i < containers.active_entities.size(); ++i)
     //  {
-    //    EntityID id = containers.active_entities.entity_at(i);
+    //    EntityID id = containers.active_entities.key_at(i);
     //    auto it = containers.entity_signatures.find(id);
     //    if (it != containers.entity_signatures.end())
     //    {

@@ -19,21 +19,22 @@
 #include <vector>
 #include <algorithm>
 #include <stdexcept>
+#include <limits>
 
 namespace Engine {
   namespace ECS {
 
     /* ============================================================ //
-    // SparseSet - Efficient entity storage with O(1) operations   //
+    // SparseSet - Efficient storage with O(1) operations          //
     // ============================================================ */
-    template<typename T = EntityID>
+    template<typename T = size_t>
     class SparseSet {
     private:
-      std::vector<EntityID> sparse;  // Maps entity ID to dense array index
-      std::vector<EntityID> dense;   // Dense array of entity IDs
-      std::vector<T> data;           // Dense array of component data (optional)
+      std::vector<size_t> sparse;    // Maps key to dense array index
+      std::vector<size_t> dense;     // Dense array of keys
+      std::vector<T> data;           // Dense array of data (optional)
 
-      static constexpr EntityID NULL_INDEX = static_cast<EntityID>(-1);
+      static constexpr size_t NULL_INDEX = std::numeric_limits<size_t>::max();
 
     public:
       /*=================================================================================
@@ -50,76 +51,76 @@ namespace Engine {
 
       /*=================================================================================
       Function Brief:
-      Inserts an entity into the sparse set. If the entity already exists, does nothing.
+      Inserts a key into the sparse set. If the key already exists, does nothing.
 
       Parameters:
-      entity - The EntityID to insert.
+      key - The key to insert.
 
       Where to call it:
-      When adding an entity to a component array or system entity set.
+      When adding a key to the set (e.g., an entity to a component array or system entity set).
       ==================================================================================*/
-      void insert(EntityID entity);
+      void insert(size_t key);
 
       /*=================================================================================
       Function Brief:
-      Inserts an entity with associated data into the sparse set.
+      Inserts a key with associated data into the sparse set.
 
       Parameters:
-      entity - The EntityID to insert.
-      value - The data to associate with the entity.
+      key - The key to insert.
+      value - The data to associate with the key.
 
       Where to call it:
-      When adding a component to an entity in a component array.
+      When adding data associated with a key (e.g., a component to an entity in a component array).
       ==================================================================================*/
-      void insert(EntityID entity, const T& value);
+      void insert(size_t key, const T& value);
 
       /*=================================================================================
       Function Brief:
-      Removes an entity from the sparse set using swap-and-pop for O(1) removal.
+      Removes a key from the sparse set using swap-and-pop for O(1) removal.
 
       Parameters:
-      entity - The EntityID to remove.
+      key - The key to remove.
 
       Where to call it:
-      When removing a component from an entity or removing an entity from a system.
+      When removing data from the set (e.g., a component from an entity or an entity from a system).
       ==================================================================================*/
-      void erase(EntityID entity);
+      void erase(size_t key);
 
       /*=================================================================================
       Function Brief:
-      Checks if the sparse set contains the specified entity.
+      Checks if the sparse set contains the specified key.
 
       Parameters:
-      entity - The EntityID to check.
+      key - The key to check.
 
       Where to call it:
-      When verifying if an entity has a specific component.
+      When verifying if a key exists in the set (e.g., if an entity has a specific component).
       ==================================================================================*/
-      bool contains(EntityID entity) const;
+      bool contains(size_t key) const;
 
       /*=================================================================================
       Function Brief:
-      Gets the data associated with an entity. Returns nullptr if not found.
+      Gets the data associated with a key. Returns nullptr if not found.
 
       Parameters:
-      entity - The EntityID to get data for.
+      key - The key to get data for.
 
       Where to call it:
-      When accessing a component's data from an entity.
+      When accessing data associated with a key (e.g., a component's data from an entity).
       ==================================================================================*/
-      T* get(EntityID entity);
+      T* get(size_t key);
 
       /*=================================================================================
       Function Brief:
-      Gets the data associated with an entity (const version).
+      Gets the data associated with a key (const version).
 
       Parameters:
-      entity - The EntityID to get data for.
+      key - The key to get data for.
 
       Where to call it:
-      When accessing a component's data from an entity without modifying it.
+      When accessing data associated with a key without modifying it (e.g., a component's data from an entity).
       ==================================================================================*/
-      const T* get(EntityID entity) const;
+      const T* get(size_t key) const;
 
       /*=================================================================================
       Function Brief:
@@ -147,15 +148,15 @@ namespace Engine {
 
       /*=================================================================================
       Function Brief:
-      Gets the entity ID at a specific index in the dense array.
+      Gets the key at a specific index in the dense array.
 
       Parameters:
       index - The index in the dense array.
 
       Where to call it:
-      When iterating over all entities in the set.
+      When iterating over all keys in the set (e.g., all entities).
       ==================================================================================*/
-      EntityID entity_at(size_t index) const;
+      size_t key_at(size_t index) const;
 
       /*=================================================================================
       Function Brief:
@@ -210,60 +211,60 @@ namespace Engine {
       Sorts the dense array using a custom comparator function.
 
       Parameters:
-      compare - Comparator function that takes two EntityIDs and returns true if
+      compare - Comparator function that takes two keys and returns true if
                 the first should come before the second.
 
       Where to call it:
-      When you need to sort entities by a specific criteria (e.g., layer priority).
+      When you need to sort keys by a specific criteria (e.g., entities by layer priority).
       ==================================================================================*/
       template<typename Compare>
       void sort(Compare compare);
 
       /*=================================================================================
       Function Brief:
-      Returns an iterator to the beginning of the dense entity array.
+      Returns an iterator to the beginning of the dense key array.
 
       Parameters:
       None.
 
       Where to call it:
-      When iterating over all entities in the set.
+      When iterating over all keys in the set.
       ==================================================================================*/
       auto begin() { return dense.begin(); }
 
       /*=================================================================================
       Function Brief:
-      Returns an iterator to the end of the dense entity array.
+      Returns an iterator to the end of the dense key array.
 
       Parameters:
       None.
 
       Where to call it:
-      When iterating over all entities in the set.
+      When iterating over all keys in the set.
       ==================================================================================*/
       auto end() { return dense.end(); }
 
       /*=================================================================================
       Function Brief:
-      Returns a const iterator to the beginning of the dense entity array.
+      Returns a const iterator to the beginning of the dense key array.
 
       Parameters:
       None.
 
       Where to call it:
-      When iterating over all entities in the set without modifying them.
+      When iterating over all keys in the set without modifying them.
       ==================================================================================*/
       auto begin() const { return dense.begin(); }
 
       /*=================================================================================
       Function Brief:
-      Returns a const iterator to the end of the dense entity array.
+      Returns a const iterator to the end of the dense key array.
 
       Parameters:
       None.
 
       Where to call it:
-      When iterating over all entities in the set without modifying them.
+      When iterating over all keys in the set without modifying them.
       ==================================================================================*/
       auto end() const { return dense.end(); }
 
@@ -328,113 +329,113 @@ namespace Engine {
     }
 
     template<typename T>
-    void SparseSet<T>::insert(EntityID entity) {
-      if (contains(entity)) {
+    void SparseSet<T>::insert(size_t key) {
+      if (contains(key)) {
         return; // Already exists
       }
 
       // Expand sparse array if needed
-      if (entity >= sparse.size()) {
-        sparse.resize(entity + 1, NULL_INDEX);
+      if (key >= sparse.size()) {
+        sparse.resize(key + 1, NULL_INDEX);
       }
 
       // Add to dense array and update sparse mapping
-      sparse[entity] = static_cast<EntityID>(dense.size());
-      dense.push_back(entity);
+      sparse[key] = dense.size();
+      dense.push_back(key);
 
       // Add default-constructed data
-      if constexpr (!std::is_same_v<T, EntityID>) {
+      if constexpr (!std::is_same_v<T, size_t>) {
         data.emplace_back();
       }
     }
 
     template<typename T>
-    void SparseSet<T>::insert(EntityID entity, const T& value) {
-      if (contains(entity)) {
+    void SparseSet<T>::insert(size_t key, const T& value) {
+      if (contains(key)) {
         // Update existing value
-        EntityID index = sparse[entity];
-        if constexpr (!std::is_same_v<T, EntityID>) {
+        size_t index = sparse[key];
+        if constexpr (!std::is_same_v<T, size_t>) {
           data[index] = value;
         }
         return;
       }
 
       // Expand sparse array if needed
-      if (entity >= sparse.size()) {
-        sparse.resize(entity + 1, NULL_INDEX);
+      if (key >= sparse.size()) {
+        sparse.resize(key + 1, NULL_INDEX);
       }
 
       // Add to dense array and update sparse mapping
-      sparse[entity] = static_cast<EntityID>(dense.size());
-      dense.push_back(entity);
+      sparse[key] = dense.size();
+      dense.push_back(key);
 
       // Add data
-      if constexpr (!std::is_same_v<T, EntityID>) {
+      if constexpr (!std::is_same_v<T, size_t>) {
         data.push_back(value);
       }
     }
 
     template<typename T>
-    void SparseSet<T>::erase(EntityID entity) {
-      if (!contains(entity)) {
-        return; // Entity not in set
+    void SparseSet<T>::erase(size_t key) {
+      if (!contains(key)) {
+        return; // Key not in set
       }
 
       // Swap-and-pop removal for O(1) deletion
-      EntityID index = sparse[entity];
-      EntityID last = dense.back();
+      size_t index = sparse[key];
+      size_t last = dense.back();
 
       // Swap with last element
       dense[index] = last;
       sparse[last] = index;
 
-      if constexpr (!std::is_same_v<T, EntityID>) {
+      if constexpr (!std::is_same_v<T, size_t>) {
         data[index] = std::move(data.back());
         data.pop_back();
       }
 
       // Remove last element
       dense.pop_back();
-      sparse[entity] = NULL_INDEX;
+      sparse[key] = NULL_INDEX;
     }
 
     template<typename T>
-    bool SparseSet<T>::contains(EntityID entity) const {
-      return entity < sparse.size() && sparse[entity] != NULL_INDEX;
+    bool SparseSet<T>::contains(size_t key) const {
+      return key < sparse.size() && sparse[key] != NULL_INDEX;
     }
 
     template<typename T>
-    T* SparseSet<T>::get(EntityID entity) {
-      if (!contains(entity)) {
+    T* SparseSet<T>::get(size_t key) {
+      if (!contains(key)) {
         return nullptr;
       }
-      if constexpr (std::is_same_v<T, EntityID>) {
-        return nullptr; // No data storage for EntityID specialization
+      if constexpr (std::is_same_v<T, size_t>) {
+        return nullptr; // No data storage when T == size_t
       }
       else {
-        EntityID index = sparse[entity];
+        size_t index = sparse[key];
         return &data[index];
       }
     }
 
     template<typename T>
-    const T* SparseSet<T>::get(EntityID entity) const {
-      if (!contains(entity)) {
+    const T* SparseSet<T>::get(size_t key) const {
+      if (!contains(key)) {
         return nullptr;
       }
-      if constexpr (std::is_same_v<T, EntityID>) {
-        return nullptr; // No data storage for EntityID specialization
+      if constexpr (std::is_same_v<T, size_t>) {
+        return nullptr; // No data storage when T == size_t
       }
       else {
-        EntityID index = sparse[entity];
+        size_t index = sparse[key];
         return &data[index];
       }
     }
 
     template<typename T>
     T& SparseSet<T>::at(size_t index) {
-      if constexpr (std::is_same_v<T, EntityID>) {
-        throw std::runtime_error("Cannot access data in EntityID specialization");
+      if constexpr (std::is_same_v<T, size_t>) {
+        throw std::runtime_error("Cannot access data when T == size_t");
       }
       else {
         if (index >= data.size()) {
@@ -446,8 +447,8 @@ namespace Engine {
 
     template<typename T>
     const T& SparseSet<T>::at(size_t index) const {
-      if constexpr (std::is_same_v<T, EntityID>) {
-        throw std::runtime_error("Cannot access data in EntityID specialization");
+      if constexpr (std::is_same_v<T, size_t>) {
+        throw std::runtime_error("Cannot access data when T == size_t");
       }
       else {
         if (index >= data.size()) {
@@ -458,7 +459,7 @@ namespace Engine {
     }
 
     template<typename T>
-    EntityID SparseSet<T>::entity_at(size_t index) const {
+    size_t SparseSet<T>::key_at(size_t index) const {
       if (index >= dense.size()) {
         throw std::out_of_range("Index out of range");
       }
@@ -479,7 +480,7 @@ namespace Engine {
     void SparseSet<T>::clear() {
       sparse.clear();
       dense.clear();
-      if constexpr (!std::is_same_v<T, EntityID>) {
+      if constexpr (!std::is_same_v<T, size_t>) {
         data.clear();
       }
     }
@@ -488,7 +489,7 @@ namespace Engine {
     void SparseSet<T>::reserve(size_t capacity) {
       sparse.resize(capacity, NULL_INDEX);
       dense.reserve(capacity);
-      if constexpr (!std::is_same_v<T, EntityID>) {
+      if constexpr (!std::is_same_v<T, size_t>) {
         data.reserve(capacity);
       }
     }
@@ -508,11 +509,11 @@ namespace Engine {
         });
 
       // Create temporary arrays for the sorted data
-      std::vector<EntityID> sorted_dense;
+      std::vector<size_t> sorted_dense;
       sorted_dense.reserve(dense.size());
 
       std::vector<T> sorted_data;
-      if constexpr (!std::is_same_v<T, EntityID>) {
+      if constexpr (!std::is_same_v<T, size_t>) {
         sorted_data.reserve(data.size());
       }
 
@@ -521,20 +522,20 @@ namespace Engine {
         size_t old_index = indices[i];
         sorted_dense.push_back(dense[old_index]);
 
-        if constexpr (!std::is_same_v<T, EntityID>) {
+        if constexpr (!std::is_same_v<T, size_t>) {
           sorted_data.push_back(data[old_index]);
         }
       }
 
       // Replace with sorted arrays
       dense = std::move(sorted_dense);
-      if constexpr (!std::is_same_v<T, EntityID>) {
+      if constexpr (!std::is_same_v<T, size_t>) {
         data = std::move(sorted_data);
       }
 
       // Update sparse array to point to new indices
       for (size_t i = 0; i < dense.size(); ++i) {
-        sparse[dense[i]] = static_cast<EntityID>(i);
+        sparse[dense[i]] = i;
       }
     }
 
