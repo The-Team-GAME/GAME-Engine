@@ -24,27 +24,10 @@ namespace TilemapManager {
     // Grid settings
     float grid_snap = 64.0f;
     Math::Vec2D grid_offset = { 0.0f, 0.0f };
-
-    // Tilemap entity per layer (stores TileMap component)
-    std::unordered_map<std::string, Engine::ECS::Entity> tilemap_entities_per_layer;
   } // anonymous namespace
 
   void init() {
-    // Find existing TileMap entities in the world and register them
-    tilemap_entities_per_layer.clear();
-    
-    for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
-      auto layers = entity.get_layers();
-      for (Engine::ECS::LayerID layer_id = 0; layer_id < Engine::ECS::MAX_LAYERS; ++layer_id) {
-        if (layers.test(layer_id)) {
-          std::string layer_name = Engine::ECS::get_layer_name(layer_id);
-          if (!layer_name.empty()) {
-            // Register the existing entity for this layer
-            tilemap_entities_per_layer[layer_name] = entity;
-          }
-        }
-      }
-    }
+    // No longer need to maintain a cache - we query ECS directly
   }
 
   void set_grid_size(float size) {
@@ -84,17 +67,9 @@ namespace TilemapManager {
   }
 
   Engine::ECS::Entity get_or_create_tilemap_entity(const std::string& layer_name) {
-    // First check our cache
-    auto it = tilemap_entities_per_layer.find(layer_name);
-    if (it != tilemap_entities_per_layer.end() && it->second.is_valid()) {
-      return it->second;
-    }
-
     // Check if there's already a TileMap entity on this layer in the world
     for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
       if (entity.is_on_layer(layer_name)) {
-        // Found an existing TileMap entity on this layer, register it
-        tilemap_entities_per_layer[layer_name] = entity;
         return entity;
       }
     }
@@ -110,20 +85,21 @@ namespace TilemapManager {
     int_map->tile_size = { grid_snap, grid_snap };
     int_map->grid_offset = grid_offset;
 
-    tilemap_entities_per_layer[layer_name] = entity;
     return entity;
   }
 
   Engine::Graphics::Tile get_tile_at(const std::string& layer_name, int grid_x, int grid_y) {
-    auto it = tilemap_entities_per_layer.find(layer_name);
-    if (it == tilemap_entities_per_layer.end() || !it->second.is_valid()) {
-      return Engine::Graphics::Tile();
+    // Find the TileMap entity on this layer
+    for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
+      if (entity.is_on_layer(layer_name)) {
+        auto* int_map = entity.get_component<Components::TileMap>();
+        if (int_map) {
+          return int_map->get_tile(grid_x, grid_y);
+        }
+      }
     }
 
-    auto* int_map = it->second.get_component<Components::TileMap>();
-    if (!int_map) return Engine::Graphics::Tile();
-
-    return int_map->get_tile(grid_x, grid_y);
+    return Engine::Graphics::Tile();
   }
 
   void rebuild_tilemap_for_layer(const std::string& layer_name,
@@ -136,19 +112,12 @@ namespace TilemapManager {
       }
     }
 
-    // Get or find the tilemap entity for this layer (don't create if it doesn't exist)
+    // Find the tilemap entity for this layer (don't create if it doesn't exist)
     Engine::ECS::Entity tilemap_entity;
-    auto it = tilemap_entities_per_layer.find(layer_name);
-    if (it != tilemap_entities_per_layer.end() && it->second.is_valid()) {
-      tilemap_entity = it->second;
-    } else {
-      // Search for existing TileMap entity on this layer
-      for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
-        if (entity.is_on_layer(layer_name)) {
-          tilemap_entity = entity;
-          tilemap_entities_per_layer[layer_name] = entity; // Register it
-          break;
-        }
+    for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
+      if (entity.is_on_layer(layer_name)) {
+        tilemap_entity = entity;
+        break;
       }
     }
 
@@ -305,13 +274,20 @@ namespace TilemapManager {
     int grid_x, grid_y;
     world_to_grid(world_pos, grid_x, grid_y);
 
-    // Get the tilemap entity
-    auto it = tilemap_entities_per_layer.find(layer_name);
-    if (it == tilemap_entities_per_layer.end() || !it->second.is_valid()) {
+    // Find the tilemap entity on this layer
+    Engine::ECS::Entity tilemap_entity;
+    for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
+      if (entity.is_on_layer(layer_name)) {
+        tilemap_entity = entity;
+        break;
+      }
+    }
+
+    if (!tilemap_entity.is_valid()) {
       return;
     }
 
-    auto* int_map = it->second.get_component<Components::TileMap>();
+    auto* int_map = tilemap_entity.get_component<Components::TileMap>();
     if (!int_map) return;
 
     Engine::Graphics::Tile old_tile = int_map->get_tile(grid_x, grid_y);
@@ -332,14 +308,22 @@ namespace TilemapManager {
 
   void update_all_tile_dimensions(const std::vector<Engine::Graphics::AtlasEntry>& loaded_tilemaps) {
     // Update tile size and grid offset in all tilemap entities and rebuild collision entities
-    for (auto& [layer_name, entity] : tilemap_entities_per_layer) {
-      if (entity.is_valid()) {
-        auto* int_map = entity.get_component<Components::TileMap>();
-        if (int_map) {
-          int_map->tile_size = { grid_snap, grid_snap };
-          int_map->grid_offset = grid_offset;
+    for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
+      auto* int_map = entity.get_component<Components::TileMap>();
+      if (int_map) {
+        int_map->tile_size = { grid_snap, grid_snap };
+        int_map->grid_offset = grid_offset;
+      }
+
+      // Rebuild for each layer this entity is on
+      auto layers = entity.get_layers();
+      for (Engine::ECS::LayerID layer_id = 0; layer_id < Engine::ECS::MAX_LAYERS; ++layer_id) {
+        if (layers.test(layer_id)) {
+          std::string layer_name = Engine::ECS::get_layer_name(layer_id);
+          if (!layer_name.empty()) {
+            rebuild_tilemap_for_layer(layer_name, loaded_tilemaps);
+          }
         }
-        rebuild_tilemap_for_layer(layer_name, loaded_tilemaps);
       }
     }
   }
