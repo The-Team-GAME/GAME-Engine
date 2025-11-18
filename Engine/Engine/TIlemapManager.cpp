@@ -30,8 +30,21 @@ namespace TilemapManager {
   } // anonymous namespace
 
   void init() {
-    // Find existing TileMap entities
+    // Find existing TileMap entities in the world and register them
     tilemap_entities_per_layer.clear();
+    
+    for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
+      auto layers = entity.get_layers();
+      for (Engine::ECS::LayerID layer_id = 0; layer_id < Engine::ECS::MAX_LAYERS; ++layer_id) {
+        if (layers.test(layer_id)) {
+          std::string layer_name = Engine::ECS::get_layer_name(layer_id);
+          if (!layer_name.empty()) {
+            // Register the existing entity for this layer
+            tilemap_entities_per_layer[layer_name] = entity;
+          }
+        }
+      }
+    }
   }
 
   void set_grid_size(float size) {
@@ -71,9 +84,19 @@ namespace TilemapManager {
   }
 
   Engine::ECS::Entity get_or_create_tilemap_entity(const std::string& layer_name) {
+    // First check our cache
     auto it = tilemap_entities_per_layer.find(layer_name);
     if (it != tilemap_entities_per_layer.end() && it->second.is_valid()) {
       return it->second;
+    }
+
+    // Check if there's already a TileMap entity on this layer in the world
+    for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
+      if (entity.is_on_layer(layer_name)) {
+        // Found an existing TileMap entity on this layer, register it
+        tilemap_entities_per_layer[layer_name] = entity;
+        return entity;
+      }
     }
 
     // Create new tilemap entity
@@ -113,13 +136,28 @@ namespace TilemapManager {
       }
     }
 
-    // Get the tilemap entity for this layer
+    // Get or find the tilemap entity for this layer (don't create if it doesn't exist)
+    Engine::ECS::Entity tilemap_entity;
     auto it = tilemap_entities_per_layer.find(layer_name);
-    if (it == tilemap_entities_per_layer.end() || !it->second.is_valid()) {
+    if (it != tilemap_entities_per_layer.end() && it->second.is_valid()) {
+      tilemap_entity = it->second;
+    } else {
+      // Search for existing TileMap entity on this layer
+      for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
+        if (entity.is_on_layer(layer_name)) {
+          tilemap_entity = entity;
+          tilemap_entities_per_layer[layer_name] = entity; // Register it
+          break;
+        }
+      }
+    }
+
+    // If no tilemap entity exists, nothing to rebuild
+    if (!tilemap_entity.is_valid()) {
       return;
     }
 
-    auto* int_map = it->second.get_component<Components::TileMap>();
+    auto* int_map = tilemap_entity.get_component<Components::TileMap>();
     if (!int_map || int_map->is_empty()) {
       return;
     }

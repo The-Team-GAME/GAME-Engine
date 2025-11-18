@@ -35,11 +35,11 @@ void Engine::Level::instantiate_into_world()
 
   for (const auto& entity_value : entities) {
     Engine::ECS::create_entity_from_generic_value(entity_value);
-    // TODO: we need a way to mark the entities as belonging to a specific level
+    // This creates all entities including TileMap entities which store the tile data
   }
 
-  // After loading all entities, rebuild tile entities from TileMap components
-  // This is done in TilemapPanel::init() which gets called after level load
+  // After loading all entities (including TileMap entities), TilemapPanel::init()
+  // will be called which registers the TileMap entities and rebuilds collision entities
 }
 
 std::string Engine::LevelManager::get_current_level_path()
