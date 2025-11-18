@@ -193,4 +193,8 @@ namespace ViewportPanel {
       viewport_image_max.x, viewport_image_max.y);
   }
 
+  bool is_viewport_hovered() {
+    return viewport_hovered;
+  }
+
 } // namespace ViewportPanel
