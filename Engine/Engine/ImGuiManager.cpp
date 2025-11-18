@@ -394,49 +394,51 @@ namespace ImGuiManager {
         ImGui::SetNextWindowSize(ImVec2(toast_width, 0), ImGuiCond_Always);
 
         // Style based on toast type
-        ImVec4 bg_color;
+        ImVec4 border_color;
         const char* icon;
         switch (toast.type)
         {
         case ImGuiManager::ToastType::Info:
-          bg_color = ImVec4(0.2f, 0.4f, 0.8f, 0.9f);
+          border_color = ImVec4(0.2f, 0.4f, 0.8f, 1.0f);
           icon = "[INFO]";
           break;
         case ImGuiManager::ToastType::Warning:
-          bg_color = ImVec4(0.8f, 0.6f, 0.2f, 0.9f);
+          border_color = ImVec4(0.8f, 0.6f, 0.2f, 1.0f);
           icon = "[WARNING]";
           break;
         case ImGuiManager::ToastType::Error:
-          bg_color = ImVec4(0.8f, 0.2f, 0.2f, 0.9f);
+          border_color = ImVec4(0.8f, 0.2f, 0.2f, 1.0f);
           icon = "[ERROR]";
           break;
         default:
-          bg_color = ImVec4(0.2f, 0.4f, 0.8f, 0.9f);
+          border_color = ImVec4(0.2f, 0.4f, 0.8f, 1.0f);
           icon = "[INFO]";
           break;
         }
 
-        ImGui::PushStyleColor(ImGuiCol_WindowBg, bg_color);
+        ImGui::PushStyleColor(ImGuiCol_Border, border_color);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 2.0f);
 
         std::string window_id = "##Toast" + std::to_string(i);
-        ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs |
+        ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
           ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
-          ImGuiWindowFlags_NoFocusOnAppearing;
-
-        if (ImGui::Begin(window_id.c_str(), nullptr, flags))
+          ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs |
+          ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;        if (ImGui::Begin(window_id.c_str(), nullptr, flags))
         {
-          ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "%s", icon);
+          ImGui::TextColored(border_color, "%s", icon);
           ImGui::SameLine();
           ImGui::TextWrapped("%s", toast.message.c_str());
 
-          // Progress bar
+          // Progress bar with matching color
+          ImGui::PushStyleColor(ImGuiCol_PlotHistogram, border_color);
           float progress = toast.elapsed / toast.duration;
           ImGui::ProgressBar(progress, ImVec2(-1.0f, 2.0f), "");
+          ImGui::PopStyleColor();
         }
         ImGui::End();
 
-        ImGui::PopStyleVar();
+        ImGui::PopStyleVar(2);
         ImGui::PopStyleColor();
 
         // Update y_offset for next toast (subtract spacing for upward stacking)
