@@ -1539,7 +1539,7 @@ namespace Engine {
       draw_ui_quad(texture, position, size, rotation, color, tex_coords);
     }
 
-    void draw_tilemap(const std::vector<std::vector<int>>& integerMap,
+    void draw_tilemap(const std::unordered_map<int64_t, int>& integerMap,
       const std::vector<Engine::Graphics::SubTexture>& atlas,
       Engine::Graphics::Texture texture,
       const Math::Vec2D& tileSize,
@@ -1550,12 +1550,30 @@ namespace Engine {
         return;
       }
 
-      int height = static_cast<int>(integerMap.size());
-      int width = height > 0 ? static_cast<int>(integerMap[0].size()) : 0;
+      // Get bounds of the tilemap
+      int min_x = INT_MAX, min_y = INT_MAX;
+      int max_x = INT_MIN, max_y = INT_MIN;
 
-      if (width == 0 || height == 0) {
-        return;
+      for (const auto& [key, tile_index] : integerMap) {
+        if (tile_index < 0) continue;
+
+        int x, y;
+        // Decode key: y is upper 32 bits, x is lower 32 bits
+        y = static_cast<int>(key >> 32);
+        x = static_cast<int>(key & 0xFFFFFFFF);
+
+        min_x = std::min(min_x, x);
+        min_y = std::min(min_y, y);
+        max_x = std::max(max_x, x);
+        max_y = std::max(max_y, y);
       }
+
+      if (min_x == INT_MAX) {
+        return; // No valid tiles
+      }
+
+      int width = max_x - min_x + 1;
+      int height = max_y - min_y + 1;
 
       // Helper struct for rectangle merging
       struct Rectangle {
@@ -1567,39 +1585,47 @@ namespace Engine {
       std::vector<std::vector<bool>> processed(height, std::vector<bool>(width, false));
       std::vector<Rectangle> rectangles;
 
-      // Find all rectangles using greedy algorithm
-      for (int y = 0; y < height; ++y) {
-        int row_width = static_cast<int>(integerMap[y].size());
-        for (int x = 0; x < row_width && x < width; ++x) {
-          if (processed[y][x]) continue;
+      // Helper lambda to get tile from hashmap
+      auto get_tile = [&](int x, int y) -> int {
+        int64_t key = (static_cast<int64_t>(y) << 32) | (static_cast<uint32_t>(x));
+        auto it = integerMap.find(key);
+        return (it != integerMap.end()) ? it->second : -1;
+        };
 
-          int tile_index = integerMap[y][x];
+      // Find all rectangles using greedy algorithm
+      for (int rel_y = 0; rel_y < height; ++rel_y) {
+        for (int rel_x = 0; rel_x < width; ++rel_x) {
+          if (processed[rel_y][rel_x]) continue;
+
+          int abs_x = min_x + rel_x;
+          int abs_y = min_y + rel_y;
+          int tile_index = get_tile(abs_x, abs_y);
+
           if (tile_index < 0 || tile_index >= static_cast<int>(atlas.size())) {
-            processed[y][x] = true;
+            processed[rel_y][rel_x] = true;
             continue;
           }
 
           // Find maximum width at this row
           int max_width = 0;
-          for (int w = x; w < row_width && w < width; ++w) {
-            if (processed[y][w] || integerMap[y][w] != tile_index) {
+          for (int w = 0; rel_x + w < width; ++w) {
+            if (processed[rel_y][rel_x + w] || get_tile(abs_x + w, abs_y) != tile_index) {
               break;
             }
             max_width++;
           }
 
           if (max_width == 0) {
-            processed[y][x] = true;
+            processed[rel_y][rel_x] = true;
             continue;
           }
 
           // Expand downward while maintaining the width
           int rect_height = 1;
-          for (int h = y + 1; h < height; ++h) {
+          for (int h = 1; rel_y + h < height; ++h) {
             bool can_expand = true;
-            int next_row_width = static_cast<int>(integerMap[h].size());
-            for (int w = x; w < x + max_width; ++w) {
-              if (w >= next_row_width || processed[h][w] || integerMap[h][w] != tile_index) {
+            for (int w = 0; w < max_width; ++w) {
+              if (processed[rel_y + h][rel_x + w] || get_tile(abs_x + w, abs_y + h) != tile_index) {
                 can_expand = false;
                 break;
               }
@@ -1609,13 +1635,14 @@ namespace Engine {
           }
 
           // Mark all tiles in this rectangle as processed
-          for (int h = y; h < y + rect_height; ++h) {
-            for (int w = x; w < x + max_width; ++w) {
-              processed[h][w] = true;
+          for (int h = 0; h < rect_height; ++h) {
+            for (int w = 0; w < max_width; ++w) {
+              processed[rel_y + h][rel_x + w] = true;
             }
           }
 
-          rectangles.push_back({ x, y, max_width, rect_height, tile_index });
+          // Store rectangle with absolute coordinates
+          rectangles.push_back({ abs_x, abs_y, max_width, rect_height, tile_index });
         }
       }
 

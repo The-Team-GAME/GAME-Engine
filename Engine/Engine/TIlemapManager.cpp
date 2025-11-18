@@ -134,9 +134,12 @@ namespace TilemapManager {
       return;
     }
 
-    // Find all rectangles using greedy algorithm (merge any tiles regardless of texture)
-    int height = int_map->get_height();
-    int width = int_map->get_width();
+    // Get bounds of the tilemap
+    int min_x, min_y, max_x, max_y;
+    int_map->get_bounds(min_x, min_y, max_x, max_y);
+
+    int width = max_x - min_x + 1;
+    int height = max_y - min_y + 1;
 
     if (width == 0 || height == 0) {
       return;
@@ -147,43 +150,44 @@ namespace TilemapManager {
       int x, y, width, height;
     };
 
-    // Track processed tiles
+    // Track processed tiles using relative coordinates
     std::vector<std::vector<bool>> processed(height, std::vector<bool>(width, false));
     std::vector<Rectangle> rectangles;
 
     // Find all rectangles using greedy algorithm (merge any non-empty tiles)
-    for (int y = 0; y < height; ++y) {
-      int row_width = static_cast<int>(int_map->tiles[y].size());
-      for (int x = 0; x < row_width && x < width; ++x) {
-        if (processed[y][x]) continue;
+    for (int rel_y = 0; rel_y < height; ++rel_y) {
+      for (int rel_x = 0; rel_x < width; ++rel_x) {
+        if (processed[rel_y][rel_x]) continue;
 
-        int tile_index = int_map->get_tile(x, y);
+        int abs_x = min_x + rel_x;
+        int abs_y = min_y + rel_y;
+        int tile_index = int_map->get_tile(abs_x, abs_y);
+
         if (tile_index < 0) {
-          processed[y][x] = true;
+          processed[rel_y][rel_x] = true;
           continue;
         }
 
         // Find maximum width at this row (any non-empty tile)
         int max_width = 0;
-        for (int w = x; w < row_width && w < width; ++w) {
-          if (processed[y][w] || int_map->get_tile(w, y) < 0) {
+        for (int w = 0; rel_x + w < width; ++w) {
+          if (processed[rel_y][rel_x + w] || int_map->get_tile(abs_x + w, abs_y) < 0) {
             break;
           }
           max_width++;
         }
 
         if (max_width == 0) {
-          processed[y][x] = true;
+          processed[rel_y][rel_x] = true;
           continue;
         }
 
         // Expand downward while maintaining the width (any non-empty tile)
         int rect_height = 1;
-        for (int h = y + 1; h < height; ++h) {
+        for (int h = 1; rel_y + h < height; ++h) {
           bool can_expand = true;
-          int next_row_width = static_cast<int>(int_map->tiles[h].size());
-          for (int w = x; w < x + max_width; ++w) {
-            if (w >= next_row_width || processed[h][w] || int_map->get_tile(w, h) < 0) {
+          for (int w = 0; w < max_width; ++w) {
+            if (processed[rel_y + h][rel_x + w] || int_map->get_tile(abs_x + w, abs_y + h) < 0) {
               can_expand = false;
               break;
             }
@@ -193,13 +197,14 @@ namespace TilemapManager {
         }
 
         // Mark all tiles in this rectangle as processed
-        for (int h = y; h < y + rect_height; ++h) {
-          for (int w = x; w < x + max_width; ++w) {
-            processed[h][w] = true;
+        for (int h = 0; h < rect_height; ++h) {
+          for (int w = 0; w < max_width; ++w) {
+            processed[rel_y + h][rel_x + w] = true;
           }
         }
 
-        rectangles.push_back({ x, y, max_width, rect_height });
+        // Store rectangle with absolute coordinates
+        rectangles.push_back({ abs_x, abs_y, max_width, rect_height });
       }
     }
 
