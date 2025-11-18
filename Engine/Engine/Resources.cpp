@@ -776,6 +776,57 @@ bool Engine::Resources::open(const std::string& filepath, bool append_resource_p
 }
 
 
+void Engine::Resources::remove_from_cache(const std::string& filepath, bool append_resource_path)
+{
+  std::string path = append_resource_path ?
+    Path(resource_path).join(filepath).to_string() : filepath;
+
+  // Remove from level cache
+  auto level_it = level_cache.find(path);
+  if (level_it != level_cache.end()) {
+    Log::info("Removed level from cache: " + path);
+    level_cache.erase(level_it);
+
+    // Check if this was the current level and clear it
+    if (LevelManager::get_current_level_path() == path) {
+      LevelManager::set_current_level_path("");
+      Log::warning("Deleted currently open level - current level path cleared");
+    }
+  }
+
+  // Remove from texture cache
+  auto texture_it = texture_cache.find(path);
+  if (texture_it != texture_cache.end()) {
+    Log::info("Removed texture from cache: " + path);
+    texture_cache.erase(texture_it);
+  }
+
+  // Remove from font cache
+  auto font_it = font_cache.find(path);
+  if (font_it != font_cache.end()) {
+    Log::info("Removed font from cache: " + path);
+    font_cache.erase(font_it);
+  }
+
+  // Remove from sound cache
+  auto sound_it = sound_cache.find(path);
+  if (sound_it != sound_cache.end()) {
+    Log::info("Removed sound from cache: " + path);
+    sound_cache.erase(sound_it);
+  }
+
+  // Remove from prefab cache
+  auto prefab_it = prefab_cache.find(path);
+  if (prefab_it != prefab_cache.end()) {
+    Log::info("Removed prefab from cache: " + path);
+    prefab_cache.erase(prefab_it);
+  }
+
+  // Note: persistent_resources vector doesn't store filepath info,
+  // so we rely on shared_ptr reference counting to clean up when caches are cleared
+}
+
+
 void Engine::Resources::clear_unused_resources()
 {
   // Clear expired texture cache entries
