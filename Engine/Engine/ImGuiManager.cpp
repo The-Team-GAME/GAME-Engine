@@ -39,7 +39,15 @@ namespace {
     bool visible = true;
   };
 
+  struct Toast {
+    std::string message;
+    ImGuiManager::ToastType type;
+    float duration;
+    float elapsed;
+  };
+
   std::vector<PanelInfo> registered_panels;
+  std::vector<Toast> active_toasts;
 
   std::unordered_map<std::string, std::function<void()>> styles_map = {
     {"Eggplant", SetupImGuiStyle_Eggplant},
@@ -355,6 +363,84 @@ namespace ImGuiManager {
     // ==================================================================================
     // End of run even when ImGui is disabled
     // ==================================================================================
+
+    // ==================================================================================
+    // Render toast notifications
+    // ==================================================================================
+    if (!active_toasts.empty())
+    {
+      ImGuiViewport* viewport = ImGui::GetMainViewport();
+      ImVec2 work_pos = viewport->WorkPos;
+      ImVec2 work_size = viewport->WorkSize;
+
+      float padding = 10.0f;
+      float toast_width = 300.0f;
+      float toast_spacing = 10.0f;
+      float y_offset = padding;
+
+      for (size_t i = 0; i < active_toasts.size(); ++i)
+      {
+        Toast& toast = active_toasts[i];
+
+        // Calculate position (top-right corner)
+        ImVec2 toast_pos = ImVec2(
+          work_pos.x + work_size.x - toast_width - padding,
+          work_pos.y + y_offset
+        );
+
+        ImGui::SetNextWindowPos(toast_pos, ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(toast_width, 0), ImGuiCond_Always);
+
+        // Style based on toast type
+        ImVec4 bg_color;
+        const char* icon;
+        switch (toast.type)
+        {
+        case ImGuiManager::ToastType::Info:
+          bg_color = ImVec4(0.2f, 0.4f, 0.8f, 0.9f);
+          icon = "[INFO]";
+          break;
+        case ImGuiManager::ToastType::Warning:
+          bg_color = ImVec4(0.8f, 0.6f, 0.2f, 0.9f);
+          icon = "[WARNING]";
+          break;
+        case ImGuiManager::ToastType::Error:
+          bg_color = ImVec4(0.8f, 0.2f, 0.2f, 0.9f);
+          icon = "[ERROR]";
+          break;
+        }
+
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, bg_color);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5.0f);
+
+        std::string window_id = "##Toast" + std::to_string(i);
+        ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs |
+          ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
+          ImGuiWindowFlags_NoFocusOnAppearing;
+
+        if (ImGui::Begin(window_id.c_str(), nullptr, flags))
+        {
+          ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "%s", icon);
+          ImGui::SameLine();
+          ImGui::TextWrapped("%s", toast.message.c_str());
+
+          // Progress bar
+          float progress = toast.elapsed / toast.duration;
+          ImGui::ProgressBar(progress, ImVec2(-1.0f, 2.0f), "");
+        }
+        ImGui::End();
+
+        ImGui::PopStyleVar();
+        ImGui::PopStyleColor();
+
+        // Update y_offset for next toast
+        y_offset += ImGui::GetItemRectSize().y + toast_spacing;
+      }
+    }
+
+    // ==================================================================================
+    // End of toast notifications
+    // ==================================================================================
   }
 
   void end()
@@ -384,6 +470,21 @@ namespace ImGuiManager {
 
   void update()
   {
+    // Update toast timers
+    float dt = Engine::Time::get_unscaled_fixed_dt();
+    for (auto it = active_toasts.begin(); it != active_toasts.end();)
+    {
+      it->elapsed += dt;
+      if (it->elapsed >= it->duration)
+      {
+        it = active_toasts.erase(it);
+      }
+      else
+      {
+        ++it;
+      }
+    }
+
     // Save
     if (Engine::Input::is_held(Engine::KeyCode::CtrlLeft) && Engine::Input::is_pressed(Engine::KeyCode::S))
     {
@@ -446,6 +547,16 @@ namespace ImGuiManager {
     // Update user settings
     Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::get_mutable().imgui_theme = style_name;
     Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::save();
+  }
+
+  void show_toast(const std::string& message, ToastType type, float duration)
+  {
+    Toast toast;
+    toast.message = message;
+    toast.type = type;
+    toast.duration = duration;
+    toast.elapsed = 0.0f;
+    active_toasts.push_back(toast);
   }
 
 }

@@ -20,6 +20,11 @@
 
 namespace ImGuiManager {
 
+	enum class ToastType {
+		Info,
+		Warning,
+		Error
+	};
 
 	void init();
 	void exit();
@@ -36,5 +41,8 @@ namespace ImGuiManager {
 	void clear_panels();
 
 	void set_style(const std::string& style_name);
+
+	// Show a toast notification
+	void show_toast(const std::string& message, ToastType type = ToastType::Info, float duration = 3.0f);
 }
 
