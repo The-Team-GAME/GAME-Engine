@@ -427,17 +427,17 @@ namespace TilemapPanel {
     ImGui::Separator();
 
     // === TILEMAP MODE TOGGLE ===
-    bool prev_tilemap_mode = enable_tilemap_mode;
+    // bool prev_tilemap_mode = enable_tilemap_mode;
     ImGui::Checkbox("Enable Tilemap Mode", &enable_tilemap_mode);
 
     // Check if trying to enable tilemap mode without a level loaded
-    if (!prev_tilemap_mode && enable_tilemap_mode) {
-      std::string current_level = Engine::LevelManager::get_current_level_path();
-      if (current_level.empty()) {
-        enable_tilemap_mode = false;
-        ImGuiManager::show_toast("A level must be loaded before enabling tilemap mode", ImGuiManager::ToastType::Warning);
-      }
-    }
+    // if (!prev_tilemap_mode && enable_tilemap_mode) {
+    //   std::string current_level = Engine::LevelManager::get_current_level_path();
+    //   if (current_level.empty()) {
+    //     enable_tilemap_mode = false;
+    //     ImGuiManager::show_toast("A level must be loaded before enabling tilemap mode", ImGuiManager::ToastType::Warning);
+    //   }
+    // }
 
     ImGui::SameLine();
     ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(Toggle grid & editing)");

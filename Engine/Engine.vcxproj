@@ -106,6 +106,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClCompile Include="Engine\Systems\DebugDrawSystem.cpp" />
     <ClCompile Include="Engine\Lua\GameAPI.cpp" />
     <ClCompile Include="Engine\ECS\Types.cpp" />
+    <ClCompile Include="Engine\FileIO\FileDialog.cpp" />
     <ClCompile Include="Engine\FileIO\Helpers.cpp" />
     <ClCompile Include="Engine\Systems\CollisionSystem.cpp" />
     <ClCompile Include="Engine\Audio\AudioPlayer.cpp" />
@@ -175,6 +176,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="Engine\ECS\Reflection.h" />
     <ClInclude Include="Engine\ECS\SparseSet.h" />
     <ClInclude Include="Engine\Events\RegisterAllEvents.h" />
+    <ClInclude Include="Engine\FileIO\FileDialog.h" />
     <ClInclude Include="Engine\FileIO\Helpers.h" />
     <ClInclude Include="Engine\FileIO\Settings.h" />
     <ClInclude Include="Engine\GUI\PerformanceViewerPanel.h" />

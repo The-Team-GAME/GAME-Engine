@@ -396,7 +396,7 @@ void ResourceExplorerPanel() {
           else {
             // Remove from resource caches first
             Engine::Resources::remove_from_cache(entry.path, true);
-            
+
             // Then delete the file
             std::filesystem::remove(full_path);
             Log::info("Deleted file: " + entry.path);

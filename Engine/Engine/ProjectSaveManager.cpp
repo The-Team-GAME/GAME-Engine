@@ -1,6 +1,7 @@
 #include "ProjectSaveManager.h"
 #include "Logger.h"
 #include "FileIO/Settings.h"
+#include "FileIO/FileDialog.h"
 #include "Path.h"
 #include <vector>
 #include <algorithm>
@@ -61,13 +62,40 @@ void Engine::ProjectSaveManager::save_all_dirty()
       }
       else if constexpr (std::is_same_v<T, DirtyStates::Level>) {
         // Save specific level
-        Log::info("Saving level: " + s.level_path);
+        std::string level_path = s.level_path;
+
+        // If level path is empty, prompt user for save location
+        if (level_path.empty()) {
+          Log::info("Current level has no save path - prompting user for location");
+
+          auto selected_path = Engine::FileIO::show_save_file_dialog(
+            "Save Level As",
+            "untitled.json",
+            "Level Files (*.json)\0*.json\0All Files\0*.*\0",
+            "json"
+          );
+
+          if (!selected_path.has_value()) {
+            Log::info("User cancelled save operation");
+            return; // User cancelled, don't save
+          }
+
+          level_path = selected_path.value();
+
+          // Update the current level path so subsequent saves don't prompt again
+          Engine::LevelManager::set_current_level_path(level_path);
+
+          Log::info("User selected save location: " + level_path);
+        }
+        else {
+          Log::info("Saving level: " + level_path);
+        }
 
         // Generate level from current world state
         Engine::Level level = Engine::Level::from_world();
 
         // Get relative path for saving
-        std::string relative_path = Engine::Resources::get_relative_path(s.level_path);
+        std::string relative_path = Engine::Resources::get_relative_path(level_path);
 
         // Save the level
         if (Engine::Resources::save_level(relative_path, level, true)) {
