@@ -7,7 +7,7 @@
 //
 // email:   chew.s@digipen.edu
 //
-// brief:   Implementation of the tilemap management system. Handles IntegerMap-based
+// brief:   Implementation of the tilemap management system. Handles TileMap-based
 //          tilemap storage with automatic rectangular region merging for optimized
 //          rendering performance.
 //
@@ -25,12 +25,12 @@ namespace TilemapManager {
     float grid_snap = 64.0f;
     Math::Vec2D grid_offset = { 0.0f, 0.0f };
 
-    // Tilemap entity per layer (stores IntegerMap component)
+    // Tilemap entity per layer (stores TileMap component)
     std::unordered_map<std::string, Engine::ECS::Entity> tilemap_entities_per_layer;
   } // anonymous namespace
 
   void init() {
-    // Find existing IntegerMap entities
+    // Find existing TileMap entities
     tilemap_entities_per_layer.clear();
   }
 
@@ -78,12 +78,12 @@ namespace TilemapManager {
 
     // Create new tilemap entity
     auto entity = Engine::ECS::create_entity()
-      .add_component<Components::IntegerMap>();
+      .add_component<Components::TileMap>();
 
     entity.clear_layers();
     entity.add_to_layer(layer_name);
 
-    auto* int_map = entity.get_component<Components::IntegerMap>();
+    auto* int_map = entity.get_component<Components::TileMap>();
     int_map->tile_size = { grid_snap, grid_snap };
     int_map->grid_offset = grid_offset;
     int_map->atlas_index = atlas_index;
@@ -98,7 +98,7 @@ namespace TilemapManager {
       return -1;
     }
 
-    auto* int_map = it->second.get_component<Components::IntegerMap>();
+    auto* int_map = it->second.get_component<Components::TileMap>();
     if (!int_map) return -1;
 
     return int_map->get_tile(grid_x, grid_y);
@@ -120,7 +120,7 @@ namespace TilemapManager {
       return;
     }
 
-    auto* int_map = it->second.get_component<Components::IntegerMap>();
+    auto* int_map = it->second.get_component<Components::TileMap>();
     if (!int_map || int_map->is_empty()) {
       return;
     }
@@ -234,7 +234,7 @@ namespace TilemapManager {
 
     // Get the tilemap entity
     auto tilemap_entity = get_or_create_tilemap_entity(layer_name, atlas_index);
-    auto* int_map = tilemap_entity.get_component<Components::IntegerMap>();
+    auto* int_map = tilemap_entity.get_component<Components::TileMap>();
     if (!int_map) return;
 
     // Update atlas index if it changed
@@ -274,7 +274,7 @@ namespace TilemapManager {
       return;
     }
 
-    auto* int_map = it->second.get_component<Components::IntegerMap>();
+    auto* int_map = it->second.get_component<Components::TileMap>();
     if (!int_map) return;
 
     int old_tile = int_map->get_tile(grid_x, grid_y);
@@ -297,7 +297,7 @@ namespace TilemapManager {
     // Update tile size and grid offset in all tilemap entities and rebuild collision entities
     for (auto& [layer_name, entity] : tilemap_entities_per_layer) {
       if (entity.is_valid()) {
-        auto* int_map = entity.get_component<Components::IntegerMap>();
+        auto* int_map = entity.get_component<Components::TileMap>();
         if (int_map) {
           int_map->tile_size = { grid_snap, grid_snap };
           int_map->grid_offset = grid_offset;

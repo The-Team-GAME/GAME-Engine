@@ -13,7 +13,7 @@ Engine::Level Engine::Level::from_world()
   Level level;
 
   Engine::ECS::for_each_entity([&](Engine::ECS::Entity entity) {
-    // Skip tile entities - they are temporary and rebuilt from IntegerMap
+    // Skip tile entities - they are temporary and rebuilt by TilemapManager
     if (entity.has_components<Components::Tile>()) {
       return;
     }
@@ -38,7 +38,7 @@ void Engine::Level::instantiate_into_world()
     // TODO: we need a way to mark the entities as belonging to a specific level
   }
 
-  // After loading all entities, rebuild tile entities from IntegerMap components
+  // After loading all entities, rebuild tile entities from TileMap components
   // This is done in TilemapPanel::init() which gets called after level load
 }
 

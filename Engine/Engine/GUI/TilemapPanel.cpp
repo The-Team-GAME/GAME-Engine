@@ -142,7 +142,7 @@ namespace TilemapPanel {
 
     // Get the tilemap entity for this layer to find the atlas index
     auto tilemap_entity = TilemapManager::get_or_create_tilemap_entity(selected_layer, 0);
-    auto* int_map = tilemap_entity.get_component<Components::IntegerMap>();
+    auto* int_map = tilemap_entity.get_component<Components::TileMap>();
     if (!int_map || int_map->atlas_index < 0) {
       return; // No valid atlas
     }
@@ -297,8 +297,8 @@ namespace TilemapPanel {
     // Initialize TilemapManager
     TilemapManager::init();
 
-    // Rebuild all tilemaps from loaded IntegerMap entities
-    for (auto& entity : Engine::ECS::get_entities_with<Components::IntegerMap>()) {
+    // Rebuild all tilemaps from loaded TileMap entities
+    for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
       auto layers = entity.get_layers();
       for (Engine::ECS::LayerID layer_id = 0; layer_id < Engine::ECS::MAX_LAYERS; ++layer_id) {
         if (layers.test(layer_id)) {
@@ -649,8 +649,8 @@ namespace TilemapPanel {
               Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
             }
           }
-          // Also clear all IntegerMap entities
-          for (auto& entity : Engine::ECS::get_entities_with<Components::IntegerMap>()) {
+          // Also clear all TileMap entities
+          for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
             entity.destroy();
           }
           ImGui::CloseCurrentPopup();

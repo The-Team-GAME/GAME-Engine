@@ -138,13 +138,13 @@ namespace Engine {
     void draw_subtexture_tiled(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& position, const Math::Vec2D& size, const Math::Vec2D& tile_size, f32 rotation, const Math::Vec4D& color);
 
     // Draw tilemap from integer map with automatic rectangle merging for optimization
-    // integerMap: Sparse hashmap of tile indices (key = encoded x,y coordinates)
+    // tileMap: Sparse hashmap of tile indices (key = encoded x,y coordinates)
     // atlas: Texture atlas containing all tile sprites
     // texture: The texture handle for the atlas
     // tileSize: Size of each tile in world units
     // gridOffset: World position offset for the tilemap origin
     // color: Tint color to apply to all tiles
-    void draw_tilemap(const std::unordered_map<int64_t, int>& integerMap,
+    void draw_tilemap(const std::unordered_map<int64_t, int>& tileMap,
       const std::vector<Engine::Graphics::SubTexture>& atlas,
       Engine::Graphics::Texture texture,
       const Math::Vec2D& tileSize,

@@ -81,11 +81,11 @@ namespace Engine
     class TilemapRenderSystem : public Engine::ECS::System {
     public:
       TilemapRenderSystem() {
-        require_components<Components::IntegerMap>();
+        require_components<Components::TileMap>();
       }
 
       void draw_entity(const Engine::ECS::Entity& entity) override {
-        auto* int_map = entity.get_component<Components::IntegerMap>();
+        auto* int_map = entity.get_component<Components::TileMap>();
 
         // Skip if tilemap is empty or invalid
         if (!int_map || int_map->is_empty() || int_map->atlas_index < 0) {

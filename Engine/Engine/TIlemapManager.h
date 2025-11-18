@@ -7,7 +7,7 @@
 //
 // email:   chew.s@digipen.edu
 //
-// brief:   Core tilemap management system that handles IntegerMap-based tilemap
+// brief:   Core tilemap management system that handles TileMap-based tilemap
 //          storage, tile placement/deletion, and automatic merging of rectangular
 //          tile regions for optimized rendering.
 //
@@ -27,7 +27,7 @@ namespace TilemapManager {
 
   /*=================================================================================
   Function Brief:
-  Initializes the tilemap manager by loading existing IntegerMap entities and
+  Initializes the tilemap manager by loading existing TileMap entities and
   rebuilding their visual tile representations.
 
   Where to call it:
@@ -146,7 +146,7 @@ namespace TilemapManager {
 
   /*=================================================================================
   Function Brief:
-  Rebuilds all tile entities from IntegerMap data for the specified layer.
+  Rebuilds all tile entities from TileMap data for the specified layer.
   This merges rectangular regions of the same tile into single entities for
   optimized rendering.
 
@@ -162,14 +162,14 @@ namespace TilemapManager {
 
   /*=================================================================================
   Function Brief:
-  Gets or creates the IntegerMap entity for the specified layer.
+  Gets or creates the TileMap entity for the specified layer.
 
   Parameters:
   layer_name - Name of the layer
   atlas_index - Index of the atlas to use for this tilemap
 
   Returns:
-  The IntegerMap entity for this layer.
+  The TileMap entity for this layer.
   ==================================================================================*/
   Engine::ECS::Entity get_or_create_tilemap_entity(const std::string& layer_name, int atlas_index);
 

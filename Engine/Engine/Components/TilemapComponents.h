@@ -32,10 +32,10 @@ namespace Components {
     Components::TextureAtlas atlas;
   };
 
-  // IntegerMap stores a 2D grid of tile indices using a sparse hashmap
+  // TileMap stores a 2D grid of tile indices using a sparse hashmap
   // Supports any integer coordinates (positive, negative, sparse)
   // Value: tile index in the atlas (-1 or missing means empty)
-  struct IntegerMap {
+  struct TileMap {
     std::unordered_map<int64_t, int> tiles; // Sparse map of tile indices (key = encoded x,y)
     Math::Vec2D tile_size = { 64.0f, 64.0f }; // Size of each tile in world units
     Math::Vec2D grid_offset = { 0.0f, 0.0f }; // World position offset for tilemap origin
@@ -122,4 +122,4 @@ namespace Components {
 
 REFLECT_FIELDS(Components::Tile, size);
 REFLECT_FIELDS(Components::AtlasEntry, texture, atlas);
-REGISTER_COMPONENT(Components::IntegerMap, tiles, tile_size, grid_offset, atlas_index);
+REGISTER_COMPONENT(Components::TileMap, tiles, tile_size, grid_offset, atlas_index);
