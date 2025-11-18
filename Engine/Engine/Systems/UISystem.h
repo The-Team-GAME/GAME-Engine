@@ -42,7 +42,7 @@ namespace Engine
 
         if (!clickable || !tr) return;
 
-        const float LERP_SPEED = 0.15f;
+        const float LERP_SPEED = 0.10f;
         const float CLAMP = 0.01f;
 
 				//Sets the original and target scale
