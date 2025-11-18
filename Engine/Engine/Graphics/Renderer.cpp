@@ -1539,14 +1539,13 @@ namespace Engine {
       draw_ui_quad(texture, position, size, rotation, color, tex_coords);
     }
 
-    void draw_tilemap(const std::unordered_map<int64_t, int>& tileMap,
-      const std::vector<Engine::Graphics::SubTexture>& atlas,
-      Engine::Graphics::Texture texture,
+    void draw_tilemap(const std::unordered_map<int64_t, Tile>& tileMap,
+      const std::vector<AtlasEntry>& loaded_tilemaps,
       const Math::Vec2D& tileSize,
       const Math::Vec2D& gridOffset,
       const Math::Vec4D& color) {
 
-      if (tileMap.empty() || atlas.empty() || !texture) {
+      if (tileMap.empty() || loaded_tilemaps.empty()) {
         return;
       }
 
@@ -1554,8 +1553,8 @@ namespace Engine {
       int min_x = INT_MAX, min_y = INT_MAX;
       int max_x = INT_MIN, max_y = INT_MIN;
 
-      for (const auto& [key, tile_index] : tileMap) {
-        if (tile_index < 0) continue;
+      for (const auto& [key, tile] : tileMap) {
+        if (!tile.is_valid()) continue;
 
         int x, y;
         // Decode key: y is upper 32 bits, x is lower 32 bits
@@ -1578,7 +1577,7 @@ namespace Engine {
       // Helper struct for rectangle merging
       struct Rectangle {
         int x, y, width, height;
-        int tile_index;
+        Tile tile;
       };
 
       // Track processed tiles
@@ -1586,30 +1585,40 @@ namespace Engine {
       std::vector<Rectangle> rectangles;
 
       // Helper lambda to get tile from hashmap
-      auto get_tile = [&](int x, int y) -> int {
+      auto get_tile = [&](int x, int y) -> Tile {
         int64_t key = (static_cast<int64_t>(y) << 32) | (static_cast<uint32_t>(x));
         auto it = tileMap.find(key);
-        return (it != tileMap.end()) ? it->second : -1;
+        return (it != tileMap.end()) ? it->second : Tile();
         };
 
       // Find all rectangles using greedy algorithm
+      // Tiles can only merge if they have the same atlas_index AND tile_index
       for (int rel_y = 0; rel_y < height; ++rel_y) {
         for (int rel_x = 0; rel_x < width; ++rel_x) {
           if (processed[rel_y][rel_x]) continue;
 
           int abs_x = min_x + rel_x;
           int abs_y = min_y + rel_y;
-          int tile_index = get_tile(abs_x, abs_y);
+          Tile tile = get_tile(abs_x, abs_y);
 
-          if (tile_index < 0 || tile_index >= static_cast<int>(atlas.size())) {
+          if (!tile.is_valid() || tile.atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
             processed[rel_y][rel_x] = true;
             continue;
           }
 
-          // Find maximum width at this row
+          const auto& atlas_entry = loaded_tilemaps[tile.atlas_index];
+          if (tile.tile_index >= static_cast<int>(atlas_entry.subTextures.size())) {
+            processed[rel_y][rel_x] = true;
+            continue;
+          }
+
+          // Find maximum width at this row (same tile only)
           int max_width = 0;
           for (int w = 0; rel_x + w < width; ++w) {
-            if (processed[rel_y][rel_x + w] || get_tile(abs_x + w, abs_y) != tile_index) {
+            Tile check_tile = get_tile(abs_x + w, abs_y);
+            if (processed[rel_y][rel_x + w] ||
+              check_tile.atlas_index != tile.atlas_index ||
+              check_tile.tile_index != tile.tile_index) {
               break;
             }
             max_width++;
@@ -1625,7 +1634,10 @@ namespace Engine {
           for (int h = 1; rel_y + h < height; ++h) {
             bool can_expand = true;
             for (int w = 0; w < max_width; ++w) {
-              if (processed[rel_y + h][rel_x + w] || get_tile(abs_x + w, abs_y + h) != tile_index) {
+              Tile check_tile = get_tile(abs_x + w, abs_y + h);
+              if (processed[rel_y + h][rel_x + w] ||
+                check_tile.atlas_index != tile.atlas_index ||
+                check_tile.tile_index != tile.tile_index) {
                 can_expand = false;
                 break;
               }
@@ -1641,18 +1653,23 @@ namespace Engine {
             }
           }
 
-          // Store rectangle with absolute coordinates
-          rectangles.push_back({ abs_x, abs_y, max_width, rect_height, tile_index });
+          // Store rectangle with absolute coordinates and tile info
+          rectangles.push_back({ abs_x, abs_y, max_width, rect_height, tile });
         }
       }
 
       // Draw each rectangle
       for (const Rectangle& rect : rectangles) {
-        if (rect.tile_index < 0 || rect.tile_index >= static_cast<int>(atlas.size())) {
+        if (!rect.tile.is_valid() || rect.tile.atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
           continue;
         }
 
-        const auto& subTexture = atlas[rect.tile_index];
+        const auto& atlas_entry = loaded_tilemaps[rect.tile.atlas_index];
+        if (rect.tile.tile_index >= static_cast<int>(atlas_entry.subTextures.size())) {
+          continue;
+        }
+
+        const auto& subTexture = atlas_entry.subTextures[rect.tile.tile_index];
 
         // Calculate the world position for the center of the rectangle
         f32 center_x = gridOffset.x + rect.x * tileSize.x + (rect.width * tileSize.x) * 0.5f;
@@ -1661,7 +1678,7 @@ namespace Engine {
         Math::Vec2D scale = { rect.width * tileSize.x, rect.height * tileSize.y };
 
         // Draw the merged rectangle as a single tiled subtexture
-        draw_subtexture_tiled(texture, subTexture.tex_coords, center_world, scale, tileSize, 0.0f, color);
+        draw_subtexture_tiled(atlas_entry.texture_handle, subTexture.tex_coords, center_world, scale, tileSize, 0.0f, color);
       }
     }
 

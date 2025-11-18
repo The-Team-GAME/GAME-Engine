@@ -70,7 +70,7 @@ namespace TilemapManager {
     };
   }
 
-  Engine::ECS::Entity get_or_create_tilemap_entity(const std::string& layer_name, int atlas_index) {
+  Engine::ECS::Entity get_or_create_tilemap_entity(const std::string& layer_name) {
     auto it = tilemap_entities_per_layer.find(layer_name);
     if (it != tilemap_entities_per_layer.end() && it->second.is_valid()) {
       return it->second;
@@ -86,30 +86,29 @@ namespace TilemapManager {
     auto* int_map = entity.get_component<Components::TileMap>();
     int_map->tile_size = { grid_snap, grid_snap };
     int_map->grid_offset = grid_offset;
-    int_map->atlas_index = atlas_index;
 
     tilemap_entities_per_layer[layer_name] = entity;
     return entity;
   }
 
-  int get_tile_at(const std::string& layer_name, int grid_x, int grid_y) {
+  Engine::Graphics::Tile get_tile_at(const std::string& layer_name, int grid_x, int grid_y) {
     auto it = tilemap_entities_per_layer.find(layer_name);
     if (it == tilemap_entities_per_layer.end() || !it->second.is_valid()) {
-      return -1;
+      return Engine::Graphics::Tile();
     }
 
     auto* int_map = it->second.get_component<Components::TileMap>();
-    if (!int_map) return -1;
+    if (!int_map) return Engine::Graphics::Tile();
 
     return int_map->get_tile(grid_x, grid_y);
   }
 
   void rebuild_tilemap_for_layer(const std::string& layer_name,
-    const std::vector<Components::AtlasEntry>& loaded_tilemaps) {
+    const std::vector<Engine::Graphics::AtlasEntry>& loaded_tilemaps) {
     // Destroy all existing tile collision entities on this layer
     auto all_entities = Engine::ECS::get_all_entities();
     for (auto& entity : all_entities) {
-      if (entity.has_component<Components::Tile>() && entity.is_on_layer(layer_name)) {
+      if (entity.has_component<Components::TileCollider>() && entity.is_on_layer(layer_name)) {
         entity.destroy();
       }
     }
@@ -128,11 +127,6 @@ namespace TilemapManager {
     // Update the tile size and grid offset to match current settings
     int_map->tile_size = { grid_snap, grid_snap };
     int_map->grid_offset = grid_offset;
-
-    // Get atlas info
-    if (int_map->atlas_index < 0 || int_map->atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
-      return;
-    }
 
     // Get bounds of the tilemap
     int min_x, min_y, max_x, max_y;
@@ -154,16 +148,16 @@ namespace TilemapManager {
     std::vector<std::vector<bool>> processed(height, std::vector<bool>(width, false));
     std::vector<Rectangle> rectangles;
 
-    // Find all rectangles using greedy algorithm (merge any non-empty tiles)
+    // Find all rectangles using greedy algorithm (merge any non-empty tiles for collision)
     for (int rel_y = 0; rel_y < height; ++rel_y) {
       for (int rel_x = 0; rel_x < width; ++rel_x) {
         if (processed[rel_y][rel_x]) continue;
 
         int abs_x = min_x + rel_x;
         int abs_y = min_y + rel_y;
-        int tile_index = int_map->get_tile(abs_x, abs_y);
+        Engine::Graphics::Tile tile = int_map->get_tile(abs_x, abs_y);
 
-        if (tile_index < 0) {
+        if (!tile.is_valid()) {
           processed[rel_y][rel_x] = true;
           continue;
         }
@@ -171,9 +165,11 @@ namespace TilemapManager {
         // Find maximum width at this row (any non-empty tile)
         int max_width = 0;
         for (int w = 0; rel_x + w < width; ++w) {
-          if (processed[rel_y][rel_x + w] || int_map->get_tile(abs_x + w, abs_y) < 0) {
-            break;
-          }
+          if (processed[rel_y][rel_x + w]) break;
+
+          Engine::Graphics::Tile check_tile = int_map->get_tile(abs_x + w, abs_y);
+          if (!check_tile.is_valid()) break;
+
           max_width++;
         }
 
@@ -187,7 +183,13 @@ namespace TilemapManager {
         for (int h = 1; rel_y + h < height; ++h) {
           bool can_expand = true;
           for (int w = 0; w < max_width; ++w) {
-            if (processed[rel_y + h][rel_x + w] || int_map->get_tile(abs_x + w, abs_y + h) < 0) {
+            if (processed[rel_y + h][rel_x + w]) {
+              can_expand = false;
+              break;
+            }
+
+            Engine::Graphics::Tile check_tile = int_map->get_tile(abs_x + w, abs_y + h);
+            if (!check_tile.is_valid()) {
               can_expand = false;
               break;
             }
@@ -218,7 +220,7 @@ namespace TilemapManager {
 
       // Create collision-only entity (no rendering components)
       auto entity = Engine::ECS::create_entity()
-        .add_component<Components::Tile>() // Marker component to identify tile collision entities
+        .add_component<Components::TileCollider>() // Marker component to identify tile collision entities
         .add_component<Components::Transform2D>(center_world, 0.0f, scale)
         .add_component<Components::RigidBody>(true, false) // is_static = true, no gravity
         .add_component<Components::BoxCollider>(scale.x, scale.y, true); // resolve_collisions = true
@@ -226,30 +228,27 @@ namespace TilemapManager {
       entity.clear_layers();
       entity.add_to_layer(layer_name);
     }
-  }  void place_tile(const Math::Vec2D& world_pos, const std::string& layer_name,
+  }
+
+  void place_tile(const Math::Vec2D& world_pos, const std::string& layer_name,
     int atlas_index, int tile_index,
-    const std::vector<Components::AtlasEntry>& loaded_tilemaps) {
+    const std::vector<Engine::Graphics::AtlasEntry>& loaded_tilemaps) {
     int grid_x, grid_y;
     world_to_grid(world_pos, grid_x, grid_y);
 
     // Get the tilemap entity
-    auto tilemap_entity = get_or_create_tilemap_entity(layer_name, atlas_index);
+    auto tilemap_entity = get_or_create_tilemap_entity(layer_name);
     auto* int_map = tilemap_entity.get_component<Components::TileMap>();
     if (!int_map) return;
 
-    // Update atlas index if it changed
-    if (int_map->atlas_index != atlas_index) {
-      int_map->atlas_index = atlas_index;
-    }
-
     // Check if the tile is already the same
-    int current_tile = int_map->get_tile(grid_x, grid_y);
-    if (current_tile == tile_index) {
+    Engine::Graphics::Tile current_tile = int_map->get_tile(grid_x, grid_y);
+    if (current_tile.atlas_index == atlas_index && current_tile.tile_index == tile_index) {
       return; // Same tile, nothing to do
     }
 
     // Set the tile
-    int_map->set_tile(grid_x, grid_y, tile_index);
+    int_map->set_tile(grid_x, grid_y, atlas_index, tile_index);
 
     // Update tile size and grid offset
     int_map->tile_size = { grid_snap, grid_snap };
@@ -277,11 +276,11 @@ namespace TilemapManager {
     auto* int_map = it->second.get_component<Components::TileMap>();
     if (!int_map) return;
 
-    int old_tile = int_map->get_tile(grid_x, grid_y);
-    if (old_tile < 0) return; // Nothing to delete
+    Engine::Graphics::Tile old_tile = int_map->get_tile(grid_x, grid_y);
+    if (!old_tile.is_valid()) return; // Nothing to delete
 
     // Delete the tile
-    int_map->set_tile(grid_x, grid_y, -1);
+    int_map->set_tile(grid_x, grid_y, Engine::Graphics::Tile());
 
     // We need to pass loaded_tilemaps to rebuild, get it from project settings
     const auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get();
@@ -293,7 +292,7 @@ namespace TilemapManager {
     );
   }
 
-  void update_all_tile_dimensions(const std::vector<Components::AtlasEntry>& loaded_tilemaps) {
+  void update_all_tile_dimensions(const std::vector<Engine::Graphics::AtlasEntry>& loaded_tilemaps) {
     // Update tile size and grid offset in all tilemap entities and rebuild collision entities
     for (auto& [layer_name, entity] : tilemap_entities_per_layer) {
       if (entity.is_valid()) {

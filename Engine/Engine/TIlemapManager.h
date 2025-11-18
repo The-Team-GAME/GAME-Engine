@@ -93,7 +93,7 @@ namespace TilemapManager {
   ==================================================================================*/
   void place_tile(const Math::Vec2D& world_pos, const std::string& layer_name,
     int atlas_index, int tile_index,
-    const std::vector<Components::AtlasEntry>& loaded_tilemaps);
+    const std::vector<Engine::Graphics::AtlasEntry>& loaded_tilemaps);
 
   /*=================================================================================
   Function Brief:
@@ -158,7 +158,7 @@ namespace TilemapManager {
   Called automatically after placing or deleting tiles, or when loading a level.
   ==================================================================================*/
   void rebuild_tilemap_for_layer(const std::string& layer_name,
-    const std::vector<Components::AtlasEntry>& loaded_tilemaps);
+    const std::vector<Engine::Graphics::AtlasEntry>& loaded_tilemaps);
 
   /*=================================================================================
   Function Brief:
@@ -166,26 +166,25 @@ namespace TilemapManager {
 
   Parameters:
   layer_name - Name of the layer
-  atlas_index - Index of the atlas to use for this tilemap
 
   Returns:
   The TileMap entity for this layer.
   ==================================================================================*/
-  Engine::ECS::Entity get_or_create_tilemap_entity(const std::string& layer_name, int atlas_index);
+  Engine::ECS::Entity get_or_create_tilemap_entity(const std::string& layer_name);
 
   /*=================================================================================
   Function Brief:
   Gets the tile at the specified grid position on the given layer.
 
   Parameters:
-  layer_name - Name of the layer
+  layer_name - Name of the layer to query
   grid_x - Grid X coordinate
   grid_y - Grid Y coordinate
 
   Returns:
-  The tile index at that position, or -1 if no tile exists.
+  The Tile at that position, or an invalid Tile if no tile exists.
   ==================================================================================*/
-  int get_tile_at(const std::string& layer_name, int grid_x, int grid_y);
+  Engine::Graphics::Tile get_tile_at(const std::string& layer_name, int grid_x, int grid_y);
 
   /*=================================================================================
   Function Brief:
@@ -194,6 +193,6 @@ namespace TilemapManager {
   Parameters:
   loaded_tilemaps - Reference to the loaded atlas entries
   ==================================================================================*/
-  void update_all_tile_dimensions(const std::vector<Components::AtlasEntry>& loaded_tilemaps);
+  void update_all_tile_dimensions(const std::vector<Engine::Graphics::AtlasEntry>& loaded_tilemaps);
 
 } // namespace TilemapManager

@@ -31,7 +31,7 @@ namespace Engine
     public:
       StaticSpriteRenderSystem() {
         require_components<Components::Transform2D, Components::Color, Components::Texture>();
-        exclude_components<Components::TextureAtlas, Components::Distortion, Components::Tile>();
+        exclude_components<Components::TextureAtlas, Components::Distortion >();
       }
 
       void draw_entity(const Engine::ECS::Entity& entity) override {
@@ -53,7 +53,7 @@ namespace Engine
     public:
       AtlasSpriteRenderSystem() {
         require_components<Components::Transform2D, Components::Color, Components::Texture, Components::TextureAtlas>();
-        exclude_components<Components::Distortion, Components::Tile>();
+        exclude_components<Components::Distortion >();
       }
 
       void draw_entity(const Engine::ECS::Entity& entity) override {
@@ -87,24 +87,18 @@ namespace Engine
       void draw_entity(const Engine::ECS::Entity& entity) override {
         auto* int_map = entity.get_component<Components::TileMap>();
 
-        // Skip if tilemap is empty or invalid
-        if (!int_map || int_map->is_empty() || int_map->atlas_index < 0) {
+        // Skip if tilemap is empty
+        if (!int_map || int_map->is_empty()) {
           return;
         }
 
-        // Get the atlas entry from project settings
+        // Get the atlas entries from project settings
         const auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get();
-        if (int_map->atlas_index >= static_cast<int>(project_settings.loaded_tilemaps.size())) {
-          return;
-        }
 
-        const Components::AtlasEntry& atlas_entry = project_settings.loaded_tilemaps[int_map->atlas_index];
-
-        // Draw the tilemap using the optimized renderer function
+        // Draw the tilemap using the optimized renderer function with multiple atlases
         Engine::Graphics::draw_tilemap(
           int_map->tiles,
-          atlas_entry.atlas.subTextures,
-          atlas_entry.texture.texture_handle,
+          project_settings.loaded_tilemaps,
           int_map->tile_size,
           int_map->grid_offset,
           Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f) // White color
@@ -300,7 +294,7 @@ namespace Engine
     public:
       DistortionSpriteRenderSystem() {
         require_components<Components::Transform2D, Components::Color, Components::Texture, Components::Distortion>();
-        exclude_components<Components::TextureAtlas, Components::Tile>();
+        exclude_components<Components::TextureAtlas>();
       }
 
       void draw_entity(const Engine::ECS::Entity& entity) override {
@@ -326,7 +320,6 @@ namespace Engine
     public:
       DistortionAtlasSpriteRenderSystem() {
         require_components<Components::Transform2D, Components::Color, Components::Texture, Components::TextureAtlas, Components::Distortion>();
-        exclude_components<Components::Tile>();
       }
 
       void draw_entity(const Engine::ECS::Entity& entity) override {

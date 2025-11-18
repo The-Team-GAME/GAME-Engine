@@ -16,30 +16,25 @@
 #pragma once
 
 #include "../ECS/Macros.h"
+#include "../Graphics/RendererInternal.h"
 #include <unordered_map>
 #include <string>
 #include <vector>
 #include <algorithm>
 
 namespace Components {
-  struct Tile {
-    Math::Vec2D size = { 64.0f, 64.0f };
+
+  // Marker component for tile collision entities (generated from TileMap)
+  struct TileCollider {
   };
 
-  // Only used in TilemapPanel and ProjectSettings for saving/loading tilemaps
-  struct AtlasEntry {
-    Components::Texture texture;
-    Components::TextureAtlas atlas;
-  };
-
-  // TileMap stores a 2D grid of tile indices using a sparse hashmap
+  // TileMap stores a 2D grid of tiles using a sparse hashmap
   // Supports any integer coordinates (positive, negative, sparse)
-  // Value: tile index in the atlas (-1 or missing means empty)
+  // Each tile can reference a different atlas
   struct TileMap {
-    std::unordered_map<int64_t, int> tiles; // Sparse map of tile indices (key = encoded x,y)
+    std::unordered_map<int64_t, Engine::Graphics::Tile> tiles; // Sparse map of tiles (key = encoded x,y)
     Math::Vec2D tile_size = { 64.0f, 64.0f }; // Size of each tile in world units
     Math::Vec2D grid_offset = { 0.0f, 0.0f }; // World position offset for tilemap origin
-    int atlas_index = -1; // Which atlas this tilemap uses
 
     // Encode x,y coordinates into a single int64_t key
     static int64_t encode_key(int x, int y) {
@@ -62,8 +57,8 @@ namespace Components {
       min_x = min_y = INT_MAX;
       max_x = max_y = INT_MIN;
 
-      for (const auto& [key, tile_index] : tiles) {
-        if (tile_index == -1) continue; // Skip empty tiles
+      for (const auto& [key, tile] : tiles) {
+        if (!tile.is_valid()) continue; // Skip invalid tiles
 
         int x, y;
         decode_key(key, x, y);
@@ -88,24 +83,29 @@ namespace Components {
       return max_x - min_x + 1;
     }
 
-    // Helper to get tile at grid position (returns -1 if not found)
-    int get_tile(int x, int y) const {
+    // Helper to get tile at grid position (returns invalid Tile if not found)
+    Engine::Graphics::Tile get_tile(int x, int y) const {
       int64_t key = encode_key(x, y);
       auto it = tiles.find(key);
-      return (it != tiles.end()) ? it->second : -1;
+      return (it != tiles.end()) ? it->second : Engine::Graphics::Tile();
     }
 
     // Helper to set tile at grid position
-    void set_tile(int x, int y, int tile_index) {
+    void set_tile(int x, int y, const Engine::Graphics::Tile& tile) {
       int64_t key = encode_key(x, y);
 
-      if (tile_index == -1) {
-        // Remove empty tiles to keep map sparse
+      if (!tile.is_valid()) {
+        // Remove invalid tiles to keep map sparse
         tiles.erase(key);
       }
       else {
-        tiles[key] = tile_index;
+        tiles[key] = tile;
       }
+    }
+
+    // Overload for setting tile by atlas and tile index
+    void set_tile(int x, int y, int atlas_index, int tile_index) {
+      set_tile(x, y, Engine::Graphics::Tile(atlas_index, tile_index));
     }
 
     // Check if the tilemap is empty
@@ -120,6 +120,5 @@ namespace Components {
   };
 }
 
-REFLECT_FIELDS(Components::Tile, size);
-REFLECT_FIELDS(Components::AtlasEntry, texture, atlas);
-REGISTER_COMPONENT(Components::TileMap, tiles, tile_size, grid_offset, atlas_index);
+REFLECT_FIELDS(Components::TileCollider);
+REGISTER_COMPONENT(Components::TileMap, tiles, tile_size, grid_offset);

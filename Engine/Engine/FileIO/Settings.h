@@ -21,6 +21,7 @@
 #include "../Components/Components.h"
 #include "../Reflection/ReflectionLibrary.h"
 #include "SettingsManager.h"
+#include "../Graphics/RendererInternal.h"
 
 /*
 Settings Documentation:
@@ -66,7 +67,7 @@ namespace Engine
     // Values that need to be loaded after intializing engine subsystems, (e.g. Textures need to wait for Graphics init)
     struct ProjectSettings
     {
-      std::vector<Components::AtlasEntry> loaded_tilemaps{};
+      std::vector<Engine::Graphics::AtlasEntry> loaded_tilemaps{};
     };
 
     // Values that are specific to the local user/machine (e.g. ImGui theme)

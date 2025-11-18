@@ -144,9 +144,8 @@ namespace Engine {
     // tileSize: Size of each tile in world units
     // gridOffset: World position offset for the tilemap origin
     // color: Tint color to apply to all tiles
-    void draw_tilemap(const std::unordered_map<int64_t, int>& tileMap,
-      const std::vector<Engine::Graphics::SubTexture>& atlas,
-      Engine::Graphics::Texture texture,
+    void draw_tilemap(const std::unordered_map<int64_t, Tile>& tileMap,
+      const std::vector<AtlasEntry>& loaded_tilemaps,
       const Math::Vec2D& tileSize,
       const Math::Vec2D& gridOffset,
       const Math::Vec4D& color);

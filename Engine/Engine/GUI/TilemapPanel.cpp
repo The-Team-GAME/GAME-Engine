@@ -35,11 +35,12 @@
 #include "../TilemapManager.h"
 #include "../Level.h"
 #include "../ImGuiManager.h"
+#include "../Logger.h"
 
 namespace TilemapPanel {
   // Internal state
   namespace {
-    std::vector<Components::AtlasEntry> loaded_tilemaps;
+    std::vector<Engine::Graphics::AtlasEntry> loaded_tilemaps;
     int selected_atlas_index = -1;
     int selected_tile_index = 0;
 
@@ -104,13 +105,13 @@ namespace TilemapPanel {
     TilemapManager::world_to_grid(world_pos, grid_x, grid_y);
 
     // Check if there's a tile to delete
-    int old_tile = TilemapManager::get_tile_at(selected_layer, grid_x, grid_y);
-    if (old_tile < 0) return; // Nothing to delete
+    Engine::Graphics::Tile old_tile = TilemapManager::get_tile_at(selected_layer, grid_x, grid_y);
+    if (!old_tile.is_valid()) return; // Nothing to delete
 
     // Capture state for undo
     int captured_grid_x = grid_x;
     int captured_grid_y = grid_y;
-    int captured_tile = old_tile;
+    Engine::Graphics::Tile captured_tile = old_tile;
     std::string captured_layer = selected_layer;
 
     Engine::UndoManager::execute(
@@ -120,7 +121,7 @@ namespace TilemapPanel {
       },
       [captured_grid_x, captured_grid_y, captured_tile, captured_layer]() {
         Math::Vec2D restore_pos = TilemapManager::grid_to_world(captured_grid_x, captured_grid_y);
-        TilemapManager::place_tile(restore_pos, captured_layer, -1, captured_tile, loaded_tilemaps);
+        TilemapManager::place_tile(restore_pos, captured_layer, captured_tile.atlas_index, captured_tile.tile_index, loaded_tilemaps);
         Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
       }
     );
@@ -135,26 +136,19 @@ namespace TilemapPanel {
     TilemapManager::world_to_grid(world_pos, grid_x, grid_y);
 
     // Get the tile at this position on the selected layer
-    int tile_index = TilemapManager::get_tile_at(selected_layer, grid_x, grid_y);
-    if (tile_index < 0) {
+    Engine::Graphics::Tile tile = TilemapManager::get_tile_at(selected_layer, grid_x, grid_y);
+    if (!tile.is_valid()) {
       return; // No tile at this position
     }
 
-    // Get the tilemap entity for this layer to find the atlas index
-    auto tilemap_entity = TilemapManager::get_or_create_tilemap_entity(selected_layer, 0);
-    auto* int_map = tilemap_entity.get_component<Components::TileMap>();
-    if (!int_map || int_map->atlas_index < 0) {
-      return; // No valid atlas
-    }
-
     // Verify the atlas index is valid
-    if (int_map->atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
+    if (tile.atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
       return;
     }
 
     // Set the selected atlas and tile
-    selected_atlas_index = int_map->atlas_index;
-    selected_tile_index = tile_index;
+    selected_atlas_index = tile.atlas_index;
+    selected_tile_index = tile.tile_index;
 
     // Switch back to Paintbrush tool after picking
     current_tool = ToolMode::Paintbrush;
@@ -166,12 +160,12 @@ namespace TilemapPanel {
       return;
     }
 
-    const Components::AtlasEntry& atlas_entry = loaded_tilemaps[selected_atlas_index];
+    const Engine::Graphics::AtlasEntry& atlas_entry = loaded_tilemaps[selected_atlas_index];
 
-    if (!atlas_entry.texture.texture_handle ||
-      atlas_entry.atlas.subTextures.empty() ||
+    if (!atlas_entry.texture_handle ||
+      atlas_entry.subTextures.empty() ||
       selected_tile_index < 0 ||
-      selected_tile_index >= static_cast<int>(atlas_entry.atlas.subTextures.size())) {
+      selected_tile_index >= static_cast<int>(atlas_entry.subTextures.size())) {
       return;
     }
 
@@ -186,14 +180,15 @@ namespace TilemapPanel {
 
     // Capture state for undo
     struct TileState {
-      int x, y, old_tile;
+      int x, y;
+      Engine::Graphics::Tile old_tile;
     };
     std::vector<TileState> old_tiles;
 
     // Collect old tile states
     for (int y = start_grid_y; y <= end_grid_y; ++y) {
       for (int x = start_grid_x; x <= end_grid_x; ++x) {
-        int old_tile = TilemapManager::get_tile_at(selected_layer, x, y);
+        Engine::Graphics::Tile old_tile = TilemapManager::get_tile_at(selected_layer, x, y);
         old_tiles.push_back({ x, y, old_tile });
       }
     }
@@ -223,13 +218,13 @@ namespace TilemapPanel {
         // Restore old tiles
         for (const auto& tile_state : captured_old_tiles) {
           Math::Vec2D restore_pos = TilemapManager::grid_to_world(tile_state.x, tile_state.y);
-          if (tile_state.old_tile < 0) {
+          if (!tile_state.old_tile.is_valid()) {
             // Tile didn't exist, delete it
             TilemapManager::delete_tile(restore_pos, captured_layer);
           }
           else {
             // Restore the old tile
-            TilemapManager::place_tile(restore_pos, captured_layer, captured_atlas_index, tile_state.old_tile, loaded_tilemaps);
+            TilemapManager::place_tile(restore_pos, captured_layer, tile_state.old_tile.atlas_index, tile_state.old_tile.tile_index, loaded_tilemaps);
           }
         }
         Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
@@ -243,12 +238,12 @@ namespace TilemapPanel {
       return;
     }
 
-    const Components::AtlasEntry& atlas_entry = loaded_tilemaps[selected_atlas_index];
+    const Engine::Graphics::AtlasEntry& atlas_entry = loaded_tilemaps[selected_atlas_index];
 
-    if (!atlas_entry.texture.texture_handle ||
-      atlas_entry.atlas.subTextures.empty() ||
+    if (!atlas_entry.texture_handle ||
+      atlas_entry.subTextures.empty() ||
       selected_tile_index < 0 ||
-      selected_tile_index >= static_cast<int>(atlas_entry.atlas.subTextures.size())) {
+      selected_tile_index >= static_cast<int>(atlas_entry.subTextures.size())) {
       return;
     }
 
@@ -256,15 +251,15 @@ namespace TilemapPanel {
     TilemapManager::world_to_grid(world_pos, grid_x, grid_y);
 
     // Check if the tile is already the same
-    int current_tile = TilemapManager::get_tile_at(selected_layer, grid_x, grid_y);
-    if (current_tile == selected_tile_index) {
+    Engine::Graphics::Tile current_tile = TilemapManager::get_tile_at(selected_layer, grid_x, grid_y);
+    if (current_tile.atlas_index == selected_atlas_index && current_tile.tile_index == selected_tile_index) {
       return; // Same tile, nothing to do
     }
 
     // Capture state for undo
     int captured_grid_x = grid_x;
     int captured_grid_y = grid_y;
-    int captured_old_tile = current_tile;
+    Engine::Graphics::Tile captured_old_tile = current_tile;
     int captured_new_tile = selected_tile_index;
     int captured_atlas_index = selected_atlas_index;
     std::string captured_layer = selected_layer;
@@ -274,15 +269,15 @@ namespace TilemapPanel {
         TilemapManager::place_tile(world_pos, captured_layer, captured_atlas_index, captured_new_tile, loaded_tilemaps);
         Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
       },
-      [captured_grid_x, captured_grid_y, captured_old_tile, captured_atlas_index, captured_layer]() {
+      [captured_grid_x, captured_grid_y, captured_old_tile, captured_layer]() {
         Math::Vec2D restore_pos = TilemapManager::grid_to_world(captured_grid_x, captured_grid_y);
-        if (captured_old_tile < 0) {
+        if (!captured_old_tile.is_valid()) {
           // If there was no tile before, delete it
           TilemapManager::delete_tile(restore_pos, captured_layer);
         }
         else {
           // Restore the old tile
-          TilemapManager::place_tile(restore_pos, captured_layer, captured_atlas_index, captured_old_tile, loaded_tilemaps);
+          TilemapManager::place_tile(restore_pos, captured_layer, captured_old_tile.atlas_index, captured_old_tile.tile_index, loaded_tilemaps);
         }
         Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
       }
@@ -293,6 +288,17 @@ namespace TilemapPanel {
   void init() {
     const auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get();
     loaded_tilemaps = project_settings.loaded_tilemaps;
+
+    // Reload texture handles from paths (since texture_handle is not serialized)
+    for (auto& entry : loaded_tilemaps) {
+      if (!entry.texture_path.empty() && !entry.texture_handle) {
+        // Load the texture using Resources (handles cache lookup automatically)
+        entry.texture_handle = Engine::Resources::load_texture(entry.texture_path, true, false);
+        if (!entry.texture_handle || entry.texture_handle->id == 0) {
+          Log::warning("Failed to load tilemap atlas texture: " + entry.texture_path);
+        }
+      }
+    }
 
     // Initialize TilemapManager
     TilemapManager::init();
@@ -399,7 +405,7 @@ namespace TilemapPanel {
     }
     else {
       // Reset all tiles to full brightness when tilemap mode is disabled
-      for (auto& entity : Engine::ECS::get_entities_with<Components::Tile>()) {
+      for (auto& entity : Engine::ECS::get_entities_with<Components::TileCollider>()) {
         auto* color = entity.get_component<Components::Color>();
         if (!color) continue;
 
@@ -545,9 +551,11 @@ namespace TilemapPanel {
             ImGui::Separator();
 
             if (ImGui::Button("Submit Atlas", ImVec2(-1, 0))) {
-              Components::AtlasEntry entry;
-              entry.texture = preview_texture;
-              entry.atlas = preview_atlas;
+              Engine::Graphics::AtlasEntry entry;
+              entry.texture_handle = preview_texture.texture_handle;
+              entry.texture_path = preview_texture.texture_handle->path;
+              entry.subTextures = preview_atlas.subTextures;
+              entry.drawIndex = preview_atlas.drawIndex;
               loaded_tilemaps.push_back(entry);
 
               // Save to project settings
@@ -644,7 +652,7 @@ namespace TilemapPanel {
         if (ImGui::Button("Yes, Clear All", ImVec2(120, 0))) {
           auto all_entities = Engine::ECS::get_all_entities();
           for (auto& entity : all_entities) {
-            if (entity.has_components<Components::Tile>()) {
+            if (entity.has_components<Components::TileCollider>()) {
               entity.destroy();
               Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
             }
@@ -867,7 +875,7 @@ namespace TilemapPanel {
 
         // Display all submitted atlases
         for (int i = 0; i < static_cast<int>(loaded_tilemaps.size()); ++i) {
-          const Components::AtlasEntry& entry = loaded_tilemaps[i];
+          const Engine::Graphics::AtlasEntry& entry = loaded_tilemaps[i];
 
           ImGui::PushID(i);
 
@@ -877,9 +885,27 @@ namespace TilemapPanel {
             ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.2f, 0.6f, 0.2f, 1.0f));
           }
 
-          // Create non-const copies for TextureAtlasPreview
-          Components::Texture temp_texture = entry.texture;
-          Components::TextureAtlas temp_atlas = entry.atlas;
+          // Skip this atlas if texture handle is null (not properly loaded)
+          if (!entry.texture_handle) {
+            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "ERROR: Atlas %d has null texture!", i);
+            if (ImGui::Button("Remove Broken Atlas", ImVec2(-1, 0))) {
+              loaded_tilemaps.erase(loaded_tilemaps.begin() + i);
+              if (selected_atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
+                selected_atlas_index = static_cast<int>(loaded_tilemaps.size()) - 1;
+              }
+              save_loaded_tilemaps_to_project_settings();
+            }
+            ImGui::PopID();
+            ImGui::Separator();
+            continue;
+          }
+
+          // Create Components wrapper types for TextureAtlasPreview widget
+          Components::Texture temp_texture;
+          temp_texture.texture_handle = entry.texture_handle;
+
+          Components::TextureAtlas temp_atlas;
+          temp_atlas.subTextures = entry.subTextures;
 
           // Set the drawIndex to the currently selected tile if this is the selected atlas
           if (is_selected) {
@@ -893,9 +919,9 @@ namespace TilemapPanel {
           int cols = 1;
           int rows = 1;
 
-          if (!entry.atlas.subTextures.empty()) {
+          if (!entry.subTextures.empty()) {
             // Get the first tile's UV width to determine column count
-            const auto& first_coords = entry.atlas.subTextures[0].tex_coords;
+            const auto& first_coords = entry.subTextures[0].tex_coords;
             float tile_uv_width = std::abs(first_coords[1].x - first_coords[0].x);
             float tile_uv_height = std::abs(first_coords[0].y - first_coords[3].y);
 
@@ -954,7 +980,7 @@ namespace TilemapPanel {
       size_t total_tiles = 0;
       size_t selected_layer_tiles = 0;
 
-      for (auto& entity : Engine::ECS::get_entities_with<Components::Tile>()) {
+      for (auto& entity : Engine::ECS::get_entities_with<Components::TileCollider>()) {
         total_tiles++;
         if (entity.is_on_layer(selected_layer)) {
           selected_layer_tiles++;
@@ -1127,7 +1153,7 @@ namespace TilemapPanel {
     // Only darken when tilemap mode is enabled
     if (!enable_tilemap_mode) {
       // Reset all tiles to full brightness when tilemap mode is disabled
-      for (auto& entity : Engine::ECS::get_entities_with<Components::Tile>()) {
+      for (auto& entity : Engine::ECS::get_entities_with<Components::TileCollider>()) {
         auto* color = entity.get_component<Components::Color>();
         if (!color) continue;
 
@@ -1146,7 +1172,7 @@ namespace TilemapPanel {
     }
 
     // Iterate through all tile entities
-    for (auto& entity : Engine::ECS::get_entities_with<Components::Tile>()) {
+    for (auto& entity : Engine::ECS::get_entities_with<Components::TileCollider>()) {
       auto* color = entity.get_component<Components::Color>();
       if (!color) continue;
 
