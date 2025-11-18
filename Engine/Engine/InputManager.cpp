@@ -24,6 +24,7 @@
 #include "KeyCodes.h"
 #include "GUI/ViewportPanel.h"
 #include "FileIO/Settings.h"
+#include "ImGuiManager.h"
 #include <imgui.h>
 
 namespace
@@ -39,8 +40,6 @@ namespace
   // =================== */
   glm::vec2 mousePosition;
   glm::vec2 scrollOffset;
-
-  bool is_cursor_in_viewport = false;
 
   // Helper function to convert KeyCode to array index
   inline int key_to_index(Engine::KeyCode key)
@@ -96,11 +95,8 @@ namespace Engine
 
     //std::cout << "Raw Mouse Position: (" << xpos << ", " << ypos << ")\n";
 
-    // Check if imgui viewport mode is enabled to determine mouse position calculation
-    // auto [mousePosition, is_in_viewport] = Engine::Graphics::screen_to_viewport({ static_cast<f32>(xpos), static_cast<f32>(ypos) });
-    auto result = Engine::Graphics::screen_to_viewport({ static_cast<f32>(xpos), static_cast<f32>(ypos) });
-    mousePosition = result.first;
-    is_cursor_in_viewport = result.second;
+    // Convert screen coordinates to viewport-relative virtual coordinates
+    mousePosition = Engine::Graphics::screen_to_viewport({ static_cast<f32>(xpos), static_cast<f32>(ypos) });
 
     //std::cout << "Mouse Position: (" << mousePosition.x << ", " << mousePosition.y << ")\n";
 
@@ -132,17 +128,18 @@ namespace Engine
 
   std::optional<glm::vec2> Input::get_mouse_position_if_in_viewport()
   {
-    // Allow input if hovering over the viewport image, even if ImGui wants to capture
-    bool viewport_exception = ViewportPanel::is_viewport_hovered();
+    if (ImGuiManager::is_viewport_mode_enabled()) {
+      // In viewport mode: only allow input if hovering over the viewport image
+      if (!ViewportPanel::is_viewport_hovered())
+        return std::nullopt;
+    }
+    else {
+      // In normal mode: block input if any ImGui window is capturing the mouse
+      if (ImGui::GetIO().WantCaptureMouse)
+        return std::nullopt;
+    }
 
-    // Don't return mouse position if ImGui is capturing the mouse (unless it's the viewport)
-    if (ImGui::GetIO().WantCaptureMouse && !viewport_exception)
-      return std::nullopt;
-
-    if (is_cursor_in_viewport)
-      return mousePosition;
-    else
-      return std::nullopt;
+    return mousePosition;
   }
 
   glm::vec2 Input::get_mouse_world_position()
@@ -152,17 +149,18 @@ namespace Engine
 
   std::optional<glm::vec2> Input::get_mouse_world_position_if_in_viewport()
   {
-    // Allow input if hovering over the viewport image, even if ImGui wants to capture
-    bool viewport_exception = ViewportPanel::is_viewport_hovered();
+    if (ImGuiManager::is_viewport_mode_enabled()) {
+      // In viewport mode: only allow input if hovering over the viewport image
+      if (!ViewportPanel::is_viewport_hovered())
+        return std::nullopt;
+    }
+    else {
+      // In normal mode: block input if any ImGui window is capturing the mouse
+      if (ImGui::GetIO().WantCaptureMouse)
+        return std::nullopt;
+    }
 
-    // Don't return mouse position if ImGui is capturing the mouse (unless it's the viewport)
-    if (ImGui::GetIO().WantCaptureMouse && !viewport_exception)
-      return std::nullopt;
-
-    if (is_cursor_in_viewport)
-      return Engine::Graphics::virtual_to_world(mousePosition);
-    else
-      return std::nullopt;
+    return Engine::Graphics::virtual_to_world(mousePosition);
   }
 
   glm::vec2 Input::get_scroll_offset()
@@ -176,10 +174,5 @@ namespace Engine
   {
     //std::cout << "Scroll Offset Callback: (" << xoffset << ", " << yoffset << ")\n";
     scrollOffset = { static_cast<f32>(xoffset), static_cast<f32>(yoffset) };
-  }
-
-  bool Input::is_in_viewport()
-  {
-    return is_cursor_in_viewport;
   }
 }

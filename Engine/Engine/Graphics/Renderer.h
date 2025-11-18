@@ -85,8 +85,7 @@ namespace Engine {
     Math::Vec2D screen_to_virtual(const Math::Vec2D& screen_pos);
 
     // Convert screen coordinates to viewport-relative virtual coordinates (for ImGui viewport mode)
-    // Returns a pair: first = virtual coordinates, second = whether mouse is in viewport
-    std::pair<Math::Vec2D, bool> screen_to_viewport(const Math::Vec2D& screen_pos);
+    Math::Vec2D screen_to_viewport(const Math::Vec2D& screen_pos);
 
     // Convert virtual coordinates to screen coordinates
     Math::Vec2D virtual_to_screen(const Math::Vec2D& virtual_pos);

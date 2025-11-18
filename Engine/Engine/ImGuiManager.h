@@ -44,5 +44,8 @@ namespace ImGuiManager {
 
 	// Show a toast notification
 	void show_toast(const std::string& message, ToastType type = ToastType::Info, float duration = 3.0f);
+
+	// Check if viewport mode is enabled
+	bool is_viewport_mode_enabled();
 }
 

@@ -567,4 +567,9 @@ namespace ImGuiManager {
     active_toasts.push_back(toast);
   }
 
+  bool is_viewport_mode_enabled()
+  {
+    return Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled;
+  }
+
 }
