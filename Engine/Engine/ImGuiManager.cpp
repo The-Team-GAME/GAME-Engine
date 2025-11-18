@@ -154,7 +154,7 @@ namespace ImGuiManager {
           if (ImGui::BeginMenu("ImGui"))
           {
             ImGui::MenuItem("Toggle GUI", "F1", &main_gui_visible);
-            ImGui::MenuItem("ImGui Viewport Mode", "F2", &Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().imgui_viewport_enabled);
+            ImGui::MenuItem("Panel Viewport Mode", "F2", &Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().panel_viewport_mode);
             if (ImGui::MenuItem("Toggle Debug Layer", "F3", Engine::ECS::is_layer_active("debug"))) {
               Engine::ECS::is_layer_active("debug") ? Engine::ECS::disable_layer("debug") : Engine::ECS::enable_layer("debug");
             }
@@ -505,18 +505,18 @@ namespace ImGuiManager {
       main_gui_visible = !main_gui_visible;
     }
 
-    // Toggle ImGui Viewport Mode with F2 key
+    // Toggle Panel Viewport Mode with F2 key
     if (Engine::Input::is_pressed(Engine::KeyCode::F2))
     {
-      Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().imgui_viewport_enabled =
-        !Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled;
+      Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().panel_viewport_mode =
+        !Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode;
     }
 
-    // Make sure that imgui_viewport_enabled is false when gui is disabled
-    if (!main_gui_visible) Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().imgui_viewport_enabled = false;
+    // Make sure that panel_viewport_mode is false when gui is disabled
+    if (!main_gui_visible) Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().panel_viewport_mode = false;
 
-    // Clear screen every frame when imgui_viewport_enabled is true
-    if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled) {
+    // Clear screen every frame when panel_viewport_mode is true
+    if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode) {
       // use the theme color as the clear color
       ImVec4 bg_color = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
       Engine::Graphics::clear_screen({ bg_color.x * 0.6f, bg_color.y * 0.6f, bg_color.z * 0.6f, bg_color.w });
@@ -569,7 +569,7 @@ namespace ImGuiManager {
 
   bool is_viewport_mode_enabled()
   {
-    return Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled;
+    return Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode;
   }
 
 }

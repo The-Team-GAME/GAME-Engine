@@ -60,7 +60,7 @@ namespace Engine
       int window_width = 1280;
       int window_height = 720;
       std::string window_title = "Monkey Stole My GPA";
-      bool imgui_viewport_enabled = true;
+      bool panel_viewport_mode = true; // True - Render to ImGui panel viewport, False - render to full window
       bool load_all_assets_on_startup = true;
     };
 
@@ -78,6 +78,6 @@ namespace Engine
   }
 }
 
-REFLECT_FIELDS(Engine::FileIO::EngineSettings, window_title, window_width, window_height, imgui_viewport_enabled, load_all_assets_on_startup)
+REFLECT_FIELDS(Engine::FileIO::EngineSettings, window_title, window_width, window_height, panel_viewport_mode, load_all_assets_on_startup)
 REFLECT_FIELDS(Engine::FileIO::ProjectSettings, loaded_tilemaps)
 REFLECT_FIELDS(Engine::FileIO::LocalSettings, imgui_theme)

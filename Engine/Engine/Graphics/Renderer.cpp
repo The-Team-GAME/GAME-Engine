@@ -607,8 +607,8 @@ namespace Engine {
 
     Math::Vec2D screen_to_viewport(const Math::Vec2D& screen_pos) {
 
-      if (!Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled) {
-        // This means that imgui viewport mode is disabled, so we can just return the virtual coordinates
+      if (!Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode) {
+        // This means that panel viewport mode is disabled, so we can just return the virtual coordinates
         return screen_to_virtual(screen_pos);
       }
 

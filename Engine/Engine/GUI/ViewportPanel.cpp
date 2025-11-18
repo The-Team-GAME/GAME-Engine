@@ -108,8 +108,8 @@ namespace ViewportPanel {
   }
 
   void draw_panel() {
-    // Only show the viewport panel if viewport mode is enabled
-    if (!Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled) {
+    // Only show the viewport panel if panel viewport mode is enabled
+    if (!Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode) {
       return;
     }
 

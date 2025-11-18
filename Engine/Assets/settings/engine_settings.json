@@ -3,5 +3,5 @@
     "window_width": 1280,
     "window_height": 720,
     "load_all_assets_on_startup": true,
-    "imgui_viewport_enabled": true
+    "panel_viewport_mode": true
 }
