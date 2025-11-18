@@ -254,6 +254,9 @@ void ResourceExplorerPanel() {
     ImGui::InputText("File Name", new_file_name, sizeof(new_file_name));
 
     if (ImGui::Button("Create", ImVec2(120, 0))) {
+      // Close the popup FIRST before doing any file operations
+      ImGui::CloseCurrentPopup();
+
       std::string filename = std::string(new_file_name);
 
       // Handle different file types
@@ -279,8 +282,6 @@ void ResourceExplorerPanel() {
           Log::error("Failed to create level: " + file_path);
         }
       }
-
-      ImGui::CloseCurrentPopup();
     }
 
     ImGui::SameLine();
