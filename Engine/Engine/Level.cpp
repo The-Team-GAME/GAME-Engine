@@ -1,6 +1,9 @@
 #include "Level.h"
 #include "SceneManager.h"
 #include "Components/Components.h"
+#include "TilemapManager.h"
+#include "FileIO/SettingsManager.h"
+#include "FileIO/Settings.h"
 
 namespace
 {
@@ -38,8 +41,19 @@ void Engine::Level::instantiate_into_world()
     // This creates all entities including TileMap entities which store the tile data
   }
 
-  // After loading all entities (including TileMap entities), TilemapPanel::init()
-  // will be called which registers the TileMap entities and rebuilds collision entities
+  // Rebuild collision entities from all TileMap entities
+  const auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get();
+  for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
+    auto layers = entity.get_layers();
+    for (Engine::ECS::LayerID layer_id = 0; layer_id < Engine::ECS::MAX_LAYERS; ++layer_id) {
+      if (layers.test(layer_id)) {
+        std::string layer_name = Engine::ECS::get_layer_name(layer_id);
+        if (!layer_name.empty()) {
+          TilemapManager::rebuild_tilemap_for_layer(layer_name, project_settings.loaded_tilemaps);
+        }
+      }
+    }
+  }
 }
 
 std::string Engine::LevelManager::get_current_level_path()
