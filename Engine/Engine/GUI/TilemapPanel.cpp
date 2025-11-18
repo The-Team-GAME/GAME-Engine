@@ -2,11 +2,12 @@
 // file:    TilemapPanel.cpp
 // project: Monkey Stole My GPA
 //
-// author:  Ong Zi Ming (100%), Chew Shee Yang (50%)
+// author:  Ong Zi Ming (50%), Chew Shee Yang (50%)
 //          Primary author: Ong Zi Ming
 //          Refactored tilemap logic to TilemapManager: Chew Shee Yang
 //
 // email:   o.ziming@digipen.edu
+//          chew.s@digipen.edu
 //
 // brief:   Implementation of TilemapPanel UI for the tilemap editor. Handles
 //          user interface, tool selection, and delegates tilemap operations to
@@ -1155,6 +1156,7 @@ namespace TilemapPanel {
       }
     }
   }
+
   bool is_tilemap_mode_enabled()
   {
     return enable_tilemap_mode;
