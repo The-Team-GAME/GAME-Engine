@@ -376,13 +376,15 @@ namespace ImGuiManager {
       float padding = 10.0f;
       float toast_width = 300.0f;
       float toast_spacing = 10.0f;
-      float y_offset = padding;
+      float toast_height = 60.0f; // Approximate height per toast
+      float y_offset = work_size.y - padding;
 
       for (size_t i = 0; i < active_toasts.size(); ++i)
       {
         Toast& toast = active_toasts[i];
 
-        // Calculate position (top-right corner)
+        // Calculate position (bottom-right corner, stacking upwards)
+        y_offset -= toast_height;
         ImVec2 toast_pos = ImVec2(
           work_pos.x + work_size.x - toast_width - padding,
           work_pos.y + y_offset
@@ -407,6 +409,10 @@ namespace ImGuiManager {
         case ImGuiManager::ToastType::Error:
           bg_color = ImVec4(0.8f, 0.2f, 0.2f, 0.9f);
           icon = "[ERROR]";
+          break;
+        default:
+          bg_color = ImVec4(0.2f, 0.4f, 0.8f, 0.9f);
+          icon = "[INFO]";
           break;
         }
 
@@ -433,8 +439,8 @@ namespace ImGuiManager {
         ImGui::PopStyleVar();
         ImGui::PopStyleColor();
 
-        // Update y_offset for next toast
-        y_offset += ImGui::GetItemRectSize().y + toast_spacing;
+        // Update y_offset for next toast (subtract spacing for upward stacking)
+        y_offset -= toast_spacing;
       }
     }
 
