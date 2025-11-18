@@ -1539,31 +1539,6 @@ namespace Engine {
       draw_ui_quad(texture, position, size, rotation, color, tex_coords);
     }
 
-    void draw_subtexture_tiled_ui(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords,
-      const Math::Vec2D& position, const Math::Vec2D& size, const Math::Vec2D& tile_size, f32 rotation, const Math::Vec4D& color) {
-
-      // For tiled rendering, we need to draw multiple instances of the same tile
-      // Calculate how many tiles we need in each direction
-      int num_tiles_x = static_cast<int>(std::ceil(size.x / tile_size.x));
-      int num_tiles_y = static_cast<int>(std::ceil(size.y / tile_size.y));
-
-      // Calculate top-left corner of the tiled area
-      f32 start_x = position.x - size.x * 0.5f;
-      f32 start_y = position.y - size.y * 0.5f;
-
-      // Draw each tile instance
-      for (int y = 0; y < num_tiles_y; ++y) {
-        for (int x = 0; x < num_tiles_x; ++x) {
-          // Calculate position for this tile
-          f32 tile_x = start_x + x * tile_size.x + tile_size.x * 0.5f;
-          f32 tile_y = start_y + y * tile_size.y + tile_size.y * 0.5f;
-
-          // Draw the tile at this position
-          draw_ui_quad(texture, Math::Vec2D(tile_x, tile_y), tile_size, rotation, color, tex_coords);
-        }
-      }
-    }
-
     void draw_tilemap(const std::vector<std::vector<int>>& integerMap,
       const std::vector<Engine::Graphics::SubTexture>& atlas,
       Engine::Graphics::Texture texture,

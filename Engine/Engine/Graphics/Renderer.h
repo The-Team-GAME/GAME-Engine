@@ -201,9 +201,6 @@ namespace Engine {
     // Draw a UI subtexture (part of a texture atlas) using custom texture coordinates
     void draw_subtexture_ui(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color);
 
-    // Draw a tiled UI subtexture that repeats instead of scaling
-    void draw_subtexture_tiled_ui(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& position, const Math::Vec2D& size, const Math::Vec2D& tile_size, f32 rotation, const Math::Vec4D& color);
-
     // Draw UI text using a font
     void draw_text_ui(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color);
 
