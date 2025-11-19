@@ -484,6 +484,20 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
+    Creates an entity with a specific ID and copies all components from the prefab to it.
+    Used for restoring deleted entities during undo operations.
+
+    Parameters:
+    prefab - The prefab handle to instantiate.
+    entity_id - The specific entity ID to use.
+
+    Where to call it:
+    When restoring a deleted entity during undo operations to preserve entity ID references.
+    ==================================================================================*/
+    Entity instantiate_prefab_with_id(const Prefab& prefab, EntityID entity_id);
+
+    /*=================================================================================
+    Function Brief:
     Creates a prefab from an existing entity by copying its components.
 
     Parameters:

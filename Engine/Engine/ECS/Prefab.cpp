@@ -221,6 +221,51 @@ namespace Engine {
       return entity;
     }
 
+    Entity instantiate_prefab_with_id(const Prefab& prefab, EntityID entity_id) {
+      if (!prefab.is_valid()) {
+        return Entity(INVALID_ENTITY);
+      }
+
+      // Create entity with specific ID
+      Entity entity = create_entity_with_id(entity_id);
+
+      auto& containers = Internal::get_containers();
+      auto prefab_impl = prefab.get_impl();
+
+      // Copy signature
+      containers.entity_signatures[entity_id] = prefab_impl->get_signature();
+
+      // Copy layers
+      const LayerSignature& prefab_layers = prefab_impl->get_layers();
+      entity.clear_layers();
+      for (LayerID layer = 0; layer < containers.layer_id_to_name.size(); ++layer) {
+        if (prefab_layers.test(layer)) {
+          containers.entity_layers[entity_id].set(layer);
+          Internal::add_entity_to_layer_set(entity_id, layer);
+        }
+      }
+
+      // Clone all components from prefab to entity
+      for (const auto& [type_id, prefab_array] : prefab_impl->get_component_storage()) {
+        // Get or create component array in world
+        auto it = containers.component_arrays.find(type_id);
+        if (it == containers.component_arrays.end()) {
+          // Component type not registered in world, create it
+          containers.component_arrays[type_id] = prefab_array->create_empty();
+          it = containers.component_arrays.find(type_id);
+        }
+
+        // Clone component from prefab's storage (entity ID 0) to world's storage (entity_id)
+        ReflectionLibrary::GenericValue component_data = prefab_array->to_generic_value(0);
+        it->second->add_component_from_generic_value(entity_id, component_data);
+      }
+
+      // Notify systems about the new entity
+      Internal::entity_component_changed(entity_id);
+
+      return entity;
+    }
+
     Prefab entity_to_prefab(const Entity& entity) {
       if (!entity.is_valid()) {
         return Prefab();

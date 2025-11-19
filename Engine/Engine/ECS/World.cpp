@@ -114,6 +114,26 @@ namespace Engine {
       Internal::add_entity_to_layer_set(id, DEFAULT_LAYER);
 
       return Entity(id);
+    }
+
+    Entity create_entity_with_id(EntityID id)
+    {
+      auto& containers = Internal::get_containers();
+
+      // Make sure this ID won't be reused by incrementing next_entity_id if needed
+      if (id >= containers.next_entity_id) {
+        containers.next_entity_id = id + 1;
+      }
+
+      containers.active_entities.insert(id);
+      containers.entity_signatures[id] = ComponentSignature{};
+      containers.entity_layers[id] = LayerSignature{};
+
+      // Add entity to default layer
+      containers.entity_layers[id].set(DEFAULT_LAYER);
+      Internal::add_entity_to_layer_set(id, DEFAULT_LAYER);
+
+      return Entity(id);
     }    Entity get_entity(EntityID id)
     {
       auto& containers = Internal::get_containers();
