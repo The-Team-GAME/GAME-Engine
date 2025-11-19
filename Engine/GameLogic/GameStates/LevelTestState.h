@@ -24,16 +24,17 @@ public:
   };
 
   void init() {
-    Engine::ECS::create_entity().add_component<Components::Tag<"PhysicsTestState">>()
-      .add_component<Components::Transform2D>(0.0f, 0.0f, 0.0f, 50.0f, 50.0f) // pos.x, pos.y, rotation, scale.x, scale.y
-      .add_component<Components::Color>(blue)
-      .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
-      .add_component<Components::RigidBody>(Components::RigidBody(false, true))
-      .add_component<Components::BoxCollider>(50.0f, 50.0f, false) // width, height
-      .add_component<Components::Logic>(IDLE)
-      .add_component<Components::Player>()
-      .remove_from_layer("default")
-      .add_to_layer("player");
+    // now deserialized from level
+    // Engine::ECS::create_entity().add_component<Components::Tag<"PhysicsTestState">>()
+    //   .add_component<Components::Transform2D>(0.0f, 0.0f, 0.0f, 50.0f, 50.0f) // pos.x, pos.y, rotation, scale.x, scale.y
+    //   .add_component<Components::Color>(blue)
+    //   .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
+    //   .add_component<Components::RigidBody>(Components::RigidBody(false, true))
+    //   .add_component<Components::BoxCollider>(50.0f, 50.0f, false) // width, height
+    //   .add_component<Components::Logic>(IDLE)
+    //   .add_component<Components::Player>()
+    //   .remove_from_layer("default")
+    //   .add_to_layer("player");
   };
 
   void update() {};

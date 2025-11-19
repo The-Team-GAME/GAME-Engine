@@ -10,10 +10,11 @@
 // brief:   This file contains the definition of the data structures that will be
 //          needed for physics related logic / calculations
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 #include "../Math/Vector2D.h"
+#include "../ECS/Macros.h"
 
 using namespace Math;
 
@@ -62,14 +63,14 @@ namespace Components
       }
     }
 
-    // Just to fix reflection temporarily, remove when RigidBody is closer to finalized
-    RigidBody(f32 rotation = 0.0f, f32 angular_velocity = 0.0f) : rotation(rotation), angular_velocity(angular_velocity)
+    // Default constructor for reflection
+    RigidBody() : mass(1.0f), friction(0.99f), terminal_velocity(750.f), is_static(false), on_ground(false),
+      is_jumping(false), direction(RIGHT), rotation(0.0f), rotation_terminal_velocity(360.0f), angular_velocity(0.0f)
     {
     }
 
-    
+
   };
 }
 
-REGISTER_COMPONENT(Components::RigidBody, rotation, angular_velocity)
-//REFLECT_FIELDS(Components::RigidBody, resolve_collisions, linear_velocity, is_static, mass, linear_terminal_velocity, rotation, rotation_terminal_velocity, angular_velocity//
+REGISTER_COMPONENT(Components::RigidBody, mass, force, acceleration, gravity_acc, velocity, friction, terminal_velocity, is_static, on_ground, is_jumping, rotation, rotation_terminal_velocity, angular_velocity)
