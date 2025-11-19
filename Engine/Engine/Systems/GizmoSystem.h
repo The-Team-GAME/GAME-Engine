@@ -23,6 +23,9 @@
 #include "../Graphics/Renderer.h"
 #include "../EventManager/EventManager.h"
 #include "../Events/EngineEvents.h"
+#include "../UndoManager/UndoManager.h"
+#include "../ProjectSaveManager.h"
+#include "../Level.h"
 #include <imgui.h>
 
 // TODO: M2: NEED TO WORK WITH THINGS WITH RIGIDBODY
@@ -284,6 +287,7 @@ namespace Engine
         if (Engine::Input::is_pressed(KeyCode::MouseLeft)) {
           if (gizmo->hover_handle != Components::GizmoHandleType::None) {
             gizmo->active_handle = gizmo->hover_handle;
+            gizmo->is_dragging = true;
             gizmo->start_mouse_world = mouse;
             gizmo->start_pos = tr->position;
             gizmo->start_scale = tr->scale;
@@ -324,7 +328,63 @@ namespace Engine
 
         // ---------------- Drag ----------------
         const bool held = Engine::Input::is_held(KeyCode::MouseLeft);
-        if (!held) { gizmo->is_dragging = false; gizmo->active_handle = Components::GizmoHandleType::None; return; }
+
+        // When mouse is released, record undo and mark level as dirty
+        if (!held && gizmo->is_dragging && gizmo->active_handle != Components::GizmoHandleType::None) {
+          // Capture final transform state
+          Components::Transform2D final_transform = *tr;
+
+          // Capture initial state for undo
+          Math::Vec2D initial_pos = gizmo->start_pos;
+          float initial_rotation = gizmo->start_rotation;
+          Math::Vec2D initial_scale = gizmo->start_scale;
+
+          // Get entity ID for lambda capture
+          Engine::ECS::EntityID entity_id = entity.get_id();
+
+          // Record undo action
+          Engine::UndoManager::record(
+            // Do: Keep current state (already applied)
+            [entity_id, final_transform]() {
+              auto ent = Engine::ECS::get_entity(entity_id);
+              if (ent.is_valid()) {
+                auto* transform = ent.get_component<Components::Transform2D>();
+                if (transform) {
+                  transform->position = final_transform.position;
+                  transform->rotation = final_transform.rotation;
+                  transform->scale = final_transform.scale;
+                }
+              }
+              Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+            },
+            // Undo: Restore initial state
+            [entity_id, initial_pos, initial_rotation, initial_scale]() {
+              auto ent = Engine::ECS::get_entity(entity_id);
+              if (ent.is_valid()) {
+                auto* transform = ent.get_component<Components::Transform2D>();
+                if (transform) {
+                  transform->position = initial_pos;
+                  transform->rotation = initial_rotation;
+                  transform->scale = initial_scale;
+                }
+              }
+              Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+            }
+          );
+
+          // Mark level as dirty
+          Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+
+          gizmo->is_dragging = false;
+          gizmo->active_handle = Components::GizmoHandleType::None;
+          return;
+        }
+
+        if (!held) {
+          gizmo->is_dragging = false;
+          gizmo->active_handle = Components::GizmoHandleType::None;
+          return;
+        }
         if (gizmo->active_handle == Components::GizmoHandleType::None) return;
 
         const bool shift = Engine::Input::is_held(KeyCode::ShiftLeft) || Engine::Input::is_held(KeyCode::ShiftRight);
