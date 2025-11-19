@@ -43,12 +43,6 @@ namespace Engine
         auto* tr = entity.get_component<Components::Transform2D>();
         if (!tr) return;
 
-        // Don't select entities when Ctrl is held (camera control mode)
-        bool ctrl_held = Engine::Input::is_held(Engine::KeyCode::CtrlLeft) ||
-          Engine::Input::is_held(Engine::KeyCode::CtrlRight);
-
-        if (ctrl_held) return;
-
         const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
 
         if (!mouse_opt.has_value()) return;
@@ -89,12 +83,6 @@ namespace Engine
         auto* font = entity.get_component<Components::Font>();
 
         if (!tr || !text || !font) return;
-
-        // Don't select entities when Ctrl is held (camera control mode)
-        bool ctrl_held = Engine::Input::is_held(Engine::KeyCode::CtrlLeft) ||
-          Engine::Input::is_held(Engine::KeyCode::CtrlRight);
-
-        if (ctrl_held) return;
 
         const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
 
@@ -178,17 +166,6 @@ namespace Engine
         // if tilemap mode is enabled, remove gizmo and return
         if (TilemapPanel::is_tilemap_mode_enabled()) {
           entity.remove_component<Components::Gizmo>();
-          return;
-        }
-
-        // Check if Ctrl is held (camera control mode)
-        bool ctrl_held = Engine::Input::is_held(Engine::KeyCode::CtrlLeft) ||
-          Engine::Input::is_held(Engine::KeyCode::CtrlRight);
-
-        // If Ctrl is held, stop any ongoing drag but keep the gizmo visible
-        if (ctrl_held) {
-          gizmo->is_dragging = false;
-          gizmo->active_handle = Components::GizmoHandleType::None;
           return;
         }
 
