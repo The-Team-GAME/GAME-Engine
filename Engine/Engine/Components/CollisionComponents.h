@@ -196,7 +196,7 @@ struct Polygon
       if (!my_projection.overlaps(other_projection)) 
       {
         // No collision
-        return CollisionResult{ false, Vec2D(0, 0) };
+        return CollisionResult(false, Vec2D(0, 0));
       }
 
       f32 overlap = my_projection.get_overlap(other_projection);
@@ -216,7 +216,7 @@ struct Polygon
       // The order of checking dosent matter here :>
       if (!my_projection.overlaps(other_projection)) 
       {
-        return CollisionResult{ false, Vec2D(0, 0) };
+        return CollisionResult(false, Vec2D(0, 0));
       }
 
       f32 overlap = my_projection.get_overlap(other_projection);
@@ -238,7 +238,7 @@ struct Polygon
     }
 
     Vec2D mtv = smallest_axis * smallest_overlap;
-    return { true, mtv };
+    return CollisionResult(true, mtv);
   }
 
 };

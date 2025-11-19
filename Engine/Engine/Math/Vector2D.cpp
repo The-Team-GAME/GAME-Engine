@@ -79,8 +79,8 @@ namespace Math {
   Vec2D rotate(Vec2D const& vect, f32 degree)
   {
     Vec2D tmp{};
-    float cos_theta = cos(degree * std::numbers::pi / 180.0f);
-    float sin_theta = sin(degree * std::numbers::pi / 180.0f);
+    f32 cos_theta = static_cast<f32>(cos(degree * std::numbers::pi / 180.0f));
+    f32 sin_theta = static_cast<f32>(sin(degree * std::numbers::pi / 180.0f));
     tmp.x = vect.x * cos_theta - vect.y * sin_theta;
     tmp.y = vect.x * sin_theta + vect.y * cos_theta;
     return tmp;

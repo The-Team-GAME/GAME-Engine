@@ -117,7 +117,8 @@ void col2D::update()
         xform->position -= collision.mtv;
         phy2D::kill_normal_component(*rigid, collision.mtv);
 
-        if (collision.mtv.y > 0)
+        Vec2D normal = collision.get_normal();
+        if (normal.y > 0) // make smth to calculate the angle here maybe
         {
           rigid->on_ground = true;
         }
@@ -228,10 +229,8 @@ CollisionResult col2D::check_collision(
     {
       return lhs.polygon.intersects(rhs.polygon);
     }
-    
   }
 }
-
 
 void col2D::draw_quad_tree_sat()
 {
@@ -544,7 +543,6 @@ void col2D::QuadTreeSAT::clear()
 // Same implementation as QuadTree
 bool col2D::QuadTreeSAT::insert(ECS::Entity& entity)
 {
-  Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
   // Check if the entity intersects with this node of the quad tree
   // We need to use the get_entity_aabb function here because not every box collider uses aabb anymore
   AABB entity_aabb = get_entity_aabb(entity); 
