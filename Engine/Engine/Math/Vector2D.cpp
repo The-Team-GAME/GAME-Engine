@@ -13,6 +13,8 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "Vector2D.h"
+#include <cmath>
+#include <numbers>
 
 namespace Math {
 
@@ -74,6 +76,16 @@ namespace Math {
     return tmp * scale;
   }
 
+  Vec2D rotate(Vec2D const& vect, f32 degree)
+  {
+    Vec2D tmp{};
+    float cos_theta = cos(degree * std::numbers::pi / 180.0f);
+    float sin_theta = sin(degree * std::numbers::pi / 180.0f);
+    tmp.x = vect.x * cos_theta - vect.y * sin_theta;
+    tmp.y = vect.x * sin_theta + vect.y * cos_theta;
+    return tmp;
+  }
+
   f32 dot_product(Vec2D const& lhs, Vec2D const& rhs)
   {
     return lhs.x * rhs.x + lhs.y * rhs.y;
@@ -82,6 +94,11 @@ namespace Math {
   {
     f32 result = lhs.x * rhs.y - lhs.y * rhs.x;
     return result < 0 ? -result : result;
+  }
+
+  Vec2D outward_normal(Vec2D const& vect)
+  {
+    return Vec2D(-vect.y, vect.x);
   }
 
   // Non Member Operator Overloads

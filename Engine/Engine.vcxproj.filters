@@ -10,9 +10,7 @@
     <ClCompile Include="Engine\EventManager\EventManager.cpp" />
     <ClCompile Include="Engine\FileIO\PrefabsFileIO.cpp" />
     <ClCompile Include="Engine\FileIO\LevelFileIO.cpp" />
-    <ClCompile Include="Engine\LevelManager.cpp" />
     <ClCompile Include="Engine\GUI\EntityEditorPanel.cpp" />
-    <ClCompile Include="Engine\GUI\LevelPanel.cpp" />
     <ClCompile Include="Engine\GUI\PrefabEditorPanel.cpp" />
     <ClCompile Include="Engine\GUI\TilemapPanel.cpp" />
     <ClCompile Include="Engine\GUI\ViewportPanel.cpp" />
@@ -96,6 +94,10 @@
     <ClCompile Include="Engine\GUI\LayerManagerPanel.cpp" />
     <ClCompile Include="GameLogic\GameStates\StressTestState.cpp" />
     <ClCompile Include="Engine\Systems\LogicSystem.cpp" />
+    <ClCompile Include="Engine\GUI\LevelManagerPanel.cpp" />
+    <ClCompile Include="Engine\GUI\ResourceExplorerPanel.cpp" />
+    <ClCompile Include="Engine\Level.cpp" />
+    <ClCompile Include="Engine\ProjectSaveManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -151,9 +153,7 @@
     <ClInclude Include="Engine\ECS\Types.h" />
     <ClInclude Include="Engine\ECS\World.h" />
     <ClInclude Include="Engine\FileIO\LevelFileIO.h" />
-    <ClInclude Include="Engine\LevelManager.h" />
     <ClInclude Include="Engine\GUI\EntityEditorPanel.h" />
-    <ClInclude Include="Engine\GUI\LevelPanel.h" />
     <ClInclude Include="Engine\GUI\PrefabEditorPanel.h" />
     <ClInclude Include="Engine\GUI\ResourcePicker.h" />
     <ClInclude Include="Engine\ImGuiManager.h" />
@@ -197,6 +197,15 @@
     <ClInclude Include="Engine\GUI\LayerManagerPanel.h" />
     <ClInclude Include="GameLogic\GameStates\StressTestState.h" />
     <ClInclude Include="Engine\Systems\LogicSystem.h" />
+    <ClInclude Include="Engine\GUI\LevelManagerPanel.h" />
+    <ClInclude Include="Engine\GUI\RegisterAllPanels.h" />
+    <ClInclude Include="Engine\GUI\ResourceExplorerPanel.h" />
+    <ClInclude Include="Engine\ImGuiThemes.h" />
+    <ClInclude Include="Engine\KeyCodes.h" />
+    <ClInclude Include="Engine\Level.h" />
+    <ClInclude Include="Engine\ProjectSaveManager.h" />
+    <ClInclude Include="Engine\TimelineState.h" />
+    <ClInclude Include="GameLogic\GameStates\BehaviourState.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -294,5 +303,6 @@
     <None Include="Engine\FileIO\SettingsManager.inl" />
     <None Include="Engine\Reflection\ReflectionLibrary\GenericValue.inl" />
     <None Include="Assets\scripts\buttons_test.lua" />
+    <None Include="Assets\scripts\behaviour_test.lua" />
   </ItemGroup>
 </Project>

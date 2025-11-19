@@ -33,6 +33,14 @@ namespace Engine {
 
       void update_entity(Engine::ECS::Entity& entity) override;
 
+      // void knockback(Components::RigidBody& rigid, Vec2D force);
+      // Update the linear velocities if said entities here
+      void update_kinematics(Components::RigidBody& rigid, Components::Transform2D& xform);
+
+      // Called when resolving collisions to zero the rigidbody's velocity that is pushing against the normal
+      // of the collision surface while retaining the sliding velocity parallel to the collision surface
+      static void kill_normal_component(Components::RigidBody& rigid, Vec2D mvt);
+
       // Used to add forces to the rigid body
       static void add_force(Components::RigidBody& rigid, Vec2D force);
 
@@ -48,9 +56,7 @@ namespace Engine {
 
       static void jump(Components::RigidBody& rigid);
 
-      // void knockback(Components::RigidBody& rigid, Vec2D force);
-      // Update the linear velocities if said entities here
-      void update_kinematics(Components::RigidBody& rigid, Components::Transform2D& xform);
+
     };
   }
 }

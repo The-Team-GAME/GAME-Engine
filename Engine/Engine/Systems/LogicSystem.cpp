@@ -158,6 +158,8 @@ void logi::run_state(ECS::Entity entity)
     break;
 
   case entity_state::CHASE:
+    // Condition to swap into Attack state here
+    
     // Condition to swap into PATROL state here
     // We will make the NPCs swap back to patrol mode if they exceed their chasing bounds
     // For now i want to make it so that they simply are confined to their patrol area, in the future maybe let them chase as long as they are on the same platform and maintains line of sight with the player
