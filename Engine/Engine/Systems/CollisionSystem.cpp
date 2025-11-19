@@ -110,8 +110,7 @@ void col2D::update()
         xform->position -= collision.mtv;
         phy2D::kill_normal_component(*rigid, collision.mtv);
 
-        Vec2D normal = collision.get_normal();
-        if (normal.y > 0) // make smth to calculate the angle here maybe
+        if (collision.mtv.y > 0) // make smth to calculate the angle here maybe
         {
           rigid->on_ground = true;
         }

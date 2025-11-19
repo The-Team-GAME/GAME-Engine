@@ -88,8 +88,9 @@ void phy2D::update_kinematics(Components::RigidBody& rigid, Components::Transfor
 
 void phy2D::kill_normal_component(Components::RigidBody& rigid, Vec2D mvt)
 {
-  f32 magnitude_of_normal_force = dot_product(rigid.velocity, normalise_vector(mvt));
-  rigid.velocity -= mvt * magnitude_of_normal_force;
+  Vec2D normalised_mtv = normalise_vector(mvt);
+  f32 magnitude_of_normal_force = dot_product(rigid.velocity, normalised_mtv);
+  rigid.velocity -= normalised_mtv * magnitude_of_normal_force;
 }
 
 void phy2D::add_force(Components::RigidBody& rigid, Vec2D force)

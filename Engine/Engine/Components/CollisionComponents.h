@@ -268,6 +268,7 @@ namespace Components
     AABB aabb;
     f32 width;
     f32 height;
+    f32 radius;
 
     // Polygon data (for rotated/custom shapes)
     Polygon polygon;
