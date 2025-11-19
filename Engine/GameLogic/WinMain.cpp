@@ -69,14 +69,6 @@ int main()
   Engine::ECS::register_layer("ui"); // User interface elements
   Engine::ECS::register_layer("debug"); // Debug overlays and information
 
-  // Register collision callback for player with tilemap foreground (solid ground/platforms)
-  Engine::ECS::LayerRegistry::register_collision_callback("player", "tilemap_foreground_near",
-    [](Engine::ECS::Entity entityA, Engine::ECS::Entity entityB)
-    {
-      // Player collides with solid tilemap elements (ground, platforms, etc.)
-      // Collision resolution is handled automatically by the collision system
-    });
-
   // Example: Register a collision callback between gameplay and ui layers
   Engine::ECS::LayerRegistry::register_collision_callback("gameplay", "ui",
     [](Engine::ECS::Entity entityA, Engine::ECS::Entity entityB)

@@ -20,7 +20,7 @@ class LevelTestState : public Engine::Scene
 private:
 public:
   void load() {
-    auto level = Engine::Resources::open_level("levels/Example.json");
+    Engine::Resources::open_level("levels/Example.json");
   };
 
   void init() {

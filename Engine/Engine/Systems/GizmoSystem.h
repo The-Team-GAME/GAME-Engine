@@ -229,12 +229,12 @@ namespace Engine
         const bool allow_body = (gizmo->mode == Components::GizmoMode::GrabMove);
         const bool allow_rot = (gizmo->mode == Components::GizmoMode::Rotate);
 
-        if (Input::is_pressed(KeyCode::MouseLeft)) {
-          // inside check via local-space AABB
-          Math::Vec2D local = rot_deg(mouse, rect_center, -tr->rotation);
-          bool inside = (local.x >= rect_center.x - hw) && (local.x <= rect_center.x + hw) &&
-            (local.y >= rect_center.y - hh) && (local.y <= rect_center.y + hh);
-        }
+        //if (Input::is_pressed(KeyCode::MouseLeft)) {
+        //  // inside check via local-space AABB
+        //  Math::Vec2D local = rot_deg(mouse, rect_center, -tr->rotation);
+        //  bool inside = (local.x >= rect_center.x - hw) && (local.x <= rect_center.x + hw) &&
+        //    (local.y >= rect_center.y - hh) && (local.y <= rect_center.y + hh);
+        //}
 
         // ---------------- Hover picking ----------------
         gizmo->hover_handle = Components::GizmoHandleType::None;
@@ -340,10 +340,10 @@ namespace Engine
           // Only record undo if the transform actually changed
           const float epsilon = 0.0001f;
           bool position_changed = std::abs(final_transform.position.x - initial_transform.position.x) > epsilon ||
-                                  std::abs(final_transform.position.y - initial_transform.position.y) > epsilon;
+            std::abs(final_transform.position.y - initial_transform.position.y) > epsilon;
           bool rotation_changed = std::abs(final_transform.rotation - initial_transform.rotation) > epsilon;
           bool scale_changed = std::abs(final_transform.scale.x - initial_transform.scale.x) > epsilon ||
-                               std::abs(final_transform.scale.y - initial_transform.scale.y) > epsilon;
+            std::abs(final_transform.scale.y - initial_transform.scale.y) > epsilon;
 
           if (position_changed || rotation_changed || scale_changed) {
             // Get component type ID
