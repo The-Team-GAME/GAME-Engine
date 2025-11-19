@@ -3,6 +3,27 @@
         "entities": [
             {
                 "layers": [
+                    "default"
+                ],
+                "components": [
+                    {
+                        "type": "Components::TileMap",
+                        "data": {
+                            "tiles": [],
+                            "tile_size": {
+                                "x": 64.0,
+                                "y": 64.0
+                            },
+                            "grid_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "layers": [
                     "tilemap_background_mid"
                 ],
                 "components": [
@@ -10,6 +31,13 @@
                         "type": "Components::TileMap",
                         "data": {
                             "tiles": [
+                                {
+                                    "first": 5,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
                                 {
                                     "first": 42949672975,
                                     "second": {
@@ -32,14 +60,21 @@
                                     }
                                 },
                                 {
-                                    "first": 5,
+                                    "first": 34359738380,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
                                     }
                                 },
                                 {
-                                    "first": 4294967295,
+                                    "first": 4294967317,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
+                                    "first": 4,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -60,35 +95,7 @@
                                     }
                                 },
                                 {
-                                    "first": 4,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 4294967317,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 34359738380,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 0,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 4294967313,
+                                    "first": 4294967295,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -102,21 +109,21 @@
                                     }
                                 },
                                 {
+                                    "first": 4294967313,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
+                                    "first": 0,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
                                     "first": 1,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 2,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 4294967315,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -130,21 +137,21 @@
                                     }
                                 },
                                 {
+                                    "first": 4294967315,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
+                                    "first": 2,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
                                     "first": 3,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 6,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 4294967319,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -158,7 +165,21 @@
                                     }
                                 },
                                 {
+                                    "first": 4294967319,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
                                     "first": 12884901887,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
+                                    "first": 6,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -172,14 +193,14 @@
                                     }
                                 },
                                 {
-                                    "first": 8,
+                                    "first": 38654705681,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
                                     }
                                 },
                                 {
-                                    "first": 38654705681,
+                                    "first": 8,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -193,13 +214,6 @@
                                     }
                                 },
                                 {
-                                    "first": 10,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
                                     "first": 38654705683,
                                     "second": {
                                         "atlas_index": 1,
@@ -207,7 +221,7 @@
                                     }
                                 },
                                 {
-                                    "first": 11,
+                                    "first": 10,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -221,7 +235,7 @@
                                     }
                                 },
                                 {
-                                    "first": 12,
+                                    "first": 11,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -229,6 +243,13 @@
                                 },
                                 {
                                     "first": 38654705685,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
+                                    "first": 12,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -249,13 +270,6 @@
                                     }
                                 },
                                 {
-                                    "first": 14,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
                                     "first": 38654705687,
                                     "second": {
                                         "atlas_index": 1,
@@ -263,14 +277,7 @@
                                     }
                                 },
                                 {
-                                    "first": 15,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 47244640254,
+                                    "first": 14,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -284,7 +291,14 @@
                                     }
                                 },
                                 {
-                                    "first": 16,
+                                    "first": 47244640254,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
+                                    "first": 15,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -298,14 +312,7 @@
                                     }
                                 },
                                 {
-                                    "first": 17,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 38654705672,
+                                    "first": 16,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -319,21 +326,21 @@
                                     }
                                 },
                                 {
+                                    "first": 38654705672,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
+                                    "first": 17,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
                                     "first": 18,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 19,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 38654705674,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -347,14 +354,14 @@
                                     }
                                 },
                                 {
-                                    "first": 8589934590,
+                                    "first": 38654705674,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
                                     }
                                 },
                                 {
-                                    "first": 20,
+                                    "first": 19,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -368,14 +375,14 @@
                                     }
                                 },
                                 {
-                                    "first": 21,
+                                    "first": 20,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
                                     }
                                 },
                                 {
-                                    "first": 38654705676,
+                                    "first": 8589934590,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -389,28 +396,21 @@
                                     }
                                 },
                                 {
+                                    "first": 38654705676,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
+                                    "first": 21,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
                                     "first": 22,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 23,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 38654705678,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 17179869183,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -424,7 +424,42 @@
                                     }
                                 },
                                 {
+                                    "first": 38654705678,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
+                                    "first": 23,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
+                                    "first": 17179869183,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
                                     "first": 24,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
+                                    "first": 34359738385,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
+                                    "first": 4294967304,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -439,20 +474,6 @@
                                 },
                                 {
                                     "first": 25,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 4294967304,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 34359738385,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -522,6 +543,13 @@
                                     }
                                 },
                                 {
+                                    "first": 51539607551,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
                                     "first": 34359738391,
                                     "second": {
                                         "atlas_index": 1,
@@ -530,13 +558,6 @@
                                 },
                                 {
                                     "first": 4294967310,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 51539607551,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -571,13 +592,6 @@
                                     }
                                 },
                                 {
-                                    "first": 33,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
                                     "first": 55834574876,
                                     "second": {
                                         "atlas_index": 1,
@@ -585,7 +599,7 @@
                                     }
                                 },
                                 {
-                                    "first": 34,
+                                    "first": 33,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -599,7 +613,7 @@
                                     }
                                 },
                                 {
-                                    "first": 8589934591,
+                                    "first": 34,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -614,6 +628,13 @@
                                 },
                                 {
                                     "first": 8589934615,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
+                                    "first": 8589934591,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -718,14 +739,14 @@
                                     }
                                 },
                                 {
-                                    "first": 4294967321,
+                                    "first": 42949672994,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
                                     }
                                 },
                                 {
-                                    "first": 42949672994,
+                                    "first": 4294967321,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -746,14 +767,14 @@
                                     }
                                 },
                                 {
-                                    "first": 4294967324,
+                                    "first": 51539607585,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
                                     }
                                 },
                                 {
-                                    "first": 51539607585,
+                                    "first": 4294967324,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -788,13 +809,6 @@
                                     }
                                 },
                                 {
-                                    "first": 4294967329,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
                                     "first": 51539607580,
                                     "second": {
                                         "atlas_index": 1,
@@ -802,7 +816,7 @@
                                     }
                                 },
                                 {
-                                    "first": 4294967330,
+                                    "first": 4294967329,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -810,6 +824,13 @@
                                 },
                                 {
                                     "first": 42949672985,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
+                                    "first": 4294967330,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -970,13 +991,6 @@
                                     }
                                 },
                                 {
-                                    "first": 38654705663,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
                                     "first": 47244640279,
                                     "second": {
                                         "atlas_index": 1,
@@ -985,6 +999,13 @@
                                 },
                                 {
                                     "first": 8589934606,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
+                                    "first": 38654705663,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -1117,14 +1138,14 @@
                                     }
                                 },
                                 {
-                                    "first": 8589934617,
+                                    "first": 38654705698,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
                                     }
                                 },
                                 {
-                                    "first": 38654705698,
+                                    "first": 8589934617,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -1187,14 +1208,14 @@
                                     }
                                 },
                                 {
-                                    "first": 8589934626,
+                                    "first": 38654705689,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
                                     }
                                 },
                                 {
-                                    "first": 38654705689,
+                                    "first": 8589934626,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -1334,13 +1355,6 @@
                                     }
                                 },
                                 {
-                                    "first": 42949672959,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
                                     "first": 42949672983,
                                     "second": {
                                         "atlas_index": 1,
@@ -1349,6 +1363,13 @@
                                 },
                                 {
                                     "first": 12884901902,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
+                                    "first": 42949672959,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -1460,14 +1481,14 @@
                                     }
                                 },
                                 {
-                                    "first": 12884901913,
+                                    "first": 34359738402,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
                                     }
                                 },
                                 {
-                                    "first": 34359738402,
+                                    "first": 12884901913,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -1509,13 +1530,6 @@
                                     }
                                 },
                                 {
-                                    "first": 12884901919,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
                                     "first": 51539607584,
                                     "second": {
                                         "atlas_index": 1,
@@ -1523,7 +1537,7 @@
                                     }
                                 },
                                 {
-                                    "first": 12884901920,
+                                    "first": 12884901919,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -1537,6 +1551,13 @@
                                     }
                                 },
                                 {
+                                    "first": 12884901920,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
                                     "first": 12884901921,
                                     "second": {
                                         "atlas_index": 1,
@@ -1544,14 +1565,14 @@
                                     }
                                 },
                                 {
-                                    "first": 12884901922,
+                                    "first": 34359738393,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
                                     }
                                 },
                                 {
-                                    "first": 34359738393,
+                                    "first": 12884901922,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -1572,14 +1593,14 @@
                                     }
                                 },
                                 {
-                                    "first": 21474836479,
+                                    "first": 30064771095,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
                                     }
                                 },
                                 {
-                                    "first": 30064771095,
+                                    "first": 21474836479,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -1817,13 +1838,6 @@
                                     }
                                 },
                                 {
-                                    "first": 34359738367,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
                                     "first": 55834574862,
                                     "second": {
                                         "atlas_index": 1,
@@ -1832,6 +1846,13 @@
                                 },
                                 {
                                     "first": 17179869207,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
+                                    "first": 34359738367,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -1866,14 +1887,14 @@
                                     }
                                 },
                                 {
-                                    "first": 17179869212,
+                                    "first": 38654705697,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
                                     }
                                 },
                                 {
-                                    "first": 38654705697,
+                                    "first": 17179869212,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -1894,13 +1915,6 @@
                                     }
                                 },
                                 {
-                                    "first": 17179869215,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
                                     "first": 47244640288,
                                     "second": {
                                         "atlas_index": 1,
@@ -1908,7 +1922,7 @@
                                     }
                                 },
                                 {
-                                    "first": 17179869216,
+                                    "first": 17179869215,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -1922,7 +1936,7 @@
                                     }
                                 },
                                 {
-                                    "first": 17179869217,
+                                    "first": 17179869216,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -1936,6 +1950,13 @@
                                     }
                                 },
                                 {
+                                    "first": 17179869217,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
                                     "first": 17179869218,
                                     "second": {
                                         "atlas_index": 1,
@@ -1943,14 +1964,14 @@
                                     }
                                 },
                                 {
-                                    "first": 25769803775,
+                                    "first": 25769803799,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
                                     }
                                 },
                                 {
-                                    "first": 25769803799,
+                                    "first": 25769803775,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -2174,13 +2195,6 @@
                                     }
                                 },
                                 {
-                                    "first": 30064771071,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
                                     "first": 51539607566,
                                     "second": {
                                         "atlas_index": 1,
@@ -2189,6 +2203,13 @@
                                 },
                                 {
                                     "first": 21474836503,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
+                                    "first": 30064771071,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -2223,14 +2244,14 @@
                                     }
                                 },
                                 {
-                                    "first": 21474836508,
+                                    "first": 34359738401,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
                                     }
                                 },
                                 {
-                                    "first": 34359738401,
+                                    "first": 21474836508,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -2251,13 +2272,6 @@
                                     }
                                 },
                                 {
-                                    "first": 21474836511,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
                                     "first": 42949672992,
                                     "second": {
                                         "atlas_index": 1,
@@ -2265,7 +2279,7 @@
                                     }
                                 },
                                 {
-                                    "first": 21474836512,
+                                    "first": 21474836511,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -2279,7 +2293,7 @@
                                     }
                                 },
                                 {
-                                    "first": 21474836513,
+                                    "first": 21474836512,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -2287,6 +2301,13 @@
                                 },
                                 {
                                     "first": 34359738396,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
+                                    "first": 21474836513,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -2433,14 +2454,14 @@
                                     }
                                 },
                                 {
-                                    "first": 25769803790,
+                                    "first": 55834574847,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
                                     }
                                 },
                                 {
-                                    "first": 55834574847,
+                                    "first": 25769803790,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -2573,14 +2594,14 @@
                                     }
                                 },
                                 {
-                                    "first": 25769803804,
+                                    "first": 47244640289,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
                                     }
                                 },
                                 {
-                                    "first": 47244640289,
+                                    "first": 25769803804,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -2601,13 +2622,6 @@
                                     }
                                 },
                                 {
-                                    "first": 25769803807,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
                                     "first": 38654705696,
                                     "second": {
                                         "atlas_index": 1,
@@ -2615,7 +2629,7 @@
                                     }
                                 },
                                 {
-                                    "first": 25769803808,
+                                    "first": 25769803807,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -2629,7 +2643,7 @@
                                     }
                                 },
                                 {
-                                    "first": 25769803809,
+                                    "first": 25769803808,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -2643,7 +2657,7 @@
                                     }
                                 },
                                 {
-                                    "first": 25769803810,
+                                    "first": 25769803809,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -2651,6 +2665,13 @@
                                 },
                                 {
                                     "first": 55834574873,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
+                                    "first": 25769803810,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -2769,6 +2790,13 @@
                                     }
                                 },
                                 {
+                                    "first": 60129542143,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
                                     "first": 30064771086,
                                     "second": {
                                         "atlas_index": 1,
@@ -2776,7 +2804,7 @@
                                     }
                                 },
                                 {
-                                    "first": 60129542143,
+                                    "first": 30064771087,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -2797,13 +2825,6 @@
                                     }
                                 },
                                 {
-                                    "first": 30064771087,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
                                     "first": 51539607563,
                                     "second": {
                                         "atlas_index": 1,
@@ -2814,7 +2835,7 @@
                                     "first": 30064771088,
                                     "second": {
                                         "atlas_index": 1,
-                                        "tile_index": 22
+                                        "tile_index": 1
                                     }
                                 },
                                 {
@@ -2867,14 +2888,14 @@
                                     }
                                 },
                                 {
-                                    "first": 30064771097,
+                                    "first": 51539607586,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
                                     }
                                 },
                                 {
-                                    "first": 51539607586,
+                                    "first": 30064771097,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -2895,14 +2916,14 @@
                                     }
                                 },
                                 {
-                                    "first": 30064771100,
+                                    "first": 42949672993,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
                                     }
                                 },
                                 {
-                                    "first": 42949672993,
+                                    "first": 30064771100,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -2923,13 +2944,6 @@
                                     }
                                 },
                                 {
-                                    "first": 30064771103,
-                                    "second": {
-                                        "atlas_index": 1,
-                                        "tile_index": 22
-                                    }
-                                },
-                                {
                                     "first": 34359738400,
                                     "second": {
                                         "atlas_index": 1,
@@ -2937,7 +2951,7 @@
                                     }
                                 },
                                 {
-                                    "first": 30064771104,
+                                    "first": 30064771103,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -2951,7 +2965,7 @@
                                     }
                                 },
                                 {
-                                    "first": 30064771105,
+                                    "first": 30064771104,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -2965,7 +2979,7 @@
                                     }
                                 },
                                 {
-                                    "first": 30064771106,
+                                    "first": 30064771105,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -2973,6 +2987,13 @@
                                 },
                                 {
                                     "first": 51539607577,
+                                    "second": {
+                                        "atlas_index": 1,
+                                        "tile_index": 22
+                                    }
+                                },
+                                {
+                                    "first": 30064771106,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -3651,6 +3672,322 @@
             },
             {
                 "layers": [
+                    "tilemap_background_near"
+                ],
+                "components": [
+                    {
+                        "type": "Components::TileMap",
+                        "data": {
+                            "tiles": [
+                                {
+                                    "first": 51539607572,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 18
+                                    }
+                                },
+                                {
+                                    "first": 47244640276,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 12
+                                    }
+                                },
+                                {
+                                    "first": 42949672980,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 6
+                                    }
+                                },
+                                {
+                                    "first": 38654705684,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 34359738388,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 30064771092,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 25769803796,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 21474836500,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 17179869204,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 12884901908,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 8589934612,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 4294967316,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 20,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": -4294967276,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 0
+                                    }
+                                },
+                                {
+                                    "first": 47244640277,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 13
+                                    }
+                                },
+                                {
+                                    "first": 51539607573,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 19
+                                    }
+                                },
+                                {
+                                    "first": 51539607574,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 20
+                                    }
+                                },
+                                {
+                                    "first": 47244640278,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 14
+                                    }
+                                },
+                                {
+                                    "first": 42949672982,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 8
+                                    }
+                                },
+                                {
+                                    "first": 38654705686,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 8
+                                    }
+                                },
+                                {
+                                    "first": 34359738390,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 8
+                                    }
+                                },
+                                {
+                                    "first": 30064771094,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 8
+                                    }
+                                },
+                                {
+                                    "first": 25769803798,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 8
+                                    }
+                                },
+                                {
+                                    "first": 21474836502,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 8
+                                    }
+                                },
+                                {
+                                    "first": 17179869206,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 8
+                                    }
+                                },
+                                {
+                                    "first": 12884901910,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 8
+                                    }
+                                },
+                                {
+                                    "first": 8589934614,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 8
+                                    }
+                                },
+                                {
+                                    "first": 4294967318,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 8
+                                    }
+                                },
+                                {
+                                    "first": 22,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 8
+                                    }
+                                },
+                                {
+                                    "first": -4294967274,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 8
+                                    }
+                                },
+                                {
+                                    "first": 42949672981,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 7
+                                    }
+                                },
+                                {
+                                    "first": 38654705685,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 1
+                                    }
+                                },
+                                {
+                                    "first": 34359738389,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 1
+                                    }
+                                },
+                                {
+                                    "first": 30064771093,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 1
+                                    }
+                                },
+                                {
+                                    "first": 25769803797,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 1
+                                    }
+                                },
+                                {
+                                    "first": 21474836501,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 1
+                                    }
+                                },
+                                {
+                                    "first": 17179869205,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 1
+                                    }
+                                },
+                                {
+                                    "first": 12884901909,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 1
+                                    }
+                                },
+                                {
+                                    "first": 8589934613,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 1
+                                    }
+                                },
+                                {
+                                    "first": 4294967317,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 1
+                                    }
+                                },
+                                {
+                                    "first": 21,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 1
+                                    }
+                                },
+                                {
+                                    "first": -4294967275,
+                                    "second": {
+                                        "atlas_index": 5,
+                                        "tile_index": 1
+                                    }
+                                }
+                            ],
+                            "tile_size": {
+                                "x": 64.0,
+                                "y": 64.0
+                            },
+                            "grid_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "layers": [
                     "tilemap_foreground_near"
                 ],
                 "components": [
@@ -3659,7 +3996,7 @@
                         "data": {
                             "tiles": [
                                 {
-                                    "first": 60129542142,
+                                    "first": 55834574853,
                                     "second": {
                                         "atlas_index": 4,
                                         "tile_index": 17
@@ -3673,14 +4010,7 @@
                                     }
                                 },
                                 {
-                                    "first": 55834574853,
-                                    "second": {
-                                        "atlas_index": 4,
-                                        "tile_index": 17
-                                    }
-                                },
-                                {
-                                    "first": 60129542143,
+                                    "first": 60129542142,
                                     "second": {
                                         "atlas_index": 4,
                                         "tile_index": 17
@@ -3694,10 +4024,10 @@
                                     }
                                 },
                                 {
-                                    "first": 51539607569,
+                                    "first": 60129542143,
                                     "second": {
-                                        "atlas_index": 2,
-                                        "tile_index": 14
+                                        "atlas_index": 4,
+                                        "tile_index": 17
                                     }
                                 },
                                 {
@@ -3705,6 +4035,13 @@
                                     "second": {
                                         "atlas_index": 4,
                                         "tile_index": 17
+                                    }
+                                },
+                                {
+                                    "first": 51539607569,
+                                    "second": {
+                                        "atlas_index": 2,
+                                        "tile_index": 14
                                     }
                                 },
                                 {
@@ -4057,7 +4394,7 @@
                                 "x": 0.0,
                                 "y": 0.0
                             },
-                            "on_ground": false,
+                            "on_ground": true,
                             "is_jumping": false,
                             "rotation": 0.0,
                             "rotation_terminal_velocity": 360.0,
@@ -4067,8 +4404,8 @@
                     {
                         "data": {
                             "position": {
-                                "x": 690.7022094726563,
-                                "y": -144.21255493164063
+                                "x": 567.7420043945313,
+                                "y": 807.0
                             },
                             "rotation": 0.0,
                             "scale": {
@@ -4085,8 +4422,8 @@
                             "width": 50.0,
                             "aabb": {
                                 "pos": {
-                                    "x": 690.7022094726563,
-                                    "y": -144.21255493164063
+                                    "x": 567.7420043945313,
+                                    "y": 807.388916015625
                                 },
                                 "half_width": 25.0,
                                 "half_height": 25.0
