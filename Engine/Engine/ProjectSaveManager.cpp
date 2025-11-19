@@ -55,6 +55,9 @@ void Engine::ProjectSaveManager::save_all_dirty()
         // Sync collision matrix from ECS to ProjectSettings before saving
         auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get_mutable();
         auto& containers = Engine::ECS::Internal::get_containers();
+
+        Log::info("Saving ProjectSettings - loaded_tilemaps count: " + std::to_string(project_settings.loaded_tilemaps.size()));
+
         project_settings.collision_matrix = containers.collision_matrix;
 
         // Save project settings
