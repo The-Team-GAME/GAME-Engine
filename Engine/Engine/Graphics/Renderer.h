@@ -85,8 +85,7 @@ namespace Engine {
     Math::Vec2D screen_to_virtual(const Math::Vec2D& screen_pos);
 
     // Convert screen coordinates to viewport-relative virtual coordinates (for ImGui viewport mode)
-    // Returns a pair: first = virtual coordinates, second = whether mouse is in viewport
-    std::pair<Math::Vec2D, bool> screen_to_viewport(const Math::Vec2D& screen_pos);
+    Math::Vec2D screen_to_viewport(const Math::Vec2D& screen_pos);
 
     // Convert virtual coordinates to screen coordinates
     Math::Vec2D virtual_to_screen(const Math::Vec2D& virtual_pos);
@@ -133,6 +132,22 @@ namespace Engine {
 
     // Draw a subtexture (part of a texture atlas) using custom texture coordinates
     void draw_subtexture(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color);
+
+    // Draw a tiled subtexture that repeats instead of scaling
+    void draw_subtexture_tiled(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& position, const Math::Vec2D& size, const Math::Vec2D& tile_size, f32 rotation, const Math::Vec4D& color);
+
+    // Draw tilemap from integer map with automatic rectangle merging for optimization
+    // tileMap: Sparse hashmap of tile indices (key = encoded x,y coordinates)
+    // atlas: Texture atlas containing all tile sprites
+    // texture: The texture handle for the atlas
+    // tileSize: Size of each tile in world units
+    // gridOffset: World position offset for the tilemap origin
+    // color: Tint color to apply to all tiles
+    void draw_tilemap(const std::unordered_map<int64_t, Tile>& tileMap,
+      const std::vector<AtlasEntry>& loaded_tilemaps,
+      const Math::Vec2D& tileSize,
+      const Math::Vec2D& gridOffset,
+      const Math::Vec4D& color);
 
     // Draw texture with distortion effect
     void draw_texture_distortion(Engine::Graphics::Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, f32 intensity, f32 speed, f32 mesh_intensity = 0.0f);

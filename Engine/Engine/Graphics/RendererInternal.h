@@ -95,5 +95,51 @@ namespace Engine {
       FontData(const std::string& path, unsigned int size);
     };
 
+    // Tile data used in tilemap rendering - contains atlas reference and tile index
+    struct Tile {
+      int atlas_index = -1; // Which atlas this tile uses
+      int tile_index = -1;  // Which tile within the atlas
+
+      // Default constructor for empty tiles
+      Tile() = default;
+
+      // Constructor for setting atlas and tile index
+      Tile(int atlas_idx, int tile_idx)
+        : atlas_index(atlas_idx), tile_index(tile_idx) {
+      }
+
+      // Check if this is a valid tile
+      bool is_valid() const {
+        return atlas_index >= 0 && tile_index >= 0;
+      }
+    };
+
+    // Forward declare Texture type (defined in Renderer.h)
+    using Texture = std::shared_ptr<TextureData>;
+
+    // Atlas entry for tilemap rendering - flattened structure
+    struct AtlasEntry {
+      Texture texture_handle;                    // Shared pointer to texture data (runtime only, not serialized)
+      std::vector<SubTexture> subTextures;       // UV coordinates for each tile in the atlas
+      int drawIndex = -1;                        // Current subTexture index to draw (unused in tilemap)
+      std::string texture_path;                  // Path to texture file (for serialization/deserialization)
+
+      AtlasEntry() : texture_handle(nullptr), subTextures(), drawIndex(-1), texture_path("") {}
+
+      // Custom reflector for serialization/deserialization
+      struct Reflector {
+        std::string texture_path;
+        std::vector<std::array<Math::Vec2D, 4>> tex_coords_list;
+        int drawIndex;
+
+        static Reflector reflect(const AtlasEntry& entry);
+        static AtlasEntry create(const Reflector& r);
+      };
+    };
+
   }
 }
+
+REFLECT_FIELDS(Engine::Graphics::SubTexture, tex_coords);
+REFLECT_FIELDS(Engine::Graphics::Tile, atlas_index, tile_index);
+REFLECT_CUSTOM(Engine::Graphics::AtlasEntry, texture_path, tex_coords_list, drawIndex);

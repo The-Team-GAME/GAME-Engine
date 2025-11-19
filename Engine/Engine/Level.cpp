@@ -1,5 +1,9 @@
 #include "Level.h"
 #include "SceneManager.h"
+#include "Components/Components.h"
+#include "TilemapManager.h"
+#include "FileIO/SettingsManager.h"
+#include "FileIO/Settings.h"
 
 namespace
 {
@@ -12,6 +16,11 @@ Engine::Level Engine::Level::from_world()
   Level level;
 
   Engine::ECS::for_each_entity([&](Engine::ECS::Entity entity) {
+    // Skip tile entities - they are temporary and rebuilt by TilemapManager
+    if (entity.has_components<Components::TileCollider>()) {
+      return;
+    }
+
     ReflectionLibrary::GenericValue entity_value = Engine::ECS::entity_to_generic_value(entity);
     level.entities.push_back(std::move(entity_value));
     });
@@ -29,7 +38,21 @@ void Engine::Level::instantiate_into_world()
 
   for (const auto& entity_value : entities) {
     Engine::ECS::create_entity_from_generic_value(entity_value);
-    // TODO: we need a way to mark the entities as belonging to a specific level
+    // This creates all entities including TileMap entities which store the tile data
+  }
+
+  // Rebuild collision entities from all TileMap entities
+  const auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get();
+  for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
+    auto layers = entity.get_layers();
+    for (Engine::ECS::LayerID layer_id = 0; layer_id < Engine::ECS::MAX_LAYERS; ++layer_id) {
+      if (layers.test(layer_id)) {
+        std::string layer_name = Engine::ECS::get_layer_name(layer_id);
+        if (!layer_name.empty()) {
+          TilemapManager::rebuild_tilemap_for_layer(layer_name, project_settings.loaded_tilemaps);
+        }
+      }
+    }
   }
 }
 

@@ -15,6 +15,7 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "RendererInternal.h"
+#include "../Resources.h"
 #include <stdexcept>
 
 struct FreeTypeDeleter
@@ -237,3 +238,38 @@ Engine::Graphics::FontData::FontData(const std::string& path, unsigned int size)
   Log::info("Font atlas created: " + std::to_string(atlas_width) + "x" + std::to_string(atlas_height) + " with " + std::to_string(glyphs.size()) + " glyphs");
 }
 
+// AtlasEntry::Reflector implementation
+Engine::Graphics::AtlasEntry::Reflector Engine::Graphics::AtlasEntry::Reflector::reflect(const AtlasEntry& entry)
+{
+  Reflector r;
+  // Save the texture path (either from texture_handle or the stored path)
+  if (entry.texture_handle) {
+    r.texture_path = Engine::Resources::get_relative_path(entry.texture_handle->path);
+  }
+  r.drawIndex = entry.drawIndex;
+  // Convert SubTextures to array format for serialization
+  r.tex_coords_list.reserve(entry.subTextures.size());
+  for (const auto& subTex : entry.subTextures) {
+    r.tex_coords_list.push_back(subTex.tex_coords);
+  }
+  return r;
+}
+
+Engine::Graphics::AtlasEntry Engine::Graphics::AtlasEntry::Reflector::create(const Reflector& r)
+{
+  AtlasEntry entry;
+  // Load the texture from the path
+  entry.texture_path = r.texture_path;
+  if (!r.texture_path.empty()) {
+    entry.texture_handle = Engine::Resources::load_texture(r.texture_path, true);
+  }
+  entry.drawIndex = r.drawIndex;
+  // Convert arrays back to SubTextures
+  entry.subTextures.reserve(r.tex_coords_list.size());
+  for (const auto& coords : r.tex_coords_list) {
+    SubTexture subTex;
+    subTex.tex_coords = coords;
+    entry.subTextures.push_back(subTex);
+  }
+  return entry;
+}
