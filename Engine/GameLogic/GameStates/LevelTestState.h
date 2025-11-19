@@ -31,7 +31,9 @@ public:
       .add_component<Components::RigidBody>(Components::RigidBody(false, true))
       .add_component<Components::BoxCollider>(50.0f, 50.0f, false) // width, height
       .add_component<Components::Logic>(IDLE)
-      .add_component<Components::Player>();
+      .add_component<Components::Player>()
+      .remove_from_layer("default")
+      .add_to_layer("player");
   };
 
   void update() {};
