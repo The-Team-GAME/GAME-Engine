@@ -121,14 +121,14 @@ namespace TilemapPanel {
       },
       [captured_grid_x, captured_grid_y, captured_tile, captured_layer]() {
         Math::Vec2D restore_pos = TilemapManager::grid_to_world(captured_grid_x, captured_grid_y);
-        TilemapManager::place_tile(restore_pos, captured_layer, captured_tile.atlas_index, captured_tile.tile_index, loaded_tilemaps);
+        TilemapManager::place_tile(restore_pos, captured_layer, captured_tile.atlas_index, captured_tile.tile_index);
         Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
       }
     );
   }
 
   void update_all_tile_dimensions() {
-    TilemapManager::update_all_tile_dimensions(loaded_tilemaps);
+    TilemapManager::update_all_tile_dimensions();
   }
 
   void pick_tile_at_position(const Math::Vec2D& world_pos) {
@@ -209,7 +209,7 @@ namespace TilemapPanel {
         for (int y = captured_start_y; y <= captured_end_y; ++y) {
           for (int x = captured_start_x; x <= captured_end_x; ++x) {
             Math::Vec2D world_pos = TilemapManager::grid_to_world(x, y);
-            TilemapManager::place_tile(world_pos, captured_layer, captured_atlas_index, captured_tile_index, loaded_tilemaps);
+            TilemapManager::place_tile(world_pos, captured_layer, captured_atlas_index, captured_tile_index);
           }
         }
         Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
@@ -224,7 +224,7 @@ namespace TilemapPanel {
           }
           else {
             // Restore the old tile
-            TilemapManager::place_tile(restore_pos, captured_layer, tile_state.old_tile.atlas_index, tile_state.old_tile.tile_index, loaded_tilemaps);
+            TilemapManager::place_tile(restore_pos, captured_layer, tile_state.old_tile.atlas_index, tile_state.old_tile.tile_index);
           }
         }
         Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
@@ -266,7 +266,7 @@ namespace TilemapPanel {
 
     Engine::UndoManager::execute(
       [world_pos, captured_new_tile, captured_atlas_index, captured_layer]() {
-        TilemapManager::place_tile(world_pos, captured_layer, captured_atlas_index, captured_new_tile, loaded_tilemaps);
+        TilemapManager::place_tile(world_pos, captured_layer, captured_atlas_index, captured_new_tile);
         Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
       },
       [captured_grid_x, captured_grid_y, captured_old_tile, captured_layer]() {
@@ -277,7 +277,7 @@ namespace TilemapPanel {
         }
         else {
           // Restore the old tile
-          TilemapManager::place_tile(restore_pos, captured_layer, captured_old_tile.atlas_index, captured_old_tile.tile_index, loaded_tilemaps);
+          TilemapManager::place_tile(restore_pos, captured_layer, captured_old_tile.atlas_index, captured_old_tile.tile_index);
         }
         Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
       }
@@ -310,7 +310,7 @@ namespace TilemapPanel {
         if (layers.test(layer_id)) {
           std::string layer_name = Engine::ECS::get_layer_name(layer_id);
           if (!layer_name.empty()) {
-            TilemapManager::rebuild_tilemap_for_layer(layer_name, loaded_tilemaps);
+            TilemapManager::rebuild_tilemap_for_layer(layer_name);
           }
         }
       }

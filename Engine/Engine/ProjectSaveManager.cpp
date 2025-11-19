@@ -38,7 +38,6 @@ bool Engine::ProjectSaveManager::check_dirty(const DirtyState& state)
           else if constexpr (std::is_same_v<T, DirtyStates::Prefab>) {
             return existing_ptr->prefab_path == s.prefab_path;
           }
-          return false;
         }
         return false;
         }, state);
