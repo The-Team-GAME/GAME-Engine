@@ -253,34 +253,14 @@ void EntityEditorPanel()
             // Right-click context menu
             if (ImGui::BeginPopupContextItem()) {
               if (ImGui::MenuItem("Delete Entity")) {
-                // Capture entity state for undo
-                Engine::ECS::Prefab entity_prefab = Engine::ECS::entity_to_prefab(entity);
-                Engine::ECS::EntityID entity_id = entity.get_id();
-                bool was_selected = (selected_entity_id == static_cast<s32>(entity_id));
+                // Send delete event (handles undo/redo and marking dirty)
+                Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(entity.get_id(), true);
 
-                Engine::UndoManager::execute(
-                  // Do: Delete the entity
-                  [entity_id, was_selected]() {
-                    Engine::ECS::destroy_entity(entity_id);
-                    if (was_selected) {
-                      selected_entity_id = -1;
-                      Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
-                    }
-                    Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
-                  },
-                  // Undo: Recreate the entity from prefab (will have a new ID)
-                  [entity_prefab, was_selected]() {
-                    Engine::ECS::Entity restored = Engine::ECS::instantiate_prefab(entity_prefab);
-                    if (was_selected) {
-                      selected_entity_id = static_cast<s32>(restored.get_id());
-                      Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(restored.get_id());
-                    }
-                    Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
-                  }
-                );
-
-                // Mark level as dirty
-                Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+                // Clear selection if this entity was selected
+                if (selected_entity_id == static_cast<s32>(entity.get_id())) {
+                  selected_entity_id = -1;
+                  Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
+                }
               }
               if (ImGui::MenuItem("Clone Entity")) {
                 Engine::ECS::Entity cloned = Engine::ECS::clone_entity(entity);
@@ -329,32 +309,12 @@ void EntityEditorPanel()
     // Delete selected entity
     if (selected_entity_id != -1 && ImGui::Button("Delete Selected"))
     {
-      auto entity = Engine::ECS::get_entity(selected_entity_id);
-      if (entity.is_valid()) {
-        // Capture entity state for undo
-        Engine::ECS::Prefab entity_prefab = Engine::ECS::entity_to_prefab(entity);
-        Engine::ECS::EntityID entity_id = selected_entity_id;
+      // Send delete event (handles undo/redo and marking dirty)
+      Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(selected_entity_id, true);
 
-        Engine::UndoManager::execute(
-          // Do: Delete the entity
-          [entity_id]() {
-            Engine::ECS::destroy_entity(entity_id);
-            selected_entity_id = -1;
-            Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
-            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
-          },
-          // Undo: Recreate the entity from prefab (will have a new ID)
-          [entity_prefab]() {
-            Engine::ECS::Entity restored = Engine::ECS::instantiate_prefab(entity_prefab);
-            selected_entity_id = static_cast<s32>(restored.get_id());
-            Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(restored.get_id());
-            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
-          }
-        );
-
-        // Mark level as dirty
-        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
-      }
+      // Clear selection
+      selected_entity_id = -1;
+      Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
     }
   }
 

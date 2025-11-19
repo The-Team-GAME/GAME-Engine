@@ -22,6 +22,9 @@
 #include "../Resources.h"
 #include "../Components/GizmoComponents.h"
 #include "../InputManager.h"
+#include "../UndoManager/UndoManager.h"
+#include "../ProjectSaveManager.h"
+#include "../Level.h"
 
 
 namespace Engine {
@@ -72,11 +75,11 @@ namespace Engine {
                   const auto mouse = Engine::Input::get_mouse_world_position();
                   gizmo->drag_offset = Math::Vec2D(mouse.x - transform->position.x, mouse.y - transform->position.y);
                   gizmo->is_dragging = true;
-                  
+
                   // Set active handle to Body for immediate dragging
                   gizmo->active_handle = Components::GizmoHandleType::Body;
                   gizmo->hover_handle = Components::GizmoHandleType::Body;
-                  
+
                   // Cache initial state for dragging
                   gizmo->start_mouse_world = mouse;
                   gizmo->start_pos = transform->position;
@@ -91,6 +94,87 @@ namespace Engine {
               }
             }
           }
+        }
+      );
+
+      // Register entity transform modification event
+      Engine::EventManager::add_event_listener<Engine::Events::ModifyEntityTransformEvent>([](const Engine::Events::ModifyEntityTransformEvent& event)
+        {
+          auto entity = Engine::ECS::get_entity(event.entity_id);
+          if (!entity.is_valid() || !entity.has_component<Components::Transform2D>()) {
+            return;
+          }
+
+          auto* transform = entity.get_component<Components::Transform2D>();
+          if (!transform) return;
+
+          // Apply the new transform
+          *transform = event.new_transform;
+
+          // Record undo if requested
+          if (event.record_undo) {
+            Engine::ECS::EntityID entity_id = event.entity_id;
+            Components::Transform2D old_tf = event.old_transform;
+            Components::Transform2D new_tf = event.new_transform;
+
+            Engine::UndoManager::record(
+              // Do: Apply new transform
+              [entity_id, new_tf]() {
+                Engine::EventManager::send_event<Engine::Events::ModifyEntityTransformEvent>(
+                  entity_id, new_tf, new_tf, false
+                );
+                Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+              },
+              // Undo: Restore old transform
+              [entity_id, old_tf, new_tf]() {
+                Engine::EventManager::send_event<Engine::Events::ModifyEntityTransformEvent>(
+                  entity_id, old_tf, new_tf, false
+                );
+                Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+              }
+            );
+
+            // Mark level as dirty
+            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+          }
+        }
+      );
+
+      // Register entity deletion event
+      Engine::EventManager::add_event_listener<Engine::Events::DeleteEntityEvent>([](const Engine::Events::DeleteEntityEvent& event)
+        {
+          auto entity = Engine::ECS::get_entity(event.entity_id);
+          if (!entity.is_valid()) {
+            return;
+          }
+
+          // Record undo if requested
+          if (event.record_undo) {
+            // Capture entity state before deletion
+            Engine::ECS::Prefab entity_prefab = Engine::ECS::entity_to_prefab(entity);
+            Engine::ECS::EntityID entity_id = event.entity_id;
+
+            Engine::UndoManager::record(
+              // Do: Delete the entity
+              [entity_id]() {
+                Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(entity_id, false);
+                Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+              },
+              // Undo: Recreate the entity from prefab
+              [entity_prefab]() {
+                Engine::ECS::Entity restored = Engine::ECS::instantiate_prefab(entity_prefab);
+                // Send selection event to select the restored entity
+                Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(restored.get_id());
+                Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+              }
+            );
+
+            // Mark level as dirty
+            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+          }
+
+          // Perform the actual deletion
+          Engine::ECS::destroy_entity(event.entity_id);
         }
       );
     }

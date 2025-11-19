@@ -23,9 +23,6 @@
 #include "../Graphics/Renderer.h"
 #include "../EventManager/EventManager.h"
 #include "../Events/EngineEvents.h"
-#include "../UndoManager/UndoManager.h"
-#include "../ProjectSaveManager.h"
-#include "../Level.h"
 #include <imgui.h>
 
 // TODO: M2: NEED TO WORK WITH THINGS WITH RIGIDBODY
@@ -329,51 +326,21 @@ namespace Engine
         // ---------------- Drag ----------------
         const bool held = Engine::Input::is_held(KeyCode::MouseLeft);
 
-        // When mouse is released, record undo and mark level as dirty
+        // When mouse is released, send modification event with undo support
         if (!held && gizmo->is_dragging && gizmo->active_handle != Components::GizmoHandleType::None) {
           // Capture final transform state
           Components::Transform2D final_transform = *tr;
 
-          // Capture initial state for undo
-          Math::Vec2D initial_pos = gizmo->start_pos;
-          float initial_rotation = gizmo->start_rotation;
-          Math::Vec2D initial_scale = gizmo->start_scale;
+          // Capture initial state
+          Components::Transform2D initial_transform;
+          initial_transform.position = gizmo->start_pos;
+          initial_transform.rotation = gizmo->start_rotation;
+          initial_transform.scale = gizmo->start_scale;
 
-          // Get entity ID for lambda capture
-          Engine::ECS::EntityID entity_id = entity.get_id();
-
-          // Record undo action
-          Engine::UndoManager::record(
-            // Do: Keep current state (already applied)
-            [entity_id, final_transform]() {
-              auto ent = Engine::ECS::get_entity(entity_id);
-              if (ent.is_valid()) {
-                auto* transform = ent.get_component<Components::Transform2D>();
-                if (transform) {
-                  transform->position = final_transform.position;
-                  transform->rotation = final_transform.rotation;
-                  transform->scale = final_transform.scale;
-                }
-              }
-              Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
-            },
-            // Undo: Restore initial state
-            [entity_id, initial_pos, initial_rotation, initial_scale]() {
-              auto ent = Engine::ECS::get_entity(entity_id);
-              if (ent.is_valid()) {
-                auto* transform = ent.get_component<Components::Transform2D>();
-                if (transform) {
-                  transform->position = initial_pos;
-                  transform->rotation = initial_rotation;
-                  transform->scale = initial_scale;
-                }
-              }
-              Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
-            }
+          // Send modification event (this will handle undo/redo and marking dirty)
+          Engine::EventManager::send_event<Engine::Events::ModifyEntityTransformEvent>(
+            entity.get_id(), final_transform, initial_transform, true
           );
-
-          // Mark level as dirty
-          Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
 
           gizmo->is_dragging = false;
           gizmo->active_handle = Components::GizmoHandleType::None;
