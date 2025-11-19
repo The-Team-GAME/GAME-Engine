@@ -1082,19 +1082,26 @@ namespace TilemapPanel {
     if (ImGui::CollapsingHeader("Instructions")) {
       ImGui::Indent();
 
-      ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "How to use:");
-      ImGui::BulletText("Load an atlas from an entity with Texture + TextureAtlas");
-      ImGui::BulletText("Select a tile from the atlas preview (click)");
-      ImGui::BulletText("Click-drag to select multiple tiles in a rectangle");
-      ImGui::BulletText("Enable painting mode");
-      ImGui::BulletText("Click in the game world to place tiles");
-      ImGui::BulletText("Multi-tile selections are placed as a stamp pattern");
-      ImGui::BulletText("Enable erasing mode to delete tiles");
-      ImGui::BulletText("Toggle grid to see tile boundaries");
-      ImGui::BulletText("Adjust grid snap size to match your tile size");
+      ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Getting Started:");
+      ImGui::BulletText("Click 'Create Atlas' to load a texture from Resources");
+      ImGui::BulletText("Configure rows/columns to slice the texture into tiles");
+      ImGui::BulletText("Preview and submit the atlas to the loaded tilemaps list");
+      ImGui::BulletText("Enable Tilemap Mode to start editing");
 
       ImGui::Spacing();
-      ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "Keyboard Shortcuts:");
+      ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "Tile Selection:");
+      ImGui::BulletText("Click a tile in the atlas preview to select it");
+      ImGui::BulletText("Click-drag to select multiple tiles in a rectangle");
+
+      ImGui::Spacing();
+      ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f), "Tools:");
+      ImGui::BulletText("Paintbrush (B) - Click to place selected tile(s)");
+      ImGui::BulletText("Box Fill (U) - Drag to fill a rectangular area");
+      ImGui::BulletText("Picker (I) - Click a placed tile to select it");
+      ImGui::BulletText("Eraser (D) - Click to delete placed tiles");
+
+      ImGui::Spacing();
+      ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.4f, 1.0f), "Keyboard Shortcuts:");
       ImGui::BulletText("B - Paintbrush tool");
       ImGui::BulletText("U - Box Fill tool");
       ImGui::BulletText("I - Picker tool");
@@ -1102,11 +1109,15 @@ namespace TilemapPanel {
       ImGui::BulletText("L - Toggle dim non-selected layers");
       ImGui::BulletText("Ctrl - Temporary Picker (while painting)");
       ImGui::BulletText("Shift - Temporary Eraser (while painting)");
+      ImGui::BulletText("Ctrl+Z / Ctrl+Y - Undo/Redo");
 
       ImGui::Spacing();
-      ImGui::TextColored(ImVec4(1.0f, 0.5f, 1.0f, 1.0f), "Multi-Tile Selection:");
-      ImGui::BulletText("Selected tiles show with CYAN borders");
-      ImGui::BulletText("Paint to place entire pattern at once");
+      ImGui::TextColored(ImVec4(1.0f, 0.5f, 1.0f, 1.0f), "Layers & Grid:");
+      ImGui::BulletText("Select a layer in 'Layer Selection' to paint on");
+      ImGui::BulletText("Dim non-selected layers for better visibility");
+      ImGui::BulletText("Adjust 'Tile Size' to match your tileset dimensions");
+      ImGui::BulletText("Use 'Grid Offset' to align grid with your level");
+      ImGui::BulletText("Grid updates all existing tiles when changed");
 
       ImGui::Unindent();
     }
