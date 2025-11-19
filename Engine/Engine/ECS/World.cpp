@@ -326,6 +326,12 @@ namespace Engine {
         }
       }
 
+      // After layer-based entity drawing, call draw() on each system for global drawing operations
+      // TODO: Holiday: DEPRECATE
+      for (auto& system : containers.systems) {
+        system->draw();
+      }
+
       Engine::Perf::stop("ECS Draw");
     }
 
