@@ -41,8 +41,7 @@ namespace TilemapPanel {
   // Internal state
   namespace {
     std::vector<Engine::Graphics::AtlasEntry> loaded_tilemaps;
-    int selected_atlas_index = -1;
-    int selected_tile_index = 0;
+    Engine::Graphics::Tile selected_tile;
 
     // Current preview (before submission)
     Components::Texture preview_texture;
@@ -147,9 +146,8 @@ namespace TilemapPanel {
       return;
     }
 
-    // Set the selected atlas and tile
-    selected_atlas_index = tile.atlas_index;
-    selected_tile_index = tile.tile_index;
+    // Set the selected tile
+    selected_tile = tile;
 
     // Switch back to Paintbrush tool after picking
     current_tool = ToolMode::Paintbrush;
@@ -157,16 +155,15 @@ namespace TilemapPanel {
 
   void fill_box_with_tiles(const Math::Vec2D& start_pos, const Math::Vec2D& end_pos) {
     // Check if we have a valid atlas selected
-    if (selected_atlas_index < 0 || selected_atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
+    if (!selected_tile.is_valid() || selected_tile.atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
       return;
     }
 
-    const Engine::Graphics::AtlasEntry& atlas_entry = loaded_tilemaps[selected_atlas_index];
+    const Engine::Graphics::AtlasEntry& atlas_entry = loaded_tilemaps[selected_tile.atlas_index];
 
     if (!atlas_entry.texture_handle ||
       atlas_entry.subTextures.empty() ||
-      selected_tile_index < 0 ||
-      selected_tile_index >= static_cast<int>(atlas_entry.subTextures.size())) {
+      selected_tile.tile_index >= static_cast<int>(atlas_entry.subTextures.size())) {
       return;
     }
 
@@ -199,23 +196,22 @@ namespace TilemapPanel {
     int captured_start_y = start_grid_y;
     int captured_end_x = end_grid_x;
     int captured_end_y = end_grid_y;
-    int captured_tile_index = selected_tile_index;
-    int captured_atlas_index = selected_atlas_index;
+    Engine::Graphics::Tile captured_tile = selected_tile;
     std::string captured_layer = selected_layer;
     std::vector<TileState> captured_old_tiles = old_tiles;
 
     Engine::UndoManager::execute(
-      [captured_start_x, captured_start_y, captured_end_x, captured_end_y, captured_tile_index, captured_atlas_index, captured_layer]() {
+      [captured_start_x, captured_start_y, captured_end_x, captured_end_y, captured_tile, captured_layer]() {
         // Fill the box with new tiles
         for (int y = captured_start_y; y <= captured_end_y; ++y) {
           for (int x = captured_start_x; x <= captured_end_x; ++x) {
             Math::Vec2D world_pos = TilemapManager::grid_to_world(x, y);
-            TilemapManager::place_tile(world_pos, captured_layer, captured_atlas_index, captured_tile_index);
+            TilemapManager::place_tile(world_pos, captured_layer, captured_tile.atlas_index, captured_tile.tile_index);
           }
         }
         Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
       },
-      [captured_old_tiles, captured_atlas_index, captured_layer]() {
+      [captured_old_tiles, captured_layer]() {
         // Restore old tiles
         for (const auto& tile_state : captured_old_tiles) {
           Math::Vec2D restore_pos = TilemapManager::grid_to_world(tile_state.x, tile_state.y);
@@ -235,16 +231,15 @@ namespace TilemapPanel {
 
   void place_tile_at_position(const Math::Vec2D& world_pos) {
     // Check if we have a valid atlas selected
-    if (selected_atlas_index < 0 || selected_atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
+    if (!selected_tile.is_valid() || selected_tile.atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
       return;
     }
 
-    const Engine::Graphics::AtlasEntry& atlas_entry = loaded_tilemaps[selected_atlas_index];
+    const Engine::Graphics::AtlasEntry& atlas_entry = loaded_tilemaps[selected_tile.atlas_index];
 
     if (!atlas_entry.texture_handle ||
       atlas_entry.subTextures.empty() ||
-      selected_tile_index < 0 ||
-      selected_tile_index >= static_cast<int>(atlas_entry.subTextures.size())) {
+      selected_tile.tile_index >= static_cast<int>(atlas_entry.subTextures.size())) {
       return;
     }
 
@@ -253,7 +248,7 @@ namespace TilemapPanel {
 
     // Check if the tile is already the same
     Engine::Graphics::Tile current_tile = TilemapManager::get_tile_at(selected_layer, grid_x, grid_y);
-    if (current_tile.atlas_index == selected_atlas_index && current_tile.tile_index == selected_tile_index) {
+    if (current_tile.atlas_index == selected_tile.atlas_index && current_tile.tile_index == selected_tile.tile_index) {
       return; // Same tile, nothing to do
     }
 
@@ -261,13 +256,12 @@ namespace TilemapPanel {
     int captured_grid_x = grid_x;
     int captured_grid_y = grid_y;
     Engine::Graphics::Tile captured_old_tile = current_tile;
-    int captured_new_tile = selected_tile_index;
-    int captured_atlas_index = selected_atlas_index;
+    Engine::Graphics::Tile captured_new_tile = selected_tile;
     std::string captured_layer = selected_layer;
 
     Engine::UndoManager::execute(
-      [world_pos, captured_new_tile, captured_atlas_index, captured_layer]() {
-        TilemapManager::place_tile(world_pos, captured_layer, captured_atlas_index, captured_new_tile);
+      [world_pos, captured_new_tile, captured_layer]() {
+        TilemapManager::place_tile(world_pos, captured_layer, captured_new_tile.atlas_index, captured_new_tile.tile_index);
         Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
       },
       [captured_grid_x, captured_grid_y, captured_old_tile, captured_layer]() {
@@ -872,7 +866,7 @@ namespace TilemapPanel {
           ImGui::PushID(i);
 
           // Atlas name and select button
-          bool is_selected = (i == selected_atlas_index);
+          bool is_selected = (i == selected_tile.atlas_index);
           if (is_selected) {
             ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.2f, 0.6f, 0.2f, 1.0f));
           }
@@ -882,8 +876,8 @@ namespace TilemapPanel {
             ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "ERROR: Atlas %d has null texture!", i);
             if (ImGui::Button("Remove Broken Atlas", ImVec2(-1, 0))) {
               loaded_tilemaps.erase(loaded_tilemaps.begin() + i);
-              if (selected_atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
-                selected_atlas_index = static_cast<int>(loaded_tilemaps.size()) - 1;
+              if (selected_tile.atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
+                selected_tile.atlas_index = static_cast<int>(loaded_tilemaps.size()) - 1;
               }
               save_loaded_tilemaps_to_project_settings();
             }
@@ -901,7 +895,7 @@ namespace TilemapPanel {
 
           // Set the drawIndex to the currently selected tile if this is the selected atlas
           if (is_selected) {
-            temp_atlas.drawIndex = selected_tile_index;
+            temp_atlas.drawIndex = selected_tile.tile_index;
           }
           else {
             temp_atlas.drawIndex = -1; // No tile selected in this atlas
@@ -934,16 +928,16 @@ namespace TilemapPanel {
             temp_atlas,
             preview_height,
             [i](size_t tile_idx) {
-              selected_atlas_index = i;
-              selected_tile_index = static_cast<int>(tile_idx);
+              selected_tile.atlas_index = i;
+              selected_tile.tile_index = static_cast<int>(tile_idx);
             }
           );
 
           // Remove button
           if (ImGui::Button("Remove Atlas", ImVec2(-1, 0))) {
             loaded_tilemaps.erase(loaded_tilemaps.begin() + i);
-            if (selected_atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
-              selected_atlas_index = static_cast<int>(loaded_tilemaps.size()) - 1;
+            if (selected_tile.atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
+              selected_tile.atlas_index = static_cast<int>(loaded_tilemaps.size()) - 1;
             }
 
             // Save to project settings
