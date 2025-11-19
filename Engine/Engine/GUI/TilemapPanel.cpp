@@ -398,25 +398,6 @@ namespace TilemapPanel {
         }
       }
     }
-
-    // Update tile colors based on selected layer (only when tilemap mode is enabled)
-    if (enable_tilemap_mode) {
-      darken_non_selected_layer_tiles();
-    }
-    else {
-      // Reset all tiles to full brightness when tilemap mode is disabled
-      for (auto& entity : Engine::ECS::get_entities_with<Components::TileCollider>()) {
-        auto* color = entity.get_component<Components::Color>();
-        if (!color) continue;
-
-        color->r = 1.0f;
-        color->g = 1.0f;
-        color->b = 1.0f;
-        color->a = 1.0f;
-      }
-    }
-
-
   }
 
 
@@ -1149,55 +1130,13 @@ namespace TilemapPanel {
     }
   }
 
-  void darken_non_selected_layer_tiles() {
-    // Only darken when tilemap mode is enabled
-    if (!enable_tilemap_mode) {
-      // Reset all tiles to full brightness when tilemap mode is disabled
-      for (auto& entity : Engine::ECS::get_entities_with<Components::TileCollider>()) {
-        auto* color = entity.get_component<Components::Color>();
-        if (!color) continue;
-
-        color->r = 1.0f;
-        color->g = 1.0f;
-        color->b = 1.0f;
-        color->a = 1.0f;
-      }
-      return;
-    }
-
-    // Get the selected layer ID
-    Engine::ECS::LayerID selected_layer_id = Engine::ECS::get_layer_id(selected_layer);
-    if (selected_layer_id == Engine::ECS::INVALID_LAYER) {
-      return;
-    }
-
-    // Iterate through all tile entities
-    for (auto& entity : Engine::ECS::get_entities_with<Components::TileCollider>()) {
-      auto* color = entity.get_component<Components::Color>();
-      if (!color) continue;
-
-      // Check if entity is on the selected layer
-      bool on_selected_layer = entity.is_on_layer(selected_layer_id);
-
-      if (on_selected_layer) {
-        // Reset to full brightness for tiles on selected layer
-        color->r = 1.0f;
-        color->g = 1.0f;
-        color->b = 1.0f;
-        color->a = 1.0f;
-      }
-      else {
-        // Darken tiles on other layers
-        color->r = 0.3f;
-        color->g = 0.3f;
-        color->b = 0.3f;
-        color->a = 1.0f;
-      }
-    }
-  }
-
   bool is_tilemap_mode_enabled()
   {
     return enable_tilemap_mode;
+  }
+
+  std::string get_selected_layer()
+  {
+    return selected_layer;
   }
 } // namespace TilemapPanel

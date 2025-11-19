@@ -146,13 +146,19 @@ namespace TilemapPanel {
 
   /*=================================================================================
   Function Brief:
-  Darkens tiles that are not on the currently selected layer. This provides visual
-  feedback about which layer is active during painting/erasing operations.
+  Returns whether tilemap editing mode is currently enabled.
 
-  Where to call it:
-  Called internally during update() when painting or erasing mode is enabled.
+  Returns:
+  True if tilemap mode is enabled, false otherwise.
   ==================================================================================*/
-  void darken_non_selected_layer_tiles();
-
   bool is_tilemap_mode_enabled();
+
+  /*=================================================================================
+  Function Brief:
+  Returns the name of the currently selected layer in the tilemap editor.
+
+  Returns:
+  String name of the selected layer.
+  ==================================================================================*/
+  std::string get_selected_layer();
 }
