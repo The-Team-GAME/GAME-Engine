@@ -25,9 +25,13 @@
 #include "Core.h"
 #include "SceneManager.h"
 #include "ProjectSaveManager.h"
+#include "Events/WindowEvents.h"
+#include "EventManager/EventManager.h"
 
 namespace {
-  bool gui_enabled = true;
+  bool gui_enabled = true; // Completely disable ImGui when false (TODO: Hook this up to a setting)
+  bool main_gui_visible = true; // Still render ImGui but hide all windows when false
+  bool show_exit_confirmation = false;
 
   struct PanelInfo {
     std::string name;
@@ -35,7 +39,15 @@ namespace {
     bool visible = true;
   };
 
+  struct Toast {
+    std::string message;
+    ImGuiManager::ToastType type;
+    float duration;
+    float elapsed;
+  };
+
   std::vector<PanelInfo> registered_panels;
+  std::vector<Toast> active_toasts;
 
   std::unordered_map<std::string, std::function<void()>> styles_map = {
     {"Eggplant", SetupImGuiStyle_Eggplant},
@@ -71,6 +83,13 @@ namespace ImGuiManager {
 
     ImGui_ImplGlfw_InitForOpenGL(Engine::WindowManager::get_window(), true);
     ImGui_ImplOpenGL3_Init();
+
+    // Register event listener for window close requests
+    Engine::EventManager::add_event_listener<Engine::Events::WindowCloseRequestedEvent>(
+      [](const Engine::Events::WindowCloseRequestedEvent&) {
+        show_exit_confirmation = true;
+      }
+    );
   }
 
   void exit()
@@ -82,11 +101,23 @@ namespace ImGuiManager {
 
   void begin()
   {
-    if (gui_enabled)
+    if (!gui_enabled) {
+      return;
+    }
+
+    // ==================================================================================
+    // Always start ImGui frame (needed for popups even when GUI is disabled)
+    // ==================================================================================
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    // ==================================================================================
+    // Start of ImGui enabled
+    // ==================================================================================
+
+    if (main_gui_visible)
     {
-      ImGui_ImplOpenGL3_NewFrame();
-      ImGui_ImplGlfw_NewFrame();
-      ImGui::NewFrame();
 
       ImGuiViewport* viewport = ImGui::GetMainViewport();
       float top_bar_height = 0.0f;
@@ -122,8 +153,8 @@ namespace ImGuiManager {
           }
           if (ImGui::BeginMenu("ImGui"))
           {
-            ImGui::MenuItem("Toggle GUI", "F1", &gui_enabled);
-            ImGui::MenuItem("ImGui Viewport Mode", "F2", &Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().imgui_viewport_enabled);
+            ImGui::MenuItem("Toggle GUI", "F1", &main_gui_visible);
+            ImGui::MenuItem("Panel Viewport Mode", "F2", &Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().panel_viewport_mode);
             if (ImGui::MenuItem("Toggle Debug Layer", "F3", Engine::ECS::is_layer_active("debug"))) {
               Engine::ECS::is_layer_active("debug") ? Engine::ECS::disable_layer("debug") : Engine::ECS::enable_layer("debug");
             }
@@ -237,26 +268,209 @@ namespace ImGuiManager {
         }
       }
     }
+
+    // ==================================================================================
+    // End of ImGui enabled
+    // ==================================================================================
+
+
+    // ==================================================================================
+    // Start of run even when ImGui is disabled
+    // ==================================================================================
+
+    // Show exit confirmation popup
+    if (show_exit_confirmation)
+    {
+      ImGui::OpenPopup("Exit Confirmation");
+      show_exit_confirmation = false; // Reset flag after opening
+    }
+
+    // Always place the popup at the center of the viewport
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+    if (ImGui::BeginPopupModal("Exit Confirmation", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+      bool has_unsaved_changes = Engine::ProjectSaveManager::is_any_dirty();
+
+      if (has_unsaved_changes)
+      {
+        ImGui::Text("You have unsaved changes!");
+        ImGui::Spacing();
+        ImGui::Text("Do you want to save before exiting?");
+      }
+      else
+      {
+        ImGui::Text("Are you sure you want to exit?");
+      }
+
+      ImGui::Spacing();
+      ImGui::Separator();
+      ImGui::Spacing();
+
+      // Button layout
+      f32 button_width = 120.0f;
+      f32 total_width = has_unsaved_changes ? (button_width * 3 + ImGui::GetStyle().ItemSpacing.x * 2)
+        : (button_width * 2 + ImGui::GetStyle().ItemSpacing.x);
+      f32 window_width = ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x;
+      f32 offset = (window_width - total_width) * 0.5f;
+
+      if (offset > 0.0f)
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
+
+      if (has_unsaved_changes)
+      {
+        // Save and Exit button
+        if (ImGui::Button("Save and Exit", ImVec2(button_width, 0)))
+        {
+          Engine::ProjectSaveManager::save_all_dirty();
+          Engine::Core::stop();
+          ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+
+        // Don't Save button
+        if (ImGui::Button("Don't Save", ImVec2(button_width, 0)))
+        {
+          Engine::Core::stop();
+          ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+      }
+      else
+      {
+        // Exit button
+        if (ImGui::Button("Exit", ImVec2(button_width, 0)))
+        {
+          Engine::Core::stop();
+          ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+      }
+
+      // Cancel button
+      if (ImGui::Button("Cancel", ImVec2(button_width, 0)))
+      {
+        ImGui::CloseCurrentPopup();
+      }
+
+      ImGui::EndPopup();
+    }
+
+    // ==================================================================================
+    // End of run even when ImGui is disabled
+    // ==================================================================================
+
+    // ==================================================================================
+    // Render toast notifications
+    // ==================================================================================
+    if (!active_toasts.empty())
+    {
+      ImGuiViewport* viewport = ImGui::GetMainViewport();
+      ImVec2 work_pos = viewport->WorkPos;
+      ImVec2 work_size = viewport->WorkSize;
+
+      float padding = 10.0f;
+      float toast_width = 300.0f;
+      float toast_spacing = 10.0f;
+      float toast_height = 60.0f; // Approximate height per toast
+      float y_offset = work_size.y - padding;
+
+      for (size_t i = 0; i < active_toasts.size(); ++i)
+      {
+        Toast& toast = active_toasts[i];
+
+        // Calculate position (bottom-right corner, stacking upwards)
+        y_offset -= toast_height;
+        ImVec2 toast_pos = ImVec2(
+          work_pos.x + work_size.x - toast_width - padding,
+          work_pos.y + y_offset
+        );
+
+        ImGui::SetNextWindowPos(toast_pos, ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(toast_width, 0), ImGuiCond_Always);
+
+        // Style based on toast type
+        ImVec4 border_color;
+        const char* icon;
+        switch (toast.type)
+        {
+        case ImGuiManager::ToastType::Info:
+          border_color = ImVec4(0.2f, 0.4f, 0.8f, 1.0f);
+          icon = "[INFO]";
+          break;
+        case ImGuiManager::ToastType::Warning:
+          border_color = ImVec4(0.8f, 0.6f, 0.2f, 1.0f);
+          icon = "[WARNING]";
+          break;
+        case ImGuiManager::ToastType::Error:
+          border_color = ImVec4(0.8f, 0.2f, 0.2f, 1.0f);
+          icon = "[ERROR]";
+          break;
+        default:
+          border_color = ImVec4(0.2f, 0.4f, 0.8f, 1.0f);
+          icon = "[INFO]";
+          break;
+        }
+
+        ImGui::PushStyleColor(ImGuiCol_Border, border_color);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 2.0f);
+
+        std::string window_id = "##Toast" + std::to_string(i);
+        ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+          ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
+          ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs |
+          ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;        if (ImGui::Begin(window_id.c_str(), nullptr, flags))
+        {
+          ImGui::TextColored(border_color, "%s", icon);
+          ImGui::SameLine();
+          ImGui::TextWrapped("%s", toast.message.c_str());
+
+          // Progress bar with matching color
+          ImGui::PushStyleColor(ImGuiCol_PlotHistogram, border_color);
+          float progress = toast.elapsed / toast.duration;
+          ImGui::ProgressBar(progress, ImVec2(-1.0f, 2.0f), "");
+          ImGui::PopStyleColor();
+        }
+        ImGui::End();
+
+        ImGui::PopStyleVar(2);
+        ImGui::PopStyleColor();
+
+        // Update y_offset for next toast (subtract spacing for upward stacking)
+        y_offset -= toast_spacing;
+      }
+    }
+
+    // ==================================================================================
+    // End of toast notifications
+    // ==================================================================================
   }
 
   void end()
   {
     Engine::Perf::start("ImGui Render");
 
-    if (gui_enabled)
+    if (!gui_enabled)
     {
-      ImGui::Render();
-      ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+      return;
+    }
 
-      // Update and Render additional Platform Windows
-      ImGuiIO& io = ImGui::GetIO();
-      if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-      {
-        GLFWwindow* backup_current_context = glfwGetCurrentContext();
-        ImGui::UpdatePlatformWindows();
-        ImGui::RenderPlatformWindowsDefault();
-        glfwMakeContextCurrent(backup_current_context);
-      }
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    // Update and Render additional Platform Windows
+    ImGuiIO& io = ImGui::GetIO();
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    {
+      GLFWwindow* backup_current_context = glfwGetCurrentContext();
+      ImGui::UpdatePlatformWindows();
+      ImGui::RenderPlatformWindowsDefault();
+      glfwMakeContextCurrent(backup_current_context);
     }
 
     Engine::Perf::stop("ImGui Render");
@@ -264,6 +478,21 @@ namespace ImGuiManager {
 
   void update()
   {
+    // Update toast timers
+    float dt = Engine::Time::get_unscaled_fixed_dt();
+    for (auto it = active_toasts.begin(); it != active_toasts.end();)
+    {
+      it->elapsed += dt;
+      if (it->elapsed >= it->duration)
+      {
+        it = active_toasts.erase(it);
+      }
+      else
+      {
+        ++it;
+      }
+    }
+
     // Save
     if (Engine::Input::is_held(Engine::KeyCode::CtrlLeft) && Engine::Input::is_pressed(Engine::KeyCode::S))
     {
@@ -273,21 +502,21 @@ namespace ImGuiManager {
     // Toggle ImGui with F1 key
     if (Engine::Input::is_pressed(Engine::KeyCode::F1))
     {
-      gui_enabled = !gui_enabled;
+      main_gui_visible = !main_gui_visible;
     }
 
-    // Toggle ImGui Viewport Mode with F2 key
+    // Toggle Panel Viewport Mode with F2 key
     if (Engine::Input::is_pressed(Engine::KeyCode::F2))
     {
-      Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().imgui_viewport_enabled =
-        !Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled;
+      Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().panel_viewport_mode =
+        !Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode;
     }
 
-    // Make sure that imgui_viewport_enabled is false when gui is disabled
-    if (!gui_enabled) Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().imgui_viewport_enabled = false;
+    // Make sure that panel_viewport_mode is false when gui is disabled
+    if (!main_gui_visible) Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().panel_viewport_mode = false;
 
-    // Clear screen every frame when imgui_viewport_enabled is true
-    if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled) {
+    // Clear screen every frame when panel_viewport_mode is true
+    if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode) {
       // use the theme color as the clear color
       ImVec4 bg_color = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
       Engine::Graphics::clear_screen({ bg_color.x * 0.6f, bg_color.y * 0.6f, bg_color.z * 0.6f, bg_color.w });
@@ -326,6 +555,21 @@ namespace ImGuiManager {
     // Update user settings
     Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::get_mutable().imgui_theme = style_name;
     Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::save();
+  }
+
+  void show_toast(const std::string& message, ToastType type, float duration)
+  {
+    Toast toast;
+    toast.message = message;
+    toast.type = type;
+    toast.duration = duration;
+    toast.elapsed = 0.0f;
+    active_toasts.push_back(toast);
+  }
+
+  bool is_viewport_mode_enabled()
+  {
+    return Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode;
   }
 
 }

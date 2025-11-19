@@ -81,6 +81,19 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
+    Creates an entity with a specific ID. Used for restoring deleted entities
+    during undo operations to preserve entity ID references.
+
+    Parameters:
+    id - The specific entity ID to use.
+
+    Where to call it:
+    When restoring a deleted entity during undo operations.
+    ==================================================================================*/
+    Entity create_entity_with_id(EntityID id);
+
+    /*=================================================================================
+    Function Brief:
     Retrieves an existing entity by its ID. Returns an invalid entity if the ID
     doesn't correspond to an active entity.
 

@@ -16,30 +16,75 @@
 #include <imgui.h>
 #include "PrefabEditorPanel.h"
 #include "widgets/ReflectionFieldWidgets.h"
+#include "../UndoManager/UndoManager.h"
 #include "../FileIO/PrefabsFileIO.h"
 #include "../Path.h"
 #include "../Resources.h"
 #include "../ProjectSaveManager.h"
+#include "../InputManager.h"
 
 void PrefabEditorPanelHelpers::render_component_tree(const std::string& component_name, Engine::ECS::Prefab& prefab, Engine::ECS::IComponentArray* array, const std::string& prefab_path)
 {
   if (ImGui::TreeNode(component_name.c_str())) {
+    // Track the value before any modifications
+    static std::unordered_map<std::string, ReflectionLibrary::GenericValue> component_edit_start_values;
+    static std::unordered_map<std::string, bool> component_being_edited;
+    static std::unordered_map<std::string, bool> component_was_active_last_frame;
+
+    std::string component_key = component_name + "_" + prefab_path;
+
     auto component_data = array->to_generic_value(0); // Prefabs use entity ID 0
     bool modified = false;
 
     ImGuiWidgets::render_field(component_name, component_data, modified);
 
-    // Write back changes if modified
+    // Check if user is currently editing (any widget is active in this component)
+    bool is_any_item_active = ImGui::IsAnyItemActive();
+    bool was_active_last_frame = component_was_active_last_frame[component_key];
+
+    // Start tracking when editing begins
+    if (is_any_item_active && !component_being_edited[component_key]) {
+      component_being_edited[component_key] = true;
+      component_edit_start_values[component_key] = array->to_generic_value(0);
+    }
+
+    // Apply changes in real-time
     if (modified) {
       array->set_component_from_generic_value(0, component_data);
-
-      // Mark prefab as dirty
-      if (!prefab_path.empty()) {
-        Engine::ProjectSaveManager::set_dirty(
-          Engine::ProjectSaveManager::DirtyStates::Prefab(prefab_path)
-        );
-      }
     }
+
+    // Record to undo manager only when editing just finished (was active, now inactive)
+    if (component_being_edited[component_key] && was_active_last_frame && !is_any_item_active) {
+      auto prev_value = component_edit_start_values[component_key];
+      auto new_value = component_data;
+
+      // Only record if the value actually changed
+      if (prev_value != new_value) {
+        Engine::UndoManager::record(
+          // Do lambda: apply new value
+          [array, new_value]() {
+            array->set_component_from_generic_value(0, new_value);
+          },
+          // Undo lambda: restore previous value
+          [array, prev_value]() {
+            array->set_component_from_generic_value(0, prev_value);
+          }
+        );
+
+        // Mark prefab as dirty
+        if (!prefab_path.empty()) {
+          Engine::ProjectSaveManager::set_dirty(
+            Engine::ProjectSaveManager::DirtyStates::Prefab(prefab_path)
+          );
+        }
+      }
+
+      component_being_edited[component_key] = false;
+      component_edit_start_values.erase(component_key);
+    }
+
+    // Update last frame state
+    component_was_active_last_frame[component_key] = is_any_item_active;
 
     ImGui::Separator();
 

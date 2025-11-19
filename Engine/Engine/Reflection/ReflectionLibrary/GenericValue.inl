@@ -459,6 +459,59 @@ namespace ReflectionLibrary
   inline const GenericValue::VariantType& GenericValue::variant() const { return data_; }
   inline GenericValue::VariantType& GenericValue::variant() { return data_; }
 
+  // Comparison operators
+  inline bool GenericValue::operator==(const GenericValue& other) const
+  {
+    // First check if types are the same
+    if (data_.index() != other.data_.index())
+      return false;
+
+    // Compare based on type
+    if (isNull())
+      return true; // Both are null
+    else if (isBool())
+      return getBool() == other.getBool();
+    else if (isInt())
+      return getInt() == other.getInt();
+    else if (isDouble())
+      return getDouble() == other.getDouble();
+    else if (isString())
+      return getString() == other.getString();
+    else if (isArray())
+    {
+      const auto& arr1 = getArray();
+      const auto& arr2 = other.getArray();
+      if (arr1.size() != arr2.size())
+        return false;
+      for (size_t i = 0; i < arr1.size(); ++i)
+      {
+        if (arr1[i] != arr2[i]) // Recursive comparison
+          return false;
+      }
+      return true;
+    }
+    else if (isObject())
+    {
+      const auto& obj1 = getObject();
+      const auto& obj2 = other.getObject();
+      if (obj1.size() != obj2.size())
+        return false;
+      for (const auto& [key, value] : obj1)
+      {
+        auto it = obj2.find(key);
+        if (it == obj2.end() || value != it->second) // Recursive comparison
+          return false;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  inline bool GenericValue::operator!=(const GenericValue& other) const
+  {
+    return !(*this == other);
+  }
+
   // Convert any C++ type to GenericValue
   template <typename T>
   inline GenericValue to_generic_value(const T& obj)
@@ -473,6 +526,11 @@ namespace ReflectionLibrary
         return GenericValue(); // null
       }
       return to_generic_value(obj.value());
+    }
+    else if constexpr (is_bitset_v<ValueType>)
+    {
+      // Handle std::bitset - convert to string representation
+      return GenericValue(obj.to_string());
     }
     else if constexpr (std::is_same_v<ValueType, bool>)
     {
@@ -567,6 +625,20 @@ namespace ReflectionLibrary
         return false;
       obj = std::move(inner_value);
       return true;
+    }
+    else if constexpr (is_bitset_v<ValueType>)
+    {
+      // Handle std::bitset - convert from string representation
+      if (!value.isString())
+        return false;
+      const auto& str = value.getString();
+      try {
+        obj = ValueType(str);
+        return true;
+      }
+      catch (...) {
+        return false;
+      }
     }
     else if constexpr (std::is_same_v<ValueType, bool>)
     {

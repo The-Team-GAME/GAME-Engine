@@ -28,6 +28,9 @@
 #include "../Components/UtilityComponents.h"
 #include "../EventManager/EventManager.h"
 #include "../Events/EngineEvents.h"
+#include "../UndoManager/UndoManager.h"
+#include "../InputManager.h"
+#include "../ProjectSaveManager.h"
 
 namespace {
   // Shared state for entity selection
@@ -50,25 +53,67 @@ namespace {
 void EntityEditorPanelHelpers::render_component_tree(const std::string& component_name, Engine::ECS::Entity& entity, Engine::ECS::IComponentArray* array)
 {
   if (ImGui::TreeNode(component_name.c_str())) {
+    // Track the value before any modifications
+    static std::unordered_map<std::string, ReflectionLibrary::GenericValue> component_edit_start_values;
+    static std::unordered_map<std::string, bool> component_being_edited;
+    static std::unordered_map<std::string, bool> component_was_active_last_frame;
+
+    std::string component_key = component_name + "_" + std::to_string(entity.get_id());
+
     auto component_data = array->to_generic_value(entity.get_id());
     bool modified = false;
 
     ImGuiWidgets::render_field(component_name, component_data, modified, entity);
 
-    // Write back changes if modified
+    // Check if user is currently editing (any widget is active in this component)
+    bool is_any_item_active = ImGui::IsAnyItemActive();
+    bool was_active_last_frame = component_was_active_last_frame[component_key];
+
+    // Start tracking when editing begins
+    if (is_any_item_active && !component_being_edited[component_key]) {
+      component_being_edited[component_key] = true;
+      component_edit_start_values[component_key] = array->to_generic_value(entity.get_id());
+    }
+
+    // Apply changes in real-time
     if (modified) {
-      //std::cout << "Component " << component_name << " modified on Entity " << entity.get_id() << std::endl;
       array->set_component_from_generic_value(entity.get_id(), component_data);
     }
+
+    // Record to undo manager only when editing just finished (was active, now inactive)
+    if (component_being_edited[component_key] && was_active_last_frame && !is_any_item_active) {
+      auto prev_value = component_edit_start_values[component_key];
+      auto new_value = component_data;
+
+      // Only send event if the value actually changed
+      if (prev_value != new_value) {
+        // Get component type ID
+        Engine::ECS::ComponentTypeID type_id = array->get_type_id();
+
+        // Send modification event (this will handle undo/redo and marking dirty)
+        Engine::EventManager::send_event<Engine::Events::ModifyComponentEvent>(
+          entity.get_id(), type_id, new_value, prev_value, true
+        );
+      }
+
+      component_being_edited[component_key] = false;
+      component_edit_start_values.erase(component_key);
+    }
+
+    // Update last frame state
+    component_was_active_last_frame[component_key] = is_any_item_active;
 
     ImGui::Separator();
 
     std::string remove_label = "Remove##" + component_name;
     if (ImGui::Button(remove_label.c_str())) {
-      auto& containers = Engine::ECS::Internal::get_containers();
-      Engine::ECS::EntityID entityId = entity.get_id();
+      // Get component type ID
+      Engine::ECS::ComponentTypeID type_id = array->get_type_id();
 
-      containers.components_to_remove.emplace_back(entityId, array->get_type_id());
+      // Send remove component event (this will handle undo/redo and marking dirty)
+      Engine::EventManager::send_event<Engine::Events::RemoveComponentEvent>(
+        entity.get_id(), type_id, true
+      );
     }
 
     ImGui::TreePop();
@@ -189,7 +234,10 @@ void EntityEditorPanel()
             // Right-click context menu
             if (ImGui::BeginPopupContextItem()) {
               if (ImGui::MenuItem("Delete Entity")) {
-                Engine::ECS::destroy_entity(entity);
+                // Send delete event (handles undo/redo and marking dirty)
+                Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(entity.get_id(), true);
+
+                // Clear selection if this entity was selected
                 if (selected_entity_id == static_cast<s32>(entity.get_id())) {
                   selected_entity_id = -1;
                   Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
@@ -242,7 +290,10 @@ void EntityEditorPanel()
     // Delete selected entity
     if (selected_entity_id != -1 && ImGui::Button("Delete Selected"))
     {
-      Engine::ECS::destroy_entity(selected_entity_id);
+      // Send delete event (handles undo/redo and marking dirty)
+      Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(selected_entity_id, true);
+
+      // Clear selection
       selected_entity_id = -1;
       Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
     }
@@ -307,13 +358,15 @@ void EntityEditorPanel()
         }
         else {
           if (ImGui::Button(button_label.c_str())) {
-            // Add default-constructed component to entity by name
-            if (entity.add_component_by_name(component_name)) {
-              Log::info("Added component '" + component_name + "' to entity " + std::to_string(entity.get_id()));
-            }
-            else {
-              Log::error("Failed to add component '" + component_name + "' to entity " + std::to_string(entity.get_id()));
-            }
+            // Create default component data
+            ReflectionLibrary::GenericValue default_data = ReflectionLibrary::Object();
+
+            // Send add component event (this will handle undo/redo and marking dirty)
+            Engine::EventManager::send_event<Engine::Events::AddComponentEvent>(
+              entity.get_id(), type_id, default_data, true
+            );
+
+            Log::info("Added component '" + component_name + "' to entity " + std::to_string(entity.get_id()));
           }
         }
 

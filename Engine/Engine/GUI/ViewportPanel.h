@@ -12,17 +12,17 @@
 //          framebuffer texture and displays it in a resizable ImGui window.
 //
 //          INPUT HANDLING:
-//          The InputManager automatically uses viewport coordinates when the mouse
-//          is hovering over the viewport. Use ViewportPanel::should_capture_input()
-//          to check if the viewport is active before processing game input events.
+//          The InputManager automatically allows input when hovering over the
+//          viewport image, even though it's technically an ImGui window. This means
+//          you can interact with game entities in the viewport without other ImGui
+//          panels interfering. The viewport is treated as a special exception to
+//          normal ImGui input blocking.
 //
 //          Example usage:
-//            if (ViewportPanel::should_capture_input()) {
-//              // Process game input here
-//              if (Input::is_pressed(KeyCode::MouseLeft)) {
-//                // Mouse click in game world
-//                auto world_pos = Input::get_mouse_world_position();
-//              }
+//            auto world_pos_opt = Input::get_mouse_world_position_if_in_viewport();
+//            if (world_pos_opt.has_value()) {
+//              // Mouse is over viewport - interact with game world
+//              auto world_pos = world_pos_opt.value();
 //            }
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
@@ -93,5 +93,17 @@ namespace ViewportPanel {
   conversion and input handling.
   ==================================================================================*/
   Math::Vec4D get_viewport_bounds();
+
+  /*=================================================================================
+  Function Brief:
+  Checks if the mouse cursor is hovering over the viewport image (not just the window).
+
+  Returns:
+  bool - True if hovering over the viewport image
+
+  Where to call it:
+  Used internally by InputManager to determine if viewport should capture input.
+  ==================================================================================*/
+  bool is_viewport_hovered();
 
 } // namespace ViewportPanel

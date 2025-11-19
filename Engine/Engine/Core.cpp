@@ -36,7 +36,7 @@
 #include "FileIO/Settings.h"
 #include "FileIO/SettingsManager.h"
 #include "Events/RegisterAllEvents.h"
-
+#include "UndoManager/UndoManager.h"
 
 namespace Engine
 {
@@ -112,6 +112,7 @@ namespace Engine
       Log::warning("Failed to load project settings, using defaults");
     }
 
+
     // CORE INITIALIZATION
 
     // Initialize TilemapPanel to load saved tilemaps from project settings
@@ -151,6 +152,29 @@ namespace Engine
   ==================================================================================*/
   void Core::run(std::string first_scene)
   {
+    // Sync collision matrix from ProjectSettings to ECS internal collision matrix
+    const auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get();
+    auto& containers = Engine::ECS::Internal::get_containers();
+
+    // Clear the collision matrix first (set all to false)
+    for (auto& row : containers.collision_matrix) {
+      row.reset();
+    }
+
+    // Rebuild collision matrix from name-based pairs
+    for (const auto& [name_a, name_b] : project_settings.layer_collision_pairs) {
+      Engine::ECS::LayerID layer_a = Engine::ECS::get_layer_id(name_a);
+      Engine::ECS::LayerID layer_b = Engine::ECS::get_layer_id(name_b);
+
+      // Only apply if both layers exist (have been registered)
+      if (layer_a != Engine::ECS::INVALID_LAYER && layer_b != Engine::ECS::INVALID_LAYER) {
+        containers.collision_matrix[layer_a].set(layer_b);
+        containers.collision_matrix[layer_b].set(layer_a); // Symmetric
+      }
+    }
+
+    Log::info("Loaded " + std::to_string(project_settings.layer_collision_pairs.size()) + " layer collision pairs from settings");
+
     SceneManager::load_scene(first_scene);
 
     while (!glfwWindowShouldClose(WindowManager::get_window()) && is_running)
@@ -200,6 +224,33 @@ namespace Engine
           single_step_requested = true;
         }
 
+        // Undo last action
+        if (Engine::Input::is_pressed(Engine::KeyCode::Z) && Engine::Input::is_held(Engine::KeyCode::CtrlLeft))
+        {
+          std::cout << "Undoing last action\n";
+          Engine::UndoManager::undo();
+        }
+
+        // Redo last undone action
+        if (Engine::Input::is_pressed(Engine::KeyCode::Y) && Engine::Input::is_held(Engine::KeyCode::CtrlLeft))
+        {
+          std::cout << "Redoing last undone action\n";
+          Engine::UndoManager::redo();
+        }
+
+        // Delete selected entity (Delete key or Ctrl+D)
+        if (Engine::Input::is_pressed(Engine::KeyCode::Delete))
+        {
+          // Find the entity with a Gizmo component (indicates it's selected)
+          // TODO: This is a temporary solution; ideally, we should have a proper selection manager
+          Engine::ECS::Entity selected_entity = Engine::ECS::get_first_entity_with<Components::Gizmo>();
+
+          if (selected_entity != Engine::ECS::INVALID_ENTITY) {
+            std::cout << "Deleting selected entity: " << selected_entity.get_id() << "\n";
+            Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(selected_entity.get_id(), true);
+          }
+        }
+
         // Temporarily enable time for single-step
         if (single_step_requested)
         {
@@ -228,7 +279,7 @@ namespace Engine
       }
 
       // Rendering Start ========================================
-      if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled) {
+      if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode) {
         ViewportPanel::begin_render();
       }
 
@@ -241,7 +292,7 @@ namespace Engine
       // end of draw stuff (flush remaining batches)
       Engine::Graphics::end_batch();
 
-      if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().imgui_viewport_enabled) {
+      if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode) {
         ViewportPanel::end_render();
       }
 

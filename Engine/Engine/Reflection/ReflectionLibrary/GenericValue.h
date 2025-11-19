@@ -190,6 +190,10 @@ namespace ReflectionLibrary
     const VariantType& variant() const;
     VariantType& variant();
 
+    // Comparison operators
+    bool operator==(const GenericValue& other) const;
+    bool operator!=(const GenericValue& other) const;
+
     // Friend class for internal access
     friend class GenericValueProxy;
   };

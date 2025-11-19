@@ -10,10 +10,11 @@
 // brief:   This file contains the definition of the data structures that will be
 //          needed for collision related logic / calculations
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 #include "../Math/Vector2D.h"
+#include "../ECS/Macros.h"
 #include <limits>
 
 struct CollisionResult {
@@ -41,13 +42,13 @@ struct AABB {
   f32 half_width;
   f32 half_height;
 
-  AABB(Vec2D pos = Vec2D(0,0), f32 width = 0.f, f32 height = 0.f) : pos(pos), half_width(width / 2), half_height(height / 2)
+  AABB(Vec2D pos = Vec2D(0, 0), f32 width = 0.f, f32 height = 0.f) : pos(pos), half_width(width / 2), half_height(height / 2)
   {
     // Default Ctor
     // Empty by design
   }
 
-  AABB(f32 width, f32 height) : pos(0,0), half_width(width / 2), half_height(height / 2)
+  AABB(f32 width, f32 height) : pos(0, 0), half_width(width / 2), half_height(height / 2)
   {
     // For the old style of AABB so it wont return any problems b4 M2 submissions
     // Empty by design
@@ -295,5 +296,13 @@ namespace Components
       polygon.rotation = 0;
     }
 
+    // Default constructor for reflection
+    BoxCollider() : width(0.0f), height(0.0f), radius(0.0f), resolve_collisions(false)
+    {
+      /* empty by design */
+    }
   };
 }
+
+REFLECT_FIELDS(AABB, pos, half_width, half_height)
+REGISTER_COMPONENT(Components::BoxCollider, resolve_collisions, width, height, radius, aabb)

@@ -114,7 +114,7 @@ void ShowcaseState::init() {
     .add_component<Components::Texture>(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_idle_spritesheet.png"))
     .add_component<Components::TextureAtlas>(64, 64, 1, 24, 24)
     .add_component<Components::RigidBody>(false, true)
-    .add_component<Components::BoxCollider>(player_idle_width * 2.0f, player_idle_height * 2.0f, true)
+    .add_component<Components::BoxCollider>(player_idle_width * 2.0f, player_idle_height * 2.0f, false)
     .add_component<Components::Animation>(24, 0.1f)
     .add_component<Components::AnimationState>(player_anim_state)
     .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
@@ -129,7 +129,7 @@ void ShowcaseState::init() {
     .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
     .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 0.0f)
     .add_component<Components::RigidBody>(true, false)
-    .add_component<Components::BoxCollider>(1920.0f, 100.0f, false);
+    .add_component<Components::BoxCollider>(1920.0f, 100.0f, true);
 
   // Create text entities
   title_text = Engine::ECS::create_entity()

@@ -23,6 +23,7 @@
 #include <iomanip>
 #include "InputManager.h"
 #include "ProjectSaveManager.h"
+#include "Level.h"
 
 namespace Engine {
   namespace WindowManager
@@ -87,6 +88,9 @@ namespace Engine {
 
       // Set up scroll callback
       glfwSetScrollCallback(window, scroll_callback);
+
+      // Set up window close callback
+      glfwSetWindowCloseCallback(window, window_close_callback);
     }
 
     void exit()
@@ -136,7 +140,7 @@ namespace Engine {
 
         // Update window title
         std::ostringstream title_stream;
-        title_stream << (is_unsaved ? "[*] " : "") << base_title << " - FPS: " << std::fixed << std::setprecision(1) << display_fps;
+        title_stream << (is_unsaved ? "[*] " : "") << base_title << " - " << Engine::LevelManager::get_current_level_path() << " - FPS: " << std::fixed << std::setprecision(1) << display_fps;
         glfwSetWindowTitle(window, title_stream.str().c_str());
 
         update_timer = 0.0f;
@@ -171,6 +175,15 @@ namespace Engine {
     void scroll_callback([[maybe_unused]] GLFWwindow* win, f64 xoffset, f64 yoffset)
     {
       Engine::Input::set_scroll_offset(xoffset, yoffset);
+    }
+
+    void window_close_callback(GLFWwindow* win)
+    {
+      // Cancel the close - we'll handle it through ImGui popup
+      glfwSetWindowShouldClose(win, GLFW_FALSE);
+
+      // Set flag to show the exit confirmation popup
+      Engine::EventManager::send_event<Engine::Events::WindowCloseRequestedEvent>();
     }
   }
 }

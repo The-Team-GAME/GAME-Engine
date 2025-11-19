@@ -2,14 +2,16 @@
 // file:    TilemapPanel.cpp
 // project: Monkey Stole My GPA
 //
-// author:  Ong Zi Ming (100%)
-//          Primary author
+// author:  Ong Zi Ming (50%), Chew Shee Yang (50%)
+//          Primary author: Ong Zi Ming
+//          Refactored tilemap logic to TilemapManager: Chew Shee Yang
 //
 // email:   o.ziming@digipen.edu
+//          chew.s@digipen.edu
 //
-// brief:   Implementation of TilemapPanel for painting tiles on the world using
-//          TextureAtlas. Provides tile selection, grid overlay, and mouse-based
-//          tile placement directly in the game world.
+// brief:   Implementation of TilemapPanel UI for the tilemap editor. Handles
+//          user interface, tool selection, and delegates tilemap operations to
+//          TilemapManager for core logic.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
@@ -29,15 +31,17 @@
 #include "../FileIO/Settings.h"
 #include "ViewportPanel.h"
 #include "../ProjectSaveManager.h"
+#include "../UndoManager/UndoManager.h"
+#include "../TilemapManager.h"
+#include "../Level.h"
+#include "../ImGuiManager.h"
+#include "../Logger.h"
 
 namespace TilemapPanel {
   // Internal state
   namespace {
-
-
-    std::vector<Components::AtlasEntry> loaded_tilemaps;
-    int selected_atlas_index = -1;
-    int selected_tile_index = 0;
+    std::vector<Engine::Graphics::AtlasEntry> loaded_tilemaps;
+    Engine::Graphics::Tile selected_tile;
 
     // Current preview (before submission)
     Components::Texture preview_texture;
@@ -47,18 +51,24 @@ namespace TilemapPanel {
 
     // Painting state
     bool enable_tilemap_mode = false;
-    bool painting_enabled = false;
-    bool erasing_enabled = false;
-    float grid_snap = 64.0f;
-    float prev_grid_snap = 64.0f;
-    Math::Vec2D grid_offset = { 0.0f, 0.0f };
-    Math::Vec2D prev_grid_offset = { 0.0f, 0.0f };
+
+    // Tool modes
+    enum class ToolMode {
+      Paintbrush,
+      BoxFill,
+      Picker,
+      Eraser
+    };
+    ToolMode current_tool = ToolMode::Paintbrush;
 
     // Layer selection
     std::string selected_layer = "default";
+    bool dim_non_selected_layers = true; // Toggle for dimming non-selected layers
 
-    // Track placed tiles to prevent duplicates (per layer)
-    std::unordered_map<std::string, std::unordered_set<std::string>> placed_tiles_per_layer;
+    // BoxFill state
+    bool box_fill_dragging = false;
+    Math::Vec2D box_fill_start;
+    Math::Vec2D box_fill_end;
   }
 
   // Helper functions
@@ -68,10 +78,7 @@ namespace TilemapPanel {
   void save_loaded_tilemaps_to_project_settings() {
     auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get_mutable();
     project_settings.loaded_tilemaps = loaded_tilemaps;
-    // if (!Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::save("Assets/settings/project_settings.json")) {
-    //   Log::warning("Failed to save project settings after updating tilemaps");
-    // }
-    Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings()); // Mark dirty for saving later
+    Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings());
   }
 
   void regenerate_atlas() {
@@ -93,169 +100,241 @@ namespace TilemapPanel {
     );
   }
 
-  std::string get_position_key(const Math::Vec2D& pos) {
-    int grid_x = static_cast<int>(std::floor(pos.x / grid_snap));
-    int grid_y = static_cast<int>(std::floor(pos.y / grid_snap));
-    return std::to_string(grid_x) + "_" + std::to_string(grid_y);
-  }
+  void delete_tile_at_position(const Math::Vec2D& world_pos) {
+    int grid_x, grid_y;
+    TilemapManager::world_to_grid(world_pos, grid_x, grid_y);
 
-  Math::Vec2D snap_to_grid(const Math::Vec2D& pos) {
-    float half_snap = grid_snap * 0.5f;
-    float snapped_x = std::floor((pos.x - grid_offset.x) / grid_snap) * grid_snap + grid_offset.x + half_snap;
-    float snapped_y = std::floor((pos.y - grid_offset.y) / grid_snap) * grid_snap + grid_offset.y + half_snap;
-    return { snapped_x, snapped_y };
-  }
+    // Check if there's a tile to delete
+    Engine::Graphics::Tile old_tile = TilemapManager::get_tile_at(selected_layer, grid_x, grid_y);
+    if (!old_tile.is_valid()) return; // Nothing to delete
 
-  void delete_tile_at_position(const Math::Vec2D& grid_pos) {
-    std::string pos_key = get_position_key(grid_pos);
+    // Capture state for undo
+    int captured_grid_x = grid_x;
+    int captured_grid_y = grid_y;
+    Engine::Graphics::Tile captured_tile = old_tile;
+    std::string captured_layer = selected_layer;
 
-    auto all_entities = Engine::ECS::get_all_entities();
-    for (auto& entity : all_entities) {
-      if (entity.has_component<Components::Tile>()) {
-        auto* transform = entity.get_component<Components::Transform2D>();
-        if (transform && entity.is_on_layer(selected_layer)) {
-          Math::Vec2D entity_grid_pos = snap_to_grid(transform->position);
-          std::string entity_key = get_position_key(entity_grid_pos);
-
-          if (entity_key == pos_key) {
-            entity.destroy();
-            placed_tiles_per_layer[selected_layer].erase(pos_key);
-            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
-            break;
-          }
-        }
+    Engine::UndoManager::execute(
+      [captured_grid_x, captured_grid_y, captured_layer, world_pos]() {
+        TilemapManager::delete_tile(world_pos, captured_layer);
+        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+      },
+      [captured_grid_x, captured_grid_y, captured_tile, captured_layer]() {
+        Math::Vec2D restore_pos = TilemapManager::grid_to_world(captured_grid_x, captured_grid_y);
+        TilemapManager::place_tile(restore_pos, captured_layer, captured_tile.atlas_index, captured_tile.tile_index);
+        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
       }
-    }
+    );
   }
 
   void update_all_tile_dimensions() {
-    auto all_entities = Engine::ECS::get_all_entities();
+    TilemapManager::update_all_tile_dimensions();
+  }
 
-    placed_tiles_per_layer.clear();
+  void pick_tile_at_position(const Math::Vec2D& world_pos) {
+    int grid_x, grid_y;
+    TilemapManager::world_to_grid(world_pos, grid_x, grid_y);
 
-    for (auto& entity : all_entities) {
-      if (entity.has_component<Components::Tile>()) {
-        auto* transform = entity.get_component<Components::Transform2D>();
-        if (transform) {
-          Math::Vec2D new_pos = snap_to_grid(transform->position);
-          transform->position = new_pos;
-          transform->scale = Math::Vec2D{ grid_snap, grid_snap };
+    // Get the tile at this position on the selected layer
+    Engine::Graphics::Tile tile = TilemapManager::get_tile_at(selected_layer, grid_x, grid_y);
+    if (!tile.is_valid()) {
+      return; // No tile at this position
+    }
 
-          std::string pos_key = get_position_key(new_pos);
+    // Verify the atlas index is valid
+    if (tile.atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
+      return;
+    }
 
-          // Track this tile for each layer it's on
-          auto layers = entity.get_layers();
-          for (Engine::ECS::LayerID layer_id = 0; layer_id < Engine::ECS::MAX_LAYERS; ++layer_id) {
-            if (layers.test(layer_id)) {
-              std::string layer_name = Engine::ECS::get_layer_name(layer_id);
-              if (!layer_name.empty()) {
-                placed_tiles_per_layer[layer_name].insert(pos_key);
-              }
-            }
-          }
-        }
+    // Set the selected tile
+    selected_tile = tile;
+
+    // Switch back to Paintbrush tool after picking
+    current_tool = ToolMode::Paintbrush;
+  }
+
+  void fill_box_with_tiles(const Math::Vec2D& start_pos, const Math::Vec2D& end_pos) {
+    // Check if we have a valid atlas selected
+    if (!selected_tile.is_valid() || selected_tile.atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
+      return;
+    }
+
+    const Engine::Graphics::AtlasEntry& atlas_entry = loaded_tilemaps[selected_tile.atlas_index];
+
+    if (!atlas_entry.texture_handle ||
+      atlas_entry.subTextures.empty() ||
+      selected_tile.tile_index >= static_cast<int>(atlas_entry.subTextures.size())) {
+      return;
+    }
+
+    // Convert to grid coordinates
+    int start_grid_x, start_grid_y, end_grid_x, end_grid_y;
+    TilemapManager::world_to_grid(start_pos, start_grid_x, start_grid_y);
+    TilemapManager::world_to_grid(end_pos, end_grid_x, end_grid_y);
+
+    // Ensure start is less than end
+    if (start_grid_x > end_grid_x) std::swap(start_grid_x, end_grid_x);
+    if (start_grid_y > end_grid_y) std::swap(start_grid_y, end_grid_y);
+
+    // Capture state for undo
+    struct TileState {
+      int x, y;
+      Engine::Graphics::Tile old_tile;
+    };
+    std::vector<TileState> old_tiles;
+
+    // Collect old tile states
+    for (int y = start_grid_y; y <= end_grid_y; ++y) {
+      for (int x = start_grid_x; x <= end_grid_x; ++x) {
+        Engine::Graphics::Tile old_tile = TilemapManager::get_tile_at(selected_layer, x, y);
+        old_tiles.push_back({ x, y, old_tile });
       }
     }
+
+    // Capture variables for lambda
+    int captured_start_x = start_grid_x;
+    int captured_start_y = start_grid_y;
+    int captured_end_x = end_grid_x;
+    int captured_end_y = end_grid_y;
+    Engine::Graphics::Tile captured_tile = selected_tile;
+    std::string captured_layer = selected_layer;
+    std::vector<TileState> captured_old_tiles = old_tiles;
+
+    Engine::UndoManager::execute(
+      [captured_start_x, captured_start_y, captured_end_x, captured_end_y, captured_tile, captured_layer]() {
+        // Fill the box with new tiles
+        for (int y = captured_start_y; y <= captured_end_y; ++y) {
+          for (int x = captured_start_x; x <= captured_end_x; ++x) {
+            Math::Vec2D world_pos = TilemapManager::grid_to_world(x, y);
+            TilemapManager::place_tile(world_pos, captured_layer, captured_tile.atlas_index, captured_tile.tile_index);
+          }
+        }
+        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+      },
+      [captured_old_tiles, captured_layer]() {
+        // Restore old tiles
+        for (const auto& tile_state : captured_old_tiles) {
+          Math::Vec2D restore_pos = TilemapManager::grid_to_world(tile_state.x, tile_state.y);
+          if (!tile_state.old_tile.is_valid()) {
+            // Tile didn't exist, delete it
+            TilemapManager::delete_tile(restore_pos, captured_layer);
+          }
+          else {
+            // Restore the old tile
+            TilemapManager::place_tile(restore_pos, captured_layer, tile_state.old_tile.atlas_index, tile_state.old_tile.tile_index);
+          }
+        }
+        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+      }
+    );
   }
 
   void place_tile_at_position(const Math::Vec2D& world_pos) {
     // Check if we have a valid atlas selected
-    if (selected_atlas_index < 0 || selected_atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
+    if (!selected_tile.is_valid() || selected_tile.atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
       return;
     }
 
-    const Components::AtlasEntry& atlas_entry = loaded_tilemaps[selected_atlas_index];
+    const Engine::Graphics::AtlasEntry& atlas_entry = loaded_tilemaps[selected_tile.atlas_index];
 
-    if (!atlas_entry.texture.texture_handle ||
-      atlas_entry.atlas.subTextures.empty() ||
-      selected_tile_index < 0 ||
-      selected_tile_index >= static_cast<int>(atlas_entry.atlas.subTextures.size())) {
+    if (!atlas_entry.texture_handle ||
+      atlas_entry.subTextures.empty() ||
+      selected_tile.tile_index >= static_cast<int>(atlas_entry.subTextures.size())) {
       return;
     }
 
-    Math::Vec2D grid_pos = snap_to_grid(world_pos);
-    std::string pos_key = get_position_key(grid_pos);
+    int grid_x, grid_y;
+    TilemapManager::world_to_grid(world_pos, grid_x, grid_y);
 
-    // Get the placed tiles set for the current layer
-    auto& placed_tiles = placed_tiles_per_layer[selected_layer];
+    // Check if the tile is already the same
+    Engine::Graphics::Tile current_tile = TilemapManager::get_tile_at(selected_layer, grid_x, grid_y);
+    if (current_tile.atlas_index == selected_tile.atlas_index && current_tile.tile_index == selected_tile.tile_index) {
+      return; // Same tile, nothing to do
+    }
 
-    // If a tile already exists at this position on this layer, delete it first (overwrite behavior)
-    if (placed_tiles.find(pos_key) != placed_tiles.end()) {
-      // Find and destroy the existing tile entity 
-      for (auto& entity : Engine::ECS::get_entities_with<Components::Tile>()) {
-        // TODO: This is very inefficient, implement hashing for Transform2D so we dont have to loop all entities 
-        auto* transform = entity.get_component<Components::Transform2D>();
-        if (transform && entity.is_on_layer(selected_layer)) {
-          Math::Vec2D entity_grid_pos = snap_to_grid(transform->position);
-          std::string entity_key = get_position_key(entity_grid_pos);
+    // Capture state for undo
+    int captured_grid_x = grid_x;
+    int captured_grid_y = grid_y;
+    Engine::Graphics::Tile captured_old_tile = current_tile;
+    Engine::Graphics::Tile captured_new_tile = selected_tile;
+    std::string captured_layer = selected_layer;
 
-          if (entity_key == pos_key) {
-            entity.destroy();
-            break;
-          }
+    Engine::UndoManager::execute(
+      [world_pos, captured_new_tile, captured_layer]() {
+        TilemapManager::place_tile(world_pos, captured_layer, captured_new_tile.atlas_index, captured_new_tile.tile_index);
+        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+      },
+      [captured_grid_x, captured_grid_y, captured_old_tile, captured_layer]() {
+        Math::Vec2D restore_pos = TilemapManager::grid_to_world(captured_grid_x, captured_grid_y);
+        if (!captured_old_tile.is_valid()) {
+          // If there was no tile before, delete it
+          TilemapManager::delete_tile(restore_pos, captured_layer);
         }
+        else {
+          // Restore the old tile
+          TilemapManager::place_tile(restore_pos, captured_layer, captured_old_tile.atlas_index, captured_old_tile.tile_index);
+        }
+        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
       }
-
-      // Remove from tracking set (will be re-added below)
-      placed_tiles.erase(pos_key);
-    }
-
-    Engine::ECS::Entity tile = Engine::ECS::create_entity()
-      .add_component<Components::Tile>()
-      .add_component<Components::Transform2D>(
-        grid_pos,
-        0.0f,
-        Math::Vec2D{ grid_snap, grid_snap }
-      )
-      .add_component<Components::Texture>(atlas_entry.texture)
-      .add_component<Components::TextureAtlas>(atlas_entry.atlas)
-      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
-
-
-
-    // RYAN HOW
-
-    //// Place tiles example
-    //Engine::ECS::Entity tile;
-    //auto place_tile_action = Engine::UndoManager::add(Action(
-    //  [tile]() {
-    //    tile = Engine::ECS::create_entity()
-    //      .add_component<Components::Tile>()
-    //      .add_component<Components::Transform2D>(
-    //        Math::Vec2D{ 5, 10 },
-    //        0.0f,
-    //        Math::Vec2D{ 32.0f, 32.0f }
-    //      )
-    //      .add_component<Components::Texture>(some_texture)
-    //      .add_component<Components::TextureAtlas>(some_atlas)
-    //      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
-    //  },
-    //  [tile]() {
-    //    Engine::ECS::destroy_entity(tile);
-    //  }
-    //));
-
-    //place_tile_action.do_action();
-
-    tile.get_component<Components::TextureAtlas>()->drawIndex = selected_tile_index;
-
-    // Assign to selected layer
-    tile.clear_layers();
-    tile.add_to_layer(selected_layer);
-
-    placed_tiles.insert(pos_key);
-
-    // Mark level as dirty for saving later
-    Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+    );
   }
 
   // Public interface
   void init() {
     const auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get();
     loaded_tilemaps = project_settings.loaded_tilemaps;
+
+    // Reload texture handles from paths (since texture_handle is not serialized)
+    for (auto& entry : loaded_tilemaps) {
+      if (!entry.texture_path.empty() && !entry.texture_handle) {
+        // Load the texture using Resources (handles cache lookup automatically)
+        entry.texture_handle = Engine::Resources::load_texture(entry.texture_path, true, false);
+        if (!entry.texture_handle || entry.texture_handle->id == 0) {
+          Log::warning("Failed to load tilemap atlas texture: " + entry.texture_path);
+        }
+      }
+    }
+
+    // Initialize TilemapManager
+    TilemapManager::init();
+
+    // Rebuild all tilemaps from loaded TileMap entities
+    for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
+      auto layers = entity.get_layers();
+      for (Engine::ECS::LayerID layer_id = 0; layer_id < Engine::ECS::MAX_LAYERS; ++layer_id) {
+        if (layers.test(layer_id)) {
+          std::string layer_name = Engine::ECS::get_layer_name(layer_id);
+          if (!layer_name.empty()) {
+            TilemapManager::rebuild_tilemap_for_layer(layer_name);
+          }
+        }
+      }
+    }
   }
 
   void update() {
+    // === KEYBOARD SHORTCUTS FOR TOOLS ===
+    if (enable_tilemap_mode) {
+      // Tool selection shortcuts
+      if (Engine::Input::is_pressed(Engine::KeyCode::B)) {
+        current_tool = ToolMode::Paintbrush;
+      }
+      else if (Engine::Input::is_pressed(Engine::KeyCode::U)) {
+        current_tool = ToolMode::BoxFill;
+      }
+      else if (Engine::Input::is_pressed(Engine::KeyCode::I)) {
+        current_tool = ToolMode::Picker;
+      }
+      else if (Engine::Input::is_pressed(Engine::KeyCode::D)) {
+        current_tool = ToolMode::Eraser;
+      }
+
+      // Toggle dim non-selected layers with L key
+      if (Engine::Input::is_pressed(Engine::KeyCode::L)) {
+        dim_non_selected_layers = !dim_non_selected_layers;
+      }
+    }
+
     // === HANDLE PAINTING IN WORLD ===
     // Only allow painting/erasing when tilemap mode is enabled
     auto world_pos_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
@@ -264,34 +343,63 @@ namespace TilemapPanel {
       if (!world_pos_opt.has_value()) {
         /// Empty by design: if mouse is outside viewport, do nothing
       }
-      else if (painting_enabled && Engine::Input::is_held(Engine::KeyCode::MouseLeft)) {
+      else if (Engine::Input::is_held(Engine::KeyCode::MouseLeft)) {
         Math::Vec2D world_pos = world_pos_opt.value();
-        place_tile_at_position(world_pos);
-      }
-      else if (erasing_enabled && Engine::Input::is_held(Engine::KeyCode::MouseLeft)) {
-        Math::Vec2D world_pos = world_pos_opt.value();
-        Math::Vec2D grid_pos = snap_to_grid(world_pos);
-        delete_tile_at_position(grid_pos);
-      }
-    }
 
-    // Update tile colors based on selected layer (only when tilemap mode is enabled)
-    if (enable_tilemap_mode) {
-      darken_non_selected_layer_tiles();
-    }
-    else {
-      // Reset all tiles to full brightness when tilemap mode is disabled
-      for (auto& entity : Engine::ECS::get_entities_with<Components::Tile>()) {
-        auto* color = entity.get_component<Components::Color>();
-        if (!color) continue;
+        // Check for temporary tool modifiers
+        ToolMode active_tool = current_tool;
 
-        color->r = 1.0f;
-        color->g = 1.0f;
-        color->b = 1.0f;
-        color->a = 1.0f;
+        // Ctrl temporarily switches to Picker (unless already in Eraser mode)
+        if (Engine::Input::is_held(Engine::KeyCode::CtrlLeft) || Engine::Input::is_held(Engine::KeyCode::CtrlRight)) {
+          if (current_tool == ToolMode::Paintbrush || current_tool == ToolMode::BoxFill) {
+            active_tool = ToolMode::Picker;
+          }
+        }
+
+        // Shift temporarily switches to Eraser
+        if (Engine::Input::is_held(Engine::KeyCode::ShiftLeft) || Engine::Input::is_held(Engine::KeyCode::ShiftRight)) {
+          if (current_tool == ToolMode::Paintbrush || current_tool == ToolMode::BoxFill) {
+            active_tool = ToolMode::Eraser;
+          }
+        }
+
+        // Execute tool action
+        if (active_tool == ToolMode::Paintbrush) {
+          place_tile_at_position(world_pos);
+        }
+        else if (active_tool == ToolMode::BoxFill) {
+          // BoxFill: Start dragging on mouse press
+          if (!box_fill_dragging) {
+            box_fill_dragging = true;
+            box_fill_start = world_pos;
+            box_fill_end = world_pos;
+          }
+          else {
+            // Update end position while dragging
+            box_fill_end = world_pos;
+          }
+        }
+        else if (active_tool == ToolMode::Picker) {
+          pick_tile_at_position(world_pos);
+        }
+        else if (active_tool == ToolMode::Eraser) {
+          delete_tile_at_position(world_pos);
+        }
+      }
+      else if (box_fill_dragging) {
+        // Mouse released - execute the box fill
+        fill_box_with_tiles(box_fill_start, box_fill_end);
+        box_fill_dragging = false;
+      }
+      else {
+        // Mouse not held and not dragging - reset box fill state
+        if (box_fill_dragging) {
+          box_fill_dragging = false;
+        }
       }
     }
   }
+
 
   void draw_panel() {
     ImGui::Begin("Tilemap Editor");
@@ -300,7 +408,23 @@ namespace TilemapPanel {
     ImGui::Separator();
 
     // === TILEMAP MODE TOGGLE ===
+    // bool prev_tilemap_mode = enable_tilemap_mode;
     ImGui::Checkbox("Enable Tilemap Mode", &enable_tilemap_mode);
+
+    // Dim non-selected layers toggle
+    ImGui::Checkbox("Dim Non-Selected Layers", &dim_non_selected_layers);
+    ImGui::SameLine();
+    ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(L)");
+
+    // Check if trying to enable tilemap mode without a level loaded
+    // if (!prev_tilemap_mode && enable_tilemap_mode) {
+    //   std::string current_level = Engine::LevelManager::get_current_level_path();
+    //   if (current_level.empty()) {
+    //     enable_tilemap_mode = false;
+    //     ImGuiManager::show_toast("A level must be loaded before enabling tilemap mode", ImGuiManager::ToastType::Warning);
+    //   }
+    // }
+
     ImGui::SameLine();
     ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(Toggle grid & editing)");
 
@@ -310,8 +434,6 @@ namespace TilemapPanel {
     }
 
     ImGui::Separator();
-
-    // === TEXTURE ATLAS SELECTION ===
     if (ImGui::Button("Create Atlas")) {
       ImGui::OpenPopup("Atlas Selection");
     }
@@ -415,9 +537,11 @@ namespace TilemapPanel {
             ImGui::Separator();
 
             if (ImGui::Button("Submit Atlas", ImVec2(-1, 0))) {
-              Components::AtlasEntry entry;
-              entry.texture = preview_texture;
-              entry.atlas = preview_atlas;
+              Engine::Graphics::AtlasEntry entry;
+              entry.texture_handle = preview_texture.texture_handle;
+              entry.texture_path = preview_texture.texture_handle->path;
+              entry.subTextures = preview_atlas.subTextures;
+              entry.drawIndex = preview_atlas.drawIndex;
               loaded_tilemaps.push_back(entry);
 
               // Save to project settings
@@ -441,44 +565,52 @@ namespace TilemapPanel {
     if (ImGui::CollapsingHeader("Painting Controls", ImGuiTreeNodeFlags_DefaultOpen)) {
       ImGui::Indent();
 
-      // Painting mode toggle
-      if (ImGui::Checkbox("Enable Painting", &painting_enabled)) {
-        if (painting_enabled) {
-          erasing_enabled = false;
-        }
+      // Tool selection
+      ImGui::Text("Tool:");
+
+      int tool_index = static_cast<int>(current_tool);
+      if (ImGui::RadioButton("Paintbrush (B)", &tool_index, static_cast<int>(ToolMode::Paintbrush))) {
+        current_tool = ToolMode::Paintbrush;
       }
       ImGui::SameLine();
-      ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(Click in world to place tiles)");
-
-      // Erasing mode toggle
-      if (ImGui::Checkbox("Enable Erasing", &erasing_enabled)) {
-        if (erasing_enabled) {
-          painting_enabled = false;
-        }
+      if (ImGui::RadioButton("Box Fill (U)", &tool_index, static_cast<int>(ToolMode::BoxFill))) {
+        current_tool = ToolMode::BoxFill;
       }
 
-
+      if (ImGui::RadioButton("Picker (I)", &tool_index, static_cast<int>(ToolMode::Picker))) {
+        current_tool = ToolMode::Picker;
+      }
       ImGui::SameLine();
-      ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(Click in world to delete tiles)");
+      if (ImGui::RadioButton("Eraser (D)", &tool_index, static_cast<int>(ToolMode::Eraser))) {
+        current_tool = ToolMode::Eraser;
+      }
+
+      ImGui::Spacing();
+      ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Tip: Hold Ctrl for Picker, Shift for Eraser");
 
       ImGui::Separator();
 
+      // Get current grid settings from TilemapManager
+      float grid_snap = TilemapManager::get_grid_size();
+      Math::Vec2D grid_offset = TilemapManager::get_grid_offset();
+
       // Tile size with change detection
-      if (ImGui::DragFloat("Tile Size", &grid_snap, 1.0f, 1.0f, 256.0f, "%.1f")) {
-        if (grid_snap != prev_grid_snap) {
+      float new_grid_snap = grid_snap;
+      if (ImGui::DragFloat("Tile Size", &new_grid_snap, 1.0f, 1.0f, 256.0f, "%.1f")) {
+        if (new_grid_snap != grid_snap) {
+          TilemapManager::set_grid_size(new_grid_snap);
           update_all_tile_dimensions();
-          prev_grid_snap = grid_snap;
         }
       }
       ImGui::SameLine();
       ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(Updates all tiles)");
 
       // Grid offset with change detection
-      if (ImGui::DragFloat2("Grid Offset", &grid_offset.x, 1.0f, -1000.0f, 1000.0f, "%.1f")) {
-        if (grid_offset.x != prev_grid_offset.x ||
-          grid_offset.y != prev_grid_offset.y) {
+      Math::Vec2D new_grid_offset = grid_offset;
+      if (ImGui::DragFloat2("Grid Offset", &new_grid_offset.x, 1.0f, -1000.0f, 1000.0f, "%.1f")) {
+        if (new_grid_offset.x != grid_offset.x || new_grid_offset.y != grid_offset.y) {
+          TilemapManager::set_grid_offset(new_grid_offset);
           update_all_tile_dimensions();
-          prev_grid_offset = grid_offset;
         }
       }
 
@@ -506,12 +638,15 @@ namespace TilemapPanel {
         if (ImGui::Button("Yes, Clear All", ImVec2(120, 0))) {
           auto all_entities = Engine::ECS::get_all_entities();
           for (auto& entity : all_entities) {
-            if (entity.has_components<Components::Tile>()) {
+            if (entity.has_components<Components::TileCollider>()) {
               entity.destroy();
               Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
             }
           }
-          placed_tiles_per_layer.clear();
+          // Also clear all TileMap entities
+          for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
+            entity.destroy();
+          }
           ImGui::CloseCurrentPopup();
         }
 
@@ -726,23 +861,41 @@ namespace TilemapPanel {
 
         // Display all submitted atlases
         for (int i = 0; i < static_cast<int>(loaded_tilemaps.size()); ++i) {
-          const Components::AtlasEntry& entry = loaded_tilemaps[i];
+          const Engine::Graphics::AtlasEntry& entry = loaded_tilemaps[i];
 
           ImGui::PushID(i);
 
           // Atlas name and select button
-          bool is_selected = (i == selected_atlas_index);
+          bool is_selected = (i == selected_tile.atlas_index);
           if (is_selected) {
             ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.2f, 0.6f, 0.2f, 1.0f));
           }
 
-          // Create non-const copies for TextureAtlasPreview
-          Components::Texture temp_texture = entry.texture;
-          Components::TextureAtlas temp_atlas = entry.atlas;
+          // Skip this atlas if texture handle is null (not properly loaded)
+          if (!entry.texture_handle) {
+            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "ERROR: Atlas %d has null texture!", i);
+            if (ImGui::Button("Remove Broken Atlas", ImVec2(-1, 0))) {
+              loaded_tilemaps.erase(loaded_tilemaps.begin() + i);
+              if (selected_tile.atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
+                selected_tile.atlas_index = static_cast<int>(loaded_tilemaps.size()) - 1;
+              }
+              save_loaded_tilemaps_to_project_settings();
+            }
+            ImGui::PopID();
+            ImGui::Separator();
+            continue;
+          }
+
+          // Create Components wrapper types for TextureAtlasPreview widget
+          Components::Texture temp_texture;
+          temp_texture.texture_handle = entry.texture_handle;
+
+          Components::TextureAtlas temp_atlas;
+          temp_atlas.subTextures = entry.subTextures;
 
           // Set the drawIndex to the currently selected tile if this is the selected atlas
           if (is_selected) {
-            temp_atlas.drawIndex = selected_tile_index;
+            temp_atlas.drawIndex = selected_tile.tile_index;
           }
           else {
             temp_atlas.drawIndex = -1; // No tile selected in this atlas
@@ -752,9 +905,9 @@ namespace TilemapPanel {
           int cols = 1;
           int rows = 1;
 
-          if (!entry.atlas.subTextures.empty()) {
+          if (!entry.subTextures.empty()) {
             // Get the first tile's UV width to determine column count
-            const auto& first_coords = entry.atlas.subTextures[0].tex_coords;
+            const auto& first_coords = entry.subTextures[0].tex_coords;
             float tile_uv_width = std::abs(first_coords[1].x - first_coords[0].x);
             float tile_uv_height = std::abs(first_coords[0].y - first_coords[3].y);
 
@@ -775,16 +928,16 @@ namespace TilemapPanel {
             temp_atlas,
             preview_height,
             [i](size_t tile_idx) {
-              selected_atlas_index = i;
-              selected_tile_index = static_cast<int>(tile_idx);
+              selected_tile.atlas_index = i;
+              selected_tile.tile_index = static_cast<int>(tile_idx);
             }
           );
 
           // Remove button
           if (ImGui::Button("Remove Atlas", ImVec2(-1, 0))) {
             loaded_tilemaps.erase(loaded_tilemaps.begin() + i);
-            if (selected_atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
-              selected_atlas_index = static_cast<int>(loaded_tilemaps.size()) - 1;
+            if (selected_tile.atlas_index >= static_cast<int>(loaded_tilemaps.size())) {
+              selected_tile.atlas_index = static_cast<int>(loaded_tilemaps.size()) - 1;
             }
 
             // Save to project settings
@@ -809,15 +962,22 @@ namespace TilemapPanel {
     if (ImGui::CollapsingHeader("Statistics", ImGuiTreeNodeFlags_DefaultOpen)) {
       ImGui::Indent();
 
+      // Count total tiles across all layers
       size_t total_tiles = 0;
-      for (const auto& [layer, tiles] : placed_tiles_per_layer) {
-        total_tiles += tiles.size();
+      size_t selected_layer_tiles = 0;
+
+      for (auto& entity : Engine::ECS::get_entities_with<Components::TileCollider>()) {
+        total_tiles++;
+        if (entity.is_on_layer(selected_layer)) {
+          selected_layer_tiles++;
+        }
       }
+
       ImGui::Text("Total placed tiles: %zu", total_tiles);
-      ImGui::Text("Tiles on '%s' layer: %zu", selected_layer.c_str(), placed_tiles_per_layer[selected_layer].size());
+      ImGui::Text("Tiles on '%s' layer: %zu", selected_layer.c_str(), selected_layer_tiles);
 
       Math::Vec2D mouse_world_pos = Engine::Input::get_mouse_world_position();
-      Math::Vec2D snapped_pos = snap_to_grid(mouse_world_pos);
+      Math::Vec2D snapped_pos = TilemapManager::snap_to_grid(mouse_world_pos);
 
       ImGui::Text("Mouse world pos: (%.1f, %.1f)", mouse_world_pos.x, mouse_world_pos.y);
       ImGui::Text("Snapped pos: (%.1f, %.1f)", snapped_pos.x, snapped_pos.y);
@@ -840,6 +1000,16 @@ namespace TilemapPanel {
       ImGui::BulletText("Toggle grid to see tile boundaries");
       ImGui::BulletText("Adjust grid snap size to match your tile size");
 
+      ImGui::Spacing();
+      ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "Keyboard Shortcuts:");
+      ImGui::BulletText("B - Paintbrush tool");
+      ImGui::BulletText("U - Box Fill tool");
+      ImGui::BulletText("I - Picker tool");
+      ImGui::BulletText("D - Eraser tool");
+      ImGui::BulletText("L - Toggle dim non-selected layers");
+      ImGui::BulletText("Ctrl - Temporary Picker (while painting)");
+      ImGui::BulletText("Shift - Temporary Eraser (while painting)");
+
       ImGui::Unindent();
     }
 
@@ -858,22 +1028,26 @@ namespace TilemapPanel {
       return;
     }
 
+    // Get grid settings from TilemapManager
+    float grid_snap = TilemapManager::get_grid_size();
+    Math::Vec2D grid_offset = TilemapManager::get_grid_offset();
+
     // Get screen bounds in world space using the helper functions
     auto virtual_res = Engine::Graphics::get_virtual_resolution();
-    
+
     // Convert the four corners of the screen from virtual to world space
     Math::Vec2D top_left_world = Engine::Graphics::virtual_to_world(Math::Vec2D{ 0.0f, 0.0f });
     Math::Vec2D bottom_right_world = Engine::Graphics::virtual_to_world(Math::Vec2D{ virtual_res.x, virtual_res.y });
-    
+
     float left = top_left_world.x;
     float right = bottom_right_world.x;
     float top = top_left_world.y;
     float bottom = bottom_right_world.y;
-    
+
     // Calculate grid line positions aligned to grid_offset
     float start_x = std::floor((left - grid_offset.x) / grid_snap) * grid_snap + grid_offset.x;
     float start_y = std::floor((top - grid_offset.y) / grid_snap) * grid_snap + grid_offset.y;
-    
+
     Math::Vec4D grid_color = Math::Vec4D{ 1.0f, 1.0f, 1.0f, 0.3f }; // White with transparency
 
     // Draw vertical lines (loop from left until right)
@@ -896,74 +1070,93 @@ namespace TilemapPanel {
       );
     }
 
-    // Highlight hovered layer tiles
-    if ((painting_enabled || erasing_enabled)) {
+    // Draw box fill preview if dragging
+    if (box_fill_dragging) {
+      int start_grid_x, start_grid_y, end_grid_x, end_grid_y;
+      TilemapManager::world_to_grid(box_fill_start, start_grid_x, start_grid_y);
+      TilemapManager::world_to_grid(box_fill_end, end_grid_x, end_grid_y);
+
+      // Ensure start is less than end
+      if (start_grid_x > end_grid_x) std::swap(start_grid_x, end_grid_x);
+      if (start_grid_y > end_grid_y) std::swap(start_grid_y, end_grid_y);
+
+      // Calculate box dimensions in world space
+      Math::Vec2D box_start_world = TilemapManager::grid_to_world(start_grid_x, start_grid_y);
+      Math::Vec2D box_end_world = TilemapManager::grid_to_world(end_grid_x, end_grid_y);
+
+      Math::Vec2D box_center = {
+        (box_start_world.x + box_end_world.x) * 0.5f,
+        (box_start_world.y + box_end_world.y) * 0.5f
+      };
+      Math::Vec2D box_size = {
+        (end_grid_x - start_grid_x + 1) * grid_snap,
+        (end_grid_y - start_grid_y + 1) * grid_snap
+      };
+
+      // Draw semi-transparent box preview
+      Engine::Graphics::draw_rect(
+        box_center,
+        box_size,
+        0.0f,
+        Math::Vec4D{ 0.0f, 1.0f, 0.0f, 0.3f }
+      );
+
+      // Draw border for better visibility
+      float half_width = box_size.x * 0.5f;
+      float half_height = box_size.y * 0.5f;
+      Math::Vec2D top_left = { box_center.x - half_width, box_center.y - half_height };
+      Math::Vec2D top_right = { box_center.x + half_width, box_center.y - half_height };
+      Math::Vec2D bottom_left = { box_center.x - half_width, box_center.y + half_height };
+      Math::Vec2D bottom_right = { box_center.x + half_width, box_center.y + half_height };
+
+      Math::Vec4D border_color = Math::Vec4D{ 0.0f, 1.0f, 0.0f, 0.8f };
+      Engine::Graphics::draw_line(top_left, top_right, 2.0f, border_color);
+      Engine::Graphics::draw_line(top_right, bottom_right, 2.0f, border_color);
+      Engine::Graphics::draw_line(bottom_right, bottom_left, 2.0f, border_color);
+      Engine::Graphics::draw_line(bottom_left, top_left, 2.0f, border_color);
+    }
+    // Highlight hovered cell based on current tool (only when not box filling)
+    else {
       auto world_pos_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
 
-      if (!world_pos_opt.has_value()) {
-        return;
+      if (world_pos_opt.has_value()) {
+        Math::Vec2D world_pos = world_pos_opt.value();
+        Math::Vec2D grid_pos = TilemapManager::snap_to_grid(world_pos);
+
+        // Different highlight colors for different tools
+        Math::Vec4D highlight_color;
+        if (current_tool == ToolMode::Paintbrush || current_tool == ToolMode::BoxFill) {
+          highlight_color = Math::Vec4D{ 0.0f, 1.0f, 0.0f, 0.4f }; // Green for painting
+        }
+        else if (current_tool == ToolMode::Eraser) {
+          highlight_color = Math::Vec4D{ 1.0f, 0.0f, 0.0f, 0.4f }; // Red for erasing
+        }
+        else if (current_tool == ToolMode::Picker) {
+          highlight_color = Math::Vec4D{ 0.0f, 0.5f, 1.0f, 0.4f }; // Blue for picker
+        }
+
+        Engine::Graphics::draw_rect(
+          grid_pos,
+          Math::Vec2D{ grid_snap, grid_snap },
+          0.0f,
+          highlight_color
+        );
       }
-
-      Math::Vec2D world_pos = world_pos_opt.value();
-      Math::Vec2D grid_pos = snap_to_grid(world_pos);
-
-      Math::Vec4D highlight_color = painting_enabled ?
-        Math::Vec4D{ 0.0f, 1.0f, 0.0f, 0.4f } :
-        Math::Vec4D{ 1.0f, 0.0f, 0.0f, 0.4f };
-
-      Engine::Graphics::draw_rect(
-        grid_pos,
-        Math::Vec2D{ grid_snap, grid_snap },
-        0.0f,
-        highlight_color
-      );
     }
   }
 
-  void darken_non_selected_layer_tiles() {
-    // Only darken when tilemap mode is enabled
-    if (!enable_tilemap_mode) {
-      // Reset all tiles to full brightness when tilemap mode is disabled
-      for (auto& entity : Engine::ECS::get_entities_with<Components::Tile>()) {
-        auto* color = entity.get_component<Components::Color>();
-        if (!color) continue;
+  bool is_tilemap_mode_enabled()
+  {
+    return enable_tilemap_mode;
+  }
 
-        color->r = 1.0f;
-        color->g = 1.0f;
-        color->b = 1.0f;
-        color->a = 1.0f;
-      }
-      return;
-    }
+  std::string get_selected_layer()
+  {
+    return selected_layer;
+  }
 
-    // Get the selected layer ID
-    Engine::ECS::LayerID selected_layer_id = Engine::ECS::get_layer_id(selected_layer);
-    if (selected_layer_id == Engine::ECS::INVALID_LAYER) {
-      return;
-    }
-
-    // Iterate through all tile entities
-    for (auto& entity : Engine::ECS::get_entities_with<Components::Tile>()) {
-      auto* color = entity.get_component<Components::Color>();
-      if (!color) continue;
-
-      // Check if entity is on the selected layer
-      bool on_selected_layer = entity.is_on_layer(selected_layer_id);
-
-      if (on_selected_layer) {
-        // Reset to full brightness for tiles on selected layer
-        color->r = 1.0f;
-        color->g = 1.0f;
-        color->b = 1.0f;
-        color->a = 1.0f;
-      }
-      else {
-        // Darken tiles on other layers
-        color->r = 0.3f;
-        color->g = 0.3f;
-        color->b = 0.3f;
-        color->a = 1.0f;
-      }
-    }
+  bool is_dim_non_selected_layers_enabled()
+  {
+    return dim_non_selected_layers;
   }
 } // namespace TilemapPanel

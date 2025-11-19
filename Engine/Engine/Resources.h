@@ -105,7 +105,15 @@ namespace Engine {
     // Add level to cache without saving to disk
     void cache_level(const std::string& filepath, const Engine::Level& level, bool append_resource_path = true, bool persist = false);
 
+    // Open (instantiate) a level into the world
+    bool open_level(const std::string& filepath, bool append_resource_path = true);
 
+    // Generic open function - automatically detects resource type and opens it
+    // Currently supports: levels
+    bool open(const std::string& filepath, bool append_resource_path = true);
+
+    // Remove a specific resource from all caches (e.g., when file is deleted)
+    void remove_from_cache(const std::string& filepath, bool append_resource_path = true);
 
     //optimization: clear unused resources from cache
     void clear_unused_resources();
