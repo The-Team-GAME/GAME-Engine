@@ -30,6 +30,7 @@
 #include "../Events/EngineEvents.h"
 #include "../UndoManager/UndoManager.h"
 #include "../InputManager.h"
+#include "../ProjectSaveManager.h"
 
 namespace {
   // Shared state for entity selection
@@ -90,10 +91,14 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
           // Do lambda: apply new value
           [array, entity_id = entity.get_id(), new_value]() {
             array->set_component_from_generic_value(entity_id, new_value);
+            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+
           },
           // Undo lambda: restore previous value
           [array, entity_id = entity.get_id(), prev_value]() {
             array->set_component_from_generic_value(entity_id, prev_value);
+            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+
           }
         );
       }
@@ -116,11 +121,13 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
         [entity_id = entity.get_id(), type_id = array->get_type_id()]() {
           auto& containers = Engine::ECS::Internal::get_containers();
           containers.components_to_remove.emplace_back(entity_id, type_id);
+          Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
         },
         // Undo lambda: restore component
         [array, entity_id = entity.get_id(), prev_value]() {
           array->add_default_component(entity_id);
           array->set_component_from_generic_value(entity_id, prev_value);
+          Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
         }
       );
 
