@@ -4194,5 +4194,15 @@
             ],
             "drawIndex": -1
         }
+    ],
+    "layer_collision_pairs": [
+        {
+            "first": "default",
+            "second": "default"
+        },
+        {
+            "first": "tilemap_foreground_mid",
+            "second": "player"
+        }
     ]
 }

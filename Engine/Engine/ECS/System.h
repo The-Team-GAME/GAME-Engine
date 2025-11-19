@@ -97,15 +97,15 @@ namespace Engine {
 
       /*=================================================================================
       Function Brief:
-      Renders all entities managed by this system in layer order. Calls draw_entity
-      for each entity, processing layers from lowest ID (highest priority) to highest ID.
-      This ensures entities are drawn in the correct z-order.
+      Override this method to implement custom drawing logic that executes once per
+      frame. Useful for systems that need to do global drawing operations (e.g.,
+      debug visualization) rather than per-entity drawing.
 
       Parameters:
       None.
 
       Where to call it:
-      Called automatically by the ECS during the main draw loop.
+      Called automatically during the draw phase. Override to add custom drawing.
       ==================================================================================*/
       virtual void draw();
 

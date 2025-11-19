@@ -134,7 +134,8 @@ namespace TilemapPanel {
   Function Brief:
   Creates a new tile entity at the specified world position. Snaps the position to
   the grid, checks for duplicates, and creates an entity with Tile, Transform2D,
-  Texture, TextureAtlas, and Color components.
+  Texture, TextureAtlas, and Color components. If multi-tile selection is active,
+  places multiple tiles in a pattern.
 
   Parameters:
   world_pos - Mouse world position where the user clicked
@@ -146,13 +147,29 @@ namespace TilemapPanel {
 
   /*=================================================================================
   Function Brief:
-  Darkens tiles that are not on the currently selected layer. This provides visual
-  feedback about which layer is active during painting/erasing operations.
+  Returns whether tilemap editing mode is currently enabled.
 
-  Where to call it:
-  Called internally during update() when painting or erasing mode is enabled.
+  Returns:
+  True if tilemap mode is enabled, false otherwise.
   ==================================================================================*/
-  void darken_non_selected_layer_tiles();
-
   bool is_tilemap_mode_enabled();
+
+  /*=================================================================================
+  Function Brief:
+  Returns the name of the currently selected layer in the tilemap editor.
+
+  Returns:
+  String name of the selected layer.
+  ==================================================================================*/
+  std::string get_selected_layer();
+
+  /*=================================================================================
+  Function Brief:
+  Returns whether the "dim non-selected layers" feature is currently enabled.
+  When enabled, layers other than the selected one are rendered at reduced brightness.
+
+  Returns:
+  True if dimming is enabled, false otherwise.
+  ==================================================================================*/
+  bool is_dim_non_selected_layers_enabled();
 }

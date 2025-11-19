@@ -10,7 +10,7 @@
 // brief:   This file defines a system containing functions that will allow the 
 //					developers to debug the engine using visual aids.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "DebugDrawSystem.h"
 using namespace Engine;
@@ -22,6 +22,7 @@ void ddsys::draw()
 {
 	// Only draw if debug layer is active
 	if (ECS::is_layer_active("debug")) {
-		col2D::draw_quad_tree();
+		//col2D::draw_quad_tree();
+		col2D::draw_quad_tree_sat();
 	}
 }
