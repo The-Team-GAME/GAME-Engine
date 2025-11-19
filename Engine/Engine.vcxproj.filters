@@ -99,6 +99,10 @@
     <ClCompile Include="Engine\GUI\LayerManagerPanel.cpp" />
     <ClCompile Include="GameLogic\GameStates\StressTestState.cpp" />
     <ClCompile Include="Engine\Systems\LogicSystem.cpp" />
+    <ClCompile Include="Engine\GUI\LevelManagerPanel.cpp" />
+    <ClCompile Include="Engine\GUI\ResourceExplorerPanel.cpp" />
+    <ClCompile Include="Engine\Level.cpp" />
+    <ClCompile Include="Engine\ProjectSaveManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -203,6 +207,15 @@
     <ClInclude Include="Engine\GUI\LayerManagerPanel.h" />
     <ClInclude Include="GameLogic\GameStates\StressTestState.h" />
     <ClInclude Include="Engine\Systems\LogicSystem.h" />
+    <ClInclude Include="Engine\GUI\LevelManagerPanel.h" />
+    <ClInclude Include="Engine\GUI\RegisterAllPanels.h" />
+    <ClInclude Include="Engine\GUI\ResourceExplorerPanel.h" />
+    <ClInclude Include="Engine\ImGuiThemes.h" />
+    <ClInclude Include="Engine\KeyCodes.h" />
+    <ClInclude Include="Engine\Level.h" />
+    <ClInclude Include="Engine\ProjectSaveManager.h" />
+    <ClInclude Include="Engine\TimelineState.h" />
+    <ClInclude Include="GameLogic\GameStates\BehaviourState.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -300,5 +313,6 @@
     <None Include="Engine\FileIO\SettingsManager.inl" />
     <None Include="Engine\Reflection\ReflectionLibrary\GenericValue.inl" />
     <None Include="Assets\scripts\buttons_test.lua" />
+    <None Include="Assets\scripts\behaviour_test.lua" />
   </ItemGroup>
 </Project>

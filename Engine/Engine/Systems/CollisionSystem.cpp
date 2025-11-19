@@ -14,16 +14,19 @@
 // Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "CollisionSystem.h"
+#include "PhysicsSystem.h"
 #include "../Perf.h"
 #include "../FileIO/Settings.h"
 #include "../Graphics/Renderer.h" // for picturing the quad tree
 using namespace Engine;
 using namespace Systems;
 using col2D = Collision2DSystem;
+using phy2D = Physics2DSystem;
 using settings = Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>;
 
 // Need to define cuz we made spatial tree static so we could make a static function to call its draw function in another system
-std::unique_ptr<col2D::QuadTree> col2D::spatial_tree = nullptr;
+//std::unique_ptr<col2D::QuadTree> col2D::spatial_tree = nullptr;
+std::unique_ptr<col2D::QuadTreeSAT> col2D::spatial_tree_sat = nullptr;
 
 col2D::Collision2DSystem() {
   require_components<Components::Transform2D, Components::RigidBody, Components::BoxCollider>();
@@ -34,7 +37,9 @@ col2D::Collision2DSystem() {
   f32 win_height = win_size.y;
   Vec2D mid_point(win_width / 2, win_height / 2);
   world_bounds = AABB(mid_point, win_width, win_height);
-  spatial_tree = std::make_unique<QuadTree>(world_bounds, 0);
+
+  //spatial_tree = std::make_unique<QuadTree>(world_bounds, 0);
+  spatial_tree_sat = std::make_unique<QuadTreeSAT>(world_bounds, 0);
 }
 
 void col2D::update()
@@ -42,14 +47,14 @@ void col2D::update()
   Engine::Perf::start("Collision Update");
 
   // reset the tree from last frame
-  spatial_tree->clear();
+  spatial_tree_sat->clear();
 
   // update the entities from last frame and chuck them into the spatial tree
   for (ECS::EntityID entity_id : entities)
   {
     ECS::Entity entity(entity_id);
     update_entity(entity);
-    spatial_tree->insert(entity);
+    spatial_tree_sat->insert(entity);
   }
 
   for (ECS::EntityID entity_id : entities)
@@ -64,7 +69,7 @@ void col2D::update()
     // Query nearby entities using quadtree
     std::vector<ECS::Entity> nearby;
     // In the future the range for the find near entity could be expanded to the range that entity could travel in that frame, but for now ill double the current entity's aabb
-    spatial_tree->find_near_entity(AABB(box->aabb.pos, box->width, box->height), nearby);
+    spatial_tree_sat->find_near_entity(AABB(box->aabb.pos, box->width, box->height), nearby);
 
     // Check collision only with nearby entities
     for (ECS::Entity& other : nearby)
@@ -85,7 +90,9 @@ void col2D::update()
       }
 
       // Check if both entities intersect
-      if (!box->aabb.intersects(other_box->aabb))
+      CollisionResult collision = check_collision(*box, *other_box);
+
+      if (!collision.collided)
       {
         // skip other_entity if they dont collide
         continue;
@@ -100,21 +107,12 @@ void col2D::update()
       {
         Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
 
-        AABB minkowski = col2D::minkowski_AABB(*box, *other_box);
-        Vec2D pen_vec = col2D::penetrationVector(minkowski);
+        xform->position -= collision.mtv;
+        phy2D::kill_normal_component(*rigid, collision.mtv);
 
-        xform->position -= pen_vec;
-        if (pen_vec.y == 0)
-        {  // Sideways collision
-          rigid->velocity.x = 0.f;
-        }
-        else
-        {  // Up/down collision
-          rigid->velocity.y = 0.f;
-          if (pen_vec.y > 0)
-          {
-            rigid->on_ground = true;
-          }
+        if (collision.mtv.y > 0) // make smth to calculate the angle here maybe
+        {
+          rigid->on_ground = true;
         }
       }
       /*=============================
@@ -138,15 +136,109 @@ void col2D::update_entity(Engine::ECS::Entity& entity)
 {
   Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
   Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
-  col2D::update_AABB(*xform, *box);
+  if (box->type == Components::ColliderType::AABB)
+  {
+    box->aabb.pos = xform->position;
+  }
+  else if (box->type == Components::ColliderType::OBB || 
+           box->type == Components::ColliderType::POLYGON)
+  {
+    box->polygon.position = xform->position;
+    box->polygon.rotation = xform->rotation;
+  }
 }
 
 // update the AABB of the entity after it gets transformed
-void col2D::update_AABB(Components::Transform2D const& xform, Components::BoxCollider& box)
+// Old -> obslete now :>
+//void col2D::update_AABB(Components::Transform2D const& xform, Components::BoxCollider& box)
+//{
+//  box.aabb.pos = xform.position;
+//  return;
+//}
+
+// Helper to get AABB for any collider type (for spatial partitioning)
+// OBB and POLYGON types will use their bounding AABB
+AABB col2D::get_entity_aabb(ECS::Entity& entity)
 {
-  box.aabb.pos = xform.position;
-  return;
+  Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
+
+  if (box->type == Components::ColliderType::AABB)
+  {
+    // Direct AABB access
+    return box->aabb;
+  }
+  // else
+  // Since we dont know if the shape is rotated, we need to compute all the vertices anyways
+
+  std::vector<Vec2D> xformed_vertices = box->polygon.get_transformed_vertices();
+
+  Vec2D min = xformed_vertices[0];
+  Vec2D max = xformed_vertices[0];
+
+  // Finding the min and max values
+  for (Vec2D const& vertice : xformed_vertices)
+  {
+    min.x = std::min(min.x, vertice.x);
+    min.y = std::min(min.y, vertice.y);
+    max.x = std::max(max.x, vertice.x);
+    max.y = std::max(max.y, vertice.y);
+  }
+
+  // Calculate center and half-extents
+  Vec2D center = (min + max) * 0.5f;
+  f32 half_width = (max.x - min.x) * 0.5f;
+  f32 half_height = (max.y - min.y) * 0.5f;
+
+  return AABB(center, half_width * 2, half_height * 2);
 }
+
+CollisionResult col2D::check_collision(
+  Components::BoxCollider const& lhs,
+  Components::BoxCollider const& rhs)
+{
+  if (lhs.type == Components::ColliderType::AABB &&
+    rhs.type == Components::ColliderType::AABB)
+  {
+    if (!lhs.aabb.intersects(rhs.aabb)) {
+      return { false, Vec2D(0, 0) };
+    }
+
+    // Keep the minkoswki collision for this cuz its cheaper
+    AABB minkowski = minkowski_AABB(lhs, rhs);
+    Vec2D pen_vec = penetration_vector(minkowski);
+
+    return CollisionResult{ true, pen_vec };
+  }
+  else
+  {
+    // Here we check if either lhs or rhs is an AABB and we construct them as a polygon before continuing
+    if (lhs.type == Components::ColliderType::AABB)
+    {
+      Polygon poly_a = Polygon(lhs.aabb);
+      return poly_a.intersects(rhs.polygon);
+    }
+    else if (rhs.type == Components::ColliderType::AABB)
+    {
+      Polygon poly_b = Polygon(rhs.aabb);
+      return poly_b.intersects(lhs.polygon);
+    }
+    else
+    {
+      return lhs.polygon.intersects(rhs.polygon);
+    }
+  }
+}
+
+void col2D::draw_quad_tree_sat()
+{
+  if (spatial_tree_sat)
+  {
+    spatial_tree_sat->draw_tree_node();
+  }
+}
+
+#ifdef USE_OLD_QUAD_TREE
+#pragma region QuadTree
 
 void col2D::draw_quad_tree()
 {
@@ -156,7 +248,6 @@ void col2D::draw_quad_tree()
   }
 }
 
-#pragma region QuadTree
 /*==============================/
 / Spatial Partitioning Attempts /
 /==============================*/
@@ -373,6 +464,223 @@ void col2D::QuadTree::draw_tree_node() const
 }
 
 #pragma endregion Quad Tree Implementation
+#endif
+
+#pragma region Quad Tree Implementation with SAT
+
+// Ctor
+col2D::QuadTreeSAT::QuadTreeSAT(AABB boundary, u32 depth)
+  :bounds(boundary), depth(depth), divided(false)
+{
+  entity_vec.reserve(max_entities);
+}
+
+// Dtor
+col2D::QuadTreeSAT::~QuadTreeSAT() = default;
+
+// Same implementation as QuadTree
+void col2D::QuadTreeSAT::split()
+{
+  Vec2D mid = bounds.pos;
+  f32 hw = bounds.half_width / 2;
+  f32 hh = bounds.half_height / 2;
+  // remember that the top left is 0,0 :>
+
+  child_nodes[0] = std::make_unique<QuadTreeSAT>(
+    AABB(Vec2D(mid.x - hw, mid.y - hh), bounds.half_width, bounds.half_height),
+    depth + 1);
+
+  child_nodes[1] = std::make_unique<QuadTreeSAT>(
+    AABB(Vec2D(mid.x + hw, mid.y - hh), bounds.half_width, bounds.half_height),
+    depth + 1);
+
+  child_nodes[2] = std::make_unique<QuadTreeSAT>(
+    AABB(Vec2D(mid.x - hw, mid.y + hh), bounds.half_width, bounds.half_height),
+    depth + 1);
+
+  child_nodes[3] = std::make_unique<QuadTreeSAT>(
+    AABB(Vec2D(mid.x + hw, mid.y + hh), bounds.half_width, bounds.half_height),
+    depth + 1);
+
+  divided = true;
+}
+
+// Check if entity's AABB can be contained in this node
+bool col2D::QuadTreeSAT::can_contain_entity(ECS::Entity& entity) const
+{
+  AABB aabb = get_entity_aabb(entity);
+  Vec2D aabb_min = aabb.min();
+  Vec2D aabb_max = aabb.max();
+  Vec2D bounds_min = bounds.min();
+  Vec2D bounds_max = bounds.max();
+
+  return aabb_min.x >= bounds_min.x &&
+    aabb_min.y >= bounds_min.y &&
+    aabb_max.x <= bounds_max.x &&
+    aabb_max.y <= bounds_max.y;
+}
+
+// Same implementation as QuadTree
+void col2D::QuadTreeSAT::clear()
+{
+  // Clearing the objects in the current node
+  entity_vec.clear();
+  // Recursively clearing all the child nodes
+  if (divided)
+  {
+    for (u32 i{}; i < 4; ++i)
+    {
+      child_nodes[i]->clear(); // Make the child clear its children
+      child_nodes[i].reset();  // HEHE MURDER *stabs*
+    }
+    divided = false;
+  }
+}
+
+// Same implementation as QuadTree
+bool col2D::QuadTreeSAT::insert(ECS::Entity& entity)
+{
+  // Check if the entity intersects with this node of the quad tree
+  // We need to use the get_entity_aabb function here because not every box collider uses aabb anymore
+  AABB entity_aabb = get_entity_aabb(entity); 
+  if (!bounds.intersects(entity_aabb))
+  {
+    // If u reach here then the object shouldnt even be in this node LOL
+
+    return false;
+  }
+
+  // Next we check if the node has already been divided before
+  // If it hasnt, we check if there is enough space to store it
+  if (!divided && entity_vec.size() < max_entities)
+  {
+    entity_vec.push_back(entity);
+    return true;
+    // Ok problem solved :>
+  }
+
+  // If we have reached this part, it means that the node is not divided and we have hit capacity
+  // So now we need to split the node, provided we havent hit our max depth
+  if (!divided && depth < max_depth)
+  {
+    // Now we split kekw
+    this->split();
+    std::vector<ECS::Entity> remaining_entities;
+    for (ECS::Entity& existing_entity : entity_vec)
+    {
+      // Try to insert the existing entities into the child nodes that have been created
+      if (!insert_in_child_node(existing_entity))
+      {
+        // insert_in_child_node will return true if the existing entity can fit inside the child node
+        // else it will return false and we enter this part :>
+        remaining_entities.push_back(existing_entity);
+      }
+    }
+    // then now the vector will only be filled with objects that can only fit at this depth as it is too big for the child nodes
+    entity_vec = std::move(remaining_entities);
+  }
+
+  // So after we split (or not), its time to insert the current entity
+  // In this case theres a child node
+  if (divided)
+  {
+    if (insert_in_child_node(entity))
+    {
+      // insertion successful
+      return true;
+    }
+  }
+
+  // I guess this means we max depth LUL
+  entity_vec.push_back(entity);
+  return true;
+}
+
+// Same implementation as QuadTree
+bool col2D::QuadTreeSAT::insert_in_child_node(ECS::Entity& entity)
+{
+  // Try to find a child that fully contains the rectangle
+  for (u32 i{}; i < 4; ++i)
+  {
+    if (child_nodes[i]->can_contain_entity(entity)) {
+      // If child can fully contain it, insert recursively
+      return child_nodes[i]->insert(entity);
+    }
+  }
+
+  // No single child can contain it (spans multiple quadrants)
+  return false;
+}
+
+// Same implementation as QuadTree
+void col2D::QuadTreeSAT::find_near_entity(const AABB& range, std::vector<ECS::Entity>& nearby)
+{
+  // Exit if search range doesn't intersect this node
+  // Cuz remember this function is called recursively so this is the exit criteria
+  if (!bounds.intersects(range)) {
+    return;
+  }
+
+  // Check all objects stored at this level
+  for (ECS::Entity entity : entity_vec) {
+    // Same here, we use the helper function to generate the AABB
+    AABB entity_aabb = get_entity_aabb(entity);
+    if (range.intersects(entity_aabb))
+    {
+      nearby.push_back(entity);
+    }
+  }
+
+  // Recursively check all children
+  if (divided) {
+    for (u32 i = 0; i < 4; i++) {
+      child_nodes[i]->find_near_entity(range, nearby);
+    }
+  }
+}
+
+// Same implementation as QuadTree
+u32  col2D::QuadTreeSAT::entity_count() const
+{
+  return static_cast<u32>(entity_vec.size());
+}
+
+// Same implementation as QuadTree
+bool col2D::QuadTreeSAT::is_divided() const
+{
+  return divided;
+}
+
+// Same implementation as QuadTree
+void col2D::QuadTreeSAT::draw_tree_node() const
+{
+  Vec2D dimensions(bounds.half_width * 2, bounds.half_height * 2);
+  f32 rotation = 0.f;
+  f32 thickness = 2.f;
+
+  // Color based on entity count
+  Vec4D color;
+  if (entity_vec.empty())
+  {
+    color = Vec4D(0.5f, 0.5f, 1.f, 0.7f);  // Blue for empty nodes
+  }
+  else
+  {
+    color = Vec4D(1.0f, 0.5f, 0.0f, 0.7f);  // Orange for nodes with entities
+  }
+
+  Graphics::draw_rect_outline(bounds.pos, dimensions, rotation, thickness, color);
+
+  if (divided)
+  {
+    for (u32 i = 0; i < 4; ++i)
+    {
+      child_nodes[i]->draw_tree_node();
+    }
+  }
+}
+
+#pragma endregion
 
 /*========================/
 / Static Collision Checks /
@@ -384,7 +692,7 @@ bool col2D::rect_rect_coll(Components::BoxCollider const& lhs, Components::BoxCo
 {
   return lhs.aabb.intersects(rhs.aabb);
 }
-
+#pragma region minkowski
 AABB col2D::minkowski_AABB(Components::BoxCollider const& dynamic_obj, Components::BoxCollider const& static_obj)
 {
   AABB minkowski;
@@ -403,7 +711,7 @@ AABB col2D::minkowski_AABB(Components::BoxCollider const& dynamic_obj, Component
 
 // This gives the vector for how deep the dynamic object has collided into the static object
 // So u need to take the position of the obj and minus the pen-vec to get the correct location
-Vec2D col2D::penetrationVector(AABB const& minkowski)
+Vec2D col2D::penetration_vector(AABB const& minkowski)
 {
   // So... how does this work.
   // First we take the aabb and find the distance to the edges of the static object
@@ -426,3 +734,4 @@ Vec2D col2D::penetrationVector(AABB const& minkowski)
     return Vec2D((left < right) ? min.x : max.x, 0);
   }
 }
+#pragma endregion

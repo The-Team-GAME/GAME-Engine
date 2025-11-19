@@ -22,6 +22,9 @@
 #include "../Components/Components.h"
 #include "../Time.h"
 #include <memory>
+
+// #define USE_OLD_QUAD_TREE;
+
 namespace Engine {
   namespace Systems
   {
@@ -36,6 +39,9 @@ namespace Engine {
     enum { // enum for the quadrants in the quad tree
       NW, NE, SW, SE
     };
+
+    // Old Quad Tree Implementation, ill leave it here for reading
+#ifdef USE_OLD_QUAD_TREE
     class QuadTree 
     {
     private:
@@ -89,12 +95,53 @@ namespace Engine {
 
       void draw_tree_node() const;
     };
+#endif
+
+    class QuadTreeSAT
+    {
+    private:
+      AABB bounds; // AABB bounds for spatial partitioning (broad-phase)
+      std::vector<ECS::Entity> entity_vec; // Entities in this node
+      std::array<std::unique_ptr<QuadTreeSAT>, 4> child_nodes; // NW, NE, SW, SE
+
+      u32 const max_entities = 4;
+      u32 const max_depth = 6;
+
+      bool divided;
+      u32 depth;
+
+      void split();
+
+
+
+      // Helper to check if entity's AABB can be contained in this node
+      bool can_contain_entity(ECS::Entity& entity) const;
+
+    public:
+      QuadTreeSAT(AABB boundary, u32 depth = 0);
+      ~QuadTreeSAT();
+
+      void clear();
+      bool insert(ECS::Entity& entity);
+      bool insert_in_child_node(ECS::Entity& entity);
+
+      // Find nearby entities using AABB broad-phase
+      void find_near_entity(const AABB& range, std::vector<ECS::Entity>& nearby);
+
+      u32 entity_count() const;
+      bool is_divided() const;
+      void draw_tree_node() const;
+    };
+
+    // QUad Tree helper functions
+
     /*=================/
     / End of Quad Tree /
     /=================*/
 
     private:
-      static std::unique_ptr<QuadTree> spatial_tree;
+      //static std::unique_ptr<QuadTree> spatial_tree; 
+      static std::unique_ptr<QuadTreeSAT> spatial_tree_sat;
       AABB world_bounds;
     public:
       Collision2DSystem(); // Default dtor that includes all the components needed for the entities called in the physics engine
@@ -104,9 +151,19 @@ namespace Engine {
       void update_entity(ECS::Entity& entity) override;
 
       // update the AABB of the entity after it gets transformed
-      static void update_AABB(Components::Transform2D const& xform, Components::BoxCollider& box);
+      // No longer used
+      // static void update_AABB(Components::Transform2D const& xform, Components::BoxCollider& box);
 
-      static void draw_quad_tree();
+      // Helper to get AABB for any collider type (for spatial partitioning)
+      // OBB and POLYGON types will use their bounding AABB
+      static AABB get_entity_aabb(ECS::Entity& entity);
+
+      static CollisionResult check_collision( 
+        Components::BoxCollider const& lhs, 
+        Components::BoxCollider const& rhs);
+
+      //static void draw_quad_tree();
+      static void draw_quad_tree_sat();
 
       /*=========================/
       / Minkowski AABB Collision /
@@ -116,7 +173,7 @@ namespace Engine {
 
       // This gives the vector for how deep the dynamic object has collided into the static object
       // So u need to take the position of the obj and minus the pen-vec to get the correct location
-      static Vec2D penetrationVector(AABB const& minkowski);
+      static Vec2D penetration_vector(AABB const& minkowski);
 
       /*========================/
       / Static Collision Checks /
@@ -132,4 +189,3 @@ namespace Engine {
     };
   }
 }
-

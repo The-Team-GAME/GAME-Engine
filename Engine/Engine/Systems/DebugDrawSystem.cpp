@@ -22,6 +22,7 @@ void ddsys::draw()
 {
 	// Only draw if debug layer is active
 	if (ECS::is_layer_active("debug")) {
-		col2D::draw_quad_tree();
+		//col2D::draw_quad_tree();
+		col2D::draw_quad_tree_sat();
 	}
 }
