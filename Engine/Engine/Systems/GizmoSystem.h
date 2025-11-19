@@ -36,7 +36,7 @@ namespace Engine
     public:
       GizmoSelectionSystem() {
         require_components<Components::Transform2D>();
-        exclude_components<Components::Gizmo, Components::Text>(); // Only process entities without Gizmo and without Text
+        exclude_components<Components::Gizmo, Components::Text, Components::TileCollider>(); // Only process entities without Gizmo and without Text
       }
 
       void update_entity(Engine::ECS::Entity& entity) override {
