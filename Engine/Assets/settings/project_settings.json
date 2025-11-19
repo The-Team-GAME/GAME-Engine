@@ -4197,7 +4197,7 @@
     ],
     "layer_collision_pairs": [
         {
-            "first": "tilemap_foreground_near",
+            "first": "tilemap_foreground_mid",
             "second": "player"
         }
     ]
