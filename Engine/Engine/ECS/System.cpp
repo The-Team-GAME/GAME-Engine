@@ -30,11 +30,9 @@ namespace Engine {
 
     void System::update() {
       // Iterate through entities in layer order (lower layer ID = higher priority = first)
-      // For entities on multiple layers, update them only at their highest layer
+      // Update entities at EVERY layer they are on - systems are applied layer by layer
       auto& containers = Internal::get_containers();
-      std::unordered_map<EntityID, LayerID> entity_highest_layer; // Track highest layer for each entity
 
-      // First pass: find the highest layer for each entity
       for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
         // Skip if system doesn't process this layer
         if (!active_layers.test(layer))
@@ -46,39 +44,22 @@ namespace Engine {
 
         for (EntityID entityId : containers.layer_entities[layer]) {
           // Only consider entities in this system's entity set
-          if (!entities.contains(entityId))
+          if (!entities.contains(entityId)) {
             continue;
-
-          // Update to highest layer
-          if (entity_highest_layer.find(entityId) == entity_highest_layer.end() || layer > entity_highest_layer[entityId]) {
-            entity_highest_layer[entityId] = layer;
           }
-        }
-      }
 
-      // Second pass: update each entity at its highest layer
-      for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
-        // Skip if system doesn't process this layer
-        if (!active_layers.test(layer))
-          continue;
-
-        // Skip if layer is disabled
-        if (!containers.layer_active_state.test(layer))
-          continue;
-
-        for (EntityID entityId : containers.layer_entities[layer]) {
-          // Only update if this is the entity's highest layer
-          if (entity_highest_layer.find(entityId) != entity_highest_layer.end() &&
-            entity_highest_layer[entityId] == layer) {
-            Entity entity(entityId);
-            update_entity(entity);
-          }
+          Entity entity(entityId);
+          update_entity(entity);
         }
       }
     }
 
     void System::draw() {
-      // Iterate through entities in layer order (lower layer ID = higher priority = first)
+      // NOTE: This method is deprecated in favor of layer-based drawing in World::draw()
+      // It's kept for backwards compatibility but won't be called by the ECS anymore.
+      // The World::draw() now calls draw_entity() directly in layer order.
+
+      // Legacy behavior: Iterate through entities in layer order
       // For entities on multiple layers, draw them only at their highest layer
       auto& containers = Internal::get_containers();
       std::unordered_map<EntityID, LayerID> entity_highest_layer; // Track highest layer for each entity

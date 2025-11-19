@@ -16,6 +16,8 @@
 #include "World.h"
 #include "WorldData.h"
 #include "../Perf.h"
+#include <unordered_set>
+#include <unordered_map>
 
 namespace Engine {
   namespace ECS
@@ -274,9 +276,54 @@ namespace Engine {
       auto& containers = Internal::get_containers();
       Engine::Perf::start("ECS Draw");
 
-      for (auto& system : containers.systems)
-      {
-        system->draw();
+      // Draw layer by layer to ensure correct draw order regardless of system registration order
+      // Entities are drawn once at their highest layer
+
+      // First pass: find the highest layer for each entity
+      std::unordered_map<EntityID, LayerID> entity_highest_layer;
+      for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
+        if (!containers.layer_active_state.test(layer))
+          continue;
+
+        for (EntityID entityId : containers.layer_entities[layer]) {
+          // Track the highest layer this entity is on
+          if (entity_highest_layer.find(entityId) == entity_highest_layer.end() ||
+            layer > entity_highest_layer[entityId]) {
+            entity_highest_layer[entityId] = layer;
+          }
+        }
+      }
+
+      // Second pass: draw entities layer by layer at their highest layer only
+      for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
+        // Skip if layer is disabled
+        if (!containers.layer_active_state.test(layer))
+          continue;
+
+        // For each system, draw entities on this layer
+        for (auto& system : containers.systems) {
+          // Skip if system doesn't process this layer
+          if (!system->get_layer_signature().test(layer))
+            continue;
+
+          // Get entities in this system
+          const auto& system_entities = system->get_entities();
+
+          // Draw entities on this layer
+          for (EntityID entityId : containers.layer_entities[layer]) {
+            // Skip if not in this system
+            if (!system_entities.contains(entityId))
+              continue;
+
+            // Only draw if this is the entity's highest layer
+            if (entity_highest_layer[entityId] != layer)
+              continue;
+
+            // Draw the entity
+            Entity entity(entityId);
+            system->draw_entity(entity);
+          }
+        }
       }
 
       Engine::Perf::stop("ECS Draw");
