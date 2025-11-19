@@ -21,6 +21,7 @@
 #include "../../Resources.h"
 #include "../../Components/Components.h"
 #include "../../Path.h"
+#include <unordered_map>
 
 namespace ImGuiWidgets {
 
@@ -242,7 +243,10 @@ namespace ImGuiWidgets {
       return true;
     }
 
-    ImGuiWidgets::TextureAtlasPreview(*texture, *atlas, 80.0f);
+    // Use a static state per entity ID (basic but works for most cases)
+    static std::unordered_map<Engine::ECS::EntityID, ImGuiWidgets::TextureAtlasState> entity_atlas_states;
+
+    ImGuiWidgets::TextureAtlasPreview(*texture, *atlas, 80.0f, entity_atlas_states[entity.get_id()]);
     return true;
   }
 
