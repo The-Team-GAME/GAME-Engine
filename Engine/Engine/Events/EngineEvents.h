@@ -17,6 +17,7 @@
 #include "../TypeDef.h"
 #include "../ECS/ECS.h"
 #include "../Components/Components.h"
+#include "../Reflection/ReflectionLibrary.h"
 #include <functional>
 #include <string>
 
@@ -29,19 +30,15 @@ namespace Engine {
     struct SelectEntityEvent {
       Engine::ECS::EntityID entity_id;
       bool start_dragging = false; // If true, start dragging immediately
+
+      SelectEntityEvent(Engine::ECS::EntityID id, bool drag = false)
+        : entity_id(id), start_dragging(drag) {
+      }
     };
 
     /* ============================ //
     // Entity modification events   //
     // ============================ */
-
-    // Event to modify an entity's transform with undo/redo support
-    struct ModifyEntityTransformEvent {
-      Engine::ECS::EntityID entity_id;
-      Components::Transform2D new_transform;
-      Components::Transform2D old_transform;
-      bool record_undo = true; // Set to false to skip undo recording (for undo/redo itself)
-    };
 
     // Event to delete an entity with undo/redo support
     struct DeleteEntityEvent {
@@ -49,11 +46,11 @@ namespace Engine {
       bool record_undo = true; // Set to false to skip undo recording (for undo/redo itself)
     };
 
-    // Event to add a component to an entity with undo/redo support
-    template<typename ComponentType>
+    // Event to add a component to an entity with undo/redo support (generic, reflection-based)
     struct AddComponentEvent {
       Engine::ECS::EntityID entity_id;
-      ComponentType component_data;
+      Engine::ECS::ComponentTypeID component_type_id;
+      ReflectionLibrary::GenericValue component_data;
       bool record_undo = true;
     };
 
@@ -64,12 +61,12 @@ namespace Engine {
       bool record_undo = true;
     };
 
-    // Event to modify a component's data with undo/redo support
-    template<typename ComponentType>
+    // Event to modify a component's data with undo/redo support (generic, reflection-based)
     struct ModifyComponentEvent {
       Engine::ECS::EntityID entity_id;
-      ComponentType new_data;
-      ComponentType old_data;
+      Engine::ECS::ComponentTypeID component_type_id;
+      ReflectionLibrary::GenericValue new_data;
+      ReflectionLibrary::GenericValue old_data;
       bool record_undo = true;
     };
 

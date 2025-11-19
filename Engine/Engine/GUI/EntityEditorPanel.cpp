@@ -85,21 +85,14 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
       auto prev_value = component_edit_start_values[component_key];
       auto new_value = component_data;
 
-      // Only record if the value actually changed
+      // Only send event if the value actually changed
       if (prev_value != new_value) {
-        Engine::UndoManager::record(
-          // Do lambda: apply new value
-          [array, entity_id = entity.get_id(), new_value]() {
-            array->set_component_from_generic_value(entity_id, new_value);
-            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+        // Get component type ID
+        Engine::ECS::ComponentTypeID type_id = array->get_type_id();
 
-          },
-          // Undo lambda: restore previous value
-          [array, entity_id = entity.get_id(), prev_value]() {
-            array->set_component_from_generic_value(entity_id, prev_value);
-            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
-
-          }
+        // Send modification event (this will handle undo/redo and marking dirty)
+        Engine::EventManager::send_event<Engine::Events::ModifyComponentEvent>(
+          entity.get_id(), type_id, new_value, prev_value, true
         );
       }
 
@@ -114,25 +107,13 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
 
     std::string remove_label = "Remove##" + component_name;
     if (ImGui::Button(remove_label.c_str())) {
-      auto prev_value = array->to_generic_value(entity.get_id());
+      // Get component type ID
+      Engine::ECS::ComponentTypeID type_id = array->get_type_id();
 
-      Engine::UndoManager::record(
-        // Do lambda: remove component
-        [entity_id = entity.get_id(), type_id = array->get_type_id()]() {
-          auto& containers = Engine::ECS::Internal::get_containers();
-          containers.components_to_remove.emplace_back(entity_id, type_id);
-          Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
-        },
-        // Undo lambda: restore component
-        [array, entity_id = entity.get_id(), prev_value]() {
-          array->add_default_component(entity_id);
-          array->set_component_from_generic_value(entity_id, prev_value);
-          Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
-        }
+      // Send remove component event (this will handle undo/redo and marking dirty)
+      Engine::EventManager::send_event<Engine::Events::RemoveComponentEvent>(
+        entity.get_id(), type_id, true
       );
-
-      auto& containers = Engine::ECS::Internal::get_containers();
-      containers.components_to_remove.emplace_back(entity.get_id(), array->get_type_id());
     }
 
     ImGui::TreePop();
@@ -377,13 +358,15 @@ void EntityEditorPanel()
         }
         else {
           if (ImGui::Button(button_label.c_str())) {
-            // Add default-constructed component to entity by name
-            if (entity.add_component_by_name(component_name)) {
-              Log::info("Added component '" + component_name + "' to entity " + std::to_string(entity.get_id()));
-            }
-            else {
-              Log::error("Failed to add component '" + component_name + "' to entity " + std::to_string(entity.get_id()));
-            }
+            // Create default component data
+            ReflectionLibrary::GenericValue default_data = ReflectionLibrary::Object();
+
+            // Send add component event (this will handle undo/redo and marking dirty)
+            Engine::EventManager::send_event<Engine::Events::AddComponentEvent>(
+              entity.get_id(), type_id, default_data, true
+            );
+
+            Log::info("Added component '" + component_name + "' to entity " + std::to_string(entity.get_id()));
           }
         }
 
