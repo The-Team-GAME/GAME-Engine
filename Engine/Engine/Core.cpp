@@ -112,10 +112,6 @@ namespace Engine
       Log::warning("Failed to load project settings, using defaults");
     }
 
-    // Sync collision matrix from ProjectSettings to ECS internal collision matrix
-    const auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get();
-    auto& containers = Engine::ECS::Internal::get_containers();
-    containers.collision_matrix = project_settings.collision_matrix;
 
     // CORE INITIALIZATION
 
@@ -156,6 +152,29 @@ namespace Engine
   ==================================================================================*/
   void Core::run(std::string first_scene)
   {
+    // Sync collision matrix from ProjectSettings to ECS internal collision matrix
+    const auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get();
+    auto& containers = Engine::ECS::Internal::get_containers();
+
+    // Clear the collision matrix first (set all to false)
+    for (auto& row : containers.collision_matrix) {
+      row.reset();
+    }
+
+    // Rebuild collision matrix from name-based pairs
+    for (const auto& [name_a, name_b] : project_settings.layer_collision_pairs) {
+      Engine::ECS::LayerID layer_a = Engine::ECS::get_layer_id(name_a);
+      Engine::ECS::LayerID layer_b = Engine::ECS::get_layer_id(name_b);
+
+      // Only apply if both layers exist (have been registered)
+      if (layer_a != Engine::ECS::INVALID_LAYER && layer_b != Engine::ECS::INVALID_LAYER) {
+        containers.collision_matrix[layer_a].set(layer_b);
+        containers.collision_matrix[layer_b].set(layer_a); // Symmetric
+      }
+    }
+
+    Log::info("Loaded " + std::to_string(project_settings.layer_collision_pairs.size()) + " layer collision pairs from settings");
+
     SceneManager::load_scene(first_scene);
 
     while (!glfwWindowShouldClose(WindowManager::get_window()) && is_running)

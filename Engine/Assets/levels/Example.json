@@ -60,7 +60,7 @@
                                     }
                                 },
                                 {
-                                    "first": 34359738380,
+                                    "first": 4,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -74,14 +74,14 @@
                                     }
                                 },
                                 {
-                                    "first": 4,
+                                    "first": 34359738380,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
                                     }
                                 },
                                 {
-                                    "first": 42949672974,
+                                    "first": 4294967295,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -95,7 +95,7 @@
                                     }
                                 },
                                 {
-                                    "first": 4294967295,
+                                    "first": 42949672974,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
@@ -4404,7 +4404,7 @@
                     {
                         "data": {
                             "position": {
-                                "x": 567.7420043945313,
+                                "x": 876.8165893554688,
                                 "y": 807.0
                             },
                             "rotation": 0.0,
@@ -4422,7 +4422,7 @@
                             "width": 50.0,
                             "aabb": {
                                 "pos": {
-                                    "x": 567.7420043945313,
+                                    "x": 876.8165893554688,
                                     "y": 807.388916015625
                                 },
                                 "half_width": 25.0,
