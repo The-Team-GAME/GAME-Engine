@@ -54,9 +54,9 @@ int main()
 
   // Register game layers at startup
   Engine::ECS::register_layer("background"); // Static background layer
-  Engine::ECS::register_layer("tilemap_background_far");  // Tilemap background far layer (e.g., distant cityscape, outside window)
+  //Engine::ECS::register_layer("tilemap_background_far");  // Tilemap background far layer (e.g., distant cityscape, outside window) // TODO: Re-enable after M3
   Engine::ECS::register_layer("tilemap_background_mid");  // Tilemap background mid layer (e.g., MRT carriage, trees, hills, pillars)
-  Engine::ECS::register_layer("tilemap_background_near"); // Tilemap background near layer (e.g., bushes, fences)
+  //Engine::ECS::register_layer("tilemap_background_near"); // Tilemap background near layer (e.g., bushes, fences) // TODO: Re-enable after M3
   // Engine::ECS::register_layer("tilemap_foreground_far"); // Tilemap foreground far layer (don't need it for now)
   // Engine::ECS::register_layer("tilemap_foreground_mid"); // Tilemap foreground mid layer (don't need it for now)
   Engine::ECS::register_layer("tilemap_foreground_near"); // Tilemap foreground near layer (e.g., things that needs to collide with player, ground, platforms)
