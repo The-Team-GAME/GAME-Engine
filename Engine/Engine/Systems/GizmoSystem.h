@@ -337,17 +337,27 @@ namespace Engine
           initial_transform.rotation = gizmo->start_rotation;
           initial_transform.scale = gizmo->start_scale;
 
-          // Get component type ID
-          Engine::ECS::ComponentTypeID type_id = Engine::ECS::ComponentTypeManager::get_type_id<Components::Transform2D>();
+          // Only record undo if the transform actually changed
+          const float epsilon = 0.0001f;
+          bool position_changed = std::abs(final_transform.position.x - initial_transform.position.x) > epsilon ||
+                                  std::abs(final_transform.position.y - initial_transform.position.y) > epsilon;
+          bool rotation_changed = std::abs(final_transform.rotation - initial_transform.rotation) > epsilon;
+          bool scale_changed = std::abs(final_transform.scale.x - initial_transform.scale.x) > epsilon ||
+                               std::abs(final_transform.scale.y - initial_transform.scale.y) > epsilon;
 
-          // Convert to GenericValue for the event
-          ReflectionLibrary::GenericValue final_data = ReflectionLibrary::to_generic_value(final_transform);
-          ReflectionLibrary::GenericValue initial_data = ReflectionLibrary::to_generic_value(initial_transform);
+          if (position_changed || rotation_changed || scale_changed) {
+            // Get component type ID
+            Engine::ECS::ComponentTypeID type_id = Engine::ECS::ComponentTypeManager::get_type_id<Components::Transform2D>();
 
-          // Send modification event (this will handle undo/redo and marking dirty)
-          Engine::EventManager::send_event<Engine::Events::ModifyComponentEvent>(
-            entity.get_id(), type_id, final_data, initial_data, true
-          );
+            // Convert to GenericValue for the event
+            ReflectionLibrary::GenericValue final_data = ReflectionLibrary::to_generic_value(final_transform);
+            ReflectionLibrary::GenericValue initial_data = ReflectionLibrary::to_generic_value(initial_transform);
+
+            // Send modification event (this will handle undo/redo and marking dirty)
+            Engine::EventManager::send_event<Engine::Events::ModifyComponentEvent>(
+              entity.get_id(), type_id, final_data, initial_data, true
+            );
+          }
 
           gizmo->is_dragging = false;
           gizmo->active_handle = Components::GizmoHandleType::None;
