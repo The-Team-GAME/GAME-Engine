@@ -16,6 +16,7 @@
 #include <imgui.h>
 #include "LayerManagerPanel.h"
 #include "../ECS/ECS.h"
+#include "../ProjectSaveManager.h"
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -285,7 +286,6 @@ void LayerManagerPanel()
 
         ImGui::SameLine();
 
-
         bool collides = Engine::ECS::LayerRegistry::should_layers_collide(row_layer, col_layer);
         std::string checkbox_id = "##" + std::to_string(row_layer) + "_" + std::to_string(col_layer);
 
@@ -296,6 +296,8 @@ void LayerManagerPanel()
           else {
             Engine::ECS::LayerRegistry::disable_layer_collision(row_layer, col_layer);
           }
+          // Mark project settings as dirty
+          Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings{});
         }
 
 
@@ -321,10 +323,12 @@ void LayerManagerPanel()
   // Quick actions 
   if (ImGui::Button("Enable All Collisions")) {
     Engine::ECS::LayerRegistry::reset_to_default();
+    Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings{});
   }
   ImGui::SameLine();
   if (ImGui::Button("Disable All Collisions")) {
     Engine::ECS::LayerRegistry::clear_all();
+    Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings{});
   }
 
   ImGui::Separator();
@@ -367,6 +371,7 @@ void LayerManagerPanel()
         else {
           Engine::ECS::LayerRegistry::disable_layer_collision(selected_layer, other_layer);
         }
+        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings{});
       }
     }
 
@@ -377,12 +382,14 @@ void LayerManagerPanel()
       for (Engine::ECS::LayerID other_layer : layer_ids) {
         Engine::ECS::LayerRegistry::enable_layer_collision(selected_layer, other_layer);
       }
+      Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings{});
     }
     ImGui::SameLine();
     if (ImGui::Button("Disable All for This Layer")) {
       for (Engine::ECS::LayerID other_layer : layer_ids) {
         Engine::ECS::LayerRegistry::disable_layer_collision(selected_layer, other_layer);
       }
+      Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings{});
     }
   }
 

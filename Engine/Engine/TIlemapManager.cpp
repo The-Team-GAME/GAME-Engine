@@ -102,8 +102,7 @@ namespace TilemapManager {
     return Engine::Graphics::Tile();
   }
 
-  void rebuild_tilemap_for_layer(const std::string& layer_name,
-    const std::vector<Engine::Graphics::AtlasEntry>& loaded_tilemaps) {
+  void rebuild_tilemap_for_layer(const std::string& layer_name) {
     // Destroy all existing tile collision entities on this layer
     auto all_entities = Engine::ECS::get_all_entities();
     for (auto& entity : all_entities) {
@@ -237,9 +236,7 @@ namespace TilemapManager {
     }
   }
 
-  void place_tile(const Math::Vec2D& world_pos, const std::string& layer_name,
-    int atlas_index, int tile_index,
-    const std::vector<Engine::Graphics::AtlasEntry>& loaded_tilemaps) {
+  void place_tile(const Math::Vec2D& world_pos, const std::string& layer_name, int atlas_index, int tile_index) {
     int grid_x, grid_y;
     world_to_grid(world_pos, grid_x, grid_y);
 
@@ -262,7 +259,7 @@ namespace TilemapManager {
     int_map->grid_offset = grid_offset;
 
     // Rebuild the tilemap to create collision entities
-    rebuild_tilemap_for_layer(layer_name, loaded_tilemaps);
+    rebuild_tilemap_for_layer(layer_name);
 
     // Mark level as dirty
     Engine::ProjectSaveManager::set_dirty(
@@ -297,8 +294,7 @@ namespace TilemapManager {
     int_map->set_tile(grid_x, grid_y, Engine::Graphics::Tile());
 
     // We need to pass loaded_tilemaps to rebuild, get it from project settings
-    const auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get();
-    rebuild_tilemap_for_layer(layer_name, project_settings.loaded_tilemaps);
+    rebuild_tilemap_for_layer(layer_name);
 
     // Mark level as dirty
     Engine::ProjectSaveManager::set_dirty(
@@ -306,7 +302,7 @@ namespace TilemapManager {
     );
   }
 
-  void update_all_tile_dimensions(const std::vector<Engine::Graphics::AtlasEntry>& loaded_tilemaps) {
+  void update_all_tile_dimensions() {
     // Update tile size and grid offset in all tilemap entities and rebuild collision entities
     for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
       auto* int_map = entity.get_component<Components::TileMap>();
@@ -321,7 +317,7 @@ namespace TilemapManager {
         if (layers.test(layer_id)) {
           std::string layer_name = Engine::ECS::get_layer_name(layer_id);
           if (!layer_name.empty()) {
-            rebuild_tilemap_for_layer(layer_name, loaded_tilemaps);
+            rebuild_tilemap_for_layer(layer_name);
           }
         }
       }

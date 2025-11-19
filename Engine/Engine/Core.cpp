@@ -112,6 +112,11 @@ namespace Engine
       Log::warning("Failed to load project settings, using defaults");
     }
 
+    // Sync collision matrix from ProjectSettings to ECS internal collision matrix
+    const auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get();
+    auto& containers = Engine::ECS::Internal::get_containers();
+    containers.collision_matrix = project_settings.collision_matrix;
+
     // CORE INITIALIZATION
 
     // Initialize TilemapPanel to load saved tilemaps from project settings
@@ -212,6 +217,19 @@ namespace Engine
         {
           std::cout << "Redoing last undone action\n";
           Engine::UndoManager::redo();
+        }
+
+        // Delete selected entity (Delete key or Ctrl+D)
+        if (Engine::Input::is_pressed(Engine::KeyCode::Delete))
+        {
+          // Find the entity with a Gizmo component (indicates it's selected)
+          // TODO: This is a temporary solution; ideally, we should have a proper selection manager
+          Engine::ECS::Entity selected_entity = Engine::ECS::get_first_entity_with<Components::Gizmo>();
+
+          if (selected_entity != Engine::ECS::INVALID_ENTITY) {
+            std::cout << "Deleting selected entity: " << selected_entity.get_id() << "\n";
+            Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(selected_entity.get_id(), true);
+          }
         }
 
         // Temporarily enable time for single-step

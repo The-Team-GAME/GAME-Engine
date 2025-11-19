@@ -36,18 +36,12 @@ namespace Engine
     public:
       GizmoSelectionSystem() {
         require_components<Components::Transform2D>();
-        exclude_components<Components::Gizmo, Components::Text>(); // Only process entities without Gizmo and without Text
+        exclude_components<Components::Gizmo, Components::Text, Components::TileCollider>(); // Only process entities without Gizmo and without Text
       }
 
       void update_entity(Engine::ECS::Entity& entity) override {
         auto* tr = entity.get_component<Components::Transform2D>();
         if (!tr) return;
-
-        // Don't select entities when Ctrl is held (camera control mode)
-        bool ctrl_held = Engine::Input::is_held(Engine::KeyCode::CtrlLeft) ||
-          Engine::Input::is_held(Engine::KeyCode::CtrlRight);
-
-        if (ctrl_held) return;
 
         const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
 
@@ -89,12 +83,6 @@ namespace Engine
         auto* font = entity.get_component<Components::Font>();
 
         if (!tr || !text || !font) return;
-
-        // Don't select entities when Ctrl is held (camera control mode)
-        bool ctrl_held = Engine::Input::is_held(Engine::KeyCode::CtrlLeft) ||
-          Engine::Input::is_held(Engine::KeyCode::CtrlRight);
-
-        if (ctrl_held) return;
 
         const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
 
@@ -181,17 +169,6 @@ namespace Engine
           return;
         }
 
-        // Check if Ctrl is held (camera control mode)
-        bool ctrl_held = Engine::Input::is_held(Engine::KeyCode::CtrlLeft) ||
-          Engine::Input::is_held(Engine::KeyCode::CtrlRight);
-
-        // If Ctrl is held, stop any ongoing drag but keep the gizmo visible
-        if (ctrl_held) {
-          gizmo->is_dragging = false;
-          gizmo->active_handle = Components::GizmoHandleType::None;
-          return;
-        }
-
         const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
 
         if (!mouse_opt.has_value()) return;
@@ -252,12 +229,12 @@ namespace Engine
         const bool allow_body = (gizmo->mode == Components::GizmoMode::GrabMove);
         const bool allow_rot = (gizmo->mode == Components::GizmoMode::Rotate);
 
-        if (Input::is_pressed(KeyCode::MouseLeft)) {
-          // inside check via local-space AABB
-          Math::Vec2D local = rot_deg(mouse, rect_center, -tr->rotation);
-          bool inside = (local.x >= rect_center.x - hw) && (local.x <= rect_center.x + hw) &&
-            (local.y >= rect_center.y - hh) && (local.y <= rect_center.y + hh);
-        }
+        //if (Input::is_pressed(KeyCode::MouseLeft)) {
+        //  // inside check via local-space AABB
+        //  Math::Vec2D local = rot_deg(mouse, rect_center, -tr->rotation);
+        //  bool inside = (local.x >= rect_center.x - hw) && (local.x <= rect_center.x + hw) &&
+        //    (local.y >= rect_center.y - hh) && (local.y <= rect_center.y + hh);
+        //}
 
         // ---------------- Hover picking ----------------
         gizmo->hover_handle = Components::GizmoHandleType::None;
@@ -307,6 +284,7 @@ namespace Engine
         if (Engine::Input::is_pressed(KeyCode::MouseLeft)) {
           if (gizmo->hover_handle != Components::GizmoHandleType::None) {
             gizmo->active_handle = gizmo->hover_handle;
+            gizmo->is_dragging = true;
             gizmo->start_mouse_world = mouse;
             gizmo->start_pos = tr->position;
             gizmo->start_scale = tr->scale;
@@ -347,7 +325,50 @@ namespace Engine
 
         // ---------------- Drag ----------------
         const bool held = Engine::Input::is_held(KeyCode::MouseLeft);
-        if (!held) { gizmo->is_dragging = false; gizmo->active_handle = Components::GizmoHandleType::None; return; }
+
+        // When mouse is released, send modification event with undo support
+        if (!held && gizmo->is_dragging && gizmo->active_handle != Components::GizmoHandleType::None) {
+          // Capture final transform state
+          Components::Transform2D final_transform = *tr;
+
+          // Capture initial state
+          Components::Transform2D initial_transform;
+          initial_transform.position = gizmo->start_pos;
+          initial_transform.rotation = gizmo->start_rotation;
+          initial_transform.scale = gizmo->start_scale;
+
+          // Only record undo if the transform actually changed
+          const float epsilon = 0.0001f;
+          bool position_changed = std::abs(final_transform.position.x - initial_transform.position.x) > epsilon ||
+            std::abs(final_transform.position.y - initial_transform.position.y) > epsilon;
+          bool rotation_changed = std::abs(final_transform.rotation - initial_transform.rotation) > epsilon;
+          bool scale_changed = std::abs(final_transform.scale.x - initial_transform.scale.x) > epsilon ||
+            std::abs(final_transform.scale.y - initial_transform.scale.y) > epsilon;
+
+          if (position_changed || rotation_changed || scale_changed) {
+            // Get component type ID
+            Engine::ECS::ComponentTypeID type_id = Engine::ECS::ComponentTypeManager::get_type_id<Components::Transform2D>();
+
+            // Convert to GenericValue for the event
+            ReflectionLibrary::GenericValue final_data = ReflectionLibrary::to_generic_value(final_transform);
+            ReflectionLibrary::GenericValue initial_data = ReflectionLibrary::to_generic_value(initial_transform);
+
+            // Send modification event (this will handle undo/redo and marking dirty)
+            Engine::EventManager::send_event<Engine::Events::ModifyComponentEvent>(
+              entity.get_id(), type_id, final_data, initial_data, true
+            );
+          }
+
+          gizmo->is_dragging = false;
+          gizmo->active_handle = Components::GizmoHandleType::None;
+          return;
+        }
+
+        if (!held) {
+          gizmo->is_dragging = false;
+          gizmo->active_handle = Components::GizmoHandleType::None;
+          return;
+        }
         if (gizmo->active_handle == Components::GizmoHandleType::None) return;
 
         const bool shift = Engine::Input::is_held(KeyCode::ShiftLeft) || Engine::Input::is_held(KeyCode::ShiftRight);

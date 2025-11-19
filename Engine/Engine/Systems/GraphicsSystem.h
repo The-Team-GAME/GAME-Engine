@@ -23,6 +23,8 @@
 #include "../InputManager.h"
 #include "../FileIO/SettingsManager.h"
 #include "../FileIO/Settings.h"
+#include "../GUI/TilemapPanel.h"
+
 namespace Engine
 {
   namespace Systems
@@ -95,13 +97,30 @@ namespace Engine
         // Get the atlas entries from project settings
         const auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get();
 
+        // Determine the color based on tilemap mode and selected layer
+        Math::Vec4D color(1.0f, 1.0f, 1.0f, 1.0f); // Default: white (full brightness)
+
+        // Check if tilemap mode is enabled AND dimming is enabled
+        if (TilemapPanel::is_tilemap_mode_enabled() && TilemapPanel::is_dim_non_selected_layers_enabled()) {
+          // Get the selected layer name
+          std::string selected_layer = TilemapPanel::get_selected_layer();
+
+          // Check if this entity is on the selected layer
+          bool on_selected_layer = entity.is_on_layer(selected_layer);
+
+          if (!on_selected_layer) {
+            // Darken tiles on non-selected layers
+            color = Math::Vec4D(0.3f, 0.3f, 0.3f, 1.0f);
+          }
+        }
+
         // Draw the tilemap using the optimized renderer function with multiple atlases
         Engine::Graphics::draw_tilemap(
           int_map->tiles,
           project_settings.loaded_tilemaps,
           int_map->tile_size,
           int_map->grid_offset,
-          Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f) // White color
+          color
         );
       }
     };

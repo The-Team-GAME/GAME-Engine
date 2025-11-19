@@ -527,6 +527,11 @@ namespace ReflectionLibrary
       }
       return to_generic_value(obj.value());
     }
+    else if constexpr (is_bitset_v<ValueType>)
+    {
+      // Handle std::bitset - convert to string representation
+      return GenericValue(obj.to_string());
+    }
     else if constexpr (std::is_same_v<ValueType, bool>)
     {
       return GenericValue(obj);
@@ -620,6 +625,20 @@ namespace ReflectionLibrary
         return false;
       obj = std::move(inner_value);
       return true;
+    }
+    else if constexpr (is_bitset_v<ValueType>)
+    {
+      // Handle std::bitset - convert from string representation
+      if (!value.isString())
+        return false;
+      const auto& str = value.getString();
+      try {
+        obj = ValueType(str);
+        return true;
+      }
+      catch (...) {
+        return false;
+      }
     }
     else if constexpr (std::is_same_v<ValueType, bool>)
     {

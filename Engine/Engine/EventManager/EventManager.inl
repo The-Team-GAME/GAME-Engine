@@ -43,7 +43,8 @@ namespace Engine {
     template <typename T, typename... Args>
     void send_event(Args&&... args)
     {
-      Internal::event_queue.emplace_back(T{ std::forward<Args>(args)... });
+      T event(std::forward<Args>(args)...);
+      Internal::event_queue.emplace_back(std::move(event));
     }
 
     template <typename T>

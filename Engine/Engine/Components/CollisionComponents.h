@@ -14,6 +14,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 #include "../Math/Vector2D.h"
+#include "../ECS/Macros.h"
 
 struct AABB {
   Vec2D pos;
@@ -85,6 +86,13 @@ namespace Components
       /* empty by design */
     }
 
-
+    // Default constructor for reflection
+    BoxCollider() : width(0.0f), height(0.0f), radius(0.0f), resolve_collisions(false)
+    {
+      /* empty by design */
+    }
   };
 }
+
+REFLECT_FIELDS(AABB, pos, half_width, half_height)
+REGISTER_COMPONENT(Components::BoxCollider, resolve_collisions, width, height, radius, aabb)

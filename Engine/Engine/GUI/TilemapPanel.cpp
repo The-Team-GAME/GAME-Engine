@@ -64,6 +64,7 @@ namespace TilemapPanel {
 
     // Layer selection
     std::string selected_layer = "default";
+    bool dim_non_selected_layers = true; // Toggle for dimming non-selected layers
 
     // BoxFill state
     bool box_fill_dragging = false;
@@ -121,14 +122,14 @@ namespace TilemapPanel {
       },
       [captured_grid_x, captured_grid_y, captured_tile, captured_layer]() {
         Math::Vec2D restore_pos = TilemapManager::grid_to_world(captured_grid_x, captured_grid_y);
-        TilemapManager::place_tile(restore_pos, captured_layer, captured_tile.atlas_index, captured_tile.tile_index, loaded_tilemaps);
+        TilemapManager::place_tile(restore_pos, captured_layer, captured_tile.atlas_index, captured_tile.tile_index);
         Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
       }
     );
   }
 
   void update_all_tile_dimensions() {
-    TilemapManager::update_all_tile_dimensions(loaded_tilemaps);
+    TilemapManager::update_all_tile_dimensions();
   }
 
   void pick_tile_at_position(const Math::Vec2D& world_pos) {
@@ -209,7 +210,7 @@ namespace TilemapPanel {
         for (int y = captured_start_y; y <= captured_end_y; ++y) {
           for (int x = captured_start_x; x <= captured_end_x; ++x) {
             Math::Vec2D world_pos = TilemapManager::grid_to_world(x, y);
-            TilemapManager::place_tile(world_pos, captured_layer, captured_atlas_index, captured_tile_index, loaded_tilemaps);
+            TilemapManager::place_tile(world_pos, captured_layer, captured_atlas_index, captured_tile_index);
           }
         }
         Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
@@ -224,7 +225,7 @@ namespace TilemapPanel {
           }
           else {
             // Restore the old tile
-            TilemapManager::place_tile(restore_pos, captured_layer, tile_state.old_tile.atlas_index, tile_state.old_tile.tile_index, loaded_tilemaps);
+            TilemapManager::place_tile(restore_pos, captured_layer, tile_state.old_tile.atlas_index, tile_state.old_tile.tile_index);
           }
         }
         Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
@@ -266,7 +267,7 @@ namespace TilemapPanel {
 
     Engine::UndoManager::execute(
       [world_pos, captured_new_tile, captured_atlas_index, captured_layer]() {
-        TilemapManager::place_tile(world_pos, captured_layer, captured_atlas_index, captured_new_tile, loaded_tilemaps);
+        TilemapManager::place_tile(world_pos, captured_layer, captured_atlas_index, captured_new_tile);
         Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
       },
       [captured_grid_x, captured_grid_y, captured_old_tile, captured_layer]() {
@@ -277,7 +278,7 @@ namespace TilemapPanel {
         }
         else {
           // Restore the old tile
-          TilemapManager::place_tile(restore_pos, captured_layer, captured_old_tile.atlas_index, captured_old_tile.tile_index, loaded_tilemaps);
+          TilemapManager::place_tile(restore_pos, captured_layer, captured_old_tile.atlas_index, captured_old_tile.tile_index);
         }
         Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
       }
@@ -310,7 +311,7 @@ namespace TilemapPanel {
         if (layers.test(layer_id)) {
           std::string layer_name = Engine::ECS::get_layer_name(layer_id);
           if (!layer_name.empty()) {
-            TilemapManager::rebuild_tilemap_for_layer(layer_name, loaded_tilemaps);
+            TilemapManager::rebuild_tilemap_for_layer(layer_name);
           }
         }
       }
@@ -332,6 +333,11 @@ namespace TilemapPanel {
       }
       else if (Engine::Input::is_pressed(Engine::KeyCode::D)) {
         current_tool = ToolMode::Eraser;
+      }
+
+      // Toggle dim non-selected layers with L key
+      if (Engine::Input::is_pressed(Engine::KeyCode::L)) {
+        dim_non_selected_layers = !dim_non_selected_layers;
       }
     }
 
@@ -398,25 +404,6 @@ namespace TilemapPanel {
         }
       }
     }
-
-    // Update tile colors based on selected layer (only when tilemap mode is enabled)
-    if (enable_tilemap_mode) {
-      darken_non_selected_layer_tiles();
-    }
-    else {
-      // Reset all tiles to full brightness when tilemap mode is disabled
-      for (auto& entity : Engine::ECS::get_entities_with<Components::TileCollider>()) {
-        auto* color = entity.get_component<Components::Color>();
-        if (!color) continue;
-
-        color->r = 1.0f;
-        color->g = 1.0f;
-        color->b = 1.0f;
-        color->a = 1.0f;
-      }
-    }
-
-
   }
 
 
@@ -429,6 +416,11 @@ namespace TilemapPanel {
     // === TILEMAP MODE TOGGLE ===
     // bool prev_tilemap_mode = enable_tilemap_mode;
     ImGui::Checkbox("Enable Tilemap Mode", &enable_tilemap_mode);
+
+    // Dim non-selected layers toggle
+    ImGui::Checkbox("Dim Non-Selected Layers", &dim_non_selected_layers);
+    ImGui::SameLine();
+    ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(L)");
 
     // Check if trying to enable tilemap mode without a level loaded
     // if (!prev_tilemap_mode && enable_tilemap_mode) {
@@ -1014,6 +1006,16 @@ namespace TilemapPanel {
       ImGui::BulletText("Toggle grid to see tile boundaries");
       ImGui::BulletText("Adjust grid snap size to match your tile size");
 
+      ImGui::Spacing();
+      ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "Keyboard Shortcuts:");
+      ImGui::BulletText("B - Paintbrush tool");
+      ImGui::BulletText("U - Box Fill tool");
+      ImGui::BulletText("I - Picker tool");
+      ImGui::BulletText("D - Eraser tool");
+      ImGui::BulletText("L - Toggle dim non-selected layers");
+      ImGui::BulletText("Ctrl - Temporary Picker (while painting)");
+      ImGui::BulletText("Shift - Temporary Eraser (while painting)");
+
       ImGui::Unindent();
     }
 
@@ -1149,55 +1151,18 @@ namespace TilemapPanel {
     }
   }
 
-  void darken_non_selected_layer_tiles() {
-    // Only darken when tilemap mode is enabled
-    if (!enable_tilemap_mode) {
-      // Reset all tiles to full brightness when tilemap mode is disabled
-      for (auto& entity : Engine::ECS::get_entities_with<Components::TileCollider>()) {
-        auto* color = entity.get_component<Components::Color>();
-        if (!color) continue;
-
-        color->r = 1.0f;
-        color->g = 1.0f;
-        color->b = 1.0f;
-        color->a = 1.0f;
-      }
-      return;
-    }
-
-    // Get the selected layer ID
-    Engine::ECS::LayerID selected_layer_id = Engine::ECS::get_layer_id(selected_layer);
-    if (selected_layer_id == Engine::ECS::INVALID_LAYER) {
-      return;
-    }
-
-    // Iterate through all tile entities
-    for (auto& entity : Engine::ECS::get_entities_with<Components::TileCollider>()) {
-      auto* color = entity.get_component<Components::Color>();
-      if (!color) continue;
-
-      // Check if entity is on the selected layer
-      bool on_selected_layer = entity.is_on_layer(selected_layer_id);
-
-      if (on_selected_layer) {
-        // Reset to full brightness for tiles on selected layer
-        color->r = 1.0f;
-        color->g = 1.0f;
-        color->b = 1.0f;
-        color->a = 1.0f;
-      }
-      else {
-        // Darken tiles on other layers
-        color->r = 0.3f;
-        color->g = 0.3f;
-        color->b = 0.3f;
-        color->a = 1.0f;
-      }
-    }
-  }
-
   bool is_tilemap_mode_enabled()
   {
     return enable_tilemap_mode;
+  }
+
+  std::string get_selected_layer()
+  {
+    return selected_layer;
+  }
+
+  bool is_dim_non_selected_layers_enabled()
+  {
+    return dim_non_selected_layers;
   }
 } // namespace TilemapPanel

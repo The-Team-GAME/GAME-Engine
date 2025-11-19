@@ -72,7 +72,7 @@ void col2D::update()
       // Skip self-collision
       if (entity == other) { continue; }
 
-      Components::RigidBody* other_rigid = other.get_component<Components::RigidBody>();
+      //Components::RigidBody* other_rigid = other.get_component<Components::RigidBody>();
       Components::BoxCollider* other_box = other.get_component<Components::BoxCollider>();
 
       // Get other entity's layers

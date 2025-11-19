@@ -36,6 +36,9 @@ namespace Engine
 
       unload_current_scene();
 
+      // Clear all entities from previous scene
+      Engine::ECS::destroy_all_entities();
+
       Engine::Systems::CameraSystem::reset_camera();
 
       current_scene = scene_it->second.get();

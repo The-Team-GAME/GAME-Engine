@@ -86,14 +86,11 @@ namespace TilemapManager {
   layer_name - Name of the layer to place the tile on
   atlas_index - Index of the atlas in the loaded tilemaps
   tile_index - Index of the tile within the atlas
-  loaded_tilemaps - Reference to the loaded atlas entries
 
   Where to call it:
   When the user paints a tile in the editor.
   ==================================================================================*/
-  void place_tile(const Math::Vec2D& world_pos, const std::string& layer_name,
-    int atlas_index, int tile_index,
-    const std::vector<Engine::Graphics::AtlasEntry>& loaded_tilemaps);
+  void place_tile(const Math::Vec2D& world_pos, const std::string& layer_name, int atlas_index, int tile_index);
 
   /*=================================================================================
   Function Brief:
@@ -152,13 +149,11 @@ namespace TilemapManager {
 
   Parameters:
   layer_name - Name of the layer to rebuild
-  loaded_tilemaps - Reference to the loaded atlas entries
 
   Where to call it:
   Called automatically after placing or deleting tiles, or when loading a level.
   ==================================================================================*/
-  void rebuild_tilemap_for_layer(const std::string& layer_name,
-    const std::vector<Engine::Graphics::AtlasEntry>& loaded_tilemaps);
+  void rebuild_tilemap_for_layer(const std::string& layer_name);
 
   /*=================================================================================
   Function Brief:
@@ -189,10 +184,7 @@ namespace TilemapManager {
   /*=================================================================================
   Function Brief:
   Updates all tilemap dimensions when grid size or offset changes.
-
-  Parameters:
-  loaded_tilemaps - Reference to the loaded atlas entries
   ==================================================================================*/
-  void update_all_tile_dimensions(const std::vector<Engine::Graphics::AtlasEntry>& loaded_tilemaps);
+  void update_all_tile_dimensions();
 
 } // namespace TilemapManager
