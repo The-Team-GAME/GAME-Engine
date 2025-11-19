@@ -100,8 +100,8 @@ namespace Engine
         // Determine the color based on tilemap mode and selected layer
         Math::Vec4D color(1.0f, 1.0f, 1.0f, 1.0f); // Default: white (full brightness)
 
-        // Check if tilemap mode is enabled
-        if (TilemapPanel::is_tilemap_mode_enabled()) {
+        // Check if tilemap mode is enabled AND dimming is enabled
+        if (TilemapPanel::is_tilemap_mode_enabled() && TilemapPanel::is_dim_non_selected_layers_enabled()) {
           // Get the selected layer name
           std::string selected_layer = TilemapPanel::get_selected_layer();
 

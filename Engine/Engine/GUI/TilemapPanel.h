@@ -161,4 +161,14 @@ namespace TilemapPanel {
   String name of the selected layer.
   ==================================================================================*/
   std::string get_selected_layer();
+
+  /*=================================================================================
+  Function Brief:
+  Returns whether the "dim non-selected layers" feature is currently enabled.
+  When enabled, layers other than the selected one are rendered at reduced brightness.
+
+  Returns:
+  True if dimming is enabled, false otherwise.
+  ==================================================================================*/
+  bool is_dim_non_selected_layers_enabled();
 }

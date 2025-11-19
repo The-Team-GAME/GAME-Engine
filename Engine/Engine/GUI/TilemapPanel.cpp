@@ -64,6 +64,7 @@ namespace TilemapPanel {
 
     // Layer selection
     std::string selected_layer = "default";
+    bool dim_non_selected_layers = true; // Toggle for dimming non-selected layers
 
     // BoxFill state
     bool box_fill_dragging = false;
@@ -333,6 +334,11 @@ namespace TilemapPanel {
       else if (Engine::Input::is_pressed(Engine::KeyCode::D)) {
         current_tool = ToolMode::Eraser;
       }
+
+      // Toggle dim non-selected layers with L key
+      if (Engine::Input::is_pressed(Engine::KeyCode::L)) {
+        dim_non_selected_layers = !dim_non_selected_layers;
+      }
     }
 
     // === HANDLE PAINTING IN WORLD ===
@@ -410,6 +416,11 @@ namespace TilemapPanel {
     // === TILEMAP MODE TOGGLE ===
     // bool prev_tilemap_mode = enable_tilemap_mode;
     ImGui::Checkbox("Enable Tilemap Mode", &enable_tilemap_mode);
+
+    // Dim non-selected layers toggle
+    ImGui::Checkbox("Dim Non-Selected Layers", &dim_non_selected_layers);
+    ImGui::SameLine();
+    ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(L)");
 
     // Check if trying to enable tilemap mode without a level loaded
     // if (!prev_tilemap_mode && enable_tilemap_mode) {
@@ -995,6 +1006,16 @@ namespace TilemapPanel {
       ImGui::BulletText("Toggle grid to see tile boundaries");
       ImGui::BulletText("Adjust grid snap size to match your tile size");
 
+      ImGui::Spacing();
+      ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "Keyboard Shortcuts:");
+      ImGui::BulletText("B - Paintbrush tool");
+      ImGui::BulletText("U - Box Fill tool");
+      ImGui::BulletText("I - Picker tool");
+      ImGui::BulletText("D - Eraser tool");
+      ImGui::BulletText("L - Toggle dim non-selected layers");
+      ImGui::BulletText("Ctrl - Temporary Picker (while painting)");
+      ImGui::BulletText("Shift - Temporary Eraser (while painting)");
+
       ImGui::Unindent();
     }
 
@@ -1138,5 +1159,10 @@ namespace TilemapPanel {
   std::string get_selected_layer()
   {
     return selected_layer;
+  }
+
+  bool is_dim_non_selected_layers_enabled()
+  {
+    return dim_non_selected_layers;
   }
 } // namespace TilemapPanel
