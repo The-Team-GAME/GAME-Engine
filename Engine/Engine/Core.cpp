@@ -219,6 +219,19 @@ namespace Engine
           Engine::UndoManager::redo();
         }
 
+        // Delete selected entity (Delete key or Ctrl+D)
+        if (Engine::Input::is_pressed(Engine::KeyCode::Delete))
+        {
+          // Find the entity with a Gizmo component (indicates it's selected)
+          // TODO: This is a temporary solution; ideally, we should have a proper selection manager
+          Engine::ECS::Entity selected_entity = Engine::ECS::get_first_entity_with<Components::Gizmo>();
+
+          if (selected_entity != Engine::ECS::INVALID_ENTITY) {
+            std::cout << "Deleting selected entity: " << selected_entity.get_id() << "\n";
+            Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(selected_entity.get_id(), true);
+          }
+        }
+
         // Temporarily enable time for single-step
         if (single_step_requested)
         {
