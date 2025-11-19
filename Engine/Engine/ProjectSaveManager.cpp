@@ -4,6 +4,7 @@
 #include "FileIO/FileDialog.h"
 #include "Path.h"
 #include "Resources.h"
+#include "ECS/ECS.h"
 #include <vector>
 #include <algorithm>
 
@@ -51,6 +52,11 @@ void Engine::ProjectSaveManager::save_all_dirty()
       using T = std::decay_t<decltype(s)>;
 
       if constexpr (std::is_same_v<T, DirtyStates::ProjectSettings>) {
+        // Sync collision matrix from ECS to ProjectSettings before saving
+        auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get_mutable();
+        auto& containers = Engine::ECS::Internal::get_containers();
+        project_settings.collision_matrix = containers.collision_matrix;
+
         // Save project settings
         if (Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::save("Assets/settings/project_settings.json"))
         {

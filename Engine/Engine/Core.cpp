@@ -112,6 +112,11 @@ namespace Engine
       Log::warning("Failed to load project settings, using defaults");
     }
 
+    // Sync collision matrix from ProjectSettings to ECS internal collision matrix
+    const auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get();
+    auto& containers = Engine::ECS::Internal::get_containers();
+    containers.collision_matrix = project_settings.collision_matrix;
+
     // CORE INITIALIZATION
 
     // Initialize TilemapPanel to load saved tilemaps from project settings

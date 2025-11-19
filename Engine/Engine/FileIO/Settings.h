@@ -18,10 +18,13 @@
 
 #include <string>
 #include <vector>
+#include <array>
+#include <bitset>
 #include "../Components/Components.h"
 #include "../Reflection/ReflectionLibrary.h"
 #include "SettingsManager.h"
 #include "../Graphics/RendererInternal.h"
+#include "../ECS/Types.h"
 
 /*
 Settings Documentation:
@@ -68,6 +71,16 @@ namespace Engine
     struct ProjectSettings
     {
       std::vector<Engine::Graphics::AtlasEntry> loaded_tilemaps{};
+
+      // Collision matrix: collision_matrix[layerA][layerB] = true if they should collide
+      // Matrix is symmetric: collision_matrix[A][B] == collision_matrix[B][A]
+      std::array<std::bitset<Engine::ECS::MAX_LAYERS>, Engine::ECS::MAX_LAYERS> collision_matrix = []() {
+        std::array<std::bitset<Engine::ECS::MAX_LAYERS>, Engine::ECS::MAX_LAYERS> matrix;
+        for (auto& row : matrix) {
+          row.set(); // All layers collide with all layers by default
+        }
+        return matrix;
+        }();
     };
 
     // Values that are specific to the local user/machine (e.g. ImGui theme)
@@ -79,5 +92,5 @@ namespace Engine
 }
 
 REFLECT_FIELDS(Engine::FileIO::EngineSettings, window_title, window_width, window_height, panel_viewport_mode, load_all_assets_on_startup)
-REFLECT_FIELDS(Engine::FileIO::ProjectSettings, loaded_tilemaps)
+REFLECT_FIELDS(Engine::FileIO::ProjectSettings, loaded_tilemaps, collision_matrix)
 REFLECT_FIELDS(Engine::FileIO::LocalSettings, imgui_theme)
