@@ -30,7 +30,9 @@ Engine::Level Engine::Level::from_world()
 
 void Engine::Level::instantiate_into_world()
 {
-  Engine::SceneManager::load_scene("EmptyState"); // TODO: very hacky, just use empty scene for now, need better scene/level management
+  //Engine::SceneManager::load_scene("EmptyState"); // TODO: very hacky, just use empty scene for now, need better scene/level management
+
+  std::cout << "Instantiating level with " << entities.size() << " entities." << std::endl;
 
   Engine::ECS::for_each_entity([](Engine::ECS::Entity entity) {
     entity.destroy();
