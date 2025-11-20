@@ -383,61 +383,6 @@ namespace Engine
       }
     };
 
-    // NOT FINALIZED, STILL EXPERIMENTAL
-    class AnimationStateSystem : public Engine::ECS::System {
-    public:
-      AnimationStateSystem() {
-        require_components<Components::AnimationState, Components::Texture, Components::TextureAtlas, Components::Animation>();
-      }
-
-      void update_entity(Engine::ECS::Entity& entity) override {
-        auto* anim_state = entity.get_component<Components::AnimationState>();
-        auto* texture = entity.get_component<Components::Texture>();
-        auto* atlas = entity.get_component<Components::TextureAtlas>();
-        auto* animation = entity.get_component<Components::Animation>();
-
-        // Apply state changes when dirty flag is set
-        if (anim_state->dirty) {
-          // Log::info("Updating animation state for entity: " + std::to_string(entity.get_id()));
-          auto it = anim_state->states.find(anim_state->current_state);
-          if (it != anim_state->states.end()) {
-            // Log::info("Found animation state: " + anim_state->current_state);
-            const auto& state_data = it->second;
-            texture->texture_handle = state_data.texture.texture_handle;
-            atlas->subTextures = state_data.texture_atlas.subTextures;
-            atlas->drawIndex = state_data.texture_atlas.drawIndex;
-            animation->frames = state_data.animation.frames;
-            animation->startTime = Engine::Time::get_time(); // Reset start time to NOW when transitioning
-            animation->totalDuration = state_data.animation.totalDuration;
-
-            // Apply scale if provided
-            if (state_data.scale.has_value()) {
-              auto* transform = entity.get_component<Components::Transform2D>();
-              if (transform) {
-                transform->scale = state_data.scale.value();
-              }
-            }
-          }
-          anim_state->dirty = false; // Clear dirty flag after update
-        }
-
-        // Check for non-looping animation completion and auto-transition
-        auto it = anim_state->states.find(anim_state->current_state);
-        if (it != anim_state->states.end()) {
-          const auto& state_data = it->second;
-
-          // Only check for completion if animation is non-looping and has a next state
-          if (!state_data.is_looping && state_data.next_state.has_value()) {
-            // Check if animation has completed
-            float elapsed = Engine::Time::get_time() - animation->startTime;
-            if (elapsed >= animation->totalDuration) {
-              // Animation finished, transition to next state
-              anim_state->set_animation_state(state_data.next_state.value());
-            }
-          }
-        }
-      }
-    };
 
   }; // namespace Systems
 } // namespace Engine

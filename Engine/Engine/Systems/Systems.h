@@ -37,7 +37,6 @@ void register_engine_systems()
   Engine::ECS::add_system<Engine::Systems::LogicSystem>();
   Engine::ECS::add_system<Engine::Systems::Physics2DSystem>();
   Engine::ECS::add_system<Engine::Systems::Collision2DSystem>();
-  Engine::ECS::add_system<Engine::Systems::AnimationStateSystem>();
   Engine::ECS::add_system<Engine::Systems::AnimationUpdateSystem>();
   Engine::ECS::add_system<Engine::Systems::ClickableSystem>();
   Engine::ECS::add_system<Engine::Systems::GizmoSelectionSystem>();
@@ -79,7 +78,6 @@ void unregister_engine_systems()
   Engine::ECS::remove_system<Engine::Systems::GizmoSelectionSystem>();
   Engine::ECS::remove_system<Engine::Systems::ClickableSystem>();
   Engine::ECS::remove_system<Engine::Systems::AnimationUpdateSystem>();
-  Engine::ECS::remove_system<Engine::Systems::AnimationStateSystem>();
   Engine::ECS::remove_system<Engine::Systems::Collision2DSystem>();
   Engine::ECS::remove_system<Engine::Systems::Physics2DSystem>();
   Engine::ECS::remove_system<Engine::Systems::LogicSystem>();

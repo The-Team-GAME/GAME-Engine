@@ -163,7 +163,6 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClCompile Include="Engine\Math\Vector4D.cpp" />
     <ClCompile Include="Engine\WindowManager.cpp" />
     <ClCompile Include="GameLogic\GameStates\RectPainterState.cpp" />
-    <ClCompile Include="GameLogic\GameStates\ShowcaseState.cpp" />
     <ClCompile Include="GameLogic\GameStates\StressTestState.cpp" />
     <ClCompile Include="GameLogic\WinMain.cpp" />
     <ClCompile Include="Engine\Lua\LuaManager.cpp" />
@@ -266,7 +265,6 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="GameLogic\GameStates\RectPainterState.h" />
     <ClInclude Include="GameLogic\GameStates\Rubric2500ParticlesState.h" />
     <ClInclude Include="Engine\FileHandler.h" />
-    <ClInclude Include="GameLogic\GameStates\ShowcaseState.h" />
     <ClInclude Include="GameLogic\GameStates\StressTestState.h" />
     <ClInclude Include="Engine\Time.h" />
     <ClInclude Include="Engine\GUI\Timeline.h" />

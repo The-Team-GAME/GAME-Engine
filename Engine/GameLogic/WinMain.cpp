@@ -116,7 +116,7 @@ int main()
   // Register game scenes at startup
   Engine::SceneManager::register_scene<EmptyState>("EmptyState");
   Engine::SceneManager::register_scene<MainMenuState>("MainMenuState");
-  Engine::SceneManager::register_scene<ShowcaseState>("ShowcaseState");
+  // Engine::SceneManager::register_scene<ShowcaseState>("ShowcaseState");
   Engine::SceneManager::register_scene<RectPainterState>("RectPainterState");
   Engine::SceneManager::register_scene<Rubric2500ParticlesState>("Rubric2500ParticlesState");
   Engine::SceneManager::register_scene<StressTestState>("StressTestState");

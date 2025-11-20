@@ -49,11 +49,11 @@ public:
         auto* rigid = entity.get_component<Components::RigidBody>();
         if (rigid) rigid->velocity.x = 0.f;
 
-        // Switch to idle animation
-        auto* anim_state = entity.get_component<Components::AnimationState>();
-        if (anim_state) {
-          anim_state->set_animation_state("Idle");
-        }
+        //// Switch to idle animation
+        //auto* anim_state = entity.get_component<Components::AnimationState>();
+        //if (anim_state) {
+        //  anim_state->set_animation_state("Idle");
+        //}
 
         std::cout << "Player: Entered Idle state" << std::endl;
       },
@@ -92,11 +92,11 @@ public:
       "Walking",
       // on_enter
       [this](Engine::ECS::Entity& entity) {
-        // Switch to run animation
-        auto* anim_state = entity.get_component<Components::AnimationState>();
-        if (anim_state) {
-          anim_state->set_animation_state("Walking");
-        }
+        //// Switch to run animation
+        //auto* anim_state = entity.get_component<Components::AnimationState>();
+        //if (anim_state) {
+        //  anim_state->set_animation_state("Walking");
+        //}
 
         std::cout << "Player: Entered Walking state" << std::endl;
       },
@@ -162,11 +162,11 @@ public:
           rigid->velocity.y = -900.f; // Negative is up
         }
 
-        // Switch to jump animation
-        auto* anim_state = entity.get_component<Components::AnimationState>();
-        if (anim_state) {
-          anim_state->set_animation_state("Jumping");
-        }
+        //// Switch to jump animation
+        //auto* anim_state = entity.get_component<Components::AnimationState>();
+        //if (anim_state) {
+        //  anim_state->set_animation_state("Jumping");
+        //}
 
         std::cout << "Player: Entered Jumping state" << std::endl;
       },
@@ -222,11 +222,11 @@ public:
           // Don't reset velocity.y - let gravity/physics handle it
         }
 
-        // Switch to attack animation
-        auto* anim_state = entity.get_component<Components::AnimationState>();
-        if (anim_state) {
-          anim_state->set_animation_state("Attacking");
-        }
+        //// Switch to attack animation
+        //auto* anim_state = entity.get_component<Components::AnimationState>();
+        //if (anim_state) {
+        //  anim_state->set_animation_state("Attacking");
+        //}
 
         // Create attack hitbox entity
         auto* transform = entity.get_component<Components::Transform2D>();
@@ -283,54 +283,54 @@ public:
     player_sm.set_initial_state("Idle");
 
     // Create AnimationState for player with all animation states
-    Components::AnimationState player_anim_state;
+    //Components::AnimationState player_anim_state;
 
-    // Add idle state (24 frames) - looping
-    player_anim_state.add_animation_state(
-      "Idle",
-      Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_idle_spritesheet.png")),
-      Components::TextureAtlas(64, 64, 1, 24, 24),
-      Components::Animation(24, 0.1f),
-      Math::Vec2D(player_idle_width * 2.0f, player_idle_height * 2.0f),
-      true,  // is_looping
-      std::nullopt  // no auto-transition
-    );
+    //// Add idle state (24 frames) - looping
+    //player_anim_state.add_animation_state(
+    //  "Idle",
+    //  Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_idle_spritesheet.png")),
+    //  Components::TextureAtlas(64, 64, 1, 24, 24),
+    //  Components::Animation(24, 0.1f),
+    //  Math::Vec2D(player_idle_width * 2.0f, player_idle_height * 2.0f),
+    //  true,  // is_looping
+    //  std::nullopt  // no auto-transition
+    //);
 
-    // Add run state (8 frames) - looping
-    player_anim_state.add_animation_state(
-      "Walking",
-      Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_run_spritesheet.png")),
-      Components::TextureAtlas(64, 64, 1, 8, 8),
-      Components::Animation(8, 0.1f),
-      Math::Vec2D(player_idle_width * 2.0f, player_idle_height * 2.0f),
-      true,  // is_looping
-      std::nullopt
-    );
+    //// Add run state (8 frames) - looping
+    //player_anim_state.add_animation_state(
+    //  "Walking",
+    //  Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_run_spritesheet.png")),
+    //  Components::TextureAtlas(64, 64, 1, 8, 8),
+    //  Components::Animation(8, 0.1f),
+    //  Math::Vec2D(player_idle_width * 2.0f, player_idle_height * 2.0f),
+    //  true,  // is_looping
+    //  std::nullopt
+    //);
 
-    // Add jump state (8 frames) - uses run animation, looping
-    player_anim_state.add_animation_state(
-      "Jumping",
-      Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_run_spritesheet.png")),
-      Components::TextureAtlas(64, 64, 1, 8, 8),
-      Components::Animation(8, 0.1f),
-      Math::Vec2D(player_idle_width * 2.0f, player_idle_height * 2.0f),
-      true,  // is_looping
-      std::nullopt
-    );
+    //// Add jump state (8 frames) - uses run animation, looping
+    //player_anim_state.add_animation_state(
+    //  "Jumping",
+    //  Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_run_spritesheet.png")),
+    //  Components::TextureAtlas(64, 64, 1, 8, 8),
+    //  Components::Animation(8, 0.1f),
+    //  Math::Vec2D(player_idle_width * 2.0f, player_idle_height * 2.0f),
+    //  true,  // is_looping
+    //  std::nullopt
+    //);
 
-    // Add attack state (6 frames) - one-shot, auto-transitions to idle
-    player_anim_state.add_animation_state(
-      "Attacking",
-      Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_threehit_spritesheet.png")),
-      Components::TextureAtlas(96, 64, 1, 19, 6),
-      Components::Animation(6, 0.05f),
-      Math::Vec2D(player_attack_width * 2.0f, player_attack_height * 2.0f),
-      false,  // is_looping = false (one-shot animation)
-      "Idle"  // auto-transition to idle when done
-    );
+    //// Add attack state (6 frames) - one-shot, auto-transitions to idle
+    //player_anim_state.add_animation_state(
+    //  "Attacking",
+    //  Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_threehit_spritesheet.png")),
+    //  Components::TextureAtlas(96, 64, 1, 19, 6),
+    //  Components::Animation(6, 0.05f),
+    //  Math::Vec2D(player_attack_width * 2.0f, player_attack_height * 2.0f),
+    //  false,  // is_looping = false (one-shot animation)
+    //  "Idle"  // auto-transition to idle when done
+    //);
 
     // Set initial state to idle
-    player_anim_state.set_animation_state("Idle");
+    //player_anim_state.set_animation_state("Idle");
 
     // Create player entity
     player_entity = Engine::ECS::create_entity()
@@ -339,7 +339,7 @@ public:
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_idle_spritesheet.png"))
       .add_component<Components::TextureAtlas>(64, 64, 1, 24, 24)
       .add_component<Components::Animation>(24, 0.1f)
-      .add_component<Components::AnimationState>(player_anim_state)
+      //.add_component<Components::AnimationState>(player_anim_state)
       .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
       .add_component<Components::Flip>(1.0f, 1.0f) // Start facing right
       .add_component<Components::RigidBody>(Components::RigidBody(false, true))
@@ -357,11 +357,11 @@ public:
       "Idle",
       // on_enter
       [](Engine::ECS::Entity& entity) {
-        // Switch to idle animation
-        auto* anim_state = entity.get_component<Components::AnimationState>();
-        if (anim_state) {
-          anim_state->set_animation_state("Idle");
-        }
+        //// Switch to idle animation
+        //auto* anim_state = entity.get_component<Components::AnimationState>();
+        //if (anim_state) {
+        //  anim_state->set_animation_state("Idle");
+        //}
 
         std::cout << "Lazy Monkey: Entered Idle state" << std::endl;
       },
@@ -394,11 +394,11 @@ public:
       "Chasing",
       // on_enter
       [](Engine::ECS::Entity& entity) {
-        // Switch to run/chasing animation
-        auto* anim_state = entity.get_component<Components::AnimationState>();
-        if (anim_state) {
-          anim_state->set_animation_state("Chasing");
-        }
+        //// Switch to run/chasing animation
+        //auto* anim_state = entity.get_component<Components::AnimationState>();
+        //if (anim_state) {
+        //  anim_state->set_animation_state("Chasing");
+        //}
 
         std::cout << "Lazy Monkey: Entered Chasing state" << std::endl;
       },
@@ -473,11 +473,11 @@ public:
           rigid->velocity.y = -300.f; // Negative is up
         }
 
-        // Switch to attack animation
-        auto* anim_state = entity.get_component<Components::AnimationState>();
-        if (anim_state) {
-          anim_state->set_animation_state("Attacking");
-        }
+        //// Switch to attack animation
+        //auto* anim_state = entity.get_component<Components::AnimationState>();
+        //if (anim_state) {
+        //  anim_state->set_animation_state("Attacking");
+        //}
 
         std::cout << "Lazy Monkey: Entered Attacking state" << std::endl;
       },
@@ -504,11 +504,11 @@ public:
       "Hit",
       // on_enter
       [](Engine::ECS::Entity& entity) {
-        // Switch to hit animation
-        auto* anim_state = entity.get_component<Components::AnimationState>();
-        if (anim_state) {
-          anim_state->set_animation_state("Hit");
-        }
+        //// Switch to hit animation
+        //auto* anim_state = entity.get_component<Components::AnimationState>();
+        //if (anim_state) {
+        //  anim_state->set_animation_state("Hit");
+        //}
 
         auto* rigid = entity.get_component<Components::RigidBody>();
         if (rigid) {
@@ -544,54 +544,54 @@ public:
     lazy_monkey_sm.set_initial_state("Idle");
 
     // Create AnimationState for lazy_monkey (Lazy Monkey) with all animation states
-    Components::AnimationState lazy_monkey_anim_state;
+    //Components::AnimationState lazy_monkey_anim_state;
 
-    // Add idle state (5 frames) - looping
-    lazy_monkey_anim_state.add_animation_state(
-      "Idle",
-      Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Idle_Spritesheet.png")),
-      Components::TextureAtlas(64, 64, 1, 5, 5),
-      Components::Animation(5, 0.15f),
-      Math::Vec2D(lazy_monkey_width * 2.0f, lazy_monkey_height * 2.0f),
-      true,  // is_looping
-      std::nullopt  // no auto-transition
-    );
+    //// Add idle state (5 frames) - looping
+    //lazy_monkey_anim_state.add_animation_state(
+    //  "Idle",
+    //  Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Idle_Spritesheet.png")),
+    //  Components::TextureAtlas(64, 64, 1, 5, 5),
+    //  Components::Animation(5, 0.15f),
+    //  Math::Vec2D(lazy_monkey_width * 2.0f, lazy_monkey_height * 2.0f),
+    //  true,  // is_looping
+    //  std::nullopt  // no auto-transition
+    //);
 
-    // Add chasing/running state (6 frames) - looping
-    lazy_monkey_anim_state.add_animation_state(
-      "Chasing",
-      Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Walk_Spritesheet.png")),
-      Components::TextureAtlas(64, 64, 1, 6, 6),
-      Components::Animation(6, 0.1f),
-      Math::Vec2D(lazy_monkey_width * 2.0f, lazy_monkey_height * 2.0f),
-      true,  // is_looping
-      std::nullopt
-    );
+    //// Add chasing/running state (6 frames) - looping
+    //lazy_monkey_anim_state.add_animation_state(
+    //  "Chasing",
+    //  Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Walk_Spritesheet.png")),
+    //  Components::TextureAtlas(64, 64, 1, 6, 6),
+    //  Components::Animation(6, 0.1f),
+    //  Math::Vec2D(lazy_monkey_width * 2.0f, lazy_monkey_height * 2.0f),
+    //  true,  // is_looping
+    //  std::nullopt
+    //);
 
-    // Add attacking state (5 frames) - one-shot, auto-transitions to chasing
-    lazy_monkey_anim_state.add_animation_state(
-      "Attacking",
-      Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Attack_Spritesheet.png")),
-      Components::TextureAtlas(64, 64, 1, 4, 4),
-      Components::Animation(5, 0.1f),
-      Math::Vec2D(lazy_monkey_width * 2.0f, lazy_monkey_height * 2.0f),
-      false,  // is_looping = false (one-shot animation)
-      "Chasing"  // auto-transition to chasing when done
-    );
+    //// Add attacking state (5 frames) - one-shot, auto-transitions to chasing
+    //lazy_monkey_anim_state.add_animation_state(
+    //  "Attacking",
+    //  Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Attack_Spritesheet.png")),
+    //  Components::TextureAtlas(64, 64, 1, 4, 4),
+    //  Components::Animation(5, 0.1f),
+    //  Math::Vec2D(lazy_monkey_width * 2.0f, lazy_monkey_height * 2.0f),
+    //  false,  // is_looping = false (one-shot animation)
+    //  "Chasing"  // auto-transition to chasing when done
+    //);
 
-    // Add hit state (4 frames) - one-shot, auto-transitions to idle
-    lazy_monkey_anim_state.add_animation_state(
-      "Hit",
-      Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Death_Spritesheet.png")),
-      Components::TextureAtlas(64, 64, 1, 3, 3),
-      Components::Animation(4, 0.1f),
-      Math::Vec2D(lazy_monkey_width * 2.0f, lazy_monkey_height * 2.0f),
-      false,  // is_looping = false (one-shot animation)
-      "Idle"  // auto-transition to idle when done
-    );
+    //// Add hit state (4 frames) - one-shot, auto-transitions to idle
+    //lazy_monkey_anim_state.add_animation_state(
+    //  "Hit",
+    //  Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Death_Spritesheet.png")),
+    //  Components::TextureAtlas(64, 64, 1, 3, 3),
+    //  Components::Animation(4, 0.1f),
+    //  Math::Vec2D(lazy_monkey_width * 2.0f, lazy_monkey_height * 2.0f),
+    //  false,  // is_looping = false (one-shot animation)
+    //  "Idle"  // auto-transition to idle when done
+    //);
 
     // Set initial state to idle
-    lazy_monkey_anim_state.set_animation_state("Idle");
+    //lazy_monkey_anim_state.set_animation_state("Idle");
 
     // Create lazy_monkey entity
     lazy_monkey_entity = Engine::ECS::create_entity()
@@ -600,7 +600,7 @@ public:
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Idle_Spritesheet.png"))
       .add_component<Components::TextureAtlas>(64, 64, 1, 5, 5)
       .add_component<Components::Animation>(5, 0.15f)
-      .add_component<Components::AnimationState>(lazy_monkey_anim_state)
+      //.add_component<Components::AnimationState>(lazy_monkey_anim_state)
       .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
       .add_component<Components::Flip>(1.0f, 1.0f) // Start facing right
       .add_component<Components::RigidBody>(Components::RigidBody(false, true))
