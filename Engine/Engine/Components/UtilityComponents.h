@@ -57,5 +57,5 @@ namespace Components
 
 }
 
-REGISTER_COMPONENT(Components::Lifetime, destroy_at)
-REGISTER_COMPONENT(Components::FrameLifetime, frames_remaining)
+// REGISTER_COMPONENT(Components::Lifetime, destroy_at)
+// REGISTER_COMPONENT(Components::FrameLifetime, frames_remaining)

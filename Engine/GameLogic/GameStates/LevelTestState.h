@@ -14,13 +14,12 @@
 #pragma once
 
 #include "../../Engine/MonkeyEngine.h"
-#include "../Components/EnemyHealthComponent.h"
 
 class LevelTestState : public Engine::Scene
 {
 private:
   Engine::ECS::Entity player_entity;
-  Engine::ECS::Entity enemy_entity;
+  Engine::ECS::Entity lazy_monkey_entity;
 
   // Player dimensions
   const f32 player_idle_width = 64.0f;
@@ -28,9 +27,9 @@ private:
   const f32 player_attack_width = 96.0f;
   const f32 player_attack_height = 64.0f;
 
-  // Enemy (Lazy Monkey) dimensions
-  const f32 enemy_width = 64.0f;
-  const f32 enemy_height = 64.0f;
+  // Lazy Monkey dimensions
+  const f32 lazy_monkey_width = 64.0f;
+  const f32 lazy_monkey_height = 64.0f;
 
 public:
   void load() {
@@ -350,11 +349,11 @@ public:
       .add_to_layer("player");
 
     // ========================================================================
-    // Create Enemy with State Machine
+    // Create Lazy Monkey with State Machine
     // ========================================================================
 
-    // Define enemy states
-    Components::State enemy_idle(
+    // Define lazy_monkey states
+    Components::State lazy_monkey_idle(
       "Idle",
       // on_enter
       [](Engine::ECS::Entity& entity) {
@@ -364,7 +363,7 @@ public:
           anim_state->set_animation_state("Idle");
         }
 
-        std::cout << "Enemy: Entered Idle state" << std::endl;
+        std::cout << "Lazy Monkey: Entered Idle state" << std::endl;
       },
       // on_update
       [this](Engine::ECS::Entity& entity) {
@@ -372,12 +371,12 @@ public:
 
         // Check if player is nearby
         if (player_entity.is_valid()) {
-          auto* enemy_transform = entity.get_component<Components::Transform2D>();
+          auto* lazy_monkey_transform = entity.get_component<Components::Transform2D>();
           auto* player_transform = player_entity.get_component<Components::Transform2D>();
 
-          if (enemy_transform && player_transform) {
-            float dx = player_transform->position.x - enemy_transform->position.x;
-            float dy = player_transform->position.y - enemy_transform->position.y;
+          if (lazy_monkey_transform && player_transform) {
+            float dx = player_transform->position.x - lazy_monkey_transform->position.x;
+            float dy = player_transform->position.y - lazy_monkey_transform->position.y;
             float distance = std::sqrt(dx * dx + dy * dy);
 
             // Start chasing if player is within 300 units
@@ -391,7 +390,7 @@ public:
       nullptr
     );
 
-    Components::State enemy_chasing(
+    Components::State lazy_monkey_chasing(
       "Chasing",
       // on_enter
       [](Engine::ECS::Entity& entity) {
@@ -401,20 +400,20 @@ public:
           anim_state->set_animation_state("Chasing");
         }
 
-        std::cout << "Enemy: Entered Chasing state" << std::endl;
+        std::cout << "Lazy Monkey: Entered Chasing state" << std::endl;
       },
       // on_update
       [this](Engine::ECS::Entity& entity) {
         auto* state_machine = entity.get_component<Components::StateMachine>();
         auto* rigid = entity.get_component<Components::RigidBody>();
-        auto* enemy_transform = entity.get_component<Components::Transform2D>();
+        auto* lazy_monkey_transform = entity.get_component<Components::Transform2D>();
         auto* flip = entity.get_component<Components::Flip>();
 
-        if (player_entity.is_valid() && rigid && enemy_transform) {
+        if (player_entity.is_valid() && rigid && lazy_monkey_transform) {
           auto* player_transform = player_entity.get_component<Components::Transform2D>();
 
           if (player_transform) {
-            float dx = player_transform->position.x - enemy_transform->position.x;
+            float dx = player_transform->position.x - lazy_monkey_transform->position.x;
             float distance = std::abs(dx); // Only horizontal distance for sidescrolling
 
             // Chase player horizontally
@@ -453,7 +452,7 @@ public:
       }
     );
 
-    Components::State enemy_attacking(
+    Components::State lazy_monkey_attacking(
       "Attacking",
       // on_enter
       [](Engine::ECS::Entity& entity) {
@@ -469,7 +468,7 @@ public:
           anim_state->set_animation_state("Attacking");
         }
 
-        std::cout << "Enemy: Entered Attacking state" << std::endl;
+        std::cout << "Lazy Monkey: Entered Attacking state" << std::endl;
       },
       // on_update
       [](Engine::ECS::Entity& entity) {
@@ -488,7 +487,7 @@ public:
       nullptr
     );
 
-    Components::State enemy_hit(
+    Components::State lazy_monkey_hit(
       "Hit",
       // on_enter
       [](Engine::ECS::Entity& entity) {
@@ -504,7 +503,7 @@ public:
           // Don't reset velocity.y - let gravity/physics handle it
         }
 
-        std::cout << "Enemy: Got hit!" << std::endl;
+        std::cout << "Lazy Monkey: Got hit!" << std::endl;
       },
       // on_update
       [](Engine::ECS::Entity& entity) {
@@ -523,78 +522,78 @@ public:
       nullptr
     );
 
-    // Create enemy state machine
-    Components::StateMachine enemy_sm;
-    enemy_sm.add_state(enemy_idle);
-    enemy_sm.add_state(enemy_chasing);
-    enemy_sm.add_state(enemy_attacking);
-    enemy_sm.add_state(enemy_hit);
-    enemy_sm.set_initial_state("Idle");
+    // Create lazy_monkey state machine
+    Components::StateMachine lazy_monkey_sm;
+    lazy_monkey_sm.add_state(lazy_monkey_idle);
+    lazy_monkey_sm.add_state(lazy_monkey_chasing);
+    lazy_monkey_sm.add_state(lazy_monkey_attacking);
+    lazy_monkey_sm.add_state(lazy_monkey_hit);
+    lazy_monkey_sm.set_initial_state("Idle");
 
-    // Create AnimationState for enemy (Lazy Monkey) with all animation states
-    Components::AnimationState enemy_anim_state;
+    // Create AnimationState for lazy_monkey (Lazy Monkey) with all animation states
+    Components::AnimationState lazy_monkey_anim_state;
 
     // Add idle state (5 frames) - looping
-    enemy_anim_state.add_animation_state(
+    lazy_monkey_anim_state.add_animation_state(
       "Idle",
       Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Idle_Spritesheet.png")),
       Components::TextureAtlas(64, 64, 1, 5, 5),
       Components::Animation(5, 0.15f),
-      Math::Vec2D(enemy_width * 2.0f, enemy_height * 2.0f),
+      Math::Vec2D(lazy_monkey_width * 2.0f, lazy_monkey_height * 2.0f),
       true,  // is_looping
       std::nullopt  // no auto-transition
     );
 
     // Add chasing/running state (6 frames) - looping
-    enemy_anim_state.add_animation_state(
+    lazy_monkey_anim_state.add_animation_state(
       "Chasing",
       Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Walk_Spritesheet.png")),
       Components::TextureAtlas(64, 64, 1, 6, 6),
       Components::Animation(6, 0.1f),
-      Math::Vec2D(enemy_width * 2.0f, enemy_height * 2.0f),
+      Math::Vec2D(lazy_monkey_width * 2.0f, lazy_monkey_height * 2.0f),
       true,  // is_looping
       std::nullopt
     );
 
     // Add attacking state (5 frames) - one-shot, auto-transitions to chasing
-    enemy_anim_state.add_animation_state(
+    lazy_monkey_anim_state.add_animation_state(
       "Attacking",
       Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Attack_Spritesheet.png")),
       Components::TextureAtlas(64, 64, 1, 4, 4),
       Components::Animation(5, 0.1f),
-      Math::Vec2D(enemy_width * 2.0f, enemy_height * 2.0f),
+      Math::Vec2D(lazy_monkey_width * 2.0f, lazy_monkey_height * 2.0f),
       false,  // is_looping = false (one-shot animation)
       "Chasing"  // auto-transition to chasing when done
     );
 
     // Add hit state (4 frames) - one-shot, auto-transitions to idle
-    enemy_anim_state.add_animation_state(
+    lazy_monkey_anim_state.add_animation_state(
       "Hit",
       Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Death_Spritesheet.png")),
       Components::TextureAtlas(64, 64, 1, 3, 3),
       Components::Animation(4, 0.1f),
-      Math::Vec2D(enemy_width * 2.0f, enemy_height * 2.0f),
+      Math::Vec2D(lazy_monkey_width * 2.0f, lazy_monkey_height * 2.0f),
       false,  // is_looping = false (one-shot animation)
       "Idle"  // auto-transition to idle when done
     );
 
     // Set initial state to idle
-    enemy_anim_state.set_animation_state("Idle");
+    lazy_monkey_anim_state.set_animation_state("Idle");
 
-    // Create enemy entity
-    enemy_entity = Engine::ECS::create_entity()
-      .add_component<Components::Tag<"Enemy">>()
-      .add_component<Components::Transform2D>(600.0f, 300.0f, 0.0f, enemy_width * 2.0f, enemy_height * 2.0f)
+    // Create lazy_monkey entity
+    lazy_monkey_entity = Engine::ECS::create_entity()
+      .add_component<Components::Tag<"Lazy Monkey">>()
+      .add_component<Components::Transform2D>(600.0f, 300.0f, 0.0f, lazy_monkey_width * 2.0f, lazy_monkey_height * 2.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Idle_Spritesheet.png"))
       .add_component<Components::TextureAtlas>(64, 64, 1, 5, 5)
       .add_component<Components::Animation>(5, 0.15f)
-      .add_component<Components::AnimationState>(enemy_anim_state)
+      .add_component<Components::AnimationState>(lazy_monkey_anim_state)
       .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
       .add_component<Components::Flip>(1.0f, 1.0f) // Start facing right
       .add_component<Components::RigidBody>(Components::RigidBody(false, true))
-      .add_component<Components::BoxCollider>(enemy_width * 2.0f, enemy_height * 2.0f, false)
+      .add_component<Components::BoxCollider>(lazy_monkey_width * 2.0f, lazy_monkey_height * 2.0f, false)
       .add_component<Components::EnemyHealth>(100, 100)
-      .add_component<Components::StateMachine>(enemy_sm)
+      .add_component<Components::StateMachine>(lazy_monkey_sm)
       .remove_from_layer("default")
       .add_to_layer("enemy");
 
@@ -602,9 +601,9 @@ public:
     std::cout << "Controls (Sidescrolling Platform Game):" << std::endl;
     std::cout << "  A/D - Move left/right" << std::endl;
     std::cout << "  SPACE - Jump" << std::endl;
-    std::cout << "  F - Attack (damages enemy if close)" << std::endl;
+    std::cout << "  F - Attack (damages lazy_monkey if close)" << std::endl;
     std::cout << "\nPlayer States: Idle (Blue), Walking (Green), Jumping (Cyan), Attacking (Red)" << std::endl;
-    std::cout << "Enemy States: Idle (Yellow), Chasing (Orange), Attacking (Red), Hit (White)" << std::endl;
+    std::cout << "Lazy Monkey States: Idle (Yellow), Chasing (Orange), Attacking (Red), Hit (White)" << std::endl;
     std::cout << "Note: Gravity is active - entities will fall!" << std::endl;
     std::cout << "========================================\n" << std::endl;
   };
