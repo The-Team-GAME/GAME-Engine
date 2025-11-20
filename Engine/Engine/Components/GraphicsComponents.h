@@ -351,7 +351,7 @@ namespace Components
     std::string current_state;
     std::unordered_map<std::string, StateData> states;
 
-    void add_state(
+    void add_animation_state(
       const std::string& name,
       const Texture& texture,
       const TextureAtlas& atlas,
@@ -363,7 +363,7 @@ namespace Components
       states[name] = { texture, atlas, animation, scale, is_looping, next_state };
     }
 
-    void set_entity_state(const std::string& name) {
+    void set_animation_state(const std::string& name) {
       // Log::info("Switching to animation state: " + name);
       current_state = name;
       dirty = true;

@@ -52,7 +52,7 @@ public:
         // Switch to idle animation
         auto* anim_state = entity.get_component<Components::AnimationState>();
         if (anim_state) {
-          anim_state->set_entity_state("Idle");
+          anim_state->set_animation_state("Idle");
         }
 
         std::cout << "Player: Entered Idle state" << std::endl;
@@ -95,7 +95,7 @@ public:
         // Switch to run animation
         auto* anim_state = entity.get_component<Components::AnimationState>();
         if (anim_state) {
-          anim_state->set_entity_state("Walking");
+          anim_state->set_animation_state("Walking");
         }
 
         std::cout << "Player: Entered Walking state" << std::endl;
@@ -165,7 +165,7 @@ public:
         // Switch to jump animation
         auto* anim_state = entity.get_component<Components::AnimationState>();
         if (anim_state) {
-          anim_state->set_entity_state("Jumping");
+          anim_state->set_animation_state("Jumping");
         }
 
         std::cout << "Player: Entered Jumping state" << std::endl;
@@ -225,7 +225,7 @@ public:
         // Switch to attack animation
         auto* anim_state = entity.get_component<Components::AnimationState>();
         if (anim_state) {
-          anim_state->set_entity_state("Attacking");
+          anim_state->set_animation_state("Attacking");
         }
 
         std::cout << "Player: Entered Attacking state" << std::endl;
@@ -279,7 +279,7 @@ public:
     Components::AnimationState player_anim_state;
 
     // Add idle state (24 frames) - looping
-    player_anim_state.add_state(
+    player_anim_state.add_animation_state(
       "Idle",
       Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_idle_spritesheet.png")),
       Components::TextureAtlas(64, 64, 1, 24, 24),
@@ -290,7 +290,7 @@ public:
     );
 
     // Add run state (8 frames) - looping
-    player_anim_state.add_state(
+    player_anim_state.add_animation_state(
       "Walking",
       Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_run_spritesheet.png")),
       Components::TextureAtlas(64, 64, 1, 8, 8),
@@ -301,7 +301,7 @@ public:
     );
 
     // Add jump state (8 frames) - uses run animation, looping
-    player_anim_state.add_state(
+    player_anim_state.add_animation_state(
       "Jumping",
       Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_run_spritesheet.png")),
       Components::TextureAtlas(64, 64, 1, 8, 8),
@@ -312,7 +312,7 @@ public:
     );
 
     // Add attack state (6 frames) - one-shot, auto-transitions to idle
-    player_anim_state.add_state(
+    player_anim_state.add_animation_state(
       "Attacking",
       Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_threehit_spritesheet.png")),
       Components::TextureAtlas(96, 64, 1, 19, 6),
@@ -323,7 +323,7 @@ public:
     );
 
     // Set initial state to idle
-    player_anim_state.set_entity_state("Idle");
+    player_anim_state.set_animation_state("Idle");
 
     // Create player entity
     player_entity = Engine::ECS::create_entity()
@@ -353,7 +353,7 @@ public:
         // Switch to idle animation
         auto* anim_state = entity.get_component<Components::AnimationState>();
         if (anim_state) {
-          anim_state->set_entity_state("Idle");
+          anim_state->set_animation_state("Idle");
         }
 
         std::cout << "Enemy: Entered Idle state" << std::endl;
@@ -390,7 +390,7 @@ public:
         // Switch to run/chasing animation
         auto* anim_state = entity.get_component<Components::AnimationState>();
         if (anim_state) {
-          anim_state->set_entity_state("Chasing");
+          anim_state->set_animation_state("Chasing");
         }
 
         std::cout << "Enemy: Entered Chasing state" << std::endl;
@@ -458,7 +458,7 @@ public:
         // Switch to attack animation
         auto* anim_state = entity.get_component<Components::AnimationState>();
         if (anim_state) {
-          anim_state->set_entity_state("Attacking");
+          anim_state->set_animation_state("Attacking");
         }
 
         std::cout << "Enemy: Entered Attacking state" << std::endl;
@@ -487,7 +487,7 @@ public:
         // Switch to hit animation
         auto* anim_state = entity.get_component<Components::AnimationState>();
         if (anim_state) {
-          anim_state->set_entity_state("Hit");
+          anim_state->set_animation_state("Hit");
         }
 
         auto* rigid = entity.get_component<Components::RigidBody>();
@@ -527,7 +527,7 @@ public:
     Components::AnimationState enemy_anim_state;
 
     // Add idle state (5 frames) - looping
-    enemy_anim_state.add_state(
+    enemy_anim_state.add_animation_state(
       "Idle",
       Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Idle_Spritesheet.png")),
       Components::TextureAtlas(64, 64, 1, 5, 5),
@@ -538,7 +538,7 @@ public:
     );
 
     // Add chasing/running state (6 frames) - looping
-    enemy_anim_state.add_state(
+    enemy_anim_state.add_animation_state(
       "Chasing",
       Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Walk_Spritesheet.png")),
       Components::TextureAtlas(64, 64, 1, 6, 6),
@@ -549,7 +549,7 @@ public:
     );
 
     // Add attacking state (5 frames) - one-shot, auto-transitions to chasing
-    enemy_anim_state.add_state(
+    enemy_anim_state.add_animation_state(
       "Attacking",
       Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Attack_Spritesheet.png")),
       Components::TextureAtlas(64, 64, 1, 4, 4),
@@ -560,7 +560,7 @@ public:
     );
 
     // Add hit state (4 frames) - one-shot, auto-transitions to idle
-    enemy_anim_state.add_state(
+    enemy_anim_state.add_animation_state(
       "Hit",
       Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Death_Spritesheet.png")),
       Components::TextureAtlas(64, 64, 1, 3, 3),
@@ -571,7 +571,7 @@ public:
     );
 
     // Set initial state to idle
-    enemy_anim_state.set_entity_state("Idle");
+    enemy_anim_state.set_animation_state("Idle");
 
     // Create enemy entity
     enemy_entity = Engine::ECS::create_entity()

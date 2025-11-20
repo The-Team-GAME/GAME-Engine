@@ -432,7 +432,7 @@ namespace Engine
             float elapsed = Engine::Time::get_time() - animation->startTime;
             if (elapsed >= animation->totalDuration) {
               // Animation finished, transition to next state
-              anim_state->set_entity_state(state_data.next_state.value());
+              anim_state->set_animation_state(state_data.next_state.value());
             }
           }
         }

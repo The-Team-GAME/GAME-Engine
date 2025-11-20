@@ -40,7 +40,7 @@ void StressTestState::init() {
     Components::AnimationState anim_state;
 
     // Add monkey state
-    anim_state.add_state(
+    anim_state.add_animation_state(
       MONKEY_STATE,
       Components::Texture(lazy_monkey_texture),
       Components::TextureAtlas(monkey_frame_width, monkey_frame_height, 1, monkey_frame_count, monkey_frame_count),
@@ -48,7 +48,7 @@ void StressTestState::init() {
     );
 
     // Add player state
-    anim_state.add_state(
+    anim_state.add_animation_state(
       PLAYER_STATE,
       Components::Texture(player_run_texture),
       Components::TextureAtlas(player_frame_width, player_frame_height, 1, player_frame_count, player_frame_count),
@@ -56,7 +56,7 @@ void StressTestState::init() {
     );
 
     // Set initial state to monkey
-    anim_state.set_entity_state(MONKEY_STATE);
+    anim_state.set_animation_state(MONKEY_STATE);
 
     // Create entity with AnimationState component
     auto entity = Engine::ECS::create_entity()
@@ -87,10 +87,10 @@ void StressTestState::update() {
         if (anim_state) {
           // Toggle between monkey and player states
           if (anim_state->current_state == MONKEY_STATE) {
-            anim_state->set_entity_state(PLAYER_STATE);
+            anim_state->set_animation_state(PLAYER_STATE);
           }
           else {
-            anim_state->set_entity_state(MONKEY_STATE);
+            anim_state->set_animation_state(MONKEY_STATE);
           }
         }
       });
