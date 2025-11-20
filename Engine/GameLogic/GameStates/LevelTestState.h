@@ -104,6 +104,7 @@ public:
       [](Engine::ECS::Entity& entity) {
         auto* rigid = entity.get_component<Components::RigidBody>();
         auto* state_machine = entity.get_component<Components::StateMachine>();
+        auto* flip = entity.get_component<Components::Flip>();
 
         float speed = 600.f;
         rigid->velocity.x = 0.f;
@@ -112,9 +113,11 @@ public:
         // Horizontal movement only (sidescrolling)
         if (Engine::Input::is_held(Engine::KeyCode::A)) {
           rigid->velocity.x = -speed;
+          if (flip) flip->value.x = -1.0f; // Face left
         }
         if (Engine::Input::is_held(Engine::KeyCode::D)) {
           rigid->velocity.x = speed;
+          if (flip) flip->value.x = 1.0f; // Face right
         }
 
         // Return to idle if no horizontal input
@@ -171,6 +174,7 @@ public:
       [](Engine::ECS::Entity& entity) {
         auto* rigid = entity.get_component<Components::RigidBody>();
         auto* state_machine = entity.get_component<Components::StateMachine>();
+        auto* flip = entity.get_component<Components::Flip>();
 
         // Allow horizontal air control
         float air_speed = 150.f; // Slightly slower than ground movement
@@ -178,9 +182,11 @@ public:
 
         if (Engine::Input::is_held(Engine::KeyCode::A)) {
           rigid->velocity.x = -air_speed;
+          if (flip) flip->value.x = -1.0f; // Face left
         }
         if (Engine::Input::is_held(Engine::KeyCode::D)) {
           rigid->velocity.x = air_speed;
+          if (flip) flip->value.x = 1.0f; // Face right
         }
 
         // Return to idle when landing
@@ -328,6 +334,7 @@ public:
       .add_component<Components::Animation>(24, 0.1f)
       .add_component<Components::AnimationState>(player_anim_state)
       .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
+      .add_component<Components::Flip>(1.0f, 1.0f) // Start facing right
       .add_component<Components::RigidBody>(Components::RigidBody(false, true))
       .add_component<Components::BoxCollider>(player_idle_width * 2.0f, player_idle_height * 2.0f, false)
       .add_component<Components::StateMachine>(player_sm)
@@ -393,6 +400,7 @@ public:
         auto* state_machine = entity.get_component<Components::StateMachine>();
         auto* rigid = entity.get_component<Components::RigidBody>();
         auto* enemy_transform = entity.get_component<Components::Transform2D>();
+        auto* flip = entity.get_component<Components::Flip>();
 
         if (player_entity.is_valid() && rigid && enemy_transform) {
           auto* player_transform = player_entity.get_component<Components::Transform2D>();
@@ -405,6 +413,10 @@ public:
             if (distance > 10.f) {
               float speed = 100.f;
               rigid->velocity.x = (dx > 0 ? speed : -speed);
+              // Update flip direction based on movement
+              if (flip) {
+                flip->value.x = (dx > 0 ? 1.0f : -1.0f);
+              }
               // Don't modify velocity.y - let gravity handle it
             }
             else {
@@ -570,6 +582,7 @@ public:
       .add_component<Components::Animation>(5, 0.15f)
       .add_component<Components::AnimationState>(enemy_anim_state)
       .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
+      .add_component<Components::Flip>(1.0f, 1.0f) // Start facing right
       .add_component<Components::RigidBody>(Components::RigidBody(false, true))
       .add_component<Components::BoxCollider>(enemy_width * 2.0f, enemy_height * 2.0f, false)
       .add_component<Components::StateMachine>(enemy_sm)
