@@ -121,11 +121,12 @@ namespace Components
     std::vector<Engine::Graphics::Frame> frames;
     f32 startTime = Engine::Time::get_time(); // To get the elapsed time to calculate which frame to show
     float totalDuration = 0.0f; // Total duration of the animation
+    bool is_looping = true; // Whether the animation should loop or stay at the last frame
 
-    Animation() : frames(), startTime(Engine::Time::get_time()), totalDuration(0.0f) {} // TODO: remove default constructor
+    Animation() : frames(), startTime(Engine::Time::get_time()), totalDuration(0.0f), is_looping(true) {} // TODO: remove default constructor
 
     // Evenly spaced frames
-    Animation(size_t frameCount, float frameDuration) : frames(), startTime(0.0f), totalDuration(frameDuration* frameCount)
+    Animation(size_t frameCount, float frameDuration, bool looping = true) : frames(), startTime(0.0f), totalDuration(frameDuration* frameCount), is_looping(looping)
     {
       if (frameCount == 0)
         return;
@@ -156,11 +157,13 @@ namespace Components
       std::vector<float> before_times;
       float startTime;
       float totalDuration;
+      bool is_looping;
 
       static Reflector reflect(const Animation& anim) {
         Reflector r;
         r.startTime = anim.startTime;
         r.totalDuration = anim.totalDuration;
+        r.is_looping = anim.is_looping;
         r.durations.reserve(anim.frames.size());
         r.before_times.reserve(anim.frames.size());
         for (const auto& frame : anim.frames) {
@@ -171,7 +174,7 @@ namespace Components
       }
 
       static Animation create(const Reflector& r) {
-        Animation anim(0, 0.0f);
+        Animation anim(0, 0.0f, r.is_looping);
         anim.startTime = r.startTime;
         anim.totalDuration = r.totalDuration;
         anim.frames.resize(r.durations.size());
@@ -356,4 +359,4 @@ REGISTER_COMPONENT_CUSTOM(Components::Color, r, g, b, a)
 REGISTER_COMPONENT_CUSTOM(Components::Texture, path)
 REGISTER_COMPONENT_CUSTOM(Components::Font, path, font_size)
 REGISTER_COMPONENT_CUSTOM(Components::TextureAtlas, tex_coords_list, drawIndex)
-REGISTER_COMPONENT_CUSTOM(Components::Animation, durations, before_times, startTime, totalDuration)
+REGISTER_COMPONENT_CUSTOM(Components::Animation, durations, before_times, startTime, totalDuration, is_looping)

@@ -175,13 +175,24 @@ namespace Engine
         // Calculate elapsed time since animation started
         float elapsed = Engine::Time::get_time() - animation->startTime;
 
-        // Loop the animation by wrapping elapsed time
-        float wrapped_time = fmod(elapsed, animation->totalDuration);
+        float time_to_use = elapsed;
+
+        // Handle looping vs non-looping animations
+        if (animation->is_looping) {
+          // Loop the animation by wrapping elapsed time
+          time_to_use = fmod(elapsed, animation->totalDuration);
+        }
+        else {
+          // Clamp to the end of the animation (stay at last frame)
+          if (time_to_use > animation->totalDuration) {
+            time_to_use = animation->totalDuration;
+          }
+        }
 
         // Find which frame should be displayed based on elapsed time
         int current_frame = 0;
         for (int i = 0; i < animation->frames.size(); ++i) {
-          if (wrapped_time >= animation->frames[i].before_time) {
+          if (time_to_use >= animation->frames[i].before_time) {
             current_frame = i;
           }
           else {

@@ -38,9 +38,6 @@ namespace Components
     TextureAtlas texture_atlas;
     Animation animation;
     std::optional<Math::Vec2D> scale; // Optional scale override for this state, for entities that have different sizes per animation
-
-    // Note: Animation looping is handled by the AnimationUpdateSystem using fmod
-    // If you need non-looping animations, implement custom logic in state callbacks
   };
 
   // ============================================================================
