@@ -268,13 +268,10 @@ public:
       // on_update
       [this](Engine::ECS::Entity& entity) {
         auto* state_machine = entity.get_component<Components::StateMachine>();
+        auto* animation = entity.get_component<Components::Animation>();
 
-        // Simple timer: attack lasts ~30 frames
-        static int attack_timer = 0;
-        attack_timer++;
-
-        if (attack_timer >= 30) {
-          attack_timer = 0;
+        // Transition to idle when attack animation completes
+        if (animation && animation->has_ended()) {
           state_machine->change_state("Idle");
         }
       },
@@ -448,13 +445,10 @@ public:
       // on_update
       [](Engine::ECS::Entity& entity) {
         auto* state_machine = entity.get_component<Components::StateMachine>();
+        auto* animation = entity.get_component<Components::Animation>();
 
-        // Simple timer: attack lasts ~40 frames
-        static int attack_timer = 0;
-        attack_timer++;
-
-        if (attack_timer >= 40) {
-          attack_timer = 0;
+        // Transition back to chasing when attack animation completes
+        if (animation && animation->has_ended()) {
           state_machine->change_state("Chasing");
         }
       },
@@ -487,13 +481,10 @@ public:
       // on_update
       [](Engine::ECS::Entity& entity) {
         auto* state_machine = entity.get_component<Components::StateMachine>();
+        auto* animation = entity.get_component<Components::Animation>();
 
-        // Flash briefly
-        static int hit_timer = 0;
-        hit_timer++;
-
-        if (hit_timer >= 15) {
-          hit_timer = 0;
+        // Transition to idle when hit animation completes
+        if (animation && animation->has_ended()) {
           state_machine->change_state("Idle");
         }
       },

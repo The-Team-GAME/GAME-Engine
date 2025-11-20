@@ -140,6 +140,17 @@ namespace Components
       }
     }
 
+    // Check if the animation has completed one full cycle
+    bool has_ended() const {
+      float elapsed = Engine::Time::get_time() - startTime;
+      return elapsed >= totalDuration;
+    }
+
+    // Get the elapsed time since animation started
+    float get_elapsed_time() const {
+      return Engine::Time::get_time() - startTime;
+    }
+
     struct Reflector {
       std::vector<float> durations;
       std::vector<float> before_times;
