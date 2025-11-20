@@ -231,6 +231,15 @@ namespace Components
     Distortion(f32 inten, f32 spd, f32 mesh_inten = 0.0f) : intensity(inten), speed(spd), mesh_intensity(mesh_inten) {}
   };
 
+  struct Flip
+  {
+    Math::Vec2D value = { 1.0f, 1.0f }; // 1.0f = no flip, -1.0f = flip (x for horizontal, y for vertical)
+
+    Flip() : value(1.0f, 1.0f) {}
+    Flip(f32 x, f32 y) : value(x, y) {}
+    Flip(const Math::Vec2D& v) : value(v) {}
+  };
+
   struct Color : public Math::Vec4D {
     f32& r;
     f32& g;
@@ -366,6 +375,7 @@ namespace Components
 REGISTER_COMPONENT(Components::Text, content)
 REGISTER_COMPONENT(Components::Camera, name, is_active, position, rotation, zoom)
 REGISTER_COMPONENT(Components::Distortion, intensity, speed, mesh_intensity)
+REGISTER_COMPONENT(Components::Flip, value)
 REGISTER_COMPONENT_CUSTOM(Components::Color, r, g, b, a)
 REGISTER_COMPONENT_CUSTOM(Components::Texture, path)
 REGISTER_COMPONENT_CUSTOM(Components::Font, path, font_size)

@@ -40,13 +40,17 @@ namespace Engine
         auto* transform = entity.get_component<Components::Transform2D>();
         auto* color = entity.get_component<Components::Color>();
         auto* texture = entity.get_component<Components::Texture>();
+        auto* flip = entity.get_component<Components::Flip>();
+
+        Math::Vec2D flip_value = flip ? flip->value : Math::Vec2D(1.0f, 1.0f);
 
         Engine::Graphics::draw_texture(
           texture->texture_handle,
           Math::Vec2D(transform->position.x, transform->position.y),
           Math::Vec2D(transform->scale.x, transform->scale.y),
           transform->rotation,
-          *color
+          *color,
+          flip_value
         );
       }
     };
@@ -63,6 +67,9 @@ namespace Engine
         auto* color = entity.get_component<Components::Color>();
         auto* texture = entity.get_component<Components::Texture>();
         auto* atlas = entity.get_component<Components::TextureAtlas>();
+        auto* flip = entity.get_component<Components::Flip>();
+
+        Math::Vec2D flip_value = flip ? flip->value : Math::Vec2D(1.0f, 1.0f);
 
         // Ensure drawIndex is within bounds
         if (atlas->drawIndex < atlas->subTextures.size()) {
@@ -74,7 +81,8 @@ namespace Engine
             Math::Vec2D(transform->position.x, transform->position.y),
             Math::Vec2D(transform->scale.x, transform->scale.y),
             transform->rotation,
-            *color
+            *color,
+            flip_value
           );
         }
       }
@@ -321,6 +329,9 @@ namespace Engine
         auto* color = entity.get_component<Components::Color>();
         auto* texture = entity.get_component<Components::Texture>();
         auto* distortion = entity.get_component<Components::Distortion>();
+        auto* flip = entity.get_component<Components::Flip>();
+
+        Math::Vec2D flip_value = flip ? flip->value : Math::Vec2D(1.0f, 1.0f);
 
         Engine::Graphics::draw_texture_distortion(
           texture->texture_handle,
@@ -330,7 +341,8 @@ namespace Engine
           *color,
           distortion->intensity,
           distortion->speed,
-          distortion->mesh_intensity
+          distortion->mesh_intensity,
+          flip_value
         );
       }
     };
@@ -347,6 +359,9 @@ namespace Engine
         auto* texture = entity.get_component<Components::Texture>();
         auto* atlas = entity.get_component<Components::TextureAtlas>();
         auto* distortion = entity.get_component<Components::Distortion>();
+        auto* flip = entity.get_component<Components::Flip>();
+
+        Math::Vec2D flip_value = flip ? flip->value : Math::Vec2D(1.0f, 1.0f);
 
         // Ensure drawIndex is within bounds
         if (atlas->drawIndex < atlas->subTextures.size()) {
@@ -361,7 +376,8 @@ namespace Engine
             *color,
             distortion->intensity,
             distortion->speed,
-            distortion->mesh_intensity
+            distortion->mesh_intensity,
+            flip_value
           );
         }
       }
