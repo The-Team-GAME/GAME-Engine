@@ -234,6 +234,8 @@ public:
         if (transform) {
           // Position hitbox in front of player based on facing direction
           float hitbox_offset = (flip && flip->value.x < 0) ? -80.0f : 80.0f;
+          float hitbox_width = 100.0f;
+          float hitbox_height = player_attack_height * 2.0f;
 
           Engine::ECS::create_entity()
             .add_component<Components::Tag<"PlayerAttackHitbox">>()
@@ -241,13 +243,14 @@ public:
               transform->position.x + hitbox_offset,
               transform->position.y,
               0.0f,
-              100.0f, // hitbox width
-              player_attack_height * 2.0f // hitbox height
+              hitbox_width,
+              hitbox_height
             )
-            .add_component<Components::BoxCollider>(100.0f, player_attack_height * 2.0f, true)
-            .add_component<Components::Lifetime>(0.5f) // Destroy after 0.5 seconds
-            .add_component<Components::Color>(Math::Vec4D(1.0f, 0.0f, 0.0f, 0.5f)) // Semi-transparent red for debugging
-            .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
+            .add_component<Components::RigidBody>(true, false) // Static (not affected by forces), no gravity
+            .add_component<Components::BoxCollider>(hitbox_width, hitbox_height, false) // Not a static obstacle
+            .add_component<Components::Lifetime>(0.1f) // Destroy after 0.1 seconds (brief hitbox window)
+            .add_component<Components::Color>(Math::Vec4D(1.0f, 0.0f, 0.0f, 0.3f)) // Semi-transparent red for debugging
+            .add_component<Components::Texture>(Engine::Graphics::get_rect_texture())
             .remove_from_layer("default")
             .add_to_layer("player_attack");
         }
