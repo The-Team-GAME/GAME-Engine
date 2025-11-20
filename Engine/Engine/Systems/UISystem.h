@@ -40,16 +40,8 @@ namespace Engine
         auto* clickable = entity.get_component<Components::Clickable>();
         auto* tr = entity.get_component<Components::Transform2D>();
 
+
         if (!clickable || !tr) return;
-
-        const float LERP_SPEED = 0.15f;
-        const float CLAMP = 0.01f;
-
-				//Sets the original and target scale
-        if (clickable->original_scale.x == 0.0f) {
-          clickable->original_scale = tr->scale;
-          clickable->target_scale = clickable->original_scale * 0.7f;
-        }
 
         const auto mouse = Engine::Input::get_mouse_position();
 
@@ -66,41 +58,17 @@ namespace Engine
           (mouse.x >= left) && (mouse.x <= right) &&
           (mouse.y >= top) && (mouse.y <= bottom);
 
-        
-        if (inside) {
-          if (!clickable->is_hovered) { // If we just entered the clickable area, set the state to hovered
-            clickable->is_hovered = true;
-          }
-        }
-        else { // If we just left the clickable area, set the state to un-hovered
-          if (clickable->is_hovered) {
-            clickable->is_hovered = false;
-          }
-        }
-        if (clickable->is_hovered) { //SCALE + LERP
-          tr->scale.x = tr->scale.x + (clickable->target_scale.x - tr->scale.x) * LERP_SPEED;
-          tr->scale.y = tr->scale.y + (clickable->target_scale.y - tr->scale.y) * LERP_SPEED;
-
-          // Clamp
-          if (std::abs(tr->scale.x - clickable->target_scale.x) < CLAMP) {
-            tr->scale = clickable->target_scale;
-          }
-        }
-				else { //DESCALE + LERP
-          tr->scale.x = tr->scale.x + (clickable->original_scale.x - tr->scale.x) * LERP_SPEED;
-          tr->scale.y = tr->scale.y + (clickable->original_scale.y - tr->scale.y) * LERP_SPEED;
-
-          // Clamp
-          if (std::abs(tr->scale.x - clickable->original_scale.x) < CLAMP) {
-            tr->scale = clickable->original_scale;
-          }
-        }
 
 				// mouse click detection
         if (inside) {
+          clickable->on_hover(entity);
+
           if (Engine::Input::is_pressed(KeyCode::MouseLeft)) {
             clickable->on_click();
           }
+        }
+        else {
+          clickable->exit_hover(entity);
         }
       }
     };

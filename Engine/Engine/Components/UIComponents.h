@@ -23,10 +23,8 @@ namespace Components
   {
     std::function<void()> on_click;
 
-    bool is_hovered = false;
+    std::function<void(Engine::ECS::Entity)> on_hover;
 
-    glm::vec2 original_scale;
-    glm::vec2 target_scale;
-    float scale_timer = 0.0f;
+    std::function<void(Engine::ECS::Entity)> exit_hover;
   };
 }

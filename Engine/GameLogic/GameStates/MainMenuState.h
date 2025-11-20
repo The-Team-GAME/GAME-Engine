@@ -17,6 +17,43 @@
 
 #include "../../Engine/MonkeyEngine.h"
 
+void button_scale(Engine::ECS::Entity entity){
+
+  Vec2D& scale = entity.get_component<Components::Transform2D>()->scale;
+
+  const Vec2D og_scale = Vec2D(192.0f * 1.5f, 64.0f * 1.5f);
+  const Vec2D target_scale = og_scale * 1.2f;
+  const float LERP_SPEED = 0.10f;
+  const float clamp = 0.01f;
+
+  scale = scale + (target_scale - scale) * LERP_SPEED;
+  const Vec2D diff = scale - target_scale;
+  float distance = std::sqrt(diff.x * diff.x + diff.y * diff.y);
+
+  // clamping
+  if (distance < clamp) {
+    scale = target_scale;
+  }
+}
+
+void button_exit_scale(Engine::ECS::Entity entity) {
+
+  Vec2D& scale = entity.get_component<Components::Transform2D>()->scale;
+
+  const Vec2D og_scale = Vec2D(192.0f * 1.5f, 64.0f * 1.5f);
+  const float LERP_SPEED = 0.10f;
+  const float clamp = 0.01f;
+
+  scale = scale + (og_scale - scale) * LERP_SPEED;
+  Vec2D diff = scale - og_scale;
+  float distance = std::sqrt(diff.x * diff.x + diff.y * diff.y);
+
+  if (distance < clamp) {
+    scale = og_scale;
+  }
+}
+
+
 class MainMenuState : public Engine::Scene
 {
 private:
@@ -39,6 +76,13 @@ public:
       .add_component<Components::Clickable>([]()
         {
           Engine::SceneManager::load_scene("ShowcaseState");
+        },
+
+        [](Engine::ECS::Entity entity) { //Scale/Descale
+          button_scale(entity);
+        },
+        [](Engine::ECS::Entity entity) { //Unscale
+          button_exit_scale(entity);
         })
       .add_to_layer("ui");
 
@@ -51,6 +95,12 @@ public:
       .add_component<Components::Clickable>([]()
         {
           Engine::Core::stop();
+        },
+        [](Engine::ECS::Entity entity) {
+          button_scale(entity);
+        },
+        [](Engine::ECS::Entity entity) {
+          button_exit_scale(entity);
         })
       .add_to_layer("ui");
   };
