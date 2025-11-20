@@ -27,4 +27,21 @@ namespace Components
 
     std::function<void(Engine::ECS::Entity)> exit_hover;
   };
+
+  struct Chat 
+  {
+
+    // Path to the json dialogue texts
+    std::string json_file_path;
+
+    // The actual text content loaded from the file
+    std::string display_text;
+
+    // Configuration for rendering
+    int font_size = 18;
+    glm::vec3 font_color = glm::vec3(1.0f, 1.0f, 1.0f); //RGB
+
+    //Maximum characters to display per line for wrapping
+    unsigned int max_line_length = 50;
+  };
 }
