@@ -64,8 +64,8 @@ int main()
   Engine::ECS::register_layer("hazard"); // Hazard layer (e.g., spikes, lava) 
   Engine::ECS::register_layer("player"); // Player character layer
   Engine::ECS::register_layer("enemy"); // Enemy characters layer
-  Engine::ECS::register_layer("player_attack"); // Player attack layer (contains the hitboxes for player attacks)
-  Engine::ECS::register_layer("enemy_attack"); // Enemy attack layer (contains the hitboxes for enemy attacks)
+  Engine::ECS::register_layer("damage_enemy"); // Damage enemy layer (e.g., hitboxes for player attacks)
+  Engine::ECS::register_layer("damage_player"); // Damage player layer (e.g., hitboxes for enemy attacks, hazards)
   Engine::ECS::register_layer("effect"); // Visual effects like particles
   Engine::ECS::register_layer("ui"); // User interface elements
   Engine::ECS::register_layer("debug"); // Debug overlays and information
@@ -82,7 +82,7 @@ int main()
     });
 
   // Register collision callback for player attacks hitting enemies
-  Engine::ECS::LayerRegistry::register_collision_callback("player_attack", "enemy",
+  Engine::ECS::LayerRegistry::register_collision_callback("damage_enemy", "enemy",
     [](Engine::ECS::Entity attack_entity, Engine::ECS::Entity enemy_entity)
     {
       // std::cout << "Player attack hit enemy!" << std::endl;

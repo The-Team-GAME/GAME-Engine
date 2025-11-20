@@ -252,7 +252,7 @@ public:
             .add_component<Components::Color>(Math::Vec4D(1.0f, 0.0f, 0.0f, 0.3f)) // Semi-transparent red for debugging
             .add_component<Components::Texture>(Engine::Graphics::get_rect_texture())
             .remove_from_layer("default")
-            .add_to_layer("player_attack");
+            .add_to_layer("damage_enemy");
         }
 
         std::cout << "Player: Entered Attacking state" << std::endl;
@@ -409,6 +409,11 @@ public:
         auto* lazy_monkey_transform = entity.get_component<Components::Transform2D>();
         auto* flip = entity.get_component<Components::Flip>();
 
+        // Attack cooldown tracking (in seconds)
+        static float last_attack_time = 0.0f;
+        const float attack_cooldown = 2.0f; // 2 seconds between attacks
+        float current_time = Engine::Time::get_time();
+
         if (player_entity.is_valid() && rigid && lazy_monkey_transform) {
           auto* player_transform = player_entity.get_component<Components::Transform2D>();
 
@@ -435,8 +440,9 @@ public:
               state_machine->change_state("Idle");
             }
 
-            // Attack if close enough
-            if (distance < 80.f) {
+            // Attack if close enough AND cooldown has elapsed
+            if (distance < 80.f && (current_time - last_attack_time) >= attack_cooldown) {
+              last_attack_time = current_time;
               state_machine->change_state("Attacking");
             }
           }
@@ -457,9 +463,14 @@ public:
       // on_enter
       [](Engine::ECS::Entity& entity) {
         auto* rigid = entity.get_component<Components::RigidBody>();
-        if (rigid) {
-          rigid->velocity.x = 0.f;
-          // Don't reset velocity.y - let gravity/physics handle it
+        auto* flip = entity.get_component<Components::Flip>();
+
+        if (rigid && flip) {
+          // Throw monkey forward based on facing direction
+          float leap_speed = 400.f;
+          rigid->velocity.x = (flip->value.x > 0 ? leap_speed : -leap_speed);
+          // Optional: Add slight upward velocity for a leap effect
+          rigid->velocity.y = -300.f; // Negative is up
         }
 
         // Switch to attack animation
@@ -484,7 +495,9 @@ public:
         }
       },
       // on_exit
-      nullptr
+      [](Engine::ECS::Entity& entity)
+      {
+      }
     );
 
     Components::State lazy_monkey_hit(
@@ -595,7 +608,8 @@ public:
       .add_component<Components::EnemyHealth>(100, 100)
       .add_component<Components::StateMachine>(lazy_monkey_sm)
       .remove_from_layer("default")
-      .add_to_layer("enemy");
+      .add_to_layer("enemy")
+      .add_to_layer("damage_player");
 
     std::cout << "\n=== State Machine Test Level Loaded ===" << std::endl;
     std::cout << "Controls (Sidescrolling Platform Game):" << std::endl;

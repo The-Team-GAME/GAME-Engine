@@ -4210,7 +4210,7 @@
         },
         {
             "first": "enemy",
-            "second": "player_attack"
+            "second": "damage_enemy"
         }
     ]
 }
