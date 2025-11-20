@@ -55,6 +55,16 @@ public:
           state_machine->change_state("Walking");
         }
 
+        // Check for jump input
+        if (Engine::Input::is_pressed(Engine::KeyCode::Space))
+        {
+          auto* rigid = entity.get_component<Components::RigidBody>();
+          // Only jump if on ground
+          if (rigid && rigid->on_ground) {
+            state_machine->change_state("Jumping");
+          }
+        }
+
         // Check for attack input
         if (Engine::Input::is_pressed(Engine::KeyCode::F))
         {
@@ -79,7 +89,7 @@ public:
         auto* rigid = entity.get_component<Components::RigidBody>();
         auto* state_machine = entity.get_component<Components::StateMachine>();
 
-        float speed = 200.f;
+        float speed = 600.f;
         rigid->velocity.x = 0.f;
         // Don't touch velocity.y - let gravity handle it
 
@@ -98,6 +108,16 @@ public:
           state_machine->change_state("Idle");
         }
 
+        // Check for jump input
+        if (Engine::Input::is_pressed(Engine::KeyCode::Space))
+        {
+          auto* rigid = entity.get_component<Components::RigidBody>();
+          // Only jump if on ground
+          if (rigid && rigid->on_ground) {
+            state_machine->change_state("Jumping");
+          }
+        }
+
         // Can attack while moving
         if (Engine::Input::is_pressed(Engine::KeyCode::F))
         {
@@ -112,6 +132,60 @@ public:
           // Don't reset velocity.y - let gravity/physics handle it
         }
       }
+    );
+
+    Components::State player_jumping(
+      "Jumping",
+      // on_enter
+      [](Engine::ECS::Entity& entity) {
+        auto* rigid = entity.get_component<Components::RigidBody>();
+        if (rigid) {
+          // Apply jump force
+          rigid->velocity.y = -900.f; // Negative is up
+        }
+
+        auto* color = entity.get_component<Components::Color>();
+        if (color) *color = Components::Color(0.0f, 1.0f, 1.0f, 1.0f); // Cyan when jumping
+
+        std::cout << "Player: Entered Jumping state" << std::endl;
+      },
+      // on_update
+      [](Engine::ECS::Entity& entity) {
+        auto* rigid = entity.get_component<Components::RigidBody>();
+        auto* state_machine = entity.get_component<Components::StateMachine>();
+
+        // Allow horizontal air control
+        float air_speed = 150.f; // Slightly slower than ground movement
+        rigid->velocity.x = 0.f;
+
+        if (Engine::Input::is_held(Engine::KeyCode::A)) {
+          rigid->velocity.x = -air_speed;
+        }
+        if (Engine::Input::is_held(Engine::KeyCode::D)) {
+          rigid->velocity.x = air_speed;
+        }
+
+        // Return to idle when landing
+        if (rigid && rigid->on_ground) {
+          // Check if moving horizontally
+          if (Engine::Input::is_held(Engine::KeyCode::A) ||
+            Engine::Input::is_held(Engine::KeyCode::D))
+          {
+            state_machine->change_state("Walking");
+          }
+          else {
+            state_machine->change_state("Idle");
+          }
+        }
+
+        // Can attack while jumping
+        if (Engine::Input::is_pressed(Engine::KeyCode::F))
+        {
+          state_machine->change_state("Attacking");
+        }
+      },
+      // on_exit
+      nullptr
     );
 
     Components::State player_attacking(
@@ -170,6 +244,7 @@ public:
     Components::StateMachine player_sm;
     player_sm.add_state(player_idle);
     player_sm.add_state(player_walking);
+    player_sm.add_state(player_jumping);
     player_sm.add_state(player_attacking);
     player_sm.set_initial_state("Idle");
 
@@ -365,8 +440,9 @@ public:
     std::cout << "\n=== State Machine Test Level Loaded ===" << std::endl;
     std::cout << "Controls (Sidescrolling Platform Game):" << std::endl;
     std::cout << "  A/D - Move left/right" << std::endl;
-    std::cout << "  SPACE - Attack (damages enemy if close)" << std::endl;
-    std::cout << "\nPlayer States: Idle (Blue), Walking (Green), Attacking (Red)" << std::endl;
+    std::cout << "  SPACE - Jump" << std::endl;
+    std::cout << "  F - Attack (damages enemy if close)" << std::endl;
+    std::cout << "\nPlayer States: Idle (Blue), Walking (Green), Jumping (Cyan), Attacking (Red)" << std::endl;
     std::cout << "Enemy States: Idle (Yellow), Chasing (Orange), Attacking (Red), Hit (White)" << std::endl;
     std::cout << "Note: Gravity is active - entities will fall!" << std::endl;
     std::cout << "========================================\n" << std::endl;
