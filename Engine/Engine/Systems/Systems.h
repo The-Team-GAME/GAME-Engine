@@ -25,12 +25,14 @@
 #include "DebugDrawSystem.h"
 #include "UISystem.h"
 #include "GizmoSystem.h"
+#include "StateMachineSystem.h"
 
 void register_engine_systems()
 {
   // Update systems
   Engine::ECS::add_system<Engine::Systems::CameraSystem>();
   Engine::ECS::add_system<Engine::Systems::CameraControlSystem>();
+  Engine::ECS::add_system<Engine::Systems::StateMachineSystem>(); // Update state machines first
   Engine::ECS::add_system<Engine::Systems::LogicSystem>();
   Engine::ECS::add_system<Engine::Systems::Physics2DSystem>();
   Engine::ECS::add_system<Engine::Systems::Collision2DSystem>();
