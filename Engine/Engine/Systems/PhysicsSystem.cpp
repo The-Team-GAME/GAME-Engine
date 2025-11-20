@@ -30,13 +30,12 @@ using col2D = Collision2DSystem;
 
 // eventually we'll deserialise these values from file bah
 namespace {
-
-  
   Vec2D knockback_force{ -1000000.f, 50000.f };
 }
+
 phy2D::Physics2DSystem() {
   require_components<Components::Transform2D, Components::RigidBody>();
-} //, Components::BoxCollider
+} // Components::BoxCollider
 
 void phy2D::update()
 {
@@ -87,7 +86,12 @@ void phy2D::update_kinematics(Components::RigidBody& rigid, Components::Transfor
   xform.rotation += rigid.angular_velocity * Engine::Time::get_fixed_dt();
 }
 
-// Maybe we check for collision here and then do translate as the last step?
+void phy2D::kill_normal_component(Components::RigidBody& rigid, Vec2D mvt)
+{
+  Vec2D normalised_mtv = normalise_vector(mvt);
+  f32 magnitude_of_normal_force = dot_product(rigid.velocity, normalised_mtv);
+  rigid.velocity -= normalised_mtv * magnitude_of_normal_force;
+}
 
 void phy2D::add_force(Components::RigidBody& rigid, Vec2D force)
 {

@@ -21,6 +21,10 @@
 #include "../Components/Components.h"
 #include "../Graphics/Renderer.h"
 #include "../InputManager.h"
+#include "../FileIO/SettingsManager.h"
+#include "../FileIO/Settings.h"
+#include "../GUI/TilemapPanel.h"
+
 namespace Engine
 {
   namespace Systems
@@ -29,7 +33,7 @@ namespace Engine
     public:
       StaticSpriteRenderSystem() {
         require_components<Components::Transform2D, Components::Color, Components::Texture>();
-        exclude_components<Components::TextureAtlas, Components::Distortion>();
+        exclude_components<Components::TextureAtlas, Components::Distortion >();
       }
 
       void draw_entity(const Engine::ECS::Entity& entity) override {
@@ -51,7 +55,7 @@ namespace Engine
     public:
       AtlasSpriteRenderSystem() {
         require_components<Components::Transform2D, Components::Color, Components::Texture, Components::TextureAtlas>();
-        exclude_components<Components::Distortion>();
+        exclude_components<Components::Distortion >();
       }
 
       void draw_entity(const Engine::ECS::Entity& entity) override {
@@ -73,6 +77,51 @@ namespace Engine
             *color
           );
         }
+      }
+    };
+
+    class TilemapRenderSystem : public Engine::ECS::System {
+    public:
+      TilemapRenderSystem() {
+        require_components<Components::TileMap>();
+      }
+
+      void draw_entity(const Engine::ECS::Entity& entity) override {
+        auto* int_map = entity.get_component<Components::TileMap>();
+
+        // Skip if tilemap is empty
+        if (!int_map || int_map->is_empty()) {
+          return;
+        }
+
+        // Get the atlas entries from project settings
+        const auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get();
+
+        // Determine the color based on tilemap mode and selected layer
+        Math::Vec4D color(1.0f, 1.0f, 1.0f, 1.0f); // Default: white (full brightness)
+
+        // Check if tilemap mode is enabled AND dimming is enabled
+        if (TilemapPanel::is_tilemap_mode_enabled() && TilemapPanel::is_dim_non_selected_layers_enabled()) {
+          // Get the selected layer name
+          std::string selected_layer = TilemapPanel::get_selected_layer();
+
+          // Check if this entity is on the selected layer
+          bool on_selected_layer = entity.is_on_layer(selected_layer);
+
+          if (!on_selected_layer) {
+            // Darken tiles on non-selected layers
+            color = Math::Vec4D(0.3f, 0.3f, 0.3f, 1.0f);
+          }
+        }
+
+        // Draw the tilemap using the optimized renderer function with multiple atlases
+        Engine::Graphics::draw_tilemap(
+          int_map->tiles,
+          project_settings.loaded_tilemaps,
+          int_map->tile_size,
+          int_map->grid_offset,
+          color
+        );
       }
     };
 
@@ -198,64 +247,65 @@ namespace Engine
       }
 
       void update() override {
-        // Check if Ctrl is held
-        bool ctrl_held = Engine::Input::is_held(Engine::KeyCode::CtrlLeft) ||
-          Engine::Input::is_held(Engine::KeyCode::CtrlRight);
+        // Get current mouse position if in viewport
+        auto mouse_pos_opt = Engine::Input::get_mouse_position_if_in_viewport();
 
-        // Get current mouse position
-        glm::vec2 current_mouse_pos = Engine::Input::get_mouse_position();
-
-        // Get scroll offset
+        // Get scroll offset first (to consume it)
         glm::vec2 scroll = Engine::Input::get_scroll_offset();
 
-        // Check if left mouse button is held
-        bool mouse_held = Engine::Input::is_held(Engine::KeyCode::MouseLeft);
+        // Early exit if mouse is not in viewport
+        if (!mouse_pos_opt.has_value()) {
+          is_dragging = false;
+          return;
+        }
 
-        // Start dragging
-        if (ctrl_held && Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
+        glm::vec2 current_mouse_pos = mouse_pos_opt.value();
+
+        // Check if middle mouse button is held
+        bool mouse_middle_held = Engine::Input::is_held(Engine::KeyCode::MouseMiddle);
+
+        // Start dragging with middle mouse button
+        if (Engine::Input::is_pressed(Engine::KeyCode::MouseMiddle)) {
           is_dragging = true;
           last_mouse_pos = current_mouse_pos;
         }
 
         // Stop dragging
-        if (!mouse_held || !ctrl_held) {
+        if (!mouse_middle_held) {
           is_dragging = false;
         }
 
-        // Only process camera controls if Ctrl is held
-        if (ctrl_held) {
-          auto& camera = CameraSystem::get_camera();
+        auto& camera = CameraSystem::get_camera();
 
-          // Handle zoom with Ctrl + Scroll
-          if (scroll.y != 0.0f) {
-            // Unactivate all cameras to use the free camera
-            CameraSystem::unactivate_all_cameras();
+        // Handle zoom with scroll (no Ctrl required)
+        if (scroll.y != 0.0f) {
+          // Unactivate all cameras to use the free camera
+          CameraSystem::unactivate_all_cameras();
 
-            float zoom_speed = 0.1f;
-            float zoom_delta = scroll.y * zoom_speed;
-            camera.zoom += zoom_delta;
-            // Clamp zoom to reasonable values
-            camera.zoom = glm::clamp(camera.zoom, 0.1f, 10.0f);
-          }
-
-          // Perform camera drag
-          if (is_dragging && mouse_held) {
-            // Unactivate all cameras to use the free camera
-            CameraSystem::unactivate_all_cameras();
-
-            // Calculate mouse delta
-            glm::vec2 delta = current_mouse_pos - last_mouse_pos;
-            last_mouse_pos = current_mouse_pos;
-
-            // Move camera in opposite direction of mouse drag for intuitive feel
-            // Also account for camera zoom
-            camera.position.x -= delta.x / camera.zoom;
-            camera.position.y -= delta.y / camera.zoom;
-          }
-
-          // Update the camera in the graphics system
-          Engine::Graphics::set_camera(camera);
+          float zoom_speed = 0.1f;
+          float zoom_delta = scroll.y * zoom_speed;
+          camera.zoom += zoom_delta;
+          // Clamp zoom to reasonable values
+          camera.zoom = glm::clamp(camera.zoom, 0.1f, 10.0f);
         }
+
+        // Perform camera drag with middle mouse button
+        if (is_dragging && mouse_middle_held) {
+          // Unactivate all cameras to use the free camera
+          CameraSystem::unactivate_all_cameras();
+
+          // Calculate mouse delta
+          glm::vec2 delta = current_mouse_pos - last_mouse_pos;
+          last_mouse_pos = current_mouse_pos;
+
+          // Move camera in opposite direction of mouse drag for intuitive feel
+          // Also account for camera zoom
+          camera.position.x -= delta.x / camera.zoom;
+          camera.position.y -= delta.y / camera.zoom;
+        }
+
+        // Update the camera in the graphics system
+        Engine::Graphics::set_camera(camera);
       }
     };
 
@@ -372,7 +422,6 @@ namespace Engine
         }
       }
     };
-
 
   }; // namespace Systems
 } // namespace Engine

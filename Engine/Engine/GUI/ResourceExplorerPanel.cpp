@@ -18,6 +18,7 @@
 #include "../Resources.h"
 #include "../Path.h"
 #include "../Logger.h"
+#include "../FileIO/LevelFileIO.h"
 #include <filesystem>
 #include <vector>
 #include <string>
@@ -192,6 +193,12 @@ void ResourceExplorerPanel() {
 
   ImGui::SameLine();
 
+  if (ImGui::Button("New File")) {
+    ImGui::OpenPopup("CreateFile");
+  }
+
+  ImGui::SameLine();
+
   if (ImGui::Button("Refresh")) {
     // Just triggers a re-read on next frame
   }
@@ -221,6 +228,60 @@ void ResourceExplorerPanel() {
       }
 
       ImGui::CloseCurrentPopup();
+    }
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+      ImGui::CloseCurrentPopup();
+    }
+
+    ImGui::EndPopup();
+  }
+
+  // Create file popup
+  static char new_file_name[128] = "NewFile";
+  static int selected_file_type = 0; // 0 = Level
+  if (ImGui::BeginPopupModal("CreateFile", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+    ImGui::Text("Create new file in current directory");
+
+    ImGui::Separator();
+    ImGui::Text("File Type:");
+    ImGui::RadioButton("Level (.json)", &selected_file_type, 0);
+    // Add more file types here in the future
+
+    ImGui::Separator();
+    ImGui::InputText("File Name", new_file_name, sizeof(new_file_name));
+
+    if (ImGui::Button("Create", ImVec2(120, 0))) {
+      // Close the popup FIRST before doing any file operations
+      ImGui::CloseCurrentPopup();
+
+      std::string filename = std::string(new_file_name);
+
+      // Handle different file types
+      if (selected_file_type == 0) { // Level
+        // Add .json extension if not present
+        if (Engine::Path(filename).get_extension() != ".json") {
+          filename += ".json";
+        }
+
+        std::string file_path = current_directory.empty() ?
+          filename :
+          Engine::Path(current_directory).join(filename).to_string();
+
+        std::string full_path = Engine::Path(Engine::Resources::resource_path).join(file_path).to_string();
+
+        // Create an empty level
+        Engine::Level empty_level;
+
+        if (Engine::FileIO::serialize_level_to_json_file(full_path, empty_level)) {
+          Log::info("Created level: " + file_path);
+        }
+        else {
+          Log::error("Failed to create level: " + file_path);
+        }
+      }
     }
 
     ImGui::SameLine();
@@ -284,9 +345,12 @@ void ResourceExplorerPanel() {
           preview_texture = nullptr;
         }
         else {
-          // Load resource
-          Engine::Resources::load(entry.path, true, false);
-          Log::info("Loaded resource: " + entry.path);
+          // Try to open the resource (e.g., instantiate level)
+          if (!Engine::Resources::open(entry.path, true)) {
+            // If open fails or is not supported, fall back to loading
+            Engine::Resources::load(entry.path, true, false);
+            Log::info("Loaded resource: " + entry.path);
+          }
         }
       }
     }
@@ -301,6 +365,12 @@ void ResourceExplorerPanel() {
         }
       }
       else {
+        if (ImGui::MenuItem("Open")) {
+          if (!Engine::Resources::open(entry.path, true)) {
+            Log::warning("Cannot open this resource type");
+          }
+        }
+
         if (ImGui::MenuItem("Load Resource")) {
           Engine::Resources::load(entry.path, true, false);
           Log::info("Loaded resource: " + entry.path);
@@ -318,12 +388,19 @@ void ResourceExplorerPanel() {
         std::string full_path = Engine::Path(Engine::Resources::resource_path).join(entry.path).to_string();
         try {
           if (entry.is_directory) {
+            // For directories, recursively remove all cached resources within
             std::filesystem::remove_all(full_path);
+            Log::info("Deleted directory: " + entry.path);
+            // TODO: Could iterate through all files in directory and remove from cache
           }
           else {
+            // Remove from resource caches first
+            Engine::Resources::remove_from_cache(entry.path, true);
+
+            // Then delete the file
             std::filesystem::remove(full_path);
+            Log::info("Deleted file: " + entry.path);
           }
-          Log::info("Deleted: " + entry.path);
 
           if (selected_item == entry.path) {
             selected_item = "";

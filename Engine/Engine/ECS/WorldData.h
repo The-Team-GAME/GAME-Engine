@@ -21,9 +21,13 @@
 #include <unordered_map>
 #include <memory>
 #include <vector>
+#include <array>
+#include <functional>
 
 namespace Engine {
   namespace ECS {
+    class Entity; // Forward declaration
+
     namespace Internal {
 
       struct WorldContainers {
@@ -41,6 +45,15 @@ namespace Engine {
         std::vector<SparseSet<EntityID>> layer_entities;
         std::bitset<MAX_LAYERS> layer_active_state; // Track which layers are active/enabled
 
+        // Collision matrix: collision_matrix[layerA][layerB] = true if they should collide
+        // Matrix is symmetric: collision_matrix[A][B] == collision_matrix[B][A]
+        std::array<std::bitset<MAX_LAYERS>, MAX_LAYERS> collision_matrix;
+
+        // Collision callbacks: map from layer pair key to callback function
+        // Key is created by make_layer_pair_key(LayerID, LayerID) to ensure symmetric access
+        // u64 key = (min_layer << 32) | max_layer
+        std::unordered_map<u64, std::function<void(Entity, Entity)>> collision_callbacks;
+
         // Constructor to initialize default layer
         WorldContainers() {
           // Pre-register default layer as ID 1 (DEFAULT_LAYER constant)
@@ -49,6 +62,11 @@ namespace Engine {
           layer_id_to_name[DEFAULT_LAYER] = "default";
           layer_entities.resize(2); // Resize to hold layer 0 (unused) and layer 1 (default)
           layer_active_state.set(); // All layers are active by default
+
+          // Initialize collision matrix: all layers collide with all layers by default
+          for (auto& row : collision_matrix) {
+            row.set();
+          }
         }
       };
 

@@ -40,6 +40,11 @@ namespace ReflectionLibrary
         print_value(name, inner_value, nest_level);
       }
     }
+    else if constexpr (is_bitset_v<ValueType>)
+    {
+      // Handle std::bitset
+      std::cout << indent << name << " = " << value.to_string() << "\n";
+    }
     else if constexpr (std::is_same_v<ValueType, bool>)
     {
       std::cout << indent << name << " = " << (value ? "true" : "false") << "\n";

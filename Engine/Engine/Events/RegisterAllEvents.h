@@ -22,6 +22,9 @@
 #include "../Resources.h"
 #include "../Components/GizmoComponents.h"
 #include "../InputManager.h"
+#include "../UndoManager/UndoManager.h"
+#include "../ProjectSaveManager.h"
+#include "../Level.h"
 
 
 namespace Engine {
@@ -72,6 +75,16 @@ namespace Engine {
                   const auto mouse = Engine::Input::get_mouse_world_position();
                   gizmo->drag_offset = Math::Vec2D(mouse.x - transform->position.x, mouse.y - transform->position.y);
                   gizmo->is_dragging = true;
+
+                  // Set active handle to Body for immediate dragging
+                  gizmo->active_handle = Components::GizmoHandleType::Body;
+                  gizmo->hover_handle = Components::GizmoHandleType::Body;
+
+                  // Cache initial state for dragging
+                  gizmo->start_mouse_world = mouse;
+                  gizmo->start_pos = transform->position;
+                  gizmo->start_scale = transform->scale;
+                  gizmo->start_rotation = transform->rotation;
                 }
                 else {
                   // Initialize drag offset to zero - will be set on first update if needed
@@ -81,6 +94,197 @@ namespace Engine {
               }
             }
           }
+        }
+      );
+
+      // Register generic component modification event (reflection-based)
+      Engine::EventManager::add_event_listener<Engine::Events::ModifyComponentEvent>([](const Engine::Events::ModifyComponentEvent& event)
+        {
+          auto entity = Engine::ECS::get_entity(event.entity_id);
+          if (!entity.is_valid()) {
+            return;
+          }
+
+          // Get the component array for this component type
+          auto& containers = Engine::ECS::Internal::get_containers();
+          auto it = containers.component_arrays.find(event.component_type_id);
+          if (it == containers.component_arrays.end()) {
+            return;
+          }
+
+          Engine::ECS::IComponentArray* array = it->second.get();
+
+          // Apply the new component data using reflection
+          array->set_component_from_generic_value(event.entity_id, event.new_data);
+
+          // Record undo if requested
+          if (event.record_undo) {
+            Engine::ECS::EntityID entity_id = event.entity_id;
+            Engine::ECS::ComponentTypeID component_type_id = event.component_type_id;
+            ReflectionLibrary::GenericValue old_data = event.old_data;
+            ReflectionLibrary::GenericValue new_data = event.new_data;
+
+            Engine::UndoManager::record(
+              // Do: Apply new data
+              [entity_id, component_type_id, new_data]() {
+                Engine::EventManager::send_event<Engine::Events::ModifyComponentEvent>(
+                  entity_id, component_type_id, new_data, new_data, false
+                );
+                Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+              },
+              // Undo: Restore old data
+              [entity_id, component_type_id, old_data, new_data]() {
+                Engine::EventManager::send_event<Engine::Events::ModifyComponentEvent>(
+                  entity_id, component_type_id, old_data, new_data, false
+                );
+                Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+              }
+            );
+
+            // Mark level as dirty
+            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+          }
+        }
+      );
+
+      // Register add component event (reflection-based)
+      Engine::EventManager::add_event_listener<Engine::Events::AddComponentEvent>([](const Engine::Events::AddComponentEvent& event)
+        {
+          auto entity = Engine::ECS::get_entity(event.entity_id);
+          if (!entity.is_valid()) {
+            return;
+          }
+
+          // Get the component array for this component type
+          auto& containers = Engine::ECS::Internal::get_containers();
+          auto it = containers.component_arrays.find(event.component_type_id);
+          if (it == containers.component_arrays.end()) {
+            return;
+          }
+
+          Engine::ECS::IComponentArray* array = it->second.get();
+
+          // Add the component using reflection
+          array->add_component_from_generic_value(event.entity_id, event.component_data);
+
+          // Record undo if requested
+          if (event.record_undo) {
+            Engine::ECS::EntityID entity_id = event.entity_id;
+            Engine::ECS::ComponentTypeID component_type_id = event.component_type_id;
+            ReflectionLibrary::GenericValue component_data = event.component_data;
+
+            Engine::UndoManager::record(
+              // Do: Add component
+              [entity_id, component_type_id, component_data]() {
+                Engine::EventManager::send_event<Engine::Events::AddComponentEvent>(
+                  entity_id, component_type_id, component_data, false
+                );
+                Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+              },
+              // Undo: Remove component
+              [entity_id, component_type_id]() {
+                Engine::EventManager::send_event<Engine::Events::RemoveComponentEvent>(
+                  entity_id, component_type_id, false
+                );
+                Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+              }
+            );
+
+            // Mark level as dirty
+            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+          }
+        }
+      );
+
+      // Register remove component event (reflection-based)
+      Engine::EventManager::add_event_listener<Engine::Events::RemoveComponentEvent>([](const Engine::Events::RemoveComponentEvent& event)
+        {
+          auto entity = Engine::ECS::get_entity(event.entity_id);
+          if (!entity.is_valid()) {
+            return;
+          }
+
+          // Get the component array for this component type
+          auto& containers = Engine::ECS::Internal::get_containers();
+          auto it = containers.component_arrays.find(event.component_type_id);
+          if (it == containers.component_arrays.end()) {
+            return;
+          }
+
+          Engine::ECS::IComponentArray* array = it->second.get();
+
+          // Capture component data before removal for undo
+          ReflectionLibrary::GenericValue component_data;
+          if (event.record_undo) {
+            component_data = array->to_generic_value(event.entity_id);
+          }
+
+          // Remove the component
+          containers.components_to_remove.emplace_back(event.entity_id, event.component_type_id);
+
+          // Record undo if requested
+          if (event.record_undo) {
+            Engine::ECS::EntityID entity_id = event.entity_id;
+            Engine::ECS::ComponentTypeID component_type_id = event.component_type_id;
+
+            Engine::UndoManager::record(
+              // Do: Remove component
+              [entity_id, component_type_id]() {
+                Engine::EventManager::send_event<Engine::Events::RemoveComponentEvent>(
+                  entity_id, component_type_id, false
+                );
+                Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+              },
+              // Undo: Restore component
+              [entity_id, component_type_id, component_data]() {
+                Engine::EventManager::send_event<Engine::Events::AddComponentEvent>(
+                  entity_id, component_type_id, component_data, false
+                );
+                Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+              }
+            );
+
+            // Mark level as dirty
+            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+          }
+        }
+      );
+
+      // Register entity deletion event
+      Engine::EventManager::add_event_listener<Engine::Events::DeleteEntityEvent>([](const Engine::Events::DeleteEntityEvent& event)
+        {
+          auto entity = Engine::ECS::get_entity(event.entity_id);
+          if (!entity.is_valid()) {
+            return;
+          }
+
+          // Record undo if requested
+          if (event.record_undo) {
+            // Capture entity state before deletion
+            Engine::ECS::Prefab entity_prefab = Engine::ECS::entity_to_prefab(entity);
+            Engine::ECS::EntityID entity_id = event.entity_id;
+
+            Engine::UndoManager::record(
+              // Do: Delete the entity
+              [entity_id]() {
+                Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(entity_id, false);
+                Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+              },
+              // Undo: Recreate the entity from prefab with the same ID
+              [entity_prefab, entity_id]() {
+                Engine::ECS::Entity restored = Engine::ECS::instantiate_prefab_with_id(entity_prefab, entity_id);
+                // Send selection event to select the restored entity
+                Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(restored.get_id());
+                Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+              }
+            );
+
+            // Mark level as dirty
+            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+          }
+
+          // Perform the actual deletion
+          Engine::ECS::destroy_entity(event.entity_id);
         }
       );
     }

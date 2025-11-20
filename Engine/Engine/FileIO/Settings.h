@@ -18,9 +18,13 @@
 
 #include <string>
 #include <vector>
+#include <array>
+#include <bitset>
 #include "../Components/Components.h"
 #include "../Reflection/ReflectionLibrary.h"
 #include "SettingsManager.h"
+#include "../Graphics/RendererInternal.h"
+#include "../ECS/Types.h"
 
 /*
 Settings Documentation:
@@ -59,14 +63,20 @@ namespace Engine
       int window_width = 1280;
       int window_height = 720;
       std::string window_title = "Monkey Stole My GPA";
-      bool imgui_viewport_enabled = true;
+      bool panel_viewport_mode = true; // True - Render to ImGui panel viewport, False - render to full window
       bool load_all_assets_on_startup = true;
     };
 
     // Values that need to be loaded after intializing engine subsystems, (e.g. Textures need to wait for Graphics init)
     struct ProjectSettings
     {
-      std::vector<Components::AtlasEntry> loaded_tilemaps{};
+      std::vector<Engine::Graphics::AtlasEntry> loaded_tilemaps{};
+
+      // Layer collision pairs: stores pairs of layer names that should collide
+      // This is name-based instead of ID-based, so it survives layer additions/removals
+      // Each entry is a pair of layer names: {"layerA", "layerB"}
+      // The matrix is symmetric, so only one direction needs to be stored
+      std::vector<std::pair<std::string, std::string>> layer_collision_pairs{};
     };
 
     // Values that are specific to the local user/machine (e.g. ImGui theme)
@@ -77,6 +87,6 @@ namespace Engine
   }
 }
 
-REFLECT_FIELDS(Engine::FileIO::EngineSettings, window_title, window_width, window_height, imgui_viewport_enabled, load_all_assets_on_startup)
-REFLECT_FIELDS(Engine::FileIO::ProjectSettings, loaded_tilemaps)
+REFLECT_FIELDS(Engine::FileIO::EngineSettings, window_title, window_width, window_height, panel_viewport_mode, load_all_assets_on_startup)
+REFLECT_FIELDS(Engine::FileIO::ProjectSettings, loaded_tilemaps, layer_collision_pairs)
 REFLECT_FIELDS(Engine::FileIO::LocalSettings, imgui_theme)
