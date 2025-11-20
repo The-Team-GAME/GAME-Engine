@@ -249,7 +249,7 @@ public:
             )
             .add_component<Components::RigidBody>(true, false) // Static (not affected by forces), no gravity
             .add_component<Components::BoxCollider>(hitbox_width, hitbox_height, false) // Not a static obstacle
-            .add_component<Components::Lifetime>(0.1f) // Destroy after 0.1 seconds (brief hitbox window)
+            .add_component<Components::FrameLifetime>(1) // Destroy after 1 frame
             .add_component<Components::Color>(Math::Vec4D(1.0f, 0.0f, 0.0f, 0.3f)) // Semi-transparent red for debugging
             .add_component<Components::Texture>(Engine::Graphics::get_rect_texture())
             .remove_from_layer("default")
