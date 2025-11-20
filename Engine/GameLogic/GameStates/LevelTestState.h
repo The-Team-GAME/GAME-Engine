@@ -127,7 +127,6 @@ public:
         // Check for jump input
         if (Engine::Input::is_pressed(Engine::KeyCode::Space))
         {
-          auto* rigid = entity.get_component<Components::RigidBody>();
           // Only jump if on ground
           if (rigid && rigid->on_ground) {
             state_machine->change_state("Jumping");
