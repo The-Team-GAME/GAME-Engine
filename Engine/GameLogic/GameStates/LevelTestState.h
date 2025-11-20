@@ -21,6 +21,12 @@ private:
   Engine::ECS::Entity player_entity;
   Engine::ECS::Entity enemy_entity;
 
+  // Player dimensions
+  const f32 player_idle_width = 64.0f;
+  const f32 player_idle_height = 64.0f;
+  const f32 player_attack_width = 96.0f;
+  const f32 player_attack_height = 64.0f;
+
 public:
   void load() {
     Engine::Resources::open_level("levels/LevelTest.json");
@@ -35,12 +41,15 @@ public:
     Components::State player_idle(
       "Idle",
       // on_enter
-      [](Engine::ECS::Entity& entity) {
+      [this](Engine::ECS::Entity& entity) {
         auto* rigid = entity.get_component<Components::RigidBody>();
         if (rigid) rigid->velocity.x = 0.f;
 
-        auto* color = entity.get_component<Components::Color>();
-        if (color) *color = Components::Color(blue); // Blue when idle
+        // Switch to idle animation
+        auto* anim_state = entity.get_component<Components::AnimationState>();
+        if (anim_state) {
+          anim_state->set_entity_state("Idle");
+        }
 
         std::cout << "Player: Entered Idle state" << std::endl;
       },
@@ -78,9 +87,12 @@ public:
     Components::State player_walking(
       "Walking",
       // on_enter
-      [](Engine::ECS::Entity& entity) {
-        auto* color = entity.get_component<Components::Color>();
-        if (color) *color = Components::Color(0.0f, 1.0f, 0.0f, 1.0f); // Green when walking
+      [this](Engine::ECS::Entity& entity) {
+        // Switch to run animation
+        auto* anim_state = entity.get_component<Components::AnimationState>();
+        if (anim_state) {
+          anim_state->set_entity_state("Walking");
+        }
 
         std::cout << "Player: Entered Walking state" << std::endl;
       },
@@ -137,15 +149,18 @@ public:
     Components::State player_jumping(
       "Jumping",
       // on_enter
-      [](Engine::ECS::Entity& entity) {
+      [this](Engine::ECS::Entity& entity) {
         auto* rigid = entity.get_component<Components::RigidBody>();
         if (rigid) {
           // Apply jump force
           rigid->velocity.y = -900.f; // Negative is up
         }
 
-        auto* color = entity.get_component<Components::Color>();
-        if (color) *color = Components::Color(0.0f, 1.0f, 1.0f, 1.0f); // Cyan when jumping
+        // Switch to jump animation
+        auto* anim_state = entity.get_component<Components::AnimationState>();
+        if (anim_state) {
+          anim_state->set_entity_state("Jumping");
+        }
 
         std::cout << "Player: Entered Jumping state" << std::endl;
       },
@@ -191,15 +206,18 @@ public:
     Components::State player_attacking(
       "Attacking",
       // on_enter
-      [](Engine::ECS::Entity& entity) {
+      [this](Engine::ECS::Entity& entity) {
         auto* rigid = entity.get_component<Components::RigidBody>();
         if (rigid) {
           rigid->velocity.x = 0.f;
           // Don't reset velocity.y - let gravity/physics handle it
         }
 
-        auto* color = entity.get_component<Components::Color>();
-        if (color) *color = Components::Color(red); // Red when attacking
+        // Switch to attack animation
+        auto* anim_state = entity.get_component<Components::AnimationState>();
+        if (anim_state) {
+          anim_state->set_entity_state("Attacking");
+        }
 
         std::cout << "Player: Entered Attacking state" << std::endl;
       },
@@ -248,14 +266,67 @@ public:
     player_sm.add_state(player_attacking);
     player_sm.set_initial_state("Idle");
 
+    // Create AnimationState for player with all animation states
+    Components::AnimationState player_anim_state;
+
+    // Add idle state (24 frames) - looping
+    player_anim_state.add_state(
+      "Idle",
+      Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_idle_spritesheet.png")),
+      Components::TextureAtlas(64, 64, 1, 24, 24),
+      Components::Animation(24, 0.1f),
+      Math::Vec2D(player_idle_width * 2.0f, player_idle_height * 2.0f),
+      true,  // is_looping
+      std::nullopt  // no auto-transition
+    );
+
+    // Add run state (8 frames) - looping
+    player_anim_state.add_state(
+      "Walking",
+      Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_run_spritesheet.png")),
+      Components::TextureAtlas(64, 64, 1, 8, 8),
+      Components::Animation(8, 0.1f),
+      Math::Vec2D(player_idle_width * 2.0f, player_idle_height * 2.0f),
+      true,  // is_looping
+      std::nullopt
+    );
+
+    // Add jump state (8 frames) - uses run animation, looping
+    player_anim_state.add_state(
+      "Jumping",
+      Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_run_spritesheet.png")),
+      Components::TextureAtlas(64, 64, 1, 8, 8),
+      Components::Animation(8, 0.1f),
+      Math::Vec2D(player_idle_width * 2.0f, player_idle_height * 2.0f),
+      true,  // is_looping
+      std::nullopt
+    );
+
+    // Add attack state (6 frames) - one-shot, auto-transitions to idle
+    player_anim_state.add_state(
+      "Attacking",
+      Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_threehit_spritesheet.png")),
+      Components::TextureAtlas(96, 64, 1, 19, 6),
+      Components::Animation(6, 0.05f),
+      Math::Vec2D(player_attack_width * 2.0f, player_attack_height * 2.0f),
+      false,  // is_looping = false (one-shot animation)
+      "Idle"  // auto-transition to idle when done
+    );
+
+    // Set initial state to idle
+    player_anim_state.set_entity_state("Idle");
+
     // Create player entity
     player_entity = Engine::ECS::create_entity()
       .add_component<Components::Tag<"Player">>()
-      .add_component<Components::Transform2D>(400.0f, 300.0f, 0.0f, 50.0f, 50.0f)
-      .add_component<Components::Color>(blue)
-      .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
+      .add_component<Components::Transform2D>(400.0f, 300.0f, 0.0f, player_idle_width * 2.0f, player_idle_height * 2.0f)
+      .add_component<Components::Texture>(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_idle_spritesheet.png"))
+      .add_component<Components::TextureAtlas>(64, 64, 1, 24, 24)
+      .add_component<Components::Animation>(24, 0.1f)
+      .add_component<Components::AnimationState>(player_anim_state)
+      .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
       .add_component<Components::RigidBody>(Components::RigidBody(false, true))
-      .add_component<Components::BoxCollider>(50.0f, 50.0f, false)
+      .add_component<Components::BoxCollider>(player_idle_width * 2.0f, player_idle_height * 2.0f, false)
       .add_component<Components::StateMachine>(player_sm)
       .remove_from_layer("default")
       .add_to_layer("player");
