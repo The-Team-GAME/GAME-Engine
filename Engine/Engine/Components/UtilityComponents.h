@@ -16,6 +16,9 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
+#include "../TypeDef.h"
+#include "../ECS/Macros.h"
+
 namespace Components
 {
   /* ======================================= //
@@ -34,4 +37,15 @@ namespace Components
 
   // Entities with this should not be modifyable by game dev
   struct Internal {};
+
+  // Component for entities that should be destroyed after a certain time
+  struct Lifetime {
+    f32 duration = 1.0f;       // How long the entity lives (in seconds)
+    f32 elapsed = 0.0f;        // Time elapsed since creation
+
+    Lifetime() : duration(1.0f), elapsed(0.0f) {}
+    Lifetime(f32 time) : duration(time), elapsed(0.0f) {}
+  };
 }
+
+REGISTER_COMPONENT(Components::Lifetime, duration, elapsed)

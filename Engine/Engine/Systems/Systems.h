@@ -26,12 +26,14 @@
 #include "UISystem.h"
 #include "GizmoSystem.h"
 #include "StateMachineSystem.h"
+#include "LifetimeSystem.h"
 
 void register_engine_systems()
 {
   // Update systems
   Engine::ECS::add_system<Engine::Systems::CameraSystem>();
   Engine::ECS::add_system<Engine::Systems::CameraControlSystem>();
+  Engine::ECS::add_system<Engine::Systems::LifetimeSystem>(); // Handle entity lifetimes
   Engine::ECS::add_system<Engine::Systems::StateMachineSystem>(); // Update state machines first
   Engine::ECS::add_system<Engine::Systems::LogicSystem>();
   Engine::ECS::add_system<Engine::Systems::Physics2DSystem>();
@@ -75,6 +77,8 @@ void unregister_engine_systems()
   Engine::ECS::remove_system<Engine::Systems::Collision2DSystem>();
   Engine::ECS::remove_system<Engine::Systems::Physics2DSystem>();
   Engine::ECS::remove_system<Engine::Systems::LogicSystem>();
+  Engine::ECS::remove_system<Engine::Systems::StateMachineSystem>();
+  Engine::ECS::remove_system<Engine::Systems::LifetimeSystem>();
   Engine::ECS::remove_system<Engine::Systems::CameraControlSystem>();
   Engine::ECS::remove_system<Engine::Systems::CameraSystem>();
 }

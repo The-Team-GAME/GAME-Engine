@@ -228,6 +228,30 @@ public:
           anim_state->set_animation_state("Attacking");
         }
 
+        // Create attack hitbox entity
+        auto* transform = entity.get_component<Components::Transform2D>();
+        auto* flip = entity.get_component<Components::Flip>();
+        if (transform) {
+          // Position hitbox in front of player based on facing direction
+          float hitbox_offset = (flip && flip->value.x < 0) ? -80.0f : 80.0f;
+
+          Engine::ECS::create_entity()
+            .add_component<Components::Tag<"PlayerAttackHitbox">>()
+            .add_component<Components::Transform2D>(
+              transform->position.x + hitbox_offset,
+              transform->position.y,
+              0.0f,
+              100.0f, // hitbox width
+              player_attack_height * 2.0f // hitbox height
+            )
+            .add_component<Components::BoxCollider>(100.0f, player_attack_height * 2.0f, true)
+            .add_component<Components::Lifetime>(0.5f) // Destroy after 0.5 seconds
+            .add_component<Components::Color>(Math::Vec4D(1.0f, 0.0f, 0.0f, 0.5f)) // Semi-transparent red for debugging
+            .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
+            .remove_from_layer("default")
+            .add_to_layer("player_attack");
+        }
+
         std::cout << "Player: Entered Attacking state" << std::endl;
       },
       // on_update
@@ -240,26 +264,6 @@ public:
 
         if (attack_timer >= 30) {
           attack_timer = 0;
-
-          // Check if enemy is nearby and damage it
-          if (enemy_entity.is_valid()) {
-            auto* player_transform = entity.get_component<Components::Transform2D>();
-            auto* enemy_transform = enemy_entity.get_component<Components::Transform2D>();
-
-            if (player_transform && enemy_transform) {
-              float dx = player_transform->position.x - enemy_transform->position.x;
-              float dy = player_transform->position.y - enemy_transform->position.y;
-              float distance = std::sqrt(dx * dx + dy * dy);
-
-              if (distance < 150.f) {
-                auto* enemy_sm = enemy_entity.get_component<Components::StateMachine>();
-                if (enemy_sm) {
-                  enemy_sm->change_state("Hit");
-                }
-              }
-            }
-          }
-
           state_machine->change_state("Idle");
         }
       },

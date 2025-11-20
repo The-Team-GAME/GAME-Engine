@@ -58,7 +58,7 @@ int main()
   Engine::ECS::register_layer("tilemap_background_mid");  // Tilemap background mid layer (e.g., MRT carriage, trees, hills, pillars)
   //Engine::ECS::register_layer("tilemap_background_near"); // Tilemap background near layer (e.g., bushes, fences) // TODO: Re-enable after M3
   // Engine::ECS::register_layer("tilemap_foreground_far"); // Tilemap foreground far layer (don't need it for now)
-   Engine::ECS::register_layer("tilemap_foreground_mid"); // Tilemap foreground mid layer (e.g., things that needs to collide with player, ground, platforms)
+  Engine::ECS::register_layer("tilemap_foreground_mid"); // Tilemap foreground mid layer (e.g., things that needs to collide with player, ground, platforms)
   //Engine::ECS::register_layer("tilemap_foreground_near"); // Tilemap foreground near layer (don't need it for now)
   Engine::ECS::register_layer("hazard"); // Hazard layer (e.g., spikes, lava) 
   Engine::ECS::register_layer("player"); // Player character layer
@@ -78,6 +78,24 @@ int main()
       std::cout << "Collision detected between Entity "
         << entityA.get_id() << " and Entity "
         << entityB.get_id() << std::endl;
+    });
+
+  // Register collision callback for player attacks hitting enemies
+  Engine::ECS::LayerRegistry::register_collision_callback("player_attack", "enemy",
+    [](Engine::ECS::Entity attack_entity, Engine::ECS::Entity enemy_entity)
+    {
+      // When player attack hitbox collides with enemy
+      auto* enemy_sm = enemy_entity.get_component<Components::StateMachine>();
+      if (enemy_sm) {
+        // Only trigger hit if enemy is not already hit
+        if (enemy_sm->get_current_state() != "Hit") {
+          enemy_sm->change_state("Hit");
+          std::cout << "Player attack hit enemy!" << std::endl;
+        }
+      }
+
+      // Destroy the attack hitbox after hitting
+      Engine::ECS::destroy_entity(attack_entity);
     });
 
   // Register game scenes at startup
