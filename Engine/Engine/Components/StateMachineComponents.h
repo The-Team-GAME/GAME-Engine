@@ -18,6 +18,8 @@
 
 #include "../ECS/ECS.h"
 #include "../ECS/Macros.h"
+#include "../Math/Vector2D.h"
+#include "GraphicsComponents.h"
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -27,6 +29,20 @@
 
 namespace Components
 {
+  // ============================================================================
+  // State Animation Definition
+  // ============================================================================
+
+  struct StateAnimation {
+    Texture texture;
+    TextureAtlas texture_atlas;
+    Animation animation;
+    std::optional<Math::Vec2D> scale; // Optional scale override for this state, for entities that have different sizes per animation
+
+    // Note: Animation looping is handled by the AnimationUpdateSystem using fmod
+    // If you need non-looping animations, implement custom logic in state callbacks
+  };
+
   // ============================================================================
   // State Definition
   // ============================================================================
@@ -39,16 +55,21 @@ namespace Components
     std::function<void(Engine::ECS::Entity&)> on_update;
     std::function<void(Engine::ECS::Entity&)> on_exit;
 
+    // Optional animation data for this state
+    std::optional<StateAnimation> animation;
+
     State() = default;
 
     State(const std::string& state_name,
       std::function<void(Engine::ECS::Entity&)> enter_callback = nullptr,
       std::function<void(Engine::ECS::Entity&)> update_callback = nullptr,
-      std::function<void(Engine::ECS::Entity&)> exit_callback = nullptr)
+      std::function<void(Engine::ECS::Entity&)> exit_callback = nullptr,
+      std::optional<StateAnimation> state_animation = std::nullopt)
       : name(state_name)
       , on_enter(enter_callback)
       , on_update(update_callback)
       , on_exit(exit_callback)
+      , animation(state_animation)
     {
     }
   };
@@ -230,6 +251,51 @@ namespace Components
       // Transition to new state
       current_state_name_ = new_state;
       is_first_frame_ = true; // Mark that we need to call on_enter next update
+
+      // Apply state animation if it exists
+      auto& new_state_obj = states_[new_state];
+      if (new_state_obj.animation.has_value()) {
+        apply_state_animation(new_state_obj.animation.value());
+      }
+    }
+
+    // Apply the animation data to the entity
+    void apply_state_animation(const StateAnimation& anim) {
+      if (!owner_entity_) return;
+
+      // Update Texture component
+      if (auto* texture = owner_entity_->get_component<Texture>()) {
+        *texture = anim.texture;
+      }
+      else {
+        owner_entity_->add_component<Texture>(anim.texture);
+      }
+
+      // Update TextureAtlas component
+      if (auto* atlas = owner_entity_->get_component<TextureAtlas>()) {
+        *atlas = anim.texture_atlas;
+      }
+      else {
+        owner_entity_->add_component<TextureAtlas>(anim.texture_atlas);
+      }
+
+      // Update Animation component and reset it to start from the beginning
+      if (auto* animation = owner_entity_->get_component<Animation>()) {
+        *animation = anim.animation;
+        animation->startTime = Engine::Time::get_time(); // Reset animation start time
+      }
+      else {
+        Animation new_anim = anim.animation;
+        new_anim.startTime = Engine::Time::get_time(); // Set current time as start
+        owner_entity_->add_component<Animation>(new_anim);
+      }
+
+      // Apply optional scale override if specified
+      if (anim.scale.has_value()) {
+        if (auto* transform = owner_entity_->get_component<Transform2D>()) {
+          transform->scale = anim.scale.value();
+        }
+      }
     }
   };
 
