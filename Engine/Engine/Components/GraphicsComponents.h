@@ -141,6 +141,14 @@ namespace Components
       }
     }
 
+    Animation(std::initializer_list<float> durations, bool looping = true)
+      : frames(), startTime(Engine::Time::get_time()), totalDuration(0.0f), is_looping(looping)
+    {
+      // Create frames based on the number of durations
+      frames.resize(durations.size());
+      set_frame_durations(durations);
+    }
+
     // Check if the animation has completed one full cycle
     bool has_ended() const {
       float elapsed = Engine::Time::get_time() - startTime;
@@ -150,6 +158,25 @@ namespace Components
     // Get the elapsed time since animation started
     float get_elapsed_time() const {
       return Engine::Time::get_time() - startTime;
+    }
+
+    // Set specific frame durations (allows different duration per frame)
+    void set_frame_durations(const std::vector<float>& durations) {
+      if (durations.empty() || durations.size() != frames.size()) {
+        return; // Invalid input - must match frame count
+      }
+
+      totalDuration = 0.0f;
+      for (size_t i = 0; i < frames.size(); ++i) {
+        frames[i].duration = durations[i];
+        frames[i].before_time = totalDuration;
+        totalDuration += durations[i];
+      }
+    }
+
+    // Set specific frame durations using initializer list for convenience
+    void set_frame_durations(std::initializer_list<float> durations) {
+      set_frame_durations(std::vector<float>(durations));
     }
 
     struct Reflector {
