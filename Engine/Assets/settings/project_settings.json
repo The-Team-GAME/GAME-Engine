@@ -4203,6 +4203,10 @@
         {
             "first": "tilemap_foreground_mid",
             "second": "player"
+        },
+        {
+            "first": "tilemap_foreground_mid",
+            "second": "enemy"
         }
     ]
 }
