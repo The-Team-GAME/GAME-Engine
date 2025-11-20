@@ -422,7 +422,7 @@ public:
     Components::StateAnimation lazy_monkey_attacking_anim;
     lazy_monkey_attacking_anim.texture = Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Attack_Spritesheet.png"));
     lazy_monkey_attacking_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 4, 4);
-    lazy_monkey_attacking_anim.animation = Components::Animation(5, 0.1f);
+    lazy_monkey_attacking_anim.animation = Components::Animation(4, 0.1f);
     lazy_monkey_attacking_anim.scale = Math::Vec2D(lazy_monkey_width * 2.0f, lazy_monkey_height * 2.0f);
 
     Components::State lazy_monkey_attacking(
@@ -463,7 +463,7 @@ public:
     Components::StateAnimation lazy_monkey_hit_anim;
     lazy_monkey_hit_anim.texture = Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Death_Spritesheet.png"));
     lazy_monkey_hit_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 3, 3);
-    lazy_monkey_hit_anim.animation = Components::Animation(4, 0.1f);
+    lazy_monkey_hit_anim.animation = Components::Animation(3, 0.1f);
     lazy_monkey_hit_anim.scale = Math::Vec2D(lazy_monkey_width * 2.0f, lazy_monkey_height * 2.0f);
 
     Components::State lazy_monkey_hit(
