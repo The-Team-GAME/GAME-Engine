@@ -14,6 +14,7 @@
 #pragma once
 
 #include "../../Engine/MonkeyEngine.h"
+#include "../Components/EnemyHealthComponent.h"
 
 class LevelTestState : public Engine::Scene
 {
@@ -592,6 +593,7 @@ public:
       .add_component<Components::Flip>(1.0f, 1.0f) // Start facing right
       .add_component<Components::RigidBody>(Components::RigidBody(false, true))
       .add_component<Components::BoxCollider>(enemy_width * 2.0f, enemy_height * 2.0f, false)
+      .add_component<Components::EnemyHealth>(100, 100)
       .add_component<Components::StateMachine>(enemy_sm)
       .remove_from_layer("default")
       .add_to_layer("enemy");

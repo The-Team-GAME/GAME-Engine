@@ -30,6 +30,7 @@
 #include "GameStates/LuaState.h"
 #include "GameStates/BehaviourState.h"
 #include "Systems/HealthSystem.h"
+#include "Systems/EnemyHealthSystem.h"
 #include "GameStates/LevelTestState.h"
 
 /*=================================================================================
@@ -84,18 +85,32 @@ int main()
   Engine::ECS::LayerRegistry::register_collision_callback("player_attack", "enemy",
     [](Engine::ECS::Entity attack_entity, Engine::ECS::Entity enemy_entity)
     {
+      // std::cout << "Player attack hit enemy!" << std::endl;
+
       // When player attack hitbox collides with enemy
-      auto* enemy_sm = enemy_entity.get_component<Components::StateMachine>();
-      if (enemy_sm) {
-        // Only trigger hit if enemy is not already hit
-        if (enemy_sm->get_current_state() != "Hit") {
-          enemy_sm->change_state("Hit");
-          std::cout << "Player attack hit enemy!" << std::endl;
+      auto* enemy_health = enemy_entity.get_component<Components::EnemyHealth>();
+      auto* state_machine = enemy_entity.get_component<Components::StateMachine>();
+
+      if (enemy_health && state_machine) {
+        // Use the EnemyHealthSystem to handle damage
+        if (!enemy_health) {
+          std::cout << "Error: EnemyHealth component missing!" << std::endl;
+          return;
+        };
+
+        // Only take damage if not invulnerable
+        enemy_health->take_damage(10);
+        std::cout << "Enemy took " << 10 << " damage! HP: "
+          << enemy_health->current_hp << "/" << enemy_health->max_hp << std::endl;
+
+        // Trigger hit state if state machine exists
+        if (state_machine && state_machine->get_current_state() != "Hit") {
+          state_machine->change_state("Hit");
         }
       }
-
-      // Destroy the attack hitbox after hitting
-      Engine::ECS::destroy_entity(attack_entity);
+      else {
+        std::cout << "Error: EnemyHealth or StateMachine component missing!" << std::endl;
+      }
     });
 
   // Register game scenes at startup
@@ -116,6 +131,7 @@ int main()
 
   // Register game systems at startup
   Engine::ECS::add_system<Engine::Systems::HealthSystem>();
+  Engine::ECS::add_system<Engine::Systems::EnemyHealthSystem>();
 
   // Run the main menu state
   Engine::Core::run("MainMenuState");
