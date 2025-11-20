@@ -205,7 +205,7 @@ namespace Engine {
     void draw_quad(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size,
       f32 rotation, const Math::Vec4D& color, const std::array<Math::Vec2D, 4>& tex_coords) {
       if (!texture || texture->id == 0) {
-        Log::warning("Attempted to draw invalid texture");
+        Log::warning("Attempted to draw invalid texture: " + texture->path);
         return;
       }
 
@@ -296,7 +296,7 @@ namespace Engine {
     void draw_ui_quad(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size,
       f32 rotation, const Math::Vec4D& color, const std::array<Math::Vec2D, 4>& tex_coords) {
       if (!texture || texture->id == 0) {
-        Log::warning("Attempted to draw invalid texture");
+        Log::warning("Attempted to draw invalid texture: " + texture->path);
         return;
       }
 

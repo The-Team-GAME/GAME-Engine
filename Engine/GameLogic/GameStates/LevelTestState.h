@@ -27,6 +27,10 @@ private:
   const f32 player_attack_width = 96.0f;
   const f32 player_attack_height = 64.0f;
 
+  // Enemy (Lazy Monkey) dimensions
+  const f32 enemy_width = 64.0f;
+  const f32 enemy_height = 64.0f;
+
 public:
   void load() {
     Engine::Resources::open_level("levels/LevelTest.json");
@@ -340,8 +344,11 @@ public:
       "Idle",
       // on_enter
       [](Engine::ECS::Entity& entity) {
-        auto* color = entity.get_component<Components::Color>();
-        if (color) *color = Components::Color(1.0f, 1.0f, 0.0f, 1.0f); // Yellow when idle
+        // Switch to idle animation
+        auto* anim_state = entity.get_component<Components::AnimationState>();
+        if (anim_state) {
+          anim_state->set_entity_state("Idle");
+        }
 
         std::cout << "Enemy: Entered Idle state" << std::endl;
       },
@@ -374,8 +381,11 @@ public:
       "Chasing",
       // on_enter
       [](Engine::ECS::Entity& entity) {
-        auto* color = entity.get_component<Components::Color>();
-        if (color) *color = Components::Color(1.0f, 0.65f, 0.0f, 1.0f); // Orange when chasing
+        // Switch to run/chasing animation
+        auto* anim_state = entity.get_component<Components::AnimationState>();
+        if (anim_state) {
+          anim_state->set_entity_state("Chasing");
+        }
 
         std::cout << "Enemy: Entered Chasing state" << std::endl;
       },
@@ -434,8 +444,11 @@ public:
           // Don't reset velocity.y - let gravity/physics handle it
         }
 
-        auto* color = entity.get_component<Components::Color>();
-        if (color) *color = Components::Color(red); // Red when attacking
+        // Switch to attack animation
+        auto* anim_state = entity.get_component<Components::AnimationState>();
+        if (anim_state) {
+          anim_state->set_entity_state("Attacking");
+        }
 
         std::cout << "Enemy: Entered Attacking state" << std::endl;
       },
@@ -460,8 +473,11 @@ public:
       "Hit",
       // on_enter
       [](Engine::ECS::Entity& entity) {
-        auto* color = entity.get_component<Components::Color>();
-        if (color) *color = Components::Color(white); // White when hit (flash)
+        // Switch to hit animation
+        auto* anim_state = entity.get_component<Components::AnimationState>();
+        if (anim_state) {
+          anim_state->set_entity_state("Hit");
+        }
 
         auto* rigid = entity.get_component<Components::RigidBody>();
         if (rigid) {
@@ -496,14 +512,67 @@ public:
     enemy_sm.add_state(enemy_hit);
     enemy_sm.set_initial_state("Idle");
 
+    // Create AnimationState for enemy (Lazy Monkey) with all animation states
+    Components::AnimationState enemy_anim_state;
+
+    // Add idle state (5 frames) - looping
+    enemy_anim_state.add_state(
+      "Idle",
+      Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Idle_Spritesheet.png")),
+      Components::TextureAtlas(64, 64, 1, 5, 5),
+      Components::Animation(5, 0.15f),
+      Math::Vec2D(enemy_width * 2.0f, enemy_height * 2.0f),
+      true,  // is_looping
+      std::nullopt  // no auto-transition
+    );
+
+    // Add chasing/running state (6 frames) - looping
+    enemy_anim_state.add_state(
+      "Chasing",
+      Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Walk_Spritesheet.png")),
+      Components::TextureAtlas(64, 64, 1, 6, 6),
+      Components::Animation(6, 0.1f),
+      Math::Vec2D(enemy_width * 2.0f, enemy_height * 2.0f),
+      true,  // is_looping
+      std::nullopt
+    );
+
+    // Add attacking state (5 frames) - one-shot, auto-transitions to chasing
+    enemy_anim_state.add_state(
+      "Attacking",
+      Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Attack_Spritesheet.png")),
+      Components::TextureAtlas(64, 64, 1, 4, 4),
+      Components::Animation(5, 0.1f),
+      Math::Vec2D(enemy_width * 2.0f, enemy_height * 2.0f),
+      false,  // is_looping = false (one-shot animation)
+      "Chasing"  // auto-transition to chasing when done
+    );
+
+    // Add hit state (4 frames) - one-shot, auto-transitions to idle
+    enemy_anim_state.add_state(
+      "Hit",
+      Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Death_Spritesheet.png")),
+      Components::TextureAtlas(64, 64, 1, 3, 3),
+      Components::Animation(4, 0.1f),
+      Math::Vec2D(enemy_width * 2.0f, enemy_height * 2.0f),
+      false,  // is_looping = false (one-shot animation)
+      "Idle"  // auto-transition to idle when done
+    );
+
+    // Set initial state to idle
+    enemy_anim_state.set_entity_state("Idle");
+
     // Create enemy entity
     enemy_entity = Engine::ECS::create_entity()
       .add_component<Components::Tag<"Enemy">>()
-      .add_component<Components::Transform2D>(600.0f, 300.0f, 0.0f, 50.0f, 50.0f)
-      .add_component<Components::Color>(1.0f, 1.0f, 0.0f, 1.0f)
-      .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
+      .add_component<Components::Transform2D>(600.0f, 300.0f, 0.0f, enemy_width * 2.0f, enemy_height * 2.0f)
+      .add_component<Components::Texture>(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Idle_Spritesheet.png"))
+      .add_component<Components::TextureAtlas>(64, 64, 1, 5, 5)
+      .add_component<Components::Animation>(5, 0.15f)
+      .add_component<Components::AnimationState>(enemy_anim_state)
+      .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
       .add_component<Components::RigidBody>(Components::RigidBody(false, true))
-      .add_component<Components::BoxCollider>(50.0f, 50.0f, false)
+      .add_component<Components::BoxCollider>(enemy_width * 2.0f, enemy_height * 2.0f, false)
       .add_component<Components::StateMachine>(enemy_sm)
       .remove_from_layer("default")
       .add_to_layer("enemy");
