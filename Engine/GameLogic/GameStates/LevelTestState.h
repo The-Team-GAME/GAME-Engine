@@ -49,14 +49,14 @@ public:
         auto* state_machine = entity.get_component<Components::StateMachine>();
 
         // Check for horizontal movement input (A/D only for sidescrolling)
-        if (Engine::Input::is_pressed(Engine::KeyCode::A) ||
-          Engine::Input::is_pressed(Engine::KeyCode::D))
+        if (Engine::Input::is_held(Engine::KeyCode::A) ||
+          Engine::Input::is_held(Engine::KeyCode::D))
         {
           state_machine->change_state("Walking");
         }
 
         // Check for attack input
-        if (Engine::Input::is_pressed(Engine::KeyCode::Space))
+        if (Engine::Input::is_pressed(Engine::KeyCode::F))
         {
           state_machine->change_state("Attacking");
         }
@@ -84,22 +84,22 @@ public:
         // Don't touch velocity.y - let gravity handle it
 
         // Horizontal movement only (sidescrolling)
-        if (Engine::Input::is_pressed(Engine::KeyCode::A)) {
+        if (Engine::Input::is_held(Engine::KeyCode::A)) {
           rigid->velocity.x = -speed;
         }
-        if (Engine::Input::is_pressed(Engine::KeyCode::D)) {
+        if (Engine::Input::is_held(Engine::KeyCode::D)) {
           rigid->velocity.x = speed;
         }
 
         // Return to idle if no horizontal input
-        if (!Engine::Input::is_pressed(Engine::KeyCode::A) &&
-          !Engine::Input::is_pressed(Engine::KeyCode::D))
+        if (!Engine::Input::is_held(Engine::KeyCode::A) &&
+          !Engine::Input::is_held(Engine::KeyCode::D))
         {
           state_machine->change_state("Idle");
         }
 
         // Can attack while moving
-        if (Engine::Input::is_pressed(Engine::KeyCode::Space))
+        if (Engine::Input::is_pressed(Engine::KeyCode::F))
         {
           state_machine->change_state("Attacking");
         }
