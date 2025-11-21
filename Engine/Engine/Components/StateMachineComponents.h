@@ -76,8 +76,9 @@ namespace Components
   // ============================================================================
 
   class StateMachine {
-  private:
+  public:
     std::unordered_map<std::string, State> states_;
+  private:
     std::string current_state_name_;
     std::string pending_state_name_;  // For deferred transitions
     bool has_pending_transition_ = false;
@@ -298,4 +299,6 @@ namespace Components
 
 } // namespace Components
 
-REFLECT_FIELDS(Components::StateMachine)
+REFLECT_FIELDS(Components::State, name, animation)
+REFLECT_FIELDS(Components::StateAnimation, texture, texture_atlas, animation, scale)
+REGISTER_COMPONENT(Components::StateMachine, states_)
