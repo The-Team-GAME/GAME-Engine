@@ -19,6 +19,7 @@
 #include "../ECS/ECS.h"
 #include "../ECS/Macros.h"
 #include "../Math/Vector2D.h"
+#include "../FunctionRegistry.h"
 #include "GraphicsComponents.h"
 #include <string>
 #include <unordered_map>
@@ -47,10 +48,10 @@ namespace Components
   struct State {
     std::string name;
 
-    // Lifecycle callbacks - all receive the entity they're attached to
-    std::function<void(Engine::ECS::Entity&)> on_enter;
-    std::function<void(Engine::ECS::Entity&)> on_update;
-    std::function<void(Engine::ECS::Entity&)> on_exit;
+    // Callback names (serializable) - empty string means no callback
+    std::string on_enter_callback_name;
+    std::string on_update_callback_name;
+    std::string on_exit_callback_name;
 
     // Optional animation data for this state
     std::optional<StateAnimation> animation;
@@ -58,16 +59,44 @@ namespace Components
     State() = default;
 
     State(const std::string& state_name,
-      std::function<void(Engine::ECS::Entity&)> enter_callback = nullptr,
-      std::function<void(Engine::ECS::Entity&)> update_callback = nullptr,
-      std::function<void(Engine::ECS::Entity&)> exit_callback = nullptr,
+      const std::string& enter_callback = "",
+      const std::string& update_callback = "",
+      const std::string& exit_callback = "",
       std::optional<StateAnimation> state_animation = std::nullopt)
       : name(state_name)
-      , on_enter(enter_callback)
-      , on_update(update_callback)
-      , on_exit(exit_callback)
+      , on_enter_callback_name(enter_callback)
+      , on_update_callback_name(update_callback)
+      , on_exit_callback_name(exit_callback)
       , animation(state_animation)
     {
+    }
+
+    // Helper methods to invoke callbacks (looks them up in registry)
+    void invoke_on_enter(Engine::ECS::Entity& entity) const {
+      if (!on_enter_callback_name.empty()) {
+        auto callback = Engine::FunctionRegistry<void(Engine::ECS::Entity&)>::get_function(on_enter_callback_name);
+        if (callback) {
+          callback(entity);
+        }
+      }
+    }
+
+    void invoke_on_update(Engine::ECS::Entity& entity) const {
+      if (!on_update_callback_name.empty()) {
+        auto callback = Engine::FunctionRegistry<void(Engine::ECS::Entity&)>::get_function(on_update_callback_name);
+        if (callback) {
+          callback(entity);
+        }
+      }
+    }
+
+    void invoke_on_exit(Engine::ECS::Entity& entity) const {
+      if (!on_exit_callback_name.empty()) {
+        auto callback = Engine::FunctionRegistry<void(Engine::ECS::Entity&)>::get_function(on_exit_callback_name);
+        if (callback) {
+          callback(entity);
+        }
+      }
     }
   };
 
@@ -170,17 +199,13 @@ namespace Components
       // Call on_enter if this is the first frame after entering this state
       if (is_first_frame_) {
         auto& current_state = states[current_state_name_];
-        if (current_state.on_enter) {
-          current_state.on_enter(entity);
-        }
+        current_state.invoke_on_enter(entity);
         is_first_frame_ = false;
       }
 
       // Execute current state's update
       auto& current_state = states[current_state_name_];
-      if (current_state.on_update) {
-        current_state.on_update(entity);
-      }
+      current_state.invoke_on_update(entity);
 
       // After update completes, apply any pending state transition
       if (has_pending_transition_) {
@@ -235,9 +260,7 @@ namespace Components
       // Exit current state
       if (!current_state_name_.empty()) {
         auto& old_state = states[current_state_name_];
-        if (old_state.on_exit) {
-          old_state.on_exit(*owner_entity_);
-        }
+        old_state.invoke_on_exit(*owner_entity_);
 
         // Add to history (limit history size to prevent unbounded growth)
         state_history_.push_back(current_state_name_);
@@ -299,6 +322,6 @@ namespace Components
 
 } // namespace Components
 
-REFLECT_FIELDS(Components::State, name, animation)
+REFLECT_FIELDS(Components::State, name, on_enter_callback_name, on_update_callback_name, on_exit_callback_name, animation)
 REFLECT_FIELDS(Components::StateAnimation, texture, texture_atlas, animation, scale)
 REGISTER_COMPONENT(Components::StateMachine, states)

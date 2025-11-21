@@ -14,8 +14,8 @@
 #pragma once
 
 #include "../../Engine/MonkeyEngine.h"
-
 #include "../Components/GameplayComponent.h"
+#include "PlayerStateCallbacks.h"
 
 namespace PlayerStates
 {
@@ -36,42 +36,7 @@ namespace PlayerStates
     player_idle_anim.animation = Components::Animation(24, 0.1f);
     player_idle_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
 
-    Components::State player_idle;
-    player_idle.name = "Idle";
-    player_idle.on_enter = [](Engine::ECS::Entity& entity) {
-      auto* rigid = entity.get_component<Components::RigidBody>();
-      if (rigid) rigid->velocity.x = 0.f;
-
-      std::cout << "Player: Entered Idle state" << std::endl;
-      };
-    player_idle.on_update = [](Engine::ECS::Entity& entity) {
-      auto* state_machine = entity.get_component<Components::StateMachine>();
-
-      // Check for horizontal movement input (A/D only for sidescrolling)
-      if (Engine::Input::is_held(Engine::KeyCode::A) ||
-        Engine::Input::is_held(Engine::KeyCode::D))
-      {
-        state_machine->change_state("Walking");
-      }
-
-      // Check for jump input
-      if (Engine::Input::is_pressed(Engine::KeyCode::Space))
-      {
-        auto* rigid = entity.get_component<Components::RigidBody>();
-        // Only jump if on ground
-        if (rigid && rigid->on_ground) {
-          state_machine->change_state("Jumping");
-        }
-      }
-
-      // Check for attack input
-      if (Engine::Input::is_pressed(Engine::KeyCode::F))
-      {
-        state_machine->change_state("Attacking");
-      }
-      };
-    player_idle.on_exit = nullptr;
-    player_idle.animation = player_idle_anim;
+    Components::State player_idle("Idle", "player_idle_enter", "player_idle_update", "", player_idle_anim);
 
     // ========================================================================
     // Player Walking State
@@ -82,62 +47,7 @@ namespace PlayerStates
     player_walking_anim.animation = Components::Animation(8, 0.1f);
     player_walking_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
 
-    Components::State player_walking;
-    player_walking.name = "Walking";
-    player_walking.on_enter = [](Engine::ECS::Entity& entity) {
-      std::cout << "Player: Entered Walking state" << std::endl;
-      };
-    player_walking.on_update = [](Engine::ECS::Entity& entity) {
-      auto* rigid = entity.get_component<Components::RigidBody>();
-      auto* state_machine = entity.get_component<Components::StateMachine>();
-      auto* flip = entity.get_component<Components::Flip>();
-      auto* player = entity.get_component<Components::Player>();
-
-      if (!player) return;
-
-      rigid->velocity.x = 0.f;
-      // Don't touch velocity.y - let gravity handle it
-
-      // Horizontal movement only (sidescrolling)
-      if (Engine::Input::is_held(Engine::KeyCode::A)) {
-        rigid->velocity.x = -player->walk_speed;
-        if (flip) flip->value.x = -1.0f; // Face left
-      }
-      if (Engine::Input::is_held(Engine::KeyCode::D)) {
-        rigid->velocity.x = player->walk_speed;
-        if (flip) flip->value.x = 1.0f; // Face right
-      }
-
-      // Return to idle if no horizontal input
-      if (!Engine::Input::is_held(Engine::KeyCode::A) &&
-        !Engine::Input::is_held(Engine::KeyCode::D))
-      {
-        state_machine->change_state("Idle");
-      }
-
-      // Check for jump input
-      if (Engine::Input::is_pressed(Engine::KeyCode::Space))
-      {
-        // Only jump if on ground
-        if (rigid && rigid->on_ground) {
-          state_machine->change_state("Jumping");
-        }
-      }
-
-      // Can attack while moving
-      if (Engine::Input::is_pressed(Engine::KeyCode::F))
-      {
-        state_machine->change_state("Attacking");
-      }
-      };
-    player_walking.on_exit = [](Engine::ECS::Entity& entity) {
-      auto* rigid = entity.get_component<Components::RigidBody>();
-      if (rigid) {
-        rigid->velocity.x = 0.f;
-        // Don't reset velocity.y - let gravity/physics handle it
-      }
-      };
-    player_walking.animation = player_walking_anim;
+    Components::State player_walking("Walking", "player_walking_enter", "player_walking_update", "player_walking_exit", player_walking_anim);
 
     // ========================================================================
     // Player Jumping State
@@ -148,60 +58,7 @@ namespace PlayerStates
     player_jumping_anim.animation = Components::Animation(8, 0.1f);
     player_jumping_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
 
-    Components::State player_jumping;
-    player_jumping.name = "Jumping";
-    player_jumping.on_enter = [](Engine::ECS::Entity& entity) {
-      auto* rigid = entity.get_component<Components::RigidBody>();
-      auto* player = entity.get_component<Components::Player>();
-
-      if (rigid && player) {
-        // Apply jump force
-        rigid->velocity.y = -player->jump_force; // Negative is up
-      }
-
-      std::cout << "Player: Entered Jumping state" << std::endl;
-      };
-    player_jumping.on_update = [](Engine::ECS::Entity& entity) {
-      auto* rigid = entity.get_component<Components::RigidBody>();
-      auto* state_machine = entity.get_component<Components::StateMachine>();
-      auto* flip = entity.get_component<Components::Flip>();
-      auto* player = entity.get_component<Components::Player>();
-
-      if (!player) return;
-
-      // Allow horizontal air control
-      rigid->velocity.x = 0.f;
-
-      if (Engine::Input::is_held(Engine::KeyCode::A)) {
-        rigid->velocity.x = -player->air_speed;
-        if (flip) flip->value.x = -1.0f; // Face left
-      }
-      if (Engine::Input::is_held(Engine::KeyCode::D)) {
-        rigid->velocity.x = player->air_speed;
-        if (flip) flip->value.x = 1.0f; // Face right
-      }
-
-      // Return to idle when landing
-      if (rigid && rigid->on_ground) {
-        // Check if moving horizontally
-        if (Engine::Input::is_held(Engine::KeyCode::A) ||
-          Engine::Input::is_held(Engine::KeyCode::D))
-        {
-          state_machine->change_state("Walking");
-        }
-        else {
-          state_machine->change_state("Idle");
-        }
-      }
-
-      // Can attack while jumping
-      if (Engine::Input::is_pressed(Engine::KeyCode::F))
-      {
-        state_machine->change_state("Attacking");
-      }
-      };
-    player_jumping.on_exit = nullptr;
-    player_jumping.animation = player_jumping_anim;
+    Components::State player_jumping("Jumping", "player_jumping_enter", "player_jumping_update", "", player_jumping_anim);
 
     // ========================================================================
     // Player Attacking State
@@ -212,55 +69,7 @@ namespace PlayerStates
     player_attacking_anim.animation = Components::Animation(6, 0.05f);
     player_attacking_anim.scale = Math::Vec2D(ATTACK_WIDTH * 2.0f, ATTACK_HEIGHT * 2.0f);
 
-    Components::State player_attacking;
-    player_attacking.name = "Attacking";
-    player_attacking.on_enter = [](Engine::ECS::Entity& entity) {
-      auto* rigid = entity.get_component<Components::RigidBody>();
-      if (rigid) {
-        rigid->velocity.x = 0.f;
-        // Don't reset velocity.y - let gravity/physics handle it
-      }
-
-      // Create attack hitbox entity
-      auto* transform = entity.get_component<Components::Transform2D>();
-      auto* flip = entity.get_component<Components::Flip>();
-      auto* player = entity.get_component<Components::Player>();
-
-      if (transform && player) {
-        // Position hitbox in front of player based on facing direction
-        float hitbox_offset = (flip && flip->value.x < 0) ? -player->hitbox_offset : player->hitbox_offset;
-
-        Engine::ECS::create_entity()
-          .add_component<Components::Tag<"PlayerAttackHitbox">>()
-          .add_component<Components::Transform2D>(
-            transform->position.x + hitbox_offset,
-            transform->position.y,
-            0.0f,
-            player->hitbox_width,
-            player->hitbox_height
-          )
-          .add_component<Components::RigidBody>(true, false) // Static (not affected by forces), no gravity
-          .add_component<Components::BoxCollider>(player->hitbox_width, player->hitbox_height, false) // Not a static obstacle
-          .add_component<Components::FrameLifetime>(1) // Destroy after 1 frame
-          .add_component<Components::Color>(Math::Vec4D(1.0f, 0.0f, 0.0f, 0.3f)) // Semi-transparent red for debugging
-          .add_component<Components::Texture>(Engine::Graphics::get_rect_texture())
-          .remove_from_layer("default")
-          .add_to_layer("damage_enemy");
-      }
-
-      std::cout << "Player: Entered Attacking state" << std::endl;
-      };
-    player_attacking.on_update = [](Engine::ECS::Entity& entity) {
-      auto* state_machine = entity.get_component<Components::StateMachine>();
-      auto* animation = entity.get_component<Components::Animation>();
-
-      // Transition to idle when attack animation completes
-      if (animation && animation->has_ended()) {
-        state_machine->change_state("Idle");
-      }
-      };
-    player_attacking.on_exit = nullptr;
-    player_attacking.animation = player_attacking_anim;
+    Components::State player_attacking("Attacking", "player_attacking_enter", "player_attacking_update", "", player_attacking_anim);
 
     // ========================================================================
     // Build and return state machine

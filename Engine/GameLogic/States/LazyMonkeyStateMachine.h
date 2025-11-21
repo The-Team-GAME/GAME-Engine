@@ -14,8 +14,8 @@
 #pragma once
 
 #include "../../Engine/MonkeyEngine.h"
-
 #include "../Components/GameplayComponent.h"
+#include "LazyMonkeyStateCallbacks.h"
 
 namespace LazyMonkeyStates
 {
@@ -34,43 +34,7 @@ namespace LazyMonkeyStates
     lazy_monkey_idle_anim.animation = Components::Animation(5, 0.15f);
     lazy_monkey_idle_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
-    Components::State lazy_monkey_idle;
-    lazy_monkey_idle.name = "Idle";
-    lazy_monkey_idle.on_enter = [](Engine::ECS::Entity& entity) {
-      std::cout << "Lazy Monkey: Entered Idle state" << std::endl;
-      };
-    lazy_monkey_idle.on_update = [](Engine::ECS::Entity& entity) {
-      auto* state_machine = entity.get_component<Components::StateMachine>();
-      auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
-
-      // Get player entity
-      auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
-
-      // Print error if player entity not found
-      if (!player_entity.is_valid()) {
-        std::cout << "Error: Player entity not found in Lazy Monkey Idle state update" << std::endl;
-        return;
-      }
-
-      // Check if player is nearby
-      if (player_entity.is_valid() && lazy_monkey) {
-        auto* lazy_monkey_transform = entity.get_component<Components::Transform2D>();
-        auto* player_transform = player_entity.get_component<Components::Transform2D>();
-
-        if (lazy_monkey_transform && player_transform) {
-          float dx = player_transform->position.x - lazy_monkey_transform->position.x;
-          float dy = player_transform->position.y - lazy_monkey_transform->position.y;
-          float distance = std::sqrt(dx * dx + dy * dy);
-
-          // Start chasing if player is within detection range
-          if (distance < lazy_monkey->detection_range) {
-            state_machine->change_state("Chasing");
-          }
-        }
-      }
-      };
-    lazy_monkey_idle.on_exit = nullptr;
-    lazy_monkey_idle.animation = lazy_monkey_idle_anim;
+    Components::State lazy_monkey_idle("Idle", "lazy_monkey_idle_enter", "lazy_monkey_idle_update", "", lazy_monkey_idle_anim);
 
     // ========================================================================
     // Lazy Monkey Chasing State
@@ -81,67 +45,7 @@ namespace LazyMonkeyStates
     lazy_monkey_chasing_anim.animation = Components::Animation(6, 0.1f);
     lazy_monkey_chasing_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
-    Components::State lazy_monkey_chasing;
-    lazy_monkey_chasing.name = "Chasing";
-    lazy_monkey_chasing.on_enter = [](Engine::ECS::Entity& entity) {
-      std::cout << "Lazy Monkey: Entered Chasing state" << std::endl;
-      };
-    lazy_monkey_chasing.on_update = [](Engine::ECS::Entity& entity) {
-      auto* state_machine = entity.get_component<Components::StateMachine>();
-      auto* rigid = entity.get_component<Components::RigidBody>();
-      auto* lazy_monkey_transform = entity.get_component<Components::Transform2D>();
-      auto* flip = entity.get_component<Components::Flip>();
-      auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
-
-      if (!lazy_monkey) return;
-
-      float current_time = Engine::Time::get_time();
-
-      // Get player entity
-      auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
-
-      if (player_entity.is_valid() && rigid && lazy_monkey_transform) {
-        auto* player_transform = player_entity.get_component<Components::Transform2D>();
-
-        if (player_transform) {
-          float dx = player_transform->position.x - lazy_monkey_transform->position.x;
-          float distance = std::abs(dx); // Only horizontal distance for sidescrolling
-
-          // Chase player horizontally
-          if (distance > 10.f) {
-            rigid->velocity.x = (dx > 0 ? lazy_monkey->chase_speed : -lazy_monkey->chase_speed);
-            // Update flip direction based on movement
-            if (flip) {
-              flip->value.x = (dx > 0 ? -1.0f : 1.0f); // TODO: Unflip this when sprite is fixed
-            }
-            // Don't modify velocity.y - let gravity handle it
-          }
-          else {
-            rigid->velocity.x = 0.f;
-          }
-
-          // Return to idle if player is far away
-          if (distance > lazy_monkey->chase_range) {
-            state_machine->change_state("Idle");
-          }
-
-          // Attack if close enough AND cooldown has elapsed
-          if (distance < lazy_monkey->attack_range &&
-            (current_time - lazy_monkey->last_attack_time) >= lazy_monkey->attack_cooldown) {
-            lazy_monkey->last_attack_time = current_time;
-            state_machine->change_state("Attacking");
-          }
-        }
-      }
-      };
-    lazy_monkey_chasing.on_exit = [](Engine::ECS::Entity& entity) {
-      auto* rigid = entity.get_component<Components::RigidBody>();
-      if (rigid) {
-        rigid->velocity.x = 0.f;
-        // Don't reset velocity.y - let gravity/physics handle it
-      }
-      };
-    lazy_monkey_chasing.animation = lazy_monkey_chasing_anim;
+    Components::State lazy_monkey_chasing("Chasing", "lazy_monkey_chasing_enter", "lazy_monkey_chasing_update", "lazy_monkey_chasing_exit", lazy_monkey_chasing_anim);
 
     // ========================================================================
     // Lazy Monkey Attacking State
@@ -152,34 +56,7 @@ namespace LazyMonkeyStates
     lazy_monkey_attacking_anim.animation = Components::Animation({ 0.2f, 0.1f, 0.1f, 0.5f }); // Custom frame durations
     lazy_monkey_attacking_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
-    Components::State lazy_monkey_attacking;
-    lazy_monkey_attacking.name = "Attacking";
-    lazy_monkey_attacking.on_enter = [](Engine::ECS::Entity& entity) {
-      auto* rigid = entity.get_component<Components::RigidBody>();
-      auto* flip = entity.get_component<Components::Flip>();
-      auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
-
-      if (rigid && flip && lazy_monkey) {
-        // Throw monkey forward based on facing direction
-        rigid->velocity.x = (flip->value.x > 0 ? -lazy_monkey->leap_speed : lazy_monkey->leap_speed); // TODO: Unflip this when sprite is fixed
-        // Add upward velocity for a leap effect
-        rigid->velocity.y = -lazy_monkey->leap_height; // Negative is up
-      }
-
-      std::cout << "Lazy Monkey: Entered Attacking state" << std::endl;
-      };
-    lazy_monkey_attacking.on_update = [](Engine::ECS::Entity& entity) {
-      auto* state_machine = entity.get_component<Components::StateMachine>();
-      auto* animation = entity.get_component<Components::Animation>();
-
-      // Transition back to chasing when attack animation completes
-      if (animation && animation->has_ended()) {
-        state_machine->change_state("Chasing");
-      }
-      };
-    lazy_monkey_attacking.on_exit = [](Engine::ECS::Entity& entity) {
-      };
-    lazy_monkey_attacking.animation = lazy_monkey_attacking_anim;
+    Components::State lazy_monkey_attacking("Attacking", "lazy_monkey_attacking_enter", "lazy_monkey_attacking_update", "", lazy_monkey_attacking_anim);
 
     // ========================================================================
     // Lazy Monkey Hit State
@@ -190,28 +67,7 @@ namespace LazyMonkeyStates
     lazy_monkey_hit_anim.animation = Components::Animation(3, 0.1f);
     lazy_monkey_hit_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
-    Components::State lazy_monkey_hit;
-    lazy_monkey_hit.name = "Hit";
-    lazy_monkey_hit.on_enter = [](Engine::ECS::Entity& entity) {
-      auto* rigid = entity.get_component<Components::RigidBody>();
-      if (rigid) {
-        rigid->velocity.x = 0.f;
-        // Don't reset velocity.y - let gravity/physics handle it
-      }
-
-      std::cout << "Lazy Monkey: Got hit!" << std::endl;
-      };
-    lazy_monkey_hit.on_update = [](Engine::ECS::Entity& entity) {
-      auto* state_machine = entity.get_component<Components::StateMachine>();
-      auto* animation = entity.get_component<Components::Animation>();
-
-      // Transition to idle when hit animation completes
-      if (animation && animation->has_ended()) {
-        state_machine->change_state("Idle");
-      }
-      };
-    lazy_monkey_hit.on_exit = nullptr;
-    lazy_monkey_hit.animation = lazy_monkey_hit_anim;
+    Components::State lazy_monkey_hit("Hit", "lazy_monkey_hit_enter", "lazy_monkey_hit_update", "", lazy_monkey_hit_anim);
 
     // ========================================================================
     // Build and return state machine
