@@ -570,15 +570,30 @@ namespace ReflectionLibrary
       // Handle maps specially
       if constexpr (requires { typename ValueType::key_type; typename ValueType::mapped_type; })
       {
-        Array result;
-        for (const auto& [key, val] : obj)
+        // If the key is a string, convert to Object (for unordered_map<string, T>)
+        if constexpr (std::is_same_v<typename ValueType::key_type, std::string> ||
+          std::is_convertible_v<typename ValueType::key_type, std::string>)
         {
-          Object pair;
-          pair["first"] = to_generic_value(key);
-          pair["second"] = to_generic_value(val);
-          result.push_back(GenericValue(std::move(pair)));
+          Object result;
+          for (const auto& [key, val] : obj)
+          {
+            result[std::string(key)] = to_generic_value(val);
+          }
+          return GenericValue(std::move(result));
         }
-        return GenericValue(std::move(result));
+        else
+        {
+          // For non-string keys, convert to Array of pairs
+          Array result;
+          for (const auto& [key, val] : obj)
+          {
+            Object pair;
+            pair["first"] = to_generic_value(key);
+            pair["second"] = to_generic_value(val);
+            result.push_back(GenericValue(std::move(pair)));
+          }
+          return GenericValue(std::move(result));
+        }
       }
       else
       {
