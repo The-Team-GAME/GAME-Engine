@@ -152,6 +152,14 @@ namespace LazyMonkeyStateCallbacks
     }
   }
 
+  inline void attacking_on_exit(Engine::ECS::Entity& entity) {
+    auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
+    if (lazy_monkey) {
+      // Update last attack time for cooldown
+      lazy_monkey->last_attack_time = Engine::Time::get_time();
+    }
+  }
+
   // ========================================================================
   // Hit State Callbacks
   // ========================================================================
@@ -237,5 +245,6 @@ REGISTER_FUNCTION(lazy_monkey_chasing_update, void(Engine::ECS::Entity&), LazyMo
 REGISTER_FUNCTION(lazy_monkey_chasing_exit, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::chasing_on_exit)
 REGISTER_FUNCTION(lazy_monkey_attacking_enter, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::attacking_on_enter)
 REGISTER_FUNCTION(lazy_monkey_attacking_update, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::attacking_on_update)
+REGISTER_FUNCTION(lazy_monkey_attacking_exit, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::attacking_on_exit)
 REGISTER_FUNCTION(lazy_monkey_hit_enter, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::hit_on_enter)
 REGISTER_FUNCTION(lazy_monkey_hit_update, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::hit_on_update)

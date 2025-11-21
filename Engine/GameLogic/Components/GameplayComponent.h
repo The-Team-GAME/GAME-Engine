@@ -35,7 +35,7 @@ namespace Components
     // Attack parameters
     float leap_speed = 400.0f;
     float leap_height = 300.0f;
-    float attack_cooldown = 2.0f;
+    float attack_cooldown = 5.0f;
     float last_attack_time = 0.0f;
 
     // Detection ranges
