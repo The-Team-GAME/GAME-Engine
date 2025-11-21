@@ -368,8 +368,6 @@ namespace ImGuiWidgets {
     // - animation: Animation
     // - scale: optional<Vec2D>
 
-    std::cout << "Rendering StateMachine field\n";
-
     if (!field_value.isObject()) {
       ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "StateMachine field is not an object");
       return true;
@@ -392,64 +390,63 @@ namespace ImGuiWidgets {
       return true;
     }
 
-    // Iterate through all states in the state machine
-    for (std::pair<const std::string, ReflectionLibrary::GenericValue>& state_pair : states_map) {
-      const std::string& state_name = state_pair.first;
-      ReflectionLibrary::GenericValue& state_value = state_pair.second;
+    // Create a tab bar for all states
+    if (ImGui::BeginTabBar("StatesTabBar", ImGuiTabBarFlags_None)) {
+      // Iterate through all states in the state machine
+      for (std::pair<const std::string, ReflectionLibrary::GenericValue>& state_pair : states_map) {
+        const std::string& state_name = state_pair.first;
+        ReflectionLibrary::GenericValue& state_value = state_pair.second;
 
-      ImGui::PushID(state_name.c_str());
+        // Create a tab for each state
+        if (ImGui::BeginTabItem(state_name.c_str())) {
+          // Display state name (read-only for now, as it's the key)
+          ImGui::Text("State Name: %s", state_name.c_str());
+          ImGui::Separator();
 
-      // Create a collapsing header for each state
-      if (ImGui::CollapsingHeader(state_name.c_str())) {
-        ImGui::Indent();
+          // Check if state has animation
+          if (state_value.isObject()) {
+            ReflectionLibrary::Object& state_obj = state_value.getObject();
+            auto anim_it = state_obj.find("animation");
 
-        // Display state name (read-only for now, as it's the key)
-        ImGui::Text("State Name: %s", state_name.c_str());
-        ImGui::Separator();
+            // The optional<StateAnimation> is converted directly to the StateAnimation object
+            // (not wrapped in a "value" key), or to null if empty
+            if (anim_it != state_obj.end() && anim_it->second.isObject()) {
+              ReflectionLibrary::Object& state_anim_obj = anim_it->second.getObject();
 
-        // Check if state has animation
-        if (state_value.isObject()) {
-          ReflectionLibrary::Object& state_obj = state_value.getObject();
-          auto anim_it = state_obj.find("animation");
-
-          // The optional<StateAnimation> is converted directly to the StateAnimation object
-          // (not wrapped in a "value" key), or to null if empty
-          if (anim_it != state_obj.end() && anim_it->second.isObject()) {
-            ReflectionLibrary::Object& state_anim_obj = anim_it->second.getObject();
-
-            ImGui::Text("State Animation:");
-            ImGui::Indent();
-
-            // Render Texture field
-            auto tex_it = state_anim_obj.find("texture");
-            if (tex_it != state_anim_obj.end()) {
-              ImGui::Text("Texture:");
+              ImGui::Text("State Animation:");
               ImGui::Indent();
-              render_texture_field(tex_it->second, modified);
-              ImGui::Unindent();
-              ImGui::Separator();
-            }
 
-            // Render Animation field
-            auto anim_field_it = state_anim_obj.find("animation");
-            if (anim_field_it != state_anim_obj.end()) {
-              ImGui::Text("Animation:");
-              ImGui::Indent();
-              render_animation_field(anim_field_it->second, modified);
+              // Render Texture field
+              auto tex_it = state_anim_obj.find("texture");
+              if (tex_it != state_anim_obj.end()) {
+                ImGui::Text("Texture:");
+                ImGui::Indent();
+                render_texture_field(tex_it->second, modified);
+                ImGui::Unindent();
+                ImGui::Separator();
+              }
+
+              // Render Animation field
+              auto anim_field_it = state_anim_obj.find("animation");
+              if (anim_field_it != state_anim_obj.end()) {
+                ImGui::Text("Animation:");
+                ImGui::Indent();
+                render_animation_field(anim_field_it->second, modified);
+                ImGui::Unindent();
+              }
+
               ImGui::Unindent();
             }
+            else {
+              ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No animation defined for this state");
+            }
+          }
 
-            ImGui::Unindent();
-          }
-          else {
-            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No animation defined for this state");
-          }
+          ImGui::EndTabItem();
         }
-
-        ImGui::Unindent();
       }
 
-      ImGui::PopID();
+      ImGui::EndTabBar();
     }
 
     return true;
