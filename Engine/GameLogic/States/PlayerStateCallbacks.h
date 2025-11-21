@@ -193,6 +193,7 @@ namespace PlayerStateCallbacks
 
       Engine::ECS::create_entity()
         .add_component<Components::Tag<"PlayerAttackHitbox">>()
+        .add_component<Components::Attack>(player->attack_damage1)
         .add_component<Components::Transform2D>(
           transform->position.x + hitbox_offset,
           transform->position.y,
@@ -261,6 +262,7 @@ namespace PlayerStateCallbacks
 
       Engine::ECS::create_entity()
         .add_component<Components::Tag<"PlayerAttackHitbox">>()
+        .add_component<Components::Attack>(player->attack_damage2)
         .add_component<Components::Transform2D>(
           transform->position.x + hitbox_offset,
           transform->position.y,
@@ -329,6 +331,7 @@ namespace PlayerStateCallbacks
 
       Engine::ECS::create_entity()
         .add_component<Components::Tag<"PlayerAttackHitbox">>()
+        .add_component<Components::Attack>(player->attack_damage3)
         .add_component<Components::Transform2D>(
           transform->position.x + hitbox_offset,
           transform->position.y,

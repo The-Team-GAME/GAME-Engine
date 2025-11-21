@@ -18,6 +18,9 @@ namespace Components
     float attack_dash_speed1 = 3500.0f; // First punch forward movement
     float attack_dash_speed2 = 3500.0f; // Second punch forward movement
     float attack_dash_speed3 = 5000.0f; // Third punch (finisher) forward movement
+    int attack_damage1 = 10; // First punch damage
+    int attack_damage2 = 15; // Second punch damage
+    int attack_damage3 = 25; // Third punch (finisher) damage
   };
 
   struct Enemy
@@ -41,7 +44,16 @@ namespace Components
     float attack_range = 80.0f;
   };
 
+  struct Attack
+  {
+    int damage = 10;
+
+    Attack() = default;
+    explicit Attack(int dmg) : damage(dmg) {}
+  };
+
 } // namespace Components
 
-REGISTER_COMPONENT(Components::Player, walk_speed, air_speed, jump_force, hitbox_offset, hitbox_width, hitbox_height, attack_dash_speed1, attack_dash_speed2, attack_dash_speed3)
+REGISTER_COMPONENT(Components::Player, walk_speed, air_speed, jump_force, hitbox_offset, hitbox_width, hitbox_height, attack_dash_speed1, attack_dash_speed2, attack_dash_speed3, attack_damage1, attack_damage2, attack_damage3)
 REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height, attack_cooldown, last_attack_time, detection_range, chase_range, attack_range)
+REGISTER_COMPONENT(Components::Attack, damage)

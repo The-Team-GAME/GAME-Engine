@@ -85,26 +85,25 @@ int main()
   Engine::ECS::LayerRegistry::register_collision_callback("damage_enemy", "enemy",
     [](Engine::ECS::Entity attack_entity, Engine::ECS::Entity enemy_entity)
     {
-      // std::cout << "Player attack hit enemy!" << std::endl;
-
       // When player attack hitbox collides with enemy
+      auto* attack = attack_entity.get_component<Components::Attack>();
       auto* enemy_health = enemy_entity.get_component<Components::EnemyHealth>();
       auto* state_machine = enemy_entity.get_component<Components::StateMachine>();
 
-      if (enemy_health && state_machine) {
-        // Use the EnemyHealthSystem to handle damage
-        if (!enemy_health) {
-          std::cout << "Error: EnemyHealth component missing!" << std::endl;
-          return;
-        };
+      if (!attack) {
+        std::cout << "Error: Attack component missing from attack hitbox!" << std::endl;
+        return;
+      }
 
+      if (enemy_health && state_machine) {
         // Only take damage if not invulnerable
-        enemy_health->take_damage(10);
-        std::cout << "Enemy took " << 10 << " damage! HP: "
+        int damage = attack->damage;
+        enemy_health->take_damage(damage);
+        std::cout << "Enemy took " << damage << " damage! HP: "
           << enemy_health->current_hp << "/" << enemy_health->max_hp << std::endl;
 
         // Trigger hit state if state machine exists
-        if (state_machine && state_machine->get_current_state() != "Hit") {
+        if (state_machine->get_current_state() != "Hit") {
           state_machine->change_state("Hit");
         }
       }
