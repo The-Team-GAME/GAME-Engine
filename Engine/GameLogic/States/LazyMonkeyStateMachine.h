@@ -41,6 +41,7 @@ namespace LazyMonkeyStates
       };
     lazy_monkey_idle.on_update = [](Engine::ECS::Entity& entity) {
       auto* state_machine = entity.get_component<Components::StateMachine>();
+      auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
 
       // Get player entity
       auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
@@ -52,7 +53,7 @@ namespace LazyMonkeyStates
       }
 
       // Check if player is nearby
-      if (player_entity.is_valid()) {
+      if (player_entity.is_valid() && lazy_monkey) {
         auto* lazy_monkey_transform = entity.get_component<Components::Transform2D>();
         auto* player_transform = player_entity.get_component<Components::Transform2D>();
 
@@ -61,8 +62,8 @@ namespace LazyMonkeyStates
           float dy = player_transform->position.y - lazy_monkey_transform->position.y;
           float distance = std::sqrt(dx * dx + dy * dy);
 
-          // Start chasing if player is within 300 units
-          if (distance < 300.f) {
+          // Start chasing if player is within detection range
+          if (distance < lazy_monkey->detection_range) {
             state_machine->change_state("Chasing");
           }
         }
@@ -90,10 +91,10 @@ namespace LazyMonkeyStates
       auto* rigid = entity.get_component<Components::RigidBody>();
       auto* lazy_monkey_transform = entity.get_component<Components::Transform2D>();
       auto* flip = entity.get_component<Components::Flip>();
+      auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
 
-      // Attack cooldown tracking (in seconds)
-      static float last_attack_time = 0.0f;
-      const float attack_cooldown = 2.0f; // 2 seconds between attacks
+      if (!lazy_monkey) return;
+
       float current_time = Engine::Time::get_time();
 
       // Get player entity
@@ -108,8 +109,7 @@ namespace LazyMonkeyStates
 
           // Chase player horizontally
           if (distance > 10.f) {
-            float speed = 100.f;
-            rigid->velocity.x = (dx > 0 ? speed : -speed);
+            rigid->velocity.x = (dx > 0 ? lazy_monkey->chase_speed : -lazy_monkey->chase_speed);
             // Update flip direction based on movement
             if (flip) {
               flip->value.x = (dx > 0 ? -1.0f : 1.0f); // TODO: Unflip this when sprite is fixed
@@ -121,13 +121,14 @@ namespace LazyMonkeyStates
           }
 
           // Return to idle if player is far away
-          if (distance > 400.f) {
+          if (distance > lazy_monkey->chase_range) {
             state_machine->change_state("Idle");
           }
 
           // Attack if close enough AND cooldown has elapsed
-          if (distance < 80.f && (current_time - last_attack_time) >= attack_cooldown) {
-            last_attack_time = current_time;
+          if (distance < lazy_monkey->attack_range &&
+            (current_time - lazy_monkey->last_attack_time) >= lazy_monkey->attack_cooldown) {
+            lazy_monkey->last_attack_time = current_time;
             state_machine->change_state("Attacking");
           }
         }
@@ -156,13 +157,13 @@ namespace LazyMonkeyStates
     lazy_monkey_attacking.on_enter = [](Engine::ECS::Entity& entity) {
       auto* rigid = entity.get_component<Components::RigidBody>();
       auto* flip = entity.get_component<Components::Flip>();
+      auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
 
-      if (rigid && flip) {
+      if (rigid && flip && lazy_monkey) {
         // Throw monkey forward based on facing direction
-        float leap_speed = 600.f;
-        rigid->velocity.x = (flip->value.x > 0 ? -leap_speed : leap_speed); // TODO: Unflip this when sprite is fixed
-        // Optional: Add slight upward velocity for a leap effect
-        rigid->velocity.y = -300.f; // Negative is up
+        rigid->velocity.x = (flip->value.x > 0 ? -lazy_monkey->leap_speed : lazy_monkey->leap_speed); // TODO: Unflip this when sprite is fixed
+        // Add upward velocity for a leap effect
+        rigid->velocity.y = -lazy_monkey->leap_height; // Negative is up
       }
 
       std::cout << "Lazy Monkey: Entered Attacking state" << std::endl;

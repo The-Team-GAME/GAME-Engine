@@ -15,6 +15,8 @@
 
 #include "../../Engine/MonkeyEngine.h"
 
+#include "../Components/GameplayComponent.h"
+
 namespace PlayerStates
 {
   // Player dimensions
@@ -89,18 +91,20 @@ namespace PlayerStates
       auto* rigid = entity.get_component<Components::RigidBody>();
       auto* state_machine = entity.get_component<Components::StateMachine>();
       auto* flip = entity.get_component<Components::Flip>();
+      auto* player = entity.get_component<Components::Player>();
 
-      float speed = 600.f;
+      if (!player) return;
+
       rigid->velocity.x = 0.f;
       // Don't touch velocity.y - let gravity handle it
 
       // Horizontal movement only (sidescrolling)
       if (Engine::Input::is_held(Engine::KeyCode::A)) {
-        rigid->velocity.x = -speed;
+        rigid->velocity.x = -player->walk_speed;
         if (flip) flip->value.x = -1.0f; // Face left
       }
       if (Engine::Input::is_held(Engine::KeyCode::D)) {
-        rigid->velocity.x = speed;
+        rigid->velocity.x = player->walk_speed;
         if (flip) flip->value.x = 1.0f; // Face right
       }
 
@@ -148,9 +152,11 @@ namespace PlayerStates
     player_jumping.name = "Jumping";
     player_jumping.on_enter = [](Engine::ECS::Entity& entity) {
       auto* rigid = entity.get_component<Components::RigidBody>();
-      if (rigid) {
+      auto* player = entity.get_component<Components::Player>();
+
+      if (rigid && player) {
         // Apply jump force
-        rigid->velocity.y = -900.f; // Negative is up
+        rigid->velocity.y = -player->jump_force; // Negative is up
       }
 
       std::cout << "Player: Entered Jumping state" << std::endl;
@@ -159,17 +165,19 @@ namespace PlayerStates
       auto* rigid = entity.get_component<Components::RigidBody>();
       auto* state_machine = entity.get_component<Components::StateMachine>();
       auto* flip = entity.get_component<Components::Flip>();
+      auto* player = entity.get_component<Components::Player>();
+
+      if (!player) return;
 
       // Allow horizontal air control
-      float air_speed = 150.f; // Slightly slower than ground movement
       rigid->velocity.x = 0.f;
 
       if (Engine::Input::is_held(Engine::KeyCode::A)) {
-        rigid->velocity.x = -air_speed;
+        rigid->velocity.x = -player->air_speed;
         if (flip) flip->value.x = -1.0f; // Face left
       }
       if (Engine::Input::is_held(Engine::KeyCode::D)) {
-        rigid->velocity.x = air_speed;
+        rigid->velocity.x = player->air_speed;
         if (flip) flip->value.x = 1.0f; // Face right
       }
 
@@ -216,11 +224,11 @@ namespace PlayerStates
       // Create attack hitbox entity
       auto* transform = entity.get_component<Components::Transform2D>();
       auto* flip = entity.get_component<Components::Flip>();
-      if (transform) {
+      auto* player = entity.get_component<Components::Player>();
+
+      if (transform && player) {
         // Position hitbox in front of player based on facing direction
-        float hitbox_offset = (flip && flip->value.x < 0) ? -80.0f : 80.0f;
-        float hitbox_width = 100.0f;
-        float hitbox_height = ATTACK_HEIGHT * 2.0f;
+        float hitbox_offset = (flip && flip->value.x < 0) ? -player->hitbox_offset : player->hitbox_offset;
 
         Engine::ECS::create_entity()
           .add_component<Components::Tag<"PlayerAttackHitbox">>()
@@ -228,11 +236,11 @@ namespace PlayerStates
             transform->position.x + hitbox_offset,
             transform->position.y,
             0.0f,
-            hitbox_width,
-            hitbox_height
+            player->hitbox_width,
+            player->hitbox_height
           )
           .add_component<Components::RigidBody>(true, false) // Static (not affected by forces), no gravity
-          .add_component<Components::BoxCollider>(hitbox_width, hitbox_height, false) // Not a static obstacle
+          .add_component<Components::BoxCollider>(player->hitbox_width, player->hitbox_height, false) // Not a static obstacle
           .add_component<Components::FrameLifetime>(1) // Destroy after 1 frame
           .add_component<Components::Color>(Math::Vec4D(1.0f, 0.0f, 0.0f, 0.3f)) // Semi-transparent red for debugging
           .add_component<Components::Texture>(Engine::Graphics::get_rect_texture())

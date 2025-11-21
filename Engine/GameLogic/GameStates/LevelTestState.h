@@ -52,6 +52,7 @@ public:
     // ========================================================================
     lazy_monkey_entity = Engine::ECS::create_entity()
       .add_component<Components::Enemy>()
+      .add_component<Components::LazyMonkey>()
       .add_component<Components::Transform2D>(600.0f, 300.0f, 0.0f, LazyMonkeyStates::WIDTH * 2.0f, LazyMonkeyStates::HEIGHT * 2.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Idle_Spritesheet.png"))
       .add_component<Components::TextureAtlas>(64, 64, 1, 5, 5)
