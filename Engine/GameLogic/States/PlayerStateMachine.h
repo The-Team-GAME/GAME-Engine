@@ -66,7 +66,7 @@ namespace PlayerStates
     Components::StateAnimation player_attacking_anim;
     player_attacking_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_threehit_spritesheet.png"));
     player_attacking_anim.texture_atlas = Components::TextureAtlas(96, 64, 1, 19, 6);
-    player_attacking_anim.animation = Components::Animation(6, 0.05f);
+    player_attacking_anim.animation = Components::Animation({ 0, 1, 2, 3, 4, 5 }, { 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f }, false); // Custom frame durations
     player_attacking_anim.scale = Math::Vec2D(ATTACK_WIDTH * 2.0f, ATTACK_HEIGHT * 2.0f);
 
     Components::State player_attacking("Attacking", "player_attacking_enter", "player_attacking_update", "", player_attacking_anim);
