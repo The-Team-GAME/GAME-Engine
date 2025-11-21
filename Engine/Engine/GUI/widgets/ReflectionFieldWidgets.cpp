@@ -356,6 +356,109 @@ namespace ImGuiWidgets {
     return true;
   }
 
+  bool render_statemachine_field(ReflectionLibrary::GenericValue& field_value, bool& modified) {
+    // StateMachine structure:
+    // - states: unordered_map<string, State>
+    // Each State has:
+    // - name: string
+    // - animation: optional<StateAnimation>
+    // Each StateAnimation has:
+    // - texture: Texture
+    // - texture_atlas: TextureAtlas
+    // - animation: Animation
+    // - scale: optional<Vec2D>
+
+    std::cout << "Rendering StateMachine field\n";
+
+    if (!field_value.isObject()) {
+      std::cout << "Field value is not an object\n";
+      return false;
+    };
+
+    ReflectionLibrary::Object& field_obj = field_value.getObject();
+    auto states_it = field_obj.find("states");
+    if (states_it == field_obj.end() || !states_it->second.isObject()) return false;
+
+    ReflectionLibrary::Object& states_map = states_it->second.getObject();
+
+    ImGui::Text("States (%zu):", states_map.size());
+    ImGui::Separator();
+
+    if (states_map.empty()) {
+      ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No states defined");
+      return true;
+    }
+
+    // Iterate through all states in the state machine
+    for (std::pair<const std::string, ReflectionLibrary::GenericValue>& state_pair : states_map) {
+      const std::string& state_name = state_pair.first;
+      ReflectionLibrary::GenericValue& state_value = state_pair.second;
+
+      ImGui::PushID(state_name.c_str());
+
+      // Create a collapsing header for each state
+      if (ImGui::CollapsingHeader(state_name.c_str())) {
+        ImGui::Indent();
+
+        // Display state name (read-only for now, as it's the key)
+        ImGui::Text("State Name: %s", state_name.c_str());
+        ImGui::Separator();
+
+        // Check if state has animation optional
+        if (state_value.isObject()) {
+          ReflectionLibrary::Object& state_obj = state_value.getObject();
+          auto anim_opt_it = state_obj.find("animation");
+
+          if (anim_opt_it != state_obj.end() && anim_opt_it->second.isObject()) {
+            ReflectionLibrary::Object& anim_opt_obj = anim_opt_it->second.getObject();
+            auto value_it = anim_opt_obj.find("value");
+
+            // Check if optional has a value
+            if (value_it != anim_opt_obj.end() && value_it->second.isObject()) {
+              ReflectionLibrary::Object& state_anim_obj = value_it->second.getObject();
+
+              ImGui::Text("State Animation:");
+              ImGui::Indent();
+
+              // Render Texture field
+              auto tex_it = state_anim_obj.find("texture");
+              if (tex_it != state_anim_obj.end()) {
+                ImGui::Text("Texture:");
+                ImGui::Indent();
+                render_texture_field(tex_it->second, modified);
+                ImGui::Unindent();
+                ImGui::Separator();
+              }
+
+              // Render Animation field
+              auto anim_it = state_anim_obj.find("animation");
+              if (anim_it != state_anim_obj.end()) {
+                ImGui::Text("Animation:");
+                ImGui::Indent();
+                render_animation_field(anim_it->second, modified);
+                ImGui::Unindent();
+              }
+
+              ImGui::Unindent();
+            }
+            else {
+              ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No animation defined for this state");
+            }
+          }
+          else {
+            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No animation defined for this state");
+          }
+        }
+
+        ImGui::Unindent();
+      }
+
+      ImGui::PopID();
+    }
+
+    return true;
+  }
+
   bool render_specialized_field(
     const std::string& display_name,
     const std::string& type_hint,
@@ -385,6 +488,10 @@ namespace ImGuiWidgets {
 
     if (type_hint == "Components::Animation") {
       return render_animation_field(field_value, modified);
+    }
+
+    if (type_hint == "Components::StateMachine") {
+      return render_statemachine_field(field_value, modified);
     }
 
     // Not handled by specialized renderer

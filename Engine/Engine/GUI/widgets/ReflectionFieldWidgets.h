@@ -121,6 +121,23 @@ namespace ImGuiWidgets {
 
   /*=================================================================================
   Function Brief:
+  Renders a state machine editor widget for Components::StateMachine fields.
+  Displays all states with their textures and allows modifying their animations.
+
+  Parameters:
+  field_value - Reference to the GenericValue containing state machine data
+  modified    - [out] Set to true if the state machine was modified by user input
+
+  Returns:
+  true if the field was handled and rendered, false otherwise.
+
+  Where to call it:
+  From specialized field renderers for state machine components.
+  ==================================================================================*/
+  bool render_statemachine_field(ReflectionLibrary::GenericValue& field_value, bool& modified);
+
+  /*=================================================================================
+  Function Brief:
   Renders specialized UI fields for specific component types (e.g., Color, Texture,
   Font). Returns true if the field was handled and rendered, false otherwise.
 
