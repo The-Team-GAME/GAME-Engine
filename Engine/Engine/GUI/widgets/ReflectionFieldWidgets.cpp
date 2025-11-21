@@ -250,6 +250,112 @@ namespace ImGuiWidgets {
     return true;
   }
 
+  bool render_animation_field(ReflectionLibrary::GenericValue& field_value, bool& modified) {
+    // Animation structure:
+    // - durations: array of floats
+    // - before_times: array of floats (cumulative times)
+    // - startTime: float
+    // - totalDuration: float
+    // - is_looping: bool
+
+    if (!field_value.isObject()) return false;
+
+    // Get values
+    float total_duration = field_value["totalDuration"].isDouble() ?
+      static_cast<float>(field_value["totalDuration"].getDouble()) : 0.0f;
+    bool is_looping = field_value["is_looping"].isBool() ?
+      field_value["is_looping"].getBool() : true;
+
+    if (!field_value["durations"].isArray() || !field_value["before_times"].isArray()) return false;
+
+    size_t frame_count = field_value["durations"].size();
+
+    // Display animation info
+    ImGui::Text("Animation Info:");
+    ImGui::Indent();
+    ImGui::Text("Frame Count: %zu", frame_count);
+    ImGui::Text("Total Duration: %.3f seconds", total_duration);
+    ImGui::Unindent();
+
+    ImGui::Separator();
+
+    // Looping toggle
+    bool new_looping = is_looping;
+    if (ImGui::Checkbox("Loop Animation", &new_looping)) {
+      field_value["is_looping"] = new_looping;
+      modified = true;
+    }
+
+    ImGui::Separator();
+
+    // Reset start time button
+    if (ImGui::Button("Reset Animation (Set Start Time to Now)")) {
+      field_value["startTime"] = Engine::Time::get_time();
+      modified = true;
+    }
+
+    ImGui::Separator();
+
+    // Frame duration editor
+    if (frame_count > 0) {
+      ImGui::Text("Frame Durations:");
+      ImGui::Indent();
+
+      bool durations_changed = false;
+      for (size_t i = 0; i < frame_count; ++i) {
+        float duration = field_value["durations"][i].isDouble() ?
+          static_cast<float>(field_value["durations"][i].getDouble()) : 0.0f;
+
+        ImGui::PushID(static_cast<int>(i));
+        ImGui::Text("Frame %zu:", i);
+        ImGui::SameLine();
+
+        if (ImGui::DragFloat("##duration", &duration, 0.01f, 0.0f, 10.0f, "%.3f sec")) {
+          field_value["durations"][i] = duration;
+          durations_changed = true;
+        }
+
+        ImGui::PopID();
+      }
+
+      // Recalculate before_times and total_duration if durations changed
+      if (durations_changed) {
+        float cumulative = 0.0f;
+        for (size_t i = 0; i < frame_count; ++i) {
+          field_value["before_times"][i] = cumulative;
+          cumulative += static_cast<float>(field_value["durations"][i].getDouble());
+        }
+        field_value["totalDuration"] = cumulative;
+        modified = true;
+      }
+
+      ImGui::Unindent();
+      ImGui::Separator();
+
+      // Quick actions for setting all durations
+      static float uniform_duration = 0.1f;
+      ImGui::Text("Quick Actions:");
+      ImGui::Indent();
+      ImGui::DragFloat("Uniform Duration", &uniform_duration, 0.01f, 0.0f, 10.0f, "%.3f sec");
+      if (ImGui::Button("Set All Frames to Uniform Duration")) {
+        float cumulative = 0.0f;
+        for (size_t i = 0; i < frame_count; ++i) {
+          field_value["durations"][i] = uniform_duration;
+          field_value["before_times"][i] = cumulative;
+          cumulative += uniform_duration;
+        }
+        field_value["totalDuration"] = cumulative;
+        modified = true;
+      }
+      ImGui::Unindent();
+    }
+    else {
+      ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No frames in animation");
+    }
+
+    return true;
+  }
+
   bool render_specialized_field(
     const std::string& display_name,
     ReflectionLibrary::GenericValue& field_value,
@@ -276,7 +382,9 @@ namespace ImGuiWidgets {
       return render_texture_atlas_field(entity);
     }
 
-
+    if (display_name == "Components::Animation") {
+      return render_animation_field(field_value, modified);
+    }
 
     // Not handled by specialized renderer
     return false;

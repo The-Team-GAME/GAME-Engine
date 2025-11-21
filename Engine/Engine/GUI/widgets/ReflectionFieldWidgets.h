@@ -72,7 +72,7 @@ namespace ImGuiWidgets {
 
   /*=================================================================================
   Function Brief:
-	Renders a 2D transform editor for Components::Transform2D fields.
+  Renders a 2D transform editor for Components::Transform2D fields.
 
   Parameters:
   field_value - Reference to the GenericValue containing font path and size data
@@ -82,7 +82,7 @@ namespace ImGuiWidgets {
   true if the field was handled and rendered, false otherwise.
 
   Where to call it:
-	From specialized field renderers for Transform2D components.
+  From specialized field renderers for Transform2D components.
   ==================================================================================*/
   bool render_transform2d_field(ReflectionLibrary::GenericValue& field_value, bool& modified);
 
@@ -101,6 +101,23 @@ namespace ImGuiWidgets {
   From specialized field renderers for texture atlas components.
   ==================================================================================*/
   bool render_texture_atlas_field(Engine::ECS::Entity entity);
+
+  /*=================================================================================
+  Function Brief:
+  Renders an animation editor widget for Components::Animation fields.
+  Allows manual editing of frame durations, total duration, loop settings, etc.
+
+  Parameters:
+  field_value - Reference to the GenericValue containing animation data
+  modified    - [out] Set to true if the animation was modified by user input
+
+  Returns:
+  true if the field was handled and rendered, false otherwise.
+
+  Where to call it:
+  From specialized field renderers for animation components.
+  ==================================================================================*/
+  bool render_animation_field(ReflectionLibrary::GenericValue& field_value, bool& modified);
 
   /*=================================================================================
   Function Brief:
