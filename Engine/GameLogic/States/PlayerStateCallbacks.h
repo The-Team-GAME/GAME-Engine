@@ -338,7 +338,7 @@ namespace PlayerStateCallbacks
         )
         .add_component<Components::RigidBody>(true, false)
         .add_component<Components::BoxCollider>(player->hitbox_width * 1.2f, player->hitbox_height, false)
-        .add_component<Components::FrameLifetime>(2) // Lasts 2 frames for bigger impact
+        .add_component<Components::FrameLifetime>(1)
         .add_component<Components::Color>(Math::Vec4D(1.0f, 0.0f, 1.0f, 0.4f)) // Purple for finisher
         .add_component<Components::Texture>(Engine::Graphics::get_rect_texture())
         .remove_from_layer("default")
