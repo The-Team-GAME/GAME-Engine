@@ -437,7 +437,7 @@ namespace ImGuiWidgets {
     else if (field_value.isObject()) {
       auto& nested_fields = field_value.getObject();
       for (auto& [nested_name, nested_value] : nested_fields) {
-        render_field(display_name + "::" + nested_name, "", nested_value, modified, entity);
+        render_field(display_name + "::" + nested_name, nested_value.type_hint, nested_value, modified, entity);
       }
     }
     else if (field_value.isArray()) {
@@ -486,8 +486,8 @@ namespace ImGuiWidgets {
             break; // Exit loop after erasing to avoid iterator issues
           }
 
-          // Render the element using the generic field renderer
-          render_field(element_label, "", array[i], modified, entity);
+          // Render the element using the field renderer with its type hint
+          render_field(element_label, array[i].type_hint, array[i], modified, entity);
 
           ImGui::PopID();
         }

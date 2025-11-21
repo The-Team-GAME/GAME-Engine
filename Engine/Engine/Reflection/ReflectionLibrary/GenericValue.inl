@@ -597,7 +597,9 @@ namespace ReflectionLibrary
       auto& obj_ref = const_cast<ValueType&>(obj);
       for_each_field(obj_ref, [&](std::string_view name, auto& field_value, int)
         { result[std::string(name)] = to_generic_value(field_value); });
-      return GenericValue(std::move(result));
+      GenericValue gv(std::move(result));
+      gv.type_hint = std::string(class_name<ValueType>);
+      return gv;
     }
     else
     {
