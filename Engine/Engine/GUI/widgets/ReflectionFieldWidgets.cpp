@@ -288,23 +288,28 @@ namespace ImGuiWidgets {
     bool& modified,
     Engine::ECS::Entity entity
   ) {
+
     if (field_value.isBool()) {
       bool val = field_value.getBool();
-      if (ImGui::Checkbox(display_name.c_str(), &val)) {
+      ImGui::Text("%s", display_name.c_str());
+      ImGui::SameLine();
+      if (ImGui::Checkbox(("##" + display_name).c_str(), &val)) {
         field_value = val;
         modified = true;
       }
     }
     else if (field_value.isInt()) {
       int val = static_cast<int>(field_value.getInt());
-      if (ImGui::DragInt(display_name.c_str(), &val)) {
+      ImGui::Text("%s", display_name.c_str());
+      if (ImGui::DragInt(("##" + display_name).c_str(), &val)) {
         field_value = static_cast<ReflectionLibrary::Integer>(val);
         modified = true;
       }
     }
     else if (field_value.isDouble()) {
       float val = static_cast<float>(field_value.getDouble());
-      if (ImGui::DragFloat(display_name.c_str(), &val, 0.01f)) {
+      ImGui::Text("%s", display_name.c_str());
+      if (ImGui::DragFloat(("##" + display_name).c_str(), &val, 0.01f)) {
         field_value = static_cast<double>(val);
         modified = true;
       }
@@ -314,7 +319,8 @@ namespace ImGuiWidgets {
       std::string str_val = field_value.getString();
       strncpy_s(buffer, str_val.c_str(), sizeof(buffer) - 1);
       buffer[sizeof(buffer) - 1] = '\0';
-      if (ImGui::InputText(display_name.c_str(), buffer, sizeof(buffer))) {
+      ImGui::Text("%s", display_name.c_str());
+      if (ImGui::InputText(("##" + display_name).c_str(), buffer, sizeof(buffer))) {
         field_value = std::string(buffer);
         modified = true;
       }
@@ -391,8 +397,13 @@ namespace ImGuiWidgets {
     bool& modified,
     Engine::ECS::Entity entity
   ) {
+    ImGui::PushItemWidth(-FLT_MIN);
+
     // First try specialized rendering, then fallback to generic
     render_specialized_field(display_name, field_value, modified, entity) || render_generic_field(display_name, field_value, modified, entity);
+
+    ImGui::PopItemWidth();
+
   }
 
 } // namespace ImGuiWidgets
