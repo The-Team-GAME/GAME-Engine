@@ -77,7 +77,7 @@ namespace Components
 
   class StateMachine {
   public:
-    std::unordered_map<std::string, State> states_;
+    std::unordered_map<std::string, State> states;
   private:
     std::string current_state_name_;
     std::string pending_state_name_;  // For deferred transitions
@@ -96,15 +96,15 @@ namespace Components
 
     /// Add a state to the state machine
     void add_state(const State& state) {
-      if (states_.find(state.name) != states_.end()) {
+      if (states.find(state.name) != states.end()) {
         std::cout << "Warning: State '" << state.name << "' already exists in state machine. Overwriting." << std::endl;
       }
-      states_[state.name] = state;
+      states[state.name] = state;
     }
 
     /// Set the initial state (must be called before first update)
     void set_initial_state(const std::string& state_name) {
-      if (states_.find(state_name) == states_.end()) {
+      if (states.find(state_name) == states.end()) {
         std::cout << "Error: Cannot set initial state '" << state_name << "' - state does not exist" << std::endl;
         return;
       }
@@ -115,7 +115,7 @@ namespace Components
 
     /// Request a state change (deferred until end of current update)
     void change_state(const std::string& new_state) {
-      if (states_.find(new_state) == states_.end()) {
+      if (states.find(new_state) == states.end()) {
         std::cout << "Error: Cannot change to state '" << new_state << "' - state does not exist" << std::endl;
         return;
       }
@@ -127,7 +127,7 @@ namespace Components
 
     /// Force an immediate state change (use with caution - can cause issues if called during update)
     void force_immediate_state_change(const std::string& new_state) {
-      if (states_.find(new_state) == states_.end()) {
+      if (states.find(new_state) == states.end()) {
         std::cout << "Error: Cannot change to state '" << new_state << "' - state does not exist" << std::endl;
         return;
       }
@@ -169,7 +169,7 @@ namespace Components
 
       // Call on_enter if this is the first frame after entering this state
       if (is_first_frame_) {
-        auto& current_state = states_[current_state_name_];
+        auto& current_state = states[current_state_name_];
         if (current_state.on_enter) {
           current_state.on_enter(entity);
         }
@@ -177,7 +177,7 @@ namespace Components
       }
 
       // Execute current state's update
-      auto& current_state = states_[current_state_name_];
+      auto& current_state = states[current_state_name_];
       if (current_state.on_update) {
         current_state.on_update(entity);
       }
@@ -210,7 +210,7 @@ namespace Components
 
     /// Check if a state exists in this state machine
     bool has_state(const std::string& state_name) const {
-      return states_.find(state_name) != states_.end();
+      return states.find(state_name) != states.end();
     }
 
     /// Get the state history (for debugging)
@@ -234,7 +234,7 @@ namespace Components
 
       // Exit current state
       if (!current_state_name_.empty()) {
-        auto& old_state = states_[current_state_name_];
+        auto& old_state = states[current_state_name_];
         if (old_state.on_exit) {
           old_state.on_exit(*owner_entity_);
         }
@@ -251,7 +251,7 @@ namespace Components
       is_first_frame_ = true; // Mark that we need to call on_enter next update
 
       // Apply state animation if it exists
-      auto& new_state_obj = states_[new_state];
+      auto& new_state_obj = states[new_state];
       if (new_state_obj.animation.has_value()) {
         apply_state_animation(new_state_obj.animation.value());
       }
@@ -301,4 +301,4 @@ namespace Components
 
 REFLECT_FIELDS(Components::State, name, animation)
 REFLECT_FIELDS(Components::StateAnimation, texture, texture_atlas, animation, scale)
-REGISTER_COMPONENT(Components::StateMachine, states_)
+REGISTER_COMPONENT(Components::StateMachine, states)
