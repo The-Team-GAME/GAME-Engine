@@ -228,6 +228,13 @@ namespace PlayerStateCallbacks
 
     // Transition to idle when attack animation completes
     if (animation->has_ended()) {
+      auto* transform = entity.get_component<Components::Transform2D>();
+      auto* flip = entity.get_component<Components::Flip>();
+      // offset slightly forward because attack texture is wider than idle texture
+      if (transform && flip) {
+        transform->position.x += (flip->value.x < 0) ? 20.0f : -20.0f;
+      }
+
       state_machine->change_state("Idle");
     }
   }
@@ -289,6 +296,13 @@ namespace PlayerStateCallbacks
 
     // Transition to idle when attack animation completes
     if (animation->has_ended()) {
+      auto* transform = entity.get_component<Components::Transform2D>();
+      auto* flip = entity.get_component<Components::Flip>();
+      // offset slightly forward because attack texture is wider than idle texture
+      if (transform && flip) {
+        transform->position.x += (flip->value.x < 0) ? 20.0f : -20.0f;
+      }
+
       state_machine->change_state("Idle");
     }
   }
@@ -341,6 +355,13 @@ namespace PlayerStateCallbacks
     // No combo after this - it's the finisher
     // Just wait for animation to complete
     if (animation && animation->has_ended()) {
+      auto* transform = entity.get_component<Components::Transform2D>();
+      auto* flip = entity.get_component<Components::Flip>();
+      // offset slightly forward because attack texture is wider than idle texture
+      if (transform && flip) {
+        transform->position.x += (flip->value.x < 0) ? 20.0f : -20.0f;
+      }
+
       state_machine->change_state("Idle");
     }
   }
