@@ -371,13 +371,16 @@ namespace ImGuiWidgets {
     std::cout << "Rendering StateMachine field\n";
 
     if (!field_value.isObject()) {
-      std::cout << "Field value is not an object\n";
-      return false;
+      ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "StateMachine field is not an object");
+      return true;
     };
 
     ReflectionLibrary::Object& field_obj = field_value.getObject();
     auto states_it = field_obj.find("states");
-    if (states_it == field_obj.end() || !states_it->second.isObject()) return false;
+    if (states_it == field_obj.end() || !states_it->second.isObject()) {
+      ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "StateMachine has no states defined");
+      return true;
+    }
 
     ReflectionLibrary::Object& states_map = states_it->second.getObject();
 
