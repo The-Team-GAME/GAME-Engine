@@ -15,6 +15,9 @@ namespace Components
     float hitbox_offset = 80.0f;
     float hitbox_width = 100.0f;
     float hitbox_height = 128.0f; // ATTACK_HEIGHT * 2.0f
+    float attack_dash_speed1 = 3500.0f; // First punch forward movement
+    float attack_dash_speed2 = 3500.0f; // Second punch forward movement
+    float attack_dash_speed3 = 5000.0f; // Third punch (finisher) forward movement
   };
 
   struct Enemy
@@ -40,5 +43,5 @@ namespace Components
 
 } // namespace Components
 
-REGISTER_COMPONENT(Components::Player, walk_speed, air_speed, jump_force, hitbox_offset, hitbox_width, hitbox_height)
+REGISTER_COMPONENT(Components::Player, walk_speed, air_speed, jump_force, hitbox_offset, hitbox_width, hitbox_height, attack_dash_speed1, attack_dash_speed2, attack_dash_speed3)
 REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height, attack_cooldown, last_attack_time, detection_range, chase_range, attack_range)

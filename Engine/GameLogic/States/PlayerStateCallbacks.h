@@ -177,14 +177,16 @@ namespace PlayerStateCallbacks
 
   inline void attack1_on_enter(Engine::ECS::Entity& entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
-    if (rigid) {
-      rigid->velocity.x = 0.f;
+    auto* flip = entity.get_component<Components::Flip>();
+    auto* player = entity.get_component<Components::Player>();
+    
+    // Apply forward movement during attack
+    if (rigid && flip && player) {
+      rigid->velocity.x = (flip->value.x < 0) ? -player->attack_dash_speed1 : player->attack_dash_speed1;
     }
 
     // Create attack hitbox entity
     auto* transform = entity.get_component<Components::Transform2D>();
-    auto* flip = entity.get_component<Components::Flip>();
-    auto* player = entity.get_component<Components::Player>();
 
     if (transform && player) {
       float hitbox_offset = (flip && flip->value.x < 0) ? -player->hitbox_offset : player->hitbox_offset;
@@ -213,8 +215,14 @@ namespace PlayerStateCallbacks
   inline void attack1_on_update(Engine::ECS::Entity& entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* animation = entity.get_component<Components::Animation>();
+    auto* rigid = entity.get_component<Components::RigidBody>();
 
     if (!animation) return;
+
+    // Apply friction to slow down the attack dash
+    if (rigid) {
+      rigid->velocity.x *= 0.85f; // Decelerate
+    }
 
     // Check if player pressed attack again during this combo window
     if (Engine::Input::is_pressed(Engine::KeyCode::F) && !animation->has_ended()) {
@@ -236,14 +244,16 @@ namespace PlayerStateCallbacks
 
   inline void attack2_on_enter(Engine::ECS::Entity& entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
-    if (rigid) {
-      rigid->velocity.x = 0.f;
+    auto* flip = entity.get_component<Components::Flip>();
+    auto* player = entity.get_component<Components::Player>();
+    
+    // Apply forward movement during attack
+    if (rigid && flip && player) {
+      rigid->velocity.x = (flip->value.x < 0) ? -player->attack_dash_speed2 : player->attack_dash_speed2;
     }
 
     // Create attack hitbox entity
     auto* transform = entity.get_component<Components::Transform2D>();
-    auto* flip = entity.get_component<Components::Flip>();
-    auto* player = entity.get_component<Components::Player>();
 
     if (transform && player) {
       float hitbox_offset = (flip && flip->value.x < 0) ? -player->hitbox_offset : player->hitbox_offset;
@@ -272,8 +282,14 @@ namespace PlayerStateCallbacks
   inline void attack2_on_update(Engine::ECS::Entity& entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* animation = entity.get_component<Components::Animation>();
+    auto* rigid = entity.get_component<Components::RigidBody>();
 
     if (!animation) return;
+
+    // Apply friction to slow down the attack dash
+    if (rigid) {
+      rigid->velocity.x *= 0.85f; // Decelerate
+    }
 
     // Check if player pressed attack again during this combo window
     if (Engine::Input::is_pressed(Engine::KeyCode::F) && !animation->has_ended()) {
@@ -295,14 +311,16 @@ namespace PlayerStateCallbacks
 
   inline void attack3_on_enter(Engine::ECS::Entity& entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
-    if (rigid) {
-      rigid->velocity.x = 0.f;
+    auto* flip = entity.get_component<Components::Flip>();
+    auto* player = entity.get_component<Components::Player>();
+    
+    // Apply forward movement during attack
+    if (rigid && flip && player) {
+      rigid->velocity.x = (flip->value.x < 0) ? -player->attack_dash_speed3 : player->attack_dash_speed3;
     }
 
     // Create attack hitbox entity
     auto* transform = entity.get_component<Components::Transform2D>();
-    auto* flip = entity.get_component<Components::Flip>();
-    auto* player = entity.get_component<Components::Player>();
 
     if (transform && player) {
       float hitbox_offset = (flip && flip->value.x < 0) ? -player->hitbox_offset : player->hitbox_offset;
@@ -331,6 +349,12 @@ namespace PlayerStateCallbacks
   inline void attack3_on_update(Engine::ECS::Entity& entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* animation = entity.get_component<Components::Animation>();
+    auto* rigid = entity.get_component<Components::RigidBody>();
+
+    // Apply friction to slow down the attack dash
+    if (rigid) {
+      rigid->velocity.x *= 0.85f; // Decelerate
+    }
 
     // No combo after this - it's the finisher
     // Just wait for animation to complete
