@@ -18,7 +18,7 @@
 #include "../../Engine/MonkeyEngine.h"
 #include "../../Engine/Systems/ParticleSystem.h"
 #include "../../Engine/Systems/PhysicsSystem.h"
-//#include "../Components/Components.h"
+#include "../../Engine/Systems/ChatBoxSystem.h"
 
 /* ===================== //
 // Custom Events         //
@@ -62,6 +62,10 @@ private:
   Engine::ECS::Entity enemy_health_text;
   Engine::ECS::Entity player_health_text;
 
+  Engine::ECS::Entity chatbox_background;
+  Engine::ECS::Entity chatbox_text;
+  std::unique_ptr<Engine::Systems::ChatBox> chatbox_system;
+  bool chatbox_active = false;
 
   Engine::Graphics::Texture background_texture;
 

@@ -292,6 +292,33 @@ void ShowcaseState::init() {
 
   // Start playing background music (looped)
   bgm_channel = Engine::Audio::play_sound(bgm_sound, 0.5f, true);
+
+
+ // //Chatbox
+ // chatbox_system = std::make_unique<Engine::Systems::ChatBox>();
+
+ // chatbox_background = Engine::ECS::create_entity()
+ //   .add_component<Components::Tag<"ShowcaseState">>();
+
+	//// chat text entity
+ // chatbox_text = Engine::ECS::create_entity()
+ //   .add_component<Components::Tag<"ShowcaseState">>()
+ //   .add_component<Components::Transform2D>(
+ //     100.0f,   // x: left padding
+ //     830.0f,   // y: near bottom (adjust based on your virtual resolution)
+ //     0.0f,
+ //     0.7f,     // scale x
+ //     0.7f      // scale y
+ //   )
+ //   .add_component<Components::Font>(info_font)
+ //   .add_component<Components::Text>("Press T to start dialogue")
+ //   .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
+
+ // // Link the text entity to the chatbox system
+ // chatbox_system->set_text_entity(chatbox_text);
+ // chatbox_active = false;
+ // auto* text_color = chatbox_text.get_component<Components::Color>();
+ // if (text_color) text_color->a = 0.0f;
 }
 
 void ShowcaseState::update() {
