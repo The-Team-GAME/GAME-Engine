@@ -200,8 +200,14 @@ namespace Engine
           }
         }
 
-        // Update the atlas drawIndex to the current frame
-        atlas->drawIndex = current_frame;
+        // Update the atlas drawIndex using the frame's atlas_index
+        if (current_frame >= 0 && current_frame < static_cast<int>(animation->frames.size())) {
+          atlas->drawIndex = animation->frames[current_frame].atlas_index;
+        }
+        else {
+          std::cout << "Warning: current_frame out of bounds in AnimationUpdateSystem\n";
+          atlas->drawIndex = 0; // Fallback to first frame
+        }
       }
     };
 

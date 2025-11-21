@@ -125,7 +125,7 @@ namespace Components
 
     Animation() : frames(), startTime(Engine::Time::get_time()), totalDuration(0.0f), is_looping(true) {} // TODO: remove default constructor
 
-    // Evenly spaced frames
+    // Evenly spaced frames with sequential atlas indices starting from 0
     Animation(size_t frameCount, float frameDuration, bool looping = true) : frames(), startTime(0.0f), totalDuration(0.0f), is_looping(looping)
     {
       if (frameCount == 0)
@@ -133,14 +133,103 @@ namespace Components
 
       startTime = Engine::Time::get_time();
       frames.resize(frameCount);
+
+      // Default: sequential indices 0, 1, 2, ...
+      for (size_t i = 0; i < frameCount; ++i) {
+        frames[i].atlas_index = static_cast<int>(i);
+      }
+
       set_frame_even(frameDuration);
     }
 
+    // Evenly spaced frames with specified atlas index range
+    Animation(int startIndex, int endIndex, float frameDuration, bool looping = true)
+      : frames(), startTime(0.0f), totalDuration(0.0f), is_looping(looping)
+    {
+      if (startIndex > endIndex) {
+        Log::warning("Animation: startIndex > endIndex, swapping them");
+        std::swap(startIndex, endIndex);
+      }
+
+      size_t frameCount = static_cast<size_t>(endIndex - startIndex + 1);
+      startTime = Engine::Time::get_time();
+      frames.resize(frameCount);
+
+      // Fill with indices from startIndex to endIndex
+      for (int i = 0; i < static_cast<int>(frameCount); ++i) {
+        frames[i].atlas_index = startIndex + i;
+      }
+
+      set_frame_even(frameDuration);
+    }
+
+    // Custom frame durations with sequential atlas indices starting from 0
     Animation(std::initializer_list<float> durations, bool looping = true)
       : frames(), startTime(Engine::Time::get_time()), totalDuration(0.0f), is_looping(looping)
     {
       // Create frames based on the number of durations
       frames.resize(durations.size());
+
+      // Default: sequential indices 0, 1, 2, ...
+      for (size_t i = 0; i < durations.size(); ++i) {
+        frames[i].atlas_index = static_cast<int>(i);
+      }
+
+      set_frame_durations(durations);
+    }
+
+    // Custom frame durations with specified atlas index range
+    Animation(int startIndex, int endIndex, std::initializer_list<float> durations, bool looping = true)
+      : frames(), startTime(Engine::Time::get_time()), totalDuration(0.0f), is_looping(looping)
+    {
+      if (startIndex > endIndex) {
+        Log::warning("Animation: startIndex > endIndex, swapping them");
+        std::swap(startIndex, endIndex);
+      }
+
+      size_t frameCount = static_cast<size_t>(endIndex - startIndex + 1);
+
+      if (durations.size() != frameCount) {
+        Log::warning("Animation: duration count doesn't match frame range, adjusting");
+      }
+
+      size_t actualFrameCount = std::min(frameCount, durations.size());
+      frames.resize(actualFrameCount);
+
+      // Fill with indices from startIndex to endIndex
+      for (size_t i = 0; i < actualFrameCount; ++i) {
+        frames[i].atlas_index = startIndex + static_cast<int>(i);
+      }
+
+      set_frame_durations(durations);
+    }
+
+    // Custom frame indices with even duration
+    Animation(const std::vector<int>& indices, float frameDuration, bool looping = true)
+      : frames(), startTime(Engine::Time::get_time()), totalDuration(0.0f), is_looping(looping)
+    {
+      frames.resize(indices.size());
+      for (size_t i = 0; i < indices.size(); ++i) {
+        frames[i].atlas_index = indices[i];
+      }
+      set_frame_even(frameDuration);
+    }
+
+    // Custom frame indices with custom durations
+    Animation(const std::vector<int>& indices, const std::vector<float>& durations, bool looping = true)
+      : frames(), startTime(Engine::Time::get_time()), totalDuration(0.0f), is_looping(looping)
+    {
+      if (indices.size() != durations.size()) {
+        Log::warning("Animation: indices and durations size mismatch");
+      }
+
+      size_t frameCount = std::min(indices.size(), durations.size());
+      frames.resize(frameCount);
+
+      for (size_t i = 0; i < frameCount; ++i) {
+        frames[i].atlas_index = indices[i];
+      }
+
       set_frame_durations(durations);
     }
 
@@ -153,6 +242,48 @@ namespace Components
     // Get the elapsed time since animation started
     float get_elapsed_time() const {
       return Engine::Time::get_time() - startTime;
+    }
+
+    // Get the current frame index
+    int get_current_frame_index() const {
+      if (frames.empty()) {
+        return 0;
+      }
+
+      float elapsed = Engine::Time::get_time() - startTime;
+      float time_to_use = elapsed;
+
+      // Handle looping vs non-looping animations
+      if (is_looping) {
+        time_to_use = fmod(elapsed, totalDuration);
+      }
+      else {
+        if (time_to_use > totalDuration) {
+          time_to_use = totalDuration;
+        }
+      }
+
+      // Find which frame should be displayed based on elapsed time
+      int current_frame = 0;
+      for (int i = 0; i < static_cast<int>(frames.size()); ++i) {
+        if (time_to_use >= frames[i].before_time) {
+          current_frame = i;
+        }
+        else {
+          break;
+        }
+      }
+
+      return current_frame;
+    }
+
+    // Get the current atlas index for rendering
+    int get_current_atlas_index() const {
+      int frame_idx = get_current_frame_index();
+      if (frame_idx >= 0 && frame_idx < static_cast<int>(frames.size())) {
+        return frames[frame_idx].atlas_index;
+      }
+      return 0; // Default to first frame
     }
 
     // Set specific frame durations (allows different duration per frame)
@@ -187,6 +318,7 @@ namespace Components
     struct Reflector {
       std::vector<float> durations;
       std::vector<float> before_times;
+      std::vector<int> atlas_indices;
       float startTime;
       float totalDuration;
       bool is_looping;
@@ -198,21 +330,34 @@ namespace Components
         r.is_looping = anim.is_looping;
         r.durations.reserve(anim.frames.size());
         r.before_times.reserve(anim.frames.size());
+        r.atlas_indices.reserve(anim.frames.size());
         for (const auto& frame : anim.frames) {
           r.durations.push_back(frame.duration);
           r.before_times.push_back(frame.before_time);
+          r.atlas_indices.push_back(frame.atlas_index);
         }
         return r;
       }
 
       static Animation create(const Reflector& r) {
-        Animation anim(0, 0.0f, r.is_looping);
+        Animation anim{};  // Use braced initialization to explicitly call default constructor
         anim.startTime = r.startTime;
         anim.totalDuration = r.totalDuration;
+        anim.is_looping = r.is_looping;
         anim.frames.resize(r.durations.size());
         for (size_t i = 0; i < r.durations.size(); ++i) {
           anim.frames[i].duration = r.durations[i];
           anim.frames[i].before_time = r.before_times[i];
+          anim.frames[i].atlas_index = r.atlas_indices[i];
+          // // Use atlas_indices if available, otherwise default to sequential indices
+          // // TODO: HOLIDAY: backwards compatibility, remove later
+          // if (i < r.atlas_indices.size()) {
+          //   anim.frames[i].atlas_index = r.atlas_indices[i];
+          // }
+          // else {
+          //   std::cout << "Warning: atlas_indices size less than durations size in Animation Reflector, using default sequential indices.\n";
+          //   anim.frames[i].atlas_index = static_cast<int>(i);
+          // }
         }
         return anim;
       }
@@ -391,4 +536,4 @@ REGISTER_COMPONENT_CUSTOM(Components::Color, r, g, b, a)
 REGISTER_COMPONENT_CUSTOM(Components::Texture, path)
 REGISTER_COMPONENT_CUSTOM(Components::Font, path, font_size)
 REGISTER_COMPONENT_CUSTOM(Components::TextureAtlas, tex_coords_list, drawIndex)
-REGISTER_COMPONENT_CUSTOM(Components::Animation, durations, before_times, startTime, totalDuration, is_looping)
+REGISTER_COMPONENT_CUSTOM(Components::Animation, durations, before_times, atlas_indices, startTime, totalDuration, is_looping)

@@ -35,6 +35,7 @@ namespace Engine {
     {
       float duration;   // Duration of this frame in seconds
       float before_time; // Time before this frame starts (for internal calculations)
+      int atlas_index = 0; // Index into TextureAtlas for this frame
     };
 
     // Used by TextureAtlas and Font components
