@@ -126,19 +126,14 @@ namespace Components
     Animation() : frames(), startTime(Engine::Time::get_time()), totalDuration(0.0f), is_looping(true) {} // TODO: remove default constructor
 
     // Evenly spaced frames
-    Animation(size_t frameCount, float frameDuration, bool looping = true) : frames(), startTime(0.0f), totalDuration(frameDuration* frameCount), is_looping(looping)
+    Animation(size_t frameCount, float frameDuration, bool looping = true) : frames(), startTime(0.0f), totalDuration(0.0f), is_looping(looping)
     {
       if (frameCount == 0)
         return;
 
       startTime = Engine::Time::get_time();
-
       frames.resize(frameCount);
-      for (size_t i = 0; i < frameCount; ++i)
-      {
-        frames[i].duration = frameDuration;
-        frames[i].before_time = i * frameDuration;
-      }
+      set_frame_even(frameDuration);
     }
 
     Animation(std::initializer_list<float> durations, bool looping = true)
@@ -172,6 +167,16 @@ namespace Components
         frames[i].before_time = totalDuration;
         totalDuration += durations[i];
       }
+    }
+
+    // Set all frames to have the same duration (evenly distributed)
+    void set_frame_even(float frameDuration) {
+      if (frames.empty()) {
+        return;
+      }
+
+      std::vector<float> even_durations(frames.size(), frameDuration);
+      set_frame_durations(even_durations);
     }
 
     // Set specific frame durations using initializer list for convenience
