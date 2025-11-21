@@ -42,6 +42,12 @@ namespace Components
     float detection_range = 300.0f;
     float chase_range = 400.0f;
     float attack_range = 80.0f;
+
+    // Knockback parameters
+    float knockback_force = 500.0f;
+    float knockback_upward = 200.0f;
+    float stun_duration = 0.5f;
+    float stun_timer = 0.0f;
   };
 
   struct Attack
@@ -55,5 +61,5 @@ namespace Components
 } // namespace Components
 
 REGISTER_COMPONENT(Components::Player, walk_speed, air_speed, jump_force, hitbox_offset, hitbox_width, hitbox_height, attack_dash_speed1, attack_dash_speed2, attack_dash_speed3, attack_damage1, attack_damage2, attack_damage3)
-REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height, attack_cooldown, last_attack_time, detection_range, chase_range, attack_range)
+REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height, attack_cooldown, last_attack_time, detection_range, chase_range, attack_range, knockback_force, knockback_upward, stun_duration, stun_timer)
 REGISTER_COMPONENT(Components::Attack, damage)
