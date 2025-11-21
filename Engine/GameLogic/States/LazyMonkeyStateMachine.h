@@ -159,7 +159,7 @@ namespace LazyMonkeyStates
 
       if (rigid && flip) {
         // Throw monkey forward based on facing direction
-        float leap_speed = 400.f;
+        float leap_speed = 600.f;
         rigid->velocity.x = (flip->value.x > 0 ? -leap_speed : leap_speed); // TODO: Unflip this when sprite is fixed
         // Optional: Add slight upward velocity for a leap effect
         rigid->velocity.y = -300.f; // Negative is up
