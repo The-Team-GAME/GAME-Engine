@@ -358,31 +358,32 @@ namespace ImGuiWidgets {
 
   bool render_specialized_field(
     const std::string& display_name,
+    const std::string& type_hint,
     ReflectionLibrary::GenericValue& field_value,
     bool& modified,
     Engine::ECS::Entity entity
   ) {
-    if (display_name == "Components::Color") {
+    if (type_hint == "Components::Color") {
       return render_color_field(field_value, modified);
     }
 
-    if (display_name == "Components::Texture") {
+    if (type_hint == "Components::Texture") {
       return render_texture_field(field_value, modified);
     }
 
-    if (display_name == "Components::Font") {
+    if (type_hint == "Components::Font") {
       return render_font_field(field_value, modified);
     }
 
-    if (display_name == "Components::Transform2D") {
+    if (type_hint == "Components::Transform2D") {
       return render_transform2d_field(field_value, modified);
     }
 
-    if (display_name == "Components::TextureAtlas") {
+    if (type_hint == "Components::TextureAtlas") {
       return render_texture_atlas_field(entity);
     }
 
-    if (display_name == "Components::Animation") {
+    if (type_hint == "Components::Animation") {
       return render_animation_field(field_value, modified);
     }
 
@@ -436,7 +437,7 @@ namespace ImGuiWidgets {
     else if (field_value.isObject()) {
       auto& nested_fields = field_value.getObject();
       for (auto& [nested_name, nested_value] : nested_fields) {
-        render_field(display_name + "::" + nested_name, nested_value, modified, entity);
+        render_field(display_name + "::" + nested_name, "", nested_value, modified, entity);
       }
     }
     else if (field_value.isArray()) {
@@ -486,7 +487,7 @@ namespace ImGuiWidgets {
           }
 
           // Render the element using the generic field renderer
-          render_field(element_label, array[i], modified, entity);
+          render_field(element_label, "", array[i], modified, entity);
 
           ImGui::PopID();
         }
@@ -501,6 +502,7 @@ namespace ImGuiWidgets {
 
   void render_field(
     const std::string& display_name,
+    const std::string& type_hint,
     ReflectionLibrary::GenericValue& field_value,
     bool& modified,
     Engine::ECS::Entity entity
@@ -508,7 +510,7 @@ namespace ImGuiWidgets {
     ImGui::PushItemWidth(-FLT_MIN);
 
     // First try specialized rendering, then fallback to generic
-    render_specialized_field(display_name, field_value, modified, entity) || render_generic_field(display_name, field_value, modified, entity);
+    render_specialized_field(display_name, type_hint, field_value, modified, entity) || render_generic_field(display_name, field_value, modified, entity);
 
     ImGui::PopItemWidth();
 

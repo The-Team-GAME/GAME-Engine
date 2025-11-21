@@ -126,6 +126,7 @@ namespace ImGuiWidgets {
 
   Parameters:
   display_name - The name to display for the field in the UI
+  type_hint    - The type name used to identify which specialized renderer to use
   field_value  - Reference to the GenericValue containing the field data
   modified     - [out] Set to true if the field value was modified by user input
   entity       - Optional entity for context-dependent rendering (e.g., TextureAtlas)
@@ -138,6 +139,7 @@ namespace ImGuiWidgets {
   ==================================================================================*/
   bool render_specialized_field(
     const std::string& display_name,
+    const std::string& type_hint,
     ReflectionLibrary::GenericValue& field_value,
     bool& modified,
     Engine::ECS::Entity entity = Engine::ECS::Entity(Engine::ECS::INVALID_ENTITY)
@@ -173,6 +175,7 @@ namespace ImGuiWidgets {
 
   Parameters:
   display_name - The name to display for the field in the UI
+  type_hint    - The type name used to identify which specialized renderer to use
   field_value  - Reference to the GenericValue containing the field data
   modified     - [out] Set to true if the field value was modified by user input
   entity       - Optional entity for context-dependent rendering
@@ -182,6 +185,7 @@ namespace ImGuiWidgets {
   ==================================================================================*/
   void render_field(
     const std::string& display_name,
+    const std::string& type_hint,
     ReflectionLibrary::GenericValue& field_value,
     bool& modified,
     Engine::ECS::Entity entity = Engine::ECS::Entity(Engine::ECS::INVALID_ENTITY)
