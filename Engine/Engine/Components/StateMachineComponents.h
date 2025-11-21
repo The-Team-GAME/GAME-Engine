@@ -107,8 +107,8 @@ namespace Components
   class StateMachine {
   public:
     std::unordered_map<std::string, State> states;
+    std::string current_state_name; // Made public for serialization
   private:
-    std::string current_state_name_;
     std::string pending_state_name_;  // For deferred transitions
     bool has_pending_transition_ = false;
     bool is_first_frame_ = false;     // Track if we just entered current state
@@ -138,7 +138,7 @@ namespace Components
         return;
       }
 
-      current_state_name_ = state_name;
+      current_state_name = state_name;
       is_first_frame_ = true;
     }
 
@@ -161,7 +161,7 @@ namespace Components
         return;
       }
 
-      if (new_state == current_state_name_) {
+      if (new_state == current_state_name) {
         return; // Already in this state
       }
 
@@ -191,20 +191,20 @@ namespace Components
       // Store entity reference
       owner_entity_ = &entity;
 
-      if (current_state_name_.empty()) {
+      if (current_state_name.empty()) {
         std::cout << "Warning: StateMachine has no current state set. Call set_initial_state() first." << std::endl;
         return;
       }
 
       // Call on_enter if this is the first frame after entering this state
       if (is_first_frame_) {
-        auto& current_state = states[current_state_name_];
+        auto& current_state = states[current_state_name];
         current_state.invoke_on_enter(entity);
         is_first_frame_ = false;
       }
 
       // Execute current state's update
-      auto& current_state = states[current_state_name_];
+      auto& current_state = states[current_state_name];
       current_state.invoke_on_update(entity);
 
       // After update completes, apply any pending state transition
@@ -220,12 +220,12 @@ namespace Components
 
     /// Get the name of the current state
     const std::string& get_current_state() const {
-      return current_state_name_;
+      return current_state_name;
     }
 
     /// Check if currently in a specific state
     bool is_in_state(const std::string& state_name) const {
-      return current_state_name_ == state_name;
+      return current_state_name == state_name;
     }
 
     /// Check if this is the first frame after entering the current state
@@ -248,7 +248,7 @@ namespace Components
     // Internal State Transition Logic
     // ========================================================================
     void execute_state_transition(const std::string& new_state) {
-      if (new_state == current_state_name_) {
+      if (new_state == current_state_name) {
         return; // Already in this state
       }
 
@@ -258,19 +258,19 @@ namespace Components
       }
 
       // Exit current state
-      if (!current_state_name_.empty()) {
-        auto& old_state = states[current_state_name_];
+      if (!current_state_name.empty()) {
+        auto& old_state = states[current_state_name];
         old_state.invoke_on_exit(*owner_entity_);
 
         // Add to history (limit history size to prevent unbounded growth)
-        state_history_.push_back(current_state_name_);
+        state_history_.push_back(current_state_name);
         if (state_history_.size() > 10) { // Keep last 10 states
           state_history_.erase(state_history_.begin());
         }
       }
 
       // Transition to new state
-      current_state_name_ = new_state;
+      current_state_name = new_state;
       is_first_frame_ = true; // Mark that we need to call on_enter next update
 
       // Apply state animation if it exists
@@ -324,4 +324,4 @@ namespace Components
 
 REFLECT_FIELDS(Components::State, name, on_enter_callback_name, on_update_callback_name, on_exit_callback_name, animation)
 REFLECT_FIELDS(Components::StateAnimation, texture, texture_atlas, animation, scale)
-REGISTER_COMPONENT(Components::StateMachine, states)
+REGISTER_COMPONENT(Components::StateMachine, states, current_state_name)
