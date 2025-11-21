@@ -196,6 +196,12 @@ namespace Components
         return;
       }
 
+      // Auto-initialize after deserialization: if we have a current state but haven't set the first frame flag,
+      // it means we were just deserialized and need to initialize
+      if (!is_first_frame_ && !has_pending_transition_ && pending_state_name_.empty() && state_history_.empty()) {
+        is_first_frame_ = true; // Trigger on_enter callback on the next check
+      }
+
       // Call on_enter if this is the first frame after entering this state
       if (is_first_frame_) {
         auto& current_state = states[current_state_name];

@@ -30,7 +30,9 @@ namespace Engine
 
       void update_entity(Engine::ECS::Entity& entity) override {
         auto* state_machine = entity.get_component<Components::StateMachine>();
-        state_machine->update(entity);
+        if (state_machine) {
+          state_machine->update(entity);
+        }
       }
     };
 
