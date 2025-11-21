@@ -702,34 +702,14 @@ namespace ReflectionLibrary
     }
     else if constexpr (is_iterable_v<ValueType>)
     {
+      if (!value.isArray())
+        return false;
+      const auto& arr = value.getArray();
       obj.clear();
 
       // Handle maps differently from vectors/lists
       if constexpr (requires { typename ValueType::key_type; typename ValueType::mapped_type; })
       {
-        // For string-keyed maps, check if stored as Object
-        if constexpr (std::is_same_v<typename ValueType::key_type, std::string> ||
-          std::is_convertible_v<typename ValueType::key_type, std::string>)
-        {
-          if (value.isObject())
-          {
-            // Deserialize from Object format
-            const auto& object = value.getObject();
-            for (const auto& [key, val] : object)
-            {
-              typename ValueType::mapped_type mapped_val{};
-              if (!from_generic_value(mapped_val, val))
-                return false;
-              obj[key] = std::move(mapped_val);
-            }
-            return true;
-          }
-        }
-
-        // For non-string keys or Array format, deserialize from Array
-        if (!value.isArray())
-          return false;
-        const auto& arr = value.getArray();
         for (const auto& elem : arr)
         {
           std::pair<typename ValueType::key_type, typename ValueType::mapped_type> pair{};
@@ -740,10 +720,6 @@ namespace ReflectionLibrary
       }
       else
       {
-        // Sequential containers
-        if (!value.isArray())
-          return false;
-        const auto& arr = value.getArray();
         for (const auto& elem : arr)
         {
           typename ValueType::value_type val{};
