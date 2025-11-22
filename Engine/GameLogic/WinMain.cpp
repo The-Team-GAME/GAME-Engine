@@ -129,6 +129,9 @@ int main()
           // Make enemy child of hitbox (offset will be auto-calculated by HierarchySystem)
           enemy_entity.add_component<Components::Parent>(attack_entity);
         
+          // Store knockback to apply when detaching (from Player struct via Attack component)
+          enemy_entity.add_component<Components::PendingKnockback>(attack->knockback);
+        
           // Offset slightly upwards each hit
           transform->position.y += -10.0f;
 

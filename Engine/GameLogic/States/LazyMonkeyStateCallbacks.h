@@ -185,10 +185,20 @@ namespace LazyMonkeyStateCallbacks
     auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* animation = entity.get_component<Components::Animation>();
+    auto* pending_knockback = entity.get_component<Components::PendingKnockback>();
 
     if (!lazy_monkey) return;
  
-    // Transition to idle only when animation completes AND grounded
+    // When animation ends, apply knockback and wait for landing
+    if (animation->has_ended() && pending_knockback && rigid) {
+      // Apply knockback momentum from Player struct
+      rigid->velocity = pending_knockback->knockback;
+      
+      // Remove the pending knockback component (one-time use)
+      entity.remove_component<Components::PendingKnockback>();
+    }
+    
+    // Transition to idle only when grounded (after knockback has been applied)
     if (animation->has_ended() && rigid && rigid->on_ground) {
       state_machine->change_state("Idle");
     }
@@ -198,15 +208,6 @@ namespace LazyMonkeyStateCallbacks
     // Detach from hitbox when exiting hit state
     if (entity.has_component<Components::Parent>()) {
       entity.remove_component<Components::Parent>();
-    }
-    
-    // Apply knockback momentum
-    auto* rigid = entity.get_component<Components::RigidBody>();
-    
-    if (rigid) {
-      // knockback momentum
-      rigid->velocity.y = -1000.0f; // TODO: use the value in Player struct
-      rigid->velocity.x = 1000.0f; // TODO: use the value in Player struct
     }
   }
 
