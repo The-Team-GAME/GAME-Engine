@@ -62,10 +62,10 @@ int main()
   Engine::ECS::register_layer("tilemap_foreground_mid"); // Tilemap foreground mid layer (e.g., things that needs to collide with player, ground, platforms)
   //Engine::ECS::register_layer("tilemap_foreground_near"); // Tilemap foreground near layer (don't need it for now)
   Engine::ECS::register_layer("hazard"); // Hazard layer (e.g., spikes, lava) 
-  Engine::ECS::register_layer("player"); // Player character layer
-  Engine::ECS::register_layer("enemy"); // Enemy characters layer
   Engine::ECS::register_layer("damage_enemy"); // Damage enemy layer (e.g., hitboxes for player attacks)
   Engine::ECS::register_layer("damage_player"); // Damage player layer (e.g., hitboxes for enemy attacks, hazards)
+  Engine::ECS::register_layer("enemy"); // Enemy characters layer
+  Engine::ECS::register_layer("player"); // Player character layer
   Engine::ECS::register_layer("effect"); // Visual effects like particles
   Engine::ECS::register_layer("ui"); // User interface elements
   Engine::ECS::register_layer("debug"); // Debug overlays and information
