@@ -153,19 +153,7 @@ namespace Components
       transition_queue_.push(new_state);
     }
 
-    /// Force an immediate state change (use with caution - can cause issues if called during update)
-    void force_immediate_state_change(const std::string& new_state) {
-      if (states.find(new_state) == states.end()) {
-        std::cout << "Error: Cannot change to state '" << new_state << "' - state does not exist" << std::endl;
-        return;
-      }
 
-      if (new_state == current_state_name) {
-        return; // Already in this state
-      }
-
-      execute_state_transition(new_state);
-    }
 
     /// Revert to the previous state in history
     void revert_to_previous_state() {
@@ -222,6 +210,15 @@ namespace Components
       // Execute current state's update
       auto& current_state = states[current_state_name];
       current_state.invoke_on_update(entity);
+
+      // Process pending transitions at the END of the frame as well
+      // This handles transitions requested during the update (e.g. animation end)
+      // ensuring the state changes within the same frame.
+      if (!transition_queue_.empty()) {
+        std::string next_state = transition_queue_.front();
+        transition_queue_.pop();
+        execute_state_transition(next_state);
+      }
     }
 
     // ========================================================================

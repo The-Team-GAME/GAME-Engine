@@ -248,7 +248,7 @@ namespace PlayerStateCallbacks
       }
 
       // Force so that we don't display the attack texture after offset is applied
-      state_machine->force_immediate_state_change("Idle");
+      state_machine->change_state("Idle");
     }
   }
 
@@ -329,7 +329,7 @@ namespace PlayerStateCallbacks
       }
 
       // Force so that we don't display the attack texture after offset is applied
-      state_machine->force_immediate_state_change("Idle");
+      state_machine->change_state("Idle");
     }
   }
 
@@ -401,7 +401,7 @@ namespace PlayerStateCallbacks
       }
 
       // Force so that we don't display the attack texture after offset is applied
-      state_machine->force_immediate_state_change("Idle");
+      state_machine->change_state("Idle");
     }
   }
 
