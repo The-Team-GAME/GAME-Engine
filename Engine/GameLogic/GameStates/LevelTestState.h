@@ -61,7 +61,7 @@ public:
       .add_component<Components::Flip>(1.0f, 1.0f) // Start facing right
       .add_component<Components::RigidBody>(Components::RigidBody(false, true))
       .add_component<Components::BoxCollider>(LazyMonkeyStates::WIDTH * 2.0f, LazyMonkeyStates::HEIGHT * 2.0f, false)
-      .add_component<Components::EnemyHealth>(100, 100)
+      .add_component<Components::EnemyHealth>(400, 400)
       .add_component<Components::StateMachine>(LazyMonkeyStates::create_state_machine())
       .remove_from_layer("default")
       .add_to_layer("enemy")
