@@ -57,6 +57,8 @@ void button_exit_scale(Engine::ECS::Entity entity) {
 class MainMenuState : public Engine::Scene
 {
 private:
+  // Deferred scene load flag to avoid modifying engine systems mid-iteration
+  bool request_load_showcase = false;
 
 public:
   void load() {
@@ -73,9 +75,10 @@ public:
       .add_component<Components::Transform2D>(625.0f, 700.0f, 0.0f, 192.0f * 1.5f, 64.0f * 1.5f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/Button_Start.png"))
       .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
-      .add_component<Components::Clickable>([]()
+      .add_component<Components::Clickable>([this]()
         {
-          Engine::SceneManager::load_scene("ShowcaseState");
+          // Defer actual scene load to MainMenuState::update() to avoid modifying ECS from within a system iteration
+          request_load_showcase = true;
         },
 
         [](Engine::ECS::Entity entity) { //Scale/Descale
@@ -107,7 +110,13 @@ public:
 
   void init() {};
 
-  void update() {};
+  void update() {
+    // Handle deferred scene load request (set by the click handler)
+    if (request_load_showcase) {
+      request_load_showcase = false;
+      Engine::SceneManager::load_scene("ShowcaseState");
+    }
+  };
 
   void draw() {
     Engine::Graphics::clear_screen({ 0.0f, 0.0f, 0.0f, 1.0f });

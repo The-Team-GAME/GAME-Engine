@@ -194,10 +194,6 @@ void ShowcaseState::init() {
 
   // Subscribe to attack events
   Engine::EventManager::add_event_listener<AttackEvent>([this](const AttackEvent& event) {
-    std::cout << "Attack event! Entity " << event.attacker
-      << " attacks Entity " << event.target
-      << " for " << event.damage << " damage!\n";
-
     // Play attack animation
     if (event.attacker == player.get_id()) {
       // Stop walk sound if playing
@@ -213,7 +209,6 @@ void ShowcaseState::init() {
       auto* anim_state = player.get_component<Components::AnimationState>();
       if (anim_state) {
         anim_state->set_entity_state(PUNCH_STATE);
-        std::cout << "Playing punch animation\n";
       }
     }
 
@@ -231,16 +226,11 @@ void ShowcaseState::init() {
     // Apply damage to enemy
     auto target_entity = Engine::ECS::get_entity(event.target);
     if (target_entity.is_valid()) {
-      std::cout << "Target entity is valid\n";
 
       if (target_entity.has_component<Components::Health>()) {
-        std::cout << "Target has health component\n";
         auto* health = target_entity.get_component<Components::Health>();
-        std::cout << "Health before damage: " << health->value << "\n";
 
         health->damage(event.damage);
-
-        std::cout << "Health after damage: " << health->value << "\n";
 
         // Update enemy health text
         if (enemy_health_text.is_valid() && enemy_health_text.has_component<Components::Text>()) {
@@ -249,25 +239,14 @@ void ShowcaseState::init() {
         }
 
         if (health->is_dead()) {
-          std::cout << "Entity " << event.target << " has been defeated!\n";
           target_entity.destroy();
         }
       }
-      else {
-        std::cout << "ERROR: Target entity does not have health component!\n";
-      }
-    }
-    else {
-      std::cout << "ERROR: Target entity is not valid!\n";
     }
     });
 
   // Subscribe to collect events
   Engine::EventManager::add_event_listener<CollectEvent>([this](const CollectEvent& event) {
-    std::cout << "Collect event! Entity " << event.collector
-      << " collected Entity " << event.collected
-      << " for " << event.points << " points!\n";
-
     // Update score
     if (event.collector == player.get_id()) {
       banana_collected += event.points;
@@ -294,31 +273,30 @@ void ShowcaseState::init() {
   bgm_channel = Engine::Audio::play_sound(bgm_sound, 0.5f, true);
 
 
- // //Chatbox
- // chatbox_system = std::make_unique<Engine::Systems::ChatBox>();
+  //Chatbox
+  // Create chatbox system
+  chatbox_system = std::make_unique<Engine::Systems::ChatBox>();
 
- // chatbox_background = Engine::ECS::create_entity()
- //   .add_component<Components::Tag<"ShowcaseState">>();
+  // Create a UI background
+  chatbox_background = Engine::ECS::create_entity()
+    .add_component<Components::Tag<"ShowcaseState">>()
+    .add_component<Components::Texture>(Engine::Resources::load_texture("images/BroDialogueBox/DarkRed Dialogue.png"))
+    .add_component<Components::Transform2D>(960.0f, 900.0f, 0.0f, 1800.0f, 180.0f);
 
-	//// chat text entity
- // chatbox_text = Engine::ECS::create_entity()
- //   .add_component<Components::Tag<"ShowcaseState">>()
- //   .add_component<Components::Transform2D>(
- //     100.0f,   // x: left padding
- //     830.0f,   // y: near bottom (adjust based on your virtual resolution)
- //     0.0f,
- //     0.7f,     // scale x
- //     0.7f      // scale y
- //   )
- //   .add_component<Components::Font>(info_font)
- //   .add_component<Components::Text>("Press T to start dialogue")
- //   .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
+  // Create text
+  chatbox_text = Engine::ECS::create_entity()
+    .add_component<Components::Tag<"ShowcaseState">>()
+    .add_component<Components::Transform2D>(100.0f, 830.0f, 0.0f, 0.7f, 0.7f)
+    .add_component<Components::Font>(info_font)
+    .add_component<Components::Text>("Press F to start dialogue")
+    .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.0f);
 
- // // Link the text entity to the chatbox system
- // chatbox_system->set_text_entity(chatbox_text);
- // chatbox_active = false;
- // auto* text_color = chatbox_text.get_component<Components::Color>();
- // if (text_color) text_color->a = 0.0f;
+  chatbox_system->set_text_entity(chatbox_text);
+  chatbox_system->set_background_entity(chatbox_background);
+  chatbox_system->init(info_font);
+
+  std::cout << "[ChatBox Debug] chatbox_system initialized (ShowcaseState)\n";
+
 }
 
 void ShowcaseState::update() {
@@ -405,8 +383,6 @@ void ShowcaseState::update() {
 
   // Attack enemy with E key (using event system)
   if (Engine::Input::is_pressed(Engine::KeyCode::E) && anim_state->current_state != PUNCH_STATE) {
-    std::cout << "E key pressed! Player ID: " << player.get_id() << ", Enemy ID: " << enemy.get_id() << "\n";
-
     // Send attack event 
     Engine::EventManager::send_event<AttackEvent>(player.get_id(), enemy.get_id(), 10);
 
@@ -428,10 +404,16 @@ void ShowcaseState::update() {
     //camera_comp->position.y = player_transform->position.y - Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().window_height / 2.0f;
   }
 
+  // Update chatbox system (do not recreate it every frame)
+  if (chatbox_system) {
+    chatbox_system->update_entities(Engine::Time::get_fixed_dt());
+  }
+
 }
 
 void ShowcaseState::draw() {
   Engine::Graphics::clear_screen(background_texture);
+  if (chatbox_system) chatbox_system->draw();
 }
 
 void ShowcaseState::free() {
@@ -452,6 +434,11 @@ void ShowcaseState::free() {
   // Remove event listeners
   Engine::EventManager::remove_event_listener<AttackEvent>();
   Engine::EventManager::remove_event_listener<CollectEvent>();
+
+	// Clear chatbox system
+  if (chatbox_system) {
+    chatbox_system->cleanup();
+  }
 }
 
 void ShowcaseState::unload() {
