@@ -23,9 +23,9 @@ namespace Components
     int attack_damage3 = 25; // Third punch (finisher) damage
 
     // Attack knockbacks
-    Math::Vec2D attack_knockback1 = Math::Vec2D(300.0f, -100.0f);
-    Math::Vec2D attack_knockback2 = Math::Vec2D(300.0f, -100.0f);
-    Math::Vec2D attack_knockback3 = Math::Vec2D(800.0f, -400.0f);
+    Math::Vec2D attack_knockback1 = Math::Vec2D(3000.0f, -1000.0f);
+    Math::Vec2D attack_knockback2 = Math::Vec2D(3000.0f, -1000.0f);
+    Math::Vec2D attack_knockback3 = Math::Vec2D(8000.0f, -4000.0f);
   };
 
   struct Enemy

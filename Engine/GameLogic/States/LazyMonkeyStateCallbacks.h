@@ -116,11 +116,7 @@ namespace LazyMonkeyStateCallbacks
   }
 
   inline void chasing_on_exit(Engine::ECS::Entity& entity) {
-    auto* rigid = entity.get_component<Components::RigidBody>();
-    if (rigid) {
-      rigid->velocity.x = 0.f;
-      // Don't reset velocity.y - let gravity/physics handle it
-    }
+   
   }
 
   // ========================================================================
@@ -187,10 +183,10 @@ namespace LazyMonkeyStateCallbacks
   }
 
   inline void hit_on_exit(Engine::ECS::Entity& entity) {
-    auto* rigid = entity.get_component<Components::RigidBody>();
-    if (rigid) {
-      rigid->velocity.x = 0.f;
-    }
+    // auto* rigid = entity.get_component<Components::RigidBody>();
+    // if (rigid) {
+    //   rigid->velocity.x = 0.f;
+    // }
   }
 
 } // namespace LazyMonkeyStateCallbacks

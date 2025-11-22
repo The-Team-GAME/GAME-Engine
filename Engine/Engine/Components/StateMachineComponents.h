@@ -27,6 +27,7 @@
 #include <functional>
 #include <optional>
 #include <iostream>
+#include <queue>
 
 namespace Components
 {
@@ -109,8 +110,7 @@ namespace Components
     std::unordered_map<std::string, State> states;
     std::string current_state_name; // Made public for serialization
   private:
-    std::string pending_state_name_;  // For deferred transitions
-    bool has_pending_transition_ = false;
+    std::queue<std::string> transition_queue_;  // Queue for deferred transitions
     bool is_first_frame_ = false;     // Track if we just entered current state
     std::vector<std::string> state_history_; // Track previous states
 
@@ -150,8 +150,7 @@ namespace Components
       }
 
       // Mark transition as pending - will execute after current update completes
-      pending_state_name_ = new_state;
-      has_pending_transition_ = true;
+      transition_queue_.push(new_state);
     }
 
     /// Force an immediate state change (use with caution - can cause issues if called during update)
@@ -191,6 +190,17 @@ namespace Components
       // Store entity reference
       owner_entity_ = &entity;
 
+      // Process pending transitions at the START of the frame
+      // This ensures we switch states before running any update logic
+      if (!transition_queue_.empty()) {
+        std::string next_state = transition_queue_.front();
+        transition_queue_.pop();
+        execute_state_transition(next_state);
+        
+        // If we have more transitions, we could process them here, 
+        // but typically one transition per frame is safer/saner.
+      }
+
       if (current_state_name.empty()) {
         std::cout << "Warning: StateMachine has no current state set. Call set_initial_state() first." << std::endl;
         return;
@@ -198,7 +208,7 @@ namespace Components
 
       // Auto-initialize after deserialization: if we have a current state but haven't set the first frame flag,
       // it means we were just deserialized and need to initialize
-      if (!is_first_frame_ && !has_pending_transition_ && pending_state_name_.empty() && state_history_.empty()) {
+      if (!is_first_frame_ && transition_queue_.empty() && state_history_.empty()) {
         is_first_frame_ = true; // Trigger on_enter callback on the next check
       }
 
@@ -212,12 +222,6 @@ namespace Components
       // Execute current state's update
       auto& current_state = states[current_state_name];
       current_state.invoke_on_update(entity);
-
-      // After update completes, apply any pending state transition
-      if (has_pending_transition_) {
-        execute_state_transition(pending_state_name_);
-        has_pending_transition_ = false;
-      }
     }
 
     // ========================================================================
