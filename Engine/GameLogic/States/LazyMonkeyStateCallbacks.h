@@ -176,8 +176,8 @@ namespace LazyMonkeyStateCallbacks
 
     if (!lazy_monkey) return;
  
-    // Transition to idle when animation completes
-    if (animation->has_ended()) {
+    // Transition to idle only when animation completes AND grounded
+    if (animation->has_ended() && rigid && rigid->on_ground) {
       state_machine->change_state("Idle");
     }
   }
