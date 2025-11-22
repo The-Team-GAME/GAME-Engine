@@ -189,6 +189,30 @@ namespace LazyMonkeyStateCallbacks
     // }
   }
 
+  // ========================================================================
+  // Death State Callbacks
+  // ========================================================================
+
+  inline void death_on_enter(Engine::ECS::Entity& entity) {
+    // auto* rigid = entity.get_component<Components::RigidBody>();
+    // if (rigid) {
+    //   rigid->velocity.x = 0.f;
+    // }
+    std::cout << "Lazy Monkey: Died!" << std::endl;
+  }
+
+  inline void death_on_update(Engine::ECS::Entity& entity) {
+    auto* animation = entity.get_component<Components::Animation>();
+    if (animation && animation->has_ended()) {
+      Engine::ECS::destroy_entity(entity);
+      std::cout << "Lazy Monkey: Destroyed after death animation." << std::endl;
+    }
+  }
+
+  inline void death_on_exit(Engine::ECS::Entity& entity) {
+    // Should not happen unless respawning
+  }
+
 } // namespace LazyMonkeyStateCallbacks
 
 // Register all lazy monkey state callbacks
@@ -203,3 +227,6 @@ REGISTER_FUNCTION(lazy_monkey_attacking_exit, void(Engine::ECS::Entity&), LazyMo
 REGISTER_FUNCTION(lazy_monkey_hit_enter, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::hit_on_enter)
 REGISTER_FUNCTION(lazy_monkey_hit_update, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::hit_on_update)
 REGISTER_FUNCTION(lazy_monkey_hit_exit, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::hit_on_exit)
+REGISTER_FUNCTION(lazy_monkey_death_enter, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::death_on_enter)
+REGISTER_FUNCTION(lazy_monkey_death_update, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::death_on_update)
+REGISTER_FUNCTION(lazy_monkey_death_exit, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::death_on_exit)

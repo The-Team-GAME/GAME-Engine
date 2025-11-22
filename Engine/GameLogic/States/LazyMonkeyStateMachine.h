@@ -64,10 +64,21 @@ namespace LazyMonkeyStates
     Components::StateAnimation lazy_monkey_hit_anim;
     lazy_monkey_hit_anim.texture = Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Death_Spritesheet.png"));
     lazy_monkey_hit_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 3, 3);
-    lazy_monkey_hit_anim.animation = Components::Animation({ 0.2f, 0.1f, 1.5f });
+    lazy_monkey_hit_anim.animation = Components::Animation({ 0.4f }); // Single frame (index 0) for 1.0s
     lazy_monkey_hit_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
     Components::State lazy_monkey_hit("Hit", "lazy_monkey_hit_enter", "lazy_monkey_hit_update", "lazy_monkey_hit_exit", lazy_monkey_hit_anim);
+
+    // ========================================================================
+    // Lazy Monkey Death State
+    // ========================================================================
+    Components::StateAnimation lazy_monkey_death_anim;
+    lazy_monkey_death_anim.texture = Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Death_Spritesheet.png"));
+    lazy_monkey_death_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 3, 3);
+    lazy_monkey_death_anim.animation = Components::Animation({ 0.2f, 0.1f, 1.5f }); // Full death animation
+    lazy_monkey_death_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
+
+    Components::State lazy_monkey_death("Death", "lazy_monkey_death_enter", "lazy_monkey_death_update", "lazy_monkey_death_exit", lazy_monkey_death_anim);
 
     // ========================================================================
     // Build and return state machine
@@ -77,6 +88,7 @@ namespace LazyMonkeyStates
     lazy_monkey_sm.add_state(lazy_monkey_chasing);
     lazy_monkey_sm.add_state(lazy_monkey_attacking);
     lazy_monkey_sm.add_state(lazy_monkey_hit);
+    lazy_monkey_sm.add_state(lazy_monkey_death);
     lazy_monkey_sm.set_initial_state("Idle");
 
     return lazy_monkey_sm;

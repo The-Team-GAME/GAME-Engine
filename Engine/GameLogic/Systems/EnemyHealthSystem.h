@@ -32,8 +32,8 @@ namespace Engine {
         // Check if enemy is dead
         if (enemy_health->is_dead()) {
           // Destroy the enemy entity
-          Engine::ECS::destroy_entity(entity);
-          std::cout << "Enemy destroyed!" << std::endl;
+          // Engine::ECS::destroy_entity(entity);
+          // std::cout << "Enemy destroyed!" << std::endl;
         }
       }
     };

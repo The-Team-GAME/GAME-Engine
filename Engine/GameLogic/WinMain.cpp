@@ -102,8 +102,13 @@ int main()
         std::cout << "Enemy took " << damage << " damage! HP: "
           << enemy_health->current_hp << "/" << enemy_health->max_hp << std::endl;
 
-        // Trigger hit state if state machine exists
-        if (state_machine->get_current_state() != "Hit") {
+        // Trigger hit or death state
+        if (enemy_health->current_hp <= 0) {
+          if (state_machine->get_current_state() != "Death") {
+            state_machine->change_state("Death");
+          }
+        }
+        else if (state_machine->get_current_state() != "Hit") {
           state_machine->change_state("Hit");
         }
 
