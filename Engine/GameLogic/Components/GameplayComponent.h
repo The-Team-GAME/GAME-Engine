@@ -15,17 +15,17 @@ namespace Components
     float hitbox_offset = 80.0f;
     float hitbox_width = 100.0f;
     float hitbox_height = 128.0f; // ATTACK_HEIGHT * 2.0f
-    float attack_dash_speed1 = 3500.0f; // First punch forward movement
-    float attack_dash_speed2 = 3500.0f; // Second punch forward movement
-    float attack_dash_speed3 = 5000.0f; // Third punch (finisher) forward movement
+    float attack_dash_speed1 = 1000.0f; // First punch forward movement
+    float attack_dash_speed2 = 1000.0f; // Second punch forward movement
+    float attack_dash_speed3 = 2000.0f; // Third punch (finisher) forward movement
     int attack_damage1 = 10; // First punch damage
     int attack_damage2 = 15; // Second punch damage
     int attack_damage3 = 25; // Third punch (finisher) damage
 
     // Attack knockbacks
-    Math::Vec2D attack_knockback1 = Math::Vec2D(3000.0f, -1000.0f);
-    Math::Vec2D attack_knockback2 = Math::Vec2D(3000.0f, -1000.0f);
-    Math::Vec2D attack_knockback3 = Math::Vec2D(8000.0f, -4000.0f);
+    Math::Vec2D attack_knockback1 = Math::Vec2D(3000.0f, -500.0f);
+    Math::Vec2D attack_knockback2 = Math::Vec2D(3000.0f, -500.0f);
+    Math::Vec2D attack_knockback3 = Math::Vec2D(8000.0f, -800.0f);
   };
 
   struct Enemy

@@ -113,8 +113,15 @@ int main()
         }
 
         // Apply knockback
+        // Apply immediate knockback (position shift)
         auto* rigid = enemy_entity.get_component<Components::RigidBody>();
-        if (rigid) {
+        auto* transform = enemy_entity.get_component<Components::Transform2D>();
+        
+        if (rigid && transform) {
+          // rigid->velocity.zero();
+          // transform->position += attack->knockback;
+
+          
           rigid->velocity = attack->knockback;
         }
       }
