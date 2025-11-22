@@ -143,7 +143,15 @@ namespace Engine
       void draw() {
         if (!is_active) return;
 
-        // If a background entity with a texture was provided, draw it in UI space
+        // Always draw a semi-transparent background rectangle first so the chatbox is visible
+        Engine::Graphics::draw_rect_ui(
+          Math::Vec2D(CHATBOX_X, CHATBOX_Y),
+          Math::Vec2D(CHATBOX_WIDTH, CHATBOX_HEIGHT),
+          0.0f,
+          Math::Vec4D(0.0f, 0.0f, 0.0f, 0.85f)
+        );
+
+        // If a background entity with a texture was provided, draw it in UI space on top
         if (chatbox_background_entity.is_valid()) {
           auto* texComp = chatbox_background_entity.get_component<Components::Texture>();
           auto* xf = chatbox_background_entity.get_component<Components::Transform2D>();
@@ -158,20 +166,10 @@ namespace Engine
               xf->rotation,
               tint
             );
-            // Don't draw the default rectangle if we have a texture
+
             return;
           }
         }
-
-        // Draw semi-transparent background if no texture provided
-        Engine::Graphics::draw_rect_ui(
-          Math::Vec2D(CHATBOX_X, CHATBOX_Y),
-          Math::Vec2D(CHATBOX_WIDTH, CHATBOX_HEIGHT),
-          0.0f,
-          Math::Vec4D(0.0f, 0.0f, 0.0f, 0.85f)
-        );
-
-        // Text is automatically rendered by the rendering system
       }
 
       // Toggle chatbox visibility
