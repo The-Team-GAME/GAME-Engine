@@ -53,6 +53,7 @@ namespace Components
   {
     int damage = 10;
     Math::Vec2D knockback = Math::Vec2D(0.0f, 0.0f);
+    std::vector<Engine::ECS::Entity> hit_entities; // Track which entities have been hit by this attack
 
     Attack() = default;
     explicit Attack(int dmg, Math::Vec2D kb = Math::Vec2D(0.0f, 0.0f)) : damage(dmg), knockback(kb) {}

@@ -27,6 +27,7 @@
 #include "GizmoSystem.h"
 #include "StateMachineSystem.h"
 #include "UtilitiesSystem.h"
+#include "HierarchySystem.h"
 
 void register_engine_systems()
 {
@@ -36,6 +37,7 @@ void register_engine_systems()
   Engine::ECS::add_system<Engine::Systems::StateMachineSystem>(); // Update state machines first
   Engine::ECS::add_system<Engine::Systems::LogicSystem>();
   Engine::ECS::add_system<Engine::Systems::Physics2DSystem>();
+  Engine::ECS::add_system<Engine::Systems::HierarchySystem>(); // Update child transforms after physics
   Engine::ECS::add_system<Engine::Systems::Collision2DSystem>();
   Engine::ECS::add_system<Engine::Systems::AnimationUpdateSystem>();
   Engine::ECS::add_system<Engine::Systems::ClickableSystem>();
@@ -79,6 +81,7 @@ void unregister_engine_systems()
   Engine::ECS::remove_system<Engine::Systems::ClickableSystem>();
   Engine::ECS::remove_system<Engine::Systems::AnimationUpdateSystem>();
   Engine::ECS::remove_system<Engine::Systems::Collision2DSystem>();
+  Engine::ECS::remove_system<Engine::Systems::HierarchySystem>();
   Engine::ECS::remove_system<Engine::Systems::Physics2DSystem>();
   Engine::ECS::remove_system<Engine::Systems::LogicSystem>();
   Engine::ECS::remove_system<Engine::Systems::StateMachineSystem>();

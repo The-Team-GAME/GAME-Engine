@@ -89,6 +89,7 @@ int main()
       auto* attack = attack_entity.get_component<Components::Attack>();
       auto* enemy_health = enemy_entity.get_component<Components::EnemyHealth>();
       auto* state_machine = enemy_entity.get_component<Components::StateMachine>();
+      auto* transform = enemy_entity.get_component<Components::Transform2D>();
 
       if (!attack) {
         std::cout << "Error: Attack component missing from attack hitbox!" << std::endl;
@@ -96,6 +97,15 @@ int main()
       }
 
       if (enemy_health && state_machine) {
+        // Check if this enemy has already been hit by this attack
+        if (std::find(attack->hit_entities.begin(), attack->hit_entities.end(), enemy_entity) != attack->hit_entities.end()) {
+          // Already hit, skip
+          return;
+        }
+
+        // Mark entity as hit by this attack
+        attack->hit_entities.push_back(enemy_entity);
+
         // Only take damage if not invulnerable
         int damage = attack->damage;
         enemy_health->take_damage(damage);
@@ -112,17 +122,18 @@ int main()
           state_machine->change_state("Hit");
         }
 
-        // Apply knockback
-        // Apply immediate knockback (position shift)
+        // Attach enemy to hitbox (sticky knockback)
         auto* rigid = enemy_entity.get_component<Components::RigidBody>();
-        auto* transform = enemy_entity.get_component<Components::Transform2D>();
         
-        if (rigid && transform) {
-          // rigid->velocity.zero();
-          // transform->position += attack->knockback;
+        if (rigid) {
+          // Make enemy child of hitbox (offset will be auto-calculated by HierarchySystem)
+          enemy_entity.add_component<Components::Parent>(attack_entity);
+        
+          // Offset slightly upwards each hit
+          transform->position.y += -10.0f;
 
-          
-          rigid->velocity = attack->knockback;
+          // Zero out velocity for clean stick effect
+          rigid->velocity.zero();
         }
       }
       else {
