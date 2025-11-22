@@ -1,14 +1,14 @@
 [
     {
         "speaker": "Narrator",
-        "text_content": "Welcome to Monkey Stole My GPA! Click on the banana to start your adventure.",
+        "text_content": "Welcome to Monkey Stole My GPA! Click on the banana to start your adventure."
     },
     {
         "speaker": "Player",
-        "text_content": "Let's go!",
+        "text_content": "Let's go!"
     },
     {
         "speaker": "monkey",
-        "text_content": "Ooh ooh ah ah! Give me your GPA!",
+        "text_content": "Ooh ooh ah ah! Give me your GPA!"
     }
 ]

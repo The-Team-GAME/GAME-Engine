@@ -5,21 +5,26 @@
 // author:  Ryan Ang An Kiat (100%)
 //          Primary author
 //
-// email:   hongchinryan.how@digipen.edu
+// email:   a.ryanankiat@digipen.edu
 //
 // brief:  .
 //
-// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 
 #include "../ECS/ECS.h"
 #include "../Components/Components.h"
 #include "../InputManager.h"
+#include "../FileIO/Helpers.h"
+#include "../Reflection/ReflectionLibrary.h"
+#include "../Path.h"
+#include "../Resources.h"
 #include <fstream>
 #include <sstream>
 #include <iostream>
 #include <vector>
 #include <string>
+#include <regex>
 
 namespace Engine
 {
@@ -30,12 +35,12 @@ namespace Engine
       std::string text;
     };
 
-    inline std::vector<Dialogue> sample_dialogues = {
-      {"Alice", "Hello there! Welcome to our game."},
-      {"Bob", "Thanks, Alice! I'm excited to be here."},
-      {"Alice", "Feel free to explore and have fun!"},
-      {"Bob", "Will do! Let's get started."}
-    };
+    //inline std::vector<Dialogue> sample_dialogues = {
+    //  {"Alice", "Hello there! Welcome to our game."},
+    //  {"Bob", "Thanks, Alice! I'm excited to be here."},
+    //  {"Alice", "Feel free to explore and have fun!"},
+    //  {"Bob", "Will do! Let's get started."}
+    //};
 
     class ChatBox : public Engine::ECS::System {
 
@@ -44,6 +49,9 @@ namespace Engine
       // Entities
       Engine::ECS::Entity chatbox_background_entity;
       Engine::ECS::Entity chatbox_text_entity;
+
+      // Dialogues loaded from JSON
+      std::vector<Dialogue> dialogues;
 
       // State
       bool is_active = false;
@@ -112,6 +120,10 @@ namespace Engine
         is_active = false;
         current_dialogue_index = 0;
         dialogue_finished = false;
+
+        // Try to auto-load dialogues from the standard JSON path in resources
+        // This will silently fall back to having no dialogues if loading fails
+        load_dialogues_from_file("Assets/Dialogue/dialogue_test.json");
       }
 
       // Allow external code to set the text entity (ShowcaseState uses this)
@@ -124,10 +136,91 @@ namespace Engine
         chatbox_background_entity = entity;
       }
 
-      // Add a tag to entities so they can be cleaned up with state
-      void add_tag_to_entities() {
-        // This should be called after init if you want to use tags
-        // Example: chatbox_text_entity.add_component<Components::Tag<"ShowcaseState">>();
+      // Public API: load dialogues from JSON file (path relative to resource path or absolute)
+      bool load_dialogues_from_file(const std::string& filepath) {
+        // Build candidate full path using resource_path if available
+        std::string full_path = filepath;
+        if (!Engine::Resources::resource_path.empty()) {
+          Engine::Path p(Engine::Resources::resource_path);
+          full_path = p.join(filepath).to_string();
+        }
+
+        // Try reading file via FileIO helper
+        auto opt = Engine::FileIO::read_string_from_file(full_path);
+        if (!opt.has_value()) {
+          // Fallback: try filepath as given
+          opt = Engine::FileIO::read_string_from_file(filepath);
+          if (!opt.has_value()) {
+            return false;
+          }
+        }
+
+        std::string json_str = opt.value();
+
+        // Sanitize common trailing-comma errors (remove commas before ] or })
+        try {
+          std::regex trailing_comma_re(",\s*([\]}])");
+          json_str = std::regex_replace(json_str, trailing_comma_re, "$1");
+        }
+        catch (...) {
+        }
+
+        // Parse using reflection helper
+        std::optional<ReflectionLibrary::GenericValue> parsed = ReflectionLibrary::generic_value_from_json(json_str);
+        if (!parsed.has_value()) {
+          return false;
+        }
+
+        ReflectionLibrary::GenericValue root = parsed.value();
+
+        // Expecting an array of dialogue objects; if it's an object with a field, try to find it
+        ReflectionLibrary::GenericValue arr;
+        if (root.isArray()) {
+          arr = root;
+        }
+        else if (root.isObject()) {
+          // Common wrappers could be { "dialogues": [ ... ] }
+          if (root.has("dialogues") && root["dialogues"].isArray()) {
+            arr = root["dialogues"];
+          }
+          else {
+            return false;
+          }
+        }
+
+        // Convert array elements to Dialogue structures
+        std::vector<Dialogue> loaded;
+        for (size_t i = 0; i < arr.size(); ++i) {
+          const ReflectionLibrary::GenericValue& elem = arr[i];
+          if (!elem.isObject()) continue;
+
+          std::string speaker;
+          std::string text;
+
+          if (elem.has("speaker") && elem["speaker"].isString()) {
+            speaker = elem["speaker"].getString();
+          }
+
+          // Support both "text" and "text_content" keys
+          if (elem.has("text") && elem["text"].isString()) {
+            text = elem["text"].getString();
+          }
+          else if (elem.has("text_content") && elem["text_content"].isString()) {
+            text = elem["text_content"].getString();
+          }
+
+          if (!text.empty()) {
+            loaded.push_back(Dialogue{ speaker, text });
+          }
+        }
+
+        if (!loaded.empty()) {
+          dialogues = std::move(loaded);
+          reset_dialogue();
+          return true;
+        }
+
+        return false;
       }
 
       // Update logic (call this every frame)
@@ -139,11 +232,11 @@ namespace Engine
         }
       }
 
-      // Draw the chatbox background (call this in your state's draw() method)
+      // Draw the chatbox background
       void draw() {
         if (!is_active) return;
 
-        // Always draw a semi-transparent background rectangle first so the chatbox is visible
+				// Background chatbox rectangle
         Engine::Graphics::draw_rect_ui(
           Math::Vec2D(CHATBOX_X, CHATBOX_Y),
           Math::Vec2D(CHATBOX_WIDTH, CHATBOX_HEIGHT),
@@ -151,7 +244,7 @@ namespace Engine
           Math::Vec4D(0.0f, 0.0f, 0.0f, 0.85f)
         );
 
-        // If a background entity with a texture was provided, draw it in UI space on top
+				// draw background entity if valid
         if (chatbox_background_entity.is_valid()) {
           auto* texComp = chatbox_background_entity.get_component<Components::Texture>();
           auto* xf = chatbox_background_entity.get_component<Components::Transform2D>();
@@ -166,7 +259,6 @@ namespace Engine
               xf->rotation,
               tint
             );
-
             return;
           }
         }
@@ -206,8 +298,8 @@ namespace Engine
       }
 
       // Load dialogues from vector (for event-driven dialogues)
-      void load_dialogues(const std::vector<Dialogue>& dialogues) {
-        sample_dialogues = dialogues;
+      void load_dialogues(const std::vector<Dialogue>& new_dialogues) {
+        dialogues = new_dialogues;
         reset_dialogue();
       }
 
@@ -293,10 +385,18 @@ namespace Engine
         // Check if typing is complete
         if (current_char_index >= full_text.length()) {
           is_typing = false;
-          // If we've shown the last dialogue (index progressed past last), mark finished so F can restart
-          if (current_dialogue_index >= sample_dialogues.size()) {
+          // When Dialogue is done
+          if (current_dialogue_index >= dialogues.size()) {
             dialogue_finished = true;
+
+            // Append the restart prompt to the displayed text so players see how to restart
+            if (chatbox_text_entity.is_valid()) {
+              auto* text = chatbox_text_entity.get_component<Components::Text>();
+              if (text) {
+                text->content = displayed_text + "\nPress F to restart dialogue";
           }
+        }
+      }
         }
       }
 
@@ -305,6 +405,17 @@ namespace Engine
         current_char_index = full_text.length();
         is_typing = false;
         update_text_display();
+
+        // If this was the last dialogue, also show the restart prompt
+        if (current_dialogue_index >= dialogues.size()) {
+          dialogue_finished = true;
+          if (chatbox_text_entity.is_valid()) {
+            auto* text = chatbox_text_entity.get_component<Components::Text>();
+            if (text) {
+              text->content = displayed_text + "\nPress F to restart dialogue";
+            }
+          }
+        }
       }
 
       void update_text_display() {
@@ -319,19 +430,20 @@ namespace Engine
       void advance_dialogue() {
         if (!chatbox_text_entity.is_valid()) return;
 
-        // If there are no dialogues, do nothing
-        if (sample_dialogues.empty()) {
+        // If there are no dialogues, do nothing (and show hint)
+        if (dialogues.empty()) {
           is_typing = false;
           dialogue_finished = true;
+          auto* text = chatbox_text_entity.get_component<Components::Text>();
+          if (text) text->content = "No dialogues loaded";
           return;
         }
 
         // If there are remaining dialogues, start the next one
-        if (current_dialogue_index < sample_dialogues.size()) {
-          const auto& dialogue = sample_dialogues[current_dialogue_index];
+        if (current_dialogue_index < dialogues.size()) {
+          const auto& dialogue = dialogues[current_dialogue_index];
           start_typing(dialogue.speaker + ": " + dialogue.text);
           current_dialogue_index++;
-          // Do not auto-loop; dialogue_finished will be set when typing of the final entry finishes
         }
         else {
           // No more dialogues - mark finished
@@ -362,7 +474,7 @@ namespace Engine
       }
 
       bool is_dialogue_finished() const {
-        return current_dialogue_index >= sample_dialogues.size();
+        return current_dialogue_index >= dialogues.size();
       }
 
     };
