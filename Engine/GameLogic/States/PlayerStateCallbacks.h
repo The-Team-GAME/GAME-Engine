@@ -191,7 +191,7 @@ namespace PlayerStateCallbacks
     if (transform && player) {
       float hitbox_offset = (flip && flip->value.x < 0) ? -player->hitbox_offset : player->hitbox_offset;
 
-      Engine::ECS::create_entity()
+      auto hitbox = Engine::ECS::create_entity()
         .add_component<Components::Tag<"PlayerAttackHitbox">>()
         .add_component<Components::Attack>(player->attack_damage1)
         .add_component<Components::Transform2D>(
@@ -208,6 +208,17 @@ namespace PlayerStateCallbacks
         .add_component<Components::Texture>(Engine::Graphics::get_rect_texture())
         .remove_from_layer("default")
         .add_to_layer("damage_enemy");
+
+      // Apply knockback direction based on facing
+      auto* attack = hitbox.get_component<Components::Attack>();
+      if (attack) {
+        attack->knockback = player->attack_knockback1;
+        if (flip && flip->value.x < 0) {
+          attack->knockback.x = -attack->knockback.x;
+        }
+        // Knockback Y is always positive (up) in our config, but physics needs negative for up
+        attack->knockback.y = -std::abs(attack->knockback.y);
+      }
     }
 
     std::cout << "Player: Attack 1 (First Punch)" << std::endl;
@@ -260,7 +271,7 @@ namespace PlayerStateCallbacks
     if (transform && player) {
       float hitbox_offset = (flip && flip->value.x < 0) ? -player->hitbox_offset : player->hitbox_offset;
 
-      Engine::ECS::create_entity()
+      auto hitbox = Engine::ECS::create_entity()
         .add_component<Components::Tag<"PlayerAttackHitbox">>()
         .add_component<Components::Attack>(player->attack_damage2)
         .add_component<Components::Transform2D>(
@@ -277,6 +288,17 @@ namespace PlayerStateCallbacks
         .add_component<Components::Texture>(Engine::Graphics::get_rect_texture())
         .remove_from_layer("default")
         .add_to_layer("damage_enemy");
+
+      // Apply knockback direction based on facing
+      auto* attack = hitbox.get_component<Components::Attack>();
+      if (attack) {
+        attack->knockback = player->attack_knockback2;
+        if (flip && flip->value.x < 0) {
+          attack->knockback.x = -attack->knockback.x;
+        }
+        // Knockback Y is always positive (up) in our config, but physics needs negative for up
+        attack->knockback.y = -std::abs(attack->knockback.y);
+      }
     }
 
     std::cout << "Player: Attack 2 (Second Punch)" << std::endl;
@@ -329,7 +351,7 @@ namespace PlayerStateCallbacks
     if (transform && player) {
       float hitbox_offset = (flip && flip->value.x < 0) ? -player->hitbox_offset : player->hitbox_offset;
 
-      Engine::ECS::create_entity()
+      auto hitbox = Engine::ECS::create_entity()
         .add_component<Components::Tag<"PlayerAttackHitbox">>()
         .add_component<Components::Attack>(player->attack_damage3)
         .add_component<Components::Transform2D>(
@@ -346,6 +368,17 @@ namespace PlayerStateCallbacks
         .add_component<Components::Texture>(Engine::Graphics::get_rect_texture())
         .remove_from_layer("default")
         .add_to_layer("damage_enemy");
+
+      // Apply knockback direction based on facing
+      auto* attack = hitbox.get_component<Components::Attack>();
+      if (attack) {
+        attack->knockback = player->attack_knockback3;
+        if (flip && flip->value.x < 0) {
+          attack->knockback.x = -attack->knockback.x;
+        }
+        // Knockback Y is always positive (up) in our config, but physics needs negative for up
+        attack->knockback.y = -std::abs(attack->knockback.y);
+      }
     }
 
     std::cout << "Player: Attack 3 (Third Punch - Finisher!)" << std::endl;

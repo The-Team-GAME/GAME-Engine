@@ -21,6 +21,11 @@ namespace Components
     int attack_damage1 = 10; // First punch damage
     int attack_damage2 = 15; // Second punch damage
     int attack_damage3 = 25; // Third punch (finisher) damage
+
+    // Attack knockbacks
+    Math::Vec2D attack_knockback1 = Math::Vec2D(300.0f, -100.0f);
+    Math::Vec2D attack_knockback2 = Math::Vec2D(300.0f, -100.0f);
+    Math::Vec2D attack_knockback3 = Math::Vec2D(800.0f, -400.0f);
   };
 
   struct Enemy
@@ -42,24 +47,19 @@ namespace Components
     float detection_range = 300.0f;
     float chase_range = 400.0f;
     float attack_range = 80.0f;
-
-    // Knockback parameters
-    float knockback_force = 500.0f;
-    float knockback_upward = 200.0f;
-    float stun_duration = 0.5f;
-    float stun_timer = 0.0f;
   };
 
   struct Attack
   {
     int damage = 10;
+    Math::Vec2D knockback = Math::Vec2D(0.0f, 0.0f);
 
     Attack() = default;
-    explicit Attack(int dmg) : damage(dmg) {}
+    explicit Attack(int dmg, Math::Vec2D kb = Math::Vec2D(0.0f, 0.0f)) : damage(dmg), knockback(kb) {}
   };
 
 } // namespace Components
 
-REGISTER_COMPONENT(Components::Player, walk_speed, air_speed, jump_force, hitbox_offset, hitbox_width, hitbox_height, attack_dash_speed1, attack_dash_speed2, attack_dash_speed3, attack_damage1, attack_damage2, attack_damage3)
-REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height, attack_cooldown, last_attack_time, detection_range, chase_range, attack_range, knockback_force, knockback_upward, stun_duration, stun_timer)
-REGISTER_COMPONENT(Components::Attack, damage)
+REGISTER_COMPONENT(Components::Player, walk_speed, air_speed, jump_force, hitbox_offset, hitbox_width, hitbox_height, attack_dash_speed1, attack_dash_speed2, attack_dash_speed3, attack_damage1, attack_damage2, attack_damage3, attack_knockback1, attack_knockback2, attack_knockback3)
+REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height, attack_cooldown, last_attack_time, detection_range, chase_range, attack_range)
+REGISTER_COMPONENT(Components::Attack, damage, knockback)

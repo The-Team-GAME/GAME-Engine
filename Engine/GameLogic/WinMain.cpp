@@ -102,6 +102,12 @@ int main()
         std::cout << "Enemy took " << damage << " damage! HP: "
           << enemy_health->current_hp << "/" << enemy_health->max_hp << std::endl;
 
+        // Apply knockback
+        auto* rigid = enemy_entity.get_component<Components::RigidBody>();
+        if (rigid) {
+          rigid->velocity = attack->knockback;
+        }
+
         // Trigger hit state if state machine exists
         if (state_machine->get_current_state() != "Hit") {
           state_machine->change_state("Hit");

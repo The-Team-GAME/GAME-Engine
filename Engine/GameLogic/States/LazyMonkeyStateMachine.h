@@ -64,10 +64,10 @@ namespace LazyMonkeyStates
     Components::StateAnimation lazy_monkey_hit_anim;
     lazy_monkey_hit_anim.texture = Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Death_Spritesheet.png"));
     lazy_monkey_hit_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 3, 3);
-    lazy_monkey_hit_anim.animation = Components::Animation(3, 0.1f);
+    lazy_monkey_hit_anim.animation = Components::Animation({ 0.2f, 0.1f, 1.5f });
     lazy_monkey_hit_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
-    Components::State lazy_monkey_hit("Hit", "lazy_monkey_hit_enter", "lazy_monkey_hit_update", "", lazy_monkey_hit_anim);
+    Components::State lazy_monkey_hit("Hit", "lazy_monkey_hit_enter", "lazy_monkey_hit_update", "lazy_monkey_hit_exit", lazy_monkey_hit_anim);
 
     // ========================================================================
     // Build and return state machine

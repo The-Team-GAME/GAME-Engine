@@ -160,49 +160,14 @@ namespace LazyMonkeyStateCallbacks
     }
   }
 
-  // ========================================================================
-  // Hit State Callbacks
-  // ========================================================================
-
-  //inline void hit_on_enter(Engine::ECS::Entity& entity) {
-  //  auto* rigid = entity.get_component<Components::RigidBody>();
-  //  if (rigid) {
-  //    rigid->velocity.x = 0.f;
-  //    // Don't reset velocity.y - let gravity/physics handle it
-  //  }
-
-  //  std::cout << "Lazy Monkey: Got hit!" << std::endl;
-  //}
-
-  //inline void hit_on_update(Engine::ECS::Entity& entity) {
-  //  auto* state_machine = entity.get_component<Components::StateMachine>();
-  //  auto* animation = entity.get_component<Components::Animation>();
-
-  //  // Transition to idle when hit animation completes
-  //  if (animation && animation->has_ended()) {
-  //    state_machine->change_state("Idle");
-  //  }
-  //}
-
   //// ========================================================================
-  //// Stunned State Callbacks
+  //// Hit State Callbacks
   //// ========================================================================
 
   inline void hit_on_enter(Engine::ECS::Entity& entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
     auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
-
-    if (rigid && flip && lazy_monkey) {
-      // Apply knockback force in opposite direction of facing
-      // If flipped left (flip.x < 0), knockback goes right (positive)
-      // If flipped right (flip.x > 0), knockback goes left (negative)
-      rigid->velocity.x = (flip->value.x > 0 ? lazy_monkey->knockback_force : -lazy_monkey->knockback_force);
-      rigid->velocity.y = -lazy_monkey->knockback_upward; // Negative is up
-
-      // Reset stun timer
-      lazy_monkey->stun_timer = 0.0f;
-    }
 
     std::cout << "Lazy Monkey: Stunned!" << std::endl;
   }
@@ -211,19 +176,12 @@ namespace LazyMonkeyStateCallbacks
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
     auto* rigid = entity.get_component<Components::RigidBody>();
+    auto* animation = entity.get_component<Components::Animation>();
 
     if (!lazy_monkey) return;
-
-    // Update stun timer
-    lazy_monkey->stun_timer += Engine::Time::get_fixed_dt();
-
-    // Apply friction to knockback velocity
-    if (rigid) {
-      rigid->velocity.x *= 0.95f;
-    }
-
-    // Transition to idle when stun duration expires
-    if (lazy_monkey->stun_timer >= lazy_monkey->stun_duration) {
+ 
+    // Transition to idle when animation completes
+    if (animation->has_ended()) {
       state_machine->change_state("Idle");
     }
   }
@@ -248,3 +206,4 @@ REGISTER_FUNCTION(lazy_monkey_attacking_update, void(Engine::ECS::Entity&), Lazy
 REGISTER_FUNCTION(lazy_monkey_attacking_exit, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::attacking_on_exit)
 REGISTER_FUNCTION(lazy_monkey_hit_enter, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::hit_on_enter)
 REGISTER_FUNCTION(lazy_monkey_hit_update, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::hit_on_update)
+REGISTER_FUNCTION(lazy_monkey_hit_exit, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::hit_on_exit)
