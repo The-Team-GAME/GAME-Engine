@@ -183,10 +183,10 @@ namespace LazyMonkeyStateCallbacks
   }
 
   inline void hit_on_exit(Engine::ECS::Entity& entity) {
-    // auto* rigid = entity.get_component<Components::RigidBody>();
-    // if (rigid) {
-    //   rigid->velocity.x = 0.f;
-    // }
+    // Detach from hitbox when exiting hit state
+    if (entity.has_component<Components::Parent>()) {
+      entity.remove_component<Components::Parent>();
+    }
   }
 
   // ========================================================================
