@@ -24,12 +24,27 @@ namespace LazyMonkeyStateCallbacks
   // ========================================================================
 
   inline void idle_on_enter(Engine::ECS::Entity& entity) {
+    auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
+    if (lazy_monkey) {
+      // Store when we entered idle (for recovery delay after being hit)
+      lazy_monkey->last_attack_time = Engine::Time::get_time(); // Reusing this field as "idle_enter_time"
+    }
     std::cout << "Lazy Monkey: Entered Idle state" << std::endl;
   }
 
   inline void idle_on_update(Engine::ECS::Entity& entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
+
+    if (!lazy_monkey) return;
+
+    float current_time = Engine::Time::get_time();
+    float time_in_idle = current_time - lazy_monkey->last_attack_time;
+
+    // Don't chase immediately after entering idle (recovery from hit)
+    if (time_in_idle < 0.3f) {
+      return;
+    }
 
     // Get player entity
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
@@ -96,9 +111,6 @@ namespace LazyMonkeyStateCallbacks
           }
           // Don't modify velocity.y - let gravity handle it
         }
-        else {
-          rigid->velocity.x = 0.f;
-        }
 
         // Return to idle if player is far away
         if (distance > lazy_monkey->chase_range) {
@@ -128,7 +140,7 @@ namespace LazyMonkeyStateCallbacks
     auto* flip = entity.get_component<Components::Flip>();
     auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
 
-    if (rigid && flip && lazy_monkey) {
+    if (rigid && flip && lazy_monkey && rigid->on_ground) {
       // Throw monkey forward based on facing direction
       rigid->velocity.x = (flip->value.x > 0 ? -lazy_monkey->leap_speed : lazy_monkey->leap_speed); // TODO: Unflip this when sprite is fixed
       // Add upward velocity for a leap effect
@@ -187,17 +199,22 @@ namespace LazyMonkeyStateCallbacks
     if (entity.has_component<Components::Parent>()) {
       entity.remove_component<Components::Parent>();
     }
+    
+    // Apply knockback momentum
+    auto* rigid = entity.get_component<Components::RigidBody>();
+    
+    if (rigid) {
+      // knockback momentum
+      rigid->velocity.y = -1000.0f; // TODO: use the value in Player struct
+      rigid->velocity.x = 1000.0f; // TODO: use the value in Player struct
+    }
   }
 
   // ========================================================================
   // Death State Callbacks
   // ========================================================================
 
-  inline void death_on_enter(Engine::ECS::Entity& entity) {
-    // auto* rigid = entity.get_component<Components::RigidBody>();
-    // if (rigid) {
-    //   rigid->velocity.x = 0.f;
-    // }
+  inline void death_on_enter(Engine::ECS::Entity& entity) { 
     std::cout << "Lazy Monkey: Died!" << std::endl;
   }
 
