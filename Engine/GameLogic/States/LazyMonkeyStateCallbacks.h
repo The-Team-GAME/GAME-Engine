@@ -189,8 +189,13 @@ namespace LazyMonkeyStateCallbacks
 
     if (!lazy_monkey) return;
  
-    // When animation ends, apply knockback and wait for landing
+    // When animation ends, detach from hitbox and apply knockback
     if (animation->has_ended() && pending_knockback && rigid) {
+      // Detach from hitbox first (stop following player)
+      if (entity.has_component<Components::Parent>()) {
+        entity.remove_component<Components::Parent>();
+      }
+      
       // Apply knockback momentum from Player struct
       rigid->velocity = pending_knockback->knockback;
       
@@ -205,7 +210,7 @@ namespace LazyMonkeyStateCallbacks
   }
 
   inline void hit_on_exit(Engine::ECS::Entity& entity) {
-    // Detach from hitbox when exiting hit state
+    // Cleanup: ensure parent is removed (safety check)
     if (entity.has_component<Components::Parent>()) {
       entity.remove_component<Components::Parent>();
     }
