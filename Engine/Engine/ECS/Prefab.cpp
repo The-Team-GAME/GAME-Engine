@@ -19,6 +19,9 @@
 #include "ComponentArray.h"
 #include "Reflection.h"
 #include "../Reflection/ReflectionLibrary.h"
+#include "PrefabMergeUtils.h"
+#include "../Resources.h"
+#include "../Components/SpatialComponents.h"
 
 namespace Engine {
   namespace ECS {
@@ -336,5 +339,171 @@ namespace Engine {
 
       return prefab;
     }
+
+    // ============================================================================
+    // Prefab Instance Management
+    // ============================================================================
+
+    Entity instantiate_prefab_from_path(const std::string& prefab_path) {
+      // Load the prefab from resources
+      auto prefab = Engine::Resources::load_prefab(prefab_path);
+      
+      if (!prefab.is_valid()) {
+        return Entity(INVALID_ENTITY);
+      }
+
+      // Instantiate the prefab
+      Entity entity = instantiate_prefab(prefab);
+      
+      if (!entity.is_valid()) {
+        return entity;
+      }
+
+      // Track this as a prefab instance
+      auto& containers = Internal::get_containers();
+      EntityID entity_id = entity.get_id();
+      
+      Internal::PrefabInstanceData instance_data;
+      instance_data.prefab_path = prefab_path;
+      
+      // Mark Transform2D as fully overridden (Transform2D should never sync from prefab)
+      auto transform_type_id = get_component_type_id<Components::Transform2D>();
+      instance_data.field_overrides[transform_type_id].insert("*"); // "*" means all fields
+      
+      containers.prefab_instances[entity_id] = std::move(instance_data);
+      
+      return entity;
+    }
+
+    void update_prefab_instances(const std::string& prefab_path) {
+      auto& containers = Internal::get_containers();
+      
+      // Load the prefab
+      auto prefab = Engine::Resources::load_prefab(prefab_path);
+      if (!prefab.is_valid()) {
+        return;
+      }
+
+      auto prefab_impl = prefab.get_impl();
+      
+      // Find all instances of this prefab
+      std::vector<EntityID> instances_to_update;
+      for (const auto& [entity_id, instance_data] : containers.prefab_instances) {
+        if (instance_data.prefab_path == prefab_path) {
+          instances_to_update.push_back(entity_id);
+        }
+      }
+
+      // Update each instance
+      for (EntityID entity_id : instances_to_update) {
+        if (!containers.active_entities.contains(entity_id)) {
+          continue;
+        }
+
+        const auto& instance_data = containers.prefab_instances[entity_id];
+
+        // For each component in the prefab
+        for (const auto& [type_id, prefab_array] : prefab_impl->get_component_storage()) {
+          // Check if component is fully overridden (marked with "*")
+          auto override_it = instance_data.field_overrides.find(type_id);
+          if (override_it != instance_data.field_overrides.end()) {
+            if (override_it->second.count("*") > 0) {
+              // Entire component is overridden, skip
+              continue;
+            }
+          }
+
+          // Get the current instance component data
+          auto instance_array_it = containers.component_arrays.find(type_id);
+          if (instance_array_it == containers.component_arrays.end()) {
+            continue;
+          }
+
+          auto& instance_array = instance_array_it->second;
+          
+          // Get component data as GenericValues
+          ReflectionLibrary::GenericValue prefab_component_data = prefab_array->to_generic_value(0);
+          ReflectionLibrary::GenericValue instance_component_data = instance_array->to_generic_value(entity_id);
+
+          // Get field overrides for this component
+          std::unordered_set<std::string> overrides;
+          if (override_it != instance_data.field_overrides.end()) {
+            overrides = override_it->second;
+          }
+
+          // Merge prefab data with instance overrides
+          ReflectionLibrary::GenericValue merged_data = 
+            PrefabMergeUtils::merge_component_with_overrides(
+              prefab_component_data,
+              instance_component_data,
+              overrides
+            );
+
+          // Apply merged data back to instance
+          instance_array->set_component_from_generic_value(entity_id, merged_data);
+        }
+
+        // Notify systems of component changes
+        Internal::entity_component_changed(entity_id);
+      }
+    }
+
+    void mark_field_overridden(Entity entity, ComponentTypeID type, const std::string& field_path) {
+      if (!entity.is_valid()) return;
+
+      auto& containers = Internal::get_containers();
+      EntityID entity_id = entity.get_id();
+
+      auto it = containers.prefab_instances.find(entity_id);
+      if (it == containers.prefab_instances.end()) {
+        // Not a prefab instance, nothing to do
+        return;
+      }
+
+      it->second.field_overrides[type].insert(field_path);
+    }
+
+    void clear_field_override(Entity entity, ComponentTypeID type, const std::string& field_path) {
+      if (!entity.is_valid()) return;
+
+      auto& containers = Internal::get_containers();
+      EntityID entity_id = entity.get_id();
+
+      auto it = containers.prefab_instances.find(entity_id);
+      if (it == containers.prefab_instances.end()) {
+        return;
+      }
+
+      auto override_it = it->second.field_overrides.find(type);
+      if (override_it != it->second.field_overrides.end()) {
+        override_it->second.erase(field_path);
+        
+        // If no more overrides for this component, remove the entry
+        if (override_it->second.empty()) {
+          it->second.field_overrides.erase(override_it);
+        }
+      }
+    }
+
+    bool is_prefab_instance(Entity entity) {
+      if (!entity.is_valid()) return false;
+
+      auto& containers = Internal::get_containers();
+      return containers.prefab_instances.find(entity.get_id()) != containers.prefab_instances.end();
+    }
+
+    std::string get_prefab_path(Entity entity) {
+      if (!entity.is_valid()) return "";
+
+      auto& containers = Internal::get_containers();
+      auto it = containers.prefab_instances.find(entity.get_id());
+      
+      if (it != containers.prefab_instances.end()) {
+        return it->second.prefab_path;
+      }
+      
+      return "";
+    }
+
   } // namespace ECS
 } // namespace Engine

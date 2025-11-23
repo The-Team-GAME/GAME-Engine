@@ -532,5 +532,97 @@ namespace Engine {
     ==================================================================================*/
     Prefab prefab_from_generic_value(const ReflectionLibrary::GenericValue& value);
 
+    /* ====================================== //
+    // Prefab Instance Management             //
+    // ====================================== */
+
+    /*=================================================================================
+    Function Brief:
+    Creates a new entity from a prefab file and marks it as a prefab instance.
+    Automatically tracks the prefab path for future updates.
+
+    Parameters:
+    prefab_path - Relative path to the prefab file (e.g., "prefabs/enemy.json").
+
+    Returns:
+    Entity handle for the newly created instance.
+
+    Where to call it:
+    When spawning entities from prefabs in the game world.
+    ==================================================================================*/
+    Entity instantiate_prefab_from_path(const std::string& prefab_path);
+
+    /*=================================================================================
+    Function Brief:
+    Updates all instances of a prefab with new data from the prefab file.
+    Respects per-field overrides - only non-overridden fields are updated.
+
+    Parameters:
+    prefab_path - Relative path to the prefab file.
+
+    Where to call it:
+    After modifying a prefab file, to propagate changes to all instances.
+    ==================================================================================*/
+    void update_prefab_instances(const std::string& prefab_path);
+
+    /*=================================================================================
+    Function Brief:
+    Marks a specific field in a component as overridden for an entity.
+    Overridden fields will not be updated when the prefab changes.
+
+    Parameters:
+    entity - The entity instance.
+    type - Component type ID.
+    field_path - Dot-separated path to the field (e.g., "color.r").
+
+    Where to call it:
+    When a user manually edits a field in the inspector.
+    ==================================================================================*/
+    void mark_field_overridden(Entity entity, ComponentTypeID type, const std::string& field_path);
+
+    /*=================================================================================
+    Function Brief:
+    Removes an override marking from a field, allowing it to receive prefab updates again.
+
+    Parameters:
+    entity - The entity instance.
+    type - Component type ID.
+    field_path - Dot-separated path to the field.
+
+    Where to call it:
+    When user clicks "Revert to Prefab" on a field.
+    ==================================================================================*/
+    void clear_field_override(Entity entity, ComponentTypeID type, const std::string& field_path);
+
+    /*=================================================================================
+    Function Brief:
+    Checks if an entity is an instance of a prefab.
+
+    Parameters:
+    entity - The entity to check.
+
+    Returns:
+    True if the entity is a prefab instance, false otherwise.
+
+    Where to call it:
+    In UI code to show prefab-specific options.
+    ==================================================================================*/
+    bool is_prefab_instance(Entity entity);
+
+    /*=================================================================================
+    Function Brief:
+    Gets the prefab path for a prefab instance entity.
+
+    Parameters:
+    entity - The entity instance.
+
+    Returns:
+    Prefab path string, or empty string if not a prefab instance.
+
+    Where to call it:
+    When displaying which prefab an entity is based on.
+    ==================================================================================*/
+    std::string get_prefab_path(Entity entity);
+
   } // namespace ECS
 } // namespace Engine

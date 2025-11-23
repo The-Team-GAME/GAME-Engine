@@ -79,6 +79,9 @@ void PrefabEditorPanelHelpers::render_component_tree(const std::string& componen
           Engine::ProjectSaveManager::set_dirty(
             Engine::ProjectSaveManager::DirtyStates::Prefab(prefab_path)
           );
+          
+          // Propagate changes to all prefab instances
+          Engine::ECS::update_prefab_instances(prefab_path);
         }
       }
 
@@ -108,6 +111,9 @@ void PrefabEditorPanelHelpers::render_component_tree(const std::string& componen
             Engine::ProjectSaveManager::set_dirty(
               Engine::ProjectSaveManager::DirtyStates::Prefab(prefab_path)
             );
+            
+            // Propagate changes to all prefab instances
+            Engine::ECS::update_prefab_instances(prefab_path);
           }
         }
       }
@@ -318,6 +324,10 @@ void PrefabEditorPanel()
               Engine::ProjectSaveManager::set_dirty(
                 Engine::ProjectSaveManager::DirtyStates::Prefab(selected_prefab_path)
               );
+              
+              // Propagate changes to all prefab instances
+              Engine::ECS::update_prefab_instances(selected_prefab_path);
+              
               Log::info("Added component '" + component_name + "' to prefab: " + selected_prefab_path);
             }
             else {
@@ -390,6 +400,9 @@ void PrefabEditorPanel()
             Engine::ProjectSaveManager::set_dirty(
               Engine::ProjectSaveManager::DirtyStates::Prefab(selected_prefab_path)
             );
+            
+            // Propagate changes to all prefab instances
+            Engine::ECS::update_prefab_instances(selected_prefab_path);
           }
         }
       }
@@ -427,6 +440,9 @@ void PrefabEditorPanel()
           Engine::ProjectSaveManager::set_dirty(
             Engine::ProjectSaveManager::DirtyStates::Prefab(selected_prefab_path)
           );
+          
+          // Propagate changes to all prefab instances
+          Engine::ECS::update_prefab_instances(selected_prefab_path);
         }
       }
     }
