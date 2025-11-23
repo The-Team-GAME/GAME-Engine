@@ -33,6 +33,7 @@
 #include "Systems/HealthSystem.h"
 #include "Systems/EnemyHealthSystem.h"
 #include "Systems/HeartrateSystem.h"
+#include "Systems/DebugHitboxRenderSystem.h"
 
 /*=================================================================================
 Function Brief:
@@ -172,6 +173,7 @@ int main()
   Engine::ECS::add_system<Engine::Systems::HealthSystem>();
   Engine::ECS::add_system<Engine::Systems::EnemyHealthSystem>();
   Engine::ECS::add_system<Engine::Systems::HeartrateSystem>();
+  Engine::ECS::add_system<Engine::Systems::DebugHitboxRenderSystem>();
 
   // Run the main menu state
   Engine::Core::run("MainMenuState");
