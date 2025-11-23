@@ -17,6 +17,11 @@ namespace Engine {
         font = Engine::Resources::load_font("fonts/Roboto-Regular.ttf", 48);
       }
 
+      void update_entity(Engine::ECS::Entity& entity) override {
+        auto* heartrate = entity.get_component<Components::Heartrate>();
+        heartrate->decrease(heartrate->decay_rate * Engine::Time::get_fixed_dt());
+      }
+
       void draw_entity(const Engine::ECS::Entity& entity) override {
         auto* heartrate = entity.get_component<Components::Heartrate>();
         if (!heartrate) return;

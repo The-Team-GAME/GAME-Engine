@@ -87,7 +87,6 @@
     <ClCompile Include="Engine\Math\Vector4D.cpp" />
     <ClCompile Include="Engine\WindowManager.cpp" />
     <ClCompile Include="GameLogic\GameStates\RectPainterState.cpp" />
-    <ClCompile Include="GameLogic\GameStates\ShowcaseState.cpp" />
     <ClCompile Include="GameLogic\WinMain.cpp" />
     <ClCompile Include="Engine\Lua\LuaManager.cpp" />
     <ClCompile Include="Engine\Lua\GameAPI.cpp" />
@@ -210,6 +209,17 @@
     <ClInclude Include="Engine\TIlemapManager.h" />
     <ClInclude Include="Engine\UndoManager\Commands\Commands.h" />
     <ClInclude Include="Engine\UndoManager\UndoManager.h" />
+    <ClInclude Include="GameLogic\States\PlayerStateMachine.h" />
+    <ClInclude Include="GameLogic\States\LazyMonkeyStateCallbacks.h" />
+    <ClInclude Include="GameLogic\States\LazyMonkeyStateMachine.h" />
+    <ClInclude Include="GameLogic\States\PlayerStateCallbacks.h" />
+    <ClInclude Include="GameLogic\GameStates\TimelineState.h" />
+    <ClInclude Include="GameLogic\GameStates\PrefabsState.h" />
+    <ClInclude Include="GameLogic\GameStates\PhysicsTestState.h" />
+    <ClInclude Include="GameLogic\GameStates\LevelTestState.h" />
+    <ClInclude Include="GameLogic\Components\HeartrateComponent.h" />
+    <ClInclude Include="GameLogic\Components\GameplayComponent.h" />
+    <ClInclude Include="GameLogic\Components\EnemyHealthComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -271,7 +281,6 @@
     <ClInclude Include="GameLogic\GameStates\RectPainterState.h" />
     <ClInclude Include="GameLogic\GameStates\Rubric2500ParticlesState.h" />
     <ClInclude Include="Engine\FileHandler.h" />
-    <ClInclude Include="GameLogic\GameStates\ShowcaseState.h" />
     <ClInclude Include="Engine\Time.h" />
     <ClInclude Include="Engine\GUI\Timeline.h" />
     <ClInclude Include="Engine\Math\Vector2D.h" />

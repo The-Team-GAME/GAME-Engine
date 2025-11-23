@@ -10,6 +10,7 @@ namespace Components {
     float crash_out = 160.0f;
 
     float heartrate = low;
+    float decay_rate = 1.0f; // bpm per second
     
     enum class HeartrateState {
       Low,

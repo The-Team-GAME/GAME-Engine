@@ -15,6 +15,7 @@
 
 #include "../../Engine/MonkeyEngine.h"
 #include "../Components/GameplayComponent.h"
+#include "../Components/HeartrateComponent.h"
 
 namespace PlayerStateCallbacks
 {
@@ -179,6 +180,12 @@ namespace PlayerStateCallbacks
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
     auto* player = entity.get_component<Components::Player>();
+    auto* heartrate = entity.get_component<Components::Heartrate>();
+
+    // Increase heartrate
+    if (heartrate) {
+      heartrate->increase(player->attack_heartrate1);
+    }
 
     // Apply forward movement during attack
     if (rigid && flip && player) {
@@ -261,6 +268,12 @@ namespace PlayerStateCallbacks
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
     auto* player = entity.get_component<Components::Player>();
+    auto* heartrate = entity.get_component<Components::Heartrate>();
+
+    // Increase heartrate
+    if (heartrate) {
+      heartrate->increase(player->attack_heartrate2);
+    }
 
     // Apply forward movement during attack
     if (rigid && flip && player) {
@@ -343,6 +356,12 @@ namespace PlayerStateCallbacks
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
     auto* player = entity.get_component<Components::Player>();
+    auto* heartrate = entity.get_component<Components::Heartrate>();
+
+    // Increase heartrate
+    if (heartrate) {
+      heartrate->increase(player->attack_heartrate3);
+    }
 
     // Apply forward movement during attack
     if (rigid && flip && player) {

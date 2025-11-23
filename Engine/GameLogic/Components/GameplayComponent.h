@@ -21,6 +21,9 @@ namespace Components
     int attack_damage1 = 10; // First punch damage
     int attack_damage2 = 15; // Second punch damage
     int attack_damage3 = 25; // Third punch (finisher) damage
+    float attack_heartrate1 = 5.0f; // First punch heartrate increase
+    float attack_heartrate2 = 5.0f; // Second punch heartrate increase
+    float attack_heartrate3 = 8.0f; // Third punch (finisher) heartrate increase
 
     // Attack knockbacks
     Math::Vec2D attack_knockback1 = Math::Vec2D(300.0f, -50.0f);
@@ -69,4 +72,4 @@ namespace Components
 REGISTER_COMPONENT(Components::Player, walk_speed, air_speed, jump_force, hitbox_offset, hitbox_width, hitbox_height, attack_dash_speed1, attack_dash_speed2, attack_dash_speed3, attack_damage1, attack_damage2, attack_damage3, attack_knockback1, attack_knockback2, attack_knockback3)
 REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height, attack_cooldown, last_attack_time, detection_range, chase_range, attack_range)
 REGISTER_COMPONENT(Components::Attack, damage, knockback)
-REGISTER_COMPONENT(Components::PendingKnockback, knockback)
+//REGISTER_COMPONENT(Components::PendingKnockback, knockback)
