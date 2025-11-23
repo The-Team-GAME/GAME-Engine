@@ -65,7 +65,6 @@ private:
   Engine::ECS::Entity chatbox_background;
   Engine::ECS::Entity chatbox_text;
   std::unique_ptr<Engine::Systems::ChatBox> chatbox_system;
-  bool chatbox_active = false;
 
   Engine::Graphics::Texture background_texture;
 

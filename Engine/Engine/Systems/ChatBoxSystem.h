@@ -9,7 +9,7 @@
 //
 // brief:  .
 //
-// Copyright Â© 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 
 #include "../ECS/ECS.h"
@@ -49,14 +49,19 @@ namespace Engine
       // Entities
       Engine::ECS::Entity chatbox_background_entity;
       Engine::ECS::Entity chatbox_text_entity;
+      Engine::ECS::Entity chatbox_overlay_entity;
 
       // Dialogues loaded from JSON
       std::vector<Dialogue> dialogues;
 
+      // Follow target (optional)
+      Engine::ECS::Entity follow_entity;
+      Math::Vec2D follow_offset_world{ 0.0f, 0.0f };
+
       // State
       bool is_active = false;
       size_t current_dialogue_index = 0;
-      bool dialogue_finished = false; // true when we've displayed all dialogues and finished typing
+      bool dialogue_finished = false;
 
       // Input handling
       bool input_cooldown = false;
@@ -71,37 +76,45 @@ namespace Engine
       f32 char_timer = 0.0f;
       const f32 CHARS_PER_SECOND = 40.0f;
 
-      // Chatbox configuration (adjust these for your screen)
-      const f32 CHATBOX_X = 960.0f;
-      const f32 CHATBOX_Y = 900.0f;
-      const f32 CHATBOX_WIDTH = 1800.0f;
-      const f32 CHATBOX_HEIGHT = 180.0f;
+      // Chatbox configuration
+      const f32 CHATBOX_X = 1050.0f;
+      const f32 CHATBOX_Y = 1100.0f;
+      const f32 CHATBOX_WIDTH = 600.0f;
+      const f32 CHATBOX_HEIGHT = 150.0f;
 
       const f32 TEXT_X = 100.0f;
       const f32 TEXT_Y = 830.0f;
       const f32 TEXT_SCALE = 0.7f;
 
+      // Text padding from edges of overlay rectangle
+      const f32 TEXT_PADDING_LEFT = 20.0f;
+      const f32 TEXT_PADDING_RIGHT = 20.0f;
+      const f32 TEXT_PADDING_TOP = 15.0f;
+
     public:
       ChatBox() {}
 
+      void set_follow_entity(const Engine::ECS::Entity& entity) {
+        follow_entity = entity;
+      }
 
-      // Initialize the chatbox (call this once in your state's init())
+      void set_follow_offset(const Math::Vec2D& offset) {
+        follow_offset_world = offset;
+      }
+
       void init(Engine::Graphics::Font font) {
-        // Only create a background entity if none was provided externally
         if (!chatbox_background_entity.is_valid()) {
           chatbox_background_entity = Engine::ECS::create_entity();
         }
 
-        // If a text entity wasn't supplied, create a default one
         if (!chatbox_text_entity.is_valid()) {
           chatbox_text_entity = Engine::ECS::create_entity()
             .add_component<Components::Transform2D>(TEXT_X, TEXT_Y, 0.0f, TEXT_SCALE, TEXT_SCALE)
             .add_component<Components::Font>(font)
             .add_component<Components::Text>("Press F to start dialogue")
-            .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.0f); // Start hidden (alpha = 0)
+            .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.0f);
         }
         else {
-          // Ensure provided entity has required components
           if (!chatbox_text_entity.has_component<Components::Font>()) {
             chatbox_text_entity.add_component<Components::Font>(font);
           }
@@ -113,7 +126,11 @@ namespace Engine
           }
           else {
             auto* c = chatbox_text_entity.get_component<Components::Color>();
-            c->a = 0.0f; // hide initially
+            c->a = 0.0f;
+          }
+
+          if (!chatbox_text_entity.has_component<Components::Transform2D>()) {
+            chatbox_text_entity.add_component<Components::Transform2D>(TEXT_X, TEXT_Y, 0.0f, TEXT_SCALE, TEXT_SCALE);
           }
         }
 
@@ -121,34 +138,34 @@ namespace Engine
         current_dialogue_index = 0;
         dialogue_finished = false;
 
-        // Try to auto-load dialogues from the standard JSON path in resources
-        // This will silently fall back to having no dialogues if loading fails
         load_dialogues_from_file("Assets/Dialogue/dialogue_test.json");
+
+        if (!dialogues.empty()) {
+          show();
+        }
       }
 
-      // Allow external code to set the text entity (ShowcaseState uses this)
       void set_text_entity(const Engine::ECS::Entity& entity) {
         chatbox_text_entity = entity;
       }
 
-      // Allow external code to set the background entity
       void set_background_entity(const Engine::ECS::Entity& entity) {
         chatbox_background_entity = entity;
       }
 
-      // Public API: load dialogues from JSON file (path relative to resource path or absolute)
+      void set_overlay_entity(const Engine::ECS::Entity& entity) {
+        chatbox_overlay_entity = entity;
+      }
+
       bool load_dialogues_from_file(const std::string& filepath) {
-        // Build candidate full path using resource_path if available
         std::string full_path = filepath;
         if (!Engine::Resources::resource_path.empty()) {
           Engine::Path p(Engine::Resources::resource_path);
           full_path = p.join(filepath).to_string();
         }
 
-        // Try reading file via FileIO helper
         auto opt = Engine::FileIO::read_string_from_file(full_path);
         if (!opt.has_value()) {
-          // Fallback: try filepath as given
           opt = Engine::FileIO::read_string_from_file(filepath);
           if (!opt.has_value()) {
             return false;
@@ -157,51 +174,42 @@ namespace Engine
 
         std::string json_str = opt.value();
 
-        // Sanitize common trailing-comma errors (remove commas before ] or })
         try {
-          std::regex trailing_comma_re(",\s*([\]}])");
+          std::regex trailing_comma_re(",\\s*([\\]})");
           json_str = std::regex_replace(json_str, trailing_comma_re, "$1");
         }
         catch (...) {
         }
 
-        // Parse using reflection helper
-        std::optional<ReflectionLibrary::GenericValue> parsed = ReflectionLibrary::generic_value_from_json(json_str);
+        auto parsed = ReflectionLibrary::generic_value_from_json(json_str);
         if (!parsed.has_value()) {
           return false;
         }
 
         ReflectionLibrary::GenericValue root = parsed.value();
 
-        // Expecting an array of dialogue objects; if it's an object with a field, try to find it
         ReflectionLibrary::GenericValue arr;
         if (root.isArray()) {
           arr = root;
         }
-        else if (root.isObject()) {
-          // Common wrappers could be { "dialogues": [ ... ] }
-          if (root.has("dialogues") && root["dialogues"].isArray()) {
-            arr = root["dialogues"];
-          }
-          else {
-            return false;
-          }
+        else if (root.isObject() && root.has("dialogues") && root["dialogues"].isArray()) {
+          arr = root["dialogues"];
+        }
+        else {
+          return false;
         }
 
-        // Convert array elements to Dialogue structures
         std::vector<Dialogue> loaded;
         for (size_t i = 0; i < arr.size(); ++i) {
           const ReflectionLibrary::GenericValue& elem = arr[i];
           if (!elem.isObject()) continue;
 
-          std::string speaker;
-          std::string text;
+          std::string speaker, text;
 
           if (elem.has("speaker") && elem["speaker"].isString()) {
             speaker = elem["speaker"].getString();
           }
 
-          // Support both "text" and "text_content" keys
           if (elem.has("text") && elem["text"].isString()) {
             text = elem["text"].getString();
           }
@@ -210,7 +218,7 @@ namespace Engine
           }
 
           if (!text.empty()) {
-            loaded.push_back(Dialogue{ speaker, text });
+            loaded.push_back({ speaker, text });
           }
         }
 
@@ -223,48 +231,72 @@ namespace Engine
         return false;
       }
 
-      // Update logic (call this every frame)
       void update_entities(f32 delta_time) {
         handle_input(delta_time);
 
         if (is_active && is_typing) {
           update_typing_effect(delta_time);
         }
-      }
 
-      // Draw the chatbox background
-      void draw() {
-        if (!is_active) return;
+        if (follow_entity.is_valid()) {
+          auto* target_xf = follow_entity.get_component<Components::Transform2D>();
+          if (target_xf) {
+            f32 vertical_gap_world = 10.0f;
+            f32 anchor_y_world = target_xf->position.y - (target_xf->scale.y * 0.5f) - vertical_gap_world;
+            Math::Vec2D anchor_world_pos(target_xf->position.x + follow_offset_world.x, anchor_y_world + follow_offset_world.y);
 
-				// Background chatbox rectangle
-        Engine::Graphics::draw_rect_ui(
-          Math::Vec2D(CHATBOX_X, CHATBOX_Y),
-          Math::Vec2D(CHATBOX_WIDTH, CHATBOX_HEIGHT),
-          0.0f,
-          Math::Vec4D(0.0f, 0.0f, 0.0f, 0.85f)
-        );
+            Math::Vec2D ui_center = Engine::Graphics::world_to_virtual(anchor_world_pos);
 
-				// draw background entity if valid
-        if (chatbox_background_entity.is_valid()) {
-          auto* texComp = chatbox_background_entity.get_component<Components::Texture>();
-          auto* xf = chatbox_background_entity.get_component<Components::Transform2D>();
-          auto* col = chatbox_background_entity.get_component<Components::Color>();
+            if (chatbox_background_entity.is_valid()) {
+              if (!chatbox_background_entity.has_component<Components::Transform2D>()) {
+                chatbox_background_entity.add_component<Components::Transform2D>(ui_center.x, ui_center.y, 0.0f, CHATBOX_WIDTH, CHATBOX_HEIGHT);
+              }
+              else {
+                auto* bg_xf = chatbox_background_entity.get_component<Components::Transform2D>();
+                bg_xf->position.x = ui_center.x;
+                bg_xf->position.y = ui_center.y;
 
-          if (texComp && xf) {
-            Math::Vec4D tint = col ? Math::Vec4D(col->r, col->g, col->b, col->a) : Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f);
-            Engine::Graphics::draw_texture_ui(
-              texComp->texture_handle,
-              Math::Vec2D(xf->position.x, xf->position.y),
-              Math::Vec2D(xf->scale.x, xf->scale.y),
-              xf->rotation,
-              tint
-            );
-            return;
+                auto* texCompBg = chatbox_background_entity.get_component<Components::Texture>();
+                f32 final_w = CHATBOX_WIDTH;
+                f32 final_h = CHATBOX_HEIGHT;
+
+                if (texCompBg && texCompBg->texture_handle) {
+                  auto& tex = *texCompBg->texture_handle;
+                  if (tex.width > 0 && tex.height > 0) {
+                    float texAspect = static_cast<float>(tex.width) / static_cast<float>(tex.height);
+                    float boxAspect = CHATBOX_WIDTH / CHATBOX_HEIGHT;
+
+                    if (texAspect > boxAspect) {
+                      final_w = CHATBOX_WIDTH;
+                      final_h = CHATBOX_WIDTH / texAspect;
+                    }
+                    else {
+                      final_h = CHATBOX_HEIGHT;
+                      final_w = CHATBOX_HEIGHT * texAspect;
+                    }
+                  }
+                }
+
+                bg_xf->scale.x = final_w;
+                bg_xf->scale.y = final_h;
+              }
+            }
+
+            if (chatbox_overlay_entity.is_valid() && chatbox_overlay_entity.has_component<Components::Transform2D>()) {
+              auto* overlay_xf = chatbox_overlay_entity.get_component<Components::Transform2D>();
+              overlay_xf->position.x = ui_center.x;
+              overlay_xf->position.y = ui_center.y;
+            }
+
+            update_text_position();
           }
+        }
+        else {
+          // Update text position in static mode
+          update_text_position();
         }
       }
 
-      // Toggle chatbox visibility
       void toggle() {
         is_active = !is_active;
 
@@ -280,7 +312,17 @@ namespace Engine
         is_active = true;
 
         auto* text_color = chatbox_text_entity.get_component<Components::Color>();
-        if (text_color) text_color->a = 1.0f;
+        if (text_color) {
+          text_color->r = 1.0f;
+          text_color->g = 1.0f;
+          text_color->b = 1.0f;
+          text_color->a = 1.0f;
+        }
+
+        if (chatbox_overlay_entity.is_valid() && chatbox_overlay_entity.has_component<Components::Color>()) {
+          auto* overlay_color = chatbox_overlay_entity.get_component<Components::Color>();
+          overlay_color->a = 0.35f;
+        }
 
         reset_dialogue();
         advance_dialogue();
@@ -290,23 +332,30 @@ namespace Engine
         is_active = false;
 
         auto* text_color = chatbox_text_entity.get_component<Components::Color>();
-        if (text_color) text_color->a = 0.0f;
+        if (text_color) {
+          text_color->a = 0.0f;
+        }
+
+        if (chatbox_overlay_entity.is_valid() && chatbox_overlay_entity.has_component<Components::Color>()) {
+          chatbox_overlay_entity.get_component<Components::Color>()->a = 0.0f;
+        }
       }
 
       bool is_chatbox_active() const {
         return is_active;
       }
 
-      // Load dialogues from vector (for event-driven dialogues)
       void load_dialogues(const std::vector<Dialogue>& new_dialogues) {
         dialogues = new_dialogues;
         reset_dialogue();
       }
 
-      // Cleanup (call in state's free())
       void cleanup() {
         if (chatbox_background_entity.is_valid()) {
           chatbox_background_entity.destroy();
+        }
+        if (chatbox_overlay_entity.is_valid()) {
+          chatbox_overlay_entity.destroy();
         }
         if (chatbox_text_entity.is_valid()) {
           chatbox_text_entity.destroy();
@@ -314,8 +363,125 @@ namespace Engine
       }
 
     private:
+      void update_text_position() {
+        if (!chatbox_text_entity.is_valid()) return;
+        if (!chatbox_text_entity.has_component<Components::Transform2D>()) return;
+
+        auto* txt_xf = chatbox_text_entity.get_component<Components::Transform2D>();
+
+        // Get overlay rectangle position and size
+        Math::Vec2D overlay_center(CHATBOX_X, CHATBOX_Y);
+        Math::Vec2D overlay_size(CHATBOX_WIDTH, CHATBOX_HEIGHT);
+
+        if (chatbox_overlay_entity.is_valid() && chatbox_overlay_entity.has_component<Components::Transform2D>()) {
+          auto* overlay_xf = chatbox_overlay_entity.get_component<Components::Transform2D>();
+          overlay_center = Math::Vec2D(overlay_xf->position.x, overlay_xf->position.y);
+          overlay_size = Math::Vec2D(overlay_xf->scale.x, overlay_xf->scale.y);
+        }
+
+        // Calculate top-left corner of overlay
+        Math::Vec2D top_left(
+          overlay_center.x - overlay_size.x * 0.5f,
+          overlay_center.y - overlay_size.y * 0.5f
+        );
+
+        // Position text with padding from top-left
+        txt_xf->position.x = top_left.x + TEXT_PADDING_LEFT;
+        txt_xf->position.y = top_left.y + TEXT_PADDING_TOP;
+      }
+
+      std::string wrap_text(const std::string& text) {
+        if (!chatbox_text_entity.is_valid()) return text;
+
+        auto* font_comp = chatbox_text_entity.get_component<Components::Font>();
+        auto* transform = chatbox_text_entity.get_component<Components::Transform2D>();
+        if (!font_comp || !transform) return text;
+
+        // Calculate available width for text
+        f32 overlay_width = CHATBOX_WIDTH;
+        if (chatbox_overlay_entity.is_valid() && chatbox_overlay_entity.has_component<Components::Transform2D>()) {
+          auto* overlay_xf = chatbox_overlay_entity.get_component<Components::Transform2D>();
+          overlay_width = overlay_xf->scale.x;
+        }
+
+        f32 available_width = overlay_width - TEXT_PADDING_LEFT - TEXT_PADDING_RIGHT;
+        f32 text_scale = (transform->scale.x + transform->scale.y) * 0.5f;
+
+        std::string result;
+        std::string current_line;
+
+        // Split text into words
+        size_t pos = 0;
+        while (pos < text.length()) {
+          // Find the next word
+          size_t space_pos = text.find(' ', pos);
+          size_t newline_pos = text.find('\n', pos);
+          
+          // Determine the end of the current word
+          size_t end_pos;
+          bool is_newline = false;
+          
+          if (newline_pos != std::string::npos && (space_pos == std::string::npos || newline_pos < space_pos)) {
+            end_pos = newline_pos;
+            is_newline = true;
+          }
+          else if (space_pos != std::string::npos) {
+            end_pos = space_pos;
+          }
+          else {
+            end_pos = text.length();
+          }
+
+          std::string word = text.substr(pos, end_pos - pos);
+
+          // If we hit a newline in the original text, flush the current line
+          if (is_newline) {
+            if (!current_line.empty()) {
+              if (!result.empty()) result += "\n";
+              result += current_line;
+              current_line.clear();
+            }
+            else {
+              // Empty line (double newline)
+              if (!result.empty()) result += "\n";
+            }
+            pos = end_pos + 1; // Skip the newline character
+            continue;
+          }
+
+          // Try adding the word to the current line
+          std::string test_line = current_line.empty() ? word : current_line + " " + word;
+          Math::Vec2D text_size = Engine::Graphics::measure_text(font_comp->font_handle, test_line, text_scale);
+
+          if (text_size.x > available_width && !current_line.empty()) {
+            // Line would be too long, start new line
+            if (!result.empty()) result += "\n";
+            result += current_line;
+            current_line = word;
+          }
+          else {
+            current_line = test_line;
+          }
+
+          // Move to next position
+          if (space_pos != std::string::npos && end_pos == space_pos) {
+            pos = end_pos + 1; // Skip the space
+          }
+          else {
+            pos = end_pos;
+          }
+        }
+
+        // Add remaining text
+        if (!current_line.empty()) {
+          if (!result.empty()) result += "\n";
+          result += current_line;
+        }
+
+        return result;
+      }
+
       void handle_input(f32 delta_time) {
-        // Handle cooldown
         if (input_cooldown) {
           cooldown_timer -= delta_time;
           if (cooldown_timer <= 0.0f) {
@@ -323,9 +489,7 @@ namespace Engine
           }
         }
 
-        // Toggle chatbox with F key (or advance when active)
         if (Engine::Input::is_pressed(Engine::KeyCode::F)) {
-          // If chatbox is not active, open it
           if (!is_active) {
             toggle();
             input_cooldown = true;
@@ -333,11 +497,10 @@ namespace Engine
             return;
           }
 
-          // If active, treat F as 'advance' key: skip typing if still typing, otherwise advance to next dialogue
           if (is_typing) {
             skip_typing();
-          } else {
-            // If we've finished the whole list, restart on F
+          }
+          else {
             if (dialogue_finished) {
               reset_dialogue();
               advance_dialogue();
@@ -352,16 +515,13 @@ namespace Engine
           return;
         }
 
-        // Only handle Enter if chatbox is active
         if (!is_active || input_cooldown) return;
 
         if (Engine::Input::is_pressed(Engine::KeyCode::Enter)) {
           if (is_typing) {
-            // Skip typing animation
             skip_typing();
           }
           else {
-            // Advance to next dialogue
             advance_dialogue();
           }
 
@@ -382,21 +542,19 @@ namespace Engine
           update_text_display();
         }
 
-        // Check if typing is complete
         if (current_char_index >= full_text.length()) {
           is_typing = false;
-          // When Dialogue is done
+
           if (current_dialogue_index >= dialogues.size()) {
             dialogue_finished = true;
 
-            // Append the restart prompt to the displayed text so players see how to restart
             if (chatbox_text_entity.is_valid()) {
               auto* text = chatbox_text_entity.get_component<Components::Text>();
               if (text) {
                 text->content = displayed_text + "\nPress F to restart dialogue";
+              }
+            }
           }
-        }
-      }
         }
       }
 
@@ -406,9 +564,9 @@ namespace Engine
         is_typing = false;
         update_text_display();
 
-        // If this was the last dialogue, also show the restart prompt
         if (current_dialogue_index >= dialogues.size()) {
           dialogue_finished = true;
+
           if (chatbox_text_entity.is_valid()) {
             auto* text = chatbox_text_entity.get_component<Components::Text>();
             if (text) {
@@ -430,23 +588,22 @@ namespace Engine
       void advance_dialogue() {
         if (!chatbox_text_entity.is_valid()) return;
 
-        // If there are no dialogues, do nothing (and show hint)
         if (dialogues.empty()) {
           is_typing = false;
           dialogue_finished = true;
           auto* text = chatbox_text_entity.get_component<Components::Text>();
-          if (text) text->content = "No dialogues loaded";
+          if (text) {
+            text->content = "No dialogues loaded";
+          }
           return;
         }
 
-        // If there are remaining dialogues, start the next one
         if (current_dialogue_index < dialogues.size()) {
           const auto& dialogue = dialogues[current_dialogue_index];
           start_typing(dialogue.speaker + ": " + dialogue.text);
           current_dialogue_index++;
         }
         else {
-          // No more dialogues - mark finished
           dialogue_finished = true;
           auto* text = chatbox_text_entity.get_component<Components::Text>();
           if (text) {
@@ -457,7 +614,8 @@ namespace Engine
       }
 
       void start_typing(const std::string& text) {
-        full_text = text;
+        // Wrap text before starting typing animation
+        full_text = wrap_text(text);
         displayed_text = "";
         current_char_index = 0;
         is_typing = true;

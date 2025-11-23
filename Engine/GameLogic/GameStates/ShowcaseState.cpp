@@ -277,22 +277,37 @@ void ShowcaseState::init() {
   // Create chatbox system
   chatbox_system = std::make_unique<Engine::Systems::ChatBox>();
 
-  // Create a UI background
+  // Register foreground UI layer (only once). If already exists, register_layer returns existing id.
+  Engine::ECS::register_layer("ui_foreground");
+
+  // Create a UI background (drawn first on ui_foreground layer)
   chatbox_background = Engine::ECS::create_entity()
     .add_component<Components::Tag<"ShowcaseState">>()
     .add_component<Components::Texture>(Engine::Resources::load_texture("images/BroDialogueBox/DarkRed Dialogue.png"))
-    .add_component<Components::Transform2D>(960.0f, 900.0f, 0.0f, 1800.0f, 180.0f);
+    .add_component<Components::Transform2D>(800.0f, 500.0f, 0.0f, 1600.0f, 700.0f)
+    .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+    .add_to_layer("ui_foreground");
 
-  // Create text
+  // Create overlay rectangle (drawn after background texture on ui_foreground layer)
+  auto chatbox_overlay = Engine::ECS::create_entity()
+    .add_component<Components::Tag<"ShowcaseState">>()
+    .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
+    .add_component<Components::Transform2D>(1150.0f, 700.0f, 0.0f, 600.0f, 120.0f)
+    .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 0.0f) // Start hidden
+    .add_to_layer("ui_foreground");
+
+  // Create text (drawn last on ui_foreground layer)
   chatbox_text = Engine::ECS::create_entity()
     .add_component<Components::Tag<"ShowcaseState">>()
-    .add_component<Components::Transform2D>(100.0f, 830.0f, 0.0f, 0.7f, 0.7f)
+    .add_component<Components::Transform2D>(100.0f, 830.0f, 0.0f, 0.5f, 0.5f)
     .add_component<Components::Font>(info_font)
     .add_component<Components::Text>("Press F to start dialogue")
-    .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.0f);
+    .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.0f)
+    .add_to_layer("ui_foreground");
 
   chatbox_system->set_text_entity(chatbox_text);
   chatbox_system->set_background_entity(chatbox_background);
+  chatbox_system->set_overlay_entity(chatbox_overlay);
   chatbox_system->init(info_font);
 
   std::cout << "[ChatBox Debug] chatbox_system initialized (ShowcaseState)\n";
@@ -413,7 +428,7 @@ void ShowcaseState::update() {
 
 void ShowcaseState::draw() {
   Engine::Graphics::clear_screen(background_texture);
-  if (chatbox_system) chatbox_system->draw();
+  // chatbox_system->draw() removed - ECS will handle rendering via layers
 }
 
 void ShowcaseState::free() {
