@@ -22,6 +22,7 @@
 #include "PrefabMergeUtils.h"
 #include "../Resources.h"
 #include "../Components/SpatialComponents.h"
+#include "ComponentManager.h"
 
 namespace Engine {
   namespace ECS {
@@ -367,7 +368,7 @@ namespace Engine {
       instance_data.prefab_path = prefab_path;
       
       // Mark Transform2D as fully overridden (Transform2D should never sync from prefab)
-      auto transform_type_id = get_component_type_id<Components::Transform2D>();
+      auto transform_type_id = ComponentTypeManager::get_type_id<Components::Transform2D>();
       instance_data.field_overrides[transform_type_id].insert("*"); // "*" means all fields
       
       containers.prefab_instances[entity_id] = std::move(instance_data);

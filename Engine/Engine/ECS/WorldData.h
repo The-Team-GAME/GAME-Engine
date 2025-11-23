@@ -23,6 +23,7 @@
 #include <vector>
 #include <array>
 #include <functional>
+#include <unordered_set>
 
 namespace Engine {
   namespace ECS {

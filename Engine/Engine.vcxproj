@@ -108,6 +108,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Engine\ECS\PrefabMergeUtils.cpp" />
     <ClCompile Include="Engine\GUI\LayerManagerPanel.cpp" />
     <ClCompile Include="Engine\GUI\ResourceExplorerPanel.cpp" />
     <ClCompile Include="Engine\Level.cpp" />
@@ -170,6 +171,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClCompile Include="Engine\UndoManager\UndoManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\ECS\PrefabMergeUtils.h" />
     <ClInclude Include="Engine\GUI\LayerManagerPanel.h" />
     <ClInclude Include="Engine\GUI\RegisterAllPanels.h" />
     <ClInclude Include="Engine\GUI\ResourceExplorerPanel.h" />
