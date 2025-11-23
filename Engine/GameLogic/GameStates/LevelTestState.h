@@ -17,6 +17,7 @@
 #include "../States/PlayerStateMachine.h"
 #include "../States/LazyMonkeyStateMachine.h"
 #include "../Components/GameplayComponent.h"
+#include "../Components/HeartrateComponent.h"
 
 class LevelTestState : public Engine::Scene
 {
@@ -44,6 +45,7 @@ public:
       .add_component<Components::RigidBody>(Components::RigidBody(false, true))
       .add_component<Components::BoxCollider>(PlayerStates::IDLE_WIDTH * 2.0f, PlayerStates::IDLE_HEIGHT * 2.0f, false)
       .add_component<Components::StateMachine>(PlayerStates::create_state_machine())
+      .add_component<Components::Heartrate>()
       .remove_from_layer("default")
       .add_to_layer("player");
 

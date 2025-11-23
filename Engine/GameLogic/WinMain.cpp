@@ -29,9 +29,10 @@
 #include "GameStates/DistortionEffectState.h"
 #include "GameStates/LuaState.h"
 #include "GameStates/BehaviourState.h"
+#include "GameStates/LevelTestState.h"
 #include "Systems/HealthSystem.h"
 #include "Systems/EnemyHealthSystem.h"
-#include "GameStates/LevelTestState.h"
+#include "Systems/HeartrateSystem.h"
 
 /*=================================================================================
 Function Brief:
@@ -163,6 +164,7 @@ int main()
   // Register game systems at startup
   Engine::ECS::add_system<Engine::Systems::HealthSystem>();
   Engine::ECS::add_system<Engine::Systems::EnemyHealthSystem>();
+  Engine::ECS::add_system<Engine::Systems::HeartrateSystem>();
 
   // Run the main menu state
   Engine::Core::run("MainMenuState");
