@@ -20,6 +20,7 @@
 #include <concepts>
 #include <array>
 #include <optional>
+#include <string>
 
 namespace ReflectionLibrary
 {

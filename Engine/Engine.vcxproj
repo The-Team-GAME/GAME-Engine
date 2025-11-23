@@ -163,7 +163,6 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClCompile Include="Engine\Math\Vector4D.cpp" />
     <ClCompile Include="Engine\WindowManager.cpp" />
     <ClCompile Include="GameLogic\GameStates\RectPainterState.cpp" />
-    <ClCompile Include="GameLogic\GameStates\ShowcaseState.cpp" />
     <ClCompile Include="GameLogic\GameStates\StressTestState.cpp" />
     <ClCompile Include="GameLogic\WinMain.cpp" />
     <ClCompile Include="Engine\Lua\LuaManager.cpp" />
@@ -181,6 +180,8 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="Engine\Systems\DebugDrawSystem.h" />
     <ClInclude Include="Engine\TIlemapManager.h" />
     <ClInclude Include="Engine\UndoManager\Commands\Commands.h" />
+    <ClInclude Include="GameLogic\Components\EnemyHealthComponent.h" />
+    <ClInclude Include="GameLogic\Components\GameplayComponent.h" />
     <ClInclude Include="GameLogic\Components\HealthComponents.h" />
     <ClInclude Include="Engine\ECS\Reflection.h" />
     <ClInclude Include="Engine\ECS\SparseSet.h" />
@@ -221,14 +222,19 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="Engine\Systems\ParticleSystem.h" />
     <ClInclude Include="Engine\Systems\Systems.h" />
     <ClInclude Include="Engine\Systems\UISystem.h" />
+    <ClInclude Include="GameLogic\Components\HeartrateComponent.h" />
     <ClInclude Include="GameLogic\GameStates\BehaviourState.h" />
     <ClInclude Include="GameLogic\GameStates\DistortionEffectState.h" />
     <ClInclude Include="GameLogic\GameStates\Documentation\LayersAdvancedState.h" />
     <ClInclude Include="GameLogic\GameStates\Documentation\LayersState.h" />
     <ClInclude Include="GameLogic\GameStates\Documentation\PrefabsState.h" />
     <ClInclude Include="GameLogic\GameStates\EmptyState.h" />
+    <ClInclude Include="GameLogic\GameStates\LevelTestState.h" />
     <ClInclude Include="GameLogic\GameStates\LuaState.h" />
     <ClInclude Include="GameLogic\GameStates\MainMenuState.h" />
+    <ClInclude Include="GameLogic\GameStates\PhysicsTestState.h" />
+    <ClInclude Include="GameLogic\GameStates\PrefabsState.h" />
+    <ClInclude Include="GameLogic\GameStates\TimelineState.h" />
     <ClInclude Include="GameLogic\Reflection\ImGuiHelpers.h" />
     <ClInclude Include="Engine\Reflection\JsonHelpers.h" />
     <ClInclude Include="Engine\GUI\CameraPanel.h" />
@@ -266,7 +272,6 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="GameLogic\GameStates\RectPainterState.h" />
     <ClInclude Include="GameLogic\GameStates\Rubric2500ParticlesState.h" />
     <ClInclude Include="Engine\FileHandler.h" />
-    <ClInclude Include="GameLogic\GameStates\ShowcaseState.h" />
     <ClInclude Include="GameLogic\GameStates\StressTestState.h" />
     <ClInclude Include="Engine\Time.h" />
     <ClInclude Include="Engine\GUI\Timeline.h" />
@@ -277,6 +282,10 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="Engine\Math\Vector3D.h" />
     <ClInclude Include="Engine\Math\Vector4D.h" />
     <ClInclude Include="Engine\WindowManager.h" />
+    <ClInclude Include="GameLogic\States\LazyMonkeyStateCallbacks.h" />
+    <ClInclude Include="GameLogic\States\LazyMonkeyStateMachine.h" />
+    <ClInclude Include="GameLogic\States\PlayerStateCallbacks.h" />
+    <ClInclude Include="GameLogic\States\PlayerStateMachine.h" />
     <ClInclude Include="GameLogic\Systems\HealthSystem.h" />
     <ClInclude Include="GameLogic\Systems\PlayerControllerSystem.h" />
     <ClInclude Include="Engine\Lua\LuaManager.h" />

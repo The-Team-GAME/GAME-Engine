@@ -36,7 +36,10 @@ void PrefabEditorPanelHelpers::render_component_tree(const std::string& componen
     auto component_data = array->to_generic_value(0); // Prefabs use entity ID 0
     bool modified = false;
 
-    ImGuiWidgets::render_field(component_name, component_data, modified);
+    // Get the type name from the component array for specialized rendering
+    std::string type_hint = array->get_type_name();
+
+    ImGuiWidgets::render_field(component_name, type_hint, component_data, modified);
 
     // Check if user is currently editing (any widget is active in this component)
     bool is_any_item_active = ImGui::IsAnyItemActive();

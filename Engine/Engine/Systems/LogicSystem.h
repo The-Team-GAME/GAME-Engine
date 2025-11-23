@@ -19,10 +19,10 @@ enum entity_state {
 
 namespace Components
 {
-  struct Player
-  {
-    // Exists just to identify the player
-  };
+   struct Player_
+   {
+     // Exists just to identify the player
+   };
   struct Logic
   {
     entity_state state;
@@ -35,15 +35,15 @@ namespace Components
     f32 left_chase_bound;
     f32 right_chase_bound;
     // The patrol limit, pls set it a little under the length of the platform
-    
+
 
 
     // Player ctor
     Logic(entity_state starting_state) : state(starting_state) {};
 
     // Enemy ctor
-    Logic(entity_state starting_state, f32 left_chase_bound, f32 left_patrol_bound, f32 right_patrol_bound, f32 right_chase_bound):
-      state(starting_state), 
+    Logic(entity_state starting_state, f32 left_chase_bound, f32 left_patrol_bound, f32 right_patrol_bound, f32 right_chase_bound) :
+      state(starting_state),
       left_patrol_bound(left_patrol_bound), right_patrol_bound(right_patrol_bound),
       left_chase_bound(left_chase_bound), right_chase_bound(right_chase_bound)
     {

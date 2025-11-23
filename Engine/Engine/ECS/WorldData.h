@@ -50,8 +50,10 @@ namespace Engine {
         std::array<std::bitset<MAX_LAYERS>, MAX_LAYERS> collision_matrix;
 
         // Collision callbacks: map from layer pair key to callback function
-        // Key is created by make_layer_pair_key(LayerID, LayerID) to ensure symmetric access
-        // u64 key = (min_layer << 32) | max_layer
+        // Key is created by make_layer_pair_key(LayerID, LayerID) - asymmetric!
+        // (layer_a, layer_b) and (layer_b, layer_a) are different keys
+        // u64 key = (layer_a << 32) | layer_b
+        // Entity order in callback matches layer order: callback(entity_on_layer_a, entity_on_layer_b)
         std::unordered_map<u64, std::function<void(Entity, Entity)>> collision_callbacks;
 
         // Constructor to initialize default layer

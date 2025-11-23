@@ -121,6 +121,7 @@ namespace ReflectionLibrary
   {
   public:
     using VariantType = std::variant<Null, Boolean, Integer, Double, String, Array, Object>;
+    std::string type_hint;
 
   private:
     VariantType data_;
