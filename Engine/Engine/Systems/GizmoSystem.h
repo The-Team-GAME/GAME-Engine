@@ -34,12 +34,11 @@ namespace Engine
     public:
       GizmoSelectionSystem() {
         require_components<Components::Transform2D>();
-        exclude_components<Components::Gizmo, Components::Text, Components::TileCollider>(); // Only process entities without Gizmo and without Text
+        exclude_components<Components::Text, Components::TileCollider>(); // Only process entities without Text
       }
 
       void update() override {
-        // Track processed entities to avoid duplicate selection events when entities are on multiple layers
-        std::unordered_set<Engine::ECS::EntityID> processed_entities;
+        Engine::ECS::EntityID best_entity = Engine::ECS::INVALID_ENTITY;
 
         auto& containers = Engine::ECS::Internal::get_containers();
         for (Engine::ECS::LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
@@ -52,25 +51,29 @@ namespace Engine
             if (!get_entities().contains(entityId))
               continue;
 
-            // Skip if already processed this entity
-            if (processed_entities.count(entityId))
-              continue;
-
-            processed_entities.insert(entityId);
             Engine::ECS::Entity entity(entityId);
-            update_entity(entity);
+            if (is_entity_under_mouse(entity)) {
+              best_entity = entityId;
+            }
+          }
+        }
+
+        if (best_entity != Engine::ECS::INVALID_ENTITY && Engine::Input::is_pressed(KeyCode::MouseLeft) && !TilemapPanel::is_tilemap_mode_enabled()) {
+          Engine::ECS::Entity entity(best_entity);
+          // Only select if not already selected (has Gizmo)
+          // If it has Gizmo, it means we clicked on the selected entity, so we do nothing (and don't select entities behind it)
+          if (!entity.has_component<Components::Gizmo>()) {
+            Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(best_entity, true);
           }
         }
       }
 
-      void update_entity(Engine::ECS::Entity& entity) override {
+      bool is_entity_under_mouse(Engine::ECS::Entity& entity) {
         auto* tr = entity.get_component<Components::Transform2D>();
-        if (!tr) return;
+        if (!tr) return false;
 
         const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
-
-        if (!mouse_opt.has_value()) return;
-
+        if (!mouse_opt.has_value()) return false;
         const auto mouse = mouse_opt.value();
 
         // Check if mouse is inside entity bounds
@@ -81,16 +84,11 @@ namespace Engine
         const float top = tr->position.y - half_h;
         const float bottom = tr->position.y + half_h;
 
-        const bool inside =
-          (mouse.x >= left) && (mouse.x <= right) &&
+        return (mouse.x >= left) && (mouse.x <= right) &&
           (mouse.y >= top) && (mouse.y <= bottom);
-
-        // Add Gizmo component when clicked
-        if (inside && Engine::Input::is_pressed(KeyCode::MouseLeft) && !TilemapPanel::is_tilemap_mode_enabled()) {
-          // Send selection event with start_dragging = true for immediate drag
-          Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(entity.get_id(), true);
-        }
       }
+
+      void update_entity(Engine::ECS::Entity& entity) override {}
     };
 
     // System to select text entities when clicked
@@ -98,12 +96,10 @@ namespace Engine
     public:
       GizmoTextSelectionSystem() {
         require_components<Components::Transform2D, Components::Text, Components::Font>();
-        exclude_components<Components::Gizmo>(); // Only process entities without Gizmo
       }
 
       void update() override {
-        // Track processed entities to avoid duplicate selection events when entities are on multiple layers
-        std::unordered_set<Engine::ECS::EntityID> processed_entities;
+        Engine::ECS::EntityID best_entity = Engine::ECS::INVALID_ENTITY;
 
         auto& containers = Engine::ECS::Internal::get_containers();
         for (Engine::ECS::LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
@@ -116,28 +112,30 @@ namespace Engine
             if (!get_entities().contains(entityId))
               continue;
 
-            // Skip if already processed this entity
-            if (processed_entities.count(entityId))
-              continue;
-
-            processed_entities.insert(entityId);
             Engine::ECS::Entity entity(entityId);
-            update_entity(entity);
+            if (is_entity_under_mouse(entity)) {
+              best_entity = entityId;
+            }
+          }
+        }
+
+        if (best_entity != Engine::ECS::INVALID_ENTITY && Engine::Input::is_pressed(KeyCode::MouseLeft) && !TilemapPanel::is_tilemap_mode_enabled()) {
+          Engine::ECS::Entity entity(best_entity);
+          if (!entity.has_component<Components::Gizmo>()) {
+            Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(best_entity, true);
           }
         }
       }
 
-      void update_entity(Engine::ECS::Entity& entity) override {
+      bool is_entity_under_mouse(Engine::ECS::Entity& entity) {
         auto* tr = entity.get_component<Components::Transform2D>();
         auto* text = entity.get_component<Components::Text>();
         auto* font = entity.get_component<Components::Font>();
 
-        if (!tr || !text || !font) return;
+        if (!tr || !text || !font) return false;
 
         const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
-
-        if (!mouse_opt.has_value()) return;
-
+        if (!mouse_opt.has_value()) return false;
         const auto mouse = mouse_opt.value();
 
         // Accurately measure text dimensions
@@ -154,16 +152,11 @@ namespace Engine
         const float top = tr->position.y;
         const float bottom = tr->position.y + text_height;
 
-        const bool inside =
-          (mouse.x >= left) && (mouse.x <= right) &&
+        return (mouse.x >= left) && (mouse.x <= right) &&
           (mouse.y >= top) && (mouse.y <= bottom);
-
-        // Add Gizmo component when clicked
-        if (inside && Engine::Input::is_pressed(KeyCode::MouseLeft) && !TilemapPanel::is_tilemap_mode_enabled()) {
-          // Send selection event with start_dragging = true for immediate drag
-          Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(entity.get_id(), true);
-        }
       }
+
+      void update_entity(Engine::ECS::Entity& entity) override {}
     };
 
     // System to handle dragging and drawing selected entities
