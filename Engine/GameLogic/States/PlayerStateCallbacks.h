@@ -184,32 +184,33 @@ namespace PlayerStateCallbacks
 
     // Increase heartrate
     if (heartrate) {
-      heartrate->increase(player->attack_heartrate1);
+      heartrate->increase(player->attack1.heartrate_cost);
     }
 
     // Apply forward movement during attack
     if (rigid && flip && player) {
-      rigid->velocity.x = (flip->value.x < 0) ? -player->attack_dash_speed1 : player->attack_dash_speed1;
+      rigid->velocity.x = (flip->value.x < 0) ? -player->attack1.dash_speed : player->attack1.dash_speed;
     }
 
     // Create attack hitbox entity
     auto* transform = entity.get_component<Components::Transform2D>();
 
     if (transform && player) {
-      float hitbox_offset = (flip && flip->value.x < 0) ? -player->hitbox_offset : player->hitbox_offset;
+      float offset_x = (flip && flip->value.x < 0) ? -player->attack1.hitbox_offset_x : player->attack1.hitbox_offset_x;
+      float offset_y = player->attack1.hitbox_offset_y;
 
       auto hitbox = Engine::ECS::create_entity()
         .add_component<Components::Tag<"PlayerAttackHitbox">>()
-        .add_component<Components::Attack>(player->attack_damage1)
+        .add_component<Components::Attack>(player->attack1.damage)
         .add_component<Components::Transform2D>(
-          transform->position.x + hitbox_offset,
-          transform->position.y,
+          transform->position.x + offset_x,
+          transform->position.y + offset_y,
           0.0f,
-          player->hitbox_width,
-          player->hitbox_height
+          player->attack1.hitbox_width,
+          player->attack1.hitbox_height
         )
         .add_component<Components::RigidBody>(true, false)
-        .add_component<Components::BoxCollider>(player->hitbox_width, player->hitbox_height, false)
+        .add_component<Components::BoxCollider>(player->attack1.hitbox_width, player->attack1.hitbox_height, false)
         .add_component<Components::Parent>(entity)
         .add_component<Components::Lifetime>(0.48f) // Attack1 duration: 6 frames × 0.08f
         //.add_component<Components::Color>(Math::Vec4D(1.0f, 0.0f, 0.0f, 0.3f))
@@ -220,7 +221,7 @@ namespace PlayerStateCallbacks
       // Apply knockback direction based on facing
       auto* attack = hitbox.get_component<Components::Attack>();
       if (attack) {
-        attack->knockback = player->attack_knockback1;
+        attack->knockback = player->attack1.knockback;
         if (flip && flip->value.x < 0) {
           attack->knockback.x = -attack->knockback.x;
         }
@@ -272,32 +273,33 @@ namespace PlayerStateCallbacks
 
     // Increase heartrate
     if (heartrate) {
-      heartrate->increase(player->attack_heartrate2);
+      heartrate->increase(player->attack2.heartrate_cost);
     }
 
     // Apply forward movement during attack
     if (rigid && flip && player) {
-      rigid->velocity.x = (flip->value.x < 0) ? -player->attack_dash_speed2 : player->attack_dash_speed2;
+      rigid->velocity.x = (flip->value.x < 0) ? -player->attack2.dash_speed : player->attack2.dash_speed;
     }
 
     // Create attack hitbox entity
     auto* transform = entity.get_component<Components::Transform2D>();
 
     if (transform && player) {
-      float hitbox_offset = (flip && flip->value.x < 0) ? -player->hitbox_offset : player->hitbox_offset;
+      float offset_x = (flip && flip->value.x < 0) ? -player->attack2.hitbox_offset_x : player->attack2.hitbox_offset_x;
+      float offset_y = player->attack2.hitbox_offset_y;
 
       auto hitbox = Engine::ECS::create_entity()
         .add_component<Components::Tag<"PlayerAttackHitbox">>()
-        .add_component<Components::Attack>(player->attack_damage2)
+        .add_component<Components::Attack>(player->attack2.damage)
         .add_component<Components::Transform2D>(
-          transform->position.x + hitbox_offset,
-          transform->position.y,
+          transform->position.x + offset_x,
+          transform->position.y + offset_y,
           0.0f,
-          player->hitbox_width,
-          player->hitbox_height
+          player->attack2.hitbox_width,
+          player->attack2.hitbox_height
         )
         .add_component<Components::RigidBody>(true, false)
-        .add_component<Components::BoxCollider>(player->hitbox_width, player->hitbox_height, false)
+        .add_component<Components::BoxCollider>(player->attack2.hitbox_width, player->attack2.hitbox_height, false)
         .add_component<Components::Parent>(entity)
         .add_component<Components::Lifetime>(0.24f) // Attack2 duration: 3 frames × 0.08f
         //.add_component<Components::Color>(Math::Vec4D(1.0f, 0.5f, 0.0f, 0.3f))
@@ -308,7 +310,7 @@ namespace PlayerStateCallbacks
       // Apply knockback direction based on facing
       auto* attack = hitbox.get_component<Components::Attack>();
       if (attack) {
-        attack->knockback = player->attack_knockback2;
+        attack->knockback = player->attack2.knockback;
         if (flip && flip->value.x < 0) {
           attack->knockback.x = -attack->knockback.x;
         }
@@ -360,32 +362,33 @@ namespace PlayerStateCallbacks
 
     // Increase heartrate
     if (heartrate) {
-      heartrate->increase(player->attack_heartrate3);
+      heartrate->increase(player->attack3.heartrate_cost);
     }
 
     // Apply forward movement during attack
     if (rigid && flip && player) {
-      rigid->velocity.x = (flip->value.x < 0) ? -player->attack_dash_speed3 : player->attack_dash_speed3;
+      rigid->velocity.x = (flip->value.x < 0) ? -player->attack3.dash_speed : player->attack3.dash_speed;
     }
 
     // Create attack hitbox entity
     auto* transform = entity.get_component<Components::Transform2D>();
 
     if (transform && player) {
-      float hitbox_offset = (flip && flip->value.x < 0) ? -player->hitbox_offset : player->hitbox_offset;
+      float offset_x = (flip && flip->value.x < 0) ? -player->attack3.hitbox_offset_x : player->attack3.hitbox_offset_x;
+      float offset_y = player->attack3.hitbox_offset_y;
 
       auto hitbox = Engine::ECS::create_entity()
         .add_component<Components::Tag<"PlayerAttackHitbox">>()
-        .add_component<Components::Attack>(player->attack_damage3)
+        .add_component<Components::Attack>(player->attack3.damage)
         .add_component<Components::Transform2D>(
-          transform->position.x + hitbox_offset,
-          transform->position.y,
+          transform->position.x + offset_x,
+          transform->position.y + offset_y,
           0.0f,
-          player->hitbox_width * 1.2f, // Slightly larger hitbox for finisher
-          player->hitbox_height
+          player->attack3.hitbox_width,
+          player->attack3.hitbox_height
         )
         .add_component<Components::RigidBody>(true, false)
-        .add_component<Components::BoxCollider>(player->hitbox_width * 1.2f, player->hitbox_height, false)
+        .add_component<Components::BoxCollider>(player->attack3.hitbox_width, player->attack3.hitbox_height, false)
         .add_component<Components::Parent>(entity)
         .add_component<Components::Lifetime>(0.6f) // Attack3 duration: 10 frames × 0.06f
         //.add_component<Components::Color>(Math::Vec4D(1.0f, 0.0f, 1.0f, 0.4f)) // Purple for finisher
@@ -396,7 +399,7 @@ namespace PlayerStateCallbacks
       // Apply knockback direction based on facing
       auto* attack = hitbox.get_component<Components::Attack>();
       if (attack) {
-        attack->knockback = player->attack_knockback3;
+        attack->knockback = player->attack3.knockback;
         if (flip && flip->value.x < 0) {
           attack->knockback.x = -attack->knockback.x;
         }
