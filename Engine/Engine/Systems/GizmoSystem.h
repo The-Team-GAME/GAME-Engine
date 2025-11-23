@@ -25,8 +25,6 @@
 #include "../Events/EngineEvents.h"
 #include <imgui.h>
 
-// TODO: M2: NEED TO WORK WITH THINGS WITH RIGIDBODY
-
 namespace Engine
 {
   namespace Systems
@@ -37,6 +35,32 @@ namespace Engine
       GizmoSelectionSystem() {
         require_components<Components::Transform2D>();
         exclude_components<Components::Gizmo, Components::Text, Components::TileCollider>(); // Only process entities without Gizmo and without Text
+      }
+
+      void update() override {
+        // Track processed entities to avoid duplicate selection events when entities are on multiple layers
+        std::unordered_set<Engine::ECS::EntityID> processed_entities;
+
+        auto& containers = Engine::ECS::Internal::get_containers();
+        for (Engine::ECS::LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
+          if (!get_layer_signature().test(layer))
+            continue;
+          if (!containers.layer_active_state.test(layer))
+            continue;
+
+          for (Engine::ECS::EntityID entityId : containers.layer_entities[layer]) {
+            if (!get_entities().contains(entityId))
+              continue;
+
+            // Skip if already processed this entity
+            if (processed_entities.count(entityId))
+              continue;
+
+            processed_entities.insert(entityId);
+            Engine::ECS::Entity entity(entityId);
+            update_entity(entity);
+          }
+        }
       }
 
       void update_entity(Engine::ECS::Entity& entity) override {
@@ -75,6 +99,32 @@ namespace Engine
       GizmoTextSelectionSystem() {
         require_components<Components::Transform2D, Components::Text, Components::Font>();
         exclude_components<Components::Gizmo>(); // Only process entities without Gizmo
+      }
+
+      void update() override {
+        // Track processed entities to avoid duplicate selection events when entities are on multiple layers
+        std::unordered_set<Engine::ECS::EntityID> processed_entities;
+
+        auto& containers = Engine::ECS::Internal::get_containers();
+        for (Engine::ECS::LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
+          if (!get_layer_signature().test(layer))
+            continue;
+          if (!containers.layer_active_state.test(layer))
+            continue;
+
+          for (Engine::ECS::EntityID entityId : containers.layer_entities[layer]) {
+            if (!get_entities().contains(entityId))
+              continue;
+
+            // Skip if already processed this entity
+            if (processed_entities.count(entityId))
+              continue;
+
+            processed_entities.insert(entityId);
+            Engine::ECS::Entity entity(entityId);
+            update_entity(entity);
+          }
+        }
       }
 
       void update_entity(Engine::ECS::Entity& entity) override {
