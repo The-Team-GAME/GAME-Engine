@@ -133,6 +133,13 @@ int main()
           // Store knockback to apply when detaching (from Player struct via Attack component)
           enemy_entity.add_component<Components::PendingKnockback>(attack->knockback);
         
+          // Move slightly towards the center of the hitbox (20%)
+          auto* attack_transform = attack_entity.get_component<Components::Transform2D>();
+          if (attack_transform) {
+            Math::Vec2D dir = attack_transform->position - transform->position;
+            transform->position += dir * 0.2f;
+          }
+
           // Offset slightly upwards each hit
           transform->position.y += -10.0f;
 
