@@ -297,8 +297,15 @@ void ColliderEditorPanel()
   // Center of the drawn image (Sprite Center)
   ImVec2 center = { image_min.x + draw_width * 0.5f, image_min.y + draw_height * 0.5f };
 
-  // Collider Center (Sprite Center + Offset)
-  ImVec2 col_center = { center.x + col_offset.x * scale, center.y + col_offset.y * scale };
+  // Apply flip to offset for visualization
+  Math::Vec2D flipped_offset = col_offset;
+  if (auto* flip = entity.get_component<Components::Flip>()) {
+    flipped_offset.x *= flip->value.x;
+    flipped_offset.y *= flip->value.y;
+  }
+
+  // Collider Center (Sprite Center + Flipped Offset)
+  ImVec2 col_center = { center.x + flipped_offset.x * scale, center.y + flipped_offset.y * scale };
 
   // Collider half-extents scaled to screen
   float col_half_w = (col_width / 2.0f) * scale;
@@ -327,8 +334,17 @@ void ColliderEditorPanel()
 
   if (ImGui::IsItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
       delta = ImGui::GetIO().MouseDelta;
-      col_offset.x += (delta.x / scale);
-      col_offset.y += (delta.y / scale);
+      
+      // Account for flip - invert delta if entity is flipped
+      float flip_x = 1.0f;
+      float flip_y = 1.0f;
+      if (auto* flip = entity.get_component<Components::Flip>()) {
+          flip_x = flip->value.x;
+          flip_y = flip->value.y;
+      }
+      
+      col_offset.x += (delta.x / scale) * flip_x;
+      col_offset.y += (delta.y / scale) * flip_y;
       changed = true;
   }
   

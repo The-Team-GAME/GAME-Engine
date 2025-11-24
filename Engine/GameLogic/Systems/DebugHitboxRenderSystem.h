@@ -39,9 +39,16 @@ namespace Engine {
           color = Math::Vec4D(0.0f, 1.0f, 0.0f, 0.2f); // Green (Hurtbox/Character)
         }
 
+        // Calculate flipped offset
+        Math::Vec2D flipped_offset = collider->offset;
+        if (auto* flip = entity.get_component<Components::Flip>()) {
+          flipped_offset.x *= flip->value.x;
+          flipped_offset.y *= flip->value.y;
+        }
+
         if (collider->type == Components::ColliderType::AABB) {
           Engine::Graphics::draw_rect(
-            transform->position,
+            transform->position + flipped_offset,
             Math::Vec2D(collider->width, collider->height),
             0.0f,
             color
