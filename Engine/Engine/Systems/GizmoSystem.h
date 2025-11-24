@@ -24,6 +24,7 @@
 #include "../EventManager/EventManager.h"
 #include "../Events/EngineEvents.h"
 #include "../GUI/ViewportPanel.h"
+#include "../ImGuiManager.h"
 #include <imgui.h>
 
 namespace Engine
@@ -614,8 +615,8 @@ namespace Engine
         {
           Components::Gizmo* gizmo_nc = const_cast<Components::Gizmo*>(gizmo);
 
-          auto bounds = ViewportPanel::get_viewport_bounds();
-          ImGui::SetNextWindowPos(ImVec2(bounds.x + 10.0f, bounds.y + 10.0f));
+          Math::Vec2D min_pos = ImGuiManager::get_game_render_area_min();
+          ImGui::SetNextWindowPos(ImVec2(min_pos.x + 10.0f, min_pos.y + 10.0f));
 
           ImGui::SetNextWindowBgAlpha(0.9f);
 
