@@ -4,6 +4,7 @@
 #include "TilemapManager.h"
 #include "FileIO/SettingsManager.h"
 #include "FileIO/Settings.h"
+#include "Systems/CollisionSystem.h"
 #include <unordered_set>
 
 namespace
@@ -67,6 +68,9 @@ void Engine::Level::instantiate_into_world()
       Engine::ECS::update_prefab_instances(instance_data.prefab_id);
     }
   }
+
+  // Update collision world bounds after level load
+  TilemapManager::broadcast_world_bounds();
 }
 
 std::string Engine::LevelManager::get_current_level_path()
