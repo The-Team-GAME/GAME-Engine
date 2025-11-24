@@ -43,14 +43,15 @@ namespace Components
     f32 height;
     Math::Vec2D offset;
     std::vector<Math::Vec2D> vertices; // For polygon colliders (local space)
-    
-    ColliderData() 
+
+    ColliderData()
       : type(Components::ColliderType::AABB)
       , width(0.0f)
       , height(0.0f)
       , offset(0.0f, 0.0f)
       , vertices()
-    {}
+    {
+    }
   };
 
   struct StateAnimation {

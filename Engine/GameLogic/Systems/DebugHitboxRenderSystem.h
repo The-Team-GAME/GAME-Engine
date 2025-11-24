@@ -53,7 +53,8 @@ namespace Engine {
             0.0f,
             color
           );
-        } else if (collider->type == Components::ColliderType::POLYGON) {
+        }
+        else if (collider->type == Components::ColliderType::POLYGON) {
           // Draw polygon collider
           if (!collider->polygon.vertices.empty()) {
             std::vector<Math::Vec2D> local_vertices;
@@ -66,7 +67,7 @@ namespace Engine {
               }
               local_vertices.push_back(flipped_v);
             }
-            
+
             // Use draw_polygon with position and rotation
             Engine::Graphics::draw_polygon(
               local_vertices,

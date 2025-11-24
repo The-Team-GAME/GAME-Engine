@@ -142,10 +142,12 @@ void ColliderEditorPanel()
 
   // We'll read the current type and allow changing it
   static int current_type_index = 0; // 0=AABB, 1=Polygon
+  static bool type_just_changed = false;
   const char* type_names[] = { "AABB", "Polygon" };
 
   if (ImGui::Combo("##ColliderType", &current_type_index, type_names, IM_ARRAYSIZE(type_names))) {
-    // Type changed - will apply this change later
+    // Type changed via combo box
+    type_just_changed = true;
   }
 
   // --- Data Retrieval ---
@@ -385,8 +387,12 @@ void ColliderEditorPanel()
   ImVec2 delta;
   bool changed = false;
 
-  // Sync current_type_index with loaded collider type
-  current_type_index = (col_type == Components::ColliderType::POLYGON) ? 1 : 0;
+  // Sync current_type_index with loaded collider type only when entity/state changes
+  // Don't overwrite user's combo box selection
+  if (!type_just_changed) {
+    current_type_index = (col_type == Components::ColliderType::POLYGON) ? 1 : 0;
+  }
+  type_just_changed = false;
 
   if (current_type_index == 0) {
     // ===== AABB MODE =====
