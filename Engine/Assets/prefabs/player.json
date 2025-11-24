@@ -1,34 +1,34 @@
 {
     "data": {
-        "uuid": "7b144527-18a2-40c44-967b-c565ab64ffb2",
+        "uuid": "059699a2-2a13-40be7-92b0-5298e7adcb67",
         "layers": [
             "player"
         ],
         "components": [
             {
                 "data": {
-                    "value": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "type": "Components::Flip"
-            },
-            {
-                "type": "Components::BoxCollider",
-                "data": {
                     "resolve_collisions": false,
-                    "width": 128.0,
                     "aabb": {
                         "pos": {
-                            "x": 374.0,
+                            "x": 400.0,
                             "y": 768.0
                         },
                         "half_width": 64.0,
                         "half_height": 64.0
                     },
+                    "width": 128.0,
                     "height": 128.0,
                     "radius": 0.0
+                },
+                "type": "Components::BoxCollider"
+            },
+            {
+                "type": "Components::Flip",
+                "data": {
+                    "value": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
                 }
             },
             {
@@ -540,7 +540,7 @@
                         2.200000047683716,
                         2.299999952316284
                     ],
-                    "startTime": 0.0,
+                    "startTime": 68.00212097167969,
                     "atlas_indices": [
                         0,
                         1,
@@ -606,7 +606,7 @@
                 "type": "Components::Transform2D",
                 "data": {
                     "position": {
-                        "x": 374.0,
+                        "x": 400.0,
                         "y": 768.0
                     },
                     "rotation": 0.0,
@@ -1147,7 +1147,7 @@
                                             22,
                                             23
                                         ],
-                                        "startTime": 0.0,
+                                        "startTime": 68.00212097167969,
                                         "totalDuration": 2.3999998569488525,
                                         "is_looping": true
                                     },
@@ -1339,7 +1339,7 @@
                                             0.6000000238418579,
                                             0.7000000476837158
                                         ],
-                                        "startTime": 0.0,
+                                        "startTime": 68.00212097167969,
                                         "atlas_indices": [
                                             0,
                                             1,
@@ -1551,7 +1551,7 @@
                                             6,
                                             7
                                         ],
-                                        "startTime": 0.0,
+                                        "startTime": 68.00212097167969,
                                         "totalDuration": 0.8000000715255737,
                                         "is_looping": true
                                     },
@@ -1937,7 +1937,7 @@
                                             0.3199999928474426,
                                             0.3999999761581421
                                         ],
-                                        "startTime": 0.0,
+                                        "startTime": 68.00212097167969,
                                         "atlas_indices": [
                                             0,
                                             1,
@@ -2330,7 +2330,7 @@
                                             7,
                                             8
                                         ],
-                                        "startTime": 0.0,
+                                        "startTime": 68.00212097167969,
                                         "totalDuration": 0.23999999463558197,
                                         "is_looping": false
                                     },
@@ -2736,7 +2736,7 @@
                                             17,
                                             18
                                         ],
-                                        "startTime": 0.0,
+                                        "startTime": 68.00212097167969,
                                         "totalDuration": 0.5999999642372131,
                                         "is_looping": false
                                     },
@@ -2750,6 +2750,16 @@
                     ],
                     "current_state_name": "Idle"
                 }
+            },
+            {
+                "data": {
+                    "interval": 0.05000000074505806,
+                    "lifetime": 0.0,
+                    "last_spawn_time": 11.657536506652832,
+                    "start_alpha": 0.800000011920929,
+                    "end_alpha": 0.0
+                },
+                "type": "Components::Trail"
             },
             {
                 "data": {
@@ -2797,6 +2807,18 @@
                     }
                 },
                 "type": "Components::Player"
+            },
+            {
+                "data": {
+                    "heartrate": 80.0,
+                    "low": 80.0,
+                    "very_high": 140.0,
+                    "normal": 100.0,
+                    "high": 120.0,
+                    "crash_out": 160.0,
+                    "decay_rate": 1.0
+                },
+                "type": "Components::Heartrate"
             }
         ]
     },
