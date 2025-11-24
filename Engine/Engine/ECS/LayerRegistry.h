@@ -28,7 +28,7 @@ namespace Engine {
     namespace LayerRegistry {
 
       // Callback signature: void callback(Entity entityA, Entity entityB)
-      // entityA is on layerA, entityB is on layerB (order matches registration)
+      // entityA is on layerA, entityB is on layerB
       using CollisionCallback = std::function<void(Entity, Entity)>;
 
       /*=================================================================================
@@ -168,30 +168,19 @@ namespace Engine {
       Registers a callback function to be called when entities on two specific layers
       collide. The callback receives both entities involved in the collision.
 
-      IMPORTANT: Callbacks are asymmetric! The entity order in the callback matches
-      the layer order during registration. If you register (layer_a, layer_b), the
-      callback will receive (entity_on_layer_a, entity_on_layer_b). To handle both
-      directions, register both (A, B) and (B, A) with appropriate callbacks.
-
       Parameters:
       - layer_a: First layer ID
       - layer_b: Second layer ID
-      - callback: Function to call when collision occurs (receives entities in order)
+      - callback: Function to call when collision occurs
 
       Example:
-      // Player projectile hits enemy - order matters!
-      register_collision_callback(player_projectile_layer, enemy_layer, [](Entity projectile, Entity enemy) {
-        // projectile is first, enemy is second
+      register_collision_callback("player_projectile", "enemy", [](Entity projectile, Entity enemy) {
+        // Damage enemy
         if (auto* health = enemy.get_component<Health>()) {
           health->take_damage(10);
         }
+        // Destroy projectile
         projectile.destroy();
-      });
-
-      // If you want enemy hitting projectile to have different logic:
-      register_collision_callback(enemy_layer, player_projectile_layer, [](Entity enemy, Entity projectile) {
-        // enemy is first, projectile is second
-        // Different handling if needed
       });
 
       Where to call it:
@@ -203,13 +192,10 @@ namespace Engine {
       Function Brief:
       Registers a callback using layer names instead of IDs.
 
-      IMPORTANT: Callbacks are asymmetric! The entity order in the callback matches
-      the layer order during registration.
-
       Parameters:
       - layer_a_name: First layer name
       - layer_b_name: Second layer name
-      - callback: Function to call when collision occurs (receives entities in order)
+      - callback: Function to call when collision occurs
 
       Where to call it:
       During initialization when setting up gameplay collision logic.

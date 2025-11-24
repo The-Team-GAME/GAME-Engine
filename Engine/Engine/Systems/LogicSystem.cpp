@@ -74,7 +74,7 @@ void logi::take_input(ECS::Entity player)
 void logi::run_state(ECS::Entity entity)
 {
   // getting the player for the NPC state machine logic
-  ECS::Entity player = ECS::get_first_entity_with<Components::Player_>();
+  ECS::Entity player = ECS::get_first_entity_with<Components::Player>();
   Components::BoxCollider*  player_box = player.get_component<Components::BoxCollider>();
 
   Components::Transform2D*  xform = entity.get_component<Components::Transform2D>();

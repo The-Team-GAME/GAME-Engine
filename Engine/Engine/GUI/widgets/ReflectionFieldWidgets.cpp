@@ -22,7 +22,6 @@
 #include "../../Components/Components.h"
 #include "../../Path.h"
 #include <unordered_map>
-#include "../../FunctionRegistry.h"
 
 namespace ImGuiWidgets {
 
@@ -251,312 +250,33 @@ namespace ImGuiWidgets {
     return true;
   }
 
-  bool render_animation_field(ReflectionLibrary::GenericValue& field_value, bool& modified) {
-    // Animation structure:
-    // - durations: array of floats
-    // - before_times: array of floats (cumulative times)
-    // - startTime: float
-    // - totalDuration: float
-    // - is_looping: bool
-
-    if (!field_value.isObject()) return false;
-
-    // Get values
-    float total_duration = field_value["totalDuration"].isDouble() ?
-      static_cast<float>(field_value["totalDuration"].getDouble()) : 0.0f;
-    bool is_looping = field_value["is_looping"].isBool() ?
-      field_value["is_looping"].getBool() : true;
-
-    if (!field_value["durations"].isArray() || !field_value["before_times"].isArray()) return false;
-
-    size_t frame_count = field_value["durations"].size();
-
-    // Display animation info
-    ImGui::Text("Animation Info:");
-    ImGui::Indent();
-    ImGui::Text("Frame Count: %zu", frame_count);
-    ImGui::Text("Total Duration: %.3f seconds", total_duration);
-    ImGui::Unindent();
-
-    ImGui::Separator();
-
-    // Looping toggle
-    bool new_looping = is_looping;
-    if (ImGui::Checkbox("Loop Animation", &new_looping)) {
-      field_value["is_looping"] = new_looping;
-      modified = true;
-    }
-
-    ImGui::Separator();
-
-    // Reset start time button
-    if (ImGui::Button("Reset Animation (Set Start Time to Now)")) {
-      field_value["startTime"] = Engine::Time::get_time();
-      modified = true;
-    }
-
-    ImGui::Separator();
-
-    // Frame duration editor
-    if (frame_count > 0) {
-      ImGui::Text("Frame Durations:");
-      ImGui::Indent();
-
-      bool durations_changed = false;
-      for (size_t i = 0; i < frame_count; ++i) {
-        float duration = field_value["durations"][i].isDouble() ?
-          static_cast<float>(field_value["durations"][i].getDouble()) : 0.0f;
-
-        ImGui::PushID(static_cast<int>(i));
-        ImGui::Text("Frame %zu:", i);
-        ImGui::SameLine();
-
-        if (ImGui::DragFloat("##duration", &duration, 0.01f, 0.0f, 10.0f, "%.3f sec")) {
-          field_value["durations"][i] = duration;
-          durations_changed = true;
-        }
-
-        ImGui::PopID();
-      }
-
-      // Recalculate before_times and total_duration if durations changed
-      if (durations_changed) {
-        float cumulative = 0.0f;
-        for (size_t i = 0; i < frame_count; ++i) {
-          field_value["before_times"][i] = cumulative;
-          cumulative += static_cast<float>(field_value["durations"][i].getDouble());
-        }
-        field_value["totalDuration"] = cumulative;
-        modified = true;
-      }
-
-      ImGui::Unindent();
-      ImGui::Separator();
-
-      // Quick actions for setting all durations
-      static float uniform_duration = 0.1f;
-      ImGui::Text("Quick Actions:");
-      ImGui::Indent();
-      ImGui::DragFloat("Uniform Duration", &uniform_duration, 0.01f, 0.0f, 10.0f, "%.3f sec");
-      if (ImGui::Button("Set All Frames to Uniform Duration")) {
-        float cumulative = 0.0f;
-        for (size_t i = 0; i < frame_count; ++i) {
-          field_value["durations"][i] = uniform_duration;
-          field_value["before_times"][i] = cumulative;
-          cumulative += uniform_duration;
-        }
-        field_value["totalDuration"] = cumulative;
-        modified = true;
-      }
-      ImGui::Unindent();
-    }
-    else {
-      ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No frames in animation");
-    }
-
-    return true;
-  }
-
-  // Helper to render a script selector dropdown
-  void render_script_selector(const std::string& label, ReflectionLibrary::GenericValue& field_value, bool& modified) {
-    if (!field_value.isString()) return;
-
-    std::string current_script = field_value.getString();
-
-    // Get all registered functions with the correct signature
-    // Note: This assumes all state callbacks have the signature void(Engine::ECS::Entity&)
-    auto& functions = Engine::FunctionRegistry<void(Engine::ECS::Entity&)>::get_functions();
-
-    if (ImGui::BeginCombo(label.c_str(), current_script.empty() ? "<None>" : current_script.c_str())) {
-
-      // Option to clear selection
-      bool is_selected = current_script.empty();
-      if (ImGui::Selectable("<None>", is_selected)) {
-        field_value = std::string("");
-        modified = true;
-      }
-      if (is_selected) ImGui::SetItemDefaultFocus();
-
-      // List all scripts
-      for (const auto& [name, func] : functions) {
-        is_selected = (current_script == name);
-        if (ImGui::Selectable(name.c_str(), is_selected)) {
-          field_value = name;
-          modified = true;
-        }
-        if (is_selected) ImGui::SetItemDefaultFocus();
-      }
-
-      ImGui::EndCombo();
-    }
-  }
-
-  bool render_statemachine_field(ReflectionLibrary::GenericValue& field_value, bool& modified) {
-    // StateMachine structure:
-    // - states: unordered_map<string, State> (Serialized as Array of Pairs or Object)
-    // Each State has:
-    // - name: string
-    // - animation: optional<StateAnimation>
-    // Each StateAnimation has:
-    // - texture: Texture
-    // - texture_atlas: TextureAtlas
-    // - animation: Animation
-    // - scale: optional<Vec2D>
-
-    if (!field_value.isObject()) {
-      ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "StateMachine field is not an object");
-      return true;
-    };
-
-    ReflectionLibrary::Object& field_obj = field_value.getObject();
-    auto states_it = field_obj.find("states");
-
-    // Check for valid states container (Object or Array)
-    if (states_it == field_obj.end() || (!states_it->second.isObject() && !states_it->second.isArray())) {
-      ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "StateMachine has no states defined (or invalid format)");
-      return true;
-    }
-
-    ReflectionLibrary::GenericValue states_map_val;
-
-    states_map_val = ReflectionLibrary::convert_array_of_pairs_to_map(states_it->second);
-
-    ReflectionLibrary::Object& states_map = states_map_val.getObject();
-    bool local_modified = false;
-
-    ImGui::Text("States (%zu):", states_map.size());
-    ImGui::Separator();
-
-    if (states_map.empty()) {
-      ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No states defined");
-      return true;
-    }
-
-    // Create a tab bar for all states
-    if (ImGui::BeginTabBar("StatesTabBar", ImGuiTabBarFlags_None)) {
-      // Iterate through all states in the state machine
-      for (std::pair<const std::string, ReflectionLibrary::GenericValue>& state_pair : states_map) {
-        const std::string& state_name = state_pair.first;
-        ReflectionLibrary::GenericValue& state_value = state_pair.second;
-
-        // Create a tab for each state
-        if (ImGui::BeginTabItem(state_name.c_str())) {
-          // Display state name (read-only for now, as it's the key)
-          ImGui::Text("State Name: %s", state_name.c_str());
-          ImGui::Separator();
-
-          // Check if state has animation
-          if (state_value.isObject()) {
-            ReflectionLibrary::Object& state_obj = state_value.getObject();
-
-            // Render Script Selectors
-            ImGui::Text("State Callbacks:");
-            ImGui::Indent();
-
-            auto enter_it = state_obj.find("on_enter_callback_name");
-            if (enter_it != state_obj.end()) {
-              render_script_selector("On Enter", enter_it->second, local_modified);
-            }
-
-            auto update_it = state_obj.find("on_update_callback_name");
-            if (update_it != state_obj.end()) {
-              render_script_selector("On Update", update_it->second, local_modified);
-            }
-
-            auto exit_it = state_obj.find("on_exit_callback_name");
-            if (exit_it != state_obj.end()) {
-              render_script_selector("On Exit", exit_it->second, local_modified);
-            }
-
-            ImGui::Unindent();
-            ImGui::Separator();
-
-            auto anim_it = state_obj.find("animation");
-
-            // The optional<StateAnimation> is converted directly to the StateAnimation object
-            // (not wrapped in a "value" key), or to null if empty
-            if (anim_it != state_obj.end() && anim_it->second.isObject()) {
-              ReflectionLibrary::Object& state_anim_obj = anim_it->second.getObject();
-
-              ImGui::Text("State Animation:");
-              ImGui::Indent();
-
-              // Render Texture field
-              auto tex_it = state_anim_obj.find("texture");
-              if (tex_it != state_anim_obj.end()) {
-                ImGui::Text("Texture:");
-                ImGui::Indent();
-                render_texture_field(tex_it->second, local_modified);
-                ImGui::Unindent();
-                ImGui::Separator();
-              }
-
-              // Render Animation field
-              auto anim_field_it = state_anim_obj.find("animation");
-              if (anim_field_it != state_anim_obj.end()) {
-                ImGui::Text("Animation:");
-                ImGui::Indent();
-                render_animation_field(anim_field_it->second, local_modified);
-                ImGui::Unindent();
-              }
-
-              ImGui::Unindent();
-            }
-            else {
-              ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No animation defined for this state");
-            }
-          }
-
-          ImGui::EndTabItem();
-        }
-      }
-
-      ImGui::EndTabBar();
-    }
-
-    // Write back changes if modified
-    if (local_modified) {
-      states_it->second = ReflectionLibrary::convert_map_to_array_of_pairs(states_map_val);
-      modified = true;
-    }
-
-    return true;
-  }
-
   bool render_specialized_field(
     const std::string& display_name,
-    const std::string& type_hint,
     ReflectionLibrary::GenericValue& field_value,
     bool& modified,
     Engine::ECS::Entity entity
   ) {
-    if (type_hint == "Components::Color") {
+    if (display_name == "Components::Color") {
       return render_color_field(field_value, modified);
     }
 
-    if (type_hint == "Components::Texture") {
+    if (display_name == "Components::Texture") {
       return render_texture_field(field_value, modified);
     }
 
-    if (type_hint == "Components::Font") {
+    if (display_name == "Components::Font") {
       return render_font_field(field_value, modified);
     }
 
-    if (type_hint == "Components::Transform2D") {
+    if (display_name == "Components::Transform2D") {
       return render_transform2d_field(field_value, modified);
     }
 
-    if (type_hint == "Components::TextureAtlas") {
+    if (display_name == "Components::TextureAtlas") {
       return render_texture_atlas_field(entity);
     }
 
-    if (type_hint == "Components::Animation") {
-      return render_animation_field(field_value, modified);
-    }
 
-    if (type_hint == "Components::StateMachine") {
-      return render_statemachine_field(field_value, modified);
-    }
 
     // Not handled by specialized renderer
     return false;
@@ -568,28 +288,23 @@ namespace ImGuiWidgets {
     bool& modified,
     Engine::ECS::Entity entity
   ) {
-
     if (field_value.isBool()) {
       bool val = field_value.getBool();
-      ImGui::Text("%s", display_name.c_str());
-      ImGui::SameLine();
-      if (ImGui::Checkbox(("##" + display_name).c_str(), &val)) {
+      if (ImGui::Checkbox(display_name.c_str(), &val)) {
         field_value = val;
         modified = true;
       }
     }
     else if (field_value.isInt()) {
       int val = static_cast<int>(field_value.getInt());
-      ImGui::Text("%s", display_name.c_str());
-      if (ImGui::DragInt(("##" + display_name).c_str(), &val)) {
+      if (ImGui::DragInt(display_name.c_str(), &val)) {
         field_value = static_cast<ReflectionLibrary::Integer>(val);
         modified = true;
       }
     }
     else if (field_value.isDouble()) {
       float val = static_cast<float>(field_value.getDouble());
-      ImGui::Text("%s", display_name.c_str());
-      if (ImGui::DragFloat(("##" + display_name).c_str(), &val, 0.01f)) {
+      if (ImGui::DragFloat(display_name.c_str(), &val, 0.01f)) {
         field_value = static_cast<double>(val);
         modified = true;
       }
@@ -599,8 +314,7 @@ namespace ImGuiWidgets {
       std::string str_val = field_value.getString();
       strncpy_s(buffer, str_val.c_str(), sizeof(buffer) - 1);
       buffer[sizeof(buffer) - 1] = '\0';
-      ImGui::Text("%s", display_name.c_str());
-      if (ImGui::InputText(("##" + display_name).c_str(), buffer, sizeof(buffer))) {
+      if (ImGui::InputText(display_name.c_str(), buffer, sizeof(buffer))) {
         field_value = std::string(buffer);
         modified = true;
       }
@@ -608,7 +322,7 @@ namespace ImGuiWidgets {
     else if (field_value.isObject()) {
       auto& nested_fields = field_value.getObject();
       for (auto& [nested_name, nested_value] : nested_fields) {
-        render_field(display_name + "::" + nested_name, nested_value.type_hint, nested_value, modified, entity);
+        render_field(display_name + "::" + nested_name, nested_value, modified, entity);
       }
     }
     else if (field_value.isArray()) {
@@ -657,8 +371,8 @@ namespace ImGuiWidgets {
             break; // Exit loop after erasing to avoid iterator issues
           }
 
-          // Render the element using the field renderer with its type hint
-          render_field(element_label, array[i].type_hint, array[i], modified, entity);
+          // Render the element using the generic field renderer
+          render_field(element_label, array[i], modified, entity);
 
           ImGui::PopID();
         }
@@ -673,18 +387,12 @@ namespace ImGuiWidgets {
 
   void render_field(
     const std::string& display_name,
-    const std::string& type_hint,
     ReflectionLibrary::GenericValue& field_value,
     bool& modified,
     Engine::ECS::Entity entity
   ) {
-    ImGui::PushItemWidth(-FLT_MIN);
-
     // First try specialized rendering, then fallback to generic
-    render_specialized_field(display_name, type_hint, field_value, modified, entity) || render_generic_field(display_name, field_value, modified, entity);
-
-    ImGui::PopItemWidth();
-
+    render_specialized_field(display_name, field_value, modified, entity) || render_generic_field(display_name, field_value, modified, entity);
   }
 
 } // namespace ImGuiWidgets

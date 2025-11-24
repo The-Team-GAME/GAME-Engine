@@ -21,10 +21,11 @@ namespace Engine {
     namespace LayerRegistry {
 
       // Helper function to create a unique key for a layer pair
-      // Uses an asymmetric key so (A,B) and (B,A) are different callbacks
-      // This allows layer-specific collision logic where order matters
+      // Uses a symmetric key so (A,B) and (B,A) map to the same callback
       static u64 make_layer_pair_key(LayerID layer_a, LayerID layer_b) {
-        return (static_cast<u64>(layer_a) << 32) | static_cast<u64>(layer_b);
+        LayerID min_layer = layer_a < layer_b ? layer_a : layer_b;
+        LayerID max_layer = layer_a < layer_b ? layer_b : layer_a;
+        return (static_cast<u64>(min_layer) << 32) | static_cast<u64>(max_layer);
       }
 
       void enable_layer_collision(LayerID layer_a, LayerID layer_b) {
@@ -175,12 +176,16 @@ namespace Engine {
           for (LayerID layer_b = 0; layer_b < MAX_LAYERS; ++layer_b) {
             if (!layers_b.test(layer_b)) continue;
 
-            // Check for callback registered as (layer_a, layer_b)
             u64 key = make_layer_pair_key(layer_a, layer_b);
             auto it = containers.collision_callbacks.find(key);
             if (it != containers.collision_callbacks.end()) {
-              // Invoke callback with entity order matching layer registration order
-              it->second(entity_a, entity_b);
+              // Invoke callback - entity order matches layer order
+              if (layer_a <= layer_b) {
+                it->second(entity_a, entity_b);
+              }
+              else {
+                it->second(entity_b, entity_a);
+              }
             }
           }
         }

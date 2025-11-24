@@ -63,10 +63,7 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
     auto component_data = array->to_generic_value(entity.get_id());
     bool modified = false;
 
-    // Get the type name from the component array for specialized rendering
-    std::string type_hint = array->get_type_name();
-
-    ImGuiWidgets::render_field(component_name, type_hint, component_data, modified, entity);
+    ImGuiWidgets::render_field(component_name, component_data, modified, entity);
 
     // Check if user is currently editing (any widget is active in this component)
     bool is_any_item_active = ImGui::IsAnyItemActive();
@@ -533,14 +530,6 @@ void EntityEditorPanel()
 
           if (Engine::FileIO::serialize_prefab_to_json_file(full_path, prefab))
           {
-            // Add prefab to resource cache so it can be tracked and appears in PrefabEditorPanel
-            Engine::Resources::cache_prefab(relative_path, prefab, true, true);
-
-            // Mark as dirty so it gets saved
-            Engine::ProjectSaveManager::set_dirty(
-              Engine::ProjectSaveManager::DirtyStates::Prefab(relative_path)
-            );
-
             // Clear the input and close popup
             prefab_filename[0] = '\0';
             ImGui::CloseCurrentPopup();

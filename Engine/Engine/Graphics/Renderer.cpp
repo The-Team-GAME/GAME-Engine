@@ -203,9 +203,9 @@ namespace Engine {
 
     // Helper function to draw a quad with custom texture coordinates
     void draw_quad(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size,
-      f32 rotation, const Math::Vec4D& color, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& flip = Math::Vec2D(1.0f, 1.0f)) {
+      f32 rotation, const Math::Vec4D& color, const std::array<Math::Vec2D, 4>& tex_coords) {
       if (!texture || texture->id == 0) {
-        Log::warning("Attempted to draw invalid texture: " + texture->path);
+        Log::warning("Attempted to draw invalid texture");
         return;
       }
 
@@ -221,7 +221,7 @@ namespace Engine {
         model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
       }
 
-      model = glm::scale(model, glm::vec3(size.x * flip.x, size.y * flip.y, 1.0f));
+      model = glm::scale(model, glm::vec3(size.x, size.y, 1.0f));
 
       // Create quad vertices
       Vertex vertices[4];
@@ -294,9 +294,9 @@ namespace Engine {
 
     // Helper function to draw a quad in UI space (no view matrix applied)
     void draw_ui_quad(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size,
-      f32 rotation, const Math::Vec4D& color, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& flip = Math::Vec2D(1.0f, 1.0f)) {
+      f32 rotation, const Math::Vec4D& color, const std::array<Math::Vec2D, 4>& tex_coords) {
       if (!texture || texture->id == 0) {
-        Log::warning("Attempted to draw invalid texture: " + texture->path);
+        Log::warning("Attempted to draw invalid texture");
         return;
       }
 
@@ -326,7 +326,7 @@ namespace Engine {
         model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
       }
 
-      model = glm::scale(model, glm::vec3(size.x * flip.x, size.y * flip.y, 1.0f));
+      model = glm::scale(model, glm::vec3(size.x, size.y, 1.0f));
 
       // Create quad vertices
       Vertex vertices[4];
@@ -984,7 +984,7 @@ namespace Engine {
       draw_polygon_outline(vertices, position, 0.0f, thickness, color);
     }
 
-    void draw_texture(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, const Math::Vec2D& flip) {
+    void draw_texture(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
       // Default texture coordinates for full texture (bottom-left, bottom-right, top-right, top-left)
       std::array<Math::Vec2D, 4> default_tex_coords = {
         Math::Vec2D(0.0f, 1.0f), // Bottom-left
@@ -993,16 +993,16 @@ namespace Engine {
         Math::Vec2D(0.0f, 0.0f)  // Top-left
       };
 
-      draw_quad(texture, position, size, rotation, color, default_tex_coords, flip);
+      draw_quad(texture, position, size, rotation, color, default_tex_coords);
     }
 
     void draw_subtexture(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords,
-      const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, const Math::Vec2D& flip) {
-      draw_quad(texture, position, size, rotation, color, tex_coords, flip);
+      const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
+      draw_quad(texture, position, size, rotation, color, tex_coords);
     }
 
     void draw_subtexture_tiled(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords,
-      const Math::Vec2D& position, const Math::Vec2D& size, const Math::Vec2D& tile_size, f32 rotation, const Math::Vec4D& color, const Math::Vec2D& flip) {
+      const Math::Vec2D& position, const Math::Vec2D& size, const Math::Vec2D& tile_size, f32 rotation, const Math::Vec4D& color) {
 
       // For tiled rendering, we need to draw multiple instances of the same tile
       // Calculate how many tiles we need in each direction
@@ -1021,7 +1021,7 @@ namespace Engine {
           f32 tile_y = start_y + y * tile_size.y + tile_size.y * 0.5f;
 
           // Draw the tile at this position
-          draw_quad(texture, Math::Vec2D(tile_x, tile_y), tile_size, rotation, color, tex_coords, flip);
+          draw_quad(texture, Math::Vec2D(tile_x, tile_y), tile_size, rotation, color, tex_coords);
         }
       }
     }
@@ -1144,7 +1144,7 @@ namespace Engine {
     // Helper function to draw a quad with distortion effect
     void draw_quad_distortion(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size,
       f32 rotation, const Math::Vec4D& color, const std::array<Math::Vec2D, 4>& tex_coords,
-      f32 intensity, f32 speed, f32 mesh_intensity, const Math::Vec2D& flip = Math::Vec2D(1.0f, 1.0f)) {
+      f32 intensity, f32 speed, f32 mesh_intensity) {
       if (!texture || texture->id == 0) {
         Log::warning("Attempted to draw invalid texture");
         return;
@@ -1163,7 +1163,7 @@ namespace Engine {
         model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
       }
 
-      model = glm::scale(model, glm::vec3(size.x * flip.x, size.y * flip.y, 1.0f));
+      model = glm::scale(model, glm::vec3(size.x, size.y, 1.0f));
 
       // Create quad vertices
       Vertex vertices[4];
@@ -1191,7 +1191,7 @@ namespace Engine {
       batch_quad(texture->id, vertices, distortion_shader.get(), intensity, speed, mesh_intensity);
     }
 
-    void draw_texture_distortion(Engine::Graphics::Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, f32 intensity, f32 speed, f32 mesh_intensity, const Math::Vec2D& flip) {
+    void draw_texture_distortion(Engine::Graphics::Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, f32 intensity, f32 speed, f32 mesh_intensity) {
       // Default texture coordinates (full texture)
       std::array<Math::Vec2D, 4> tex_coords = {
         Math::Vec2D(0.0f, 1.0f), // Bottom-left
@@ -1200,11 +1200,11 @@ namespace Engine {
         Math::Vec2D(0.0f, 0.0f)  // Top-left
       };
 
-      draw_quad_distortion(texture, position, size, rotation, color, tex_coords, intensity, speed, mesh_intensity, flip);
+      draw_quad_distortion(texture, position, size, rotation, color, tex_coords, intensity, speed, mesh_intensity);
     }
 
-    void draw_subtexture_distortion(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, f32 intensity, f32 speed, f32 mesh_intensity, const Math::Vec2D& flip) {
-      draw_quad_distortion(texture, position, size, rotation, color, tex_coords, intensity, speed, mesh_intensity, flip);
+    void draw_subtexture_distortion(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, f32 intensity, f32 speed, f32 mesh_intensity) {
+      draw_quad_distortion(texture, position, size, rotation, color, tex_coords, intensity, speed, mesh_intensity);
     }
 
     // UI Drawing functions (no camera transformation)
@@ -1512,7 +1512,7 @@ namespace Engine {
       draw_polygon_outline_ui(vertices, position, 0.0f, thickness, color);
     }
 
-    void draw_texture_ui(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, const Math::Vec2D& flip) {
+    void draw_texture_ui(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
       // Default texture coordinates for full texture
       std::array<Math::Vec2D, 4> default_tex_coords = {
         Math::Vec2D(0.0f, 1.0f), // Bottom-left
@@ -1521,12 +1521,12 @@ namespace Engine {
         Math::Vec2D(0.0f, 0.0f)  // Top-left
       };
 
-      draw_ui_quad(texture, position, size, rotation, color, default_tex_coords, flip);
+      draw_ui_quad(texture, position, size, rotation, color, default_tex_coords);
     }
 
     void draw_subtexture_ui(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords,
-      const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, const Math::Vec2D& flip) {
-      draw_ui_quad(texture, position, size, rotation, color, tex_coords, flip);
+      const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color) {
+      draw_ui_quad(texture, position, size, rotation, color, tex_coords);
     }
 
     void draw_tilemap(const std::unordered_map<int64_t, Tile>& tileMap,

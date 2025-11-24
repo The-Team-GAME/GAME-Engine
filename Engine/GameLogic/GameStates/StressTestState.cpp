@@ -36,27 +36,27 @@ void StressTestState::init() {
       1.0f
     );
 
-    //// Create AnimationState component with both states
-    //Components::AnimationState anim_state;
+    // Create AnimationState component with both states
+    Components::AnimationState anim_state;
 
-    //// Add monkey state
-    //anim_state.add_animation_state(
-    //  MONKEY_STATE,
-    //  Components::Texture(lazy_monkey_texture),
-    //  Components::TextureAtlas(monkey_frame_width, monkey_frame_height, 1, monkey_frame_count, monkey_frame_count),
-    //  Components::Animation(monkey_frame_count, monkey_anim_speed)
-    //);
+    // Add monkey state
+    anim_state.add_state(
+      MONKEY_STATE,
+      Components::Texture(lazy_monkey_texture),
+      Components::TextureAtlas(monkey_frame_width, monkey_frame_height, 1, monkey_frame_count, monkey_frame_count),
+      Components::Animation(monkey_frame_count, monkey_anim_speed)
+    );
 
-    //// Add player state
-    //anim_state.add_animation_state(
-    //  PLAYER_STATE,
-    //  Components::Texture(player_run_texture),
-    //  Components::TextureAtlas(player_frame_width, player_frame_height, 1, player_frame_count, player_frame_count),
-    //  Components::Animation(player_frame_count, player_anim_speed)
-    //);
+    // Add player state
+    anim_state.add_state(
+      PLAYER_STATE,
+      Components::Texture(player_run_texture),
+      Components::TextureAtlas(player_frame_width, player_frame_height, 1, player_frame_count, player_frame_count),
+      Components::Animation(player_frame_count, player_anim_speed)
+    );
 
     // Set initial state to monkey
-    //anim_state.set_animation_state(MONKEY_STATE);
+    anim_state.set_entity_state(MONKEY_STATE);
 
     // Create entity with AnimationState component
     auto entity = Engine::ECS::create_entity()
@@ -66,7 +66,7 @@ void StressTestState::init() {
       .add_component<Components::Texture>(lazy_monkey_texture)
       .add_component<Components::TextureAtlas>(monkey_frame_width, monkey_frame_height, 1, monkey_frame_count, monkey_frame_count)
       .add_component<Components::Animation>(monkey_frame_count, monkey_anim_speed)
-      //.add_component<Components::AnimationState>(anim_state)
+      .add_component<Components::AnimationState>(anim_state)
       .add_component<Components::RigidBody>(false, false);
 
     // Random rotation speed
@@ -81,20 +81,19 @@ void StressTestState::update() {
   // Press SPACE to toggle between monkey and player sprites
   if (Engine::Input::is_pressed(Engine::KeyCode::Space)) {
     // Update all entities with the new animation state
-    //Engine::ECS::for_each_entity_with<Components::Tag<"StressTestState">, Components::AnimationState>(
-    //  [this](Engine::ECS::Entity entity) {
-    //    auto* anim_state = entity.get_component<Components::AnimationState>();
-    //    if (anim_state) {
-    //      // Toggle between monkey and player states
-    //      if (anim_state->current_state == MONKEY_STATE) {
-    //        anim_state->set_animation_state(PLAYER_STATE);
-    //      }
-    //      else {
-    //        anim_state->set_animation_state(MONKEY_STATE);
-    //      }
-    //    }
-    //  }
-    //);
+    Engine::ECS::for_each_entity_with<Components::Tag<"StressTestState">, Components::AnimationState>(
+      [this](Engine::ECS::Entity entity) {
+        auto* anim_state = entity.get_component<Components::AnimationState>();
+        if (anim_state) {
+          // Toggle between monkey and player states
+          if (anim_state->current_state == MONKEY_STATE) {
+            anim_state->set_entity_state(PLAYER_STATE);
+          }
+          else {
+            anim_state->set_entity_state(MONKEY_STATE);
+          }
+        }
+      });
   }
 }
 

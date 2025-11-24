@@ -597,9 +597,7 @@ namespace ReflectionLibrary
       auto& obj_ref = const_cast<ValueType&>(obj);
       for_each_field(obj_ref, [&](std::string_view name, auto& field_value, int)
         { result[std::string(name)] = to_generic_value(field_value); });
-      GenericValue gv(std::move(result));
-      gv.type_hint = std::string(class_name<ValueType>);
-      return gv;
+      return GenericValue(std::move(result));
     }
     else
     {
@@ -763,37 +761,6 @@ namespace ReflectionLibrary
     return result;
   }
 
-  inline GenericValue convert_array_of_pairs_to_map(const GenericValue& array_value)
-  {
-    if (!array_value.isArray()) return GenericValue(Object{});
-
-    Object result;
-    const auto& arr = array_value.getArray();
-    for (const auto& item : arr) {
-      if (item.isObject() && item.has("first") && item.has("second")) {
-        const auto& key = item["first"];
-        if (key.isString()) {
-          result[key.getString()] = item["second"];
-        }
-      }
-    }
-    return GenericValue(std::move(result));
-  }
-
-  inline GenericValue convert_map_to_array_of_pairs(const GenericValue& map_value)
-  {
-    if (!map_value.isObject()) return GenericValue(Array{});
-
-    Array result;
-    const auto& obj = map_value.getObject();
-    for (const auto& [key, val] : obj) {
-      Object pair;
-      pair["first"] = GenericValue(key);
-      pair["second"] = val;
-      result.push_back(GenericValue(std::move(pair)));
-    }
-    return GenericValue(std::move(result));
-  }
 
 
 } // namespace ReflectionLibrary
