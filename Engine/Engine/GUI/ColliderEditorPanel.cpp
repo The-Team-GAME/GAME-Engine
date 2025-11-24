@@ -483,6 +483,11 @@ void ColliderEditorPanel()
     static int selected_vertex = -1;
     static int hovered_vertex = -1;
     hovered_vertex = -1;
+    
+    // Reset selection when not actively dragging
+    if (!ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+      selected_vertex = -1;
+    }
 
     for (size_t i = 0; i < col_vertices.size(); ++i) {
       ImVec2 vertex_screen = { center.x + (col_vertices[i].x + display_offset.x) * scale,
@@ -517,20 +522,56 @@ void ColliderEditorPanel()
     }
 
     // Click on sprite (but not on a vertex) to add new vertex
-    if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+    if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && hovered_vertex == -1) {
       ImVec2 mouse_pos = ImGui::GetMousePos();
 
-      // Check if mouse is within the sprite bounds and not on a vertex
+      // Check if mouse is within the sprite bounds
       if (mouse_pos.x >= image_min.x && mouse_pos.x <= image_max.x &&
-        mouse_pos.y >= image_min.y && mouse_pos.y <= image_max.y &&
-        hovered_vertex == -1 && selected_vertex == -1) {
+        mouse_pos.y >= image_min.y && mouse_pos.y <= image_max.y) {
 
         // Convert screen position to local vertex position  
         Math::Vec2D new_vertex;
         new_vertex.x = (mouse_pos.x - center.x) / scale - display_offset.x;
         new_vertex.y = (mouse_pos.y - center.y) / scale - display_offset.y;
 
-        col_vertices.push_back(new_vertex);
+        // Find the closest edge and insert the vertex there
+        if (col_vertices.size() >= 2) {
+          float min_distance = FLT_MAX;
+          size_t insert_after_index = 0;
+
+          for (size_t i = 0; i < col_vertices.size(); ++i) {
+            size_t next = (i + 1) % col_vertices.size();
+            
+            // Project mouse point onto the line segment
+            Math::Vec2D v1 = col_vertices[i];
+            Math::Vec2D v2 = col_vertices[next];
+            Math::Vec2D edge = v2 - v1;
+            Math::Vec2D to_point = new_vertex - v1;
+            
+            float edge_length_sq = edge.x * edge.x + edge.y * edge.y;
+            if (edge_length_sq < 0.0001f) continue; // Skip degenerate edges
+            
+            float t = (to_point.x * edge.x + to_point.y * edge.y) / edge_length_sq;
+            t = std::max(0.0f, std::min(1.0f, t)); // Clamp to segment
+            
+            Math::Vec2D closest_point = v1 + edge * t;
+            Math::Vec2D to_closest = new_vertex - closest_point;
+            float distance = to_closest.x * to_closest.x + to_closest.y * to_closest.y;
+            
+            if (distance < min_distance) {
+              min_distance = distance;
+              insert_after_index = i;
+            }
+          }
+          
+          // Insert vertex after the closest edge
+          col_vertices.insert(col_vertices.begin() + insert_after_index + 1, new_vertex);
+        }
+        else {
+          // If less than 2 vertices, just append
+          col_vertices.push_back(new_vertex);
+        }
+        
         changed = true;
       }
     }
