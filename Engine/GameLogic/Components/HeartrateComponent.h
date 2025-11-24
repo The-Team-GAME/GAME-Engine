@@ -1,5 +1,6 @@
 #pragma once
- 
+
+#include "../../Engine/MonkeyEngine.h"
 
 namespace Components {
   struct Heartrate {
@@ -8,10 +9,19 @@ namespace Components {
     float high = 120.0f;
     float very_high = 140.0f;
     float crash_out = 160.0f;
+    float dead = 180.0f;
 
     float heartrate = low;
     float decay_rate = 1.0f; // bpm per second
-    
+
+    // greener the higher the heartrate
+    Components::Color low_tint = { 1.0f, 1.0f, 1.0f, 1.0f };
+    Components::Color normal_tint = { 0.8f, 1.0f, 0.8f, 1.0f };
+    Components::Color high_tint = { 0.7f, 1.0f, 0.7f, 1.0f };
+    Components::Color very_high_tint = { 0.5f, 1.0f, 0.5f, 1.0f };
+    Components::Color crash_out_tint = { 0.2f, 1.0f, 0.2f, 1.0f };
+    Components::Color dead_tint = { 0.0f, 1.0f, 0.0f, 1.0f };
+
     enum class HeartrateState {
       Low,
       Normal,
@@ -29,14 +39,16 @@ namespace Components {
       heartrate -= amount;
       if (heartrate < low) heartrate = low;
     }
- 
+
     HeartrateState get_state() {
-      if (heartrate < low) return HeartrateState::Low;
-      if (heartrate < normal) return HeartrateState::Normal;
-      if (heartrate < high) return HeartrateState::High;
-      if (heartrate < very_high) return HeartrateState::VeryHigh;
-      if (heartrate < crash_out) return HeartrateState::CrashOut;
-      return HeartrateState::Dead;
+      if (heartrate > dead) return HeartrateState::Dead;
+      if (heartrate > crash_out) return HeartrateState::CrashOut;
+      if (heartrate > very_high) return HeartrateState::VeryHigh;
+      if (heartrate > high) return HeartrateState::High;
+      if (heartrate > normal) return HeartrateState::Normal;
+      if (heartrate > low) return HeartrateState::Low;
     }
   };
 }
+
+REGISTER_COMPONENT(Components::Heartrate, low, normal, high, very_high, crash_out, heartrate, decay_rate)
