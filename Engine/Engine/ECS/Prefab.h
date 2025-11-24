@@ -37,6 +37,7 @@ namespace Engine {
       ComponentSignature signature;
       LayerSignature layers;
       std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> component_storage;
+      std::string prefab_id; // Unique UUID identifier for this prefab
 
     public:
       PrefabImpl() = default;
@@ -203,6 +204,30 @@ namespace Engine {
       When processing all components in a prefab.
       ==================================================================================*/
       void for_each_component(std::function<void(const std::string&, IComponentArray*)> callback);
+
+      /*=================================================================================
+      Function Brief:
+      Gets the prefab ID (UUID).
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When tracking which prefab an instance was created from.
+      ==================================================================================*/
+      const std::string& get_prefab_id() const;
+
+      /*=================================================================================
+      Function Brief:
+      Sets the prefab ID (UUID).
+
+      Parameters:
+      id - The UUID to set.
+
+      Where to call it:
+      When creating a new prefab or loading from file.
+      ==================================================================================*/
+      void set_prefab_id(const std::string& id);
     };
 
     /* ============================ //
@@ -460,7 +485,7 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
-    Creates a new empty prefab handle.
+    Creates a new empty prefab handle with a unique auto-generated UUID.
 
     Parameters:
     None.
@@ -538,32 +563,16 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
-    Creates a new entity from a prefab file and marks it as a prefab instance.
-    Automatically tracks the prefab path for future updates.
-
-    Parameters:
-    prefab_path - Relative path to the prefab file (e.g., "prefabs/enemy.json").
-
-    Returns:
-    Entity handle for the newly created instance.
-
-    Where to call it:
-    When spawning entities from prefabs in the game world.
-    ==================================================================================*/
-    Entity instantiate_prefab_from_path(const std::string& prefab_path);
-
-    /*=================================================================================
-    Function Brief:
     Updates all instances of a prefab with new data from the prefab file.
     Respects per-field overrides - only non-overridden fields are updated.
 
     Parameters:
-    prefab_path - Relative path to the prefab file.
+    prefab_id - Relative path to the prefab file.
 
     Where to call it:
     After modifying a prefab file, to propagate changes to all instances.
     ==================================================================================*/
-    void update_prefab_instances(const std::string& prefab_path);
+    void update_prefab_instances(const std::string& prefab_id);
 
     /*=================================================================================
     Function Brief:

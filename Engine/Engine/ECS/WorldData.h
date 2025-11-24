@@ -36,7 +36,7 @@ namespace Engine {
       // instances and field overrides          //
       // ====================================== */
       struct PrefabInstanceData {
-        std::string prefab_path;
+        std::string prefab_id; // Now stores UUID instead of file path
         // Map: ComponentTypeID -> set of overridden field paths (e.g., "color", "scale.x")
         std::unordered_map<ComponentTypeID, std::unordered_set<std::string>> field_overrides;
       };

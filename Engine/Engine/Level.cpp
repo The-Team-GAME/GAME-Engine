@@ -63,8 +63,8 @@ void Engine::Level::instantiate_into_world()
   std::unordered_set<std::string> updated_prefabs;
   for (const auto& [entity_id, instance_data] : Engine::ECS::Internal::get_containers().prefab_instances) {
     // Only update each prefab once
-    if (updated_prefabs.insert(instance_data.prefab_path).second) {
-      Engine::ECS::update_prefab_instances(instance_data.prefab_path);
+    if (updated_prefabs.insert(instance_data.prefab_id).second) {
+      Engine::ECS::update_prefab_instances(instance_data.prefab_id);
     }
   }
 }

@@ -117,10 +117,10 @@ namespace Engine {
       auto prefab_it = containers.prefab_instances.find(entity_id);
       if (prefab_it != containers.prefab_instances.end()) {
         const auto& instance_data = prefab_it->second;
-        
+
         ReflectionLibrary::GenericValue prefab_ref = ReflectionLibrary::Object();
-        prefab_ref["path"] = instance_data.prefab_path;
-        
+        prefab_ref["id"] = instance_data.prefab_id;
+
         // Serialize field overrides
         ReflectionLibrary::GenericValue overrides_obj = ReflectionLibrary::Object();
         for (const auto& [type_id, field_set] : instance_data.field_overrides) {
@@ -131,7 +131,7 @@ namespace Engine {
           overrides_obj[std::to_string(type_id)] = fields_array;
         }
         prefab_ref["overrides"] = overrides_obj;
-        
+
         result["prefab_reference"] = prefab_ref;
       }
 
@@ -169,18 +169,18 @@ namespace Engine {
       // Deserialize prefab instance data if present
       if (value.has("prefab_reference") && value["prefab_reference"].isObject()) {
         const auto& prefab_ref = value["prefab_reference"];
-        
+
         Internal::PrefabInstanceData instance_data;
-        if (prefab_ref.has("path") && prefab_ref["path"].isString()) {
-          instance_data.prefab_path = prefab_ref["path"].getString();
+        if (prefab_ref.has("id") && prefab_ref["id"].isString()) {
+          instance_data.prefab_id = prefab_ref["id"].getString();
         }
-        
+
         // Deserialize field overrides
         if (prefab_ref.has("overrides") && prefab_ref["overrides"].isObject()) {
           const auto& overrides_obj = prefab_ref["overrides"].getObject();
           for (const auto& [type_id_str, fields_val] : overrides_obj) {
             ComponentTypeID type_id = std::stoull(type_id_str);
-            
+
             if (fields_val.isArray()) {
               for (const auto& field_val : fields_val.getArray()) {
                 if (field_val.isString()) {
@@ -190,7 +190,7 @@ namespace Engine {
             }
           }
         }
-        
+
         containers.prefab_instances[entity_id] = std::move(instance_data);
       }
 

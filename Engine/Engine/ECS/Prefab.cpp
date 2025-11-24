@@ -23,6 +23,7 @@
 #include "../Resources.h"
 #include "../Components/SpatialComponents.h"
 #include "ComponentManager.h"
+#include "../Random.h"
 
 namespace Engine {
   namespace ECS {
@@ -53,6 +54,14 @@ namespace Engine {
 
     LayerSignature& PrefabImpl::get_layers() {
       return layers;
+    }
+
+    const std::string& PrefabImpl::get_prefab_id() const {
+      return prefab_id;
+    }
+
+    void PrefabImpl::set_prefab_id(const std::string& id) {
+      prefab_id = id;
     }
 
     void PrefabImpl::for_each_component(std::function<void(const std::string&, IComponentArray*)> callback) {
@@ -175,6 +184,8 @@ namespace Engine {
       auto prefab = Prefab(std::make_shared<PrefabImpl>());
       // Initialize prefab with default layer
       prefab.get_impl()->get_layers().set(DEFAULT_LAYER);
+      // Generate unique UUID for this prefab
+      prefab.get_impl()->set_prefab_id(Random::generate_uuid());
       return prefab;
     }
 
@@ -217,6 +228,19 @@ namespace Engine {
         // We need to get the component data from prefab and add it to world
         ReflectionLibrary::GenericValue component_data = prefab_array->to_generic_value(0);
         it->second->add_component_from_generic_value(entity_id, component_data);
+      }
+
+      // Track this as a prefab instance if the prefab has an ID
+      const std::string& prefab_id = prefab_impl->get_prefab_id();
+      if (!prefab_id.empty()) {
+        Internal::PrefabInstanceData instance_data;
+        instance_data.prefab_id = prefab_id; // Store UUID in prefab_id field
+
+        // Mark Transform2D as fully overridden (Transform2D should never sync from prefab)
+        auto transform_type_id = ComponentTypeManager::get_type_id<Components::Transform2D>();
+        instance_data.field_overrides[transform_type_id].insert("*"); // "*" means all fields
+
+        containers.prefab_instances[entity_id] = std::move(instance_data);
       }
 
       // Notify systems about the new entity
@@ -345,52 +369,25 @@ namespace Engine {
     // Prefab Instance Management
     // ============================================================================
 
-    Entity instantiate_prefab_from_path(const std::string& prefab_path) {
-      // Load the prefab from resources
-      auto prefab = Engine::Resources::load_prefab(prefab_path);
-      
-      if (!prefab.is_valid()) {
-        return Entity(INVALID_ENTITY);
-      }
-
-      // Instantiate the prefab
-      Entity entity = instantiate_prefab(prefab);
-      
-      if (!entity.is_valid()) {
-        return entity;
-      }
-
-      // Track this as a prefab instance
+    void update_prefab_instances(const std::string& prefab_id) {
       auto& containers = Internal::get_containers();
-      EntityID entity_id = entity.get_id();
-      
-      Internal::PrefabInstanceData instance_data;
-      instance_data.prefab_path = prefab_path;
-      
-      // Mark Transform2D as fully overridden (Transform2D should never sync from prefab)
-      auto transform_type_id = ComponentTypeManager::get_type_id<Components::Transform2D>();
-      instance_data.field_overrides[transform_type_id].insert("*"); // "*" means all fields
-      
-      containers.prefab_instances[entity_id] = std::move(instance_data);
-      
-      return entity;
-    }
 
-    void update_prefab_instances(const std::string& prefab_path) {
-      auto& containers = Internal::get_containers();
-      
       // Load the prefab
-      auto prefab = Engine::Resources::load_prefab(prefab_path);
+      auto prefab = Engine::Resources::load_prefab(prefab_id);
       if (!prefab.is_valid()) {
         return;
       }
 
       auto prefab_impl = prefab.get_impl();
-      
-      // Find all instances of this prefab
+
+      if (prefab_id.empty()) {
+        return; // Can't update instances without UUID
+      }
+
+      // Find all instances of this prefab by UUID
       std::vector<EntityID> instances_to_update;
       for (const auto& [entity_id, instance_data] : containers.prefab_instances) {
-        if (instance_data.prefab_path == prefab_path) {
+        if (instance_data.prefab_id == prefab_id) { // prefab_id field now stores UUID
           instances_to_update.push_back(entity_id);
         }
       }
@@ -421,7 +418,7 @@ namespace Engine {
           }
 
           auto& instance_array = instance_array_it->second;
-          
+
           // Get component data as GenericValues
           ReflectionLibrary::GenericValue prefab_component_data = prefab_array->to_generic_value(0);
           ReflectionLibrary::GenericValue instance_component_data = instance_array->to_generic_value(entity_id);
@@ -433,7 +430,7 @@ namespace Engine {
           }
 
           // Merge prefab data with instance overrides
-          ReflectionLibrary::GenericValue merged_data = 
+          ReflectionLibrary::GenericValue merged_data =
             PrefabMergeUtils::merge_component_with_overrides(
               prefab_component_data,
               instance_component_data,
@@ -478,7 +475,7 @@ namespace Engine {
       auto override_it = it->second.field_overrides.find(type);
       if (override_it != it->second.field_overrides.end()) {
         override_it->second.erase(field_path);
-        
+
         // If no more overrides for this component, remove the entry
         if (override_it->second.empty()) {
           it->second.field_overrides.erase(override_it);
@@ -493,18 +490,6 @@ namespace Engine {
       return containers.prefab_instances.find(entity.get_id()) != containers.prefab_instances.end();
     }
 
-    std::string get_prefab_path(Entity entity) {
-      if (!entity.is_valid()) return "";
-
-      auto& containers = Internal::get_containers();
-      auto it = containers.prefab_instances.find(entity.get_id());
-      
-      if (it != containers.prefab_instances.end()) {
-        return it->second.prefab_path;
-      }
-      
-      return "";
-    }
 
   } // namespace ECS
 } // namespace Engine

@@ -6,7 +6,18 @@
         "components": [
             {
                 "data": {
+                    "value": {
+                        "x": -1.0,
+                        "y": 1.0
+                    }
+                },
+                "type": "Components::Flip"
+            },
+            {
+                "type": "Components::BoxCollider",
+                "data": {
                     "resolve_collisions": false,
+                    "width": 128.0,
                     "aabb": {
                         "pos": {
                             "x": 1271.4925537109375,
@@ -15,19 +26,8 @@
                         "half_width": 64.0,
                         "half_height": 64.0
                     },
-                    "width": 128.0,
                     "height": 128.0,
                     "radius": -1.690596447556647e-15
-                },
-                "type": "Components::BoxCollider"
-            },
-            {
-                "type": "Components::Flip",
-                "data": {
-                    "value": {
-                        "x": -1.0,
-                        "y": 1.0
-                    }
                 }
             },
             {
@@ -539,7 +539,7 @@
                         2.200000047683716,
                         2.299999952316284
                     ],
-                    "startTime": 48.88060760498047,
+                    "startTime": 72.94186401367188,
                     "atlas_indices": [
                         0,
                         1,
@@ -810,7 +810,7 @@
                                             6,
                                             7
                                         ],
-                                        "startTime": 36.73207473754883,
+                                        "startTime": 72.94186401367188,
                                         "totalDuration": 0.8000000715255737,
                                         "is_looping": true
                                     },
@@ -1322,7 +1322,7 @@
                                             2.200000047683716,
                                             2.299999952316284
                                         ],
-                                        "startTime": 36.73207473754883,
+                                        "startTime": 72.94186401367188,
                                         "atlas_indices": [
                                             0,
                                             1,
@@ -1550,7 +1550,7 @@
                                             6,
                                             7
                                         ],
-                                        "startTime": 36.73207473754883,
+                                        "startTime": 72.94186401367188,
                                         "totalDuration": 0.8000000715255737,
                                         "is_looping": true
                                     },
@@ -1936,7 +1936,7 @@
                                             0.3199999928474426,
                                             0.3999999761581421
                                         ],
-                                        "startTime": 36.73207473754883,
+                                        "startTime": 72.94186401367188,
                                         "atlas_indices": [
                                             0,
                                             1,
@@ -2329,7 +2329,7 @@
                                             7,
                                             8
                                         ],
-                                        "startTime": 36.73207473754883,
+                                        "startTime": 72.94186401367188,
                                         "totalDuration": 0.23999999463558197,
                                         "is_looping": false
                                     },
@@ -2735,7 +2735,7 @@
                                             17,
                                             18
                                         ],
-                                        "startTime": 36.73207473754883,
+                                        "startTime": 72.94186401367188,
                                         "totalDuration": 0.5999999642372131,
                                         "is_looping": false
                                     },
