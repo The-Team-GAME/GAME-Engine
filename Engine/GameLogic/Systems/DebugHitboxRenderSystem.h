@@ -53,6 +53,26 @@ namespace Engine {
             0.0f,
             color
           );
+        } else if (collider->type == Components::ColliderType::POLYGON) {
+          // Draw polygon collider
+          if (!collider->polygon.vertices.empty()) {
+            std::vector<Math::Vec2D> world_vertices;
+            for (const auto& v : collider->polygon.vertices) {
+              // Apply flip to each vertex
+              Math::Vec2D flipped_v = v;
+              if (auto* flip = entity.get_component<Components::Flip>()) {
+                flipped_v.x *= flip->value.x;
+                flipped_v.y *= flip->value.y;
+              }
+              world_vertices.push_back(transform->position + flipped_offset + flipped_v);
+            }
+            
+            // Draw edges
+            for (size_t i = 0; i < world_vertices.size(); ++i) {
+              size_t next = (i + 1) % world_vertices.size();
+              Engine::Graphics::draw_line(world_vertices[i], world_vertices[next], color);
+            }
+          }
         }
       }
     };
