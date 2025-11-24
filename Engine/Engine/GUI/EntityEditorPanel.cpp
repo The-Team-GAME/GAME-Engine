@@ -533,10 +533,13 @@ void EntityEditorPanel()
 
           if (Engine::FileIO::serialize_prefab_to_json_file(full_path, prefab))
           {
-            // Add prefab to resource cache so it can be tracked
-            if (prefab.is_valid()) {
-              Engine::Resources::prefab_cache[full_path] = prefab.get_impl();
-            }
+            // Add prefab to resource cache so it can be tracked and appears in PrefabEditorPanel
+            Engine::Resources::cache_prefab(relative_path, prefab, true, true);
+
+            // Mark as dirty so it gets saved
+            Engine::ProjectSaveManager::set_dirty(
+              Engine::ProjectSaveManager::DirtyStates::Prefab(relative_path)
+            );
 
             // Clear the input and close popup
             prefab_filename[0] = '\0';
