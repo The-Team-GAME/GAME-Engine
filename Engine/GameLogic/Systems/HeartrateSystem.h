@@ -12,7 +12,7 @@ namespace Engine {
       Engine::Graphics::Font font;
     public:
       HeartrateSystem() {
-        require_components<Components::Heartrate, Components::Player, Components::Color>();
+        require_components<Components::Heartrate, Components::Player, Components::Color, Components::Trail>();
 
         font = Engine::Resources::load_font("fonts/Roboto-Regular.ttf", 48);
       }
@@ -21,6 +21,7 @@ namespace Engine {
         auto* heartrate = entity.get_component<Components::Heartrate>();
         auto* player = entity.get_component<Components::Player>();
         auto* color = entity.get_component<Components::Color>();
+        auto* trail = entity.get_component<Components::Trail>();
 
         heartrate->decrease(heartrate->decay_rate * Engine::Time::get_fixed_dt());
 
@@ -31,22 +32,22 @@ namespace Engine {
 
         switch (state) {
         case Components::Heartrate::HeartrateState::Low:
-          tint_color = heartrate->low_tint;
+          tint_color = heartrate->low_world_tint;
           break;
         case Components::Heartrate::HeartrateState::Normal:
-          tint_color = heartrate->normal_tint;
+          tint_color = heartrate->normal_world_tint;
           break;
         case Components::Heartrate::HeartrateState::High:
-          tint_color = heartrate->high_tint;
+          tint_color = heartrate->high_world_tint;
           break;
         case Components::Heartrate::HeartrateState::VeryHigh:
-          tint_color = heartrate->very_high_tint;
+          tint_color = heartrate->very_high_world_tint;
           break;
         case Components::Heartrate::HeartrateState::CrashOut:
-          tint_color = heartrate->crash_out_tint;
+          tint_color = heartrate->crash_out_world_tint;
           break;
         case Components::Heartrate::HeartrateState::Dead:
-          tint_color = heartrate->dead_tint;
+          tint_color = heartrate->dead_world_tint;
           break;
         }
 
@@ -64,19 +65,44 @@ namespace Engine {
           if (tile_color) *tile_color = tint_color;
         }
 
-        // Apply rainbow tint to player if in CrashOut state
-        auto* player_color = entity.get_component<Components::Color>();
-
+        // Apply rainbow tint to player if in CrashOut state 
         if (state == Components::Heartrate::HeartrateState::CrashOut || state == Components::Heartrate::HeartrateState::Dead) {
           float time = Engine::Time::get_time();
           float r = std::sin(time * 5.0f) * 0.5f + 0.5f;
           float g = std::sin(time * 5.0f + 2.0f) * 0.5f + 0.5f;
           float b = std::sin(time * 5.0f + 4.0f) * 0.5f + 0.5f;
-          player_color->set_rgba(r, g, b, 1.0f);
+          color->set_rgba(r, g, b, 1.0f);
         }
         else {
-          player_color->set_rgba(1.0f, 1.0f, 1.0f, 1.0f);
+          color->set_rgba(1.0f, 1.0f, 1.0f, 1.0f);
         }
+
+        // Adjust trail lifetime based on heartrate
+        if (trail) {
+          float lifetime = 0.0f;
+          switch (state) {
+          case Components::Heartrate::HeartrateState::Low:
+            lifetime = heartrate->low_trail_lifetime;
+            break;
+          case Components::Heartrate::HeartrateState::Normal:
+            lifetime = heartrate->normal_trail_lifetime;
+            break;
+          case Components::Heartrate::HeartrateState::High:
+            lifetime = heartrate->high_trail_lifetime;
+            break;
+          case Components::Heartrate::HeartrateState::VeryHigh:
+            lifetime = heartrate->very_high_trail_lifetime;
+            break;
+          case Components::Heartrate::HeartrateState::CrashOut:
+            lifetime = heartrate->crash_out_trail_lifetime;
+            break;
+          case Components::Heartrate::HeartrateState::Dead:
+            lifetime = heartrate->dead_trail_lifetime;
+            break;
+          }
+          trail->lifetime = lifetime;
+        }
+
       }
 
 
