@@ -300,12 +300,15 @@ namespace Components
     }
 
     // Default constructor for reflection
-    BoxCollider() : width(0.0f), height(0.0f), radius(0.0f), resolve_collisions(false)
+    BoxCollider() : width(0.0f), height(0.0f), radius(0.0f), resolve_collisions(false), offset(0.0f, 0.0f)
     {
       /* empty by design */
     }
+
+    // Offset from the entity's position
+    Vec2D offset = { 0.0f, 0.0f };
   };
 }
 
 REFLECT_FIELDS(AABB, pos, half_width, half_height)
-REGISTER_COMPONENT(Components::BoxCollider, resolve_collisions, width, height, radius, aabb)
+REGISTER_COMPONENT(Components::BoxCollider, resolve_collisions, width, height, radius, aabb, offset)

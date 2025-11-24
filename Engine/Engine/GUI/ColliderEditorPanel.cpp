@@ -14,6 +14,7 @@
 #include <imgui.h>
 #include "../ECS/ECS.h"
 #include "../Components/CollisionComponents.h"
+#include "../Components/StateMachineComponents.h"
 #include "../Components/GraphicsComponents.h"
 #include "../Components/SpatialComponents.h"
 #include "../EventManager/EventManager.h"
@@ -83,7 +84,7 @@ void ColliderEditorPanel()
 
   auto* collider = entity.get_component<Components::BoxCollider>();
   auto* texture = entity.get_component<Components::Texture>();
-  auto* transform = entity.get_component<Components::Transform2D>();
+  auto* state_machine = entity.get_component<Components::StateMachine>();
 
   if (!collider) {
     ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.0f, 1.0f), "Selected entity has no BoxCollider");
@@ -94,13 +95,100 @@ void ColliderEditorPanel()
     return;
   }
 
-  if (!texture || !texture->texture_handle) {
-    ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.0f, 1.0f), "Selected entity has no Texture (cannot visualize)");
-    // Fallback: just show numeric controls? Or maybe draw a placeholder box?
-    // For now, let's just show the numeric controls which are already in EntityEditor, 
-    // but we can duplicate them here for convenience.
-    ImGui::DragFloat("Width", &collider->width);
-    ImGui::DragFloat("Height", &collider->height);
+  // --- State Selection Logic ---
+  std::string current_editing_state = "";
+  static std::string selected_state_name = ""; // Persist selection
+  bool editing_specific_state = false;
+
+  if (state_machine) {
+    ImGui::Text("State Machine Detected");
+    
+    // Dropdown to select state
+    if (ImGui::BeginCombo("Edit State", selected_state_name.empty() ? "Current (Live)" : selected_state_name.c_str())) {
+      
+      if (ImGui::Selectable("Current (Live)", selected_state_name.empty())) {
+        selected_state_name = "";
+      }
+
+      for (auto& [name, state] : state_machine->states) {
+        bool is_selected = (selected_state_name == name);
+        if (ImGui::Selectable(name.c_str(), is_selected)) {
+          selected_state_name = name;
+        }
+        if (is_selected) {
+          ImGui::SetItemDefaultFocus();
+        }
+      }
+      ImGui::EndCombo();
+    }
+
+    if (!selected_state_name.empty()) {
+      if (state_machine->states.find(selected_state_name) != state_machine->states.end()) {
+        editing_specific_state = true;
+        current_editing_state = selected_state_name;
+      } else {
+        // State might have been deleted
+        selected_state_name = "";
+      }
+    }
+  }
+
+  // --- Data Retrieval ---
+  Engine::Graphics::Texture texture_handle = nullptr;
+  float col_width = collider->width;
+  float col_height = collider->height;
+  Math::Vec2D col_offset = collider->offset;
+
+  if (editing_specific_state) {
+    auto& state = state_machine->states[current_editing_state];
+    
+    // Get texture from state animation if available
+    if (state.animation.has_value()) {
+      if (state.animation->texture.texture_handle) {
+        texture_handle = state.animation->texture.texture_handle;
+      }
+      
+      // Get collider data from state if available
+      if (state.animation->collider_data.has_value()) {
+        col_width = state.animation->collider_data->width;
+        col_height = state.animation->collider_data->height;
+        col_offset = state.animation->collider_data->offset;
+      } else {
+        // If no collider data set for this state, show current but indicate it's not overridden
+        ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.0f, 1.0f), "No collider override for this state.");
+        if (ImGui::Button("Create Override")) {
+          state.animation->collider_data = Components::ColliderData{ collider->width, collider->height, collider->offset };
+        }
+      }
+    } else {
+      ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "State has no animation data.");
+    }
+  } else {
+    // Live editing
+    if (texture && texture->texture_handle) {
+      texture_handle = texture->texture_handle;
+    }
+  }
+
+  if (!texture_handle) {
+    ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.0f, 1.0f), "No Texture to visualize");
+    // Show numeric controls at least
+    if (editing_specific_state) {
+        auto& state = state_machine->states[current_editing_state];
+        if (state.animation.has_value() && state.animation->collider_data.has_value()) {
+            ImGui::DragFloat("Width", &state.animation->collider_data->width);
+            ImGui::DragFloat("Height", &state.animation->collider_data->height);
+            ImGui::DragFloat2("Offset", &state.animation->collider_data->offset.x);
+            
+            if (ImGui::Button("Remove Override")) {
+                state.animation->collider_data.reset();
+            }
+        }
+    } else {
+        ImGui::DragFloat("Width", &collider->width);
+        ImGui::DragFloat("Height", &collider->height);
+        ImGui::DragFloat2("Offset", &collider->offset.x);
+    }
     ImGui::End();
     return;
   }
@@ -112,8 +200,8 @@ void ColliderEditorPanel()
   if (avail_size.x < 100 || avail_size.y < 100) avail_size = { 400, 400 };
 
   // 2. Get sprite dimensions
-  float sprite_width = static_cast<float>(texture->texture_handle->width);
-  float sprite_height = static_cast<float>(texture->texture_handle->height);
+  float sprite_width = static_cast<float>(texture_handle->width);
+  float sprite_height = static_cast<float>(texture_handle->height);
   
   // 3. Calculate scale to fit sprite in window while maintaining aspect ratio
   float scale_x = avail_size.x / sprite_width;
@@ -133,39 +221,24 @@ void ColliderEditorPanel()
 
   // Draw the sprite
   ImGui::SetCursorScreenPos(image_min);
-  ImGui::Image((ImTextureID)(intptr_t)texture->texture_handle->id, { draw_width, draw_height });
+  ImGui::Image((ImTextureID)(intptr_t)texture_handle->id, { draw_width, draw_height });
 
   // 5. Draw Collider Rect
-  // Collider dimensions are in world units. 
-  // We need to map World Units -> Sprite Pixels -> Screen Pixels.
-  // Assumption: The sprite's texture size corresponds to its world size when scale is 1.0?
-  // Usually, 1 pixel = 1 world unit, or there's a PPU (Pixels Per Unit).
-  // Let's assume 1-to-1 for now, or check Transform scale.
-  // Actually, the BoxCollider width/height are in World Units.
-  // The Texture width/height are in Pixels.
-  // If the entity is rendered 1:1, then we can map directly.
-  // However, the sprite might be scaled by Transform2D.scale.
-  // BUT, we are viewing the "Prefab" / "Local" state here effectively, ignoring World Transform for the view?
-  // Or are we trying to edit the collider relative to the sprite?
-  // Yes, usually collider is defined relative to the entity center.
-  
-  // Let's assume the sprite image displayed represents the "unscaled" entity visual.
-  // We need to know how many "World Units" the sprite image covers.
-  // If we don't have PPU, we might have to guess or assume the texture size IS the world size (common in 2D engines).
-  // Let's assume Texture Width (px) == World Width (units) for the base sprite.
-  
   ImDrawList* draw_list = ImGui::GetWindowDrawList();
   
-  // Center of the drawn image
+  // Center of the drawn image (Sprite Center)
   ImVec2 center = { image_min.x + draw_width * 0.5f, image_min.y + draw_height * 0.5f };
 
+  // Collider Center (Sprite Center + Offset)
+  ImVec2 col_center = { center.x + col_offset.x * scale, center.y + col_offset.y * scale };
+
   // Collider half-extents scaled to screen
-  float col_half_w = (collider->width / 2.0f) * scale;
-  float col_half_h = (collider->height / 2.0f) * scale;
+  float col_half_w = (col_width / 2.0f) * scale;
+  float col_half_h = (col_height / 2.0f) * scale;
 
   // Collider screen coords
-  ImVec2 col_min = { center.x - col_half_w, center.y - col_half_h };
-  ImVec2 col_max = { center.x + col_half_w, center.y + col_half_h };
+  ImVec2 col_min = { col_center.x - col_half_w, col_center.y - col_half_h };
+  ImVec2 col_max = { col_center.x + col_half_w, col_center.y + col_half_h };
 
   // Draw Rect
   draw_list->AddRect(col_min, col_max, IM_COL32(0, 255, 0, 255), 0.0f, 0, 2.0f);
@@ -174,44 +247,102 @@ void ColliderEditorPanel()
   float handle_size = 8.0f;
   ImU32 handle_color = IM_COL32(0, 255, 0, 255);
   ImVec2 delta;
+  
+  bool changed = false;
 
   // Right Edge
-  if (draw_handle(draw_list, { col_max.x, center.y }, handle_size, handle_color, 0, delta)) {
-    collider->width += (delta.x / scale) * 2.0f; // *2 because we are editing width from center
-    if (collider->width < 0) collider->width = 0;
+  if (draw_handle(draw_list, { col_max.x, col_center.y }, handle_size, handle_color, 0, delta)) {
+    col_width += (delta.x / scale) * 2.0f;
+    if (col_width < 0) col_width = 0;
+    changed = true;
   }
   
   // Left Edge
-  if (draw_handle(draw_list, { col_min.x, center.y }, handle_size, handle_color, 1, delta)) {
-    collider->width -= (delta.x / scale) * 2.0f;
-    if (collider->width < 0) collider->width = 0;
+  if (draw_handle(draw_list, { col_min.x, col_center.y }, handle_size, handle_color, 1, delta)) {
+    col_width -= (delta.x / scale) * 2.0f;
+    if (col_width < 0) col_width = 0;
+    changed = true;
   }
 
   // Top Edge
-  if (draw_handle(draw_list, { center.x, col_min.y }, handle_size, handle_color, 2, delta)) {
-    collider->height -= (delta.y / scale) * 2.0f;
-    if (collider->height < 0) collider->height = 0;
+  if (draw_handle(draw_list, { col_center.x, col_min.y }, handle_size, handle_color, 2, delta)) {
+    col_height -= (delta.y / scale) * 2.0f;
+    if (col_height < 0) col_height = 0;
+    changed = true;
   }
 
   // Bottom Edge
-  if (draw_handle(draw_list, { center.x, col_max.y }, handle_size, handle_color, 3, delta)) {
-    collider->height += (delta.y / scale) * 2.0f;
-    if (collider->height < 0) collider->height = 0;
+  if (draw_handle(draw_list, { col_center.x, col_max.y }, handle_size, handle_color, 3, delta)) {
+    col_height += (delta.y / scale) * 2.0f;
+    if (col_height < 0) col_height = 0;
+    changed = true;
   }
 
-  // Sync AABB
-  collider->aabb.half_width = collider->width / 2.0f;
-  collider->aabb.half_height = collider->height / 2.0f;
+  // Center Handle (Offset)
+  if (draw_handle(draw_list, col_center, handle_size, IM_COL32(0, 0, 255, 255), 4, delta)) {
+      col_offset.x += (delta.x / scale);
+      col_offset.y += (delta.y / scale);
+      changed = true;
+  }
+
+  // Apply changes
+  if (changed) {
+    if (editing_specific_state) {
+      auto& state = state_machine->states[current_editing_state];
+      if (state.animation.has_value()) {
+        // Ensure collider data exists
+        if (!state.animation->collider_data.has_value()) {
+             state.animation->collider_data = Components::ColliderData{ col_width, col_height, col_offset };
+        }
+        state.animation->collider_data->width = col_width;
+        state.animation->collider_data->height = col_height;
+        state.animation->collider_data->offset = col_offset;
+      }
+    } else {
+      // Live update
+      collider->width = col_width;
+      collider->height = col_height;
+      collider->offset = col_offset;
+      collider->aabb.half_width = col_width / 2.0f;
+      collider->aabb.half_height = col_height / 2.0f;
+    }
+  }
 
   // Display values
   ImGui::SetCursorScreenPos({ image_min.x, image_max.y + 10 });
-  ImGui::Text("Collider Size: %.2f x %.2f", collider->width, collider->height);
+  ImGui::Text("Collider Size: %.2f x %.2f", col_width, col_height);
+  ImGui::Text("Collider Offset: %.2f, %.2f", col_offset.x, col_offset.y);
+  
   ImGui::SameLine();
   if (ImGui::Button("Reset to Sprite Size")) {
-    collider->width = sprite_width;
-    collider->height = sprite_height;
-    collider->aabb.half_width = sprite_width / 2.0f;
-    collider->aabb.half_height = sprite_height / 2.0f;
+    col_width = sprite_width;
+    col_height = sprite_height;
+    col_offset = { 0.0f, 0.0f };
+    changed = true;
+    
+    // Apply reset immediately
+    if (editing_specific_state) {
+        auto& state = state_machine->states[current_editing_state];
+        if (state.animation.has_value()) {
+             state.animation->collider_data = Components::ColliderData{ col_width, col_height, col_offset };
+        }
+    } else {
+        collider->width = col_width;
+        collider->height = col_height;
+        collider->offset = col_offset;
+        collider->aabb.half_width = col_width / 2.0f;
+        collider->aabb.half_height = col_height / 2.0f;
+    }
+  }
+
+  if (editing_specific_state) {
+      auto& state = state_machine->states[current_editing_state];
+      if (state.animation.has_value() && state.animation->collider_data.has_value()) {
+          ImGui::SameLine();
+          if (ImGui::Button("Remove Override")) {
+              state.animation->collider_data.reset();
+          }
+      }
   }
 
   ImGui::End();

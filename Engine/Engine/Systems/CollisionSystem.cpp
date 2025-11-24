@@ -143,12 +143,12 @@ void col2D::update_entity(Engine::ECS::Entity& entity)
   Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
   if (box->type == Components::ColliderType::AABB)
   {
-    box->aabb.pos = xform->position;
+    box->aabb.pos = xform->position + box->offset;
   }
   else if (box->type == Components::ColliderType::OBB ||
     box->type == Components::ColliderType::POLYGON)
   {
-    box->polygon.position = xform->position;
+    box->polygon.position = xform->position + box->offset;
     box->polygon.rotation = xform->rotation;
   }
 }
