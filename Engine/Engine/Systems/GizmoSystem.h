@@ -23,6 +23,7 @@
 #include "../Graphics/Renderer.h"
 #include "../EventManager/EventManager.h"
 #include "../Events/EngineEvents.h"
+#include "../GUI/ViewportPanel.h"
 #include <imgui.h>
 
 namespace Engine
@@ -613,13 +614,19 @@ namespace Engine
         {
           Components::Gizmo* gizmo_nc = const_cast<Components::Gizmo*>(gizmo);
 
+          auto bounds = ViewportPanel::get_viewport_bounds();
+          ImGui::SetNextWindowPos(ImVec2(bounds.x + 10.0f, bounds.y + 10.0f));
 
           ImGui::SetNextWindowBgAlpha(0.9f);
-          ImGui::SetNextWindowSize(ImVec2(160, 200), ImGuiCond_Once);
 
           if (ImGui::Begin("Gizmo Tools", nullptr,
             ImGuiWindowFlags_NoSavedSettings |
-            ImGuiWindowFlags_AlwaysAutoResize))
+            ImGuiWindowFlags_AlwaysAutoResize |
+            ImGuiWindowFlags_NoDocking |
+            ImGuiWindowFlags_NoTitleBar |
+            ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoCollapse))
           {
             int mode = static_cast<int>(gizmo_nc->mode);
 
