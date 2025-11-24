@@ -135,6 +135,9 @@ void ColliderEditorPanel()
 
   // --- Data Retrieval ---
   Engine::Graphics::Texture texture_handle = nullptr;
+  const Components::TextureAtlas* texture_atlas = nullptr;
+  const Components::Animation* animation = nullptr;
+  
   float col_width = collider->width;
   float col_height = collider->height;
   Math::Vec2D col_offset = collider->offset;
@@ -146,6 +149,8 @@ void ColliderEditorPanel()
     if (state.animation.has_value()) {
       if (state.animation->texture.texture_handle) {
         texture_handle = state.animation->texture.texture_handle;
+        texture_atlas = &state.animation->texture_atlas;
+        animation = &state.animation->animation;
       }
       
       // Get collider data from state if available
@@ -167,6 +172,8 @@ void ColliderEditorPanel()
     // Live editing
     if (texture && texture->texture_handle) {
       texture_handle = texture->texture_handle;
+      texture_atlas = entity.get_component<Components::TextureAtlas>();
+      animation = entity.get_component<Components::Animation>();
     }
   }
 
@@ -195,13 +202,49 @@ void ColliderEditorPanel()
 
   // --- Visualization Logic ---
 
+  // Calculate UVs
+  ImVec2 uv0 = { 0, 0 };
+  ImVec2 uv1 = { 1, 1 };
+  float sprite_width = static_cast<float>(texture_handle->width);
+  float sprite_height = static_cast<float>(texture_handle->height);
+
+  if (texture_atlas && !texture_atlas->subTextures.empty()) {
+      int atlas_index = 0;
+      if (animation && !animation->frames.empty()) {
+          if (editing_specific_state) {
+              // For static editing, just show the first frame of the animation
+              atlas_index = animation->frames[0].atlas_index;
+          } else {
+              // For live editing, show the current frame
+              atlas_index = animation->get_current_atlas_index();
+          }
+      } else {
+          // No animation, use drawIndex if valid, else 0
+          if (texture_atlas->drawIndex >= 0) {
+              atlas_index = texture_atlas->drawIndex;
+          }
+      }
+
+      if (atlas_index >= 0 && atlas_index < static_cast<int>(texture_atlas->subTextures.size())) {
+          const auto& subTex = texture_atlas->subTextures[atlas_index];
+          // tex_coords: 0=BL, 1=BR, 2=TR, 3=TL
+          // ImGui wants TL (uv0) and BR (uv1)
+          uv0 = { subTex.tex_coords[3].x, subTex.tex_coords[3].y };
+          uv1 = { subTex.tex_coords[1].x, subTex.tex_coords[1].y };
+
+          // Update sprite dimensions based on UVs
+          float u_range = std::abs(uv1.x - uv0.x);
+          float v_range = std::abs(uv1.y - uv0.y);
+          sprite_width *= u_range;
+          sprite_height *= v_range;
+      }
+  }
+
   // 1. Calculate available space
   ImVec2 avail_size = ImGui::GetContentRegionAvail();
   if (avail_size.x < 100 || avail_size.y < 100) avail_size = { 400, 400 };
 
-  // 2. Get sprite dimensions
-  float sprite_width = static_cast<float>(texture_handle->width);
-  float sprite_height = static_cast<float>(texture_handle->height);
+  // 2. (Sprite dimensions already calculated above)
   
   // 3. Calculate scale to fit sprite in window while maintaining aspect ratio
   float scale_x = avail_size.x / sprite_width;
@@ -221,7 +264,7 @@ void ColliderEditorPanel()
 
   // Draw the sprite
   ImGui::SetCursorScreenPos(image_min);
-  ImGui::Image((ImTextureID)(intptr_t)texture_handle->id, { draw_width, draw_height });
+  ImGui::Image((ImTextureID)(intptr_t)texture_handle->id, { draw_width, draw_height }, uv0, uv1);
 
   // 5. Draw Collider Rect
   ImDrawList* draw_list = ImGui::GetWindowDrawList();
