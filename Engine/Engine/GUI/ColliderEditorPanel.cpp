@@ -318,6 +318,24 @@ void ColliderEditorPanel()
   
   bool changed = false;
 
+  // --- Body Drag (Offset) ---
+  // Submit this BEFORE handles so handles take priority if they overlap
+  ImGui::SetCursorScreenPos(col_min);
+  ImGui::PushID("##collider_body_drag");
+  ImGui::InvisibleButton("##body", { col_max.x - col_min.x, col_max.y - col_min.y });
+  ImGui::PopID();
+
+  if (ImGui::IsItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
+      delta = ImGui::GetIO().MouseDelta;
+      col_offset.x += (delta.x / scale);
+      col_offset.y += (delta.y / scale);
+      changed = true;
+  }
+  
+  if (ImGui::IsItemHovered()) {
+      ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
+  }
+
   // Right Edge
   if (draw_handle(draw_list, { col_max.x, col_center.y }, handle_size, handle_color, 0, delta)) {
     col_width += (delta.x / scale) * 2.0f;
@@ -344,13 +362,6 @@ void ColliderEditorPanel()
     col_height += (delta.y / scale) * 2.0f;
     if (col_height < 0) col_height = 0;
     changed = true;
-  }
-
-  // Center Handle (Offset)
-  if (draw_handle(draw_list, col_center, handle_size, IM_COL32(0, 0, 255, 255), 4, delta)) {
-      col_offset.x += (delta.x / scale);
-      col_offset.y += (delta.y / scale);
-      changed = true;
   }
 
   // Apply changes
