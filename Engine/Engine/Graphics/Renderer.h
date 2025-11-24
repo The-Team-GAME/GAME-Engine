@@ -128,13 +128,13 @@ namespace Engine {
     // Draw a circle outline
     void draw_circle_outline(const Math::Vec2D& position, f32 radius, f32 thickness, const Math::Vec4D& color, int segments = 32);
 
-    void draw_texture(Engine::Graphics::Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color);
+    void draw_texture(Engine::Graphics::Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, const Math::Vec2D& flip = Math::Vec2D(1.0f, 1.0f));
 
     // Draw a subtexture (part of a texture atlas) using custom texture coordinates
-    void draw_subtexture(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color);
+    void draw_subtexture(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, const Math::Vec2D& flip = Math::Vec2D(1.0f, 1.0f));
 
     // Draw a tiled subtexture that repeats instead of scaling
-    void draw_subtexture_tiled(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& position, const Math::Vec2D& size, const Math::Vec2D& tile_size, f32 rotation, const Math::Vec4D& color);
+    void draw_subtexture_tiled(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& position, const Math::Vec2D& size, const Math::Vec2D& tile_size, f32 rotation, const Math::Vec4D& color, const Math::Vec2D& flip = Math::Vec2D(1.0f, 1.0f));
 
     // Draw tilemap from integer map with automatic rectangle merging for optimization
     // tileMap: Sparse hashmap of tile indices (key = encoded x,y coordinates)
@@ -150,10 +150,10 @@ namespace Engine {
       const Math::Vec4D& color);
 
     // Draw texture with distortion effect
-    void draw_texture_distortion(Engine::Graphics::Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, f32 intensity, f32 speed, f32 mesh_intensity = 0.0f);
+    void draw_texture_distortion(Engine::Graphics::Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, f32 intensity, f32 speed, f32 mesh_intensity = 0.0f, const Math::Vec2D& flip = Math::Vec2D(1.0f, 1.0f));
 
     // Draw subtexture with distortion effect
-    void draw_subtexture_distortion(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, f32 intensity, f32 speed, f32 mesh_intensity = 0.0f);
+    void draw_subtexture_distortion(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, f32 intensity, f32 speed, f32 mesh_intensity = 0.0f, const Math::Vec2D& flip = Math::Vec2D(1.0f, 1.0f));
 
     // Draw text using a font
     void draw_text(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color);
@@ -194,10 +194,10 @@ namespace Engine {
     // Draw a UI circle outline
     void draw_circle_outline_ui(const Math::Vec2D& position, f32 radius, f32 thickness, const Math::Vec4D& color, int segments = 32);
 
-    void draw_texture_ui(Engine::Graphics::Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color);
+    void draw_texture_ui(Engine::Graphics::Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, const Math::Vec2D& flip = Math::Vec2D(1.0f, 1.0f));
 
     // Draw a UI subtexture (part of a texture atlas) using custom texture coordinates
-    void draw_subtexture_ui(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color);
+    void draw_subtexture_ui(Engine::Graphics::Texture texture, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, const Math::Vec2D& flip = Math::Vec2D(1.0f, 1.0f));
 
     // Draw UI text using a font
     void draw_text_ui(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color);

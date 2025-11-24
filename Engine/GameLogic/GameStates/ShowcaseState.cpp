@@ -62,7 +62,7 @@ void ShowcaseState::init() {
   Components::AnimationState player_anim_state;
 
   // Add idle state (24 frames) - looping, no auto-transition
-  player_anim_state.add_state(
+  player_anim_state.add_animation_state(
     IDLE_STATE,
     Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_idle_spritesheet.png")),
     Components::TextureAtlas(64, 64, 1, 24, 24),
@@ -73,7 +73,7 @@ void ShowcaseState::init() {
   );
 
   // Add run state (8 frames) - looping, no auto-transition
-  player_anim_state.add_state(
+  player_anim_state.add_animation_state(
     RUN_STATE,
     Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_run_spritesheet.png")),
     Components::TextureAtlas(64, 64, 1, 8, 8),
@@ -84,7 +84,7 @@ void ShowcaseState::init() {
   );
 
   // Add jump state (8 frames) - looping, uses run animation
-  player_anim_state.add_state(
+  player_anim_state.add_animation_state(
     JUMP_STATE,
     Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_run_spritesheet.png")),
     Components::TextureAtlas(64, 64, 1, 8, 8),
@@ -95,7 +95,7 @@ void ShowcaseState::init() {
   );
 
   // Add punch state (6 frames) - one-shot, auto-transitions to idle
-  player_anim_state.add_state(
+  player_anim_state.add_animation_state(
     PUNCH_STATE,
     Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_threehit_spritesheet.png")),
     Components::TextureAtlas(96, 64, 1, 19, 6),
@@ -106,7 +106,7 @@ void ShowcaseState::init() {
   );
 
   // Set initial state to idle
-  player_anim_state.set_entity_state(IDLE_STATE);
+  player_anim_state.set_animation_state(IDLE_STATE);
 
   // Create player with AnimationState
   player = Engine::ECS::create_entity()
@@ -212,7 +212,7 @@ void ShowcaseState::init() {
       // Switch to punch animation state
       auto* anim_state = player.get_component<Components::AnimationState>();
       if (anim_state) {
-        anim_state->set_entity_state(PUNCH_STATE);
+        anim_state->set_animation_state(PUNCH_STATE);
         std::cout << "Playing punch animation\n";
       }
     }
@@ -330,7 +330,7 @@ void ShowcaseState::update() {
     if (Engine::Input::is_pressed(Engine::KeyCode::Space) && rigid->on_ground) {
       Engine::Systems::Physics2DSystem::jump(*rigid);
       Engine::Audio::play_sound(jump_sound);
-      anim_state->set_entity_state(JUMP_STATE);
+      anim_state->set_animation_state(JUMP_STATE);
 
       // Stop walking sound when jumping
       if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
@@ -343,7 +343,7 @@ void ShowcaseState::update() {
     if (!rigid->on_ground) {
       // In the air - use jump animation
       if (anim_state->current_state != JUMP_STATE) {
-        anim_state->set_entity_state(JUMP_STATE);
+        anim_state->set_animation_state(JUMP_STATE);
 
         // Stop walking sound when in air
         if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
@@ -355,14 +355,14 @@ void ShowcaseState::update() {
     else if (moving_horizontally) {
       // On ground and moving - use run animation
       if (anim_state->current_state != RUN_STATE) {
-        anim_state->set_entity_state(RUN_STATE);
+        anim_state->set_animation_state(RUN_STATE);
         walk_sound_channel = Engine::Audio::play_sound(walk_sound, 1.0f, true);
       }
     }
     else {
       // On ground and not moving - use idle animation
       if (anim_state->current_state != IDLE_STATE) {
-        anim_state->set_entity_state(IDLE_STATE);
+        anim_state->set_animation_state(IDLE_STATE);
 
         if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
           Engine::Audio::stop_channel(walk_sound_channel);
