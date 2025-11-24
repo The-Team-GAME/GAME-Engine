@@ -17,6 +17,8 @@
 #include "../ECS/Macros.h"
 #include <limits>
 
+using Math::Vec2D;
+
 struct CollisionResult {
   bool collided = false;
   Vec2D mtv;  // Minimum Translation Vector aka penetration vector
