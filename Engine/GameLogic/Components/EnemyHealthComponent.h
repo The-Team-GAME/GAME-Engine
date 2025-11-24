@@ -36,4 +36,4 @@ namespace Components {
 
 }
 
-//REGISTER_COMPONENT(Components::EnemyHealth, current_hp, max_hp)
+REGISTER_COMPONENT(Components::EnemyHealth, current_hp, max_hp)

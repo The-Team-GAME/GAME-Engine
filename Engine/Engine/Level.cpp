@@ -4,6 +4,7 @@
 #include "TilemapManager.h"
 #include "FileIO/SettingsManager.h"
 #include "FileIO/Settings.h"
+#include <unordered_set>
 
 namespace
 {
@@ -53,6 +54,17 @@ void Engine::Level::instantiate_into_world()
           TilemapManager::rebuild_tilemap_for_layer(layer_name);
         }
       }
+    }
+  }
+
+  // Update all prefab instances to sync with latest prefab data
+  // This ensures that if a prefab was modified after the level was saved,
+  // instances will receive those updates while preserving overrides
+  std::unordered_set<std::string> updated_prefabs;
+  for (const auto& [entity_id, instance_data] : Engine::ECS::Internal::get_containers().prefab_instances) {
+    // Only update each prefab once
+    if (updated_prefabs.insert(instance_data.prefab_id).second) {
+      Engine::ECS::update_prefab_instances(instance_data.prefab_id);
     }
   }
 }

@@ -108,10 +108,12 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Engine\ECS\PrefabMergeUtils.cpp" />
     <ClCompile Include="Engine\GUI\LayerManagerPanel.cpp" />
     <ClCompile Include="Engine\GUI\ResourceExplorerPanel.cpp" />
     <ClCompile Include="Engine\Level.cpp" />
     <ClCompile Include="Engine\ProjectSaveManager.cpp" />
+    <ClCompile Include="Engine\Random.cpp" />
     <ClCompile Include="Engine\Systems\DebugDrawSystem.cpp" />
     <ClCompile Include="Engine\Lua\GameAPI.cpp" />
     <ClCompile Include="Engine\ECS\Types.cpp" />
@@ -170,6 +172,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClCompile Include="Engine\UndoManager\UndoManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\ECS\PrefabMergeUtils.h" />
     <ClInclude Include="Engine\GUI\LayerManagerPanel.h" />
     <ClInclude Include="Engine\GUI\RegisterAllPanels.h" />
     <ClInclude Include="Engine\GUI\ResourceExplorerPanel.h" />
@@ -177,6 +180,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="Engine\KeyCodes.h" />
     <ClInclude Include="Engine\Level.h" />
     <ClInclude Include="Engine\ProjectSaveManager.h" />
+    <ClInclude Include="Engine\Random.h" />
     <ClInclude Include="Engine\Systems\DebugDrawSystem.h" />
     <ClInclude Include="Engine\TIlemapManager.h" />
     <ClInclude Include="Engine\UndoManager\Commands\Commands.h" />

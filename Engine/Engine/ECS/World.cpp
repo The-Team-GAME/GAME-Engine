@@ -279,6 +279,7 @@ namespace Engine {
 
           containers.entity_signatures.erase(entityId);
           containers.entity_layers.erase(entityId);
+          containers.prefab_instances.erase(entityId); // Clean up prefab instance data
 
           for (auto& system : containers.systems)
           {

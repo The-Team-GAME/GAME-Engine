@@ -184,7 +184,7 @@ namespace Components
         std::string next_state = transition_queue_.front();
         transition_queue_.pop();
         execute_state_transition(next_state);
-        
+
         // If we have more transitions, we could process them here, 
         // but typically one transition per frame is safer/saner.
       }

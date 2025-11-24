@@ -341,7 +341,7 @@ namespace Components
 
       static Animation create(const Reflector& r) {
         Animation anim{};  // Use braced initialization to explicitly call default constructor
-        anim.startTime = r.startTime;
+        anim.startTime = Engine::Time::get_time(); // Reset to current time when instantiating
         anim.totalDuration = r.totalDuration;
         anim.is_looping = r.is_looping;
         anim.frames.resize(r.durations.size());
