@@ -24,6 +24,7 @@
 #include "../Components/SpatialComponents.h"
 #include "ComponentManager.h"
 #include "../Random.h"
+#include "../Graphics/Renderer.h"
 
 namespace Engine {
   namespace ECS {
@@ -228,6 +229,20 @@ namespace Engine {
         // We need to get the component data from prefab and add it to world
         ReflectionLibrary::GenericValue component_data = prefab_array->to_generic_value(0);
         it->second->add_component_from_generic_value(entity_id, component_data);
+      }
+
+      // Set Transform2D position to center of screen if entity has Transform2D
+      if (entity.has_component<Components::Transform2D>()) {
+        auto* transform = entity.get_component<Components::Transform2D>();
+        if (transform) {
+          // Get virtual resolution (screen center in virtual coordinates)
+          Math::Vec2D virtual_resolution = Engine::Graphics::get_virtual_resolution();
+          Math::Vec2D screen_center(virtual_resolution.x / 2.0f, virtual_resolution.y / 2.0f);
+          
+          // Convert screen center to world coordinates
+          Math::Vec2D world_pos = Engine::Graphics::virtual_to_world(screen_center);
+          transform->position = world_pos;
+        }
       }
 
       // Track this as a prefab instance if the prefab has an ID
