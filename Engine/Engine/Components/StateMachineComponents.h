@@ -38,11 +38,19 @@ namespace Components
   // ============================================================================
 
   struct ColliderData {
-    Components::ColliderType type = Components::ColliderType::AABB;
+    Components::ColliderType type;
     f32 width;
     f32 height;
     Math::Vec2D offset;
     std::vector<Math::Vec2D> vertices; // For polygon colliders (local space)
+    
+    ColliderData() 
+      : type(Components::ColliderType::AABB)
+      , width(0.0f)
+      , height(0.0f)
+      , offset(0.0f, 0.0f)
+      , vertices()
+    {}
   };
 
   struct StateAnimation {
@@ -351,7 +359,7 @@ namespace Components
 
 } // namespace Components
 
-REFLECT_FIELDS(Components::ColliderData, type, width, height, offset, vertices)
+REFLECT_FIELDS(Components::ColliderData, width, height, offset, vertices)
 REFLECT_FIELDS(Components::State, name, on_enter_callback_name, on_update_callback_name, on_exit_callback_name, animation)
 REFLECT_FIELDS(Components::StateAnimation, texture, texture_atlas, animation, scale, collider_data)
 REGISTER_COMPONENT(Components::StateMachine, states, current_state_name)

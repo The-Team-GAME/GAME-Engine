@@ -56,7 +56,7 @@ namespace Engine {
         } else if (collider->type == Components::ColliderType::POLYGON) {
           // Draw polygon collider
           if (!collider->polygon.vertices.empty()) {
-            std::vector<Math::Vec2D> world_vertices;
+            std::vector<Math::Vec2D> local_vertices;
             for (const auto& v : collider->polygon.vertices) {
               // Apply flip to each vertex
               Math::Vec2D flipped_v = v;
@@ -64,14 +64,16 @@ namespace Engine {
                 flipped_v.x *= flip->value.x;
                 flipped_v.y *= flip->value.y;
               }
-              world_vertices.push_back(transform->position + flipped_offset + flipped_v);
+              local_vertices.push_back(flipped_v);
             }
             
-            // Draw edges
-            for (size_t i = 0; i < world_vertices.size(); ++i) {
-              size_t next = (i + 1) % world_vertices.size();
-              Engine::Graphics::draw_line(world_vertices[i], world_vertices[next], color);
-            }
+            // Use draw_polygon with position and rotation
+            Engine::Graphics::draw_polygon(
+              local_vertices,
+              transform->position + flipped_offset,
+              transform->rotation,
+              color
+            );
           }
         }
       }
