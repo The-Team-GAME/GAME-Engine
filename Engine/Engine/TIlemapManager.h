@@ -187,4 +187,24 @@ namespace TilemapManager {
   ==================================================================================*/
   void update_all_tile_dimensions();
 
+  /*=================================================================================
+  Function Brief:
+  Calculates the world bounds of all active tilemaps.
+
+  Parameters:
+  min - Output parameter for the minimum world coordinates (bottom-left)
+  max - Output parameter for the maximum world coordinates (top-right)
+
+  Returns:
+  True if any tilemaps were found and bounds calculated, false otherwise.
+  ==================================================================================*/
+  bool get_world_bounds(Math::Vec2D& min, Math::Vec2D& max);
+
+  /*=================================================================================
+  Function Brief:
+  Calculates the world bounds and updates the collision system.
+  If no tilemaps exist, it uses the default screen bounds.
+  ==================================================================================*/
+  void broadcast_world_bounds();
+
 } // namespace TilemapManager

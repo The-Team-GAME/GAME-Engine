@@ -31,113 +31,113 @@ namespace Engine {
     class Collision2DSystem : public Engine::ECS::System
     {
 
-    /*==============/
-    / Quad Tree UwU /
-    /==============*/
-    // Ok so we are going to use a quad tree to settle our collisions to reduce the number of checks we need to make so that the engine runs smoother
+      /*==============/
+      / Quad Tree UwU /
+      /==============*/
+      // Ok so we are going to use a quad tree to settle our collisions to reduce the number of checks we need to make so that the engine runs smoother
 
-    enum { // enum for the quadrants in the quad tree
-      NW, NE, SW, SE
-    };
+      enum { // enum for the quadrants in the quad tree
+        NW, NE, SW, SE
+      };
 
-    // Old Quad Tree Implementation, ill leave it here for reading
+      // Old Quad Tree Implementation, ill leave it here for reading
 #ifdef USE_OLD_QUAD_TREE
-    class QuadTree 
-    {
-    private:
-      AABB bounds; // The "size" of that quadrant to check (initial quadrant will basically be the size of the world, screen for now cuz we just testing)
-      std::vector<ECS::Entity> entity_vec; // Vector of objects stored at the current node of the quad tree
-      std::array<std::unique_ptr<QuadTree>, 4> child_nodes; // NW, NE, SW, SE child nodes
+      class QuadTree
+      {
+      private:
+        AABB bounds; // The "size" of that quadrant to check (initial quadrant will basically be the size of the world, screen for now cuz we just testing)
+        std::vector<ECS::Entity> entity_vec; // Vector of objects stored at the current node of the quad tree
+        std::array<std::unique_ptr<QuadTree>, 4> child_nodes; // NW, NE, SW, SE child nodes
 
-      u32 const max_entities = 4; // The max number of entities that can be in this node before the tree is split again
-      u32 const max_depth = 6; // We are capping the number of times the tree can split :>
+        u32 const max_entities = 4; // The max number of entities that can be in this node before the tree is split again
+        u32 const max_depth = 6; // We are capping the number of times the tree can split :>
 
 
-      bool divided; // To check if the current node has been split
-      u32 depth; // Current depth of tree
+        bool divided; // To check if the current node has been split
+        u32 depth; // Current depth of tree
 
-      // This function splits the current node into 
-      // Private cuz we dont want users to anyhow split the node
-      void split();
+        // This function splits the current node into 
+        // Private cuz we dont want users to anyhow split the node
+        void split();
 
-    public:
-      // Ctor
-      QuadTree(AABB boundary, u32 depth = 0);
-      // The bounds would be the constraint of this quad tree node.
-      // The depth would be how deep we are in the tree, with depth being the root / parent node
-      // WE GROWING PLANTS BOYS... i might be losing it LOL
-        
+      public:
+        // Ctor
+        QuadTree(AABB boundary, u32 depth = 0);
+        // The bounds would be the constraint of this quad tree node.
+        // The depth would be how deep we are in the tree, with depth being the root / parent node
+        // WE GROWING PLANTS BOYS... i might be losing it LOL
 
-      // Dtor
-      ~QuadTree();
 
-      // Clear all entities from the tree and kills all child nodes
-      // To be called at the start of each frame so that the tree can be rebuilt
-      void clear();
+        // Dtor
+        ~QuadTree();
 
-      // Inserts an entity into the quad tree
-      bool insert(ECS::Entity& entity);
+        // Clear all entities from the tree and kills all child nodes
+        // To be called at the start of each frame so that the tree can be rebuilt
+        void clear();
 
-      // Insert an entity into a child node
-      bool insert_in_child_node(ECS::Entity& entity);
+        // Inserts an entity into the quad tree
+        bool insert(ECS::Entity& entity);
 
-      // Check if an entity is fully contained within the current node's boundary
-      bool can_contain(ECS::Entity& entity) const;
+        // Insert an entity into a child node
+        bool insert_in_child_node(ECS::Entity& entity);
 
-      //
-      void find_near_entity(AABB const& range, std::vector<ECS::Entity>& nearby);
+        // Check if an entity is fully contained within the current node's boundary
+        bool can_contain(ECS::Entity& entity) const;
 
-      // Returns the number of entities in the current node
-      u32 entity_count() const;
+        //
+        void find_near_entity(AABB const& range, std::vector<ECS::Entity>& nearby);
 
-      // Returns a bool to show if this node has been divided/ has children node already
-      bool is_divided() const;
+        // Returns the number of entities in the current node
+        u32 entity_count() const;
 
-      void draw_tree_node() const;
-    };
+        // Returns a bool to show if this node has been divided/ has children node already
+        bool is_divided() const;
+
+        void draw_tree_node() const;
+      };
 #endif
 
-    class QuadTreeSAT
-    {
-    private:
-      AABB bounds; // AABB bounds for spatial partitioning (broad-phase)
-      std::vector<ECS::Entity> entity_vec; // Entities in this node
-      std::array<std::unique_ptr<QuadTreeSAT>, 4> child_nodes; // NW, NE, SW, SE
+      class QuadTreeSAT
+      {
+      private:
+        AABB bounds; // AABB bounds for spatial partitioning (broad-phase)
+        std::vector<ECS::Entity> entity_vec; // Entities in this node
+        std::array<std::unique_ptr<QuadTreeSAT>, 4> child_nodes; // NW, NE, SW, SE
 
-      u32 const max_entities = 4;
-      u32 const max_depth = 6;
+        u32 const max_entities = 4;
+        u32 const max_depth = 6;
 
-      bool divided;
-      u32 depth;
+        bool divided;
+        u32 depth;
 
-      void split();
+        void split();
 
 
 
-      // Helper to check if entity's AABB can be contained in this node
-      bool can_contain_entity(ECS::Entity& entity) const;
+        // Helper to check if entity's AABB can be contained in this node
+        bool can_contain_entity(ECS::Entity& entity) const;
 
-    public:
-      QuadTreeSAT(AABB boundary, u32 depth = 0);
-      ~QuadTreeSAT();
+      public:
+        QuadTreeSAT(AABB boundary, u32 depth = 0);
+        ~QuadTreeSAT();
 
-      void clear();
-      bool insert(ECS::Entity& entity);
-      bool insert_in_child_node(ECS::Entity& entity);
+        void clear();
+        bool insert(ECS::Entity& entity);
+        bool insert_in_child_node(ECS::Entity& entity);
 
-      // Find nearby entities using AABB broad-phase
-      void find_near_entity(const AABB& range, std::vector<ECS::Entity>& nearby);
+        // Find nearby entities using AABB broad-phase
+        void find_near_entity(const AABB& range, std::vector<ECS::Entity>& nearby);
 
-      u32 entity_count() const;
-      bool is_divided() const;
-      void draw_tree_node() const;
-    };
+        u32 entity_count() const;
+        bool is_divided() const;
+        void draw_tree_node() const;
+      };
 
-    // QUad Tree helper functions
+      // QUad Tree helper functions
 
-    /*=================/
-    / End of Quad Tree /
-    /=================*/
+      /*=================/
+      / End of Quad Tree /
+      /=================*/
 
     private:
       //static std::unique_ptr<QuadTree> spatial_tree; 
@@ -158,8 +158,8 @@ namespace Engine {
       // OBB and POLYGON types will use their bounding AABB
       static AABB get_entity_aabb(ECS::Entity& entity);
 
-      static CollisionResult check_collision( 
-        Components::BoxCollider const& lhs, 
+      static CollisionResult check_collision(
+        Components::BoxCollider const& lhs,
         Components::BoxCollider const& rhs);
 
       //static void draw_quad_tree();
@@ -181,11 +181,13 @@ namespace Engine {
       // i think the functions explain themselves kekw
       // read only cuz we only checking for collision and not changing any variables
       // might swap to return an unsigned int after to show which sides are colliding
-      static bool rect_rect_coll     (Components::BoxCollider const& lhs, Components::BoxCollider const& rhs);
-      bool circle_circle_coll (Components::BoxCollider const& lhs, Components::BoxCollider const& rhs); // wont implement yet
+      static bool rect_rect_coll(Components::BoxCollider const& lhs, Components::BoxCollider const& rhs);
+      bool circle_circle_coll(Components::BoxCollider const& lhs, Components::BoxCollider const& rhs); // wont implement yet
 
       // in this scenario the rect should be a wall
       bool rect_circle_coll(Components::BoxCollider const& lhs, Components::BoxCollider const& rhs);
+
+      static void set_world_bounds(const AABB& bounds);
     };
   }
 }

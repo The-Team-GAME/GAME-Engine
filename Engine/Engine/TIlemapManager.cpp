@@ -17,7 +17,9 @@
 #include "ProjectSaveManager.h"
 #include "Level.h"
 #include <algorithm>
+#include <limits>
 #include "FileIO/Settings.h"
+#include "Systems/CollisionSystem.h"
 
 namespace TilemapManager {
   namespace {
@@ -234,6 +236,8 @@ namespace TilemapManager {
       entity.clear_layers();
       entity.add_to_layer(layer_name);
     }
+
+    broadcast_world_bounds();
   }
 
   void place_tile(const Math::Vec2D& world_pos, const std::string& layer_name, int atlas_index, int tile_index) {
@@ -295,6 +299,7 @@ namespace TilemapManager {
 
     // We need to pass loaded_tilemaps to rebuild, get it from project settings
     rebuild_tilemap_for_layer(layer_name);
+    broadcast_world_bounds();
 
     // Mark level as dirty
     Engine::ProjectSaveManager::set_dirty(
@@ -322,6 +327,62 @@ namespace TilemapManager {
         }
       }
     }
+  }
+
+  bool get_world_bounds(Math::Vec2D& min, Math::Vec2D& max) {
+    min = { std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
+    max = { std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest() };
+    bool found_any = false;
+
+    for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
+      auto* tilemap = entity.get_component<Components::TileMap>();
+      if (!tilemap || tilemap->is_empty()) continue;
+
+      int grid_min_x, grid_min_y, grid_max_x, grid_max_y;
+      tilemap->get_bounds(grid_min_x, grid_min_y, grid_max_x, grid_max_y);
+
+      // Convert grid bounds to world bounds
+      // min world pos corresponds to the bottom-left corner of the min grid cell
+      // max world pos corresponds to the top-right corner of the max grid cell
+
+      float min_world_x = grid_min_x * tilemap->tile_size.x + tilemap->grid_offset.x;
+      float min_world_y = grid_min_y * tilemap->tile_size.y + tilemap->grid_offset.y;
+
+      float max_world_x = (grid_max_x + 1) * tilemap->tile_size.x + tilemap->grid_offset.x;
+      float max_world_y = (grid_max_y + 1) * tilemap->tile_size.y + tilemap->grid_offset.y;
+
+      if (min_world_x < min.x) min.x = min_world_x;
+      if (min_world_y < min.y) min.y = min_world_y;
+      if (max_world_x > max.x) max.x = max_world_x;
+      if (max_world_y > max.y) max.y = max_world_y;
+
+      found_any = true;
+    }
+
+    return found_any;
+  }
+
+  void broadcast_world_bounds() {
+    AABB bounds;
+    Math::Vec2D min_bounds, max_bounds;
+    if (get_world_bounds(min_bounds, max_bounds)) {
+      f32 width = max_bounds.x - min_bounds.x;
+      f32 height = max_bounds.y - min_bounds.y;
+      Math::Vec2D mid_point(min_bounds.x + width * 0.5f, min_bounds.y + height * 0.5f);
+      bounds = AABB(mid_point, width, height);
+    }
+    else {
+      // Fallback to screen bounds
+      using settings = Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>;
+      Math::Vec2D win_size = Engine::Graphics::screen_to_virtual({ settings::get().window_width, settings::get().window_height });
+
+      f32 win_width = win_size.x;
+      f32 win_height = win_size.y;
+      Math::Vec2D mid_point(win_width / 2, win_height / 2);
+      bounds = AABB(mid_point, win_width, win_height);
+    }
+
+    Engine::Systems::Collision2DSystem::set_world_bounds(bounds);
   }
 
 } // namespace TilemapManager
