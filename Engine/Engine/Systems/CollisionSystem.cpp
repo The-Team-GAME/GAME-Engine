@@ -18,6 +18,7 @@
 #include "../Perf.h"
 #include "../FileIO/Settings.h"
 #include "../Graphics/Renderer.h" // for picturing the quad tree
+
 using namespace Engine;
 using namespace Systems;
 using col2D = Collision2DSystem;
@@ -30,16 +31,20 @@ std::unique_ptr<col2D::QuadTreeSAT> col2D::spatial_tree_sat = nullptr;
 
 col2D::Collision2DSystem() {
   require_components<Components::Transform2D, Components::RigidBody, Components::BoxCollider>();
-  // i know i should use world bounds but ill use screen bounds for now for testing put
-  Math::Vec2D win_size = Engine::Graphics::screen_to_virtual({ settings::get().window_width, settings::get().window_height });
 
+  // Initialize with default screen bounds
+  Math::Vec2D win_size = Engine::Graphics::screen_to_virtual({ settings::get().window_width, settings::get().window_height });
   f32 win_width = win_size.x;
   f32 win_height = win_size.y;
   Vec2D mid_point(win_width / 2, win_height / 2);
-  world_bounds = AABB(mid_point, win_width, win_height);
+  AABB bounds(mid_point, win_width, win_height);
 
-  //spatial_tree = std::make_unique<QuadTree>(world_bounds, 0);
-  spatial_tree_sat = std::make_unique<QuadTreeSAT>(world_bounds, 0);
+  set_world_bounds(bounds);
+}
+
+void col2D::set_world_bounds(const AABB& bounds) {
+  //spatial_tree = std::make_unique<QuadTree>(bounds, 0);
+  spatial_tree_sat = std::make_unique<QuadTreeSAT>(bounds, 0);
 }
 
 void col2D::update()
@@ -140,8 +145,8 @@ void col2D::update_entity(Engine::ECS::Entity& entity)
   {
     box->aabb.pos = xform->position;
   }
-  else if (box->type == Components::ColliderType::OBB || 
-           box->type == Components::ColliderType::POLYGON)
+  else if (box->type == Components::ColliderType::OBB ||
+    box->type == Components::ColliderType::POLYGON)
   {
     box->polygon.position = xform->position;
     box->polygon.rotation = xform->rotation;
@@ -542,7 +547,7 @@ bool col2D::QuadTreeSAT::insert(ECS::Entity& entity)
 {
   // Check if the entity intersects with this node of the quad tree
   // We need to use the get_entity_aabb function here because not every box collider uses aabb anymore
-  AABB entity_aabb = get_entity_aabb(entity); 
+  AABB entity_aabb = get_entity_aabb(entity);
   if (!bounds.intersects(entity_aabb))
   {
     // If u reach here then the object shouldnt even be in this node LOL
