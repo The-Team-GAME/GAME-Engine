@@ -22,6 +22,7 @@
 #include "../../Components/Components.h"
 #include "../../Path.h"
 #include <unordered_map>
+#include "../../FunctionRegistry.h"
 
 namespace ImGuiWidgets {
 
@@ -356,9 +357,43 @@ namespace ImGuiWidgets {
     return true;
   }
 
+  // Helper to render a script selector dropdown
+  void render_script_selector(const std::string& label, ReflectionLibrary::GenericValue& field_value, bool& modified) {
+    if (!field_value.isString()) return;
+
+    std::string current_script = field_value.getString();
+
+    // Get all registered functions with the correct signature
+    // Note: This assumes all state callbacks have the signature void(Engine::ECS::Entity&)
+    auto& functions = Engine::FunctionRegistry<void(Engine::ECS::Entity&)>::get_functions();
+
+    if (ImGui::BeginCombo(label.c_str(), current_script.empty() ? "<None>" : current_script.c_str())) {
+
+      // Option to clear selection
+      bool is_selected = current_script.empty();
+      if (ImGui::Selectable("<None>", is_selected)) {
+        field_value = std::string("");
+        modified = true;
+      }
+      if (is_selected) ImGui::SetItemDefaultFocus();
+
+      // List all scripts
+      for (const auto& [name, func] : functions) {
+        is_selected = (current_script == name);
+        if (ImGui::Selectable(name.c_str(), is_selected)) {
+          field_value = name;
+          modified = true;
+        }
+        if (is_selected) ImGui::SetItemDefaultFocus();
+      }
+
+      ImGui::EndCombo();
+    }
+  }
+
   bool render_statemachine_field(ReflectionLibrary::GenericValue& field_value, bool& modified) {
     // StateMachine structure:
-    // - states: unordered_map<string, State>
+    // - states: unordered_map<string, State> (Serialized as Array of Pairs or Object)
     // Each State has:
     // - name: string
     // - animation: optional<StateAnimation>
@@ -375,12 +410,19 @@ namespace ImGuiWidgets {
 
     ReflectionLibrary::Object& field_obj = field_value.getObject();
     auto states_it = field_obj.find("states");
-    if (states_it == field_obj.end() || !states_it->second.isObject()) {
-      ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "StateMachine has no states defined");
+
+    // Check for valid states container (Object or Array)
+    if (states_it == field_obj.end() || (!states_it->second.isObject() && !states_it->second.isArray())) {
+      ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "StateMachine has no states defined (or invalid format)");
       return true;
     }
 
-    ReflectionLibrary::Object& states_map = states_it->second.getObject();
+    ReflectionLibrary::GenericValue states_map_val;
+
+    states_map_val = ReflectionLibrary::convert_array_of_pairs_to_map(states_it->second);
+
+    ReflectionLibrary::Object& states_map = states_map_val.getObject();
+    bool local_modified = false;
 
     ImGui::Text("States (%zu):", states_map.size());
     ImGui::Separator();
@@ -406,6 +448,29 @@ namespace ImGuiWidgets {
           // Check if state has animation
           if (state_value.isObject()) {
             ReflectionLibrary::Object& state_obj = state_value.getObject();
+
+            // Render Script Selectors
+            ImGui::Text("State Callbacks:");
+            ImGui::Indent();
+
+            auto enter_it = state_obj.find("on_enter_callback_name");
+            if (enter_it != state_obj.end()) {
+              render_script_selector("On Enter", enter_it->second, local_modified);
+            }
+
+            auto update_it = state_obj.find("on_update_callback_name");
+            if (update_it != state_obj.end()) {
+              render_script_selector("On Update", update_it->second, local_modified);
+            }
+
+            auto exit_it = state_obj.find("on_exit_callback_name");
+            if (exit_it != state_obj.end()) {
+              render_script_selector("On Exit", exit_it->second, local_modified);
+            }
+
+            ImGui::Unindent();
+            ImGui::Separator();
+
             auto anim_it = state_obj.find("animation");
 
             // The optional<StateAnimation> is converted directly to the StateAnimation object
@@ -421,7 +486,7 @@ namespace ImGuiWidgets {
               if (tex_it != state_anim_obj.end()) {
                 ImGui::Text("Texture:");
                 ImGui::Indent();
-                render_texture_field(tex_it->second, modified);
+                render_texture_field(tex_it->second, local_modified);
                 ImGui::Unindent();
                 ImGui::Separator();
               }
@@ -431,7 +496,7 @@ namespace ImGuiWidgets {
               if (anim_field_it != state_anim_obj.end()) {
                 ImGui::Text("Animation:");
                 ImGui::Indent();
-                render_animation_field(anim_field_it->second, modified);
+                render_animation_field(anim_field_it->second, local_modified);
                 ImGui::Unindent();
               }
 
@@ -447,6 +512,12 @@ namespace ImGuiWidgets {
       }
 
       ImGui::EndTabBar();
+    }
+
+    // Write back changes if modified
+    if (local_modified) {
+      states_it->second = ReflectionLibrary::convert_map_to_array_of_pairs(states_map_val);
+      modified = true;
     }
 
     return true;
