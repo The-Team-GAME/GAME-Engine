@@ -11,7 +11,7 @@
 //          that has the clickable component and gets the mouse position of when the
 //          object was clicked.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 
 
@@ -38,7 +38,13 @@ namespace Engine
 
         if (!clickable || !tr) return;
 
-        const auto mouse = Engine::Input::get_mouse_position();
+        const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+
+        if (!mouse_opt.has_value()) {
+          return;
+        }
+
+        const Math::Vec2D& mouse = mouse_opt.value();
 
         // Move Transform2D.position to center;
         // scale.x/scale.y as width/height
