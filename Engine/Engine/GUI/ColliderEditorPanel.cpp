@@ -164,27 +164,11 @@ void ColliderEditorPanel()
       }
       
       // Get collider data from state if available
+      // Note: Will set defaults after sprite_world_width/height are calculated
       if (state.animation->collider_data.has_value()) {
         col_width = state.animation->collider_data->width;
         col_height = state.animation->collider_data->height;
         col_offset = state.animation->collider_data->offset;
-      } else {
-        // If no collider data set for this state, show defaults for preview
-        // Use texture size as default dimensions
-        if (texture_handle) {
-          col_width = static_cast<float>(texture_handle->width);
-          col_height = static_cast<float>(texture_handle->height);
-        } else {
-          col_width = 50.0f;
-          col_height = 50.0f;
-        }
-        col_offset = {0.0f, 0.0f}; // Default to no offset
-        
-        ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.0f, 1.0f), "No collider override for this state.");
-        ImGui::Text("Default: %.0fx%.0f, offset (0, 0)", col_width, col_height);
-        if (ImGui::Button("Create Override with Defaults")) {
-          state.animation->collider_data = Components::ColliderData{ col_width, col_height, col_offset };
-        }
       }
     } else {
       ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "State has no animation data.");
@@ -252,6 +236,21 @@ void ColliderEditorPanel()
       if (state.animation.has_value() && state.animation->scale.has_value()) {
           sprite_world_width = state.animation->scale->x;
           sprite_world_height = state.animation->scale->y;
+      }
+      
+      // Now set defaults for states without collider override
+      if (!state.animation.has_value() || !state.animation->collider_data.has_value()) {
+        col_width = sprite_world_width;
+        col_height = sprite_world_height;
+        col_offset = {0.0f, 0.0f};
+        
+        if (state.animation.has_value()) {
+          ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.0f, 1.0f), "No collider override for this state.");
+          ImGui::Text("Default: %.0fx%.0f, offset (0, 0)", col_width, col_height);
+          if (ImGui::Button("Create Override with Defaults")) {
+            state.animation->collider_data = Components::ColliderData{ col_width, col_height, col_offset };
+          }
+        }
       }
   }
 
