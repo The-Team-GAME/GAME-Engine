@@ -34,6 +34,13 @@ namespace Engine {
 			int count{ 0 };
 		};
 
+    struct SetParticleParamsEvent {
+      std::optional<float> angle_deg{};
+      std::optional<float> spread_deg{};
+      std::optional<float> rate{};
+      std::optional<bool>  playing{};
+    };
+
 		class ParticleSystem final : public Engine::ECS::System {
 		public:
 			ParticleSystem();
@@ -83,6 +90,7 @@ namespace Engine {
 
       // helpers
       static inline float deg2rad(float d) { return d * 0.01745329251994329577f; }
+      static inline float rad2deg(float r) { return r * 57.29577951308232f; }
 
       // state
       int pool_size_{ 512 };

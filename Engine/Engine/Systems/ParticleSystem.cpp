@@ -35,12 +35,23 @@ ParticleSystem::ParticleSystem() {
       emitter_.position = e.pos;
       spawn_burst(std::max(0, e.count));
       });
+
+  Engine::EventManager::add_event_listener<SetParticleParamsEvent>(
+    [this](const SetParticleParamsEvent& e) {
+      if (!initialized_) lazy_init();
+      if (e.angle_deg)  emitter_.angle_deg = *e.angle_deg;
+      if (e.spread_deg) emitter_.spread_deg = *e.spread_deg;
+      if (e.rate)       emitter_.rate = *e.rate;
+      if (e.playing)    emitter_.playing = *e.playing;
+    });
+
   subscribed_ = true;
 }
 
 ParticleSystem::~ParticleSystem() {
   if (subscribed_) { 
-    Engine::EventManager::remove_event_listener<SpawnParticlesEvent>(); 
+    Engine::EventManager::remove_event_listener<SpawnParticlesEvent>();
+    Engine::EventManager::remove_event_listener<SetParticleParamsEvent>();
     subscribed_ = false; 
   }
 }
