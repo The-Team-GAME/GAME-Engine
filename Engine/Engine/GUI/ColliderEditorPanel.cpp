@@ -205,9 +205,31 @@ void ColliderEditorPanel()
   // Calculate UVs
   ImVec2 uv0 = { 0, 0 };
   ImVec2 uv1 = { 1, 1 };
-  float sprite_width = static_cast<float>(texture_handle->width);
-  float sprite_height = static_cast<float>(texture_handle->height);
+  
+  // Determine Sprite World Dimensions (Virtual Pixels)
+  float sprite_world_width = 0.0f;
+  float sprite_world_height = 0.0f;
 
+  // 1. Base Scale from Transform2D
+  if (auto* xform = entity.get_component<Components::Transform2D>()) {
+      sprite_world_width = xform->scale.x;
+      sprite_world_height = xform->scale.y;
+  } else if (texture_handle) {
+      // Fallback if no transform (unlikely for rendered entity)
+      sprite_world_width = static_cast<float>(texture_handle->width);
+      sprite_world_height = static_cast<float>(texture_handle->height);
+  }
+
+  // 2. State Override
+  if (editing_specific_state) {
+      auto& state = state_machine->states[current_editing_state];
+      if (state.animation.has_value() && state.animation->scale.has_value()) {
+          sprite_world_width = state.animation->scale->x;
+          sprite_world_height = state.animation->scale->y;
+      }
+  }
+
+  // 3. UV Calculation (for texture subset)
   if (texture_atlas && !texture_atlas->subTextures.empty()) {
       int atlas_index = 0;
       if (animation && !animation->frames.empty()) {
@@ -231,12 +253,11 @@ void ColliderEditorPanel()
           // ImGui wants TL (uv0) and BR (uv1)
           uv0 = { subTex.tex_coords[3].x, subTex.tex_coords[3].y };
           uv1 = { subTex.tex_coords[1].x, subTex.tex_coords[1].y };
-
-          // Update sprite dimensions based on UVs
-          float u_range = std::abs(uv1.x - uv0.x);
-          float v_range = std::abs(uv1.y - uv0.y);
-          sprite_width *= u_range;
-          sprite_height *= v_range;
+          
+          // Note: We do NOT adjust sprite_world_width/height based on UVs here
+          // because the User said "scale is how many pixel it is on the screen".
+          // The Transform2D scale defines the FINAL size of the rendered quad,
+          // regardless of how much texture it displays.
       }
   }
 
@@ -244,15 +265,19 @@ void ColliderEditorPanel()
   ImVec2 avail_size = ImGui::GetContentRegionAvail();
   if (avail_size.x < 100 || avail_size.y < 100) avail_size = { 400, 400 };
 
-  // 2. (Sprite dimensions already calculated above)
+  // 2. (Sprite dimensions calculated above as sprite_world_width/height)
   
   // 3. Calculate scale to fit sprite in window while maintaining aspect ratio
-  float scale_x = avail_size.x / sprite_width;
-  float scale_y = avail_size.y / sprite_height;
+  // Avoid division by zero
+  if (sprite_world_width <= 0.001f) sprite_world_width = 1.0f;
+  if (sprite_world_height <= 0.001f) sprite_world_height = 1.0f;
+
+  float scale_x = avail_size.x / sprite_world_width;
+  float scale_y = avail_size.y / sprite_world_height;
   float scale = std::min(scale_x, scale_y) * 0.8f; // 0.8 to leave some padding
 
-  float draw_width = sprite_width * scale;
-  float draw_height = sprite_height * scale;
+  float draw_width = sprite_world_width * scale;
+  float draw_height = sprite_world_height * scale;
 
   // 4. Center the image
   ImVec2 cursor_pos = ImGui::GetCursorScreenPos();
@@ -358,8 +383,8 @@ void ColliderEditorPanel()
   
   ImGui::SameLine();
   if (ImGui::Button("Reset to Sprite Size")) {
-    col_width = sprite_width;
-    col_height = sprite_height;
+    col_width = sprite_world_width;
+    col_height = sprite_world_height;
     col_offset = { 0.0f, 0.0f };
     changed = true;
     
