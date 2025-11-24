@@ -23,6 +23,8 @@
 #include "../Graphics/Renderer.h"
 #include "../EventManager/EventManager.h"
 #include "../Events/EngineEvents.h"
+#include "../GUI/ViewportPanel.h"
+#include "../ImGuiManager.h"
 #include <imgui.h>
 
 // TODO: M2: NEED TO WORK WITH THINGS WITH RIGIDBODY
@@ -570,13 +572,19 @@ namespace Engine
         {
           Components::Gizmo* gizmo_nc = const_cast<Components::Gizmo*>(gizmo);
 
+          Math::Vec2D min_pos = ImGuiManager::get_game_render_area_min();
+          ImGui::SetNextWindowPos(ImVec2(min_pos.x + 10.0f, min_pos.y + 10.0f));
 
           ImGui::SetNextWindowBgAlpha(0.9f);
-          ImGui::SetNextWindowSize(ImVec2(160, 200), ImGuiCond_Once);
 
           if (ImGui::Begin("Gizmo Tools", nullptr,
             ImGuiWindowFlags_NoSavedSettings |
-            ImGuiWindowFlags_AlwaysAutoResize))
+            ImGuiWindowFlags_AlwaysAutoResize |
+            ImGuiWindowFlags_NoDocking |
+            ImGuiWindowFlags_NoTitleBar |
+            ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoCollapse))
           {
             int mode = static_cast<int>(gizmo_nc->mode);
 

@@ -17,6 +17,7 @@
 
 #include <functional>
 #include <string>
+#include "Math/Vector2D.h"
 
 namespace ImGuiManager {
 
@@ -47,5 +48,11 @@ namespace ImGuiManager {
 
 	// Check if viewport mode is enabled
 	bool is_viewport_mode_enabled();
+
+	// Get the top-left position of the viewport area (either panel or main window)
+	Math::Vec2D get_viewport_area_min();
+
+	// Get the top-left position of the central dock node (where the game is rendered when not in viewport mode)
+	Math::Vec2D get_game_render_area_min();
 }
 
