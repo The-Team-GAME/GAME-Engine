@@ -349,7 +349,7 @@ namespace Components
 
 } // namespace Components
 
-REFLECT_FIELDS(Components::ColliderData, width, height)
+REFLECT_FIELDS(Components::ColliderData, width, height, offset)
 REFLECT_FIELDS(Components::State, name, on_enter_callback_name, on_update_callback_name, on_exit_callback_name, animation)
 REFLECT_FIELDS(Components::StateAnimation, texture, texture_atlas, animation, scale, collider_data)
 REGISTER_COMPONENT(Components::StateMachine, states, current_state_name)

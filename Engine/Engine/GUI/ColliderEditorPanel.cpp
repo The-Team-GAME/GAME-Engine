@@ -138,11 +138,13 @@ void ColliderEditorPanel()
   const Components::TextureAtlas* texture_atlas = nullptr;
   const Components::Animation* animation = nullptr;
   
-  float col_width = collider->width;
-  float col_height = collider->height;
-  Math::Vec2D col_offset = collider->offset;
+  float col_width = 0.0f;
+  float col_height = 0.0f;
+  Math::Vec2D col_offset = {0.0f, 0.0f};
+  bool should_apply_flip = false; // Only apply flip in live mode
 
   if (editing_specific_state) {
+    // STATE EDITING MODE - completely isolated from live entity
     auto& state = state_machine->states[current_editing_state];
     
     // Get texture from state animation if available
@@ -159,22 +161,38 @@ void ColliderEditorPanel()
         col_height = state.animation->collider_data->height;
         col_offset = state.animation->collider_data->offset;
       } else {
-        // If no collider data set for this state, show current but indicate it's not overridden
+        // If no collider data set for this state, show defaults for preview
+        // Use texture size as default dimensions
+        if (texture_handle) {
+          col_width = static_cast<float>(texture_handle->width);
+          col_height = static_cast<float>(texture_handle->height);
+        } else {
+          col_width = 50.0f;
+          col_height = 50.0f;
+        }
+        col_offset = {0.0f, 0.0f}; // Default to no offset
+        
         ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.0f, 1.0f), "No collider override for this state.");
-        if (ImGui::Button("Create Override")) {
-          state.animation->collider_data = Components::ColliderData{ collider->width, collider->height, collider->offset };
+        ImGui::Text("Default: %.0fx%.0f, offset (0, 0)", col_width, col_height);
+        if (ImGui::Button("Create Override with Defaults")) {
+          state.animation->collider_data = Components::ColliderData{ col_width, col_height, col_offset };
         }
       }
     } else {
       ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "State has no animation data.");
     }
   } else {
-    // Live editing
+    // LIVE EDITING MODE - use entity's current data including flip
     if (texture && texture->texture_handle) {
       texture_handle = texture->texture_handle;
       texture_atlas = entity.get_component<Components::TextureAtlas>();
       animation = entity.get_component<Components::Animation>();
     }
+    
+    col_width = collider->width;
+    col_height = collider->height;
+    col_offset = collider->offset;
+    should_apply_flip = true; // Apply flip only in live mode
   }
 
   if (!texture_handle) {
@@ -220,7 +238,7 @@ void ColliderEditorPanel()
       sprite_world_height = static_cast<float>(texture_handle->height);
   }
 
-  // 2. State Override
+  // 2. State Override (only when editing specific state)
   if (editing_specific_state) {
       auto& state = state_machine->states[current_editing_state];
       if (state.animation.has_value() && state.animation->scale.has_value()) {
@@ -297,15 +315,17 @@ void ColliderEditorPanel()
   // Center of the drawn image (Sprite Center)
   ImVec2 center = { image_min.x + draw_width * 0.5f, image_min.y + draw_height * 0.5f };
 
-  // Apply flip to offset for visualization
-  Math::Vec2D flipped_offset = col_offset;
-  if (auto* flip = entity.get_component<Components::Flip>()) {
-    flipped_offset.x *= flip->value.x;
-    flipped_offset.y *= flip->value.y;
+  // Apply flip to offset ONLY in live mode
+  Math::Vec2D display_offset = col_offset;
+  if (should_apply_flip) {
+    if (auto* flip = entity.get_component<Components::Flip>()) {
+      display_offset.x *= flip->value.x;
+      display_offset.y *= flip->value.y;
+    }
   }
 
-  // Collider Center (Sprite Center + Flipped Offset)
-  ImVec2 col_center = { center.x + flipped_offset.x * scale, center.y + flipped_offset.y * scale };
+  // Collider Center (Sprite Center + Display Offset)
+  ImVec2 col_center = { center.x + display_offset.x * scale, center.y + display_offset.y * scale };
 
   // Collider half-extents scaled to screen
   float col_half_w = (col_width / 2.0f) * scale;
@@ -335,12 +355,14 @@ void ColliderEditorPanel()
   if (ImGui::IsItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
       delta = ImGui::GetIO().MouseDelta;
       
-      // Account for flip - invert delta if entity is flipped
+      // Account for flip ONLY in live mode
       float flip_x = 1.0f;
       float flip_y = 1.0f;
-      if (auto* flip = entity.get_component<Components::Flip>()) {
-          flip_x = flip->value.x;
-          flip_y = flip->value.y;
+      if (should_apply_flip) {
+          if (auto* flip = entity.get_component<Components::Flip>()) {
+              flip_x = flip->value.x;
+              flip_y = flip->value.y;
+          }
       }
       
       col_offset.x += (delta.x / scale) * flip_x;
