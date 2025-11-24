@@ -97,5 +97,168 @@ namespace Engine {
       }
     };
 
+    class EnemyHealthBarSystem : public Engine::ECS::System {
+    public:
+      EnemyHealthBarSystem() {
+        require_components<Components::EnemyHealth, Components::Transform2D, Components::EnemyHealthBar>();
+      }
+
+      void update_entity(Engine::ECS::Entity& e) override {
+        using namespace Components;
+        auto* hp = e.get_component<EnemyHealth>();
+        auto* tr = e.get_component<Components::Transform2D>();
+        auto* bar = e.get_component<EnemyHealthBar>();
+        if (!hp || !tr || !bar) return;
+
+        ensure_bar(e, *bar);
+
+        const float now = Engine::Time::get_time();
+        const float dt = Engine::Time::get_fixed_dt();
+        const int   cur = std::max(0, hp->current_hp);
+        const int   mx = std::max(1, hp->max_hp);
+
+        if (bar->last_hp < 0) { // first tick
+          bar->last_hp = cur; bar->last_max = mx;
+          bar->front_ratio = bar->after_ratio = static_cast<float>(cur) / mx;
+        }
+
+        // Damage
+        if (cur < bar->last_hp) {
+          const float newR = static_cast<float>(cur) / mx;
+          const float oldR = static_cast<float>(bar->last_hp) / mx;
+          bar->front_ratio = newR;            // snap
+          bar->after_ratio = oldR;            // start draining from previous
+          bar->visible_until = now + bar->show_duration;
+        }
+        // Heal: both jump up
+        else if (cur > bar->last_hp) {
+          const float r = static_cast<float>(cur) / mx;
+          bar->front_ratio = bar->after_ratio = r;
+          bar->visible_until = now + 0.4f;
+        }
+
+        bar->last_hp = cur; bar->last_max = mx;
+
+        // Drain delayed
+        if (bar->after_ratio > bar->front_ratio) {
+          bar->after_ratio = std::max(bar->front_ratio, bar->after_ratio - bar->drain_speed * dt);
+        }
+
+        const bool show = (now <= bar->visible_until) && !hp->is_dead();
+        if (show) {
+          layout_arc(e, *bar);
+        }
+        else {
+          set_layer_visibility(bar->front, 0);
+          set_layer_visibility(bar->after, 0);
+        }
+
+        if (hp->is_dead()) {
+          for (auto& seg : bar->front) if (seg.is_valid()) seg.destroy();
+          for (auto& seg : bar->after) if (seg.is_valid()) seg.destroy();
+          bar->front.clear(); bar->after.clear();
+          bar->initialized = false;
+        }
+      }
+
+    private:
+      static inline float deg2rad(float d) { return d * 0.01745329251994329577f; }
+
+      static Engine::Graphics::Texture default_rect() {
+        return Engine::Resources::get_rect_texture();
+      }
+
+      void ensure_bar(Engine::ECS::Entity& owner, Components::EnemyHealthBar& bar) {
+        using namespace Components;
+        if (bar.initialized) return;
+        bar.initialized = true;
+        if (!bar.tex) bar.tex = default_rect();
+
+        const int n = std::max(3, bar.segments);
+        bar.front.resize(n);
+        bar.after.resize(n);
+
+        // Pre-create segment sprites
+        for (int i = 0; i < n; ++i) {
+          {
+            auto seg = Engine::ECS::create_entity()
+              .add_component<Components::Transform2D>(0.f, 0.f, 0.f, bar.after_thickness, bar.after_thickness)
+              .add_component<Components::Texture>(bar.tex)
+              .add_component<Components::Color>(bar.after_color.r, bar.after_color.g, bar.after_color.b, bar.after_color.a);
+            bar.after[i] = seg;
+          }
+          {
+            auto seg = Engine::ECS::create_entity()
+              .add_component<Components::Transform2D>(0.f, 0.f, 0.f, bar.front_thickness, bar.front_thickness)
+              .add_component<Components::Texture>(bar.tex)
+              .add_component<Components::Color>(bar.front_color.r, bar.front_color.g, bar.front_color.b, bar.front_color.a);
+            bar.front[i] = seg;
+          }
+        }
+
+        tint_layer(bar.front, bar.front_color);
+        tint_layer(bar.after, bar.after_color);
+
+        set_layer_visibility(bar.front, 0);
+        set_layer_visibility(bar.after, 0);
+      }
+
+      void set_layer_visibility(std::vector<Engine::ECS::Entity>& layer, int visible_count) {
+        const int n = static_cast<int>(layer.size());
+        for (int i = 0; i < n; ++i) {
+          if (!layer[i].is_valid()) continue;
+          bool vis = (i < visible_count);
+          if (auto* tr = layer[i].get_component<Components::Transform2D>()) {
+            tr->scale.y = vis ? tr->scale.x : 0.0f; // hide by collapsing Y
+          }
+          if (auto* c = layer[i].get_component<Components::Color>()) {
+            c->a = vis ? c->a : 0.0f;
+          }
+        }
+      }
+
+      void tint_layer(std::vector<Engine::ECS::Entity>& layer, const Components::EnemyHealthBar::RGBA& c) {
+        for (auto& seg : layer) {
+          if (!seg.is_valid()) continue;
+          if (auto* col = seg.get_component<Components::Color>()) {
+            col->r = c.r; col->g = c.g; col->b = c.b; col->a = c.a;
+          }
+        }
+      }
+
+      void layout_arc(Engine::ECS::Entity& owner, Components::EnemyHealthBar& bar) {
+        auto* tOwner = owner.get_component<Components::Transform2D>();
+        if (!tOwner) return;
+
+        const int n = std::max(3, bar.segments);
+        const float a0 = deg2rad(bar.start_angle_deg);
+        const float a1 = deg2rad(bar.end_angle_deg);
+        const float span = (a1 - a0);
+
+        auto place_ring = [&](std::vector<Engine::ECS::Entity>& ring, float thickness, float ratio) {
+          const int visible = std::clamp(static_cast<int>(std::round(ratio * n)), 0, n);
+          for (int i = 0; i < n; ++i) {
+            if (!ring[i].is_valid()) continue;
+            const float t = (i + 0.5f) / n;
+            const float ang = a0 + t * span;
+            const float cx = tOwner->position.x + bar.offset.x + std::cos(ang) * bar.radius;
+            const float cy = tOwner->position.y + bar.offset.y + std::sin(ang) * bar.radius;
+
+            if (auto* tr = ring[i].get_component<Components::Transform2D>()) {
+              tr->position.x = cx;
+              tr->position.y = cy;
+              tr->rotation = -ang;     // face outward
+              tr->scale.x = thickness;
+              tr->scale.y = thickness; // toggled by visibility
+            }
+          }
+          set_layer_visibility(ring, visible);
+          };
+
+        place_ring(bar.after, bar.after_thickness, bar.after_ratio);
+        place_ring(bar.front, bar.front_thickness, bar.front_ratio);
+      }
+    };
+
   }
 }
