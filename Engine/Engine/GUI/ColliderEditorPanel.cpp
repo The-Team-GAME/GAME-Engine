@@ -25,6 +25,8 @@
 namespace {
   s32 selected_entity_id = -1;
   bool selection_initialized = false;
+  std::string preview_state_name = "";
+  float preview_animation_start_time = 0.0f;
 
   void init_selection_listener() {
     if (selection_initialized) return;
@@ -153,6 +155,12 @@ void ColliderEditorPanel()
         texture_handle = state.animation->texture.texture_handle;
         texture_atlas = &state.animation->texture_atlas;
         animation = &state.animation->animation;
+        
+        // Track preview animation start time (reset when state changes)
+        if (preview_state_name != current_editing_state) {
+          preview_state_name = current_editing_state;
+          preview_animation_start_time = Engine::Time::get_time();
+        }
       }
       
       // Get collider data from state if available
@@ -252,10 +260,27 @@ void ColliderEditorPanel()
       int atlas_index = 0;
       if (animation && !animation->frames.empty()) {
           if (editing_specific_state) {
-              // For static editing, just show the first frame of the animation
-              atlas_index = animation->frames[0].atlas_index;
+              // Calculate animated frame using preview start time
+              // Always loop in preview mode for better visualization
+              float elapsed = Engine::Time::get_time() - preview_animation_start_time;
+              float time_to_use = elapsed;
+              
+              if (animation->totalDuration > 0.0f) {
+                  time_to_use = fmod(elapsed, animation->totalDuration);
+              }
+              
+              int current_frame = 0;
+              for (int i = 0; i < static_cast<int>(animation->frames.size()); ++i) {
+                  if (time_to_use >= animation->frames[i].before_time) {
+                      current_frame = i;
+                  } else {
+                      break;
+                  }
+              }
+              
+              atlas_index = animation->frames[current_frame].atlas_index;
           } else {
-              // For live editing, show the current frame
+              // Use live animation's current frame
               atlas_index = animation->get_current_atlas_index();
           }
       } else {
