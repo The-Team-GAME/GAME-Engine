@@ -315,7 +315,24 @@ namespace Engine {
       }
 
       // Create prefab and populate it from the entity data
-      return prefab_from_generic_value(entity_data);
+      Prefab prefab = prefab_from_generic_value(entity_data);
+
+      // Register the entity as an instance of this prefab
+      if (prefab.is_valid()) {
+        const std::string& prefab_uuid = prefab.get_impl()->get_prefab_id();
+        if (!prefab_uuid.empty()) {
+          Internal::PrefabInstanceData instance_data;
+          instance_data.prefab_id = prefab_uuid;
+
+          // Mark Transform2D as fully overridden (Transform2D should never sync from prefab)
+          auto transform_type_id = ComponentTypeManager::get_type_id<Components::Transform2D>();
+          instance_data.field_overrides[transform_type_id].insert("*"); // "*" means all fields
+
+          containers.prefab_instances[entity_id] = std::move(instance_data);
+        }
+      }
+
+      return prefab;
     }
 
     ReflectionLibrary::GenericValue prefab_to_generic_value(const Prefab& prefab) {
@@ -327,6 +344,9 @@ namespace Engine {
       // result["dataType"] = "Prefab";
 
       auto prefab_impl = prefab.get_impl();
+
+      // Serialize UUID
+      result["uuid"] = prefab_impl->get_prefab_id();
 
       // Serialize layers and components using helper functions
       result["layers"] = Serialization::serialize_layers(prefab_impl->get_layers());
@@ -340,11 +360,18 @@ namespace Engine {
 
     Prefab prefab_from_generic_value(const ReflectionLibrary::GenericValue& value) {
       if (!value.isObject() || !value.has("components") || !value["components"].isArray()) {
+        Log::warning("prefab_from_generic_value: Invalid value structure");
         return Prefab();
       }
 
       Prefab prefab = create_prefab();
       auto prefab_impl = prefab.get_impl();
+
+      // Deserialize UUID if it exists, otherwise keep the generated one
+      if (value.has("uuid") && value["uuid"].isString()) {
+        prefab_impl->set_prefab_id(value["uuid"].getString());
+        Log::info("Loaded prefab with UUID: " + value["uuid"].getString());
+      }
 
       // Deserialize layers using helper function
       LayerSignature& prefab_layers = prefab_impl->get_layers();
@@ -352,6 +379,8 @@ namespace Engine {
 
       // Deserialize components using helper function
       const auto& components_array = value["components"].getArray();
+      Log::info("Deserializing " + std::to_string(components_array.size()) + " components for prefab");
+
       auto& prefab_storage = prefab_impl->get_component_storage();
       auto& prefab_signature = prefab_impl->get_signature();
 
@@ -361,6 +390,8 @@ namespace Engine {
         prefab_signature,
         0 // Using dummy entity ID 0 for prefabs
       );
+
+      Log::info("Prefab now has " + std::to_string(prefab_storage.size()) + " components in storage");
 
       return prefab;
     }
@@ -372,14 +403,6 @@ namespace Engine {
     void update_prefab_instances(const std::string& prefab_id) {
       auto& containers = Internal::get_containers();
 
-      // Load the prefab
-      auto prefab = Engine::Resources::load_prefab(prefab_id);
-      if (!prefab.is_valid()) {
-        return;
-      }
-
-      auto prefab_impl = prefab.get_impl();
-
       if (prefab_id.empty()) {
         return; // Can't update instances without UUID
       }
@@ -387,10 +410,27 @@ namespace Engine {
       // Find all instances of this prefab by UUID
       std::vector<EntityID> instances_to_update;
       for (const auto& [entity_id, instance_data] : containers.prefab_instances) {
-        if (instance_data.prefab_id == prefab_id) { // prefab_id field now stores UUID
+        if (instance_data.prefab_id == prefab_id) { // Compare UUIDs
           instances_to_update.push_back(entity_id);
         }
       }
+
+      // We need to get the prefab data to update instances
+      // Get from registry if available
+      Prefab prefab;
+      for (const auto& [path, weak_prefab] : Engine::Resources::prefab_cache) {
+        auto shared_prefab_impl = weak_prefab.lock();
+        if (shared_prefab_impl && shared_prefab_impl->get_prefab_id() == prefab_id) {
+          prefab = Prefab(shared_prefab_impl);
+          break;
+        }
+      }
+
+      if (!prefab.is_valid()) {
+        return; // Prefab not found in cache
+      }
+
+      auto prefab_impl = prefab.get_impl();
 
       // Update each instance
       for (EntityID entity_id : instances_to_update) {

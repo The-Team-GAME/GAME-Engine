@@ -81,7 +81,9 @@ void PrefabEditorPanelHelpers::render_component_tree(const std::string& componen
           );
 
           // Propagate changes to all prefab instances
-          Engine::ECS::update_prefab_instances(prefab_path);
+          if (prefab.is_valid()) {
+            Engine::ECS::update_prefab_instances(prefab.get_impl()->get_prefab_id());
+          }
         }
       }
 
@@ -113,7 +115,7 @@ void PrefabEditorPanelHelpers::render_component_tree(const std::string& componen
             );
 
             // Propagate changes to all prefab instances
-            Engine::ECS::update_prefab_instances(prefab_path);
+            Engine::ECS::update_prefab_instances(prefab_impl->get_prefab_id());
           }
         }
       }
@@ -329,7 +331,7 @@ void PrefabEditorPanel()
               );
 
               // Propagate changes to all prefab instances
-              Engine::ECS::update_prefab_instances(selected_prefab_path);
+              Engine::ECS::update_prefab_instances(selected_prefab.get_impl()->get_prefab_id());
 
               Log::info("Added component '" + component_name + "' to prefab: " + selected_prefab_path);
             }
@@ -405,7 +407,7 @@ void PrefabEditorPanel()
             );
 
             // Propagate changes to all prefab instances
-            Engine::ECS::update_prefab_instances(selected_prefab_path);
+            Engine::ECS::update_prefab_instances(selected_prefab.get_impl()->get_prefab_id());
           }
         }
       }
@@ -445,7 +447,7 @@ void PrefabEditorPanel()
           );
 
           // Propagate changes to all prefab instances
-          Engine::ECS::update_prefab_instances(selected_prefab_path);
+          Engine::ECS::update_prefab_instances(selected_prefab.get_impl()->get_prefab_id());
         }
       }
     }

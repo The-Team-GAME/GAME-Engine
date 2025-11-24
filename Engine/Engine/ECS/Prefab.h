@@ -524,6 +524,8 @@ namespace Engine {
     /*=================================================================================
     Function Brief:
     Creates a prefab from an existing entity by copying its components.
+    The entity automatically becomes an instance of the newly created prefab,
+    allowing it to receive future updates when the prefab is modified.
 
     Parameters:
     entity - The entity to convert to a prefab.
@@ -563,14 +565,16 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
-    Updates all instances of a prefab with new data from the prefab file.
-    Respects per-field overrides - only non-overridden fields are updated.
+    Updates all instances of a prefab with new data from the prefab.
+    Finds all entities that were instantiated from the prefab with the given UUID
+    and updates their components. Respects per-field overrides - only non-overridden
+    fields are updated.
 
     Parameters:
-    prefab_id - Relative path to the prefab file.
+    prefab_id - UUID of the prefab to update instances for.
 
     Where to call it:
-    After modifying a prefab file, to propagate changes to all instances.
+    After modifying a prefab, to propagate changes to all instances.
     ==================================================================================*/
     void update_prefab_instances(const std::string& prefab_id);
 
