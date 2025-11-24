@@ -10,7 +10,7 @@
                     "resolve_collisions": false,
                     "aabb": {
                         "pos": {
-                            "x": 621.9873046875,
+                            "x": 862.1563720703125,
                             "y": 768.388916015625
                         },
                         "half_width": 64.0,
@@ -18,7 +18,7 @@
                     },
                     "width": 128.0,
                     "height": 128.0,
-                    "radius": -1.690596447556647e-15
+                    "radius": 0.0
                 },
                 "type": "Components::BoxCollider"
             },
@@ -140,7 +140,7 @@
                             }
                         ]
                     ],
-                    "drawIndex": 1
+                    "drawIndex": 4
                 },
                 "type": "Components::TextureAtlas"
             },
@@ -160,7 +160,7 @@
                         0.45000001788139343,
                         0.6000000238418579
                     ],
-                    "startTime": 36.73207473754883,
+                    "startTime": 15.0929594039917,
                     "atlas_indices": [
                         0,
                         1,
@@ -207,7 +207,7 @@
                 "type": "Components::Transform2D",
                 "data": {
                     "position": {
-                        "x": 621.9873046875,
+                        "x": 862.1563720703125,
                         "y": 768.0
                     },
                     "rotation": 0.0,
@@ -328,7 +328,7 @@
                                             2,
                                             3
                                         ],
-                                        "startTime": 36.73207473754883,
+                                        "startTime": 15.0929594039917,
                                         "totalDuration": 0.8999999761581421,
                                         "is_looping": true
                                     },
@@ -460,7 +460,7 @@
                                             0.45000001788139343,
                                             0.6000000238418579
                                         ],
-                                        "startTime": 36.73207473754883,
+                                        "startTime": 15.0929594039917,
                                         "atlas_indices": [
                                             0,
                                             1,
@@ -627,7 +627,7 @@
                                             4,
                                             5
                                         ],
-                                        "startTime": 36.73207473754883,
+                                        "startTime": 15.0929594039917,
                                         "totalDuration": 0.6000000238418579,
                                         "is_looping": true
                                     },
@@ -715,7 +715,7 @@
                                         "before_times": [
                                             0.0
                                         ],
-                                        "startTime": 36.73207473754883,
+                                        "startTime": 15.0929594039917,
                                         "atlas_indices": [
                                             0
                                         ],
@@ -815,7 +815,7 @@
                                             1,
                                             2
                                         ],
-                                        "startTime": 36.73207473754883,
+                                        "startTime": 15.0929594039917,
                                         "totalDuration": 1.7999999523162842,
                                         "is_looping": true
                                     },
@@ -831,24 +831,24 @@
                 }
             },
             {
-                "type": "Components::EnemyHealth",
-                "data": {
-                    "current_hp": 50,
-                    "max_hp": 50
-                }
-            },
-            {
                 "data": {
                     "chase_speed": 100.0,
                     "attack_cooldown": 5.0,
                     "leap_height": 300.0,
                     "leap_speed": 400.0,
-                    "last_attack_time": 61.63928985595703,
+                    "last_attack_time": 29.26655387878418,
                     "detection_range": 300.0,
                     "attack_range": 80.0,
                     "chase_range": 400.0
                 },
                 "type": "Components::LazyMonkey"
+            },
+            {
+                "data": {
+                    "current_hp": 400,
+                    "max_hp": 400
+                },
+                "type": "Components::EnemyHealth"
             }
         ]
     },
