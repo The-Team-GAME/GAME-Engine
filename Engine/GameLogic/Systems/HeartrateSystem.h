@@ -12,13 +12,16 @@ namespace Engine {
       Engine::Graphics::Font font;
     public:
       HeartrateSystem() {
-        require_components < Components::Heartrate, Components::Player>();
+        require_components<Components::Heartrate, Components::Player, Components::Color>();
 
         font = Engine::Resources::load_font("fonts/Roboto-Regular.ttf", 48);
       }
 
       void update_entity(Engine::ECS::Entity& entity) override {
         auto* heartrate = entity.get_component<Components::Heartrate>();
+        auto* player = entity.get_component<Components::Player>();
+        auto* color = entity.get_component<Components::Color>();
+
         heartrate->decrease(heartrate->decay_rate * Engine::Time::get_fixed_dt());
 
         // Multiply color (tint) all tilemap tiles based on heartrate state, the higher the heartrate, the greener the tint
@@ -50,6 +53,7 @@ namespace Engine {
         // tint_color.x = ((heartrate->crash_out - heartrate->low) - heartrate->heartrate - heartrate->low) / (heartrate->crash_out - heartrate->low);
         // tint_color.z = ((heartrate->crash_out - heartrate->low) - heartrate->heartrate - heartrate->low) / (heartrate->crash_out - heartrate->low);
 
+        // Apply tint to all tilemap entities
         auto tile_entities = Engine::ECS::get_entities_with<Components::TileMap>();
         for (auto& tilemap_entity : tile_entities) {
           // std::cout << "Applying tint to tilemap entity ID: " << tilemap_entity.get_id() << std::endl;
@@ -58,6 +62,20 @@ namespace Engine {
           }
           auto* tile_color = tilemap_entity.get_component<Components::Color>();
           if (tile_color) *tile_color = tint_color;
+        }
+
+        // Apply rainbow tint to player if in CrashOut state
+        auto* player_color = entity.get_component<Components::Color>();
+
+        if (state == Components::Heartrate::HeartrateState::CrashOut || state == Components::Heartrate::HeartrateState::Dead) {
+          float time = Engine::Time::get_time();
+          float r = std::sin(time * 5.0f) * 0.5f + 0.5f;
+          float g = std::sin(time * 5.0f + 2.0f) * 0.5f + 0.5f;
+          float b = std::sin(time * 5.0f + 4.0f) * 0.5f + 0.5f;
+          player_color->set_rgba(r, g, b, 1.0f);
+        }
+        else {
+          player_color->set_rgba(1.0f, 1.0f, 1.0f, 1.0f);
         }
       }
 
