@@ -99,7 +99,8 @@ namespace Engine {
     // Tile collider type - determines if tiles can be merged for collision optimization
     enum class TileColliderType {
       Default,  // Can be merged with adjacent Default tiles into rectangles
-      Custom    // Cannot be merged, each tile gets its own collision entity
+      AABB,     // Custom AABB box with width/height/offset, individual per tile
+      Polygon   // Custom polygon with vertices, individual per tile
     };
 
     // Tile data used in tilemap rendering - contains atlas reference and tile index
@@ -107,7 +108,14 @@ namespace Engine {
       int atlas_index = -1; // Which atlas this tile uses
       int tile_index = -1;  // Which tile within the atlas
       TileColliderType collider_type = TileColliderType::Default; // Collider merging behavior
-      std::vector<Math::Vec2D> custom_vertices; // Custom polygon vertices (for Custom collider type)
+      
+      // AABB collider properties (for AABB collider type)
+      float aabb_width = 0.0f;
+      float aabb_height = 0.0f;
+      Math::Vec2D aabb_offset = { 0.0f, 0.0f };
+      
+      // Polygon collider properties (for Polygon collider type)
+      std::vector<Math::Vec2D> custom_vertices;
 
       // Default constructor for empty tiles
       Tile() = default;
@@ -152,5 +160,5 @@ namespace Engine {
 }
 
 REFLECT_FIELDS(Engine::Graphics::SubTexture, tex_coords);
-REFLECT_FIELDS(Engine::Graphics::Tile, atlas_index, tile_index, collider_type, custom_vertices);
+REFLECT_FIELDS(Engine::Graphics::Tile, atlas_index, tile_index, collider_type, aabb_width, aabb_height, aabb_offset, custom_vertices);
 REFLECT_CUSTOM(Engine::Graphics::AtlasEntry, texture_path, tex_coords_list, drawIndex, tile_collider_configs);

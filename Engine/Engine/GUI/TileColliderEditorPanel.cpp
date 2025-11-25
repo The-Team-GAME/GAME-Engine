@@ -71,27 +71,25 @@ namespace {
 
   // Helper to draw a handle and return true if dragged
   bool draw_handle(ImDrawList* draw_list, ImVec2 pos, float size, ImU32 color, int id, ImVec2& out_delta) {
-    ImVec2 handle_min(pos.x - size, pos.y - size);
-    ImVec2 handle_max(pos.x + size, pos.y + size);
+    ImVec2 min = { pos.x - size / 2, pos.y - size / 2 };
+    ImVec2 max = { pos.x + size / 2, pos.y + size / 2 };
 
-    ImGui::SetCursorScreenPos(handle_min);
-    ImGui::InvisibleButton(("##handle" + std::to_string(id)).c_str(), ImVec2(size * 2, size * 2));
+    draw_list->AddRectFilled(min, max, color);
+    draw_list->AddRect(min, max, IM_COL32(0, 0, 0, 255));
 
-    bool is_hovered = ImGui::IsItemHovered();
-    bool is_active = ImGui::IsItemActive();
+    ImGui::SetCursorScreenPos(min);
+    ImGui::PushID(id);
+    ImGui::InvisibleButton("##handle", { size, size });
+    ImGui::PopID();
 
-    if (is_active && ImGui::IsMouseDragging(0)) {
-      out_delta = ImGui::GetIO().MouseDelta;
-      draw_list->AddRectFilled(handle_min, handle_max, IM_COL32(255, 255, 0, 255)); // Yellow when dragging
+    bool hovered = ImGui::IsItemHovered();
+    bool active = ImGui::IsItemActive();
+
+    if (active && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
+      ImVec2 delta = ImGui::GetIO().MouseDelta;
+      out_delta = delta;
       return true;
     }
-    else if (is_hovered) {
-      draw_list->AddRectFilled(handle_min, handle_max, IM_COL32(255, 200, 0, 255)); // Orange when hovered
-    }
-    else {
-      draw_list->AddRectFilled(handle_min, handle_max, color);
-    }
-
     return false;
   }
 }
@@ -191,25 +189,39 @@ void TileColliderEditorPanel() {
 
   // Collider Type Selection
   ImGui::Text("Collider Type");
-  int current_type = (tile_config.collider_type == Engine::Graphics::TileColliderType::Default) ? 0 : 1;
-  const char* type_names[] = { "Default (AABB - Merged)", "Custom (Polygon - Individual)" };
+  int current_type = 0;
+  if (tile_config.collider_type == Engine::Graphics::TileColliderType::Default) current_type = 0;
+  else if (tile_config.collider_type == Engine::Graphics::TileColliderType::AABB) current_type = 1;
+  else if (tile_config.collider_type == Engine::Graphics::TileColliderType::Polygon) current_type = 2;
+  
+  const char* type_names[] = { "Default (Merged)", "AABB (Custom Box)", "Polygon (Custom Shape)" };
 
   if (ImGui::Combo("##ColliderType", &current_type, type_names, IM_ARRAYSIZE(type_names))) {
-    tile_config.collider_type = (current_type == 0) ?
-      Engine::Graphics::TileColliderType::Default :
-      Engine::Graphics::TileColliderType::Custom;
-
-    // Initialize custom vertices if switching to Custom for the first time
-    if (tile_config.collider_type == Engine::Graphics::TileColliderType::Custom && tile_config.custom_vertices.empty()) {
-      // Create default box shape (64x64 default tile size)
-      float hw = 32.0f;
-      float hh = 32.0f;
-      tile_config.custom_vertices = {
-        Math::Vec2D(-hw, -hh),
-        Math::Vec2D(-hw,  hh),
-        Math::Vec2D(hw,  hh),
-        Math::Vec2D(hw, -hh)
-      };
+    if (current_type == 0) {
+      tile_config.collider_type = Engine::Graphics::TileColliderType::Default;
+    }
+    else if (current_type == 1) {
+      tile_config.collider_type = Engine::Graphics::TileColliderType::AABB;
+      // Initialize AABB if not set
+      if (tile_config.aabb_width == 0.0f && tile_config.aabb_height == 0.0f) {
+        tile_config.aabb_width = TilemapManager::get_grid_size();
+        tile_config.aabb_height = TilemapManager::get_grid_size();
+        tile_config.aabb_offset = { 0.0f, 0.0f };
+      }
+    }
+    else if (current_type == 2) {
+      tile_config.collider_type = Engine::Graphics::TileColliderType::Polygon;
+      // Initialize custom vertices if switching to Polygon for the first time
+      if (tile_config.custom_vertices.empty()) {
+        float hw = TilemapManager::get_grid_size() / 2.0f;
+        float hh = TilemapManager::get_grid_size() / 2.0f;
+        tile_config.custom_vertices = {
+          Math::Vec2D(-hw, -hh),
+          Math::Vec2D(hw, -hh),
+          Math::Vec2D(hw, hh),
+          Math::Vec2D(-hw, hh)
+        };
+      }
     }
 
     // Update all existing tile instances in the world
@@ -229,18 +241,156 @@ void TileColliderEditorPanel() {
     ImGui::Text("Tile size is determined by the tilemap grid settings.");
     ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(Default tiles use automatic sizing)");
   }
-  else {
+  else if (tile_config.collider_type == Engine::Graphics::TileColliderType::AABB) {
+    // Custom AABB editing with visual editor
+    ImGui::Text("Custom AABB Editor");
+
+    if (ImGui::Button("Reset to Tile Size")) {
+      tile_config.aabb_width = TilemapManager::get_grid_size();
+      tile_config.aabb_height = TilemapManager::get_grid_size();
+      tile_config.aabb_offset = { 0.0f, 0.0f };
+      update_all_tile_instances(current_atlas_index, selected_tile_index, tile_config);
+      Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings());
+    }
+
+    ImGui::Separator();
+
+    // Visual editor
+    ImGui::Text("Visual Editor");
+
+    // Get the subtexture for the selected tile
+    if (selected_tile_index < static_cast<int>(atlas_entry.subTextures.size())) {
+      const auto& sub_tex = atlas_entry.subTextures[selected_tile_index];
+
+      // Calculate UV bounds
+      const auto& coords = sub_tex.tex_coords;
+      float min_u = coords[0].x, max_u = coords[0].x;
+      float min_v = coords[0].y, max_v = coords[0].y;
+      for (size_t j = 1; j < 4; ++j) {
+        min_u = std::min(min_u, coords[j].x);
+        max_u = std::max(max_u, coords[j].x);
+        min_v = std::min(min_v, coords[j].y);
+        max_v = std::max(max_v, coords[j].y);
+      }
+
+      ImVec2 uv0(min_u, min_v);
+      ImVec2 uv1(max_u, max_v);
+
+      // Sprite world dimensions
+      float sprite_world_width = TilemapManager::get_grid_size();
+      float sprite_world_height = TilemapManager::get_grid_size();
+
+      // Calculate scale to fit sprite in window while maintaining aspect ratio
+      ImVec2 avail_size = ImGui::GetContentRegionAvail();
+      if (avail_size.x < 100 || avail_size.y < 100) avail_size = { 400, 400 };
+
+      if (sprite_world_width <= 0.001f) sprite_world_width = 64.0f;
+      if (sprite_world_height <= 0.001f) sprite_world_height = 64.0f;
+
+      float scale_x = avail_size.x / sprite_world_width;
+      float scale_y = avail_size.y / sprite_world_height;
+      float scale = std::min(scale_x, scale_y) * 0.8f;
+
+      float draw_width = sprite_world_width * scale;
+      float draw_height = sprite_world_height * scale;
+
+      ImVec2 cursor_pos = ImGui::GetCursorScreenPos();
+      float offset_x = (avail_size.x - draw_width) * 0.5f;
+      float offset_y = (avail_size.y - draw_height) * 0.5f;
+
+      ImVec2 image_min = { cursor_pos.x + offset_x, cursor_pos.y + offset_y };
+      ImVec2 image_max = { image_min.x + draw_width, image_min.y + draw_height };
+
+      // Draw the tile sprite
+      ImGui::SetCursorScreenPos(image_min);
+      ImGui::Image((ImTextureID)(intptr_t)atlas_entry.texture_handle->id,
+        ImVec2(draw_width, draw_height), uv0, uv1);
+
+      // Draw collider overlay
+      ImDrawList* draw_list = ImGui::GetWindowDrawList();
+      ImVec2 center = { image_min.x + draw_width * 0.5f, image_min.y + draw_height * 0.5f };
+
+      float handle_size = 8.0f;
+      ImU32 handle_color = IM_COL32(0, 255, 0, 255);
+      ImVec2 delta;
+      bool changed = false;
+
+      // Collider Center (Sprite Center + Offset)
+      ImVec2 col_center = { center.x + tile_config.aabb_offset.x * scale, center.y - tile_config.aabb_offset.y * scale };
+
+      // Collider half-extents scaled to screen
+      float col_half_w = (tile_config.aabb_width / 2.0f) * scale;
+      float col_half_h = (tile_config.aabb_height / 2.0f) * scale;
+
+      // Collider screen coords
+      ImVec2 col_min = { col_center.x - col_half_w, col_center.y - col_half_h };
+      ImVec2 col_max = { col_center.x + col_half_w, col_center.y + col_half_h };
+
+      // Draw Rect
+      draw_list->AddRect(col_min, col_max, IM_COL32(0, 255, 0, 255), 0.0f, 0, 2.0f);
+
+      // --- Body Drag (Offset) ---
+      ImGui::SetCursorScreenPos(col_min);
+      ImGui::PushID("##collider_body_drag");
+      ImGui::InvisibleButton("##body", { col_max.x - col_min.x, col_max.y - col_min.y });
+      ImGui::PopID();
+
+      if (ImGui::IsItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
+        ImVec2 mouse_delta = ImGui::GetIO().MouseDelta;
+        tile_config.aabb_offset.x += mouse_delta.x / scale;
+        tile_config.aabb_offset.y -= mouse_delta.y / scale; // Flip Y
+        changed = true;
+      }
+
+      if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Drag to move collider");
+      }
+
+      // Edge handles
+      if (draw_handle(draw_list, { col_max.x, col_center.y }, handle_size, handle_color, 0, delta)) {
+        tile_config.aabb_width += (delta.x / scale) * 2.0f;
+        changed = true;
+      }
+
+      if (draw_handle(draw_list, { col_min.x, col_center.y }, handle_size, handle_color, 1, delta)) {
+        tile_config.aabb_width -= (delta.x / scale) * 2.0f;
+        changed = true;
+      }
+
+      if (draw_handle(draw_list, { col_center.x, col_min.y }, handle_size, handle_color, 2, delta)) {
+        tile_config.aabb_height -= (delta.y / scale) * 2.0f;
+        changed = true;
+      }
+
+      if (draw_handle(draw_list, { col_center.x, col_max.y }, handle_size, handle_color, 3, delta)) {
+        tile_config.aabb_height += (delta.y / scale) * 2.0f;
+        changed = true;
+      }
+
+      if (changed) {
+        update_all_tile_instances(current_atlas_index, selected_tile_index, tile_config);
+        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings());
+      }
+
+      // Display values below the editor
+      ImGui::SetCursorScreenPos({ image_min.x, image_max.y + 10 });
+      ImGui::Text("Size: %.2f x %.2f | Offset: %.2f, %.2f", 
+        tile_config.aabb_width, tile_config.aabb_height,
+        tile_config.aabb_offset.x, tile_config.aabb_offset.y);
+    }
+  }
+  else if (tile_config.collider_type == Engine::Graphics::TileColliderType::Polygon) {
     // Custom polygon editing
     ImGui::Text("Custom Polygon Editor");
 
     if (ImGui::Button("Reset to Box")) {
-      float hw = 32.0f;
-      float hh = 32.0f;
+      float hw = TilemapManager::get_grid_size() / 2.0f;
+      float hh = TilemapManager::get_grid_size() / 2.0f;
       tile_config.custom_vertices = {
         Math::Vec2D(-hw, -hh),
-        Math::Vec2D(-hw,  hh),
-        Math::Vec2D(hw,  hh),
-        Math::Vec2D(hw, -hh)
+        Math::Vec2D(hw, -hh),
+        Math::Vec2D(hw, hh),
+        Math::Vec2D(-hw, hh)
       };
       update_all_tile_instances(current_atlas_index, selected_tile_index, tile_config);
       Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings());
@@ -249,33 +399,6 @@ void TileColliderEditorPanel() {
     ImGui::SameLine();
     if (ImGui::Button("Add Vertex")) {
       tile_config.custom_vertices.push_back(Math::Vec2D(0.0f, 0.0f));
-      update_all_tile_instances(current_atlas_index, selected_tile_index, tile_config);
-      Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings());
-    }
-
-    // Vertex list with delete buttons
-    ImGui::Text("Vertices (%zu):", tile_config.custom_vertices.size());
-    int vertex_to_delete = -1;
-    for (size_t i = 0; i < tile_config.custom_vertices.size(); ++i) {
-      ImGui::PushID(static_cast<int>(i));
-
-      float v[2] = { tile_config.custom_vertices[i].x, tile_config.custom_vertices[i].y };
-      if (ImGui::DragFloat2("##vertex", v, 0.5f)) {
-        tile_config.custom_vertices[i] = Math::Vec2D(v[0], v[1]);
-        update_all_tile_instances(current_atlas_index, selected_tile_index, tile_config);
-        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings());
-      }
-
-      ImGui::SameLine();
-      if (ImGui::Button("X") && tile_config.custom_vertices.size() > 3) {
-        vertex_to_delete = static_cast<int>(i);
-      }
-
-      ImGui::PopID();
-    }
-
-    if (vertex_to_delete >= 0) {
-      tile_config.custom_vertices.erase(tile_config.custom_vertices.begin() + vertex_to_delete);
       update_all_tile_instances(current_atlas_index, selected_tile_index, tile_config);
       Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings());
     }
@@ -347,8 +470,13 @@ void TileColliderEditorPanel() {
       ImDrawList* draw_list = ImGui::GetWindowDrawList();
       ImVec2 center = { image_min.x + draw_width * 0.5f, image_min.y + draw_height * 0.5f };
 
+      float handle_size = 8.0f;
+      ImU32 handle_color = IM_COL32(0, 255, 0, 255);
+      ImVec2 delta;
+      bool changed = false;
+
       // Draw polygon edges
-      if (tile_config.custom_vertices.size() >= 3) {
+      if (tile_config.custom_vertices.size() >= 2) {
         for (size_t i = 0; i < tile_config.custom_vertices.size(); ++i) {
           size_t next_i = (i + 1) % tile_config.custom_vertices.size();
 
@@ -360,20 +488,100 @@ void TileColliderEditorPanel() {
 
           draw_list->AddLine(p1, p2, IM_COL32(0, 255, 0, 255), 2.0f);
         }
+      }
 
-        // Draw vertex handles
-        for (size_t i = 0; i < tile_config.custom_vertices.size(); ++i) {
-          Math::Vec2D& vertex = tile_config.custom_vertices[i];
-          ImVec2 vertex_pos(center.x + vertex.x * scale, center.y - vertex.y * scale);
+      // Draw and interact with vertices
+      static int selected_vertex = -1;
+      static int hovered_vertex = -1;
+      hovered_vertex = -1;
 
-          ImVec2 delta;
-          if (draw_handle(draw_list, vertex_pos, 6.0f, IM_COL32(0, 255, 0, 255), static_cast<int>(i), delta)) {
-            vertex.x += delta.x / scale;
-            vertex.y -= delta.y / scale; // Flip Y
-            update_all_tile_instances(current_atlas_index, selected_tile_index, tile_config);
-            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings());
-          }
+      // Reset selection when not actively dragging
+      if (!ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+        selected_vertex = -1;
+      }
+
+      for (size_t i = 0; i < tile_config.custom_vertices.size(); ++i) {
+        Math::Vec2D& vertex = tile_config.custom_vertices[i];
+        ImVec2 vertex_pos(center.x + vertex.x * scale, center.y - vertex.y * scale);
+
+        if (draw_handle(draw_list, vertex_pos, handle_size, handle_color, static_cast<int>(i), delta)) {
+          vertex.x += delta.x / scale;
+          vertex.y -= delta.y / scale; // Flip Y
+          changed = true;
+          selected_vertex = static_cast<int>(i);
         }
+
+        // Check if hovering over this vertex
+        ImVec2 mouse_pos = ImGui::GetMousePos();
+        float dx = mouse_pos.x - vertex_pos.x;
+        float dy = mouse_pos.y - vertex_pos.y;
+        if (dx * dx + dy * dy < (handle_size * handle_size)) {
+          hovered_vertex = static_cast<int>(i);
+        }
+      }
+
+      // Right-click to delete vertex
+      if (hovered_vertex >= 0 && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
+        if (tile_config.custom_vertices.size() > 3) {
+          tile_config.custom_vertices.erase(tile_config.custom_vertices.begin() + hovered_vertex);
+          changed = true;
+        }
+      }
+
+      // Click on sprite (but not on a vertex) to add new vertex
+      if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && hovered_vertex == -1) {
+        ImVec2 mouse_pos = ImGui::GetMousePos();
+        
+        // Check if click is within the image bounds
+        if (mouse_pos.x >= image_min.x && mouse_pos.x <= image_max.x &&
+            mouse_pos.y >= image_min.y && mouse_pos.y <= image_max.y) {
+          
+          // Convert screen position to local vertex coordinates
+          float local_x = (mouse_pos.x - center.x) / scale;
+          float local_y = -((mouse_pos.y - center.y) / scale); // Flip Y
+          
+          // Insert the new vertex at the best position in the polygon
+          if (tile_config.custom_vertices.empty()) {
+            tile_config.custom_vertices.push_back(Math::Vec2D(local_x, local_y));
+          }
+          else {
+            // Find the closest edge to insert between
+            int best_insert_idx = 0;
+            float best_dist = std::numeric_limits<float>::max();
+            
+            for (size_t i = 0; i < tile_config.custom_vertices.size(); ++i) {
+              size_t next_i = (i + 1) % tile_config.custom_vertices.size();
+              
+              Math::Vec2D v1 = tile_config.custom_vertices[i];
+              Math::Vec2D v2 = tile_config.custom_vertices[next_i];
+              Math::Vec2D new_v(local_x, local_y);
+              
+              // Calculate distance to edge midpoint
+              Math::Vec2D edge_mid = (v1 + v2) * 0.5f;
+              float dist = (new_v - edge_mid).get_magnitude();
+              
+              if (dist < best_dist) {
+                best_dist = dist;
+                best_insert_idx = static_cast<int>(next_i);
+              }
+            }
+            
+            tile_config.custom_vertices.insert(
+              tile_config.custom_vertices.begin() + best_insert_idx,
+              Math::Vec2D(local_x, local_y)
+            );
+          }
+          changed = true;
+        }
+      }
+
+      // Show vertex count
+      ImGui::SetCursorScreenPos({ image_min.x, image_min.y - 20 });
+      ImGui::Text("Vertices: %zu (Click to add, Drag to move, Right-click to delete)", tile_config.custom_vertices.size());
+
+      if (changed) {
+        update_all_tile_instances(current_atlas_index, selected_tile_index, tile_config);
+        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings());
       }
     }
   }

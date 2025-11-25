@@ -170,8 +170,9 @@ namespace TilemapManager {
           continue;
         }
 
-        // Skip tiles with Custom collider type - they will be handled separately
-        if (tile.collider_type == Engine::Graphics::TileColliderType::Custom) {
+        // Skip tiles with AABB or Polygon collider type - they will be handled separately
+        if (tile.collider_type == Engine::Graphics::TileColliderType::AABB || 
+            tile.collider_type == Engine::Graphics::TileColliderType::Polygon) {
           processed[rel_y][rel_x] = true;
           continue;
         }
@@ -253,44 +254,83 @@ namespace TilemapManager {
         int abs_y = min_y + rel_y;
         Engine::Graphics::Tile tile = int_map->get_tile(abs_x, abs_y);
 
-        if (tile.is_valid() && tile.collider_type == Engine::Graphics::TileColliderType::Custom) {
+        if (tile.is_valid() && (tile.collider_type == Engine::Graphics::TileColliderType::AABB || 
+                                tile.collider_type == Engine::Graphics::TileColliderType::Polygon)) {
           // Calculate world position for this individual tile
           float center_x = grid_offset.x + abs_x * grid_snap + grid_snap * 0.5f;
           float center_y = grid_offset.y + abs_y * grid_snap + grid_snap * 0.5f;
           Math::Vec2D center_world = { center_x, center_y };
           Math::Vec2D scale = { grid_snap, grid_snap };
 
-          // Get the custom vertices from the atlas entry's tile_collider_configs
-          std::vector<Math::Vec2D> custom_vertices;
-          if (tile.atlas_index >= 0 && tile.atlas_index < static_cast<int>(project_settings.loaded_tilemaps.size())) {
-            auto& atlas_entry = project_settings.loaded_tilemaps[tile.atlas_index];
-            auto config_it = atlas_entry.tile_collider_configs.find(tile.tile_index);
-            if (config_it != atlas_entry.tile_collider_configs.end()) {
-              // Copy vertices and flip Y-axis (screen coords have Y increasing downward)
-              custom_vertices.reserve(config_it->second.custom_vertices.size());
-              for (const auto& v : config_it->second.custom_vertices) {
-                custom_vertices.push_back(Math::Vec2D(v.x, -v.y));
+          if (tile.collider_type == Engine::Graphics::TileColliderType::AABB) {
+            // Get AABB properties from tile config or from atlas entry
+            float box_width = tile.aabb_width;
+            float box_height = tile.aabb_height;
+            Math::Vec2D box_offset = tile.aabb_offset;
+
+            // If not set on the tile itself, try to get from atlas entry
+            if (box_width == 0.0f && box_height == 0.0f) {
+              if (tile.atlas_index >= 0 && tile.atlas_index < static_cast<int>(project_settings.loaded_tilemaps.size())) {
+                auto& atlas_entry = project_settings.loaded_tilemaps[tile.atlas_index];
+                auto config_it = atlas_entry.tile_collider_configs.find(tile.tile_index);
+                if (config_it != atlas_entry.tile_collider_configs.end()) {
+                  box_width = config_it->second.aabb_width;
+                  box_height = config_it->second.aabb_height;
+                  box_offset = config_it->second.aabb_offset;
+                }
               }
             }
-          }
 
-          // Create collision-only entity for this Custom tile
-          auto entity = Engine::ECS::create_entity()
-            .add_component<Components::TileCollider>()
-            .add_component<Components::Transform2D>(center_world, 0.0f, scale)
-            .add_component<Components::RigidBody>(true, false);
+            // Default to tile size if still not set
+            if (box_width == 0.0f) box_width = grid_snap;
+            if (box_height == 0.0f) box_height = grid_snap;
 
-          // Add appropriate collider based on whether we have custom vertices
-          if (!custom_vertices.empty()) {
-            entity.add_component<Components::BoxCollider>(custom_vertices, true);
-          }
-          else {
-            // Fallback to AABB if no custom vertices defined
-            entity.add_component<Components::BoxCollider>(scale.x, scale.y, true);
-          }
+            // Apply offset to center position
+            Math::Vec2D final_center = center_world + box_offset;
 
-          entity.clear_layers();
-          entity.add_to_layer(layer_name);
+            // Create AABB collision entity
+            auto entity = Engine::ECS::create_entity()
+              .add_component<Components::TileCollider>()
+              .add_component<Components::Transform2D>(final_center, 0.0f, scale)
+              .add_component<Components::RigidBody>(true, false)
+              .add_component<Components::BoxCollider>(box_width, box_height, true);
+
+            entity.clear_layers();
+            entity.add_to_layer(layer_name);
+          }
+          else if (tile.collider_type == Engine::Graphics::TileColliderType::Polygon) {
+            // Get the custom vertices from the atlas entry's tile_collider_configs
+            std::vector<Math::Vec2D> custom_vertices;
+            if (tile.atlas_index >= 0 && tile.atlas_index < static_cast<int>(project_settings.loaded_tilemaps.size())) {
+              auto& atlas_entry = project_settings.loaded_tilemaps[tile.atlas_index];
+              auto config_it = atlas_entry.tile_collider_configs.find(tile.tile_index);
+              if (config_it != atlas_entry.tile_collider_configs.end()) {
+                // Copy vertices and flip Y-axis (screen coords have Y increasing downward)
+                custom_vertices.reserve(config_it->second.custom_vertices.size());
+                for (const auto& v : config_it->second.custom_vertices) {
+                  custom_vertices.push_back(Math::Vec2D(v.x, -v.y));
+                }
+              }
+            }
+
+            // Create collision-only entity for this Polygon tile
+            auto entity = Engine::ECS::create_entity()
+              .add_component<Components::TileCollider>()
+              .add_component<Components::Transform2D>(center_world, 0.0f, scale)
+              .add_component<Components::RigidBody>(true, false);
+
+            // Add appropriate collider based on whether we have custom vertices
+            if (!custom_vertices.empty()) {
+              entity.add_component<Components::BoxCollider>(custom_vertices, true);
+            }
+            else {
+              // Fallback to AABB if no custom vertices defined
+              entity.add_component<Components::BoxCollider>(scale.x, scale.y, true);
+            }
+
+            entity.clear_layers();
+            entity.add_to_layer(layer_name);
+          }
         }
       }
     }
