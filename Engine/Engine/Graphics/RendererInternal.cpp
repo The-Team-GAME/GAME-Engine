@@ -252,6 +252,8 @@ Engine::Graphics::AtlasEntry::Reflector Engine::Graphics::AtlasEntry::Reflector:
   for (const auto& subTex : entry.subTextures) {
     r.tex_coords_list.push_back(subTex.tex_coords);
   }
+  // Copy tile collider configs
+  r.tile_collider_configs = entry.tile_collider_configs;
   return r;
 }
 
@@ -271,5 +273,7 @@ Engine::Graphics::AtlasEntry Engine::Graphics::AtlasEntry::Reflector::create(con
     subTex.tex_coords = coords;
     entry.subTextures.push_back(subTex);
   }
+  // Copy tile collider configs
+  entry.tile_collider_configs = r.tile_collider_configs;
   return entry;
 }

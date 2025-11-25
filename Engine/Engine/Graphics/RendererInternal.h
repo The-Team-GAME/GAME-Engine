@@ -132,6 +132,7 @@ namespace Engine {
       std::vector<SubTexture> subTextures;       // UV coordinates for each tile in the atlas
       int drawIndex = -1;                        // Current subTexture index to draw (unused in tilemap)
       std::string texture_path;                  // Path to texture file (for serialization/deserialization)
+      std::unordered_map<int, Tile> tile_collider_configs; // Per-tile collider configurations (tile_index -> Tile config)
 
       AtlasEntry() : texture_handle(nullptr), subTextures(), drawIndex(-1), texture_path("") {}
 
@@ -140,6 +141,7 @@ namespace Engine {
         std::string texture_path;
         std::vector<std::array<Math::Vec2D, 4>> tex_coords_list;
         int drawIndex;
+        std::unordered_map<int, Tile> tile_collider_configs;
 
         static Reflector reflect(const AtlasEntry& entry);
         static AtlasEntry create(const Reflector& r);
@@ -151,4 +153,4 @@ namespace Engine {
 
 REFLECT_FIELDS(Engine::Graphics::SubTexture, tex_coords);
 REFLECT_FIELDS(Engine::Graphics::Tile, atlas_index, tile_index, collider_type, custom_vertices);
-REFLECT_CUSTOM(Engine::Graphics::AtlasEntry, texture_path, tex_coords_list, drawIndex);
+REFLECT_CUSTOM(Engine::Graphics::AtlasEntry, texture_path, tex_coords_list, drawIndex, tile_collider_configs);

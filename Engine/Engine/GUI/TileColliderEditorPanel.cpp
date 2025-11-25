@@ -179,13 +179,8 @@ void TileColliderEditorPanel() {
   ImGui::Text("Editing Tile: %d", selected_tile_index);
   ImGui::Separator();
 
-  // Note: We're editing a template/configuration, not actual placed tiles
-  // When tiles are placed, they'll copy this configuration
-
-  // For simplicity, we'll store this in a static map for now
-  // In a full implementation, this should be stored in AtlasEntry or project settings
-  static std::unordered_map<int, std::unordered_map<int, Engine::Graphics::Tile>> tile_configs;
-  Engine::Graphics::Tile& tile_config = tile_configs[current_atlas_index][selected_tile_index];
+  // Get or create the tile collider configuration from the atlas entry
+  Engine::Graphics::Tile& tile_config = atlas_entry.tile_collider_configs[selected_tile_index];
 
   // Initialize if first time
   if (tile_config.atlas_index == -1) {
