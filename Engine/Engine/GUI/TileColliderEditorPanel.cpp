@@ -20,8 +20,10 @@
 #include "../Resources.h"
 #include "../Graphics/RendererInternal.h"
 #include "../Components/CollisionComponents.h"
+#include "../Components/TilemapComponents.h"
 #include "../ProjectSaveManager.h"
 #include "../TilemapManager.h"
+#include "../ECS/ECS.h"
 #include "../Math/Vector2D.h"
 #include <vector>
 #include <algorithm>
@@ -31,6 +33,41 @@ namespace {
   int current_atlas_index = -1;
   int selected_tile_index = -1;
   ImGuiWidgets::TextureAtlasState atlas_widget_state;
+
+  // Helper function to update all existing tile instances in the world with new collider config
+  void update_all_tile_instances(int atlas_idx, int tile_idx, const Engine::Graphics::Tile& config) {
+    // Find all TileMap entities and update tiles that match this atlas/tile index
+    for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
+      auto* tilemap = entity.get_component<Components::TileMap>();
+      if (!tilemap) continue;
+
+      bool any_updated = false;
+
+      // Iterate through all tiles in this tilemap
+      for (auto& [key, tile] : tilemap->tiles) {
+        if (tile.atlas_index == atlas_idx && tile.tile_index == tile_idx) {
+          // Update the collider configuration for this tile
+          tile.collider_type = config.collider_type;
+          tile.custom_vertices = config.custom_vertices;
+          any_updated = true;
+        }
+      }
+
+      // If any tiles were updated, rebuild the collision for this layer
+      if (any_updated) {
+        // Get all layers this entity is on and rebuild each one
+        auto layers = entity.get_layers();
+        for (Engine::ECS::LayerID layer_id = 0; layer_id < Engine::ECS::MAX_LAYERS; ++layer_id) {
+          if (layers.test(layer_id)) {
+            std::string layer_name = Engine::ECS::get_layer_name(layer_id);
+            if (!layer_name.empty()) {
+              TilemapManager::rebuild_tilemap_for_layer(layer_name);
+            }
+          }
+        }
+      }
+    }
+  }
 
   // Helper to draw a handle and return true if dragged
   bool draw_handle(ImDrawList* draw_list, ImVec2 pos, float size, ImU32 color, int id, ImVec2& out_delta) {
@@ -180,6 +217,9 @@ void TileColliderEditorPanel() {
       };
     }
 
+    // Update all existing tile instances in the world
+    update_all_tile_instances(current_atlas_index, selected_tile_index, tile_config);
+
     Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings());
   }
 
@@ -207,12 +247,14 @@ void TileColliderEditorPanel() {
         Math::Vec2D(hw,  hh),
         Math::Vec2D(hw, -hh)
       };
+      update_all_tile_instances(current_atlas_index, selected_tile_index, tile_config);
       Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings());
     }
 
     ImGui::SameLine();
     if (ImGui::Button("Add Vertex")) {
       tile_config.custom_vertices.push_back(Math::Vec2D(0.0f, 0.0f));
+      update_all_tile_instances(current_atlas_index, selected_tile_index, tile_config);
       Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings());
     }
 
@@ -225,6 +267,7 @@ void TileColliderEditorPanel() {
       float v[2] = { tile_config.custom_vertices[i].x, tile_config.custom_vertices[i].y };
       if (ImGui::DragFloat2("##vertex", v, 0.5f)) {
         tile_config.custom_vertices[i] = Math::Vec2D(v[0], v[1]);
+        update_all_tile_instances(current_atlas_index, selected_tile_index, tile_config);
         Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings());
       }
 
@@ -238,6 +281,7 @@ void TileColliderEditorPanel() {
 
     if (vertex_to_delete >= 0) {
       tile_config.custom_vertices.erase(tile_config.custom_vertices.begin() + vertex_to_delete);
+      update_all_tile_instances(current_atlas_index, selected_tile_index, tile_config);
       Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings());
     }
 
@@ -331,6 +375,7 @@ void TileColliderEditorPanel() {
           if (draw_handle(draw_list, vertex_pos, 6.0f, IM_COL32(0, 255, 0, 255), static_cast<int>(i), delta)) {
             vertex.x += delta.x / scale;
             vertex.y -= delta.y / scale; // Flip Y
+            update_all_tile_instances(current_atlas_index, selected_tile_index, tile_config);
             Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings());
           }
         }
