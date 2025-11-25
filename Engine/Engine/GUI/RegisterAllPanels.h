@@ -23,6 +23,7 @@
 #include "PrefabEditorPanel.h" 
 #include "CameraPanel.h"
 #include "TilemapPanel.h"
+#include "TileColliderEditorPanel.h"
 #include "ViewportPanel.h"
 #include "SceneChooserPanel.h"
 #include "LayerManagerPanel.h"
@@ -38,6 +39,7 @@ void register_all_panels()
   ImGuiManager::register_panel("Prefab", PrefabEditorPanel);
   ImGuiManager::register_panel("Camera", CameraPanel);
   ImGuiManager::register_panel("Tilemap", TilemapPanel::draw_panel);
+  ImGuiManager::register_panel("Tile Collider Editor", TileColliderEditorPanel);
   ImGuiManager::register_panel("Scene Chooser", SceneChooserPanel);
   ImGuiManager::register_panel("Layer Manager", LayerManagerPanel);
   ImGuiManager::register_panel("Collider Editor", ColliderEditorPanel);

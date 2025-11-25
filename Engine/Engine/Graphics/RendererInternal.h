@@ -107,6 +107,7 @@ namespace Engine {
       int atlas_index = -1; // Which atlas this tile uses
       int tile_index = -1;  // Which tile within the atlas
       TileColliderType collider_type = TileColliderType::Default; // Collider merging behavior
+      std::vector<Math::Vec2D> custom_vertices; // Custom polygon vertices (for Custom collider type)
 
       // Default constructor for empty tiles
       Tile() = default;
@@ -149,5 +150,5 @@ namespace Engine {
 }
 
 REFLECT_FIELDS(Engine::Graphics::SubTexture, tex_coords);
-REFLECT_FIELDS(Engine::Graphics::Tile, atlas_index, tile_index, collider_type);
+REFLECT_FIELDS(Engine::Graphics::Tile, atlas_index, tile_index, collider_type, custom_vertices);
 REFLECT_CUSTOM(Engine::Graphics::AtlasEntry, texture_path, tex_coords_list, drawIndex);
