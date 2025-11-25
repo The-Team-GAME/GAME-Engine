@@ -561,6 +561,27 @@ namespace Engine {
       return containers.prefab_instances.find(entity.get_id()) != containers.prefab_instances.end();
     }
 
+    std::string get_prefab_path(Entity entity) {
+      if (!entity.is_valid()) return "";
+
+      auto& containers = Internal::get_containers();
+      auto it = containers.prefab_instances.find(entity.get_id());
+      if (it == containers.prefab_instances.end()) {
+        return ""; // Not a prefab instance
+      }
+
+      // Look up the prefab by UUID to find its filepath
+      const std::string& prefab_id = it->second.prefab_id;
+      for (const auto& [path, weak_prefab] : Engine::Resources::prefab_cache) {
+        auto shared_prefab_impl = weak_prefab.lock();
+        if (shared_prefab_impl && shared_prefab_impl->get_prefab_id() == prefab_id) {
+          return shared_prefab_impl->get_prefab_filepath();
+        }
+      }
+
+      return ""; // Prefab not found in cache
+    }
+
 
   } // namespace ECS
 } // namespace Engine

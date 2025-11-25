@@ -23,6 +23,8 @@
 #include "../Graphics/Renderer.h" // For Texture
 #include "../InputManager.h"
 #include "../ProjectSaveManager.h" // For marking prefabs dirty
+#include "../Resources.h"
+#include "../Logger.h"
 
 namespace {
   enum class EditorMode { None, Entity, Prefab };
@@ -31,6 +33,8 @@ namespace {
   s32 selected_entity_id = -1;
   Engine::ECS::Prefab selected_prefab;
   std::string selected_prefab_path = "";
+  bool is_entity_prefab_instance = false;
+  std::string entity_source_prefab_path = "";
 
   bool selection_initialized = false;
   std::string preview_state_name = "";
@@ -45,6 +49,16 @@ namespace {
         selected_entity_id = static_cast<s32>(event.entity_id);
         if (selected_entity_id != -1) {
           current_mode = EditorMode::Entity;
+
+          // Check if this entity is a prefab instance
+          Engine::ECS::Entity entity = Engine::ECS::get_entity(event.entity_id);
+          is_entity_prefab_instance = Engine::ECS::is_prefab_instance(entity);
+          if (is_entity_prefab_instance) {
+            entity_source_prefab_path = Engine::ECS::get_prefab_path(entity);
+          }
+          else {
+            entity_source_prefab_path = "";
+          }
         }
       }
     );
@@ -135,6 +149,20 @@ void ColliderEditorPanel()
     animation = entity.get_component<Components::Animation>();
     transform = entity.get_component<Components::Transform2D>();
     flip = entity.get_component<Components::Flip>();
+
+    // Display prefab instance info if applicable
+    if (is_entity_prefab_instance && !entity_source_prefab_path.empty()) {
+      ImGui::TextColored(ImVec4(0.5f, 0.8f, 1.0f, 1.0f), "Prefab Instance: %s", entity_source_prefab_path.c_str());
+      ImGui::SameLine();
+      if (ImGui::Button("Edit Prefab Directly")) {
+        // Load the source prefab and switch to prefab editing mode
+        Engine::ECS::Prefab source_prefab = Engine::Resources::load_prefab(entity_source_prefab_path);
+        if (source_prefab.is_valid()) {
+          ColliderEditor::Open(source_prefab, entity_source_prefab_path);
+        }
+      }
+      ImGui::Separator();
+    }
   }
   else if (current_mode == EditorMode::Prefab) {
     if (!selected_prefab.is_valid()) {
@@ -285,10 +313,10 @@ void ColliderEditorPanel()
     col_height = collider->height;
     col_offset = collider->offset;
     col_vertices = collider->polygon.vertices;
-    
+
     // Apply flip only if in Entity mode
     if (current_mode == EditorMode::Entity) {
-        should_apply_flip = true;
+      should_apply_flip = true;
     }
   }
 
@@ -556,7 +584,7 @@ void ColliderEditorPanel()
     static int selected_vertex = -1;
     static int hovered_vertex = -1;
     hovered_vertex = -1;
-    
+
     // Reset selection when not actively dragging
     if (!ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
       selected_vertex = -1;
@@ -614,29 +642,29 @@ void ColliderEditorPanel()
 
           for (size_t i = 0; i < col_vertices.size(); ++i) {
             size_t next = (i + 1) % col_vertices.size();
-            
+
             // Project mouse point onto the line segment
             Math::Vec2D v1 = col_vertices[i];
             Math::Vec2D v2 = col_vertices[next];
             Math::Vec2D edge = v2 - v1;
             Math::Vec2D to_point = new_vertex - v1;
-            
+
             float edge_length_sq = edge.x * edge.x + edge.y * edge.y;
             if (edge_length_sq < 0.0001f) continue; // Skip degenerate edges
-            
+
             float t = (to_point.x * edge.x + to_point.y * edge.y) / edge_length_sq;
             t = std::max(0.0f, std::min(1.0f, t)); // Clamp to segment
-            
+
             Math::Vec2D closest_point = v1 + edge * t;
             Math::Vec2D to_closest = new_vertex - closest_point;
             float distance = to_closest.x * to_closest.x + to_closest.y * to_closest.y;
-            
+
             if (distance < min_distance) {
               min_distance = distance;
               insert_after_index = i;
             }
           }
-          
+
           // Insert vertex after the closest edge
           col_vertices.insert(col_vertices.begin() + insert_after_index + 1, new_vertex);
         }
@@ -644,7 +672,7 @@ void ColliderEditorPanel()
           // If less than 2 vertices, just append
           col_vertices.push_back(new_vertex);
         }
-        
+
         changed = true;
       }
     }
@@ -727,6 +755,39 @@ void ColliderEditorPanel()
   ImGui::Text("Collider Size: %.2f x %.2f", col_width, col_height);
   ImGui::Text("Collider Offset: %.2f, %.2f", col_offset.x, col_offset.y);
 
+  // Show save to prefab button for prefab instances
+  if (current_mode == EditorMode::Entity && is_entity_prefab_instance && !entity_source_prefab_path.empty() && !editing_specific_state) {
+    if (ImGui::Button("Save Collider to Prefab")) {
+      // Load the source prefab
+      Engine::ECS::Prefab source_prefab = Engine::Resources::load_prefab(entity_source_prefab_path);
+      if (source_prefab.is_valid()) {
+        // Update the prefab's collider
+        auto* prefab_collider = source_prefab.get_component<Components::BoxCollider>();
+        if (prefab_collider) {
+          prefab_collider->type = collider->type;
+          prefab_collider->width = collider->width;
+          prefab_collider->height = collider->height;
+          prefab_collider->offset = collider->offset;
+          prefab_collider->aabb.half_width = collider->width / 2.0f;
+          prefab_collider->aabb.half_height = collider->height / 2.0f;
+          prefab_collider->polygon.vertices = collider->polygon.vertices;
+
+          // Mark the prefab as dirty to trigger save
+          Engine::ProjectSaveManager::set_dirty(
+            Engine::ProjectSaveManager::DirtyStates::Prefab(entity_source_prefab_path)
+          );
+
+          // Update all instances of this prefab
+          Engine::ECS::update_prefab_instances(source_prefab.get_impl()->get_prefab_id());
+
+          Log::info("Saved collider changes to prefab: " + entity_source_prefab_path);
+        }
+      }
+    }
+    ImGui::SameLine();
+    ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.0f, 1.0f), "(Changes only affect this instance)");
+  }
+
   ImGui::SameLine();
   if (ImGui::Button("Reset to Sprite Size")) {
     col_width = sprite_world_width;
@@ -753,7 +814,7 @@ void ColliderEditorPanel()
       collider->offset = col_offset;
       collider->aabb.half_width = col_width / 2.0f;
       collider->aabb.half_height = col_height / 2.0f;
-      
+
       if (current_mode == EditorMode::Prefab) {
         if (!selected_prefab_path.empty()) {
           Engine::ProjectSaveManager::set_dirty(
