@@ -245,6 +245,8 @@ namespace TilemapManager {
     }
 
     // Create individual collision entities for Custom collider type tiles
+    auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get_mutable();
+
     for (int rel_y = 0; rel_y < height; ++rel_y) {
       for (int rel_x = 0; rel_x < width; ++rel_x) {
         int abs_x = min_x + rel_x;
@@ -258,12 +260,30 @@ namespace TilemapManager {
           Math::Vec2D center_world = { center_x, center_y };
           Math::Vec2D scale = { grid_snap, grid_snap };
 
+          // Get the custom vertices from the atlas entry's tile_collider_configs
+          std::vector<Math::Vec2D> custom_vertices;
+          if (tile.atlas_index >= 0 && tile.atlas_index < static_cast<int>(project_settings.loaded_tilemaps.size())) {
+            auto& atlas_entry = project_settings.loaded_tilemaps[tile.atlas_index];
+            auto config_it = atlas_entry.tile_collider_configs.find(tile.tile_index);
+            if (config_it != atlas_entry.tile_collider_configs.end()) {
+              custom_vertices = config_it->second.custom_vertices;
+            }
+          }
+
           // Create collision-only entity for this Custom tile
           auto entity = Engine::ECS::create_entity()
             .add_component<Components::TileCollider>()
             .add_component<Components::Transform2D>(center_world, 0.0f, scale)
-            .add_component<Components::RigidBody>(true, false)
-            .add_component<Components::BoxCollider>(scale.x, scale.y, true);
+            .add_component<Components::RigidBody>(true, false);
+
+          // Add appropriate collider based on whether we have custom vertices
+          if (!custom_vertices.empty()) {
+            entity.add_component<Components::BoxCollider>(custom_vertices, true);
+          }
+          else {
+            // Fallback to AABB if no custom vertices defined
+            entity.add_component<Components::BoxCollider>(scale.x, scale.y, true);
+          }
 
           entity.clear_layers();
           entity.add_to_layer(layer_name);
