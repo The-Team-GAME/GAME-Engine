@@ -29,6 +29,28 @@ namespace Components {
     // Components::Color crash_out_world_tint = { 1.0f, 0.2f, 1.0f, 1.0f };
     // Components::Color dead_world_tint = { 1.0f, 0.0f, 1.0f, 1.0f };
 
+    // more distortion the higher the heartrate
+    float low_distortion_intensity = 0.0f;
+    float normal_distortion_intensity = 0.1f;
+    float high_distortion_intensity = 0.3f;
+    float very_high_distortion_intensity = 0.5f;
+    float crash_out_distortion_intensity = 0.8f;
+    float dead_distortion_intensity = 1.0f;
+
+    float low_distortion_speed = 0.0f;
+    float normal_distortion_speed = 0.1f;
+    float high_distortion_speed = 0.2f;
+    float very_high_distortion_speed = 0.4f;
+    float crash_out_distortion_speed = 0.6f;
+    float dead_distortion_speed = 0.8f;
+
+    float low_mesh_distortion_intensity = 0.0f;
+    float normal_mesh_distortion_intensity = 0.1f;
+    float high_mesh_distortion_intensity = 0.2f;
+    float very_high_mesh_distortion_intensity = 0.3f;
+    float crash_out_mesh_distortion_intensity = 0.4f;
+    float dead_mesh_distortion_intensity = 0.5f;
+
     float low_trail_lifetime = 0.0f;
     float normal_trail_lifetime = 0.2f;
     float high_trail_lifetime = 0.4f;

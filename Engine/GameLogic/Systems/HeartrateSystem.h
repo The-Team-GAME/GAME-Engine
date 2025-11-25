@@ -12,7 +12,7 @@ namespace Engine {
       Engine::Graphics::Font font;
     public:
       HeartrateSystem() {
-        require_components<Components::Heartrate, Components::Player, Components::Color, Components::Trail>();
+        require_components<Components::Heartrate, Components::Player, Components::Color, Components::Trail, Components::Distortion>();
 
         font = Engine::Resources::load_font("fonts/Roboto-Regular.ttf", 48);
       }
@@ -22,6 +22,8 @@ namespace Engine {
         auto* player = entity.get_component<Components::Player>();
         auto* color = entity.get_component<Components::Color>();
         auto* trail = entity.get_component<Components::Trail>();
+        auto* distortion = entity.get_component<Components::Distortion>();
+
 
         heartrate->decrease(heartrate->decay_rate * Engine::Time::get_fixed_dt());
 
@@ -85,30 +87,54 @@ namespace Engine {
           color->set_rgba(1.0f, 1.0f, 1.0f, 1.0f);
         }
 
-        // Adjust trail lifetime based on heartrate
+        // Adjust trail and distortion lifetime based on heartrate
         if (trail) {
           float lifetime = 0.0f;
+          float distortion_intensity = 0.0f;
+          float distortion_speed = 0.0f;
+          float mesh_distortion_intensity = 0.0f;
           switch (state) {
           case Components::Heartrate::HeartrateState::Low:
             lifetime = heartrate->low_trail_lifetime;
+            distortion_intensity = heartrate->low_distortion_intensity;
+            distortion_speed = heartrate->low_distortion_speed;
+            mesh_distortion_intensity = heartrate->low_mesh_distortion_intensity;
             break;
           case Components::Heartrate::HeartrateState::Normal:
             lifetime = heartrate->normal_trail_lifetime;
+            distortion_intensity = heartrate->normal_distortion_intensity;
+            distortion_speed = heartrate->normal_distortion_speed;
+            mesh_distortion_intensity = heartrate->normal_mesh_distortion_intensity;
             break;
           case Components::Heartrate::HeartrateState::High:
             lifetime = heartrate->high_trail_lifetime;
+            distortion_intensity = heartrate->high_distortion_intensity;
+            distortion_speed = heartrate->high_distortion_speed;
+            mesh_distortion_intensity = heartrate->high_mesh_distortion_intensity;
             break;
           case Components::Heartrate::HeartrateState::VeryHigh:
             lifetime = heartrate->very_high_trail_lifetime;
+            distortion_intensity = heartrate->very_high_distortion_intensity;
+            distortion_speed = heartrate->very_high_distortion_speed;
+            mesh_distortion_intensity = heartrate->very_high_mesh_distortion_intensity;
             break;
           case Components::Heartrate::HeartrateState::CrashOut:
             lifetime = heartrate->crash_out_trail_lifetime;
+            distortion_intensity = heartrate->crash_out_distortion_intensity;
+            distortion_speed = heartrate->crash_out_distortion_speed;
+            mesh_distortion_intensity = heartrate->crash_out_mesh_distortion_intensity;
             break;
           case Components::Heartrate::HeartrateState::Dead:
             lifetime = heartrate->dead_trail_lifetime;
+            distortion_intensity = heartrate->dead_distortion_intensity;
+            distortion_speed = heartrate->dead_distortion_speed;
+            mesh_distortion_intensity = heartrate->dead_mesh_distortion_intensity;
             break;
           }
           trail->lifetime = lifetime;
+          distortion->intensity = distortion_intensity;
+          distortion->speed = distortion_speed;
+          distortion->mesh_intensity = mesh_distortion_intensity;
         }
 
       }
