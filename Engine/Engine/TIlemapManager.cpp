@@ -156,7 +156,7 @@ namespace TilemapManager {
     std::vector<std::vector<bool>> processed(height, std::vector<bool>(width, false));
     std::vector<Rectangle> rectangles;
 
-    // Find all rectangles using greedy algorithm (merge any non-empty tiles for collision)
+    // Find all rectangles using greedy algorithm (merge only tiles with Default collider type)
     for (int rel_y = 0; rel_y < height; ++rel_y) {
       for (int rel_x = 0; rel_x < width; ++rel_x) {
         if (processed[rel_y][rel_x]) continue;
@@ -170,13 +170,20 @@ namespace TilemapManager {
           continue;
         }
 
-        // Find maximum width at this row (any non-empty tile)
+        // Skip tiles with Custom collider type - they will be handled separately
+        if (tile.collider_type == Engine::Graphics::TileColliderType::Custom) {
+          processed[rel_y][rel_x] = true;
+          continue;
+        }
+
+        // Find maximum width at this row (only merge Default collider type tiles)
         int max_width = 0;
         for (int w = 0; rel_x + w < width; ++w) {
           if (processed[rel_y][rel_x + w]) break;
 
           Engine::Graphics::Tile check_tile = int_map->get_tile(abs_x + w, abs_y);
           if (!check_tile.is_valid()) break;
+          if (check_tile.collider_type != Engine::Graphics::TileColliderType::Default) break;
 
           max_width++;
         }
@@ -186,7 +193,7 @@ namespace TilemapManager {
           continue;
         }
 
-        // Expand downward while maintaining the width (any non-empty tile)
+        // Expand downward while maintaining the width (only Default collider type tiles)
         int rect_height = 1;
         for (int h = 1; rel_y + h < height; ++h) {
           bool can_expand = true;
@@ -197,7 +204,7 @@ namespace TilemapManager {
             }
 
             Engine::Graphics::Tile check_tile = int_map->get_tile(abs_x + w, abs_y + h);
-            if (!check_tile.is_valid()) {
+            if (!check_tile.is_valid() || check_tile.collider_type != Engine::Graphics::TileColliderType::Default) {
               can_expand = false;
               break;
             }
@@ -235,6 +242,33 @@ namespace TilemapManager {
 
       entity.clear_layers();
       entity.add_to_layer(layer_name);
+    }
+
+    // Create individual collision entities for Custom collider type tiles
+    for (int rel_y = 0; rel_y < height; ++rel_y) {
+      for (int rel_x = 0; rel_x < width; ++rel_x) {
+        int abs_x = min_x + rel_x;
+        int abs_y = min_y + rel_y;
+        Engine::Graphics::Tile tile = int_map->get_tile(abs_x, abs_y);
+
+        if (tile.is_valid() && tile.collider_type == Engine::Graphics::TileColliderType::Custom) {
+          // Calculate world position for this individual tile
+          float center_x = grid_offset.x + abs_x * grid_snap + grid_snap * 0.5f;
+          float center_y = grid_offset.y + abs_y * grid_snap + grid_snap * 0.5f;
+          Math::Vec2D center_world = { center_x, center_y };
+          Math::Vec2D scale = { grid_snap, grid_snap };
+
+          // Create collision-only entity for this Custom tile
+          auto entity = Engine::ECS::create_entity()
+            .add_component<Components::TileCollider>()
+            .add_component<Components::Transform2D>(center_world, 0.0f, scale)
+            .add_component<Components::RigidBody>(true, false)
+            .add_component<Components::BoxCollider>(scale.x, scale.y, true);
+
+          entity.clear_layers();
+          entity.add_to_layer(layer_name);
+        }
+      }
     }
 
     broadcast_world_bounds();

@@ -96,10 +96,17 @@ namespace Engine {
       FontData(const std::string& path, unsigned int size);
     };
 
+    // Tile collider type - determines if tiles can be merged for collision optimization
+    enum class TileColliderType {
+      Default,  // Can be merged with adjacent Default tiles into rectangles
+      Custom    // Cannot be merged, each tile gets its own collision entity
+    };
+
     // Tile data used in tilemap rendering - contains atlas reference and tile index
     struct Tile {
       int atlas_index = -1; // Which atlas this tile uses
       int tile_index = -1;  // Which tile within the atlas
+      TileColliderType collider_type = TileColliderType::Default; // Collider merging behavior
 
       // Default constructor for empty tiles
       Tile() = default;
@@ -142,5 +149,5 @@ namespace Engine {
 }
 
 REFLECT_FIELDS(Engine::Graphics::SubTexture, tex_coords);
-REFLECT_FIELDS(Engine::Graphics::Tile, atlas_index, tile_index);
+REFLECT_FIELDS(Engine::Graphics::Tile, atlas_index, tile_index, collider_type);
 REFLECT_CUSTOM(Engine::Graphics::AtlasEntry, texture_path, tex_coords_list, drawIndex);
