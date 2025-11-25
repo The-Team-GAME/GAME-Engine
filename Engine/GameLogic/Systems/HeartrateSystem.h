@@ -62,7 +62,15 @@ namespace Engine {
             tilemap_entity.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
           }
           auto* tile_color = tilemap_entity.get_component<Components::Color>();
-          if (tile_color) *tile_color = tint_color;
+          if (tile_color) {
+            float lerp_speed = 1.0f;
+            float dt = Engine::Time::get_fixed_dt();
+
+            tile_color->r += (tint_color.x - tile_color->r) * lerp_speed * dt;
+            tile_color->g += (tint_color.y - tile_color->g) * lerp_speed * dt;
+            tile_color->b += (tint_color.z - tile_color->b) * lerp_speed * dt;
+            tile_color->a += (tint_color.w - tile_color->a) * lerp_speed * dt;
+          }
         }
 
         // Apply rainbow tint to player if in CrashOut state 
