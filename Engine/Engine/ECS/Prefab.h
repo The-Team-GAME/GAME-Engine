@@ -38,6 +38,7 @@ namespace Engine {
       LayerSignature layers;
       std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> component_storage;
       std::string prefab_id; // Unique UUID identifier for this prefab
+      std::string prefab_filepath; // Filepath where this prefab is stored
 
     public:
       PrefabImpl() = default;
@@ -228,6 +229,30 @@ namespace Engine {
       When creating a new prefab or loading from file.
       ==================================================================================*/
       void set_prefab_id(const std::string& id);
+
+      /*=================================================================================
+      Function Brief:
+      Gets the prefab filepath.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When tracking the location where the prefab is stored.
+      ==================================================================================*/
+      const std::string& get_prefab_filepath() const;
+
+      /*=================================================================================
+      Function Brief:
+      Sets the prefab filepath.
+
+      Parameters:
+      filepath - The filepath to set.
+
+      Where to call it:
+      When loading a prefab from file or saving to a new location.
+      ==================================================================================*/
+      void set_prefab_filepath(const std::string& filepath);
     };
 
     /* ============================ //
