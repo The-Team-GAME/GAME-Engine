@@ -11,4 +11,16 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
+#include <string>
+
+namespace Engine::ECS {
+  class Entity;
+  class Prefab;
+}
+
+namespace ColliderEditor {
+  void Open(Engine::ECS::Entity entity);
+  void Open(Engine::ECS::Prefab prefab, const std::string& prefab_path);
+}
+
 void ColliderEditorPanel();

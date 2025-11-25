@@ -13,6 +13,7 @@
 #include "ColliderEditorPanel.h"
 #include <imgui.h>
 #include "../ECS/ECS.h"
+#include "../ECS/Prefab.h"
 #include "../Components/CollisionComponents.h"
 #include "../Components/StateMachineComponents.h"
 #include "../Components/GraphicsComponents.h"
@@ -21,9 +22,16 @@
 #include "../Events/EngineEvents.h"
 #include "../Graphics/Renderer.h" // For Texture
 #include "../InputManager.h"
+#include "../ProjectSaveManager.h" // For marking prefabs dirty
 
 namespace {
+  enum class EditorMode { None, Entity, Prefab };
+  EditorMode current_mode = EditorMode::None;
+
   s32 selected_entity_id = -1;
+  Engine::ECS::Prefab selected_prefab;
+  std::string selected_prefab_path = "";
+
   bool selection_initialized = false;
   std::string preview_state_name = "";
   float preview_animation_start_time = 0.0f;
@@ -35,6 +43,9 @@ namespace {
     Engine::EventManager::add_event_listener<Engine::Events::SelectEntityEvent>(
       [](const Engine::Events::SelectEntityEvent& event) {
         selected_entity_id = static_cast<s32>(event.entity_id);
+        if (selected_entity_id != -1) {
+          current_mode = EditorMode::Entity;
+        }
       }
     );
   }
@@ -64,34 +75,103 @@ namespace {
   }
 }
 
+namespace ColliderEditor {
+  void Open(Engine::ECS::Entity entity) {
+    current_mode = EditorMode::Entity;
+    selected_entity_id = static_cast<s32>(entity.get_id());
+    ImGui::SetWindowFocus("Collider Editor");
+  }
+
+  void Open(Engine::ECS::Prefab prefab, const std::string& prefab_path) {
+    current_mode = EditorMode::Prefab;
+    selected_prefab = prefab;
+    selected_prefab_path = prefab_path;
+    ImGui::SetWindowFocus("Collider Editor");
+  }
+}
+
 void ColliderEditorPanel()
 {
   init_selection_listener();
 
   ImGui::Begin("Collider Editor");
 
-  if (selected_entity_id == -1) {
-    ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "No entity selected");
+  if (current_mode == EditorMode::None) {
+    ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "No entity or prefab selected");
     ImGui::End();
     return;
   }
 
-  auto entity = Engine::ECS::get_entity(selected_entity_id);
-  if (!entity.is_valid()) {
-    selected_entity_id = -1;
-    ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Selected entity no longer exists");
-    ImGui::End();
-    return;
-  }
+  // --- Context Retrieval ---
+  Components::BoxCollider* collider = nullptr;
+  Components::Texture* texture = nullptr;
+  Components::StateMachine* state_machine = nullptr;
+  Components::TextureAtlas* texture_atlas = nullptr;
+  Components::Animation* animation = nullptr;
+  Components::Transform2D* transform = nullptr;
+  Components::Flip* flip = nullptr;
 
-  auto* collider = entity.get_component<Components::BoxCollider>();
-  auto* texture = entity.get_component<Components::Texture>();
-  auto* state_machine = entity.get_component<Components::StateMachine>();
+  Engine::ECS::Entity entity; // Only valid in Entity mode
+
+  if (current_mode == EditorMode::Entity) {
+    if (selected_entity_id == -1) {
+      ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "No entity selected");
+      ImGui::End();
+      return;
+    }
+    entity = Engine::ECS::get_entity(selected_entity_id);
+    if (!entity.is_valid()) {
+      selected_entity_id = -1;
+      current_mode = EditorMode::None;
+      ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Selected entity no longer exists");
+      ImGui::End();
+      return;
+    }
+
+    collider = entity.get_component<Components::BoxCollider>();
+    texture = entity.get_component<Components::Texture>();
+    state_machine = entity.get_component<Components::StateMachine>();
+    texture_atlas = entity.get_component<Components::TextureAtlas>();
+    animation = entity.get_component<Components::Animation>();
+    transform = entity.get_component<Components::Transform2D>();
+    flip = entity.get_component<Components::Flip>();
+  }
+  else if (current_mode == EditorMode::Prefab) {
+    if (!selected_prefab.is_valid()) {
+      current_mode = EditorMode::None;
+      ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Selected prefab is invalid");
+      ImGui::End();
+      return;
+    }
+
+    collider = selected_prefab.get_component<Components::BoxCollider>();
+    texture = selected_prefab.get_component<Components::Texture>();
+    state_machine = selected_prefab.get_component<Components::StateMachine>();
+    texture_atlas = selected_prefab.get_component<Components::TextureAtlas>();
+    animation = selected_prefab.get_component<Components::Animation>();
+    transform = selected_prefab.get_component<Components::Transform2D>();
+    flip = selected_prefab.get_component<Components::Flip>();
+
+    ImGui::Text("Editing Prefab: %s", selected_prefab.get_impl()->get_prefab_id().c_str());
+  }
 
   if (!collider) {
-    ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.0f, 1.0f), "Selected entity has no BoxCollider");
+    ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.0f, 1.0f), "Selected object has no BoxCollider");
     if (ImGui::Button("Add BoxCollider")) {
-      entity.add_component<Components::BoxCollider>(50.0f, 50.0f, false);
+      if (current_mode == EditorMode::Entity) {
+        entity.add_component<Components::BoxCollider>(50.0f, 50.0f, false);
+      }
+      else {
+        selected_prefab.add_component<Components::BoxCollider>(50.0f, 50.0f, false);
+        // Mark dirty
+        if (!selected_prefab_path.empty()) {
+          Engine::ProjectSaveManager::set_dirty(
+            Engine::ProjectSaveManager::DirtyStates::Prefab(selected_prefab_path)
+          );
+        }
+        // We don't have the path here easily, but update_prefab_instances will be called
+        Engine::ECS::update_prefab_instances(selected_prefab.get_impl()->get_prefab_id());
+      }
     }
     ImGui::End();
     return;
@@ -106,9 +186,9 @@ void ColliderEditorPanel()
     ImGui::Text("State Machine Detected");
 
     // Dropdown to select state
-    if (ImGui::BeginCombo("Edit State", selected_state_name.empty() ? "Current (Live)" : selected_state_name.c_str())) {
+    if (ImGui::BeginCombo("Edit State", selected_state_name.empty() ? "Current (Live/Default)" : selected_state_name.c_str())) {
 
-      if (ImGui::Selectable("Current (Live)", selected_state_name.empty())) {
+      if (ImGui::Selectable("Current (Live/Default)", selected_state_name.empty())) {
         selected_state_name = "";
       }
 
@@ -152,15 +232,15 @@ void ColliderEditorPanel()
 
   // --- Data Retrieval ---
   Engine::Graphics::Texture texture_handle = nullptr;
-  const Components::TextureAtlas* texture_atlas = nullptr;
-  const Components::Animation* animation = nullptr;
+  const Components::TextureAtlas* active_atlas = texture_atlas;
+  const Components::Animation* active_animation = animation;
 
   float col_width = 0.0f;
   float col_height = 0.0f;
   Math::Vec2D col_offset = { 0.0f, 0.0f };
   Components::ColliderType col_type = Components::ColliderType::AABB;
   std::vector<Math::Vec2D> col_vertices; // For polygon colliders
-  bool should_apply_flip = false; // Only apply flip in live mode
+  bool should_apply_flip = false; // Only apply flip in live mode (Entity)
 
   if (editing_specific_state) {
     // STATE EDITING MODE - completely isolated from live entity
@@ -170,8 +250,8 @@ void ColliderEditorPanel()
     if (state.animation.has_value()) {
       if (state.animation->texture.texture_handle) {
         texture_handle = state.animation->texture.texture_handle;
-        texture_atlas = &state.animation->texture_atlas;
-        animation = &state.animation->animation;
+        active_atlas = &state.animation->texture_atlas;
+        active_animation = &state.animation->animation;
 
         // Track preview animation start time (reset when state changes)
         if (preview_state_name != current_editing_state) {
@@ -195,11 +275,9 @@ void ColliderEditorPanel()
     }
   }
   else {
-    // LIVE EDITING MODE - use entity's current data including flip
+    // LIVE/DEFAULT EDITING MODE
     if (texture && texture->texture_handle) {
       texture_handle = texture->texture_handle;
-      texture_atlas = entity.get_component<Components::TextureAtlas>();
-      animation = entity.get_component<Components::Animation>();
     }
 
     col_type = collider->type;
@@ -207,7 +285,11 @@ void ColliderEditorPanel()
     col_height = collider->height;
     col_offset = collider->offset;
     col_vertices = collider->polygon.vertices;
-    should_apply_flip = true; // Apply flip only in live mode
+    
+    // Apply flip only if in Entity mode
+    if (current_mode == EditorMode::Entity) {
+        should_apply_flip = true;
+    }
   }
 
   if (!texture_handle) {
@@ -245,9 +327,9 @@ void ColliderEditorPanel()
   float sprite_world_height = 0.0f;
 
   // 1. Base Scale from Transform2D
-  if (auto* xform = entity.get_component<Components::Transform2D>()) {
-    sprite_world_width = xform->scale.x;
-    sprite_world_height = xform->scale.y;
+  if (transform) {
+    sprite_world_width = transform->scale.x;
+    sprite_world_height = transform->scale.y;
   }
   else if (texture_handle) {
     // Fallback if no transform (unlikely for rendered entity)
@@ -286,22 +368,22 @@ void ColliderEditorPanel()
   }
 
   // 3. UV Calculation (for texture subset)
-  if (texture_atlas && !texture_atlas->subTextures.empty()) {
+  if (active_atlas && !active_atlas->subTextures.empty()) {
     int atlas_index = 0;
-    if (animation && !animation->frames.empty()) {
-      if (editing_specific_state) {
+    if (active_animation && !active_animation->frames.empty()) {
+      if (editing_specific_state || current_mode == EditorMode::Prefab) {
         // Calculate animated frame using preview start time
         // Always loop in preview mode for better visualization
         float elapsed = Engine::Time::get_time() - preview_animation_start_time;
         float time_to_use = elapsed;
 
-        if (animation->totalDuration > 0.0f) {
-          time_to_use = fmod(elapsed, animation->totalDuration);
+        if (active_animation->totalDuration > 0.0f) {
+          time_to_use = fmod(elapsed, active_animation->totalDuration);
         }
 
         int current_frame = 0;
-        for (int i = 0; i < static_cast<int>(animation->frames.size()); ++i) {
-          if (time_to_use >= animation->frames[i].before_time) {
+        for (int i = 0; i < static_cast<int>(active_animation->frames.size()); ++i) {
+          if (time_to_use >= active_animation->frames[i].before_time) {
             current_frame = i;
           }
           else {
@@ -309,31 +391,26 @@ void ColliderEditorPanel()
           }
         }
 
-        atlas_index = animation->frames[current_frame].atlas_index;
+        atlas_index = active_animation->frames[current_frame].atlas_index;
       }
       else {
-        // Use live animation's current frame
-        atlas_index = animation->get_current_atlas_index();
+        // Use live animation's current frame (Entity mode only)
+        atlas_index = active_animation->get_current_atlas_index();
       }
     }
     else {
       // No animation, use drawIndex if valid, else 0
-      if (texture_atlas->drawIndex >= 0) {
-        atlas_index = texture_atlas->drawIndex;
+      if (active_atlas->drawIndex >= 0) {
+        atlas_index = active_atlas->drawIndex;
       }
     }
 
-    if (atlas_index >= 0 && atlas_index < static_cast<int>(texture_atlas->subTextures.size())) {
-      const auto& subTex = texture_atlas->subTextures[atlas_index];
+    if (atlas_index >= 0 && atlas_index < static_cast<int>(active_atlas->subTextures.size())) {
+      const auto& subTex = active_atlas->subTextures[atlas_index];
       // tex_coords: 0=BL, 1=BR, 2=TR, 3=TL
       // ImGui wants TL (uv0) and BR (uv1)
       uv0 = { subTex.tex_coords[3].x, subTex.tex_coords[3].y };
       uv1 = { subTex.tex_coords[1].x, subTex.tex_coords[1].y };
-
-      // Note: We do NOT adjust sprite_world_width/height based on UVs here
-      // because the User said "scale is how many pixel it is on the screen".
-      // The Transform2D scale defines the FINAL size of the rendered quad,
-      // regardless of how much texture it displays.
     }
   }
 
@@ -375,11 +452,9 @@ void ColliderEditorPanel()
 
   // Apply flip to offset ONLY in live mode
   Math::Vec2D display_offset = col_offset;
-  if (should_apply_flip) {
-    if (auto* flip = entity.get_component<Components::Flip>()) {
-      display_offset.x *= flip->value.x;
-      display_offset.y *= flip->value.y;
-    }
+  if (should_apply_flip && flip) {
+    display_offset.x *= flip->value.x;
+    display_offset.y *= flip->value.y;
   }
 
   float handle_size = 8.0f;
@@ -421,11 +496,9 @@ void ColliderEditorPanel()
 
       float flip_x = 1.0f;
       float flip_y = 1.0f;
-      if (should_apply_flip) {
-        if (auto* flip = entity.get_component<Components::Flip>()) {
-          flip_x = flip->value.x;
-          flip_y = flip->value.y;
-        }
+      if (should_apply_flip && flip) {
+        flip_x = flip->value.x;
+        flip_y = flip->value.y;
       }
 
       col_offset.x += (delta.x / scale) * flip_x;
@@ -624,7 +697,7 @@ void ColliderEditorPanel()
       }
     }
     else {
-      // Live update
+      // Live/Default update
       collider->type = col_type;
       collider->width = col_width;
       collider->height = col_height;
@@ -635,6 +708,16 @@ void ColliderEditorPanel()
       // Update polygon vertices
       if (col_type == Components::ColliderType::POLYGON) {
         collider->polygon.vertices = col_vertices;
+      }
+
+      // If in Prefab mode, mark dirty
+      if (current_mode == EditorMode::Prefab) {
+        if (!selected_prefab_path.empty()) {
+          Engine::ProjectSaveManager::set_dirty(
+            Engine::ProjectSaveManager::DirtyStates::Prefab(selected_prefab_path)
+          );
+        }
+        Engine::ECS::update_prefab_instances(selected_prefab.get_impl()->get_prefab_id());
       }
     }
   }
@@ -670,6 +753,15 @@ void ColliderEditorPanel()
       collider->offset = col_offset;
       collider->aabb.half_width = col_width / 2.0f;
       collider->aabb.half_height = col_height / 2.0f;
+      
+      if (current_mode == EditorMode::Prefab) {
+        if (!selected_prefab_path.empty()) {
+          Engine::ProjectSaveManager::set_dirty(
+            Engine::ProjectSaveManager::DirtyStates::Prefab(selected_prefab_path)
+          );
+        }
+        Engine::ECS::update_prefab_instances(selected_prefab.get_impl()->get_prefab_id());
+      }
     }
   }
 

@@ -16,6 +16,7 @@
 #include <imgui.h>
 #include "ReflectionFieldWidgets.h"
 #include "TextureAtlasWidget.h"
+#include "../ColliderEditorPanel.h"
 #include "../../UndoManager/UndoManager.h"
 #include "../ResourcePicker.h"
 #include "../../Resources.h"
@@ -523,13 +524,29 @@ namespace ImGuiWidgets {
     return true;
   }
 
+  bool render_box_collider_field(ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity, Engine::ECS::Prefab* prefab, const std::string& prefab_path) {
+    if (ImGui::Button("Edit Collider")) {
+      if (entity.is_valid()) {
+        ColliderEditor::Open(entity);
+      } else if (prefab && prefab->is_valid()) {
+        ColliderEditor::Open(*prefab, prefab_path);
+      }
+    }
+    return true;
+  }
+
   bool render_specialized_field(
     const std::string& display_name,
     const std::string& type_hint,
     ReflectionLibrary::GenericValue& field_value,
     bool& modified,
-    Engine::ECS::Entity entity
+    Engine::ECS::Entity entity,
+    Engine::ECS::Prefab* prefab,
+    const std::string& prefab_path
   ) {
+    if (type_hint == "Components::BoxCollider") {
+      return render_box_collider_field(field_value, modified, entity, prefab, prefab_path);
+    }
     if (type_hint == "Components::Color") {
       return render_color_field(field_value, modified);
     }
@@ -566,7 +583,9 @@ namespace ImGuiWidgets {
     const std::string& display_name,
     ReflectionLibrary::GenericValue& field_value,
     bool& modified,
-    Engine::ECS::Entity entity
+    Engine::ECS::Entity entity,
+    Engine::ECS::Prefab* prefab,
+    const std::string& prefab_path
   ) {
 
     if (field_value.isBool()) {
@@ -608,7 +627,7 @@ namespace ImGuiWidgets {
     else if (field_value.isObject()) {
       auto& nested_fields = field_value.getObject();
       for (auto& [nested_name, nested_value] : nested_fields) {
-        render_field(display_name + "::" + nested_name, nested_value.type_hint, nested_value, modified, entity);
+        render_field(display_name + "::" + nested_name, nested_value.type_hint, nested_value, modified, entity, prefab, prefab_path);
       }
     }
     else if (field_value.isArray()) {
@@ -658,7 +677,7 @@ namespace ImGuiWidgets {
           }
 
           // Render the element using the field renderer with its type hint
-          render_field(element_label, array[i].type_hint, array[i], modified, entity);
+          render_field(element_label, array[i].type_hint, array[i], modified, entity, prefab, prefab_path);
 
           ImGui::PopID();
         }
@@ -676,12 +695,14 @@ namespace ImGuiWidgets {
     const std::string& type_hint,
     ReflectionLibrary::GenericValue& field_value,
     bool& modified,
-    Engine::ECS::Entity entity
+    Engine::ECS::Entity entity,
+    Engine::ECS::Prefab* prefab,
+    const std::string& prefab_path
   ) {
     ImGui::PushItemWidth(-FLT_MIN);
 
     // First try specialized rendering, then fallback to generic
-    render_specialized_field(display_name, type_hint, field_value, modified, entity) || render_generic_field(display_name, field_value, modified, entity);
+    render_specialized_field(display_name, type_hint, field_value, modified, entity, prefab, prefab_path) || render_generic_field(display_name, field_value, modified, entity, prefab, prefab_path);
 
     ImGui::PopItemWidth();
 

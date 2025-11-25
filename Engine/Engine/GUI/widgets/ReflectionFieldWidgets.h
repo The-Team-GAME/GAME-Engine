@@ -19,6 +19,7 @@
 #include <functional>
 #include "../../Reflection/ReflectionLibrary.h"
 #include "../../ECS/ECS.h"
+#include "../../ECS/Prefab.h"
 
 namespace ImGuiWidgets {
 
@@ -138,6 +139,21 @@ namespace ImGuiWidgets {
 
   /*=================================================================================
   Function Brief:
+  Renders a button to open the Collider Editor for Components::BoxCollider fields.
+
+  Parameters:
+  field_value - Reference to the GenericValue containing box collider data
+  modified    - [out] Set to true if the collider was modified by user input
+  entity      - Optional entity context
+  prefab      - Optional prefab context
+
+  Returns:
+  true if the field was handled and rendered, false otherwise.
+  ==================================================================================*/
+  bool render_box_collider_field(ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity, Engine::ECS::Prefab* prefab = nullptr, const std::string& prefab_path = "");
+
+  /*=================================================================================
+  Function Brief:
   Renders specialized UI fields for specific component types (e.g., Color, Texture,
   Font). Returns true if the field was handled and rendered, false otherwise.
 
@@ -159,7 +175,9 @@ namespace ImGuiWidgets {
     const std::string& type_hint,
     ReflectionLibrary::GenericValue& field_value,
     bool& modified,
-    Engine::ECS::Entity entity = Engine::ECS::Entity(Engine::ECS::INVALID_ENTITY)
+    Engine::ECS::Entity entity = Engine::ECS::Entity(Engine::ECS::INVALID_ENTITY),
+    Engine::ECS::Prefab* prefab = nullptr,
+    const std::string& prefab_path = ""
   );
 
   /*=================================================================================
@@ -183,7 +201,9 @@ namespace ImGuiWidgets {
     const std::string& display_name,
     ReflectionLibrary::GenericValue& field_value,
     bool& modified,
-    Engine::ECS::Entity entity = Engine::ECS::Entity(Engine::ECS::INVALID_ENTITY)
+    Engine::ECS::Entity entity = Engine::ECS::Entity(Engine::ECS::INVALID_ENTITY),
+    Engine::ECS::Prefab* prefab = nullptr,
+    const std::string& prefab_path = ""
   );
 
   /*=================================================================================
@@ -205,7 +225,9 @@ namespace ImGuiWidgets {
     const std::string& type_hint,
     ReflectionLibrary::GenericValue& field_value,
     bool& modified,
-    Engine::ECS::Entity entity = Engine::ECS::Entity(Engine::ECS::INVALID_ENTITY)
+    Engine::ECS::Entity entity = Engine::ECS::Entity(Engine::ECS::INVALID_ENTITY),
+    Engine::ECS::Prefab* prefab = nullptr,
+    const std::string& prefab_path = ""
   );
 
 } // namespace ImGuiWidgets
