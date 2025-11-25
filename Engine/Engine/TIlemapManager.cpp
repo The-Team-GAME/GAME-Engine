@@ -266,7 +266,11 @@ namespace TilemapManager {
             auto& atlas_entry = project_settings.loaded_tilemaps[tile.atlas_index];
             auto config_it = atlas_entry.tile_collider_configs.find(tile.tile_index);
             if (config_it != atlas_entry.tile_collider_configs.end()) {
-              custom_vertices = config_it->second.custom_vertices;
+              // Copy vertices and flip Y-axis (screen coords have Y increasing downward)
+              custom_vertices.reserve(config_it->second.custom_vertices.size());
+              for (const auto& v : config_it->second.custom_vertices) {
+                custom_vertices.push_back(Math::Vec2D(v.x, -v.y));
+              }
             }
           }
 
