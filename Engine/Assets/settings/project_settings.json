@@ -4202,15 +4202,15 @@
         },
         {
             "first": "tilemap_foreground_mid",
-            "second": "player"
-        },
-        {
-            "first": "tilemap_foreground_mid",
             "second": "enemy"
         },
         {
-            "first": "enemy",
-            "second": "damage_enemy"
+            "first": "tilemap_foreground_mid",
+            "second": "player"
+        },
+        {
+            "first": "damage_enemy",
+            "second": "enemy"
         }
     ]
 }

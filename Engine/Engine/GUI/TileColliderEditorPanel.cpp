@@ -21,6 +21,7 @@
 #include "../Graphics/RendererInternal.h"
 #include "../Components/CollisionComponents.h"
 #include "../ProjectSaveManager.h"
+#include "../TilemapManager.h"
 #include "../Math/Vector2D.h"
 #include <vector>
 #include <algorithm>
@@ -263,15 +264,33 @@ void TileColliderEditorPanel() {
       ImVec2 uv0(min_u, min_v);
       ImVec2 uv1(max_u, max_v);
 
-      // Calculate display size
-      float tex_width = (max_u - min_u) * atlas_entry.texture_handle->width;
-      float tex_height = (max_v - min_v) * atlas_entry.texture_handle->height;
+      // Calculate sprite world dimensions (in virtual pixels)
+      // The tile size in pixels
+      float tex_width_pixels = (max_u - min_u) * atlas_entry.texture_handle->width;
+      float tex_height_pixels = (max_v - min_v) * atlas_entry.texture_handle->height;
 
+      // Sprite world dimensions - for tiles, we use the default tile grid size
+      // This represents the actual world-space size of the tile
+      float sprite_world_width = 64.0f;  // Default tile size in world units
+      float sprite_world_height = 64.0f;
+
+      // If we can get the actual tile size from TilemapManager, use that
+      sprite_world_width = TilemapManager::get_grid_size();
+      sprite_world_height = TilemapManager::get_grid_size();
+
+      // Calculate scale to fit sprite in window while maintaining aspect ratio
       ImVec2 avail_size = ImGui::GetContentRegionAvail();
-      float scale = std::min(avail_size.x / tex_width, avail_size.y / tex_height) * 0.8f;
+      if (avail_size.x < 100 || avail_size.y < 100) avail_size = { 400, 400 };
 
-      float draw_width = tex_width * scale;
-      float draw_height = tex_height * scale;
+      if (sprite_world_width <= 0.001f) sprite_world_width = 64.0f;
+      if (sprite_world_height <= 0.001f) sprite_world_height = 64.0f;
+
+      float scale_x = avail_size.x / sprite_world_width;
+      float scale_y = avail_size.y / sprite_world_height;
+      float scale = std::min(scale_x, scale_y) * 0.8f; // 0.8 to leave some padding
+
+      float draw_width = sprite_world_width * scale;
+      float draw_height = sprite_world_height * scale;
 
       ImVec2 cursor_pos = ImGui::GetCursorScreenPos();
       float offset_x = (avail_size.x - draw_width) * 0.5f;
