@@ -143,17 +143,6 @@ namespace Engine {
       std::unordered_map<int, Tile> tile_collider_configs; // Per-tile collider configurations (tile_index -> Tile config)
 
       AtlasEntry() : texture_handle(nullptr), subTextures(), drawIndex(-1), texture_path("") {}
-
-      // Custom reflector for serialization/deserialization
-      struct Reflector {
-        std::string texture_path;
-        std::vector<std::array<Math::Vec2D, 4>> tex_coords_list;
-        int drawIndex;
-        std::unordered_map<int, Tile> tile_collider_configs;
-
-        static Reflector reflect(const AtlasEntry& entry);
-        static AtlasEntry create(const Reflector& r);
-      };
     };
 
   }
@@ -161,4 +150,4 @@ namespace Engine {
 
 REFLECT_FIELDS(Engine::Graphics::SubTexture, tex_coords);
 REFLECT_FIELDS(Engine::Graphics::Tile, atlas_index, tile_index, collider_type, aabb_width, aabb_height, aabb_offset, custom_vertices);
-REFLECT_CUSTOM(Engine::Graphics::AtlasEntry, texture_path, tex_coords_list, drawIndex, tile_collider_configs);
+REFLECT_FIELDS(Engine::Graphics::AtlasEntry, texture_path, subTextures, drawIndex, tile_collider_configs);
