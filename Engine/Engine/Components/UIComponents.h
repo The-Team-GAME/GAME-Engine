@@ -44,33 +44,46 @@ namespace Components
     f32 hovered_height = 0.0f;
     std::vector<Math::Vec2D> hovered_vertices;  // For polygon colliders
 
-    // Track current hover state
+    // Clicked state collider data
+    f32 clicked_width = 0.0f;
+    f32 clicked_height = 0.0f;
+    std::vector<Math::Vec2D> clicked_vertices;  // For polygon colliders
+
+    // Track current hover and click state
     bool is_hovered = false;
+    bool is_clicked = false;
 
     DynamicButton() = default;
 
     // Constructor for AABB colliders
-    DynamicButton(f32 normal_w, f32 normal_h, f32 hovered_w, f32 hovered_h)
+    DynamicButton(f32 normal_w, f32 normal_h, f32 hovered_w, f32 hovered_h, f32 clicked_w, f32 clicked_h)
       : normal_width(normal_w)
       , normal_height(normal_h)
       , hovered_width(hovered_w)
       , hovered_height(hovered_h)
+      , clicked_width(clicked_w)
+      , clicked_height(clicked_h)
       , is_hovered(false)
+      , is_clicked(false)
     {
     }
 
     // Constructor for polygon colliders
-    DynamicButton(const std::vector<Math::Vec2D>& normal_verts, const std::vector<Math::Vec2D>& hovered_verts)
+    DynamicButton(const std::vector<Math::Vec2D>& normal_verts, const std::vector<Math::Vec2D>& hovered_verts, const std::vector<Math::Vec2D>& clicked_verts)
       : normal_width(0.0f)
       , normal_height(0.0f)
       , normal_vertices(normal_verts)
       , hovered_width(0.0f)
       , hovered_height(0.0f)
       , hovered_vertices(hovered_verts)
+      , clicked_width(0.0f)
+      , clicked_height(0.0f)
+      , clicked_vertices(clicked_verts)
       , is_hovered(false)
+      , is_clicked(false)
     {
     }
   };
 }
 
-REGISTER_COMPONENT(Components::DynamicButton, normal_width, normal_height, normal_vertices, hovered_width, hovered_height, hovered_vertices, is_hovered)
+REGISTER_COMPONENT(Components::DynamicButton, normal_width, normal_height, normal_vertices, hovered_width, hovered_height, hovered_vertices, clicked_width, clicked_height, clicked_vertices, is_hovered, is_clicked)

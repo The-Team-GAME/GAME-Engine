@@ -30,7 +30,7 @@
 
 namespace {
   enum class EditorMode { None, Entity, Prefab };
-  enum class ButtonColliderMode { Normal, Hovered }; // For DynamicButton editing
+  enum class ButtonColliderMode { Normal, Hovered, Clicked }; // For DynamicButton editing
 
   EditorMode current_mode = EditorMode::None;
   ButtonColliderMode button_mode = ButtonColliderMode::Normal; // Default to normal state
@@ -145,6 +145,10 @@ void ColliderEditorPanel()
         }
         if (ImGui::BeginTabItem("Hovered State")) {
           button_mode = ButtonColliderMode::Hovered;
+          ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Clicked State")) {
+          button_mode = ButtonColliderMode::Clicked;
           ImGui::EndTabItem();
         }
         ImGui::EndTabBar();
@@ -320,10 +324,15 @@ void ColliderEditorPanel()
         col_height = dynamic_button->normal_height;
         col_vertices = dynamic_button->normal_vertices;
       }
-      else { // Hovered
+      else if (button_mode == ButtonColliderMode::Hovered) {
         col_width = dynamic_button->hovered_width;
         col_height = dynamic_button->hovered_height;
         col_vertices = dynamic_button->hovered_vertices;
+      }
+      else { // Clicked
+        col_width = dynamic_button->clicked_width;
+        col_height = dynamic_button->clicked_height;
+        col_vertices = dynamic_button->clicked_vertices;
       }
     }
     else {
@@ -596,10 +605,15 @@ void ColliderEditorPanel()
           dynamic_button->normal_height = col_height;
           dynamic_button->normal_vertices = col_vertices;
         }
-        else { // Hovered
+        else if (button_mode == ButtonColliderMode::Hovered) {
           dynamic_button->hovered_width = col_width;
           dynamic_button->hovered_height = col_height;
           dynamic_button->hovered_vertices = col_vertices;
+        }
+        else { // Clicked
+          dynamic_button->clicked_width = col_width;
+          dynamic_button->clicked_height = col_height;
+          dynamic_button->clicked_vertices = col_vertices;
         }
 
         // Also update BoxCollider with current values

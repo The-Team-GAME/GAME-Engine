@@ -157,10 +157,13 @@ namespace Engine
             dynamic_button->normal_height = box_collider->height;
             dynamic_button->hovered_width = box_collider->width;
             dynamic_button->hovered_height = box_collider->height;
+            dynamic_button->clicked_width = box_collider->width;
+            dynamic_button->clicked_height = box_collider->height;
           }
           else {
             dynamic_button->normal_vertices = box_collider->polygon.vertices;
             dynamic_button->hovered_vertices = box_collider->polygon.vertices;
+            dynamic_button->clicked_vertices = box_collider->polygon.vertices;
           }
         }
 
@@ -183,17 +186,32 @@ namespace Engine
 
         // Check if mouse is inside
         bool inside = is_point_inside_collider(mouse, *box_collider);
+        bool is_mouse_down = Engine::Input::is_pressed(KeyCode::MouseLeft);
 
-        // Update hover state and collider dimensions
-        if (inside && !dynamic_button->is_hovered) {
-          // Just entered hover state
-          apply_hovered_state(*dynamic_button, *box_collider);
-          dynamic_button->is_hovered = true;
+        // State priority: Clicked > Hovered > Normal
+        if (inside && is_mouse_down) {
+          // Mouse is down on button - apply clicked state
+          if (!dynamic_button->is_clicked) {
+            apply_clicked_state(*dynamic_button, *box_collider);
+            dynamic_button->is_clicked = true;
+            dynamic_button->is_hovered = false;
+          }
         }
-        else if (!inside && dynamic_button->is_hovered) {
-          // Just exited hover state
-          apply_normal_state(*dynamic_button, *box_collider);
-          dynamic_button->is_hovered = false;
+        else if (inside && !is_mouse_down) {
+          // Mouse is hovering but not clicked
+          if (!dynamic_button->is_hovered || dynamic_button->is_clicked) {
+            apply_hovered_state(*dynamic_button, *box_collider);
+            dynamic_button->is_hovered = true;
+            dynamic_button->is_clicked = false;
+          }
+        }
+        else {
+          // Mouse is outside - return to normal state
+          if (dynamic_button->is_hovered || dynamic_button->is_clicked) {
+            apply_normal_state(*dynamic_button, *box_collider);
+            dynamic_button->is_hovered = false;
+            dynamic_button->is_clicked = false;
+          }
         }
       }
 
@@ -228,6 +246,23 @@ namespace Engine
           // Update polygon vertices
           if (!button.hovered_vertices.empty()) {
             collider.polygon.vertices = button.hovered_vertices;
+          }
+        }
+      }
+
+      void apply_clicked_state(const Components::DynamicButton& button, Components::BoxCollider& collider) {
+        if (collider.type == Components::ColliderType::AABB) {
+          // Update AABB dimensions
+          collider.width = button.clicked_width;
+          collider.height = button.clicked_height;
+          collider.aabb.half_width = button.clicked_width / 2.0f;
+          collider.aabb.half_height = button.clicked_height / 2.0f;
+        }
+        else if (collider.type == Components::ColliderType::OBB ||
+          collider.type == Components::ColliderType::POLYGON) {
+          // Update polygon vertices
+          if (!button.clicked_vertices.empty()) {
+            collider.polygon.vertices = button.clicked_vertices;
           }
         }
       }
