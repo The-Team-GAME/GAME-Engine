@@ -58,28 +58,36 @@ namespace ImGuiWidgets {
     float flip_x,
     float flip_y
   ) {
-    // Apply flip to offset for display
-    Math::Vec2D display_offset = collider_data.offset;
-    if (should_apply_flip) {
-      display_offset.x *= flip_x;
-      display_offset.y *= flip_y;
-    }
-
-    // Collider Center (Sprite Center + Display Offset)
-    ImVec2 col_center = { center.x + display_offset.x * scale, center.y + display_offset.y * scale };
-
     // Ensure minimum collider size to prevent degenerate cases
     const float min_size = 1.0f;
     if (collider_data.width < min_size) collider_data.width = min_size;
     if (collider_data.height < min_size) collider_data.height = min_size;
 
-    // Collider half-extents scaled to screen
-    float col_half_w = (collider_data.width / 2.0f) * scale;
-    float col_half_h = (collider_data.height / 2.0f) * scale;
+    // Convert collider data (center-based) to UI box (min/max corners in world space)
+    // UI box is relative to sprite center (not affected by flip yet)
+    float ui_min_x = collider_data.offset.x - collider_data.width / 2.0f;
+    float ui_min_y = collider_data.offset.y - collider_data.height / 2.0f;
+    float ui_max_x = collider_data.offset.x + collider_data.width / 2.0f;
+    float ui_max_y = collider_data.offset.y + collider_data.height / 2.0f;
 
-    // Collider screen coords
-    ImVec2 col_min = { col_center.x - col_half_w, col_center.y - col_half_h };
-    ImVec2 col_max = { col_center.x + col_half_w, col_center.y + col_half_h };
+    // Apply flip for display
+    Math::Vec2D display_min = { ui_min_x, ui_min_y };
+    Math::Vec2D display_max = { ui_max_x, ui_max_y };
+    if (should_apply_flip) {
+      display_min.x *= flip_x;
+      display_min.y *= flip_y;
+      display_max.x *= flip_x;
+      display_max.y *= flip_y;
+
+      // Ensure min is still less than max after flip
+      if (display_min.x > display_max.x) std::swap(display_min.x, display_max.x);
+      if (display_min.y > display_max.y) std::swap(display_min.y, display_max.y);
+    }
+
+    // Convert to screen space
+    ImVec2 col_min = { center.x + display_min.x * scale, center.y + display_min.y * scale };
+    ImVec2 col_max = { center.x + display_max.x * scale, center.y + display_max.y * scale };
+    ImVec2 col_center = { (col_min.x + col_max.x) * 0.5f, (col_min.y + col_max.y) * 0.5f };
 
     // Draw Rect
     draw_list->AddRect(col_min, col_max, IM_COL32(0, 255, 0, 255), 0.0f, 0, 2.0f);
@@ -110,22 +118,41 @@ namespace ImGuiWidgets {
       ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
     }
 
-    // Edge handles
+    // Edge and corner handles
     bool shift_held = ImGui::GetIO().KeyShift;
+
+    // Helper lambda to convert UI box back to collider data
+    auto update_collider_from_ui_box = [&](float new_ui_min_x, float new_ui_min_y, float new_ui_max_x, float new_ui_max_y) {
+      // Ensure min < max
+      if (new_ui_min_x > new_ui_max_x) std::swap(new_ui_min_x, new_ui_max_x);
+      if (new_ui_min_y > new_ui_max_y) std::swap(new_ui_min_y, new_ui_max_y);
+
+      // Calculate new width, height, and offset
+      float new_width = new_ui_max_x - new_ui_min_x;
+      float new_height = new_ui_max_y - new_ui_min_y;
+
+      // Enforce minimum size
+      if (new_width < min_size) new_width = min_size;
+      if (new_height < min_size) new_height = min_size;
+
+      // Update collider data
+      collider_data.width = new_width;
+      collider_data.height = new_height;
+      collider_data.offset.x = (new_ui_min_x + new_ui_max_x) * 0.5f;
+      collider_data.offset.y = (new_ui_min_y + new_ui_max_y) * 0.5f;
+      };
 
     // Right handle
     if (ColliderHandle(draw_list, { col_max.x, col_center.y }, handle_size, handle_color, 0, delta)) {
       float dx = delta.x / scale;
       if (shift_held) {
         // Shift: scale symmetrically from center
-        collider_data.width += dx * 2.0f;
+        update_collider_from_ui_box(ui_min_x - dx, ui_min_y, ui_max_x + dx, ui_max_y);
       }
       else {
         // No shift: move right edge only
-        collider_data.width += dx;
-        collider_data.offset.x += dx / 2.0f;
+        update_collider_from_ui_box(ui_min_x, ui_min_y, ui_max_x + dx, ui_max_y);
       }
-      if (collider_data.width < min_size) collider_data.width = min_size;
       changed = true;
     }
 
@@ -134,14 +161,12 @@ namespace ImGuiWidgets {
       float dx = delta.x / scale;
       if (shift_held) {
         // Shift: scale symmetrically from center
-        collider_data.width -= dx * 2.0f;
+        update_collider_from_ui_box(ui_min_x - dx, ui_min_y, ui_max_x + dx, ui_max_y);
       }
       else {
         // No shift: move left edge only
-        collider_data.width -= dx;
-        collider_data.offset.x += dx / 2.0f;
+        update_collider_from_ui_box(ui_min_x + dx, ui_min_y, ui_max_x, ui_max_y);
       }
-      if (collider_data.width < min_size) collider_data.width = min_size;
       changed = true;
     }
 
@@ -150,14 +175,12 @@ namespace ImGuiWidgets {
       float dy = delta.y / scale;
       if (shift_held) {
         // Shift: scale symmetrically from center
-        collider_data.height -= dy * 2.0f;
+        update_collider_from_ui_box(ui_min_x, ui_min_y - dy, ui_max_x, ui_max_y + dy);
       }
       else {
         // No shift: move top edge only
-        collider_data.height -= dy;
-        collider_data.offset.y += dy / 2.0f;
+        update_collider_from_ui_box(ui_min_x, ui_min_y + dy, ui_max_x, ui_max_y);
       }
-      if (collider_data.height < min_size) collider_data.height = min_size;
       changed = true;
     }
 
@@ -166,14 +189,12 @@ namespace ImGuiWidgets {
       float dy = delta.y / scale;
       if (shift_held) {
         // Shift: scale symmetrically from center
-        collider_data.height += dy * 2.0f;
+        update_collider_from_ui_box(ui_min_x, ui_min_y - dy, ui_max_x, ui_max_y + dy);
       }
       else {
         // No shift: move bottom edge only
-        collider_data.height += dy;
-        collider_data.offset.y -= dy / 2.0f;
+        update_collider_from_ui_box(ui_min_x, ui_min_y, ui_max_x, ui_max_y + dy);
       }
-      if (collider_data.height < min_size) collider_data.height = min_size;
       changed = true;
     }
 
@@ -186,18 +207,12 @@ namespace ImGuiWidgets {
       float dy = delta.y / scale;
       if (shift_held) {
         // Shift: scale symmetrically from center
-        collider_data.width -= dx * 2.0f;
-        collider_data.height -= dy * 2.0f;
+        update_collider_from_ui_box(ui_min_x - dx, ui_min_y - dy, ui_max_x + dx, ui_max_y + dy);
       }
       else {
         // No shift: move top-left corner only
-        collider_data.width -= dx;
-        collider_data.height -= dy;
-        collider_data.offset.x += dx / 2.0f;
-        collider_data.offset.y += dy / 2.0f;
+        update_collider_from_ui_box(ui_min_x + dx, ui_min_y + dy, ui_max_x, ui_max_y);
       }
-      if (collider_data.width < min_size) collider_data.width = min_size;
-      if (collider_data.height < min_size) collider_data.height = min_size;
       changed = true;
     }
 
@@ -207,18 +222,12 @@ namespace ImGuiWidgets {
       float dy = delta.y / scale;
       if (shift_held) {
         // Shift: scale symmetrically from center
-        collider_data.width += dx * 2.0f;
-        collider_data.height -= dy * 2.0f;
+        update_collider_from_ui_box(ui_min_x - dx, ui_min_y - dy, ui_max_x + dx, ui_max_y + dy);
       }
       else {
         // No shift: move top-right corner only
-        collider_data.width += dx;
-        collider_data.height -= dy;
-        collider_data.offset.x += dx / 2.0f;
-        collider_data.offset.y += dy / 2.0f;
+        update_collider_from_ui_box(ui_min_x, ui_min_y + dy, ui_max_x + dx, ui_max_y);
       }
-      if (collider_data.width < min_size) collider_data.width = min_size;
-      if (collider_data.height < min_size) collider_data.height = min_size;
       changed = true;
     }
 
@@ -228,18 +237,12 @@ namespace ImGuiWidgets {
       float dy = delta.y / scale;
       if (shift_held) {
         // Shift: scale symmetrically from center
-        collider_data.width -= dx * 2.0f;
-        collider_data.height += dy * 2.0f;
+        update_collider_from_ui_box(ui_min_x - dx, ui_min_y - dy, ui_max_x + dx, ui_max_y + dy);
       }
       else {
         // No shift: move bottom-left corner only
-        collider_data.width -= dx;
-        collider_data.height += dy;
-        collider_data.offset.x += dx / 2.0f;
-        collider_data.offset.y -= dy / 2.0f;
+        update_collider_from_ui_box(ui_min_x + dx, ui_min_y, ui_max_x, ui_max_y + dy);
       }
-      if (collider_data.width < min_size) collider_data.width = min_size;
-      if (collider_data.height < min_size) collider_data.height = min_size;
       changed = true;
     }
 
@@ -249,18 +252,12 @@ namespace ImGuiWidgets {
       float dy = delta.y / scale;
       if (shift_held) {
         // Shift: scale symmetrically from center
-        collider_data.width += dx * 2.0f;
-        collider_data.height += dy * 2.0f;
+        update_collider_from_ui_box(ui_min_x - dx, ui_min_y - dy, ui_max_x + dx, ui_max_y + dy);
       }
       else {
         // No shift: move bottom-right corner only
-        collider_data.width += dx;
-        collider_data.height += dy;
-        collider_data.offset.x += dx / 2.0f;
-        collider_data.offset.y -= dy / 2.0f;
+        update_collider_from_ui_box(ui_min_x, ui_min_y, ui_max_x + dx, ui_max_y + dy);
       }
-      if (collider_data.width < min_size) collider_data.width = min_size;
-      if (collider_data.height < min_size) collider_data.height = min_size;
       changed = true;
     }
 
