@@ -108,12 +108,12 @@ namespace Engine {
       int atlas_index = -1; // Which atlas this tile uses
       int tile_index = -1;  // Which tile within the atlas
       TileColliderType collider_type = TileColliderType::Default; // Collider merging behavior
-      
+
       // AABB collider properties (for AABB collider type)
       float aabb_width = 0.0f;
       float aabb_height = 0.0f;
       Math::Vec2D aabb_offset = { 0.0f, 0.0f };
-      
+
       // Polygon collider properties (for Polygon collider type)
       std::vector<Math::Vec2D> custom_vertices;
 

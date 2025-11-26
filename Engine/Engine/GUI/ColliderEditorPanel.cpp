@@ -539,26 +539,68 @@ void ColliderEditorPanel()
     }
 
     // Edge handles
+    bool shift_held = ImGui::GetIO().KeyShift;
+
+    // Right handle
     if (draw_handle(draw_list, { col_max.x, col_center.y }, handle_size, handle_color, 0, delta)) {
-      col_width += (delta.x / scale) * 2.0f;
+      float dx = delta.x / scale;
+      if (shift_held) {
+        // Shift: scale symmetrically from center
+        col_width += dx * 2.0f;
+      }
+      else {
+        // No shift: move right edge only
+        col_width += dx;
+        col_offset.x += dx / 2.0f;
+      }
       if (col_width < 0) col_width = 0;
       changed = true;
     }
 
+    // Left handle
     if (draw_handle(draw_list, { col_min.x, col_center.y }, handle_size, handle_color, 1, delta)) {
-      col_width -= (delta.x / scale) * 2.0f;
+      float dx = delta.x / scale;
+      if (shift_held) {
+        // Shift: scale symmetrically from center
+        col_width -= dx * 2.0f;
+      }
+      else {
+        // No shift: move left edge only
+        col_width -= dx;
+        col_offset.x += dx / 2.0f;
+      }
       if (col_width < 0) col_width = 0;
       changed = true;
     }
 
+    // Top handle
     if (draw_handle(draw_list, { col_center.x, col_min.y }, handle_size, handle_color, 2, delta)) {
-      col_height -= (delta.y / scale) * 2.0f;
+      float dy = delta.y / scale;
+      if (shift_held) {
+        // Shift: scale symmetrically from center
+        col_height -= dy * 2.0f;
+      }
+      else {
+        // No shift: move top edge only
+        col_height -= dy;
+        col_offset.y += dy / 2.0f;
+      }
       if (col_height < 0) col_height = 0;
       changed = true;
     }
 
+    // Bottom handle
     if (draw_handle(draw_list, { col_center.x, col_max.y }, handle_size, handle_color, 3, delta)) {
-      col_height += (delta.y / scale) * 2.0f;
+      float dy = delta.y / scale;
+      if (shift_held) {
+        // Shift: scale symmetrically from center
+        col_height += dy * 2.0f;
+      }
+      else {
+        // No shift: move bottom edge only
+        col_height += dy;
+        col_offset.y -= dy / 2.0f;
+      }
       if (col_height < 0) col_height = 0;
       changed = true;
     }

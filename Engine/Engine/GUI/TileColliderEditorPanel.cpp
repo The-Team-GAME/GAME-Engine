@@ -193,7 +193,7 @@ void TileColliderEditorPanel() {
   if (tile_config.collider_type == Engine::Graphics::TileColliderType::Default) current_type = 0;
   else if (tile_config.collider_type == Engine::Graphics::TileColliderType::AABB) current_type = 1;
   else if (tile_config.collider_type == Engine::Graphics::TileColliderType::Polygon) current_type = 2;
-  
+
   const char* type_names[] = { "Default (Merged)", "AABB (Custom Box)", "Polygon (Custom Shape)" };
 
   if (ImGui::Combo("##ColliderType", &current_type, type_names, IM_ARRAYSIZE(type_names))) {
@@ -347,23 +347,65 @@ void TileColliderEditorPanel() {
       }
 
       // Edge handles
+      bool shift_held = ImGui::GetIO().KeyShift;
+
+      // Right handle
       if (draw_handle(draw_list, { col_max.x, col_center.y }, handle_size, handle_color, 0, delta)) {
-        tile_config.aabb_width += (delta.x / scale) * 2.0f;
+        float dx = delta.x / scale;
+        if (shift_held) {
+          // Shift: scale symmetrically from center
+          tile_config.aabb_width += dx * 2.0f;
+        }
+        else {
+          // No shift: move right edge only
+          tile_config.aabb_width += dx;
+          tile_config.aabb_offset.x += dx / 2.0f;
+        }
         changed = true;
       }
 
+      // Left handle
       if (draw_handle(draw_list, { col_min.x, col_center.y }, handle_size, handle_color, 1, delta)) {
-        tile_config.aabb_width -= (delta.x / scale) * 2.0f;
+        float dx = delta.x / scale;
+        if (shift_held) {
+          // Shift: scale symmetrically from center
+          tile_config.aabb_width -= dx * 2.0f;
+        }
+        else {
+          // No shift: move left edge only
+          tile_config.aabb_width -= dx;
+          tile_config.aabb_offset.x += dx / 2.0f;
+        }
         changed = true;
       }
 
+      // Top handle
       if (draw_handle(draw_list, { col_center.x, col_min.y }, handle_size, handle_color, 2, delta)) {
-        tile_config.aabb_height -= (delta.y / scale) * 2.0f;
+        float dy = delta.y / scale;
+        if (shift_held) {
+          // Shift: scale symmetrically from center
+          tile_config.aabb_height -= dy * 2.0f;
+        }
+        else {
+          // No shift: move top edge only
+          tile_config.aabb_height -= dy;
+          tile_config.aabb_offset.y += dy / 2.0f;
+        }
         changed = true;
       }
 
+      // Bottom handle
       if (draw_handle(draw_list, { col_center.x, col_max.y }, handle_size, handle_color, 3, delta)) {
-        tile_config.aabb_height += (delta.y / scale) * 2.0f;
+        float dy = delta.y / scale;
+        if (shift_held) {
+          // Shift: scale symmetrically from center
+          tile_config.aabb_height += dy * 2.0f;
+        }
+        else {
+          // No shift: move bottom edge only
+          tile_config.aabb_height += dy;
+          tile_config.aabb_offset.y -= dy / 2.0f;
+        }
         changed = true;
       }
 
@@ -374,7 +416,7 @@ void TileColliderEditorPanel() {
 
       // Display values below the editor
       ImGui::SetCursorScreenPos({ image_min.x, image_max.y + 10 });
-      ImGui::Text("Size: %.2f x %.2f | Offset: %.2f, %.2f", 
+      ImGui::Text("Size: %.2f x %.2f | Offset: %.2f, %.2f",
         tile_config.aabb_width, tile_config.aabb_height,
         tile_config.aabb_offset.x, tile_config.aabb_offset.y);
     }
@@ -531,15 +573,15 @@ void TileColliderEditorPanel() {
       // Click on sprite (but not on a vertex) to add new vertex
       if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && hovered_vertex == -1) {
         ImVec2 mouse_pos = ImGui::GetMousePos();
-        
+
         // Check if click is within the image bounds
         if (mouse_pos.x >= image_min.x && mouse_pos.x <= image_max.x &&
-            mouse_pos.y >= image_min.y && mouse_pos.y <= image_max.y) {
-          
+          mouse_pos.y >= image_min.y && mouse_pos.y <= image_max.y) {
+
           // Convert screen position to local vertex coordinates
           float local_x = (mouse_pos.x - center.x) / scale;
           float local_y = -((mouse_pos.y - center.y) / scale); // Flip Y
-          
+
           // Insert the new vertex at the best position in the polygon
           if (tile_config.custom_vertices.empty()) {
             tile_config.custom_vertices.push_back(Math::Vec2D(local_x, local_y));
@@ -548,24 +590,24 @@ void TileColliderEditorPanel() {
             // Find the closest edge to insert between
             int best_insert_idx = 0;
             float best_dist = std::numeric_limits<float>::max();
-            
+
             for (size_t i = 0; i < tile_config.custom_vertices.size(); ++i) {
               size_t next_i = (i + 1) % tile_config.custom_vertices.size();
-              
+
               Math::Vec2D v1 = tile_config.custom_vertices[i];
               Math::Vec2D v2 = tile_config.custom_vertices[next_i];
               Math::Vec2D new_v(local_x, local_y);
-              
+
               // Calculate distance to edge midpoint
               Math::Vec2D edge_mid = (v1 + v2) * 0.5f;
               float dist = (new_v - edge_mid).get_magnitude();
-              
+
               if (dist < best_dist) {
                 best_dist = dist;
                 best_insert_idx = static_cast<int>(next_i);
               }
             }
-            
+
             tile_config.custom_vertices.insert(
               tile_config.custom_vertices.begin() + best_insert_idx,
               Math::Vec2D(local_x, local_y)

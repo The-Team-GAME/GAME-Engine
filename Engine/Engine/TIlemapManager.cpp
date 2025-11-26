@@ -171,8 +171,8 @@ namespace TilemapManager {
         }
 
         // Skip tiles with AABB or Polygon collider type - they will be handled separately
-        if (tile.collider_type == Engine::Graphics::TileColliderType::AABB || 
-            tile.collider_type == Engine::Graphics::TileColliderType::Polygon) {
+        if (tile.collider_type == Engine::Graphics::TileColliderType::AABB ||
+          tile.collider_type == Engine::Graphics::TileColliderType::Polygon) {
           processed[rel_y][rel_x] = true;
           continue;
         }
@@ -254,8 +254,8 @@ namespace TilemapManager {
         int abs_y = min_y + rel_y;
         Engine::Graphics::Tile tile = int_map->get_tile(abs_x, abs_y);
 
-        if (tile.is_valid() && (tile.collider_type == Engine::Graphics::TileColliderType::AABB || 
-                                tile.collider_type == Engine::Graphics::TileColliderType::Polygon)) {
+        if (tile.is_valid() && (tile.collider_type == Engine::Graphics::TileColliderType::AABB ||
+          tile.collider_type == Engine::Graphics::TileColliderType::Polygon)) {
           // Calculate world position for this individual tile
           float center_x = grid_offset.x + abs_x * grid_snap + grid_snap * 0.5f;
           float center_y = grid_offset.y + abs_y * grid_snap + grid_snap * 0.5f;
