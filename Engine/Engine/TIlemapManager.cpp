@@ -147,6 +147,24 @@ namespace TilemapManager {
       return;
     }
 
+    // Get project settings to access AtlasEntry.tile_collider_configs
+    auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get_mutable();
+
+    // Helper lambda to get collider type for a tile by looking up in atlas entry
+    auto get_tile_collider_type = [&](const Engine::Graphics::Tile& tile) -> Engine::Graphics::TileColliderType {
+      if (!tile.is_valid()) return Engine::Graphics::TileColliderType::Default;
+
+      if (tile.atlas_index >= 0 && tile.atlas_index < static_cast<int>(project_settings.loaded_tilemaps.size())) {
+        auto& atlas_entry = project_settings.loaded_tilemaps[tile.atlas_index];
+        auto config_it = atlas_entry.tile_collider_configs.find(tile.tile_index);
+        if (config_it != atlas_entry.tile_collider_configs.end()) {
+          return config_it->second.collider_type;
+        }
+      }
+
+      return Engine::Graphics::TileColliderType::Default; // Default if no config found
+      };
+
     // Helper struct for rectangle merging
     struct Rectangle {
       int x, y, width, height;
@@ -170,9 +188,12 @@ namespace TilemapManager {
           continue;
         }
 
+        // Look up collider type from atlas entry
+        Engine::Graphics::TileColliderType collider_type = get_tile_collider_type(tile);
+
         // Skip tiles with AABB or Polygon collider type - they will be handled separately
-        if (tile.collider_type == Engine::Graphics::TileColliderType::AABB ||
-          tile.collider_type == Engine::Graphics::TileColliderType::Polygon) {
+        if (collider_type == Engine::Graphics::TileColliderType::AABB ||
+          collider_type == Engine::Graphics::TileColliderType::Polygon) {
           processed[rel_y][rel_x] = true;
           continue;
         }
@@ -184,7 +205,7 @@ namespace TilemapManager {
 
           Engine::Graphics::Tile check_tile = int_map->get_tile(abs_x + w, abs_y);
           if (!check_tile.is_valid()) break;
-          if (check_tile.collider_type != Engine::Graphics::TileColliderType::Default) break;
+          if (get_tile_collider_type(check_tile) != Engine::Graphics::TileColliderType::Default) break;
 
           max_width++;
         }
@@ -205,7 +226,7 @@ namespace TilemapManager {
             }
 
             Engine::Graphics::Tile check_tile = int_map->get_tile(abs_x + w, abs_y + h);
-            if (!check_tile.is_valid() || check_tile.collider_type != Engine::Graphics::TileColliderType::Default) {
+            if (!check_tile.is_valid() || get_tile_collider_type(check_tile) != Engine::Graphics::TileColliderType::Default) {
               can_expand = false;
               break;
             }
@@ -245,45 +266,42 @@ namespace TilemapManager {
       entity.add_to_layer(layer_name);
     }
 
-    // Create individual collision entities for Custom collider type tiles
-    auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get_mutable();
-
+    // Create individual collision entities for AABB and Polygon collider type tiles
     for (int rel_y = 0; rel_y < height; ++rel_y) {
       for (int rel_x = 0; rel_x < width; ++rel_x) {
         int abs_x = min_x + rel_x;
         int abs_y = min_y + rel_y;
         Engine::Graphics::Tile tile = int_map->get_tile(abs_x, abs_y);
 
-        if (tile.is_valid() && (tile.collider_type == Engine::Graphics::TileColliderType::AABB ||
-          tile.collider_type == Engine::Graphics::TileColliderType::Polygon)) {
+        if (!tile.is_valid()) continue;
+
+        // Look up collision configuration from atlas entry
+        Engine::Graphics::TileColliderType collider_type = get_tile_collider_type(tile);
+
+        if (collider_type == Engine::Graphics::TileColliderType::AABB ||
+          collider_type == Engine::Graphics::TileColliderType::Polygon) {
+
           // Calculate world position for this individual tile
           float center_x = grid_offset.x + abs_x * grid_snap + grid_snap * 0.5f;
           float center_y = grid_offset.y + abs_y * grid_snap + grid_snap * 0.5f;
           Math::Vec2D center_world = { center_x, center_y };
           Math::Vec2D scale = { grid_snap, grid_snap };
 
-          if (tile.collider_type == Engine::Graphics::TileColliderType::AABB) {
-            // Get AABB properties from tile config or from atlas entry
-            float box_width = tile.aabb_width;
-            float box_height = tile.aabb_height;
-            Math::Vec2D box_offset = tile.aabb_offset;
+          if (collider_type == Engine::Graphics::TileColliderType::AABB) {
+            // Look up AABB properties from atlas entry
+            float box_width = grid_snap;
+            float box_height = grid_snap;
+            Math::Vec2D box_offset = { 0.0f, 0.0f };
 
-            // If not set on the tile itself, try to get from atlas entry
-            if (box_width == 0.0f && box_height == 0.0f) {
-              if (tile.atlas_index >= 0 && tile.atlas_index < static_cast<int>(project_settings.loaded_tilemaps.size())) {
-                auto& atlas_entry = project_settings.loaded_tilemaps[tile.atlas_index];
-                auto config_it = atlas_entry.tile_collider_configs.find(tile.tile_index);
-                if (config_it != atlas_entry.tile_collider_configs.end()) {
-                  box_width = config_it->second.aabb_width;
-                  box_height = config_it->second.aabb_height;
-                  box_offset = config_it->second.aabb_offset;
-                }
+            if (tile.atlas_index >= 0 && tile.atlas_index < static_cast<int>(project_settings.loaded_tilemaps.size())) {
+              auto& atlas_entry = project_settings.loaded_tilemaps[tile.atlas_index];
+              auto config_it = atlas_entry.tile_collider_configs.find(tile.tile_index);
+              if (config_it != atlas_entry.tile_collider_configs.end()) {
+                box_width = config_it->second.aabb_width;
+                box_height = config_it->second.aabb_height;
+                box_offset = config_it->second.aabb_offset;
               }
             }
-
-            // Default to tile size if still not set
-            if (box_width == 0.0f) box_width = grid_snap;
-            if (box_height == 0.0f) box_height = grid_snap;
 
             // Apply offset to center position
             Math::Vec2D final_center = center_world + box_offset;
@@ -298,35 +316,28 @@ namespace TilemapManager {
             entity.clear_layers();
             entity.add_to_layer(layer_name);
           }
-          else if (tile.collider_type == Engine::Graphics::TileColliderType::Polygon) {
-            // Get the custom vertices from the atlas entry's tile_collider_configs
+          else if (collider_type == Engine::Graphics::TileColliderType::Polygon) {
+            // Look up custom vertices from the atlas entry's tile_collider_configs
             std::vector<Math::Vec2D> custom_vertices;
             if (tile.atlas_index >= 0 && tile.atlas_index < static_cast<int>(project_settings.loaded_tilemaps.size())) {
               auto& atlas_entry = project_settings.loaded_tilemaps[tile.atlas_index];
               auto config_it = atlas_entry.tile_collider_configs.find(tile.tile_index);
               if (config_it != atlas_entry.tile_collider_configs.end()) {
-                // Copy vertices directly without flipping
                 custom_vertices = config_it->second.custom_vertices;
               }
             }
 
-            // Create collision-only entity for this Polygon tile
-            auto entity = Engine::ECS::create_entity()
-              .add_component<Components::TileCollider>()
-              .add_component<Components::Transform2D>(center_world, 0.0f, scale)
-              .add_component<Components::RigidBody>(true, false);
-
-            // Add appropriate collider based on whether we have custom vertices
             if (!custom_vertices.empty()) {
-              entity.add_component<Components::BoxCollider>(custom_vertices, true);
-            }
-            else {
-              // Fallback to AABB if no custom vertices defined
-              entity.add_component<Components::BoxCollider>(scale.x, scale.y, true);
-            }
+              // Create Polygon collision entity
+              auto entity = Engine::ECS::create_entity()
+                .add_component<Components::TileCollider>()
+                .add_component<Components::Transform2D>(center_world, 0.0f, scale)
+                .add_component<Components::RigidBody>(true, false)
+                .add_component<Components::BoxCollider>(custom_vertices, true);
 
-            entity.clear_layers();
-            entity.add_to_layer(layer_name);
+              entity.clear_layers();
+              entity.add_to_layer(layer_name);
+            }
           }
         }
       }

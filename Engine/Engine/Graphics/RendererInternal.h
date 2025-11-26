@@ -103,19 +103,11 @@ namespace Engine {
       Polygon   // Custom polygon with vertices, individual per tile
     };
 
-    // Tile data used in tilemap rendering - contains atlas reference and tile index
+    // Tile data used in tilemap rendering - contains ONLY references to atlas and tile
+    // Collision configuration is looked up at runtime from AtlasEntry.tile_collider_configs
     struct Tile {
       int atlas_index = -1; // Which atlas this tile uses
       int tile_index = -1;  // Which tile within the atlas
-      TileColliderType collider_type = TileColliderType::Default; // Collider merging behavior
-
-      // AABB collider properties (for AABB collider type)
-      float aabb_width = 0.0f;
-      float aabb_height = 0.0f;
-      Math::Vec2D aabb_offset = { 0.0f, 0.0f };
-
-      // Polygon collider properties (for Polygon collider type)
-      std::vector<Math::Vec2D> custom_vertices;
 
       // Default constructor for empty tiles
       Tile() = default;
@@ -131,6 +123,21 @@ namespace Engine {
       }
     };
 
+    // Collision configuration for a tile - stored in AtlasEntry.tile_collider_configs
+    struct TileColliderConfig {
+      TileColliderType collider_type = TileColliderType::Default;
+
+      // AABB collider properties (for AABB collider type)
+      float aabb_width = 0.0f;
+      float aabb_height = 0.0f;
+      Math::Vec2D aabb_offset = { 0.0f, 0.0f };
+
+      // Polygon collider properties (for Polygon collider type)
+      std::vector<Math::Vec2D> custom_vertices;
+
+      TileColliderConfig() = default;
+    };
+
     // Forward declare Texture type (defined in Renderer.h)
     using Texture = std::shared_ptr<TextureData>;
 
@@ -140,7 +147,7 @@ namespace Engine {
       std::vector<SubTexture> subTextures;       // UV coordinates for each tile in the atlas
       int drawIndex = -1;                        // Current subTexture index to draw (unused in tilemap)
       std::string texture_path;                  // Path to texture file (for serialization/deserialization)
-      std::unordered_map<int, Tile> tile_collider_configs; // Per-tile collider configurations (tile_index -> Tile config)
+      std::unordered_map<int, TileColliderConfig> tile_collider_configs; // Per-tile collider configurations (tile_index -> config)
 
       AtlasEntry() : texture_handle(nullptr), subTextures(), drawIndex(-1), texture_path("") {}
     };
@@ -150,5 +157,6 @@ namespace Engine {
 
 REFLECT_ENUM(Engine::Graphics::TileColliderType, Default, AABB, Polygon);
 REFLECT_FIELDS(Engine::Graphics::SubTexture, tex_coords);
-REFLECT_FIELDS(Engine::Graphics::Tile, atlas_index, tile_index, collider_type, aabb_width, aabb_height, aabb_offset, custom_vertices);
+REFLECT_FIELDS(Engine::Graphics::Tile, atlas_index, tile_index);
+REFLECT_FIELDS(Engine::Graphics::TileColliderConfig, collider_type, aabb_width, aabb_height, aabb_offset, custom_vertices);
 REFLECT_FIELDS(Engine::Graphics::AtlasEntry, texture_path, subTextures, drawIndex, tile_collider_configs);

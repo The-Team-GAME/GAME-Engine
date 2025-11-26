@@ -35,27 +35,25 @@ namespace {
   int selected_tile_index = -1;
   ImGuiWidgets::TextureAtlasState atlas_widget_state;
 
-  // Helper function to update all existing tile instances in the world with new collider config
-  void update_all_tile_instances(int atlas_idx, int tile_idx, const Engine::Graphics::Tile& config) {
-    // Find all TileMap entities and update tiles that match this atlas/tile index
+  // Helper function to rebuild collision entities for all tiles that use this atlas/tile combination
+  void update_all_tile_instances(int atlas_idx, int tile_idx, const Engine::Graphics::TileColliderConfig& config) {
+    // Find all TileMap entities and rebuild layers that contain tiles matching this atlas/tile index
     for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
       auto* tilemap = entity.get_component<Components::TileMap>();
       if (!tilemap) continue;
 
-      bool any_updated = false;
+      bool has_matching_tiles = false;
 
-      // Iterate through all tiles in this tilemap
-      for (auto& [key, tile] : tilemap->tiles) {
+      // Check if this tilemap contains any tiles with the specified atlas/tile index
+      for (const auto& [key, tile] : tilemap->tiles) {
         if (tile.atlas_index == atlas_idx && tile.tile_index == tile_idx) {
-          // Update the collider configuration for this tile
-          tile.collider_type = config.collider_type;
-          tile.custom_vertices = config.custom_vertices;
-          any_updated = true;
+          has_matching_tiles = true;
+          break;
         }
       }
 
-      // If any tiles were updated, rebuild the collision for this layer
-      if (any_updated) {
+      // If any matching tiles were found, rebuild the collision for this layer
+      if (has_matching_tiles) {
         // Get all layers this entity is on and rebuild each one
         auto layers = entity.get_layers();
         for (Engine::ECS::LayerID layer_id = 0; layer_id < Engine::ECS::MAX_LAYERS; ++layer_id) {
@@ -155,14 +153,7 @@ void TileColliderEditorPanel() {
   ImGui::Separator();
 
   // Get or create the tile collider configuration from the atlas entry
-  Engine::Graphics::Tile& tile_config = atlas_entry.tile_collider_configs[selected_tile_index];
-
-  // Initialize if first time
-  if (tile_config.atlas_index == -1) {
-    tile_config.atlas_index = current_atlas_index;
-    tile_config.tile_index = selected_tile_index;
-    tile_config.collider_type = Engine::Graphics::TileColliderType::Default;
-  }
+  Engine::Graphics::TileColliderConfig& tile_config = atlas_entry.tile_collider_configs[selected_tile_index];
 
   // Collider Type Selection
   ImGui::Text("Collider Type");
