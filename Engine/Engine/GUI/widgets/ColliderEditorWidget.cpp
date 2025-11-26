@@ -172,6 +172,93 @@ namespace ImGuiWidgets {
       changed = true;
     }
 
+    // Corner handles for diagonal scaling
+    ImU32 corner_handle_color = IM_COL32(255, 255, 0, 255); // Yellow for corners
+
+    // Top-left corner
+    if (ColliderHandle(draw_list, col_min, handle_size, corner_handle_color, 4, delta)) {
+      float dx = delta.x / scale;
+      float dy = delta.y / scale;
+      if (shift_held) {
+        // Shift: scale symmetrically from center
+        collider_data.width -= dx * 2.0f;
+        collider_data.height -= dy * 2.0f;
+      }
+      else {
+        // No shift: move top-left corner only
+        collider_data.width -= dx;
+        collider_data.height -= dy;
+        collider_data.offset.x += dx / 2.0f;
+        collider_data.offset.y += dy / 2.0f;
+      }
+      if (collider_data.width < 0) collider_data.width = 0;
+      if (collider_data.height < 0) collider_data.height = 0;
+      changed = true;
+    }
+
+    // Top-right corner
+    if (ColliderHandle(draw_list, { col_max.x, col_min.y }, handle_size, corner_handle_color, 5, delta)) {
+      float dx = delta.x / scale;
+      float dy = delta.y / scale;
+      if (shift_held) {
+        // Shift: scale symmetrically from center
+        collider_data.width += dx * 2.0f;
+        collider_data.height -= dy * 2.0f;
+      }
+      else {
+        // No shift: move top-right corner only
+        collider_data.width += dx;
+        collider_data.height -= dy;
+        collider_data.offset.x += dx / 2.0f;
+        collider_data.offset.y += dy / 2.0f;
+      }
+      if (collider_data.width < 0) collider_data.width = 0;
+      if (collider_data.height < 0) collider_data.height = 0;
+      changed = true;
+    }
+
+    // Bottom-left corner
+    if (ColliderHandle(draw_list, { col_min.x, col_max.y }, handle_size, corner_handle_color, 6, delta)) {
+      float dx = delta.x / scale;
+      float dy = delta.y / scale;
+      if (shift_held) {
+        // Shift: scale symmetrically from center
+        collider_data.width -= dx * 2.0f;
+        collider_data.height += dy * 2.0f;
+      }
+      else {
+        // No shift: move bottom-left corner only
+        collider_data.width -= dx;
+        collider_data.height += dy;
+        collider_data.offset.x += dx / 2.0f;
+        collider_data.offset.y -= dy / 2.0f;
+      }
+      if (collider_data.width < 0) collider_data.width = 0;
+      if (collider_data.height < 0) collider_data.height = 0;
+      changed = true;
+    }
+
+    // Bottom-right corner
+    if (ColliderHandle(draw_list, col_max, handle_size, corner_handle_color, 7, delta)) {
+      float dx = delta.x / scale;
+      float dy = delta.y / scale;
+      if (shift_held) {
+        // Shift: scale symmetrically from center
+        collider_data.width += dx * 2.0f;
+        collider_data.height += dy * 2.0f;
+      }
+      else {
+        // No shift: move bottom-right corner only
+        collider_data.width += dx;
+        collider_data.height += dy;
+        collider_data.offset.x += dx / 2.0f;
+        collider_data.offset.y -= dy / 2.0f;
+      }
+      if (collider_data.width < 0) collider_data.width = 0;
+      if (collider_data.height < 0) collider_data.height = 0;
+      changed = true;
+    }
+
     return changed;
   }
 
