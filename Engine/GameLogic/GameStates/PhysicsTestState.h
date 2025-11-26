@@ -58,7 +58,7 @@ namespace {
 
   void make_wall(Vec2D position, Vec2D scale)
   {
-    f32 rotation = 35.f;
+    f32 rotation = 0.f;
     Engine::ECS::create_entity().add_component<Components::Tag<"PhysicsTestState">>()
       .add_component<Components::Transform2D>(position.x, position.y, rotation, scale.x, scale.y) // pos.x, pos.y, rotation, scale.x, scale.y
       .add_component<Components::Color>(white)
@@ -75,6 +75,8 @@ public:
   void load() {
     // Free falling box
     player = make_player(player_pos, npc_scale);
+    Components::BoxCollider* player_box = player.get_component< Components::BoxCollider>();
+    player_box->kinetic_friction = 0.1f;
     make_npc(Vec2D{ 1000.f, 825.f }, npc_scale, 600.f, 750.f, 1050.f, 1200.f);
 
     // Walling the player in
@@ -106,13 +108,14 @@ public:
       .add_component<Components::RigidBody>(true, false)
       .add_component<Components::BoxCollider>(300.0f, 50.0f, true); // width, height
 
-    Engine::ECS::create_entity().add_component<Components::Tag<"PhysicsTestState">>()
-      .add_component<Components::Transform2D>(500.0f, 675.0f, 0.0f, 500.0f, 50.0f) // pos.x, pos.y, rotation, scale.x, scale.y
+    ECS::Entity slope = Engine::ECS::create_entity().add_component<Components::Tag<"PhysicsTestState">>()
+      .add_component<Components::Transform2D>(500.0f, 675.0f, 30.0f, 500.0f, 50.0f) // pos.x, pos.y, rotation, scale.x, scale.y
       .add_component<Components::Color>(grey)
       .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
       .add_component<Components::RigidBody>(true, false)
-      .add_component<Components::BoxCollider>(500.0f, 50.0f, true); // width, height
-
+      .add_component<Components::BoxCollider>(500.0f, 50.0f, 30.f, true); // width, height
+    Components::BoxCollider* box_slope = slope.get_component< Components::BoxCollider>();
+    box_slope->kinetic_friction = 0.9f;
     Engine::ECS::create_entity().add_component<Components::Tag<"PhysicsTestState">>()
       .add_component<Components::Transform2D>(1300.0f, 675.0f, 0.0f, 300.0f, 50.0f) // pos.x, pos.y, rotation, scale.x, scale.y
       .add_component<Components::Color>(grey)

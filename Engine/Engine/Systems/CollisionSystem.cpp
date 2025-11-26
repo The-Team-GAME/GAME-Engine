@@ -109,7 +109,13 @@ void col2D::update()
 
         // we add the MTV here because it is not the penetration vector but rather how far the object needs to be pushed out to resolve the collision
         xform->position += collision.mtv;
-        //phy2D::kill_normal_component(*rigid, collision.mtv);
+        phy2D::zero_normal_velocity(*rigid, collision);
+
+        // The friction here is multiplicative cuz each entity has its own frictiona and its not additive
+        f32 combined_static = sqrt(box->static_friction * other_box->static_friction);
+        f32 combined_kinetic = sqrt(box->kinetic_friction * other_box->kinetic_friction);
+
+        phy2D::apply_surface_friction(*rigid, collision, combined_static, combined_kinetic);
 
         // So therefor we need to check if the y component points upwards, because if its pointing upwards, it means the object is trying to snap out of the ground
         if (collision.mtv.y < 0) // make smth to calculate the angle here maybe

@@ -31,6 +31,7 @@ using col2D = Collision2DSystem;
 // eventually we'll deserialise these values from file bah
 namespace {
   Vec2D knockback_force{ -1000000.f, 50000.f };
+  Vec2D gravity_acc = { 0.f, 1400.f };
 }
 
 phy2D::Physics2DSystem() {
@@ -66,11 +67,15 @@ void phy2D::update_kinematics(Components::RigidBody& rigid, Components::Transfor
   Vec2D next_pos;
   // F = m x a => Force equals mass x acceleration
   // acceleration will contain a value if the entity is affected by gravity
-  rigid.acceleration = rigid.force / rigid.mass + rigid.gravity_acc;
-  // V = a x dt => Velocity equals acceleration x delta time
-  // i increased friction for the x axis to test cuz we not sure if we want to do it like this
-  Vec2D prev_velocity = Vec2D(rigid.velocity.x * 0.80f, rigid.velocity.y * rigid.friction);
-  rigid.velocity = prev_velocity + rigid.acceleration * Time::get_fixed_dt();
+  rigid.acceleration = rigid.force / rigid.mass;
+  if (rigid.use_gravity)
+  {
+    rigid.acceleration += gravity_acc;
+  }
+  
+  // From now on we will apply friction on collision like how its supposed to be
+  // There wont be any air resistance so that the player can be controlled more accurately
+  rigid.velocity += rigid.acceleration * Time::get_fixed_dt();
 
   // Checking terminal velocity here
   // using the magnitude squared to check cuz its cheaper than sqrt-ing the value
@@ -86,11 +91,33 @@ void phy2D::update_kinematics(Components::RigidBody& rigid, Components::Transfor
   xform.rotation += rigid.angular_velocity * Engine::Time::get_fixed_dt();
 }
 
-void phy2D::kill_normal_component(Components::RigidBody& rigid, Vec2D mvt)
+void phy2D::zero_normal_velocity(
+  Components::RigidBody& rigid,
+  CollisionResult const& collision)
 {
-  Vec2D normalised_mtv = normalise_vector(mvt);
-  f32 magnitude_of_normal_force = dot_product(rigid.velocity, normalised_mtv);
-  rigid.velocity -= normalised_mtv * magnitude_of_normal_force;
+  Vec2D normalised_mtv = normalise_vector(collision.mtv);
+  f32 normal_velocity_magnitude = dot_product(rigid.velocity, normalised_mtv);
+  rigid.velocity -= normalised_mtv * normal_velocity_magnitude;
+}
+
+void phy2D::apply_surface_friction(
+  Components::RigidBody& rigid,
+  CollisionResult const& collision,
+  f32 static_friction,
+  f32 kinetic_friction)
+{
+  // At this point, the velocity of the entity should already be parallel to the surface its colliding with since zero_normal_velocity was called prior to this function.
+  Vec2D normal = normalise_vector(collision.get_normal());
+
+  if (rigid.velocity.get_magnitude() < 0.01f) // Magic number is just an epsilon number
+  {
+    // The object is basically stationary at this point
+    return;
+  }
+
+  // Maybe check if its a wall here idk ah
+
+  rigid.velocity -= rigid.velocity * kinetic_friction;
 }
 
 void phy2D::add_force(Components::RigidBody& rigid, Vec2D force)

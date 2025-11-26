@@ -269,9 +269,13 @@ namespace Components
     f32 width;
     f32 height;
     f32 radius;
-
     // Polygon data (for rotated/custom shapes)
     Polygon polygon;
+
+    // Used when an object is at rest to make it harder to start moving (used when objects are on a slope)
+    f32 static_friction; 
+    // Used when an object is moving, acts against the direction the object is moving
+    f32 kinetic_friction; 
 
     // AABB constructor (existing - no rotation)
     BoxCollider(f32 width, f32 height, bool is_static_object)
