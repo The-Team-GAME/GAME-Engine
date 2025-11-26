@@ -3075,7 +3075,23 @@
             "drawIndex": -1
         },
         {
-            "tile_collider_configs": [],
+            "tile_collider_configs": [
+                {
+                    "first": 18,
+                    "second": {
+                        "atlas_index": 2,
+                        "collider_type": "AABB",
+                        "tile_index": 18,
+                        "custom_vertices": [],
+                        "aabb_width": 64.0,
+                        "aabb_offset": {
+                            "x": 51.187110900878906,
+                            "y": -1.7706242799758911
+                        },
+                        "aabb_height": 64.0
+                    }
+                }
+            ],
             "texture_path": "images/Tilemaps/AdditionalProps_TilemapM1.png",
             "subTextures": [
                 {

@@ -148,6 +148,7 @@ namespace Engine {
   }
 }
 
+REFLECT_ENUM(Engine::Graphics::TileColliderType, Default, AABB, Polygon);
 REFLECT_FIELDS(Engine::Graphics::SubTexture, tex_coords);
 REFLECT_FIELDS(Engine::Graphics::Tile, atlas_index, tile_index, collider_type, aabb_width, aabb_height, aabb_offset, custom_vertices);
 REFLECT_FIELDS(Engine::Graphics::AtlasEntry, texture_path, subTextures, drawIndex, tile_collider_configs);
