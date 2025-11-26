@@ -83,16 +83,17 @@ public:
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/Button_Start.png"))
       .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
       .add_component<Components::BoxCollider>(192.0f * 1.5f, 64.0f * 1.5f, false)
+      .add_component<Components::DynamicButton>()
       .add_component<Components::Clickable>([]()
         {
           Engine::SceneManager::load_scene("LevelTestState");
         },
 
         [](Engine::ECS::Entity entity) { //Scale/Descale
-          button_scale(entity);
+          // button_scale(entity);
         },
         [](Engine::ECS::Entity entity) { //Unscale
-          button_exit_scale(entity);
+          // button_exit_scale(entity);
         })
       .add_to_layer("ui");
 
@@ -103,15 +104,16 @@ public:
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/Button_Exit.png"))
       .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
       .add_component<Components::BoxCollider>(192.0f * 1.5f, 64.0f * 1.5f, false)
+      .add_component<Components::DynamicButton>()
       .add_component<Components::Clickable>([]()
         {
           Engine::Core::stop();
         },
         [](Engine::ECS::Entity entity) {
-          button_scale(entity);
+          // button_scale(entity);
         },
         [](Engine::ECS::Entity entity) {
-          button_exit_scale(entity);
+          // button_exit_scale(entity);
         })
       .add_to_layer("ui");
   };
