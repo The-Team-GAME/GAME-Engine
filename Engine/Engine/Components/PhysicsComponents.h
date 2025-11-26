@@ -37,8 +37,7 @@ namespace Components
     Vec2D velocity; // Velocity in units per second
     // terminal velocity should be a set value instead of a vector just cuz you want to properly scale the velocity instead of capping it at set values
     f32 friction{ 0.99f };
-    f32 terminal_velocity{ 750.f }; // idk i wack some value here first, might split into the individual axis eventually
-
+    f32 terminal_velocity{ std::numeric_limits<float>::max()}; // set to max float
     bool is_static = false;  // If true, not affected by physics forces
     bool on_ground = false;
     bool is_jumping = false;

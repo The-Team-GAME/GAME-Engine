@@ -75,7 +75,7 @@ public:
       .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
       .add_component<Components::Clickable>([]()
         {
-          Engine::SceneManager::load_scene("ShowcaseState");
+          Engine::SceneManager::load_scene("LevelTestState");
         },
 
         [](Engine::ECS::Entity entity) { //Scale/Descale

@@ -19,7 +19,7 @@
 #include <variant>
 #include <string>
 #include <vector>
-#include <unordered_map>
+#include <map>
 #include <stdexcept>
 #include <type_traits>
 #include <sstream>
@@ -40,7 +40,7 @@ namespace ReflectionLibrary
   using Double = double;
   using String = std::string;
   using Array = std::vector<GenericValue>;
-  using Object = std::unordered_map<std::string, GenericValue>;
+  using Object = std::map<std::string, GenericValue>;
 
   // Proxy class for lazy evaluation and implicit conversions
   class GenericValueProxy
@@ -121,6 +121,7 @@ namespace ReflectionLibrary
   {
   public:
     using VariantType = std::variant<Null, Boolean, Integer, Double, String, Array, Object>;
+    std::string type_hint;
 
   private:
     VariantType data_;
@@ -196,6 +197,12 @@ namespace ReflectionLibrary
 
     // Friend class for internal access
     friend class GenericValueProxy;
+
+    // Helper to convert array of pairs (from map serialization) to GenericValue Object
+    static GenericValue convert_array_of_pairs_to_map(const GenericValue& array_value);
+
+    // Helper to convert GenericValue Object back to array of pairs
+    static GenericValue convert_map_to_array_of_pairs(const GenericValue& map_value);
   };
 
   // Convert any C++ type to GenericValue

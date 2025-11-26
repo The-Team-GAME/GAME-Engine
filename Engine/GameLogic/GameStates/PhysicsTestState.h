@@ -40,7 +40,7 @@ namespace {
       .add_component<Components::RigidBody>(Components::RigidBody(false, true))
       .add_component<Components::BoxCollider>(scale.x, scale.y, false) // width, height
       .add_component<Components::Logic>(IDLE)
-      .add_component<Components::Player>();
+      .add_component<Components::Player_>();
     return ret;
   }
 

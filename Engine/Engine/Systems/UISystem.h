@@ -15,7 +15,7 @@
 //          object was clicked. (Ryan) It also handles the dynamic scaling animation when the mouse
 //          hovers over the clickable entity.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 
 
@@ -43,7 +43,13 @@ namespace Engine
 
         if (!clickable || !tr) return;
 
-        const auto mouse = Engine::Input::get_mouse_position();
+        const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+
+        if (!mouse_opt.has_value()) {
+          return;
+        }
+
+        const Math::Vec2D& mouse = mouse_opt.value();
 
         // Move Transform2D.position to center;
         // scale.x/scale.y as width/height

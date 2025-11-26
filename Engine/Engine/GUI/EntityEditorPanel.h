@@ -23,10 +23,11 @@ namespace EntityEditorPanelHelpers {
   /*=================================================================================
   Function Brief:
   Renders a collapsible tree node for a component, including its fields and a remove
-  button. Handles writing back modified data to the component array.
+  button. Handles writing back modified data to the component array. Components are
+  grouped by namespace at the caller level for better organization.
 
   Parameters:
-  component_name - The name of the component type
+  component_name - The name of the component type (display name, may be short form)
   entity         - Reference to the entity owning the component
   array          - Pointer to the component array containing the component data
 
