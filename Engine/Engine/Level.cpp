@@ -40,6 +40,10 @@ void Engine::Level::instantiate_into_world()
     entity.destroy();
     });
 
+  // Process housekeeping to ensure old entities (including tile colliders) are actually destroyed
+  // before creating new ones. This prevents tile colliders from previous levels from persisting.
+  Engine::ECS::process_housekeeping();
+
   for (const auto& entity_value : entities) {
     Engine::ECS::create_entity_from_generic_value(entity_value);
     // This creates all entities including TileMap entities which store the tile data
