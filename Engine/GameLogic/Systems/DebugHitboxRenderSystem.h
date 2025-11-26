@@ -62,7 +62,7 @@ namespace Engine {
         if (!collider) return;
 
         // Determine color based on component types
-        Math::Vec4D color(0.0f, 0.0f, 0.0f, 0.0f);
+        Math::Vec4D color(1.0f, 1.0f, 0.0f, 0.2f); // Yellow (Default)
 
         if (entity.has_component<Components::Attack>()) {
           color = Math::Vec4D(1.0f, 0.0f, 0.0f, 0.2f); // Red (Attack)

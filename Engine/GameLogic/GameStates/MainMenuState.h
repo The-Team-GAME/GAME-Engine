@@ -20,6 +20,7 @@
 
 void button_scale(Engine::ECS::Entity entity) {
   Vec2D& scale = entity.get_component<Components::Transform2D>()->scale;
+  Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
 
   const Vec2D og_scale = Vec2D(192.0f * 1.5f, 64.0f * 1.5f);
   const Vec2D target_scale = og_scale * 1.2f;
@@ -29,10 +30,19 @@ void button_scale(Engine::ECS::Entity entity) {
   float easedY = Engine::Easing::EaseBackOut(0.10f, scale.y, target_scale.y - scale.y, 1.0f);
 
   scale = Vec2D(easedX, easedY);
+
+  // Update box collider dimensions to match new scale
+  if (box) {
+    box->width = scale.x;
+    box->height = scale.y;
+    box->aabb.half_width = scale.x / 2.0f;
+    box->aabb.half_height = scale.y / 2.0f;
+  }
 }
 
 void button_exit_scale(Engine::ECS::Entity entity) {
   Vec2D& scale = entity.get_component<Components::Transform2D>()->scale;
+  Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
 
   const Vec2D og_scale = Vec2D(192.0f * 1.5f, 64.0f * 1.5f);
 
@@ -42,6 +52,14 @@ void button_exit_scale(Engine::ECS::Entity entity) {
   float easedY = Engine::Easing::EaseCubicOut(t, scale.y, og_scale.y - scale.y, 1.0f);
 
   scale = Vec2D(easedX, easedY);
+
+  // Update box collider dimensions to match new scale
+  if (box) {
+    box->width = scale.x;
+    box->height = scale.y;
+    box->aabb.half_width = scale.x / 2.0f;
+    box->aabb.half_height = scale.y / 2.0f;
+  }
 }
 
 
@@ -64,6 +82,7 @@ public:
       .add_component<Components::Transform2D>(625.0f, 700.0f, 0.0f, 192.0f * 1.5f, 64.0f * 1.5f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/Button_Start.png"))
       .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
+      .add_component<Components::BoxCollider>(192.0f * 1.5f, 64.0f * 1.5f, false)
       .add_component<Components::Clickable>([]()
         {
           Engine::SceneManager::load_scene("LevelTestState");
@@ -83,6 +102,7 @@ public:
       .add_component<Components::Transform2D>(975.0f, 700.0f, 0.0f, 192.0f * 1.5f, 64.0f * 1.5f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/Button_Exit.png"))
       .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
+      .add_component<Components::BoxCollider>(192.0f * 1.5f, 64.0f * 1.5f, false)
       .add_component<Components::Clickable>([]()
         {
           Engine::Core::stop();

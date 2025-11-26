@@ -33,15 +33,15 @@ namespace Engine
     class ClickableSystem : public Engine::ECS::System {
     public:
       ClickableSystem() {
-        require_components<Components::Clickable, Components::Transform2D>();
+        require_components<Components::Clickable, Components::Transform2D, Components::BoxCollider>();
       }
 
       void update_entity(Engine::ECS::Entity& entity) override {
         auto* clickable = entity.get_component<Components::Clickable>();
         auto* tr = entity.get_component<Components::Transform2D>();
+        auto* box_collider = entity.get_component<Components::BoxCollider>();
 
-
-        if (!clickable || !tr) return;
+        if (!clickable || !tr || !box_collider) return;
 
         const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
 
@@ -51,21 +51,13 @@ namespace Engine
 
         const Math::Vec2D& mouse = mouse_opt.value();
 
-        // Move Transform2D.position to center;
-        // scale.x/scale.y as width/height
-        const float half_w = tr->scale.x * 0.5f;
-        const float half_h = tr->scale.y * 0.5f;
-        const float left = tr->position.x - half_w;
-        const float right = tr->position.x + half_w;
-        const float top = tr->position.y - half_h;
-        const float bottom = tr->position.y + half_h;
+        // Update the collider position before checking collision
+        update_collider_position(*box_collider, *tr, entity);
 
-        const bool inside =
-          (mouse.x >= left) && (mouse.x <= right) &&
-          (mouse.y >= top) && (mouse.y <= bottom);
+        // Use precise collision detection based on collider type
+        bool inside = is_point_inside_collider(mouse, *box_collider, *tr);
 
-
-				// mouse click detection
+        // mouse click detection
         if (inside) {
           clickable->on_hover(entity);
 
@@ -76,6 +68,63 @@ namespace Engine
         else {
           clickable->exit_hover(entity);
         }
+      }
+
+    private:
+      // Update collider position to match transform
+      void update_collider_position(Components::BoxCollider& collider,
+        const Components::Transform2D& transform,
+        Engine::ECS::Entity& entity) {
+        // Calculate flipped offset
+        Vec2D flipped_offset = collider.offset;
+        if (auto* flip = entity.get_component<Components::Flip>()) {
+          flipped_offset.x *= flip->value.x;
+          flipped_offset.y *= flip->value.y;
+        }
+
+        if (collider.type == Components::ColliderType::AABB) {
+          collider.aabb.pos = transform.position + flipped_offset;
+        }
+        else if (collider.type == Components::ColliderType::OBB ||
+          collider.type == Components::ColliderType::POLYGON) {
+          collider.polygon.position = transform.position + flipped_offset;
+          collider.polygon.rotation = transform.rotation;
+        }
+      }
+      // Point-in-polygon test for any collider type
+      bool is_point_inside_collider(const Math::Vec2D& point, const Components::BoxCollider& collider, const Components::Transform2D& transform) {
+
+        if (collider.type == Components::ColliderType::AABB) {
+          // Convert AABB to polygon and get transformed vertices
+          Polygon poly(collider.aabb);
+          const std::vector<Vec2D> vertices = poly.get_transformed_vertices();
+          return point_in_polygon(point, vertices);
+        }
+        else {
+          // Polygon collision (works for OBB and POLYGON types)
+          // Use point-in-polygon ray casting algorithm
+          const std::vector<Vec2D> vertices = collider.polygon.get_transformed_vertices();
+          return point_in_polygon(point, vertices);
+        }
+      }
+
+      // Ray casting algorithm for point-in-polygon test
+      bool point_in_polygon(const Math::Vec2D& point, const std::vector<Vec2D>& vertices) {
+        bool inside = false;
+        size_t n = vertices.size();
+
+        for (size_t i = 0, j = n - 1; i < n; j = i++) {
+          const Vec2D& vi = vertices[i];
+          const Vec2D& vj = vertices[j];
+
+          // Check if point is on horizontal ray crossing
+          if (((vi.y > point.y) != (vj.y > point.y)) &&
+            (point.x < (vj.x - vi.x) * (point.y - vi.y) / (vj.y - vi.y) + vi.x)) {
+            inside = !inside;
+          }
+        }
+
+        return inside;
       }
     };
 
