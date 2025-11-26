@@ -41,6 +41,7 @@ void register_engine_systems()
   Engine::ECS::add_system<Engine::Systems::Collision2DSystem>();
   Engine::ECS::add_system<Engine::Systems::AnimationUpdateSystem>();
   Engine::ECS::add_system<Engine::Systems::ClickableSystem>();
+
   Engine::ECS::add_system<Engine::Systems::GizmoSelectionSystem>();
   Engine::ECS::add_system<Engine::Systems::GizmoTextSelectionSystem>();
   Engine::ECS::add_system<Engine::Systems::GizmoManipulationSystem>();

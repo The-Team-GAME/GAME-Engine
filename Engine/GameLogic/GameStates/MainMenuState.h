@@ -16,6 +16,34 @@
 /* EVERY CODE HERE IS TEMPORARY */
 
 #include "../../Engine/MonkeyEngine.h"
+#include "../../Engine/Easing.h"
+
+void button_scale(Engine::ECS::Entity entity) {
+  Vec2D& scale = entity.get_component<Components::Transform2D>()->scale;
+
+  const Vec2D og_scale = Vec2D(192.0f * 1.5f, 64.0f * 1.5f);
+  const Vec2D target_scale = og_scale * 1.2f;
+
+  // Using BackOut easing for smooth scale-up with slight overshoot
+  float easedX = Engine::Easing::EaseBackOut(0.10f, scale.x, target_scale.x - scale.x, 1.0f);
+  float easedY = Engine::Easing::EaseBackOut(0.10f, scale.y, target_scale.y - scale.y, 1.0f);
+
+  scale = Vec2D(easedX, easedY);
+}
+
+void button_exit_scale(Engine::ECS::Entity entity) {
+  Vec2D& scale = entity.get_component<Components::Transform2D>()->scale;
+
+  const Vec2D og_scale = Vec2D(192.0f * 1.5f, 64.0f * 1.5f);
+
+  // Using CubicOut easing for smooth scale-down
+  float t = 0.10f;
+  float easedX = Engine::Easing::EaseCubicOut(t, scale.x, og_scale.x - scale.x, 1.0f);
+  float easedY = Engine::Easing::EaseCubicOut(t, scale.y, og_scale.y - scale.y, 1.0f);
+
+  scale = Vec2D(easedX, easedY);
+}
+
 
 class MainMenuState : public Engine::Scene
 {
@@ -39,6 +67,13 @@ public:
       .add_component<Components::Clickable>([]()
         {
           Engine::SceneManager::load_scene("LevelTestState");
+        },
+
+        [](Engine::ECS::Entity entity) { //Scale/Descale
+          button_scale(entity);
+        },
+        [](Engine::ECS::Entity entity) { //Unscale
+          button_exit_scale(entity);
         })
       .add_to_layer("ui");
 
@@ -51,6 +86,12 @@ public:
       .add_component<Components::Clickable>([]()
         {
           Engine::Core::stop();
+        },
+        [](Engine::ECS::Entity entity) {
+          button_scale(entity);
+        },
+        [](Engine::ECS::Entity entity) {
+          button_exit_scale(entity);
         })
       .add_to_layer("ui");
   };
