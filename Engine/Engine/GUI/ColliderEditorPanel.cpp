@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------------------
 #include "ColliderEditorPanel.h"
 #include <imgui.h>
+#include "widgets/ColliderEditorWidget.h"
 #include "../ECS/ECS.h"
 #include "../ECS/Prefab.h"
 #include "../Components/CollisionComponents.h"
@@ -62,30 +63,6 @@ namespace {
         }
       }
     );
-  }
-
-  // Helper to draw a handle and return true if dragged
-  bool draw_handle(ImDrawList* draw_list, ImVec2 pos, float size, ImU32 color, int id, ImVec2& out_delta) {
-    ImVec2 min = { pos.x - size / 2, pos.y - size / 2 };
-    ImVec2 max = { pos.x + size / 2, pos.y + size / 2 };
-
-    draw_list->AddRectFilled(min, max, color);
-    draw_list->AddRect(min, max, IM_COL32(0, 0, 0, 255));
-
-    ImGui::SetCursorScreenPos(min);
-    ImGui::PushID(id);
-    ImGui::InvisibleButton("##handle", { size, size });
-    ImGui::PopID();
-
-    bool hovered = ImGui::IsItemHovered();
-    bool active = ImGui::IsItemActive();
-
-    if (active && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
-      ImVec2 delta = ImGui::GetIO().MouseDelta;
-      out_delta = delta;
-      return true;
-    }
-    return false;
   }
 }
 
@@ -442,52 +419,34 @@ void ColliderEditorPanel()
     }
   }
 
-  // 1. Calculate available space
-  ImVec2 avail_size = ImGui::GetContentRegionAvail();
-  if (avail_size.x < 100 || avail_size.y < 100) avail_size = { 400, 400 };
+  // Setup sprite rendering configuration
+  ImGuiWidgets::SpriteRenderConfig sprite_config;
+  sprite_config.texture_handle = texture_handle;
+  sprite_config.uv0 = uv0;
+  sprite_config.uv1 = uv1;
+  sprite_config.sprite_world_width = sprite_world_width;
+  sprite_config.sprite_world_height = sprite_world_height;
 
-  // 2. (Sprite dimensions calculated above as sprite_world_width/height)
-
-  // 3. Calculate scale to fit sprite in window while maintaining aspect ratio
-  // Avoid division by zero
-  if (sprite_world_width <= 0.001f) sprite_world_width = 1.0f;
-  if (sprite_world_height <= 0.001f) sprite_world_height = 1.0f;
-
-  float scale_x = avail_size.x / sprite_world_width;
-  float scale_y = avail_size.y / sprite_world_height;
-  float scale = std::min(scale_x, scale_y) * 0.8f; // 0.8 to leave some padding
-
-  float draw_width = sprite_world_width * scale;
-  float draw_height = sprite_world_height * scale;
-
-  // 4. Center the image
-  ImVec2 cursor_pos = ImGui::GetCursorScreenPos();
-  float offset_x = (avail_size.x - draw_width) * 0.5f;
-  float offset_y = (avail_size.y - draw_height) * 0.5f;
-
-  ImVec2 image_min = { cursor_pos.x + offset_x, cursor_pos.y + offset_y };
-  ImVec2 image_max = { image_min.x + draw_width, image_min.y + draw_height };
+  // Calculate visual editor layout
+  ImGuiWidgets::VisualEditorLayout layout = ImGuiWidgets::CalculateVisualEditorLayout(sprite_config);
 
   // Draw the sprite
-  ImGui::SetCursorScreenPos(image_min);
-  ImGui::Image((ImTextureID)(intptr_t)texture_handle->id, { draw_width, draw_height }, uv0, uv1);
+  ImGuiWidgets::DrawSprite(sprite_config, layout);
 
-  // 5. Draw Collider and Handle Interaction
+  // Draw Collider and Handle Interaction
   ImDrawList* draw_list = ImGui::GetWindowDrawList();
-
-  // Center of the drawn image (Sprite Center)
-  ImVec2 center = { image_min.x + draw_width * 0.5f, image_min.y + draw_height * 0.5f };
 
   // Apply flip to offset ONLY in live mode
   Math::Vec2D display_offset = col_offset;
+  float flip_x = 1.0f;
+  float flip_y = 1.0f;
   if (should_apply_flip && flip) {
-    display_offset.x *= flip->value.x;
-    display_offset.y *= flip->value.y;
+    flip_x = flip->value.x;
+    flip_y = flip->value.y;
+    display_offset.x *= flip_x;
+    display_offset.y *= flip_y;
   }
 
-  float handle_size = 8.0f;
-  ImU32 handle_color = IM_COL32(0, 255, 0, 255);
-  ImVec2 delta;
   bool changed = false;
 
   // Sync current_type_index with loaded collider type only when entity/state changes
@@ -499,229 +458,45 @@ void ColliderEditorPanel()
 
   if (current_type_index == 0) {
     // ===== AABB MODE =====
-    // Collider Center (Sprite Center + Display Offset)
-    ImVec2 col_center = { center.x + display_offset.x * scale, center.y + display_offset.y * scale };
+    ImGuiWidgets::AABBColliderData aabb_data;
+    aabb_data.width = col_width;
+    aabb_data.height = col_height;
+    aabb_data.offset = col_offset;
 
-    // Collider half-extents scaled to screen
-    float col_half_w = (col_width / 2.0f) * scale;
-    float col_half_h = (col_height / 2.0f) * scale;
+    changed = ImGuiWidgets::AABBColliderEditor(
+      draw_list,
+      layout.center,
+      layout.scale,
+      aabb_data,
+      should_apply_flip,
+      flip_x,
+      flip_y
+    );
 
-    // Collider screen coords
-    ImVec2 col_min = { col_center.x - col_half_w, col_center.y - col_half_h };
-    ImVec2 col_max = { col_center.x + col_half_w, col_center.y + col_half_h };
-
-    // Draw Rect
-    draw_list->AddRect(col_min, col_max, IM_COL32(0, 255, 0, 255), 0.0f, 0, 2.0f);
-
-    // --- Body Drag (Offset) ---
-    ImGui::SetCursorScreenPos(col_min);
-    ImGui::PushID("##collider_body_drag");
-    ImGui::InvisibleButton("##body", { col_max.x - col_min.x, col_max.y - col_min.y });
-    ImGui::PopID();
-
-    if (ImGui::IsItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
-      delta = ImGui::GetIO().MouseDelta;
-
-      float flip_x = 1.0f;
-      float flip_y = 1.0f;
-      if (should_apply_flip && flip) {
-        flip_x = flip->value.x;
-        flip_y = flip->value.y;
-      }
-
-      col_offset.x += (delta.x / scale) * flip_x;
-      col_offset.y += (delta.y / scale) * flip_y;
-      changed = true;
-    }
-
-    if (ImGui::IsItemHovered()) {
-      ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
-    }
-
-    // Edge handles
-    bool shift_held = ImGui::GetIO().KeyShift;
-
-    // Right handle
-    if (draw_handle(draw_list, { col_max.x, col_center.y }, handle_size, handle_color, 0, delta)) {
-      float dx = delta.x / scale;
-      if (shift_held) {
-        // Shift: scale symmetrically from center
-        col_width += dx * 2.0f;
-      }
-      else {
-        // No shift: move right edge only
-        col_width += dx;
-        col_offset.x += dx / 2.0f;
-      }
-      if (col_width < 0) col_width = 0;
-      changed = true;
-    }
-
-    // Left handle
-    if (draw_handle(draw_list, { col_min.x, col_center.y }, handle_size, handle_color, 1, delta)) {
-      float dx = delta.x / scale;
-      if (shift_held) {
-        // Shift: scale symmetrically from center
-        col_width -= dx * 2.0f;
-      }
-      else {
-        // No shift: move left edge only
-        col_width -= dx;
-        col_offset.x += dx / 2.0f;
-      }
-      if (col_width < 0) col_width = 0;
-      changed = true;
-    }
-
-    // Top handle
-    if (draw_handle(draw_list, { col_center.x, col_min.y }, handle_size, handle_color, 2, delta)) {
-      float dy = delta.y / scale;
-      if (shift_held) {
-        // Shift: scale symmetrically from center
-        col_height -= dy * 2.0f;
-      }
-      else {
-        // No shift: move top edge only
-        col_height -= dy;
-        col_offset.y += dy / 2.0f;
-      }
-      if (col_height < 0) col_height = 0;
-      changed = true;
-    }
-
-    // Bottom handle
-    if (draw_handle(draw_list, { col_center.x, col_max.y }, handle_size, handle_color, 3, delta)) {
-      float dy = delta.y / scale;
-      if (shift_held) {
-        // Shift: scale symmetrically from center
-        col_height += dy * 2.0f;
-      }
-      else {
-        // No shift: move bottom edge only
-        col_height += dy;
-        col_offset.y -= dy / 2.0f;
-      }
-      if (col_height < 0) col_height = 0;
-      changed = true;
+    if (changed) {
+      col_width = aabb_data.width;
+      col_height = aabb_data.height;
+      col_offset = aabb_data.offset;
     }
   }
   else {
     // ===== POLYGON MODE =====
-    // Draw polygon edges
-    if (col_vertices.size() >= 2) {
-      for (size_t i = 0; i < col_vertices.size(); ++i) {
-        size_t next = (i + 1) % col_vertices.size();
+    ImGuiWidgets::PolygonColliderData poly_data;
+    poly_data.vertices = col_vertices;
 
-        // Apply offset and scale to vertices
-        ImVec2 v1 = { center.x + (col_vertices[i].x + display_offset.x) * scale,
-                      center.y + (col_vertices[i].y + display_offset.y) * scale };
-        ImVec2 v2 = { center.x + (col_vertices[next].x + display_offset.x) * scale,
-                      center.y + (col_vertices[next].y + display_offset.y) * scale };
+    changed = ImGuiWidgets::PolygonColliderEditor(
+      draw_list,
+      layout.center,
+      layout.scale,
+      poly_data,
+      display_offset,
+      layout.image_min,
+      layout.image_max
+    );
 
-        draw_list->AddLine(v1, v2, IM_COL32(0, 255, 0, 255), 2.0f);
-      }
+    if (changed) {
+      col_vertices = poly_data.vertices;
     }
-
-    // Draw and interact with vertices
-    static int selected_vertex = -1;
-    static int hovered_vertex = -1;
-    hovered_vertex = -1;
-
-    // Reset selection when not actively dragging
-    if (!ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
-      selected_vertex = -1;
-    }
-
-    for (size_t i = 0; i < col_vertices.size(); ++i) {
-      ImVec2 vertex_screen = { center.x + (col_vertices[i].x + display_offset.x) * scale,
-                                center.y + (col_vertices[i].y + display_offset.y) * scale };
-
-      ImU32 vertex_color = (selected_vertex == static_cast<int>(i)) ? IM_COL32(255, 255, 0, 255) : IM_COL32(0, 255, 0, 255);
-
-      if (draw_handle(draw_list, vertex_screen, handle_size, vertex_color, 100 + static_cast<int>(i), delta)) {
-        // Drag vertex
-        col_vertices[i].x += delta.x / scale;
-        col_vertices[i].y += delta.y / scale;
-        changed = true;
-        selected_vertex = static_cast<int>(i);
-      }
-
-      // Check if mouse is hovering this vertex
-      ImVec2 mouse_pos = ImGui::GetMousePos();
-      float dist_sq = (mouse_pos.x - vertex_screen.x) * (mouse_pos.x - vertex_screen.x) +
-        (mouse_pos.y - vertex_screen.y) * (mouse_pos.y - vertex_screen.y);
-      if (dist_sq < handle_size * handle_size) {
-        hovered_vertex = static_cast<int>(i);
-      }
-    }
-
-    // Right-click to delete vertex
-    if (hovered_vertex >= 0 && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
-      if (col_vertices.size() > 3) { // Keep at least 3 vertices
-        col_vertices.erase(col_vertices.begin() + hovered_vertex);
-        changed = true;
-        selected_vertex = -1;
-      }
-    }
-
-    // Click on sprite (but not on a vertex) to add new vertex
-    if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && hovered_vertex == -1) {
-      ImVec2 mouse_pos = ImGui::GetMousePos();
-
-      // Check if mouse is within the sprite bounds
-      if (mouse_pos.x >= image_min.x && mouse_pos.x <= image_max.x &&
-        mouse_pos.y >= image_min.y && mouse_pos.y <= image_max.y) {
-
-        // Convert screen position to local vertex position  
-        Math::Vec2D new_vertex;
-        new_vertex.x = (mouse_pos.x - center.x) / scale - display_offset.x;
-        new_vertex.y = (mouse_pos.y - center.y) / scale - display_offset.y;
-
-        // Find the closest edge and insert the vertex there
-        if (col_vertices.size() >= 2) {
-          float min_distance = FLT_MAX;
-          size_t insert_after_index = 0;
-
-          for (size_t i = 0; i < col_vertices.size(); ++i) {
-            size_t next = (i + 1) % col_vertices.size();
-
-            // Project mouse point onto the line segment
-            Math::Vec2D v1 = col_vertices[i];
-            Math::Vec2D v2 = col_vertices[next];
-            Math::Vec2D edge = v2 - v1;
-            Math::Vec2D to_point = new_vertex - v1;
-
-            float edge_length_sq = edge.x * edge.x + edge.y * edge.y;
-            if (edge_length_sq < 0.0001f) continue; // Skip degenerate edges
-
-            float t = (to_point.x * edge.x + to_point.y * edge.y) / edge_length_sq;
-            t = std::max(0.0f, std::min(1.0f, t)); // Clamp to segment
-
-            Math::Vec2D closest_point = v1 + edge * t;
-            Math::Vec2D to_closest = new_vertex - closest_point;
-            float distance = to_closest.x * to_closest.x + to_closest.y * to_closest.y;
-
-            if (distance < min_distance) {
-              min_distance = distance;
-              insert_after_index = i;
-            }
-          }
-
-          // Insert vertex after the closest edge
-          col_vertices.insert(col_vertices.begin() + insert_after_index + 1, new_vertex);
-        }
-        else {
-          // If less than 2 vertices, just append
-          col_vertices.push_back(new_vertex);
-        }
-
-        changed = true;
-      }
-    }
-
-    // Show vertex count
-    ImGui::SetCursorScreenPos({ image_min.x, image_min.y - 20 });
-    ImGui::Text("Vertices: %zu (Click to add, Drag to move, Right-click to delete)", col_vertices.size());
   }
 
   // Apply changes
@@ -793,7 +568,7 @@ void ColliderEditorPanel()
   }
 
   // Display values
-  ImGui::SetCursorScreenPos({ image_min.x, image_max.y + 10 });
+  ImGui::SetCursorScreenPos({ layout.image_min.x, layout.image_max.y + 10 });
   ImGui::Text("Collider Size: %.2f x %.2f", col_width, col_height);
   ImGui::Text("Collider Offset: %.2f, %.2f", col_offset.x, col_offset.y);
 

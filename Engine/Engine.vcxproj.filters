@@ -100,6 +100,10 @@
     <ClCompile Include="Engine\ProjectSaveManager.cpp" />
     <ClCompile Include="Engine\TIlemapManager.cpp" />
     <ClCompile Include="Engine\UndoManager\UndoManager.cpp" />
+    <ClCompile Include="Engine\ECS\PrefabMergeUtils.cpp" />
+    <ClCompile Include="Engine\GUI\ColliderEditorPanel.cpp" />
+    <ClCompile Include="Engine\Random.cpp" />
+    <ClCompile Include="Engine\GUI\widgets\ColliderEditorWidget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -222,6 +226,10 @@
     <ClInclude Include="GameLogic\Components\HeartrateComponent.h" />
     <ClInclude Include="GameLogic\Components\GameplayComponent.h" />
     <ClInclude Include="GameLogic\Components\EnemyHealthComponent.h" />
+    <ClInclude Include="Engine\ECS\PrefabMergeUtils.h" />
+    <ClInclude Include="Engine\GUI\ColliderEditorPanel.h" />
+    <ClInclude Include="Engine\Random.h" />
+    <ClInclude Include="Engine\GUI\widgets\ColliderEditorWidget.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
