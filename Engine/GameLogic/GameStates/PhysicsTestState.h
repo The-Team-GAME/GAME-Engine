@@ -58,12 +58,13 @@ namespace {
 
   void make_wall(Vec2D position, Vec2D scale)
   {
+    f32 rotation = 35.f;
     Engine::ECS::create_entity().add_component<Components::Tag<"PhysicsTestState">>()
-      .add_component<Components::Transform2D>(position.x, position.y, 0.0f, scale.x, scale.y) // pos.x, pos.y, rotation, scale.x, scale.y
+      .add_component<Components::Transform2D>(position.x, position.y, rotation, scale.x, scale.y) // pos.x, pos.y, rotation, scale.x, scale.y
       .add_component<Components::Color>(white)
       .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
       .add_component<Components::RigidBody>(true, false)
-      .add_component<Components::BoxCollider>(scale.x, scale.y, true); // width, height
+      .add_component<Components::BoxCollider>(scale.x, scale.y,  rotation, true); // width, height
   }
 }
 class PhysicsTestState : public Engine::Scene {

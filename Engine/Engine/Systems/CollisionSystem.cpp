@@ -107,10 +107,12 @@ void col2D::update()
       {
         Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
 
-        xform->position -= collision.mtv;
-        phy2D::kill_normal_component(*rigid, collision.mtv);
+        // we add the MTV here because it is not the penetration vector but rather how far the object needs to be pushed out to resolve the collision
+        xform->position += collision.mtv;
+        //phy2D::kill_normal_component(*rigid, collision.mtv);
 
-        if (collision.mtv.y > 0) // make smth to calculate the angle here maybe
+        // So therefor we need to check if the y component points upwards, because if its pointing upwards, it means the object is trying to snap out of the ground
+        if (collision.mtv.y < 0) // make smth to calculate the angle here maybe
         {
           rigid->on_ground = true;
         }
@@ -207,7 +209,7 @@ CollisionResult col2D::check_collision(
     AABB minkowski = minkowski_AABB(lhs, rhs);
     Vec2D pen_vec = penetration_vector(minkowski);
 
-    return CollisionResult{ true, pen_vec };
+    return CollisionResult{ true, -pen_vec };
   }
   else
   {
@@ -215,16 +217,19 @@ CollisionResult col2D::check_collision(
     if (lhs.type == Components::ColliderType::AABB)
     {
       Polygon poly_a = Polygon(lhs.aabb);
-      return poly_a.intersects(rhs.polygon);
+      CollisionResult result = poly_a.intersects(rhs.polygon);
+      return result;
     }
     else if (rhs.type == Components::ColliderType::AABB)
     {
       Polygon poly_b = Polygon(rhs.aabb);
-      return poly_b.intersects(lhs.polygon);
+      CollisionResult result = poly_b.intersects(lhs.polygon);
+      return result;
     }
     else
     {
-      return lhs.polygon.intersects(rhs.polygon);
+      CollisionResult result = lhs.polygon.intersects(rhs.polygon);
+      return result;
     }
   }
 }
