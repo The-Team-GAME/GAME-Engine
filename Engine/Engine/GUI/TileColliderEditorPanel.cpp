@@ -316,7 +316,7 @@ void TileColliderEditorPanel() {
       bool changed = false;
 
       // Collider Center (Sprite Center + Offset)
-      ImVec2 col_center = { center.x + tile_config.aabb_offset.x * scale, center.y - tile_config.aabb_offset.y * scale };
+      ImVec2 col_center = { center.x + tile_config.aabb_offset.x * scale, center.y + tile_config.aabb_offset.y * scale };
 
       // Collider half-extents scaled to screen
       float col_half_w = (tile_config.aabb_width / 2.0f) * scale;
@@ -338,7 +338,7 @@ void TileColliderEditorPanel() {
       if (ImGui::IsItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
         ImVec2 mouse_delta = ImGui::GetIO().MouseDelta;
         tile_config.aabb_offset.x += mouse_delta.x / scale;
-        tile_config.aabb_offset.y -= mouse_delta.y / scale; // Flip Y
+        tile_config.aabb_offset.y += mouse_delta.y / scale;
         changed = true;
       }
 
@@ -525,8 +525,8 @@ void TileColliderEditorPanel() {
           Math::Vec2D v1 = tile_config.custom_vertices[i];
           Math::Vec2D v2 = tile_config.custom_vertices[next_i];
 
-          ImVec2 p1(center.x + v1.x * scale, center.y - v1.y * scale); // Flip Y for screen space
-          ImVec2 p2(center.x + v2.x * scale, center.y - v2.y * scale);
+          ImVec2 p1(center.x + v1.x * scale, center.y + v1.y * scale);
+          ImVec2 p2(center.x + v2.x * scale, center.y + v2.y * scale);
 
           draw_list->AddLine(p1, p2, IM_COL32(0, 255, 0, 255), 2.0f);
         }
@@ -544,11 +544,11 @@ void TileColliderEditorPanel() {
 
       for (size_t i = 0; i < tile_config.custom_vertices.size(); ++i) {
         Math::Vec2D& vertex = tile_config.custom_vertices[i];
-        ImVec2 vertex_pos(center.x + vertex.x * scale, center.y - vertex.y * scale);
+        ImVec2 vertex_pos(center.x + vertex.x * scale, center.y + vertex.y * scale);
 
         if (draw_handle(draw_list, vertex_pos, handle_size, handle_color, static_cast<int>(i), delta)) {
           vertex.x += delta.x / scale;
-          vertex.y -= delta.y / scale; // Flip Y
+          vertex.y += delta.y / scale;
           changed = true;
           selected_vertex = static_cast<int>(i);
         }
@@ -580,9 +580,7 @@ void TileColliderEditorPanel() {
 
           // Convert screen position to local vertex coordinates
           float local_x = (mouse_pos.x - center.x) / scale;
-          float local_y = -((mouse_pos.y - center.y) / scale); // Flip Y
-
-          // Insert the new vertex at the best position in the polygon
+          float local_y = (mouse_pos.y - center.y) / scale;          // Insert the new vertex at the best position in the polygon
           if (tile_config.custom_vertices.empty()) {
             tile_config.custom_vertices.push_back(Math::Vec2D(local_x, local_y));
           }
