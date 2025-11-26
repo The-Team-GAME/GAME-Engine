@@ -109,8 +109,11 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Engine\ECS\PrefabMergeUtils.cpp" />
+    <ClCompile Include="Engine\GUI\ColliderEditorPanel.cpp" />
+    <ClCompile Include="Engine\GUI\TileColliderEditorPanel.cpp" />
     <ClCompile Include="Engine\GUI\LayerManagerPanel.cpp" />
     <ClCompile Include="Engine\GUI\ResourceExplorerPanel.cpp" />
+    <ClCompile Include="Engine\GUI\widgets\ColliderEditorWidget.cpp" />
     <ClCompile Include="Engine\Level.cpp" />
     <ClCompile Include="Engine\ProjectSaveManager.cpp" />
     <ClCompile Include="Engine\Random.cpp" />
@@ -173,9 +176,12 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\ECS\PrefabMergeUtils.h" />
+    <ClInclude Include="Engine\GUI\ColliderEditorPanel.h" />
+    <ClInclude Include="Engine\GUI\TileColliderEditorPanel.h" />
     <ClInclude Include="Engine\GUI\LayerManagerPanel.h" />
     <ClInclude Include="Engine\GUI\RegisterAllPanels.h" />
     <ClInclude Include="Engine\GUI\ResourceExplorerPanel.h" />
+    <ClInclude Include="Engine\GUI\widgets\ColliderEditorWidget.h" />
     <ClInclude Include="Engine\ImGuiThemes.h" />
     <ClInclude Include="Engine\KeyCodes.h" />
     <ClInclude Include="Engine\Level.h" />
