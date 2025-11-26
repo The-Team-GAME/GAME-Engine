@@ -95,7 +95,7 @@ namespace Components
     // Helper methods to invoke callbacks (looks them up in registry)
     void invoke_on_enter(Engine::ECS::Entity& entity) const {
       if (!on_enter_callback.empty()) {
-        auto callback = Engine::FunctionRegistry<void(Engine::ECS::Entity&)>::get_function(on_enter_callback.name);
+        auto callback = on_enter_callback.get<void(Engine::ECS::Entity&)>();
         if (callback) {
           callback(entity);
         }
@@ -104,7 +104,7 @@ namespace Components
 
     void invoke_on_update(Engine::ECS::Entity& entity) const {
       if (!on_update_callback.empty()) {
-        auto callback = Engine::FunctionRegistry<void(Engine::ECS::Entity&)>::get_function(on_update_callback.name);
+        auto callback = on_update_callback.get<void(Engine::ECS::Entity&)>();
         if (callback) {
           callback(entity);
         }
@@ -113,7 +113,7 @@ namespace Components
 
     void invoke_on_exit(Engine::ECS::Entity& entity) const {
       if (!on_exit_callback.empty()) {
-        auto callback = Engine::FunctionRegistry<void(Engine::ECS::Entity&)>::get_function(on_exit_callback.name);
+        auto callback = on_exit_callback.get<void(Engine::ECS::Entity&)>();
         if (callback) {
           callback(entity);
         }

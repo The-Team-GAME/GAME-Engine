@@ -63,7 +63,7 @@ namespace Engine
         if (inside) {
           // Call on_hover if function is set
           if (!clickable->on_hover.empty()) {
-            auto hover_func = Engine::FunctionRegistry<void(Engine::ECS::Entity)>::get_function(clickable->on_hover.name);
+            auto hover_func = clickable->on_hover.get<void(Engine::ECS::Entity)>();
             if (hover_func) {
               hover_func(entity);
             }
@@ -72,7 +72,7 @@ namespace Engine
           if (Engine::Input::is_pressed(KeyCode::MouseLeft)) {
             // Call on_click if function is set
             if (!clickable->on_click.empty()) {
-              auto click_func = Engine::FunctionRegistry<void()>::get_function(clickable->on_click.name);
+              auto click_func = clickable->on_click.get<void()>();
               if (click_func) {
                 click_func();
               }
@@ -82,7 +82,7 @@ namespace Engine
         else {
           // Call exit_hover if function is set
           if (!clickable->exit_hover.empty()) {
-            auto exit_func = Engine::FunctionRegistry<void(Engine::ECS::Entity)>::get_function(clickable->exit_hover.name);
+            auto exit_func = clickable->exit_hover.get<void(Engine::ECS::Entity)>();
             if (exit_func) {
               exit_func(entity);
             }
@@ -263,7 +263,7 @@ namespace Engine
         // Apply easing to position
         Math::Vec2D final_position = target.transform.position;
         if (!target.position_easing.empty()) {
-          auto easing_func = Engine::FunctionRegistry<f32(f32, f32, f32, f32)>::get_function(target.position_easing.name);
+          auto easing_func = target.position_easing.get<f32(f32, f32, f32, f32)>();
           if (easing_func) {
             float eased_x = easing_func(elapsed, start.position.x, target.transform.position.x - start.position.x, button.transition_duration);
             float eased_y = easing_func(elapsed, start.position.y, target.transform.position.y - start.position.y, button.transition_duration);
@@ -277,7 +277,7 @@ namespace Engine
         // Apply easing to rotation
         float final_rotation = target.transform.rotation;
         if (!target.rotation_easing.empty()) {
-          auto easing_func = Engine::FunctionRegistry<f32(f32, f32, f32, f32)>::get_function(target.rotation_easing.name);
+          auto easing_func = target.rotation_easing.get<f32(f32, f32, f32, f32)>();
           if (easing_func) {
             final_rotation = easing_func(elapsed, start.rotation, target.transform.rotation - start.rotation, button.transition_duration);
           }
@@ -289,7 +289,7 @@ namespace Engine
         // Apply easing to scale
         Math::Vec2D final_scale = target.transform.scale;
         if (!target.scale_easing.empty()) {
-          auto easing_func = Engine::FunctionRegistry<f32(f32, f32, f32, f32)>::get_function(target.scale_easing.name);
+          auto easing_func = target.scale_easing.get<f32(f32, f32, f32, f32)>();
           if (easing_func) {
             float eased_x = easing_func(elapsed, start.scale.x, target.transform.scale.x - start.scale.x, button.transition_duration);
             float eased_y = easing_func(elapsed, start.scale.y, target.transform.scale.y - start.scale.y, button.transition_duration);

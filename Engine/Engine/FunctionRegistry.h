@@ -26,6 +26,10 @@
 
 namespace Engine {
 
+  // Forward declaration
+  template<typename FuncSignature>
+  struct FunctionRegistry;
+
   // ============================================================================
   // Serializable Function Wrapper
   // ============================================================================
@@ -89,6 +93,14 @@ namespace Engine {
     void clear() {
       name.clear();
     }
+
+    // Get function with explicit signature (implemented after FunctionRegistry)
+    template<typename Signature>
+    std::function<Signature> get() const;
+
+    // Check if function exists with explicit signature (implemented after FunctionRegistry)
+    template<typename Signature>
+    bool exists() const;
   };
 
   // ============================================================================
@@ -158,6 +170,21 @@ namespace Engine {
       return functions.size();
     }
   };
+
+  // ============================================================================
+  // SerializableFunction Method Implementations
+  // ============================================================================
+
+  template<typename Signature>
+  inline std::function<Signature> SerializableFunction::get() const {
+    return FunctionRegistry<Signature>::get_function(name);
+  }
+
+  template<typename Signature>
+  inline bool SerializableFunction::exists() const {
+    return FunctionRegistry<Signature>::has_function(name);
+  }
+
   // ============================================================================
   // Multi-Signature Function Registry (Advanced)
   // ============================================================================
