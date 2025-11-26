@@ -27,6 +27,71 @@
 namespace Engine {
 
   // ============================================================================
+  // Serializable Function Wrapper
+  // ============================================================================
+
+  /// Type-safe wrapper for serializable function names
+  /// Stores just the function name as a string for serialization
+  struct SerializableFunction {
+    std::string name;
+
+    SerializableFunction() = default;
+
+    SerializableFunction(const std::string& function_name)
+      : name(function_name)
+    {
+    }
+
+    SerializableFunction(const char* function_name)
+      : name(function_name)
+    {
+    }
+
+    // Implicit conversion to string for backwards compatibility
+    operator const std::string& () const {
+      return name;
+    }
+
+    // Assignment operators
+    SerializableFunction& operator=(const std::string& function_name) {
+      name = function_name;
+      return *this;
+    }
+
+    SerializableFunction& operator=(const char* function_name) {
+      name = function_name;
+      return *this;
+    }
+
+    // Comparison operators
+    bool operator==(const SerializableFunction& other) const {
+      return name == other.name;
+    }
+
+    bool operator==(const std::string& other) const {
+      return name == other;
+    }
+
+    bool operator!=(const SerializableFunction& other) const {
+      return name != other.name;
+    }
+
+    bool operator!=(const std::string& other) const {
+      return name != other;
+    }
+
+    // Check if function name is set
+    bool empty() const {
+      return name.empty();
+    }
+
+    // Clear the function name
+    void clear() {
+      name.clear();
+    }
+  };
+
+  // ============================================================================
   // Generic Function Registry
   // ============================================================================
 
@@ -92,7 +157,8 @@ namespace Engine {
       auto& functions = get_functions();
       return functions.size();
     }
-  };  // ============================================================================
+  };
+  // ============================================================================
   // Multi-Signature Function Registry (Advanced)
   // ============================================================================
 
@@ -194,3 +260,6 @@ namespace Engine {
     }
 
 } // namespace Engine
+
+
+REFLECT_FIELDS(Engine::SerializableFunction, name)

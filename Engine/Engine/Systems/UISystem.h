@@ -61,18 +61,18 @@ namespace Engine
 
         // mouse click detection
         if (inside) {
-          // Call on_hover if function name is set
-          if (!clickable->on_hover_name.empty()) {
-            auto hover_func = Engine::FunctionRegistry<void(Engine::ECS::Entity)>::get_function(clickable->on_hover_name);
+          // Call on_hover if function is set
+          if (!clickable->on_hover.empty()) {
+            auto hover_func = Engine::FunctionRegistry<void(Engine::ECS::Entity)>::get_function(clickable->on_hover.name);
             if (hover_func) {
               hover_func(entity);
             }
           }
 
           if (Engine::Input::is_pressed(KeyCode::MouseLeft)) {
-            // Call on_click if function name is set
-            if (!clickable->on_click_name.empty()) {
-              auto click_func = Engine::FunctionRegistry<void()>::get_function(clickable->on_click_name);
+            // Call on_click if function is set
+            if (!clickable->on_click.empty()) {
+              auto click_func = Engine::FunctionRegistry<void()>::get_function(clickable->on_click.name);
               if (click_func) {
                 click_func();
               }
@@ -80,9 +80,9 @@ namespace Engine
           }
         }
         else {
-          // Call exit_hover if function name is set
-          if (!clickable->exit_hover_name.empty()) {
-            auto exit_func = Engine::FunctionRegistry<void(Engine::ECS::Entity)>::get_function(clickable->exit_hover_name);
+          // Call exit_hover if function is set
+          if (!clickable->exit_hover.empty()) {
+            auto exit_func = Engine::FunctionRegistry<void(Engine::ECS::Entity)>::get_function(clickable->exit_hover.name);
             if (exit_func) {
               exit_func(entity);
             }
@@ -262,15 +262,12 @@ namespace Engine
 
         // Apply easing to position
         Math::Vec2D final_position = target.transform.position;
-        if (!target.position_easing_name.empty()) {
-          auto easing_func = Engine::FunctionRegistry<f32(f32, f32, f32, f32)>::get_function(target.position_easing_name);
+        if (!target.position_easing.empty()) {
+          auto easing_func = Engine::FunctionRegistry<f32(f32, f32, f32, f32)>::get_function(target.position_easing.name);
           if (easing_func) {
             float eased_x = easing_func(elapsed, start.position.x, target.transform.position.x - start.position.x, button.transition_duration);
             float eased_y = easing_func(elapsed, start.position.y, target.transform.position.y - start.position.y, button.transition_duration);
             final_position = { eased_x, eased_y };
-          }
-          else {
-            final_position = start.position + (target.transform.position - start.position) * t;
           }
         }
         else {
@@ -279,13 +276,10 @@ namespace Engine
 
         // Apply easing to rotation
         float final_rotation = target.transform.rotation;
-        if (!target.rotation_easing_name.empty()) {
-          auto easing_func = Engine::FunctionRegistry<f32(f32, f32, f32, f32)>::get_function(target.rotation_easing_name);
+        if (!target.rotation_easing.empty()) {
+          auto easing_func = Engine::FunctionRegistry<f32(f32, f32, f32, f32)>::get_function(target.rotation_easing.name);
           if (easing_func) {
             final_rotation = easing_func(elapsed, start.rotation, target.transform.rotation - start.rotation, button.transition_duration);
-          }
-          else {
-            final_rotation = start.rotation + (target.transform.rotation - start.rotation) * t;
           }
         }
         else {
@@ -294,15 +288,12 @@ namespace Engine
 
         // Apply easing to scale
         Math::Vec2D final_scale = target.transform.scale;
-        if (!target.scale_easing_name.empty()) {
-          auto easing_func = Engine::FunctionRegistry<f32(f32, f32, f32, f32)>::get_function(target.scale_easing_name);
+        if (!target.scale_easing.empty()) {
+          auto easing_func = Engine::FunctionRegistry<f32(f32, f32, f32, f32)>::get_function(target.scale_easing.name);
           if (easing_func) {
             float eased_x = easing_func(elapsed, start.scale.x, target.transform.scale.x - start.scale.x, button.transition_duration);
             float eased_y = easing_func(elapsed, start.scale.y, target.transform.scale.y - start.scale.y, button.transition_duration);
             final_scale = { eased_x, eased_y };
-          }
-          else {
-            final_scale = start.scale + (target.transform.scale - start.scale) * t;
           }
         }
         else {

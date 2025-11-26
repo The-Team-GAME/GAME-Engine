@@ -704,18 +704,18 @@ void ColliderEditorPanel()
       static auto easing_names = Engine::FunctionRegistry<f32(f32)>::get_all_names();
 
       // Helper lambda for easing function combo
-      auto easing_combo = [&](const char* label, std::string& easing_name) {
+      auto easing_combo = [&](const char* label, Engine::SerializableFunction& easing_func) {
         bool easing_changed = false;
-        if (ImGui::BeginCombo(label, easing_name.empty() ? "None (Linear)" : easing_name.c_str())) {
-          if (ImGui::Selectable("None (Linear)", easing_name.empty())) {
-            easing_name = "";
+        if (ImGui::BeginCombo(label, easing_func.empty() ? "None (Linear)" : easing_func.name.c_str())) {
+          if (ImGui::Selectable("None (Linear)", easing_func.empty())) {
+            easing_func = "";
             easing_changed = true;
           }
 
           for (const auto& name : easing_names) {
-            bool is_selected = (easing_name == name);
+            bool is_selected = (easing_func.name == name);
             if (ImGui::Selectable(name.c_str(), is_selected)) {
-              easing_name = name;
+              easing_func = name;
               easing_changed = true;
             }
             if (is_selected) {
@@ -727,9 +727,9 @@ void ColliderEditorPanel()
         return easing_changed;
         };
 
-      transform_changed |= easing_combo("Position Easing", current_state->position_easing_name);
-      transform_changed |= easing_combo("Rotation Easing", current_state->rotation_easing_name);
-      transform_changed |= easing_combo("Scale Easing", current_state->scale_easing_name);
+      transform_changed |= easing_combo("Position Easing", current_state->position_easing);
+      transform_changed |= easing_combo("Rotation Easing", current_state->rotation_easing);
+      transform_changed |= easing_combo("Scale Easing", current_state->scale_easing);
 
       if (transform_changed) {
         changed = true;

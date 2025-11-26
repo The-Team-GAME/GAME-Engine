@@ -18,6 +18,7 @@
 
 #include <functional>
 #include "../ECS/Macros.h"
+#include "../FunctionRegistry.h"
 #include "CollisionComponents.h"
 
 namespace Components
@@ -25,16 +26,16 @@ namespace Components
   struct Clickable
   {
     // Function names for FunctionRegistry lookup (serializable)
-    std::string on_click_name;
-    std::string on_hover_name;
-    std::string exit_hover_name;
+    Engine::SerializableFunction on_click;
+    Engine::SerializableFunction on_hover;
+    Engine::SerializableFunction exit_hover;
 
     Clickable() = default;
 
     Clickable(const std::string& click_func, const std::string& hover_func = "", const std::string& exit_func = "")
-      : on_click_name(click_func)
-      , on_hover_name(hover_func)
-      , exit_hover_name(exit_func)
+      : on_click(click_func)
+      , on_hover(hover_func)
+      , exit_hover(exit_func)
     {
     }
   };
@@ -52,9 +53,9 @@ namespace Components
       Components::Transform2D transform;
 
       // Easing function names for transitions (serializable)
-      std::string position_easing_name;
-      std::string rotation_easing_name;
-      std::string scale_easing_name;
+      Engine::SerializableFunction position_easing;
+      Engine::SerializableFunction rotation_easing;
+      Engine::SerializableFunction scale_easing;
     };
 
     StateData normal;
@@ -98,6 +99,6 @@ namespace Components
   };
 }
 
-REFLECT_FIELDS(Components::DynamicButton::StateData, width, height, vertices, transform, position_easing_name, rotation_easing_name, scale_easing_name)
+REFLECT_FIELDS(Components::DynamicButton::StateData, width, height, vertices, transform, position_easing, rotation_easing, scale_easing)
 REGISTER_COMPONENT(Components::DynamicButton, normal, hovered, clicked, is_hovered, is_clicked, transition_start_time, transition_duration, transition_start_transform)
-REGISTER_COMPONENT(Components::Clickable, on_click_name, on_hover_name, exit_hover_name)
+REGISTER_COMPONENT(Components::Clickable, on_click, on_hover, exit_hover)
