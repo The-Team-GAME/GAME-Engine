@@ -320,19 +320,19 @@ void ColliderEditorPanel()
       col_offset = collider->offset; // Offset is always from BoxCollider
 
       if (button_mode == ButtonColliderMode::Normal) {
-        col_width = dynamic_button->normal_width;
-        col_height = dynamic_button->normal_height;
-        col_vertices = dynamic_button->normal_vertices;
+        col_width = dynamic_button->normal.width;
+        col_height = dynamic_button->normal.height;
+        col_vertices = dynamic_button->normal.vertices;
       }
       else if (button_mode == ButtonColliderMode::Hovered) {
-        col_width = dynamic_button->hovered_width;
-        col_height = dynamic_button->hovered_height;
-        col_vertices = dynamic_button->hovered_vertices;
+        col_width = dynamic_button->hovered.width;
+        col_height = dynamic_button->hovered.height;
+        col_vertices = dynamic_button->hovered.vertices;
       }
       else { // Clicked
-        col_width = dynamic_button->clicked_width;
-        col_height = dynamic_button->clicked_height;
-        col_vertices = dynamic_button->clicked_vertices;
+        col_width = dynamic_button->clicked.width;
+        col_height = dynamic_button->clicked.height;
+        col_vertices = dynamic_button->clicked.vertices;
       }
     }
     else {
@@ -601,19 +601,19 @@ void ColliderEditorPanel()
       // Save to DynamicButton if present
       if (dynamic_button) {
         if (button_mode == ButtonColliderMode::Normal) {
-          dynamic_button->normal_width = col_width;
-          dynamic_button->normal_height = col_height;
-          dynamic_button->normal_vertices = col_vertices;
+          dynamic_button->normal.width = col_width;
+          dynamic_button->normal.height = col_height;
+          dynamic_button->normal.vertices = col_vertices;
         }
         else if (button_mode == ButtonColliderMode::Hovered) {
-          dynamic_button->hovered_width = col_width;
-          dynamic_button->hovered_height = col_height;
-          dynamic_button->hovered_vertices = col_vertices;
+          dynamic_button->hovered.width = col_width;
+          dynamic_button->hovered.height = col_height;
+          dynamic_button->hovered.vertices = col_vertices;
         }
         else { // Clicked
-          dynamic_button->clicked_width = col_width;
-          dynamic_button->clicked_height = col_height;
-          dynamic_button->clicked_vertices = col_vertices;
+          dynamic_button->clicked.width = col_width;
+          dynamic_button->clicked.height = col_height;
+          dynamic_button->clicked.vertices = col_vertices;
         }
 
         // Also update BoxCollider with current values

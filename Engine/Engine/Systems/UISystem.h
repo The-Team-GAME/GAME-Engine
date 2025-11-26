@@ -145,25 +145,25 @@ namespace Engine
         // Initialize DynamicButton with current collider values if not set
         bool needs_init = false;
         if (box_collider->type == Components::ColliderType::AABB) {
-          needs_init = (dynamic_button->normal_width == 0.0f && dynamic_button->normal_height == 0.0f);
+          needs_init = (dynamic_button->normal.width == 0.0f && dynamic_button->normal.height == 0.0f);
         }
         else {
-          needs_init = dynamic_button->normal_vertices.empty();
+          needs_init = dynamic_button->normal.vertices.empty();
         }
 
         if (needs_init) {
           if (box_collider->type == Components::ColliderType::AABB) {
-            dynamic_button->normal_width = box_collider->width;
-            dynamic_button->normal_height = box_collider->height;
-            dynamic_button->hovered_width = box_collider->width;
-            dynamic_button->hovered_height = box_collider->height;
-            dynamic_button->clicked_width = box_collider->width;
-            dynamic_button->clicked_height = box_collider->height;
+            dynamic_button->normal.width = box_collider->width;
+            dynamic_button->normal.height = box_collider->height;
+            dynamic_button->hovered.width = box_collider->width;
+            dynamic_button->hovered.height = box_collider->height;
+            dynamic_button->clicked.width = box_collider->width;
+            dynamic_button->clicked.height = box_collider->height;
           }
           else {
-            dynamic_button->normal_vertices = box_collider->polygon.vertices;
-            dynamic_button->hovered_vertices = box_collider->polygon.vertices;
-            dynamic_button->clicked_vertices = box_collider->polygon.vertices;
+            dynamic_button->normal.vertices = box_collider->polygon.vertices;
+            dynamic_button->hovered.vertices = box_collider->polygon.vertices;
+            dynamic_button->clicked.vertices = box_collider->polygon.vertices;
           }
         }
 
@@ -219,16 +219,16 @@ namespace Engine
       void apply_normal_state(const Components::DynamicButton& button, Components::BoxCollider& collider) {
         if (collider.type == Components::ColliderType::AABB) {
           // Update AABB dimensions
-          collider.width = button.normal_width;
-          collider.height = button.normal_height;
-          collider.aabb.half_width = button.normal_width / 2.0f;
-          collider.aabb.half_height = button.normal_height / 2.0f;
+          collider.width = button.normal.width;
+          collider.height = button.normal.height;
+          collider.aabb.half_width = button.normal.width / 2.0f;
+          collider.aabb.half_height = button.normal.height / 2.0f;
         }
         else if (collider.type == Components::ColliderType::OBB ||
           collider.type == Components::ColliderType::POLYGON) {
           // Update polygon vertices
-          if (!button.normal_vertices.empty()) {
-            collider.polygon.vertices = button.normal_vertices;
+          if (!button.normal.vertices.empty()) {
+            collider.polygon.vertices = button.normal.vertices;
           }
         }
       }
@@ -236,16 +236,16 @@ namespace Engine
       void apply_hovered_state(const Components::DynamicButton& button, Components::BoxCollider& collider) {
         if (collider.type == Components::ColliderType::AABB) {
           // Update AABB dimensions
-          collider.width = button.hovered_width;
-          collider.height = button.hovered_height;
-          collider.aabb.half_width = button.hovered_width / 2.0f;
-          collider.aabb.half_height = button.hovered_height / 2.0f;
+          collider.width = button.hovered.width;
+          collider.height = button.hovered.height;
+          collider.aabb.half_width = button.hovered.width / 2.0f;
+          collider.aabb.half_height = button.hovered.height / 2.0f;
         }
         else if (collider.type == Components::ColliderType::OBB ||
           collider.type == Components::ColliderType::POLYGON) {
           // Update polygon vertices
-          if (!button.hovered_vertices.empty()) {
-            collider.polygon.vertices = button.hovered_vertices;
+          if (!button.hovered.vertices.empty()) {
+            collider.polygon.vertices = button.hovered.vertices;
           }
         }
       }
@@ -253,16 +253,16 @@ namespace Engine
       void apply_clicked_state(const Components::DynamicButton& button, Components::BoxCollider& collider) {
         if (collider.type == Components::ColliderType::AABB) {
           // Update AABB dimensions
-          collider.width = button.clicked_width;
-          collider.height = button.clicked_height;
-          collider.aabb.half_width = button.clicked_width / 2.0f;
-          collider.aabb.half_height = button.clicked_height / 2.0f;
+          collider.width = button.clicked.width;
+          collider.height = button.clicked.height;
+          collider.aabb.half_width = button.clicked.width / 2.0f;
+          collider.aabb.half_height = button.clicked.height / 2.0f;
         }
         else if (collider.type == Components::ColliderType::OBB ||
           collider.type == Components::ColliderType::POLYGON) {
           // Update polygon vertices
-          if (!button.clicked_vertices.empty()) {
-            collider.polygon.vertices = button.clicked_vertices;
+          if (!button.clicked.vertices.empty()) {
+            collider.polygon.vertices = button.clicked.vertices;
           }
         }
       }

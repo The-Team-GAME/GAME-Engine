@@ -34,20 +34,16 @@ namespace Components
   // Dynamic button component that stores collider states for hover effects
   struct DynamicButton
   {
-    // Normal state collider data
-    f32 normal_width = 0.0f;
-    f32 normal_height = 0.0f;
-    std::vector<Math::Vec2D> normal_vertices;  // For polygon colliders
+    struct StateData
+    {
+      f32 width = 0.0f;
+      f32 height = 0.0f;
+      std::vector<Math::Vec2D> vertices;  // For polygon colliders
+    };
 
-    // Hovered state collider data
-    f32 hovered_width = 0.0f;
-    f32 hovered_height = 0.0f;
-    std::vector<Math::Vec2D> hovered_vertices;  // For polygon colliders
-
-    // Clicked state collider data
-    f32 clicked_width = 0.0f;
-    f32 clicked_height = 0.0f;
-    std::vector<Math::Vec2D> clicked_vertices;  // For polygon colliders
+    StateData normal;
+    StateData hovered;
+    StateData clicked;
 
     // Track current hover and click state
     bool is_hovered = false;
@@ -57,33 +53,27 @@ namespace Components
 
     // Constructor for AABB colliders
     DynamicButton(f32 normal_w, f32 normal_h, f32 hovered_w, f32 hovered_h, f32 clicked_w, f32 clicked_h)
-      : normal_width(normal_w)
-      , normal_height(normal_h)
-      , hovered_width(hovered_w)
-      , hovered_height(hovered_h)
-      , clicked_width(clicked_w)
-      , clicked_height(clicked_h)
-      , is_hovered(false)
+      : is_hovered(false)
       , is_clicked(false)
     {
+      normal.width = normal_w;
+      normal.height = normal_h;
+      hovered.width = hovered_w;
+      hovered.height = hovered_h;
+      clicked.width = clicked_w;
+      clicked.height = clicked_h;
     }
 
     // Constructor for polygon colliders
     DynamicButton(const std::vector<Math::Vec2D>& normal_verts, const std::vector<Math::Vec2D>& hovered_verts, const std::vector<Math::Vec2D>& clicked_verts)
-      : normal_width(0.0f)
-      , normal_height(0.0f)
-      , normal_vertices(normal_verts)
-      , hovered_width(0.0f)
-      , hovered_height(0.0f)
-      , hovered_vertices(hovered_verts)
-      , clicked_width(0.0f)
-      , clicked_height(0.0f)
-      , clicked_vertices(clicked_verts)
-      , is_hovered(false)
+      : is_hovered(false)
       , is_clicked(false)
     {
+      normal.vertices = normal_verts;
+      hovered.vertices = hovered_verts;
+      clicked.vertices = clicked_verts;
     }
   };
 }
 
-REGISTER_COMPONENT(Components::DynamicButton, normal_width, normal_height, normal_vertices, hovered_width, hovered_height, hovered_vertices, clicked_width, clicked_height, clicked_vertices, is_hovered, is_clicked)
+REGISTER_COMPONENT(Components::DynamicButton, normal, hovered, clicked, is_hovered, is_clicked)
