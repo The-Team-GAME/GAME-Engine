@@ -585,8 +585,102 @@ namespace ImGuiWidgets {
     return true;
   }
 
+  bool render_serializable_function_field(ReflectionLibrary::GenericValue& field_value, bool& modified, const std::string& field_name) {
+    // SerializableFunction has a single "name" field
+    if (!field_value.isObject() || field_value.getObject().find("name") == field_value.getObject().end()) {
+      return false;
+    }
+
+    // auto& name_field = field_value["name"]; // TODO: implement Generic Value ref
+    auto name_field = field_value["name"];
+    if (!name_field.isString()) return false;
+
+    std::string current_function = name_field.getString();
+
+    // Determine which signature to use based on field name
+    // Common patterns: callbacks ending in "callback" use void(Entity&)
+    //                  easing functions use f32(f32,f32,f32,f32)
+    //                  click handlers use void()
+
+    std::string label = "Function##" + field_name;
+
+    // Check if it's an easing function
+    if (field_name.find("easing") != std::string::npos) {
+      auto& functions = Engine::FunctionRegistry<f32(f32, f32, f32, f32)>::get_functions();
+
+      if (ImGui::BeginCombo(label.c_str(), current_function.empty() ? "<None>" : current_function.c_str())) {
+        bool is_selected = current_function.empty();
+        if (ImGui::Selectable("<None>", is_selected)) {
+          name_field = std::string("");
+          modified = true;
+        }
+        if (is_selected) ImGui::SetItemDefaultFocus();
+
+        for (const auto& [name, func] : functions) {
+          is_selected = (current_function == name);
+          if (ImGui::Selectable(name.c_str(), is_selected)) {
+            name_field = name;
+            modified = true;
+          }
+          if (is_selected) ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+      }
+      return true;
+    }
+    // Check if it's a state callback
+    else if (field_name.find("callback") != std::string::npos || field_name.find("on_enter") != std::string::npos ||
+      field_name.find("on_update") != std::string::npos || field_name.find("on_exit") != std::string::npos) {
+      auto& functions = Engine::FunctionRegistry<void(Engine::ECS::Entity&)>::get_functions();
+
+      if (ImGui::BeginCombo(label.c_str(), current_function.empty() ? "<None>" : current_function.c_str())) {
+        bool is_selected = current_function.empty();
+        if (ImGui::Selectable("<None>", is_selected)) {
+          name_field = std::string("");
+          modified = true;
+        }
+        if (is_selected) ImGui::SetItemDefaultFocus();
+
+        for (const auto& [name, func] : functions) {
+          is_selected = (current_function == name);
+          if (ImGui::Selectable(name.c_str(), is_selected)) {
+            name_field = name;
+            modified = true;
+          }
+          if (is_selected) ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+      }
+      return true;
+    }
+    // Default to void() for click handlers
+    else {
+      auto& functions = Engine::FunctionRegistry<void()>::get_functions();
+
+      if (ImGui::BeginCombo(label.c_str(), current_function.empty() ? "<None>" : current_function.c_str())) {
+        bool is_selected = current_function.empty();
+        if (ImGui::Selectable("<None>", is_selected)) {
+          name_field = std::string("");
+          modified = true;
+        }
+        if (is_selected) ImGui::SetItemDefaultFocus();
+
+        for (const auto& [name, func] : functions) {
+          is_selected = (current_function == name);
+          if (ImGui::Selectable(name.c_str(), is_selected)) {
+            name_field = name;
+            modified = true;
+          }
+          if (is_selected) ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+      }
+      return true;
+    }
+  }
+
   bool render_box_collider_field(ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity, Engine::ECS::Prefab* prefab, const std::string& prefab_path) {
-    if (ImGui::Button("Edit Collider")) {
+    if (ImGui::Button("Open Collider Editor")) {
       if (entity.is_valid()) {
         ColliderEditor::Open(entity);
       }
@@ -606,6 +700,9 @@ namespace ImGuiWidgets {
     Engine::ECS::Prefab* prefab,
     const std::string& prefab_path
   ) {
+    if (type_hint == "Engine::SerializableFunction") {
+      return render_serializable_function_field(field_value, modified, display_name);
+    }
     if (type_hint == "Components::BoxCollider") {
       return render_box_collider_field(field_value, modified, entity, prefab, prefab_path);
     }
