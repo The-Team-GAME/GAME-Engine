@@ -39,6 +39,9 @@ namespace Components
       f32 width = 0.0f;
       f32 height = 0.0f;
       std::vector<Math::Vec2D> vertices;  // For polygon colliders
+
+      // Transform data
+      Components::Transform2D transform;
     };
 
     StateData normal;
@@ -76,4 +79,5 @@ namespace Components
   };
 }
 
+REFLECT_FIELDS(Components::DynamicButton::StateData, width, height, vertices, transform)
 REGISTER_COMPONENT(Components::DynamicButton, normal, hovered, clicked, is_hovered, is_clicked)

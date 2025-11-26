@@ -656,6 +656,34 @@ void ColliderEditorPanel()
   ImGui::Text("Collider Size: %.2f x %.2f", col_width, col_height);
   ImGui::Text("Collider Offset: %.2f, %.2f", col_offset.x, col_offset.y);
 
+  // Transform controls for DynamicButton states
+  if (dynamic_button) {
+    ImGui::Separator();
+    ImGui::Text("Transform Controls (per state):");
+
+    Components::DynamicButton::StateData* current_state = nullptr;
+    if (button_mode == ButtonColliderMode::Normal) {
+      current_state = &dynamic_button->normal;
+    }
+    else if (button_mode == ButtonColliderMode::Hovered) {
+      current_state = &dynamic_button->hovered;
+    }
+    else {
+      current_state = &dynamic_button->clicked;
+    }
+
+    if (current_state) {
+      bool transform_changed = false;
+      transform_changed |= ImGui::DragFloat2("Position", &current_state->transform.position.x, 0.1f);
+      transform_changed |= ImGui::DragFloat("Rotation", &current_state->transform.rotation, 0.5f);
+      transform_changed |= ImGui::DragFloat2("Scale", &current_state->transform.scale.x, 0.01f);
+
+      if (transform_changed) {
+        changed = true;
+      }
+    }
+  }
+
   // Show save to prefab button for prefab instances
   if (current_mode == EditorMode::Entity && is_entity_prefab_instance && !entity_source_prefab_path.empty() && !editing_specific_state) {
     if (ImGui::Button("Save Collider to Prefab")) {

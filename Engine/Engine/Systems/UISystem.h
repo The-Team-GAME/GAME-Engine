@@ -138,8 +138,9 @@ namespace Engine
       void update_entity(Engine::ECS::Entity& entity) override {
         auto* dynamic_button = entity.get_component<Components::DynamicButton>();
         auto* box_collider = entity.get_component<Components::BoxCollider>();
+        auto* transform = entity.get_component<Components::Transform2D>();
 
-        if (!dynamic_button || !box_collider) return;
+        if (!dynamic_button || !box_collider || !transform) return;
 
         // TODO: very inefficient to initialize every frame, optimize later
         // Initialize DynamicButton with current collider values if not set
@@ -165,14 +166,17 @@ namespace Engine
             dynamic_button->hovered.vertices = box_collider->polygon.vertices;
             dynamic_button->clicked.vertices = box_collider->polygon.vertices;
           }
-        }
 
-        const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+          // Initialize transform data from current transform
+          dynamic_button->normal.transform = *transform;
+          dynamic_button->hovered.transform = *transform;
+          dynamic_button->clicked.transform = *transform;
+        }        const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
 
         if (!mouse_opt.has_value()) {
           // Mouse not in viewport - ensure button is in normal state
           if (dynamic_button->is_hovered) {
-            apply_normal_state(*dynamic_button, *box_collider);
+            apply_normal_state(*dynamic_button, *box_collider, *transform);
             dynamic_button->is_hovered = false;
           }
           return;
@@ -192,7 +196,7 @@ namespace Engine
         if (inside && is_mouse_down) {
           // Mouse is down on button - apply clicked state
           if (!dynamic_button->is_clicked) {
-            apply_clicked_state(*dynamic_button, *box_collider);
+            apply_clicked_state(*dynamic_button, *box_collider, *transform);
             dynamic_button->is_clicked = true;
             dynamic_button->is_hovered = false;
           }
@@ -200,7 +204,7 @@ namespace Engine
         else if (inside && !is_mouse_down) {
           // Mouse is hovering but not clicked
           if (!dynamic_button->is_hovered || dynamic_button->is_clicked) {
-            apply_hovered_state(*dynamic_button, *box_collider);
+            apply_hovered_state(*dynamic_button, *box_collider, *transform);
             dynamic_button->is_hovered = true;
             dynamic_button->is_clicked = false;
           }
@@ -208,7 +212,7 @@ namespace Engine
         else {
           // Mouse is outside - return to normal state
           if (dynamic_button->is_hovered || dynamic_button->is_clicked) {
-            apply_normal_state(*dynamic_button, *box_collider);
+            apply_normal_state(*dynamic_button, *box_collider, *transform);
             dynamic_button->is_hovered = false;
             dynamic_button->is_clicked = false;
           }
@@ -216,7 +220,7 @@ namespace Engine
       }
 
     private:
-      void apply_normal_state(const Components::DynamicButton& button, Components::BoxCollider& collider) {
+      void apply_normal_state(const Components::DynamicButton& button, Components::BoxCollider& collider, Components::Transform2D& transform) {
         if (collider.type == Components::ColliderType::AABB) {
           // Update AABB dimensions
           collider.width = button.normal.width;
@@ -231,9 +235,12 @@ namespace Engine
             collider.polygon.vertices = button.normal.vertices;
           }
         }
+
+        // Apply transform
+        transform = button.normal.transform;
       }
 
-      void apply_hovered_state(const Components::DynamicButton& button, Components::BoxCollider& collider) {
+      void apply_hovered_state(const Components::DynamicButton& button, Components::BoxCollider& collider, Components::Transform2D& transform) {
         if (collider.type == Components::ColliderType::AABB) {
           // Update AABB dimensions
           collider.width = button.hovered.width;
@@ -248,9 +255,12 @@ namespace Engine
             collider.polygon.vertices = button.hovered.vertices;
           }
         }
+
+        // Apply transform
+        transform = button.hovered.transform;
       }
 
-      void apply_clicked_state(const Components::DynamicButton& button, Components::BoxCollider& collider) {
+      void apply_clicked_state(const Components::DynamicButton& button, Components::BoxCollider& collider, Components::Transform2D& transform) {
         if (collider.type == Components::ColliderType::AABB) {
           // Update AABB dimensions
           collider.width = button.clicked.width;
@@ -265,6 +275,9 @@ namespace Engine
             collider.polygon.vertices = button.clicked.vertices;
           }
         }
+
+        // Apply transform
+        transform = button.clicked.transform;
       }
 
       void update_collider_position(Components::BoxCollider& collider,
