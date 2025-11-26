@@ -243,8 +243,8 @@ namespace Engine
         Engine::Graphics::draw_text_ui(font, displayed_text, text_pos_ui, TEXT_SCALE, text_color);
       }
 
-      // Toggles visibility and state
-      void toggle() { is_active ? hide() : show(); }
+      //// Toggles visibility and state
+      //void toggle() { is_active ? hide() : show(); }
 
       // Activates the chat box and starts the first dialogue
       void show() {
