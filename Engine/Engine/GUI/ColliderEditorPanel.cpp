@@ -696,6 +696,41 @@ void ColliderEditorPanel()
       transform_changed |= ImGui::DragFloat("Rotation", &current_state->transform.rotation, 0.5f);
       transform_changed |= ImGui::DragFloat2("Scale", &current_state->transform.scale.x, 0.01f);
 
+      // Easing function inputs
+      ImGui::Separator();
+      ImGui::Text("Easing Functions:");
+
+      // Get all registered easing functions
+      static auto easing_names = Engine::FunctionRegistry<f32(f32)>::get_all_names();
+
+      // Helper lambda for easing function combo
+      auto easing_combo = [&](const char* label, std::string& easing_name) {
+        bool easing_changed = false;
+        if (ImGui::BeginCombo(label, easing_name.empty() ? "None (Linear)" : easing_name.c_str())) {
+          if (ImGui::Selectable("None (Linear)", easing_name.empty())) {
+            easing_name = "";
+            easing_changed = true;
+          }
+
+          for (const auto& name : easing_names) {
+            bool is_selected = (easing_name == name);
+            if (ImGui::Selectable(name.c_str(), is_selected)) {
+              easing_name = name;
+              easing_changed = true;
+            }
+            if (is_selected) {
+              ImGui::SetItemDefaultFocus();
+            }
+          }
+          ImGui::EndCombo();
+        }
+        return easing_changed;
+        };
+
+      transform_changed |= easing_combo("Position Easing", current_state->position_easing_name);
+      transform_changed |= easing_combo("Rotation Easing", current_state->rotation_easing_name);
+      transform_changed |= easing_combo("Scale Easing", current_state->scale_easing_name);
+
       if (transform_changed) {
         changed = true;
       }

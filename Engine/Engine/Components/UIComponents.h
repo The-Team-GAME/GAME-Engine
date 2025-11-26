@@ -42,6 +42,11 @@ namespace Components
 
       // Transform data
       Components::Transform2D transform;
+
+      // Easing function names for transitions (serializable)
+      std::string position_easing_name;
+      std::string rotation_easing_name;
+      std::string scale_easing_name;
     };
 
     StateData normal;
@@ -51,6 +56,12 @@ namespace Components
     // Track current hover and click state
     bool is_hovered = false;
     bool is_clicked = false;
+
+    // Transition state (for easing animations)
+    f32 transition_start_time = 0.0f;
+    f32 transition_duration = 0.3f; // Duration of transition in seconds
+    Components::Transform2D transition_start_transform; // Transform at start of transition
+    StateData* target_state = nullptr; // Current target state for transition
 
     DynamicButton() = default;
 
@@ -79,5 +90,5 @@ namespace Components
   };
 }
 
-REFLECT_FIELDS(Components::DynamicButton::StateData, width, height, vertices, transform)
-REGISTER_COMPONENT(Components::DynamicButton, normal, hovered, clicked, is_hovered, is_clicked)
+REFLECT_FIELDS(Components::DynamicButton::StateData, width, height, vertices, transform, position_easing_name, rotation_easing_name, scale_easing_name)
+REGISTER_COMPONENT(Components::DynamicButton, normal, hovered, clicked, is_hovered, is_clicked, transition_start_time, transition_duration, transition_start_transform)

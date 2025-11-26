@@ -24,6 +24,8 @@
 #include "../ECS/ECS.h"
 #include "../Components/Components.h"
 #include "../InputManager.h"
+#include "../FunctionRegistry.h"
+#include "../Time.h"
 
 namespace Engine
 {
@@ -196,7 +198,7 @@ namespace Engine
         if (inside && is_mouse_down) {
           // Mouse is down on button - apply clicked state
           if (!dynamic_button->is_clicked) {
-            apply_clicked_state(*dynamic_button, *box_collider, *transform);
+            start_transition(*dynamic_button, dynamic_button->clicked, *transform);
             dynamic_button->is_clicked = true;
             dynamic_button->is_hovered = false;
           }
@@ -204,7 +206,7 @@ namespace Engine
         else if (inside && !is_mouse_down) {
           // Mouse is hovering but not clicked
           if (!dynamic_button->is_hovered || dynamic_button->is_clicked) {
-            apply_hovered_state(*dynamic_button, *box_collider, *transform);
+            start_transition(*dynamic_button, dynamic_button->hovered, *transform);
             dynamic_button->is_hovered = true;
             dynamic_button->is_clicked = false;
           }
@@ -212,14 +214,108 @@ namespace Engine
         else {
           // Mouse is outside - return to normal state
           if (dynamic_button->is_hovered || dynamic_button->is_clicked) {
-            apply_normal_state(*dynamic_button, *box_collider, *transform);
+            start_transition(*dynamic_button, dynamic_button->normal, *transform);
             dynamic_button->is_hovered = false;
             dynamic_button->is_clicked = false;
           }
         }
+
+        // Update transition animation
+        if (dynamic_button->target_state) {
+          update_transition(*dynamic_button, *box_collider, *transform);
+        }
       }
 
     private:
+      void start_transition(Components::DynamicButton& button, Components::DynamicButton::StateData& target, const Components::Transform2D& current_transform) {
+        button.transition_start_time = Engine::Time::get_time();
+        button.transition_start_transform = current_transform;
+        button.target_state = &target;
+      }
+
+      void update_transition(Components::DynamicButton& button, Components::BoxCollider& collider, Components::Transform2D& transform) {
+        if (!button.target_state) return;
+
+        float elapsed = Engine::Time::get_time() - button.transition_start_time;
+        float t = std::min(elapsed / button.transition_duration, 1.0f);
+
+        const auto& target = *button.target_state;
+        const auto& start = button.transition_start_transform;
+
+        // Apply easing to position
+        Math::Vec2D final_position = target.transform.position;
+        if (!target.position_easing_name.empty()) {
+          auto easing_func = Engine::FunctionRegistry<f32(f32, f32, f32, f32)>::get_function(target.position_easing_name);
+          if (easing_func) {
+            float eased_x = easing_func(elapsed, start.position.x, target.transform.position.x - start.position.x, button.transition_duration);
+            float eased_y = easing_func(elapsed, start.position.y, target.transform.position.y - start.position.y, button.transition_duration);
+            final_position = { eased_x, eased_y };
+          }
+          else {
+            final_position = start.position + (target.transform.position - start.position) * t;
+          }
+        }
+        else {
+          final_position = start.position + (target.transform.position - start.position) * t;
+        }
+
+        // Apply easing to rotation
+        float final_rotation = target.transform.rotation;
+        if (!target.rotation_easing_name.empty()) {
+          auto easing_func = Engine::FunctionRegistry<f32(f32, f32, f32, f32)>::get_function(target.rotation_easing_name);
+          if (easing_func) {
+            final_rotation = easing_func(elapsed, start.rotation, target.transform.rotation - start.rotation, button.transition_duration);
+          }
+          else {
+            final_rotation = start.rotation + (target.transform.rotation - start.rotation) * t;
+          }
+        }
+        else {
+          final_rotation = start.rotation + (target.transform.rotation - start.rotation) * t;
+        }
+
+        // Apply easing to scale
+        Math::Vec2D final_scale = target.transform.scale;
+        if (!target.scale_easing_name.empty()) {
+          auto easing_func = Engine::FunctionRegistry<f32(f32, f32, f32, f32)>::get_function(target.scale_easing_name);
+          if (easing_func) {
+            float eased_x = easing_func(elapsed, start.scale.x, target.transform.scale.x - start.scale.x, button.transition_duration);
+            float eased_y = easing_func(elapsed, start.scale.y, target.transform.scale.y - start.scale.y, button.transition_duration);
+            final_scale = { eased_x, eased_y };
+          }
+          else {
+            final_scale = start.scale + (target.transform.scale - start.scale) * t;
+          }
+        }
+        else {
+          final_scale = start.scale + (target.transform.scale - start.scale) * t;
+        }
+
+        // Apply interpolated transform
+        transform.position = final_position;
+        transform.rotation = final_rotation;
+        transform.scale = final_scale;
+
+        // Lerp collider dimensions
+        if (collider.type == Components::ColliderType::AABB) {
+          collider.width = target.width;
+          collider.height = target.height;
+          collider.aabb.half_width = target.width / 2.0f;
+          collider.aabb.half_height = target.height / 2.0f;
+        }
+        else if (collider.type == Components::ColliderType::OBB ||
+          collider.type == Components::ColliderType::POLYGON) {
+          if (!target.vertices.empty()) {
+            collider.polygon.vertices = target.vertices;
+          }
+        }
+
+        // Clear target state when transition is complete
+        if (t >= 1.0f) {
+          button.target_state = nullptr;
+        }
+      }
+
       void apply_normal_state(const Components::DynamicButton& button, Components::BoxCollider& collider, Components::Transform2D& transform) {
         if (collider.type == Components::ColliderType::AABB) {
           // Update AABB dimensions
@@ -238,46 +334,6 @@ namespace Engine
 
         // Apply transform
         transform = button.normal.transform;
-      }
-
-      void apply_hovered_state(const Components::DynamicButton& button, Components::BoxCollider& collider, Components::Transform2D& transform) {
-        if (collider.type == Components::ColliderType::AABB) {
-          // Update AABB dimensions
-          collider.width = button.hovered.width;
-          collider.height = button.hovered.height;
-          collider.aabb.half_width = button.hovered.width / 2.0f;
-          collider.aabb.half_height = button.hovered.height / 2.0f;
-        }
-        else if (collider.type == Components::ColliderType::OBB ||
-          collider.type == Components::ColliderType::POLYGON) {
-          // Update polygon vertices
-          if (!button.hovered.vertices.empty()) {
-            collider.polygon.vertices = button.hovered.vertices;
-          }
-        }
-
-        // Apply transform
-        transform = button.hovered.transform;
-      }
-
-      void apply_clicked_state(const Components::DynamicButton& button, Components::BoxCollider& collider, Components::Transform2D& transform) {
-        if (collider.type == Components::ColliderType::AABB) {
-          // Update AABB dimensions
-          collider.width = button.clicked.width;
-          collider.height = button.clicked.height;
-          collider.aabb.half_width = button.clicked.width / 2.0f;
-          collider.aabb.half_height = button.clicked.height / 2.0f;
-        }
-        else if (collider.type == Components::ColliderType::OBB ||
-          collider.type == Components::ColliderType::POLYGON) {
-          // Update polygon vertices
-          if (!button.clicked.vertices.empty()) {
-            collider.polygon.vertices = button.clicked.vertices;
-          }
-        }
-
-        // Apply transform
-        transform = button.clicked.transform;
       }
 
       void update_collider_position(Components::BoxCollider& collider,
