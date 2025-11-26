@@ -28,14 +28,14 @@ namespace Engine {
 
 
         // Background rectangle
-        Engine::Graphics::draw_rect({ 10.0f, 10.0f }, { 200.0f, 10.0f }, 0.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
+        Engine::Graphics::draw_rect_ui({ 10.0f, 10.0f }, { 200.0f, 10.0f }, 0.0f, { 1.0f, 1.0f, 1.0f, 1.0f });
 
         // Heartrate bar
         /*f32 hr_ratio = heartrate->heartrate / heartrate->crash_out;
         Engine::Graphics::draw_rect({ 10.0f, 10.0f }, { 200.0f * hr_ratio, 10.0f }, 0.0f, { 1.0f, 0.0f, 0.0f, 1.0f });*/
 
         // Draw text
-        Engine::Graphics::draw_text(
+        Engine::Graphics::draw_text_ui(
           font,
           "Heartrate: " + std::to_string(static_cast<int>(heartrate->heartrate)) + " bpm",
           { 10.0f, 25.0f },
