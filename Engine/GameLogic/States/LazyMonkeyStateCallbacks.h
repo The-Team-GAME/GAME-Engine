@@ -107,7 +107,7 @@ namespace LazyMonkeyStateCallbacks
           rigid->velocity.x = (dx > 0 ? lazy_monkey->chase_speed : -lazy_monkey->chase_speed);
           // Update flip direction based on movement
           if (flip) {
-            flip->value.x = (dx > 0 ? -1.0f : 1.0f); // TODO: Unflip this when sprite is fixed
+            flip->value.x = (dx > 0 ? 1.0f : -1.0f);
           }
           // Don't modify velocity.y - let gravity handle it
         }
@@ -128,7 +128,7 @@ namespace LazyMonkeyStateCallbacks
   }
 
   inline void chasing_on_exit(Engine::ECS::Entity& entity) {
-   
+
   }
 
   // ========================================================================
@@ -142,7 +142,7 @@ namespace LazyMonkeyStateCallbacks
 
     if (rigid && flip && lazy_monkey && rigid->on_ground) {
       // Throw monkey forward based on facing direction
-      rigid->velocity.x = (flip->value.x > 0 ? -lazy_monkey->leap_speed : lazy_monkey->leap_speed); // TODO: Unflip this when sprite is fixed
+      rigid->velocity.x = (flip->value.x > 0 ? lazy_monkey->leap_speed : -lazy_monkey->leap_speed);
       // Add upward velocity for a leap effect
       rigid->velocity.y = -lazy_monkey->leap_height; // Negative is up
     }
@@ -188,21 +188,21 @@ namespace LazyMonkeyStateCallbacks
     auto* pending_knockback = entity.get_component<Components::PendingKnockback>();
 
     if (!lazy_monkey) return;
- 
+
     // When animation ends, detach from hitbox and apply knockback
     if (animation->has_ended() && pending_knockback && rigid) {
       // Detach from hitbox first (stop following player)
       if (entity.has_component<Components::Parent>()) {
         entity.remove_component<Components::Parent>();
       }
-      
+
       // Apply knockback momentum from Player struct
       rigid->velocity = pending_knockback->knockback;
-      
+
       // Remove the pending knockback component (one-time use)
       entity.remove_component<Components::PendingKnockback>();
     }
-    
+
     // Transition to idle only when grounded (after knockback has been applied)
     if (animation->has_ended() && rigid && rigid->on_ground) {
       state_machine->change_state("Idle");
@@ -220,7 +220,7 @@ namespace LazyMonkeyStateCallbacks
   // Death State Callbacks
   // ========================================================================
 
-  inline void death_on_enter(Engine::ECS::Entity& entity) { 
+  inline void death_on_enter(Engine::ECS::Entity& entity) {
     std::cout << "Lazy Monkey: Died!" << std::endl;
   }
 
