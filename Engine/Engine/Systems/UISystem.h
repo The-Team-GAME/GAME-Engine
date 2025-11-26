@@ -141,6 +141,29 @@ namespace Engine
 
         if (!dynamic_button || !box_collider) return;
 
+        // TODO: very inefficient to initialize every frame, optimize later
+        // Initialize DynamicButton with current collider values if not set
+        bool needs_init = false;
+        if (box_collider->type == Components::ColliderType::AABB) {
+          needs_init = (dynamic_button->normal_width == 0.0f && dynamic_button->normal_height == 0.0f);
+        }
+        else {
+          needs_init = dynamic_button->normal_vertices.empty();
+        }
+
+        if (needs_init) {
+          if (box_collider->type == Components::ColliderType::AABB) {
+            dynamic_button->normal_width = box_collider->width;
+            dynamic_button->normal_height = box_collider->height;
+            dynamic_button->hovered_width = box_collider->width;
+            dynamic_button->hovered_height = box_collider->height;
+          }
+          else {
+            dynamic_button->normal_vertices = box_collider->polygon.vertices;
+            dynamic_button->hovered_vertices = box_collider->polygon.vertices;
+          }
+        }
+
         const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
 
         if (!mouse_opt.has_value()) {
