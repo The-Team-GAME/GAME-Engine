@@ -136,10 +136,18 @@ void ColliderEditorPanel()
     // Display DynamicButton mode selector if present
     if (dynamic_button) {
       ImGui::Text("Dynamic Button Detected");
-      const char* button_modes[] = { "Normal State", "Hovered State" };
-      int current_button_mode = static_cast<int>(button_mode);
-      if (ImGui::Combo("Button State", &current_button_mode, button_modes, IM_ARRAYSIZE(button_modes))) {
-        button_mode = static_cast<ButtonColliderMode>(current_button_mode);
+
+      // Tab bar for selecting button state
+      if (ImGui::BeginTabBar("ButtonStateTabBar")) {
+        if (ImGui::BeginTabItem("Normal State")) {
+          button_mode = ButtonColliderMode::Normal;
+          ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Hovered State")) {
+          button_mode = ButtonColliderMode::Hovered;
+          ImGui::EndTabItem();
+        }
+        ImGui::EndTabBar();
       }
       ImGui::Separator();
     }
