@@ -61,14 +61,32 @@ namespace Engine
 
         // mouse click detection
         if (inside) {
-          clickable->on_hover(entity);
+          // Call on_hover if function name is set
+          if (!clickable->on_hover_name.empty()) {
+            auto hover_func = Engine::FunctionRegistry<void(Engine::ECS::Entity)>::get_function(clickable->on_hover_name);
+            if (hover_func) {
+              hover_func(entity);
+            }
+          }
 
           if (Engine::Input::is_pressed(KeyCode::MouseLeft)) {
-            clickable->on_click();
+            // Call on_click if function name is set
+            if (!clickable->on_click_name.empty()) {
+              auto click_func = Engine::FunctionRegistry<void()>::get_function(clickable->on_click_name);
+              if (click_func) {
+                click_func();
+              }
+            }
           }
         }
         else {
-          clickable->exit_hover(entity);
+          // Call exit_hover if function name is set
+          if (!clickable->exit_hover_name.empty()) {
+            auto exit_func = Engine::FunctionRegistry<void(Engine::ECS::Entity)>::get_function(clickable->exit_hover_name);
+            if (exit_func) {
+              exit_func(entity);
+            }
+          }
         }
       }
 

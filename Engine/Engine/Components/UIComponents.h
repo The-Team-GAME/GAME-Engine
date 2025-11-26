@@ -24,11 +24,19 @@ namespace Components
 {
   struct Clickable
   {
-    std::function<void()> on_click;
+    // Function names for FunctionRegistry lookup (serializable)
+    std::string on_click_name;
+    std::string on_hover_name;
+    std::string exit_hover_name;
 
-    std::function<void(Engine::ECS::Entity)> on_hover;
+    Clickable() = default;
 
-    std::function<void(Engine::ECS::Entity)> exit_hover;
+    Clickable(const std::string& click_func, const std::string& hover_func = "", const std::string& exit_func = "")
+      : on_click_name(click_func)
+      , on_hover_name(hover_func)
+      , exit_hover_name(exit_func)
+    {
+    }
   };
 
   // Dynamic button component that stores collider states for hover effects
@@ -92,3 +100,4 @@ namespace Components
 
 REFLECT_FIELDS(Components::DynamicButton::StateData, width, height, vertices, transform, position_easing_name, rotation_easing_name, scale_easing_name)
 REGISTER_COMPONENT(Components::DynamicButton, normal, hovered, clicked, is_hovered, is_clicked, transition_start_time, transition_duration, transition_start_transform)
+REGISTER_COMPONENT(Components::Clickable, on_click_name, on_hover_name, exit_hover_name)
