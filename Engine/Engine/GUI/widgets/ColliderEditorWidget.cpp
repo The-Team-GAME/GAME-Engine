@@ -68,6 +68,11 @@ namespace ImGuiWidgets {
     // Collider Center (Sprite Center + Display Offset)
     ImVec2 col_center = { center.x + display_offset.x * scale, center.y + display_offset.y * scale };
 
+    // Ensure minimum collider size to prevent degenerate cases
+    const float min_size = 1.0f;
+    if (collider_data.width < min_size) collider_data.width = min_size;
+    if (collider_data.height < min_size) collider_data.height = min_size;
+
     // Collider half-extents scaled to screen
     float col_half_w = (collider_data.width / 2.0f) * scale;
     float col_half_h = (collider_data.height / 2.0f) * scale;
@@ -120,7 +125,7 @@ namespace ImGuiWidgets {
         collider_data.width += dx;
         collider_data.offset.x += dx / 2.0f;
       }
-      if (collider_data.width < 0) collider_data.width = 0;
+      if (collider_data.width < min_size) collider_data.width = min_size;
       changed = true;
     }
 
@@ -136,7 +141,7 @@ namespace ImGuiWidgets {
         collider_data.width -= dx;
         collider_data.offset.x += dx / 2.0f;
       }
-      if (collider_data.width < 0) collider_data.width = 0;
+      if (collider_data.width < min_size) collider_data.width = min_size;
       changed = true;
     }
 
@@ -152,7 +157,7 @@ namespace ImGuiWidgets {
         collider_data.height -= dy;
         collider_data.offset.y += dy / 2.0f;
       }
-      if (collider_data.height < 0) collider_data.height = 0;
+      if (collider_data.height < min_size) collider_data.height = min_size;
       changed = true;
     }
 
@@ -168,7 +173,7 @@ namespace ImGuiWidgets {
         collider_data.height += dy;
         collider_data.offset.y -= dy / 2.0f;
       }
-      if (collider_data.height < 0) collider_data.height = 0;
+      if (collider_data.height < min_size) collider_data.height = min_size;
       changed = true;
     }
 
@@ -191,8 +196,8 @@ namespace ImGuiWidgets {
         collider_data.offset.x += dx / 2.0f;
         collider_data.offset.y += dy / 2.0f;
       }
-      if (collider_data.width < 0) collider_data.width = 0;
-      if (collider_data.height < 0) collider_data.height = 0;
+      if (collider_data.width < min_size) collider_data.width = min_size;
+      if (collider_data.height < min_size) collider_data.height = min_size;
       changed = true;
     }
 
@@ -212,8 +217,8 @@ namespace ImGuiWidgets {
         collider_data.offset.x += dx / 2.0f;
         collider_data.offset.y += dy / 2.0f;
       }
-      if (collider_data.width < 0) collider_data.width = 0;
-      if (collider_data.height < 0) collider_data.height = 0;
+      if (collider_data.width < min_size) collider_data.width = min_size;
+      if (collider_data.height < min_size) collider_data.height = min_size;
       changed = true;
     }
 
@@ -233,8 +238,8 @@ namespace ImGuiWidgets {
         collider_data.offset.x += dx / 2.0f;
         collider_data.offset.y -= dy / 2.0f;
       }
-      if (collider_data.width < 0) collider_data.width = 0;
-      if (collider_data.height < 0) collider_data.height = 0;
+      if (collider_data.width < min_size) collider_data.width = min_size;
+      if (collider_data.height < min_size) collider_data.height = min_size;
       changed = true;
     }
 
@@ -254,8 +259,8 @@ namespace ImGuiWidgets {
         collider_data.offset.x += dx / 2.0f;
         collider_data.offset.y -= dy / 2.0f;
       }
-      if (collider_data.width < 0) collider_data.width = 0;
-      if (collider_data.height < 0) collider_data.height = 0;
+      if (collider_data.width < min_size) collider_data.width = min_size;
+      if (collider_data.height < min_size) collider_data.height = min_size;
       changed = true;
     }
 
