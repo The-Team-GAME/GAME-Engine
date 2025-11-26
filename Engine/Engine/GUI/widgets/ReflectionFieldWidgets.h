@@ -25,6 +25,26 @@ namespace ImGuiWidgets {
 
   /*=================================================================================
   Function Brief:
+  Parses a component name with namespaces (e.g., "Namespace1::Namespace2::Component")
+  and renders it as nested tree nodes. Returns true if the innermost node is open.
+
+  Parameters:
+  component_name - The full component name with namespaces
+  content_func   - Lambda function to render the component content when innermost node is open
+
+  Returns:
+  true if the component tree was rendered successfully.
+
+  Where to call it:
+  From component editor panels when rendering component trees.
+  ==================================================================================*/
+  bool render_nested_component_tree(
+    const std::string& component_name,
+    const std::function<void()>& content_func
+  );
+
+  /*=================================================================================
+  Function Brief:
   Renders a color picker widget for Components::Color fields.
 
   Parameters:
