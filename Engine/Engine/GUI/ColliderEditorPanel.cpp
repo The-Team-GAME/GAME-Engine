@@ -383,8 +383,26 @@ void ColliderEditorPanel()
   float sprite_world_width = 0.0f;
   float sprite_world_height = 0.0f;
 
-  // 1. Base Scale from Transform2D
-  if (transform) {
+  // 1. Base Scale from Transform2D or DynamicButton state
+  if (dynamic_button) {
+    // Use transform from the selected button state
+    const Components::DynamicButton::StateData* current_state = nullptr;
+    if (button_mode == ButtonColliderMode::Normal) {
+      current_state = &dynamic_button->normal;
+    }
+    else if (button_mode == ButtonColliderMode::Hovered) {
+      current_state = &dynamic_button->hovered;
+    }
+    else {
+      current_state = &dynamic_button->clicked;
+    }
+
+    if (current_state) {
+      sprite_world_width = current_state->transform.scale.x;
+      sprite_world_height = current_state->transform.scale.y;
+    }
+  }
+  else if (transform) {
     sprite_world_width = transform->scale.x;
     sprite_world_height = transform->scale.y;
   }
