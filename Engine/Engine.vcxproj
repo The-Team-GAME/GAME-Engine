@@ -296,11 +296,15 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="GameLogic\States\LazyMonkeyStateMachine.h" />
     <ClInclude Include="GameLogic\States\PlayerStateCallbacks.h" />
     <ClInclude Include="GameLogic\States\PlayerStateMachine.h" />
+    <ClInclude Include="GameLogic\Systems\DebugHitboxRenderSystem.h" />
+    <ClInclude Include="GameLogic\Systems\EnemyHealthSystem.h" />
     <ClInclude Include="GameLogic\Systems\HealthSystem.h" />
+    <ClInclude Include="GameLogic\Systems\HeartrateSystem.h" />
     <ClInclude Include="GameLogic\Systems\PlayerControllerSystem.h" />
     <ClInclude Include="Engine\Lua\LuaManager.h" />
     <ClInclude Include="Engine\Systems\LogicSystem.h" />
     <ClInclude Include="Engine\UndoManager\UndoManager.h" />
+    <ClInclude Include="GameLogic\Systems\TrailSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\scripts\behaviour_test.lua" />

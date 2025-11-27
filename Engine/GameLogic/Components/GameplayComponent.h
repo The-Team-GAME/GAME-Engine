@@ -97,8 +97,22 @@ namespace Components
 
 } // namespace Components
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+REFLECT_FIELDS(Components::Player::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, dash_speed, damage, heartrate_cost, knockback)
 REGISTER_COMPONENT(Components::Player, walk_speed, air_speed, jump_force, attack1, attack2, attack3)
 REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height, attack_cooldown, last_attack_time, detection_range, chase_range, attack_range)
 REGISTER_COMPONENT(Components::Attack, damage, knockback)
-//REGISTER_COMPONENT(Components::PendingKnockback, knockback)
-REFLECT_FIELDS(Components::Player::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, dash_speed, damage, heartrate_cost, knockback)
+REGISTER_COMPONENT(Components::PendingKnockback, knockback)

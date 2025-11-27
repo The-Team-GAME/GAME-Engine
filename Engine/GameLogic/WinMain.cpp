@@ -64,6 +64,7 @@ int main()
   Engine::ECS::register_layer("damage_enemy"); // Damage enemy layer (e.g., hitboxes for player attacks)
   Engine::ECS::register_layer("damage_player"); // Damage player layer (e.g., hitboxes for enemy attacks, hazards)
   Engine::ECS::register_layer("enemy"); // Enemy characters layer
+  Engine::ECS::register_layer("player_trail"); // Specific layer for player trail effect
   Engine::ECS::register_layer("player"); // Player character layer
   Engine::ECS::register_layer("effect"); // Visual effects like particles
   Engine::ECS::register_layer("ui"); // User interface elements
@@ -126,14 +127,14 @@ int main()
 
         // Attach enemy to hitbox (sticky knockback)
         auto* rigid = enemy_entity.get_component<Components::RigidBody>();
-        
+
         if (rigid) {
           // Make enemy child of hitbox (offset will be auto-calculated by HierarchySystem)
           enemy_entity.add_component<Components::Parent>(attack_entity);
-        
+
           // Store knockback to apply when detaching (from Player struct via Attack component)
           enemy_entity.add_component<Components::PendingKnockback>(attack->knockback);
-        
+
           // Move slightly towards the center of the hitbox (20%)
           auto* attack_transform = attack_entity.get_component<Components::Transform2D>();
           if (attack_transform) {
