@@ -27,6 +27,12 @@ namespace Engine {
     Math::Vec2D listener_position = { 0.0f, 0.0f };
     Math::Vec2D listener_forward = { 0.0f, 1.0f };
     f32 master_volume = 1.0f;
+    f32 bgm_volume = 1.0f;
+    f32 sfx_volume = 1.0f;
+
+    // Channel groups
+    FMOD::ChannelGroup* bgm_group = nullptr;
+    FMOD::ChannelGroup* sfx_group = nullptr;
 
     bool init() {
       // FMOD system is initialized lazily in get_fmod_system()
@@ -37,6 +43,11 @@ namespace Engine {
           Log::error("Failed to initialize audio system");
           return false;
         }
+
+        // Create channel groups
+        system->createChannelGroup("BGM", &bgm_group);
+        system->createChannelGroup("SFX", &sfx_group);
+
         Log::info("Audio system initialized");
         return true;
       }
@@ -48,6 +59,8 @@ namespace Engine {
 
     bool exit() {
       // FMOD system cleanup is handled by UniqueFMODSystem destructor
+      bgm_group = nullptr;
+      sfx_group = nullptr;
       Log::info("Audio system cleaned up");
       return true;
     }
@@ -73,7 +86,10 @@ namespace Engine {
       FMOD::System* system = get_fmod_system();
       FMOD::Channel* channel = nullptr;
 
-      FMOD_RESULT result = system->playSound(sound->sound, nullptr, true, &channel);
+      // Select channel group based on sound type (stream = BGM, loaded = SFX)
+      FMOD::ChannelGroup* target_group = sound->is_stream ? bgm_group : sfx_group;
+
+      FMOD_RESULT result = system->playSound(sound->sound, target_group, true, &channel);
       if (result != FMOD_OK || !channel) {
         Log::warning("Failed to play sound");
         return INVALID_CHANNEL;
@@ -82,8 +98,8 @@ namespace Engine {
       // Set loop mode
       channel->setMode(loop ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
 
-      // Set volume (clamped to master volume)
-      channel->setVolume(volume * master_volume);
+      // Set volume (relative to channel group)
+      channel->setVolume(volume);
 
       // Set as 2D sound (no positional audio)
       channel->setMode(FMOD_2D);
@@ -106,7 +122,10 @@ namespace Engine {
       FMOD::System* system = get_fmod_system();
       FMOD::Channel* channel = nullptr;
 
-      FMOD_RESULT result = system->playSound(sound->sound, nullptr, true, &channel);
+      // Select channel group based on sound type (stream = BGM, loaded = SFX)
+      FMOD::ChannelGroup* target_group = sound->is_stream ? bgm_group : sfx_group;
+
+      FMOD_RESULT result = system->playSound(sound->sound, target_group, true, &channel);
       if (result != FMOD_OK || !channel) {
         Log::warning("Failed to play sound");
         return INVALID_CHANNEL;
@@ -116,7 +135,7 @@ namespace Engine {
       channel->setMode(loop ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
 
       // Set volume
-      channel->setVolume(volume * master_volume);
+      channel->setVolume(volume);
 
       // Set as 3D sound
       channel->setMode(FMOD_3D);
@@ -178,7 +197,7 @@ namespace Engine {
       FMOD::Channel* channel = nullptr;
 
       if (system->getChannel(handle, &channel) == FMOD_OK && channel) {
-        channel->setVolume(volume * master_volume);
+        channel->setVolume(volume);
       }
     }
 
@@ -212,6 +231,26 @@ namespace Engine {
 
     void set_master_volume(f32 volume) {
       master_volume = glm::clamp(volume, 0.0f, 1.0f);
+      
+      FMOD::System* system = get_fmod_system();
+      FMOD::ChannelGroup* master_group = nullptr;
+      if (system->getMasterChannelGroup(&master_group) == FMOD_OK && master_group) {
+        master_group->setVolume(master_volume);
+      }
+    }
+
+    void set_bgm_volume(f32 volume) {
+      bgm_volume = glm::clamp(volume, 0.0f, 1.0f);
+      if (bgm_group) {
+        bgm_group->setVolume(bgm_volume);
+      }
+    }
+
+    void set_sfx_volume(f32 volume) {
+      sfx_volume = glm::clamp(volume, 0.0f, 1.0f);
+      if (sfx_group) {
+        sfx_group->setVolume(sfx_volume);
+      }
     }
 
     void set_listener_position(const Math::Vec2D& position) {
@@ -240,6 +279,14 @@ namespace Engine {
 
     f32 get_master_volume() {
       return master_volume;
+    }
+
+    f32 get_bgm_volume() {
+      return bgm_volume;
+    }
+
+    f32 get_sfx_volume() {
+      return sfx_volume;
     }
 
     Math::Vec2D get_listener_position() {

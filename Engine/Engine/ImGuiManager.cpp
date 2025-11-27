@@ -161,6 +161,10 @@ namespace ImGuiManager {
             if (ImGui::MenuItem("Toggle Debug Layer", "F3", Engine::ECS::is_layer_active("debug"))) {
               Engine::ECS::is_layer_active("debug") ? Engine::ECS::disable_layer("debug") : Engine::ECS::enable_layer("debug");
             }
+            if (ImGui::MenuItem("Toggle Fullscreen", "F11", &Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get_mutable().fullscreen)) {
+              Engine::WindowManager::set_fullscreen(Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get().fullscreen);
+              Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::save();
+            }
 
             ImGui::EndMenu();
           }
@@ -530,6 +534,15 @@ namespace ImGuiManager {
     if (Engine::Input::is_pressed(Engine::KeyCode::F3))
     {
       Engine::ECS::is_layer_active("debug") ? Engine::ECS::disable_layer("debug") : Engine::ECS::enable_layer("debug");
+    }
+
+    // Toggle Fullscreen with F11 key
+    if (Engine::Input::is_pressed(Engine::KeyCode::F11))
+    {
+      auto& settings = Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get_mutable();
+      settings.fullscreen = !settings.fullscreen;
+      Engine::WindowManager::set_fullscreen(settings.fullscreen);
+      Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::save();
     }
 
   }
