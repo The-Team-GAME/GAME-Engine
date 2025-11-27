@@ -21,6 +21,7 @@
 
 #include "../Components/HealthComponents.h"
 #include "../Systems/HealthSystem.h"
+#include "../../Engine/Systems/ParticleSystem.h"
 
 class LevelTestState : public Engine::Scene
 {
@@ -40,6 +41,7 @@ public:
 
     Engine::ECS::add_system<Engine::Systems::EnemyHealthBarSystem>();
     Engine::ECS::add_system<Engine::Systems::HeartHUDSpriteSystem>();
+    Engine::ECS::add_system<Engine::Systems::ParticleSystem>();
 
     // ========================================================================
     // Create Player Entity

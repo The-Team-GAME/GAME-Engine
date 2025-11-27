@@ -50,6 +50,18 @@ namespace Engine {
 			// Runs the particle simulation, spawns new particles, and writes back to ECS.
 			void update() override;
 
+      static void post(const SetParticleParamsEvent& e) {
+        if (s_instance) {
+          if (!s_instance->initialized_) s_instance->lazy_init(); // ensure pool
+          s_instance->on_set(e);
+        }
+      }
+      static void post(const SpawnParticlesEvent& e) {
+        if (s_instance) {
+          if (!s_instance->initialized_) s_instance->lazy_init(); // ensure pool
+          s_instance->on_spawn(e);
+        }
+      }
 
 		private:
 			// ------------------------- Internal data -------------------------
@@ -92,6 +104,9 @@ namespace Engine {
       static inline float deg2rad(float d) { return d * 0.01745329251994329577f; }
       static inline float rad2deg(float r) { return r * 57.29577951308232f; }
 
+      void on_set(const SetParticleParamsEvent& e);
+      void on_spawn(const SpawnParticlesEvent& e);
+
       // state
       int pool_size_{ 512 };
       std::vector<ParticleSlot> pool_;
@@ -99,6 +114,8 @@ namespace Engine {
       float spawn_accum_{ 0.f };
       bool initialized_{ false };
       bool subscribed_{ false };
+
+      static ParticleSystem* s_instance;
     };
 
 
