@@ -215,7 +215,7 @@ namespace LazyMonkeyStateCallbacks
 
     Systems::SpawnParticlesEvent burst{};
     burst.pos = spawn;
-    burst.count = 50;
+    burst.count = 100;
     Engine::Systems::ParticleSystem::post(burst);
   }
 
