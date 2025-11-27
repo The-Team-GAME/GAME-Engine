@@ -54,11 +54,18 @@ namespace Components {
 
 	struct EnemyHealthBar {
 		// Layout
-		float radius = 36.0f;
-		float start_angle_deg = 200.0f;   // arc left -> right above head
-		float end_angle_deg = -20.0f;
-		int   segments = 36;
-		Math::Vec2D offset{ 0.f, -48.f };   // above head
+		float radius = 24.0f;
+		float start_angle_deg = 160.0f;   // arc left -> right above head
+		float end_angle_deg = 20.0f;
+		int   segments = 28;
+		Math::Vec2D offset{ 0.f, -44.f };   // above head
+
+		// Rendering/layering
+		std::string layer = "enemy";
+
+		bool  use_center_span = true;
+		float center_angle_deg = 90.0f;
+		float arc_span_deg = 140.0f;
 
 		// Visuals
 		Engine::Graphics::Texture tex{};
@@ -71,6 +78,8 @@ namespace Components {
 		// Behavior
 		float drain_speed = 1.5f;     // ratio per second for delayed bar
 		float show_duration = 1.25f;  // visible window after last damage
+		bool  persist_after_first_hit = true;
+		bool  has_been_hit = false;
 
 		// Runtime
 		std::vector<Engine::ECS::Entity> front; // immediate
