@@ -102,17 +102,20 @@ namespace LazyMonkeyStateCallbacks
         float dx = player_transform->position.x - lazy_monkey_transform->position.x;
         float distance = std::abs(dx); // Only horizontal distance for sidescrolling
 
-        // Chase player horizontally
-        if (distance > 10.f) {
-          rigid->velocity.x = (dx > 0 ? lazy_monkey->chase_speed : -lazy_monkey->chase_speed);
-          // Update flip direction based on movement
-          if (flip) {
-            flip->value.x = (dx > 0 ? 1.0f : -1.0f);
-          }
-          // Don't modify velocity.y - let gravity handle it
+        // Chase player horizontally, but stop when within attack range
+      if (distance > lazy_monkey->attack_range) {
+        rigid->velocity.x = (dx > 0 ? lazy_monkey->chase_speed : -lazy_monkey->chase_speed);
+        // Update flip direction based on movement
+        if (flip) {
+          flip->value.x = (dx > 0 ? 1.0f : -1.0f);
         }
+        // Don't modify velocity.y - let gravity handle it
+      } else {
+        // Stop moving when close enough to attack
+        rigid->velocity.x = 0.0f;
+      }
 
-        // Return to idle if player is far away
+      // Return to idle if player is far away
         if (distance > lazy_monkey->chase_range) {
           state_machine->change_state("Idle");
         }

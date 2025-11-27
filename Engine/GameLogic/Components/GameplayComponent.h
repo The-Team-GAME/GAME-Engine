@@ -69,15 +69,15 @@ namespace Components
     float chase_speed = 100.0f;
 
     // Attack parameters
-    float leap_speed = 400.0f;
+    float leap_speed = 2000.0f;
     float leap_height = 300.0f;
-    float attack_cooldown = 5.0f;
+    float attack_cooldown = 3.0f;
     float last_attack_time = 0.0f;
 
     // Detection ranges
     float detection_range = 300.0f;
     float chase_range = 400.0f;
-    float attack_range = 80.0f;
+    float attack_range = 180.0f;
   };
 
   struct Attack
