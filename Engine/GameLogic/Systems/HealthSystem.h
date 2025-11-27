@@ -299,157 +299,6 @@ namespace Engine {
 
     };
 
-    class HealthWaveHUDSystem final : public Engine::ECS::System {
-    public:
-      HealthWaveHUDSystem() { require_components<Components::Heartrate, Components::HealthWaveHUD>(); }
-
-      void update_entity(Engine::ECS::Entity& e) override {
-        using namespace Components;
-
-        auto* hr = e.get_component<Heartrate>();
-        auto* hud = e.get_component<HealthWaveHUD>();
-        if (!hr || !hud) return;
-
-        ensure_wave(*hud);
-
-        const float dt = Engine::Time::get_fixed_dt();
-
-        // Normalize heartrate to [0..1] using low..crash_out
-        const float bpm = std::max(1.f, hr->heartrate);
-        const float base = hr->low;
-        const float span = std::max(1e-3f, hr->crash_out - hr->low);
-        const float target = std::clamp((bpm - base) / span, 0.f, 1.f);
-
-        // Instant + delayed fill
-        hud->front_ratio = target;
-        if (hud->after_ratio > hud->front_ratio) {
-          hud->after_ratio = std::max(hud->front_ratio, hud->after_ratio - hud->drain_speed * dt);
-        }
-        else {
-          hud->after_ratio = std::min(hud->front_ratio, hud->after_ratio + hud->drain_speed * dt * 0.6f);
-        }
-
-        // Heartbeat animation (period from bpm)
-        advance_heartbeat(*hud, bpm, dt);
-
-        // Layout
-        layout_wave(*hud);
-      }
-
-    private:
-      static Engine::Graphics::Texture default_rect() { return Engine::Resources::get_rect_texture(); }
-
-      void ensure_wave(Components::HealthWaveHUD& hud) {
-        if (hud.initialized) return;
-        hud.initialized = true;
-        if (!hud.tex) hud.tex = default_rect();
-
-        const int n = std::max(3, hud.segments);
-        hud.back.resize(n);
-        hud.after.resize(n);
-        hud.front.resize(n);
-
-        auto make_seg = [&](float thick, Components::HealthWaveHUD::RGBA c) {
-          return Engine::ECS::create_entity()
-            .add_component<Components::Transform2D>(0.f, 0.f, 0.f, thick, thick)
-            .add_component<Components::Texture>(hud.tex)
-            .add_component<Components::Color>(c.r, c.g, c.b, c.a)
-            .remove_from_layer("default")
-            .add_to_layer(hud.layer.c_str());
-          };
-        for (int i = 0; i < n; ++i) {
-          hud.back[i] = make_seg(hud.back_thickness, hud.back_color);
-          hud.after[i] = make_seg(hud.after_thickness, hud.after_color);
-          hud.front[i] = make_seg(hud.front_thickness, hud.front_color);
-        }
-      }
-
-      static inline float tri(float t) { return 2.f * std::fabs(2.f * (t - std::floor(t + 0.5f))) - 1.f; }
-
-      void advance_heartbeat(Components::HealthWaveHUD& hud, float bpm, float dt) {
-        const float period = (bpm > 1.f) ? (60.f / bpm) : 1.f;
-        hud.beat_phase += dt / period;
-        if (hud.beat_phase >= 1.f) hud.beat_phase -= 1.f;
-        hud.spike_pos += dt / period;               // sweep left->right
-        while (hud.spike_pos >= 1.f) hud.spike_pos -= 1.f;
-      }
-
-      // Smooth base: two sines blended
-      inline void wave_point_base(const Components::HealthWaveHUD& hud, float t, float& x, float& y) {
-        const float W = hud.width, H = hud.height;
-        const float s1 = std::sin(6.28318f * (t * 1.2f));
-        const float s2 = std::sin(6.28318f * (t * 3.4f)); // detail
-        const float amp = H * 0.32f;
-        const float yoff = H * 0.42f;                     // vertical bias inside band
-        x = hud.anchor_px.x + t * W;
-        y = hud.anchor_px.y + yoff + (s1 * 0.6f + s2 * 0.4f) * amp;
-      }
-
-      // ECG spike
-      inline float wave_spike_offset(const Components::HealthWaveHUD& hud, float t) {
-        const float w = std::max(0.005f, hud.spike_width_norm);
-        const float d = std::fabs(t - hud.spike_pos);
-        const float qrs = std::pow(std::max(0.f, 1.f - d / w), 6.f);
-        return -qrs * hud.spike_height_px;
-      }
-
-      // Center + tangent angle
-      inline void wave_point(const Components::HealthWaveHUD& hud, float t, float& x, float& y, float& ang) {
-        float x0, y0, x1, y1;
-        wave_point_base(hud, t, x0, y0); y0 += wave_spike_offset(hud, t);
-
-        const float dt = 1.f / std::max(32, hud.segments * 2);
-        const float t1 = std::min(1.f, t + dt);
-        wave_point_base(hud, t1, x1, y1); y1 += wave_spike_offset(hud, t1);
-
-        x = x0; y = y0;
-        ang = std::atan2(y1 - y0, x1 - x0);
-      }
-
-      void layout_wave(Components::HealthWaveHUD& hud) {
-        const int n = std::max(6, hud.segments);        // more segments for smoothness
-        const int cnt_after = std::clamp(static_cast<int>(std::round(hud.after_ratio * n)), 0, n);
-        const int cnt_front = std::clamp(static_cast<int>(std::round(hud.front_ratio * n)), 0, n);
-        const float pulse = 1.f + hud.pulse_scale * std::exp(-8.f * hud.beat_phase);
-        const float overlap = 1.25f;                    // slight overdraw to avoid gaps
-
-        auto place_continuous = [&](std::vector<Engine::ECS::Entity>& layer, int visible, float thickness, float extraScale) {
-          for (int i = 0; i < n; ++i) {
-            if (!layer[i].is_valid()) continue;
-
-            // segment span [t0, t1]
-            const float t0 = (float)i / n;
-            const float t1 = (float)(i + 1) / n;
-
-            float x0b, y0b, x1b, y1b, a0, a1;
-            // endpoints using the smooth wave + spike
-            wave_point_base(hud, t0, x0b, y0b); y0b += wave_spike_offset(hud, t0);
-            wave_point_base(hud, t1, x1b, y1b); y1b += wave_spike_offset(hud, t1);
-
-            // center + angle from endpoints
-            const float cx = (x0b + x1b) * 0.5f;
-            const float cy = (y0b + y1b) * 0.5f;
-            const float ang = std::atan2(y1b - y0b, x1b - x0b);
-            const float len = std::hypot(x1b - x0b, y1b - y0b) * overlap;
-
-            if (auto* tr = layer[i].get_component<Components::Transform2D>()) {
-              tr->position.x = cx;
-              tr->position.y = cy;
-              tr->rotation = ang;               // align to tangent
-              tr->scale.x = len * extraScale;  // LONG side along path
-              tr->scale.y = (i < visible) ? (thickness * extraScale) : 0.f; // thickness; hide by 0 height
-            }
-          }
-          };
-
-        // Back outline: full ribbon
-        place_continuous(hud.back, n, hud.back_thickness, 1.f);
-        // After (delayed) and Front (current) with beat pulse scaling
-        place_continuous(hud.after, cnt_after, hud.after_thickness, pulse * 0.98f);
-        place_continuous(hud.front, cnt_front, hud.front_thickness, pulse);
-      }
-    };
-
     class HeartHUDSpriteSystem final : public Engine::ECS::System {
     public:
       HeartHUDSpriteSystem() { require_components<Components::Heartrate, Components::HeartHUDSprite>(); }
@@ -462,33 +311,57 @@ namespace Engine {
 
         ensure_created(*hud);
 
-        const float baseX = hud->anchor_px.x;
-        const float baseY = hud->anchor_px.y;
+        // Effective anchors
+        const float headX = hud->anchor_px.x + hud->head_offset_px.x;
+        const float headY = hud->anchor_px.y + hud->head_offset_px.y;
+        const float backX = hud->anchor_px.x + hud->back_offset_px.x;
+        const float backY = hud->anchor_px.y + hud->back_offset_px.y;
 
-        // Back & optional overlay & head (static)
+        // Back
         if (auto* t = hud->back.get_component<Components::Transform2D>()) {
-          t->position.x = baseX + hud->width * 0.5f;
-          t->position.y = baseY + hud->height * 0.5f;
+          t->position.x = backX + hud->width * 0.5f;
+          t->position.y = backY + hud->height * 0.5f;
           t->rotation = 0.f; t->scale.x = hud->width; t->scale.y = hud->height;
         }
-        if (hud->use_white_overlay)
+        // Overlay
+        if (hud->use_white_overlay && hud->white_overlay.is_valid()) {
           if (auto* t = hud->white_overlay.get_component<Components::Transform2D>()) {
-            t->position.x = baseX + hud->width * 0.5f;
-            t->position.y = baseY + hud->height * 0.5f;
+            const float baseX = hud->overlay_relative_to_back ? backX : hud->anchor_px.x;
+            const float baseY = hud->overlay_relative_to_back ? backY : hud->anchor_px.y;
+            const float ovX = baseX + hud->overlay_offset_px.x;
+            const float ovY = baseY + hud->overlay_offset_px.y;
+            t->position.x = ovX + hud->width * 0.5f;
+            t->position.y = ovY + hud->height * 0.5f;
             t->rotation = 0.f; t->scale.x = hud->width; t->scale.y = hud->height;
           }
+        }
+        // Head
         if (auto* t = hud->head.get_component<Components::Transform2D>()) {
-          t->position.x = baseX + 60.f; t->position.y = baseY + 58.f;
+          t->position.x = headX + 60.f; t->position.y = headY + 58.f;
           t->rotation = 0.f; t->scale.x = 120.f; t->scale.y = 120.f;
         }
 
+        // BPM visible columns
         const float bpm = std::max(1.f, hr->heartrate);
         const float span = std::max(1e-3f, hud->bpm_max - hud->bpm_min);
         const float ratio = std::clamp((bpm - hud->bpm_min) / span, 0.f, 1.f);
-        const int   n = std::max(1, hud->slices);
-        const int   vis = std::clamp(int(std::round(ratio * n)), 0, n);
 
-        place_white_columns(*hud, baseX, baseY, vis);
+        // ---BPM-driven tint ---
+        if (hud->use_bpm_tint) {
+          Math::Vec4D c;
+          c.x = hud->fill_color_low.x + (hud->fill_color_high.x - hud->fill_color_low.x) * ratio;
+          c.y = hud->fill_color_low.y + (hud->fill_color_high.y - hud->fill_color_low.y) * ratio;
+          c.z = hud->fill_color_low.z + (hud->fill_color_high.z - hud->fill_color_low.z) * ratio;
+          c.w = hud->fill_color_low.w + (hud->fill_color_high.w - hud->fill_color_low.w) * ratio;
+          for (auto& s : hud->whiteSlices) if (auto* col = s.get_component<Color>()) *col = c;
+        }
+
+        const int n = std::max(1, hud->slices);
+        const int vis = std::clamp(int(std::round(ratio * n)), 0, n);
+
+        place_white_columns(*hud, backX, backY, vis);
+        promote_overlay_to_front(*hud);
+        promote_head_to_front(*hud);
       }
 
     private:
@@ -505,79 +378,95 @@ namespace Engine {
 
         // Back
         hud.back = Engine::ECS::create_entity()
-          .add_component<Transform2D>(0.f, 0.f, 0.f, hud.width, hud.height)
-          .add_component<Texture>(hud.tex_back)
-          .add_component<Color>(Math::Vec4D(1, 1, 1, 1))
+          .add_component<Components::Transform2D>(0.f, 0.f, 0.f, hud.width, hud.height)
+          .add_component<Components::Texture>(hud.tex_back)
+          .add_component<Components::Color>(Math::Vec4D(1, 1, 1, 1))
           .remove_from_layer("default").add_to_layer(hud.layer.c_str());
 
-        // Build N column slices from WhiteSolidForFill.png using a texture atlas
-        const int n = std::max(1, hud.slices);
-        const int fw = std::max(1, hud.src_w_px / n);  // frame width in source tex pixels
-        const int fh = std::max(1, hud.src_h_px);      // frame height
+        // --- use low color when creating each slice (was pure white) ---
+        const int srcCols = std::max(1, hud.src_w_px);
+        const int cropL = std::clamp(hud.src_left_px, 0, hud.src_w_px - 1);
+        const int cropR = std::clamp(hud.src_right_px, cropL + 1, hud.src_w_px);
+        const int n = std::max(1, cropR - cropL);
+        hud.slices = n;
 
         hud.whiteSlices.resize(n);
         for (int i = 0; i < n; ++i) {
-          auto e = Engine::ECS::create_entity()
-            .add_component<Transform2D>(0.f, 0.f, 0.f, 1.f, 1.f)
-            .add_component<Texture>(hud.tex_solid)
-            .add_component<TextureAtlas>(fw, fh, 1, n, n) // rows=1, cols=n, frames=n
-            .add_component<Color>(Math::Vec4D(1, 1, 1, 1))
+          auto col = Engine::ECS::create_entity()
+            .add_component<Components::Transform2D>(0.f, 0.f, 0.f, 1.f, 1.f)
+            .add_component<Components::Texture>(hud.tex_solid)
+            .add_component<Components::TextureAtlas>(1, hud.src_h_px, 1, srcCols, srcCols)
+            .add_component<Components::Color>(hud.fill_color_low)
             .remove_from_layer("default").add_to_layer(hud.layer.c_str());
-
-          // Select the i-th column; no Animation used
-          if (auto* atlas = e.get_component<TextureAtlas>()) {
-            atlas->drawIndex = i; // <- pick sub-rect column
-          }
-          hud.whiteSlices[i] = e;
+          if (auto* atlas = col.get_component<Components::TextureAtlas>())
+            atlas->drawIndex = cropL + i;
+          hud.whiteSlices[i] = col;
         }
 
         if (hud.use_white_overlay) {
           if (!hud.tex_white) hud.tex_white = rect();
           hud.white_overlay = Engine::ECS::create_entity()
-            .add_component<Transform2D>(0.f, 0.f, 0.f, hud.width, hud.height)
-            .add_component<Texture>(hud.tex_white)
-            .add_component<Color>(Math::Vec4D(1, 1, 1, 1))
-            .remove_from_layer("default").add_to_layer(hud.layer.c_str());
+            .add_component<Components::Transform2D>(0.f, 0.f, 0.f, hud.width, hud.height)
+            .add_component<Components::Texture>(hud.tex_white)
+            .add_component<Components::Color>(Math::Vec4D(1, 1, 1, 1))
+            .remove_from_layer("default").add_to_layer(hud.overlay_layer.c_str());
         }
 
-        // Head badge
+        // Head on top layer
         hud.head = Engine::ECS::create_entity()
-          .add_component<Transform2D>(0.f, 0.f, 0.f, 120.f, 120.f)
-          .add_component<Texture>(hud.tex_head)
-          .add_component<Color>(Math::Vec4D(1, 1, 1, 1))
-          .remove_from_layer("default").add_to_layer(hud.layer.c_str());
+          .add_component<Components::Transform2D>(0.f, 0.f, 0.f, 120.f, 120.f)
+          .add_component<Components::Texture>(hud.tex_head)
+          .add_component<Components::Color>(Math::Vec4D(1, 1, 1, 1))
+          .remove_from_layer("default").add_to_layer(hud.head_layer.c_str());
       }
 
-      void place_white_columns(Components::HeartHUDSprite& hud, float baseX, float baseY, int visible) {
-        const int srcW = std::max(1, hud.src_w_px);
-        const int n = std::min(std::max(1, hud.slices), (int)hud.whiteSlices.size());
+      void place_white_columns(Components::HeartHUDSprite& hud, float backX, float backY, int visible) {
+        const int cropL = std::clamp(hud.src_left_px, 0, hud.src_w_px - 1);
+        const int cropR = std::clamp(hud.src_right_px, cropL + 1, hud.src_w_px);
+        const int n = std::min((int)hud.whiteSlices.size(), cropR - cropL);
 
-        // We map source pixels -> HUD pixels with exact rounding to avoid drift
-        const float hudLeft = std::floor(baseX + 0.5f);         // snap base to int
-        const float hudTop = std::floor(baseY + 0.5f);
-        const float hudW = std::round(hud.width);
-        const float hudH = std::round(hud.height);
-        const float scale = hudW / float(srcW);               // src px -> dst px
+        // Band inside BarBack (measured from BarBack’s left)
+        const float padX = hud.fill_inset_px.x, padY = hud.fill_inset_px.y;
+        const float bandL = std::floor(backX + hud.fill_left_px + padX + 0.5f);
+        const float bandR = std::floor(backX + hud.fill_right_px - padX + 0.5f);
+        const float bandW = std::max(1.f, bandR - bandL);
+        const float bandT = std::floor(backY + padY + 0.5f);
+        const float bandH = std::round(std::max(1.f, hud.height - padY * 2.f));
 
-        const int shown = std::clamp(visible, 0, n);
+        // Map ONLY the cropped pixels to the band
+        const float scale = bandW / float(std::max(1, cropR - cropL));
+        const int   shown = std::clamp(visible, 0, n);
 
         for (int i = 0; i < n; ++i) {
-          // map column i from source space to dst pixel edges, snapped to ints
-          const float L = std::round(hudLeft + i * scale);
-          const float R = std::round(hudLeft + (i + 1) * scale);
+          const float L = std::round(bandL + i * scale);
+          const float R = std::round(bandL + (i + 1) * scale);
           const float W = std::max(1.0f, R - L);
           const float CX = (L + R) * 0.5f;
           const bool  show = (i < shown);
 
           if (auto* tr = hud.whiteSlices[i].get_component<Components::Transform2D>()) {
             tr->position.x = CX;
-            tr->position.y = hudTop + hudH * 0.5f;  // center vertically
+            tr->position.y = bandT + bandH * 0.5f;
             tr->rotation = 0.f;
-            tr->scale.x = W;                     // exact integer width
-            tr->scale.y = show ? hudH : 0.f;     // reveal by height
+            tr->scale.x = W;
+            tr->scale.y = show ? bandH : 0.f;
           }
         }
       }
+
+      void promote_overlay_to_front(Components::HeartHUDSprite& hud) {
+        if (!hud.use_white_overlay) return;
+        if (!hud.white_overlay.is_valid()) return;
+        hud.white_overlay.remove_from_layer(hud.overlay_layer.c_str());
+        hud.white_overlay.add_to_layer(hud.overlay_layer.c_str());
+      }
+
+      void promote_head_to_front(Components::HeartHUDSprite& hud) {
+        if (!hud.head.is_valid()) return;
+        hud.head.remove_from_layer(hud.head_layer.c_str());
+        hud.head.add_to_layer(hud.head_layer.c_str());
+      }
+
     };
 
   }

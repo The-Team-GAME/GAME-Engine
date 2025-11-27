@@ -38,7 +38,6 @@ public:
 
   void init() {
 
-    Engine::ECS::add_system<Engine::Systems::HealthWaveHUDSystem>();
     Engine::ECS::add_system<Engine::Systems::EnemyHealthBarSystem>();
     Engine::ECS::add_system<Engine::Systems::HeartHUDSpriteSystem>();
 
@@ -62,37 +61,39 @@ public:
       .remove_from_layer("default")
       .add_to_layer("player");
 
-    player_entity.add_component<Components::HealthWaveHUD>();
-    if (auto* hud = player_entity.get_component<Components::HealthWaveHUD>()) {
-      hud->layer = "ui";           // must be a visible UI layer
-      hud->anchor_px = { 16.f, 16.f };   // top-left position
-      hud->width = 420.f;
-      hud->height = 52.f;
-      hud->segments = 48;
-
-      // Fill mapping from BPM [0..1] (0 at low, 1 at crash_out)
-      hud->drain_speed = 1.6f;     // trailing bar easing
-      hud->spike_width_norm = 0.03f;    // ECG spike width
-      hud->spike_height_px = 22.f;     // ECG spike height
-      hud->pulse_scale = 0.18f;    // beat thickness pulse
-    }
-
     player_entity.add_component<Components::HeartHUDSprite>();
     if (auto* hud = player_entity.get_component<Components::HeartHUDSprite>()) {
-      hud->layer = "ui";
-      hud->screen_space = true;
+      hud->layer = "player";
+      hud->overlay_layer = "ui";
+      hud->head_layer = "ui";
+      hud->head_offset_px = { 0.f, 0.f };      // head on the left
+      hud->back_offset_px = { 80.f, 0.f };     // keep bar to the right of the head
+      hud->overlay_relative_to_back = true;
+      hud->overlay_offset_px = { 0.f, 0.f };
 
+      hud->width = 763.f;  hud->height = 145.f;
+      hud->src_w_px = 763; hud->src_h_px = 145;
+
+      // === Fill the bar from the very left ===
+      hud->src_left_px = 0;
+      hud->src_right_px = 736;
+      hud->slices = hud->src_right_px - hud->src_left_px;  // recompute slices
+
+      // Map to the full bar width from the left edge
+      hud->fill_left_px = 0.f;
+      hud->fill_right_px = 736.f;
+      hud->fill_inset_px = { 8.f, 10.f };
+
+      hud->fill_color_low = { 1.00f, 0.22f, 0.55f, 1.0f }; // bright pink
+      hud->fill_color_high = { 1.00f, 0.12f, 0.38f, 1.0f };
+      hud->use_bpm_tint = true;
+
+      // Textures
       hud->tex_back = Engine::Resources::load_texture("images/Heartratebar/BarBack.png");
       hud->tex_solid = Engine::Resources::load_texture("images/Heartratebar/WhiteSolidForFill.png");
       hud->tex_head = Engine::Resources::load_texture("images/Heartratebar/HeadBar.png");
-      hud->use_white_overlay = false;
-
-      hud->width = 763.f;
-      hud->height = 145.f;
-      hud->src_w_px = 763;
-      hud->src_h_px = 145;
-      hud->slices = hud->src_w_px;
-      hud->use_white_overlay = false;
+      hud->tex_white = Engine::Resources::load_texture("images/Heartratebar/WhiteBar.png");
+      hud->use_white_overlay = true;
     }
 
     // ========================================================================

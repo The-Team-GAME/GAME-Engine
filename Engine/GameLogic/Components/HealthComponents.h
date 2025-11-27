@@ -52,75 +52,58 @@ namespace Components {
 		f32 left = 0.f, top = 0.f, width = 0.f, height = 0.f;
 	};
 
-	struct HealthWaveHUD {
-		// Placement
-		Math::Vec2D anchor_px{ 16.f, 16.f };
-		float width = 420.f;
-		float height = 52.f;
-		int   segments = 48;
-		std::string layer = "ui";
-
-		// Visuals
-		Engine::Graphics::Texture tex{};
-		struct RGBA { float r = 1, g = 1, b = 1, a = 1; };
-		RGBA back_color{ 0.07f, 0.10f, 0.35f, 1.0f };
-		RGBA after_color{ 1.00f, 0.28f, 0.48f, 1.0f };
-		RGBA front_color{ 0.18f, 0.90f, 1.00f, 1.0f };
-		float back_thickness = 10.f;
-		float after_thickness = 8.0f;
-		float front_thickness = 6.0f;
-
-		// Behavior (drain/grow speed for the delayed layer)
-		float drain_speed = 1.6f;
-
-		// ECG styling
-		float spike_width_norm = 0.03f;
-		float spike_height_px = 22.f;
-		float pulse_scale = 0.18f;
-
-		// Runtime
-		std::vector<Engine::ECS::Entity> back, after, front;
-		float front_ratio = 0.f;   // 0..1 (instant)
-		float after_ratio = 0.f;   // 0..1 (delayed)
-		float beat_phase = 0.f;   // 0..1 within beat
-		float spike_pos = 0.f;   // 0..1 sweep left->right
-		bool  initialized = false;
-	};
-
 	struct HeartHUDSprite {
 		Math::Vec2D anchor_px{ 20.f, 18.f };
-		float width = 763.f;
-		float height = 145.f;
+
+		// BarBack canvas (not the head)
+		float width = 763.f, height = 145.f;
+
+		// Layers
 		std::string layer = "ui";
+		std::string overlay_layer = "ui";
+		std::string head_layer = "ui";
 		bool  screen_space = true;
 
-		// Textures (fill uses WhiteSolidForFill.png)
-		Engine::Graphics::Texture tex_back{};
-		Engine::Graphics::Texture tex_white{};
-		Engine::Graphics::Texture tex_solid{};  // WhiteSolidForFill.png
-		Engine::Graphics::Texture tex_head{};
+		// Per-part offsets
+		Math::Vec2D head_offset_px{ 0.f, 0.f };
+		Math::Vec2D back_offset_px{ 80.f, 0.f };
 
-		// Map BPM -> fill
+		Math::Vec2D overlay_offset_px{ 0.f, 0.f };
+		bool overlay_relative_to_back = true;
+
+		// Textures
+		Engine::Graphics::Texture tex_back{}, tex_solid{}, tex_white{}, tex_head{};
+
+		// BPM mapping
 		float bpm_min = 40.f, bpm_max = 200.f;
 
-		// Pixel-accurate band
-		float fill_left_px = 118.f;
-		float fill_right_px = 730.f;
-		float fill_center_y = 76.f;
-		float fill_height_px = 42.f;
+		// Source PNG size for WhiteSolidForFill.png
+		int   src_w_px = 763;
+		int   src_h_px = 145;
 
-		// actual source (PNG) dimensions for the fill image (pixels)
-		int   src_w_px = 763;        // set to WhiteSolidForFill.png width
-		int   src_h_px = 145;        // set to WhiteSolidForFill.png height
-		int   slices = 140;        // number of vertical columns
+		// crop the SOURCE horizontally so columns match the on-screen band
+		int   src_left_px = 64;                 // where the white band starts in PNG
+		int   src_right_px = 736;                // where the white band ends    in PNG
 
-		bool use_white_overlay = false;
+		// Number of columns to reveal (default = cropped width)
+		int   slices = 736 - 64;
+
+		// Fill band inside BarBack (measured from BarBack’s LEFT)
+		float fill_left_px = 64.f;
+		float fill_right_px = 736.f;
+
+		// Inset so outline stays visible at full
+		Math::Vec2D fill_inset_px{ 8.f, 10.f };
+
+		bool use_white_overlay = true;
+
+		Math::Vec4D fill_color_low{ 1.f, 0.18f, 0.55f, 1.f }; // pink (left/low BPM)
+		Math::Vec4D fill_color_high{ 1.f, 0.10f, 0.30f, 1.f }; // deeper magenta (right/high)
+		bool        use_bpm_tint = false;
 
 		// Runtime
-		Engine::ECS::Entity back;
-		Engine::ECS::Entity head;
-		Engine::ECS::Entity white_overlay;
-		std::vector<Engine::ECS::Entity> whiteSlices;   // column reveal
+		Engine::ECS::Entity back, head, white_overlay;
+		std::vector<Engine::ECS::Entity> whiteSlices;
 		bool initialized = false;
 	};
 
