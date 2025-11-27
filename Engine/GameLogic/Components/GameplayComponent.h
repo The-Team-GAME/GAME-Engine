@@ -2,6 +2,8 @@
 
 #include "../../Engine/ECS/Macros.h"
 
+#include "../../Engine/Engine/Time.h"
+
 namespace Components
 {
 
@@ -86,22 +88,44 @@ namespace Components
     int damage = 10;
     Math::Vec2D knockback = Math::Vec2D(0.0f, 0.0f);
     bool is_continuous = false;
-    std::vector<Engine::ECS::Entity> hit_entities; // Track which entities have been hit by this attack
+    float damage_interval = 0.1f; // Time in seconds between damage ticks for continuous attacks
+    std::vector<std::pair<Engine::ECS::Entity, float>> hit_entities; // Track entity and last hit time
 
     Attack() = default;
-    explicit Attack(int dmg, Math::Vec2D kb = Math::Vec2D(0.0f, 0.0f), bool continuous = false) 
-      : damage(dmg), knockback(kb), is_continuous(continuous) {}
+    explicit Attack(int dmg, Math::Vec2D kb = Math::Vec2D(0.0f, 0.0f), bool continuous = false, float interval = 0.1f) 
+      : damage(dmg), knockback(kb), is_continuous(continuous), damage_interval(interval) {}
 
     bool should_apply_damage(Engine::ECS::Entity entity) {
-      // Check if this entity has already been hit by this attack
-      if (std::find(hit_entities.begin(), hit_entities.end(), entity) != hit_entities.end()) {
-        return false;
+      float current_time = Engine::Time::get_time();
+
+      // Check if this entity has already been hit
+      auto it = std::find_if(hit_entities.begin(), hit_entities.end(),
+        [entity](const std::pair<Engine::ECS::Entity, float>& pair) {
+          return pair.first == entity;
+        });
+
+      if (it != hit_entities.end()) {
+        // Entity found in hit list
+        if (!is_continuous) {
+          // Single hit attack, already hit
+          return false;
+        }
+        else {
+          // Continuous attack, check interval
+          if (current_time - it->second >= damage_interval) {
+            // Interval passed, update time and allow damage
+            it->second = current_time;
+            return true;
+          }
+          else {
+            // Too soon
+            return false;
+          }
+        }
       }
 
-      // Mark entity as hit by this attack if not continuous
-      if (!is_continuous) {
-        hit_entities.push_back(entity);
-      }
+      // Entity not found, add it
+      hit_entities.push_back({ entity, current_time });
       return true;
     }
   };
@@ -127,8 +151,9 @@ namespace Components
 
 
 
+
 REFLECT_FIELDS(Components::Player::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, dash_speed, damage, heartrate_cost, knockback)
 REGISTER_COMPONENT(Components::Player, walk_speed, air_speed, jump_force, attack1, attack2, attack3)
 REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height, attack_cooldown, last_attack_time, attack_windup, detection_range, chase_range, attack_range)
-REGISTER_COMPONENT(Components::Attack, damage, knockback, is_continuous)
+REGISTER_COMPONENT(Components::Attack, damage, knockback, is_continuous, damage_interval)
 REGISTER_COMPONENT(Components::PendingKnockback, knockback)

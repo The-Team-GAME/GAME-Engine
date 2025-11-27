@@ -19,6 +19,10 @@
         {
             "first": "damage_player",
             "second": "player"
+        },
+        {
+            "first": "damage_enemy",
+            "second": "enemy"
         }
     ],
     "loaded_tilemaps": [
