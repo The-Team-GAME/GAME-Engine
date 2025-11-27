@@ -165,7 +165,17 @@ namespace Engine {
           Engine::ECS::IComponentArray* array = it->second.get();
 
           // Add the component using reflection
-          array->add_component_from_generic_value(event.entity_id, event.component_data);
+          if (array->add_component_from_generic_value(event.entity_id, event.component_data)) {
+            // Manually update signature and notify systems since add_component_from_generic_value doesn't do it
+            auto& containers = Engine::ECS::Internal::get_containers();
+            containers.entity_signatures[event.entity_id].set(event.component_type_id);
+            Engine::ECS::Internal::entity_component_changed(event.entity_id);
+          }
+          else {
+            // If adding from generic value failed (e.g. empty data), try adding default component
+            // add_default_component calls ECS::add_component internally which handles signature updates
+            array->add_default_component(event.entity_id);
+          }
 
           // Record undo if requested
           if (event.record_undo) {
