@@ -100,14 +100,10 @@ int main()
       }
 
       if (enemy_health && state_machine) {
-        // Check if this enemy has already been hit by this attack
-        if (std::find(attack->hit_entities.begin(), attack->hit_entities.end(), enemy_entity) != attack->hit_entities.end()) {
-          // Already hit, skip
+        // Check if we should apply damage
+        if (!attack->should_apply_damage(enemy_entity)) {
           return;
         }
-
-        // Mark entity as hit by this attack
-        attack->hit_entities.push_back(enemy_entity);
 
         // Only take damage if not invulnerable
         int damage = attack->damage;
@@ -173,14 +169,10 @@ int main()
       }
 
       if (heartrate && rigid) {
-        // Check if this player has already been hit by this attack
-        if (std::find(attack->hit_entities.begin(), attack->hit_entities.end(), player_entity) != attack->hit_entities.end()) {
-          // Already hit, skip
+        // Check if we should apply damage
+        if (!attack->should_apply_damage(player_entity)) {
           return;
         }
-
-        // Mark entity as hit by this attack
-        attack->hit_entities.push_back(player_entity);
 
         // Increase heartrate instead of decreasing HP
         int damage = attack->damage;

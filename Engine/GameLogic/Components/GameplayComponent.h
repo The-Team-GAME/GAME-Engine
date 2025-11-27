@@ -85,10 +85,25 @@ namespace Components
   {
     int damage = 10;
     Math::Vec2D knockback = Math::Vec2D(0.0f, 0.0f);
+    bool is_continuous = false;
     std::vector<Engine::ECS::Entity> hit_entities; // Track which entities have been hit by this attack
 
     Attack() = default;
-    explicit Attack(int dmg, Math::Vec2D kb = Math::Vec2D(0.0f, 0.0f)) : damage(dmg), knockback(kb) {}
+    explicit Attack(int dmg, Math::Vec2D kb = Math::Vec2D(0.0f, 0.0f), bool continuous = false) 
+      : damage(dmg), knockback(kb), is_continuous(continuous) {}
+
+    bool should_apply_damage(Engine::ECS::Entity entity) {
+      // Check if this entity has already been hit by this attack
+      if (std::find(hit_entities.begin(), hit_entities.end(), entity) != hit_entities.end()) {
+        return false;
+      }
+
+      // Mark entity as hit by this attack if not continuous
+      if (!is_continuous) {
+        hit_entities.push_back(entity);
+      }
+      return true;
+    }
   };
 
   struct PendingKnockback
@@ -115,5 +130,5 @@ namespace Components
 REFLECT_FIELDS(Components::Player::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, dash_speed, damage, heartrate_cost, knockback)
 REGISTER_COMPONENT(Components::Player, walk_speed, air_speed, jump_force, attack1, attack2, attack3)
 REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height, attack_cooldown, last_attack_time, attack_windup, detection_range, chase_range, attack_range)
-REGISTER_COMPONENT(Components::Attack, damage, knockback)
+REGISTER_COMPONENT(Components::Attack, damage, knockback, is_continuous)
 REGISTER_COMPONENT(Components::PendingKnockback, knockback)
