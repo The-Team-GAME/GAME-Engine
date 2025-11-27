@@ -38,6 +38,7 @@ public:
 
   void init() {
 
+    Engine::ECS::add_system<Engine::Systems::HealthWaveHUDSystem>();
     Engine::ECS::add_system<Engine::Systems::EnemyHealthBarSystem>();
 
     // ========================================================================
@@ -57,6 +58,21 @@ public:
       .add_component<Components::Heartrate>()
       .remove_from_layer("default")
       .add_to_layer("player");
+
+    player_entity.add_component<Components::HealthWaveHUD>();
+    if (auto* hud = player_entity.get_component<Components::HealthWaveHUD>()) {
+      hud->layer = "ui";           // must be a visible UI layer
+      hud->anchor_px = { 16.f, 16.f };   // top-left position
+      hud->width = 420.f;
+      hud->height = 52.f;
+      hud->segments = 48;
+
+      // Fill mapping from BPM [0..1] (0 at low, 1 at crash_out)
+      hud->drain_speed = 1.6f;     // trailing bar easing
+      hud->spike_width_norm = 0.03f;    // ECG spike width
+      hud->spike_height_px = 22.f;     // ECG spike height
+      hud->pulse_scale = 0.18f;    // beat thickness pulse
+    }
 
     // ========================================================================
     // Create Lazy Monkey Entity

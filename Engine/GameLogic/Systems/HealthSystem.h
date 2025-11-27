@@ -18,6 +18,7 @@
 #include "../../Engine/MonkeyEngine.h"
 
 #include "../Components/HealthComponents.h"
+#include "../Components/HeartrateComponent.h"
 
 #include "../Components/EnemyHealthComponent.h"
 
@@ -215,22 +216,27 @@ namespace Engine {
         set_layer_visibility(bar.after, 1);
       }
 
-      void set_layer_visibility(std::vector<Engine::ECS::Entity>& layer, int visible_count) {
+      void set_layer_visibility(std::vector<Engine::ECS::Entity>& layer, int visible_from_right) {
         const int n = static_cast<int>(layer.size());
         for (int i = 0; i < n; ++i) {
           if (!layer[i].is_valid()) continue;
-          const bool vis = (i < visible_count);
+          const bool vis = (i >= n - visible_from_right); // R→L fill
           if (auto* tr = layer[i].get_component<Components::Transform2D>()) {
-            tr->scale.y = vis ? tr->scale.x : 0.0f;
+            // keep previous width; toggle only height
+            tr->scale.y = vis ? tr->scale.y : 0.0f;
           }
         }
       }
 
+      // Smooth continuous arc using stretched quads; Y-down coordinates
       void layout_arc(Engine::ECS::Entity& owner, Components::EnemyHealthBar& bar) {
         auto* tOwner = owner.get_component<Components::Transform2D>();
         if (!tOwner) return;
 
+        const int   n = std::max(6, bar.segments);
+        const float deg = 0.01745329251994329577f;
         float a0_deg, a1_deg;
+
         if (bar.use_center_span) {
           const float half = std::max(0.f, bar.arc_span_deg) * 0.5f;
           a0_deg = bar.center_angle_deg - half;
@@ -241,38 +247,206 @@ namespace Engine {
           a1_deg = bar.end_angle_deg;
         }
 
-        float a0 = deg2rad(a0_deg);
-        float a1 = deg2rad(a1_deg);
-        a0 = norm2pi(a0);
-        a1 = norm2pi(a1);
+        auto norm2pi = [](float a) { const float tau = 6.28318530718f; a = fmodf(a, tau); return (a < 0.f) ? a + tau : a; };
+        auto short_delta = [&](float a, float b) {
+          float d = b - a; const float pi = 3.14159265359f, tau = 6.28318530718f;
+          while (d > pi) d -= tau; while (d <= -pi) d += tau; return d;
+          };
+
+        float a0 = norm2pi(a0_deg * deg);
+        float a1 = norm2pi(a1_deg * deg);
         const float span = short_delta(a0, a1);
 
-        const int n = std::max(3, bar.segments);
-        auto place_ring = [&](std::vector<Engine::ECS::Entity>& ring, float thickness, float ratio) {
-          const int visible = std::clamp(static_cast<int>(std::round(ratio * n)), 0, n);
+        const int  vis_after = std::clamp(static_cast<int>(std::round(bar.after_ratio * n)), 0, n);
+        const int  vis_front = std::clamp(static_cast<int>(std::round(bar.front_ratio * n)), 0, n);
+        const float overlap = 1.25f; // removes hairline gaps between quads
+
+        auto place_ring = [&](std::vector<Engine::ECS::Entity>& ring, float thickness, int visible_from_right) {
           for (int i = 0; i < n; ++i) {
             if (!ring[i].is_valid()) continue;
-            const float t = (i + 0.5f) / n;
-            const float ang = a0 + t * span;
 
-            const float cx = tOwner->position.x + bar.offset.x + std::cos(ang) * bar.radius;
-            const float cy = tOwner->position.y + bar.offset.y - std::sin(ang) * bar.radius; // Y-down
+            // Segment endpoints along shortest arc
+            const float t0 = static_cast<float>(i) / n;
+            const float t1 = static_cast<float>(i + 1) / n;
+            const float ang0 = a0 + t0 * span;
+            const float ang1 = a0 + t1 * span;
+
+            const float x0 = tOwner->position.x + bar.offset.x + std::cos(ang0) * bar.radius;
+            const float y0 = tOwner->position.y + bar.offset.y - std::sin(ang0) * bar.radius; // Y-down
+            const float x1 = tOwner->position.x + bar.offset.x + std::cos(ang1) * bar.radius;
+            const float y1 = tOwner->position.y + bar.offset.y - std::sin(ang1) * bar.radius; // Y-down
+
+            const float cx = (x0 + x1) * 0.5f;
+            const float cy = (y0 + y1) * 0.5f;
+            const float ang = std::atan2(y1 - y0, x1 - x0);
+            const float len = std::hypot(x1 - x0, y1 - y0) * overlap;
 
             if (auto* tr = ring[i].get_component<Components::Transform2D>()) {
               tr->position.x = cx;
               tr->position.y = cy;
-              tr->rotation = -ang;                 // tangent; looks like dashes along arc
-              tr->scale.x = thickness;
-              tr->scale.y = thickness;
+              tr->rotation = ang;            // align ribbon to tangent
+              tr->scale.x = len;            // LONG side along the path
+              tr->scale.y = thickness;      // thickness; visibility toggled below
             }
           }
-          set_layer_visibility(ring, visible);
+          set_layer_visibility(ring, visible_from_right);
           };
 
-        place_ring(bar.after, bar.after_thickness, bar.after_ratio);
-        place_ring(bar.front, bar.front_thickness, bar.front_ratio);
+        place_ring(bar.after, bar.after_thickness, vis_after);
+        place_ring(bar.front, bar.front_thickness, vis_front);
       }
 
+    };
+
+    class HealthWaveHUDSystem final : public Engine::ECS::System {
+    public:
+      HealthWaveHUDSystem() { require_components<Components::Heartrate, Components::HealthWaveHUD>(); }
+
+      void update_entity(Engine::ECS::Entity& e) override {
+        using namespace Components;
+
+        auto* hr = e.get_component<Heartrate>();
+        auto* hud = e.get_component<HealthWaveHUD>();
+        if (!hr || !hud) return;
+
+        ensure_wave(*hud);
+
+        const float dt = Engine::Time::get_fixed_dt();
+
+        // Normalize heartrate to [0..1] using low..crash_out
+        const float bpm = std::max(1.f, hr->heartrate);
+        const float base = hr->low;
+        const float span = std::max(1e-3f, hr->crash_out - hr->low);
+        const float target = std::clamp((bpm - base) / span, 0.f, 1.f);
+
+        // Instant + delayed fill
+        hud->front_ratio = target;
+        if (hud->after_ratio > hud->front_ratio) {
+          hud->after_ratio = std::max(hud->front_ratio, hud->after_ratio - hud->drain_speed * dt);
+        }
+        else {
+          hud->after_ratio = std::min(hud->front_ratio, hud->after_ratio + hud->drain_speed * dt * 0.6f);
+        }
+
+        // Heartbeat animation (period from bpm)
+        advance_heartbeat(*hud, bpm, dt);
+
+        // Layout
+        layout_wave(*hud);
+      }
+
+    private:
+      static Engine::Graphics::Texture default_rect() { return Engine::Resources::get_rect_texture(); }
+
+      void ensure_wave(Components::HealthWaveHUD& hud) {
+        if (hud.initialized) return;
+        hud.initialized = true;
+        if (!hud.tex) hud.tex = default_rect();
+
+        const int n = std::max(3, hud.segments);
+        hud.back.resize(n);
+        hud.after.resize(n);
+        hud.front.resize(n);
+
+        auto make_seg = [&](float thick, Components::HealthWaveHUD::RGBA c) {
+          return Engine::ECS::create_entity()
+            .add_component<Components::Transform2D>(0.f, 0.f, 0.f, thick, thick)
+            .add_component<Components::Texture>(hud.tex)
+            .add_component<Components::Color>(c.r, c.g, c.b, c.a)
+            .remove_from_layer("default")
+            .add_to_layer(hud.layer.c_str());
+          };
+        for (int i = 0; i < n; ++i) {
+          hud.back[i] = make_seg(hud.back_thickness, hud.back_color);
+          hud.after[i] = make_seg(hud.after_thickness, hud.after_color);
+          hud.front[i] = make_seg(hud.front_thickness, hud.front_color);
+        }
+      }
+
+      static inline float tri(float t) { return 2.f * std::fabs(2.f * (t - std::floor(t + 0.5f))) - 1.f; }
+
+      void advance_heartbeat(Components::HealthWaveHUD& hud, float bpm, float dt) {
+        const float period = (bpm > 1.f) ? (60.f / bpm) : 1.f;
+        hud.beat_phase += dt / period;
+        if (hud.beat_phase >= 1.f) hud.beat_phase -= 1.f;
+        hud.spike_pos += dt / period;               // sweep left->right
+        while (hud.spike_pos >= 1.f) hud.spike_pos -= 1.f;
+      }
+
+      // Smooth base: two sines blended
+      inline void wave_point_base(const Components::HealthWaveHUD& hud, float t, float& x, float& y) {
+        const float W = hud.width, H = hud.height;
+        const float s1 = std::sin(6.28318f * (t * 1.2f));
+        const float s2 = std::sin(6.28318f * (t * 3.4f)); // detail
+        const float amp = H * 0.32f;
+        const float yoff = H * 0.42f;                     // vertical bias inside band
+        x = hud.anchor_px.x + t * W;
+        y = hud.anchor_px.y + yoff + (s1 * 0.6f + s2 * 0.4f) * amp;
+      }
+
+      // ECG spike
+      inline float wave_spike_offset(const Components::HealthWaveHUD& hud, float t) {
+        const float w = std::max(0.005f, hud.spike_width_norm);
+        const float d = std::fabs(t - hud.spike_pos);
+        const float qrs = std::pow(std::max(0.f, 1.f - d / w), 6.f);
+        return -qrs * hud.spike_height_px;
+      }
+
+      // Center + tangent angle
+      inline void wave_point(const Components::HealthWaveHUD& hud, float t, float& x, float& y, float& ang) {
+        float x0, y0, x1, y1;
+        wave_point_base(hud, t, x0, y0); y0 += wave_spike_offset(hud, t);
+
+        const float dt = 1.f / std::max(32, hud.segments * 2);
+        const float t1 = std::min(1.f, t + dt);
+        wave_point_base(hud, t1, x1, y1); y1 += wave_spike_offset(hud, t1);
+
+        x = x0; y = y0;
+        ang = std::atan2(y1 - y0, x1 - x0);
+      }
+
+      void layout_wave(Components::HealthWaveHUD& hud) {
+        const int n = std::max(6, hud.segments);        // more segments for smoothness
+        const int cnt_after = std::clamp(static_cast<int>(std::round(hud.after_ratio * n)), 0, n);
+        const int cnt_front = std::clamp(static_cast<int>(std::round(hud.front_ratio * n)), 0, n);
+        const float pulse = 1.f + hud.pulse_scale * std::exp(-8.f * hud.beat_phase);
+        const float overlap = 1.25f;                    // slight overdraw to avoid gaps
+
+        auto place_continuous = [&](std::vector<Engine::ECS::Entity>& layer, int visible, float thickness, float extraScale) {
+          for (int i = 0; i < n; ++i) {
+            if (!layer[i].is_valid()) continue;
+
+            // segment span [t0, t1]
+            const float t0 = (float)i / n;
+            const float t1 = (float)(i + 1) / n;
+
+            float x0b, y0b, x1b, y1b, a0, a1;
+            // endpoints using the smooth wave + spike
+            wave_point_base(hud, t0, x0b, y0b); y0b += wave_spike_offset(hud, t0);
+            wave_point_base(hud, t1, x1b, y1b); y1b += wave_spike_offset(hud, t1);
+
+            // center + angle from endpoints
+            const float cx = (x0b + x1b) * 0.5f;
+            const float cy = (y0b + y1b) * 0.5f;
+            const float ang = std::atan2(y1b - y0b, x1b - x0b);
+            const float len = std::hypot(x1b - x0b, y1b - y0b) * overlap;
+
+            if (auto* tr = layer[i].get_component<Components::Transform2D>()) {
+              tr->position.x = cx;
+              tr->position.y = cy;
+              tr->rotation = ang;               // align to tangent
+              tr->scale.x = len * extraScale;  // LONG side along path
+              tr->scale.y = (i < visible) ? (thickness * extraScale) : 0.f; // thickness; hide by 0 height
+            }
+          }
+          };
+
+        // Back outline: full ribbon
+        place_continuous(hud.back, n, hud.back_thickness, 1.f);
+        // After (delayed) and Front (current) with beat pulse scaling
+        place_continuous(hud.after, cnt_after, hud.after_thickness, pulse * 0.98f);
+        place_continuous(hud.front, cnt_front, hud.front_thickness, pulse);
+      }
     };
 
   }

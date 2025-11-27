@@ -52,6 +52,41 @@ namespace Components {
 		f32 left = 0.f, top = 0.f, width = 0.f, height = 0.f;
 	};
 
+	struct HealthWaveHUD {
+		// Placement
+		Math::Vec2D anchor_px{ 16.f, 16.f };
+		float width = 420.f;
+		float height = 52.f;
+		int   segments = 48;
+		std::string layer = "ui";
+
+		// Visuals
+		Engine::Graphics::Texture tex{};
+		struct RGBA { float r = 1, g = 1, b = 1, a = 1; };
+		RGBA back_color{ 0.07f, 0.10f, 0.35f, 1.0f };
+		RGBA after_color{ 1.00f, 0.28f, 0.48f, 1.0f };
+		RGBA front_color{ 0.18f, 0.90f, 1.00f, 1.0f };
+		float back_thickness = 10.f;
+		float after_thickness = 8.0f;
+		float front_thickness = 6.0f;
+
+		// Behavior (drain/grow speed for the delayed layer)
+		float drain_speed = 1.6f;
+
+		// ECG styling
+		float spike_width_norm = 0.03f;
+		float spike_height_px = 22.f;
+		float pulse_scale = 0.18f;
+
+		// Runtime
+		std::vector<Engine::ECS::Entity> back, after, front;
+		float front_ratio = 0.f;   // 0..1 (instant)
+		float after_ratio = 0.f;   // 0..1 (delayed)
+		float beat_phase = 0.f;   // 0..1 within beat
+		float spike_pos = 0.f;   // 0..1 sweep left->right
+		bool  initialized = false;
+	};
+
 	struct EnemyHealthBar {
 		// Layout
 		float radius = 24.0f;
