@@ -56,15 +56,15 @@ namespace {
     return ret;
   }
 
-  void make_wall(Vec2D position, Vec2D scale)
+  ECS::Entity make_wall(Vec2D position, Vec2D scale, f32 rotation = 0.f)
   {
-    f32 rotation = 0.f;
-    Engine::ECS::create_entity().add_component<Components::Tag<"PhysicsTestState">>()
+    ECS::Entity ret = Engine::ECS::create_entity().add_component<Components::Tag<"PhysicsTestState">>()
       .add_component<Components::Transform2D>(position.x, position.y, rotation, scale.x, scale.y) // pos.x, pos.y, rotation, scale.x, scale.y
       .add_component<Components::Color>(white)
       .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
       .add_component<Components::RigidBody>(true, false)
       .add_component<Components::BoxCollider>(scale.x, scale.y,  rotation, true); // width, height
+    return ret;
   }
 }
 class PhysicsTestState : public Engine::Scene {
@@ -86,71 +86,21 @@ public:
     make_wall(Vec2D(1575.f, 450.0f), Vec2D(50.0f, 900.0f));
 
     // Platforms to jump on
+    make_wall(Vec2D(100.0f, 725.0f), Vec2D(100.0f, 50.0f));
+    make_wall(Vec2D(150.0f, 775.0f), Vec2D(200.0f, 50.0f));
+    make_wall(Vec2D(200.0f, 825.0f), Vec2D(300.0f, 50.0f));
 
-    Engine::ECS::create_entity().add_component<Components::Tag<"PhysicsTestState">>()
-      .add_component<Components::Transform2D>(100.0f, 725.0f, 0.0f, 100.0f, 50.0f) // pos.x, pos.y, rotation, scale.x, scale.y
-      .add_component<Components::Color>(grey)
-      .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
-      .add_component<Components::RigidBody>(true, false)
-      .add_component<Components::BoxCollider>(100.0f, 50.0f, true); // width, height
-
-    Engine::ECS::create_entity().add_component<Components::Tag<"PhysicsTestState">>()
-      .add_component<Components::Transform2D>(150.0f, 775.0f, 0.0f, 200.0f, 50.0f) // pos.x, pos.y, rotation, scale.x, scale.y
-      .add_component<Components::Color>(grey)
-      .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
-      .add_component<Components::RigidBody>(true, false)
-      .add_component<Components::BoxCollider>(200.0f, 50.0f, true); // width, height
-
-    Engine::ECS::create_entity().add_component<Components::Tag<"PhysicsTestState">>()
-      .add_component<Components::Transform2D>(200.0f, 825.0f, 0.0f, 300.0f, 50.0f) // pos.x, pos.y, rotation, scale.x, scale.y
-      .add_component<Components::Color>(grey)
-      .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
-      .add_component<Components::RigidBody>(true, false)
-      .add_component<Components::BoxCollider>(300.0f, 50.0f, true); // width, height
-
-    ECS::Entity slope = Engine::ECS::create_entity().add_component<Components::Tag<"PhysicsTestState">>()
-      .add_component<Components::Transform2D>(500.0f, 675.0f, 30.0f, 500.0f, 50.0f) // pos.x, pos.y, rotation, scale.x, scale.y
-      .add_component<Components::Color>(grey)
-      .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
-      .add_component<Components::RigidBody>(true, false)
-      .add_component<Components::BoxCollider>(500.0f, 50.0f, 30.f, true); // width, height
+    ECS::Entity slope = make_wall(Vec2D(500.0f, 675.0f), Vec2D(500.0f, 50.0f), 30.f);
     Components::BoxCollider* box_slope = slope.get_component< Components::BoxCollider>();
     box_slope->kinetic_friction = 0.9f;
-    Engine::ECS::create_entity().add_component<Components::Tag<"PhysicsTestState">>()
-      .add_component<Components::Transform2D>(1300.0f, 675.0f, 0.0f, 300.0f, 50.0f) // pos.x, pos.y, rotation, scale.x, scale.y
-      .add_component<Components::Color>(grey)
-      .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
-      .add_component<Components::RigidBody>(true, false)
-      .add_component<Components::BoxCollider>(300.0f, 50.0f, true); // width, height
+
+    make_wall(Vec2D(1300.0f, 675.0f), Vec2D(300.0f, 50.0f));
 
     // the jummping blocks
-    Engine::ECS::create_entity().add_component<Components::Tag<"PhysicsTestState">>()
-      .add_component<Components::Transform2D>(300.0f, 375.0f, 0.0f, 50.0f, 50.0f) // pos.x, pos.y, rotation, scale.x, scale.y
-      .add_component<Components::Color>(grey)
-      .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
-      .add_component<Components::RigidBody>(true, false)
-      .add_component<Components::BoxCollider>(50.0f, 50.0f, true); // width, height
-
-    Engine::ECS::create_entity().add_component<Components::Tag<"PhysicsTestState">>()
-      .add_component<Components::Transform2D>(500.0f, 450.0f, 0.0f, 50.0f, 50.0f) // pos.x, pos.y, rotation, scale.x, scale.y
-      .add_component<Components::Color>(grey)
-      .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
-      .add_component<Components::RigidBody>(true, false)
-      .add_component<Components::BoxCollider>(50.0f, 50.0f, true); // width, height
-
-    Engine::ECS::create_entity().add_component<Components::Tag<"PhysicsTestState">>()
-      .add_component<Components::Transform2D>(700.0f, 525.0f, 0.0f, 50.0f, 50.0f) // pos.x, pos.y, rotation, scale.x, scale.y
-      .add_component<Components::Color>(grey)
-      .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
-      .add_component<Components::RigidBody>(true, false)
-      .add_component<Components::BoxCollider>(50.0f, 50.0f, true); // width, height
-
-    Engine::ECS::create_entity().add_component<Components::Tag<"PhysicsTestState">>()
-      .add_component<Components::Transform2D>(900.0f, 600.0f, 0.0f, 50.0f, 50.0f) // pos.x, pos.y, rotation, scale.x, scale.y
-      .add_component<Components::Color>(grey)
-      .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
-      .add_component<Components::RigidBody>(true, false)
-      .add_component<Components::BoxCollider>(50.0f, 50.0f, true); // width, height
+    make_wall(Vec2D(300.0f, 375.0f), Vec2D(50.0f, 50.0f));
+    make_wall(Vec2D(500.0f, 450.0f), Vec2D(50.0f, 50.0f));
+    make_wall(Vec2D(700.0f, 525.0f), Vec2D(50.0f, 50.0f));
+    make_wall(Vec2D(900.0f, 600.0f), Vec2D(50.0f, 50.0f));
   };
 
   void init() {};

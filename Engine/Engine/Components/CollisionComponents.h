@@ -30,11 +30,15 @@ struct CollisionResult {
   }
 
   // Helper methods
-  Vec2D get_normal() const {
+  Vec2D get_normalise_mtv() const {
     return normalise_vector(mtv);
   }
   f32 get_penetration() const {
     return mtv.get_magnitude();
+  }
+  Vec2D get_tangent() const {
+    // Here we flip the normal clockwise because we flip the vector counter clockwise to get the normal
+    return rotate(mtv, 90);
   }
 };
 

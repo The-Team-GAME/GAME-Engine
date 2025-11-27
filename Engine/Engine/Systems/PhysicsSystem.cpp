@@ -107,7 +107,7 @@ void phy2D::apply_surface_friction(
   f32 kinetic_friction)
 {
   // At this point, the velocity of the entity should already be parallel to the surface its colliding with since zero_normal_velocity was called prior to this function.
-  Vec2D normal = normalise_vector(collision.get_normal());
+  Vec2D normal = normalise_vector(collision.get_normalise_mtv());
 
   if (rigid.velocity.get_magnitude() < 0.01f) // Magic number is just an epsilon number
   {

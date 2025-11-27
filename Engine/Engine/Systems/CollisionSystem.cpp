@@ -25,6 +25,14 @@ using col2D = Collision2DSystem;
 using phy2D = Physics2DSystem;
 using settings = Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>;
 
+namespace {
+  f32 slope_angle_limit = 60.f; // This is basically the limit of what will count as a slope
+  /*
+        /
+       /
+      /_____ (60 degree slope for example)
+  */
+}
 // Need to define cuz we made spatial tree static so we could make a static function to call its draw function in another system
 //std::unique_ptr<col2D::QuadTree> col2D::spatial_tree = nullptr;
 std::unique_ptr<col2D::QuadTreeSAT> col2D::spatial_tree_sat = nullptr;
@@ -116,14 +124,18 @@ void col2D::update()
         xform->position += collision.mtv;
         phy2D::zero_normal_velocity(*rigid, collision);
 
+        // We store the direction vector to the last surface that the entity collided with
+        rigid->last_surface_dir_vector = normalise_vector(collision.get_tangent());
+
         // The friction here is multiplicative cuz each entity has its own frictiona and its not additive
-        f32 combined_static = sqrt(box->static_friction * other_box->static_friction);
-        f32 combined_kinetic = sqrt(box->kinetic_friction * other_box->kinetic_friction);
+        f32 combined_static = box->static_friction * other_box->static_friction;
+        f32 combined_kinetic = box->kinetic_friction * other_box->kinetic_friction;
 
         phy2D::apply_surface_friction(*rigid, collision, combined_static, combined_kinetic);
 
-        // So therefor we need to check if the y component points upwards, because if its pointing upwards, it means the object is trying to snap out of the ground
-        if (collision.mtv.y < 0) // make smth to calculate the angle here maybe
+        // Gona calculate the angle of the slope that the player last interacted with
+        // Note:: i will not take direction into account as all the values are going to be absolute values
+        if (angle_of_slope(rigid->last_surface_dir_vector) < slope_angle_limit)
         {
           rigid->on_ground = true;
         }
@@ -722,12 +734,6 @@ AABB col2D::minkowski_AABB(Components::BoxCollider const& dynamic_obj, Component
   AABB minkowski;
   // get the direction vector wrt the static object so that static obj becomes the "origin"
   minkowski.pos = dynamic_obj.aabb.pos - static_obj.aabb.pos;
-#if 0
-  f32 half_width = (dynamic_obj.width + static_obj.width) / 2;
-  f32 half_height = (dynamic_obj.height + static_obj.height) / 2;
-  minkowski.min = Vec2D(minkowski.pos.x - half_width, minkowski.pos.y - half_height);
-  minkowski.max = Vec2D(minkowski.pos.x + half_width, minkowski.pos.y + half_height);
-#endif
   minkowski.half_width = dynamic_obj.aabb.half_width + static_obj.aabb.half_width;
   minkowski.half_height = dynamic_obj.aabb.half_height + static_obj.aabb.half_height;
   return minkowski;

@@ -38,6 +38,8 @@ namespace Components
     f32 friction{ 0.99f };
     f32 terminal_velocity{ std::numeric_limits<float>::max()}; // set to max float
 
+    Vec2D last_surface_dir_vector{ 1.f, 0.f };
+
     bool use_gravity = false;
     bool is_static = false;  // If true, not affected by physics forces
     bool on_ground = false;
