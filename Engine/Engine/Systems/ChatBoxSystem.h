@@ -1,7 +1,17 @@
 ﻿//-----------------------------------------------------------------------------------
-// file:    ChatBoxSystem.h
-// project: Monkey Stole My GPA
-// (Modified end-of-dialogue behavior: hide on final F press)
+// file:    ShowcaseState.cpp
+// project: Monkey Stoke My GPA
+//
+// author:  Ryan Ang An Kiat(100%)
+//          Primary author
+//
+// email:   a.ryanankiat@digipen.edu
+//
+// brief:   Implements a chat box that prints dialogue lines with typing effect
+//          that loads on pressing F key. Handles dialogue progression and rendering.
+//          Reads dialogue data from JSON file.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
