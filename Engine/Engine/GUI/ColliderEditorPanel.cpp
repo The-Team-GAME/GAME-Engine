@@ -19,6 +19,7 @@
 #include "../Components/StateMachineComponents.h"
 #include "../Components/GraphicsComponents.h"
 #include "../Components/SpatialComponents.h"
+#include "../Components/UIComponents.h"
 #include "../EventManager/EventManager.h"
 #include "../Events/EngineEvents.h"
 #include "../Graphics/Renderer.h" // For Texture
@@ -29,7 +30,10 @@
 
 namespace {
   enum class EditorMode { None, Entity, Prefab };
+  enum class ButtonColliderMode { Normal, Hovered, Clicked }; // For DynamicButton editing
+
   EditorMode current_mode = EditorMode::None;
+  ButtonColliderMode button_mode = ButtonColliderMode::Normal; // Default to normal state
 
   s32 selected_entity_id = -1;
   Engine::ECS::Prefab selected_prefab;
@@ -101,6 +105,7 @@ void ColliderEditorPanel()
   Components::Animation* animation = nullptr;
   Components::Transform2D* transform = nullptr;
   Components::Flip* flip = nullptr;
+  Components::DynamicButton* dynamic_button = nullptr;
 
   Engine::ECS::Entity entity; // Only valid in Entity mode
 
@@ -126,6 +131,30 @@ void ColliderEditorPanel()
     animation = entity.get_component<Components::Animation>();
     transform = entity.get_component<Components::Transform2D>();
     flip = entity.get_component<Components::Flip>();
+    dynamic_button = entity.get_component<Components::DynamicButton>();
+
+    // Display DynamicButton mode selector if present
+    if (dynamic_button) {
+      ImGui::Text("Dynamic Button Detected");
+
+      // Tab bar for selecting button state
+      if (ImGui::BeginTabBar("ButtonStateTabBar")) {
+        if (ImGui::BeginTabItem("Normal State")) {
+          button_mode = ButtonColliderMode::Normal;
+          ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Hovered State")) {
+          button_mode = ButtonColliderMode::Hovered;
+          ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Clicked State")) {
+          button_mode = ButtonColliderMode::Clicked;
+          ImGui::EndTabItem();
+        }
+        ImGui::EndTabBar();
+      }
+      ImGui::Separator();
+    }
 
     // Display prefab instance info if applicable
     if (is_entity_prefab_instance && !entity_source_prefab_path.empty()) {
@@ -285,11 +314,34 @@ void ColliderEditorPanel()
       texture_handle = texture->texture_handle;
     }
 
-    col_type = collider->type;
-    col_width = collider->width;
-    col_height = collider->height;
-    col_offset = collider->offset;
-    col_vertices = collider->polygon.vertices;
+    // Load from DynamicButton if present, otherwise from BoxCollider
+    if (dynamic_button) {
+      col_type = collider->type; // Type is always from BoxCollider
+      col_offset = collider->offset; // Offset is always from BoxCollider
+
+      if (button_mode == ButtonColliderMode::Normal) {
+        col_width = dynamic_button->normal.width;
+        col_height = dynamic_button->normal.height;
+        col_vertices = dynamic_button->normal.vertices;
+      }
+      else if (button_mode == ButtonColliderMode::Hovered) {
+        col_width = dynamic_button->hovered.width;
+        col_height = dynamic_button->hovered.height;
+        col_vertices = dynamic_button->hovered.vertices;
+      }
+      else { // Clicked
+        col_width = dynamic_button->clicked.width;
+        col_height = dynamic_button->clicked.height;
+        col_vertices = dynamic_button->clicked.vertices;
+      }
+    }
+    else {
+      col_type = collider->type;
+      col_width = collider->width;
+      col_height = collider->height;
+      col_offset = collider->offset;
+      col_vertices = collider->polygon.vertices;
+    }
 
     // Apply flip only if in Entity mode
     if (current_mode == EditorMode::Entity) {
@@ -331,8 +383,26 @@ void ColliderEditorPanel()
   float sprite_world_width = 0.0f;
   float sprite_world_height = 0.0f;
 
-  // 1. Base Scale from Transform2D
-  if (transform) {
+  // 1. Base Scale from Transform2D or DynamicButton state
+  if (dynamic_button) {
+    // Use transform from the selected button state
+    const Components::DynamicButton::StateData* current_state = nullptr;
+    if (button_mode == ButtonColliderMode::Normal) {
+      current_state = &dynamic_button->normal;
+    }
+    else if (button_mode == ButtonColliderMode::Hovered) {
+      current_state = &dynamic_button->hovered;
+    }
+    else {
+      current_state = &dynamic_button->clicked;
+    }
+
+    if (current_state) {
+      sprite_world_width = current_state->transform.scale.x;
+      sprite_world_height = current_state->transform.scale.y;
+    }
+  }
+  else if (transform) {
     sprite_world_width = transform->scale.x;
     sprite_world_height = transform->scale.y;
   }
@@ -544,15 +614,47 @@ void ColliderEditorPanel()
     else {
       // Live/Default update
       collider->type = col_type;
-      collider->width = col_width;
-      collider->height = col_height;
       collider->offset = col_offset;
-      collider->aabb.half_width = col_width / 2.0f;
-      collider->aabb.half_height = col_height / 2.0f;
 
-      // Update polygon vertices
-      if (col_type == Components::ColliderType::POLYGON) {
-        collider->polygon.vertices = col_vertices;
+      // Save to DynamicButton if present
+      if (dynamic_button) {
+        if (button_mode == ButtonColliderMode::Normal) {
+          dynamic_button->normal.width = col_width;
+          dynamic_button->normal.height = col_height;
+          dynamic_button->normal.vertices = col_vertices;
+        }
+        else if (button_mode == ButtonColliderMode::Hovered) {
+          dynamic_button->hovered.width = col_width;
+          dynamic_button->hovered.height = col_height;
+          dynamic_button->hovered.vertices = col_vertices;
+        }
+        else { // Clicked
+          dynamic_button->clicked.width = col_width;
+          dynamic_button->clicked.height = col_height;
+          dynamic_button->clicked.vertices = col_vertices;
+        }
+
+        // Also update BoxCollider with current values
+        // (DynamicButtonSystem will override these at runtime based on hover state)
+        collider->width = col_width;
+        collider->height = col_height;
+        collider->aabb.half_width = col_width / 2.0f;
+        collider->aabb.half_height = col_height / 2.0f;
+
+        if (col_type == Components::ColliderType::POLYGON) {
+          collider->polygon.vertices = col_vertices;
+        }
+      }
+      else {
+        // No DynamicButton, save directly to BoxCollider
+        collider->width = col_width;
+        collider->height = col_height;
+        collider->aabb.half_width = col_width / 2.0f;
+        collider->aabb.half_height = col_height / 2.0f;
+
+        if (col_type == Components::ColliderType::POLYGON) {
+          collider->polygon.vertices = col_vertices;
+        }
       }
 
       // If in Prefab mode, mark dirty
@@ -571,6 +673,69 @@ void ColliderEditorPanel()
   ImGui::SetCursorScreenPos({ layout.image_min.x, layout.image_max.y + 10 });
   ImGui::Text("Collider Size: %.2f x %.2f", col_width, col_height);
   ImGui::Text("Collider Offset: %.2f, %.2f", col_offset.x, col_offset.y);
+
+  // Transform controls for DynamicButton states
+  if (dynamic_button) {
+    ImGui::Separator();
+    ImGui::Text("Transform Controls (per state):");
+
+    Components::DynamicButton::StateData* current_state = nullptr;
+    if (button_mode == ButtonColliderMode::Normal) {
+      current_state = &dynamic_button->normal;
+    }
+    else if (button_mode == ButtonColliderMode::Hovered) {
+      current_state = &dynamic_button->hovered;
+    }
+    else {
+      current_state = &dynamic_button->clicked;
+    }
+
+    if (current_state) {
+      bool transform_changed = false;
+      transform_changed |= ImGui::DragFloat2("Position", &current_state->transform.position.x, 0.1f);
+      transform_changed |= ImGui::DragFloat("Rotation", &current_state->transform.rotation, 0.5f);
+      transform_changed |= ImGui::DragFloat2("Scale", &current_state->transform.scale.x, 0.01f);
+
+      // Easing function inputs
+      ImGui::Separator();
+      ImGui::Text("Easing Functions:");
+
+      // Get all registered easing functions
+      static auto easing_names = Engine::FunctionRegistry<f32(f32)>::get_all_names();
+
+      // Helper lambda for easing function combo
+      auto easing_combo = [&](const char* label, Engine::SerializableFunction& easing_func) {
+        bool easing_changed = false;
+        if (ImGui::BeginCombo(label, easing_func.empty() ? "None (Linear)" : easing_func.name.c_str())) {
+          if (ImGui::Selectable("None (Linear)", easing_func.empty())) {
+            easing_func = "";
+            easing_changed = true;
+          }
+
+          for (const auto& name : easing_names) {
+            bool is_selected = (easing_func.name == name);
+            if (ImGui::Selectable(name.c_str(), is_selected)) {
+              easing_func = name;
+              easing_changed = true;
+            }
+            if (is_selected) {
+              ImGui::SetItemDefaultFocus();
+            }
+          }
+          ImGui::EndCombo();
+        }
+        return easing_changed;
+        };
+
+      transform_changed |= easing_combo("Position Easing", current_state->position_easing);
+      transform_changed |= easing_combo("Rotation Easing", current_state->rotation_easing);
+      transform_changed |= easing_combo("Scale Easing", current_state->scale_easing);
+
+      if (transform_changed) {
+        changed = true;
+      }
+    }
+  }
 
   // Show save to prefab button for prefab instances
   if (current_mode == EditorMode::Entity && is_entity_prefab_instance && !entity_source_prefab_path.empty() && !editing_specific_state) {

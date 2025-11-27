@@ -15,6 +15,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 #include "Math/Math.h"
+#include "FunctionRegistry.h"
 
 
 namespace Engine {
@@ -173,6 +174,61 @@ namespace Engine {
       }
       float postFix = a * powf(2.0f, -10.0f * (t -= 1.0f));
       return (postFix * sinf((t * d - s) * (2.0f * 3.14159265f) / p) * 0.5f + c + b);
+    }
+
+    // ============================================================================
+    // Registration Helper
+    // ============================================================================
+
+    inline void register_all_easing_functions() {
+      // Full signature versions (t, b, c, d) -> result
+      using EasingFunc = f32(f32, f32, f32, f32);
+
+      // Linear
+      FunctionRegistry<EasingFunc>::register_function("EaseLinearNone", EaseLinearNone);
+      FunctionRegistry<EasingFunc>::register_function("EaseLinearIn", EaseLinearIn);
+      FunctionRegistry<EasingFunc>::register_function("EaseLinearOut", EaseLinearOut);
+      FunctionRegistry<EasingFunc>::register_function("EaseLinearInOut", EaseLinearInOut);
+
+      // Sine
+      FunctionRegistry<EasingFunc>::register_function("EaseSineIn", EaseSineIn);
+      FunctionRegistry<EasingFunc>::register_function("EaseSineOut", EaseSineOut);
+      FunctionRegistry<EasingFunc>::register_function("EaseSineInOut", EaseSineInOut);
+
+      // Circular
+      FunctionRegistry<EasingFunc>::register_function("EaseCircIn", EaseCircIn);
+      FunctionRegistry<EasingFunc>::register_function("EaseCircOut", EaseCircOut);
+      FunctionRegistry<EasingFunc>::register_function("EaseCircInOut", EaseCircInOut);
+
+      // Cubic
+      FunctionRegistry<EasingFunc>::register_function("EaseCubicIn", EaseCubicIn);
+      FunctionRegistry<EasingFunc>::register_function("EaseCubicOut", EaseCubicOut);
+      FunctionRegistry<EasingFunc>::register_function("EaseCubicInOut", EaseCubicInOut);
+
+      // Quadratic
+      FunctionRegistry<EasingFunc>::register_function("EaseQuadIn", EaseQuadIn);
+      FunctionRegistry<EasingFunc>::register_function("EaseQuadOut", EaseQuadOut);
+      FunctionRegistry<EasingFunc>::register_function("EaseQuadInOut", EaseQuadInOut);
+
+      // Exponential
+      FunctionRegistry<EasingFunc>::register_function("EaseExpoIn", EaseExpoIn);
+      FunctionRegistry<EasingFunc>::register_function("EaseExpoOut", EaseExpoOut);
+      FunctionRegistry<EasingFunc>::register_function("EaseExpoInOut", EaseExpoInOut);
+
+      // Back
+      FunctionRegistry<EasingFunc>::register_function("EaseBackIn", EaseBackIn);
+      FunctionRegistry<EasingFunc>::register_function("EaseBackOut", EaseBackOut);
+      FunctionRegistry<EasingFunc>::register_function("EaseBackInOut", EaseBackInOut);
+
+      // Bounce
+      FunctionRegistry<EasingFunc>::register_function("EaseBounceIn", EaseBounceIn);
+      FunctionRegistry<EasingFunc>::register_function("EaseBounceOut", EaseBounceOut);
+      FunctionRegistry<EasingFunc>::register_function("EaseBounceInOut", EaseBounceInOut);
+
+      // Elastic
+      FunctionRegistry<EasingFunc>::register_function("EaseElasticIn", EaseElasticIn);
+      FunctionRegistry<EasingFunc>::register_function("EaseElasticOut", EaseElasticOut);
+      FunctionRegistry<EasingFunc>::register_function("EaseElasticInOut", EaseElasticInOut);
     }
 
   } // namespace Easing
