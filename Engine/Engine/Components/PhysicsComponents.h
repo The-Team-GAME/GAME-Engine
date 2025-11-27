@@ -72,4 +72,5 @@ namespace Components
   };
 }
 
-REGISTER_COMPONENT(Components::RigidBody, mass, force, acceleration, gravity_acc, velocity, friction, terminal_velocity, is_static, on_ground, is_jumping, rotation, rotation_terminal_velocity, angular_velocity)
+// Lua-accessible (used in movement/physics scripts)
+REGISTER_COMPONENT_LUA(Components::RigidBody, mass, force, acceleration, gravity_acc, velocity, friction, terminal_velocity, is_static, on_ground, is_jumping, rotation, rotation_terminal_velocity, angular_velocity)

@@ -1,8 +1,8 @@
 {
     "data": {
+        "uuid": "3f9e0175-802a-40b4b-b43d-339577c455f9",
         "layers": [
-            "default",
-            "gameplay"
+            "default"
         ],
         "components": [
             {
@@ -36,7 +36,30 @@
             },
             {
                 "data": {
+                    "terminal_velocity": 3.4028234663852886e38,
+                    "mass": 1.0,
+                    "is_static": false,
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "acceleration": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "friction": 0.9900000095367432,
+                    "gravity_acc": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "velocity": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "on_ground": false,
+                    "is_jumping": false,
                     "rotation": 0.0,
+                    "rotation_terminal_velocity": 360.0,
                     "angular_velocity": 45.0
                 },
                 "type": "Components::RigidBody"

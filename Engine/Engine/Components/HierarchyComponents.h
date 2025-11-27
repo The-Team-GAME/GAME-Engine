@@ -45,6 +45,7 @@ namespace Components
   struct Root {}; // Mark root entities (no parent)
 }
 
-REGISTER_COMPONENT(Components::Parent, parent_id, local_offset, offset_initialized)
+// Lua-accessible (parent removal in hit state)
+REGISTER_COMPONENT_LUA(Components::Parent, parent_id, local_offset, offset_initialized)
 REGISTER_COMPONENT(Components::Children, child_ids)
 REGISTER_COMPONENT(Components::Root)

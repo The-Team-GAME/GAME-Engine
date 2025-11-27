@@ -331,4 +331,5 @@ namespace Components
 
 REFLECT_FIELDS(Components::State, name, on_enter_callback_name, on_update_callback_name, on_exit_callback_name, animation)
 REFLECT_FIELDS(Components::StateAnimation, texture, texture_atlas, animation, scale)
-REGISTER_COMPONENT(Components::StateMachine, states, current_state_name)
+// Lua-accessible (change_state() called from Lua)
+REGISTER_COMPONENT_LUA(Components::StateMachine, states, current_state_name)

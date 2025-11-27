@@ -37,6 +37,7 @@
 #include "FileIO/SettingsManager.h"
 #include "Events/RegisterAllEvents.h"
 #include "UndoManager/UndoManager.h"
+#include "Lua/LuaComponentBindings.h"
 
 namespace Engine
 {
@@ -102,6 +103,9 @@ namespace Engine
     if (!Engine::LuaManager::init()) {
       throw std::runtime_error("Failed to initialize Lua manager");
     }
+
+    Engine::LuaBindings::register_all_bindings(); // For lua bindings
+    Engine::LuaManager::load_script("Assets/scripts/LazyMonkeyStateCallbacks.lua");
 
     Engine::Graphics::set_viewport({ 0, 0, engine_settings.window_width, engine_settings.window_height });
 

@@ -30,6 +30,8 @@
 
 namespace Engine
 {
+  namespace ECS { class Entity; } // Forward declaration
+
   namespace LuaManager
   {
     /**
@@ -106,6 +108,28 @@ namespace Engine
      * @brief Runs all registered binding callbacks.
      */
     void run_bindings();
+
+    /**
+     * @brief Calls a Lua state callback function if it exists.
+     * @param func_name Name of the Lua function to call.
+     * @param entity Entity to pass to the Lua function.
+     * @return True if the Lua function was called successfully, false if not found or error.
+     */
+    bool try_call_state_function(const std::string& func_name, Engine::ECS::Entity& entity);
+
+    /**
+     * @brief Automatically binds a component type to Lua using reflection metadata.
+     * @tparam T Component type with reflection data.
+     */
+    template<typename T>
+    void bind_component_type();
+
+    /**
+     * @brief Binds multiple component types at once using variadic templates.
+     * @tparam Components Pack of component types to bind.
+     */
+    template<typename... Components>
+    void bind_all_components();
   }
 }
 
@@ -167,6 +191,32 @@ namespace Engine
       } catch (...) {
         return default_value;
       }
+    }
+
+    /**
+     * @brief Automatically binds a component type to Lua using reflection metadata.
+     * Note: This is a template declaration. Actual implementation will use your reflection system.
+     */
+    template<typename T>
+    void bind_component_type() {
+      sol::state& lua = get_state();
+      if (!lua.lua_state()) {
+        std::cerr << "[LuaManager] Lua not initialized. Call init() first.\n";
+        return;
+      }
+
+      // This will be implemented in LuaComponentBindings.h with your reflection system
+      // For now, this is a placeholder that will be specialized
+      std::cerr << "[LuaManager] bind_component_type called but not specialized for this type\n";
+    }
+
+    /**
+     * @brief Binds multiple component types at once using variadic templates.
+     * @tparam Components Pack of component types to bind.
+     */
+    template<typename... Components>
+    void bind_all_components() {
+      (bind_component_type<Components>(), ...);
     }
   }
 }
