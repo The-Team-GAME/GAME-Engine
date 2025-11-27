@@ -233,10 +233,10 @@ namespace Engine {
         auto* tOwner = owner.get_component<Components::Transform2D>();
         if (!tOwner) return;
 
-        const int   n = std::max(6, bar.segments);
-        const float deg = 0.01745329251994329577f;
-        float a0_deg, a1_deg;
+        const int n = std::max(8, bar.segments);          // more segments = smoother
+        const float DEG = 0.01745329251994329577f;
 
+        float a0_deg, a1_deg;
         if (bar.use_center_span) {
           const float half = std::max(0.f, bar.arc_span_deg) * 0.5f;
           a0_deg = bar.center_angle_deg - half;
@@ -246,50 +246,51 @@ namespace Engine {
           a0_deg = bar.start_angle_deg;
           a1_deg = bar.end_angle_deg;
         }
-
         auto norm2pi = [](float a) { const float tau = 6.28318530718f; a = fmodf(a, tau); return (a < 0.f) ? a + tau : a; };
         auto short_delta = [&](float a, float b) {
           float d = b - a; const float pi = 3.14159265359f, tau = 6.28318530718f;
           while (d > pi) d -= tau; while (d <= -pi) d += tau; return d;
           };
-
-        float a0 = norm2pi(a0_deg * deg);
-        float a1 = norm2pi(a1_deg * deg);
+        float a0 = norm2pi(a0_deg * DEG), a1 = norm2pi(a1_deg * DEG);
         const float span = short_delta(a0, a1);
 
-        const int  vis_after = std::clamp(static_cast<int>(std::round(bar.after_ratio * n)), 0, n);
-        const int  vis_front = std::clamp(static_cast<int>(std::round(bar.front_ratio * n)), 0, n);
-        const float overlap = 1.25f; // removes hairline gaps between quads
+        const int vis_after = std::clamp(int(std::round(bar.after_ratio * n)), 0, n);
+        const int vis_front = std::clamp(int(std::round(bar.front_ratio * n)), 0, n);
+
+        const float overlap = 1.02f;
 
         auto place_ring = [&](std::vector<Engine::ECS::Entity>& ring, float thickness, int visible_from_right) {
           for (int i = 0; i < n; ++i) {
             if (!ring[i].is_valid()) continue;
 
-            // Segment endpoints along shortest arc
-            const float t0 = static_cast<float>(i) / n;
-            const float t1 = static_cast<float>(i + 1) / n;
+            // Segment angular range
+            const float t0 = float(i) / n, t1 = float(i + 1) / n;
             const float ang0 = a0 + t0 * span;
             const float ang1 = a0 + t1 * span;
 
+            // Endpoints (Y-down)
             const float x0 = tOwner->position.x + bar.offset.x + std::cos(ang0) * bar.radius;
-            const float y0 = tOwner->position.y + bar.offset.y - std::sin(ang0) * bar.radius; // Y-down
+            const float y0 = tOwner->position.y + bar.offset.y - std::sin(ang0) * bar.radius;
             const float x1 = tOwner->position.x + bar.offset.x + std::cos(ang1) * bar.radius;
-            const float y1 = tOwner->position.y + bar.offset.y - std::sin(ang1) * bar.radius; // Y-down
+            const float y1 = tOwner->position.y + bar.offset.y - std::sin(ang1) * bar.radius;
 
+            // Center, angle, length
             const float cx = (x0 + x1) * 0.5f;
             const float cy = (y0 + y1) * 0.5f;
             const float ang = std::atan2(y1 - y0, x1 - x0);
             const float len = std::hypot(x1 - x0, y1 - y0) * overlap;
 
+            // R→L visibility: show last 'visible_from_right' segments
+            const bool visible = (i >= n - visible_from_right);
+
             if (auto* tr = ring[i].get_component<Components::Transform2D>()) {
               tr->position.x = cx;
               tr->position.y = cy;
-              tr->rotation = ang;            // align ribbon to tangent
-              tr->scale.x = len;            // LONG side along the path
-              tr->scale.y = thickness;      // thickness; visibility toggled below
+              tr->rotation = ang;          // align along the arc
+              tr->scale.x = len;          // LONG side along tangent
+              tr->scale.y = visible ? thickness : 0.0f;  // thickness or hidden
             }
           }
-          set_layer_visibility(ring, visible_from_right);
           };
 
         place_ring(bar.after, bar.after_thickness, vis_after);
@@ -446,6 +447,136 @@ namespace Engine {
         // After (delayed) and Front (current) with beat pulse scaling
         place_continuous(hud.after, cnt_after, hud.after_thickness, pulse * 0.98f);
         place_continuous(hud.front, cnt_front, hud.front_thickness, pulse);
+      }
+    };
+
+    class HeartHUDSpriteSystem final : public Engine::ECS::System {
+    public:
+      HeartHUDSpriteSystem() { require_components<Components::Heartrate, Components::HeartHUDSprite>(); }
+
+      void update_entity(Engine::ECS::Entity& e) override {
+        using namespace Components;
+        auto* hr = e.get_component<Heartrate>();
+        auto* hud = e.get_component<HeartHUDSprite>();
+        if (!hr || !hud) return;
+
+        ensure_created(*hud);
+
+        const float baseX = hud->anchor_px.x;
+        const float baseY = hud->anchor_px.y;
+
+        // Back & optional overlay & head (static)
+        if (auto* t = hud->back.get_component<Components::Transform2D>()) {
+          t->position.x = baseX + hud->width * 0.5f;
+          t->position.y = baseY + hud->height * 0.5f;
+          t->rotation = 0.f; t->scale.x = hud->width; t->scale.y = hud->height;
+        }
+        if (hud->use_white_overlay)
+          if (auto* t = hud->white_overlay.get_component<Components::Transform2D>()) {
+            t->position.x = baseX + hud->width * 0.5f;
+            t->position.y = baseY + hud->height * 0.5f;
+            t->rotation = 0.f; t->scale.x = hud->width; t->scale.y = hud->height;
+          }
+        if (auto* t = hud->head.get_component<Components::Transform2D>()) {
+          t->position.x = baseX + 60.f; t->position.y = baseY + 58.f;
+          t->rotation = 0.f; t->scale.x = 120.f; t->scale.y = 120.f;
+        }
+
+        const float bpm = std::max(1.f, hr->heartrate);
+        const float span = std::max(1e-3f, hud->bpm_max - hud->bpm_min);
+        const float ratio = std::clamp((bpm - hud->bpm_min) / span, 0.f, 1.f);
+        const int   n = std::max(1, hud->slices);
+        const int   vis = std::clamp(int(std::round(ratio * n)), 0, n);
+
+        place_white_columns(*hud, baseX, baseY, vis);
+      }
+
+    private:
+      static Engine::Graphics::Texture rect() { return Engine::Resources::get_rect_texture(); }
+
+      void ensure_created(Components::HeartHUDSprite& hud) {
+        using namespace Components;
+        if (hud.initialized) return;
+        hud.initialized = true;
+
+        if (!hud.tex_back)  hud.tex_back = rect();
+        if (!hud.tex_solid) hud.tex_solid = rect();
+        if (!hud.tex_head)  hud.tex_head = rect();
+
+        // Back
+        hud.back = Engine::ECS::create_entity()
+          .add_component<Transform2D>(0.f, 0.f, 0.f, hud.width, hud.height)
+          .add_component<Texture>(hud.tex_back)
+          .add_component<Color>(Math::Vec4D(1, 1, 1, 1))
+          .remove_from_layer("default").add_to_layer(hud.layer.c_str());
+
+        // Build N column slices from WhiteSolidForFill.png using a texture atlas
+        const int n = std::max(1, hud.slices);
+        const int fw = std::max(1, hud.src_w_px / n);  // frame width in source tex pixels
+        const int fh = std::max(1, hud.src_h_px);      // frame height
+
+        hud.whiteSlices.resize(n);
+        for (int i = 0; i < n; ++i) {
+          auto e = Engine::ECS::create_entity()
+            .add_component<Transform2D>(0.f, 0.f, 0.f, 1.f, 1.f)
+            .add_component<Texture>(hud.tex_solid)
+            .add_component<TextureAtlas>(fw, fh, 1, n, n) // rows=1, cols=n, frames=n
+            .add_component<Color>(Math::Vec4D(1, 1, 1, 1))
+            .remove_from_layer("default").add_to_layer(hud.layer.c_str());
+
+          // Select the i-th column; no Animation used
+          if (auto* atlas = e.get_component<TextureAtlas>()) {
+            atlas->drawIndex = i; // <- pick sub-rect column
+          }
+          hud.whiteSlices[i] = e;
+        }
+
+        if (hud.use_white_overlay) {
+          if (!hud.tex_white) hud.tex_white = rect();
+          hud.white_overlay = Engine::ECS::create_entity()
+            .add_component<Transform2D>(0.f, 0.f, 0.f, hud.width, hud.height)
+            .add_component<Texture>(hud.tex_white)
+            .add_component<Color>(Math::Vec4D(1, 1, 1, 1))
+            .remove_from_layer("default").add_to_layer(hud.layer.c_str());
+        }
+
+        // Head badge
+        hud.head = Engine::ECS::create_entity()
+          .add_component<Transform2D>(0.f, 0.f, 0.f, 120.f, 120.f)
+          .add_component<Texture>(hud.tex_head)
+          .add_component<Color>(Math::Vec4D(1, 1, 1, 1))
+          .remove_from_layer("default").add_to_layer(hud.layer.c_str());
+      }
+
+      void place_white_columns(Components::HeartHUDSprite& hud, float baseX, float baseY, int visible) {
+        const int srcW = std::max(1, hud.src_w_px);
+        const int n = std::min(std::max(1, hud.slices), (int)hud.whiteSlices.size());
+
+        // We map source pixels -> HUD pixels with exact rounding to avoid drift
+        const float hudLeft = std::floor(baseX + 0.5f);         // snap base to int
+        const float hudTop = std::floor(baseY + 0.5f);
+        const float hudW = std::round(hud.width);
+        const float hudH = std::round(hud.height);
+        const float scale = hudW / float(srcW);               // src px -> dst px
+
+        const int shown = std::clamp(visible, 0, n);
+
+        for (int i = 0; i < n; ++i) {
+          // map column i from source space to dst pixel edges, snapped to ints
+          const float L = std::round(hudLeft + i * scale);
+          const float R = std::round(hudLeft + (i + 1) * scale);
+          const float W = std::max(1.0f, R - L);
+          const float CX = (L + R) * 0.5f;
+          const bool  show = (i < shown);
+
+          if (auto* tr = hud.whiteSlices[i].get_component<Components::Transform2D>()) {
+            tr->position.x = CX;
+            tr->position.y = hudTop + hudH * 0.5f;  // center vertically
+            tr->rotation = 0.f;
+            tr->scale.x = W;                     // exact integer width
+            tr->scale.y = show ? hudH : 0.f;     // reveal by height
+          }
+        }
       }
     };
 

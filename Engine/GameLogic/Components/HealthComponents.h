@@ -87,6 +87,43 @@ namespace Components {
 		bool  initialized = false;
 	};
 
+	struct HeartHUDSprite {
+		Math::Vec2D anchor_px{ 20.f, 18.f };
+		float width = 763.f;
+		float height = 145.f;
+		std::string layer = "ui";
+		bool  screen_space = true;
+
+		// Textures (fill uses WhiteSolidForFill.png)
+		Engine::Graphics::Texture tex_back{};
+		Engine::Graphics::Texture tex_white{};
+		Engine::Graphics::Texture tex_solid{};  // WhiteSolidForFill.png
+		Engine::Graphics::Texture tex_head{};
+
+		// Map BPM -> fill
+		float bpm_min = 40.f, bpm_max = 200.f;
+
+		// Pixel-accurate band
+		float fill_left_px = 118.f;
+		float fill_right_px = 730.f;
+		float fill_center_y = 76.f;
+		float fill_height_px = 42.f;
+
+		// actual source (PNG) dimensions for the fill image (pixels)
+		int   src_w_px = 763;        // set to WhiteSolidForFill.png width
+		int   src_h_px = 145;        // set to WhiteSolidForFill.png height
+		int   slices = 140;        // number of vertical columns
+
+		bool use_white_overlay = false;
+
+		// Runtime
+		Engine::ECS::Entity back;
+		Engine::ECS::Entity head;
+		Engine::ECS::Entity white_overlay;
+		std::vector<Engine::ECS::Entity> whiteSlices;   // column reveal
+		bool initialized = false;
+	};
+
 	struct EnemyHealthBar {
 		// Layout
 		float radius = 24.0f;

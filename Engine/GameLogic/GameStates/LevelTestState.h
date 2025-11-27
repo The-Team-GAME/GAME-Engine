@@ -40,6 +40,7 @@ public:
 
     Engine::ECS::add_system<Engine::Systems::HealthWaveHUDSystem>();
     Engine::ECS::add_system<Engine::Systems::EnemyHealthBarSystem>();
+    Engine::ECS::add_system<Engine::Systems::HeartHUDSpriteSystem>();
 
     // ========================================================================
     // Create Player Entity
@@ -74,6 +75,24 @@ public:
       hud->spike_width_norm = 0.03f;    // ECG spike width
       hud->spike_height_px = 22.f;     // ECG spike height
       hud->pulse_scale = 0.18f;    // beat thickness pulse
+    }
+
+    player_entity.add_component<Components::HeartHUDSprite>();
+    if (auto* hud = player_entity.get_component<Components::HeartHUDSprite>()) {
+      hud->layer = "ui";
+      hud->screen_space = true;
+
+      hud->tex_back = Engine::Resources::load_texture("images/Heartratebar/BarBack.png");
+      hud->tex_solid = Engine::Resources::load_texture("images/Heartratebar/WhiteSolidForFill.png");
+      hud->tex_head = Engine::Resources::load_texture("images/Heartratebar/HeadBar.png");
+      hud->use_white_overlay = false;
+
+      hud->width = 763.f;
+      hud->height = 145.f;
+      hud->src_w_px = 763;
+      hud->src_h_px = 145;
+      hud->slices = hud->src_w_px;
+      hud->use_white_overlay = false;
     }
 
     // ========================================================================
