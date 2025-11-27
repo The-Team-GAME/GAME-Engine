@@ -19,7 +19,7 @@
 #include <variant>
 #include <string>
 #include <vector>
-#include <unordered_map>
+#include <map>
 #include <stdexcept>
 #include <type_traits>
 #include <sstream>
@@ -40,7 +40,7 @@ namespace ReflectionLibrary
   using Double = double;
   using String = std::string;
   using Array = std::vector<GenericValue>;
-  using Object = std::unordered_map<std::string, GenericValue>;
+  using Object = std::map<std::string, GenericValue>;
 
   // Proxy class for lazy evaluation and implicit conversions
   class GenericValueProxy
