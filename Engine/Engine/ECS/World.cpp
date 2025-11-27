@@ -306,7 +306,10 @@ namespace Engine {
         if (!containers.layer_active_state.test(layer))
           continue;
 
-        for (EntityID entityId : containers.layer_entities[layer]) {
+        // Make a copy to avoid iterator invalidation during draw
+        auto layer_entities_copy = containers.layer_entities[layer];
+
+        for (EntityID entityId : layer_entities_copy) {
           // Track the highest layer this entity is on
           if (entity_highest_layer.find(entityId) == entity_highest_layer.end() ||
             layer > entity_highest_layer[entityId]) {
@@ -331,7 +334,10 @@ namespace Engine {
           const auto& system_entities = system->get_entities();
 
           // Draw entities on this layer
-          for (EntityID entityId : containers.layer_entities[layer]) {
+          // Make a copy to avoid iterator invalidation during draw
+          auto layer_entities_copy = containers.layer_entities[layer];
+
+          for (EntityID entityId : layer_entities_copy) {
             // Skip if not in this system
             if (!system_entities.contains(entityId))
               continue;
@@ -412,7 +418,10 @@ namespace Engine {
       std::unordered_set<EntityID> processed; // Track processed entities to avoid duplicates
 
       for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
-        for (EntityID id : containers.layer_entities[layer]) {
+        // Make a copy to avoid iterator invalidation during callback
+        auto layer_entities_copy = containers.layer_entities[layer];
+
+        for (EntityID id : layer_entities_copy) {
           // Skip if already processed or not active
           if (processed.count(id) || !containers.active_entities.contains(id))
             continue;
@@ -431,7 +440,10 @@ namespace Engine {
         return;
       }
 
-      for (EntityID id : containers.layer_entities[layer]) {
+      // Make a copy to avoid iterator invalidation during callback
+      auto layer_entities_copy = containers.layer_entities[layer];
+
+      for (EntityID id : layer_entities_copy) {
         if (containers.active_entities.contains(id)) {
           Entity entity(id);
           callback(entity);
@@ -617,13 +629,15 @@ namespace Engine {
       for (LayerID lhs_layer = 0; lhs_layer < containers.layer_entities.size(); ++lhs_layer) {
         if (!lhs_mask.test(lhs_layer)) continue;
 
-        const auto& lhs_layer_set = containers.layer_entities[lhs_layer];
+        // Make a copy to avoid iterator invalidation during callback
+        auto lhs_layer_set = containers.layer_entities[lhs_layer];
 
         // Iterate through RHS layers that match the mask
         for (LayerID rhs_layer = 0; rhs_layer < containers.layer_entities.size(); ++rhs_layer) {
           if (!rhs_mask.test(rhs_layer)) continue;
 
-          const auto& rhs_layer_set = containers.layer_entities[rhs_layer];
+          // Make a copy to avoid iterator invalidation during callback
+          auto rhs_layer_set = containers.layer_entities[rhs_layer];
 
           // Iterate all entity pairs between these two layers
           for (EntityID lhs_id : lhs_layer_set) {

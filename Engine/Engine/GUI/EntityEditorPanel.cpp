@@ -24,6 +24,7 @@
 #include <fstream>
 #include <sstream>
 #include <unordered_map>
+#include <map>
 #include "../Components/SpatialComponents.h"
 #include "../Components/UtilityComponents.h"
 #include "../EventManager/EventManager.h"
@@ -52,6 +53,7 @@ namespace {
 
 void EntityEditorPanelHelpers::render_component_tree(const std::string& component_name, Engine::ECS::Entity& entity, Engine::ECS::IComponentArray* array)
 {
+  // Render component tree node directly (namespace grouping handled by caller)
   if (ImGui::TreeNode(component_name.c_str())) {
     // Track the value before any modifications
     static std::unordered_map<std::string, ReflectionLibrary::GenericValue> component_edit_start_values;
@@ -66,7 +68,18 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
     // Get the type name from the component array for specialized rendering
     std::string type_hint = array->get_type_name();
 
-    ImGuiWidgets::render_field(component_name, type_hint, component_data, modified, entity);
+    // Try specialized rendering first
+    bool handled_by_specialization = ImGuiWidgets::render_specialized_field(
+      component_name, type_hint, component_data, modified, entity
+    );
+
+    // If not specialized, render fields directly (without creating another tree node)
+    if (!handled_by_specialization && component_data.isObject()) {
+      auto& fields = component_data.getObject();
+      for (auto& [field_name, field_value] : fields) {
+        ImGuiWidgets::render_field(field_name, field_value.type_hint, field_value, modified, entity);
+      }
+    }
 
     // Check if user is currently editing (any widget is active in this component)
     bool is_any_item_active = ImGui::IsAnyItemActive();
@@ -387,16 +400,57 @@ void EntityEditorPanel()
     // Edit Components Section
     if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_DefaultOpen))
     {
-      // Automatically iterate through ALL components the entity has
-      entity.for_each_component([&entity](const std::string& type_name, Engine::ECS::IComponentArray* array) {
+      // First, collect all components grouped by namespace
+      std::map<std::string, std::vector<std::pair<std::string, Engine::ECS::IComponentArray*>>> component_groups;
+
+      entity.for_each_component([&](const std::string& type_name, Engine::ECS::IComponentArray* array) {
         if (!array->is_reflectable()) {
           return; // Skip non-reflectable components
         }
 
-        // First try specialized rendering
-        // If not handled, fallback to generic reflection-based rendering
-        EntityEditorPanelHelpers::render_component_tree(type_name, entity, array);
+        // Extract namespace (everything before the last "::")
+        size_t last_separator = type_name.rfind("::");
+        std::string namespace_key = (last_separator != std::string::npos)
+          ? type_name.substr(0, last_separator)
+          : "";
+
+        // Skip "Components" namespace - treat as no namespace
+        if (namespace_key == "Components") {
+          namespace_key = "";
+        }
+
+        component_groups[namespace_key].push_back({ type_name, array });
         });
+
+      // Render components grouped by namespace
+      for (auto& [namespace_name, components] : component_groups) {
+        if (namespace_name.empty()) {
+          // Components without namespace - render directly
+          for (auto& [type_name, array] : components) {
+            // Strip "Components::" prefix if present, otherwise use full name
+            std::string component_display_name = type_name;
+            if (type_name.substr(0, 12) == "Components::") {
+              component_display_name = type_name.substr(12);
+            }
+
+            EntityEditorPanelHelpers::render_component_tree(component_display_name, entity, array);
+          }
+        }
+        else {
+          // Components with namespace - render under namespace tree node
+          if (ImGui::TreeNode(namespace_name.c_str())) {
+            for (auto& [type_name, array] : components) {
+              // Extract just the component name (after last "::")
+              size_t last_separator = type_name.rfind("::");
+              std::string component_only_name = type_name.substr(last_separator + 2);
+
+              // Render with a temporary modified name for display
+              EntityEditorPanelHelpers::render_component_tree(component_only_name, entity, array);
+            }
+            ImGui::TreePop();
+          }
+        }
+      }
     }
 
     ImGui::Separator();
@@ -564,6 +618,132 @@ void EntityEditorPanel()
     if (ImGui::BeginPopup("CreatePrefabSuccess"))
     {
       ImGui::Text("Prefab created successfully!");
+      ImGui::EndPopup();
+    }
+
+    ImGui::SameLine();
+
+    // Update Prefab from Entity
+    if (ImGui::Button("Update Prefab"))
+    {
+      ImGui::OpenPopup("UpdatePrefabFromEntity");
+    }
+
+    // Update Prefab popup
+    static char update_prefab_search[128] = "";
+    static std::string selected_prefab_for_update = "";
+    if (ImGui::BeginPopupModal("UpdatePrefabFromEntity", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+      ImGui::Text("Select prefab to update:");
+      ImGui::Separator();
+
+      // Search filter
+      ImGui::InputText("Search##UpdatePrefab", update_prefab_search, sizeof(update_prefab_search));
+
+      ImGui::Separator();
+
+      // List available prefabs
+      ImGui::BeginChild("UpdatePrefabList", ImVec2(400, 300), true);
+
+      // Get prefabs from resource cache
+      std::vector<std::pair<std::string, Engine::ECS::Prefab>> prefab_list;
+
+      for (const auto& [path, weak_prefab] : Engine::Resources::prefab_cache) {
+        if (auto prefab_ptr = weak_prefab.lock()) {
+          // Get relative path for display
+          std::string relative_path = Engine::Resources::get_relative_path(path);
+
+          // Apply search filter
+          if (strlen(update_prefab_search) > 0 && relative_path.find(update_prefab_search) == std::string::npos) {
+            continue;
+          }
+
+          prefab_list.push_back({ relative_path, Engine::ECS::Prefab(prefab_ptr) });
+        }
+      }
+
+      // Sort by path for consistent ordering
+      std::sort(prefab_list.begin(), prefab_list.end(),
+        [](const auto& a, const auto& b) { return a.first < b.first; });
+
+      for (const auto& [relative_path, prefab] : prefab_list) {
+        bool is_selected = (selected_prefab_for_update == relative_path);
+
+        if (ImGui::Selectable(relative_path.c_str(), is_selected)) {
+          selected_prefab_for_update = relative_path;
+        }
+      }
+
+      ImGui::EndChild();
+
+      ImGui::Separator();
+
+      if (ImGui::Button("Update", ImVec2(120, 0)))
+      {
+        if (!selected_prefab_for_update.empty())
+        {
+          // Construct full path from relative path
+          std::string full_path = Engine::Path(Engine::Resources::resource_path).join(selected_prefab_for_update).to_string();
+
+          // Load existing prefab to get its UUID
+          Engine::ECS::Prefab existing_prefab = Engine::FileIO::deserialize_prefab_from_json_file(full_path);
+          
+          if (existing_prefab.is_valid()) {
+            std::string preserved_uuid = existing_prefab.get_impl()->get_prefab_id();
+
+            // Create new prefab from current entity
+            auto updated_prefab = Engine::ECS::entity_to_prefab(entity);
+
+            // Preserve the original UUID and filepath
+            updated_prefab.get_impl()->set_prefab_id(preserved_uuid);
+            updated_prefab.get_impl()->set_prefab_filepath(selected_prefab_for_update);
+
+            // Save to file
+            if (Engine::FileIO::serialize_prefab_to_json_file(full_path, updated_prefab))
+            {
+              // Update prefab in resource cache
+              Engine::Resources::cache_prefab(selected_prefab_for_update, updated_prefab, true, true);
+
+              // Mark as dirty so it gets saved
+              Engine::ProjectSaveManager::set_dirty(
+                Engine::ProjectSaveManager::DirtyStates::Prefab(selected_prefab_for_update)
+              );
+
+              // Update all instances of this prefab
+              Engine::ECS::update_prefab_instances(preserved_uuid);
+
+              Log::info("Updated prefab: " + selected_prefab_for_update + " (UUID: " + preserved_uuid + ")");
+
+              // Clear selection and close popup
+              selected_prefab_for_update = "";
+              update_prefab_search[0] = '\0';
+              ImGui::CloseCurrentPopup();
+              ImGui::OpenPopup("UpdatePrefabSuccess");
+            }
+          }
+          else {
+            Log::error("Failed to load existing prefab: " + selected_prefab_for_update);
+          }
+        }
+      }
+
+      ImGui::SameLine();
+
+      if (ImGui::Button("Cancel", ImVec2(120, 0)))
+      {
+        selected_prefab_for_update = "";
+        update_prefab_search[0] = '\0';
+        ImGui::CloseCurrentPopup();
+      }
+
+      ImGui::EndPopup();
+    }
+
+    // Update Prefab success popup
+    if (ImGui::BeginPopup("UpdatePrefabSuccess"))
+    {
+      ImGui::Text("Prefab updated successfully!");
+      ImGui::Text("UUID preserved and instances updated.");
       ImGui::EndPopup();
     }
 

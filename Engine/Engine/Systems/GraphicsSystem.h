@@ -94,8 +94,16 @@ namespace Engine
         require_components<Components::TileMap>();
       }
 
+      void update_entity(Engine::ECS::Entity& entity) override {  // Determine the color based on tilemap mode and selected layer
+        auto* color_comp = entity.get_component<Components::Color>();
+        if (!color_comp) {
+          entity.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
+        }
+      }
+
       void draw_entity(const Engine::ECS::Entity& entity) override {
         auto* int_map = entity.get_component<Components::TileMap>();
+        auto* color_comp = entity.get_component<Components::Color>();
 
         // Skip if tilemap is empty
         if (!int_map || int_map->is_empty()) {
@@ -105,8 +113,11 @@ namespace Engine
         // Get the atlas entries from project settings
         const auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get();
 
-        // Determine the color based on tilemap mode and selected layer
-        Math::Vec4D color(1.0f, 1.0f, 1.0f, 1.0f); // Default: white (full brightness)
+        Math::Vec4D color(1.0f, 1.0f, 1.0f, 1.0f);
+        if (color_comp)
+        {
+          color = *color_comp;
+        }
 
         // Check if tilemap mode is enabled AND dimming is enabled
         if (TilemapPanel::is_tilemap_mode_enabled() && TilemapPanel::is_dim_non_selected_layers_enabled()) {
@@ -118,7 +129,9 @@ namespace Engine
 
           if (!on_selected_layer) {
             // Darken tiles on non-selected layers
-            color = Math::Vec4D(0.3f, 0.3f, 0.3f, 1.0f);
+            color.x *= 0.3f;
+            color.y *= 0.3f;
+            color.z *= 0.3f;
           }
         }
 

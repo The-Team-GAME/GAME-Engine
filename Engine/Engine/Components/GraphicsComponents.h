@@ -487,6 +487,10 @@ namespace Components
       a = alpha;
     }
 
+    Math::Vec4D to_vec4d() const {
+      return Math::Vec4D(r, g, b, a);
+    }
+
     // Clamp color values to [0, 1] range
     void clamp() {
       r = (r < 0.0f) ? 0.0f : (r > 1.0f) ? 1.0f : r;

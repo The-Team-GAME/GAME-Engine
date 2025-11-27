@@ -21,6 +21,7 @@
 #include "../Math/Vector2D.h"
 #include "../FunctionRegistry.h"
 #include "GraphicsComponents.h"
+#include "CollisionComponents.h"
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -28,6 +29,7 @@
 #include <optional>
 #include <iostream>
 #include <queue>
+#include "SpatialComponents.h"
 
 namespace Components
 {
@@ -35,11 +37,29 @@ namespace Components
   // State Animation Definition
   // ============================================================================
 
+  struct ColliderData {
+    Components::ColliderType type;
+    f32 width;
+    f32 height;
+    Math::Vec2D offset;
+    std::vector<Math::Vec2D> vertices; // For polygon colliders (local space)
+
+    ColliderData()
+      : type(Components::ColliderType::AABB)
+      , width(0.0f)
+      , height(0.0f)
+      , offset(0.0f, 0.0f)
+      , vertices()
+    {
+    }
+  };
+
   struct StateAnimation {
     Texture texture;
     TextureAtlas texture_atlas;
     Animation animation;
-    std::optional<Math::Vec2D> scale; // Optional scale override for this state, for entities that have different sizes per animation
+    std::optional<Math::Vec2D> scale; // Optional scale override for this state
+    std::optional<ColliderData> collider_data; // Optional collider size override
   };
 
   // ============================================================================
@@ -50,9 +70,9 @@ namespace Components
     std::string name;
 
     // Callback names (serializable) - empty string means no callback
-    std::string on_enter_callback_name;
-    std::string on_update_callback_name;
-    std::string on_exit_callback_name;
+    Engine::SerializableFunction on_enter_callback;
+    Engine::SerializableFunction on_update_callback;
+    Engine::SerializableFunction on_exit_callback;
 
     // Optional animation data for this state
     std::optional<StateAnimation> animation;
@@ -65,17 +85,17 @@ namespace Components
       const std::string& exit_callback = "",
       std::optional<StateAnimation> state_animation = std::nullopt)
       : name(state_name)
-      , on_enter_callback_name(enter_callback)
-      , on_update_callback_name(update_callback)
-      , on_exit_callback_name(exit_callback)
+      , on_enter_callback(enter_callback)
+      , on_update_callback(update_callback)
+      , on_exit_callback(exit_callback)
       , animation(state_animation)
     {
     }
 
     // Helper methods to invoke callbacks (looks them up in registry)
     void invoke_on_enter(Engine::ECS::Entity& entity) const {
-      if (!on_enter_callback_name.empty()) {
-        auto callback = Engine::FunctionRegistry<void(Engine::ECS::Entity&)>::get_function(on_enter_callback_name);
+      if (!on_enter_callback.empty()) {
+        auto callback = on_enter_callback.get<void(Engine::ECS::Entity&)>();
         if (callback) {
           callback(entity);
         }
@@ -83,8 +103,8 @@ namespace Components
     }
 
     void invoke_on_update(Engine::ECS::Entity& entity) const {
-      if (!on_update_callback_name.empty()) {
-        auto callback = Engine::FunctionRegistry<void(Engine::ECS::Entity&)>::get_function(on_update_callback_name);
+      if (!on_update_callback.empty()) {
+        auto callback = on_update_callback.get<void(Engine::ECS::Entity&)>();
         if (callback) {
           callback(entity);
         }
@@ -92,8 +112,8 @@ namespace Components
     }
 
     void invoke_on_exit(Engine::ECS::Entity& entity) const {
-      if (!on_exit_callback_name.empty()) {
-        auto callback = Engine::FunctionRegistry<void(Engine::ECS::Entity&)>::get_function(on_exit_callback_name);
+      if (!on_exit_callback.empty()) {
+        auto callback = on_exit_callback.get<void(Engine::ECS::Entity&)>();
         if (callback) {
           callback(entity);
         }
@@ -324,11 +344,23 @@ namespace Components
           transform->scale = anim.scale.value();
         }
       }
+
+      // Apply optional collider override if specified
+      if (anim.collider_data.has_value()) {
+        if (auto* box = owner_entity_->get_component<BoxCollider>()) {
+          box->width = anim.collider_data->width;
+          box->height = anim.collider_data->height;
+          box->offset = anim.collider_data->offset;
+          box->aabb.half_width = box->width / 2.0f;
+          box->aabb.half_height = box->height / 2.0f;
+        }
+      }
     }
   };
 
 } // namespace Components
 
-REFLECT_FIELDS(Components::State, name, on_enter_callback_name, on_update_callback_name, on_exit_callback_name, animation)
-REFLECT_FIELDS(Components::StateAnimation, texture, texture_atlas, animation, scale)
+REFLECT_FIELDS(Components::ColliderData, width, height, offset, vertices)
+REFLECT_FIELDS(Components::State, name, on_enter_callback, on_update_callback, on_exit_callback, animation)
+REFLECT_FIELDS(Components::StateAnimation, texture, texture_atlas, animation, scale, collider_data)
 REGISTER_COMPONENT(Components::StateMachine, states, current_state_name)

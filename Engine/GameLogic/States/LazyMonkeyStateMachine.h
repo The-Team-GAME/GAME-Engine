@@ -22,6 +22,8 @@ namespace LazyMonkeyStates
   // Lazy Monkey dimensions
   constexpr f32 WIDTH = 64.0f;
   constexpr f32 HEIGHT = 64.0f;
+  constexpr f32 ATTACK_WIDTH = 96.0f;
+  constexpr f32 ATTACK_HEIGHT = 64.0f;
 
   inline Components::StateMachine create_state_machine()
   {
@@ -52,9 +54,9 @@ namespace LazyMonkeyStates
     // ========================================================================
     Components::StateAnimation lazy_monkey_attacking_anim;
     lazy_monkey_attacking_anim.texture = Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Attack_Spritesheet.png"));
-    lazy_monkey_attacking_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 4, 4);
-    lazy_monkey_attacking_anim.animation = Components::Animation({ 0.2f, 0.1f, 0.1f, 0.5f }); // Custom frame durations
-    lazy_monkey_attacking_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
+    lazy_monkey_attacking_anim.texture_atlas = Components::TextureAtlas(96, 64, 1, 5, 5);
+    lazy_monkey_attacking_anim.animation = Components::Animation({ 0.2f, 0.1f, 0.1f, 0.1f, 0.5f });
+    lazy_monkey_attacking_anim.scale = Math::Vec2D(ATTACK_WIDTH * 2.0f, ATTACK_HEIGHT * 2.0f);
 
     Components::State lazy_monkey_attacking("Attacking", "lazy_monkey_attacking_enter", "lazy_monkey_attacking_update", "lazy_monkey_attacking_exit", lazy_monkey_attacking_anim);
 
@@ -62,9 +64,9 @@ namespace LazyMonkeyStates
     // Lazy Monkey Hit State
     // ========================================================================
     Components::StateAnimation lazy_monkey_hit_anim;
-    lazy_monkey_hit_anim.texture = Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Death_Spritesheet.png"));
+    lazy_monkey_hit_anim.texture = Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Damaged_Spritesheet.png"));
     lazy_monkey_hit_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 3, 3);
-    lazy_monkey_hit_anim.animation = Components::Animation({ 0.4f }); // Single frame (index 0) for 1.0s
+    lazy_monkey_hit_anim.animation = Components::Animation(std::initializer_list{ 2 }, { 0.4f });
     lazy_monkey_hit_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
     Components::State lazy_monkey_hit("Hit", "lazy_monkey_hit_enter", "lazy_monkey_hit_update", "lazy_monkey_hit_exit", lazy_monkey_hit_anim);
@@ -74,8 +76,9 @@ namespace LazyMonkeyStates
     // ========================================================================
     Components::StateAnimation lazy_monkey_death_anim;
     lazy_monkey_death_anim.texture = Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Death_Spritesheet.png"));
-    lazy_monkey_death_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 3, 3);
-    lazy_monkey_death_anim.animation = Components::Animation({ 0.2f, 0.1f, 1.5f }); // Full death animation
+    lazy_monkey_death_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 8, 8);
+    // lazy_monkey_death_anim.animation = Components::Animation({ 0.2f, 0.1f, 1.5f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f });
+    lazy_monkey_death_anim.animation = Components::Animation({ 0.2f, 0.1f, 1.5f });
     lazy_monkey_death_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
     Components::State lazy_monkey_death("Death", "lazy_monkey_death_enter", "lazy_monkey_death_update", "lazy_monkey_death_exit", lazy_monkey_death_anim);

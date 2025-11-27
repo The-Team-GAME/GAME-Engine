@@ -37,6 +37,7 @@
 #include "FileIO/SettingsManager.h"
 #include "Events/RegisterAllEvents.h"
 #include "UndoManager/UndoManager.h"
+#include "Easing.h"
 
 namespace Engine
 {
@@ -112,6 +113,17 @@ namespace Engine
       Log::warning("Failed to load project settings, using defaults");
     }
 
+    // TODO: handle using custom reflector
+    auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get_mutable();
+    for (auto& atlas_entry : project_settings.loaded_tilemaps) {
+      if (!atlas_entry.texture_path.empty() && !atlas_entry.texture_handle) {
+        atlas_entry.texture_handle = Engine::Resources::load_texture(atlas_entry.texture_path, true);
+        if (!atlas_entry.texture_handle) {
+          Log::warning("Failed to load texture for atlas: " + atlas_entry.texture_path);
+        }
+      }
+    }
+
 
     // CORE INITIALIZATION
 
@@ -123,6 +135,7 @@ namespace Engine
 
     register_engine_systems();
     register_all_panels();
+    Engine::Easing::register_all_easing_functions();
 
     // Just register one simple function
     Engine::LuaManager::register_function("log_message", [](const std::string& message) {

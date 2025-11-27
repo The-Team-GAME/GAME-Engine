@@ -141,14 +141,22 @@ void col2D::update_entity(Engine::ECS::Entity& entity)
 {
   Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
   Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
+  
+  // Calculate flipped offset
+  Vec2D flipped_offset = box->offset;
+  if (auto* flip = entity.get_component<Components::Flip>()) {
+    flipped_offset.x *= flip->value.x;
+    flipped_offset.y *= flip->value.y;
+  }
+  
   if (box->type == Components::ColliderType::AABB)
   {
-    box->aabb.pos = xform->position;
+    box->aabb.pos = xform->position + flipped_offset;
   }
   else if (box->type == Components::ColliderType::OBB ||
     box->type == Components::ColliderType::POLYGON)
   {
-    box->polygon.position = xform->position;
+    box->polygon.position = xform->position + flipped_offset;
     box->polygon.rotation = xform->rotation;
   }
 }

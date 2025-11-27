@@ -16,6 +16,7 @@
 #include <imgui.h>
 #include "ReflectionFieldWidgets.h"
 #include "TextureAtlasWidget.h"
+#include "../ColliderEditorPanel.h"
 #include "../../UndoManager/UndoManager.h"
 #include "../ResourcePicker.h"
 #include "../../Resources.h"
@@ -25,6 +26,67 @@
 #include "../../FunctionRegistry.h"
 
 namespace ImGuiWidgets {
+
+  bool render_nested_component_tree(
+    const std::string& component_name,
+    const std::function<void()>& content_func
+  ) {
+    // Split component name by "::"
+    std::vector<std::string> parts;
+    size_t start = 0;
+    size_t end = 0;
+
+    while ((end = component_name.find("::", start)) != std::string::npos) {
+      parts.push_back(component_name.substr(start, end - start));
+      start = end + 2;
+    }
+    parts.push_back(component_name.substr(start));
+
+    // If there's only one part (no namespaces), render directly
+    if (parts.size() == 1) {
+      if (ImGui::TreeNode(parts[0].c_str())) {
+        content_func();
+        ImGui::TreePop();
+        return true;
+      }
+      return false;
+    }
+
+    // Render nested tree nodes
+    bool all_open = true;
+    for (size_t i = 0; i < parts.size(); ++i) {
+      // Use unique ID for each level to avoid collisions
+      ImGui::PushID((component_name + "_level_" + std::to_string(i)).c_str());
+
+      // For all but the last part, just render the namespace
+      if (i < parts.size() - 1) {
+        if (!ImGui::TreeNode(parts[i].c_str())) {
+          all_open = false;
+          ImGui::PopID();
+          break;
+        }
+      }
+      else {
+        // Last part - render the actual component name
+        if (ImGui::TreeNode(parts[i].c_str())) {
+          content_func();
+        }
+        else {
+          all_open = false;
+        }
+      }
+      ImGui::PopID();
+    }
+
+    // Pop all opened tree nodes
+    if (all_open) {
+      for (size_t i = 0; i < parts.size(); ++i) {
+        ImGui::TreePop();
+      }
+    }
+
+    return all_open;
+  }
 
   bool render_color_field(ReflectionLibrary::GenericValue& field_value, bool& modified) {
     ImVec4 colorVec(
@@ -523,13 +585,127 @@ namespace ImGuiWidgets {
     return true;
   }
 
+  bool render_serializable_function_field(ReflectionLibrary::GenericValue& field_value, bool& modified, const std::string& field_name) {
+    // SerializableFunction has a single "name" field
+    if (!field_value.isObject() || field_value.getObject().find("name") == field_value.getObject().end()) {
+      return false;
+    }
+
+    // auto& name_field = field_value["name"]; // TODO: implement Generic Value ref
+    auto name_field = field_value["name"];
+    if (!name_field.isString()) return false;
+
+    std::string current_function = name_field.getString();
+
+    // Determine which signature to use based on field name
+    // Common patterns: callbacks ending in "callback" use void(Entity&)
+    //                  easing functions use f32(f32,f32,f32,f32)
+    //                  click handlers use void()
+
+    std::string label = "Function##" + field_name;
+
+    // Check if it's an easing function
+    if (field_name.find("easing") != std::string::npos) {
+      auto& functions = Engine::FunctionRegistry<f32(f32, f32, f32, f32)>::get_functions();
+
+      if (ImGui::BeginCombo(label.c_str(), current_function.empty() ? "<None>" : current_function.c_str())) {
+        bool is_selected = current_function.empty();
+        if (ImGui::Selectable("<None>", is_selected)) {
+          name_field = std::string("");
+          modified = true;
+        }
+        if (is_selected) ImGui::SetItemDefaultFocus();
+
+        for (const auto& [name, func] : functions) {
+          is_selected = (current_function == name);
+          if (ImGui::Selectable(name.c_str(), is_selected)) {
+            name_field = name;
+            modified = true;
+          }
+          if (is_selected) ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+      }
+      return true;
+    }
+    // Check if it's a state callback
+    else if (field_name.find("callback") != std::string::npos || field_name.find("on_enter") != std::string::npos ||
+      field_name.find("on_update") != std::string::npos || field_name.find("on_exit") != std::string::npos) {
+      auto& functions = Engine::FunctionRegistry<void(Engine::ECS::Entity&)>::get_functions();
+
+      if (ImGui::BeginCombo(label.c_str(), current_function.empty() ? "<None>" : current_function.c_str())) {
+        bool is_selected = current_function.empty();
+        if (ImGui::Selectable("<None>", is_selected)) {
+          name_field = std::string("");
+          modified = true;
+        }
+        if (is_selected) ImGui::SetItemDefaultFocus();
+
+        for (const auto& [name, func] : functions) {
+          is_selected = (current_function == name);
+          if (ImGui::Selectable(name.c_str(), is_selected)) {
+            name_field = name;
+            modified = true;
+          }
+          if (is_selected) ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+      }
+      return true;
+    }
+    // Default to void() for click handlers
+    else {
+      auto& functions = Engine::FunctionRegistry<void()>::get_functions();
+
+      if (ImGui::BeginCombo(label.c_str(), current_function.empty() ? "<None>" : current_function.c_str())) {
+        bool is_selected = current_function.empty();
+        if (ImGui::Selectable("<None>", is_selected)) {
+          name_field = std::string("");
+          modified = true;
+        }
+        if (is_selected) ImGui::SetItemDefaultFocus();
+
+        for (const auto& [name, func] : functions) {
+          is_selected = (current_function == name);
+          if (ImGui::Selectable(name.c_str(), is_selected)) {
+            name_field = name;
+            modified = true;
+          }
+          if (is_selected) ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+      }
+      return true;
+    }
+  }
+
+  bool render_box_collider_field(ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity, Engine::ECS::Prefab* prefab, const std::string& prefab_path) {
+    if (ImGui::Button("Open Collider Editor")) {
+      if (entity.is_valid()) {
+        ColliderEditor::Open(entity);
+      }
+      else if (prefab && prefab->is_valid()) {
+        ColliderEditor::Open(*prefab, prefab_path);
+      }
+    }
+    return true;
+  }
+
   bool render_specialized_field(
     const std::string& display_name,
     const std::string& type_hint,
     ReflectionLibrary::GenericValue& field_value,
     bool& modified,
-    Engine::ECS::Entity entity
+    Engine::ECS::Entity entity,
+    Engine::ECS::Prefab* prefab,
+    const std::string& prefab_path
   ) {
+    if (type_hint == "Engine::SerializableFunction") {
+      return render_serializable_function_field(field_value, modified, display_name);
+    }
+    if (type_hint == "Components::BoxCollider") {
+      return render_box_collider_field(field_value, modified, entity, prefab, prefab_path);
+    }
     if (type_hint == "Components::Color") {
       return render_color_field(field_value, modified);
     }
@@ -566,7 +742,9 @@ namespace ImGuiWidgets {
     const std::string& display_name,
     ReflectionLibrary::GenericValue& field_value,
     bool& modified,
-    Engine::ECS::Entity entity
+    Engine::ECS::Entity entity,
+    Engine::ECS::Prefab* prefab,
+    const std::string& prefab_path
   ) {
 
     if (field_value.isBool()) {
@@ -603,12 +781,6 @@ namespace ImGuiWidgets {
       if (ImGui::InputText(("##" + display_name).c_str(), buffer, sizeof(buffer))) {
         field_value = std::string(buffer);
         modified = true;
-      }
-    }
-    else if (field_value.isObject()) {
-      auto& nested_fields = field_value.getObject();
-      for (auto& [nested_name, nested_value] : nested_fields) {
-        render_field(display_name + "::" + nested_name, nested_value.type_hint, nested_value, modified, entity);
       }
     }
     else if (field_value.isArray()) {
@@ -658,7 +830,7 @@ namespace ImGuiWidgets {
           }
 
           // Render the element using the field renderer with its type hint
-          render_field(element_label, array[i].type_hint, array[i], modified, entity);
+          render_field(element_label, array[i].type_hint, array[i], modified, entity, prefab, prefab_path);
 
           ImGui::PopID();
         }
@@ -676,12 +848,33 @@ namespace ImGuiWidgets {
     const std::string& type_hint,
     ReflectionLibrary::GenericValue& field_value,
     bool& modified,
-    Engine::ECS::Entity entity
+    Engine::ECS::Entity entity,
+    Engine::ECS::Prefab* prefab,
+    const std::string& prefab_path
   ) {
     ImGui::PushItemWidth(-FLT_MIN);
 
-    // First try specialized rendering, then fallback to generic
-    render_specialized_field(display_name, type_hint, field_value, modified, entity) || render_generic_field(display_name, field_value, modified, entity);
+    // Try specialized rendering first
+    bool handled_by_specialization = render_specialized_field(display_name, type_hint, field_value, modified, entity, prefab, prefab_path);
+
+    // If not handled by specialization, check if it's an object (struct) and render fields
+    if (!handled_by_specialization) {
+      if (field_value.isObject()) {
+        auto& fields = field_value.getObject();
+
+        // Render nested object fields under a tree node
+        if (ImGui::TreeNode(display_name.c_str())) {
+          for (auto& [field_name, nested_value] : fields) {
+            render_field(field_name, nested_value.type_hint, nested_value, modified, entity, prefab, prefab_path);
+          }
+          ImGui::TreePop();
+        }
+      }
+      else {
+        // Fall back to generic rendering for primitives, arrays, etc.
+        render_generic_field(display_name, field_value, modified, entity, prefab, prefab_path);
+      }
+    }
 
     ImGui::PopItemWidth();
 
