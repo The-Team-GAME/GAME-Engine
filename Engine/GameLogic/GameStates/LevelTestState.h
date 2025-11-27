@@ -28,6 +28,9 @@ private:
 public:
   void load() {
     Engine::Resources::open_level("levels/LevelTest.json");
+
+    // Engine::Resources::load_prefab("prefabs/player.json").instantiate().get_component<Components::Transform2D>()->position.x = 100;
+    // Engine::Resources::load_prefab("prefabs/lazy_monkey.json").instantiate().get_component<Components::Transform2D>()->position.x = 900;
   };
 
   void init() {

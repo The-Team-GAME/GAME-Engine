@@ -19,8 +19,29 @@
 #include <functional>
 #include "../../Reflection/ReflectionLibrary.h"
 #include "../../ECS/ECS.h"
+#include "../../ECS/Prefab.h"
 
 namespace ImGuiWidgets {
+
+  /*=================================================================================
+  Function Brief:
+  Parses a component name with namespaces (e.g., "Namespace1::Namespace2::Component")
+  and renders it as nested tree nodes. Returns true if the innermost node is open.
+
+  Parameters:
+  component_name - The full component name with namespaces
+  content_func   - Lambda function to render the component content when innermost node is open
+
+  Returns:
+  true if the component tree was rendered successfully.
+
+  Where to call it:
+  From component editor panels when rendering component trees.
+  ==================================================================================*/
+  bool render_nested_component_tree(
+    const std::string& component_name,
+    const std::function<void()>& content_func
+  );
 
   /*=================================================================================
   Function Brief:
@@ -138,6 +159,21 @@ namespace ImGuiWidgets {
 
   /*=================================================================================
   Function Brief:
+  Renders a button to open the Collider Editor for Components::BoxCollider fields.
+
+  Parameters:
+  field_value - Reference to the GenericValue containing box collider data
+  modified    - [out] Set to true if the collider was modified by user input
+  entity      - Optional entity context
+  prefab      - Optional prefab context
+
+  Returns:
+  true if the field was handled and rendered, false otherwise.
+  ==================================================================================*/
+  bool render_box_collider_field(ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity, Engine::ECS::Prefab* prefab = nullptr, const std::string& prefab_path = "");
+
+  /*=================================================================================
+  Function Brief:
   Renders specialized UI fields for specific component types (e.g., Color, Texture,
   Font). Returns true if the field was handled and rendered, false otherwise.
 
@@ -159,7 +195,9 @@ namespace ImGuiWidgets {
     const std::string& type_hint,
     ReflectionLibrary::GenericValue& field_value,
     bool& modified,
-    Engine::ECS::Entity entity = Engine::ECS::Entity(Engine::ECS::INVALID_ENTITY)
+    Engine::ECS::Entity entity = Engine::ECS::Entity(Engine::ECS::INVALID_ENTITY),
+    Engine::ECS::Prefab* prefab = nullptr,
+    const std::string& prefab_path = ""
   );
 
   /*=================================================================================
@@ -183,7 +221,9 @@ namespace ImGuiWidgets {
     const std::string& display_name,
     ReflectionLibrary::GenericValue& field_value,
     bool& modified,
-    Engine::ECS::Entity entity = Engine::ECS::Entity(Engine::ECS::INVALID_ENTITY)
+    Engine::ECS::Entity entity = Engine::ECS::Entity(Engine::ECS::INVALID_ENTITY),
+    Engine::ECS::Prefab* prefab = nullptr,
+    const std::string& prefab_path = ""
   );
 
   /*=================================================================================
@@ -205,7 +245,9 @@ namespace ImGuiWidgets {
     const std::string& type_hint,
     ReflectionLibrary::GenericValue& field_value,
     bool& modified,
-    Engine::ECS::Entity entity = Engine::ECS::Entity(Engine::ECS::INVALID_ENTITY)
+    Engine::ECS::Entity entity = Engine::ECS::Entity(Engine::ECS::INVALID_ENTITY),
+    Engine::ECS::Prefab* prefab = nullptr,
+    const std::string& prefab_path = ""
   );
 
 } // namespace ImGuiWidgets

@@ -21,6 +21,7 @@
 #include "../Math/Vector2D.h"
 #include "../FunctionRegistry.h"
 #include "GraphicsComponents.h"
+#include "CollisionComponents.h"
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -28,6 +29,7 @@
 #include <optional>
 #include <iostream>
 #include <queue>
+#include "SpatialComponents.h"
 
 namespace Components
 {
@@ -35,11 +37,29 @@ namespace Components
   // State Animation Definition
   // ============================================================================
 
+  struct ColliderData {
+    Components::ColliderType type;
+    f32 width;
+    f32 height;
+    Math::Vec2D offset;
+    std::vector<Math::Vec2D> vertices; // For polygon colliders (local space)
+
+    ColliderData()
+      : type(Components::ColliderType::AABB)
+      , width(0.0f)
+      , height(0.0f)
+      , offset(0.0f, 0.0f)
+      , vertices()
+    {
+    }
+  };
+
   struct StateAnimation {
     Texture texture;
     TextureAtlas texture_atlas;
     Animation animation;
-    std::optional<Math::Vec2D> scale; // Optional scale override for this state, for entities that have different sizes per animation
+    std::optional<Math::Vec2D> scale; // Optional scale override for this state
+    std::optional<ColliderData> collider_data; // Optional collider size override
   };
 
   // ============================================================================
@@ -184,7 +204,7 @@ namespace Components
         std::string next_state = transition_queue_.front();
         transition_queue_.pop();
         execute_state_transition(next_state);
-        
+
         // If we have more transitions, we could process them here, 
         // but typically one transition per frame is safer/saner.
       }
@@ -324,11 +344,23 @@ namespace Components
           transform->scale = anim.scale.value();
         }
       }
+
+      // Apply optional collider override if specified
+      if (anim.collider_data.has_value()) {
+        if (auto* box = owner_entity_->get_component<BoxCollider>()) {
+          box->width = anim.collider_data->width;
+          box->height = anim.collider_data->height;
+          box->offset = anim.collider_data->offset;
+          box->aabb.half_width = box->width / 2.0f;
+          box->aabb.half_height = box->height / 2.0f;
+        }
+      }
     }
   };
 
 } // namespace Components
 
+REFLECT_FIELDS(Components::ColliderData, width, height, offset, vertices)
 REFLECT_FIELDS(Components::State, name, on_enter_callback_name, on_update_callback_name, on_exit_callback_name, animation)
-REFLECT_FIELDS(Components::StateAnimation, texture, texture_atlas, animation, scale)
+REFLECT_FIELDS(Components::StateAnimation, texture, texture_atlas, animation, scale, collider_data)
 REGISTER_COMPONENT(Components::StateMachine, states, current_state_name)

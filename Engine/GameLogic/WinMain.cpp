@@ -52,10 +52,7 @@ int main()
   _CrtSetBreakAlloc(-1);
 
 
-  // Start the engine
-  Engine::Core::init();
-
-  // Register game layers at startup
+  // Register game layers
   Engine::ECS::register_layer("background"); // Static background layer
   //Engine::ECS::register_layer("tilemap_background_far");  // Tilemap background far layer (e.g., distant cityscape, outside window) // TODO: Re-enable after M3
   Engine::ECS::register_layer("tilemap_background_mid");  // Tilemap background mid layer (e.g., MRT carriage, trees, hills, pillars)
@@ -71,6 +68,9 @@ int main()
   Engine::ECS::register_layer("effect"); // Visual effects like particles
   Engine::ECS::register_layer("ui"); // User interface elements
   Engine::ECS::register_layer("debug"); // Debug overlays and information
+
+  // Start the engine
+  Engine::Core::init();
 
   // Example: Register a collision callback between gameplay and ui layers
   Engine::ECS::LayerRegistry::register_collision_callback("gameplay", "ui",

@@ -23,12 +23,23 @@
 #include <vector>
 #include <array>
 #include <functional>
+#include <unordered_set>
 
 namespace Engine {
   namespace ECS {
     class Entity; // Forward declaration
 
     namespace Internal {
+
+      /* ====================================== //
+      // PrefabInstanceData - Tracks prefab     //
+      // instances and field overrides          //
+      // ====================================== */
+      struct PrefabInstanceData {
+        std::string prefab_id; // Now stores UUID instead of file path
+        // Map: ComponentTypeID -> set of overridden field paths (e.g., "color", "scale.x")
+        std::unordered_map<ComponentTypeID, std::unordered_set<std::string>> field_overrides;
+      };
 
       struct WorldContainers {
         EntityID next_entity_id = 1;
@@ -37,6 +48,7 @@ namespace Engine {
         SparseSet<EntityID> entities_to_destroy;
         std::unordered_map<EntityID, ComponentSignature> entity_signatures;
         std::unordered_map<EntityID, LayerSignature> entity_layers;
+        std::unordered_map<EntityID, PrefabInstanceData> prefab_instances;
         std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> component_arrays;
         std::vector<std::unique_ptr<System>> systems;
         std::vector<std::pair<EntityID, ComponentTypeID>> components_to_remove;
