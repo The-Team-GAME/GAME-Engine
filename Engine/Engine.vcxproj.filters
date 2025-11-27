@@ -10,10 +10,12 @@
     <ClCompile Include="Engine\EventManager\EventManager.cpp" />
     <ClCompile Include="Engine\FileIO\PrefabsFileIO.cpp" />
     <ClCompile Include="Engine\FileIO\LevelFileIO.cpp" />
+    <ClCompile Include="Engine\LevelManager.cpp" />
     <ClCompile Include="Engine\GUI\EntityEditorPanel.cpp" />
+    <ClCompile Include="Engine\GUI\LayerRegistryPanel.cpp" />
+    <ClCompile Include="Engine\GUI\LevelPanel.cpp" />
     <ClCompile Include="Engine\GUI\PrefabEditorPanel.cpp" />
     <ClCompile Include="Engine\GUI\TilemapPanel.cpp" />
-    <ClCompile Include="Engine\GUI\TileColliderEditorPanel.cpp" />
     <ClCompile Include="Engine\GUI\ViewportPanel.cpp" />
     <ClCompile Include="Engine\GUI\ResourcePicker.cpp" />
     <ClCompile Include="Engine\GUI\widgets\ReflectionFieldWidgets.cpp" />
@@ -45,6 +47,7 @@
     <ClCompile Include="Engine\Math\Vector4D.cpp" />
     <ClCompile Include="Engine\WindowManager.cpp" />
     <ClCompile Include="GameLogic\GameStates\RectPainterState.cpp" />
+    <ClCompile Include="GameLogic\GameStates\ShowcaseState.cpp" />
     <ClCompile Include="GameLogic\WinMain.cpp" />
     <ClCompile Include="Engine\Systems\ParticleSystem.cpp" />
     <ClCompile Include="Engine\ECS\Types.cpp" />
@@ -88,6 +91,7 @@
     <ClCompile Include="Engine\Math\Vector4D.cpp" />
     <ClCompile Include="Engine\WindowManager.cpp" />
     <ClCompile Include="GameLogic\GameStates\RectPainterState.cpp" />
+    <ClCompile Include="GameLogic\GameStates\ShowcaseState.cpp" />
     <ClCompile Include="GameLogic\WinMain.cpp" />
     <ClCompile Include="Engine\Lua\LuaManager.cpp" />
     <ClCompile Include="Engine\Lua\GameAPI.cpp" />
@@ -95,15 +99,10 @@
     <ClCompile Include="Engine\GUI\LayerManagerPanel.cpp" />
     <ClCompile Include="GameLogic\GameStates\StressTestState.cpp" />
     <ClCompile Include="Engine\Systems\LogicSystem.cpp" />
+    <ClCompile Include="Engine\GUI\LevelManagerPanel.cpp" />
     <ClCompile Include="Engine\GUI\ResourceExplorerPanel.cpp" />
     <ClCompile Include="Engine\Level.cpp" />
     <ClCompile Include="Engine\ProjectSaveManager.cpp" />
-    <ClCompile Include="Engine\TIlemapManager.cpp" />
-    <ClCompile Include="Engine\UndoManager\UndoManager.cpp" />
-    <ClCompile Include="Engine\ECS\PrefabMergeUtils.cpp" />
-    <ClCompile Include="Engine\GUI\ColliderEditorPanel.cpp" />
-    <ClCompile Include="Engine\Random.cpp" />
-    <ClCompile Include="Engine\GUI\widgets\ColliderEditorWidget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -122,7 +121,6 @@
     <ClInclude Include="Engine\FileIO\PrefabsFileIO.h" />
     <ClInclude Include="Engine\FileIO\SettingsManager.h" />
     <ClInclude Include="Engine\GUI\ResourceManagerPanel.h" />
-    <ClInclude Include="Engine\GUI\TileColliderEditorPanel.h" />
     <ClInclude Include="Engine\GUI\widgets\ReflectionFieldWidgets.h" />
     <ClInclude Include="Engine\GUI\widgets\TextureAtlasWidget.h" />
     <ClInclude Include="Engine\MonkeyEngine.h" />
@@ -161,7 +159,10 @@
     <ClInclude Include="Engine\ECS\Types.h" />
     <ClInclude Include="Engine\ECS\World.h" />
     <ClInclude Include="Engine\FileIO\LevelFileIO.h" />
+    <ClInclude Include="Engine\LevelManager.h" />
     <ClInclude Include="Engine\GUI\EntityEditorPanel.h" />
+    <ClInclude Include="Engine\GUI\LayerRegistryPanel.h" />
+    <ClInclude Include="Engine\GUI\LevelPanel.h" />
     <ClInclude Include="Engine\GUI\PrefabEditorPanel.h" />
     <ClInclude Include="Engine\GUI\ResourcePicker.h" />
     <ClInclude Include="Engine\ImGuiManager.h" />
@@ -175,6 +176,7 @@
     <ClInclude Include="GameLogic\GameStates\RectPainterState.h" />
     <ClInclude Include="GameLogic\GameStates\Rubric2500ParticlesState.h" />
     <ClInclude Include="Engine\FileHandler.h" />
+    <ClInclude Include="GameLogic\GameStates\ShowcaseState.h" />
     <ClInclude Include="Engine\Time.h" />
     <ClInclude Include="Engine\GUI\Timeline.h" />
     <ClInclude Include="Engine\Math\Vector2D.h" />
@@ -205,31 +207,15 @@
     <ClInclude Include="Engine\GUI\LayerManagerPanel.h" />
     <ClInclude Include="GameLogic\GameStates\StressTestState.h" />
     <ClInclude Include="Engine\Systems\LogicSystem.h" />
+    <ClInclude Include="Engine\GUI\LevelManagerPanel.h" />
     <ClInclude Include="Engine\GUI\RegisterAllPanels.h" />
     <ClInclude Include="Engine\GUI\ResourceExplorerPanel.h" />
     <ClInclude Include="Engine\ImGuiThemes.h" />
     <ClInclude Include="Engine\KeyCodes.h" />
     <ClInclude Include="Engine\Level.h" />
     <ClInclude Include="Engine\ProjectSaveManager.h" />
+    <ClInclude Include="Engine\TimelineState.h" />
     <ClInclude Include="GameLogic\GameStates\BehaviourState.h" />
-    <ClInclude Include="Engine\TIlemapManager.h" />
-    <ClInclude Include="Engine\UndoManager\Commands\Commands.h" />
-    <ClInclude Include="Engine\UndoManager\UndoManager.h" />
-    <ClInclude Include="GameLogic\States\PlayerStateMachine.h" />
-    <ClInclude Include="GameLogic\States\LazyMonkeyStateCallbacks.h" />
-    <ClInclude Include="GameLogic\States\LazyMonkeyStateMachine.h" />
-    <ClInclude Include="GameLogic\States\PlayerStateCallbacks.h" />
-    <ClInclude Include="GameLogic\GameStates\TimelineState.h" />
-    <ClInclude Include="GameLogic\GameStates\PrefabsState.h" />
-    <ClInclude Include="GameLogic\GameStates\PhysicsTestState.h" />
-    <ClInclude Include="GameLogic\GameStates\LevelTestState.h" />
-    <ClInclude Include="GameLogic\Components\HeartrateComponent.h" />
-    <ClInclude Include="GameLogic\Components\GameplayComponent.h" />
-    <ClInclude Include="GameLogic\Components\EnemyHealthComponent.h" />
-    <ClInclude Include="Engine\ECS\PrefabMergeUtils.h" />
-    <ClInclude Include="Engine\GUI\ColliderEditorPanel.h" />
-    <ClInclude Include="Engine\Random.h" />
-    <ClInclude Include="Engine\GUI\widgets\ColliderEditorWidget.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -291,6 +277,7 @@
     <ClInclude Include="GameLogic\GameStates\RectPainterState.h" />
     <ClInclude Include="GameLogic\GameStates\Rubric2500ParticlesState.h" />
     <ClInclude Include="Engine\FileHandler.h" />
+    <ClInclude Include="GameLogic\GameStates\ShowcaseState.h" />
     <ClInclude Include="Engine\Time.h" />
     <ClInclude Include="Engine\GUI\Timeline.h" />
     <ClInclude Include="Engine\Math\Vector2D.h" />

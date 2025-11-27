@@ -23,12 +23,9 @@
 
 namespace ReflectionLibrary
 {
-  // Forward declarations
+  // Forward declaration
   template <typename T>
   struct ReflectionInfo;
-
-  template <typename T>
-  struct EnumInfo;
 
   // Check if a type is reflectable
   template <typename T>
@@ -37,13 +34,6 @@ namespace ReflectionLibrary
     ReflectionInfo<T>::fields;
     ReflectionInfo<T>::reflect;
     ReflectionInfo<T>::create;
-  };
-
-  // Check if a type is a reflected enum
-  template <typename T>
-  concept is_reflected_enum_v = std::is_enum_v<T> && requires {
-    EnumInfo<T>::enum_name;
-    EnumInfo<T>::values;
   };
 
   // Check if a type is a std::tuple
@@ -61,6 +51,15 @@ namespace ReflectionLibrary
   // Check if a type is std::optional
   template <typename T>
   concept is_optional_v = requires(T value) { value.has_value(); value.value(); };
+
+  // Check if a type is std::bitset
+  template <typename T>
+  concept is_bitset_v = requires(T value) {
+    { value.test(0) } -> std::same_as<bool>;
+    { value.set(0) } -> std::same_as<T&>;
+    { value.reset(0) } -> std::same_as<T&>;
+    { value.to_string() } -> std::same_as<std::string>;
+  };
 
   template <typename T>
   concept has_reflector_v = requires(const T & obj) {

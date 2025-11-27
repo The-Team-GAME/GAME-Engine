@@ -17,9 +17,7 @@
 #include "ProjectSaveManager.h"
 #include "Level.h"
 #include <algorithm>
-#include <limits>
 #include "FileIO/Settings.h"
-#include "Systems/CollisionSystem.h"
 
 namespace TilemapManager {
   namespace {
@@ -147,24 +145,6 @@ namespace TilemapManager {
       return;
     }
 
-    // Get project settings to access AtlasEntry.tile_collider_configs
-    auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get_mutable();
-
-    // Helper lambda to get collider type for a tile by looking up in atlas entry
-    auto get_tile_collider_type = [&](const Engine::Graphics::Tile& tile) -> Engine::Graphics::TileColliderType {
-      if (!tile.is_valid()) return Engine::Graphics::TileColliderType::Default;
-
-      if (tile.atlas_index >= 0 && tile.atlas_index < static_cast<int>(project_settings.loaded_tilemaps.size())) {
-        auto& atlas_entry = project_settings.loaded_tilemaps[tile.atlas_index];
-        auto config_it = atlas_entry.tile_collider_configs.find(tile.tile_index);
-        if (config_it != atlas_entry.tile_collider_configs.end()) {
-          return config_it->second.collider_type;
-        }
-      }
-
-      return Engine::Graphics::TileColliderType::Default; // Default if no config found
-      };
-
     // Helper struct for rectangle merging
     struct Rectangle {
       int x, y, width, height;
@@ -174,7 +154,7 @@ namespace TilemapManager {
     std::vector<std::vector<bool>> processed(height, std::vector<bool>(width, false));
     std::vector<Rectangle> rectangles;
 
-    // Find all rectangles using greedy algorithm (merge only tiles with Default collider type)
+    // Find all rectangles using greedy algorithm (merge any non-empty tiles for collision)
     for (int rel_y = 0; rel_y < height; ++rel_y) {
       for (int rel_x = 0; rel_x < width; ++rel_x) {
         if (processed[rel_y][rel_x]) continue;
@@ -188,24 +168,13 @@ namespace TilemapManager {
           continue;
         }
 
-        // Look up collider type from atlas entry
-        Engine::Graphics::TileColliderType collider_type = get_tile_collider_type(tile);
-
-        // Skip tiles with AABB or Polygon collider type - they will be handled separately
-        if (collider_type == Engine::Graphics::TileColliderType::AABB ||
-          collider_type == Engine::Graphics::TileColliderType::Polygon) {
-          processed[rel_y][rel_x] = true;
-          continue;
-        }
-
-        // Find maximum width at this row (only merge Default collider type tiles)
+        // Find maximum width at this row (any non-empty tile)
         int max_width = 0;
         for (int w = 0; rel_x + w < width; ++w) {
           if (processed[rel_y][rel_x + w]) break;
 
           Engine::Graphics::Tile check_tile = int_map->get_tile(abs_x + w, abs_y);
           if (!check_tile.is_valid()) break;
-          if (get_tile_collider_type(check_tile) != Engine::Graphics::TileColliderType::Default) break;
 
           max_width++;
         }
@@ -215,7 +184,7 @@ namespace TilemapManager {
           continue;
         }
 
-        // Expand downward while maintaining the width (only Default collider type tiles)
+        // Expand downward while maintaining the width (any non-empty tile)
         int rect_height = 1;
         for (int h = 1; rel_y + h < height; ++h) {
           bool can_expand = true;
@@ -226,7 +195,7 @@ namespace TilemapManager {
             }
 
             Engine::Graphics::Tile check_tile = int_map->get_tile(abs_x + w, abs_y + h);
-            if (!check_tile.is_valid() || get_tile_collider_type(check_tile) != Engine::Graphics::TileColliderType::Default) {
+            if (!check_tile.is_valid()) {
               can_expand = false;
               break;
             }
@@ -265,85 +234,6 @@ namespace TilemapManager {
       entity.clear_layers();
       entity.add_to_layer(layer_name);
     }
-
-    // Create individual collision entities for AABB and Polygon collider type tiles
-    for (int rel_y = 0; rel_y < height; ++rel_y) {
-      for (int rel_x = 0; rel_x < width; ++rel_x) {
-        int abs_x = min_x + rel_x;
-        int abs_y = min_y + rel_y;
-        Engine::Graphics::Tile tile = int_map->get_tile(abs_x, abs_y);
-
-        if (!tile.is_valid()) continue;
-
-        // Look up collision configuration from atlas entry
-        Engine::Graphics::TileColliderType collider_type = get_tile_collider_type(tile);
-
-        if (collider_type == Engine::Graphics::TileColliderType::AABB ||
-          collider_type == Engine::Graphics::TileColliderType::Polygon) {
-
-          // Calculate world position for this individual tile
-          float center_x = grid_offset.x + abs_x * grid_snap + grid_snap * 0.5f;
-          float center_y = grid_offset.y + abs_y * grid_snap + grid_snap * 0.5f;
-          Math::Vec2D center_world = { center_x, center_y };
-          Math::Vec2D scale = { grid_snap, grid_snap };
-
-          if (collider_type == Engine::Graphics::TileColliderType::AABB) {
-            // Look up AABB properties from atlas entry
-            float box_width = grid_snap;
-            float box_height = grid_snap;
-            Math::Vec2D box_offset = { 0.0f, 0.0f };
-
-            if (tile.atlas_index >= 0 && tile.atlas_index < static_cast<int>(project_settings.loaded_tilemaps.size())) {
-              auto& atlas_entry = project_settings.loaded_tilemaps[tile.atlas_index];
-              auto config_it = atlas_entry.tile_collider_configs.find(tile.tile_index);
-              if (config_it != atlas_entry.tile_collider_configs.end()) {
-                box_width = config_it->second.aabb_width;
-                box_height = config_it->second.aabb_height;
-                box_offset = config_it->second.aabb_offset;
-              }
-            }
-
-            // Apply offset to center position
-            Math::Vec2D final_center = center_world + box_offset;
-
-            // Create AABB collision entity
-            auto entity = Engine::ECS::create_entity()
-              .add_component<Components::TileCollider>()
-              .add_component<Components::Transform2D>(final_center, 0.0f, scale)
-              .add_component<Components::RigidBody>(true, false)
-              .add_component<Components::BoxCollider>(box_width, box_height, true);
-
-            entity.clear_layers();
-            entity.add_to_layer(layer_name);
-          }
-          else if (collider_type == Engine::Graphics::TileColliderType::Polygon) {
-            // Look up custom vertices from the atlas entry's tile_collider_configs
-            std::vector<Math::Vec2D> custom_vertices;
-            if (tile.atlas_index >= 0 && tile.atlas_index < static_cast<int>(project_settings.loaded_tilemaps.size())) {
-              auto& atlas_entry = project_settings.loaded_tilemaps[tile.atlas_index];
-              auto config_it = atlas_entry.tile_collider_configs.find(tile.tile_index);
-              if (config_it != atlas_entry.tile_collider_configs.end()) {
-                custom_vertices = config_it->second.custom_vertices;
-              }
-            }
-
-            if (!custom_vertices.empty()) {
-              // Create Polygon collision entity
-              auto entity = Engine::ECS::create_entity()
-                .add_component<Components::TileCollider>()
-                .add_component<Components::Transform2D>(center_world, 0.0f, scale)
-                .add_component<Components::RigidBody>(true, false)
-                .add_component<Components::BoxCollider>(custom_vertices, true);
-
-              entity.clear_layers();
-              entity.add_to_layer(layer_name);
-            }
-          }
-        }
-      }
-    }
-
-    broadcast_world_bounds();
   }
 
   void place_tile(const Math::Vec2D& world_pos, const std::string& layer_name, int atlas_index, int tile_index) {
@@ -405,7 +295,6 @@ namespace TilemapManager {
 
     // We need to pass loaded_tilemaps to rebuild, get it from project settings
     rebuild_tilemap_for_layer(layer_name);
-    broadcast_world_bounds();
 
     // Mark level as dirty
     Engine::ProjectSaveManager::set_dirty(
@@ -433,62 +322,6 @@ namespace TilemapManager {
         }
       }
     }
-  }
-
-  bool get_world_bounds(Math::Vec2D& min, Math::Vec2D& max) {
-    min = { std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
-    max = { std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest() };
-    bool found_any = false;
-
-    for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
-      auto* tilemap = entity.get_component<Components::TileMap>();
-      if (!tilemap || tilemap->is_empty()) continue;
-
-      int grid_min_x, grid_min_y, grid_max_x, grid_max_y;
-      tilemap->get_bounds(grid_min_x, grid_min_y, grid_max_x, grid_max_y);
-
-      // Convert grid bounds to world bounds
-      // min world pos corresponds to the bottom-left corner of the min grid cell
-      // max world pos corresponds to the top-right corner of the max grid cell
-
-      float min_world_x = grid_min_x * tilemap->tile_size.x + tilemap->grid_offset.x;
-      float min_world_y = grid_min_y * tilemap->tile_size.y + tilemap->grid_offset.y;
-
-      float max_world_x = (grid_max_x + 1) * tilemap->tile_size.x + tilemap->grid_offset.x;
-      float max_world_y = (grid_max_y + 1) * tilemap->tile_size.y + tilemap->grid_offset.y;
-
-      if (min_world_x < min.x) min.x = min_world_x;
-      if (min_world_y < min.y) min.y = min_world_y;
-      if (max_world_x > max.x) max.x = max_world_x;
-      if (max_world_y > max.y) max.y = max_world_y;
-
-      found_any = true;
-    }
-
-    return found_any;
-  }
-
-  void broadcast_world_bounds() {
-    AABB bounds;
-    Math::Vec2D min_bounds, max_bounds;
-    if (get_world_bounds(min_bounds, max_bounds)) {
-      f32 width = max_bounds.x - min_bounds.x;
-      f32 height = max_bounds.y - min_bounds.y;
-      Math::Vec2D mid_point(min_bounds.x + width * 0.5f, min_bounds.y + height * 0.5f);
-      bounds = AABB(mid_point, width, height);
-    }
-    else {
-      // Fallback to screen bounds
-      using settings = Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>;
-      Math::Vec2D win_size = Engine::Graphics::screen_to_virtual({ settings::get().window_width, settings::get().window_height });
-
-      f32 win_width = win_size.x;
-      f32 win_height = win_size.y;
-      Math::Vec2D mid_point(win_width / 2, win_height / 2);
-      bounds = AABB(mid_point, win_width, win_height);
-    }
-
-    Engine::Systems::Collision2DSystem::set_world_bounds(bounds);
   }
 
 } // namespace TilemapManager

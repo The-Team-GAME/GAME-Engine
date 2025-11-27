@@ -17,8 +17,6 @@
 #include "../ECS/Macros.h"
 #include <limits>
 
-using Math::Vec2D;
-
 struct CollisionResult {
   bool collided = false;
   Vec2D mtv;  // Minimum Translation Vector aka penetration vector
@@ -75,8 +73,8 @@ struct AABB {
 
     return  (pos.x - half_width < rhs.pos.x + rhs.half_width)   &&
             (rhs.pos.x - rhs.half_width < pos.x + half_width)   &&
-      (pos.y - half_height < rhs.pos.y + rhs.half_height) &&
-      (rhs.pos.y - rhs.half_height < pos.y + half_height);
+            (pos.y - half_height < rhs.pos.y + rhs.half_height) &&
+            (rhs.pos.y - rhs.half_height < pos.y + half_height);
   }
 };
 
@@ -130,7 +128,7 @@ struct Polygon
   }
 
   // For this function, it dosent matter if the vertices are in clockwise or anticlockwise order, as long as they are inserted in the intended order
-  std::vector<Vec2D> get_axes() const
+  std::vector<Vec2D> get_axes() const 
   {
     std::vector<Vec2D> transformed = get_transformed_vertices();
     std::vector<Vec2D> axes;
@@ -149,26 +147,26 @@ struct Polygon
   }
 
   // Projection of polygon onto an axis
-  struct Projection
+  struct Projection 
   {
     f32 min;
     f32 max;
 
     // Checking if 2 projections overlap
-    bool overlaps(const Projection& other) const
+    bool overlaps(const Projection& other) const 
     {
       return !(max < other.min || other.max < min);
     }
 
     // Checking how much 2 projections overlap when they overlap
-    f32 get_overlap(const Projection& other) const
+    f32 get_overlap(const Projection& other) const 
     {
       return std::min(max, other.max) - std::max(min, other.min);
     }
   };
 
   // Projecting the polygon onto an axis -> only one ah, means need call once per axis check
-  Projection project_onto_axis(Vec2D const& axis) const
+  Projection project_onto_axis(Vec2D const& axis) const 
   {
     std::vector<Vec2D> transformed = get_transformed_vertices();
 
@@ -180,7 +178,7 @@ struct Polygon
       min = projection < min ? projection : min;
       max = projection > max ? projection : max;
     }
-
+    
     return { min, max };
   }
 
@@ -196,14 +194,14 @@ struct Polygon
       Projection other_projection = other.project_onto_axis(axis);
 
       // If even one axis dosent overlap, the 2 polygons do not collide
-      if (!my_projection.overlaps(other_projection))
+      if (!my_projection.overlaps(other_projection)) 
       {
         // No collision
         return CollisionResult(false, Vec2D(0, 0));
       }
 
       f32 overlap = my_projection.get_overlap(other_projection);
-      if (overlap < smallest_overlap)
+      if (overlap < smallest_overlap) 
       {
         smallest_overlap = overlap;
         smallest_axis = axis;
@@ -217,13 +215,13 @@ struct Polygon
       Projection other_projection = other.project_onto_axis(axis);
 
       // The order of checking dosent matter here :>
-      if (!my_projection.overlaps(other_projection))
+      if (!my_projection.overlaps(other_projection)) 
       {
         return CollisionResult(false, Vec2D(0, 0));
       }
 
       f32 overlap = my_projection.get_overlap(other_projection);
-      if (overlap < smallest_overlap)
+      if (overlap < smallest_overlap) 
       {
         smallest_overlap = overlap;
         smallest_axis = axis;
@@ -275,9 +273,6 @@ namespace Components
     // Polygon data (for rotated/custom shapes)
     Polygon polygon;
 
-    // Offset from the entity's position
-    Vec2D offset = { 0.0f, 0.0f };
-
     // AABB constructor (existing - no rotation)
     BoxCollider(f32 width, f32 height, bool is_static_object)
       : width(width), height(height), resolve_collisions(is_static_object), type(ColliderType::AABB)
@@ -303,13 +298,12 @@ namespace Components
     }
 
     // Default constructor for reflection
-    BoxCollider() : width(0.0f), height(0.0f), radius(0.0f), resolve_collisions(false), offset(0.0f, 0.0f)
+    BoxCollider() : width(0.0f), height(0.0f), radius(0.0f), resolve_collisions(false)
     {
       /* empty by design */
     }
-
   };
 }
 
 REFLECT_FIELDS(AABB, pos, half_width, half_height)
-REGISTER_COMPONENT(Components::BoxCollider, resolve_collisions, width, height, radius, aabb, offset)
+REGISTER_COMPONENT(Components::BoxCollider, resolve_collisions, width, height, radius, aabb)

@@ -16,7 +16,6 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "TilemapPanel.h"
-#include "TileColliderEditorPanel.h"
 #include <imgui.h>
 #include "../ECS/ECS.h"
 #include "../Components/Components.h"
@@ -1034,11 +1033,6 @@ namespace TilemapPanel {
 
             // Save to project settings
             save_loaded_tilemaps_to_project_settings();
-          }
-
-          // Edit Colliders button
-          if (ImGui::Button("Edit Tile Colliders", ImVec2(-1, 0))) {
-            TileColliderEditor::Open(i);
           }
 
           if (is_selected) {

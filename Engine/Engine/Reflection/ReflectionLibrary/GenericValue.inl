@@ -462,11 +462,7 @@ namespace ReflectionLibrary
   // Comparison operators
   inline bool GenericValue::operator==(const GenericValue& other) const
   {
-    // First check if type_hints are the same
-    if (type_hint != other.type_hint)
-      return false;
-
-    // Then check if types are the same
+    // First check if types are the same
     if (data_.index() != other.data_.index())
       return false;
 
@@ -531,10 +527,10 @@ namespace ReflectionLibrary
       }
       return to_generic_value(obj.value());
     }
-    else if constexpr (is_reflected_enum_v<ValueType>)
+    else if constexpr (is_bitset_v<ValueType>)
     {
-      // Handle reflected enums - convert to string
-      return GenericValue(std::string(enum_to_string(obj)));
+      // Handle std::bitset - convert to string representation
+      return GenericValue(obj.to_string());
     }
     else if constexpr (std::is_same_v<ValueType, bool>)
     {
@@ -630,16 +626,19 @@ namespace ReflectionLibrary
       obj = std::move(inner_value);
       return true;
     }
-    else if constexpr (is_reflected_enum_v<ValueType>)
+    else if constexpr (is_bitset_v<ValueType>)
     {
-      // Handle reflected enums - convert from string
+      // Handle std::bitset - convert from string representation
       if (!value.isString())
         return false;
-      auto enum_opt = string_to_enum<ValueType>(value.getString());
-      if (!enum_opt)
+      const auto& str = value.getString();
+      try {
+        obj = ValueType(str);
+        return true;
+      }
+      catch (...) {
         return false;
-      obj = *enum_opt;
-      return true;
+      }
     }
     else if constexpr (std::is_same_v<ValueType, bool>)
     {

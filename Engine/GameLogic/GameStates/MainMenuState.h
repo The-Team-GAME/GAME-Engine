@@ -16,38 +16,49 @@
 /* EVERY CODE HERE IS TEMPORARY */
 
 #include "../../Engine/MonkeyEngine.h"
-#include "../../Engine/Easing.h"
 
-void button_scale(Engine::ECS::Entity entity) {
+void button_scale(Engine::ECS::Entity entity){
+
   Vec2D& scale = entity.get_component<Components::Transform2D>()->scale;
 
   const Vec2D og_scale = Vec2D(192.0f * 1.5f, 64.0f * 1.5f);
   const Vec2D target_scale = og_scale * 1.2f;
+  const float LERP_SPEED = 0.10f;
+  const float clamp = 0.01f;
 
-  // Using BackOut easing for smooth scale-up with slight overshoot
-  float easedX = Engine::Easing::EaseBackOut(0.10f, scale.x, target_scale.x - scale.x, 1.0f);
-  float easedY = Engine::Easing::EaseBackOut(0.10f, scale.y, target_scale.y - scale.y, 1.0f);
+  scale = scale + (target_scale - scale) * LERP_SPEED;
+  const Vec2D diff = scale - target_scale;
+  float distance = std::sqrt(diff.x * diff.x + diff.y * diff.y);
 
-  scale = Vec2D(easedX, easedY);
+  // clamping
+  if (distance < clamp) {
+    scale = target_scale;
+  }
 }
 
 void button_exit_scale(Engine::ECS::Entity entity) {
+
   Vec2D& scale = entity.get_component<Components::Transform2D>()->scale;
 
   const Vec2D og_scale = Vec2D(192.0f * 1.5f, 64.0f * 1.5f);
+  const float LERP_SPEED = 0.10f;
+  const float clamp = 0.01f;
 
-  // Using CubicOut easing for smooth scale-down
-  float t = 0.10f;
-  float easedX = Engine::Easing::EaseCubicOut(t, scale.x, og_scale.x - scale.x, 1.0f);
-  float easedY = Engine::Easing::EaseCubicOut(t, scale.y, og_scale.y - scale.y, 1.0f);
+  scale = scale + (og_scale - scale) * LERP_SPEED;
+  Vec2D diff = scale - og_scale;
+  float distance = std::sqrt(diff.x * diff.x + diff.y * diff.y);
 
-  scale = Vec2D(easedX, easedY);
+  if (distance < clamp) {
+    scale = og_scale;
+  }
 }
 
 
 class MainMenuState : public Engine::Scene
 {
 private:
+  // Deferred scene load flag to avoid modifying engine systems mid-iteration
+  bool request_load_showcase = false;
 
 public:
   void load() {
@@ -64,9 +75,10 @@ public:
       .add_component<Components::Transform2D>(625.0f, 700.0f, 0.0f, 192.0f * 1.5f, 64.0f * 1.5f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/Button_Start.png"))
       .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
-      .add_component<Components::Clickable>([]()
+      .add_component<Components::Clickable>([this]()
         {
-          Engine::SceneManager::load_scene("LevelTestState");
+          // Defer actual scene load to MainMenuState::update() to avoid modifying ECS from within a system iteration
+          request_load_showcase = true;
         },
 
         [](Engine::ECS::Entity entity) { //Scale/Descale
@@ -98,7 +110,13 @@ public:
 
   void init() {};
 
-  void update() {};
+  void update() {
+    // Handle deferred scene load request (set by the click handler)
+    if (request_load_showcase) {
+      request_load_showcase = false;
+      Engine::SceneManager::load_scene("ShowcaseState");
+    }
+  };
 
   void draw() {
     Engine::Graphics::clear_screen({ 0.0f, 0.0f, 0.0f, 1.0f });

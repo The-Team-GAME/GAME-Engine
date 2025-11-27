@@ -68,40 +68,4 @@ namespace ReflectionLibrary
     obj = ReflectionInfo<T>::create(reflector);
   }
 
-  // Enum helper functions
-  template <typename T>
-    requires is_reflected_enum_v<T>
-  static constexpr std::string_view enum_to_string(T value)
-  {
-    std::string_view result;
-    std::apply([&](auto &&...pairs)
-      {
-        ((pairs.first == value ? (result = pairs.second, true) : false) || ...);
-      }, EnumInfo<T>::values);
-    return result;
-  }
-
-  template <typename T>
-    requires is_reflected_enum_v<T>
-  static constexpr std::optional<T> string_to_enum(std::string_view str)
-  {
-    std::optional<T> result;
-    std::apply([&](auto &&...pairs)
-      {
-        ((pairs.second == str ? (result = pairs.first, true) : false) || ...);
-      }, EnumInfo<T>::values);
-    return result;
-  }
-
-  template <typename T>
-    requires is_reflected_enum_v<T>
-  static constexpr size_t enum_value_count = std::tuple_size_v<decltype(EnumInfo<T>::values)>;
-
-  template <typename T>
-    requires is_reflected_enum_v<T>
-  static constexpr std::string_view get_enum_name()
-  {
-    return EnumInfo<T>::enum_name;
-  }
-
 } // namespace ReflectionLibrary

@@ -22,11 +22,10 @@
 namespace PrefabEditorPanelHelpers {
   /*=================================================================================
   Function Brief:
-  Renders a collapsible tree node for a component with all its fields. Components are
-  grouped by namespace at the caller level for better organization.
+  Renders a collapsible tree node for a component with all its fields.
 
   Parameters:
-  component_name - The name of the component type (display name, may be short form)
+  component_name - The name of the component type
   prefab         - The prefab being edited
   array          - The component array to read/write component data
   prefab_path    - The path of the prefab (for marking as dirty)

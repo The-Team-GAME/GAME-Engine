@@ -594,9 +594,6 @@ Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, 
     return Engine::ECS::Prefab(); // Return empty prefab handle
   }
 
-  // Set the filepath in the prefab
-  prefab.get_impl()->set_prefab_filepath(actual_filepath);
-
   // Cache the prefab implementation
   prefab_cache[full_path] = prefab.get_impl();
   if (persist)

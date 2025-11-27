@@ -40,10 +40,10 @@ namespace ReflectionLibrary
         print_value(name, inner_value, nest_level);
       }
     }
-    else if constexpr (is_reflected_enum_v<ValueType>)
+    else if constexpr (is_bitset_v<ValueType>)
     {
-      // Handle reflected enums
-      std::cout << indent << name << " = " << enum_to_string(value) << "\n";
+      // Handle std::bitset
+      std::cout << indent << name << " = " << value.to_string() << "\n";
     }
     else if constexpr (std::is_same_v<ValueType, bool>)
     {

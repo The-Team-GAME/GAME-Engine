@@ -112,17 +112,6 @@ namespace Engine
       Log::warning("Failed to load project settings, using defaults");
     }
 
-    // TODO: handle using custom reflector
-    auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get_mutable();
-    for (auto& atlas_entry : project_settings.loaded_tilemaps) {
-      if (!atlas_entry.texture_path.empty() && !atlas_entry.texture_handle) {
-        atlas_entry.texture_handle = Engine::Resources::load_texture(atlas_entry.texture_path, true);
-        if (!atlas_entry.texture_handle) {
-          Log::warning("Failed to load texture for atlas: " + atlas_entry.texture_path);
-        }
-      }
-    }
-
 
     // CORE INITIALIZATION
 
