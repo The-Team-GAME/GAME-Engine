@@ -159,6 +159,25 @@ namespace ImGuiWidgets {
 
   /*=================================================================================
   Function Brief:
+  Renders a dropdown for Engine::SerializableFunction fields with all registered
+  functions. Automatically determines the correct signature based on field name
+  (easing functions use f32(f32,f32,f32,f32), callbacks use void(Entity&), others use void()).
+
+  Parameters:
+  field_value - Reference to the GenericValue containing SerializableFunction data
+  modified    - [out] Set to true if the function was modified by user input
+  field_name  - Name of the field to determine signature
+
+  Returns:
+  true if the field was handled and rendered, false otherwise.
+
+  Where to call it:
+  From specialized field renderers for SerializableFunction fields.
+  ==================================================================================*/
+  bool render_serializable_function_field(ReflectionLibrary::GenericValue& field_value, bool& modified, const std::string& field_name);
+
+  /*=================================================================================
+  Function Brief:
   Renders a button to open the Collider Editor for Components::BoxCollider fields.
 
   Parameters:
