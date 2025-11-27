@@ -213,8 +213,6 @@ namespace PlayerStateCallbacks
         .add_component<Components::BoxCollider>(player->attack1.hitbox_width, player->attack1.hitbox_height, false)
         .add_component<Components::Parent>(entity)
         .add_component<Components::Lifetime>(0.48f) // Attack1 duration: 6 frames × 0.08f
-        //.add_component<Components::Color>(Math::Vec4D(1.0f, 0.0f, 0.0f, 0.3f))
-        .add_component<Components::Texture>(Engine::Graphics::get_rect_texture())
         .remove_from_layer("default")
         .add_to_layer("damage_enemy");
 
@@ -302,8 +300,6 @@ namespace PlayerStateCallbacks
         .add_component<Components::BoxCollider>(player->attack2.hitbox_width, player->attack2.hitbox_height, false)
         .add_component<Components::Parent>(entity)
         .add_component<Components::Lifetime>(0.24f) // Attack2 duration: 3 frames × 0.08f
-        //.add_component<Components::Color>(Math::Vec4D(1.0f, 0.5f, 0.0f, 0.3f))
-        .add_component<Components::Texture>(Engine::Graphics::get_rect_texture())
         .remove_from_layer("default")
         .add_to_layer("damage_enemy");
 
@@ -391,8 +387,6 @@ namespace PlayerStateCallbacks
         .add_component<Components::BoxCollider>(player->attack3.hitbox_width, player->attack3.hitbox_height, false)
         .add_component<Components::Parent>(entity)
         .add_component<Components::Lifetime>(0.6f) // Attack3 duration: 10 frames × 0.06f
-        //.add_component<Components::Color>(Math::Vec4D(1.0f, 0.0f, 1.0f, 0.4f)) // Purple for finisher
-        .add_component<Components::Texture>(Engine::Graphics::get_rect_texture())
         .remove_from_layer("default")
         .add_to_layer("damage_enemy");
 

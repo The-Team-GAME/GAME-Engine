@@ -2,14 +2,18 @@
 // file:    UISystem.h
 // project: Monkey Stole My GPA
 //
-// author:  Ong Zi Ming (100%)
+// author:  Ong Zi Ming (40%)
 //          Primary author
+// 
+//          Ryan Ang (60%)
+//          Secondary author
 //
 // email:   o.ziming@digipen.edu
 //
 // brief:   This file defines a Event-driven Clickable System that checks for entities
 //          that has the clickable component and gets the mouse position of when the
-//          object was clicked.
+//          object was clicked. (Ryan) It also handles the dynamic scaling animation when the mouse
+//          hovers over the clickable entity.
 //
 // Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
@@ -36,6 +40,7 @@ namespace Engine
         auto* clickable = entity.get_component<Components::Clickable>();
         auto* tr = entity.get_component<Components::Transform2D>();
 
+
         if (!clickable || !tr) return;
 
         const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
@@ -59,13 +64,17 @@ namespace Engine
           (mouse.x >= left) && (mouse.x <= right) &&
           (mouse.y >= top) && (mouse.y <= bottom);
 
-        // Prevents spamming every frame
-        if (inside && Engine::Input::is_pressed(KeyCode::MouseLeft)) {
 
-          //test shows mouse position and what entity pressed
-          //std::cout << "[CLICK] mouse=(" << mouse.x << ", " << mouse.y << ")  entity=" << entity.get_id() << "\n";
+				// mouse click detection
+        if (inside) {
+          clickable->on_hover(entity);
 
-          clickable->on_click();
+          if (Engine::Input::is_pressed(KeyCode::MouseLeft)) {
+            clickable->on_click();
+          }
+        }
+        else {
+          clickable->exit_hover(entity);
         }
       }
     };

@@ -65,6 +65,14 @@ namespace Engine {
       prefab_id = id;
     }
 
+    const std::string& PrefabImpl::get_prefab_filepath() const {
+      return prefab_filepath;
+    }
+
+    void PrefabImpl::set_prefab_filepath(const std::string& filepath) {
+      prefab_filepath = filepath;
+    }
+
     void PrefabImpl::for_each_component(std::function<void(const std::string&, IComponentArray*)> callback) {
       for (auto& [type_id, array] : component_storage) {
         if (signature.test(type_id)) {
@@ -238,7 +246,7 @@ namespace Engine {
           // Get virtual resolution (screen center in virtual coordinates)
           Math::Vec2D virtual_resolution = Engine::Graphics::get_virtual_resolution();
           Math::Vec2D screen_center(virtual_resolution.x / 2.0f, virtual_resolution.y / 2.0f);
-          
+
           // Convert screen center to world coordinates
           Math::Vec2D world_pos = Engine::Graphics::virtual_to_world(screen_center);
           transform->position = world_pos;
@@ -363,6 +371,9 @@ namespace Engine {
       // Serialize UUID
       result["uuid"] = prefab_impl->get_prefab_id();
 
+      // Serialize filepath
+      result["filepath"] = prefab_impl->get_prefab_filepath();
+
       // Serialize layers and components using helper functions
       result["layers"] = Serialization::serialize_layers(prefab_impl->get_layers());
       result["components"] = Serialization::serialize_components(
@@ -386,6 +397,11 @@ namespace Engine {
       if (value.has("uuid") && value["uuid"].isString()) {
         prefab_impl->set_prefab_id(value["uuid"].getString());
         Log::info("Loaded prefab with UUID: " + value["uuid"].getString());
+      }
+
+      // Deserialize filepath if it exists
+      if (value.has("filepath") && value["filepath"].isString()) {
+        prefab_impl->set_prefab_filepath(value["filepath"].getString());
       }
 
       // Deserialize layers using helper function
@@ -543,6 +559,27 @@ namespace Engine {
 
       auto& containers = Internal::get_containers();
       return containers.prefab_instances.find(entity.get_id()) != containers.prefab_instances.end();
+    }
+
+    std::string get_prefab_path(Entity entity) {
+      if (!entity.is_valid()) return "";
+
+      auto& containers = Internal::get_containers();
+      auto it = containers.prefab_instances.find(entity.get_id());
+      if (it == containers.prefab_instances.end()) {
+        return ""; // Not a prefab instance
+      }
+
+      // Look up the prefab by UUID to find its filepath
+      const std::string& prefab_id = it->second.prefab_id;
+      for (const auto& [path, weak_prefab] : Engine::Resources::prefab_cache) {
+        auto shared_prefab_impl = weak_prefab.lock();
+        if (shared_prefab_impl && shared_prefab_impl->get_prefab_id() == prefab_id) {
+          return shared_prefab_impl->get_prefab_filepath();
+        }
+      }
+
+      return ""; // Prefab not found in cache
     }
 
 

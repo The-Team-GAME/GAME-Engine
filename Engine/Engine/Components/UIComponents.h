@@ -22,5 +22,9 @@ namespace Components
   struct Clickable
   {
     std::function<void()> on_click;
+
+    std::function<void(Engine::ECS::Entity)> on_hover;
+
+    std::function<void(Engine::ECS::Entity)> exit_hover;
   };
 }

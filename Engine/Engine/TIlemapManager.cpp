@@ -147,6 +147,24 @@ namespace TilemapManager {
       return;
     }
 
+    // Get project settings to access AtlasEntry.tile_collider_configs
+    auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get_mutable();
+
+    // Helper lambda to get collider type for a tile by looking up in atlas entry
+    auto get_tile_collider_type = [&](const Engine::Graphics::Tile& tile) -> Engine::Graphics::TileColliderType {
+      if (!tile.is_valid()) return Engine::Graphics::TileColliderType::Default;
+
+      if (tile.atlas_index >= 0 && tile.atlas_index < static_cast<int>(project_settings.loaded_tilemaps.size())) {
+        auto& atlas_entry = project_settings.loaded_tilemaps[tile.atlas_index];
+        auto config_it = atlas_entry.tile_collider_configs.find(tile.tile_index);
+        if (config_it != atlas_entry.tile_collider_configs.end()) {
+          return config_it->second.collider_type;
+        }
+      }
+
+      return Engine::Graphics::TileColliderType::Default; // Default if no config found
+      };
+
     // Helper struct for rectangle merging
     struct Rectangle {
       int x, y, width, height;
@@ -156,7 +174,7 @@ namespace TilemapManager {
     std::vector<std::vector<bool>> processed(height, std::vector<bool>(width, false));
     std::vector<Rectangle> rectangles;
 
-    // Find all rectangles using greedy algorithm (merge any non-empty tiles for collision)
+    // Find all rectangles using greedy algorithm (merge only tiles with Default collider type)
     for (int rel_y = 0; rel_y < height; ++rel_y) {
       for (int rel_x = 0; rel_x < width; ++rel_x) {
         if (processed[rel_y][rel_x]) continue;
@@ -170,13 +188,24 @@ namespace TilemapManager {
           continue;
         }
 
-        // Find maximum width at this row (any non-empty tile)
+        // Look up collider type from atlas entry
+        Engine::Graphics::TileColliderType collider_type = get_tile_collider_type(tile);
+
+        // Skip tiles with AABB or Polygon collider type - they will be handled separately
+        if (collider_type == Engine::Graphics::TileColliderType::AABB ||
+          collider_type == Engine::Graphics::TileColliderType::Polygon) {
+          processed[rel_y][rel_x] = true;
+          continue;
+        }
+
+        // Find maximum width at this row (only merge Default collider type tiles)
         int max_width = 0;
         for (int w = 0; rel_x + w < width; ++w) {
           if (processed[rel_y][rel_x + w]) break;
 
           Engine::Graphics::Tile check_tile = int_map->get_tile(abs_x + w, abs_y);
           if (!check_tile.is_valid()) break;
+          if (get_tile_collider_type(check_tile) != Engine::Graphics::TileColliderType::Default) break;
 
           max_width++;
         }
@@ -186,7 +215,7 @@ namespace TilemapManager {
           continue;
         }
 
-        // Expand downward while maintaining the width (any non-empty tile)
+        // Expand downward while maintaining the width (only Default collider type tiles)
         int rect_height = 1;
         for (int h = 1; rel_y + h < height; ++h) {
           bool can_expand = true;
@@ -197,7 +226,7 @@ namespace TilemapManager {
             }
 
             Engine::Graphics::Tile check_tile = int_map->get_tile(abs_x + w, abs_y + h);
-            if (!check_tile.is_valid()) {
+            if (!check_tile.is_valid() || get_tile_collider_type(check_tile) != Engine::Graphics::TileColliderType::Default) {
               can_expand = false;
               break;
             }
@@ -235,6 +264,83 @@ namespace TilemapManager {
 
       entity.clear_layers();
       entity.add_to_layer(layer_name);
+    }
+
+    // Create individual collision entities for AABB and Polygon collider type tiles
+    for (int rel_y = 0; rel_y < height; ++rel_y) {
+      for (int rel_x = 0; rel_x < width; ++rel_x) {
+        int abs_x = min_x + rel_x;
+        int abs_y = min_y + rel_y;
+        Engine::Graphics::Tile tile = int_map->get_tile(abs_x, abs_y);
+
+        if (!tile.is_valid()) continue;
+
+        // Look up collision configuration from atlas entry
+        Engine::Graphics::TileColliderType collider_type = get_tile_collider_type(tile);
+
+        if (collider_type == Engine::Graphics::TileColliderType::AABB ||
+          collider_type == Engine::Graphics::TileColliderType::Polygon) {
+
+          // Calculate world position for this individual tile
+          float center_x = grid_offset.x + abs_x * grid_snap + grid_snap * 0.5f;
+          float center_y = grid_offset.y + abs_y * grid_snap + grid_snap * 0.5f;
+          Math::Vec2D center_world = { center_x, center_y };
+          Math::Vec2D scale = { grid_snap, grid_snap };
+
+          if (collider_type == Engine::Graphics::TileColliderType::AABB) {
+            // Look up AABB properties from atlas entry
+            float box_width = grid_snap;
+            float box_height = grid_snap;
+            Math::Vec2D box_offset = { 0.0f, 0.0f };
+
+            if (tile.atlas_index >= 0 && tile.atlas_index < static_cast<int>(project_settings.loaded_tilemaps.size())) {
+              auto& atlas_entry = project_settings.loaded_tilemaps[tile.atlas_index];
+              auto config_it = atlas_entry.tile_collider_configs.find(tile.tile_index);
+              if (config_it != atlas_entry.tile_collider_configs.end()) {
+                box_width = config_it->second.aabb_width;
+                box_height = config_it->second.aabb_height;
+                box_offset = config_it->second.aabb_offset;
+              }
+            }
+
+            // Apply offset to center position
+            Math::Vec2D final_center = center_world + box_offset;
+
+            // Create AABB collision entity
+            auto entity = Engine::ECS::create_entity()
+              .add_component<Components::TileCollider>()
+              .add_component<Components::Transform2D>(final_center, 0.0f, scale)
+              .add_component<Components::RigidBody>(true, false)
+              .add_component<Components::BoxCollider>(box_width, box_height, true);
+
+            entity.clear_layers();
+            entity.add_to_layer(layer_name);
+          }
+          else if (collider_type == Engine::Graphics::TileColliderType::Polygon) {
+            // Look up custom vertices from the atlas entry's tile_collider_configs
+            std::vector<Math::Vec2D> custom_vertices;
+            if (tile.atlas_index >= 0 && tile.atlas_index < static_cast<int>(project_settings.loaded_tilemaps.size())) {
+              auto& atlas_entry = project_settings.loaded_tilemaps[tile.atlas_index];
+              auto config_it = atlas_entry.tile_collider_configs.find(tile.tile_index);
+              if (config_it != atlas_entry.tile_collider_configs.end()) {
+                custom_vertices = config_it->second.custom_vertices;
+              }
+            }
+
+            if (!custom_vertices.empty()) {
+              // Create Polygon collision entity
+              auto entity = Engine::ECS::create_entity()
+                .add_component<Components::TileCollider>()
+                .add_component<Components::Transform2D>(center_world, 0.0f, scale)
+                .add_component<Components::RigidBody>(true, false)
+                .add_component<Components::BoxCollider>(custom_vertices, true);
+
+              entity.clear_layers();
+              entity.add_to_layer(layer_name);
+            }
+          }
+        }
+      }
     }
 
     broadcast_world_bounds();
