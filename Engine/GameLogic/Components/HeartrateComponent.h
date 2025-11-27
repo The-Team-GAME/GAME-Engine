@@ -16,11 +16,11 @@ namespace Components {
 
     // greener the higher the heartrate
     Components::Color low_world_tint = { 1.0f, 1.0f, 1.0f, 1.0f };
-    Components::Color normal_world_tint = { 0.8f, 1.0f, 0.8f, 1.0f };
-    Components::Color high_world_tint = { 0.7f, 1.0f, 0.7f, 1.0f };
-    Components::Color very_high_world_tint = { 0.6f, 1.0f, 0.6f, 1.0f };
-    Components::Color crash_out_world_tint = { 0.5f, 1.0f, 0.5f, 1.0f };
-    Components::Color dead_world_tint = { 0.5f, 1.0f, 0.5f, 1.0f };
+    Components::Color normal_world_tint = { 0.95f, 1.0f, 0.95f, 1.0f };
+    Components::Color high_world_tint = { 0.9f, 1.0f, 0.9f, 1.0f };
+    Components::Color very_high_world_tint = { 0.85f, 1.0f, 0.85f, 1.0f };
+    Components::Color crash_out_world_tint = { 0.7f, 1.0f, 0.7f, 1.0f };
+    Components::Color dead_world_tint = { 0.7f, 1.0f, 0.7f, 1.0f };
 
     // Components::Color low_world_tint = { 1.0f, 1.0f, 1.0f, 1.0f };
     // Components::Color normal_world_tint = { 1.0f, 0.8f, 1.0f, 1.0f };
@@ -76,7 +76,7 @@ namespace Components {
       if (heartrate < low) heartrate = low;
     }
 
-    float min_brightness = 0.0f;
+    float min_brightness = 0.5f;
     float max_brightness = 1.0f;
 
     HeartrateState get_state() {
