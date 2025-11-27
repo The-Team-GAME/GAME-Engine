@@ -37,6 +37,7 @@
 #include "FileIO/SettingsManager.h"
 #include "Events/RegisterAllEvents.h"
 #include "UndoManager/UndoManager.h"
+#include "Easing.h"
 
 namespace Engine
 {
@@ -134,6 +135,7 @@ namespace Engine
 
     register_engine_systems();
     register_all_panels();
+    Engine::Easing::register_all_easing_functions();
 
     // Just register one simple function
     Engine::LuaManager::register_function("log_message", [](const std::string& message) {
