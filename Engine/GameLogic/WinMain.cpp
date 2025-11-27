@@ -154,6 +154,57 @@ int main()
       }
     });
 
+  // Register collision callback for enemy attacks hitting player
+  Engine::ECS::LayerRegistry::register_collision_callback("damage_player", "player",
+    [](Engine::ECS::Entity attack_entity, Engine::ECS::Entity player_entity)
+    {
+      std::cout << "Player took damage!" << std::endl;
+
+      // When enemy attack hitbox collides with player
+      auto* attack = attack_entity.get_component<Components::Attack>();
+      auto* heartrate = player_entity.get_component<Components::Heartrate>();
+      auto* rigid = player_entity.get_component<Components::RigidBody>();
+      auto* player_transform = player_entity.get_component<Components::Transform2D>();
+      auto* attack_transform = attack_entity.get_component<Components::Transform2D>();
+
+      if (!attack) {
+        std::cout << "Error: Attack component missing from enemy attack hitbox!" << std::endl;
+        return;
+      }
+
+      if (heartrate && rigid) {
+        // Check if this player has already been hit by this attack
+        if (std::find(attack->hit_entities.begin(), attack->hit_entities.end(), player_entity) != attack->hit_entities.end()) {
+          // Already hit, skip
+          return;
+        }
+
+        // Mark entity as hit by this attack
+        attack->hit_entities.push_back(player_entity);
+
+        // Increase heartrate instead of decreasing HP
+        int damage = attack->damage;
+        heartrate->increase(static_cast<float>(damage));
+        std::cout << "Player took " << damage << " damage! Heartrate: " << heartrate->heartrate << std::endl;
+
+        // Apply knockback
+        if (player_transform && attack_transform) {
+          // Determine knockback direction (away from attack)
+          float dx = player_transform->position.x - attack_transform->position.x;
+          float knockback_direction = (dx > 0 ? 1.0f : -1.0f);
+          
+          // Apply knockback velocity
+          rigid->velocity.x = attack->knockback.x * knockback_direction;
+          rigid->velocity.y = attack->knockback.y; // Usually negative for upward knockback
+          
+          std::cout << "Player knocked back! Velocity: (" << rigid->velocity.x << ", " << rigid->velocity.y << ")" << std::endl;
+        }
+      }
+      else {
+        std::cout << "Error: Heartrate or RigidBody component missing from player!" << std::endl;
+      }
+    });
+
   // Register game scenes at startup
   Engine::SceneManager::register_scene<EmptyState>("EmptyState");
   Engine::SceneManager::register_scene<MainMenuState>("MainMenuState");
