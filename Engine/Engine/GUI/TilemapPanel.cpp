@@ -606,7 +606,7 @@ namespace TilemapPanel {
             if (ImGui::Button("Submit Atlas", ImVec2(-1, 0))) {
               Engine::Graphics::AtlasEntry entry;
               entry.texture_handle = preview_texture.texture_handle;
-              entry.texture_path = preview_texture.texture_handle->path;
+              entry.texture_path = Engine::Resources::get_relative_path(preview_texture.texture_handle->path);
               entry.subTextures = preview_atlas.subTextures;
               entry.drawIndex = preview_atlas.drawIndex;
               loaded_tilemaps.push_back(entry);
