@@ -132,6 +132,7 @@ namespace Components
   private:
     std::queue<std::string> transition_queue_;  // Queue for deferred transitions
     bool is_first_frame_ = false;     // Track if we just entered current state
+    bool has_started_ = false;        // Track if the state machine has started running
     std::vector<std::string> state_history_; // Track previous states
 
     Engine::ECS::Entity* owner_entity_ = nullptr;  // Reference to owning entity
@@ -160,6 +161,7 @@ namespace Components
 
       current_state_name = state_name;
       is_first_frame_ = true;
+      has_started_ = true;
     }
 
     /// Request a state change (deferred until end of current update)
@@ -214,10 +216,10 @@ namespace Components
         return;
       }
 
-      // Auto-initialize after deserialization: if we have a current state but haven't set the first frame flag,
-      // it means we were just deserialized and need to initialize
-      if (!is_first_frame_ && transition_queue_.empty() && state_history_.empty()) {
-        is_first_frame_ = true; // Trigger on_enter callback on the next check
+      // Auto-initialize after deserialization
+      if (!has_started_) {
+        is_first_frame_ = true;
+        has_started_ = true;
       }
 
       // Call on_enter if this is the first frame after entering this state
