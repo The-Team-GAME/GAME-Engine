@@ -70,7 +70,7 @@ private:
   static void register_callbacks() {
     // Register on_click callbacks
     Engine::FunctionRegistry<void()>::register_function("load_level_test", []() {
-      Engine::SceneManager::load_scene("LevelTestState");
+      Engine::Resources::open_level("levels/LevelOne.json");
       });
 
     Engine::FunctionRegistry<void()>::register_function("exit_game", []() {
