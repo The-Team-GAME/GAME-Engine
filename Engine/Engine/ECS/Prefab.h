@@ -37,6 +37,8 @@ namespace Engine {
       ComponentSignature signature;
       LayerSignature layers;
       std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> component_storage;
+      std::string prefab_id; // Unique UUID identifier for this prefab
+      std::string prefab_filepath; // Filepath where this prefab is stored
 
     public:
       PrefabImpl() = default;
@@ -203,6 +205,54 @@ namespace Engine {
       When processing all components in a prefab.
       ==================================================================================*/
       void for_each_component(std::function<void(const std::string&, IComponentArray*)> callback);
+
+      /*=================================================================================
+      Function Brief:
+      Gets the prefab ID (UUID).
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When tracking which prefab an instance was created from.
+      ==================================================================================*/
+      const std::string& get_prefab_id() const;
+
+      /*=================================================================================
+      Function Brief:
+      Sets the prefab ID (UUID).
+
+      Parameters:
+      id - The UUID to set.
+
+      Where to call it:
+      When creating a new prefab or loading from file.
+      ==================================================================================*/
+      void set_prefab_id(const std::string& id);
+
+      /*=================================================================================
+      Function Brief:
+      Gets the prefab filepath.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When tracking the location where the prefab is stored.
+      ==================================================================================*/
+      const std::string& get_prefab_filepath() const;
+
+      /*=================================================================================
+      Function Brief:
+      Sets the prefab filepath.
+
+      Parameters:
+      filepath - The filepath to set.
+
+      Where to call it:
+      When loading a prefab from file or saving to a new location.
+      ==================================================================================*/
+      void set_prefab_filepath(const std::string& filepath);
     };
 
     /* ============================ //
@@ -460,7 +510,7 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
-    Creates a new empty prefab handle.
+    Creates a new empty prefab handle with a unique auto-generated UUID.
 
     Parameters:
     None.
@@ -499,6 +549,8 @@ namespace Engine {
     /*=================================================================================
     Function Brief:
     Creates a prefab from an existing entity by copying its components.
+    The entity automatically becomes an instance of the newly created prefab,
+    allowing it to receive future updates when the prefab is modified.
 
     Parameters:
     entity - The entity to convert to a prefab.
@@ -531,6 +583,84 @@ namespace Engine {
     When loading prefabs from files or receiving over network.
     ==================================================================================*/
     Prefab prefab_from_generic_value(const ReflectionLibrary::GenericValue& value);
+
+    /* ====================================== //
+    // Prefab Instance Management             //
+    // ====================================== */
+
+    /*=================================================================================
+    Function Brief:
+    Updates all instances of a prefab with new data from the prefab.
+    Finds all entities that were instantiated from the prefab with the given UUID
+    and updates their components. Respects per-field overrides - only non-overridden
+    fields are updated.
+
+    Parameters:
+    prefab_id - UUID of the prefab to update instances for.
+
+    Where to call it:
+    After modifying a prefab, to propagate changes to all instances.
+    ==================================================================================*/
+    void update_prefab_instances(const std::string& prefab_id);
+
+    /*=================================================================================
+    Function Brief:
+    Marks a specific field in a component as overridden for an entity.
+    Overridden fields will not be updated when the prefab changes.
+
+    Parameters:
+    entity - The entity instance.
+    type - Component type ID.
+    field_path - Dot-separated path to the field (e.g., "color.r").
+
+    Where to call it:
+    When a user manually edits a field in the inspector.
+    ==================================================================================*/
+    void mark_field_overridden(Entity entity, ComponentTypeID type, const std::string& field_path);
+
+    /*=================================================================================
+    Function Brief:
+    Removes an override marking from a field, allowing it to receive prefab updates again.
+
+    Parameters:
+    entity - The entity instance.
+    type - Component type ID.
+    field_path - Dot-separated path to the field.
+
+    Where to call it:
+    When user clicks "Revert to Prefab" on a field.
+    ==================================================================================*/
+    void clear_field_override(Entity entity, ComponentTypeID type, const std::string& field_path);
+
+    /*=================================================================================
+    Function Brief:
+    Checks if an entity is an instance of a prefab.
+
+    Parameters:
+    entity - The entity to check.
+
+    Returns:
+    True if the entity is a prefab instance, false otherwise.
+
+    Where to call it:
+    In UI code to show prefab-specific options.
+    ==================================================================================*/
+    bool is_prefab_instance(Entity entity);
+
+    /*=================================================================================
+    Function Brief:
+    Gets the prefab path for a prefab instance entity.
+
+    Parameters:
+    entity - The entity instance.
+
+    Returns:
+    Prefab path string, or empty string if not a prefab instance.
+
+    Where to call it:
+    When displaying which prefab an entity is based on.
+    ==================================================================================*/
+    std::string get_prefab_path(Entity entity);
 
   } // namespace ECS
 } // namespace Engine

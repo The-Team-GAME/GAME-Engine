@@ -4,6 +4,8 @@
 #include "TilemapManager.h"
 #include "FileIO/SettingsManager.h"
 #include "FileIO/Settings.h"
+#include "Systems/CollisionSystem.h"
+#include <unordered_set>
 
 namespace
 {
@@ -38,6 +40,10 @@ void Engine::Level::instantiate_into_world()
     entity.destroy();
     });
 
+  // Process housekeeping to ensure old entities (including tile colliders) are actually destroyed
+  // before creating new ones. This prevents tile colliders from previous levels from persisting.
+  Engine::ECS::process_housekeeping();
+
   for (const auto& entity_value : entities) {
     Engine::ECS::create_entity_from_generic_value(entity_value);
     // This creates all entities including TileMap entities which store the tile data
@@ -55,6 +61,20 @@ void Engine::Level::instantiate_into_world()
       }
     }
   }
+
+  // Update all prefab instances to sync with latest prefab data
+  // This ensures that if a prefab was modified after the level was saved,
+  // instances will receive those updates while preserving overrides
+  std::unordered_set<std::string> updated_prefabs;
+  for (const auto& [entity_id, instance_data] : Engine::ECS::Internal::get_containers().prefab_instances) {
+    // Only update each prefab once
+    if (updated_prefabs.insert(instance_data.prefab_id).second) {
+      Engine::ECS::update_prefab_instances(instance_data.prefab_id);
+    }
+  }
+
+  // Update collision world bounds after level load
+  TilemapManager::broadcast_world_bounds();
 }
 
 std::string Engine::LevelManager::get_current_level_path()

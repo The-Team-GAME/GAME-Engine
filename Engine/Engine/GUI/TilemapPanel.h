@@ -134,7 +134,8 @@ namespace TilemapPanel {
   Function Brief:
   Creates a new tile entity at the specified world position. Snaps the position to
   the grid, checks for duplicates, and creates an entity with Tile, Transform2D,
-  Texture, TextureAtlas, and Color components.
+  Texture, TextureAtlas, and Color components. If multi-tile selection is active,
+  places multiple tiles in a pattern.
 
   Parameters:
   world_pos - Mouse world position where the user clicked

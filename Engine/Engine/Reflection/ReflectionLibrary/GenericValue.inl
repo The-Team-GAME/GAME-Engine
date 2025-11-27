@@ -462,7 +462,11 @@ namespace ReflectionLibrary
   // Comparison operators
   inline bool GenericValue::operator==(const GenericValue& other) const
   {
-    // First check if types are the same
+    // First check if type_hints are the same
+    if (type_hint != other.type_hint)
+      return false;
+
+    // Then check if types are the same
     if (data_.index() != other.data_.index())
       return false;
 
@@ -527,10 +531,10 @@ namespace ReflectionLibrary
       }
       return to_generic_value(obj.value());
     }
-    else if constexpr (is_bitset_v<ValueType>)
+    else if constexpr (is_reflected_enum_v<ValueType>)
     {
-      // Handle std::bitset - convert to string representation
-      return GenericValue(obj.to_string());
+      // Handle reflected enums - convert to string
+      return GenericValue(std::string(enum_to_string(obj)));
     }
     else if constexpr (std::is_same_v<ValueType, bool>)
     {
@@ -597,7 +601,9 @@ namespace ReflectionLibrary
       auto& obj_ref = const_cast<ValueType&>(obj);
       for_each_field(obj_ref, [&](std::string_view name, auto& field_value, int)
         { result[std::string(name)] = to_generic_value(field_value); });
-      return GenericValue(std::move(result));
+      GenericValue gv(std::move(result));
+      gv.type_hint = std::string(class_name<ValueType>);
+      return gv;
     }
     else
     {
@@ -626,19 +632,16 @@ namespace ReflectionLibrary
       obj = std::move(inner_value);
       return true;
     }
-    else if constexpr (is_bitset_v<ValueType>)
+    else if constexpr (is_reflected_enum_v<ValueType>)
     {
-      // Handle std::bitset - convert from string representation
+      // Handle reflected enums - convert from string
       if (!value.isString())
         return false;
-      const auto& str = value.getString();
-      try {
-        obj = ValueType(str);
-        return true;
-      }
-      catch (...) {
+      auto enum_opt = string_to_enum<ValueType>(value.getString());
+      if (!enum_opt)
         return false;
-      }
+      obj = *enum_opt;
+      return true;
     }
     else if constexpr (std::is_same_v<ValueType, bool>)
     {
@@ -761,6 +764,37 @@ namespace ReflectionLibrary
     return result;
   }
 
+  inline GenericValue convert_array_of_pairs_to_map(const GenericValue& array_value)
+  {
+    if (!array_value.isArray()) return GenericValue(Object{});
+
+    Object result;
+    const auto& arr = array_value.getArray();
+    for (const auto& item : arr) {
+      if (item.isObject() && item.has("first") && item.has("second")) {
+        const auto& key = item["first"];
+        if (key.isString()) {
+          result[key.getString()] = item["second"];
+        }
+      }
+    }
+    return GenericValue(std::move(result));
+  }
+
+  inline GenericValue convert_map_to_array_of_pairs(const GenericValue& map_value)
+  {
+    if (!map_value.isObject()) return GenericValue(Array{});
+
+    Array result;
+    const auto& obj = map_value.getObject();
+    for (const auto& [key, val] : obj) {
+      Object pair;
+      pair["first"] = GenericValue(key);
+      pair["second"] = val;
+      result.push_back(GenericValue(std::move(pair)));
+    }
+    return GenericValue(std::move(result));
+  }
 
 
 } // namespace ReflectionLibrary

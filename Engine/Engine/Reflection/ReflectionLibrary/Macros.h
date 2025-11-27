@@ -100,3 +100,40 @@
         static Reflector reflect(CLASS_NAME &obj) { return Reflector::reflect(obj); }                                                \
         static CLASS_NAME create(Reflector &r) { return Reflector::create(r); }                                                      \
     };
+
+// Enum reflection macros
+#define ENUM_VALUE_PAIR(ENUM_TYPE, VALUE) std::make_pair(ENUM_TYPE::VALUE, #VALUE)
+
+#define MAKE_ENUM_TUPLE_0(ENUM_TYPE, ...) std::make_tuple()
+#define MAKE_ENUM_TUPLE_N(ENUM_TYPE, ...) std::make_tuple(EXPAND_MACROS(ENUM_TYPE, ENUM_VALUE_PAIR, COUNT_ARGS(__VA_ARGS__), __VA_ARGS__))
+#define MAKE_ENUM_TUPLE_SELECT_0 MAKE_ENUM_TUPLE_0
+#define MAKE_ENUM_TUPLE_SELECT_1 MAKE_ENUM_TUPLE_N
+#define MAKE_ENUM_TUPLE_SELECT_2 MAKE_ENUM_TUPLE_N
+#define MAKE_ENUM_TUPLE_SELECT_3 MAKE_ENUM_TUPLE_N
+#define MAKE_ENUM_TUPLE_SELECT_4 MAKE_ENUM_TUPLE_N
+#define MAKE_ENUM_TUPLE_SELECT_5 MAKE_ENUM_TUPLE_N
+#define MAKE_ENUM_TUPLE_SELECT_6 MAKE_ENUM_TUPLE_N
+#define MAKE_ENUM_TUPLE_SELECT_7 MAKE_ENUM_TUPLE_N
+#define MAKE_ENUM_TUPLE_SELECT_8 MAKE_ENUM_TUPLE_N
+#define MAKE_ENUM_TUPLE_SELECT_9 MAKE_ENUM_TUPLE_N
+#define MAKE_ENUM_TUPLE_SELECT_10 MAKE_ENUM_TUPLE_N
+#define MAKE_ENUM_TUPLE_SELECT_11 MAKE_ENUM_TUPLE_N
+#define MAKE_ENUM_TUPLE_SELECT_12 MAKE_ENUM_TUPLE_N
+#define MAKE_ENUM_TUPLE_SELECT_13 MAKE_ENUM_TUPLE_N
+#define MAKE_ENUM_TUPLE_SELECT_14 MAKE_ENUM_TUPLE_N
+#define MAKE_ENUM_TUPLE_SELECT_15 MAKE_ENUM_TUPLE_N
+#define MAKE_ENUM_TUPLE_SELECT_16 MAKE_ENUM_TUPLE_N
+#define MAKE_ENUM_TUPLE_SELECT_17 MAKE_ENUM_TUPLE_N
+#define MAKE_ENUM_TUPLE_SELECT_18 MAKE_ENUM_TUPLE_N
+#define MAKE_ENUM_TUPLE_SELECT_19 MAKE_ENUM_TUPLE_N
+#define MAKE_ENUM_TUPLE_SELECT_20 MAKE_ENUM_TUPLE_N
+#define MAKE_ENUM_TUPLE_SELECTOR(N) CONCAT(MAKE_ENUM_TUPLE_SELECT_, N)
+#define MAKE_ENUM_TUPLE(ENUM_TYPE, ...) MAKE_ENUM_TUPLE_SELECTOR(COUNT_ARGS(__VA_ARGS__))(ENUM_TYPE, ##__VA_ARGS__)
+
+#define REFLECT_ENUM(ENUM_TYPE, ...)                                                                                                 \
+    template <>                                                                                                                      \
+    struct ReflectionLibrary::EnumInfo<ENUM_TYPE>                                                                                    \
+    {                                                                                                                                \
+        static constexpr const char *enum_name = #ENUM_TYPE;                                                                         \
+        static constexpr auto values = MAKE_ENUM_TUPLE(ENUM_TYPE, ##__VA_ARGS__);                                                   \
+    };

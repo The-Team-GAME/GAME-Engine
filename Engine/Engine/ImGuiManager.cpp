@@ -27,6 +27,8 @@
 #include "ProjectSaveManager.h"
 #include "Events/WindowEvents.h"
 #include "EventManager/EventManager.h"
+#include "GUI/ViewportPanel.h"
+#include <imgui_internal.h>
 
 namespace {
   bool gui_enabled = true; // Completely disable ImGui when false (TODO: Hook this up to a setting)
@@ -48,6 +50,7 @@ namespace {
 
   std::vector<PanelInfo> registered_panels;
   std::vector<Toast> active_toasts;
+  ImGuiID main_dockspace_id = 0;
 
   std::unordered_map<std::string, std::function<void()>> styles_map = {
     {"Eggplant", SetupImGuiStyle_Eggplant},
@@ -254,6 +257,7 @@ namespace ImGuiManager {
 
         // DockSpace for all panels
         ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+        main_dockspace_id = dockspace_id;
         ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
 
         ImGui::End();
@@ -570,6 +574,36 @@ namespace ImGuiManager {
   bool is_viewport_mode_enabled()
   {
     return Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode;
+  }
+
+  Math::Vec2D get_viewport_area_min()
+  {
+    if (is_viewport_mode_enabled()) {
+      auto bounds = ViewportPanel::get_viewport_bounds();
+      return { bounds.x, bounds.y };
+    }
+    else {
+      ImGuiViewport* viewport = ImGui::GetMainViewport();
+      return { viewport->WorkPos.x, viewport->WorkPos.y };
+    }
+  }
+
+  Math::Vec2D get_game_render_area_min()
+  {
+    if (is_viewport_mode_enabled()) {
+      auto bounds = ViewportPanel::get_viewport_bounds();
+      return { bounds.x, bounds.y };
+    }
+    else {
+      if (main_dockspace_id != 0) {
+        ImGuiDockNode* node = ImGui::DockBuilderGetCentralNode(main_dockspace_id);
+        if (node) {
+          return { node->Pos.x, node->Pos.y };
+        }
+      }
+      ImGuiViewport* viewport = ImGui::GetMainViewport();
+      return { viewport->WorkPos.x, viewport->WorkPos.y };
+    }
   }
 
 }
