@@ -46,3 +46,4 @@
 #include "FileIO/Settings.h" // Remove in the future, we should not expose this directly
 #include "Level.h"
 #include "FileIO/LevelFileIO.h"
+#include "Logger.h"

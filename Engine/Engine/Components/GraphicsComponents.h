@@ -355,7 +355,6 @@ namespace Components
           //   anim.frames[i].atlas_index = r.atlas_indices[i];
           // }
           // else {
-          //   std::cout << "Warning: atlas_indices size less than durations size in Animation Reflector, using default sequential indices.\n";
           //   anim.frames[i].atlas_index = static_cast<int>(i);
           // }
         }
@@ -402,13 +401,10 @@ namespace Components
   {
     std::string name = "Camera";
     bool is_active = false;  // Whether this camera is currently active
-    Math::Vec2D position = { 0.0f, 0.0f };  // Camera position in world space
-    f32 rotation = 0.0f;  // Camera rotation in degrees
-    f32 zoom = 1.0f;  // Camera zoom level (1.0 = normal, >1.0 = zoom in, <1.0 = zoom out)
 
-    Camera() : name("Camera"), is_active(false), position(0.0f, 0.0f), rotation(0.0f), zoom(1.0f) {}
-    Camera(const std::string& cam_name, bool active = false, const Math::Vec2D& pos = { 0.0f, 0.0f }, f32 rot = 0.0f, f32 z = 1.0f)
-      : name(cam_name), is_active(active), position(pos), rotation(rot), zoom(z) {
+    Camera() : name("Camera"), is_active(false) {}
+    Camera(const std::string& cam_name, bool active = false)
+      : name(cam_name), is_active(active) {
     }
   };
 
@@ -533,7 +529,7 @@ namespace Components
 }
 
 REGISTER_COMPONENT(Components::Text, content)
-REGISTER_COMPONENT(Components::Camera, name, is_active, position, rotation, zoom)
+REGISTER_COMPONENT(Components::Camera, name, is_active)
 REGISTER_COMPONENT(Components::Distortion, intensity, speed, mesh_intensity)
 REGISTER_COMPONENT(Components::Flip, value)
 REGISTER_COMPONENT_CUSTOM(Components::Color, r, g, b, a)

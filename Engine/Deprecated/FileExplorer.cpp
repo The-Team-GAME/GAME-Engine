@@ -12,11 +12,11 @@
 //          to select image files (.jpg, .png, .jpeg). It handles directory traversal,
 //          path history, and filtering to return the selected file path.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 
 #include "FileExplorer.h"
-#include <imgui.h>
+#include "Precompiled.h"
 #include <filesystem>
 #include <vector>
 #include <algorithm>

@@ -14,7 +14,7 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
-#include <imgui.h>
+#include "Precompiled.h"
 #include "Core.h"
 #include "Time.h"
 #include "Perf.h"

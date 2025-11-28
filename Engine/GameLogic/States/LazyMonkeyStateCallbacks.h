@@ -29,7 +29,7 @@ namespace LazyMonkeyStateCallbacks
       // Store when we entered idle (for recovery delay after being hit)
       lazy_monkey->last_attack_time = Engine::Time::get_time(); // Reusing this field as "idle_enter_time"
     }
-    std::cout << "Lazy Monkey: Entered Idle state" << std::endl;
+    Log::info("Lazy Monkey: Entered Idle state");
   }
 
   inline void idle_on_update(Engine::ECS::Entity& entity) {
@@ -49,26 +49,21 @@ namespace LazyMonkeyStateCallbacks
     // Get player entity
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
 
-    // Print error if player entity not found
     if (!player_entity.is_valid()) {
-      std::cout << "Error: Player entity not found in Lazy Monkey Idle state update" << std::endl;
       return;
     }
 
-    // Check if player is nearby
-    if (player_entity.is_valid() && lazy_monkey) {
-      auto* lazy_monkey_transform = entity.get_component<Components::Transform2D>();
-      auto* player_transform = player_entity.get_component<Components::Transform2D>();
+    auto* lazy_monkey_transform = entity.get_component<Components::Transform2D>();
+    auto* player_transform = player_entity.get_component<Components::Transform2D>();
 
-      if (lazy_monkey_transform && player_transform) {
-        float dx = player_transform->position.x - lazy_monkey_transform->position.x;
-        float dy = player_transform->position.y - lazy_monkey_transform->position.y;
-        float distance = std::sqrt(dx * dx + dy * dy);
+    if (lazy_monkey_transform && player_transform) {
+      float dx = player_transform->position.x - lazy_monkey_transform->position.x;
+      float dy = player_transform->position.y - lazy_monkey_transform->position.y;
+      float distance = std::sqrt(dx * dx + dy * dy);
 
-        // Start chasing if player is within detection range
-        if (distance < lazy_monkey->detection_range) {
-          state_machine->change_state("Chasing");
-        }
+      // Start chasing if player is within detection range
+      if (distance < lazy_monkey->detection_range) {
+        state_machine->change_state("Chasing");
       }
     }
   }
@@ -77,8 +72,8 @@ namespace LazyMonkeyStateCallbacks
   // Chasing State Callbacks
   // ========================================================================
 
-  inline void chasing_on_enter(Engine::ECS::Entity& entity) {
-    std::cout << "Lazy Monkey: Entered Chasing state" << std::endl;
+  inline void chasing_on_enter([[maybe_unused]] Engine::ECS::Entity& entity) {
+    Log::info("Lazy Monkey: Entered Chasing state");
   }
 
   inline void chasing_on_update(Engine::ECS::Entity& entity) {
@@ -102,14 +97,17 @@ namespace LazyMonkeyStateCallbacks
         float dx = player_transform->position.x - lazy_monkey_transform->position.x;
         float distance = std::abs(dx); // Only horizontal distance for sidescrolling
 
-        // Chase player horizontally
-        if (distance > 10.f) {
+        // Chase player horizontally, but stop when within attack range
+        if (distance > lazy_monkey->attack_range) {
           rigid->velocity.x = (dx > 0 ? lazy_monkey->chase_speed : -lazy_monkey->chase_speed);
           // Update flip direction based on movement
           if (flip) {
             flip->value.x = (dx > 0 ? 1.0f : -1.0f);
           }
           // Don't modify velocity.y - let gravity handle it
+        } else {
+          // Stop moving when close enough to attack
+          rigid->velocity.x = 0.0f;
         }
 
         // Return to idle if player is far away
@@ -117,18 +115,69 @@ namespace LazyMonkeyStateCallbacks
           state_machine->change_state("Idle");
         }
 
-        // Attack if close enough AND cooldown has elapsed
+        // If close enough and cooldown has elapsed, go to windup before attacking
         if (distance < lazy_monkey->attack_range &&
           (current_time - lazy_monkey->last_attack_time) >= lazy_monkey->attack_cooldown) {
-          lazy_monkey->last_attack_time = current_time;
-          state_machine->change_state("Attacking");
+          state_machine->change_state("Windup");
         }
       }
     }
   }
 
-  inline void chasing_on_exit(Engine::ECS::Entity& entity) {
+  inline void chasing_on_exit([[maybe_unused]] Engine::ECS::Entity& entity) {
 
+  }
+
+  // ========================================================================
+  // Windup State Callbacks
+  // ========================================================================
+
+  inline void windup_on_enter(Engine::ECS::Entity& entity) {
+    auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
+    auto* rigid = entity.get_component<Components::RigidBody>();
+    
+    // Stop moving during windup
+    if (rigid) {
+      rigid->velocity.x = 0.0f;
+    }
+    
+    // Record when windup started (reuse last_attack_time)
+    if (lazy_monkey) {
+      lazy_monkey->last_attack_time = Engine::Time::get_time();
+    }
+    
+    Log::info("Lazy Monkey: Winding up for attack");
+  }
+
+  inline void windup_on_update(Engine::ECS::Entity& entity) {
+    auto* state_machine = entity.get_component<Components::StateMachine>();
+    auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
+    auto* flip = entity.get_component<Components::Flip>();
+
+    if (!lazy_monkey) return;
+
+    float current_time = Engine::Time::get_time();
+    float windup_elapsed = current_time - lazy_monkey->last_attack_time;
+
+    // Get player entity to face them during windup
+    auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+    
+    if (player_entity.is_valid()) {
+      auto* lazy_monkey_transform = entity.get_component<Components::Transform2D>();
+      auto* player_transform = player_entity.get_component<Components::Transform2D>();
+      
+      if (lazy_monkey_transform && player_transform && flip) {
+        float dx = player_transform->position.x - lazy_monkey_transform->position.x;
+        // Update flip direction to face player during wind-up
+        flip->value.x = (dx > 0 ? 1.0f : -1.0f);
+      }
+    }
+
+    // After windup duration, attack
+    if (windup_elapsed >= lazy_monkey->attack_windup) {
+      lazy_monkey->last_attack_time = current_time;
+      state_machine->change_state("Attacking");
+    }
   }
 
   // ========================================================================
@@ -147,7 +196,7 @@ namespace LazyMonkeyStateCallbacks
       rigid->velocity.y = -lazy_monkey->leap_height; // Negative is up
     }
 
-    std::cout << "Lazy Monkey: Entered Attacking state" << std::endl;
+    Log::info("Lazy Monkey: Entered Attacking state");
   }
 
   inline void attacking_on_update(Engine::ECS::Entity& entity) {
@@ -172,61 +221,56 @@ namespace LazyMonkeyStateCallbacks
   //// Hit State Callbacks
   //// ========================================================================
 
-  static inline void emit_hit_particles(const Engine::ECS::Entity& enemy) {
-    using namespace Engine;
-    using Components::Transform2D;
+  //static inline void emit_hit_particles(const Engine::ECS::Entity& enemy) {
+  //  using namespace Engine;
+  //  using Components::Transform2D;
 
-    const auto player = Engine::ECS::get_first_entity_with<Components::Player>();
-    const auto* et = enemy.get_component<Transform2D>();
-    if (!et) return;
+  //  const auto player = Engine::ECS::get_first_entity_with<Components::Player>();
+  //  const auto* et = enemy.get_component<Transform2D>();
+  //  if (!et) return;
 
-    Systems::SetParticleParamsEvent set{};
-    set.spread_deg = 55.f;     // cone
-    set.rate = 0.f;      // burst only
-    set.playing = false;
+  //  Systems::SetParticleParamsEvent set{};
+  //  set.spread_deg = 55.f;     // cone
+  //  set.rate = 0.f;      // burst only
+  //  set.playing = false;
 
-    Math::Vec2D spawn = et->position;
+  //  Math::Vec2D spawn = et->position;
 
-    // Aim away from attacker if player is valid
-    if (player.is_valid()) {
-      if (const auto* pt = player.get_component<Transform2D>()) {
-        // Vector from attacker -> enemy
-        const float vx = et->position.x - pt->position.x;
-        const float vy = et->position.y - pt->position.y;
+  //  // Aim away from attacker if player is valid
+  //  if (player.is_valid()) {
+  //    if (const auto* pt = player.get_component<Transform2D>()) {
+  //      // Vector from attacker -> enemy
+  //      const float vx = et->position.x - pt->position.x;
+  //      const float vy = et->position.y - pt->position.y;
 
-        // Normalized hit-normal (away from attacker)
-        const float len = std::max(1e-4f, std::sqrt(vx * vx + vy * vy));
-        const float nx = vx / len;
-        const float ny = vy / len;
+  //      // Normalized hit-normal (away from attacker)
+  //      const float len = std::max(1e-4f, std::sqrt(vx * vx + vy * vy));
+  //      const float nx = vx / len;
+  //      const float ny = vy / len;
 
-        // Emission angle: along the normal (screen up is -Y)
-        const float deg = std::atan2(-ny, nx) * 57.29577951308232f;
-        set.angle_deg = deg;
+  //      // Emission angle: along the normal (screen up is -Y)
+  //      const float deg = std::atan2(-ny, nx) * 57.29577951308232f;
+  //      set.angle_deg = deg;
 
-        const float lateral_offset_px = 15.f;  // adjust offset horizontal
-        const float vertical_offset_px = 0.f;  // adjust offset vertical
-        spawn.x += nx * lateral_offset_px;
-        spawn.y += ny * lateral_offset_px + vertical_offset_px;
-      }
-    }
+  //      const float lateral_offset_px = 15.f;  // adjust offset horizontal
+  //      const float vertical_offset_px = 0.f;  // adjust offset vertical
+  //      spawn.x += nx * lateral_offset_px;
+  //      spawn.y += ny * lateral_offset_px + vertical_offset_px;
+  //    }
+  //  }
 
-    // Post to the particle system
-    Engine::Systems::ParticleSystem::post(set);
+  //  // Post to the particle system
+  //  Engine::Systems::ParticleSystem::post(set);
 
-    Systems::SpawnParticlesEvent burst{};
-    burst.pos = spawn;
-    burst.count = 100;
-    Engine::Systems::ParticleSystem::post(burst);
-  }
+  //  Systems::SpawnParticlesEvent burst{};
+  //  burst.pos = spawn;
+  //  burst.count = 100;
+  //  Engine::Systems::ParticleSystem::post(burst);
+  //}
 
   inline void hit_on_enter(Engine::ECS::Entity& entity) {
-    auto* rigid = entity.get_component<Components::RigidBody>();
-    auto* flip = entity.get_component<Components::Flip>();
-    auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
-
-    std::cout << "Lazy Monkey: Stunned!" << std::endl;
-
-    emit_hit_particles(entity);
+    (void)entity; // Suppress unused parameter warning
+    Log::info("Lazy Monkey: Stunned!");
   }
 
   inline void hit_on_update(Engine::ECS::Entity& entity) {
@@ -269,19 +313,19 @@ namespace LazyMonkeyStateCallbacks
   // Death State Callbacks
   // ========================================================================
 
-  inline void death_on_enter(Engine::ECS::Entity& entity) {
-    std::cout << "Lazy Monkey: Died!" << std::endl;
+  inline void death_on_enter([[maybe_unused]] Engine::ECS::Entity& entity) {
+    Log::info("Lazy Monkey: Died!");
   }
 
   inline void death_on_update(Engine::ECS::Entity& entity) {
     auto* animation = entity.get_component<Components::Animation>();
     if (animation && animation->has_ended()) {
       Engine::ECS::destroy_entity(entity);
-      std::cout << "Lazy Monkey: Destroyed after death animation." << std::endl;
+      Log::info("Lazy Monkey: Destroyed after death animation.");
     }
   }
 
-  inline void death_on_exit(Engine::ECS::Entity& entity) {
+  inline void death_on_exit([[maybe_unused]] Engine::ECS::Entity& entity) {
     // Should not happen unless respawning
   }
 
@@ -293,6 +337,8 @@ REGISTER_FUNCTION(lazy_monkey_idle_update, void(Engine::ECS::Entity&), LazyMonke
 REGISTER_FUNCTION(lazy_monkey_chasing_enter, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::chasing_on_enter)
 REGISTER_FUNCTION(lazy_monkey_chasing_update, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::chasing_on_update)
 REGISTER_FUNCTION(lazy_monkey_chasing_exit, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::chasing_on_exit)
+REGISTER_FUNCTION(lazy_monkey_windup_enter, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::windup_on_enter)
+REGISTER_FUNCTION(lazy_monkey_windup_update, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::windup_on_update)
 REGISTER_FUNCTION(lazy_monkey_attacking_enter, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::attacking_on_enter)
 REGISTER_FUNCTION(lazy_monkey_attacking_update, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::attacking_on_update)
 REGISTER_FUNCTION(lazy_monkey_attacking_exit, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::attacking_on_exit)
