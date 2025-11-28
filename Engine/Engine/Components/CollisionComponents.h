@@ -320,5 +320,7 @@ namespace Components
   };
 }
 
+REFLECT_ENUM(Components::ColliderType, AABB, OBB, POLYGON)
 REFLECT_FIELDS(AABB, pos, half_width, half_height)
-REGISTER_COMPONENT(Components::BoxCollider, resolve_collisions, width, height, radius, aabb, offset, kinetic_friction)
+REFLECT_FIELDS(Polygon, vertices, position, rotation)
+REGISTER_COMPONENT(Components::BoxCollider, resolve_collisions, type, width, height, radius, polygon, aabb, offset, kinetic_friction)

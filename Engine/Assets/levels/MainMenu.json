@@ -185,6 +185,54 @@
                 "components": [
                     {
                         "data": {
+                            "aabb": {
+                                "half_height": 25.0,
+                                "half_width": 25.0,
+                                "pos": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                }
+                            },
+                            "height": 50.0,
+                            "kinetic_friction": 1.0,
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 800.0,
+                                    "y": 450.0
+                                },
+                                "rotation": 0.0,
+                                "vertices": [
+                                    {
+                                        "x": -298.9725341796875,
+                                        "y": -79.79452514648438
+                                    },
+                                    {
+                                        "x": -275.48919677734375,
+                                        "y": 68.05284118652344
+                                    },
+                                    {
+                                        "x": 173.72799682617188,
+                                        "y": -178.5225067138672
+                                    },
+                                    {
+                                        "x": 165.90020751953125,
+                                        "y": -447.7001647949219
+                                    }
+                                ]
+                            },
+                            "radius": 0.0,
+                            "resolve_collisions": false,
+                            "type": "POLYGON",
+                            "width": 50.0
+                        },
+                        "type": "Components::BoxCollider"
+                    },
+                    {
+                        "data": {
                             "a": 1.0,
                             "b": 1.0,
                             "g": 1.0,
@@ -211,6 +259,20 @@
                             }
                         },
                         "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "exit_hover": {
+                                "name": ""
+                            },
+                            "on_click": {
+                                "name": "load_level_test"
+                            },
+                            "on_hover": {
+                                "name": ""
+                            }
+                        },
+                        "type": "Components::Clickable"
                     }
                 ],
                 "layers": [
