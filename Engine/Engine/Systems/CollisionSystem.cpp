@@ -25,14 +25,6 @@ using col2D = Collision2DSystem;
 using phy2D = Physics2DSystem;
 using settings = Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>;
 
-namespace {
-  f32 slope_angle_limit = 60.f; // This is basically the limit of what will count as a slope
-  /*
-        /
-       /
-      /_____ (60 degree slope for example)
-  */
-}
 // Need to define cuz we made spatial tree static so we could make a static function to call its draw function in another system
 //std::unique_ptr<col2D::QuadTree> col2D::spatial_tree = nullptr;
 std::unique_ptr<col2D::QuadTreeSAT> col2D::spatial_tree_sat = nullptr;
@@ -156,7 +148,7 @@ void col2D::update()
         if (found_ground)
         {
           rigid->last_surface_dir_vector = normalise_vector(rotate(best_ground_normal, -90));
-          if (angle_of_slope(rigid->last_surface_dir_vector) < slope_angle_limit)
+          if (angle_of_slope(rigid->last_surface_dir_vector) < phy2D::get_slope_angle_limit())
           {
             rigid->on_ground = true;
 
