@@ -149,6 +149,40 @@ namespace Engine {
     }
 
     /* ===================== //
+    // Window Mode           //
+    // ===================== */
+    void set_fullscreen(bool fullscreen)
+    {
+      if (!window) return;
+
+      if (fullscreen)
+      {
+        // Get primary monitor and its video mode
+        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+        // Switch to fullscreen
+        glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+      }
+      else
+      {
+        // Switch to windowed mode
+        // Center the window on the screen
+        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+        
+        // Use default size or stored size
+        int w = 1600;
+        int h = 900;
+        
+        int x = (mode->width - w) / 2;
+        int y = (mode->height - h) / 2;
+
+        glfwSetWindowMonitor(window, nullptr, x, y, w, h, 0);
+      }
+    }
+
+    /* ===================== //
     // Callbacks             //
     // ===================== */
     void framebuffer_resize_callback([[maybe_unused]] GLFWwindow* win, s32 w, s32 h)
