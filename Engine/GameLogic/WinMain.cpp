@@ -30,6 +30,7 @@
 #include "GameStates/LuaState.h"
 #include "GameStates/BehaviourState.h"
 #include "GameStates/LevelTestState.h"
+#include "GameStates/GameplayState.h"
 #include "Systems/HealthSystem.h"
 #include "Systems/EnemyHealthSystem.h"
 #include "Systems/HeartrateSystem.h"
@@ -212,6 +213,7 @@ int main()
   Engine::SceneManager::register_scene<LuaState>("LuaState");
   Engine::SceneManager::register_scene<LevelTestState>("LevelTestState");
   Engine::SceneManager::register_scene<BehaviourState>("BehaviourState");
+  Engine::SceneManager::register_scene<GameplayState>("GameplayState");
 
   // Register game systems at startup
   Engine::ECS::add_system<Engine::Systems::HealthSystem>();
