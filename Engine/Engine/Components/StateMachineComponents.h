@@ -33,6 +33,7 @@
 #include "../Resources.h"
 #include "../Audio/AudioPlayer.h"
 #include "../Audio/AudioPlayerInternal.h"
+#include "AudioComponents.h"
 
 namespace Components
 {
@@ -424,10 +425,23 @@ namespace Components
 
     // Apply the audio data
     Engine::Audio::ChannelHandle apply_state_audio(const StateAudio& audio) {
-      if (audio.sound) {
-        return Engine::Audio::play_sound(audio.sound, audio.volume, audio.loop);
+      if (!owner_entity_) return Engine::Audio::INVALID_CHANNEL;
+
+      // Get or add Sound component
+      Sound* sound_comp = owner_entity_->get_component<Sound>();
+      if (!sound_comp) {
+        std::cout << "Sound component not found for entity " << owner_entity_->get_id() << std::endl;
+        owner_entity_->add_component<Sound>();
+
+        sound_comp = owner_entity_->get_component<Sound>();
+
       }
-      return Engine::Audio::INVALID_CHANNEL;
+
+      // Update Sound component data
+      sound_comp->sound_handle = audio.sound;
+
+      // Play the sound via the component
+      return sound_comp->play(audio.volume, audio.loop);
     }
   };
 
