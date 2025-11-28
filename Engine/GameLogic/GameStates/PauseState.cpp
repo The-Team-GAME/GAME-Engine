@@ -53,7 +53,7 @@ void PauseState::load()
     )
     .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
     .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 0.5f)
-    .add_to_layer("ui");
+    .add_to_layer("effect"); // TODO: create a better layer for this
 
   // Only for displaying which button is hovered
   hovered_button_entity = Engine::ECS::create_entity()
