@@ -99,6 +99,20 @@ namespace Engine
       throw std::runtime_error("Failed to initialize audio manager");
     }
 
+    // Load game settings (Window mode, Audio volumes)
+    if (!Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::load("Assets/settings/game_settings.json")) {
+      Log::warning("Failed to load game settings, using defaults");
+    }
+
+    const auto& game_settings = Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get();
+
+    // Apply window mode
+    WindowManager::set_fullscreen(game_settings.fullscreen);
+
+    // Apply audio volumes
+    Engine::Audio::set_bgm_volume(game_settings.bgm_volume);
+    Engine::Audio::set_sfx_volume(game_settings.sfx_volume);
+
     // Initialize Lua manager
     if (!Engine::LuaManager::init()) {
       throw std::runtime_error("Failed to initialize Lua manager");
