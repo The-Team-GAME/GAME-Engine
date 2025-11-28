@@ -211,7 +211,7 @@ namespace Engine {
       Engine::Input::set_scroll_offset(xoffset, yoffset);
     }
 
-    void window_close_callback(GLFWwindow* win)
+    void window_close_callback([[maybe_unused]] GLFWwindow* win)
     {
 #ifndef GAME_BUILD
       // Cancel the close - we'll handle it through ImGui popup

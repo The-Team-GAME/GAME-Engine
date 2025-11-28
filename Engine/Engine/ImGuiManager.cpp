@@ -561,7 +561,7 @@ namespace ImGuiManager {
 #endif
   }
 
-  void register_panel(const std::string& panel_name, const std::function<void()>& panel_func)
+  void register_panel([[maybe_unused]] const std::string& panel_name, [[maybe_unused]] const std::function<void()>& panel_func)
   {
 #ifndef GAME_BUILD
     PanelInfo info;
@@ -579,7 +579,7 @@ namespace ImGuiManager {
 #endif
   }
 
-  void set_style(const std::string& style_name)
+  void set_style([[maybe_unused]] const std::string& style_name)
   {
 #ifndef GAME_BUILD
     auto it = styles_map.find(style_name);
@@ -594,7 +594,7 @@ namespace ImGuiManager {
 #endif
   }
 
-  void show_toast(const std::string& message, ToastType type, float duration)
+  void show_toast([[maybe_unused]] const std::string& message, [[maybe_unused]] ToastType type, [[maybe_unused]] float duration)
   {
 #ifndef GAME_BUILD
     Toast toast;
@@ -617,6 +617,7 @@ namespace ImGuiManager {
 
   Math::Vec2D get_viewport_area_min()
   {
+#ifndef GAME_BUILD
     if (is_viewport_mode_enabled()) {
       auto bounds = ViewportPanel::get_viewport_bounds();
       return { bounds.x, bounds.y };
@@ -625,10 +626,14 @@ namespace ImGuiManager {
       ImGuiViewport* viewport = ImGui::GetMainViewport();
       return { viewport->WorkPos.x, viewport->WorkPos.y };
     }
+#else
+    return { 0.0f, 0.0f };
+#endif
   }
 
   Math::Vec2D get_game_render_area_min()
   {
+#ifndef GAME_BUILD
     if (is_viewport_mode_enabled()) {
       auto bounds = ViewportPanel::get_viewport_bounds();
       return { bounds.x, bounds.y };
@@ -643,6 +648,9 @@ namespace ImGuiManager {
       ImGuiViewport* viewport = ImGui::GetMainViewport();
       return { viewport->WorkPos.x, viewport->WorkPos.y };
     }
+#else
+    return { 0.0f, 0.0f };
+#endif
   }
 
 }
