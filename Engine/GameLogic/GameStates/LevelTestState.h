@@ -83,15 +83,15 @@ public:
       .add_to_layer("enemy");
       //.add_to_layer("damage_player");
 
-    std::cout << "\n=== State Machine Test Level Loaded ===" << std::endl;
-    std::cout << "Controls (Sidescrolling Platform Game):" << std::endl;
-    std::cout << "  A/D - Move left/right" << std::endl;
-    std::cout << "  SPACE - Jump" << std::endl;
-    std::cout << "  F - Attack (damages lazy_monkey if close)" << std::endl;
-    std::cout << "\nPlayer States: Idle (Blue), Walking (Green), Jumping (Cyan), Attacking (Red)" << std::endl;
-    std::cout << "Lazy Monkey States: Idle (Yellow), Chasing (Orange), Attacking (Red), Hit (White)" << std::endl;
-    std::cout << "Note: Gravity is active - entities will fall!" << std::endl;
-    std::cout << "========================================\n" << std::endl;
+    Log::info("\n=== State Machine Test Level Loaded ===");
+    Log::info("Controls (Sidescrolling Platform Game):");
+    Log::info("  A/D - Move left/right");
+    Log::info("  SPACE - Jump");
+    Log::info("  F - Attack (damages lazy_monkey if close)");
+    Log::info("\nPlayer States: Idle (Blue), Walking (Green), Jumping (Cyan), Attacking (Red)");
+    Log::info("Lazy Monkey States: Idle (Yellow), Chasing (Orange), Attacking (Red), Hit (White)");
+    Log::info("Note: Gravity is active - entities will fall!");
+    Log::info("========================================\n");
   };
 
   void update() {};

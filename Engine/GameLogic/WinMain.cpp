@@ -80,9 +80,7 @@ int main()
     {
       // Example callback: Print entity IDs on collision
       // In practice, you would handle damage, effects, etc. here
-      std::cout << "Collision detected between Entity "
-        << entityA.get_id() << " and Entity "
-        << entityB.get_id() << std::endl;
+      Log::info("Collision detected between Entity {} and Entity {}", entityA.get_id(), entityB.get_id());
     });
 
   // Register collision callback for player attacks hitting enemies
@@ -96,7 +94,7 @@ int main()
       auto* transform = enemy_entity.get_component<Components::Transform2D>();
 
       if (!attack) {
-        std::cout << "Error: Attack component missing from attack hitbox!" << std::endl;
+        Log::error("Error: Attack component missing from attack hitbox!");
         return;
       }
 
@@ -109,8 +107,7 @@ int main()
         // Only take damage if not invulnerable
         int damage = attack->damage;
         enemy_health->take_damage(damage);
-        std::cout << "Enemy took " << damage << " damage! HP: "
-          << enemy_health->current_hp << "/" << enemy_health->max_hp << std::endl;
+        Log::info("Enemy took {} damage! HP: {}/{}", damage, enemy_health->current_hp, enemy_health->max_hp);
 
         // Trigger hit or death state
         if (enemy_health->current_hp <= 0) {
@@ -169,7 +166,7 @@ int main()
         }
       }
       else {
-        std::cout << "Error: EnemyHealth or StateMachine component missing!" << std::endl;
+        Log::error("Error: EnemyHealth or StateMachine component missing!");
       }
     });
 
@@ -177,7 +174,7 @@ int main()
   Engine::ECS::LayerRegistry::register_collision_callback("damage_player", "player",
     [](Engine::ECS::Entity attack_entity, Engine::ECS::Entity player_entity)
     {
-      std::cout << "Player took damage!" << std::endl;
+      Log::info("Player took damage!");
 
       // When enemy attack hitbox collides with player
       auto* attack = attack_entity.get_component<Components::Attack>();
@@ -187,7 +184,7 @@ int main()
       auto* attack_transform = attack_entity.get_component<Components::Transform2D>();
 
       if (!attack) {
-        std::cout << "Error: Attack component missing from enemy attack hitbox!" << std::endl;
+        Log::error("Error: Attack component missing from enemy attack hitbox!");
         return;
       }
 
@@ -200,7 +197,7 @@ int main()
         // Increase heartrate instead of decreasing HP
         int damage = attack->damage;
         heartrate->increase(static_cast<float>(damage));
-        std::cout << "Player took " << damage << " damage! Heartrate: " << heartrate->heartrate << std::endl;
+        Log::info("Player took {} damage! Heartrate: {}", damage, heartrate->heartrate);
 
         // Apply knockback
         if (player_transform && attack_transform) {
@@ -212,11 +209,11 @@ int main()
           rigid->velocity.x = attack->knockback.x * knockback_direction;
           rigid->velocity.y = attack->knockback.y; // Usually negative for upward knockback
 
-          std::cout << "Player knocked back! Velocity: (" << rigid->velocity.x << ", " << rigid->velocity.y << ")" << std::endl;
+          Log::info("Player knocked back! Velocity: ({}, {})", rigid->velocity.x, rigid->velocity.y);
         }
       }
       else {
-        std::cout << "Error: Heartrate or RigidBody component missing from player!" << std::endl;
+        Log::error("Error: Heartrate or RigidBody component missing from player!");
       }
     });
 
