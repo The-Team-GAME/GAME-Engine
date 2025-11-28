@@ -13,6 +13,7 @@
 //-----------------------------------------------------------------------------------
 #include "PauseState.h"
 #include "../../Engine/MonkeyEngine.h"
+#include "../../Engine/Engine/Systems/GraphicsSystem.h"
 
 namespace {
   Engine::Graphics::Texture nothing_button_hovered;
@@ -39,19 +40,25 @@ void PauseState::load()
   options_button_hovered = Engine::Resources::load_texture("images/UI/In-Game Pause/States/OptionsButtons.png");
   exit_button_hovered = Engine::Resources::load_texture("images/UI/In-Game Pause/States/ExitButton.png");
 
+  // Get current camera position to center the UI
+  auto& camera = Engine::Systems::CameraSystem::get_camera();
+  float cam_x = camera.position.x + 800.0f;
+  float cam_y = camera.position.y + 450.0f;
+
   background_entity = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
-      800.0f, 450.0f,
+      cam_x, cam_y,
       0.0f,
       1600.0f, 900.0f
     )
     .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
-    .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 0.2f);
+    .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 0.5f)
+    .add_to_layer("ui");
 
   // Only for displaying which button is hovered
   hovered_button_entity = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
-      800.0f, 450.0f,
+      cam_x, cam_y,
       0.0f,
       1600.0f, 900.0f
     )
@@ -63,7 +70,7 @@ void PauseState::load()
   // Invisible collider for detecting mouse position
   resume_collider_entity = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
-      800.0f, 450.0f - 400.0f,
+      cam_x, cam_y - 400.0f,
       0.0f,
       1600.0f, 900.0f
     )
@@ -73,7 +80,7 @@ void PauseState::load()
 
   restart_collider_entity = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
-      800.0f, 450.0f - 200.0f,
+      cam_x, cam_y - 200.0f,
       0.0f,
       1600.0f, 900.0f
     )
@@ -83,7 +90,7 @@ void PauseState::load()
 
   options_collider_entity = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
-      800.0f, 450.0f,
+      cam_x, cam_y,
       0.0f,
       1600.0f, 900.0f
     )
@@ -93,7 +100,7 @@ void PauseState::load()
 
   exit_collider_entity = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
-      800.0f, 450.0f + 200.0f,
+      cam_x, cam_y + 200.0f,
       0.0f,
       1600.0f, 900.0f
     )
