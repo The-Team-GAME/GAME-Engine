@@ -133,7 +133,7 @@ void phy2D::apply_surface_friction(
   // Entity is moving fast enough - apply kinetic friction
   // Apply friction force proportional to speed
   // Direction opposes motion along the surface
-  Vec2D friction_direction = (tangent_speed > 0) ? (tangent * -1.0f) : tangent;
+  Vec2D friction_direction = (tangent_speed < 0) ? (tangent * -1.0f) : tangent;
   f32 friction_magnitude = speed * kinetic_friction;
 
   // Apply friction as a velocity change
