@@ -119,4 +119,11 @@ void PauseState::free()
 
 void PauseState::unload()
 {
+  // Destroy entities created in load()
+  Engine::ECS::destroy_entity(background_entity);
+  Engine::ECS::destroy_entity(hovered_button_entity);
+  Engine::ECS::destroy_entity(resume_collider_entity);
+  Engine::ECS::destroy_entity(restart_collider_entity);
+  Engine::ECS::destroy_entity(options_collider_entity);
+  Engine::ECS::destroy_entity(exit_collider_entity);
 }

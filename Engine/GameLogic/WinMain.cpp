@@ -220,7 +220,7 @@ void RunGame()
 
   Engine::FunctionRegistry<void()>::register_function("pause_menu_resume", []() {
     Log::info("Resuming game from pause menu");
-    // Resume the game
+    Engine::SceneManager::pop_scene();
     });
   Engine::FunctionRegistry<void()>::register_function("pause_menu_restart", []() {
     Log::info("Restarting level from pause menu");
