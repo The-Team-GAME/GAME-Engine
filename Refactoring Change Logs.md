@@ -63,8 +63,8 @@ Engine::Resources::set_resource_path("Assets/");
 // Load resources - automatically cached and reference counted
 auto texture = Engine::Resources::load_texture("images/player.png");
 auto font = Engine::Resources::load_font("fonts/arial.ttf", 24);
-auto sound = Engine::Resources::load_sound("sounds/move1.wav");
-auto music = Engine::Resources::load_music("sounds/move1.ogg"); // Streamed from disk
+auto sound = Engine::Resources::load_sound("sounds/SFX/Player/Player Footstep.wav");
+auto music = Engine::Resources::load_music("sounds/SFX/Player/Player Footstep.ogg"); // Streamed from disk
 ```
 
 #### Resource Lifecycle
