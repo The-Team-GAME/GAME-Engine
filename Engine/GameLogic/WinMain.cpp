@@ -21,7 +21,6 @@
 #include "GameStates/Rubric2500ParticlesState.h"
 #include "GameStates/StressTestState.h"
 #include "GameStates/BasicState.h"
-#include "GameStates/PrefabsState.h"
 #include "GameStates/PhysicsTestState.h"
 #include "GameStates/TimelineState.h"
 #include "GameStates/DistortionEffectState.h"
@@ -223,7 +222,6 @@ void RunGame()
   Engine::SceneManager::register_scene<Rubric2500ParticlesState>("Rubric2500ParticlesState");
   Engine::SceneManager::register_scene<StressTestState>("StressTestState");
   Engine::SceneManager::register_scene<BasicState>("BasicState");
-  Engine::SceneManager::register_scene<PrefabsState>("PrefabsState");
   Engine::SceneManager::register_scene<PhysicsTestState>("PhysicsTestState");
   Engine::SceneManager::register_scene<TimelineState>("TimelineState");
   Engine::SceneManager::register_scene<DistortionEffectState>("DistortionEffectState");
