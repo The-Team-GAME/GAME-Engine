@@ -54,11 +54,23 @@ namespace Engine {
         // Auto-calculate local offset on first update (if not initialized)
         if (!parent_comp->offset_initialized) {
           parent_comp->local_offset = child_transform->position - parent_transform->position;
+          parent_comp->prev_parent_pos = parent_transform->position;
           parent_comp->offset_initialized = true;
         }
 
-        // Update child position to follow parent
-        child_transform->position = parent_transform->position + parent_comp->local_offset;
+        // Calculate parent's movement delta
+        Math::Vec2D parent_delta = parent_transform->position - parent_comp->prev_parent_pos;
+
+        // Apply delta to child
+        if (parent_delta.get_magnitude_sq() > 0.0001f) {
+          child_transform->position += parent_delta;
+        }
+
+        // Update previous parent position for next frame
+        parent_comp->prev_parent_pos = parent_transform->position;
+        
+        // Update local offset to reflect new relative position (in case child moved independently)
+        parent_comp->local_offset = child_transform->position - parent_transform->position;
       }
     };
   }
