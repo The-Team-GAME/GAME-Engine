@@ -1,3 +1,4 @@
+
 #pragma once
 #include <functional>
 #include <deque>
@@ -20,7 +21,7 @@ namespace Engine {
   };
 
   namespace UndoManager {
-    constexpr size_t MAX_HISTORY = 500;
+    constexpr size_t MAX_HISTORY = 40;
     inline std::deque<std::unique_ptr<Action>> undo_stack;
     inline std::deque<std::unique_ptr<Action>> redo_stack;
 

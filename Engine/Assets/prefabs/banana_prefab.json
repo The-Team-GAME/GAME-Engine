@@ -42,10 +42,6 @@
                         "y": 0.0
                     },
                     "friction": 0.9900000095367432,
-                    "gravity_acc": {
-                        "x": 0.0,
-                        "y": 0.0
-                    },
                     "is_jumping": false,
                     "is_static": false,
                     "mass": 1.0,
@@ -65,7 +61,7 @@
         "layers": [
             "default"
         ],
-        "uuid": "db6f3caf-b389-40280-81f5-b3353e94f4a6"
+        "uuid": "054376c3-76b1-40c0d-9d32-33ec9360d70c"
     },
     "dataType": "Prefab"
 }

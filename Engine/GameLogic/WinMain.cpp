@@ -21,7 +21,6 @@
 #include "GameStates/Rubric2500ParticlesState.h"
 #include "GameStates/StressTestState.h"
 #include "GameStates/BasicState.h"
-#include "GameStates/PrefabsState.h"
 #include "GameStates/PhysicsTestState.h"
 #include "GameStates/TimelineState.h"
 #include "GameStates/DistortionEffectState.h"
@@ -60,7 +59,7 @@ void RunGame()
   Engine::ECS::register_layer("background"); // Static background layer
   //Engine::ECS::register_layer("tilemap_background_far");  // Tilemap background far layer (e.g., distant cityscape, outside window) // TODO: Re-enable after M3
   Engine::ECS::register_layer("tilemap_background_mid");  // Tilemap background mid layer (e.g., MRT carriage, trees, hills, pillars)
-  //Engine::ECS::register_layer("tilemap_background_near"); // Tilemap background near layer (e.g., bushes, fences) // TODO: Re-enable after M3
+  Engine::ECS::register_layer("tilemap_background_near"); // Tilemap background near layer (e.g., bushes, fences) // TODO: Re-enable after M3
   // Engine::ECS::register_layer("tilemap_foreground_far"); // Tilemap foreground far layer (don't need it for now)
   Engine::ECS::register_layer("tilemap_foreground_mid"); // Tilemap foreground mid layer (e.g., things that needs to collide with player, ground, platforms)
   //Engine::ECS::register_layer("tilemap_foreground_near"); // Tilemap foreground near layer (don't need it for now)
@@ -101,7 +100,7 @@ void RunGame()
       auto* transform = enemy_entity.get_component<Components::Transform2D>();
 
       if (!attack) {
-        Log::error("Error: Attack component missing from attack hitbox!");
+        Log::error("Error: Attack component missing from attack hitbox, on entity {}", attack_entity.get_id());
         return;
       }
 
@@ -191,7 +190,7 @@ void RunGame()
       auto* attack_transform = attack_entity.get_component<Components::Transform2D>();
 
       if (!attack) {
-        Log::error("Error: Attack component missing from enemy attack hitbox!");
+        Log::error("Error: Attack component missing from enemy attack hitbox, on entity {}", attack_entity.get_id());
         return;
       }
 
@@ -206,18 +205,11 @@ void RunGame()
         heartrate->increase(static_cast<float>(damage));
         Log::info("Player took {} damage! Heartrate: {}", damage, heartrate->heartrate);
 
-        // Apply knockback
-        if (player_transform && attack_transform) {
-          // Determine knockback direction (away from attack)
-          float dx = player_transform->position.x - attack_transform->position.x;
-          float knockback_direction = (dx > 0 ? 1.0f : -1.0f);
+        // Apply knockback (direction is already baked into attack->knockback from the attacker)
+        rigid->velocity.x = attack->knockback.x;
+        rigid->velocity.y = attack->knockback.y; // Usually negative for upward knockback
 
-          // Apply knockback velocity
-          rigid->velocity.x = attack->knockback.x * knockback_direction;
-          rigid->velocity.y = attack->knockback.y; // Usually negative for upward knockback
-
-          Log::info("Player knocked back! Velocity: ({}, {})", rigid->velocity.x, rigid->velocity.y);
-        }
+        Log::info("Player knocked back! Velocity: ({}, {})", rigid->velocity.x, rigid->velocity.y);
       }
       else {
         Log::error("Error: Heartrate or RigidBody component missing from player!");
@@ -230,7 +222,6 @@ void RunGame()
   Engine::SceneManager::register_scene<Rubric2500ParticlesState>("Rubric2500ParticlesState");
   Engine::SceneManager::register_scene<StressTestState>("StressTestState");
   Engine::SceneManager::register_scene<BasicState>("BasicState");
-  Engine::SceneManager::register_scene<PrefabsState>("PrefabsState");
   Engine::SceneManager::register_scene<PhysicsTestState>("PhysicsTestState");
   Engine::SceneManager::register_scene<TimelineState>("TimelineState");
   Engine::SceneManager::register_scene<DistortionEffectState>("DistortionEffectState");

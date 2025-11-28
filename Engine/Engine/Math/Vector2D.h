@@ -79,6 +79,7 @@ namespace Math {
   // This one not really cross product, more like finding area of //gram formed
   f32 cross_product(Vec2D const& lhs, Vec2D const& rhs);
   Vec2D outward_normal(Vec2D const& vect);
+  f32 angle_of_slope(Vec2D const& line);
 
 
 
