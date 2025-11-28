@@ -32,6 +32,12 @@ using col2D = Collision2DSystem;
 // eventually we'll deserialise these values from file bah
 namespace {
   Vec2D knockback_force{ -1000000.f, 50000.f };
+  const Vec2D gravity_acc = { 0.f, 1000.f };
+  const f32 STATIC_FRICTION_THRESHOLD = 20.0f;
+}
+Vec2D phy2D::get_gravity()
+{
+  return gravity_acc;
 }
 
 phy2D::Physics2DSystem() {
@@ -55,8 +61,6 @@ void phy2D::update()
 void phy2D::update_entity(ECS::Entity& entity) {
   Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
   Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
-
-  rigid->on_ground = false;
   phy2D::update_kinematics(*rigid, *xform);
   rigid->force.zero();
   //Log::info("velocity: ({}, {}) || position: ({}, {})", rigid->velocity.x, rigid->velocity.y, rigid->curr_pos.x, rigid->curr_pos.y);
@@ -67,11 +71,15 @@ void phy2D::update_kinematics(Components::RigidBody& rigid, Components::Transfor
   Vec2D next_pos;
   // F = m x a => Force equals mass x acceleration
   // acceleration will contain a value if the entity is affected by gravity
-  rigid.acceleration = rigid.force / rigid.mass + rigid.gravity_acc;
-  // V = a x dt => Velocity equals acceleration x delta time
-  // i increased friction for the x axis to test cuz we not sure if we want to do it like this
-  Vec2D prev_velocity = Vec2D(rigid.velocity.x * 0.80f, rigid.velocity.y * rigid.friction);
-  rigid.velocity = prev_velocity + rigid.acceleration * Time::get_fixed_dt();
+  rigid.acceleration = rigid.force / rigid.mass;
+  if (rigid.use_gravity)
+  {
+    rigid.acceleration += gravity_acc;
+  }
+  
+  // From now on we will apply friction on collision like how its supposed to be
+  // There wont be any air resistance so that the player can be controlled more accurately
+  rigid.velocity += rigid.acceleration * Time::get_fixed_dt();
 
   // Checking terminal velocity here
   // using the magnitude squared to check cuz its cheaper than sqrt-ing the value
@@ -87,11 +95,45 @@ void phy2D::update_kinematics(Components::RigidBody& rigid, Components::Transfor
   xform.rotation += rigid.angular_velocity * Engine::Time::get_fixed_dt();
 }
 
-void phy2D::kill_normal_component(Components::RigidBody& rigid, Vec2D mvt)
+void phy2D::zero_normal_velocity(
+  Components::RigidBody& rigid,
+  CollisionResult const& collision)
 {
-  Vec2D normalised_mtv = normalise_vector(mvt);
-  f32 magnitude_of_normal_force = dot_product(rigid.velocity, normalised_mtv);
-  rigid.velocity -= normalised_mtv * magnitude_of_normal_force;
+  Vec2D normalised_mtv = normalise_vector(collision.mtv);
+  f32 normal_velocity_magnitude = dot_product(rigid.velocity, normalised_mtv);
+  rigid.velocity -= normalised_mtv * normal_velocity_magnitude;
+}
+
+void phy2D::apply_surface_friction(
+  Components::RigidBody& rigid,
+  CollisionResult const& collision,
+  f32 static_friction,
+  f32 kinetic_friction)
+{
+  // At this point, the velocity of the entity should already be parallel to the surface its colliding with since zero_normal_velocity was called prior to this function.
+  Vec2D normal = normalise_vector(collision.mtv);
+  Vec2D tangent = normalise_vector(collision.get_tangent());
+
+  // Get velocity component parallel to the surface
+  f32 tangent_speed = dot_product(rigid.velocity, tangent);
+  f32 speed = fabsf(tangent_speed);
+
+  if (speed < STATIC_FRICTION_THRESHOLD)
+  {
+    // Entity is moving very slowly - apply static friction
+    // Remove the tangent velocity component completely
+    rigid.velocity -= tangent * tangent_speed;
+    return;  // Exit early - entity is now stationary relative to surface
+  }
+
+  // Entity is moving fast enough - apply kinetic friction
+  // Apply friction force proportional to speed
+  // Direction opposes motion along the surface
+  Vec2D friction_direction = (tangent_speed > 0) ? (tangent * -1.0f) : tangent;
+  f32 friction_magnitude = speed * kinetic_friction;
+
+  // Apply friction as a velocity change
+  rigid.velocity -= friction_direction * friction_magnitude;
 }
 
 void phy2D::add_force(Components::RigidBody& rigid, Vec2D force)
@@ -109,17 +151,17 @@ void phy2D::zero_force(Components::RigidBody& rigid)
   rigid.force.zero();
 }
 
-void phy2D::walk_left(Components::RigidBody& rigid)
+void phy2D::walk_left(Components::RigidBody& rigid) // not used
 {
   rigid.velocity.x = -200.f;
 }
 
-void phy2D::walk_right(Components::RigidBody& rigid)
+void phy2D::walk_right(Components::RigidBody& rigid) // not used
 {
   rigid.velocity.x = 200.f;
 }
 
-void phy2D::jump(Components::RigidBody& rigid)
+void phy2D::jump(Components::RigidBody& rigid) // not used
 {
   rigid.on_ground = false;
   phy2D::add_force(rigid, Vec2D(0.f, -3500000.f));
