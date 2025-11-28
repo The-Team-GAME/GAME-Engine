@@ -45,7 +45,7 @@ public:
 
     // You can serialize the prefab to JSON
     std::string banana_json = Engine::FileIO::serialize_prefab_to_json(banana_prefab);
-    std::cout << banana_json << "\n";
+    Log::info("{}", banana_json);
 
     // Save the banana prefab to a JSON file
     Engine::Resources::save_prefab("prefabs/banana_prefab.json", banana_prefab);
@@ -73,7 +73,7 @@ public:
     auto copy2 = Engine::ECS::instantiate_prefab(entity_prefab);
 
     // std::string test_entity_json = Engine::FileIO::serialize_prefab_to_json(entity_prefab);
-    // std::cout << test_entity_json << "\n";
+    // Log::info("{}", test_entity_json);
 
   };
 

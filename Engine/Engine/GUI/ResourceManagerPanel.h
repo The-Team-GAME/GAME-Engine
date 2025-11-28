@@ -16,7 +16,7 @@
 //-----------------------------------------------------------------------------------
 #include "../Resources.h"
 #include "../Logger.h"
-#include <imgui.h>
+#include "Precompiled.h"
 #include "../Audio/AudioPlayerInternal.h"
 #include "../Audio/AudioPlayer.h"
 #include <unordered_map>
@@ -202,7 +202,7 @@ void ResourceManagerPanel() {
             Engine::Audio::ChannelHandle handle = Engine::Audio::play_sound(sound_ptr, 1.0f, false);
             if (handle != Engine::Audio::INVALID_CHANNEL) {
               playing_sounds[path] = handle;
-              Log::info("Playing sound: " + path);
+              Log::info("Playing sound: {}", path);
             }
           }
           ImGui::SameLine();
@@ -212,7 +212,7 @@ void ResourceManagerPanel() {
             Engine::Audio::ChannelHandle handle = Engine::Audio::play_sound(sound_ptr, 1.0f, true);
             if (handle != Engine::Audio::INVALID_CHANNEL) {
               playing_sounds[path] = handle;
-              Log::info("Playing sound (looped): " + path);
+              Log::info("Playing sound (looped): {}", path);
             }
           }
         }
@@ -221,7 +221,7 @@ void ResourceManagerPanel() {
           if (ImGui::SmallButton("Stop")) {
             Engine::Audio::stop_channel(channel_it->second);
             playing_sounds.erase(channel_it);
-            Log::info("Stopped sound: " + path);
+            Log::info("Stopped sound: {}", path);
           }
           ImGui::SameLine();
 
@@ -231,13 +231,13 @@ void ResourceManagerPanel() {
 
           if (ImGui::SmallButton("Pause")) {
             Engine::Audio::pause_channel(channel_it->second);
-            Log::info("Paused sound: " + path);
+            Log::info("Paused sound: {}", path);
           }
           ImGui::SameLine();
 
           if (ImGui::SmallButton("Resume")) {
             Engine::Audio::resume_channel(channel_it->second);
-            Log::info("Resumed sound: " + path);
+            Log::info("Resumed sound: {}", path);
           }
 
           // Volume control

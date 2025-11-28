@@ -16,7 +16,7 @@
 #include "WindowManager.h"
 #include "Core.h"
 #include "Events/WindowEvents.h"
-#include <iostream>
+#include "Logger.h"
 #include "ECS/ECS.h"
 #include "Time.h"
 #include <sstream>
@@ -54,14 +54,14 @@ namespace Engine {
 
       if (!glfwInit())
       {
-        std::cout << "Failed to initialize GLFW" << std::endl;
+        Log::error("Failed to initialize GLFW");
         return;
       }
 
       window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
       if (!window)
       {
-        std::cout << "Failed to create GLFW window" << std::endl;
+        Log::error("Failed to create GLFW window");
         glfwTerminate();
         return;
       }
@@ -71,11 +71,11 @@ namespace Engine {
 
       if (glewInit() != GLEW_OK)
       {
-        std::cout << "GLEW Initialization failed." << std::endl;
+        Log::error("GLEW Initialization failed.");
         return;
       }
 
-      std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
+      Log::info("OpenGL Version: {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 
       // Set aspect ratio constraint (16:9)
       glfwSetWindowAspectRatio(window, 16, 9);
@@ -149,6 +149,40 @@ namespace Engine {
     }
 
     /* ===================== //
+    // Window Mode           //
+    // ===================== */
+    void set_fullscreen(bool fullscreen)
+    {
+      if (!window) return;
+
+      if (fullscreen)
+      {
+        // Get primary monitor and its video mode
+        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+        // Switch to fullscreen
+        glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+      }
+      else
+      {
+        // Switch to windowed mode
+        // Center the window on the screen
+        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+        
+        // Use default size or stored size
+        int w = 1600;
+        int h = 900;
+        
+        int x = (mode->width - w) / 2;
+        int y = (mode->height - h) / 2;
+
+        glfwSetWindowMonitor(window, nullptr, x, y, w, h, 0);
+      }
+    }
+
+    /* ===================== //
     // Callbacks             //
     // ===================== */
     void framebuffer_resize_callback([[maybe_unused]] GLFWwindow* win, s32 w, s32 h)
@@ -177,13 +211,15 @@ namespace Engine {
       Engine::Input::set_scroll_offset(xoffset, yoffset);
     }
 
-    void window_close_callback(GLFWwindow* win)
+    void window_close_callback([[maybe_unused]] GLFWwindow* win)
     {
+#ifndef GAME_BUILD
       // Cancel the close - we'll handle it through ImGui popup
       glfwSetWindowShouldClose(win, GLFW_FALSE);
 
       // Set flag to show the exit confirmation popup
       Engine::EventManager::send_event<Engine::Events::WindowCloseRequestedEvent>();
+#endif
     }
   }
 }

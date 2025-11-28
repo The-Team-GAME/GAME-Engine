@@ -18,6 +18,7 @@
 
 
 #include "UtilityComponents.h"
+#include "AudioComponents.h"
 #include "GraphicsComponents.h"
 #include "PhysicsComponents.h"
 #include "SpatialComponents.h"

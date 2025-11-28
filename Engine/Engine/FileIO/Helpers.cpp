@@ -28,7 +28,7 @@ namespace Engine
 
       if (!file.is_open())
       {
-        Log::warning("Failed to open file for reading: " + file_path);
+        Log::warning("Failed to open file for reading: {}", file_path);
         return std::nullopt;
       }
 
@@ -53,11 +53,11 @@ namespace Engine
           try
           {
             std::filesystem::create_directories(directory);
-            Log::info("Created directory: " + directory);
+            Log::info("Created directory: {}", directory);
           }
           catch (const std::filesystem::filesystem_error& e)
           {
-            Log::error("Failed to create directory: " + directory + " - " + e.what());
+            Log::error("Failed to create directory: {} - {}", directory, e.what());
             return false;
           }
         }
@@ -67,14 +67,14 @@ namespace Engine
       std::ofstream file(file_path);
       if (!file.is_open())
       {
-        Log::error("Failed to open file for writing: " + file_path);
+        Log::error("Failed to open file for writing: {}", file_path);
         return false;
       }
 
       file << content;
       file.close();
 
-      Log::info("Successfully wrote to file: " + file_path);
+      Log::info("Successfully wrote to file: {}", file_path);
       return true;
     }
   }
