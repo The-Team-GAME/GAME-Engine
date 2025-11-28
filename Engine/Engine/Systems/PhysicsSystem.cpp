@@ -107,7 +107,7 @@ void phy2D::zero_normal_velocity(
 void phy2D::apply_surface_friction(
   Components::RigidBody& rigid,
   CollisionResult const& collision,
-  f32 static_friction,
+  [[maybe_unused]] f32 static_friction,
   f32 kinetic_friction)
 {
   // At this point, the velocity of the entity should already be parallel to the surface its colliding with since zero_normal_velocity was called prior to this function.

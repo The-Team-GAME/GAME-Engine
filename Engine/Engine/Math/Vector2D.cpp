@@ -104,7 +104,7 @@ namespace Math {
   f32 angle_of_slope(Vec2D const& line)
   {
     f32 angle_of_slope = atan2f(fabsf(line.y), fabsf(line.x));
-    return angle_of_slope * 180.f / std::numbers::pi;
+    return angle_of_slope * 180.f / static_cast<f32>(std::numbers::pi);
   }
 
   // Non Member Operator Overloads
