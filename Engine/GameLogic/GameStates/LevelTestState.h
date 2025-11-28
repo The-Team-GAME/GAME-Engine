@@ -83,6 +83,11 @@ public:
       .add_to_layer("enemy");
       //.add_to_layer("damage_player");
 
+
+    // set friction to 0
+    player_entity.get_component<Components::BoxCollider>()->kinetic_friction = 0.8f;
+    lazy_monkey_entity.get_component<Components::BoxCollider>()->kinetic_friction = 0.8f;
+
     Log::info("\n=== State Machine Test Level Loaded ===");
     Log::info("Controls (Sidescrolling Platform Game):");
     Log::info("  A/D - Move left/right");
