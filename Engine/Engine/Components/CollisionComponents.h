@@ -281,10 +281,11 @@ namespace Components
     // Offset from the entity's position
     Vec2D offset = { 0.0f, 0.0f };
 
+    // For friction, 1 is no friction and 0 is 100% energy loss
     // Used when an object is at rest to make it harder to start moving (used when objects are on a slope)
     f32 static_friction; 
     // Used when an object is moving, acts against the direction the object is moving
-    f32 kinetic_friction; 
+    f32 kinetic_friction = 1.f; 
 
     // AABB constructor (existing - no rotation)
     BoxCollider(f32 width, f32 height, bool is_static_object)
@@ -320,4 +321,4 @@ namespace Components
 }
 
 REFLECT_FIELDS(AABB, pos, half_width, half_height)
-REGISTER_COMPONENT(Components::BoxCollider, resolve_collisions, width, height, radius, aabb, offset)
+REGISTER_COMPONENT(Components::BoxCollider, resolve_collisions, width, height, radius, aabb, offset, kinetic_friction)

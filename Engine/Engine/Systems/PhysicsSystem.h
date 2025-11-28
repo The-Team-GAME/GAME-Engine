@@ -58,6 +58,8 @@ namespace Engine {
         Components::RigidBody const& rigid,
         CollisionResult const& collision
       );
+      
+      static Vec2D get_gravity();
 
       // Used to add forces to the rigid body
       static void add_force(Components::RigidBody& rigid, Vec2D force);

@@ -159,6 +159,11 @@ void col2D::update()
           if (angle_of_slope(rigid->last_surface_dir_vector) < slope_angle_limit)
           {
             rigid->on_ground = true;
+
+            // Calculate gravity's component along the slope surface
+            // This prevents sliding when standing still on slopes
+            Vec2D gravity_force =phy2D::get_gravity() * rigid->mass;  // mass × gravity_acc
+            phy2D::add_force(*rigid, -gravity_force);
           }
         }
       }

@@ -35,7 +35,6 @@ namespace Components
     Vec2D acceleration;
     Vec2D velocity; // Velocity in units per second
     // terminal velocity should be a set value instead of a vector just cuz you want to properly scale the velocity instead of capping it at set values
-    f32 friction{ 0.99f };
     f32 terminal_velocity{ 1000.f }; // set to max float
 
     Vec2D last_surface_dir_vector{ 1.f, 0.f };
@@ -63,7 +62,7 @@ namespace Components
     }
 
     // Default constructor for reflection
-    RigidBody() : mass(1.0f), friction(0.99f), terminal_velocity(750.f), is_static(false), on_ground(false),
+    RigidBody() : mass(1.0f), terminal_velocity(750.f), is_static(false), on_ground(false),
       is_jumping(false), direction(RIGHT), rotation(0.0f), rotation_terminal_velocity(360.0f), angular_velocity(0.0f)
     {
     }
@@ -72,4 +71,4 @@ namespace Components
   };
 }
 
-REGISTER_COMPONENT(Components::RigidBody, mass, force, acceleration, velocity, friction, terminal_velocity, use_gravity, is_static, on_ground, is_jumping, rotation, rotation_terminal_velocity, angular_velocity)
+REGISTER_COMPONENT(Components::RigidBody, mass, force, acceleration, velocity, terminal_velocity, use_gravity, is_static, on_ground, is_jumping, rotation, rotation_terminal_velocity, angular_velocity)
