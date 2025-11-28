@@ -1,0 +1,343 @@
+{
+    "data": {
+        "entities": [
+            {
+                "components": [
+                    {
+                        "data": {
+                            "aabb": {
+                                "half_height": 50.0,
+                                "half_width": 300.0,
+                                "pos": {
+                                    "x": 800.0,
+                                    "y": 650.0
+                                }
+                            },
+                            "height": 100.0,
+                            "kinetic_friction": 1.0,
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                },
+                                "rotation": 0.0,
+                                "vertices": []
+                            },
+                            "radius": -1.3052710541075741e-20,
+                            "resolve_collisions": true,
+                            "type": "AABB",
+                            "width": 600.0
+                        },
+                        "type": "Components::BoxCollider"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": 650.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 900.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "exit_hover": {
+                                "name": ""
+                            },
+                            "on_click": {
+                                "name": "pause_menu_exit"
+                            },
+                            "on_hover": {
+                                "name": ""
+                            }
+                        },
+                        "type": "Components::Clickable"
+                    }
+                ],
+                "layers": [
+                    "default"
+                ]
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "aabb": {
+                                "half_height": 50.0,
+                                "half_width": 300.0,
+                                "pos": {
+                                    "x": 800.0,
+                                    "y": 450.0
+                                }
+                            },
+                            "height": 100.0,
+                            "kinetic_friction": 1.0,
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                },
+                                "rotation": 0.0,
+                                "vertices": []
+                            },
+                            "radius": -1.3052710541075741e-20,
+                            "resolve_collisions": true,
+                            "type": "AABB",
+                            "width": 600.0
+                        },
+                        "type": "Components::BoxCollider"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 900.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "exit_hover": {
+                                "name": ""
+                            },
+                            "on_click": {
+                                "name": "pause_menu_options"
+                            },
+                            "on_hover": {
+                                "name": ""
+                            }
+                        },
+                        "type": "Components::Clickable"
+                    }
+                ],
+                "layers": [
+                    "default"
+                ]
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "aabb": {
+                                "half_height": 50.0,
+                                "half_width": 300.0,
+                                "pos": {
+                                    "x": 800.0,
+                                    "y": 250.0
+                                }
+                            },
+                            "height": 100.0,
+                            "kinetic_friction": 1.0,
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                },
+                                "rotation": 0.0,
+                                "vertices": []
+                            },
+                            "radius": -1.3052710541075741e-20,
+                            "resolve_collisions": true,
+                            "type": "AABB",
+                            "width": 600.0
+                        },
+                        "type": "Components::BoxCollider"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": 250.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 900.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "exit_hover": {
+                                "name": ""
+                            },
+                            "on_click": {
+                                "name": "pause_menu_restart"
+                            },
+                            "on_hover": {
+                                "name": ""
+                            }
+                        },
+                        "type": "Components::Clickable"
+                    }
+                ],
+                "layers": [
+                    "default"
+                ]
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "aabb": {
+                                "half_height": 50.0,
+                                "half_width": 300.0,
+                                "pos": {
+                                    "x": 800.0,
+                                    "y": 50.0
+                                }
+                            },
+                            "height": 100.0,
+                            "kinetic_friction": 1.0,
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                },
+                                "rotation": 0.0,
+                                "vertices": []
+                            },
+                            "radius": -1.3052710541075741e-20,
+                            "resolve_collisions": true,
+                            "type": "AABB",
+                            "width": 600.0
+                        },
+                        "type": "Components::BoxCollider"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": 50.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 900.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "exit_hover": {
+                                "name": ""
+                            },
+                            "on_click": {
+                                "name": "pause_menu_resume"
+                            },
+                            "on_hover": {
+                                "name": ""
+                            }
+                        },
+                        "type": "Components::Clickable"
+                    }
+                ],
+                "layers": [
+                    "default"
+                ]
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "a": 1.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/In-Game Pause/States/NothingSelectedPausedMenu.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 900.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    }
+                ],
+                "layers": [
+                    "default"
+                ]
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "a": 0.20000000298023224,
+                            "b": 0.0,
+                            "g": 0.0,
+                            "r": 0.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "path": "UNIT_RECT"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 900.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    }
+                ],
+                "layers": [
+                    "default"
+                ]
+            }
+        ]
+    },
+    "dataType": "Level"
+}
