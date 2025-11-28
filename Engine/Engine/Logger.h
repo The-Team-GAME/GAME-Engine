@@ -38,6 +38,9 @@ namespace Log {
 	void warning(std::format_string<Args...> fmt, Args&&... args) {
 #ifndef GAME_BUILD
 		detail::warning_impl(std::format(fmt, std::forward<Args>(args)...));
+#else
+		(void)fmt;
+		((void)args, ...);
 #endif
 	}
 
@@ -53,6 +56,9 @@ namespace Log {
 	void info(std::format_string<Args...> fmt, Args&&... args) {
 #ifndef GAME_BUILD
 		detail::info_impl(std::format(fmt, std::forward<Args>(args)...));
+#else
+		(void)fmt;
+		((void)args, ...);
 #endif
 	}
 
@@ -68,6 +74,9 @@ namespace Log {
 	void error(std::format_string<Args...> fmt, Args&&... args) {
 #ifndef GAME_BUILD
 		detail::error_impl(std::format(fmt, std::forward<Args>(args)...));
+#else
+		(void)fmt;
+		((void)args, ...);
 #endif
 	}
 
@@ -84,6 +93,9 @@ namespace Log {
 	void crash(std::format_string<Args...> fmt, Args&&... args) {
 #ifndef GAME_BUILD
 		detail::crash_impl(std::format(fmt, std::forward<Args>(args)...));
+#else
+		(void)fmt;
+		((void)args, ...);
 #endif
 	}
 }

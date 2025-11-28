@@ -262,7 +262,7 @@ void RunGame()
 Function Brief:
 WinMain entry point for the application (Game Build).
 ==================================================================================*/
-int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
+int APIENTRY WinMain([[maybe_unused]] HINSTANCE hInst, [[maybe_unused]] HINSTANCE hInstPrev, [[maybe_unused]] PSTR cmdline, [[maybe_unused]] int cmdshow)
 {
   RunGame();
   return 0;
