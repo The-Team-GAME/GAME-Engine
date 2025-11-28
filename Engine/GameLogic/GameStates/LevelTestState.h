@@ -55,6 +55,14 @@ public:
       .add_to_layer("player");
 
     // ========================================================================
+    // Create Camera Entity
+    // ========================================================================
+    Engine::ECS::create_entity()
+      .add_component<Components::Camera>("Main Camera", true)
+      .add_component<Components::Transform2D>(0.0f, -400.0f, 0.0f, 1.0f, 1.0f) // Relative to parent
+      .add_component<Components::Parent>(player_entity);
+
+    // ========================================================================
     // Create Lazy Monkey Entity
     // ========================================================================
     lazy_monkey_entity = Engine::ECS::create_entity()
