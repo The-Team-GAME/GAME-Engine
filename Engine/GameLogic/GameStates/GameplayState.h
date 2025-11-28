@@ -43,8 +43,6 @@ public:
 
   void update() {
 
-    Log::info("GameplayState updating");
-
     // Check if pause button is pressed
     if (Engine::Input::is_pressed(Engine::KeyCode::Escape)) {
       Engine::SceneManager::push_scene("PauseState");
