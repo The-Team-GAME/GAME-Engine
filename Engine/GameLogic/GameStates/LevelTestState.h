@@ -18,10 +18,7 @@
 #include "../States/LazyMonkeyStateMachine.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/HeartrateComponent.h"
-
 #include "../Components/HealthComponents.h"
-#include "../Systems/HealthSystem.h"
-#include "../../Engine/Systems/ParticleSystem.h"
 
 class LevelTestState : public Engine::Scene
 {
@@ -55,18 +52,10 @@ public:
       .add_component<Components::Heartrate>()
       .add_component<Components::Trail>(0.05f, 0.0f, 0.8f, 0.0f) // Interval, Lifetime, StartAlpha, EndAlpha 
       .add_component<Components::Distortion>(0.0f, 0.0f, 0.0f) // Intensity, Speed, MeshIntensity
+      .add_component<Components::HeartHUDSprite>()
       .remove_from_layer("default")
       .add_to_layer("player");
-
-    player_entity.add_component<Components::HeartHUDSprite>();
-    if (auto* hud = player_entity.get_component<Components::HeartHUDSprite>()) {
-      // Textures
-      hud->tex_back = Engine::Resources::load_texture("images/Heartratebar/BarBack.png");
-      hud->tex_solid = Engine::Resources::load_texture("images/Heartratebar/WhiteSolidForFill.png");
-      hud->tex_head = Engine::Resources::load_texture("images/Heartratebar/HeadBar.png");
-      hud->tex_white = Engine::Resources::load_texture("images/Heartratebar/WhiteBar.png");
-    }
-
+ 
     // ========================================================================
     // Create Camera Entity
     // ========================================================================

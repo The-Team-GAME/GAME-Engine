@@ -9,7 +9,7 @@
 //
 // brief:   This file defines struts required for the health system.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 
 #pragma once
@@ -72,7 +72,10 @@ namespace Components {
 		bool overlay_relative_to_back = true;
 
 		// Textures
-		Engine::Graphics::Texture tex_back{}, tex_solid{}, tex_white{}, tex_head{};
+		Engine::Graphics::Texture	tex_back{Engine::Resources::load_texture("images/Heartratebar/BarBack.png")};
+		Engine::Graphics::Texture tex_solid{Engine::Resources::load_texture("images/Heartratebar/WhiteSolidForFill.png")};
+		Engine::Graphics::Texture tex_white{Engine::Resources::load_texture("images/Heartratebar/WhiteBar.png")};
+		Engine::Graphics::Texture tex_head{Engine::Resources::load_texture("images/Heartratebar/HeadBar.png")};
 
 		// BPM mapping
 		float bpm_min = 40.f, bpm_max = 200.f;
@@ -88,7 +91,7 @@ namespace Components {
 		// Number of columns to reveal (default = cropped width)
 		int   slices = src_right_px - src_left_px;
 
-		// Fill band inside BarBack (measured from BarBack’s LEFT)
+		// Fill band inside BarBack (measured from BarBackï¿½s LEFT)
 		float fill_left_px = 0.f;
 		float fill_right_px = 736.f;
 
