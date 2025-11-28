@@ -107,6 +107,8 @@ void PauseState::load()
     .add_component<Components::BoxCollider>(600.0f, 100.0f, true)
     .add_component<Components::Clickable>("pause_menu_exit")
     .add_to_layer("ui");
+
+  Engine::Time::set_time_scale(0.0001f); // cant set to 0 or it input will not work
 }
 
 void PauseState::init()
@@ -134,4 +136,6 @@ void PauseState::unload()
   Engine::ECS::destroy_entity(restart_collider_entity);
   Engine::ECS::destroy_entity(options_collider_entity);
   Engine::ECS::destroy_entity(exit_collider_entity);
+
+  Engine::Time::set_time_scale(1.0f);
 }
