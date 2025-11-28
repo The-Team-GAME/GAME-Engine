@@ -27,7 +27,7 @@
 #include <vector>
 #include <functional>
 #include <optional>
-#include <iostream>
+#include "../Logger.h"
 #include <queue>
 #include "SpatialComponents.h"
 #include "../Resources.h"
@@ -167,7 +167,7 @@ namespace Components
     /// Add a state to the state machine
     void add_state(const State& state) {
       if (states.find(state.name) != states.end()) {
-        std::cout << "Warning: State '" << state.name << "' already exists in state machine. Overwriting." << std::endl;
+        Log::warning("State '{}' already exists in state machine. Overwriting.", state.name);
       }
       states[state.name] = state;
     }
@@ -175,7 +175,7 @@ namespace Components
     /// Set the initial state (must be called before first update)
     void set_initial_state(const std::string& state_name) {
       if (states.find(state_name) == states.end()) {
-        std::cout << "Error: Cannot set initial state '" << state_name << "' - state does not exist" << std::endl;
+        Log::error("Cannot set initial state '{}' - state does not exist", state_name);
         return;
       }
 
@@ -187,7 +187,7 @@ namespace Components
     /// Request a state change (deferred until end of current update)
     void change_state(const std::string& new_state) {
       if (states.find(new_state) == states.end()) {
-        std::cout << "Error: Cannot change to state '" << new_state << "' - state does not exist" << std::endl;
+        Log::error("Cannot change to state '{}' - state does not exist", new_state);
         return;
       }
 
@@ -200,7 +200,7 @@ namespace Components
     /// Revert to the previous state in history
     void revert_to_previous_state() {
       if (state_history_.empty()) {
-        std::cout << "Warning: No previous state to revert to" << std::endl;
+        Log::warning("No previous state to revert to");
         return;
       }
 
@@ -232,7 +232,7 @@ namespace Components
       }
 
       if (current_state_name.empty()) {
-        std::cout << "Warning: StateMachine has no current state set. Call set_initial_state() first." << std::endl;
+        Log::warning("StateMachine has no current state set. Call set_initial_state() first.");
         return;
       }
 
@@ -302,7 +302,7 @@ namespace Components
       }
 
       if (!owner_entity_) {
-        std::cout << "Error: Cannot execute state transition - owner entity is null" << std::endl;
+        Log::error("Cannot execute state transition - owner entity is null");
         return;
       }
 
@@ -404,7 +404,7 @@ namespace Components
       // Get or add Sound component
       Sound* sound_comp = owner_entity_->get_component<Sound>();
       if (!sound_comp) {
-        std::cout << "Sound component not found for entity " << owner_entity_->get_id() << std::endl;
+        Log::warning("Sound component not found for entity {}", owner_entity_->get_id());
         owner_entity_->add_component<Sound>();
 
         sound_comp = owner_entity_->get_component<Sound>();

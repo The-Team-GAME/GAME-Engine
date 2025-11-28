@@ -15,7 +15,7 @@
 //-----------------------------------------------------------------------------------
 #include "Core.h"
 #include "Precompiled.h"
-#include <iostream>
+#include "Logger.h"
 #include "FileHandler.h"
 #include "SceneManager.h"
 #include "ImGuiManager.h"
@@ -155,7 +155,7 @@ namespace Engine
 
     // Just register one simple function
     Engine::LuaManager::register_function("log_message", [](const std::string& message) {
-      std::cout << "[Lua] " << message << std::endl;
+      Log::info("[Lua] {}", message);
       });
 
 
@@ -249,7 +249,7 @@ namespace Engine
         if (Engine::Input::is_pressed(KeyCode::P))
         {
           Engine::Time::toggle_paused();
-          std::cout << "Physics Step Mode: " << (Engine::Time::get_paused() ? "ON" : "OFF") << std::endl;
+          Log::info("Physics Step Mode: {}", (Engine::Time::get_paused() ? "ON" : "OFF"));
         }
 
         // Single-step when paused
@@ -261,14 +261,14 @@ namespace Engine
         // Undo last action
         if (Engine::Input::is_pressed(Engine::KeyCode::Z) && Engine::Input::is_held(Engine::KeyCode::CtrlLeft))
         {
-          std::cout << "Undoing last action\n";
+          Log::info("Undoing last action");
           Engine::UndoManager::undo();
         }
 
         // Redo last undone action
         if (Engine::Input::is_pressed(Engine::KeyCode::Y) && Engine::Input::is_held(Engine::KeyCode::CtrlLeft))
         {
-          std::cout << "Redoing last undone action\n";
+          Log::info("Redoing last undone action");
           Engine::UndoManager::redo();
         }
 
@@ -280,7 +280,7 @@ namespace Engine
           Engine::ECS::Entity selected_entity = Engine::ECS::get_first_entity_with<Components::Gizmo>();
 
           if (selected_entity != Engine::ECS::INVALID_ENTITY) {
-            std::cout << "Deleting selected entity: " << selected_entity.get_id() << "\n";
+            Log::info("Deleting selected entity: {}", selected_entity.get_id());
             Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(selected_entity.get_id(), true);
           }
         }

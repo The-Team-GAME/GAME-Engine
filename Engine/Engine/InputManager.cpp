@@ -16,6 +16,7 @@
 #include "InputManager.h"
 #include "Core.h"
 #include "Precompiled.h"
+#include "Logger.h"
 #include <array>
 #include <glm/glm.hpp>
 #include "Perf.h"
@@ -93,12 +94,12 @@ namespace Engine
     f64 xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
 
-    //std::cout << "Raw Mouse Position: (" << xpos << ", " << ypos << ")\n";
+    //Log::info("Raw Mouse Position: ({}, {})", xpos, ypos);
 
     // Convert screen coordinates to viewport-relative virtual coordinates
     mousePosition = Engine::Graphics::screen_to_viewport({ static_cast<f32>(xpos), static_cast<f32>(ypos) });
 
-    //std::cout << "Mouse Position: (" << mousePosition.x << ", " << mousePosition.y << ")\n";
+    //Log::info("Mouse Position: ({}, {})", mousePosition.x, mousePosition.y);
 
     Engine::Perf::stop("Input");
   }
@@ -172,7 +173,7 @@ namespace Engine
 
   void Input::set_scroll_offset(f64 xoffset, f64 yoffset)
   {
-    //std::cout << "Scroll Offset Callback: (" << xoffset << ", " << yoffset << ")\n";
+    //Log::info("Scroll Offset Callback: ({}, {})", xoffset, yoffset);
     scrollOffset = { static_cast<f32>(xoffset), static_cast<f32>(yoffset) };
   }
 }

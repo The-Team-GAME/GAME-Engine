@@ -16,7 +16,7 @@
 #include "WindowManager.h"
 #include "Core.h"
 #include "Events/WindowEvents.h"
-#include <iostream>
+#include "Logger.h"
 #include "ECS/ECS.h"
 #include "Time.h"
 #include <sstream>
@@ -54,14 +54,14 @@ namespace Engine {
 
       if (!glfwInit())
       {
-        std::cout << "Failed to initialize GLFW" << std::endl;
+        Log::error("Failed to initialize GLFW");
         return;
       }
 
       window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
       if (!window)
       {
-        std::cout << "Failed to create GLFW window" << std::endl;
+        Log::error("Failed to create GLFW window");
         glfwTerminate();
         return;
       }
@@ -71,11 +71,11 @@ namespace Engine {
 
       if (glewInit() != GLEW_OK)
       {
-        std::cout << "GLEW Initialization failed." << std::endl;
+        Log::error("GLEW Initialization failed.");
         return;
       }
 
-      std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
+      Log::info("OpenGL Version: {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 
       // Set aspect ratio constraint (16:9)
       glfwSetWindowAspectRatio(window, 16, 9);

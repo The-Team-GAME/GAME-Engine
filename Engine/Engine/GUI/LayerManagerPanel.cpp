@@ -17,6 +17,7 @@
 #include "LayerManagerPanel.h"
 #include "../ECS/ECS.h"
 #include "../ProjectSaveManager.h"
+#include "../Logger.h"
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -269,7 +270,7 @@ void LayerManagerPanel()
           return a.length() < b.length();
         });
 
-      std::cout << "Max layer name length: " << (max_it != layer_names.end() ? max_it->length() : 0) << std::endl;
+      Log::info("Max layer name length: {}", (max_it != layer_names.end() ? max_it->length() : 0));
       return (max_it != layer_names.end() ? max_it->length() : 0) + 1; // Add padding
       }();
 
