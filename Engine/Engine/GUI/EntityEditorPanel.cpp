@@ -28,6 +28,7 @@
 #include "../Components/SpatialComponents.h"
 #include "../Components/UtilityComponents.h"
 #include "../Components/HierarchyComponents.h"
+#include "../Components/LevelComponent.h"
 #include "../EventManager/EventManager.h"
 #include "../Events/EngineEvents.h"
 #include "../UndoManager/UndoManager.h"
@@ -69,6 +70,12 @@ namespace {
     // Try to get a name from common components
     if (entity.has_component<Components::Transform2D>()) {
       // entity_label += " (Transform)"; // Optional: Add more info
+    }
+
+    // Check for Level component
+    if (entity.has_component<Components::Level>()) {
+      auto* level_comp = entity.get_component<Components::Level>();
+      entity_label += " (Level: " + level_comp->level_path + ")";
     }
     
     // Check if this entity is selected
@@ -128,6 +135,12 @@ namespace {
 
     // Build entity label
     std::string entity_label = "Entity " + std::to_string(entity.get_id());
+
+    // Check for Level component
+    if (entity.has_component<Components::Level>()) {
+      auto* level_comp = entity.get_component<Components::Level>();
+      entity_label += " (Level: " + level_comp->level_path + ")";
+    }
 
     // Check if this entity is selected
     bool is_selected = (selected_entity_id == static_cast<s32>(entity.get_id()));
