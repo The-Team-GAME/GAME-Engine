@@ -31,11 +31,15 @@ public:
     bgm = Engine::Resources::load_sound("sounds/BGM/Level 1 BGM.wav");
     Engine::Audio::play_sound(bgm, 0.3f, true); // TODO: get from settings
 
+    auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+
     // Camera entity
     Engine::ECS::Entity camera = Engine::ECS::create_entity();
     camera.add_component<Components::Transform2D>(0.0f, 200.0f, 0.0f, 1.0f, 1.0f);
     camera.add_component<Components::Camera>("player camera", true);
-    camera.add_component<Components::Parent>(Engine::ECS::get_first_entity_with<Components::Player>());
+    camera.add_component<Components::Parent>(player_entity);
+
+    player_entity.add_component<Components::HeartHUDSprite>();
 
   };
 
