@@ -5,6 +5,33 @@
                 "components": [
                     {
                         "data": {
+                            "position": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1.0,
+                                "y": 1.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "level_path": "levels/MainMenu.json"
+                        },
+                        "type": "Components::Level"
+                    }
+                ],
+                "layers": [
+                    "default"
+                ]
+            },
+            {
+                "components": [
+                    {
+                        "data": {
                             "a": 1.0,
                             "b": 1.0,
                             "g": 1.0,
@@ -31,6 +58,21 @@
                             }
                         },
                         "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "offset_initialized": true,
+                            "parent_id": null,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
                 "layers": [
@@ -67,6 +109,21 @@
                             }
                         },
                         "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "offset_initialized": true,
+                            "parent_id": null,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
                 "layers": [
@@ -103,6 +160,21 @@
                             }
                         },
                         "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "offset_initialized": true,
+                            "parent_id": null,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
                 "layers": [
@@ -139,6 +211,21 @@
                             }
                         },
                         "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "offset_initialized": true,
+                            "parent_id": null,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
                 "layers": [
@@ -175,6 +262,21 @@
                             }
                         },
                         "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "offset_initialized": true,
+                            "parent_id": null,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
                 "layers": [
@@ -266,13 +368,28 @@
                                 "name": ""
                             },
                             "on_click": {
-                                "name": "load_level_test"
+                                "name": "start_game"
                             },
                             "on_hover": {
                                 "name": ""
                             }
                         },
                         "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "offset_initialized": true,
+                            "parent_id": null,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
                 "layers": [
@@ -364,13 +481,28 @@
                                 "name": ""
                             },
                             "on_click": {
-                                "name": ""
+                                "name": "options_menu"
                             },
                             "on_hover": {
                                 "name": ""
                             }
                         },
                         "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "offset_initialized": true,
+                            "parent_id": null,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
                 "layers": [
@@ -470,6 +602,21 @@
                             }
                         },
                         "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "offset_initialized": true,
+                            "parent_id": null,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
                 "layers": [
@@ -569,6 +716,21 @@
                             }
                         },
                         "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "offset_initialized": true,
+                            "parent_id": null,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
                 "layers": [
@@ -606,6 +768,21 @@
                             }
                         },
                         "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "offset_initialized": true,
+                            "parent_id": null,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
                 "layers": [
@@ -642,6 +819,21 @@
                             }
                         },
                         "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "offset_initialized": true,
+                            "parent_id": null,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
                 "layers": [

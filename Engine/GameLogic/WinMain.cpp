@@ -29,6 +29,7 @@
 #include "GameStates/LevelTestState.h"
 #include "GameStates/GameplayState.h"
 #include "GameStates/PauseState.h"
+#include "GameStates/OptionsState.h"
 #include "Systems/HealthSystem.h"
 #include "Systems/EnemyHealthSystem.h"
 #include "Systems/HeartrateSystem.h"
@@ -228,7 +229,7 @@ void RunGame()
     });
   Engine::FunctionRegistry<void()>::register_function("pause_menu_options", []() {
     Log::info("Opening options from pause menu");
-    //Engine::SceneManager::load_scene("OptionsState");
+    Engine::SceneManager::load_scene("OptionsState");
     });
   Engine::FunctionRegistry<void()>::register_function("pause_menu_exit", []() {
     Log::info("Exiting to main menu from pause menu");
@@ -249,7 +250,8 @@ void RunGame()
   Engine::SceneManager::register_scene<LevelTestState>("LevelTestState");
   Engine::SceneManager::register_scene<BehaviourState>("BehaviourState");
   Engine::SceneManager::register_scene<GameplayState>("GameplayState");
-  Engine::SceneManager::register_scene<PauseState>("PauseState"); 
+  Engine::SceneManager::register_scene<PauseState>("PauseState");
+  Engine::SceneManager::register_scene<OptionsState>("OptionsState");
 
   // Register game systems at startup
   Engine::ECS::add_system<Engine::Systems::HealthSystem>();

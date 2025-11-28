@@ -29,11 +29,13 @@ void main_menu_start() {
 }
 
 public:
-  void load() {
-    Engine::FunctionRegistry<void()>::register_function("load_level_test", []() {
+  void load() { 
+    Engine::FunctionRegistry<void()>::register_function("start_game", []() {
       Engine::SceneManager::load_scene("GameplayState");
       });
-
+    Engine::FunctionRegistry<void()>::register_function("options_menu", []() {
+      Engine::SceneManager::load_scene("OptionsState");
+      });
     Engine::FunctionRegistry<void()>::register_function("exit_game", []() {
       Engine::Core::stop();
       });
