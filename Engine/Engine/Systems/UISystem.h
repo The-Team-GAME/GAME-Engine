@@ -76,6 +76,8 @@ namespace Engine
               auto click_func = clickable->on_click.get<void()>();
               if (click_func) {
                 click_func();
+
+                Engine::ECS::process_housekeeping(); // TODO: just so resuming from pause works, remove later
               }
             }
           }

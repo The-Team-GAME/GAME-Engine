@@ -79,27 +79,17 @@ namespace Engine
     }
 
     void pop_scene() {
-      if (scene_stack.empty()) return;
+      if (scene_stack.empty()) {
+        Log::error("pop_scene called but stack is empty!");
+        return;
+      }
+
+      Log::info("Popping scene. Stack size before: {}", scene_stack.size());
 
       // Unload current
       scene_stack.back()->free();
       scene_stack.back()->unload();
       scene_stack.pop_back();
-
-      // Destroy entities created by the popped scene? 
-      // This is tricky because ECS is global. 
-      // For now, we assume the popped scene cleans up its own entities in unload() or we might need a way to track entities per scene.
-      // But typically pause menus use entities too.
-      // If we don't destroy them, they persist.
-      // The user asked for "game play in background", implying the background entities stay.
-      // The pause menu entities should be destroyed.
-      // Since ECS::destroy_all_entities() kills everything, we can't use it here.
-      // We rely on the scene's unload() to clean up specific things if needed, 
-      // OR we assume the pause menu entities are destroyed when the scene is unloaded?
-      // Wait, `unload()` is user defined.
-      // If the pause menu created entities, they are in the ECS.
-      // We might need to track which entities belong to the top scene.
-      // But for now, let's just implement the stack logic.
 
       if (!scene_stack.empty()) {
         current_scene = scene_stack.back().get();
@@ -107,8 +97,10 @@ namespace Engine
       }
       else {
         current_scene = nullptr;
-        Log::info("Popped last scene.");
+        Log::info("Popped last scene. Stack is empty.");
       }
+      
+      Log::info("Stack size after: {}", scene_stack.size());
     }
 
     void unload_current_scene() {
@@ -132,7 +124,10 @@ namespace Engine
 
     void update() {
       if (current_scene != nullptr) {
+        // Log::info("Updating scene: {}", get_current_scene_name()); // Spammy but useful for debugging
         current_scene->update();
+      } else {
+        Log::warning("SceneManager::update called but current_scene is null!");
       }
     }
 
