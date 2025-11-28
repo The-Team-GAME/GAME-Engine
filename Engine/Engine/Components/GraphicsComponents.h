@@ -355,7 +355,6 @@ namespace Components
           //   anim.frames[i].atlas_index = r.atlas_indices[i];
           // }
           // else {
-          //   std::cout << "Warning: atlas_indices size less than durations size in Animation Reflector, using default sequential indices.\n";
           //   anim.frames[i].atlas_index = static_cast<int>(i);
           // }
         }

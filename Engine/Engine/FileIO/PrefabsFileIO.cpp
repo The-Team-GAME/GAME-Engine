@@ -60,7 +60,7 @@ namespace Engine {
 
       Engine::FileIO::write_string_to_file(filepath, json_content);
       
-      Log::info("Prefab saved: " + filepath);
+      Log::info("Prefab saved: {}", filepath);
 
       return true;
     }
@@ -72,7 +72,7 @@ namespace Engine {
 
       if (!json_content.has_value())
       {
-        Log::warning("Failed to read prefab file: " + filepath);
+        Log::warning("Failed to read prefab file: {}", filepath);
         return Engine::ECS::Prefab(); // Return empty prefab handle
       }
 

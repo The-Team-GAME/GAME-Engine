@@ -13,7 +13,7 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-#include <imgui.h>
+#include "../Precompiled.h"
 #include "EntityEditorPanel.h"
 #include "widgets/ReflectionFieldWidgets.h"
 #include "../FileIO/PrefabsFileIO.h"
@@ -82,7 +82,7 @@ namespace {
       node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
     }
 
-    bool node_open = ImGui::TreeNodeEx(
+    ImGui::TreeNodeEx(
       (void*)(intptr_t)entity.get_id(),
       node_flags,
       "%s",
@@ -490,7 +490,7 @@ void EntityEditorPanel()
               entity.get_id(), type_id, default_data, true
             );
 
-            Log::info("Added component '" + component_name + "' to entity " + std::to_string(entity.get_id()));
+            Log::info("Added component '{}' to entity {}", component_name, entity.get_id());
           }
         }
 
@@ -800,7 +800,7 @@ void EntityEditorPanel()
               // Update all instances of this prefab
               Engine::ECS::update_prefab_instances(preserved_uuid);
 
-              Log::info("Updated prefab: " + selected_prefab_for_update + " (UUID: " + preserved_uuid + ")");
+              Log::info("Updated prefab: {} (UUID: {})", selected_prefab_for_update, preserved_uuid);
 
               // Clear selection and close popup
               selected_prefab_for_update = "";
@@ -810,7 +810,7 @@ void EntityEditorPanel()
             }
           }
           else {
-            Log::error("Failed to load existing prefab: " + selected_prefab_for_update);
+            Log::error("Failed to load existing prefab: {}", selected_prefab_for_update);
           }
         }
       }

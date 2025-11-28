@@ -26,7 +26,7 @@ namespace PlayerStateCallbacks
   inline void idle_on_enter(Engine::ECS::Entity& entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     if (rigid) rigid->velocity.x = 0.f;
-    std::cout << "Player: Entered Idle state" << std::endl;
+    Log::info("Player: Entered Idle state");
   }
 
   inline void idle_on_update(Engine::ECS::Entity& entity) {
@@ -60,28 +60,28 @@ namespace PlayerStateCallbacks
   // Walking State Callbacks
   // ========================================================================
 
-  inline void walking_on_enter(Engine::ECS::Entity& entity) {
-    std::cout << "Player: Entered Walking state" << std::endl;
+  inline void walking_on_enter([[maybe_unused]] Engine::ECS::Entity& entity) {
+    Log::info("Player: Entered Walking state");
   }
 
   inline void walking_on_update(Engine::ECS::Entity& entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* flip = entity.get_component<Components::Flip>();
-    auto* player = entity.get_component<Components::Player>();
+    auto* player_comp = entity.get_component<Components::Player>();
 
-    if (!player) return;
+    if (!player_comp) return;
 
     rigid->velocity.x = 0.f;
     // Don't touch velocity.y - let gravity handle it
 
     // Horizontal movement only (sidescrolling)
     if (Engine::Input::is_held(Engine::KeyCode::A)) {
-      rigid->velocity.x = -player->walk_speed;
+      rigid->velocity.x = -player_comp->walk_speed;
       if (flip) flip->value.x = -1.0f; // Face left
     }
     if (Engine::Input::is_held(Engine::KeyCode::D)) {
-      rigid->velocity.x = player->walk_speed;
+      rigid->velocity.x = player_comp->walk_speed;
       if (flip) flip->value.x = 1.0f; // Face right
     }
 
@@ -122,33 +122,33 @@ namespace PlayerStateCallbacks
 
   inline void jumping_on_enter(Engine::ECS::Entity& entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
-    auto* player = entity.get_component<Components::Player>();
+    auto* player_comp = entity.get_component<Components::Player>();
 
-    if (rigid && player) {
+    if (rigid && player_comp) {
       // Apply jump force
-      rigid->velocity.y = -player->jump_force; // Negative is up
+      rigid->velocity.y = -player_comp->jump_force; // Negative is up
     }
 
-    std::cout << "Player: Entered Jumping state" << std::endl;
+    Log::info("Player: Entered Jumping state");
   }
 
   inline void jumping_on_update(Engine::ECS::Entity& entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* flip = entity.get_component<Components::Flip>();
-    auto* player = entity.get_component<Components::Player>();
+    auto* player_comp = entity.get_component<Components::Player>();
 
-    if (!player) return;
+    if (!player_comp) return;
 
     // Allow horizontal air control
     rigid->velocity.x = 0.f;
 
     if (Engine::Input::is_held(Engine::KeyCode::A)) {
-      rigid->velocity.x = -player->air_speed;
+      rigid->velocity.x = -player_comp->air_speed;
       if (flip) flip->value.x = -1.0f; // Face left
     }
     if (Engine::Input::is_held(Engine::KeyCode::D)) {
-      rigid->velocity.x = player->air_speed;
+      rigid->velocity.x = player_comp->air_speed;
       if (flip) flip->value.x = 1.0f; // Face right
     }
 
@@ -179,38 +179,38 @@ namespace PlayerStateCallbacks
   inline void attack1_on_enter(Engine::ECS::Entity& entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
-    auto* player = entity.get_component<Components::Player>();
+    auto* player_comp = entity.get_component<Components::Player>();
     auto* heartrate = entity.get_component<Components::Heartrate>();
 
     // Increase heartrate
     if (heartrate) {
-      heartrate->increase(player->attack1.heartrate_cost);
+      heartrate->increase(player_comp->attack1.heartrate_cost);
     }
 
     // Apply forward movement during attack
-    if (rigid && flip && player) {
-      rigid->velocity.x = (flip->value.x < 0) ? -player->attack1.dash_speed : player->attack1.dash_speed;
+    if (rigid && flip && player_comp) {
+      rigid->velocity.x = (flip->value.x < 0) ? -player_comp->attack1.dash_speed : player_comp->attack1.dash_speed;
     }
 
     // Create attack hitbox entity
     auto* transform = entity.get_component<Components::Transform2D>();
 
-    if (transform && player) {
-      float offset_x = (flip && flip->value.x < 0) ? -player->attack1.hitbox_offset_x : player->attack1.hitbox_offset_x;
-      float offset_y = player->attack1.hitbox_offset_y;
+    if (transform && player_comp) {
+      float offset_x = (flip && flip->value.x < 0) ? -player_comp->attack1.hitbox_offset_x : player_comp->attack1.hitbox_offset_x;
+      float offset_y = player_comp->attack1.hitbox_offset_y;
 
       auto hitbox = Engine::ECS::create_entity()
         .add_component<Components::Tag<"PlayerAttackHitbox">>()
-        .add_component<Components::Attack>(player->attack1.damage)
+        .add_component<Components::Attack>(player_comp->attack1.damage)
         .add_component<Components::Transform2D>(
           transform->position.x + offset_x,
           transform->position.y + offset_y,
           0.0f,
-          player->attack1.hitbox_width,
-          player->attack1.hitbox_height
+          player_comp->attack1.hitbox_width,
+          player_comp->attack1.hitbox_height
         )
         .add_component<Components::RigidBody>(true, false)
-        .add_component<Components::BoxCollider>(player->attack1.hitbox_width, player->attack1.hitbox_height, false)
+        .add_component<Components::BoxCollider>(player_comp->attack1.hitbox_width, player_comp->attack1.hitbox_height, false)
         .add_component<Components::Parent>(entity)
         .add_component<Components::Lifetime>(0.48f) // Attack1 duration: 6 frames × 0.08f
         .remove_from_layer("default")
@@ -219,7 +219,7 @@ namespace PlayerStateCallbacks
       // Apply knockback direction based on facing
       auto* attack = hitbox.get_component<Components::Attack>();
       if (attack) {
-        attack->knockback = player->attack1.knockback;
+        attack->knockback = player_comp->attack1.knockback;
         if (flip && flip->value.x < 0) {
           attack->knockback.x = -attack->knockback.x;
         }
@@ -231,7 +231,7 @@ namespace PlayerStateCallbacks
       }
     }
 
-    std::cout << "Player: Attack 1 (First Punch)" << std::endl;
+    Log::info("Player: Attack 1 (First Punch)");
   }
 
   inline void attack1_on_update(Engine::ECS::Entity& entity) {
@@ -269,38 +269,38 @@ namespace PlayerStateCallbacks
   inline void attack2_on_enter(Engine::ECS::Entity& entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
-    auto* player = entity.get_component<Components::Player>();
+    auto* player_comp = entity.get_component<Components::Player>();
     auto* heartrate = entity.get_component<Components::Heartrate>();
 
     // Increase heartrate
     if (heartrate) {
-      heartrate->increase(player->attack2.heartrate_cost);
+      heartrate->increase(player_comp->attack2.heartrate_cost);
     }
 
     // Apply forward movement during attack
-    if (rigid && flip && player) {
-      rigid->velocity.x = (flip->value.x < 0) ? -player->attack2.dash_speed : player->attack2.dash_speed;
+    if (rigid && flip && player_comp) {
+      rigid->velocity.x = (flip->value.x < 0) ? -player_comp->attack2.dash_speed : player_comp->attack2.dash_speed;
     }
 
     // Create attack hitbox entity
     auto* transform = entity.get_component<Components::Transform2D>();
 
-    if (transform && player) {
-      float offset_x = (flip && flip->value.x < 0) ? -player->attack2.hitbox_offset_x : player->attack2.hitbox_offset_x;
-      float offset_y = player->attack2.hitbox_offset_y;
+    if (transform && player_comp) {
+      float offset_x = (flip && flip->value.x < 0) ? -player_comp->attack2.hitbox_offset_x : player_comp->attack2.hitbox_offset_x;
+      float offset_y = player_comp->attack2.hitbox_offset_y;
 
       auto hitbox = Engine::ECS::create_entity()
         .add_component<Components::Tag<"PlayerAttackHitbox">>()
-        .add_component<Components::Attack>(player->attack2.damage)
+        .add_component<Components::Attack>(player_comp->attack2.damage)
         .add_component<Components::Transform2D>(
           transform->position.x + offset_x,
           transform->position.y + offset_y,
           0.0f,
-          player->attack2.hitbox_width,
-          player->attack2.hitbox_height
+          player_comp->attack2.hitbox_width,
+          player_comp->attack2.hitbox_height
         )
         .add_component<Components::RigidBody>(true, false)
-        .add_component<Components::BoxCollider>(player->attack2.hitbox_width, player->attack2.hitbox_height, false)
+        .add_component<Components::BoxCollider>(player_comp->attack2.hitbox_width, player_comp->attack2.hitbox_height, false)
         .add_component<Components::Parent>(entity)
         .add_component<Components::Lifetime>(0.24f) // Attack2 duration: 3 frames × 0.08f
         .remove_from_layer("default")
@@ -309,7 +309,7 @@ namespace PlayerStateCallbacks
       // Apply knockback direction based on facing
       auto* attack = hitbox.get_component<Components::Attack>();
       if (attack) {
-        attack->knockback = player->attack2.knockback;
+        attack->knockback = player_comp->attack2.knockback;
         if (flip && flip->value.x < 0) {
           attack->knockback.x = -attack->knockback.x;
         }
@@ -321,7 +321,7 @@ namespace PlayerStateCallbacks
       }
     }
 
-    std::cout << "Player: Attack 2 (Second Punch)" << std::endl;
+    Log::info("Player: Attack 2 (Second Punch)");
   }
 
   inline void attack2_on_update(Engine::ECS::Entity& entity) {
@@ -359,38 +359,38 @@ namespace PlayerStateCallbacks
   inline void attack3_on_enter(Engine::ECS::Entity& entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
-    auto* player = entity.get_component<Components::Player>();
+    auto* player_comp = entity.get_component<Components::Player>();
     auto* heartrate = entity.get_component<Components::Heartrate>();
 
     // Increase heartrate
     if (heartrate) {
-      heartrate->increase(player->attack3.heartrate_cost);
+      heartrate->increase(player_comp->attack3.heartrate_cost);
     }
 
     // Apply forward movement during attack
-    if (rigid && flip && player) {
-      rigid->velocity.x = (flip->value.x < 0) ? -player->attack3.dash_speed : player->attack3.dash_speed;
+    if (rigid && flip && player_comp) {
+      rigid->velocity.x = (flip->value.x < 0) ? -player_comp->attack3.dash_speed : player_comp->attack3.dash_speed;
     }
 
     // Create attack hitbox entity
     auto* transform = entity.get_component<Components::Transform2D>();
 
-    if (transform && player) {
-      float offset_x = (flip && flip->value.x < 0) ? -player->attack3.hitbox_offset_x : player->attack3.hitbox_offset_x;
-      float offset_y = player->attack3.hitbox_offset_y;
+    if (transform && player_comp) {
+      float offset_x = (flip && flip->value.x < 0) ? -player_comp->attack3.hitbox_offset_x : player_comp->attack3.hitbox_offset_x;
+      float offset_y = player_comp->attack3.hitbox_offset_y;
 
       auto hitbox = Engine::ECS::create_entity()
         .add_component<Components::Tag<"PlayerAttackHitbox">>()
-        .add_component<Components::Attack>(player->attack3.damage)
+        .add_component<Components::Attack>(player_comp->attack3.damage)
         .add_component<Components::Transform2D>(
           transform->position.x + offset_x,
           transform->position.y + offset_y,
           0.0f,
-          player->attack3.hitbox_width,
-          player->attack3.hitbox_height
+          player_comp->attack3.hitbox_width,
+          player_comp->attack3.hitbox_height
         )
         .add_component<Components::RigidBody>(true, false)
-        .add_component<Components::BoxCollider>(player->attack3.hitbox_width, player->attack3.hitbox_height, false)
+        .add_component<Components::BoxCollider>(player_comp->attack3.hitbox_width, player_comp->attack3.hitbox_height, false)
         .add_component<Components::Parent>(entity)
         .add_component<Components::Lifetime>(0.6f) // Attack3 duration: 10 frames × 0.06f
         .remove_from_layer("default")
@@ -399,7 +399,7 @@ namespace PlayerStateCallbacks
       // Apply knockback direction based on facing
       auto* attack = hitbox.get_component<Components::Attack>();
       if (attack) {
-        attack->knockback = player->attack3.knockback;
+        attack->knockback = player_comp->attack3.knockback;
         if (flip && flip->value.x < 0) {
           attack->knockback.x = -attack->knockback.x;
         }
@@ -411,7 +411,7 @@ namespace PlayerStateCallbacks
       }
     }
 
-    std::cout << "Player: Attack 3 (Third Punch - Finisher!)" << std::endl;
+    Log::info("Player: Attack 3 (Third Punch - Finisher!)");
   }
 
   inline void attack3_on_update(Engine::ECS::Entity& entity) {

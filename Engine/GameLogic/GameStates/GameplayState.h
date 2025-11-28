@@ -27,7 +27,7 @@ public:
     Engine::Resources::open_level("levels/LevelOne.json");
 
     bgm = Engine::Resources::load_sound("sounds/BGM/Level 1 BGM.wav");
-    Engine::Audio::play_sound(bgm, 0.3, true); // TODO: get from settings
+    Engine::Audio::play_sound(bgm, 0.3f, true); // TODO: get from settings
   };
 
   void init() {};

@@ -29,7 +29,7 @@ namespace LazyMonkeyStateCallbacks
       // Store when we entered idle (for recovery delay after being hit)
       lazy_monkey->last_attack_time = Engine::Time::get_time(); // Reusing this field as "idle_enter_time"
     }
-    std::cout << "Lazy Monkey: Entered Idle state" << std::endl;
+    Log::info("Lazy Monkey: Entered Idle state");
   }
 
   inline void idle_on_update(Engine::ECS::Entity& entity) {
@@ -72,8 +72,8 @@ namespace LazyMonkeyStateCallbacks
   // Chasing State Callbacks
   // ========================================================================
 
-  inline void chasing_on_enter(Engine::ECS::Entity& entity) {
-    std::cout << "Lazy Monkey: Entered Chasing state" << std::endl;
+  inline void chasing_on_enter([[maybe_unused]] Engine::ECS::Entity& entity) {
+    Log::info("Lazy Monkey: Entered Chasing state");
   }
 
   inline void chasing_on_update(Engine::ECS::Entity& entity) {
@@ -124,7 +124,7 @@ namespace LazyMonkeyStateCallbacks
     }
   }
 
-  inline void chasing_on_exit(Engine::ECS::Entity& entity) {
+  inline void chasing_on_exit([[maybe_unused]] Engine::ECS::Entity& entity) {
 
   }
 
@@ -146,7 +146,7 @@ namespace LazyMonkeyStateCallbacks
       lazy_monkey->last_attack_time = Engine::Time::get_time();
     }
     
-    std::cout << "Lazy Monkey: Winding up for attack" << std::endl;
+    Log::info("Lazy Monkey: Winding up for attack");
   }
 
   inline void windup_on_update(Engine::ECS::Entity& entity) {
@@ -196,7 +196,7 @@ namespace LazyMonkeyStateCallbacks
       rigid->velocity.y = -lazy_monkey->leap_height; // Negative is up
     }
 
-    std::cout << "Lazy Monkey: Entered Attacking state" << std::endl;
+    Log::info("Lazy Monkey: Entered Attacking state");
   }
 
   inline void attacking_on_update(Engine::ECS::Entity& entity) {
@@ -222,11 +222,8 @@ namespace LazyMonkeyStateCallbacks
   //// ========================================================================
 
   inline void hit_on_enter(Engine::ECS::Entity& entity) {
-    auto* rigid = entity.get_component<Components::RigidBody>();
-    auto* flip = entity.get_component<Components::Flip>();
-    auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
-
-    std::cout << "Lazy Monkey: Stunned!" << std::endl;
+    (void)entity; // Suppress unused parameter warning
+    Log::info("Lazy Monkey: Stunned!");
   }
 
   inline void hit_on_update(Engine::ECS::Entity& entity) {
@@ -269,19 +266,19 @@ namespace LazyMonkeyStateCallbacks
   // Death State Callbacks
   // ========================================================================
 
-  inline void death_on_enter(Engine::ECS::Entity& entity) {
-    std::cout << "Lazy Monkey: Died!" << std::endl;
+  inline void death_on_enter([[maybe_unused]] Engine::ECS::Entity& entity) {
+    Log::info("Lazy Monkey: Died!");
   }
 
   inline void death_on_update(Engine::ECS::Entity& entity) {
     auto* animation = entity.get_component<Components::Animation>();
     if (animation && animation->has_ended()) {
       Engine::ECS::destroy_entity(entity);
-      std::cout << "Lazy Monkey: Destroyed after death animation." << std::endl;
+      Log::info("Lazy Monkey: Destroyed after death animation.");
     }
   }
 
-  inline void death_on_exit(Engine::ECS::Entity& entity) {
+  inline void death_on_exit([[maybe_unused]] Engine::ECS::Entity& entity) {
     // Should not happen unless respawning
   }
 

@@ -18,8 +18,6 @@
 #include "../Engine/MonkeyEngine.h"
 #include "GameStates/EmptyState.h"
 #include "GameStates/MainMenuState.h"
-#include "GameStates/ShowcaseState.h"
-#include "GameStates/RectPainterState.h"
 #include "GameStates/Rubric2500ParticlesState.h"
 #include "GameStates/StressTestState.h"
 #include "GameStates/BasicState.h"
@@ -44,20 +42,25 @@ and runs the game engine, and catches any unhandled exceptions for error logging
 Returns:
 0 on successful execution, 1 if an exception occurred.
 ==================================================================================*/
-int main()
+/*=================================================================================
+Function Brief:
+Common game initialization and loop logic.
+==================================================================================*/
+void RunGame()
 {
+#if defined(_DEBUG)
   // Enable memory leak detection
   s32 tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
   tmpDbgFlag |= _CRTDBG_LEAK_CHECK_DF;
   _CrtSetDbgFlag(tmpDbgFlag);
   _CrtSetBreakAlloc(-1);
-
+#endif
 
   // Register game layers
   Engine::ECS::register_layer("background"); // Static background layer
   //Engine::ECS::register_layer("tilemap_background_far");  // Tilemap background far layer (e.g., distant cityscape, outside window) // TODO: Re-enable after M3
   Engine::ECS::register_layer("tilemap_background_mid");  // Tilemap background mid layer (e.g., MRT carriage, trees, hills, pillars)
-  //Engine::ECS::register_layer("tilemap_background_near"); // Tilemap background near layer (e.g., bushes, fences) // TODO: Re-enable after M3
+  Engine::ECS::register_layer("tilemap_background_near"); // Tilemap background near layer (e.g., bushes, fences) // TODO: Re-enable after M3
   // Engine::ECS::register_layer("tilemap_foreground_far"); // Tilemap foreground far layer (don't need it for now)
   Engine::ECS::register_layer("tilemap_foreground_mid"); // Tilemap foreground mid layer (e.g., things that needs to collide with player, ground, platforms)
   //Engine::ECS::register_layer("tilemap_foreground_near"); // Tilemap foreground near layer (don't need it for now)
@@ -69,8 +72,12 @@ int main()
   Engine::ECS::register_layer("player"); // Player character layer
   Engine::ECS::register_layer("effect"); // Visual effects like particles
   Engine::ECS::register_layer("ui"); // User interface elements
+#ifndef GAME_BUILD
   Engine::ECS::register_layer("debug"); // Debug overlays and information
+#endif
 
+
+  
   // Start the engine
   Engine::Core::init();
 
@@ -80,9 +87,7 @@ int main()
     {
       // Example callback: Print entity IDs on collision
       // In practice, you would handle damage, effects, etc. here
-      std::cout << "Collision detected between Entity "
-        << entityA.get_id() << " and Entity "
-        << entityB.get_id() << std::endl;
+      Log::info("Collision detected between Entity {} and Entity {}", entityA.get_id(), entityB.get_id());
     });
 
   // Register collision callback for player attacks hitting enemies
@@ -96,7 +101,7 @@ int main()
       auto* transform = enemy_entity.get_component<Components::Transform2D>();
 
       if (!attack) {
-        std::cout << "Error: Attack component missing from attack hitbox!" << std::endl;
+        Log::error("Error: Attack component missing from attack hitbox!");
         return;
       }
 
@@ -109,8 +114,7 @@ int main()
         // Only take damage if not invulnerable
         int damage = attack->damage;
         enemy_health->take_damage(damage);
-        std::cout << "Enemy took " << damage << " damage! HP: "
-          << enemy_health->current_hp << "/" << enemy_health->max_hp << std::endl;
+        Log::info("Enemy took {} damage! HP: {}/{}", damage, enemy_health->current_hp, enemy_health->max_hp);
 
         // Trigger hit or death state
         if (enemy_health->current_hp <= 0) {
@@ -169,7 +173,7 @@ int main()
         }
       }
       else {
-        std::cout << "Error: EnemyHealth or StateMachine component missing!" << std::endl;
+        Log::error("Error: EnemyHealth or StateMachine component missing!");
       }
     });
 
@@ -177,7 +181,7 @@ int main()
   Engine::ECS::LayerRegistry::register_collision_callback("damage_player", "player",
     [](Engine::ECS::Entity attack_entity, Engine::ECS::Entity player_entity)
     {
-      std::cout << "Player took damage!" << std::endl;
+      Log::info("Player took damage!");
 
       // When enemy attack hitbox collides with player
       auto* attack = attack_entity.get_component<Components::Attack>();
@@ -187,7 +191,7 @@ int main()
       auto* attack_transform = attack_entity.get_component<Components::Transform2D>();
 
       if (!attack) {
-        std::cout << "Error: Attack component missing from enemy attack hitbox!" << std::endl;
+        Log::error("Error: Attack component missing from enemy attack hitbox!");
         return;
       }
 
@@ -200,7 +204,7 @@ int main()
         // Increase heartrate instead of decreasing HP
         int damage = attack->damage;
         heartrate->increase(static_cast<float>(damage));
-        std::cout << "Player took " << damage << " damage! Heartrate: " << heartrate->heartrate << std::endl;
+        Log::info("Player took {} damage! Heartrate: {}", damage, heartrate->heartrate);
 
         // Apply knockback
         if (player_transform && attack_transform) {
@@ -212,19 +216,17 @@ int main()
           rigid->velocity.x = attack->knockback.x * knockback_direction;
           rigid->velocity.y = attack->knockback.y; // Usually negative for upward knockback
 
-          std::cout << "Player knocked back! Velocity: (" << rigid->velocity.x << ", " << rigid->velocity.y << ")" << std::endl;
+          Log::info("Player knocked back! Velocity: ({}, {})", rigid->velocity.x, rigid->velocity.y);
         }
       }
       else {
-        std::cout << "Error: Heartrate or RigidBody component missing from player!" << std::endl;
+        Log::error("Error: Heartrate or RigidBody component missing from player!");
       }
     });
 
   // Register game scenes at startup
   Engine::SceneManager::register_scene<EmptyState>("EmptyState");
   Engine::SceneManager::register_scene<MainMenuState>("MainMenuState");
-  // Engine::SceneManager::register_scene<ShowcaseState>("ShowcaseState");
-  Engine::SceneManager::register_scene<RectPainterState>("RectPainterState");
   Engine::SceneManager::register_scene<Rubric2500ParticlesState>("Rubric2500ParticlesState");
   Engine::SceneManager::register_scene<StressTestState>("StressTestState");
   Engine::SceneManager::register_scene<BasicState>("BasicState");
@@ -248,6 +250,34 @@ int main()
 
   // Shutdown the engine
   Engine::Core::exit();
+}
 
+#ifdef GAME_BUILD
+
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <Windows.h>
+
+/*=================================================================================
+Function Brief:
+WinMain entry point for the application (Game Build).
+==================================================================================*/
+int APIENTRY WinMain([[maybe_unused]] HINSTANCE hInst, [[maybe_unused]] HINSTANCE hInstPrev, [[maybe_unused]] PSTR cmdline, [[maybe_unused]] int cmdshow)
+{
+  RunGame();
   return 0;
 }
+
+#else
+
+/*=================================================================================
+Function Brief:
+Main entry point for the application (Console Build).
+==================================================================================*/
+int main()
+{
+  RunGame();
+  return 0;
+}
+
+#endif

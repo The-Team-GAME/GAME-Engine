@@ -101,7 +101,7 @@ namespace Engine {
       FMOD_RESULT result = system->createSound(path.c_str(), mode, nullptr, &sound);
 
       if (result != FMOD_OK) {
-        Log::warning("Failed to load sound: " + path);
+        Log::warning("Failed to load sound: {}", path);
         sound = nullptr;
       }
     }

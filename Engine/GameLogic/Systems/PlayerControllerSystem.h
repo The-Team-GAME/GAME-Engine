@@ -56,12 +56,12 @@ private:
     }
   }
 
-  void handle_jump(Components::RigidBody* rb, f32 jumpVel) {
+    void handle_jump(Components::RigidBody* rb, f32 jumpVel) {
     // Only jump if grounded and space is pressed
-    if (rb->isGrounded) std::cout << "Grounded\n";
-    else std::cout << "Airborne\n";
+    if (rb->isGrounded) Log::info("Grounded");
+    else Log::info("Airborne");
     if (Engine::Input::is_pressed(GLFW_KEY_SPACE) && rb->isGrounded) {
-      std::cout << "Jump!\n";
+      Log::info("Jump!");
       rb->velocity.y = -jumpVel;  // Negative if +Y is down
       //rb->isGrounded = false;
     }

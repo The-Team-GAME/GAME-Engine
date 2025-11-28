@@ -17,7 +17,7 @@
 
 #include "RectPainterState.h"
 #include "../../Engine/MonkeyEngine.h"
-#include <imgui.h>
+#include "Precompiled.h"
 #include <algorithm>
 #include <cstdio>
 #include <unordered_map>

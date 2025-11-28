@@ -17,6 +17,7 @@
 #include "../Perf.h"
 #include "CollisionSystem.h"
 #include "PhysicsSystem.h"
+#include "../Logger.h"
 using namespace Engine;
 using namespace Systems;
 using phy2D = Physics2DSystem;
@@ -63,7 +64,7 @@ void phy2D::update_entity(ECS::Entity& entity) {
   Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
   phy2D::update_kinematics(*rigid, *box, *xform);
   rigid->force.zero();
-  //std::cout << "velocity: " << rigid->velocity << " || position: " << rigid->curr_pos << std::endl;
+  //Log::info("velocity: ({}, {}) || position: ({}, {})", rigid->velocity.x, rigid->velocity.y, rigid->curr_pos.x, rigid->curr_pos.y);
 }
 
 void phy2D::update_kinematics(
@@ -110,7 +111,7 @@ void phy2D::zero_normal_velocity(
 void phy2D::apply_surface_friction(
   Components::RigidBody& rigid,
   CollisionResult const& collision,
-  f32 static_friction,
+  [[maybe_unused]] f32 static_friction,
   f32 kinetic_friction)
 {
   // At this point, the velocity of the entity should already be parallel to the surface its colliding with since zero_normal_velocity was called prior to this function.

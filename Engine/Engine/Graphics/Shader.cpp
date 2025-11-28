@@ -57,14 +57,14 @@ namespace Engine {
       // Read vertex shader source from file
       auto vertexSource = Engine::FileIO::read_string_from_file(vertexPath);
       if (!vertexSource.has_value()) {
-        Log::error("Failed to read vertex shader file: " + vertexPath);
+        Log::error("Failed to read vertex shader file: {}", vertexPath);
         return std::make_unique<Shader>("", ""); // Return invalid shader
       }
 
       // Read fragment shader source from file
       auto fragmentSource = Engine::FileIO::read_string_from_file(fragmentPath);
       if (!fragmentSource.has_value()) {
-        Log::error("Failed to read fragment shader file: " + fragmentPath);
+        Log::error("Failed to read fragment shader file: {}", fragmentPath);
         return std::make_unique<Shader>("", ""); // Return invalid shader
       }
 
@@ -137,7 +137,7 @@ namespace Engine {
       int location = glGetUniformLocation(program_id, name.c_str());
 
       if (location == -1) {
-        Log::warning("Uniform '" + name + "' not found in shader");
+        Log::warning("Uniform '{}' not found in shader", name);
       }
 
       // Cache the location
@@ -195,14 +195,14 @@ namespace Engine {
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
         if (!success) {
           glGetShaderInfoLog(shader, 1024, nullptr, infoLog);
-          Log::error("Shader compilation error (" + type + "):\n" + std::string(infoLog));
+          Log::error("Shader compilation error ({}):\n{}", type, infoLog);
         }
       }
       else {
         glGetProgramiv(shader, GL_LINK_STATUS, &success);
         if (!success) {
           glGetProgramInfoLog(shader, 1024, nullptr, infoLog);
-          Log::error("Shader linking error:\n" + std::string(infoLog));
+          Log::error("Shader linking error:\n{}", infoLog);
         }
       }
     }

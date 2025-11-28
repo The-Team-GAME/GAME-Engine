@@ -5,6 +5,7 @@
 #include "FileIO/SettingsManager.h"
 #include "FileIO/Settings.h"
 #include "Systems/CollisionSystem.h"
+#include "Logger.h"
 #include <unordered_set>
 
 namespace
@@ -34,7 +35,7 @@ void Engine::Level::instantiate_into_world()
 {
   //Engine::SceneManager::load_scene("EmptyState"); // TODO: very hacky, just use empty scene for now, need better scene/level management
 
-  std::cout << "Instantiating level with " << entities.size() << " entities." << std::endl;
+  Log::info("Instantiating level with {} entities.", entities.size());
 
   Engine::ECS::for_each_entity([](Engine::ECS::Entity entity) {
     entity.destroy();

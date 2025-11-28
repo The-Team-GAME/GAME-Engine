@@ -396,7 +396,7 @@ namespace Engine {
       // Deserialize UUID if it exists, otherwise keep the generated one
       if (value.has("uuid") && value["uuid"].isString()) {
         prefab_impl->set_prefab_id(value["uuid"].getString());
-        Log::info("Loaded prefab with UUID: " + value["uuid"].getString());
+        Log::info("Loaded prefab with UUID: {}", value["uuid"].getString());
       }
 
       // Deserialize filepath if it exists
@@ -410,7 +410,7 @@ namespace Engine {
 
       // Deserialize components using helper function
       const auto& components_array = value["components"].getArray();
-      Log::info("Deserializing " + std::to_string(components_array.size()) + " components for prefab");
+      Log::info("Deserializing {} components for prefab", components_array.size());
 
       auto& prefab_storage = prefab_impl->get_component_storage();
       auto& prefab_signature = prefab_impl->get_signature();
@@ -422,7 +422,7 @@ namespace Engine {
         0 // Using dummy entity ID 0 for prefabs
       );
 
-      Log::info("Prefab now has " + std::to_string(prefab_storage.size()) + " components in storage");
+      Log::info("Prefab now has {} components in storage", prefab_storage.size());
 
       return prefab;
     }

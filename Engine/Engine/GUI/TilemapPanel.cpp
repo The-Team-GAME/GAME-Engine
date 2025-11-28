@@ -17,7 +17,7 @@
 //-----------------------------------------------------------------------------------
 #include "TilemapPanel.h"
 #include "TileColliderEditorPanel.h"
-#include <imgui.h>
+#include "../Precompiled.h"
 #include "../ECS/ECS.h"
 #include "../Components/Components.h"
 #include "../InputManager.h"
@@ -357,7 +357,7 @@ namespace TilemapPanel {
         // Load the texture using Resources (handles cache lookup automatically)
         entry.texture_handle = Engine::Resources::load_texture(entry.texture_path, true, false);
         if (!entry.texture_handle || entry.texture_handle->id == 0) {
-          Log::warning("Failed to load tilemap atlas texture: " + entry.texture_path);
+          Log::warning("Failed to load tilemap atlas texture: {}", entry.texture_path);
         }
       }
     }
@@ -1256,11 +1256,9 @@ namespace TilemapPanel {
 
           // Draw preview for each tile in the selection
           for (size_t i = 0; i < multi_tile_selection.indices.size(); ++i) {
-            int idx = multi_tile_selection.indices[i];
-
             // Calculate position within selection grid
-            int offset_x = i % multi_tile_selection.grid_width;
-            int offset_y = i / multi_tile_selection.grid_width;
+            int offset_x = static_cast<int>(i % multi_tile_selection.grid_width);
+            int offset_y = static_cast<int>(i / multi_tile_selection.grid_width);
 
             Math::Vec2D tile_pos = {
               grid_pos.x + offset_x * grid_snap,
