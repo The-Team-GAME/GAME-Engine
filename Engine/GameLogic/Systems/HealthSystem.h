@@ -447,7 +447,9 @@ namespace Engine {
 
     class HeartHUDSpriteSystem final : public Engine::ECS::System {
     public:
-      HeartHUDSpriteSystem() { require_components<Components::Heartrate, Components::HeartHUDSprite>(); }
+      HeartHUDSpriteSystem() {
+        require_components<Components::Heartrate, Components::HeartHUDSprite>();
+      }
 
       void update_entity(Engine::ECS::Entity& e) override {
         using namespace Components;
@@ -455,64 +457,155 @@ namespace Engine {
         auto* hud = e.get_component<HeartHUDSprite>();
         if (!hr || !hud) return;
 
-        ensure_created(*hud);
+        if (!hud->screen_space) {
+          ensure_created(*hud);
 
-        // Effective anchors
+          const float headX = hud->anchor_px.x + hud->head_offset_px.x;
+          const float headY = hud->anchor_px.y + hud->head_offset_px.y;
+          const float backX = hud->anchor_px.x + hud->back_offset_px.x;
+          const float backY = hud->anchor_px.y + hud->back_offset_px.y;
+
+          // Back
+          if (auto* t = hud->back.get_component<Components::Transform2D>()) {
+            t->position.x = backX + hud->width * 0.5f;
+            t->position.y = backY + hud->height * 0.5f;
+            t->rotation = 0.f;
+            t->scale.x = hud->width;
+            t->scale.y = hud->height;
+          }
+
+          // Overlay
+          if (hud->use_white_overlay && hud->white_overlay.is_valid()) {
+            if (auto* t = hud->white_overlay.get_component<Components::Transform2D>()) {
+              const float baseX = hud->overlay_relative_to_back ? backX : hud->anchor_px.x;
+              const float baseY = hud->overlay_relative_to_back ? backY : hud->anchor_px.y;
+              const float ovX = baseX + hud->overlay_offset_px.x;
+              const float ovY = baseY + hud->overlay_offset_px.y;
+              t->position.x = ovX + hud->width * 0.5f;
+              t->position.y = ovY + hud->height * 0.5f;
+              t->rotation = 0.f;
+              t->scale.x = hud->width;
+              t->scale.y = hud->height;
+            }
+          }
+
+          // Head
+          if (auto* t = hud->head.get_component<Components::Transform2D>()) {
+            t->position.x = headX + 60.f;
+            t->position.y = headY + 58.f;
+            t->rotation = 0.f;
+            t->scale.x = 120.f;
+            t->scale.y = 120.f;
+          }
+
+          // BPM to color tint for world-space columns
+          const float bpm = std::max(1.f, hr->heartrate);
+          const float span = std::max(1e-3f, hud->bpm_max - hud->bpm_min);
+          const float ratio = std::clamp((bpm - hud->bpm_min) / span, 0.f, 1.f);
+
+          if (hud->use_bpm_tint) {
+            Math::Vec4D c;
+            c.x = hud->fill_color_low.x + (hud->fill_color_high.x - hud->fill_color_low.x) * ratio;
+            c.y = hud->fill_color_low.y + (hud->fill_color_high.y - hud->fill_color_low.y) * ratio;
+            c.z = hud->fill_color_low.z + (hud->fill_color_high.z - hud->fill_color_low.z) * ratio;
+            c.w = hud->fill_color_low.w + (hud->fill_color_high.w - hud->fill_color_low.w) * ratio;
+            for (auto& s : hud->whiteSlices)
+              if (auto* col = s.get_component<Color>()) *col = c;
+          }
+
+          const int n = std::max(1, hud->slices);
+          const int vis = std::clamp(int(std::round(ratio * n)), 0, n);
+
+          place_white_columns(*hud, backX, backY, vis);
+          promote_overlay_to_front(*hud);
+          promote_head_to_front(*hud);
+
+          return;
+        }
+
+      }
+
+      // ---- UI draw path (screen-space, no camera) ----
+      void draw_entity(const Engine::ECS::Entity& e) override {
+        using namespace Components;
+
+        auto* hr = e.get_component<Heartrate>();
+        auto* hud = e.get_component<HeartHUDSprite>();
+        if (!hr || !hud) return;
+
+        if (!hud->screen_space) {
+          // World-space HUD is handled by update_entity + normal render system
+          return;
+        }
+
+        // Effective anchors in screen pixels
         const float headX = hud->anchor_px.x + hud->head_offset_px.x;
         const float headY = hud->anchor_px.y + hud->head_offset_px.y;
         const float backX = hud->anchor_px.x + hud->back_offset_px.x;
         const float backY = hud->anchor_px.y + hud->back_offset_px.y;
 
-        // Back
-        if (auto* t = hud->back.get_component<Components::Transform2D>()) {
-          t->position.x = backX + hud->width * 0.5f;
-          t->position.y = backY + hud->height * 0.5f;
-          t->rotation = 0.f; t->scale.x = hud->width; t->scale.y = hud->height;
-        }
-        // Overlay
-        if (hud->use_white_overlay && hud->white_overlay.is_valid()) {
-          if (auto* t = hud->white_overlay.get_component<Components::Transform2D>()) {
-            const float baseX = hud->overlay_relative_to_back ? backX : hud->anchor_px.x;
-            const float baseY = hud->overlay_relative_to_back ? backY : hud->anchor_px.y;
-            const float ovX = baseX + hud->overlay_offset_px.x;
-            const float ovY = baseY + hud->overlay_offset_px.y;
-            t->position.x = ovX + hud->width * 0.5f;
-            t->position.y = ovY + hud->height * 0.5f;
-            t->rotation = 0.f; t->scale.x = hud->width; t->scale.y = hud->height;
-          }
-        }
-        // Head
-        if (auto* t = hud->head.get_component<Components::Transform2D>()) {
-          t->position.x = headX + 60.f; t->position.y = headY + 58.f;
-          t->rotation = 0.f; t->scale.x = 120.f; t->scale.y = 120.f;
-        }
+        // Background bar (screen-space)
+        Engine::Graphics::draw_texture_ui(
+          hud->tex_back,
+          Math::Vec2D(backX + hud->width * 0.5f, backY + hud->height * 0.5f),
+          Math::Vec2D(hud->width, hud->height),
+          0.0f,
+          Math::Vec4D(1.f, 1.f, 1.f, 1.f)
+        );
 
-        // BPM visible columns
+        // BPM ratio 0..1
         const float bpm = std::max(1.f, hr->heartrate);
         const float span = std::max(1e-3f, hud->bpm_max - hud->bpm_min);
         const float ratio = std::clamp((bpm - hud->bpm_min) / span, 0.f, 1.f);
 
-        // ---BPM-driven tint ---
+        // BPM-driven tint
+        Math::Vec4D fill_color = hud->fill_color_low;
         if (hud->use_bpm_tint) {
-          Math::Vec4D c;
-          c.x = hud->fill_color_low.x + (hud->fill_color_high.x - hud->fill_color_low.x) * ratio;
-          c.y = hud->fill_color_low.y + (hud->fill_color_high.y - hud->fill_color_low.y) * ratio;
-          c.z = hud->fill_color_low.z + (hud->fill_color_high.z - hud->fill_color_low.z) * ratio;
-          c.w = hud->fill_color_low.w + (hud->fill_color_high.w - hud->fill_color_low.w) * ratio;
-          for (auto& s : hud->whiteSlices) if (auto* col = s.get_component<Color>()) *col = c;
+          fill_color.x = hud->fill_color_low.x + (hud->fill_color_high.x - hud->fill_color_low.x) * ratio;
+          fill_color.y = hud->fill_color_low.y + (hud->fill_color_high.y - hud->fill_color_low.y) * ratio;
+          fill_color.z = hud->fill_color_low.z + (hud->fill_color_high.z - hud->fill_color_low.z) * ratio;
+          fill_color.w = hud->fill_color_low.w + (hud->fill_color_high.w - hud->fill_color_low.w) * ratio;
         }
 
-        const int n = std::max(1, hud->slices);
-        const int vis = std::clamp(int(std::round(ratio * n)), 0, n);
+        // Number of visible columns based on ratio
+        const int cropL = std::clamp(hud->src_left_px, 0, hud->src_w_px - 1);
+        const int cropR = std::clamp(hud->src_right_px, cropL + 1, hud->src_w_px);
+        const int total_cols = std::max(1, cropR - cropL);
+        const int visible_cols = std::clamp(int(std::round(ratio * total_cols)), 0, total_cols);
 
-        place_white_columns(*hud, backX, backY, vis);
-        promote_overlay_to_front(*hud);
-        promote_head_to_front(*hud);
+        // Draw the white jagged band in screen-space using sub-textures
+        draw_white_columns_ui(*hud, backX, backY, cropL, cropR, visible_cols, fill_color);
+
+        // Overlay on top
+        if (hud->use_white_overlay) {
+          const float baseX = hud->overlay_relative_to_back ? backX : hud->anchor_px.x;
+          const float baseY = hud->overlay_relative_to_back ? backY : hud->anchor_px.y;
+          const float ovX = baseX + hud->overlay_offset_px.x;
+          const float ovY = baseY + hud->overlay_offset_px.y;
+
+          Engine::Graphics::draw_texture_ui(
+            hud->tex_white,
+            Math::Vec2D(ovX + hud->width * 0.5f, ovY + hud->height * 0.5f),
+            Math::Vec2D(hud->width, hud->height),
+            0.0f,
+            Math::Vec4D(1.f, 1.f, 1.f, 1.f)
+          );
+        }
+
+        // Head on top-left
+        Engine::Graphics::draw_texture_ui(
+          hud->tex_head,
+          Math::Vec2D(headX + 60.f, headY + 58.f),
+          Math::Vec2D(120.f, 120.f),
+          0.0f,
+          Math::Vec4D(1.f, 1.f, 1.f, 1.f)
+        );
       }
 
     private:
       static Engine::Graphics::Texture rect() { return Engine::Resources::get_rect_texture(); }
 
+      // ---- existing world-space helpers ----
       void ensure_created(Components::HeartHUDSprite& hud) {
         using namespace Components;
         if (hud.initialized) return;
@@ -529,7 +622,7 @@ namespace Engine {
           .add_component<Components::Color>(Math::Vec4D(1, 1, 1, 1))
           .remove_from_layer("default").add_to_layer(hud.layer.c_str());
 
-        // --- use low color when creating each slice (was pure white) ---
+        // --- use low color when creating each slice ---
         const int srcCols = std::max(1, hud.src_w_px);
         const int cropL = std::clamp(hud.src_left_px, 0, hud.src_w_px - 1);
         const int cropR = std::clamp(hud.src_right_px, cropL + 1, hud.src_w_px);
@@ -571,7 +664,6 @@ namespace Engine {
         const int cropR = std::clamp(hud.src_right_px, cropL + 1, hud.src_w_px);
         const int n = std::min((int)hud.whiteSlices.size(), cropR - cropL);
 
-        // Band inside BarBack (measured from BarBack’s left)
         const float padX = hud.fill_inset_px.x, padY = hud.fill_inset_px.y;
         const float bandL = std::floor(backX + hud.fill_left_px + padX + 0.5f);
         const float bandR = std::floor(backX + hud.fill_right_px - padX + 0.5f);
@@ -579,7 +671,6 @@ namespace Engine {
         const float bandT = std::floor(backY + padY + 0.5f);
         const float bandH = std::round(std::max(1.f, hud.height - padY * 2.f));
 
-        // Map ONLY the cropped pixels to the band
         const float scale = bandW / float(std::max(1, cropR - cropL));
         const int   shown = std::clamp(visible, 0, n);
 
@@ -588,7 +679,7 @@ namespace Engine {
           const float R = std::round(bandL + (i + 1) * scale);
           const float W = std::max(1.0f, R - L);
           const float CX = (L + R) * 0.5f;
-          const bool  show = (i < shown);
+          const bool show = (i < shown);
 
           if (auto* tr = hud.whiteSlices[i].get_component<Components::Transform2D>()) {
             tr->position.x = CX;
@@ -613,6 +704,53 @@ namespace Engine {
         hud.head.add_to_layer(hud.head_layer.c_str());
       }
 
+      // helper for screen-space white band
+      void draw_white_columns_ui(const Components::HeartHUDSprite& hud,
+        float backX, float backY,
+        int cropL, int cropR,
+        int visible_cols,
+        const Math::Vec4D& color) {
+        const int totalCols = std::max(1, cropR - cropL);
+        const int shown = std::clamp(visible_cols, 0, totalCols);
+
+        const float padX = hud.fill_inset_px.x, padY = hud.fill_inset_px.y;
+        const float bandL = std::floor(backX + hud.fill_left_px + padX + 0.5f);
+        const float bandR = std::floor(backX + hud.fill_right_px - padX + 0.5f);
+        const float bandW = std::max(1.f, bandR - bandL);
+        const float bandT = std::floor(backY + padY + 0.5f);
+        const float bandH = std::round(std::max(1.f, hud.height - padY * 2.f));
+
+        const float scale = bandW / float(std::max(1, cropR - cropL));
+
+        for (int i = 0; i < totalCols; ++i) {
+          if (i >= shown) break;
+
+          const float L = std::round(bandL + i * scale);
+          const float R = std::round(bandL + (i + 1) * scale);
+          const float W = std::max(1.0f, R - L);
+          const float CX = (L + R) * 0.5f;
+
+          const int col = cropL + i;
+          const float u0 = float(col) / float(hud.src_w_px);
+          const float u1 = float(col + 1) / float(hud.src_w_px);
+
+          std::array<Math::Vec2D, 4> tex_coords = {
+            Math::Vec2D(u0, 1.0f),
+            Math::Vec2D(u1, 1.0f),
+            Math::Vec2D(u1, 0.0f),
+            Math::Vec2D(u0, 0.0f)
+          };
+
+          Engine::Graphics::draw_subtexture_ui(
+            hud.tex_solid,
+            tex_coords,
+            Math::Vec2D(CX, bandT + bandH * 0.5f),
+            Math::Vec2D(W, bandH),
+            0.0f,
+            color
+          );
+        }
+      }
     };
 
   }

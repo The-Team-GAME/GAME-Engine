@@ -68,7 +68,7 @@ namespace Components {
 		Math::Vec2D head_offset_px{ 0.f, 20.f };
 		Math::Vec2D back_offset_px{ 90.f, 0.f };
 
-		Math::Vec2D overlay_offset_px{ 0.f, 0.f };
+		Math::Vec2D overlay_offset_px{ 5.f, 0.f };
 		bool overlay_relative_to_back = true;
 
 		// Textures
@@ -85,15 +85,15 @@ namespace Components {
 		int   src_h_px = 145;
 
 		// crop the SOURCE horizontally so columns match the on-screen band
-		int   src_left_px = 0;                 // where the white band starts in PNG
-		int   src_right_px = 736;                // where the white band ends    in PNG
+		int   src_left_px = 3;                 // where the white band starts in PNG
+		int   src_right_px = 743;                // where the white band ends    in PNG
 
 		// Number of columns to reveal (default = cropped width)
 		int   slices = src_right_px - src_left_px;
 
 		// Fill band inside BarBack (measured from BarBack�s LEFT)
-		float fill_left_px = 0.f;
-		float fill_right_px = 736.f;
+		float fill_left_px = 4.f;
+		float fill_right_px = 742.f;
 
 		// Inset so outline stays visible at full
 		Math::Vec2D fill_inset_px{ 8.f, 10.f };
