@@ -38,12 +38,6 @@ public:
   };
 
   void init() {
-
-    //Engine::ECS::add_system<Engine::Systems::EnemyHealthBarSystem>();
-    Engine::ECS::add_system<Engine::Systems::EnemyHealthBarRectSystem>();
-    Engine::ECS::add_system<Engine::Systems::HeartHUDSpriteSystem>();
-    Engine::ECS::add_system<Engine::Systems::ParticleSystem>();
-
     // ========================================================================
     // Create Player Entity
     // ========================================================================

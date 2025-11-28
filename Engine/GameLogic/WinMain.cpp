@@ -244,6 +244,8 @@ void RunGame()
   Engine::ECS::add_system<Engine::Systems::EnemyHealthSystem>();
   Engine::ECS::add_system<Engine::Systems::HeartrateSystem>();
   Engine::ECS::add_system<Engine::Systems::DebugHitboxRenderSystem>();
+  Engine::ECS::add_system<Engine::Systems::EnemyHealthBarRectSystem>();
+  Engine::ECS::add_system<Engine::Systems::HeartHUDSpriteSystem>();
 
   // Run the main menu state
   Engine::Core::run("MainMenuState");
