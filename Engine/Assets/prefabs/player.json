@@ -3,7 +3,7 @@
         "components": [
             {
                 "data": {
-                    "drawIndex": 17,
+                    "drawIndex": 11,
                     "tex_coords_list": [
                         [
                             {
@@ -448,15 +448,16 @@
                         "half_width": 64.0,
                         "pos": {
                             "x": 400.0,
-                            "y": 768.388916015625
+                            "y": 768.2777709960938
                         }
                     },
                     "height": 128.0,
+                    "kinetic_friction": 0.800000011920929,
                     "offset": {
                         "x": 0.0,
                         "y": 0.0
                     },
-                    "radius": 3.4028234663852886e38,
+                    "radius": 1.401298464324817e-45,
                     "resolve_collisions": false,
                     "width": 128.0
                 },
@@ -575,7 +576,7 @@
                         0.10000000149011612
                     ],
                     "is_looping": true,
-                    "startTime": 20.137496948242188,
+                    "startTime": 29.535194396972656,
                     "totalDuration": 2.3999998569488525
                 },
                 "type": "Components::Animation"
@@ -682,7 +683,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 20.137496948242188,
+                                        "startTime": 29.535194396972656,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": null,
@@ -1180,7 +1181,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 20.137496948242188,
+                                        "startTime": 29.535194396972656,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": null,
@@ -1346,8 +1347,8 @@
                                     "sound": {
                                         "path": "sounds/SFX/Player/Player Jump (DJ SY Edition).wav"
                                     },
-                                    "stop_on_exit": true,
-                                    "volume": 1.0
+                                    "stop_on_exit": false,
+                                    "volume": 0.5
                                 },
                                 "name": "Jumping",
                                 "on_enter_callback": {
@@ -1397,7 +1398,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 20.137496948242188,
+                                        "startTime": 29.535194396972656,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": null,
@@ -1564,7 +1565,7 @@
                                         "path": "sounds/SFX/Player/Player Footstep.wav"
                                     },
                                     "stop_on_exit": true,
-                                    "volume": 1.0
+                                    "volume": 0.5
                                 },
                                 "name": "Walking",
                                 "on_enter_callback": {
@@ -1617,7 +1618,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 20.137496948242188,
+                                        "startTime": 29.535194396972656,
                                         "totalDuration": 0.7199999094009399
                                     },
                                     "collider_data": null,
@@ -1801,8 +1802,8 @@
                                     "sound": {
                                         "path": "sounds/SFX/Player/Player Swing.wav"
                                     },
-                                    "stop_on_exit": true,
-                                    "volume": 1.0
+                                    "stop_on_exit": false,
+                                    "volume": 0.5
                                 },
                                 "name": "Attack1",
                                 "on_enter_callback": {
@@ -1849,7 +1850,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 20.137496948242188,
+                                        "startTime": 29.535194396972656,
                                         "totalDuration": 0.559999942779541
                                     },
                                     "collider_data": null,
@@ -2105,8 +2106,8 @@
                                     "sound": {
                                         "path": "sounds/SFX/Player/Player Swing.wav"
                                     },
-                                    "stop_on_exit": true,
-                                    "volume": 1.0
+                                    "stop_on_exit": false,
+                                    "volume": 0.5
                                 },
                                 "name": "Attack2",
                                 "on_enter_callback": {
@@ -2159,7 +2160,7 @@
                                             0.05999999865889549
                                         ],
                                         "is_looping": false,
-                                        "startTime": 20.137496948242188,
+                                        "startTime": 29.535194396972656,
                                         "totalDuration": 0.5399999618530273
                                     },
                                     "collider_data": null,
@@ -2505,8 +2506,8 @@
                                     "sound": {
                                         "path": "sounds/SFX/Player/Player Swing.wav"
                                     },
-                                    "stop_on_exit": true,
-                                    "volume": 1.0
+                                    "stop_on_exit": false,
+                                    "volume": 0.5
                                 },
                                 "name": "Attack3",
                                 "on_enter_callback": {
@@ -2527,18 +2528,13 @@
             {
                 "data": {
                     "acceleration": {
-                        "x": 0.0,
-                        "y": 1400.0
+                        "x": -6.12323437939287e-14,
+                        "y": 1000.0
                     },
                     "angular_velocity": 0.0,
                     "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    },
-                    "friction": 0.9900000095367432,
-                    "gravity_acc": {
-                        "x": 0.0,
-                        "y": 1400.0
+                        "x": -6.12323437939287e-14,
+                        "y": -3.7494000395748785e-30
                     },
                     "is_jumping": false,
                     "is_static": false,
@@ -2546,10 +2542,11 @@
                     "on_ground": true,
                     "rotation": 0.0,
                     "rotation_terminal_velocity": 360.0,
-                    "terminal_velocity": 3.4028234663852886e38,
+                    "terminal_velocity": 1000.0,
+                    "use_gravity": true,
                     "velocity": {
                         "x": 0.0,
-                        "y": 0.0
+                        "y": 6.248999674126681e-32
                     }
                 },
                 "type": "Components::RigidBody"
@@ -2558,7 +2555,7 @@
                 "data": {
                     "end_alpha": 0.0,
                     "interval": 0.05000000074505806,
-                    "last_spawn_time": 9.627960205078125,
+                    "last_spawn_time": 5.363040447235107,
                     "lifetime": 0.0,
                     "start_alpha": 0.800000011920929
                 },
