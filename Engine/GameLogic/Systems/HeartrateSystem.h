@@ -19,7 +19,6 @@ namespace Engine {
 
       void update_entity(Engine::ECS::Entity& entity) override {
         auto* heartrate = entity.get_component<Components::Heartrate>();
-        auto* player = entity.get_component<Components::Player>();
         auto* color = entity.get_component<Components::Color>();
         auto* trail = entity.get_component<Components::Trail>();
         auto* distortion = entity.get_component<Components::Distortion>();
@@ -59,7 +58,7 @@ namespace Engine {
         // Apply tint to all tilemap entities
         auto tile_entities = Engine::ECS::get_entities_with<Components::TileMap>();
         for (auto& tilemap_entity : tile_entities) {
-          // std::cout << "Applying tint to tilemap entity ID: " << tilemap_entity.get_id() << std::endl;
+          // Log::info("Applying tint to tilemap entity ID: {}", tilemap_entity.get_id());
           if (!tilemap_entity.has_component<Components::Color>()) {
             tilemap_entity.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
           }

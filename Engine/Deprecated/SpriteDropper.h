@@ -18,7 +18,7 @@
 #pragma once
 
 #include "../../Engine/MonkeyEngine.h"
-#include <imgui.h>
+#include "Precompiled.h"
 #include <vector>
 
 struct DroppedImage {

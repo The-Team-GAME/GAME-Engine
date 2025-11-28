@@ -16,7 +16,7 @@
 //-----------------------------------------------------------------------------------
 
 #include "GameAPI.h"
-#include <iostream>
+#include "../Logger.h"
 #include <sol/sol.hpp>
 #include <type_traits>
 
@@ -170,7 +170,7 @@ void register_component_type(sol::state& lua, const std::string& name) {
         ent.add_component<Components::Tag<"BehaviourState">>();
       }
       else {
-        std::cerr << "[GameAPI] Unknown tag type: " << tag << "\n";
+        Log::error("[GameAPI] Unknown tag type: {}", tag);
       }
     }
 
@@ -268,7 +268,7 @@ void register_component_type(sol::state& lua, const std::string& name) {
             add_tag(id, tag);
           }
           else {
-            std::cerr << "[GameAPI] Unknown component type: " << type << "\n";
+            Log::error("[GameAPI] Unknown component type: {}", type);
           }
         }
       }
@@ -389,7 +389,7 @@ void register_component_type(sol::state& lua, const std::string& name) {
         });
 
       lua["Game"] = game;
-      std::cout << "[GameAPI] Registered Game API in Lua\n";
+      Log::info("[GameAPI] Registered Game API in Lua");
     }
   }
 }
