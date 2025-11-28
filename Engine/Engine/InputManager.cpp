@@ -26,7 +26,7 @@
 #include "GUI/ViewportPanel.h"
 #include "FileIO/Settings.h"
 #include "ImGuiManager.h"
-#include <imgui.h>
+#include "Precompiled.h"
 
 namespace
 {
@@ -129,6 +129,7 @@ namespace Engine
 
   std::optional<glm::vec2> Input::get_mouse_position_if_in_viewport()
   {
+#ifndef GAME_BUILD
     if (ImGuiManager::is_viewport_mode_enabled()) {
       // In viewport mode: only allow input if hovering over the viewport image
       if (!ViewportPanel::is_viewport_hovered())
@@ -139,7 +140,7 @@ namespace Engine
       if (ImGui::GetIO().WantCaptureMouse)
         return std::nullopt;
     }
-
+#endif
     return mousePosition;
   }
 
@@ -150,6 +151,7 @@ namespace Engine
 
   std::optional<glm::vec2> Input::get_mouse_world_position_if_in_viewport()
   {
+#ifndef GAME_BUILD
     if (ImGuiManager::is_viewport_mode_enabled()) {
       // In viewport mode: only allow input if hovering over the viewport image
       if (!ViewportPanel::is_viewport_hovered())
@@ -160,7 +162,7 @@ namespace Engine
       if (ImGui::GetIO().WantCaptureMouse)
         return std::nullopt;
     }
-
+#endif
     return Engine::Graphics::virtual_to_world(mousePosition);
   }
 

@@ -14,7 +14,7 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "TileColliderEditorPanel.h"
-#include <imgui.h>
+#include "../Precompiled.h"
 #include "widgets/TextureAtlasWidget.h"
 #include "widgets/ColliderEditorWidget.h"
 #include "../FileIO/Settings.h"

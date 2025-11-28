@@ -143,14 +143,16 @@ namespace Engine
 
     // CORE INITIALIZATION
 
+#ifndef GAME_BUILD
     // Initialize TilemapPanel to load saved tilemaps from project settings
     TilemapPanel::init();
 
     // Initialize ViewportPanel
     ViewportPanel::init();
 
-    register_engine_systems();
     register_all_panels();
+#endif
+    register_engine_systems();
     Engine::Easing::register_all_easing_functions();
 
     // Just register one simple function
@@ -305,16 +307,20 @@ namespace Engine
           single_step_requested = false;
         }
 
+#ifndef GAME_BUILD
         TilemapPanel::update();
+#endif
         ImGuiManager::update();
 
         // End of gameloop
       }
 
       // Rendering Start ========================================
+#ifndef GAME_BUILD
       if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode) {
         ViewportPanel::begin_render();
       }
+#endif
 
       // start of draw stuff
 
@@ -323,7 +329,9 @@ namespace Engine
 
       Engine::SceneManager::draw();
       Engine::ECS::draw();
+#ifndef GAME_BUILD
       TilemapPanel::draw_overlay();
+#endif
 
       if (show_fps_overlay)
       {
@@ -333,9 +341,11 @@ namespace Engine
       // end of draw stuff (flush remaining batches)
       Engine::Graphics::end_batch();
 
+#ifndef GAME_BUILD
       if (Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode) {
         ViewportPanel::end_render();
       }
+#endif
 
       // Render ImGui (including viewport panel that shows the framebuffer)
       ImGuiManager::end();
@@ -355,7 +365,9 @@ namespace Engine
   {
     Engine::SceneManager::cleanup();
     //Engine::ECS::remove_event_listener<WindowResizeEvent>();
+#ifndef GAME_BUILD
     ViewportPanel::exit();
+#endif
     Engine::Audio::exit();
     Engine::Resources::exit();
     Engine::Graphics::exit();

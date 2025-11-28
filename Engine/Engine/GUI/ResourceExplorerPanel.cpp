@@ -14,7 +14,7 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "ResourceExplorerPanel.h"
-#include <imgui.h>
+#include "../Precompiled.h"
 #include "../Resources.h"
 #include "../Path.h"
 #include "../Logger.h"

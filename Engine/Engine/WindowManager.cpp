@@ -213,11 +213,13 @@ namespace Engine {
 
     void window_close_callback(GLFWwindow* win)
     {
+#ifndef GAME_BUILD
       // Cancel the close - we'll handle it through ImGui popup
       glfwSetWindowShouldClose(win, GLFW_FALSE);
 
       // Set flag to show the exit confirmation popup
       Engine::EventManager::send_event<Engine::Events::WindowCloseRequestedEvent>();
+#endif
     }
   }
 }

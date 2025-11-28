@@ -25,7 +25,7 @@
 #include "../Events/EngineEvents.h"
 #include "../GUI/ViewportPanel.h"
 #include "../ImGuiManager.h"
-#include <imgui.h>
+#include "Precompiled.h"
 
 namespace Engine
 {

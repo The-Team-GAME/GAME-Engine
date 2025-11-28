@@ -638,6 +638,7 @@ namespace Engine {
 
     Math::Vec2D screen_to_viewport(const Math::Vec2D& screen_pos) {
 
+#ifndef GAME_BUILD
       if (!Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode) {
         // This means that panel viewport mode is disabled, so we can just return the virtual coordinates
         return screen_to_virtual(screen_pos);
@@ -664,6 +665,9 @@ namespace Engine {
       virtual_pos.y = normalized_y * virtual_height;
 
       return virtual_pos;
+#else
+      return screen_to_virtual(screen_pos);
+#endif
     }
 
     Math::Vec2D virtual_to_screen(const Math::Vec2D& virtual_pos) {

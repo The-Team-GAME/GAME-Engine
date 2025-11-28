@@ -14,7 +14,6 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "ViewportPanel.h"
-#include <imgui.h>
 #include "../Precompiled.h"
 #include "../Logger.h"
 #include "../Graphics/Renderer.h"
