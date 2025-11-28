@@ -3579,6 +3579,19 @@
             "texture_path": "images/Tilemaps/AdditionalProps_TilemapM1.png",
             "tile_collider_configs": [
                 {
+                    "first": 2,
+                    "second": {
+                        "aabb_height": 14.2626953125,
+                        "aabb_offset": {
+                            "x": 0.0,
+                            "y": 24.86865234375
+                        },
+                        "aabb_width": 64.0,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
                     "first": 18,
                     "second": {
                         "aabb_height": 64.0,
@@ -3588,6 +3601,110 @@
                         },
                         "aabb_width": 64.0,
                         "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 0,
+                    "second": {
+                        "aabb_height": 14.262687683105469,
+                        "aabb_offset": {
+                            "x": 6.024530410766602,
+                            "y": 24.868656158447266
+                        },
+                        "aabb_width": 51.9509391784668,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 15,
+                    "second": {
+                        "aabb_height": 64.0,
+                        "aabb_offset": {
+                            "x": -17.8633975982666,
+                            "y": 0.0
+                        },
+                        "aabb_width": 28.273204803466797,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 9,
+                    "second": {
+                        "aabb_height": 64.0,
+                        "aabb_offset": {
+                            "x": -17.8633975982666,
+                            "y": 0.0
+                        },
+                        "aabb_width": 28.273204803466797,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 1,
+                    "second": {
+                        "aabb_height": 14.262687683105469,
+                        "aabb_offset": {
+                            "x": 0.0,
+                            "y": 24.868656158447266
+                        },
+                        "aabb_width": 64.0,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 6,
+                    "second": {
+                        "aabb_height": 64.0,
+                        "aabb_offset": {
+                            "x": 6.0245208740234375,
+                            "y": 0.0
+                        },
+                        "aabb_width": 51.950958251953125,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 12,
+                    "second": {
+                        "aabb_height": 64.0,
+                        "aabb_offset": {
+                            "x": 6.024526596069336,
+                            "y": 0.0
+                        },
+                        "aabb_width": 51.95094680786133,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 3,
+                    "second": {
+                        "aabb_height": 64.0,
+                        "aabb_offset": {
+                            "x": -17.863399505615234,
+                            "y": 0.0
+                        },
+                        "aabb_width": 28.27320098876953,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 4,
+                    "second": {
+                        "aabb_height": 0.0,
+                        "aabb_offset": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "aabb_width": 0.0,
+                        "collider_type": "Default",
                         "custom_vertices": []
                     }
                 }
@@ -11629,6 +11746,32 @@
             "texture_path": "images/Tilemaps/BoardsPostersTVTrashCanFenceStairsTrainNewWall.png",
             "tile_collider_configs": [
                 {
+                    "first": 155,
+                    "second": {
+                        "aabb_height": 64.0,
+                        "aabb_offset": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "aabb_width": 64.0,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 115,
+                    "second": {
+                        "aabb_height": 64.0,
+                        "aabb_offset": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "aabb_width": 64.0,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
                     "first": 260,
                     "second": {
                         "aabb_height": 48.027976989746094,
@@ -11669,6 +11812,19 @@
                                 "y": 32.0
                             }
                         ]
+                    }
+                },
+                {
+                    "first": 135,
+                    "second": {
+                        "aabb_height": 64.0,
+                        "aabb_offset": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "aabb_width": 64.0,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
                     }
                 }
             ]
@@ -11718,6 +11874,187 @@
                 }
             ],
             "texture_path": "images/Tilemaps/Corners.png",
+            "tile_collider_configs": []
+        },
+        {
+            "drawIndex": -1,
+            "subTextures": [
+                {
+                    "tex_coords": [
+                        {
+                            "x": 0.0,
+                            "y": 1.0
+                        },
+                        {
+                            "x": 0.3333333432674408,
+                            "y": 1.0
+                        },
+                        {
+                            "x": 0.3333333432674408,
+                            "y": 0.0
+                        },
+                        {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    ]
+                },
+                {
+                    "tex_coords": [
+                        {
+                            "x": 0.3333333432674408,
+                            "y": 1.0
+                        },
+                        {
+                            "x": 0.6666666865348816,
+                            "y": 1.0
+                        },
+                        {
+                            "x": 0.6666666865348816,
+                            "y": 0.0
+                        },
+                        {
+                            "x": 0.3333333432674408,
+                            "y": 0.0
+                        }
+                    ]
+                },
+                {
+                    "tex_coords": [
+                        {
+                            "x": 0.6666666865348816,
+                            "y": 1.0
+                        },
+                        {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        {
+                            "x": 1.0,
+                            "y": 0.0
+                        },
+                        {
+                            "x": 0.6666666865348816,
+                            "y": 0.0
+                        }
+                    ]
+                }
+            ],
+            "texture_path": "images/Tilemaps/Poison.png",
+            "tile_collider_configs": []
+        },
+        {
+            "drawIndex": -1,
+            "subTextures": [
+                {
+                    "tex_coords": [
+                        {
+                            "x": 0.0,
+                            "y": 1.0
+                        },
+                        {
+                            "x": 0.3333333432674408,
+                            "y": 1.0
+                        },
+                        {
+                            "x": 0.3333333432674408,
+                            "y": 0.0
+                        },
+                        {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    ]
+                },
+                {
+                    "tex_coords": [
+                        {
+                            "x": 0.3333333432674408,
+                            "y": 1.0
+                        },
+                        {
+                            "x": 0.6666666865348816,
+                            "y": 1.0
+                        },
+                        {
+                            "x": 0.6666666865348816,
+                            "y": 0.0
+                        },
+                        {
+                            "x": 0.3333333432674408,
+                            "y": 0.0
+                        }
+                    ]
+                },
+                {
+                    "tex_coords": [
+                        {
+                            "x": 0.6666666865348816,
+                            "y": 1.0
+                        },
+                        {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        {
+                            "x": 1.0,
+                            "y": 0.0
+                        },
+                        {
+                            "x": 0.6666666865348816,
+                            "y": 0.0
+                        }
+                    ]
+                }
+            ],
+            "texture_path": "images/Tilemaps/StairsBlocked.png",
+            "tile_collider_configs": []
+        },
+        {
+            "drawIndex": -1,
+            "subTextures": [
+                {
+                    "tex_coords": [
+                        {
+                            "x": 0.0,
+                            "y": 1.0
+                        },
+                        {
+                            "x": 0.5,
+                            "y": 1.0
+                        },
+                        {
+                            "x": 0.5,
+                            "y": 0.0
+                        },
+                        {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    ]
+                },
+                {
+                    "tex_coords": [
+                        {
+                            "x": 0.5,
+                            "y": 1.0
+                        },
+                        {
+                            "x": 1.0,
+                            "y": 1.0
+                        },
+                        {
+                            "x": 1.0,
+                            "y": 0.0
+                        },
+                        {
+                            "x": 0.5,
+                            "y": 0.0
+                        }
+                    ]
+                }
+            ],
+            "texture_path": "images/Tilemaps/CeilingCornerTile.png",
             "tile_collider_configs": []
         }
     ]
