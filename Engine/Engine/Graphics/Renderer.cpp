@@ -221,7 +221,7 @@ namespace Engine {
     void draw_quad(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size,
       f32 rotation, const Math::Vec4D& color, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& flip = Math::Vec2D(1.0f, 1.0f)) {
       if (!texture || texture->id == 0) {
-        Log::warning("Attempted to draw invalid texture: " + texture->path);
+        Log::warning("Attempted to draw invalid texture: {}", texture->path);
         return;
       }
 
@@ -312,7 +312,7 @@ namespace Engine {
     void draw_ui_quad(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size,
       f32 rotation, const Math::Vec4D& color, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& flip = Math::Vec2D(1.0f, 1.0f)) {
       if (!texture || texture->id == 0) {
-        Log::warning("Attempted to draw invalid texture: " + texture->path);
+        Log::warning("Attempted to draw invalid texture: {}", texture->path);
         return;
       }
 
@@ -544,8 +544,8 @@ namespace Engine {
 
       unit_rect = texture_data;
 
-      Log::info("Renderer initialized with batching (max " + std::to_string(MAX_QUAD_COUNT) + " quads per batch)");
-      Log::info("Virtual resolution: " + std::to_string((int)virtual_width) + "x" + std::to_string((int)virtual_height));
+      Log::info("Renderer initialized with batching (max {} quads per batch)", MAX_QUAD_COUNT);
+      Log::info("Virtual resolution: {}x{}", (int)virtual_width, (int)virtual_height);
       return true;
     }
 
@@ -579,8 +579,7 @@ namespace Engine {
     void set_virtual_resolution(f32 width, f32 height) {
       virtual_width = width;
       virtual_height = height;
-      Log::info("Virtual resolution set to: " +
-        std::to_string((int)width) + "x" + std::to_string((int)height));
+      Log::info("Virtual resolution set to: {}x{}", (int)width, (int)height);
     }
 
     Math::Vec2D get_virtual_resolution() {

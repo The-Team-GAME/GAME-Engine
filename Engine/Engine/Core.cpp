@@ -135,7 +135,7 @@ namespace Engine
       if (!atlas_entry.texture_path.empty() && !atlas_entry.texture_handle) {
         atlas_entry.texture_handle = Engine::Resources::load_texture(atlas_entry.texture_path, true);
         if (!atlas_entry.texture_handle) {
-          Log::warning("Failed to load texture for atlas: " + atlas_entry.texture_path);
+          Log::warning("Failed to load texture for atlas: {}", atlas_entry.texture_path);
         }
       }
     }
@@ -202,7 +202,7 @@ namespace Engine
       }
     }
 
-    Log::info("Loaded " + std::to_string(project_settings.layer_collision_pairs.size()) + " layer collision pairs from settings");
+    Log::info("Loaded {} layer collision pairs from settings", project_settings.layer_collision_pairs.size());
 
     SceneManager::load_scene(first_scene);
 

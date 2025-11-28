@@ -57,13 +57,13 @@ namespace Engine {
 
       // Display the save dialog
       if (GetSaveFileNameA(&ofn) == TRUE) {
-        Log::info("File dialog: User selected: " + std::string(ofn.lpstrFile));
+        Log::info("File dialog: User selected: {}", ofn.lpstrFile);
         return std::string(ofn.lpstrFile);
       }
       else {
         DWORD error = CommDlgExtendedError();
         if (error != 0) {
-          Log::warning("File dialog error code: " + std::to_string(error));
+          Log::warning("File dialog error code: {}", error);
         }
         else {
           Log::info("File dialog: User cancelled");
@@ -97,13 +97,13 @@ namespace Engine {
 
       // Display the open dialog
       if (GetOpenFileNameA(&ofn) == TRUE) {
-        Log::info("File dialog: User selected: " + std::string(ofn.lpstrFile));
+        Log::info("File dialog: User selected: {}", ofn.lpstrFile);
         return std::string(ofn.lpstrFile);
       }
       else {
         DWORD error = CommDlgExtendedError();
         if (error != 0) {
-          Log::warning("File dialog error code: " + std::to_string(error));
+          Log::warning("File dialog error code: {}", error);
         }
         else {
           Log::info("File dialog: User cancelled");

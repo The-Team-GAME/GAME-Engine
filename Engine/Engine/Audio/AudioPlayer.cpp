@@ -52,7 +52,7 @@ namespace Engine {
         return true;
       }
       catch (const std::exception& e) {
-        Log::error("Audio initialization failed: " + std::string(e.what()));
+        Log::error("Audio initialization failed: {}", e.what());
         return false;
       }
     }
