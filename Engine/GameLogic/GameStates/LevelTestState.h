@@ -18,6 +18,7 @@
 #include "../States/LazyMonkeyStateMachine.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/HeartrateComponent.h"
+#include "../Components/HealthComponents.h"
 
 class LevelTestState : public Engine::Scene
 {
@@ -51,9 +52,10 @@ public:
       .add_component<Components::Heartrate>()
       .add_component<Components::Trail>(0.05f, 0.0f, 0.8f, 0.0f) // Interval, Lifetime, StartAlpha, EndAlpha 
       .add_component<Components::Distortion>(0.0f, 0.0f, 0.0f) // Intensity, Speed, MeshIntensity
+      .add_component<Components::HeartHUDSprite>()
       .remove_from_layer("default")
       .add_to_layer("player");
-
+ 
     // ========================================================================
     // Create Camera Entity
     // ========================================================================
@@ -78,6 +80,7 @@ public:
       .add_component<Components::BoxCollider>(LazyMonkeyStates::WIDTH * 2.0f, LazyMonkeyStates::HEIGHT * 2.0f, false)
       .add_component<Components::EnemyHealth>(400, 400)
       .add_component<Components::Attack>(10, Math::Vec2D(900.0f, -300.0f), true, 1.0f)
+      .add_component<Components::EnemyHealthBarRect>()
       .add_component<Components::StateMachine>(LazyMonkeyStates::create_state_machine())
       .remove_from_layer("default")
       .add_to_layer("enemy");
