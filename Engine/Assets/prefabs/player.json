@@ -3,7 +3,7 @@
         "components": [
             {
                 "data": {
-                    "drawIndex": 8,
+                    "drawIndex": 17,
                     "tex_coords_list": [
                         [
                             {
@@ -575,7 +575,7 @@
                         0.10000000149011612
                     ],
                     "is_looping": true,
-                    "startTime": 61.50212097167969,
+                    "startTime": 20.137496948242188,
                     "totalDuration": 2.3999998569488525
                 },
                 "type": "Components::Animation"
@@ -598,215 +598,6 @@
                 "data": {
                     "current_state_name": "Idle",
                     "states": [
-                        {
-                            "first": "Jumping",
-                            "second": {
-                                "animation": {
-                                    "animation": {
-                                        "atlas_indices": [
-                                            0,
-                                            1,
-                                            2,
-                                            3,
-                                            4,
-                                            5,
-                                            6,
-                                            7
-                                        ],
-                                        "before_times": [
-                                            0.0,
-                                            0.10000000149011612,
-                                            0.20000000298023224,
-                                            0.30000001192092896,
-                                            0.4000000059604645,
-                                            0.5,
-                                            0.6000000238418579,
-                                            0.7000000476837158
-                                        ],
-                                        "durations": [
-                                            0.10000000149011612,
-                                            0.10000000149011612,
-                                            0.10000000149011612,
-                                            0.10000000149011612,
-                                            0.10000000149011612,
-                                            0.10000000149011612,
-                                            0.10000000149011612,
-                                            0.10000000149011612
-                                        ],
-                                        "is_looping": true,
-                                        "startTime": 61.50212097167969,
-                                        "totalDuration": 0.8000000715255737
-                                    },
-                                    "collider_data": null,
-                                    "scale": {
-                                        "x": 128.0,
-                                        "y": 128.0
-                                    },
-                                    "texture": {
-                                        "path": "images/BroSpriteSheets/Bro_run_spritesheet.png"
-                                    },
-                                    "texture_atlas": {
-                                        "drawIndex": -1,
-                                        "tex_coords_list": [
-                                            [
-                                                {
-                                                    "x": 0.0,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.125,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.125,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.0,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.125,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.25,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.25,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.125,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.25,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.375,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.375,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.25,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.375,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.5,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.5,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.375,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.5,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.625,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.625,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.5,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.625,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.75,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.75,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.625,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.75,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.875,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.875,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.75,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.875,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 1.0,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 1.0,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.875,
-                                                    "y": 0.0
-                                                }
-                                            ]
-                                        ]
-                                    }
-                                },
-                                "name": "Jumping",
-                                "on_enter_callback": {
-                                    "name": "player_jumping_enter"
-                                },
-                                "on_exit_callback": {
-                                    "name": ""
-                                },
-                                "on_update_callback": {
-                                    "name": "player_jumping_update"
-                                }
-                            }
-                        },
                         {
                             "first": "Idle",
                             "second": {
@@ -891,7 +682,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 61.50212097167969,
+                                        "startTime": 20.137496948242188,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": null,
@@ -1340,6 +1131,7 @@
                                         ]
                                     }
                                 },
+                                "audio": null,
                                 "name": "Idle",
                                 "on_enter_callback": {
                                     "name": "player_idle_enter"
@@ -1353,7 +1145,7 @@
                             }
                         },
                         {
-                            "first": "Walking",
+                            "first": "Jumping",
                             "second": {
                                 "animation": {
                                     "animation": {
@@ -1388,7 +1180,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 61.50212097167969,
+                                        "startTime": 20.137496948242188,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": null,
@@ -1549,6 +1341,231 @@
                                         ]
                                     }
                                 },
+                                "audio": {
+                                    "loop": false,
+                                    "sound": {
+                                        "path": "sounds/jump.wav"
+                                    },
+                                    "stop_on_exit": true,
+                                    "volume": 1.0
+                                },
+                                "name": "Jumping",
+                                "on_enter_callback": {
+                                    "name": "player_jumping_enter"
+                                },
+                                "on_exit_callback": {
+                                    "name": ""
+                                },
+                                "on_update_callback": {
+                                    "name": "player_jumping_update"
+                                }
+                            }
+                        },
+                        {
+                            "first": "Walking",
+                            "second": {
+                                "animation": {
+                                    "animation": {
+                                        "atlas_indices": [
+                                            0,
+                                            1,
+                                            2,
+                                            3,
+                                            4,
+                                            5,
+                                            6,
+                                            7
+                                        ],
+                                        "before_times": [
+                                            0.0,
+                                            0.10000000149011612,
+                                            0.20000000298023224,
+                                            0.30000001192092896,
+                                            0.4000000059604645,
+                                            0.5,
+                                            0.6000000238418579,
+                                            0.7000000476837158
+                                        ],
+                                        "durations": [
+                                            0.10000000149011612,
+                                            0.10000000149011612,
+                                            0.10000000149011612,
+                                            0.10000000149011612,
+                                            0.10000000149011612,
+                                            0.10000000149011612,
+                                            0.10000000149011612,
+                                            0.10000000149011612
+                                        ],
+                                        "is_looping": true,
+                                        "startTime": 20.137496948242188,
+                                        "totalDuration": 0.8000000715255737
+                                    },
+                                    "collider_data": null,
+                                    "scale": {
+                                        "x": 128.0,
+                                        "y": 128.0
+                                    },
+                                    "texture": {
+                                        "path": "images/BroSpriteSheets/Bro_run_spritesheet.png"
+                                    },
+                                    "texture_atlas": {
+                                        "drawIndex": -1,
+                                        "tex_coords_list": [
+                                            [
+                                                {
+                                                    "x": 0.0,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.125,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.125,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.0,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.125,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.25,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.25,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.125,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.25,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.375,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.375,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.25,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.375,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.5,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.5,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.375,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.5,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.625,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.625,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.5,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.625,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.75,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.75,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.625,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.75,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.875,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.875,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.75,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.875,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 1.0,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 1.0,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.875,
+                                                    "y": 0.0
+                                                }
+                                            ]
+                                        ]
+                                    }
+                                },
+                                "audio": {
+                                    "loop": true,
+                                    "sound": {
+                                        "path": "sounds/move1.wav"
+                                    },
+                                    "stop_on_exit": true,
+                                    "volume": 1.0
+                                },
                                 "name": "Walking",
                                 "on_enter_callback": {
                                     "name": "player_walking_enter"
@@ -1600,7 +1617,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 61.50212097167969,
+                                        "startTime": 20.137496948242188,
                                         "totalDuration": 0.7199999094009399
                                     },
                                     "collider_data": null,
@@ -1779,6 +1796,14 @@
                                         ]
                                     }
                                 },
+                                "audio": {
+                                    "loop": false,
+                                    "sound": {
+                                        "path": "sounds/Punch.wav"
+                                    },
+                                    "stop_on_exit": true,
+                                    "volume": 1.0
+                                },
                                 "name": "Attack1",
                                 "on_enter_callback": {
                                     "name": "player_attack1_enter"
@@ -1824,7 +1849,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 61.50212097167969,
+                                        "startTime": 20.137496948242188,
                                         "totalDuration": 0.559999942779541
                                     },
                                     "collider_data": null,
@@ -2075,6 +2100,14 @@
                                         ]
                                     }
                                 },
+                                "audio": {
+                                    "loop": false,
+                                    "sound": {
+                                        "path": "sounds/Punch.wav"
+                                    },
+                                    "stop_on_exit": true,
+                                    "volume": 1.0
+                                },
                                 "name": "Attack2",
                                 "on_enter_callback": {
                                     "name": "player_attack2_enter"
@@ -2126,7 +2159,7 @@
                                             0.05999999865889549
                                         ],
                                         "is_looping": false,
-                                        "startTime": 61.50212097167969,
+                                        "startTime": 20.137496948242188,
                                         "totalDuration": 0.5399999618530273
                                     },
                                     "collider_data": null,
@@ -2467,6 +2500,14 @@
                                         ]
                                     }
                                 },
+                                "audio": {
+                                    "loop": false,
+                                    "sound": {
+                                        "path": "sounds/Punch.wav"
+                                    },
+                                    "stop_on_exit": true,
+                                    "volume": 1.0
+                                },
                                 "name": "Attack3",
                                 "on_enter_callback": {
                                     "name": "player_attack3_enter"
@@ -2517,7 +2558,7 @@
                 "data": {
                     "end_alpha": 0.0,
                     "interval": 0.05000000074505806,
-                    "last_spawn_time": 45.40320587158203,
+                    "last_spawn_time": 9.627960205078125,
                     "lifetime": 0.0,
                     "start_alpha": 0.800000011920929
                 },

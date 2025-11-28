@@ -42,38 +42,12 @@ namespace Components
   // ============================================================================
 
   struct StateAudio {
-    Engine::Audio::Sound sound;
+    Components::Sound sound;
     f32 volume = 1.0f;
     bool loop = false;
     bool stop_on_exit = true;
-
-    struct Reflector {
-      std::string path;
-      f32 volume;
-      bool loop;
-      bool stop_on_exit;
-
-      static Reflector reflect(const StateAudio& audio) {
-        Reflector r;
-        if (audio.sound) {
-          r.path = Engine::Resources::get_relative_path(audio.sound->path);
-        }
-        r.volume = audio.volume;
-        r.loop = audio.loop;
-        r.stop_on_exit = audio.stop_on_exit;
-        return r;
-      }
-
-      static StateAudio create(const Reflector& r) {
-        StateAudio audio;
-        audio.sound = Engine::Resources::load_sound(r.path);
-        audio.volume = r.volume;
-        audio.loop = r.loop;
-        audio.stop_on_exit = r.stop_on_exit;
-        return audio;
-      }
-    };
   };
+  
   // ============================================================================
   // State Animation Definition
   // ============================================================================
@@ -438,7 +412,7 @@ namespace Components
       }
 
       // Update Sound component data
-      sound_comp->sound_handle = audio.sound;
+      sound_comp->sound_handle = audio.sound.sound_handle;
 
       // Play the sound via the component
       return sound_comp->play(audio.volume, audio.loop);
@@ -450,5 +424,5 @@ namespace Components
 REFLECT_FIELDS(Components::ColliderData, width, height, offset, vertices)
 REFLECT_FIELDS(Components::State, name, on_enter_callback, on_update_callback, on_exit_callback, animation, audio)
 REFLECT_FIELDS(Components::StateAnimation, texture, texture_atlas, animation, scale, collider_data)
-REFLECT_CUSTOM(Components::StateAudio, path, volume, loop, stop_on_exit)
+REFLECT_FIELDS(Components::StateAudio, sound, volume, loop, stop_on_exit)
 REGISTER_COMPONENT(Components::StateMachine, states, current_state_name)
