@@ -217,6 +217,25 @@ void RunGame()
       }
     });
 
+
+  Engine::FunctionRegistry<void()>::register_function("pause_menu_resume", []() {
+    Log::info("Resuming game from pause menu");
+    // Resume the game
+    });
+  Engine::FunctionRegistry<void()>::register_function("pause_menu_restart", []() {
+    Log::info("Restarting level from pause menu");
+    Engine::SceneManager::load_scene("GameplayState");
+    });
+  Engine::FunctionRegistry<void()>::register_function("pause_menu_options", []() {
+    Log::info("Opening options from pause menu");
+    //Engine::SceneManager::load_scene("OptionsState");
+    });
+  Engine::FunctionRegistry<void()>::register_function("pause_menu_exit", []() {
+    Log::info("Exiting to main menu from pause menu");
+    Engine::SceneManager::load_scene("MainMenuState");
+    });
+
+
   // Register game scenes at startup
   Engine::SceneManager::register_scene<EmptyState>("EmptyState");
   Engine::SceneManager::register_scene<MainMenuState>("MainMenuState");

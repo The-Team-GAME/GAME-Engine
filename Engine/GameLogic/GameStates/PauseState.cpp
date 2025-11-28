@@ -55,25 +55,9 @@ void PauseState::load()
       1600.0f, 900.0f
     )
     .add_component<Components::Texture>(nothing_button_hovered)
-    .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
+    .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+    .add_to_layer("ui");
 
-
-  Engine::FunctionRegistry<void()>::register_function("pause_menu_resume", []() {
-    Log::info("Resuming game from pause menu");
-    // Resume the game
-    });
-  Engine::FunctionRegistry<void()>::register_function("pause_menu_restart", []() {
-    Log::info("Restarting level from pause menu");
-    Engine::SceneManager::load_scene("GameplayState");
-    });
-  Engine::FunctionRegistry<void()>::register_function("pause_menu_options", []() {
-    Log::info("Opening options from pause menu");
-    //Engine::SceneManager::load_scene("OptionsState");
-    });
-  Engine::FunctionRegistry<void()>::register_function("pause_menu_exit", []() {
-    Log::info("Exiting to main menu from pause menu");
-    Engine::SceneManager::load_scene("MainMenuState");
-    });
 
   // Invisible collider for detecting mouse position
   resume_collider_entity = Engine::ECS::create_entity()
@@ -83,7 +67,8 @@ void PauseState::load()
       1600.0f, 900.0f
     )
     .add_component<Components::BoxCollider>(600.0f, 100.0f, true)
-    .add_component<Components::Clickable>("pause_menu_resume");
+    .add_component<Components::Clickable>("pause_menu_resume")
+    .add_to_layer("ui");
 
   restart_collider_entity = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
@@ -92,7 +77,8 @@ void PauseState::load()
       1600.0f, 900.0f
     )
     .add_component<Components::BoxCollider>(600.0f, 100.0f, true)
-    .add_component<Components::Clickable>("pause_menu_restart");
+    .add_component<Components::Clickable>("pause_menu_restart")
+    .add_to_layer("ui");
 
   options_collider_entity = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
@@ -101,7 +87,8 @@ void PauseState::load()
       1600.0f, 900.0f
     )
     .add_component<Components::BoxCollider>(600.0f, 100.0f, true)
-    .add_component<Components::Clickable>("pause_menu_options");
+    .add_component<Components::Clickable>("pause_menu_options")
+    .add_to_layer("ui");
 
   exit_collider_entity = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
@@ -110,7 +97,8 @@ void PauseState::load()
       1600.0f, 900.0f
     )
     .add_component<Components::BoxCollider>(600.0f, 100.0f, true)
-    .add_component<Components::Clickable>("pause_menu_exit");
+    .add_component<Components::Clickable>("pause_menu_exit")
+    .add_to_layer("ui");
 }
 
 void PauseState::init()

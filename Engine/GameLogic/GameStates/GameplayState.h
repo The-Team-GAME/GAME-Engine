@@ -45,7 +45,7 @@ public:
 
     // Check if pause button is pressed
     if (Engine::Input::is_pressed(Engine::KeyCode::Escape)) {
-      Engine::Resources::open_level("levels/PauseState.json", true, true);
+      Engine::Resources::open_level("levels/Pause.json", true, true);
     }
 
   };
