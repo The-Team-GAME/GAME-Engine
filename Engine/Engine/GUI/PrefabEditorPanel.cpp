@@ -152,11 +152,11 @@ Engine::ECS::Prefab PrefabEditorPanelHelpers::get_prefab_from_resources(const st
       selected_prefab = Engine::ECS::Prefab(prefab_ptr);
     }
     else {
-      Log::error("PrefabEditorPanel: Prefab expired in cache: " + prefab_path);
+      Log::error("PrefabEditorPanel: Prefab expired in cache: {}", prefab_path);
     }
   }
   else {
-    Log::error("PrefabEditorPanel: Failed to find prefab in cache: " + prefab_path);
+    Log::error("PrefabEditorPanel: Failed to find prefab in cache: {}", prefab_path);
   }
 
   return selected_prefab;
@@ -253,7 +253,7 @@ void PrefabEditorPanel()
           // Select the newly created prefab
           selected_prefab_path = relative_path;
 
-          Log::info("Created new prefab: " + relative_path);
+          Log::info("Created new prefab: {}", relative_path);
           ImGui::CloseCurrentPopup();
         }
       }
@@ -346,10 +346,10 @@ void PrefabEditorPanel()
               // Propagate changes to all prefab instances
               Engine::ECS::update_prefab_instances(selected_prefab.get_impl()->get_prefab_id());
 
-              Log::info("Added component '" + component_name + "' to prefab: " + selected_prefab_path);
+              Log::info("Added component '{}' to prefab: {}", component_name, selected_prefab_path);
             }
             else {
-              Log::error("Failed to add component '" + component_name + "' to prefab: " + selected_prefab_path);
+              Log::error("Failed to add component '{}' to prefab: {}", component_name, selected_prefab_path);
             }
           }
         }

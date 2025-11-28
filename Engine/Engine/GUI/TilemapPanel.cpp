@@ -357,7 +357,7 @@ namespace TilemapPanel {
         // Load the texture using Resources (handles cache lookup automatically)
         entry.texture_handle = Engine::Resources::load_texture(entry.texture_path, true, false);
         if (!entry.texture_handle || entry.texture_handle->id == 0) {
-          Log::warning("Failed to load tilemap atlas texture: " + entry.texture_path);
+          Log::warning("Failed to load tilemap atlas texture: {}", entry.texture_path);
         }
       }
     }

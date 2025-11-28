@@ -42,7 +42,7 @@ namespace Engine {
         {
           for (const auto& filepath : event.filepaths)
           {
-            Log::info("File dropped: " + filepath);
+            Log::info("File dropped: {}", filepath);
             Engine::Resources::load(filepath, false, true);
           }
         }

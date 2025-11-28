@@ -67,7 +67,7 @@ namespace ViewportPanel {
     // Unbind framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    Log::info(std::string("ViewportPanel initialized with size ") + std::to_string(fb_width) + " x " + std::to_string(fb_height));
+    Log::info("ViewportPanel initialized with size {} x {}", fb_width, fb_height);
   }
 
   void exit() {

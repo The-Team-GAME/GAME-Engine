@@ -73,7 +73,7 @@ void Engine::Resources::set_resource_path(const std::string& path)
   // Convert to absolute path, normalize, and ensure trailing separator
   resource_path = Path(path).to_absolute().ensure_trailing_separator();
 
-  Log::info("Resource path set to: " + resource_path);
+  Log::info("Resource path set to: {}", resource_path);
 }
 
 void Engine::Resources::load_all_assets()
@@ -86,11 +86,11 @@ void Engine::Resources::load_all_assets()
 
   if (!std::filesystem::exists(resource_path))
   {
-    Log::warning("Resource path does not exist: " + resource_path);
+    Log::warning("Resource path does not exist: {}", resource_path);
     return;
   }
 
-  Log::info("Loading all assets from: " + resource_path);
+  Log::info("Loading all assets from: {}", resource_path);
   size_t loaded_count = 0;
 
   try
@@ -114,11 +114,11 @@ void Engine::Resources::load_all_assets()
       }
     }
 
-    Log::info("Finished loading all assets. Total loaded: " + std::to_string(loaded_count));
+    Log::info("Finished loading all assets. Total loaded: {}", loaded_count);
   }
   catch (const std::filesystem::filesystem_error& e)
   {
-    Log::error("Error while loading all assets: " + std::string(e.what()));
+    Log::error("Error while loading all assets: {}", e.what());
   }
 }
 
@@ -130,7 +130,7 @@ std::string Engine::Resources::copy_to_resources(const std::string& filepath, co
   // Check if file exists
   if (!std::filesystem::exists(normalized_path))
   {
-    Log::warning("Cannot copy to resources - file does not exist: " + normalized_path);
+    Log::warning("Cannot copy to resources - file does not exist: {}", normalized_path);
     return "";
   }
 
@@ -159,11 +159,11 @@ std::string Engine::Resources::copy_to_resources(const std::string& filepath, co
       try
       {
         std::filesystem::create_directories(dest_dir);
-        Log::info("Created resource subfolder: " + subfolder);
+        Log::info("Created resource subfolder: {}", subfolder);
       }
       catch (const std::filesystem::filesystem_error& e)
       {
-        Log::error("Failed to create resource subfolder: " + std::string(e.what()));
+        Log::error("Failed to create resource subfolder: {}", e.what());
         return "";
       }
     }
@@ -177,7 +177,7 @@ std::string Engine::Resources::copy_to_resources(const std::string& filepath, co
     // File already exists - check if it's the same file
     if (std::filesystem::equivalent(abs_file_path, dest_path))
     {
-      Log::info("File already exists in resources: " + filename);
+      Log::info("File already exists in resources: {}", filename);
       return !subfolder.empty() ? Engine::Path(subfolder).join(filename) : Engine::Path(filename);
     }
 
@@ -200,19 +200,19 @@ std::string Engine::Resources::copy_to_resources(const std::string& filepath, co
       counter++;
     } while (std::filesystem::exists(dest_path));
 
-    Log::info("File renamed to avoid conflict: " + filename);
+    Log::info("File renamed to avoid conflict: {}", filename);
   }
 
   // Copy the file
   try
   {
     std::filesystem::copy_file(abs_file_path, dest_path);
-    Log::info("Copied file to resources: " + filename);
+    Log::info("Copied file to resources: {}", filename);
     return !subfolder.empty() ? Engine::Path(subfolder).join(filename) : Engine::Path(filename);
   }
   catch (const std::filesystem::filesystem_error& e)
   {
-    Log::error("Failed to copy file to resources: " + std::string(e.what()));
+    Log::error("Failed to copy file to resources: {}", e.what());
     return "";
   }
 }
@@ -279,16 +279,16 @@ Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& fil
     if (persist)
     {
       persistent_resources.push_back(texture);
-      Log::info("Texture loaded (persistent): " + full_path);
+      Log::info("Texture loaded (persistent): {}", full_path);
     }
     else
     {
-      Log::info("Texture loaded: " + full_path);
+      Log::info("Texture loaded: {}", full_path);
     }
   }
   else
   {
-    Log::warning("Failed to load texture: " + full_path);
+    Log::warning("Failed to load texture: {}", full_path);
   }
 
   return texture;
@@ -339,11 +339,11 @@ Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath,
   if (persist)
   {
     persistent_resources.push_back(font);
-    Log::info("Font loaded (persistent): " + full_path + " (size: " + std::to_string(size) + ")");
+    Log::info("Font loaded (persistent): {} (size: {})", full_path, size);
   }
   else
   {
-    Log::info("Font loaded: " + full_path + " (size: " + std::to_string(size) + ")");
+    Log::info("Font loaded: {} (size: {})", full_path, size);
   }
 
   return font;
@@ -393,16 +393,16 @@ Engine::Audio::Sound Engine::Resources::load_sound(const std::string& filepath, 
     if (persist)
     {
       persistent_resources.push_back(sound);
-      Log::info("Sound loaded (persistent): " + full_path);
+      Log::info("Sound loaded (persistent): {}", full_path);
     }
     else
     {
-      Log::info("Sound loaded: " + full_path);
+      Log::info("Sound loaded: {}", full_path);
     }
   }
   else
   {
-    Log::warning("Failed to load sound: " + full_path);
+    Log::warning("Failed to load sound: {}", full_path);
   }
 
   return sound;
@@ -452,16 +452,16 @@ Engine::Audio::Sound Engine::Resources::load_music(const std::string& filepath, 
     if (persist)
     {
       persistent_resources.push_back(music);
-      Log::info("Music loaded (persistent): " + full_path);
+      Log::info("Music loaded (persistent): {}", full_path);
     }
     else
     {
-      Log::info("Music loaded: " + full_path);
+      Log::info("Music loaded: {}", full_path);
     }
   }
   else
   {
-    Log::warning("Failed to load music: " + full_path);
+    Log::warning("Failed to load music: {}", full_path);
   }
 
   return music;
@@ -476,7 +476,7 @@ Engine::Resources::Resource Engine::Resources::load(const std::string& filepath,
   std::string extension = Path(filepath).get_extension();
   if (extension.empty())
   {
-    Log::warning("No file extension found for: " + filepath);
+    Log::warning("No file extension found for: {}", filepath);
     return std::monostate{};
   }
 
@@ -527,7 +527,7 @@ Engine::Resources::Resource Engine::Resources::load(const std::string& filepath,
 
     if (json_content.empty())
     {
-      Log::warning("Failed to read JSON file: " + full_path);
+      Log::warning("Failed to read JSON file: {}", full_path);
       return std::monostate{};
     }
 
@@ -535,7 +535,7 @@ Engine::Resources::Resource Engine::Resources::load(const std::string& filepath,
 
     if (!value_opt.has_value() || !value_opt->isObject())
     {
-      Log::warning("Invalid JSON format in file: " + full_path);
+      Log::warning("Invalid JSON format in file: {}", full_path);
       return std::monostate{};
     }
 
@@ -558,11 +558,11 @@ Engine::Resources::Resource Engine::Resources::load(const std::string& filepath,
       }
     }
 
-    Log::warning("Unknown JSON dataType in file: " + full_path);
+    Log::warning("Unknown JSON dataType in file: {}", full_path);
     return std::monostate{};
   }
 
-  Log::warning("Unknown file extension: " + extension + " for file: " + filepath);
+  Log::warning("Unknown file extension: {} for file: {}", extension, filepath);
   return std::monostate{};
 }
 
@@ -610,7 +610,7 @@ Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, 
 
   if (!prefab.is_valid())
   {
-    Log::warning("Failed to deserialize prefab: " + full_path);
+    Log::warning("Failed to deserialize prefab: {}", full_path);
     return Engine::ECS::Prefab(); // Return empty prefab handle
   }
 
@@ -622,11 +622,11 @@ Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, 
   if (persist)
   {
     persistent_resources.push_back(prefab);
-    Log::info("Prefab loaded (persistent): " + full_path);
+    Log::info("Prefab loaded (persistent): {}", full_path);
   }
   else
   {
-    Log::info("Prefab loaded: " + full_path);
+    Log::info("Prefab loaded: {}", full_path);
   }
 
   return prefab;
@@ -659,10 +659,10 @@ void Engine::Resources::cache_prefab(const std::string& filepath, const Engine::
   if (persist)
   {
     persistent_resources.push_back(prefab);
-    Log::info("Level loaded (persistent): " + full_path);
+    Log::info("Level loaded (persistent): {}", full_path);
   }
 
-  Log::info("Prefab cached: " + full_path);
+  Log::info("Prefab cached: {}", full_path);
 }
 
 Engine::Level Engine::Resources::load_level(const std::string& filepath, bool append_resource_path, bool persist)
@@ -698,11 +698,11 @@ Engine::Level Engine::Resources::load_level(const std::string& filepath, bool ap
   if (persist)
   {
     persistent_resources.push_back(level);
-    Log::info("Level loaded (persistent): " + full_path);
+    Log::info("Level loaded (persistent): {}", full_path);
   }
   else
   {
-    Log::info("Level loaded: " + full_path);
+    Log::info("Level loaded: {}", full_path);
   }
 
   return level;
@@ -737,10 +737,10 @@ void Engine::Resources::cache_level(const std::string& filepath, const Engine::L
   if (persist)
   {
     persistent_resources.push_back(level);
-    Log::info("Level cached (persistent): " + full_path);
+    Log::info("Level cached (persistent): {}", full_path);
   }
 
-  Log::info("Level cached: " + full_path);
+  Log::info("Level cached: {}", full_path);
 }
 
 bool Engine::Resources::open_level(const std::string& filepath, bool append_resource_path)
@@ -756,7 +756,7 @@ bool Engine::Resources::open_level(const std::string& filepath, bool append_reso
   std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
   Engine::LevelManager::set_current_level_path(full_path);
 
-  Log::info("Opened level: " + filepath);
+  Log::info("Opened level: {}", filepath);
   return true;
 }
 
@@ -774,7 +774,7 @@ bool Engine::Resources::open(const std::string& filepath, bool append_resource_p
     auto json_str = Engine::FileIO::read_string_from_file(full_path);
 
     if (!json_str.has_value()) {
-      Log::warning("Failed to read file for opening: " + filepath);
+      Log::warning("Failed to read file for opening: {}", filepath);
       return false;
     }
 
@@ -782,7 +782,7 @@ bool Engine::Resources::open(const std::string& filepath, bool append_resource_p
     std::optional<ReflectionLibrary::GenericValue> value_opt = ReflectionLibrary::generic_value_from_json(json_str.value());
 
     if (!value_opt) {
-      Log::warning("Failed to parse JSON file: " + filepath);
+      Log::warning("Failed to parse JSON file: {}", filepath);
       return false;
     }
 
@@ -796,17 +796,17 @@ bool Engine::Resources::open(const std::string& filepath, bool append_resource_p
         return open_level(filepath, append_resource_path);
       }
       else {
-        Log::warning("Unknown dataType in JSON file: " + data_type);
+        Log::warning("Unknown dataType in JSON file: {}", data_type);
         return false;
       }
     }
     else {
-      Log::warning("JSON file missing dataType field: " + filepath);
+      Log::warning("JSON file missing dataType field: {}", filepath);
       return false;
     }
   }
 
-  Log::warning("Unsupported file type for opening: " + extension);
+  Log::warning("Unsupported file type for opening: {}", extension);
   return false;
 }
 
@@ -819,7 +819,7 @@ void Engine::Resources::remove_from_cache(const std::string& filepath, bool appe
   // Remove from level cache
   auto level_it = level_cache.find(path);
   if (level_it != level_cache.end()) {
-    Log::info("Removed level from cache: " + path);
+    Log::info("Removed level from cache: {}", path);
     level_cache.erase(level_it);
 
     // Check if this was the current level and clear it
@@ -832,28 +832,28 @@ void Engine::Resources::remove_from_cache(const std::string& filepath, bool appe
   // Remove from texture cache
   auto texture_it = texture_cache.find(path);
   if (texture_it != texture_cache.end()) {
-    Log::info("Removed texture from cache: " + path);
+    Log::info("Removed texture from cache: {}", path);
     texture_cache.erase(texture_it);
   }
 
   // Remove from font cache
   auto font_it = font_cache.find(path);
   if (font_it != font_cache.end()) {
-    Log::info("Removed font from cache: " + path);
+    Log::info("Removed font from cache: {}", path);
     font_cache.erase(font_it);
   }
 
   // Remove from sound cache
   auto sound_it = sound_cache.find(path);
   if (sound_it != sound_cache.end()) {
-    Log::info("Removed sound from cache: " + path);
+    Log::info("Removed sound from cache: {}", path);
     sound_cache.erase(sound_it);
   }
 
   // Remove from prefab cache
   auto prefab_it = prefab_cache.find(path);
   if (prefab_it != prefab_cache.end()) {
-    Log::info("Removed prefab from cache: " + path);
+    Log::info("Removed prefab from cache: {}", path);
     prefab_cache.erase(prefab_it);
   }
 
@@ -869,7 +869,7 @@ void Engine::Resources::clear_unused_resources()
   {
     if (it->second.expired())
     {
-      Log::info("Clearing unused texture from cache: " + it->first);
+      Log::info("Clearing unused texture from cache: {}", it->first);
       it = texture_cache.erase(it);
     }
     else
@@ -883,7 +883,7 @@ void Engine::Resources::clear_unused_resources()
   {
     if (it->second.expired())
     {
-      Log::info("Clearing unused font from cache: " + it->first);
+      Log::info("Clearing unused font from cache: {}", it->first);
       it = font_cache.erase(it);
     }
     else
@@ -897,7 +897,7 @@ void Engine::Resources::clear_unused_resources()
   {
     if (it->second.expired())
     {
-      Log::info("Clearing unused sound from cache: " + it->first);
+      Log::info("Clearing unused sound from cache: {}", it->first);
       it = sound_cache.erase(it);
     }
     else
@@ -911,7 +911,7 @@ void Engine::Resources::clear_unused_resources()
   {
     if (it->second.expired())
     {
-      Log::info("Clearing unused prefab from cache: " + it->first);
+      Log::info("Clearing unused prefab from cache: {}", it->first);
       it = prefab_cache.erase(it);
     }
     else
