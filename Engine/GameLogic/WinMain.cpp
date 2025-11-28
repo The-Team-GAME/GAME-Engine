@@ -206,18 +206,11 @@ void RunGame()
         heartrate->increase(static_cast<float>(damage));
         Log::info("Player took {} damage! Heartrate: {}", damage, heartrate->heartrate);
 
-        // Apply knockback
-        if (player_transform && attack_transform) {
-          // Determine knockback direction (away from attack)
-          float dx = player_transform->position.x - attack_transform->position.x;
-          float knockback_direction = (dx > 0 ? 1.0f : -1.0f);
+        // Apply knockback (direction is already baked into attack->knockback from the attacker)
+        rigid->velocity.x = attack->knockback.x;
+        rigid->velocity.y = attack->knockback.y; // Usually negative for upward knockback
 
-          // Apply knockback velocity
-          rigid->velocity.x = attack->knockback.x * knockback_direction;
-          rigid->velocity.y = attack->knockback.y; // Usually negative for upward knockback
-
-          Log::info("Player knocked back! Velocity: ({}, {})", rigid->velocity.x, rigid->velocity.y);
-        }
+        Log::info("Player knocked back! Velocity: ({}, {})", rigid->velocity.x, rigid->velocity.y);
       }
       else {
         Log::error("Error: Heartrate or RigidBody component missing from player!");
