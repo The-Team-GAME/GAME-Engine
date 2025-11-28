@@ -39,7 +39,8 @@ public:
 
   void init() {
 
-    Engine::ECS::add_system<Engine::Systems::EnemyHealthBarSystem>();
+    //Engine::ECS::add_system<Engine::Systems::EnemyHealthBarSystem>();
+    Engine::ECS::add_system<Engine::Systems::EnemyHealthBarRectSystem>();
     Engine::ECS::add_system<Engine::Systems::HeartHUDSpriteSystem>();
     Engine::ECS::add_system<Engine::Systems::ParticleSystem>();
 
@@ -65,37 +66,11 @@ public:
 
     player_entity.add_component<Components::HeartHUDSprite>();
     if (auto* hud = player_entity.get_component<Components::HeartHUDSprite>()) {
-      hud->layer = "player";
-      hud->overlay_layer = "ui";
-      hud->head_layer = "ui";
-      hud->head_offset_px = { 0.f, 0.f };      // head on the left
-      hud->back_offset_px = { 80.f, 0.f };     // keep bar to the right of the head
-      hud->overlay_relative_to_back = true;
-      hud->overlay_offset_px = { 0.f, 0.f };
-
-      hud->width = 763.f;  hud->height = 145.f;
-      hud->src_w_px = 763; hud->src_h_px = 145;
-
-      // === Fill the bar from the very left ===
-      hud->src_left_px = 0;
-      hud->src_right_px = 736;
-      hud->slices = hud->src_right_px - hud->src_left_px;  // recompute slices
-
-      // Map to the full bar width from the left edge
-      hud->fill_left_px = 0.f;
-      hud->fill_right_px = 736.f;
-      hud->fill_inset_px = { 8.f, 10.f };
-
-      hud->fill_color_low = { 1.00f, 0.22f, 0.55f, 1.0f }; // bright pink
-      hud->fill_color_high = { 1.00f, 0.12f, 0.38f, 1.0f };
-      hud->use_bpm_tint = true;
-
       // Textures
       hud->tex_back = Engine::Resources::load_texture("images/Heartratebar/BarBack.png");
       hud->tex_solid = Engine::Resources::load_texture("images/Heartratebar/WhiteSolidForFill.png");
       hud->tex_head = Engine::Resources::load_texture("images/Heartratebar/HeadBar.png");
       hud->tex_white = Engine::Resources::load_texture("images/Heartratebar/WhiteBar.png");
-      hud->use_white_overlay = true;
     }
 
     // ========================================================================
@@ -113,7 +88,8 @@ public:
       .add_component<Components::RigidBody>(Components::RigidBody(false, true))
       .add_component<Components::BoxCollider>(LazyMonkeyStates::WIDTH * 2.0f, LazyMonkeyStates::HEIGHT * 2.0f, false)
       .add_component<Components::EnemyHealth>(400, 400)
-      .add_component<Components::EnemyHealthBar>()
+      .add_component<Components::EnemyHealthBarRect>()
+      //.add_component<Components::EnemyHealthBar>()
       .add_component<Components::StateMachine>(LazyMonkeyStates::create_state_machine())
       .remove_from_layer("default")
       .add_to_layer("enemy")

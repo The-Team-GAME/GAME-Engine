@@ -100,6 +100,7 @@ namespace Engine {
       }
     };
 
+    /*
     class EnemyHealthBarSystem : public Engine::ECS::System {
     public:
       EnemyHealthBarSystem() {
@@ -109,7 +110,7 @@ namespace Engine {
       void update_entity(Engine::ECS::Entity& e) override {
         using namespace Components;
         auto* hp = e.get_component<EnemyHealth>();
-        auto* tr = e.get_component<Components::Transform2D>();
+        auto* tr = e.get_component<Transform2D>();
         auto* bar = e.get_component<EnemyHealthBar>();
         if (!hp || !tr || !bar) return;
 
@@ -122,22 +123,20 @@ namespace Engine {
 
         if (bar->last_hp < 0) { // first tick
           bar->last_hp = cur; bar->last_max = mx;
-          bar->front_ratio = bar->after_ratio = static_cast<float>(cur) / mx;
+          bar->front_ratio = bar->after_ratio = float(cur) / mx;
         }
 
         // Damage
         if (cur < bar->last_hp) {
-          const float newR = static_cast<float>(cur) / mx;
-          const float oldR = static_cast<float>(bar->last_hp) / mx;
-          bar->front_ratio = newR;            // snap
-          bar->after_ratio = oldR;            // start draining from previous
+          const float newR = float(cur) / float(mx);
+          const float oldR = float(bar->last_hp) / float(mx);
+          bar->front_ratio = newR;           // snap
+          bar->after_ratio = oldR;           // drain
           bar->has_been_hit = true;
-          if (!bar->persist_after_first_hit) 
-            bar->visible_until = now + bar->show_duration;
+          if (!bar->persist_after_first_hit) bar->visible_until = now + bar->show_duration;
         }
-        // Heal: both jump up
         else if (cur > bar->last_hp) {
-          const float r = static_cast<float>(cur) / mx;
+          const float r = float(cur) / float(mx);
           bar->front_ratio = bar->after_ratio = r;
           bar->visible_until = now + 0.4f;
         }
@@ -154,150 +153,297 @@ namespace Engine {
           : (now <= bar->visible_until && !hp->is_dead());
 
         if (show) layout_arc(e, *bar);
-        else { set_layer_visibility(bar->front, 0); set_layer_visibility(bar->after, 0); }
+        else      hide_arc(*bar);
 
-        if (hp->is_dead()) {
-          for (auto& seg : bar->front) if (seg.is_valid()) seg.destroy();
-          for (auto& seg : bar->after) if (seg.is_valid()) seg.destroy();
-          bar->front.clear(); bar->after.clear();
-          bar->initialized = false;
-        }
+        if (hp->is_dead()) destroy_arc(*bar);
       }
 
     private:
-      static inline float deg2rad(float d) { return d * 0.01745329251994329577f; }
-      static inline float rad2deg(float r) { return r * 57.29577951308232f; }
+      static Engine::Graphics::Texture rect() { return Engine::Resources::get_rect_texture(); }
+      static inline float DEG(float d) { return d * 0.01745329251994329577f; }
 
-      static Engine::Graphics::Texture default_rect() { return Engine::Resources::get_rect_texture(); }
-
-      // normalize to [0, 2π), and shortest signed delta in (-π, π]
-      static inline float norm2pi(float a) { const float tau = 6.28318530718f; a = fmodf(a, tau); return (a < 0.f) ? a + tau : a; }
-      static inline float short_delta(float a, float b) {
-        float d = b - a; const float pi = 3.14159265359f, tau = 6.28318530718f;
-        while (d > pi) d -= tau;
-        while (d <= -pi) d += tau;
-        return d;
-      }
-
-      void ensure_bar(Engine::ECS::Entity& owner, Components::EnemyHealthBar& bar) {
+      void ensure_bar(Engine::ECS::Entity&, Components::EnemyHealthBar& bar) {
         using namespace Components;
         if (bar.initialized) return;
         bar.initialized = true;
-        if (!bar.tex) bar.tex = default_rect();
+        if (!bar.tex) bar.tex = rect();
 
-        const int n = std::max(3, bar.segments);
-        bar.front.resize(n);
+        const int n = std::max(8, bar.segments);
+        bar.base.resize(n);
         bar.after.resize(n);
+        bar.front.resize(n);
 
-        // Pre-create segment sprites
+        auto make_seg = [&](float thick, const EnemyHealthBar::RGBA& c) {
+          auto seg = Engine::ECS::create_entity()
+            .add_component<Components::Transform2D>(0.f, 0.f, 0.f, thick, thick)
+            .add_component<Components::Texture>(bar.tex)
+            .add_component<Components::Color>(c.r, c.g, c.b, c.a)
+            .remove_from_layer("default").add_to_layer(bar.layer.c_str());
+          return seg;
+          };
         for (int i = 0; i < n; ++i) {
-          {
-            auto seg = Engine::ECS::create_entity()
-              .add_component<Components::Transform2D>(0.f, 0.f, 0.f, bar.after_thickness, bar.after_thickness)
-              .add_component<Components::Texture>(bar.tex)
-              .add_component<Components::Color>(bar.after_color.r, bar.after_color.g, bar.after_color.b, bar.after_color.a)
-              .remove_from_layer("default")
-              .add_to_layer(bar.layer.c_str());
-
-            bar.after[i] = seg;
-          }
-          {
-            auto seg = Engine::ECS::create_entity()
-              .add_component<Components::Transform2D>(0.f, 0.f, 0.f, bar.front_thickness, bar.front_thickness)
-              .add_component<Components::Texture>(bar.tex)
-              .add_component<Components::Color>(bar.front_color.r, bar.front_color.g, bar.front_color.b, bar.front_color.a)
-              .remove_from_layer("default")
-              .add_to_layer(bar.layer.c_str());
-            bar.front[i] = seg;
-          }
+          bar.base[i] = make_seg(bar.base_thickness, bar.base_color);
+          bar.after[i] = make_seg(bar.after_thickness, bar.after_color);
+          bar.front[i] = make_seg(bar.front_thickness, bar.front_color);
         }
 
-        set_layer_visibility(bar.front, 1);
-        set_layer_visibility(bar.after, 1);
+        // Caps
+        bar.cap_left = Engine::ECS::create_entity()
+          .add_component<Components::Transform2D>(0.f, 0.f, 0.f, bar.cap_len_px, bar.cap_thickness_px)
+          .add_component<Components::Texture>(bar.tex)
+          .add_component<Components::Color>(bar.cap_color.r, bar.cap_color.g, bar.cap_color.b, bar.cap_color.a)
+          .remove_from_layer("default").add_to_layer(bar.layer.c_str());
+        bar.cap_right = Engine::ECS::create_entity()
+          .add_component<Components::Transform2D>(0.f, 0.f, 0.f, bar.cap_len_px, bar.cap_thickness_px)
+          .add_component<Components::Texture>(bar.tex)
+          .add_component<Components::Color>(bar.cap_color.r, bar.cap_color.g, bar.cap_color.b, bar.cap_color.a)
+          .remove_from_layer("default").add_to_layer(bar.layer.c_str());
       }
 
-      void set_layer_visibility(std::vector<Engine::ECS::Entity>& layer, int visible_from_right) {
-        const int n = static_cast<int>(layer.size());
-        for (int i = 0; i < n; ++i) {
-          if (!layer[i].is_valid()) continue;
-          const bool vis = (i >= n - visible_from_right); // R→L fill
-          if (auto* tr = layer[i].get_component<Components::Transform2D>()) {
-            // keep previous width; toggle only height
-            tr->scale.y = vis ? tr->scale.y : 0.0f;
-          }
+      void hide_arc(Components::EnemyHealthBar& bar) {
+        for (auto* layer : { &bar.base, &bar.after, &bar.front }) {
+          for (auto& seg : *layer) if (auto* t = seg.get_component<Components::Transform2D>()) t->scale.y = 0.f;
         }
+        for (auto cap : { bar.cap_left, bar.cap_right })
+          if (auto* t = cap.get_component<Components::Transform2D>()) t->scale.y = 0.f;
       }
 
-      // Smooth continuous arc using stretched quads; Y-down coordinates
+      void destroy_arc(Components::EnemyHealthBar& bar) {
+        auto destroy_list = [&](std::vector<Engine::ECS::Entity>& v) { for (auto& e : v) if (e.is_valid()) e.destroy(); v.clear(); };
+        destroy_list(bar.base);
+        destroy_list(bar.after);
+        destroy_list(bar.front);
+        if (bar.cap_left.is_valid())  bar.cap_left.destroy();
+        if (bar.cap_right.is_valid()) bar.cap_right.destroy();
+        bar.initialized = false;
+      }
+
+      // Layout smooth arc
       void layout_arc(Engine::ECS::Entity& owner, Components::EnemyHealthBar& bar) {
-        auto* tOwner = owner.get_component<Components::Transform2D>();
-        if (!tOwner) return;
+        using namespace Components;
+        auto* to = owner.get_component<Components::Transform2D>();
+        if (!to) return;
 
-        const int n = std::max(8, bar.segments);          // more segments = smoother
-        const float DEG = 0.01745329251994329577f;
+        const int n = std::max(8, bar.segments);
 
+        // Arc ends (left to right on screen)
         float a0_deg, a1_deg;
         if (bar.use_center_span) {
           const float half = std::max(0.f, bar.arc_span_deg) * 0.5f;
           a0_deg = bar.center_angle_deg - half;
           a1_deg = bar.center_angle_deg + half;
         }
-        else {
-          a0_deg = bar.start_angle_deg;
-          a1_deg = bar.end_angle_deg;
-        }
-        auto norm2pi = [](float a) { const float tau = 6.28318530718f; a = fmodf(a, tau); return (a < 0.f) ? a + tau : a; };
-        auto short_delta = [&](float a, float b) {
-          float d = b - a; const float pi = 3.14159265359f, tau = 6.28318530718f;
-          while (d > pi) d -= tau; while (d <= -pi) d += tau; return d;
-          };
-        float a0 = norm2pi(a0_deg * DEG), a1 = norm2pi(a1_deg * DEG);
-        const float span = short_delta(a0, a1);
+        else { a0_deg = bar.start_angle_deg; a1_deg = bar.end_angle_deg; }
+
+        auto DEG = [](float d) { return d * 0.01745329251994329577f; };
+        const float a0 = DEG(a0_deg), a1 = DEG(a1_deg);
+        const float span = a1 - a0;
 
         const int vis_after = std::clamp(int(std::round(bar.after_ratio * n)), 0, n);
         const int vis_front = std::clamp(int(std::round(bar.front_ratio * n)), 0, n);
 
-        const float overlap = 1.02f;
+        const float cx0 = to->position.x + bar.offset.x;
+        const float cy0 = to->position.y + bar.offset.y;
 
-        auto place_ring = [&](std::vector<Engine::ECS::Entity>& ring, float thickness, int visible_from_right) {
-          for (int i = 0; i < n; ++i) {
-            if (!ring[i].is_valid()) continue;
+        // stronger overlap, no integer rounding
+        const float overlap = 1.12f;   // to remove gaps
+        auto place_ring = [&](std::vector<Engine::ECS::Entity>& ring,
+          float thickness, int visible_from_right, bool show_full)
+          {
+            for (int i = 0; i < n; ++i) {
+              if (!ring[i].is_valid()) continue;
 
-            // Segment angular range
-            const float t0 = float(i) / n, t1 = float(i + 1) / n;
-            const float ang0 = a0 + t0 * span;
-            const float ang1 = a0 + t1 * span;
+              const float t0 = float(i) / n, t1 = float(i + 1) / n;
+              const float ang0 = a0 + t0 * span, ang1 = a0 + t1 * span;
 
-            // Endpoints (Y-down)
-            const float x0 = tOwner->position.x + bar.offset.x + std::cos(ang0) * bar.radius;
-            const float y0 = tOwner->position.y + bar.offset.y - std::sin(ang0) * bar.radius;
-            const float x1 = tOwner->position.x + bar.offset.x + std::cos(ang1) * bar.radius;
-            const float y1 = tOwner->position.y + bar.offset.y - std::sin(ang1) * bar.radius;
+              const float x0 = cx0 + std::cos(ang0) * bar.radius;
+              const float y0 = cy0 - std::sin(ang0) * bar.radius;
+              const float x1 = cx0 + std::cos(ang1) * bar.radius;
+              const float y1 = cy0 - std::sin(ang1) * bar.radius;
 
-            // Center, angle, length
-            const float cx = (x0 + x1) * 0.5f;
-            const float cy = (y0 + y1) * 0.5f;
-            const float ang = std::atan2(y1 - y0, x1 - x0);
-            const float len = std::hypot(x1 - x0, y1 - y0) * overlap;
+              const float cx = (x0 + x1) * 0.5f;
+              const float cy = (y0 + y1) * 0.5f;
+              const float ang = std::atan2(y1 - y0, x1 - x0);
 
-            // R→L visibility: show last 'visible_from_right' segments
-            const bool visible = (i >= n - visible_from_right);
+              // elongate slice slightly to cover neighbors
+              const float len = std::hypot(x1 - x0, y1 - y0) * overlap;
 
-            if (auto* tr = ring[i].get_component<Components::Transform2D>()) {
-              tr->position.x = cx;
-              tr->position.y = cy;
-              tr->rotation = ang;          // align along the arc
-              tr->scale.x = len;          // LONG side along tangent
-              tr->scale.y = visible ? thickness : 0.0f;  // thickness or hidden
+              // visibility
+              const bool visible = show_full ? true : (i >= (n - visible_from_right));
+
+              if (auto* tr = ring[i].get_component<Components::Transform2D>()) {
+                tr->position.x = cx; tr->position.y = cy;
+                tr->rotation = ang;
+                tr->scale.x = len;
+                tr->scale.y = visible ? thickness : 0.f;
+              }
             }
+          };
+
+        // base to after to front
+        place_ring(bar.base, bar.base_thickness, n, true);
+        place_ring(bar.after, bar.after_thickness, vis_after, false);
+        place_ring(bar.front, bar.front_thickness, vis_front, false);
+
+        auto place_cap = [&](Engine::ECS::Entity cap, float end_deg, float slant_sign) {
+          if (!cap.is_valid()) return;
+          const float end = DEG(end_deg);
+          const float x = cx0 + std::cos(end) * bar.radius;
+          const float y = cy0 - std::sin(end) * bar.radius;
+
+          const float tangent = end + 3.14159265359f * 0.5f; // along the arc
+          const float rot = tangent + DEG(bar.cap_slant_deg * slant_sign);
+
+          // push cap outward a hair so it sits cleanly on the edge
+          const float outward = 0.5f;
+          const float nx = std::cos(end);   // outward normal
+          const float ny = -std::sin(end);
+
+          if (auto* t = cap.get_component<Components::Transform2D>()) {
+            t->position.x = x + nx * outward;
+            t->position.y = y + ny * outward;
+            t->rotation = rot;
+            t->scale.x = bar.cap_len_px;
+            t->scale.y = bar.cap_thickness_px;
+          }
+          };
+        place_cap(bar.cap_left, a0_deg, +1.f);
+        place_cap(bar.cap_right, a1_deg, -1.f);
+      }
+    };
+    */
+
+    class EnemyHealthBarRectSystem : public Engine::ECS::System {
+    public:
+      EnemyHealthBarRectSystem() {
+        require_components<Components::EnemyHealth, Components::Transform2D, Components::EnemyHealthBarRect>();
+      }
+
+      void update_entity(Engine::ECS::Entity& e) override {
+        using namespace Components;
+        auto* hp = e.get_component<EnemyHealth>();
+        auto* tr = e.get_component<Transform2D>();
+        auto* bar = e.get_component<EnemyHealthBarRect>();
+        if (!hp || !tr || !bar) return;
+
+        ensure_bar(*bar);
+
+        const float now = Engine::Time::get_time();
+        const float dt = Engine::Time::get_fixed_dt();
+
+        const int cur = std::max(0, hp->current_hp);
+        const int mx = std::max(1, hp->max_hp);
+
+        if (bar->last_hp < 0) {
+          bar->last_hp = cur;
+          bar->last_max = mx;
+          const float r = float(cur) / float(mx);
+          bar->front_ratio = bar->after_ratio = r;
+          bar->visible_until = now + (bar->persist_after_first_hit ? 60.f : bar->show_duration);
+        }
+
+        if (cur < bar->last_hp) {
+          // took damage
+          const float newR = float(cur) / float(mx);
+          const float oldR = float(bar->last_hp) / float(mx);
+          bar->front_ratio = newR;     // snap
+          bar->after_ratio = oldR;     // drain
+          bar->has_been_hit = true;
+          if (!bar->persist_after_first_hit) bar->visible_until = now + bar->show_duration;
+        }
+        else if (cur > bar->last_hp) {
+          // healed
+          const float r = float(cur) / float(mx);
+          bar->front_ratio = bar->after_ratio = r;
+          bar->visible_until = now + 0.4f;
+        }
+        bar->last_hp = cur;
+        bar->last_max = mx;
+
+        if (bar->after_ratio > bar->front_ratio) {
+          bar->after_ratio = std::max(bar->front_ratio, bar->after_ratio - bar->drain_speed * dt);
+        }
+
+        const bool show = bar->persist_after_first_hit
+          ? (bar->has_been_hit && !hp->is_dead())
+          : (now <= bar->visible_until && !hp->is_dead());
+
+        if (show) layout_rect(*tr, *bar);
+        else      hide_rect(*bar);
+
+        if (hp->is_dead()) destroy_rect(*bar);
+      }
+
+    private:
+      static Engine::Graphics::Texture rect() { return Engine::Resources::get_rect_texture(); }
+
+      void ensure_bar(Components::EnemyHealthBarRect& bar) {
+        using namespace Components;
+        if (bar.initialized) return;
+        bar.initialized = true;
+        if (!bar.tex) bar.tex = rect();
+
+        auto make = [&](const EnemyHealthBarRect::RGBA& c) {
+          return Engine::ECS::create_entity()
+            .add_component<Components::Transform2D>(0.f, 0.f, 0.f, bar.width, bar.height)
+            .add_component<Components::Texture>(bar.tex)
+            .add_component<Components::Color>(c.r, c.g, c.b, c.a)
+            .remove_from_layer("default").add_to_layer(bar.layer.c_str());
+          };
+
+        bar.base = make(bar.base_color);
+        bar.after = make(bar.after_color);
+        bar.front = make(bar.front_color);
+      }
+
+      void hide_rect(Components::EnemyHealthBarRect& bar) {
+        for (auto ent : { bar.base, bar.after, bar.front }) {
+          if (auto* t = ent.get_component<Components::Transform2D>()) t->scale.y = 0.f;
+        }
+      }
+
+      void destroy_rect(Components::EnemyHealthBarRect& bar) {
+        for (auto ent : { bar.base, bar.after, bar.front }) if (ent.is_valid()) ent.destroy();
+        bar.initialized = false;
+      }
+
+      // Layout: base full, front & after left-anchored
+      void layout_rect(const Components::Transform2D& to, Components::EnemyHealthBarRect& bar) {
+        // center of the bar
+        const float centerX = to.position.x + bar.offset.x;   // offset.x shifts center horizontally
+        const float centerY = to.position.y + bar.offset.y;   // offset.y is vertical lift
+        const float left = centerX - bar.width * 0.5f;     // left edge from centered bar
+
+        // Base (full dark background)
+        if (auto* t = bar.base.get_component<Components::Transform2D>()) {
+          t->position.x = centerX;            // centered
+          t->position.y = centerY;
+          t->rotation = 0.f;
+          t->scale.x = bar.width;
+          t->scale.y = bar.height;
+        }
+
+        // Inner height so base outline peeks
+        const float inner_h = std::max(1.f, bar.height - bar.inset_y_px * 2.f);
+
+        auto place_fill = [&](Engine::ECS::Entity e, float ratio) {
+          if (auto* t = e.get_component<Components::Transform2D>()) {
+            const float w = std::max(0.f, std::min(1.f, ratio)) * bar.width;
+            // right to left depletion
+            t->position.x = left + w * 0.5f;  // center of the current width
+            t->position.y = centerY;
+            t->rotation = 0.f;
+            t->scale.x = w;
+            t->scale.y = inner_h;
           }
           };
 
-        place_ring(bar.after, bar.after_thickness, vis_after);
-        place_ring(bar.front, bar.front_thickness, vis_front);
+        // Draw delayed then front so front is on top
+        place_fill(bar.after, bar.after_ratio);
+        place_fill(bar.front, bar.front_ratio);
       }
-
     };
+
 
     class HeartHUDSpriteSystem final : public Engine::ECS::System {
     public:
