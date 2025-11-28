@@ -28,6 +28,21 @@ namespace PlayerStates
   inline Components::StateMachine create_state_machine()
   {
     // ========================================================================
+    // Audio Setup
+    // ========================================================================
+    Components::StateAudio walk_audio;
+    walk_audio.sound = Engine::Resources::load_sound("sounds/move1.wav");
+    walk_audio.loop = true;
+
+    Components::StateAudio jump_audio;
+    jump_audio.sound = Engine::Resources::load_sound("sounds/jump.wav");
+    jump_audio.loop = false;
+
+    Components::StateAudio attack_audio;
+    attack_audio.sound = Engine::Resources::load_sound("sounds/Punch.wav");
+    attack_audio.loop = false;
+
+    // ========================================================================
     // Player Idle State
     // ========================================================================
     Components::StateAnimation player_idle_anim;
@@ -47,7 +62,7 @@ namespace PlayerStates
     player_walking_anim.animation = Components::Animation(8, 0.1f);
     player_walking_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
 
-    Components::State player_walking("Walking", "player_walking_enter", "player_walking_update", "player_walking_exit", player_walking_anim);
+    Components::State player_walking("Walking", "player_walking_enter", "player_walking_update", "player_walking_exit", player_walking_anim, walk_audio);
 
     // ========================================================================
     // Player Jumping State
@@ -58,7 +73,7 @@ namespace PlayerStates
     player_jumping_anim.animation = Components::Animation(8, 0.1f);
     player_jumping_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
 
-    Components::State player_jumping("Jumping", "player_jumping_enter", "player_jumping_update", "", player_jumping_anim);
+    Components::State player_jumping("Jumping", "player_jumping_enter", "player_jumping_update", "", player_jumping_anim, jump_audio);
 
     // ========================================================================
     // Player Attack 1 State (First Punch)
@@ -69,7 +84,7 @@ namespace PlayerStates
     player_attack1_anim.animation = Components::Animation({ 0, 1, 2, 3, 4, 5, 6, 7, 8 }, { 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f }, false);
     player_attack1_anim.scale = Math::Vec2D(ATTACK_WIDTH * 2.0f, ATTACK_HEIGHT * 2.0f);
 
-    Components::State player_attack1("Attack1", "player_attack1_enter", "player_attack1_update", "", player_attack1_anim);
+    Components::State player_attack1("Attack1", "player_attack1_enter", "player_attack1_update", "", player_attack1_anim, attack_audio);
 
     // ========================================================================
     // Player Attack 2 State (Second Punch)
@@ -80,7 +95,7 @@ namespace PlayerStates
     player_attack2_anim.animation = Components::Animation({ 6, 7, 8, 9, 10, 11, 12 }, { 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f }, false);
     player_attack2_anim.scale = Math::Vec2D(ATTACK_WIDTH * 2.0f, ATTACK_HEIGHT * 2.0f);
 
-    Components::State player_attack2("Attack2", "player_attack2_enter", "player_attack2_update", "", player_attack2_anim);
+    Components::State player_attack2("Attack2", "player_attack2_enter", "player_attack2_update", "", player_attack2_anim, attack_audio);
 
     // ========================================================================
     // Player Attack 3 State (Third Punch - Finisher)
@@ -91,7 +106,7 @@ namespace PlayerStates
     player_attack3_anim.animation = Components::Animation({ 9, 10, 11, 12, 13, 14, 15, 16, 17 }, { 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f }, false);
     player_attack3_anim.scale = Math::Vec2D(ATTACK_WIDTH * 2.0f, ATTACK_HEIGHT * 2.0f);
 
-    Components::State player_attack3("Attack3", "player_attack3_enter", "player_attack3_update", "", player_attack3_anim);
+    Components::State player_attack3("Attack3", "player_attack3_enter", "player_attack3_update", "", player_attack3_anim, attack_audio);
 
     // ========================================================================
     // Build and return state machine

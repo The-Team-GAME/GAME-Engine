@@ -30,9 +30,49 @@
 #include <iostream>
 #include <queue>
 #include "SpatialComponents.h"
+#include "../Resources.h"
+#include "../Audio/AudioPlayer.h"
+#include "../Audio/AudioPlayerInternal.h"
 
 namespace Components
 {
+  // ============================================================================
+  // State Audio Definition
+  // ============================================================================
+
+  struct StateAudio {
+    Engine::Audio::Sound sound;
+    f32 volume = 1.0f;
+    bool loop = false;
+    bool stop_on_exit = true;
+
+    struct Reflector {
+      std::string path;
+      f32 volume;
+      bool loop;
+      bool stop_on_exit;
+
+      static Reflector reflect(const StateAudio& audio) {
+        Reflector r;
+        if (audio.sound) {
+          r.path = Engine::Resources::get_relative_path(audio.sound->path);
+        }
+        r.volume = audio.volume;
+        r.loop = audio.loop;
+        r.stop_on_exit = audio.stop_on_exit;
+        return r;
+      }
+
+      static StateAudio create(const Reflector& r) {
+        StateAudio audio;
+        audio.sound = Engine::Resources::load_sound(r.path);
+        audio.volume = r.volume;
+        audio.loop = r.loop;
+        audio.stop_on_exit = r.stop_on_exit;
+        return audio;
+      }
+    };
+  };
   // ============================================================================
   // State Animation Definition
   // ============================================================================
@@ -76,6 +116,8 @@ namespace Components
 
     // Optional animation data for this state
     std::optional<StateAnimation> animation;
+    // Optional audio data for this state
+    std::optional<StateAudio> audio;
 
     State() = default;
 
@@ -83,12 +125,14 @@ namespace Components
       const std::string& enter_callback = "",
       const std::string& update_callback = "",
       const std::string& exit_callback = "",
-      std::optional<StateAnimation> state_animation = std::nullopt)
+      std::optional<StateAnimation> state_animation = std::nullopt,
+      std::optional<StateAudio> state_audio = std::nullopt)
       : name(state_name)
       , on_enter_callback(enter_callback)
       , on_update_callback(update_callback)
       , on_exit_callback(exit_callback)
       , animation(state_animation)
+      , audio(state_audio)
     {
     }
 
@@ -134,6 +178,7 @@ namespace Components
     bool is_first_frame_ = false;     // Track if we just entered current state
     bool has_started_ = false;        // Track if the state machine has started running
     std::vector<std::string> state_history_; // Track previous states
+    Engine::Audio::ChannelHandle current_audio_channel_ = Engine::Audio::INVALID_CHANNEL; // Track currently playing audio
 
     Engine::ECS::Entity* owner_entity_ = nullptr;  // Reference to owning entity
 
@@ -296,6 +341,19 @@ namespace Components
         if (state_history_.size() > 10) { // Keep last 10 states
           state_history_.erase(state_history_.begin());
         }
+
+        // Handle audio stop
+        if (current_audio_channel_ != Engine::Audio::INVALID_CHANNEL) {
+          bool should_stop = true;
+          if (old_state.audio.has_value()) {
+            should_stop = old_state.audio->stop_on_exit;
+          }
+
+          if (should_stop) {
+            Engine::Audio::stop_channel(current_audio_channel_);
+          }
+          current_audio_channel_ = Engine::Audio::INVALID_CHANNEL;
+        }
       }
 
       // Transition to new state
@@ -306,6 +364,11 @@ namespace Components
       auto& new_state_obj = states[new_state];
       if (new_state_obj.animation.has_value()) {
         apply_state_animation(new_state_obj.animation.value());
+      }
+
+      // Apply state audio if it exists
+      if (new_state_obj.audio.has_value()) {
+        current_audio_channel_ = apply_state_audio(new_state_obj.audio.value());
       }
     }
 
@@ -358,11 +421,20 @@ namespace Components
         }
       }
     }
+
+    // Apply the audio data
+    Engine::Audio::ChannelHandle apply_state_audio(const StateAudio& audio) {
+      if (audio.sound) {
+        return Engine::Audio::play_sound(audio.sound, audio.volume, audio.loop);
+      }
+      return Engine::Audio::INVALID_CHANNEL;
+    }
   };
 
 } // namespace Components
 
 REFLECT_FIELDS(Components::ColliderData, width, height, offset, vertices)
-REFLECT_FIELDS(Components::State, name, on_enter_callback, on_update_callback, on_exit_callback, animation)
+REFLECT_FIELDS(Components::State, name, on_enter_callback, on_update_callback, on_exit_callback, animation, audio)
 REFLECT_FIELDS(Components::StateAnimation, texture, texture_atlas, animation, scale, collider_data)
+REFLECT_CUSTOM(Components::StateAudio, path, volume, loop, stop_on_exit)
 REGISTER_COMPONENT(Components::StateMachine, states, current_state_name)
