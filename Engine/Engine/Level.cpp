@@ -47,7 +47,7 @@ void Engine::Level::instantiate_into_world()
 
   // Create the Level entity
   Engine::ECS::Entity level_entity = Engine::ECS::create_entity();
-  level_entity.add_component<Components::Level>(LevelManager::get_current_level_path());
+  level_entity.add_component<Components::Level>(Engine::Resources::get_relative_path(LevelManager::get_current_level_path()));
   level_entity.add_component<Components::Transform2D>(); // Level needs transform to be a parent
 
   for (const auto& entity_value : entities) {

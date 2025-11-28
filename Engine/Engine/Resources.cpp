@@ -749,12 +749,12 @@ bool Engine::Resources::open_level(const std::string& filepath, bool append_reso
   Engine::Level level = load_level(filepath, append_resource_path, false);
 
 
-  // Instantiate the level into the world
-  level.instantiate_into_world();
-
   // Update the current level path
   std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
   Engine::LevelManager::set_current_level_path(full_path);
+
+  // Instantiate the level into the world
+  level.instantiate_into_world();
 
   Log::info("Opened level: {}", filepath);
   return true;
