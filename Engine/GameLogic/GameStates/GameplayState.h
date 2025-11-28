@@ -16,13 +16,18 @@
 /* EVERY CODE HERE IS TEMPORARY */
 
 #include "../../Engine/MonkeyEngine.h"
- 
+
 
 class GameplayState : public Engine::Scene
-{ 
+{
+  Engine::Audio::Sound bgm;
+
 public:
   void load() {
     Engine::Resources::open_level("levels/LevelOne.json");
+
+    bgm = Engine::Resources::load_sound("sounds/BGM/Level 1 BGM.wav");
+    Engine::Audio::play_sound(bgm, 0.3, true); // TODO: get from settings
   };
 
   void init() {};
@@ -33,5 +38,7 @@ public:
 
   void free() {};
 
-  void unload() {};
+  void unload() {
+    Engine::Audio::stop_all_sounds();
+  };
 };
