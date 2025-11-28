@@ -65,8 +65,8 @@ namespace Components {
 		bool  screen_space = true;
 
 		// Per-part offsets
-		Math::Vec2D head_offset_px{ 0.f, 0.f };
-		Math::Vec2D back_offset_px{ 80.f, 0.f };
+		Math::Vec2D head_offset_px{ 0.f, 20.f };
+		Math::Vec2D back_offset_px{ 90.f, 0.f };
 
 		Math::Vec2D overlay_offset_px{ 0.f, 0.f };
 		bool overlay_relative_to_back = true;
