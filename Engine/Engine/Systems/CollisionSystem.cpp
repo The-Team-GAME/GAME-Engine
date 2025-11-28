@@ -2,10 +2,10 @@
 // file:    CollisionSystem.cpp
 // project: Monkey Stole My GPA
 //
-// author:   (100%)
+// author:  Cheng Ming Xian (100%)
 //          Primary author
 //
-// email:   @digipen.edu
+// email:   c.mingxian@digipen.edu
 //
 // brief:   This file defines a system that handles the collision detection and
 //          collision resolution for entities that contain the components of
@@ -160,10 +160,20 @@ void col2D::update()
           {
             rigid->on_ground = true;
 
-            // Calculate gravity's component along the slope surface
-            // This prevents sliding when standing still on slopes
-            Vec2D gravity_force =phy2D::get_gravity() * rigid->mass;  // mass × gravity_acc
-            phy2D::add_force(*rigid, -gravity_force);
+            // Calculate gravity force vector
+            Vec2D gravity_force = phy2D::get_gravity() * rigid->mass;
+            Vec2D surface_tangent = rigid->last_surface_dir_vector;
+
+            // How much does gravity pull ALONG the slope?
+            f32 gravity_along_slope = dot_product(gravity_force, surface_tangent);
+
+            // Only counter it if pulling down slope AND entity nearly stationary
+            if (gravity_along_slope < 0.f)
+            {
+              // Apply force ALONG the slope that cancels gravity's slope component
+              Vec2D anti_gravity_force = surface_tangent * -gravity_along_slope;
+              phy2D::add_force(*rigid, anti_gravity_force);
+            }
           }
         }
       }
