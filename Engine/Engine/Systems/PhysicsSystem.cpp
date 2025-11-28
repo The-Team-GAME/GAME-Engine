@@ -34,7 +34,20 @@ namespace {
   Vec2D knockback_force{ -1000000.f, 50000.f };
   const Vec2D gravity_acc = { 0.f, 1000.f };
   const f32 STATIC_FRICTION_THRESHOLD = 20.0f;
+
+  const f32 slope_angle_limit = 60.f; // This is basically the limit of what will count as a slope
+  /*
+        /
+       /
+      /_____ (60 degree slope for example)
+  */
 }
+
+f32 phy2D::get_slope_angle_limit()
+{
+  return slope_angle_limit;
+}
+
 Vec2D phy2D::get_gravity()
 {
   return gravity_acc;
@@ -117,7 +130,10 @@ void phy2D::apply_surface_friction(
   // At this point, the velocity of the entity should already be parallel to the surface its colliding with since zero_normal_velocity was called prior to this function.
   Vec2D normal = normalise_vector(collision.mtv);
   Vec2D tangent = normalise_vector(collision.get_tangent());
-
+  if (angle_of_slope(tangent) > phy2D::get_slope_angle_limit())
+  {
+    return;
+  }
   // Get velocity component parallel to the surface
   f32 tangent_speed = dot_product(rigid.velocity, tangent);
   f32 speed = fabsf(tangent_speed);
@@ -133,7 +149,7 @@ void phy2D::apply_surface_friction(
   // Entity is moving fast enough - apply kinetic friction
   // Apply friction force proportional to speed
   // Direction opposes motion along the surface
-  Vec2D friction_direction = (tangent_speed > 0) ? (tangent * -1.0f) : tangent;
+  Vec2D friction_direction = (tangent_speed < 0) ? (tangent * -1.0f) : tangent;
   f32 friction_magnitude = speed * kinetic_friction;
 
   // Apply friction as a velocity change
