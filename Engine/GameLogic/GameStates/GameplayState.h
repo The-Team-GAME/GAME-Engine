@@ -31,8 +31,6 @@ public:
     bgm = Engine::Resources::load_sound("sounds/BGM/Level 1 BGM.wav");
     Engine::Audio::play_sound(bgm, 0.3f, true); // TODO: get from settings
 
-
-
     // Camera entity
     Engine::ECS::Entity camera = Engine::ECS::create_entity();
     camera.add_component<Components::Transform2D>(0.0f, 200.0f, 0.0f, 1.0f, 1.0f);
