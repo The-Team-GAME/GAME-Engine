@@ -230,18 +230,20 @@ namespace Engine
 
     public:
       CameraSystem() {
+        require_components<Components::Camera, Components::Transform2D>();
       }
 
       void update() override {
-        Engine::ECS::for_each_entity_with<Components::Camera>(
+        Engine::ECS::for_each_entity_with<Components::Camera, Components::Transform2D>(
           [this](Engine::ECS::Entity entity) {
             auto* camera_component = entity.get_component<Components::Camera>();
+            auto* transform = entity.get_component<Components::Transform2D>();
 
             // If this camera is marked as active, use its parameters
             if (camera_component->is_active) {
-              camera.position = camera_component->position;
-              camera.rotation = camera_component->rotation;
-              camera.zoom = camera_component->zoom;
+              camera.position = transform->position;
+              camera.rotation = transform->rotation;
+              camera.zoom = transform->scale.x; // Use x scale for zoom TODO: have x and y zoom
             }
           }
         );

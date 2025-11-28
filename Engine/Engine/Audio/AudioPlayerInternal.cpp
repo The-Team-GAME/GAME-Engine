@@ -31,14 +31,15 @@ namespace Engine {
 
     using UniqueFMODSystem = std::unique_ptr<FMOD::System, FMODDeleter>;
 
-    FMOD::System* get_fmod_system() {
-      static UniqueFMODSystem fmod_system = []() -> UniqueFMODSystem {
-        FMOD::System* system = nullptr;
-        FMOD_RESULT result = FMOD::System_Create(&system);
+    struct FMODSystemWrapper {
+      FMOD::System* system = nullptr;
 
+      FMODSystemWrapper() {
+        FMOD_RESULT result = FMOD::System_Create(&system);
         if (result != FMOD_OK) {
           Log::error("Failed to create FMOD system");
-          return nullptr;
+          system = nullptr;
+          return;
         }
 
         // Initialize with 512 channels, FMOD_INIT_NORMAL, and no extra driver data
@@ -46,25 +47,44 @@ namespace Engine {
         if (result != FMOD_OK) {
           Log::error("Failed to initialize FMOD system");
           system->release();
-          return nullptr;
+          system = nullptr;
+          return;
         }
-
         Log::info("FMOD system initialized");
-        return UniqueFMODSystem(system);
-        }();
-
-      if (!fmod_system) {
-        throw std::runtime_error("FMOD system failed to initialize");
       }
 
-      return fmod_system.get();
+      ~FMODSystemWrapper() {
+        if (system) {
+          system->release();
+          Log::info("FMOD system released");
+        }
+      }
+    };
+
+    // Global shared pointer to the system wrapper
+    // This ensures the system stays alive as long as anyone (SoundData) holds a reference
+    std::shared_ptr<FMODSystemWrapper> global_fmod_system;
+
+    std::shared_ptr<void> get_fmod_system_ref() {
+      if (!global_fmod_system) {
+        global_fmod_system = std::make_shared<FMODSystemWrapper>();
+      }
+      return global_fmod_system;
+    }
+
+    FMOD::System* get_fmod_system() {
+      if (!global_fmod_system) {
+        global_fmod_system = std::make_shared<FMODSystemWrapper>();
+      }
+      return global_fmod_system->system;
     }
 
     // SoundData default constructor
     SoundData::SoundData() : sound(nullptr), is_stream(false) {}
 
     // SoundData constructor
-    SoundData::SoundData(const std::string& path, bool stream) : is_stream(stream) {
+    SoundData::SoundData(const std::string& path, bool stream) : is_stream(stream), path(path) {
+      system_ref = get_fmod_system_ref(); // Keep system alive
       FMOD::System* system = get_fmod_system();
 
       FMOD_MODE mode = FMOD_DEFAULT;

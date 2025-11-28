@@ -225,6 +225,9 @@ namespace PlayerStateCallbacks
         }
         // Knockback Y is always positive (up) in our config, but physics needs negative for up
         attack->knockback.y = -std::abs(attack->knockback.y);
+
+        // Assign impact VFX texture
+        attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactBlue_Spritesheet.png");
       }
     }
 
@@ -312,6 +315,9 @@ namespace PlayerStateCallbacks
         }
         // Knockback Y is always positive (up) in our config, but physics needs negative for up
         attack->knockback.y = -std::abs(attack->knockback.y);
+
+        // Assign impact VFX texture
+        attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactBluePink_Spritesheet.png");
       }
     }
 
@@ -399,6 +405,9 @@ namespace PlayerStateCallbacks
         }
         // Knockback Y is always positive (up) in our config, but physics needs negative for up
         attack->knockback.y = -std::abs(attack->knockback.y);
+
+        // Assign impact VFX texture
+        attack->impact_vfx_texture = Engine::Resources::load_texture("images/VFX/VFX_ImpactPink_Spritesheet.png");
       }
     }
 

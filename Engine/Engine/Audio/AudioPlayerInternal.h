@@ -50,7 +50,13 @@ namespace Engine {
 
       // Default constructor
       SoundData();
+      
+      std::string path; // Store path for reflection
+      std::shared_ptr<void> system_ref; // Keep FMOD system alive
     };
+
+    // Get the FMOD system shared pointer (for lifecycle management)
+    std::shared_ptr<void> get_fmod_system_ref();
 
   } // namespace Audio
 } // namespace Engine

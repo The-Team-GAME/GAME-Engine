@@ -95,7 +95,8 @@ inline void CameraPanel()
     // Create new camera button
     if (ImGui::Button("Create New Camera")) {
       Engine::ECS::Entity new_entity = Engine::ECS::create_entity();
-      new_entity.add_component<Components::Camera>("New Camera", false, Math::Vec2D(0.0f, 0.0f), 0.0f, 1.0f);
+      new_entity.add_component<Components::Camera>("New Camera", false);
+      new_entity.add_component<Components::Transform2D>(0.0f, 0.0f, 0.0f, 1.0f, 1.0f);
       selected_camera_id = static_cast<s32>(new_entity.get_id());
     }
 
@@ -126,6 +127,12 @@ inline void CameraPanel()
     else
     {
       auto* camera = entity.get_component<Components::Camera>();
+      
+      // Ensure Transform2D exists
+      if (!entity.has_component<Components::Transform2D>()) {
+        entity.add_component<Components::Transform2D>();
+      }
+      auto* transform = entity.get_component<Components::Transform2D>();
 
       ImGui::Text("Editing: Entity %d", selected_camera_id);
       ImGui::Separator();
@@ -162,38 +169,38 @@ inline void CameraPanel()
 
       // Position controls
       ImGui::Text("Position:");
-      float pos[2] = { camera->position.x, camera->position.y };
+      float pos[2] = { transform->position.x, transform->position.y };
       if (ImGui::DragFloat2("##Pos", pos, 1.0f, -10000.0f, 10000.0f, "%.2f")) {
-        camera->position = { pos[0], pos[1] };
+        transform->position = { pos[0], pos[1] };
       }
 
       // Rotation control
       ImGui::Text("Rotation:");
-      float rotation = camera->rotation;
+      float rotation = transform->rotation;
       if (ImGui::DragFloat("##Rot", &rotation, 0.5f, -360.0f, 360.0f, "%.2f°")) {
-        camera->rotation = rotation;
+        transform->rotation = rotation;
       }
 
-      // Zoom control
+      // Zoom control (Scale)
       ImGui::Text("Zoom:");
-      float zoom = camera->zoom;
+      float zoom = transform->scale.x;
       if (ImGui::DragFloat("##Zoom", &zoom, 0.01f, 0.01f, 10.0f, "%.3f")) {
-        camera->zoom = zoom;
+        transform->scale = { zoom, zoom }; // Uniform scale for zoom
       }
 
       ImGui::Separator();
 
       // Quick actions
       if (ImGui::Button("Reset Camera")) {
-        camera->position = { 0.0f, 0.0f };
-        camera->rotation = 0.0f;
-        camera->zoom = 1.0f;
+        transform->position = { 0.0f, 0.0f };
+        transform->rotation = 0.0f;
+        transform->scale = { 1.0f, 1.0f };
       }
 
       ImGui::SameLine();
 
       if (ImGui::Button("Focus at Origin")) {
-        camera->position = { 0.0f, 0.0f };
+        transform->position = { 0.0f, 0.0f };
       }
     }
   }

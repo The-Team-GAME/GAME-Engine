@@ -44,6 +44,7 @@ namespace Engine
         auto* box_collider = entity.get_component<Components::BoxCollider>();
 
         if (!clickable || !tr || !box_collider) return;
+        if (Engine::Time::get_paused()) return;
 
         const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
 

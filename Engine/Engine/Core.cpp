@@ -22,6 +22,7 @@
 #include "Time.h"
 #include "GUI/RegisterAllPanels.h"
 #include "GUI/ViewportPanel.h"
+#include "GUI/FPSOverlay.h"
 #include "WindowManager.h"
 #include "Perf.h"
 #include "InputManager.h"
@@ -46,6 +47,7 @@ namespace Engine
   f64 Core::accumulator{};
   s32 Core::step_limit = 3;
   bool Core::single_step_requested = false;
+  static bool show_fps_overlay = false;
 
   /*=================================================================================
   Function Brief:
@@ -239,6 +241,11 @@ namespace Engine
         // World::update() won't have a chance to react before the input state is cleared on the next frame. 
         Input::update();
 
+        if (Engine::Input::is_pressed(KeyCode::F10))
+        {
+          show_fps_overlay = !show_fps_overlay;
+        }
+
         if (Engine::Input::is_pressed(KeyCode::P))
         {
           Engine::Time::toggle_paused();
@@ -310,11 +317,19 @@ namespace Engine
         ViewportPanel::begin_render();
       }
 
-      // Clear screen (automatically begins batch)
       // start of draw stuff
+
+      // Clear screen (automatically begins batch)
+      Engine::Graphics::clear_screen({ 0.0f, 0.0f, 0.0f, 1.0f });
+
       Engine::SceneManager::draw();
       Engine::ECS::draw();
       TilemapPanel::draw_overlay();
+
+      if (show_fps_overlay)
+      {
+        Engine::GUI::RenderFPSOverlay();
+      }
 
       // end of draw stuff (flush remaining batches)
       Engine::Graphics::end_batch();

@@ -19,10 +19,10 @@ void ShowcaseState::load() {
   background_texture = Engine::Resources::load_texture("images/sample_bg.png");
 
   // Load audio
-  walk_sound = Engine::Resources::load_sound("sounds/move1.wav");
-  jump_sound = Engine::Resources::load_sound("sounds/jump.wav");
-  punch_sound = Engine::Resources::load_sound("sounds/Punch.wav");
-  bgm_sound = Engine::Resources::load_sound("sounds/A STORY TO TELL - Jazz MSCLJZ2_26.wav");
+  walk_sound = Engine::Resources::load_sound("sounds/SFX/Player/Player Footstep.wav");
+  jump_sound = Engine::Resources::load_sound("sounds/SFX/Player/Player Jump (DJ SY Edition).wav");
+  punch_sound = Engine::Resources::load_sound("sounds/SFX/Player/Player Swing.wav");
+  bgm_sound = Engine::Resources::load_sound("sounds/Level 1 BGM.wav");
 
   // Load fonts
   title_font = Engine::Resources::load_font("fonts/PlayfairDisplay-VariableFont_wght.ttf", 82);

@@ -93,6 +93,13 @@ namespace ImGuiManager {
         show_exit_confirmation = true;
       }
     );
+
+    // Register event listener for toast notifications
+    Engine::EventManager::add_event_listener<Engine::Events::ToastEvent>(
+      [](const Engine::Events::ToastEvent& event) {
+        show_toast(event.message, event.type, event.duration);
+      }
+    );
   }
 
   void exit()

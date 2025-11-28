@@ -122,7 +122,7 @@ void Engine::Resources::load_all_assets()
   }
 }
 
-std::string Engine::Resources::copy_to_resources(const std::string& filepath)
+std::string Engine::Resources::copy_to_resources(const std::string& filepath, const std::string& subfolder)
 {
   // Normalize the input path
   std::string normalized_path = Engine::Path(filepath).normalize();
@@ -148,8 +148,28 @@ std::string Engine::Resources::copy_to_resources(const std::string& filepath)
   // Extract just the filename (no directory path)
   std::string filename = Engine::Path(normalized_path).get_filename();
 
-  // Construct destination path in resource root
-  std::string dest_path = Engine::Path(abs_resource_path).join(filename);
+  // Construct destination path in resource root or subfolder
+  std::string dest_dir = abs_resource_path;
+  if (!subfolder.empty())
+  {
+    dest_dir = Engine::Path(abs_resource_path).join(subfolder);
+    // Create subfolder if it doesn't exist
+    if (!std::filesystem::exists(dest_dir))
+    {
+      try
+      {
+        std::filesystem::create_directories(dest_dir);
+        Log::info("Created resource subfolder: " + subfolder);
+      }
+      catch (const std::filesystem::filesystem_error& e)
+      {
+        Log::error("Failed to create resource subfolder: " + std::string(e.what()));
+        return "";
+      }
+    }
+  }
+
+  std::string dest_path = Engine::Path(dest_dir).join(filename);
 
   // Check if a file with this name already exists in resources
   if (std::filesystem::exists(dest_path))
@@ -158,7 +178,7 @@ std::string Engine::Resources::copy_to_resources(const std::string& filepath)
     if (std::filesystem::equivalent(abs_file_path, dest_path))
     {
       Log::info("File already exists in resources: " + filename);
-      return filename;
+      return !subfolder.empty() ? Engine::Path(subfolder).join(filename) : Engine::Path(filename);
     }
 
     // Different file with same name - append number to make it unique
@@ -176,7 +196,7 @@ std::string Engine::Resources::copy_to_resources(const std::string& filepath)
     do
     {
       filename = base_name + "_" + std::to_string(counter) + extension;
-      dest_path = Engine::Path(abs_resource_path).join(filename);
+      dest_path = Engine::Path(dest_dir).join(filename);
       counter++;
     } while (std::filesystem::exists(dest_path));
 
@@ -188,7 +208,7 @@ std::string Engine::Resources::copy_to_resources(const std::string& filepath)
   {
     std::filesystem::copy_file(abs_file_path, dest_path);
     Log::info("Copied file to resources: " + filename);
-    return filename;
+    return !subfolder.empty() ? Engine::Path(subfolder).join(filename) : Engine::Path(filename);
   }
   catch (const std::filesystem::filesystem_error& e)
   {
@@ -224,7 +244,7 @@ Engine::Graphics::Texture Engine::Resources::load_texture(const std::string& fil
   std::string actual_filepath = filepath;
   if (!append_resource_path)
   {
-    std::string copied_path = Engine::Resources::copy_to_resources(filepath);
+    std::string copied_path = Engine::Resources::copy_to_resources(filepath, "images");
     if (!copied_path.empty())
     {
       actual_filepath = copied_path;
@@ -283,7 +303,7 @@ Engine::Graphics::Font Engine::Resources::load_font(const std::string& filepath,
   std::string actual_filepath = filepath;
   if (!append_resource_path)
   {
-    std::string copied_path = Engine::Resources::copy_to_resources(filepath);
+    std::string copied_path = Engine::Resources::copy_to_resources(filepath, "fonts");
     if (!copied_path.empty())
     {
       actual_filepath = copied_path;
@@ -338,7 +358,7 @@ Engine::Audio::Sound Engine::Resources::load_sound(const std::string& filepath, 
   std::string actual_filepath = filepath;
   if (!append_resource_path)
   {
-    std::string copied_path = Engine::Resources::copy_to_resources(filepath);
+    std::string copied_path = Engine::Resources::copy_to_resources(filepath, "sounds");
     if (!copied_path.empty())
     {
       actual_filepath = copied_path;
@@ -397,7 +417,7 @@ Engine::Audio::Sound Engine::Resources::load_music(const std::string& filepath, 
   std::string actual_filepath = filepath;
   if (!append_resource_path)
   {
-    std::string copied_path = Engine::Resources::copy_to_resources(filepath);
+    std::string copied_path = Engine::Resources::copy_to_resources(filepath, "sounds");
     if (!copied_path.empty())
     {
       actual_filepath = copied_path;
@@ -560,7 +580,7 @@ Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, 
   std::string actual_filepath = filepath;
   if (!append_resource_path)
   {
-    std::string copied_path = Engine::Resources::copy_to_resources(filepath);
+    std::string copied_path = Engine::Resources::copy_to_resources(filepath, "prefabs");
     if (!copied_path.empty())
     {
       actual_filepath = copied_path;
@@ -649,6 +669,18 @@ Engine::Level Engine::Resources::load_level(const std::string& filepath, bool ap
 {
   // Construct full path using Path class
   std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
+
+  // If loading from outside resources and not appending resource path, copy to resources
+  std::string actual_filepath = filepath;
+  if (!append_resource_path)
+  {
+    std::string copied_path = Engine::Resources::copy_to_resources(filepath, "levels");
+    if (!copied_path.empty())
+    {
+      actual_filepath = copied_path;
+      full_path = Engine::Path(resource_path).join(actual_filepath);
+    }
+  }
 
   // Check if level is already in cache
   auto it = level_cache.find(full_path);
