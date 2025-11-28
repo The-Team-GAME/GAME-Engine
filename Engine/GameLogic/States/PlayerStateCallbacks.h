@@ -127,7 +127,6 @@ namespace PlayerStateCallbacks
     if (rigid && player) {
       // Apply jump force
       rigid->velocity.y = -player->jump_force; // Negative is up
-      rigid->on_ground = false; // Force off ground so we don't immediately transition back to idle
     }
 
     std::cout << "Player: Entered Jumping state" << std::endl;

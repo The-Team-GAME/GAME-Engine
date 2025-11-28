@@ -33,14 +33,20 @@ namespace PlayerStates
     Components::StateAudio walk_audio;
     walk_audio.sound = Engine::Resources::load_sound("sounds/move1.wav");
     walk_audio.loop = true;
+    walk_audio.volume = 0.5f;
+    walk_audio.stop_on_exit = true;
 
     Components::StateAudio jump_audio;
     jump_audio.sound = Engine::Resources::load_sound("sounds/jump.wav");
     jump_audio.loop = false;
+    jump_audio.volume = 0.5f;
+    jump_audio.stop_on_exit = false;
 
     Components::StateAudio attack_audio;
     attack_audio.sound = Engine::Resources::load_sound("sounds/Punch.wav");
     attack_audio.loop = false;
+    attack_audio.volume = 0.5f;
+    attack_audio.stop_on_exit = false;
 
     // ========================================================================
     // Player Idle State
