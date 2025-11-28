@@ -19,7 +19,6 @@ namespace Engine {
 
       void update_entity(Engine::ECS::Entity& entity) override {
         auto* heartrate = entity.get_component<Components::Heartrate>();
-        auto* player = entity.get_component<Components::Player>();
         auto* color = entity.get_component<Components::Color>();
         auto* trail = entity.get_component<Components::Trail>();
         auto* distortion = entity.get_component<Components::Distortion>();

@@ -167,7 +167,6 @@ namespace Engine {
           // Add the component using reflection
           if (array->add_component_from_generic_value(event.entity_id, event.component_data)) {
             // Manually update signature and notify systems since add_component_from_generic_value doesn't do it
-            auto& containers = Engine::ECS::Internal::get_containers();
             containers.entity_signatures[event.entity_id].set(event.component_type_id);
             Engine::ECS::Internal::entity_component_changed(event.entity_id);
           }

@@ -82,7 +82,7 @@ namespace {
       node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
     }
 
-    bool node_open = ImGui::TreeNodeEx(
+    ImGui::TreeNodeEx(
       (void*)(intptr_t)entity.get_id(),
       node_flags,
       "%s",
