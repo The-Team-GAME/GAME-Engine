@@ -13,7 +13,7 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-#include <imgui.h>
+#include "../Precompiled.h"
 #include "EntityEditorPanel.h"
 #include "widgets/ReflectionFieldWidgets.h"
 #include "../FileIO/PrefabsFileIO.h"

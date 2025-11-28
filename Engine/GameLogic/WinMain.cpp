@@ -18,8 +18,6 @@
 #include "../Engine/MonkeyEngine.h"
 #include "GameStates/EmptyState.h"
 #include "GameStates/MainMenuState.h"
-#include "GameStates/ShowcaseState.h"
-#include "GameStates/RectPainterState.h"
 #include "GameStates/Rubric2500ParticlesState.h"
 #include "GameStates/StressTestState.h"
 #include "GameStates/BasicState.h"
@@ -44,14 +42,19 @@ and runs the game engine, and catches any unhandled exceptions for error logging
 Returns:
 0 on successful execution, 1 if an exception occurred.
 ==================================================================================*/
-int main()
+/*=================================================================================
+Function Brief:
+Common game initialization and loop logic.
+==================================================================================*/
+void RunGame()
 {
+#if defined(_DEBUG)
   // Enable memory leak detection
   s32 tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
   tmpDbgFlag |= _CRTDBG_LEAK_CHECK_DF;
   _CrtSetDbgFlag(tmpDbgFlag);
   _CrtSetBreakAlloc(-1);
-
+#endif
 
   // Register game layers
   Engine::ECS::register_layer("background"); // Static background layer
@@ -69,8 +72,12 @@ int main()
   Engine::ECS::register_layer("player"); // Player character layer
   Engine::ECS::register_layer("effect"); // Visual effects like particles
   Engine::ECS::register_layer("ui"); // User interface elements
+#ifndef GAME_BUILD
   Engine::ECS::register_layer("debug"); // Debug overlays and information
+#endif
 
+
+  
   // Start the engine
   Engine::Core::init();
 
@@ -220,8 +227,6 @@ int main()
   // Register game scenes at startup
   Engine::SceneManager::register_scene<EmptyState>("EmptyState");
   Engine::SceneManager::register_scene<MainMenuState>("MainMenuState");
-  // Engine::SceneManager::register_scene<ShowcaseState>("ShowcaseState");
-  Engine::SceneManager::register_scene<RectPainterState>("RectPainterState");
   Engine::SceneManager::register_scene<Rubric2500ParticlesState>("Rubric2500ParticlesState");
   Engine::SceneManager::register_scene<StressTestState>("StressTestState");
   Engine::SceneManager::register_scene<BasicState>("BasicState");
@@ -245,6 +250,34 @@ int main()
 
   // Shutdown the engine
   Engine::Core::exit();
+}
 
+#ifdef GAME_BUILD
+
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <Windows.h>
+
+/*=================================================================================
+Function Brief:
+WinMain entry point for the application (Game Build).
+==================================================================================*/
+int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
+{
+  RunGame();
   return 0;
 }
+
+#else
+
+/*=================================================================================
+Function Brief:
+Main entry point for the application (Console Build).
+==================================================================================*/
+int main()
+{
+  RunGame();
+  return 0;
+}
+
+#endif

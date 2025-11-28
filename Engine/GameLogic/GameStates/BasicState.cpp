@@ -16,7 +16,6 @@
 #include "BasicState.h"
 #include "../../Engine/MonkeyEngine.h"
 #include "Time.h"
-#include <imgui.h>
 
 void BasicState::load()
 {
