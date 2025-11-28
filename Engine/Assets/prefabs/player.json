@@ -1344,7 +1344,7 @@
                                 "audio": {
                                     "loop": false,
                                     "sound": {
-                                        "path": "sounds/jump.wav"
+                                        "path": "sounds/SFX/Player/Player Jump (DJ SY Edition).wav"
                                     },
                                     "stop_on_exit": true,
                                     "volume": 1.0
@@ -1561,7 +1561,7 @@
                                 "audio": {
                                     "loop": true,
                                     "sound": {
-                                        "path": "sounds/move1.wav"
+                                        "path": "sounds/SFX/Player/Player Footstep.wav"
                                     },
                                     "stop_on_exit": true,
                                     "volume": 1.0
@@ -1799,7 +1799,7 @@
                                 "audio": {
                                     "loop": false,
                                     "sound": {
-                                        "path": "sounds/Punch.wav"
+                                        "path": "sounds/SFX/Player/Player Swing.wav"
                                     },
                                     "stop_on_exit": true,
                                     "volume": 1.0
@@ -2103,7 +2103,7 @@
                                 "audio": {
                                     "loop": false,
                                     "sound": {
-                                        "path": "sounds/Punch.wav"
+                                        "path": "sounds/SFX/Player/Player Swing.wav"
                                     },
                                     "stop_on_exit": true,
                                     "volume": 1.0
@@ -2503,7 +2503,7 @@
                                 "audio": {
                                     "loop": false,
                                     "sound": {
-                                        "path": "sounds/Punch.wav"
+                                        "path": "sounds/SFX/Player/Player Swing.wav"
                                     },
                                     "stop_on_exit": true,
                                     "volume": 1.0
