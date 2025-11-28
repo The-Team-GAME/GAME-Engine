@@ -24,6 +24,7 @@
 #include "../FileIO/SettingsManager.h"
 #include "../FileIO/Settings.h"
 #include "../GUI/TilemapPanel.h"
+#include "../Logger.h"
 
 namespace Engine
 {
@@ -218,7 +219,7 @@ namespace Engine
           atlas->drawIndex = animation->frames[current_frame].atlas_index;
         }
         else {
-          std::cout << "Warning: current_frame out of bounds in AnimationUpdateSystem\n";
+          Log::warning("current_frame out of bounds in AnimationUpdateSystem");
           atlas->drawIndex = 0; // Fallback to first frame
         }
       }
