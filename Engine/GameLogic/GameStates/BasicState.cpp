@@ -16,7 +16,6 @@
 #include "BasicState.h"
 #include "../../Engine/MonkeyEngine.h"
 #include "Time.h"
-#include <iostream>
 #include <imgui.h>
 
 void BasicState::load()
@@ -25,13 +24,13 @@ void BasicState::load()
   font_roboto = Engine::Resources::load_font("fonts/Roboto-Regular.ttf", 48);
   if (!font_roboto)
   {
-    std::cout << "Failed to load roboto font for BasicState.\n";
+    Log::error("Failed to load roboto font for BasicState.");
   }
 
   font_playfair = Engine::Resources::load_font("fonts/PlayfairDisplay-VariableFont_wght.ttf", 48);
   if (!font_playfair)
   {
-    std::cout << "Failed to load playfair font for BasicState.\n";
+    Log::error("Failed to load playfair font for BasicState.");
   }
 }
 

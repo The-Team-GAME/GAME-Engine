@@ -26,7 +26,7 @@ namespace PlayerStateCallbacks
   inline void idle_on_enter(Engine::ECS::Entity& entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     if (rigid) rigid->velocity.x = 0.f;
-    std::cout << "Player: Entered Idle state" << std::endl;
+    Log::info("Player: Entered Idle state");
   }
 
   inline void idle_on_update(Engine::ECS::Entity& entity) {
@@ -61,7 +61,7 @@ namespace PlayerStateCallbacks
   // ========================================================================
 
   inline void walking_on_enter(Engine::ECS::Entity& entity) {
-    std::cout << "Player: Entered Walking state" << std::endl;
+    Log::info("Player: Entered Walking state");
   }
 
   inline void walking_on_update(Engine::ECS::Entity& entity) {
@@ -129,7 +129,7 @@ namespace PlayerStateCallbacks
       rigid->velocity.y = -player->jump_force; // Negative is up
     }
 
-    std::cout << "Player: Entered Jumping state" << std::endl;
+    Log::info("Player: Entered Jumping state");
   }
 
   inline void jumping_on_update(Engine::ECS::Entity& entity) {
@@ -231,7 +231,7 @@ namespace PlayerStateCallbacks
       }
     }
 
-    std::cout << "Player: Attack 1 (First Punch)" << std::endl;
+    Log::info("Player: Attack 1 (First Punch)");
   }
 
   inline void attack1_on_update(Engine::ECS::Entity& entity) {
@@ -321,7 +321,7 @@ namespace PlayerStateCallbacks
       }
     }
 
-    std::cout << "Player: Attack 2 (Second Punch)" << std::endl;
+    Log::info("Player: Attack 2 (Second Punch)");
   }
 
   inline void attack2_on_update(Engine::ECS::Entity& entity) {
@@ -411,7 +411,7 @@ namespace PlayerStateCallbacks
       }
     }
 
-    std::cout << "Player: Attack 3 (Third Punch - Finisher!)" << std::endl;
+    Log::info("Player: Attack 3 (Third Punch - Finisher!)");
   }
 
   inline void attack3_on_update(Engine::ECS::Entity& entity) {
