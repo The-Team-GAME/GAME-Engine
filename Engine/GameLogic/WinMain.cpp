@@ -30,6 +30,7 @@
 #include "GameStates/LuaState.h"
 #include "GameStates/BehaviourState.h"
 #include "GameStates/LevelTestState.h"
+#include "GameStates/GameplayState.h"
 #include "Systems/HealthSystem.h"
 #include "Systems/EnemyHealthSystem.h"
 #include "Systems/HeartrateSystem.h"
@@ -100,14 +101,10 @@ int main()
       }
 
       if (enemy_health && state_machine) {
-        // Check if this enemy has already been hit by this attack
-        if (std::find(attack->hit_entities.begin(), attack->hit_entities.end(), enemy_entity) != attack->hit_entities.end()) {
-          // Already hit, skip
+        // Check if we should apply damage
+        if (!attack->should_apply_damage(enemy_entity)) {
           return;
         }
-
-        // Mark entity as hit by this attack
-        attack->hit_entities.push_back(enemy_entity);
 
         // Only take damage if not invulnerable
         int damage = attack->damage;
@@ -148,9 +145,78 @@ int main()
           // Zero out velocity for clean stick effect
           rigid->velocity.zero();
         }
+
+        // Spawn Impact VFX
+        if (attack->impact_vfx_texture.texture_handle) {
+          auto vfx = Engine::ECS::create_entity()
+            .add_component<Components::Transform2D>(
+              transform->position.x,
+              transform->position.y,
+              0.0f,
+              128.0f, // 2x scale
+              128.0f
+            )
+            .add_component<Components::Parent>(enemy_entity)
+            .add_component<Components::Texture>(attack->impact_vfx_texture)
+            .add_component<Components::TextureAtlas>(64, 64, 1, 4, 4) // 4 frames, 64x64 each
+            .add_component<Components::Animation>(0, 3, 0.05f, false)
+            .add_component<Components::Lifetime>(0.2f) // 4 * 0.05 = 0.2s
+            .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+            .add_to_layer("effect");
+
+          // Randomize rotation for variety?
+          // vfx.get_component<Components::Transform2D>()->rotation = ...
+        }
       }
       else {
         std::cout << "Error: EnemyHealth or StateMachine component missing!" << std::endl;
+      }
+    });
+
+  // Register collision callback for enemy attacks hitting player
+  Engine::ECS::LayerRegistry::register_collision_callback("damage_player", "player",
+    [](Engine::ECS::Entity attack_entity, Engine::ECS::Entity player_entity)
+    {
+      std::cout << "Player took damage!" << std::endl;
+
+      // When enemy attack hitbox collides with player
+      auto* attack = attack_entity.get_component<Components::Attack>();
+      auto* heartrate = player_entity.get_component<Components::Heartrate>();
+      auto* rigid = player_entity.get_component<Components::RigidBody>();
+      auto* player_transform = player_entity.get_component<Components::Transform2D>();
+      auto* attack_transform = attack_entity.get_component<Components::Transform2D>();
+
+      if (!attack) {
+        std::cout << "Error: Attack component missing from enemy attack hitbox!" << std::endl;
+        return;
+      }
+
+      if (heartrate && rigid) {
+        // Check if we should apply damage
+        if (!attack->should_apply_damage(player_entity)) {
+          return;
+        }
+
+        // Increase heartrate instead of decreasing HP
+        int damage = attack->damage;
+        heartrate->increase(static_cast<float>(damage));
+        std::cout << "Player took " << damage << " damage! Heartrate: " << heartrate->heartrate << std::endl;
+
+        // Apply knockback
+        if (player_transform && attack_transform) {
+          // Determine knockback direction (away from attack)
+          float dx = player_transform->position.x - attack_transform->position.x;
+          float knockback_direction = (dx > 0 ? 1.0f : -1.0f);
+
+          // Apply knockback velocity
+          rigid->velocity.x = attack->knockback.x * knockback_direction;
+          rigid->velocity.y = attack->knockback.y; // Usually negative for upward knockback
+
+          std::cout << "Player knocked back! Velocity: (" << rigid->velocity.x << ", " << rigid->velocity.y << ")" << std::endl;
+        }
+      }
+      else {
+        std::cout << "Error: Heartrate or RigidBody component missing from player!" << std::endl;
       }
     });
 
@@ -169,6 +235,7 @@ int main()
   Engine::SceneManager::register_scene<LuaState>("LuaState");
   Engine::SceneManager::register_scene<LevelTestState>("LevelTestState");
   Engine::SceneManager::register_scene<BehaviourState>("BehaviourState");
+  Engine::SceneManager::register_scene<GameplayState>("GameplayState");
 
   // Register game systems at startup
   Engine::ECS::add_system<Engine::Systems::HealthSystem>();

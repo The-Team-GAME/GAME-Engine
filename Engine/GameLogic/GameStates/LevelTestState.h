@@ -55,6 +55,14 @@ public:
       .add_to_layer("player");
 
     // ========================================================================
+    // Create Camera Entity
+    // ========================================================================
+    Engine::ECS::create_entity()
+      .add_component<Components::Camera>("Main Camera", true)
+      .add_component<Components::Transform2D>(0.0f, -400.0f, 0.0f, 1.0f, 1.0f) // Relative to parent
+      .add_component<Components::Parent>(player_entity);
+
+    // ========================================================================
     // Create Lazy Monkey Entity
     // ========================================================================
     lazy_monkey_entity = Engine::ECS::create_entity()
@@ -69,10 +77,11 @@ public:
       .add_component<Components::RigidBody>(Components::RigidBody(false, true))
       .add_component<Components::BoxCollider>(LazyMonkeyStates::WIDTH * 2.0f, LazyMonkeyStates::HEIGHT * 2.0f, false)
       .add_component<Components::EnemyHealth>(400, 400)
+      .add_component<Components::Attack>(10, Math::Vec2D(900.0f, -300.0f), true, 1.0f)
       .add_component<Components::StateMachine>(LazyMonkeyStates::create_state_machine())
       .remove_from_layer("default")
-      .add_to_layer("enemy")
-      .add_to_layer("damage_player");
+      .add_to_layer("enemy");
+      //.add_to_layer("damage_player");
 
     std::cout << "\n=== State Machine Test Level Loaded ===" << std::endl;
     std::cout << "Controls (Sidescrolling Platform Game):" << std::endl;

@@ -50,6 +50,17 @@ namespace LazyMonkeyStates
     Components::State lazy_monkey_chasing("Chasing", "lazy_monkey_chasing_enter", "lazy_monkey_chasing_update", "lazy_monkey_chasing_exit", lazy_monkey_chasing_anim);
 
     // ========================================================================
+    // Lazy Monkey Windup State (uses idle animation)
+    // ========================================================================
+    Components::StateAnimation lazy_monkey_windup_anim;
+    lazy_monkey_windup_anim.texture = Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Idle_Spritesheet.png"));
+    lazy_monkey_windup_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 5, 5);
+    lazy_monkey_windup_anim.animation = Components::Animation(5, 0.15f);
+    lazy_monkey_windup_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
+
+    Components::State lazy_monkey_windup("Windup", "lazy_monkey_windup_enter", "lazy_monkey_windup_update", "", lazy_monkey_windup_anim);
+
+    // ========================================================================
     // Lazy Monkey Attacking State
     // ========================================================================
     Components::StateAnimation lazy_monkey_attacking_anim;
@@ -89,6 +100,7 @@ namespace LazyMonkeyStates
     Components::StateMachine lazy_monkey_sm;
     lazy_monkey_sm.add_state(lazy_monkey_idle);
     lazy_monkey_sm.add_state(lazy_monkey_chasing);
+    lazy_monkey_sm.add_state(lazy_monkey_windup);
     lazy_monkey_sm.add_state(lazy_monkey_attacking);
     lazy_monkey_sm.add_state(lazy_monkey_hit);
     lazy_monkey_sm.add_state(lazy_monkey_death);
