@@ -28,6 +28,7 @@
 #include "GameStates/BehaviourState.h"
 #include "GameStates/LevelTestState.h"
 #include "GameStates/GameplayState.h"
+#include "GameStates/PauseState.h"
 #include "Systems/HealthSystem.h"
 #include "Systems/EnemyHealthSystem.h"
 #include "Systems/HeartrateSystem.h"
@@ -229,6 +230,7 @@ void RunGame()
   Engine::SceneManager::register_scene<LevelTestState>("LevelTestState");
   Engine::SceneManager::register_scene<BehaviourState>("BehaviourState");
   Engine::SceneManager::register_scene<GameplayState>("GameplayState");
+  Engine::SceneManager::register_scene<PauseState>("PauseState"); 
 
   // Register game systems at startup
   Engine::ECS::add_system<Engine::Systems::HealthSystem>();
