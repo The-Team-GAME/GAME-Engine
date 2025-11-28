@@ -286,6 +286,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="GameLogic\GameStates\Documentation\LayersState.h" />
     <ClInclude Include="GameLogic\GameStates\Documentation\PrefabsState.h" />
     <ClInclude Include="GameLogic\GameStates\EmptyState.h" />
+    <ClInclude Include="GameLogic\GameStates\GameplayState.h" />
     <ClInclude Include="GameLogic\GameStates\LevelTestState.h" />
     <ClInclude Include="GameLogic\GameStates\LuaState.h" />
     <ClInclude Include="GameLogic\GameStates\MainMenuState.h" />

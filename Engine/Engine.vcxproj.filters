@@ -234,6 +234,7 @@
     <ClInclude Include="GameLogic\Systems\HeartrateSystem.h" />
     <ClInclude Include="GameLogic\Systems\TrailSystem.h" />
     <ClInclude Include="GameLogic\GameStates\PauseState.h" />
+    <ClInclude Include="GameLogic\GameStates\GameplayState.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
