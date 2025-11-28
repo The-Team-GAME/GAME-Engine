@@ -170,7 +170,7 @@ namespace Engine
         }
         else if (component_name == "PendingKnockback") {
           auto* comp = e.get_component<Components::PendingKnockback>();
-          if (comp) return sol::make_object(lua, comp);
+          if (comp) return sol::make_object(lua, *comp);
         }
         
         return sol::nil;
