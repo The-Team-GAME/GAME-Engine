@@ -27,6 +27,7 @@
 #include <map>
 #include "../Components/SpatialComponents.h"
 #include "../Components/UtilityComponents.h"
+#include "../Components/HierarchyComponents.h"
 #include "../EventManager/EventManager.h"
 #include "../Events/EngineEvents.h"
 #include "../UndoManager/UndoManager.h"
@@ -38,6 +39,14 @@ namespace {
   s32 selected_entity_id = -1;
   bool selection_initialized = false;
 
+  enum class EntityViewMode {
+    Flat,
+    Layer,
+    Hierarchy
+  };
+
+  EntityViewMode current_view_mode = EntityViewMode::Flat;
+
   // Event listener to sync selection from other sources (like Gizmo system)
   void init_selection_listener() {
     if (selection_initialized) return;
@@ -48,6 +57,128 @@ namespace {
         selected_entity_id = static_cast<s32>(event.entity_id);
       }
     );
+  }
+
+  // Helper to render a single entity node in the tree
+  void render_entity_node(Engine::ECS::Entity& entity, bool is_leaf = true) {
+    if (!entity.is_valid()) return;
+
+    // Build entity label
+    std::string entity_label = "Entity " + std::to_string(entity.get_id());
+
+    // Try to get a name from common components
+    if (entity.has_component<Components::Transform2D>()) {
+      // entity_label += " (Transform)"; // Optional: Add more info
+    }
+    
+    // Check if this entity is selected
+    bool is_selected = (selected_entity_id == static_cast<s32>(entity.get_id()));
+    
+    ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
+    if (is_selected) {
+      node_flags |= ImGuiTreeNodeFlags_Selected;
+    }
+    if (is_leaf) {
+      node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+    }
+
+    bool node_open = ImGui::TreeNodeEx(
+      (void*)(intptr_t)entity.get_id(),
+      node_flags,
+      "%s",
+      entity_label.c_str()
+    );
+
+    // Handle selection
+    if (ImGui::IsItemClicked()) {
+      selected_entity_id = static_cast<s32>(entity.get_id());
+      Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(entity.get_id());
+    }
+
+    // Right-click context menu
+    if (ImGui::BeginPopupContextItem()) {
+      if (ImGui::MenuItem("Delete Entity")) {
+        // Send delete event (handles undo/redo and marking dirty)
+        Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(entity.get_id(), true);
+
+        // Clear selection if this entity was selected
+        if (selected_entity_id == static_cast<s32>(entity.get_id())) {
+          selected_entity_id = -1;
+          Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
+        }
+      }
+      if (ImGui::MenuItem("Clone Entity")) {
+        Engine::ECS::Entity cloned = Engine::ECS::clone_entity(entity);
+        selected_entity_id = static_cast<s32>(cloned.get_id());
+        Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(cloned.get_id());
+      }
+      ImGui::EndPopup();
+    }
+
+    // If it's not a leaf and is open, we need to let the caller handle the children rendering
+    // But since this helper is generic, we might need a callback or just return the state
+    // For now, this helper assumes LEAF behavior if is_leaf is true.
+    // If is_leaf is false, the caller MUST call TreePop() if node_open is true.
+  }
+  
+  // Recursive function to render hierarchy
+  void render_hierarchy_node(Engine::ECS::Entity entity, const std::unordered_map<Engine::ECS::EntityID, std::vector<Engine::ECS::Entity>>& parent_to_children) {
+    auto it = parent_to_children.find(entity.get_id());
+    bool has_children = (it != parent_to_children.end() && !it->second.empty());
+
+    // Build entity label
+    std::string entity_label = "Entity " + std::to_string(entity.get_id());
+
+    // Check if this entity is selected
+    bool is_selected = (selected_entity_id == static_cast<s32>(entity.get_id()));
+    
+    ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
+    if (is_selected) {
+      node_flags |= ImGuiTreeNodeFlags_Selected;
+    }
+    if (!has_children) {
+      node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+    }
+    else {
+      node_flags |= ImGuiTreeNodeFlags_DefaultOpen; // Optional: Open by default
+    }
+
+    bool node_open = ImGui::TreeNodeEx(
+      (void*)(intptr_t)entity.get_id(),
+      node_flags,
+      "%s",
+      entity_label.c_str()
+    );
+
+    // Handle selection
+    if (ImGui::IsItemClicked()) {
+      selected_entity_id = static_cast<s32>(entity.get_id());
+      Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(entity.get_id());
+    }
+
+    // Right-click context menu
+    if (ImGui::BeginPopupContextItem()) {
+      if (ImGui::MenuItem("Delete Entity")) {
+        Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(entity.get_id(), true);
+        if (selected_entity_id == static_cast<s32>(entity.get_id())) {
+          selected_entity_id = -1;
+          Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
+        }
+      }
+      if (ImGui::MenuItem("Clone Entity")) {
+        Engine::ECS::Entity cloned = Engine::ECS::clone_entity(entity);
+        selected_entity_id = static_cast<s32>(cloned.get_id());
+        Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(cloned.get_id());
+      }
+      ImGui::EndPopup();
+    }
+
+    if (has_children && node_open) {
+      for (auto& child : it->second) {
+        render_hierarchy_node(child, parent_to_children);
+      }
+      ImGui::TreePop();
+    }
   }
 }
 
@@ -139,30 +270,24 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
 void EntityEditorPanel()
 {
   static char entitySearchBuffer[256] = "";
-  static bool hierarchy_mode = false; // Toggle between flat list and hierarchy view
-
+  
   // Initialize event listener on first call
   init_selection_listener();
 
   ImGui::Begin("Entity Editor");
 
-  // Mode toggle button at the top
-  if (hierarchy_mode) {
-    if (ImGui::Button("Switch to Flat View")) {
-      hierarchy_mode = false;
-    }
-  }
-  else {
-    if (ImGui::Button("Switch to Hierarchy View")) {
-      hierarchy_mode = true;
-    }
-  }
-
-  ImGui::Separator();
-
   // Section 1: Entity List (changes based on mode)
   if (ImGui::CollapsingHeader("Entities", ImGuiTreeNodeFlags_DefaultOpen))
   {
+    // View Mode Selector (Radio Buttons)
+    if (ImGui::RadioButton("Flat", current_view_mode == EntityViewMode::Flat)) current_view_mode = EntityViewMode::Flat;
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Layer", current_view_mode == EntityViewMode::Layer)) current_view_mode = EntityViewMode::Layer;
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Hierarchy", current_view_mode == EntityViewMode::Hierarchy)) current_view_mode = EntityViewMode::Hierarchy;
+
+    ImGui::Separator();
+
     ImGui::Text("Total Entities: %zu", Engine::ECS::get_entity_count());
 
     // Search/Filter
@@ -175,8 +300,8 @@ void EntityEditorPanel()
 
     auto allEntities = Engine::ECS::get_all_entities();
 
-    if (hierarchy_mode) {
-      // Hierarchy view - group by layers
+    if (current_view_mode == EntityViewMode::Layer) {
+      // Layer view - group by layers
       std::unordered_map<std::string, std::vector<Engine::ECS::Entity>> entities_by_layer;
 
       for (auto& entity : allEntities) {
@@ -218,62 +343,45 @@ void EntityEditorPanel()
         if (layer_open) {
           for (auto& entity : entities) {
             if (!entity.is_valid()) continue;
-
-            // Build entity label
-            std::string entity_label = "Entity " + std::to_string(entity.get_id());
-
-            // Try to get a name from common components
-            if (entity.has_component<Components::Transform2D>()) {
-              entity_label += " (Transform)";
-            }
-
-            // Check if this entity is selected
-            bool is_selected = (selected_entity_id == static_cast<s32>(entity.get_id()));
-            ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-            if (is_selected) {
-              node_flags |= ImGuiTreeNodeFlags_Selected;
-            }
-
-            ImGui::TreeNodeEx(
-              (void*)(intptr_t)entity.get_id(),
-              node_flags,
-              "%s",
-              entity_label.c_str()
-            );
-
-            // Handle selection
-            if (ImGui::IsItemClicked()) {
-              selected_entity_id = static_cast<s32>(entity.get_id());
-              Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(entity.get_id());
-            }
-
-            // Right-click context menu
-            if (ImGui::BeginPopupContextItem()) {
-              if (ImGui::MenuItem("Delete Entity")) {
-                // Send delete event (handles undo/redo and marking dirty)
-                Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(entity.get_id(), true);
-
-                // Clear selection if this entity was selected
-                if (selected_entity_id == static_cast<s32>(entity.get_id())) {
-                  selected_entity_id = -1;
-                  Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
-                }
-              }
-              if (ImGui::MenuItem("Clone Entity")) {
-                Engine::ECS::Entity cloned = Engine::ECS::clone_entity(entity);
-                selected_entity_id = static_cast<s32>(cloned.get_id());
-                Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(cloned.get_id());
-              }
-              ImGui::EndPopup();
-            }
+            render_entity_node(entity, true);
           }
           ImGui::TreePop();
         }
       }
     }
+    else if (current_view_mode == EntityViewMode::Hierarchy) {
+      // Hierarchy view - group by parent/child
+      std::unordered_map<Engine::ECS::EntityID, std::vector<Engine::ECS::Entity>> parent_to_children;
+      std::vector<Engine::ECS::Entity> root_entities;
+
+      // Build hierarchy map
+      for (auto& entity : allEntities) {
+        if (entity.has_component<Components::Internal>()) continue;
+
+        if (entity.has_component<Components::Parent>()) {
+          auto* parent_comp = entity.get_component<Components::Parent>();
+          if (parent_comp->parent_id.is_valid()) {
+            parent_to_children[parent_comp->parent_id.get_id()].push_back(entity);
+          }
+          else {
+            // Parent invalid, treat as root
+            root_entities.push_back(entity);
+          }
+        }
+        else {
+          // No parent component, is root
+          root_entities.push_back(entity);
+        }
+      }
+
+      // Render roots (and recursively children)
+      for (auto& entity : root_entities) {
+        render_hierarchy_node(entity, parent_to_children);
+      }
+    }
     else {
       // Flat view - simple list
-      for (const auto& entity : allEntities)
+      for (auto& entity : allEntities)
       {
         // Skip entities with Internal component
         if (entity.has_component<Components::Internal>()) {
@@ -460,26 +568,6 @@ void EntityEditorPanel()
     {
       auto& containers = Engine::ECS::Internal::get_containers();
       auto entity_layers = entity.get_layers();
-
-      // // Display current layers
-      // ImGui::Text("Entity is on layers:");
-
-      // bool has_layers = false;
-      // for (Engine::ECS::LayerID layer = 0; layer < containers.layer_id_to_name.size(); ++layer) {
-      //   if (entity_layers.test(layer)) {
-      //     has_layers = true;
-      //     const std::string& layer_name = containers.layer_id_to_name[layer];
-      //     if (!layer_name.empty()) {
-      //       ImGui::BulletText("%s (ID: %d)", layer_name.c_str(), layer);
-      //     }
-      //   }
-      // }
-
-      // if (!has_layers) {
-      //   ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  (No layers)");
-      // }
-
-      // ImGui::Separator();
 
       // Get all registered layers
       ImGui::Text("Available Layers:");
@@ -774,4 +862,3 @@ void EntityEditorPanel()
 
   ImGui::End();
 }
-
