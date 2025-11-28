@@ -66,46 +66,74 @@ void PauseState::load()
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
     .add_to_layer("ui");
 
+  // Register hover callbacks that change the hovered_button_entity texture
+  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_menu_resume_hover", [](Engine::ECS::Entity entity) {
+    auto* texture = hovered_button_entity.get_component<Components::Texture>();
+    if (texture) {
+      *texture = Components::Texture(resume_button_hovered);
+    }
+  });
+
+  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_menu_restart_hover", [](Engine::ECS::Entity entity) {
+    auto* texture = hovered_button_entity.get_component<Components::Texture>();
+    if (texture) {
+      *texture = Components::Texture(restart_button_hovered);
+    }
+  });
+
+  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_menu_options_hover", [](Engine::ECS::Entity entity) {
+    auto* texture = hovered_button_entity.get_component<Components::Texture>();
+    if (texture) {
+      *texture = Components::Texture(options_button_hovered);
+    }
+  });
+
+  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_menu_exit_hover", [](Engine::ECS::Entity entity) {
+    auto* texture = hovered_button_entity.get_component<Components::Texture>();
+    if (texture) {
+      *texture = Components::Texture(exit_button_hovered);
+    }
+  });
 
   // Invisible collider for detecting mouse position
   resume_collider_entity = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
       cam_x, cam_y - 400.0f,
       0.0f,
-      1600.0f, 900.0f
+      0.0f, 0.0f
     )
     .add_component<Components::BoxCollider>(600.0f, 100.0f, true)
-    .add_component<Components::Clickable>("pause_menu_resume")
+    .add_component<Components::Clickable>("pause_menu_resume", "pause_menu_resume_hover", "")
     .add_to_layer("ui");
 
   restart_collider_entity = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
       cam_x, cam_y - 200.0f,
       0.0f,
-      1600.0f, 900.0f
+      0.0f, 0.0f
     )
     .add_component<Components::BoxCollider>(600.0f, 100.0f, true)
-    .add_component<Components::Clickable>("pause_menu_restart")
+    .add_component<Components::Clickable>("pause_menu_restart", "pause_menu_restart_hover", "")
     .add_to_layer("ui");
 
   options_collider_entity = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
       cam_x, cam_y,
       0.0f,
-      1600.0f, 900.0f
+      0.0f, 0.0f
     )
     .add_component<Components::BoxCollider>(600.0f, 100.0f, true)
-    .add_component<Components::Clickable>("pause_menu_options")
+    .add_component<Components::Clickable>("pause_menu_options", "pause_menu_options_hover", "")
     .add_to_layer("ui");
 
   exit_collider_entity = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(
       cam_x, cam_y + 200.0f,
       0.0f,
-      1600.0f, 900.0f
+      0.0f, 0.0f
     )
     .add_component<Components::BoxCollider>(600.0f, 100.0f, true)
-    .add_component<Components::Clickable>("pause_menu_exit")
+    .add_component<Components::Clickable>("pause_menu_exit", "pause_menu_exit_hover", "")
     .add_to_layer("ui");
 
   Engine::Time::set_time_scale(0.0001f); // cant set to 0 or it input will not work
