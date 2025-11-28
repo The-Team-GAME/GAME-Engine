@@ -153,9 +153,10 @@ int main()
               transform->position.x,
               transform->position.y,
               0.0f,
-              128.0f, // 2x scale for visibility? Original is 256x64, frame is 64x64. Let's try 128x128 or 64x64.
-              128.0f  // 64x64 might be small. Let's try 128x128.
+              128.0f, // 2x scale
+              128.0f
             )
+            .add_component<Components::Parent>(enemy_entity)
             .add_component<Components::Texture>(attack->impact_vfx_texture)
             .add_component<Components::TextureAtlas>(64, 64, 1, 4, 4) // 4 frames, 64x64 each
             .add_component<Components::Animation>(0, 3, 0.05f, false)
