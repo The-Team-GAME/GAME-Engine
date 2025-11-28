@@ -81,8 +81,8 @@ void phy2D::update_kinematics(
   
   // From now on we will apply friction on collision like how its supposed to be
   // There wont be any air resistance so that the player can be controlled more accurately
-  Vec2D prev_velocity = rigid.velocity * box.kinetic_friction;
-  rigid.velocity = prev_velocity + rigid.acceleration * Time::get_fixed_dt();
+  rigid.velocity.x *= box.kinetic_friction;
+  rigid.velocity += rigid.acceleration * Time::get_fixed_dt();
 
   // Checking terminal velocity here
   // using the magnitude squared to check cuz its cheaper than sqrt-ing the value
