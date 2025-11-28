@@ -36,7 +36,7 @@ namespace {
   ImGuiWidgets::TextureAtlasState atlas_widget_state;
 
   // Helper function to rebuild collision entities for all tiles that use this atlas/tile combination
-  void update_all_tile_instances(int atlas_idx, int tile_idx, const Engine::Graphics::TileColliderConfig& config) {
+  void update_all_tile_instances(int atlas_idx, int tile_idx) {
     // Find all TileMap entities and rebuild layers that contain tiles matching this atlas/tile index
     for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
       auto* tilemap = entity.get_component<Components::TileMap>();
@@ -193,7 +193,7 @@ void TileColliderEditorPanel() {
     }
 
     // Update all existing tile instances in the world
-    update_all_tile_instances(current_atlas_index, selected_tile_index, tile_config);
+    update_all_tile_instances(current_atlas_index, selected_tile_index);
 
     Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings());
   }
@@ -217,7 +217,7 @@ void TileColliderEditorPanel() {
       tile_config.aabb_width = TilemapManager::get_grid_size();
       tile_config.aabb_height = TilemapManager::get_grid_size();
       tile_config.aabb_offset = { 0.0f, 0.0f };
-      update_all_tile_instances(current_atlas_index, selected_tile_index, tile_config);
+      update_all_tile_instances(current_atlas_index, selected_tile_index);
       Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings());
     }
 
@@ -277,7 +277,7 @@ void TileColliderEditorPanel() {
         tile_config.aabb_width = aabb_data.width;
         tile_config.aabb_height = aabb_data.height;
         tile_config.aabb_offset = aabb_data.offset;
-        update_all_tile_instances(current_atlas_index, selected_tile_index, tile_config);
+        update_all_tile_instances(current_atlas_index, selected_tile_index);
         Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings());
       }
 
@@ -301,14 +301,14 @@ void TileColliderEditorPanel() {
         Math::Vec2D(hw, hh),
         Math::Vec2D(-hw, hh)
       };
-      update_all_tile_instances(current_atlas_index, selected_tile_index, tile_config);
+      update_all_tile_instances(current_atlas_index, selected_tile_index);
       Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings());
     }
 
     ImGui::SameLine();
     if (ImGui::Button("Add Vertex")) {
       tile_config.custom_vertices.push_back(Math::Vec2D(0.0f, 0.0f));
-      update_all_tile_instances(current_atlas_index, selected_tile_index, tile_config);
+      update_all_tile_instances(current_atlas_index, selected_tile_index);
       Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::ProjectSettings());
     }
 

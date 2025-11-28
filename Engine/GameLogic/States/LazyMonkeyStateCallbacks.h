@@ -72,7 +72,7 @@ namespace LazyMonkeyStateCallbacks
   // Chasing State Callbacks
   // ========================================================================
 
-  inline void chasing_on_enter(Engine::ECS::Entity& entity) {
+  inline void chasing_on_enter([[maybe_unused]] Engine::ECS::Entity& entity) {
     Log::info("Lazy Monkey: Entered Chasing state");
   }
 
@@ -124,7 +124,7 @@ namespace LazyMonkeyStateCallbacks
     }
   }
 
-  inline void chasing_on_exit(Engine::ECS::Entity& entity) {
+  inline void chasing_on_exit([[maybe_unused]] Engine::ECS::Entity& entity) {
 
   }
 
@@ -222,10 +222,7 @@ namespace LazyMonkeyStateCallbacks
   //// ========================================================================
 
   inline void hit_on_enter(Engine::ECS::Entity& entity) {
-    auto* rigid = entity.get_component<Components::RigidBody>();
-    auto* flip = entity.get_component<Components::Flip>();
-    auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
-
+    (void)entity; // Suppress unused parameter warning
     Log::info("Lazy Monkey: Stunned!");
   }
 
@@ -269,7 +266,7 @@ namespace LazyMonkeyStateCallbacks
   // Death State Callbacks
   // ========================================================================
 
-  inline void death_on_enter(Engine::ECS::Entity& entity) {
+  inline void death_on_enter([[maybe_unused]] Engine::ECS::Entity& entity) {
     Log::info("Lazy Monkey: Died!");
   }
 
@@ -281,7 +278,7 @@ namespace LazyMonkeyStateCallbacks
     }
   }
 
-  inline void death_on_exit(Engine::ECS::Entity& entity) {
+  inline void death_on_exit([[maybe_unused]] Engine::ECS::Entity& entity) {
     // Should not happen unless respawning
   }
 

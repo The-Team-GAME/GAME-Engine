@@ -58,7 +58,7 @@ namespace Engine
         update_collider_position(*box_collider, *tr, entity);
 
         // Use precise collision detection based on collider type
-        bool inside = is_point_inside_collider(mouse, *box_collider, *tr);
+        bool inside = is_point_inside_collider(mouse, *box_collider);
 
         // mouse click detection
         if (inside) {
@@ -113,7 +113,7 @@ namespace Engine
         }
       }
       // Point-in-polygon test for any collider type
-      bool is_point_inside_collider(const Math::Vec2D& point, const Components::BoxCollider& collider, const Components::Transform2D& transform) {
+      bool is_point_inside_collider(const Math::Vec2D& point, const Components::BoxCollider& collider) {
 
         if (collider.type == Components::ColliderType::AABB) {
           // Convert AABB to polygon and get transformed vertices
