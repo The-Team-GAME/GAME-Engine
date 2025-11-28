@@ -80,8 +80,8 @@ public:
       .add_component<Components::Attack>(10, Math::Vec2D(900.0f, -300.0f), true, 1.0f)
       .add_component<Components::StateMachine>(LazyMonkeyStates::create_state_machine())
       .remove_from_layer("default")
-      .add_to_layer("enemy")
-      .add_to_layer("damage_player");
+      .add_to_layer("enemy");
+      //.add_to_layer("damage_player");
 
     std::cout << "\n=== State Machine Test Level Loaded ===" << std::endl;
     std::cout << "Controls (Sidescrolling Platform Game):" << std::endl;

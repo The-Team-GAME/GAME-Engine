@@ -145,6 +145,27 @@ int main()
           // Zero out velocity for clean stick effect
           rigid->velocity.zero();
         }
+
+        // Spawn Impact VFX
+        if (attack->impact_vfx_texture.texture_handle) {
+          auto vfx = Engine::ECS::create_entity()
+            .add_component<Components::Transform2D>(
+              transform->position.x,
+              transform->position.y,
+              0.0f,
+              128.0f, // 2x scale for visibility? Original is 256x64, frame is 64x64. Let's try 128x128 or 64x64.
+              128.0f  // 64x64 might be small. Let's try 128x128.
+            )
+            .add_component<Components::Texture>(attack->impact_vfx_texture)
+            .add_component<Components::TextureAtlas>(64, 64, 1, 4, 4) // 4 frames, 64x64 each
+            .add_component<Components::Animation>(0, 3, 0.05f, false)
+            .add_component<Components::Lifetime>(0.2f) // 4 * 0.05 = 0.2s
+            .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+            .add_to_layer("effect");
+
+          // Randomize rotation for variety?
+          // vfx.get_component<Components::Transform2D>()->rotation = ...
+        }
       }
       else {
         std::cout << "Error: EnemyHealth or StateMachine component missing!" << std::endl;
@@ -185,11 +206,11 @@ int main()
           // Determine knockback direction (away from attack)
           float dx = player_transform->position.x - attack_transform->position.x;
           float knockback_direction = (dx > 0 ? 1.0f : -1.0f);
-          
+
           // Apply knockback velocity
           rigid->velocity.x = attack->knockback.x * knockback_direction;
           rigid->velocity.y = attack->knockback.y; // Usually negative for upward knockback
-          
+
           std::cout << "Player knocked back! Velocity: (" << rigid->velocity.x << ", " << rigid->velocity.y << ")" << std::endl;
         }
       }

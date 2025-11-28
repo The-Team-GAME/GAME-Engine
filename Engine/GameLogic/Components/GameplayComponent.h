@@ -4,6 +4,8 @@
 
 #include "../../Engine/Engine/Time.h"
 
+#include "../../Engine/Components/GraphicsComponents.h"
+
 namespace Components
 {
 
@@ -90,6 +92,7 @@ namespace Components
     bool is_continuous = false;
     float damage_interval = 0.1f; // Time in seconds between damage ticks for continuous attacks
     std::vector<std::pair<Engine::ECS::Entity, float>> hit_entities; // Track entity and last hit time
+    Components::Texture impact_vfx_texture;
 
     Attack() = default;
     explicit Attack(int dmg, Math::Vec2D kb = Math::Vec2D(0.0f, 0.0f), bool continuous = false, float interval = 0.1f) 
@@ -150,10 +153,8 @@ namespace Components
 
 
 
-
-
 REFLECT_FIELDS(Components::Player::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, dash_speed, damage, heartrate_cost, knockback)
 REGISTER_COMPONENT(Components::Player, walk_speed, air_speed, jump_force, attack1, attack2, attack3)
 REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height, attack_cooldown, last_attack_time, attack_windup, detection_range, chase_range, attack_range)
-REGISTER_COMPONENT(Components::Attack, damage, knockback, is_continuous, damage_interval)
+REGISTER_COMPONENT(Components::Attack, damage, knockback, is_continuous, damage_interval, impact_vfx_texture)
 REGISTER_COMPONENT(Components::PendingKnockback, knockback)
