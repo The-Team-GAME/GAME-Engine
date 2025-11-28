@@ -11,10 +11,10 @@
 // email:   chew.s@digipen.edu
 //
 // brief:   Implementation of the gizmo system for entity selection and manipulation
-//          in the game editor. Provides mouse-based selection of entities, visual
-//          feedback for selected entities, and drag-and-drop repositioning.
-//          Integrates with the input system and event manager for seamless
-//          editor interaction.
+//          in the game editor. Handles mouse picking for sprites and text, visual
+//          feedback (outlines, handles, arrows, rotation ring), and drag
+//          behaviour for moving, rotating and scaling entities. Integrates
+//          with the input, rendering and event systems for undo/redo support.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
