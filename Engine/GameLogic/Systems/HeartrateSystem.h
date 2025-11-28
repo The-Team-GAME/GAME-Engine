@@ -78,9 +78,14 @@ namespace Engine {
         // Apply rainbow tint to player if in CrashOut state 
         if (state == Components::Heartrate::HeartrateState::CrashOut || state == Components::Heartrate::HeartrateState::Dead) {
           float time = Engine::Time::get_time();
-          float r = std::sin(time * 5.0f) * 0.5f + 0.5f;
-          float g = std::sin(time * 5.0f + 2.0f) * 0.5f + 0.5f;
-          float b = std::sin(time * 5.0f + 4.0f) * 0.5f + 0.5f;
+          float min = heartrate->min_brightness;
+          float max = heartrate->max_brightness;
+          float amplitude = (max - min) * 0.5f;
+          float center = min + amplitude;
+
+          float r = std::sin(time * 5.0f) * amplitude + center;
+          float g = std::sin(time * 5.0f + 2.0f) * amplitude + center;
+          float b = std::sin(time * 5.0f + 4.0f) * amplitude + center;
           color->set_rgba(r, g, b, 1.0f);
         }
         else {
