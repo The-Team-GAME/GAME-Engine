@@ -283,6 +283,54 @@
                 "components": [
                     {
                         "data": {
+                            "aabb": {
+                                "half_height": 450.0,
+                                "half_width": 800.0,
+                                "pos": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                }
+                            },
+                            "height": 900.0,
+                            "kinetic_friction": 1.0,
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 800.0,
+                                    "y": 450.0
+                                },
+                                "rotation": 0.0,
+                                "vertices": [
+                                    {
+                                        "x": 551.8585205078125,
+                                        "y": -379.64739990234375
+                                    },
+                                    {
+                                        "x": 524.461181640625,
+                                        "y": -54.79452133178711
+                                    },
+                                    {
+                                        "x": 3.9138944149017334,
+                                        "y": 90.01956939697266
+                                    },
+                                    {
+                                        "x": -11.741682052612305,
+                                        "y": -66.53620147705078
+                                    }
+                                ]
+                            },
+                            "radius": 0.0,
+                            "resolve_collisions": false,
+                            "type": "POLYGON",
+                            "width": 1600.0
+                        },
+                        "type": "Components::BoxCollider"
+                    },
+                    {
+                        "data": {
                             "a": 1.0,
                             "b": 1.0,
                             "g": 1.0,
@@ -309,6 +357,20 @@
                             }
                         },
                         "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "exit_hover": {
+                                "name": ""
+                            },
+                            "on_click": {
+                                "name": ""
+                            },
+                            "on_hover": {
+                                "name": ""
+                            }
+                        },
+                        "type": "Components::Clickable"
                     }
                 ],
                 "layers": [
@@ -317,6 +379,54 @@
             },
             {
                 "components": [
+                    {
+                        "data": {
+                            "aabb": {
+                                "half_height": 51.38063049316406,
+                                "half_width": 315.5679931640625,
+                                "pos": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                }
+                            },
+                            "height": 102.76126098632813,
+                            "kinetic_friction": 1.0,
+                            "offset": {
+                                "x": 315.0679931640625,
+                                "y": 62.62230682373047
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 1115.0679931640625,
+                                    "y": 512.622314453125
+                                },
+                                "rotation": 0.0,
+                                "vertices": [
+                                    {
+                                        "x": -272.51531982421875,
+                                        "y": 7.327784538269043
+                                    },
+                                    {
+                                        "x": -276.42919921875,
+                                        "y": 145.31410217285156
+                                    },
+                                    {
+                                        "x": 162.92633056640625,
+                                        "y": 180.53915405273438
+                                    },
+                                    {
+                                        "x": 386.0178527832031,
+                                        "y": -94.4334716796875
+                                    }
+                                ]
+                            },
+                            "radius": 0.0,
+                            "resolve_collisions": false,
+                            "type": "POLYGON",
+                            "width": 631.135986328125
+                        },
+                        "type": "Components::BoxCollider"
+                    },
                     {
                         "data": {
                             "a": 1.0,
@@ -345,6 +455,20 @@
                             }
                         },
                         "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "exit_hover": {
+                                "name": ""
+                            },
+                            "on_click": {
+                                "name": ""
+                            },
+                            "on_hover": {
+                                "name": ""
+                            }
+                        },
+                        "type": "Components::Clickable"
                     }
                 ],
                 "layers": [
@@ -353,6 +477,58 @@
             },
             {
                 "components": [
+                    {
+                        "data": {
+                            "aabb": {
+                                "half_height": 57.25145721435547,
+                                "half_width": 294.04180908203125,
+                                "pos": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                }
+                            },
+                            "height": 114.50291442871094,
+                            "kinetic_friction": 1.0,
+                            "offset": {
+                                "x": 293.54180908203125,
+                                "y": 80.2348403930664
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 1093.541748046875,
+                                    "y": 530.23486328125
+                                },
+                                "rotation": 0.0,
+                                "vertices": [
+                                    {
+                                        "x": -290.1279296875,
+                                        "y": 122.78768920898438
+                                    },
+                                    {
+                                        "x": -941.291259765625,
+                                        "y": -19.569480895996094
+                                    },
+                                    {
+                                        "x": -325.35284423828125,
+                                        "y": 213.80723571777344
+                                    },
+                                    {
+                                        "x": -81.69193267822266,
+                                        "y": 342.9654235839844
+                                    },
+                                    {
+                                        "x": 67.03602600097656,
+                                        "y": 185.41000366210938
+                                    }
+                                ]
+                            },
+                            "radius": 0.0,
+                            "resolve_collisions": false,
+                            "type": "POLYGON",
+                            "width": 588.0836181640625
+                        },
+                        "type": "Components::BoxCollider"
+                    },
                     {
                         "data": {
                             "a": 1.0,
@@ -381,6 +557,20 @@
                             }
                         },
                         "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "exit_hover": {
+                                "name": ""
+                            },
+                            "on_click": {
+                                "name": "exit_game"
+                            },
+                            "on_hover": {
+                                "name": ""
+                            }
+                        },
+                        "type": "Components::Clickable"
                     }
                 ],
                 "layers": [
