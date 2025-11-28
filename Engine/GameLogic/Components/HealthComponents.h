@@ -7,7 +7,10 @@
 //
 // email:   o.ziming@digipen.edu
 //
-// brief:   This file defines struts required for the health system.
+// brief:   This file defines the ECS component and config structs used by the health 
+//					and HUD systems. Includes core Health/HealthConfig data, player HUD
+//          layout (HealthBar, HeartHUDSprite), and enemy HP bar settings
+//          (EnemyHealthBarRect) for runtime rendering and behaviour.
 //
 // Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------

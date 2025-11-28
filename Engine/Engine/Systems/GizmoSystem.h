@@ -2,8 +2,11 @@
 // file:    GizmoSystem.h
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (100%)
+// author:  Chew Shee Yang (40%)
 //          Primary author
+// 
+//          Ong Zi Ming (60%)
+//          Secondary author
 //
 // email:   chew.s@digipen.edu
 //

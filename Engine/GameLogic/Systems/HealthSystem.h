@@ -7,8 +7,11 @@
 //
 // email:   o.ziming@digipen.edu
 //
-// brief:   This file defines a system that handles the game logic of the health system
-//          for the player and other entities in the game.
+// brief:   This file defines a ECS system that drive health gameplay logic and related HUD
+//          visuals. Updates entity Health values with regen/drain, refreshes
+//          the player HP UI, renders enemy rectangular HP bars with delayed
+//          drain effect, and draws the animated screen-space heart-rate HUD
+//          using the HeartHUDSprite configuration.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------

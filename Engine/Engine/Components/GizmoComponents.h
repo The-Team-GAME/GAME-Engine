@@ -2,15 +2,18 @@
 // file:    GizmoComponents.h
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (100%)
+// author:  Chew Shee Yang (30%)
 //          Primary author
+// 
+//          Ong Zi Ming (70%)
+//          Secondary author
 //
 // email:   chew.s@digipen.edu
 //
-// brief:   ECS component definitions for the gizmo system. Provides visual
-//          feedback and interaction handling for selected entities in the
-//          editor. Includes drag state, offset tracking, and outline styling
-//          for entity manipulation in the viewport.
+// brief:   ECS component definitions for the gizmo system. Stores interaction
+//          state, cached transform data, handle geometry, and visual styling
+//          used by the gizmo systems to move, scale and rotate selected
+//          entities in the level editor.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
