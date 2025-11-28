@@ -76,6 +76,9 @@ void col2D::update()
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
 
+    // Reset rigid->on_ground here
+    rigid->on_ground = false;
+
     // Get entity's layers
     ECS::LayerSignature entity_layers = entity.get_layers();
 
@@ -84,9 +87,16 @@ void col2D::update()
     // In the future the range for the find near entity could be expanded to the range that entity could travel in that frame, but for now ill double the current entity's aabb
     spatial_tree_sat->find_near_entity(AABB(box->aabb.pos, box->width, box->height), nearby);
 
+    // This is because the entity can collide with more than one hard surface (floor and wall corner) in one frame, so we have to identify them
+    Vec2D best_ground_normal;
+    f32 best_ground_penetration = 0;
+    bool found_ground = false;
+
     // Check collision only with nearby entities
     for (ECS::Entity& other : nearby)
     {
+
+#pragma region collision checks
       // Skip self-collision
       if (entity == other) { continue; }
 
@@ -110,6 +120,7 @@ void col2D::update()
         // skip other_entity if they dont collide
         continue;
       }
+#pragma endregion
 
       /*===============================
       / Start of Collision Resolution /
@@ -122,22 +133,33 @@ void col2D::update()
 
         // we add the MTV here because it is not the penetration vector but rather how far the object needs to be pushed out to resolve the collision
         xform->position += collision.mtv;
-        phy2D::zero_normal_velocity(*rigid, collision);
 
-        // We store the direction vector to the last surface that the entity collided with
-        rigid->last_surface_dir_vector = normalise_vector(collision.get_tangent());
-
-        // The friction here is multiplicative cuz each entity has its own frictiona and its not additive
-        f32 combined_static = box->static_friction * other_box->static_friction;
+        // Check if this is a ground collision (MTV pointing mostly upward)
+        Vec2D normal = normalise_vector(collision.mtv);
+        if (normal.y < -0.f) // Pointing upward (remember: -y is up)
+        {
+          f32 penetration = collision.get_penetration();
+          if (!found_ground || penetration > best_ground_penetration)
+          {
+            best_ground_normal = normal;
+            best_ground_penetration = penetration;
+            found_ground = true;
+          }
+        }
+        f32 combined_static = box->static_friction * other_box->static_friction; // not used yet
         f32 combined_kinetic = box->kinetic_friction * other_box->kinetic_friction;
-
+        phy2D::zero_normal_velocity(*rigid, collision);
         phy2D::apply_surface_friction(*rigid, collision, combined_static, combined_kinetic);
 
         // Gona calculate the angle of the slope that the player last interacted with
         // Note:: i will not take direction into account as all the values are going to be absolute values
-        if (angle_of_slope(rigid->last_surface_dir_vector) < slope_angle_limit)
+        if (found_ground)
         {
-          rigid->on_ground = true;
+          rigid->last_surface_dir_vector = normalise_vector(rotate(best_ground_normal, -90));
+          if (angle_of_slope(rigid->last_surface_dir_vector) < slope_angle_limit)
+          {
+            rigid->on_ground = true;
+          }
         }
       }
       /*=============================

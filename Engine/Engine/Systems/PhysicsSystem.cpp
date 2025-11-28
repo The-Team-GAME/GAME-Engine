@@ -55,8 +55,6 @@ void phy2D::update()
 void phy2D::update_entity(ECS::Entity& entity) {
   Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
   Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
-
-  rigid->on_ground = false;
   phy2D::update_kinematics(*rigid, *xform);
   rigid->force.zero();
   //std::cout << "velocity: " << rigid->velocity << " || position: " << rigid->curr_pos << std::endl;

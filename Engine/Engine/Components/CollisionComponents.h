@@ -38,7 +38,7 @@ struct CollisionResult {
   }
   Vec2D get_tangent() const {
     // Here we flip the normal clockwise because we flip the vector counter clockwise to get the normal
-    return rotate(mtv, 90);
+    return rotate(mtv, -90.f);
   }
 };
 
