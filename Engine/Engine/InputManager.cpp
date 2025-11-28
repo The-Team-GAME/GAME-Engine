@@ -16,7 +16,6 @@
 #include "InputManager.h"
 #include "Core.h"
 #include "Precompiled.h"
-#include "Logger.h"
 #include <array>
 #include <glm/glm.hpp>
 #include "Perf.h"
@@ -26,7 +25,7 @@
 #include "GUI/ViewportPanel.h"
 #include "FileIO/Settings.h"
 #include "ImGuiManager.h"
-#include "Precompiled.h"
+#include <imgui.h>
 
 namespace
 {
@@ -94,12 +93,12 @@ namespace Engine
     f64 xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
 
-    //Log::info("Raw Mouse Position: ({}, {})", xpos, ypos);
+    //std::cout << "Raw Mouse Position: (" << xpos << ", " << ypos << ")\n";
 
     // Convert screen coordinates to viewport-relative virtual coordinates
     mousePosition = Engine::Graphics::screen_to_viewport({ static_cast<f32>(xpos), static_cast<f32>(ypos) });
 
-    //Log::info("Mouse Position: ({}, {})", mousePosition.x, mousePosition.y);
+    //std::cout << "Mouse Position: (" << mousePosition.x << ", " << mousePosition.y << ")\n";
 
     Engine::Perf::stop("Input");
   }
@@ -129,7 +128,6 @@ namespace Engine
 
   std::optional<glm::vec2> Input::get_mouse_position_if_in_viewport()
   {
-#ifndef GAME_BUILD
     if (ImGuiManager::is_viewport_mode_enabled()) {
       // In viewport mode: only allow input if hovering over the viewport image
       if (!ViewportPanel::is_viewport_hovered())
@@ -140,7 +138,7 @@ namespace Engine
       if (ImGui::GetIO().WantCaptureMouse)
         return std::nullopt;
     }
-#endif
+
     return mousePosition;
   }
 
@@ -151,7 +149,6 @@ namespace Engine
 
   std::optional<glm::vec2> Input::get_mouse_world_position_if_in_viewport()
   {
-#ifndef GAME_BUILD
     if (ImGuiManager::is_viewport_mode_enabled()) {
       // In viewport mode: only allow input if hovering over the viewport image
       if (!ViewportPanel::is_viewport_hovered())
@@ -162,7 +159,7 @@ namespace Engine
       if (ImGui::GetIO().WantCaptureMouse)
         return std::nullopt;
     }
-#endif
+
     return Engine::Graphics::virtual_to_world(mousePosition);
   }
 
@@ -175,7 +172,7 @@ namespace Engine
 
   void Input::set_scroll_offset(f64 xoffset, f64 yoffset)
   {
-    //Log::info("Scroll Offset Callback: ({}, {})", xoffset, yoffset);
+    //std::cout << "Scroll Offset Callback: (" << xoffset << ", " << yoffset << ")\n";
     scrollOffset = { static_cast<f32>(xoffset), static_cast<f32>(yoffset) };
   }
 }

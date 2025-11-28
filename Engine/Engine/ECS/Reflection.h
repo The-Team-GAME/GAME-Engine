@@ -146,7 +146,7 @@ namespace Engine {
           const auto& component_data = component_entry["data"];
 
           if (component_data.isNull()) {
-            Log::warning("Deserializing component '{}' with null data.", component_type);
+            Log::warning("Deserializing component '" + component_type + "' with null data.");
           }
 
           // Find matching component array type in world
@@ -170,7 +170,7 @@ namespace Engine {
           }
 
           if (!found) {
-            Log::warning("No registered component type found for '{}' during deserialization.", component_type);
+            Log::warning("No registered component type found for '" + component_type + "' during deserialization.");
           }
 
         }

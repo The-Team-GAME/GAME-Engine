@@ -16,6 +16,8 @@
 #include "BasicState.h"
 #include "../../Engine/MonkeyEngine.h"
 #include "Time.h"
+#include <iostream>
+#include <imgui.h>
 
 void BasicState::load()
 {
@@ -23,13 +25,13 @@ void BasicState::load()
   font_roboto = Engine::Resources::load_font("fonts/Roboto-Regular.ttf", 48);
   if (!font_roboto)
   {
-    Log::error("Failed to load roboto font for BasicState.");
+    std::cout << "Failed to load roboto font for BasicState.\n";
   }
 
   font_playfair = Engine::Resources::load_font("fonts/PlayfairDisplay-VariableFont_wght.ttf", 48);
   if (!font_playfair)
   {
-    Log::error("Failed to load playfair font for BasicState.");
+    std::cout << "Failed to load playfair font for BasicState.\n";
   }
 }
 
@@ -296,7 +298,7 @@ void BasicState::draw()
     { 1.0f, 1.0f, 1.0f, 1.0f }
   );
 
-  static auto move_sound = Engine::Resources::load_sound("sounds/SFX/Player/Player Footstep.wav");
+  static auto move_sound = Engine::Resources::load_sound("sounds/move1.wav");
 
   if (Engine::Input::is_pressed(Engine::KeyCode::S)) {
     Engine::Audio::play_sound(move_sound, 0.5f, false);

@@ -70,23 +70,5 @@ namespace Engine {
       bool record_undo = true;
     };
 
-    /* ============================ //
-    // Toast notification events    //
-    // ============================ */
-    enum class ToastType {
-      Info,
-      Warning,
-      Error
-    };
-
-    struct ToastEvent {
-      std::string message;
-      ToastType type;
-      float duration;
-
-      ToastEvent(const std::string& msg, ToastType t = ToastType::Info, float dur = 3.0f)
-        : message(msg), type(t), duration(dur) {}
-    };
-
   } // namespace Events
 } // namespace Engine

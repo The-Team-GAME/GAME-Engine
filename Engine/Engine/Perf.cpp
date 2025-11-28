@@ -15,7 +15,7 @@
 //-----------------------------------------------------------------------------------
 #include "TypeDef.h"
 #include "Perf.h"
-#include "Logger.h"
+#include <iostream>
 
 namespace Engine
 {
@@ -47,7 +47,7 @@ namespace Engine
     {
       auto it = elapsed_time_map.find(label);
       f32 elapsed = (it != elapsed_time_map.end()) ? static_cast<f32>(it->second) : 0.0f;
-      Log::info("{}: {} seconds ({} ms)", label, elapsed, elapsed * 1000.0);
+      std::cout << label << ": " << elapsed << " seconds (" << (elapsed * 1000.0) << " ms)" << std::endl;
       return elapsed;
     }
 

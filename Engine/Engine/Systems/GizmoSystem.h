@@ -25,7 +25,7 @@
 #include "../Events/EngineEvents.h"
 #include "../GUI/ViewportPanel.h"
 #include "../ImGuiManager.h"
-#include "Precompiled.h"
+#include <imgui.h>
 
 namespace Engine
 {
@@ -90,7 +90,7 @@ namespace Engine
           (mouse.y >= top) && (mouse.y <= bottom);
       }
 
-      //void update_entity(Engine::ECS::Entity& entity) override {}
+      void update_entity(Engine::ECS::Entity& entity) override {}
     };
 
     // System to select text entities when clicked
@@ -158,7 +158,7 @@ namespace Engine
           (mouse.y >= top) && (mouse.y <= bottom);
       }
 
-      //void update_entity(Engine::ECS::Entity& entity) override {}
+      void update_entity(Engine::ECS::Entity& entity) override {}
     };
 
     // System to handle dragging and drawing selected entities

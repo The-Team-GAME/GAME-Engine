@@ -70,7 +70,7 @@ Engine::Graphics::TextureData::TextureData(const std::string& path, TextureFilte
   unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 4);
   if (!data)
   {
-    Log::warning("Failed to load texture: {}", path);
+    Log::warning("Failed to load texture: " + path);
     id = 0;
     width = 0;
     height = 0;
@@ -147,7 +147,7 @@ Engine::Graphics::FontData::FontData(const std::string& path, unsigned int size)
   FT_Face face;
   if (FT_New_Face(get_freetype_library(), path.c_str(), 0, &face))
   {
-    Log::error("ERROR::FREETYPE: Failed to load font: {}", path);
+    Log::error("ERROR::FREETYPE: Failed to load font: " + path);
     return;
   }
 
@@ -235,7 +235,7 @@ Engine::Graphics::FontData::FontData(const std::string& path, unsigned int size)
   FT_Done_Face(face);
   glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
-  Log::info("Font atlas created: {}x{} with {} glyphs", atlas_width, atlas_height, glyphs.size());
+  Log::info("Font atlas created: " + std::to_string(atlas_width) + "x" + std::to_string(atlas_height) + " with " + std::to_string(glyphs.size()) + " glyphs");
 }
 
 

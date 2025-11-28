@@ -16,10 +16,10 @@
 //-----------------------------------------------------------------------------------
 
 #include "Timeline.h"
-#include "../Precompiled.h"
+#include "imgui.h"
 #include "../TypeDef.h"
 #include <cmath>
-#include "../Logger.h"
+#include <iostream>
 #include "../ECS/ECS.h"
 #include "../../Engine/MonkeyEngine.h"
 #include "ResourcePicker.h"
@@ -477,7 +477,7 @@ void Timeline::draw() {
 
         // --- Move Frame ---
         if (m_manipulationMode == 1) {
-          Log::info("move");
+          std::cout << "move";
           // Calculate total frames moved since the drag started
           s32 frames_moved = (s32)std::round(dragDelta.x / frame_width);
           s32 new_start_frame = m_dragStartFrame + frames_moved;

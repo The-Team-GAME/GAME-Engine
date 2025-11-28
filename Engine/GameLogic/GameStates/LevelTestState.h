@@ -55,14 +55,6 @@ public:
       .add_to_layer("player");
 
     // ========================================================================
-    // Create Camera Entity
-    // ========================================================================
-    Engine::ECS::create_entity()
-      .add_component<Components::Camera>("Main Camera", true)
-      .add_component<Components::Transform2D>(0.0f, -400.0f, 0.0f, 1.0f, 1.0f) // Relative to parent
-      .add_component<Components::Parent>(player_entity);
-
-    // ========================================================================
     // Create Lazy Monkey Entity
     // ========================================================================
     lazy_monkey_entity = Engine::ECS::create_entity()
@@ -77,26 +69,20 @@ public:
       .add_component<Components::RigidBody>(Components::RigidBody(false, true))
       .add_component<Components::BoxCollider>(LazyMonkeyStates::WIDTH * 2.0f, LazyMonkeyStates::HEIGHT * 2.0f, false)
       .add_component<Components::EnemyHealth>(400, 400)
-      .add_component<Components::Attack>(10, Math::Vec2D(900.0f, -300.0f), true, 1.0f)
       .add_component<Components::StateMachine>(LazyMonkeyStates::create_state_machine())
       .remove_from_layer("default")
-      .add_to_layer("enemy");
-      //.add_to_layer("damage_player");
+      .add_to_layer("enemy")
+      .add_to_layer("damage_player");
 
-
-    // set friction to 0
-    player_entity.get_component<Components::BoxCollider>()->kinetic_friction = 0.8f;
-    lazy_monkey_entity.get_component<Components::BoxCollider>()->kinetic_friction = 0.8f;
-
-    Log::info("\n=== State Machine Test Level Loaded ===");
-    Log::info("Controls (Sidescrolling Platform Game):");
-    Log::info("  A/D - Move left/right");
-    Log::info("  SPACE - Jump");
-    Log::info("  F - Attack (damages lazy_monkey if close)");
-    Log::info("\nPlayer States: Idle (Blue), Walking (Green), Jumping (Cyan), Attacking (Red)");
-    Log::info("Lazy Monkey States: Idle (Yellow), Chasing (Orange), Attacking (Red), Hit (White)");
-    Log::info("Note: Gravity is active - entities will fall!");
-    Log::info("========================================\n");
+    std::cout << "\n=== State Machine Test Level Loaded ===" << std::endl;
+    std::cout << "Controls (Sidescrolling Platform Game):" << std::endl;
+    std::cout << "  A/D - Move left/right" << std::endl;
+    std::cout << "  SPACE - Jump" << std::endl;
+    std::cout << "  F - Attack (damages lazy_monkey if close)" << std::endl;
+    std::cout << "\nPlayer States: Idle (Blue), Walking (Green), Jumping (Cyan), Attacking (Red)" << std::endl;
+    std::cout << "Lazy Monkey States: Idle (Yellow), Chasing (Orange), Attacking (Red), Hit (White)" << std::endl;
+    std::cout << "Note: Gravity is active - entities will fall!" << std::endl;
+    std::cout << "========================================\n" << std::endl;
   };
 
   void update() {};

@@ -18,7 +18,7 @@
 
 #include <string>
 #include <string_view>
-#include "../../Logger.h"
+#include <iostream>
 
 namespace ReflectionLibrary
 {
@@ -32,7 +32,7 @@ namespace ReflectionLibrary
       // Handle std::optional
       if (!value.has_value())
       {
-        Log::info("{}{} = <null>", indent, name);
+        std::cout << indent << name << " = <null>\n";
       }
       else
       {
@@ -43,70 +43,70 @@ namespace ReflectionLibrary
     else if constexpr (is_reflected_enum_v<ValueType>)
     {
       // Handle reflected enums
-      Log::info("{}{} = {}", indent, name, enum_to_string(value));
+      std::cout << indent << name << " = " << enum_to_string(value) << "\n";
     }
     else if constexpr (std::is_same_v<ValueType, bool>)
     {
-      Log::info("{}{} = {}", indent, name, (value ? "true" : "false"));
+      std::cout << indent << name << " = " << (value ? "true" : "false") << "\n";
     }
     else if constexpr (std::is_same_v<ValueType, char> || std::is_same_v<ValueType, unsigned char>)
     {
-      Log::info("{}{} = '{}'", indent, name, value);
+      std::cout << indent << name << " = '" << value << "'\n";
     }
     else if constexpr (std::is_arithmetic_v<ValueType>)
     {
       // Other arithmetic types (int, float, etc.)
-      Log::info("{}{} = {}", indent, name, value);
+      std::cout << indent << name << " = " << value << "\n";
     }
     else if constexpr (std::is_same_v<ValueType, std::string>)
     {
-      Log::info("{}{} = \"{}\"", indent, name, value);
+      std::cout << indent << name << " = \"" << value << "\"\n";
     }
     else if constexpr (is_iterable_v<ValueType>)
     {
       // Iterable containers (arrays, vectors, lists, maps, etc.)
-      Log::info("{}{} = [", indent, name);
+      std::cout << indent << name << " = [\n";
       int i = 0;
       for (auto& elem : value)
       {
         print_value(std::to_string(i++), elem, nest_level + 1);
       }
-      Log::info("{}]", indent);
+      std::cout << indent << "]\n";
     }
     else if constexpr (is_pair_v<ValueType>)
     {
-      Log::info("{}{} = {{", indent, name);
+      std::cout << indent << name << " = {\n";
       print_value("first", value.first, nest_level + 1);
       print_value("second", value.second, nest_level + 1);
-      Log::info("{}}}", indent);
+      std::cout << indent << "}\n";
     }
     else if constexpr (is_tuple_v<ValueType>)
     {
-      Log::info("{}{} = (", indent, name);
+      std::cout << indent << name << " = (\n";
       std::apply([&](auto &...args)
         {
           int i = 0;
           ((print_value(std::to_string(i++), args, nest_level + 1)), ...); }, value);
-      Log::info("{})", indent);
+      std::cout << indent << ")\n";
     }
     else if constexpr (is_reflectable_v<ValueType>)
     {
       // Nested reflectable type - print header and recurse into fields
-      Log::info("{}{} ({}):", indent, name, ReflectionInfo<ValueType>::class_name);
+      std::cout << indent << name << " (" << ReflectionInfo<ValueType>::class_name << "):\n";
       for_each_field(value, [&](std::string_view sub_name, auto& sub_value, int)
         { print_value(sub_name, sub_value, nest_level + 1); }, nest_level + 1);
     }
     else
     {
       // Fallback for other non-reflectable types
-      Log::info("{}{} = [non-reflectable type]", indent, name);
+      std::cout << indent << name << " = [non-reflectable type]\n";
     }
   }
 
   template <typename T>
   static void print(T& obj)
   {
-    Log::info("Type: {}", ReflectionInfo<T>::class_name);
+    std::cout << "Type: " << ReflectionInfo<T>::class_name << "\n";
     for_each_field(obj, [](std::string_view name, auto& value, int nest_level)
       { print_value(name, value, nest_level); }, 0);
   }

@@ -11,7 +11,7 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "ColliderEditorPanel.h"
-#include "../Precompiled.h"
+#include <imgui.h>
 #include "widgets/ColliderEditorWidget.h"
 #include "../ECS/ECS.h"
 #include "../ECS/Prefab.h"
@@ -762,7 +762,7 @@ void ColliderEditorPanel()
           // Update all instances of this prefab
           Engine::ECS::update_prefab_instances(source_prefab.get_impl()->get_prefab_id());
 
-          Log::info("Saved collider changes to prefab: {}", entity_source_prefab_path);
+          Log::info("Saved collider changes to prefab: " + entity_source_prefab_path);
         }
       }
     }

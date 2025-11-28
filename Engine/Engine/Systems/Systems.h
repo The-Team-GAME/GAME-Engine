@@ -34,6 +34,7 @@ void register_engine_systems()
 {
   // Update systems
   Engine::ECS::add_system<Engine::Systems::CameraSystem>();
+  Engine::ECS::add_system<Engine::Systems::CameraControlSystem>();
   Engine::ECS::add_system<Engine::Systems::StateMachineSystem>(); // Update state machines first
   Engine::ECS::add_system<Engine::Systems::LogicSystem>();
   Engine::ECS::add_system<Engine::Systems::Physics2DSystem>();
@@ -42,14 +43,10 @@ void register_engine_systems()
   Engine::ECS::add_system<Engine::Systems::AnimationUpdateSystem>();
   Engine::ECS::add_system<Engine::Systems::DynamicButtonSystem>();
   Engine::ECS::add_system<Engine::Systems::ClickableSystem>();
-  
-  // Editor systems
-#ifndef GAME_BUILD
-  Engine::ECS::add_system<Engine::Systems::CameraControlSystem>();
+
   Engine::ECS::add_system<Engine::Systems::GizmoSelectionSystem>();
   Engine::ECS::add_system<Engine::Systems::GizmoTextSelectionSystem>();
   Engine::ECS::add_system<Engine::Systems::GizmoManipulationSystem>();
-#endif
 
   // Effect systems
   Engine::ECS::add_system<Engine::Systems::TrailSystem>();
@@ -87,14 +84,10 @@ void unregister_engine_systems()
 
   Engine::ECS::remove_system<Engine::Systems::FadeOutSystem>();
   Engine::ECS::remove_system<Engine::Systems::TrailSystem>();
-  
-#ifndef GAME_BUILD
+
   Engine::ECS::remove_system<Engine::Systems::GizmoManipulationSystem>();
   Engine::ECS::remove_system<Engine::Systems::GizmoTextSelectionSystem>();
   Engine::ECS::remove_system<Engine::Systems::GizmoSelectionSystem>();
-  Engine::ECS::remove_system<Engine::Systems::CameraControlSystem>();
-#endif
-
   Engine::ECS::remove_system<Engine::Systems::ClickableSystem>();
   Engine::ECS::remove_system<Engine::Systems::DynamicButtonSystem>();
   Engine::ECS::remove_system<Engine::Systems::AnimationUpdateSystem>();
@@ -103,5 +96,6 @@ void unregister_engine_systems()
   Engine::ECS::remove_system<Engine::Systems::Physics2DSystem>();
   Engine::ECS::remove_system<Engine::Systems::LogicSystem>();
   Engine::ECS::remove_system<Engine::Systems::StateMachineSystem>();
+  Engine::ECS::remove_system<Engine::Systems::CameraControlSystem>();
   Engine::ECS::remove_system<Engine::Systems::CameraSystem>();
 }

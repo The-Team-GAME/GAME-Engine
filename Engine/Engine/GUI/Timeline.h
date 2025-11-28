@@ -21,7 +21,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
-#include "../Precompiled.h"
+#include "imgui.h"
 #include "../TypeDef.h"
 #include "../ECS/Entity.h"
 

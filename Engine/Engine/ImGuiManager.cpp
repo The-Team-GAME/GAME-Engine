@@ -15,7 +15,7 @@
 //-----------------------------------------------------------------------------------
 #include "ImGuiManager.h"
 #include "WindowManager.h"
-#include "Precompiled.h"
+#include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
 #include "InputManager.h"
@@ -28,6 +28,7 @@
 #include "Events/WindowEvents.h"
 #include "EventManager/EventManager.h"
 #include "GUI/ViewportPanel.h"
+#include <imgui_internal.h>
 
 namespace {
   bool gui_enabled = true; // Completely disable ImGui when false (TODO: Hook this up to a setting)
@@ -67,7 +68,6 @@ namespace ImGuiManager {
 
   void init()
   {
-#ifndef GAME_BUILD
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
@@ -93,28 +93,17 @@ namespace ImGuiManager {
         show_exit_confirmation = true;
       }
     );
-
-    // Register event listener for toast notifications
-    Engine::EventManager::add_event_listener<Engine::Events::ToastEvent>(
-      [](const Engine::Events::ToastEvent& event) {
-        show_toast(event.message, event.type, event.duration);
-      }
-    );
-#endif
   }
 
   void exit()
   {
-#ifndef GAME_BUILD
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
-#endif
   }
 
   void begin()
   {
-#ifndef GAME_BUILD
     if (!gui_enabled) {
       return;
     }
@@ -129,6 +118,7 @@ namespace ImGuiManager {
     // ==================================================================================
     // Start of ImGui enabled
     // ==================================================================================
+
     if (main_gui_visible)
     {
 
@@ -170,10 +160,6 @@ namespace ImGuiManager {
             ImGui::MenuItem("Panel Viewport Mode", "F2", &Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().panel_viewport_mode);
             if (ImGui::MenuItem("Toggle Debug Layer", "F3", Engine::ECS::is_layer_active("debug"))) {
               Engine::ECS::is_layer_active("debug") ? Engine::ECS::disable_layer("debug") : Engine::ECS::enable_layer("debug");
-            }
-            if (ImGui::MenuItem("Toggle Fullscreen", "F11", &Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get_mutable().fullscreen)) {
-              Engine::WindowManager::set_fullscreen(Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get().fullscreen);
-              Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::save();
             }
 
             ImGui::EndMenu();
@@ -463,16 +449,14 @@ namespace ImGuiManager {
         y_offset -= toast_spacing;
       }
     }
-    
+
     // ==================================================================================
     // End of toast notifications
     // ==================================================================================
-#endif
   }
 
   void end()
   {
-#ifndef GAME_BUILD
     Engine::Perf::start("ImGui Render");
 
     if (!gui_enabled)
@@ -492,14 +476,12 @@ namespace ImGuiManager {
       ImGui::RenderPlatformWindowsDefault();
       glfwMakeContextCurrent(backup_current_context);
     }
-    
+
     Engine::Perf::stop("ImGui Render");
-#endif
   }
 
   void update()
   {
-#ifndef GAME_BUILD
     // Update toast timers
     float dt = Engine::Time::get_unscaled_fixed_dt();
     for (auto it = active_toasts.begin(); it != active_toasts.end();)
@@ -550,38 +532,24 @@ namespace ImGuiManager {
       Engine::ECS::is_layer_active("debug") ? Engine::ECS::disable_layer("debug") : Engine::ECS::enable_layer("debug");
     }
 
-    // Toggle Fullscreen with F11 key
-    if (Engine::Input::is_pressed(Engine::KeyCode::F11))
-    {
-      auto& settings = Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get_mutable();
-      settings.fullscreen = !settings.fullscreen;
-      Engine::WindowManager::set_fullscreen(settings.fullscreen);
-      Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::save();
-    }
-#endif
   }
 
-  void register_panel([[maybe_unused]] const std::string& panel_name, [[maybe_unused]] const std::function<void()>& panel_func)
+  void register_panel(const std::string& panel_name, const std::function<void()>& panel_func)
   {
-#ifndef GAME_BUILD
     PanelInfo info;
     info.name = panel_name;
     info.render_func = panel_func;
     info.visible = true;
     registered_panels.push_back(info);
-#endif
   }
 
   void clear_panels()
   {
-#ifndef GAME_BUILD
     registered_panels.clear();
-#endif
   }
 
-  void set_style([[maybe_unused]] const std::string& style_name)
+  void set_style(const std::string& style_name)
   {
-#ifndef GAME_BUILD
     auto it = styles_map.find(style_name);
     if (it != styles_map.end())
     {
@@ -591,33 +559,25 @@ namespace ImGuiManager {
     // Update user settings
     Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::get_mutable().imgui_theme = style_name;
     Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::save();
-#endif
   }
 
-  void show_toast([[maybe_unused]] const std::string& message, [[maybe_unused]] ToastType type, [[maybe_unused]] float duration)
+  void show_toast(const std::string& message, ToastType type, float duration)
   {
-#ifndef GAME_BUILD
     Toast toast;
     toast.message = message;
     toast.type = type;
     toast.duration = duration;
     toast.elapsed = 0.0f;
     active_toasts.push_back(toast);
-#endif
   }
 
   bool is_viewport_mode_enabled()
   {
-#ifndef GAME_BUILD
     return Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode;
-#else
-    return false;
-#endif
   }
 
   Math::Vec2D get_viewport_area_min()
   {
-#ifndef GAME_BUILD
     if (is_viewport_mode_enabled()) {
       auto bounds = ViewportPanel::get_viewport_bounds();
       return { bounds.x, bounds.y };
@@ -626,14 +586,10 @@ namespace ImGuiManager {
       ImGuiViewport* viewport = ImGui::GetMainViewport();
       return { viewport->WorkPos.x, viewport->WorkPos.y };
     }
-#else
-    return { 0.0f, 0.0f };
-#endif
   }
 
   Math::Vec2D get_game_render_area_min()
   {
-#ifndef GAME_BUILD
     if (is_viewport_mode_enabled()) {
       auto bounds = ViewportPanel::get_viewport_bounds();
       return { bounds.x, bounds.y };
@@ -648,9 +604,6 @@ namespace ImGuiManager {
       ImGuiViewport* viewport = ImGui::GetMainViewport();
       return { viewport->WorkPos.x, viewport->WorkPos.y };
     }
-#else
-    return { 0.0f, 0.0f };
-#endif
   }
 
 }

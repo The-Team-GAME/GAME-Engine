@@ -15,7 +15,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "../../Precompiled.h"
+#include <imgui.h>
 #include "../../Math/Vector2D.h"
 #include "../../Graphics/Renderer.h"
 #include <vector>

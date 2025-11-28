@@ -17,7 +17,7 @@
 
 #include "LuaManager.h"
 #include "GameAPI.h"
-#include "../Logger.h"
+#include <iostream>
 #include <mutex>
 
 namespace Engine
@@ -46,11 +46,11 @@ namespace Engine
         // run any registered binding callbacks (Game API / ECS bindings)
         run_bindings();
 
-        Log::info("[LuaManager] Lua (sol2) initialized.");
+        std::cout << "[LuaManager] Lua (sol2) initialized.\n";
         return true;
       }
       catch (const sol::error& e) {
-        Log::error("[LuaManager] Failed to initialize: {}", e.what());
+        std::cerr << "[LuaManager] Failed to initialize: " << e.what() << "\n";
         return false;
       }
     }
@@ -63,13 +63,13 @@ namespace Engine
         binding_callbacks.clear();
       }
       lua_state = sol::state{};
-      Log::info("[LuaManager] Lua closed.");
+      std::cout << "[LuaManager] Lua closed.\n";
     }
 
     void load_script(const std::string& filename)
     {
       if (!lua_state.lua_state()) {
-        Log::error("[LuaManager] Lua not initialized. Call init() first.");
+        std::cerr << "[LuaManager] Lua not initialized. Call init() first.\n";
         loaded_scripts[filename] = false;
         return;
       }
@@ -77,18 +77,18 @@ namespace Engine
       try {
         lua_state.script_file(filename);
         loaded_scripts[filename] = true;
-        Log::info("[LuaManager] Loaded script: {}", filename);
+        std::cout << "[LuaManager] Loaded script: " << filename << std::endl;
       }
       catch (const sol::error& e) {
         loaded_scripts[filename] = false;
-        Log::error("[Lua Error] {}", e.what());
+        std::cerr << "[Lua Error] " << e.what() << std::endl;
       }
     }
 
     void call_function(const std::string& name, float dt)
     {
       if (!lua_state.lua_state()) {
-        Log::error("[LuaManager] Lua not initialized. Call init() first.");
+        std::cerr << "[LuaManager] Lua not initialized. Call init() first.\n";
         return;
       }
 
@@ -100,7 +100,7 @@ namespace Engine
             sol::protected_function_result result = func(dt);
             if (!result.valid()) {
               sol::error err = result;
-              Log::error("[Lua Error] {}", err.what());
+              std::cerr << "[Lua Error] " << err.what() << std::endl;
             }
           }
         } else {
@@ -109,7 +109,7 @@ namespace Engine
         }
       }
       catch (const sol::error& e) {
-        Log::error("[Lua Error] {}", e.what());
+        std::cerr << "[Lua Error] " << e.what() << std::endl;
       }
     }
 
@@ -140,7 +140,7 @@ namespace Engine
         try {
           cb(lua_state);
         } catch (const std::exception& e) {
-          Log::error("[LuaManager] binding callback error: {}", e.what());
+          std::cerr << "[LuaManager] binding callback error: " << e.what() << std::endl;
         }
       }
     }

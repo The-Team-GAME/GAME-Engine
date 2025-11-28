@@ -14,6 +14,7 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "ViewportPanel.h"
+#include <imgui.h>
 #include "../Precompiled.h"
 #include "../Logger.h"
 #include "../Graphics/Renderer.h"
@@ -66,7 +67,7 @@ namespace ViewportPanel {
     // Unbind framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    Log::info("ViewportPanel initialized with size {} x {}", fb_width, fb_height);
+    Log::info(std::string("ViewportPanel initialized with size ") + std::to_string(fb_width) + " x " + std::to_string(fb_height));
   }
 
   void exit() {

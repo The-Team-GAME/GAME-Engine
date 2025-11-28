@@ -15,7 +15,7 @@
 //-----------------------------------------------------------------------------------
 
 #include "SceneManager.h"
-#include "Logger.h"
+#include <iostream>
 #include "Systems/GraphicsSystem.h"
 
 namespace Engine
@@ -30,7 +30,7 @@ namespace Engine
     void load_scene(const std::string& name) {
       auto scene_it = scenes.find(name);
       if (scene_it == scenes.end()) {
-        Log::error("Error: Scene '{}' not found!", name);
+        std::cerr << "Error: Scene '" << name << "' not found!" << std::endl;
         return;
       }
 
@@ -47,7 +47,7 @@ namespace Engine
 
       Engine::LevelManager::set_current_level_path(""); // TODO: very hacky, we need a better way to manage levels vs scenes
 
-      Log::info("Loaded scene: {}", name);
+      std::cout << "Loaded scene: " << name << std::endl;
     }
 
     void unload_current_scene() {
@@ -55,7 +55,7 @@ namespace Engine
         current_scene->free();
         current_scene->unload();
         current_scene = nullptr;
-        Log::info("Unloaded current scene");
+        std::cout << "Unloaded current scene" << std::endl;
       }
     }
 
@@ -75,7 +75,7 @@ namespace Engine
       unload_current_scene();
       scenes.clear();
       scene_order.clear();
-      Log::info("SceneManager cleaned up");
+      std::cout << "SceneManager cleaned up" << std::endl;
     }
 
     std::string get_current_scene_name() {

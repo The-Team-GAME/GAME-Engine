@@ -2,10 +2,10 @@
 // file:    CollisionSystem.cpp
 // project: Monkey Stole My GPA
 //
-// author:  Cheng Ming Xian (100%)
+// author:   (100%)
 //          Primary author
 //
-// email:   c.mingxian@digipen.edu
+// email:   @digipen.edu
 //
 // brief:   This file declares the functions in the system that handles the 
 //          collision detection and collision resolution for entities that contain 

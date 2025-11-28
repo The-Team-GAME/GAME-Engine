@@ -13,8 +13,7 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-
-#include "../../Precompiled.h"
+#include <imgui.h>
 #include "ReflectionFieldWidgets.h"
 #include "TextureAtlasWidget.h"
 #include "../ColliderEditorPanel.h"
@@ -689,16 +688,6 @@ namespace ImGuiWidgets {
         ColliderEditor::Open(*prefab, prefab_path);
       }
     }
-
-
-    // Render all fields of the BoxCollider
-    if (field_value.isObject()) {
-      auto& fields = field_value.getObject();
-      for (auto& [field_name, field_val] : fields) {
-        render_field(field_name, field_val.type_hint, field_val, modified, entity, prefab, prefab_path);
-      }
-    }
-
     return true;
   }
 

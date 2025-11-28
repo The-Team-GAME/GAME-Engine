@@ -86,7 +86,6 @@ namespace Components {
       if (heartrate > high) return HeartrateState::High;
       if (heartrate > normal) return HeartrateState::Normal;
       if (heartrate > low) return HeartrateState::Low;
-      return HeartrateState::Low; // Default case
     }
   };
 }

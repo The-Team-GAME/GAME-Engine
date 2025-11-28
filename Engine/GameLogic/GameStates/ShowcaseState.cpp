@@ -19,10 +19,10 @@ void ShowcaseState::load() {
   background_texture = Engine::Resources::load_texture("images/sample_bg.png");
 
   // Load audio
-  walk_sound = Engine::Resources::load_sound("sounds/SFX/Player/Player Footstep.wav");
-  jump_sound = Engine::Resources::load_sound("sounds/SFX/Player/Player Jump (DJ SY Edition).wav");
-  punch_sound = Engine::Resources::load_sound("sounds/SFX/Player/Player Swing.wav");
-  bgm_sound = Engine::Resources::load_sound("sounds/Level 1 BGM.wav");
+  walk_sound = Engine::Resources::load_sound("sounds/move1.wav");
+  jump_sound = Engine::Resources::load_sound("sounds/jump.wav");
+  punch_sound = Engine::Resources::load_sound("sounds/Punch.wav");
+  bgm_sound = Engine::Resources::load_sound("sounds/A STORY TO TELL - Jazz MSCLJZ2_26.wav");
 
   // Load fonts
   title_font = Engine::Resources::load_font("fonts/PlayfairDisplay-VariableFont_wght.ttf", 82);
@@ -194,7 +194,9 @@ void ShowcaseState::init() {
 
   // Subscribe to attack events
   Engine::EventManager::add_event_listener<AttackEvent>([this](const AttackEvent& event) {
-    Log::info("Attack event! Entity {} attacks Entity {} for {} damage!", event.attacker, event.target, event.damage);
+    std::cout << "Attack event! Entity " << event.attacker
+      << " attacks Entity " << event.target
+      << " for " << event.damage << " damage!\n";
 
     // Play attack animation
     if (event.attacker == player.get_id()) {
@@ -211,7 +213,7 @@ void ShowcaseState::init() {
       auto* anim_state = player.get_component<Components::AnimationState>();
       if (anim_state) {
         anim_state->set_animation_state(PUNCH_STATE);
-        Log::info("Playing punch animation");
+        std::cout << "Playing punch animation\n";
       }
     }
 
@@ -229,16 +231,16 @@ void ShowcaseState::init() {
     // Apply damage to enemy
     auto target_entity = Engine::ECS::get_entity(event.target);
     if (target_entity.is_valid()) {
-      Log::info("Target entity is valid");
+      std::cout << "Target entity is valid\n";
 
       if (target_entity.has_component<Components::Health>()) {
-        Log::info("Target has health component");
+        std::cout << "Target has health component\n";
         auto* health = target_entity.get_component<Components::Health>();
-        Log::info("Health before damage: {}", health->value);
+        std::cout << "Health before damage: " << health->value << "\n";
 
         health->damage(event.damage);
 
-        Log::info("Health after damage: {}", health->value);
+        std::cout << "Health after damage: " << health->value << "\n";
 
         // Update enemy health text
         if (enemy_health_text.is_valid() && enemy_health_text.has_component<Components::Text>()) {
@@ -247,22 +249,24 @@ void ShowcaseState::init() {
         }
 
         if (health->is_dead()) {
-          Log::info("Entity {} has been defeated!", event.target);
+          std::cout << "Entity " << event.target << " has been defeated!\n";
           target_entity.destroy();
         }
       }
       else {
-        Log::error("ERROR: Target entity does not have health component!");
+        std::cout << "ERROR: Target entity does not have health component!\n";
       }
     }
     else {
-      Log::error("ERROR: Target entity is not valid!");
+      std::cout << "ERROR: Target entity is not valid!\n";
     }
     });
 
   // Subscribe to collect events
   Engine::EventManager::add_event_listener<CollectEvent>([this](const CollectEvent& event) {
-    Log::info("Collect event! Entity {} collected Entity {} for {} points!", event.collector, event.collected, event.points);
+    std::cout << "Collect event! Entity " << event.collector
+      << " collected Entity " << event.collected
+      << " for " << event.points << " points!\n";
 
     // Update score
     if (event.collector == player.get_id()) {
@@ -374,7 +378,7 @@ void ShowcaseState::update() {
 
   // Attack enemy with E key (using event system)
   if (Engine::Input::is_pressed(Engine::KeyCode::E) && anim_state->current_state != PUNCH_STATE) {
-    Log::info("E key pressed! Player ID: {}, Enemy ID: {}", player.get_id(), enemy.get_id());
+    std::cout << "E key pressed! Player ID: " << player.get_id() << ", Enemy ID: " << enemy.get_id() << "\n";
 
     // Send attack event 
     Engine::EventManager::send_event<AttackEvent>(player.get_id(), enemy.get_id(), 10);

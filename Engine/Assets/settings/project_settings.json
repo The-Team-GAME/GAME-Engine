@@ -13,14 +13,6 @@
             "second": "player"
         },
         {
-            "first": "damage_player",
-            "second": "enemy"
-        },
-        {
-            "first": "damage_player",
-            "second": "player"
-        },
-        {
             "first": "damage_enemy",
             "second": "enemy"
         }

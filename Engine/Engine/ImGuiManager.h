@@ -19,11 +19,13 @@
 #include <string>
 #include "Math/Vector2D.h"
 
-#include "Events/EngineEvents.h"
-
 namespace ImGuiManager {
 
-	using ToastType = Engine::Events::ToastType;
+	enum class ToastType {
+		Info,
+		Warning,
+		Error
+	};
 
 	void init();
 	void exit();

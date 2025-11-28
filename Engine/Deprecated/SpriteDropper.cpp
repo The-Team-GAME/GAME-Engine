@@ -17,7 +17,7 @@
 
 #include "SpriteDropper.h"
 #include "core.h"
-#include "Precompiled.h"
+#include "imgui.h"
 
 /*=================================================================================
     Function Brief:

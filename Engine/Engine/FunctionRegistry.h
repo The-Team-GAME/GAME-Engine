@@ -21,7 +21,7 @@
 #include <string>
 #include <typeindex>
 #include <any>
-#include "Logger.h"
+#include <iostream>
 #include <vector>
 
 namespace Engine {
@@ -123,7 +123,7 @@ namespace Engine {
     static void register_function(const std::string& name, FunctionType func) {
       auto& functions = get_functions();
       if (functions.find(name) != functions.end()) {
-        Log::warning("FunctionRegistry: Overwriting existing function '{}'", name);
+        std::cout << "FunctionRegistry: Overwriting existing function '" << name << "'" << std::endl;
       }
       functions[name] = func;
     }
@@ -203,7 +203,7 @@ namespace Engine {
     void register_function(const std::string& name, std::function<FuncSignature> func) {
       auto key = make_key<FuncSignature>(name);
       if (functions_.find(key) != functions_.end()) {
-        Log::warning("MultiFunctionRegistry: Overwriting existing function '{}'", name);
+        std::cout << "MultiFunctionRegistry: Overwriting existing function '" << name << "'" << std::endl;
       }
       functions_[key] = std::make_any<std::function<FuncSignature>>(func);
     }
@@ -221,7 +221,7 @@ namespace Engine {
         return std::any_cast<std::function<FuncSignature>>(it->second);
       }
       catch (const std::bad_any_cast&) {
-        Log::error("MultiFunctionRegistry: Type mismatch for function '{}'", name);
+        std::cerr << "MultiFunctionRegistry: Type mismatch for function '" << name << "'" << std::endl;
         return std::function<FuncSignature>{};
       }
     }

@@ -24,7 +24,6 @@
 #include "../FileIO/SettingsManager.h"
 #include "../FileIO/Settings.h"
 #include "../GUI/TilemapPanel.h"
-#include "../Logger.h"
 
 namespace Engine
 {
@@ -219,7 +218,7 @@ namespace Engine
           atlas->drawIndex = animation->frames[current_frame].atlas_index;
         }
         else {
-          Log::warning("current_frame out of bounds in AnimationUpdateSystem");
+          std::cout << "Warning: current_frame out of bounds in AnimationUpdateSystem\n";
           atlas->drawIndex = 0; // Fallback to first frame
         }
       }
@@ -231,20 +230,18 @@ namespace Engine
 
     public:
       CameraSystem() {
-        require_components<Components::Camera, Components::Transform2D>();
       }
 
       void update() override {
-        Engine::ECS::for_each_entity_with<Components::Camera, Components::Transform2D>(
+        Engine::ECS::for_each_entity_with<Components::Camera>(
           [this](Engine::ECS::Entity entity) {
             auto* camera_component = entity.get_component<Components::Camera>();
-            auto* transform = entity.get_component<Components::Transform2D>();
 
             // If this camera is marked as active, use its parameters
             if (camera_component->is_active) {
-              camera.position = transform->position;
-              camera.rotation = transform->rotation;
-              camera.zoom = transform->scale.x; // Use x scale for zoom TODO: have x and y zoom
+              camera.position = camera_component->position;
+              camera.rotation = camera_component->rotation;
+              camera.zoom = camera_component->zoom;
             }
           }
         );

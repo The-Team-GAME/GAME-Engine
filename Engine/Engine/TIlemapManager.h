@@ -207,17 +207,4 @@ namespace TilemapManager {
   ==================================================================================*/
   void broadcast_world_bounds();
 
-  /*=================================================================================
-  Function Brief:
-  Moves all tiles from the source layer to the destination layer.
-
-  Parameters:
-  source_layer - Name of the layer to move tiles from
-  dest_layer - Name of the layer to move tiles to
-
-  Where to call it:
-  When the user wants to reorganize tiles between layers.
-  ==================================================================================*/
-  void move_all_tiles_to_layer(const std::string& source_layer, const std::string& dest_layer);
-
 } // namespace TilemapManager

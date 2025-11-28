@@ -57,18 +57,6 @@ namespace Engine {
     ==================================================================================*/
     void update_title();
 
-    /*=================================================================================
-    Function Brief:
-    Toggles between fullscreen and windowed mode.
-
-    Parameters:
-    fullscreen - True for fullscreen, false for windowed.
-
-    Where to call it:
-    When applying game settings.
-    ==================================================================================*/
-    void set_fullscreen(bool fullscreen);
-
     /* ===================== //
     // Accessors             //
     // ===================== */

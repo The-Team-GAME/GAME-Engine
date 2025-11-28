@@ -38,7 +38,7 @@ namespace ImGuiWidgets {
     ImGui::InvisibleButton("##handle", { size, size });
     ImGui::PopID();
 
-    // bool hovered = ImGui::IsItemHovered();
+    bool hovered = ImGui::IsItemHovered();
     bool active = ImGui::IsItemActive();
 
     if (active && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
@@ -274,6 +274,7 @@ namespace ImGuiWidgets {
     ImVec2 image_max
   ) {
     float handle_size = 8.0f;
+    ImU32 handle_color = IM_COL32(0, 255, 0, 255);
     ImVec2 delta;
     bool changed = false;
 

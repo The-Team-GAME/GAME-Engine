@@ -41,7 +41,7 @@ namespace FileHandler {
     std::ifstream ifs(filepath);
     if (!ifs.is_open())
     {
-      Log::warning("Failed to open file at {}", filepath);
+      Log::warning("Failed to open file at " + filepath);
       return;
     }
 
@@ -61,7 +61,7 @@ namespace FileHandler {
 
     // At this point the filestream has been successfully opened and the json has been parsed
     ifs.close();
-    Log::info("File successfully loaded from {}", filepath);
+    Log::info("File successfully loaded from " + filepath);
   }
 
   void clear_json() // clears the json document so more things can be parsed in
@@ -94,7 +94,7 @@ namespace FileHandler {
     }
     else
     {
-      Log::warning("Attempted to delete a key that does not exist: {}", key);
+      Log::warning("Attempted to delete a key that does not exist: " + key);
     }
   }
 

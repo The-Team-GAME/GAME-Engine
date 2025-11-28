@@ -12,7 +12,7 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-#include "../Precompiled.h"
+#include <imgui.h>
 #include "ResourcePicker.h"
 #include "../Resources.h"
 #include <algorithm>

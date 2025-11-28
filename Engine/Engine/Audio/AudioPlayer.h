@@ -52,14 +52,10 @@ namespace Engine {
 
     // Global audio settings
     void set_master_volume(f32 volume);
-    void set_bgm_volume(f32 volume);
-    void set_sfx_volume(f32 volume);
     void set_listener_position(const Math::Vec2D& position);
     void set_listener_forward(const Math::Vec2D& forward);
 
     f32 get_master_volume();
-    f32 get_bgm_volume();
-    f32 get_sfx_volume();
     Math::Vec2D get_listener_position();
 
     // Stop all sounds

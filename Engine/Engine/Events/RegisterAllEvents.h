@@ -42,7 +42,7 @@ namespace Engine {
         {
           for (const auto& filepath : event.filepaths)
           {
-            Log::info("File dropped: {}", filepath);
+            Log::info("File dropped: " + filepath);
             Engine::Resources::load(filepath, false, true);
           }
         }
@@ -165,16 +165,7 @@ namespace Engine {
           Engine::ECS::IComponentArray* array = it->second.get();
 
           // Add the component using reflection
-          if (array->add_component_from_generic_value(event.entity_id, event.component_data)) {
-            // Manually update signature and notify systems since add_component_from_generic_value doesn't do it
-            containers.entity_signatures[event.entity_id].set(event.component_type_id);
-            Engine::ECS::Internal::entity_component_changed(event.entity_id);
-          }
-          else {
-            // If adding from generic value failed (e.g. empty data), try adding default component
-            // add_default_component calls ECS::add_component internally which handles signature updates
-            array->add_default_component(event.entity_id);
-          }
+          array->add_component_from_generic_value(event.entity_id, event.component_data);
 
           // Record undo if requested
           if (event.record_undo) {

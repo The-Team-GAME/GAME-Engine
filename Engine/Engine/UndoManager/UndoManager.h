@@ -1,9 +1,8 @@
-
 #pragma once
 #include <functional>
 #include <deque>
 #include <memory>
-#include "../Logger.h"
+#include <iostream>
 
 namespace Engine {
 
@@ -21,7 +20,7 @@ namespace Engine {
   };
 
   namespace UndoManager {
-    constexpr size_t MAX_HISTORY = 40;
+    constexpr size_t MAX_HISTORY = 500;
     inline std::deque<std::unique_ptr<Action>> undo_stack;
     inline std::deque<std::unique_ptr<Action>> redo_stack;
 
@@ -31,7 +30,7 @@ namespace Engine {
       while (undo_stack.size() > MAX_HISTORY)
         undo_stack.pop_front();
       redo_stack.clear();
-      // Log::info("Adding to list");
+      std::cout << "Adding to list\n";
     }
 
     // Takes lambdas directly but does not execute them
@@ -48,7 +47,7 @@ namespace Engine {
     inline void execute(std::unique_ptr<Action> action) {
       action->do_action();
       record(std::move(action));
-      Log::info("Adding to list and executing");
+      std::cout << "Adding to list and executing\n";
     }
 
     // Take lambdas directly and executes immediately
@@ -69,10 +68,10 @@ namespace Engine {
         redo_stack.push_back(std::move(action));
         while (redo_stack.size() > MAX_HISTORY)
           redo_stack.pop_front();
-        Log::info("Undo from list");
+        std::cout << "Undo from list\n";
       }
       else
-        Log::warning("Undo stack empty");
+        std::cout << "Undo stack empty\n";
     }
 
     inline void redo() {

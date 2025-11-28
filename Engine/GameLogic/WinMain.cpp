@@ -18,6 +18,8 @@
 #include "../Engine/MonkeyEngine.h"
 #include "GameStates/EmptyState.h"
 #include "GameStates/MainMenuState.h"
+#include "GameStates/ShowcaseState.h"
+#include "GameStates/RectPainterState.h"
 #include "GameStates/Rubric2500ParticlesState.h"
 #include "GameStates/StressTestState.h"
 #include "GameStates/BasicState.h"
@@ -28,7 +30,6 @@
 #include "GameStates/LuaState.h"
 #include "GameStates/BehaviourState.h"
 #include "GameStates/LevelTestState.h"
-#include "GameStates/GameplayState.h"
 #include "Systems/HealthSystem.h"
 #include "Systems/EnemyHealthSystem.h"
 #include "Systems/HeartrateSystem.h"
@@ -42,19 +43,14 @@ and runs the game engine, and catches any unhandled exceptions for error logging
 Returns:
 0 on successful execution, 1 if an exception occurred.
 ==================================================================================*/
-/*=================================================================================
-Function Brief:
-Common game initialization and loop logic.
-==================================================================================*/
-void RunGame()
+int main()
 {
-#if defined(_DEBUG)
   // Enable memory leak detection
   s32 tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
   tmpDbgFlag |= _CRTDBG_LEAK_CHECK_DF;
   _CrtSetDbgFlag(tmpDbgFlag);
   _CrtSetBreakAlloc(-1);
-#endif
+
 
   // Register game layers
   Engine::ECS::register_layer("background"); // Static background layer
@@ -72,12 +68,8 @@ void RunGame()
   Engine::ECS::register_layer("player"); // Player character layer
   Engine::ECS::register_layer("effect"); // Visual effects like particles
   Engine::ECS::register_layer("ui"); // User interface elements
-#ifndef GAME_BUILD
   Engine::ECS::register_layer("debug"); // Debug overlays and information
-#endif
 
-
-  
   // Start the engine
   Engine::Core::init();
 
@@ -87,7 +79,9 @@ void RunGame()
     {
       // Example callback: Print entity IDs on collision
       // In practice, you would handle damage, effects, etc. here
-      Log::info("Collision detected between Entity {} and Entity {}", entityA.get_id(), entityB.get_id());
+      std::cout << "Collision detected between Entity "
+        << entityA.get_id() << " and Entity "
+        << entityB.get_id() << std::endl;
     });
 
   // Register collision callback for player attacks hitting enemies
@@ -101,20 +95,25 @@ void RunGame()
       auto* transform = enemy_entity.get_component<Components::Transform2D>();
 
       if (!attack) {
-        Log::error("Error: Attack component missing from attack hitbox, on entity {}", attack_entity.get_id());
+        std::cout << "Error: Attack component missing from attack hitbox!" << std::endl;
         return;
       }
 
       if (enemy_health && state_machine) {
-        // Check if we should apply damage
-        if (!attack->should_apply_damage(enemy_entity)) {
+        // Check if this enemy has already been hit by this attack
+        if (std::find(attack->hit_entities.begin(), attack->hit_entities.end(), enemy_entity) != attack->hit_entities.end()) {
+          // Already hit, skip
           return;
         }
+
+        // Mark entity as hit by this attack
+        attack->hit_entities.push_back(enemy_entity);
 
         // Only take damage if not invulnerable
         int damage = attack->damage;
         enemy_health->take_damage(damage);
-        Log::info("Enemy took {} damage! HP: {}/{}", damage, enemy_health->current_hp, enemy_health->max_hp);
+        std::cout << "Enemy took " << damage << " damage! HP: "
+          << enemy_health->current_hp << "/" << enemy_health->max_hp << std::endl;
 
         // Trigger hit or death state
         if (enemy_health->current_hp <= 0) {
@@ -149,77 +148,17 @@ void RunGame()
           // Zero out velocity for clean stick effect
           rigid->velocity.zero();
         }
-
-        // Spawn Impact VFX
-        if (attack->impact_vfx_texture.texture_handle) {
-          auto vfx = Engine::ECS::create_entity()
-            .add_component<Components::Transform2D>(
-              transform->position.x,
-              transform->position.y,
-              0.0f,
-              128.0f, // 2x scale
-              128.0f
-            )
-            .add_component<Components::Parent>(enemy_entity)
-            .add_component<Components::Texture>(attack->impact_vfx_texture)
-            .add_component<Components::TextureAtlas>(64, 64, 1, 4, 4) // 4 frames, 64x64 each
-            .add_component<Components::Animation>(0, 3, 0.05f, false)
-            .add_component<Components::Lifetime>(0.2f) // 4 * 0.05 = 0.2s
-            .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-            .add_to_layer("effect");
-
-          // Randomize rotation for variety?
-          // vfx.get_component<Components::Transform2D>()->rotation = ...
-        }
       }
       else {
-        Log::error("Error: EnemyHealth or StateMachine component missing!");
-      }
-    });
-
-  // Register collision callback for enemy attacks hitting player
-  Engine::ECS::LayerRegistry::register_collision_callback("damage_player", "player",
-    [](Engine::ECS::Entity attack_entity, Engine::ECS::Entity player_entity)
-    {
-      Log::info("Player took damage!");
-
-      // When enemy attack hitbox collides with player
-      auto* attack = attack_entity.get_component<Components::Attack>();
-      auto* heartrate = player_entity.get_component<Components::Heartrate>();
-      auto* rigid = player_entity.get_component<Components::RigidBody>();
-      auto* player_transform = player_entity.get_component<Components::Transform2D>();
-      auto* attack_transform = attack_entity.get_component<Components::Transform2D>();
-
-      if (!attack) {
-        Log::error("Error: Attack component missing from enemy attack hitbox, on entity {}", attack_entity.get_id());
-        return;
-      }
-
-      if (heartrate && rigid) {
-        // Check if we should apply damage
-        if (!attack->should_apply_damage(player_entity)) {
-          return;
-        }
-
-        // Increase heartrate instead of decreasing HP
-        int damage = attack->damage;
-        heartrate->increase(static_cast<float>(damage));
-        Log::info("Player took {} damage! Heartrate: {}", damage, heartrate->heartrate);
-
-        // Apply knockback (direction is already baked into attack->knockback from the attacker)
-        rigid->velocity.x = attack->knockback.x;
-        rigid->velocity.y = attack->knockback.y; // Usually negative for upward knockback
-
-        Log::info("Player knocked back! Velocity: ({}, {})", rigid->velocity.x, rigid->velocity.y);
-      }
-      else {
-        Log::error("Error: Heartrate or RigidBody component missing from player!");
+        std::cout << "Error: EnemyHealth or StateMachine component missing!" << std::endl;
       }
     });
 
   // Register game scenes at startup
   Engine::SceneManager::register_scene<EmptyState>("EmptyState");
   Engine::SceneManager::register_scene<MainMenuState>("MainMenuState");
+  // Engine::SceneManager::register_scene<ShowcaseState>("ShowcaseState");
+  Engine::SceneManager::register_scene<RectPainterState>("RectPainterState");
   Engine::SceneManager::register_scene<Rubric2500ParticlesState>("Rubric2500ParticlesState");
   Engine::SceneManager::register_scene<StressTestState>("StressTestState");
   Engine::SceneManager::register_scene<BasicState>("BasicState");
@@ -230,7 +169,6 @@ void RunGame()
   Engine::SceneManager::register_scene<LuaState>("LuaState");
   Engine::SceneManager::register_scene<LevelTestState>("LevelTestState");
   Engine::SceneManager::register_scene<BehaviourState>("BehaviourState");
-  Engine::SceneManager::register_scene<GameplayState>("GameplayState");
 
   // Register game systems at startup
   Engine::ECS::add_system<Engine::Systems::HealthSystem>();
@@ -243,34 +181,6 @@ void RunGame()
 
   // Shutdown the engine
   Engine::Core::exit();
-}
 
-#ifdef GAME_BUILD
-
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <Windows.h>
-
-/*=================================================================================
-Function Brief:
-WinMain entry point for the application (Game Build).
-==================================================================================*/
-int APIENTRY WinMain([[maybe_unused]] HINSTANCE hInst, [[maybe_unused]] HINSTANCE hInstPrev, [[maybe_unused]] PSTR cmdline, [[maybe_unused]] int cmdshow)
-{
-  RunGame();
   return 0;
 }
-
-#else
-
-/*=================================================================================
-Function Brief:
-Main entry point for the application (Console Build).
-==================================================================================*/
-int main()
-{
-  RunGame();
-  return 0;
-}
-
-#endif

@@ -101,12 +101,6 @@ namespace Math {
     return Vec2D(-vect.y, vect.x);
   }
 
-  f32 angle_of_slope(Vec2D const& line)
-  {
-    f32 angle_of_slope = atan2f(fabsf(line.y), fabsf(line.x));
-    return angle_of_slope * 180.f / static_cast<f32>(std::numbers::pi);
-  }
-
   // Non Member Operator Overloads
   Vec2D operator+(Vec2D const& vect1, Vec2D const& vect2)
   {

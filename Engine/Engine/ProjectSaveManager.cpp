@@ -55,7 +55,7 @@ void Engine::ProjectSaveManager::save_all_dirty()
         auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get_mutable();
         auto& containers = Engine::ECS::Internal::get_containers();
 
-        Log::info("Saving ProjectSettings - loaded_tilemaps count: {}", project_settings.loaded_tilemaps.size());
+        Log::info("Saving ProjectSettings - loaded_tilemaps count: " + std::to_string(project_settings.loaded_tilemaps.size()));
 
         // Convert collision matrix from ID-based to name-based pairs
         project_settings.layer_collision_pairs.clear();
@@ -79,7 +79,7 @@ void Engine::ProjectSaveManager::save_all_dirty()
           }
         }
 
-        Log::info("Saved {} layer collision pairs", project_settings.layer_collision_pairs.size());
+        Log::info("Saved " + std::to_string(project_settings.layer_collision_pairs.size()) + " layer collision pairs");
 
         // Save project settings
         if (Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::save("Assets/settings/project_settings.json"))
@@ -117,10 +117,10 @@ void Engine::ProjectSaveManager::save_all_dirty()
           // Update the current level path so subsequent saves don't prompt again
           Engine::LevelManager::set_current_level_path(level_path);
 
-          Log::info("User selected save location: {}", level_path);
+          Log::info("User selected save location: " + level_path);
         }
         else {
-          Log::info("Saving level: {}", level_path);
+          Log::info("Saving level: " + level_path);
         }
 
         // Generate level from current world state
@@ -131,15 +131,15 @@ void Engine::ProjectSaveManager::save_all_dirty()
 
         // Save the level
         if (Engine::Resources::save_level(relative_path, level, true)) {
-          Log::info("Level saved successfully: {}", relative_path);
+          Log::info("Level saved successfully: " + relative_path);
         }
         else {
-          Log::error("Failed to save level: {}", relative_path);
+          Log::error("Failed to save level: " + relative_path);
         }
       }
       else if constexpr (std::is_same_v<T, DirtyStates::Prefab>) {
         // Save specific prefab
-        Log::info("Saving prefab: {}", s.prefab_path);
+        Log::info("Saving prefab: " + s.prefab_path);
 
         // Construct full path from relative path
         std::string full_path = Engine::Path(Engine::Resources::resource_path).join(s.prefab_path);
@@ -150,11 +150,11 @@ void Engine::ProjectSaveManager::save_all_dirty()
             Engine::Resources::save_prefab(s.prefab_path, Engine::ECS::Prefab(prefab), true);
           }
           else {
-            Log::error("Failed to save prefab - expired in cache: {}", s.prefab_path);
+            Log::error("Failed to save prefab - expired in cache: " + s.prefab_path);
           }
         }
         else {
-          Log::error("Failed to save prefab - not found in cache: {}", s.prefab_path);
+          Log::error("Failed to save prefab - not found in cache: " + s.prefab_path);
         }
       }
       }, state);

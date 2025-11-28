@@ -33,13 +33,11 @@ namespace Components
     f32 mass = 1.0f; // Mass in kg
     Vec2D force;
     Vec2D acceleration;
+    Vec2D gravity_acc;
     Vec2D velocity; // Velocity in units per second
     // terminal velocity should be a set value instead of a vector just cuz you want to properly scale the velocity instead of capping it at set values
-    f32 terminal_velocity{ 1000.f }; // set to max float
-
-    Vec2D last_surface_dir_vector{ 1.f, 0.f };
-
-    bool use_gravity = false;
+    f32 friction{ 0.99f };
+    f32 terminal_velocity{ std::numeric_limits<float>::max()}; // set to max float
     bool is_static = false;  // If true, not affected by physics forces
     bool on_ground = false;
     bool is_jumping = false;
@@ -56,13 +54,16 @@ namespace Components
 
 
     // Ctor using vectors
-    RigidBody(bool not_affected_by_forces, bool affected_by_gravity) : is_static(not_affected_by_forces), use_gravity (affected_by_gravity)
+    RigidBody(bool not_affected_by_forces, bool affected_by_gravity) : is_static(not_affected_by_forces)
     {
-
+      if (affected_by_gravity) // im setting the gravity acc value so i dont need to keep checking if an object is affected by gravity
+      {
+        gravity_acc.y = 1400.f;
+      }
     }
 
     // Default constructor for reflection
-    RigidBody() : mass(1.0f), terminal_velocity(750.f), is_static(false), on_ground(false),
+    RigidBody() : mass(1.0f), friction(0.99f), terminal_velocity(750.f), is_static(false), on_ground(false),
       is_jumping(false), direction(RIGHT), rotation(0.0f), rotation_terminal_velocity(360.0f), angular_velocity(0.0f)
     {
     }
@@ -71,4 +72,4 @@ namespace Components
   };
 }
 
-REGISTER_COMPONENT(Components::RigidBody, mass, force, acceleration, velocity, terminal_velocity, use_gravity, is_static, on_ground, is_jumping, rotation, rotation_terminal_velocity, angular_velocity)
+REGISTER_COMPONENT(Components::RigidBody, mass, force, acceleration, gravity_acc, velocity, friction, terminal_velocity, is_static, on_ground, is_jumping, rotation, rotation_terminal_velocity, angular_velocity)

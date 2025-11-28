@@ -33,7 +33,7 @@ namespace Engine {
         if (enemy_health->is_dead()) {
           // Destroy the enemy entity
           // Engine::ECS::destroy_entity(entity);
-          // Log::info("Enemy destroyed!");
+          // std::cout << "Enemy destroyed!" << std::endl;
         }
       }
     };
