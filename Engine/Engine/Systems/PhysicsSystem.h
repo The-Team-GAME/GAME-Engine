@@ -36,7 +36,8 @@ namespace Engine {
       // void knockback(Components::RigidBody& rigid, Vec2D force);
       // Update the linear velocities if said entities here
       void update_kinematics(
-        Components::RigidBody& rigid, 
+        Components::RigidBody& rigid,
+        Components::BoxCollider& box,
         Components::Transform2D& xform);
 
       // Called when resolving collisions to zero the rigidbody's velocity that is pushing against the normal

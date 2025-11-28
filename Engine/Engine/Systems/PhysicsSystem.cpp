@@ -60,14 +60,17 @@ void phy2D::update()
 void phy2D::update_entity(ECS::Entity& entity) {
   Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
   Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
-  phy2D::update_kinematics(*rigid, *xform);
+  Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
+  phy2D::update_kinematics(*rigid, *box, *xform);
   rigid->force.zero();
   //std::cout << "velocity: " << rigid->velocity << " || position: " << rigid->curr_pos << std::endl;
 }
 
-void phy2D::update_kinematics(Components::RigidBody& rigid, Components::Transform2D& xform)
+void phy2D::update_kinematics(
+  Components::RigidBody& rigid, 
+  Components::BoxCollider& box, 
+  Components::Transform2D& xform)
 {
-  Vec2D next_pos;
   // F = m x a => Force equals mass x acceleration
   // acceleration will contain a value if the entity is affected by gravity
   rigid.acceleration = rigid.force / rigid.mass;
@@ -78,7 +81,8 @@ void phy2D::update_kinematics(Components::RigidBody& rigid, Components::Transfor
   
   // From now on we will apply friction on collision like how its supposed to be
   // There wont be any air resistance so that the player can be controlled more accurately
-  rigid.velocity += rigid.acceleration * Time::get_fixed_dt();
+  Vec2D prev_velocity = rigid.velocity * box.kinetic_friction;
+  rigid.velocity = prev_velocity + rigid.acceleration * Time::get_fixed_dt();
 
   // Checking terminal velocity here
   // using the magnitude squared to check cuz its cheaper than sqrt-ing the value
@@ -87,7 +91,7 @@ void phy2D::update_kinematics(Components::RigidBody& rigid, Components::Transfor
     rigid.velocity = Math::normalise_vector(rigid.velocity) * rigid.terminal_velocity;
   }
   // setting the next position
-  next_pos = xform.position + rigid.velocity * Time::get_fixed_dt();
+  Vec2D next_pos = xform.position + rigid.velocity * Time::get_fixed_dt();
 
   // Update transform after the new position has been calculated
   xform.position = next_pos;
