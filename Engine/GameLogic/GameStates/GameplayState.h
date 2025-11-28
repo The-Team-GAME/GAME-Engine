@@ -41,7 +41,14 @@ public:
 
   void init() {};
 
-  void update() {};
+  void update() {
+
+    // Check if pause button is pressed
+    if (Engine::Input::is_pressed(Engine::KeyCode::Escape)) {
+      Engine::Resources::open_level("levels/PauseState.json", true, true);
+    }
+
+  };
 
   void draw() {};
 

@@ -31,15 +31,17 @@ Engine::Level Engine::Level::from_world()
   return level;
 }
 
-void Engine::Level::instantiate_into_world()
+void Engine::Level::instantiate_into_world(bool clear_world)
 {
   //Engine::SceneManager::load_scene("EmptyState"); // TODO: very hacky, just use empty scene for now, need better scene/level management
 
   Log::info("Instantiating level with {} entities.", entities.size());
 
-  Engine::ECS::for_each_entity([](Engine::ECS::Entity entity) {
-    entity.destroy();
-    });
+  if (clear_world) {
+    Engine::ECS::for_each_entity([](Engine::ECS::Entity entity) {
+      entity.destroy();
+      });
+  }
 
   // Process housekeeping to ensure old entities (including tile colliders) are actually destroyed
   // before creating new ones. This prevents tile colliders from previous levels from persisting.

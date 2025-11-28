@@ -743,7 +743,7 @@ void Engine::Resources::cache_level(const std::string& filepath, const Engine::L
   Log::info("Level cached: {}", full_path);
 }
 
-bool Engine::Resources::open_level(const std::string& filepath, bool append_resource_path)
+bool Engine::Resources::open_level(const std::string& filepath, bool append_resource_path, bool additive)
 {
   // Load the level
   Engine::Level level = load_level(filepath, append_resource_path, false);
@@ -754,7 +754,7 @@ bool Engine::Resources::open_level(const std::string& filepath, bool append_reso
   Engine::LevelManager::set_current_level_path(full_path);
 
   // Instantiate the level into the world
-  level.instantiate_into_world();
+  level.instantiate_into_world(!additive);
 
   Log::info("Opened level: {}", filepath);
   return true;
