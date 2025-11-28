@@ -494,4 +494,51 @@ namespace TilemapManager {
     Engine::Systems::Collision2DSystem::set_world_bounds(bounds);
   }
 
+  void move_all_tiles_to_layer(const std::string& source_layer, const std::string& dest_layer) {
+    // Find the source tilemap entity
+    Engine::ECS::Entity source_entity;
+    for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
+      if (entity.is_on_layer(source_layer)) {
+        source_entity = entity;
+        break;
+      }
+    }
+
+    // If no source tilemap exists, nothing to move
+    if (!source_entity.is_valid()) {
+      return;
+    }
+
+    auto* source_map = source_entity.get_component<Components::TileMap>();
+    if (!source_map || source_map->is_empty()) {
+      return;
+    }
+
+    // Get or create the destination tilemap entity
+    auto dest_entity = get_or_create_tilemap_entity(dest_layer);
+    auto* dest_map = dest_entity.get_component<Components::TileMap>();
+    if (!dest_map) {
+      return;
+    }
+
+    // Copy all tiles from source to destination
+    for (const auto& [key, tile] : source_map->tiles) {
+      if (tile.is_valid()) {
+        dest_map->tiles[key] = tile;
+      }
+    }
+
+    // Clear the source tilemap
+    source_map->clear();
+
+    // Rebuild both layers to update collision entities
+    rebuild_tilemap_for_layer(source_layer);
+    rebuild_tilemap_for_layer(dest_layer);
+
+    // Mark level as dirty
+    Engine::ProjectSaveManager::set_dirty(
+      Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path())
+    );
+  }
+
 } // namespace TilemapManager

@@ -101,7 +101,7 @@ void RunGame()
       auto* transform = enemy_entity.get_component<Components::Transform2D>();
 
       if (!attack) {
-        Log::error("Error: Attack component missing from attack hitbox!");
+        Log::error("Error: Attack component missing from attack hitbox, on entity {}", attack_entity.get_id());
         return;
       }
 
@@ -191,7 +191,7 @@ void RunGame()
       auto* attack_transform = attack_entity.get_component<Components::Transform2D>();
 
       if (!attack) {
-        Log::error("Error: Attack component missing from enemy attack hitbox!");
+        Log::error("Error: Attack component missing from enemy attack hitbox, on entity {}", attack_entity.get_id());
         return;
       }
 
