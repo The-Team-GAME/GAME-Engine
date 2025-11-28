@@ -3,7 +3,7 @@
         "components": [
             {
                 "data": {
-                    "drawIndex": 11,
+                    "drawIndex": 9,
                     "tex_coords_list": [
                         [
                             {
@@ -444,22 +444,22 @@
             {
                 "data": {
                     "aabb": {
-                        "half_height": 64.0,
-                        "half_width": 64.0,
+                        "half_height": 45.839599609375,
+                        "half_width": 20.47762680053711,
                         "pos": {
-                            "x": 400.0,
-                            "y": 768.2777709960938
+                            "x": 238.7253875732422,
+                            "y": 786.4381713867188
                         }
                     },
-                    "height": 128.0,
+                    "height": 91.67919921875,
                     "kinetic_friction": 0.800000011920929,
                     "offset": {
-                        "x": 0.0,
-                        "y": 0.0
+                        "x": 0.000049591064453125,
+                        "y": 18.160400390625
                     },
                     "radius": 1.401298464324817e-45,
                     "resolve_collisions": false,
-                    "width": 128.0
+                    "width": 40.95525360107422
                 },
                 "type": "Components::BoxCollider"
             },
@@ -576,7 +576,7 @@
                         0.10000000149011612
                     ],
                     "is_looping": true,
-                    "startTime": 29.535194396972656,
+                    "startTime": 126.44123077392578,
                     "totalDuration": 2.3999998569488525
                 },
                 "type": "Components::Animation"
@@ -584,7 +584,7 @@
             {
                 "data": {
                     "position": {
-                        "x": 400.0,
+                        "x": 238.725341796875,
                         "y": 768.0
                     },
                     "rotation": 0.0,
@@ -594,6 +594,12 @@
                     }
                 },
                 "type": "Components::Transform2D"
+            },
+            {
+                "data": {
+                    "path": "sounds/SFX/Player/Player Footstep.wav"
+                },
+                "type": "Components::Sound"
             },
             {
                 "data": {
@@ -683,10 +689,18 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 29.535194396972656,
+                                        "startTime": 126.44123077392578,
                                         "totalDuration": 2.3999998569488525
                                     },
-                                    "collider_data": null,
+                                    "collider_data": {
+                                        "height": 91.67919921875,
+                                        "offset": {
+                                            "x": 0.000049591064453125,
+                                            "y": 18.160400390625
+                                        },
+                                        "vertices": [],
+                                        "width": 40.95525360107422
+                                    },
                                     "scale": {
                                         "x": 128.0,
                                         "y": 128.0
@@ -1181,10 +1195,18 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 29.535194396972656,
+                                        "startTime": 126.44123077392578,
                                         "totalDuration": 0.8000000715255737
                                     },
-                                    "collider_data": null,
+                                    "collider_data": {
+                                        "height": 94.18408203125,
+                                        "offset": {
+                                            "x": 2.0352554321289063,
+                                            "y": 16.907958984375
+                                        },
+                                        "vertices": [],
+                                        "width": 35.63239288330078
+                                    },
                                     "scale": {
                                         "x": 128.0,
                                         "y": 128.0
@@ -1398,10 +1420,18 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 29.535194396972656,
+                                        "startTime": 126.44123077392578,
                                         "totalDuration": 0.8000000715255737
                                     },
-                                    "collider_data": null,
+                                    "collider_data": {
+                                        "height": 92.305419921875,
+                                        "offset": {
+                                            "x": 5.16642951965332,
+                                            "y": 17.8472900390625
+                                        },
+                                        "vertices": [],
+                                        "width": 33.127376556396484
+                                    },
                                     "scale": {
                                         "x": 128.0,
                                         "y": 128.0
@@ -1618,10 +1648,18 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 29.535194396972656,
+                                        "startTime": 126.44123077392578,
                                         "totalDuration": 0.7199999094009399
                                     },
-                                    "collider_data": null,
+                                    "collider_data": {
+                                        "height": 87.6087646484375,
+                                        "offset": {
+                                            "x": -27.005765914916992,
+                                            "y": 20.19561767578125
+                                        },
+                                        "vertices": [],
+                                        "width": 37.47994613647461
+                                    },
                                     "scale": {
                                         "x": 192.0,
                                         "y": 128.0
@@ -1850,10 +1888,18 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 29.535194396972656,
+                                        "startTime": 126.44123077392578,
                                         "totalDuration": 0.559999942779541
                                     },
-                                    "collider_data": null,
+                                    "collider_data": {
+                                        "height": 92.77508544921875,
+                                        "offset": {
+                                            "x": -28.17992401123047,
+                                            "y": 17.612457275390625
+                                        },
+                                        "vertices": [],
+                                        "width": 34.19230651855469
+                                    },
                                     "scale": {
                                         "x": 192.0,
                                         "y": 128.0
@@ -2160,10 +2206,18 @@
                                             0.05999999865889549
                                         ],
                                         "is_looping": false,
-                                        "startTime": 29.535194396972656,
+                                        "startTime": 126.44123077392578,
                                         "totalDuration": 0.5399999618530273
                                     },
-                                    "collider_data": null,
+                                    "collider_data": {
+                                        "height": 90.4267578125,
+                                        "offset": {
+                                            "x": -31.937210083007813,
+                                            "y": 18.78662109375
+                                        },
+                                        "vertices": [],
+                                        "width": 39.82823944091797
+                                    },
                                     "scale": {
                                         "x": 192.0,
                                         "y": 128.0
@@ -2555,7 +2609,7 @@
                 "data": {
                     "end_alpha": 0.0,
                     "interval": 0.05000000074505806,
-                    "last_spawn_time": 5.363040447235107,
+                    "last_spawn_time": 118.26310729980469,
                     "lifetime": 0.0,
                     "start_alpha": 0.800000011920929
                 },
