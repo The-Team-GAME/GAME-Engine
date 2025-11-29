@@ -28,6 +28,8 @@
 #include "GameStates/BehaviourState.h"
 #include "GameStates/LevelTestState.h"
 #include "GameStates/GameplayState.h"
+#include "GameStates/PauseState.h"
+#include "GameStates/OptionsState.h"
 #include "Systems/HealthSystem.h"
 #include "Systems/EnemyHealthSystem.h"
 #include "Systems/HeartrateSystem.h"
@@ -70,13 +72,15 @@ void RunGame()
   Engine::ECS::register_layer("player_trail"); // Specific layer for player trail effect
   Engine::ECS::register_layer("player"); // Player character layer
   Engine::ECS::register_layer("effect"); // Visual effects like particles
+  Engine::ECS::register_layer("ui_background"); // User interface elements
   Engine::ECS::register_layer("ui"); // User interface elements
+  Engine::ECS::register_layer("ui_foreground"); // User interface elements
 #ifndef GAME_BUILD
   Engine::ECS::register_layer("debug"); // Debug overlays and information
 #endif
 
 
-  
+
   // Start the engine
   Engine::Core::init();
 
@@ -216,6 +220,37 @@ void RunGame()
       }
     });
 
+
+  Engine::FunctionRegistry<void()>::register_function("pause_menu_resume", []() {
+    Log::info("Resuming game from pause menu");
+    Engine::SceneManager::pop_scene();
+    });
+  Engine::FunctionRegistry<void()>::register_function("pause_menu_restart", []() {
+    Log::info("Restarting level from pause menu");
+    Engine::SceneManager::load_scene("GameplayState");
+    });
+  Engine::FunctionRegistry<void()>::register_function("pause_menu_options", []() {
+    Log::info("Opening options from pause menu");
+    Engine::SceneManager::load_scene("OptionsState");
+    });
+  Engine::FunctionRegistry<void()>::register_function("pause_menu_exit", []() {
+    Log::info("Exiting to main menu from pause menu");
+    Engine::SceneManager::load_scene("MainMenuState");
+    });
+  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_menu_button_hover", [](Engine::ECS::Entity entity) {
+    auto* color = entity.get_component<Components::Color>();
+    if (color) {
+      color->a = 1.0f;
+    }
+    });
+
+  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_menu_button_exit_hover", [](Engine::ECS::Entity entity) {
+    auto* color = entity.get_component<Components::Color>();
+    if (color) {
+      color->a = 0.0f;
+    }
+    });
+
   // Register game scenes at startup
   Engine::SceneManager::register_scene<EmptyState>("EmptyState");
   Engine::SceneManager::register_scene<MainMenuState>("MainMenuState");
@@ -229,6 +264,8 @@ void RunGame()
   Engine::SceneManager::register_scene<LevelTestState>("LevelTestState");
   Engine::SceneManager::register_scene<BehaviourState>("BehaviourState");
   Engine::SceneManager::register_scene<GameplayState>("GameplayState");
+  Engine::SceneManager::register_scene<PauseState>("PauseState");
+  Engine::SceneManager::register_scene<OptionsState>("OptionsState");
 
   // Register game systems at startup
   Engine::ECS::add_system<Engine::Systems::HealthSystem>();

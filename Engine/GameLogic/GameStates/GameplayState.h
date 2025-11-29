@@ -45,7 +45,14 @@ public:
 
   void init() {};
 
-  void update() {};
+  void update() {
+
+    // Check if pause button is pressed
+    if (Engine::Input::is_pressed(Engine::KeyCode::Escape)) {
+      Engine::SceneManager::push_scene("PauseState");
+    }
+
+  };
 
   void draw() {};
 

@@ -106,7 +106,7 @@ namespace Engine {
     void cache_level(const std::string& filepath, const Engine::Level& level, bool append_resource_path = true, bool persist = false);
 
     // Open (instantiate) a level into the world
-    bool open_level(const std::string& filepath, bool append_resource_path = true);
+    bool open_level(const std::string& filepath, bool append_resource_path = true, bool additive = false);
 
     // Generic open function - automatically detects resource type and opens it
     // Currently supports: levels
