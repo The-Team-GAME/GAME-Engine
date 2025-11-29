@@ -24,8 +24,8 @@ namespace PlayerStateCallbacks
   // ========================================================================
 
   inline void idle_on_enter(Engine::ECS::Entity& entity) {
-    auto* rigid = entity.get_component<Components::RigidBody>();
-    if (rigid) rigid->velocity.x = 0.f;
+    //auto* rigid = entity.get_component<Components::RigidBody>();
+    //if (rigid) rigid->velocity.x = 0.f;
     Log::info("Player: Entered Idle state");
   }
 
