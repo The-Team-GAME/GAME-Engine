@@ -247,6 +247,14 @@ namespace Engine
           show_fps_overlay = !show_fps_overlay;
         }
 
+        if (Engine::Input::is_pressed(KeyCode::F11))
+        {
+          auto& settings = Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get_mutable();
+          settings.fullscreen = !settings.fullscreen;
+          Engine::WindowManager::set_fullscreen(settings.fullscreen);
+          Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::save();
+        }
+
         if (Engine::Input::is_pressed(KeyCode::P))
         {
           Engine::Time::toggle_paused();
