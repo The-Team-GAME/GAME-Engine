@@ -21,10 +21,12 @@ Global controls:
 Press F1 to toggle ImGui windows on/off
 Press F2 to toggle between normal viewport mode and ImGui viewport mode
 Press F3 to toggle debug layer visibility
+Press F10 to toggle FPS overlay
+Press F11 to toggle fullscreen
 Press P to toggle pause/play
 Press ] to step forward one frame when paused
-Ctrl + Click and drag to enter free camera mode (detach from active camera)
-Ctrl + Scroll to zoom the camera in/out
+MiddleMouse Click and drag to enter free camera mode (detach from active camera)
+Scroll to zoom the camera in/out
 
 Demo states can be accessed under the ImGui window "State Chooser"
 ===========================================================================================================
@@ -261,6 +263,16 @@ Note: If rect doesn't appear, it may be covered by entities in higher layers. In
 
 -----------------------------------------------------------------------------------------------------------
 
+-----------------------------------------------------------------------------------------------------------
+
+Selective Level Save (ImGui window):
+
+- Allows saving a level with only selected components from entities
+- Useful for creating prefabs or partial level data
+- Filter components to include/exclude in the save file
+
+-----------------------------------------------------------------------------------------------------------
+
 Level Manager (ImGui window):
 
 - Complete level saving: saves all entities in current scene to JSON file
@@ -282,6 +294,7 @@ Features:
 - Visual feedback: tiles not on selected layer are darkened
 - Grid overlay shows tile boundaries
 - Erase mode for removing tiles
+- Move all tiles from one layer to another
 
 Usage:
 1. Enable Tilemap Mode
@@ -487,7 +500,7 @@ Vector Library:
 Audio System:
 - Background music support (looping)
 - Sound effects (one-shot playback)
-- Example: ShowcaseState plays background music and 3 different sound effects
+- Example: GameplayState plays background music and 6 different sound effects
 - Powered by FMOD audio library
 
 Font Rendering:
@@ -530,6 +543,21 @@ Collision System:
 - Static and dynamic object support
 
 -----------------------------------------------------------------------------------------------------------
+
+Scene Management:
+- Scene Stack architecture (push/pop scenes)
+- Allows overlay states (e.g., Pause Menu) on top of gameplay
+- Non-destructive scene switching
+
+Build System:
+- WinMain entry point for Game Build
+- Hides console window in release builds for a professional look
+
+UI System Optimization:
+- Direct texture rendering for UI elements (Health Bar)
+- Reduces ECS overhead for static UI components
+
+-----------------------------------------------------------------------------------------------------------
 ===========================================================================================================
 
 
@@ -569,8 +597,7 @@ Drag & drop support                     | Drag files into editor (textures, soun
 Entity hierarchy                        | Entity Editor - toggle Hierarchy View
 Component reflection                    | Entity Editor - Components section
 Timeline/sequencing                     | TimelineState (work in progress)
-Free camera                             | Ctrl+Click drag in any state
-Crash logging                           | Press F11 to test
+Free camera                             | MiddleMouse+Click drag in any state
 Stress test (1000 sprites)              | StressTestState
 
 -----------------------------------------------------------------------------------------------------------

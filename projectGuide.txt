@@ -1,4 +1,8 @@
-Project builds in x64 Release and x64 Debug in Visual Studio
+Project builds in x64 Debug, x64 Release, x64 Game in Visual Studio
 No additional configuration required to build the project
 
-Press F1 to turn of the ImGui windows
+Press F1 to toggle the ImGui windows visibility
+Press F2 to toggle viewport mode
+Press F3 to toggle Debug visualization
+Press F10 to toggle FPS overlay
+Press F11 to toggle fullscreen
