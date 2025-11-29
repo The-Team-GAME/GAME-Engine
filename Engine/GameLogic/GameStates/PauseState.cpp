@@ -41,20 +41,19 @@ void PauseState::load()
   float cam_x = camera.position.x + 800.0f;
   float cam_y = camera.position.y + 450.0f;
 
-  // Find the Level entity
+  // Find ALL Level entities and locate the Pause level specifically
   auto level_entities = Engine::ECS::get_entities_with<Components::Level>();
-  if (!level_entities.empty()) {
-    Engine::ECS::Entity level_entity = level_entities[0];
-
-    // Verify this is the Pause level
+  
+  for (auto& level_entity : level_entities) {
+    // Check if this is the Pause level
     auto* level_comp = level_entity.get_component<Components::Level>();
     if (level_comp && level_comp->level_path == "levels/Pause.json") {
-      // Move all entities that are children of the Level component to the camera position
+      // Move all entities that are children of the Pause Level to the camera position
       Engine::ECS::for_each_entity([&](Engine::ECS::Entity entity) {
         if (entity.has_component<Components::Parent>()) {
           auto* parent_comp = entity.get_component<Components::Parent>();
           if (parent_comp->parent_id == level_entity.get_id()) {
-            // This entity is a child of the Level, move it to camera position
+            // This entity is a child of the Pause Level, move it to camera position
             if (entity.has_component<Components::Transform2D>()) {
               auto* transform = entity.get_component<Components::Transform2D>();
               transform->position.x = cam_x;
@@ -62,7 +61,8 @@ void PauseState::load()
             }
           }
         }
-        });
+      });
+      break; // Found and processed the Pause level, no need to continue
     }
   }
 
