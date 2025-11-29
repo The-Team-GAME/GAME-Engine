@@ -190,8 +190,8 @@ void RunGame()
       auto* attack = attack_entity.get_component<Components::Attack>();
       auto* heartrate = player_entity.get_component<Components::Heartrate>();
       auto* rigid = player_entity.get_component<Components::RigidBody>();
-      auto* player_transform = player_entity.get_component<Components::Transform2D>();
-      auto* attack_transform = attack_entity.get_component<Components::Transform2D>();
+      // auto* player_transform = player_entity.get_component<Components::Transform2D>();
+      // auto* attack_transform = attack_entity.get_component<Components::Transform2D>();
 
       if (!attack) {
         Log::error("Error: Attack component missing from enemy attack hitbox, on entity {}", attack_entity.get_id());

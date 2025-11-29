@@ -29,6 +29,7 @@ void main_menu_start() {
 }
 
 public:
+  Engine::Audio::Sound bgm;
   void load() { 
     Engine::FunctionRegistry<void()>::register_function("start_game", []() {
       Engine::SceneManager::load_scene("GameplayState");
@@ -40,6 +41,9 @@ public:
       Engine::Core::stop();
       });
     Engine::Resources::open_level("levels/MainMenu.json");
+
+    bgm = Engine::Resources::load_sound("sounds/BGM/Main Menu/Ricoche_LO-fi_Cut-Scene_Loop_120bpm.wav");
+    Engine::Audio::play_sound(bgm, 0.3f, true); // TODO: get from settings
   };
 
   void init() {};
@@ -52,5 +56,6 @@ public:
   void free() {};
 
   void unload() {
+    Engine::Audio::stop_all_sounds();
   };
 };
