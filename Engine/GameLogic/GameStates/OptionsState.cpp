@@ -68,6 +68,11 @@ void OptionsState::init()
 
 void OptionsState::update()
 {
+  // Check Esc key
+  if (Engine::Input::is_pressed(Engine::KeyCode::Escape))
+  {
+    Engine::SceneManager::pop_scene();
+  }
 }
 
 void OptionsState::draw()
@@ -80,4 +85,8 @@ void OptionsState::free()
 
 void OptionsState::unload()
 {
+  // unload all entities
+  Engine::ECS::destroy_entity(backsky_entity);
+  Engine::ECS::destroy_entity(carriage_entity);
+  Engine::ECS::destroy_entity(options_base_entity);
 }

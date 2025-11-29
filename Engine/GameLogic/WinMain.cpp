@@ -231,7 +231,7 @@ void RunGame()
     });
   Engine::FunctionRegistry<void()>::register_function("pause_menu_options", []() {
     Log::info("Opening options from pause menu");
-    Engine::SceneManager::load_scene("OptionsState");
+    // Engine::SceneManager::push_scene("OptionsState");
     });
   Engine::FunctionRegistry<void()>::register_function("pause_menu_exit", []() {
     Log::info("Exiting to main menu from pause menu");

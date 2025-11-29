@@ -35,7 +35,7 @@ public:
       Engine::SceneManager::load_scene("GameplayState");
       });
     Engine::FunctionRegistry<void()>::register_function("options_menu", []() {
-      Engine::SceneManager::load_scene("OptionsState");
+      // Engine::SceneManager::push_scene("OptionsState");
       });
     Engine::FunctionRegistry<void()>::register_function("exit_game", []() {
       Engine::Core::stop();
