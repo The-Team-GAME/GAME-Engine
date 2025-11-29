@@ -167,7 +167,7 @@ namespace Engine
 
         return true; // Successfully called Lua function
       }
-      catch (const sol::error& e) {
+      catch ([[maybe_unused]] const sol::error& e) {
         //std::cerr << "[Lua Error] " << e.what() << std::endl;
         return false;
       }
