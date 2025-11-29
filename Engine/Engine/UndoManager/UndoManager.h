@@ -1,3 +1,16 @@
+//-----------------------------------------------------------------------------------
+// file:    UndoManager.h
+// project: Monkey Stole My GPA
+//
+// author:  How Hong Chin Ryan (100%)
+//          Primary author
+//
+// email:   hongchinryan.how@digipen.edu
+//
+// brief:   This file defines the UndoManager and Action struct, implementing a command pattern-based undo/redo system with history management.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 
 #pragma once
 #include <functional>

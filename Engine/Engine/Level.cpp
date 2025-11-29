@@ -1,3 +1,16 @@
+//-----------------------------------------------------------------------------------
+// file:    Level.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements the Level class, which handles level instantiation from the world, clearing the world, and managing level paths.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "Level.h"
 #include "SceneManager.h"
 #include "Components/Components.h"

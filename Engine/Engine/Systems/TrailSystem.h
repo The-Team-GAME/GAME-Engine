@@ -1,3 +1,16 @@
+//-----------------------------------------------------------------------------------
+// file:    TrailSystem.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements the TrailSystem and FadeOutSystem, which manage the spawning and updating of trail effects and the fading of entities over time.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 #include "../ECS/ECS.h"
 #include "../Components/EffectComponents.h"

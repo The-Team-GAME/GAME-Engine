@@ -1,3 +1,16 @@
+//-----------------------------------------------------------------------------------
+// file:    Level.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines the Level struct and LevelManager namespace, providing functionality for serializing and deserializing game levels, including entity and prefab management.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include <string>

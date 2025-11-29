@@ -1,3 +1,16 @@
+//-----------------------------------------------------------------------------------
+// file:    EffectComponents.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines component structs for visual effects, specifically Trail and FadeOut, used for rendering trails and fading entities.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 #include "../ECS/Macros.h"
 #include "../Time.h"

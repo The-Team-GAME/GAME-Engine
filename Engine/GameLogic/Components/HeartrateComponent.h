@@ -1,3 +1,16 @@
+//-----------------------------------------------------------------------------------
+// file:    HeartrateComponent.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines the Heartrate component, which tracks the player's heart rate, manages heart rate states (Low to Dead), and defines visual effects (tint, distortion) associated with each state.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "../../Engine/MonkeyEngine.h"
