@@ -33,19 +33,41 @@ namespace {
 
 void PauseState::load()
 {
-Engine::Resources::open_level("levels/Pause.json");
+  Engine::Resources::open_level("levels/Pause.json", true, true);
 
+  
+  // Get current camera position to center the UI
+  auto& camera = Engine::Systems::CameraSystem::get_camera();
+  float cam_x = camera.position.x + 800.0f;
+  float cam_y = camera.position.y + 450.0f;
+  
+  // Find the Level entity
+  auto level_entities = Engine::ECS::get_entities_with<Components::Level>();
+  if (!level_entities.empty()) {
+    Engine::ECS::Entity level_entity = level_entities[0];
+    
+    // Move all entities that are children of the Level component to the camera position
+    Engine::ECS::for_each_entity([&](Engine::ECS::Entity entity) {
+      if (entity.has_component<Components::Parent>()) {
+        auto* parent_comp = entity.get_component<Components::Parent>();
+        if (parent_comp->parent_id == level_entity.get_id()) {
+          // This entity is a child of the Level, move it to camera position
+          if (entity.has_component<Components::Transform2D>()) {
+            auto* transform = entity.get_component<Components::Transform2D>();
+            transform->position.x = cam_x;
+            transform->position.y = cam_y;
+          }
+        }
+      }
+    });
+  }
+  
   // nothing_button_hovered = Engine::Resources::load_texture("images/UI/In-Game Pause/States/NothingSelectedPausedMenu.png");
   // resume_button_hovered = Engine::Resources::load_texture("images/UI/In-Game Pause/States/ResumeButton.png");
   // restart_button_hovered = Engine::Resources::load_texture("images/UI/In-Game Pause/States/RestartButton.png");
   // options_button_hovered = Engine::Resources::load_texture("images/UI/In-Game Pause/States/OptionsButtons.png");
   // exit_button_hovered = Engine::Resources::load_texture("images/UI/In-Game Pause/States/ExitButton.png");
-
-  // // Get current camera position to center the UI
-  // auto& camera = Engine::Systems::CameraSystem::get_camera();
-  // float cam_x = camera.position.x + 800.0f;
-  // float cam_y = camera.position.y + 450.0f;
-
+  
   // background_entity = Engine::ECS::create_entity()
   //   .add_component<Components::Transform2D>(
   //     cam_x, cam_y,
