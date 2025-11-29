@@ -50,7 +50,7 @@ namespace PlayerStateCallbacks
     }
 
     // Check for attack input
-    if (Engine::Input::is_pressed(Engine::KeyCode::F))
+    if (Engine::Input::is_pressed(Engine::KeyCode::J))
     {
       state_machine->change_state("Attack1");
     }
@@ -102,7 +102,7 @@ namespace PlayerStateCallbacks
     }
 
     // Can attack while moving
-    if (Engine::Input::is_pressed(Engine::KeyCode::F))
+    if (Engine::Input::is_pressed(Engine::KeyCode::J))
     {
       state_machine->change_state("Attack1");
     }
@@ -166,7 +166,7 @@ namespace PlayerStateCallbacks
     }
 
     // Can attack while jumping
-    if (Engine::Input::is_pressed(Engine::KeyCode::F))
+    if (Engine::Input::is_pressed(Engine::KeyCode::J))
     {
       state_machine->change_state("Attack1");
     }
@@ -241,7 +241,7 @@ namespace PlayerStateCallbacks
     if (!animation) return;
 
     // Check if player pressed attack again during this combo window
-    if (Engine::Input::is_pressed(Engine::KeyCode::F) && !animation->has_ended()) {
+    if (Engine::Input::is_pressed(Engine::KeyCode::J) && !animation->has_ended()) {
       // Queue up next attack
       if (animation->get_current_frame_index() >= 3) { // Allow combo after frame 3
         state_machine->change_state("Attack2");
@@ -331,7 +331,7 @@ namespace PlayerStateCallbacks
     if (!animation) return;
 
     // Check if player pressed attack again during this combo window
-    if (Engine::Input::is_pressed(Engine::KeyCode::F) && !animation->has_ended()) {
+    if (Engine::Input::is_pressed(Engine::KeyCode::J) && !animation->has_ended()) {
       // Allow combo after frame 1 of this attack
       if (animation->get_current_frame_index() >= 1) {
         state_machine->change_state("Attack3");
