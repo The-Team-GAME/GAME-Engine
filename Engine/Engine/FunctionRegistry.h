@@ -21,10 +21,87 @@
 #include <string>
 #include <typeindex>
 #include <any>
-#include <iostream>
+#include "Logger.h"
 #include <vector>
 
 namespace Engine {
+
+  // Forward declaration
+  template<typename FuncSignature>
+  struct FunctionRegistry;
+
+  // ============================================================================
+  // Serializable Function Wrapper
+  // ============================================================================
+
+  /// Type-safe wrapper for serializable function names
+  /// Stores just the function name as a string for serialization
+  struct SerializableFunction {
+    std::string name;
+
+    SerializableFunction() = default;
+
+    SerializableFunction(const std::string& function_name)
+      : name(function_name)
+    {
+    }
+
+    SerializableFunction(const char* function_name)
+      : name(function_name)
+    {
+    }
+
+    // Implicit conversion to string for backwards compatibility
+    operator const std::string& () const {
+      return name;
+    }
+
+    // Assignment operators
+    SerializableFunction& operator=(const std::string& function_name) {
+      name = function_name;
+      return *this;
+    }
+
+    SerializableFunction& operator=(const char* function_name) {
+      name = function_name;
+      return *this;
+    }
+
+    // Comparison operators
+    bool operator==(const SerializableFunction& other) const {
+      return name == other.name;
+    }
+
+    bool operator==(const std::string& other) const {
+      return name == other;
+    }
+
+    bool operator!=(const SerializableFunction& other) const {
+      return name != other.name;
+    }
+
+    bool operator!=(const std::string& other) const {
+      return name != other;
+    }
+
+    // Check if function name is set
+    bool empty() const {
+      return name.empty();
+    }
+
+    // Clear the function name
+    void clear() {
+      name.clear();
+    }
+
+    // Get function with explicit signature (implemented after FunctionRegistry)
+    template<typename Signature>
+    std::function<Signature> get() const;
+
+    // Check if function exists with explicit signature (implemented after FunctionRegistry)
+    template<typename Signature>
+    bool exists() const;
+  };
 
   // ============================================================================
   // Generic Function Registry
@@ -46,7 +123,7 @@ namespace Engine {
     static void register_function(const std::string& name, FunctionType func) {
       auto& functions = get_functions();
       if (functions.find(name) != functions.end()) {
-        std::cout << "FunctionRegistry: Overwriting existing function '" << name << "'" << std::endl;
+        Log::warning("FunctionRegistry: Overwriting existing function '{}'", name);
       }
       functions[name] = func;
     }
@@ -92,7 +169,23 @@ namespace Engine {
       auto& functions = get_functions();
       return functions.size();
     }
-  };  // ============================================================================
+  };
+
+  // ============================================================================
+  // SerializableFunction Method Implementations
+  // ============================================================================
+
+  template<typename Signature>
+  inline std::function<Signature> SerializableFunction::get() const {
+    return FunctionRegistry<Signature>::get_function(name);
+  }
+
+  template<typename Signature>
+  inline bool SerializableFunction::exists() const {
+    return FunctionRegistry<Signature>::has_function(name);
+  }
+
+  // ============================================================================
   // Multi-Signature Function Registry (Advanced)
   // ============================================================================
 
@@ -110,7 +203,7 @@ namespace Engine {
     void register_function(const std::string& name, std::function<FuncSignature> func) {
       auto key = make_key<FuncSignature>(name);
       if (functions_.find(key) != functions_.end()) {
-        std::cout << "MultiFunctionRegistry: Overwriting existing function '" << name << "'" << std::endl;
+        Log::warning("MultiFunctionRegistry: Overwriting existing function '{}'", name);
       }
       functions_[key] = std::make_any<std::function<FuncSignature>>(func);
     }
@@ -128,7 +221,7 @@ namespace Engine {
         return std::any_cast<std::function<FuncSignature>>(it->second);
       }
       catch (const std::bad_any_cast&) {
-        std::cerr << "MultiFunctionRegistry: Type mismatch for function '" << name << "'" << std::endl;
+        Log::error("MultiFunctionRegistry: Type mismatch for function '{}'", name);
         return std::function<FuncSignature>{};
       }
     }
@@ -194,3 +287,6 @@ namespace Engine {
     }
 
 } // namespace Engine
+
+
+REFLECT_FIELDS(Engine::SerializableFunction, name)

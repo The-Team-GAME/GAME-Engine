@@ -66,7 +66,7 @@ namespace Engine {
       auto json_str = Engine::FileIO::read_string_from_file(filepath);
 
       if (!json_str.has_value()) {
-        Log::warning("Failed to read level file: " + filepath);
+        Log::warning("Failed to read level file: {}", filepath);
         return Engine::Level();
       }
 

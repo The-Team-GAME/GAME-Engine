@@ -22,6 +22,7 @@
 
 #pragma once
 #include "../TypeDef.h"
+#include "../Logger.h"
 #include <sol/sol.hpp>
 #include <string>
 #include <unordered_map>
@@ -148,7 +149,7 @@ namespace Engine
     void register_function(const std::string& name, F&& func) {
       sol::state& lua = get_state();
       if (!lua.lua_state()) {
-        std::cerr << "[LuaManager] Lua not initialized. Call init() first.\n";
+        Log::error("[LuaManager] Lua not initialized. Call init() first.");
         return;
       }
       lua.set_function(name, std::forward<F>(func));
@@ -164,7 +165,7 @@ namespace Engine
     void set_global(const std::string& name, T&& value) {
       sol::state& lua = get_state();
       if (!lua.lua_state()) {
-        std::cerr << "[LuaManager] Lua not initialized. Call init() first.\n";
+        Log::error("[LuaManager] Lua not initialized. Call init() first.");
         return;
       }
       lua[name] = std::forward<T>(value);
@@ -181,7 +182,7 @@ namespace Engine
     T get_global(const std::string& name, T&& default_value) {
       sol::state& lua = get_state();
       if (!lua.lua_state()) {
-        std::cerr << "[LuaManager] Lua not initialized. Call init() first.\n";
+        Log::error("[LuaManager] Lua not initialized. Call init() first.");
         return default_value;
       }
       sol::object obj = lua[name];

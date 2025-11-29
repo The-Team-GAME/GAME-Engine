@@ -1,12 +1,7 @@
 {
     "data": {
-        "uuid": "3f9e0175-802a-40b4b-b43d-339577c455f9",
-        "layers": [
-            "default"
-        ],
         "components": [
             {
-                "type": "Components::Transform2D",
                 "data": {
                     "position": {
                         "x": 1200.0,
@@ -17,7 +12,8 @@
                         "x": 60.0,
                         "y": 36.0
                     }
-                }
+                },
+                "type": "Components::Transform2D"
             },
             {
                 "data": {
@@ -26,45 +22,46 @@
                 "type": "Components::Texture"
             },
             {
-                "type": "Components::Color",
                 "data": {
-                    "r": 1.0,
+                    "a": 1.0,
                     "b": 1.0,
                     "g": 1.0,
-                    "a": 1.0
-                }
+                    "r": 1.0
+                },
+                "type": "Components::Color"
             },
             {
                 "data": {
-                    "terminal_velocity": 3.4028234663852886e38,
-                    "mass": 1.0,
-                    "is_static": false,
-                    "force": {
-                        "x": 0.0,
-                        "y": 0.0
-                    },
                     "acceleration": {
                         "x": 0.0,
                         "y": 0.0
                     },
-                    "friction": 0.9900000095367432,
-                    "gravity_acc": {
+                    "angular_velocity": 45.0,
+                    "force": {
                         "x": 0.0,
                         "y": 0.0
                     },
+                    "friction": 0.9900000095367432,
+                    "is_jumping": false,
+                    "is_static": false,
+                    "mass": 1.0,
+                    "on_ground": false,
+                    "rotation": 0.0,
+                    "rotation_terminal_velocity": 360.0,
+                    "terminal_velocity": 3.4028234663852886e38,
                     "velocity": {
                         "x": 0.0,
                         "y": 0.0
-                    },
-                    "on_ground": false,
-                    "is_jumping": false,
-                    "rotation": 0.0,
-                    "rotation_terminal_velocity": 360.0,
-                    "angular_velocity": 45.0
+                    }
                 },
                 "type": "Components::RigidBody"
             }
-        ]
+        ],
+        "filepath": "",
+        "layers": [
+            "default"
+        ],
+        "uuid": "054376c3-76b1-40c0d-9d32-33ec9360d70c"
     },
     "dataType": "Prefab"
 }

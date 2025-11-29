@@ -13,7 +13,7 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-#include <imgui.h>
+#include "../Precompiled.h"
 #include "PrefabEditorPanel.h"
 #include "widgets/ReflectionFieldWidgets.h"
 #include "../UndoManager/UndoManager.h"
@@ -22,9 +22,11 @@
 #include "../Resources.h"
 #include "../ProjectSaveManager.h"
 #include "../InputManager.h"
+#include <map>
 
 void PrefabEditorPanelHelpers::render_component_tree(const std::string& component_name, Engine::ECS::Prefab& prefab, Engine::ECS::IComponentArray* array, const std::string& prefab_path)
 {
+  // Render component tree node directly (namespace grouping handled by caller)
   if (ImGui::TreeNode(component_name.c_str())) {
     // Track the value before any modifications
     static std::unordered_map<std::string, ReflectionLibrary::GenericValue> component_edit_start_values;
@@ -39,7 +41,18 @@ void PrefabEditorPanelHelpers::render_component_tree(const std::string& componen
     // Get the type name from the component array for specialized rendering
     std::string type_hint = array->get_type_name();
 
-    ImGuiWidgets::render_field(component_name, type_hint, component_data, modified);
+    // Try specialized rendering first
+    bool handled_by_specialization = ImGuiWidgets::render_specialized_field(
+      component_name, type_hint, component_data, modified, Engine::ECS::Entity(Engine::ECS::INVALID_ENTITY), &prefab, prefab_path
+    );
+
+    // If not specialized, render fields directly (without creating another tree node)
+    if (!handled_by_specialization && component_data.isObject()) {
+      auto& fields = component_data.getObject();
+      for (auto& [field_name, field_value] : fields) {
+        ImGuiWidgets::render_field(field_name, field_value.type_hint, field_value, modified, Engine::ECS::Entity(Engine::ECS::INVALID_ENTITY), &prefab, prefab_path);
+      }
+    }
 
     // Check if user is currently editing (any widget is active in this component)
     bool is_any_item_active = ImGui::IsAnyItemActive();
@@ -139,11 +152,11 @@ Engine::ECS::Prefab PrefabEditorPanelHelpers::get_prefab_from_resources(const st
       selected_prefab = Engine::ECS::Prefab(prefab_ptr);
     }
     else {
-      Log::error("PrefabEditorPanel: Prefab expired in cache: " + prefab_path);
+      Log::error("PrefabEditorPanel: Prefab expired in cache: {}", prefab_path);
     }
   }
   else {
-    Log::error("PrefabEditorPanel: Failed to find prefab in cache: " + prefab_path);
+    Log::error("PrefabEditorPanel: Failed to find prefab in cache: {}", prefab_path);
   }
 
   return selected_prefab;
@@ -240,7 +253,7 @@ void PrefabEditorPanel()
           // Select the newly created prefab
           selected_prefab_path = relative_path;
 
-          Log::info("Created new prefab: " + relative_path);
+          Log::info("Created new prefab: {}", relative_path);
           ImGui::CloseCurrentPopup();
         }
       }
@@ -333,10 +346,10 @@ void PrefabEditorPanel()
               // Propagate changes to all prefab instances
               Engine::ECS::update_prefab_instances(selected_prefab.get_impl()->get_prefab_id());
 
-              Log::info("Added component '" + component_name + "' to prefab: " + selected_prefab_path);
+              Log::info("Added component '{}' to prefab: {}", component_name, selected_prefab_path);
             }
             else {
-              Log::error("Failed to add component '" + component_name + "' to prefab: " + selected_prefab_path);
+              Log::error("Failed to add component '{}' to prefab: {}", component_name, selected_prefab_path);
             }
           }
         }
@@ -357,15 +370,57 @@ void PrefabEditorPanel()
     {
       Engine::ECS::Prefab selected_prefab = PrefabEditorPanelHelpers::get_prefab_from_resources(selected_prefab_path);
 
-      // Automatically iterate through ALL components the prefab has
+      // First, collect all components grouped by namespace
+      std::map<std::string, std::vector<std::pair<std::string, Engine::ECS::IComponentArray*>>> component_groups;
+
       selected_prefab.for_each_component([&](const std::string& type_name, Engine::ECS::IComponentArray* array) {
         if (!array->is_reflectable()) {
           return; // Skip non-reflectable components
         }
 
-        // Render component tree
-        PrefabEditorPanelHelpers::render_component_tree(type_name, selected_prefab, array, selected_prefab_path);
+        // Extract namespace (everything before the last "::")
+        size_t last_separator = type_name.rfind("::");
+        std::string namespace_key = (last_separator != std::string::npos)
+          ? type_name.substr(0, last_separator)
+          : "";
+
+        // Skip "Components" namespace - treat as no namespace
+        if (namespace_key == "Components") {
+          namespace_key = "";
+        }
+
+        component_groups[namespace_key].push_back({ type_name, array });
         });
+
+      // Render components grouped by namespace
+      for (auto& [namespace_name, components] : component_groups) {
+        if (namespace_name.empty()) {
+          // Components without namespace - render directly
+          for (auto& [type_name, array] : components) {
+            // Strip "Components::" prefix if present, otherwise use full name
+            std::string component_display_name = type_name;
+            if (type_name.substr(0, 12) == "Components::") {
+              component_display_name = type_name.substr(12);
+            }
+
+            PrefabEditorPanelHelpers::render_component_tree(component_display_name, selected_prefab, array, selected_prefab_path);
+          }
+        }
+        else {
+          // Components with namespace - render under namespace tree node
+          if (ImGui::TreeNode(namespace_name.c_str())) {
+            for (auto& [type_name, array] : components) {
+              // Extract just the component name (after last "::")
+              size_t last_separator = type_name.rfind("::");
+              std::string component_only_name = type_name.substr(last_separator + 2);
+
+              // Render with a temporary modified name for display
+              PrefabEditorPanelHelpers::render_component_tree(component_only_name, selected_prefab, array, selected_prefab_path);
+            }
+            ImGui::TreePop();
+          }
+        }
+      }
     }
 
     ImGui::Separator();

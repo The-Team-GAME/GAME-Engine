@@ -2,16 +2,19 @@
 // file:    GizmoSystem.h
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (100%)
+// author:  Chew Shee Yang (40%)
 //          Primary author
+// 
+//          Ong Zi Ming (60%)
+//          Secondary author
 //
 // email:   chew.s@digipen.edu
 //
 // brief:   Implementation of the gizmo system for entity selection and manipulation
-//          in the game editor. Provides mouse-based selection of entities, visual
-//          feedback for selected entities, and drag-and-drop repositioning.
-//          Integrates with the input system and event manager for seamless
-//          editor interaction.
+//          in the game editor. Handles mouse picking for sprites and text, visual
+//          feedback (outlines, handles, arrows, rotation ring), and drag
+//          behaviour for moving, rotating and scaling entities. Integrates
+//          with the input, rendering and event systems for undo/redo support.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
@@ -25,7 +28,7 @@
 #include "../Events/EngineEvents.h"
 #include "../GUI/ViewportPanel.h"
 #include "../ImGuiManager.h"
-#include <imgui.h>
+#include "Precompiled.h"
 
 namespace Engine
 {
@@ -90,7 +93,7 @@ namespace Engine
           (mouse.y >= top) && (mouse.y <= bottom);
       }
 
-      void update_entity(Engine::ECS::Entity& entity) override {}
+      //void update_entity(Engine::ECS::Entity& entity) override {}
     };
 
     // System to select text entities when clicked
@@ -158,7 +161,7 @@ namespace Engine
           (mouse.y >= top) && (mouse.y <= bottom);
       }
 
-      void update_entity(Engine::ECS::Entity& entity) override {}
+      //void update_entity(Engine::ECS::Entity& entity) override {}
     };
 
     // System to handle dragging and drawing selected entities

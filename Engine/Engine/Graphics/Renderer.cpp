@@ -68,6 +68,7 @@ namespace Engine {
       f32 distortion_intensity = 0.0f;
       f32 distortion_speed = 1.0f;
       f32 distortion_mesh_intensity = 0.0f;
+      bool is_ui_batch = false;
 
       void reset() {
         vertices.clear();
@@ -77,6 +78,7 @@ namespace Engine {
         distortion_intensity = 0.0f;
         distortion_speed = 1.0f;
         distortion_mesh_intensity = 0.0f;
+        is_ui_batch = false;
       }
     };
 
@@ -136,7 +138,13 @@ namespace Engine {
       active_shader->set_int("u_texture", 0);
 
       // Set view and projection matrices
-      active_shader->set_mat4("u_view", get_view_matrix());
+      // Use identity matrix for UI batches to avoid camera transformation
+      if (batch_state.is_ui_batch) {
+        active_shader->set_mat4("u_view", glm::mat4(1.0f));
+      }
+      else {
+        active_shader->set_mat4("u_view", get_view_matrix());
+      }
       active_shader->set_mat4("u_projection", get_projection_matrix());
 
       // If using distortion shader, set distortion uniforms
@@ -175,6 +183,11 @@ namespace Engine {
 
     // Add a quad to the batch
     void batch_quad(GLuint texture_id, const Vertex vertices[4], Shader* use_shader = nullptr, f32 intensity = 0.0f, f32 speed = 1.0f, f32 mesh_intensity = 0.0f) {
+      // Flush if switching from UI to world rendering
+      if (batch_state.is_ui_batch && batch_state.quad_count > 0) {
+        flush_batch();
+      }
+
       // Check if we need to flush due to texture or shader change
       if ((batch_state.current_texture_id != 0 && batch_state.current_texture_id != texture_id) ||
         (batch_state.current_shader != use_shader)) {
@@ -185,6 +198,9 @@ namespace Engine {
       if (batch_state.quad_count >= MAX_QUAD_COUNT) {
         flush_batch();
       }
+
+      // Mark this batch as world rendering (not UI)
+      batch_state.is_ui_batch = false;
 
       // Set current texture and shader
       batch_state.current_texture_id = texture_id;
@@ -205,7 +221,7 @@ namespace Engine {
     void draw_quad(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size,
       f32 rotation, const Math::Vec4D& color, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& flip = Math::Vec2D(1.0f, 1.0f)) {
       if (!texture || texture->id == 0) {
-        Log::warning("Attempted to draw invalid texture: " + texture->path);
+        Log::warning("Attempted to draw invalid texture: {}", texture->path);
         return;
       }
 
@@ -296,7 +312,7 @@ namespace Engine {
     void draw_ui_quad(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size,
       f32 rotation, const Math::Vec4D& color, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& flip = Math::Vec2D(1.0f, 1.0f)) {
       if (!texture || texture->id == 0) {
-        Log::warning("Attempted to draw invalid texture: " + texture->path);
+        Log::warning("Attempted to draw invalid texture: {}", texture->path);
         return;
       }
 
@@ -305,10 +321,18 @@ namespace Engine {
         return;
       }
 
+      // Flush current batch if switching between UI and world rendering
+      if (!batch_state.is_ui_batch && batch_state.quad_count > 0) {
+        flush_batch();
+      }
+
       // Flush current batch if texture changed
       if (batch_state.current_texture_id != 0 && batch_state.current_texture_id != texture->id) {
         flush_batch();
       }
+
+      // Mark this batch as UI
+      batch_state.is_ui_batch = true;
 
       // Check if we need to flush due to batch size
       if (batch_state.quad_count >= MAX_QUAD_COUNT) {
@@ -373,10 +397,18 @@ namespace Engine {
         return;
       }
 
+      // Flush current batch if switching between UI and world rendering
+      if (!batch_state.is_ui_batch && batch_state.quad_count > 0) {
+        flush_batch();
+      }
+
       // Flush current batch if texture changed
       if (batch_state.current_texture_id != 0 && batch_state.current_texture_id != atlas_texture.id) {
         flush_batch();
       }
+
+      // Mark this batch as UI
+      batch_state.is_ui_batch = true;
 
       // Check if we need to flush due to batch size
       if (batch_state.quad_count >= MAX_QUAD_COUNT) {
@@ -512,8 +544,8 @@ namespace Engine {
 
       unit_rect = texture_data;
 
-      Log::info("Renderer initialized with batching (max " + std::to_string(MAX_QUAD_COUNT) + " quads per batch)");
-      Log::info("Virtual resolution: " + std::to_string((int)virtual_width) + "x" + std::to_string((int)virtual_height));
+      Log::info("Renderer initialized with batching (max {} quads per batch)", MAX_QUAD_COUNT);
+      Log::info("Virtual resolution: {}x{}", (int)virtual_width, (int)virtual_height);
       return true;
     }
 
@@ -547,8 +579,7 @@ namespace Engine {
     void set_virtual_resolution(f32 width, f32 height) {
       virtual_width = width;
       virtual_height = height;
-      Log::info("Virtual resolution set to: " +
-        std::to_string((int)width) + "x" + std::to_string((int)height));
+      Log::info("Virtual resolution set to: {}x{}", (int)width, (int)height);
     }
 
     Math::Vec2D get_virtual_resolution() {
@@ -607,6 +638,7 @@ namespace Engine {
 
     Math::Vec2D screen_to_viewport(const Math::Vec2D& screen_pos) {
 
+#ifndef GAME_BUILD
       if (!Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode) {
         // This means that panel viewport mode is disabled, so we can just return the virtual coordinates
         return screen_to_virtual(screen_pos);
@@ -633,6 +665,9 @@ namespace Engine {
       virtual_pos.y = normalized_y * virtual_height;
 
       return virtual_pos;
+#else
+      return screen_to_virtual(screen_pos);
+#endif
     }
 
     Math::Vec2D virtual_to_screen(const Math::Vec2D& virtual_pos) {

@@ -17,42 +17,33 @@
 
 #include "../../Engine/MonkeyEngine.h"
 
+ 
 class MainMenuState : public Engine::Scene
 {
-private:
+void main_menu_quit() {
+  Engine::Core::stop();
+}
+
+void main_menu_start() {
+  Engine::SceneManager::load_scene("GameplayState");
+}
 
 public:
-  void load() {
-    Engine::ECS::create_entity()
-      .add_component<Components::Tag<"MainMenuState">>()
-      .add_component<Components::Transform2D>(800.0f, 450.0f, 0.0f, 1600.0f, 900.0f)
-      .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MAIN MENU.png"))
-      .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
-      .add_to_layer("background");
+  Engine::Audio::Sound bgm;
+  void load() { 
+    Engine::FunctionRegistry<void()>::register_function("start_game", []() {
+      Engine::SceneManager::load_scene("GameplayState");
+      });
+    Engine::FunctionRegistry<void()>::register_function("options_menu", []() {
+      // Engine::SceneManager::push_scene("OptionsState");
+      });
+    Engine::FunctionRegistry<void()>::register_function("exit_game", []() {
+      Engine::Core::stop();
+      });
+    Engine::Resources::open_level("levels/MainMenu.json");
 
-    // Start Button
-    Engine::ECS::create_entity()
-      .add_component<Components::Tag<"MainMenuState">>()
-      .add_component<Components::Transform2D>(625.0f, 700.0f, 0.0f, 192.0f * 1.5f, 64.0f * 1.5f)
-      .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/Button_Start.png"))
-      .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
-      .add_component<Components::Clickable>([]()
-        {
-          Engine::SceneManager::load_scene("LevelTestState");
-        })
-      .add_to_layer("ui");
-
-    // Exit Button
-    Engine::ECS::create_entity()
-      .add_component<Components::Tag<"MainMenuState">>()
-      .add_component<Components::Transform2D>(975.0f, 700.0f, 0.0f, 192.0f * 1.5f, 64.0f * 1.5f)
-      .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/Button_Exit.png"))
-      .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
-      .add_component<Components::Clickable>([]()
-        {
-          Engine::Core::stop();
-        })
-      .add_to_layer("ui");
+    bgm = Engine::Resources::load_sound("sounds/BGM/Main Menu/Ricoche_LO-fi_Cut-Scene_Loop_120bpm.wav");
+    Engine::Audio::play_sound(bgm, 0.3f, true); // TODO: get from settings
   };
 
   void init() {};
@@ -60,12 +51,11 @@ public:
   void update() {};
 
   void draw() {
-    Engine::Graphics::clear_screen({ 0.0f, 0.0f, 0.0f, 1.0f });
   };
 
   void free() {};
 
   void unload() {
-    Engine::ECS::destroy_entities_with<Components::Tag<"MainMenuState">>();
+    Engine::Audio::stop_all_sounds();
   };
 };

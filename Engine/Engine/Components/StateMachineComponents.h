@@ -21,25 +21,60 @@
 #include "../Math/Vector2D.h"
 #include "../FunctionRegistry.h"
 #include "GraphicsComponents.h"
+#include "CollisionComponents.h"
 #include <string>
 #include <unordered_map>
 #include <vector>
 #include <functional>
 #include <optional>
-#include <iostream>
+#include "../Logger.h"
 #include <queue>
+#include "SpatialComponents.h"
+#include "../Resources.h"
+#include "../Audio/AudioPlayer.h"
+#include "../Audio/AudioPlayerInternal.h"
+#include "AudioComponents.h"
 
 namespace Components
 {
   // ============================================================================
+  // State Audio Definition
+  // ============================================================================
+
+  struct StateAudio {
+    Components::Sound sound;
+    f32 volume = 1.0f;
+    bool loop = false;
+    bool stop_on_exit = true;
+  };
+  
+  // ============================================================================
   // State Animation Definition
   // ============================================================================
+
+  struct ColliderData {
+    Components::ColliderType type;
+    f32 width;
+    f32 height;
+    Math::Vec2D offset;
+    std::vector<Math::Vec2D> vertices; // For polygon colliders (local space)
+
+    ColliderData()
+      : type(Components::ColliderType::AABB)
+      , width(0.0f)
+      , height(0.0f)
+      , offset(0.0f, 0.0f)
+      , vertices()
+    {
+    }
+  };
 
   struct StateAnimation {
     Texture texture;
     TextureAtlas texture_atlas;
     Animation animation;
-    std::optional<Math::Vec2D> scale; // Optional scale override for this state, for entities that have different sizes per animation
+    std::optional<Math::Vec2D> scale; // Optional scale override for this state
+    std::optional<ColliderData> collider_data; // Optional collider size override
   };
 
   // ============================================================================
@@ -50,12 +85,14 @@ namespace Components
     std::string name;
 
     // Callback names (serializable) - empty string means no callback
-    std::string on_enter_callback_name;
-    std::string on_update_callback_name;
-    std::string on_exit_callback_name;
+    Engine::SerializableFunction on_enter_callback;
+    Engine::SerializableFunction on_update_callback;
+    Engine::SerializableFunction on_exit_callback;
 
     // Optional animation data for this state
     std::optional<StateAnimation> animation;
+    // Optional audio data for this state
+    std::optional<StateAudio> audio;
 
     State() = default;
 
@@ -63,19 +100,21 @@ namespace Components
       const std::string& enter_callback = "",
       const std::string& update_callback = "",
       const std::string& exit_callback = "",
-      std::optional<StateAnimation> state_animation = std::nullopt)
+      std::optional<StateAnimation> state_animation = std::nullopt,
+      std::optional<StateAudio> state_audio = std::nullopt)
       : name(state_name)
-      , on_enter_callback_name(enter_callback)
-      , on_update_callback_name(update_callback)
-      , on_exit_callback_name(exit_callback)
+      , on_enter_callback(enter_callback)
+      , on_update_callback(update_callback)
+      , on_exit_callback(exit_callback)
       , animation(state_animation)
+      , audio(state_audio)
     {
     }
 
     // Helper methods to invoke callbacks (looks them up in registry)
     void invoke_on_enter(Engine::ECS::Entity& entity) const {
-      if (!on_enter_callback_name.empty()) {
-        auto callback = Engine::FunctionRegistry<void(Engine::ECS::Entity&)>::get_function(on_enter_callback_name);
+      if (!on_enter_callback.empty()) {
+        auto callback = on_enter_callback.get<void(Engine::ECS::Entity&)>();
         if (callback) {
           callback(entity);
         }
@@ -83,8 +122,8 @@ namespace Components
     }
 
     void invoke_on_update(Engine::ECS::Entity& entity) const {
-      if (!on_update_callback_name.empty()) {
-        auto callback = Engine::FunctionRegistry<void(Engine::ECS::Entity&)>::get_function(on_update_callback_name);
+      if (!on_update_callback.empty()) {
+        auto callback = on_update_callback.get<void(Engine::ECS::Entity&)>();
         if (callback) {
           callback(entity);
         }
@@ -92,8 +131,8 @@ namespace Components
     }
 
     void invoke_on_exit(Engine::ECS::Entity& entity) const {
-      if (!on_exit_callback_name.empty()) {
-        auto callback = Engine::FunctionRegistry<void(Engine::ECS::Entity&)>::get_function(on_exit_callback_name);
+      if (!on_exit_callback.empty()) {
+        auto callback = on_exit_callback.get<void(Engine::ECS::Entity&)>();
         if (callback) {
           callback(entity);
         }
@@ -112,7 +151,9 @@ namespace Components
   private:
     std::queue<std::string> transition_queue_;  // Queue for deferred transitions
     bool is_first_frame_ = false;     // Track if we just entered current state
+    bool has_started_ = false;        // Track if the state machine has started running
     std::vector<std::string> state_history_; // Track previous states
+    Engine::Audio::ChannelHandle current_audio_channel_ = Engine::Audio::INVALID_CHANNEL; // Track currently playing audio
 
     Engine::ECS::Entity* owner_entity_ = nullptr;  // Reference to owning entity
 
@@ -126,7 +167,7 @@ namespace Components
     /// Add a state to the state machine
     void add_state(const State& state) {
       if (states.find(state.name) != states.end()) {
-        std::cout << "Warning: State '" << state.name << "' already exists in state machine. Overwriting." << std::endl;
+        Log::warning("State '{}' already exists in state machine. Overwriting.", state.name);
       }
       states[state.name] = state;
     }
@@ -134,18 +175,19 @@ namespace Components
     /// Set the initial state (must be called before first update)
     void set_initial_state(const std::string& state_name) {
       if (states.find(state_name) == states.end()) {
-        std::cout << "Error: Cannot set initial state '" << state_name << "' - state does not exist" << std::endl;
+        Log::error("Cannot set initial state '{}' - state does not exist", state_name);
         return;
       }
 
       current_state_name = state_name;
       is_first_frame_ = true;
+      has_started_ = true;
     }
 
     /// Request a state change (deferred until end of current update)
     void change_state(const std::string& new_state) {
       if (states.find(new_state) == states.end()) {
-        std::cout << "Error: Cannot change to state '" << new_state << "' - state does not exist" << std::endl;
+        Log::error("Cannot change to state '{}' - state does not exist", new_state);
         return;
       }
 
@@ -158,7 +200,7 @@ namespace Components
     /// Revert to the previous state in history
     void revert_to_previous_state() {
       if (state_history_.empty()) {
-        std::cout << "Warning: No previous state to revert to" << std::endl;
+        Log::warning("No previous state to revert to");
         return;
       }
 
@@ -190,14 +232,14 @@ namespace Components
       }
 
       if (current_state_name.empty()) {
-        std::cout << "Warning: StateMachine has no current state set. Call set_initial_state() first." << std::endl;
+        Log::warning("StateMachine has no current state set. Call set_initial_state() first.");
         return;
       }
 
-      // Auto-initialize after deserialization: if we have a current state but haven't set the first frame flag,
-      // it means we were just deserialized and need to initialize
-      if (!is_first_frame_ && transition_queue_.empty() && state_history_.empty()) {
-        is_first_frame_ = true; // Trigger on_enter callback on the next check
+      // Auto-initialize after deserialization
+      if (!has_started_) {
+        is_first_frame_ = true;
+        has_started_ = true;
       }
 
       // Call on_enter if this is the first frame after entering this state
@@ -260,7 +302,7 @@ namespace Components
       }
 
       if (!owner_entity_) {
-        std::cout << "Error: Cannot execute state transition - owner entity is null" << std::endl;
+        Log::error("Cannot execute state transition - owner entity is null");
         return;
       }
 
@@ -274,6 +316,19 @@ namespace Components
         if (state_history_.size() > 10) { // Keep last 10 states
           state_history_.erase(state_history_.begin());
         }
+
+        // Handle audio stop
+        if (current_audio_channel_ != Engine::Audio::INVALID_CHANNEL) {
+          bool should_stop = true;
+          if (old_state.audio.has_value()) {
+            should_stop = old_state.audio->stop_on_exit;
+          }
+
+          if (should_stop) {
+            Engine::Audio::stop_channel(current_audio_channel_);
+          }
+          current_audio_channel_ = Engine::Audio::INVALID_CHANNEL;
+        }
       }
 
       // Transition to new state
@@ -284,6 +339,11 @@ namespace Components
       auto& new_state_obj = states[new_state];
       if (new_state_obj.animation.has_value()) {
         apply_state_animation(new_state_obj.animation.value());
+      }
+
+      // Apply state audio if it exists
+      if (new_state_obj.audio.has_value()) {
+        current_audio_channel_ = apply_state_audio(new_state_obj.audio.value());
       }
     }
 
@@ -324,12 +384,45 @@ namespace Components
           transform->scale = anim.scale.value();
         }
       }
+
+      // Apply optional collider override if specified
+      if (anim.collider_data.has_value()) {
+        if (auto* box = owner_entity_->get_component<BoxCollider>()) {
+          box->width = anim.collider_data->width;
+          box->height = anim.collider_data->height;
+          box->offset = anim.collider_data->offset;
+          box->aabb.half_width = box->width / 2.0f;
+          box->aabb.half_height = box->height / 2.0f;
+        }
+      }
+    }
+
+    // Apply the audio data
+    Engine::Audio::ChannelHandle apply_state_audio(const StateAudio& audio) {
+      if (!owner_entity_) return Engine::Audio::INVALID_CHANNEL;
+
+      // Get or add Sound component
+      Sound* sound_comp = owner_entity_->get_component<Sound>();
+      if (!sound_comp) {
+        Log::warning("Sound component not found for entity {}", owner_entity_->get_id());
+        owner_entity_->add_component<Sound>();
+
+        sound_comp = owner_entity_->get_component<Sound>();
+
+      }
+
+      // Update Sound component data
+      sound_comp->sound_handle = audio.sound.sound_handle;
+
+      // Play the sound via the component
+      return sound_comp->play(audio.volume, audio.loop);
     }
   };
 
 } // namespace Components
 
-REFLECT_FIELDS(Components::State, name, on_enter_callback_name, on_update_callback_name, on_exit_callback_name, animation)
-REFLECT_FIELDS(Components::StateAnimation, texture, texture_atlas, animation, scale)
-// Lua-accessible (change_state() called from Lua)
-REGISTER_COMPONENT_LUA(Components::StateMachine, states, current_state_name)
+REFLECT_FIELDS(Components::ColliderData, width, height, offset, vertices)
+REFLECT_FIELDS(Components::State, name, on_enter_callback, on_update_callback, on_exit_callback, animation, audio)
+REFLECT_FIELDS(Components::StateAnimation, texture, texture_atlas, animation, scale, collider_data)
+REFLECT_FIELDS(Components::StateAudio, sound, volume, loop, stop_on_exit)
+REGISTER_COMPONENT(Components::StateMachine, states, current_state_name)

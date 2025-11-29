@@ -1,0 +1,477 @@
+{
+    "data": {
+        "entities": [
+            {
+                "components": [
+                    {
+                        "data": {
+                            "aabb": {
+                                "half_height": 50.0,
+                                "half_width": 300.0,
+                                "pos": {
+                                    "x": 800.0,
+                                    "y": 450.0
+                                }
+                            },
+                            "height": 100.0,
+                            "kinetic_friction": 1.0,
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 800.0,
+                                    "y": 450.0
+                                },
+                                "rotation": 0.0,
+                                "vertices": [
+                                    {
+                                        "x": -527.8477172851563,
+                                        "y": 241.13922119140625
+                                    },
+                                    {
+                                        "x": -531.01220703125,
+                                        "y": 410.759033203125
+                                    },
+                                    {
+                                        "x": -57.59479522705078,
+                                        "y": 167.08856201171875
+                                    },
+                                    {
+                                        "x": -60.75927734375,
+                                        "y": 67.088623046875
+                                    }
+                                ]
+                            },
+                            "radius": 0.000001564345438964665,
+                            "resolve_collisions": true,
+                            "type": "POLYGON",
+                            "width": 600.0
+                        },
+                        "type": "Components::BoxCollider"
+                    },
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/In-Game Pause/States/ExitButton.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 900.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "exit_hover": {
+                                "name": "pause_menu_button_exit_hover"
+                            },
+                            "on_click": {
+                                "name": "pause_menu_exit"
+                            },
+                            "on_hover": {
+                                "name": "pause_menu_button_hover"
+                            }
+                        },
+                        "type": "Components::Clickable"
+                    }
+                ],
+                "layers": [
+                    "default",
+                    "ui_foreground"
+                ]
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "aabb": {
+                                "half_height": 50.0,
+                                "half_width": 300.0,
+                                "pos": {
+                                    "x": 800.0,
+                                    "y": 450.0
+                                }
+                            },
+                            "height": 100.0,
+                            "kinetic_friction": 1.0,
+                            "offset": {
+                                "x": -224.6833953857422,
+                                "y": 104.43040466308594
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 575.3165893554688,
+                                    "y": 554.430419921875
+                                },
+                                "rotation": 0.0,
+                                "vertices": [
+                                    {
+                                        "x": -300.0,
+                                        "y": -50.0
+                                    },
+                                    {
+                                        "x": -296.83544921875,
+                                        "y": 119.62028503417969
+                                    },
+                                    {
+                                        "x": 167.0888671875,
+                                        "y": -41.77215576171875
+                                    },
+                                    {
+                                        "x": 163.92431640625,
+                                        "y": -148.10125732421875
+                                    }
+                                ]
+                            },
+                            "radius": 0.000001564345438964665,
+                            "resolve_collisions": true,
+                            "type": "POLYGON",
+                            "width": 600.0
+                        },
+                        "type": "Components::BoxCollider"
+                    },
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/In-Game Pause/States/OptionsButtons.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 900.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "exit_hover": {
+                                "name": "pause_menu_button_exit_hover"
+                            },
+                            "on_click": {
+                                "name": "pause_menu_options"
+                            },
+                            "on_hover": {
+                                "name": "pause_menu_button_hover"
+                            }
+                        },
+                        "type": "Components::Clickable"
+                    }
+                ],
+                "layers": [
+                    "default",
+                    "ui_foreground"
+                ]
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "aabb": {
+                                "half_height": 50.0,
+                                "half_width": 300.0,
+                                "pos": {
+                                    "x": 565.8228149414063,
+                                    "y": 370.88604736328125
+                                }
+                            },
+                            "height": 100.0,
+                            "kinetic_friction": 1.0,
+                            "offset": {
+                                "x": -234.1771697998047,
+                                "y": -79.11393737792969
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 565.8228149414063,
+                                    "y": 370.88604736328125
+                                },
+                                "rotation": 0.0,
+                                "vertices": [
+                                    {
+                                        "x": -309.49365234375,
+                                        "y": -46.83544158935547
+                                    },
+                                    {
+                                        "x": -300.0,
+                                        "y": 119.62028503417969
+                                    },
+                                    {
+                                        "x": 176.58250427246094,
+                                        "y": 31.012651443481445
+                                    },
+                                    {
+                                        "x": 173.4178009033203,
+                                        "y": -72.15190887451172
+                                    }
+                                ]
+                            },
+                            "radius": 0.000001564345438964665,
+                            "resolve_collisions": true,
+                            "type": "POLYGON",
+                            "width": 600.0
+                        },
+                        "type": "Components::BoxCollider"
+                    },
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/In-Game Pause/States/RestartButton.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 900.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "exit_hover": {
+                                "name": "pause_menu_button_exit_hover"
+                            },
+                            "on_click": {
+                                "name": "pause_menu_restart"
+                            },
+                            "on_hover": {
+                                "name": "pause_menu_button_hover"
+                            }
+                        },
+                        "type": "Components::Clickable"
+                    }
+                ],
+                "layers": [
+                    "default",
+                    "ui_foreground"
+                ]
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "aabb": {
+                                "half_height": 50.0,
+                                "half_width": 300.0,
+                                "pos": {
+                                    "x": 800.0,
+                                    "y": 450.0
+                                }
+                            },
+                            "height": 100.0,
+                            "kinetic_friction": 1.0,
+                            "offset": {
+                                "x": -224.68338012695313,
+                                "y": -291.1390380859375
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 575.316650390625,
+                                    "y": 158.8609619140625
+                                },
+                                "rotation": 0.0,
+                                "vertices": [
+                                    {
+                                        "x": -306.3291015625,
+                                        "y": -65.82279205322266
+                                    },
+                                    {
+                                        "x": -309.49365234375,
+                                        "y": 148.10125732421875
+                                    },
+                                    {
+                                        "x": 163.92431640625,
+                                        "y": 135.44305419921875
+                                    },
+                                    {
+                                        "x": 163.92431640625,
+                                        "y": 32.278480529785156
+                                    }
+                                ]
+                            },
+                            "radius": 0.000001564345438964665,
+                            "resolve_collisions": true,
+                            "type": "POLYGON",
+                            "width": 600.0
+                        },
+                        "type": "Components::BoxCollider"
+                    },
+                    {
+                        "data": {
+                            "a": 0.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/In-Game Pause/States/ResumeButton.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 900.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "exit_hover": {
+                                "name": "pause_menu_button_exit_hover"
+                            },
+                            "on_click": {
+                                "name": "pause_menu_resume"
+                            },
+                            "on_hover": {
+                                "name": "pause_menu_button_hover"
+                            }
+                        },
+                        "type": "Components::Clickable"
+                    }
+                ],
+                "layers": [
+                    "default",
+                    "ui_foreground"
+                ]
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "a": 1.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/In-Game Pause/States/NothingSelectedPausedMenu.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 900.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    }
+                ],
+                "layers": [
+                    "default",
+                    "ui"
+                ]
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "a": 0.5,
+                            "b": 0.0,
+                            "g": 0.0,
+                            "r": 0.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "path": "UNIT_RECT"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 800.0,
+                                "y": 450.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1600.0,
+                                "y": 900.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    }
+                ],
+                "layers": [
+                    "default",
+                    "ui_background"
+                ]
+            }
+        ]
+    },
+    "dataType": "Level"
+}

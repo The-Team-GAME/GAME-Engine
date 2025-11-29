@@ -70,7 +70,7 @@ Engine::Graphics::TextureData::TextureData(const std::string& path, TextureFilte
   unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 4);
   if (!data)
   {
-    Log::warning("Failed to load texture: " + path);
+    Log::warning("Failed to load texture: {}", path);
     id = 0;
     width = 0;
     height = 0;
@@ -147,7 +147,7 @@ Engine::Graphics::FontData::FontData(const std::string& path, unsigned int size)
   FT_Face face;
   if (FT_New_Face(get_freetype_library(), path.c_str(), 0, &face))
   {
-    Log::error("ERROR::FREETYPE: Failed to load font: " + path);
+    Log::error("ERROR::FREETYPE: Failed to load font: {}", path);
     return;
   }
 
@@ -235,41 +235,7 @@ Engine::Graphics::FontData::FontData(const std::string& path, unsigned int size)
   FT_Done_Face(face);
   glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
-  Log::info("Font atlas created: " + std::to_string(atlas_width) + "x" + std::to_string(atlas_height) + " with " + std::to_string(glyphs.size()) + " glyphs");
+  Log::info("Font atlas created: {}x{} with {} glyphs", atlas_width, atlas_height, glyphs.size());
 }
 
-// AtlasEntry::Reflector implementation
-Engine::Graphics::AtlasEntry::Reflector Engine::Graphics::AtlasEntry::Reflector::reflect(const AtlasEntry& entry)
-{
-  Reflector r;
-  // Save the texture path (either from texture_handle or the stored path)
-  if (entry.texture_handle) {
-    r.texture_path = Engine::Resources::get_relative_path(entry.texture_handle->path);
-  }
-  r.drawIndex = entry.drawIndex;
-  // Convert SubTextures to array format for serialization
-  r.tex_coords_list.reserve(entry.subTextures.size());
-  for (const auto& subTex : entry.subTextures) {
-    r.tex_coords_list.push_back(subTex.tex_coords);
-  }
-  return r;
-}
 
-Engine::Graphics::AtlasEntry Engine::Graphics::AtlasEntry::Reflector::create(const Reflector& r)
-{
-  AtlasEntry entry;
-  // Load the texture from the path
-  entry.texture_path = r.texture_path;
-  if (!r.texture_path.empty()) {
-    entry.texture_handle = Engine::Resources::load_texture(r.texture_path, true);
-  }
-  entry.drawIndex = r.drawIndex;
-  // Convert arrays back to SubTextures
-  entry.subTextures.reserve(r.tex_coords_list.size());
-  for (const auto& coords : r.tex_coords_list) {
-    SubTexture subTex;
-    subTex.tex_coords = coords;
-    entry.subTextures.push_back(subTex);
-  }
-  return entry;
-}

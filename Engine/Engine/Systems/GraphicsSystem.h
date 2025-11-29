@@ -24,6 +24,7 @@
 #include "../FileIO/SettingsManager.h"
 #include "../FileIO/Settings.h"
 #include "../GUI/TilemapPanel.h"
+#include "../Logger.h"
 
 namespace Engine
 {
@@ -94,8 +95,16 @@ namespace Engine
         require_components<Components::TileMap>();
       }
 
+      void update_entity(Engine::ECS::Entity& entity) override {  // Determine the color based on tilemap mode and selected layer
+        auto* color_comp = entity.get_component<Components::Color>();
+        if (!color_comp) {
+          entity.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
+        }
+      }
+
       void draw_entity(const Engine::ECS::Entity& entity) override {
         auto* int_map = entity.get_component<Components::TileMap>();
+        auto* color_comp = entity.get_component<Components::Color>();
 
         // Skip if tilemap is empty
         if (!int_map || int_map->is_empty()) {
@@ -105,8 +114,11 @@ namespace Engine
         // Get the atlas entries from project settings
         const auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get();
 
-        // Determine the color based on tilemap mode and selected layer
-        Math::Vec4D color(1.0f, 1.0f, 1.0f, 1.0f); // Default: white (full brightness)
+        Math::Vec4D color(1.0f, 1.0f, 1.0f, 1.0f);
+        if (color_comp)
+        {
+          color = *color_comp;
+        }
 
         // Check if tilemap mode is enabled AND dimming is enabled
         if (TilemapPanel::is_tilemap_mode_enabled() && TilemapPanel::is_dim_non_selected_layers_enabled()) {
@@ -118,7 +130,9 @@ namespace Engine
 
           if (!on_selected_layer) {
             // Darken tiles on non-selected layers
-            color = Math::Vec4D(0.3f, 0.3f, 0.3f, 1.0f);
+            color.x *= 0.3f;
+            color.y *= 0.3f;
+            color.z *= 0.3f;
           }
         }
 
@@ -205,7 +219,7 @@ namespace Engine
           atlas->drawIndex = animation->frames[current_frame].atlas_index;
         }
         else {
-          std::cout << "Warning: current_frame out of bounds in AnimationUpdateSystem\n";
+          Log::warning("current_frame out of bounds in AnimationUpdateSystem");
           atlas->drawIndex = 0; // Fallback to first frame
         }
       }
@@ -217,18 +231,20 @@ namespace Engine
 
     public:
       CameraSystem() {
+        require_components<Components::Camera, Components::Transform2D>();
       }
 
       void update() override {
-        Engine::ECS::for_each_entity_with<Components::Camera>(
+        Engine::ECS::for_each_entity_with<Components::Camera, Components::Transform2D>(
           [this](Engine::ECS::Entity entity) {
             auto* camera_component = entity.get_component<Components::Camera>();
+            auto* transform = entity.get_component<Components::Transform2D>();
 
             // If this camera is marked as active, use its parameters
             if (camera_component->is_active) {
-              camera.position = camera_component->position;
-              camera.rotation = camera_component->rotation;
-              camera.zoom = camera_component->zoom;
+              camera.position = transform->position;
+              camera.rotation = transform->rotation;
+              camera.zoom = transform->scale.x; // Use x scale for zoom TODO: have x and y zoom
             }
           }
         );

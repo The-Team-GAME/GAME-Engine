@@ -30,12 +30,12 @@ namespace Engine {
 
       if (!file.is_open())
       {
-        Log::info("Settings file not found, creating: " + file_path);
+        Log::info("Settings file not found, creating: {}", file_path);
 
         settings_ = T{};
         if (!save_impl(file_path))
         {
-          Log::warning("Failed to create default settings file: " + file_path);
+          Log::warning("Failed to create default settings file: {}", file_path);
         }
 
         return true;
@@ -55,7 +55,7 @@ namespace Engine {
       // Ensure both loaded_settings and default_settings are objects
       if (!default_settings.isObject())
       {
-        Log::error("Failed to convert default settings to object, are you sure " + std::string(typeid(T).name()) + " is reflectable?");
+        Log::error("Failed to convert default settings to object, are you sure {} is reflectable?", typeid(T).name());
         return false;
       }
 
@@ -65,7 +65,7 @@ namespace Engine {
         settings_ = T{};
         if (!save_impl(file_path))
         {
-          Log::warning("Failed to save default settings to file: " + file_path);
+          Log::warning("Failed to save default settings to file: {}", file_path);
         }
         return true;
       }
@@ -73,11 +73,11 @@ namespace Engine {
       bool has_missing = false;
       for (const auto& [key, default_value] : default_settings.getObject())
       {
-        Log::info("Checking setting key: " + key);
+        Log::info("Checking setting key: {}", key);
         // Check if the key is missing in loaded settings
         if (!loaded_settings.has(key))
         {
-          Log::info("Missing setting '" + key + "' in file. Adding default value.");
+          Log::info("Missing setting '{}' in file. Adding default value.", key);
           loaded_settings.getObject()[key] = default_value;
           has_missing = true;
         }
@@ -87,7 +87,7 @@ namespace Engine {
       {
         if (!save_impl(file_path))
         {
-          Log::warning("Failed to save updated settings to file: " + file_path);
+          Log::warning("Failed to save updated settings to file: {}", file_path);
         }
       }
 
@@ -121,7 +121,7 @@ namespace Engine {
           }
           catch (const std::filesystem::filesystem_error& e)
           {
-            Log::error("Failed to create directory: " + directory + " - " + e.what());
+            Log::error("Failed to create directory: {} - {}", directory, e.what());
             return false;
           }
         }
@@ -131,7 +131,7 @@ namespace Engine {
       std::ofstream file(file_path);
       if (!file.is_open())
       {
-        Log::error("Failed to open settings file for writing: " + file_path);
+        Log::error("Failed to open settings file for writing: {}", file_path);
         return false;
       }
       std::string json_str = ReflectionLibrary::to_json(settings_, true);
