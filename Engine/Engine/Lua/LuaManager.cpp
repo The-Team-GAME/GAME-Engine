@@ -18,6 +18,7 @@
 #include "LuaManager.h"
 #include "GameAPI.h"
 #include "../Logger.h"
+#include "../ECS/Entity.h"
 #include <mutex>
 
 namespace Engine
@@ -142,6 +143,33 @@ namespace Engine
         } catch (const std::exception& e) {
           Log::error("[LuaManager] binding callback error: {}", e.what());
         }
+      }
+    }
+
+    bool try_call_state_function(const std::string& func_name, Engine::ECS::Entity& entity)
+    {
+      if (!lua_state.lua_state()) {
+        return false;
+      }
+
+      try {
+        sol::protected_function func = lua_state[func_name];
+        if (!func.valid()) {
+          return false; // Function doesn't exist in Lua
+        }
+
+        sol::protected_function_result result = func(&entity);
+        if (!result.valid()) {
+          //sol::error err = result;
+          //std::cerr << "[Lua Error in " << func_name << "] " << err.what() << std::endl;
+          return false;
+        }
+
+        return true; // Successfully called Lua function
+      }
+      catch (const sol::error& e) {
+        //std::cerr << "[Lua Error] " << e.what() << std::endl;
+        return false;
       }
     }
   }

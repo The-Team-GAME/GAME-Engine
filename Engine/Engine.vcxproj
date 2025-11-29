@@ -235,6 +235,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="Engine\ImGuiThemes.h" />
     <ClInclude Include="Engine\KeyCodes.h" />
     <ClInclude Include="Engine\Level.h" />
+    <ClInclude Include="Engine\Lua\LuaComponentBindings.h" />
     <ClInclude Include="Engine\ProjectSaveManager.h" />
     <ClInclude Include="Engine\Random.h" />
     <ClInclude Include="Engine\Systems\DebugDrawSystem.h" />
