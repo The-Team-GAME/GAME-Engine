@@ -238,6 +238,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="Engine\Lua\LuaComponentBindings.h" />
     <ClInclude Include="Engine\ProjectSaveManager.h" />
     <ClInclude Include="Engine\Random.h" />
+    <ClInclude Include="Engine\Systems\ChatBoxSystem.h" />
     <ClInclude Include="Engine\Systems\DebugDrawSystem.h" />
     <ClInclude Include="Engine\TIlemapManager.h" />
     <ClInclude Include="Engine\UndoManager\Commands\Commands.h" />
