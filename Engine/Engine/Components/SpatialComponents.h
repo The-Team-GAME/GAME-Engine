@@ -38,4 +38,4 @@ namespace Components
 }
 
 // Lua-accessible (used for position checks in AI)
-REGISTER_COMPONENT_LUA(Components::Transform2D, position, rotation, scale)
+REGISTER_COMPONENT(Components::Transform2D, position, rotation, scale)
