@@ -34,7 +34,7 @@ void register_all_panels()
 {
   ImGuiManager::register_panel("Viewport", ViewportPanel::draw_panel);
   ImGuiManager::register_panel("Performance", PerformanceViewerPanel);
-  ImGuiManager::register_panel("Resource", ResourceManagerPanel);
+  //ImGuiManager::register_panel("Resource", ResourceManagerPanel);
   ImGuiManager::register_panel("Resource Explorer", ResourceExplorerPanel);
   ImGuiManager::register_panel("Entity", EntityEditorPanel);
   ImGuiManager::register_panel("Prefab", PrefabEditorPanel);

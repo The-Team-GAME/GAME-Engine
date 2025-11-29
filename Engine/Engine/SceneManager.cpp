@@ -17,6 +17,8 @@
 #include "SceneManager.h"
 #include "Logger.h"
 #include "Systems/GraphicsSystem.h"
+#include "EventManager/EventManager.h"
+#include "Events/EngineEvents.h"
 
 namespace Engine
 {
@@ -65,6 +67,7 @@ namespace Engine
       auto scene_it = scenes.find(name);
       if (scene_it == scenes.end()) {
         Log::error("Error: Scene '{}' not found!", name);
+        Engine::EventManager::send_event<Engine::Events::ToastEvent>("Error: Scene '" + name + "' not found!", Engine::Events::ToastType::Error);
         return;
       }
 

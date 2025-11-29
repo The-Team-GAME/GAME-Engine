@@ -23,6 +23,8 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include "../EventManager/EventManager.h"
+#include "../Events/EngineEvents.h"
 
 namespace {
   // Current directory path (relative to resource root)
@@ -368,6 +370,7 @@ void ResourceExplorerPanel() {
         if (ImGui::MenuItem("Open")) {
           if (!Engine::Resources::open(entry.path, true)) {
             Log::warning("Cannot open this resource type");
+            Engine::EventManager::send_event<Engine::Events::ToastEvent>("Cannot open this resource type", Engine::Events::ToastType::Warning);
           }
         }
 
