@@ -3,6 +3,37 @@
         "components": [
             {
                 "data": {
+                    "aabb": {
+                        "half_height": 45.839599609375,
+                        "half_width": 20.47762680053711,
+                        "pos": {
+                            "x": 238.7253875732422,
+                            "y": 786.4381713867188
+                        }
+                    },
+                    "height": 91.67919921875,
+                    "kinetic_friction": 0.800000011920929,
+                    "offset": {
+                        "x": 0.000049591064453125,
+                        "y": 18.160400390625
+                    },
+                    "polygon": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "rotation": 0.0,
+                        "vertices": []
+                    },
+                    "radius": 1.401298464324817e-45,
+                    "resolve_collisions": false,
+                    "type": "AABB",
+                    "width": 40.95525360107422
+                },
+                "type": "Components::BoxCollider"
+            },
+            {
+                "data": {
                     "drawIndex": 9,
                     "tex_coords_list": [
                         [
@@ -443,37 +474,6 @@
             },
             {
                 "data": {
-                    "aabb": {
-                        "half_height": 45.839599609375,
-                        "half_width": 20.47762680053711,
-                        "pos": {
-                            "x": 238.7253875732422,
-                            "y": 786.4381713867188
-                        }
-                    },
-                    "height": 91.67919921875,
-                    "kinetic_friction": 0.800000011920929,
-                    "offset": {
-                        "x": 0.000049591064453125,
-                        "y": 18.160400390625
-                    },
-                    "polygon": {
-                        "position": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "rotation": 0.0,
-                        "vertices": []
-                    },
-                    "radius": 1.401298464324817e-45,
-                    "resolve_collisions": false,
-                    "type": "AABB",
-                    "width": 40.95525360107422
-                },
-                "type": "Components::BoxCollider"
-            },
-            {
-                "data": {
                     "intensity": 0.0,
                     "mesh_intensity": 0.0,
                     "speed": 0.0
@@ -585,7 +585,7 @@
                         0.10000000149011612
                     ],
                     "is_looping": true,
-                    "startTime": 54.331512451171875,
+                    "startTime": 80.95516204833984,
                     "totalDuration": 2.3999998569488525
                 },
                 "type": "Components::Animation"
@@ -698,7 +698,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 54.331512451171875,
+                                        "startTime": 80.95516204833984,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": {
@@ -1204,7 +1204,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 54.331512451171875,
+                                        "startTime": 80.95516204833984,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": {
@@ -1429,7 +1429,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 54.331512451171875,
+                                        "startTime": 80.95516204833984,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": {
@@ -1657,7 +1657,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 54.331512451171875,
+                                        "startTime": 80.95516204833984,
                                         "totalDuration": 0.7199999094009399
                                     },
                                     "collider_data": {
@@ -1897,7 +1897,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 54.331512451171875,
+                                        "startTime": 80.95516204833984,
                                         "totalDuration": 0.559999942779541
                                     },
                                     "collider_data": {
@@ -2215,7 +2215,7 @@
                                             0.05999999865889549
                                         ],
                                         "is_looping": false,
-                                        "startTime": 54.331512451171875,
+                                        "startTime": 80.95516204833984,
                                         "totalDuration": 0.5399999618530273
                                     },
                                     "collider_data": {
@@ -2626,7 +2626,7 @@
             },
             {
                 "data": {
-                    "air_speed": 150.0,
+                    "air_speed": 600.0,
                     "attack1": {
                         "damage": 10,
                         "dash_speed": 1000.0,
