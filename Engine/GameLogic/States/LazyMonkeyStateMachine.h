@@ -28,6 +28,27 @@ namespace LazyMonkeyStates
   inline Components::StateMachine create_state_machine()
   {
     // ========================================================================
+    // Audio Setup
+    // ========================================================================
+    Components::StateAudio footstep_audio;
+    footstep_audio.sound = Engine::Resources::load_sound("sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav");
+    footstep_audio.loop = true;
+    footstep_audio.volume = 0.5f;
+    footstep_audio.stop_on_exit = true;
+
+    Components::StateAudio attack_audio;
+    attack_audio.sound = Engine::Resources::load_sound("sounds/SFX/Monkey/Monkey VO/Monkey-2_2_Attack.wav");
+    attack_audio.loop = false;
+    attack_audio.volume = 0.6f;
+    attack_audio.stop_on_exit = false;
+
+    Components::StateAudio hurt_audio;
+    hurt_audio.sound = Engine::Resources::load_sound("sounds/SFX/Monkey/Monkey VO/Monkey-1_8_Hurt.wav");
+    hurt_audio.loop = false;
+    hurt_audio.volume = 0.6f;
+    hurt_audio.stop_on_exit = false;
+
+    // ========================================================================
     // Lazy Monkey Idle State
     // ========================================================================
     Components::StateAnimation lazy_monkey_idle_anim;
@@ -47,7 +68,7 @@ namespace LazyMonkeyStates
     lazy_monkey_chasing_anim.animation = Components::Animation(6, 0.1f);
     lazy_monkey_chasing_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
-    Components::State lazy_monkey_chasing("Chasing", "lazy_monkey_chasing_enter", "lazy_monkey_chasing_update", "lazy_monkey_chasing_exit", lazy_monkey_chasing_anim);
+    Components::State lazy_monkey_chasing("Chasing", "lazy_monkey_chasing_enter", "lazy_monkey_chasing_update", "lazy_monkey_chasing_exit", lazy_monkey_chasing_anim, footstep_audio);
 
     // ========================================================================
     // Lazy Monkey Windup State (uses idle animation)
@@ -69,7 +90,7 @@ namespace LazyMonkeyStates
     lazy_monkey_attacking_anim.animation = Components::Animation({ 0.2f, 0.1f, 0.1f, 0.1f, 0.5f });
     lazy_monkey_attacking_anim.scale = Math::Vec2D(ATTACK_WIDTH * 2.0f, ATTACK_HEIGHT * 2.0f);
 
-    Components::State lazy_monkey_attacking("Attacking", "lazy_monkey_attacking_enter", "lazy_monkey_attacking_update", "lazy_monkey_attacking_exit", lazy_monkey_attacking_anim);
+    Components::State lazy_monkey_attacking("Attacking", "lazy_monkey_attacking_enter", "lazy_monkey_attacking_update", "lazy_monkey_attacking_exit", lazy_monkey_attacking_anim, attack_audio);
 
     // ========================================================================
     // Lazy Monkey Hit State
@@ -80,7 +101,7 @@ namespace LazyMonkeyStates
     lazy_monkey_hit_anim.animation = Components::Animation(std::initializer_list{ 2 }, { 0.4f });
     lazy_monkey_hit_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
-    Components::State lazy_monkey_hit("Hit", "lazy_monkey_hit_enter", "lazy_monkey_hit_update", "lazy_monkey_hit_exit", lazy_monkey_hit_anim);
+    Components::State lazy_monkey_hit("Hit", "lazy_monkey_hit_enter", "lazy_monkey_hit_update", "lazy_monkey_hit_exit", lazy_monkey_hit_anim, hurt_audio);
 
     // ========================================================================
     // Lazy Monkey Death State
