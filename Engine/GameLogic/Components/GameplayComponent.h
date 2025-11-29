@@ -25,7 +25,7 @@ namespace Components
 
     // Movement speeds
     float walk_speed = 600.0f;
-    float air_speed = 150.0f;
+    float air_speed = 600.0f;
     float jump_force = 900.0f;
 
     // Attacks

@@ -59,7 +59,7 @@ namespace Engine {
       Math::Vec2D text_size = Engine::Graphics::measure_text(font, fps_text, scale);
       
       // 10px padding from right and top
-      f32 x = static_cast<f32>(Engine::WindowManager::get_width()) - text_size.x - 10.0f;
+      f32 x = Engine::Graphics::get_virtual_resolution().x - text_size.x - 10.0f;
       f32 y = 10.0f; 
 
       // Render text

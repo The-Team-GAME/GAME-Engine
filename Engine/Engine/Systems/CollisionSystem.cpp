@@ -124,13 +124,27 @@ void col2D::update()
         Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
 
         // we add the MTV here because it is not the penetration vector but rather how far the object needs to be pushed out to resolve the collision
-        xform->position += collision.mtv;
+        
+        // Apply Slop (Threshold)
+        // We allow a small amount of penetration to prevent jittering when gravity fights collision resolution
+        const f32 COLLISION_SLOP = 0.5f; // Allow 0.5 pixels of penetration
+        f32 penetration = collision.get_penetration();
+        
+        // Only resolve if penetration is deeper than the slop
+        if (penetration > COLLISION_SLOP)
+        {
+          // Calculate the correction vector (push out only the amount exceeding the slop)
+          // We want to push out by (penetration - slop), not the full penetration
+          // This keeps the object slightly "resting" in the surface, preventing the 1-frame jitter cycle
+          Vec2D correction = collision.get_normalise_mtv() * (penetration - COLLISION_SLOP);
+          xform->position += correction;
+        }
 
         // Check if this is a ground collision (MTV pointing mostly upward)
         Vec2D normal = normalise_vector(collision.mtv);
         if (normal.y < -0.f) // Pointing upward (remember: -y is up)
         {
-          f32 penetration = collision.get_penetration();
+          // For ground detection, we still use the full penetration to find the "best" ground
           if (!found_ground || penetration > best_ground_penetration)
           {
             best_ground_normal = normal;
