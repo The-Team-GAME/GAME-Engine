@@ -72,13 +72,15 @@ void RunGame()
   Engine::ECS::register_layer("player_trail"); // Specific layer for player trail effect
   Engine::ECS::register_layer("player"); // Player character layer
   Engine::ECS::register_layer("effect"); // Visual effects like particles
+  Engine::ECS::register_layer("ui_background"); // User interface elements
   Engine::ECS::register_layer("ui"); // User interface elements
+  Engine::ECS::register_layer("ui_foreground"); // User interface elements
 #ifndef GAME_BUILD
   Engine::ECS::register_layer("debug"); // Debug overlays and information
 #endif
 
 
-  
+
   // Start the engine
   Engine::Core::init();
 
@@ -235,7 +237,19 @@ void RunGame()
     Log::info("Exiting to main menu from pause menu");
     Engine::SceneManager::load_scene("MainMenuState");
     });
+  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_menu_button_hover", [](Engine::ECS::Entity entity) {
+    auto* color = entity.get_component<Components::Color>();
+    if (color) {
+      color->a = 1.0f;
+    }
+    });
 
+  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_menu_button_exit_hover", [](Engine::ECS::Entity entity) {
+    auto* color = entity.get_component<Components::Color>();
+    if (color) {
+      color->a = 0.0f;
+    }
+    });
 
   // Register game scenes at startup
   Engine::SceneManager::register_scene<EmptyState>("EmptyState");
