@@ -170,11 +170,11 @@ namespace Engine {
         // Center the window on the screen
         GLFWmonitor* monitor = glfwGetPrimaryMonitor();
         const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-        
+
         // Use default size or stored size
         int w = 1600;
         int h = 900;
-        
+
         int x = (mode->width - w) / 2;
         int y = (mode->height - h) / 2;
 
