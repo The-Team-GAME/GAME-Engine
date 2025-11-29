@@ -72,8 +72,8 @@ namespace Engine {
     // Load all assets from the resource path and its subfolders
     void load_all_assets();
 
-    // Copy a file to the resource folder root if it's not already there
-    std::string copy_to_resources(const std::string& filepath);
+    // Copy a file to the resource folder root (or subfolder) if it's not already there
+    std::string copy_to_resources(const std::string& filepath, const std::string& subfolder = "");
 
     std::string get_relative_path(const std::string& full_path);
 
@@ -106,7 +106,7 @@ namespace Engine {
     void cache_level(const std::string& filepath, const Engine::Level& level, bool append_resource_path = true, bool persist = false);
 
     // Open (instantiate) a level into the world
-    bool open_level(const std::string& filepath, bool append_resource_path = true);
+    bool open_level(const std::string& filepath, bool append_resource_path = true, bool additive = false);
 
     // Generic open function - automatically detects resource type and opens it
     // Currently supports: levels

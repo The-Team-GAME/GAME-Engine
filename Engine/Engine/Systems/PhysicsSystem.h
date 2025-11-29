@@ -35,11 +35,34 @@ namespace Engine {
 
       // void knockback(Components::RigidBody& rigid, Vec2D force);
       // Update the linear velocities if said entities here
-      void update_kinematics(Components::RigidBody& rigid, Components::Transform2D& xform);
+      void update_kinematics(
+        Components::RigidBody& rigid,
+        Components::BoxCollider& box,
+        Components::Transform2D& xform);
 
       // Called when resolving collisions to zero the rigidbody's velocity that is pushing against the normal
       // of the collision surface while retaining the sliding velocity parallel to the collision surface
-      static void kill_normal_component(Components::RigidBody& rigid, Vec2D mvt);
+      static void zero_normal_velocity(
+        Components::RigidBody& rigid, 
+        CollisionResult const& collision);
+
+      // Used to apply friction when colliding into another object
+      static void apply_surface_friction(
+        Components::RigidBody& rigid,
+        CollisionResult const& collision,
+        f32 static_friction,
+        f32 kinetic_friction
+      );
+
+      // Used to generate the normal force 
+      static f32 estimate_normal_force(
+        Components::RigidBody const& rigid,
+        CollisionResult const& collision
+      );
+      
+      static Vec2D get_gravity();
+
+      static f32 get_slope_angle_limit();
 
       // Used to add forces to the rigid body
       static void add_force(Components::RigidBody& rigid, Vec2D force);

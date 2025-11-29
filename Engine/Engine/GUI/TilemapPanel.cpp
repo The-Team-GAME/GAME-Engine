@@ -16,7 +16,8 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "TilemapPanel.h"
-#include <imgui.h>
+#include "TileColliderEditorPanel.h"
+#include "../Precompiled.h"
 #include "../ECS/ECS.h"
 #include "../Components/Components.h"
 #include "../InputManager.h"
@@ -356,7 +357,7 @@ namespace TilemapPanel {
         // Load the texture using Resources (handles cache lookup automatically)
         entry.texture_handle = Engine::Resources::load_texture(entry.texture_path, true, false);
         if (!entry.texture_handle || entry.texture_handle->id == 0) {
-          Log::warning("Failed to load tilemap atlas texture: " + entry.texture_path);
+          Log::warning("Failed to load tilemap atlas texture: {}", entry.texture_path);
         }
       }
     }
@@ -605,7 +606,7 @@ namespace TilemapPanel {
             if (ImGui::Button("Submit Atlas", ImVec2(-1, 0))) {
               Engine::Graphics::AtlasEntry entry;
               entry.texture_handle = preview_texture.texture_handle;
-              entry.texture_path = preview_texture.texture_handle->path;
+              entry.texture_path = Engine::Resources::get_relative_path(preview_texture.texture_handle->path);
               entry.subTextures = preview_atlas.subTextures;
               entry.drawIndex = preview_atlas.drawIndex;
               loaded_tilemaps.push_back(entry);
@@ -765,6 +766,177 @@ namespace TilemapPanel {
       ImGui::Separator();
 
       ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "New tiles will be placed on this layer");
+
+      ImGui::Unindent();
+    }
+
+    ImGui::Separator();
+
+    // === LAYER MANAGEMENT ===
+    if (ImGui::CollapsingHeader("Layer Management", ImGuiTreeNodeFlags_DefaultOpen)) {
+      ImGui::Indent();
+
+      // Get all available layers
+      auto& containers = Engine::ECS::Internal::get_containers();
+      std::vector<std::string> available_layers;
+      for (Engine::ECS::LayerID layer_id = 0; layer_id < containers.layer_id_to_name.size(); ++layer_id) {
+        const std::string& layer_name = containers.layer_id_to_name[layer_id];
+        if (!layer_name.empty()) {
+          available_layers.push_back(layer_name);
+        }
+      }
+
+      if (available_layers.size() < 2) {
+        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Need at least 2 layers to move tiles");
+      }
+      else {
+        static int source_layer_idx = 0;
+        static int dest_layer_idx = 0;
+
+        ImGui::Text("Move all tiles:");
+        
+        // Source layer combo
+        ImGui::Text("From:");
+        ImGui::SameLine();
+        if (ImGui::BeginCombo("##SourceLayer", available_layers[source_layer_idx].c_str())) {
+          for (int i = 0; i < static_cast<int>(available_layers.size()); ++i) {
+            bool is_selected = (source_layer_idx == i);
+            if (ImGui::Selectable(available_layers[i].c_str(), is_selected)) {
+              source_layer_idx = i;
+            }
+            if (is_selected) {
+              ImGui::SetItemDefaultFocus();
+            }
+          }
+          ImGui::EndCombo();
+        }
+
+        // Destination layer combo
+        ImGui::Text("To:");
+        ImGui::SameLine();
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10.0f); // Align with source combo
+        if (ImGui::BeginCombo("##DestLayer", available_layers[dest_layer_idx].c_str())) {
+          for (int i = 0; i < static_cast<int>(available_layers.size()); ++i) {
+            bool is_selected = (dest_layer_idx == i);
+            if (ImGui::Selectable(available_layers[i].c_str(), is_selected)) {
+              dest_layer_idx = i;
+            }
+            if (is_selected) {
+              ImGui::SetItemDefaultFocus();
+            }
+          }
+          ImGui::EndCombo();
+        }
+
+        ImGui::Spacing();
+
+        // Move button
+        bool same_layer = (source_layer_idx == dest_layer_idx);
+        if (same_layer) {
+          ImGui::BeginDisabled();
+        }
+
+        if (ImGui::Button("Move All Tiles", ImVec2(-1, 0))) {
+          ImGui::OpenPopup("Move Tiles Confirm");
+        }
+
+        if (same_layer) {
+          ImGui::EndDisabled();
+          ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.0f, 1.0f), "Source and destination must be different");
+        }
+
+        // Confirmation popup
+        bool modal_open_move = true;
+        if (ImGui::BeginPopupModal("Move Tiles Confirm", &modal_open_move, ImGuiWindowFlags_AlwaysAutoResize)) {
+          ImGui::Text("Move all tiles from '%s' to '%s'?", 
+                      available_layers[source_layer_idx].c_str(), 
+                      available_layers[dest_layer_idx].c_str());
+          ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.0f, 1.0f), "This action can be undone.");
+          ImGui::Separator();
+
+          if (!modal_open_move) {
+            ImGui::CloseCurrentPopup();
+            ImGui::EndPopup();
+            modal_open_move = true;
+            return;
+          }
+
+          if (ImGui::Button("Yes, Move All", ImVec2(120, 0))) {
+            std::string source_layer = available_layers[source_layer_idx];
+            std::string dest_layer = available_layers[dest_layer_idx];
+
+            // Capture the current state for undo
+            // We need to store all tiles from both layers
+            struct LayerTileData {
+              std::unordered_map<int64_t, Engine::Graphics::Tile> tiles;
+            };
+
+            LayerTileData source_backup;
+            LayerTileData dest_backup;
+
+            // Backup source layer
+            for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
+              if (entity.is_on_layer(source_layer)) {
+                auto* tilemap = entity.get_component<Components::TileMap>();
+                if (tilemap) {
+                  source_backup.tiles = tilemap->tiles;
+                }
+                break;
+              }
+            }
+
+            // Backup destination layer
+            for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
+              if (entity.is_on_layer(dest_layer)) {
+                auto* tilemap = entity.get_component<Components::TileMap>();
+                if (tilemap) {
+                  dest_backup.tiles = tilemap->tiles;
+                }
+                break;
+              }
+            }
+
+            // Execute with undo support
+            Engine::UndoManager::execute(
+              [source_layer, dest_layer]() {
+                TilemapManager::move_all_tiles_to_layer(source_layer, dest_layer);
+                Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+              },
+              [source_layer, dest_layer, source_backup, dest_backup]() {
+                // Restore both layers to their original state
+                // Restore source layer
+                auto source_entity = TilemapManager::get_or_create_tilemap_entity(source_layer);
+                auto* source_map = source_entity.get_component<Components::TileMap>();
+                if (source_map) {
+                  source_map->tiles = source_backup.tiles;
+                }
+
+                // Restore destination layer
+                auto dest_entity = TilemapManager::get_or_create_tilemap_entity(dest_layer);
+                auto* dest_map = dest_entity.get_component<Components::TileMap>();
+                if (dest_map) {
+                  dest_map->tiles = dest_backup.tiles;
+                }
+
+                // Rebuild both layers
+                TilemapManager::rebuild_tilemap_for_layer(source_layer);
+                TilemapManager::rebuild_tilemap_for_layer(dest_layer);
+                Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+              }
+            );
+
+            ImGui::CloseCurrentPopup();
+          }
+
+          ImGui::SameLine();
+
+          if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+            ImGui::CloseCurrentPopup();
+          }
+
+          ImGui::EndPopup();
+        }
+      }
 
       ImGui::Unindent();
     }
@@ -1035,6 +1207,11 @@ namespace TilemapPanel {
             save_loaded_tilemaps_to_project_settings();
           }
 
+          // Edit Colliders button
+          if (ImGui::Button("Edit Tile Colliders", ImVec2(-1, 0))) {
+            TileColliderEditor::Open(i);
+          }
+
           if (is_selected) {
             ImGui::PopStyleColor();
           }
@@ -1250,11 +1427,9 @@ namespace TilemapPanel {
 
           // Draw preview for each tile in the selection
           for (size_t i = 0; i < multi_tile_selection.indices.size(); ++i) {
-            int idx = multi_tile_selection.indices[i];
-
             // Calculate position within selection grid
-            int offset_x = i % multi_tile_selection.grid_width;
-            int offset_y = i / multi_tile_selection.grid_width;
+            int offset_x = static_cast<int>(i % multi_tile_selection.grid_width);
+            int offset_y = static_cast<int>(i / multi_tile_selection.grid_width);
 
             Math::Vec2D tile_pos = {
               grid_pos.x + offset_x * grid_snap,

@@ -121,52 +121,242 @@ namespace Components
     std::vector<Engine::Graphics::Frame> frames;
     f32 startTime = Engine::Time::get_time(); // To get the elapsed time to calculate which frame to show
     float totalDuration = 0.0f; // Total duration of the animation
+    bool is_looping = true; // Whether the animation should loop or stay at the last frame
 
-    Animation() : frames(), startTime(Engine::Time::get_time()), totalDuration(0.0f) {} // TODO: remove default constructor
+    Animation() : frames(), startTime(Engine::Time::get_time()), totalDuration(0.0f), is_looping(true) {} // TODO: remove default constructor
 
-    // Evenly spaced frames
-    Animation(size_t frameCount, float frameDuration) : frames(), startTime(0.0f), totalDuration(frameDuration* frameCount)
+    // Evenly spaced frames with sequential atlas indices starting from 0
+    Animation(size_t frameCount, float frameDuration, bool looping = true) : frames(), startTime(0.0f), totalDuration(0.0f), is_looping(looping)
     {
       if (frameCount == 0)
         return;
 
       startTime = Engine::Time::get_time();
-
       frames.resize(frameCount);
-      for (size_t i = 0; i < frameCount; ++i)
-      {
-        frames[i].duration = frameDuration;
-        frames[i].before_time = i * frameDuration;
+
+      // Default: sequential indices 0, 1, 2, ...
+      for (size_t i = 0; i < frameCount; ++i) {
+        frames[i].atlas_index = static_cast<int>(i);
       }
+
+      set_frame_even(frameDuration);
+    }
+
+    // Evenly spaced frames with specified atlas index range
+    Animation(int startIndex, int endIndex, float frameDuration, bool looping = true)
+      : frames(), startTime(0.0f), totalDuration(0.0f), is_looping(looping)
+    {
+      if (startIndex > endIndex) {
+        Log::warning("Animation: startIndex > endIndex, swapping them");
+        std::swap(startIndex, endIndex);
+      }
+
+      size_t frameCount = static_cast<size_t>(endIndex - startIndex + 1);
+      startTime = Engine::Time::get_time();
+      frames.resize(frameCount);
+
+      // Fill with indices from startIndex to endIndex
+      for (int i = 0; i < static_cast<int>(frameCount); ++i) {
+        frames[i].atlas_index = startIndex + i;
+      }
+
+      set_frame_even(frameDuration);
+    }
+
+    // Custom frame durations with sequential atlas indices starting from 0
+    Animation(std::initializer_list<float> durations, bool looping = true)
+      : frames(), startTime(Engine::Time::get_time()), totalDuration(0.0f), is_looping(looping)
+    {
+      // Create frames based on the number of durations
+      frames.resize(durations.size());
+
+      // Default: sequential indices 0, 1, 2, ...
+      for (size_t i = 0; i < durations.size(); ++i) {
+        frames[i].atlas_index = static_cast<int>(i);
+      }
+
+      set_frame_durations(durations);
+    }
+
+    // Custom frame durations with specified atlas index range
+    Animation(int startIndex, int endIndex, std::initializer_list<float> durations, bool looping = true)
+      : frames(), startTime(Engine::Time::get_time()), totalDuration(0.0f), is_looping(looping)
+    {
+      if (startIndex > endIndex) {
+        Log::warning("Animation: startIndex > endIndex, swapping them");
+        std::swap(startIndex, endIndex);
+      }
+
+      size_t frameCount = static_cast<size_t>(endIndex - startIndex + 1);
+
+      if (durations.size() != frameCount) {
+        Log::warning("Animation: duration count doesn't match frame range, adjusting");
+      }
+
+      size_t actualFrameCount = std::min(frameCount, durations.size());
+      frames.resize(actualFrameCount);
+
+      // Fill with indices from startIndex to endIndex
+      for (size_t i = 0; i < actualFrameCount; ++i) {
+        frames[i].atlas_index = startIndex + static_cast<int>(i);
+      }
+
+      set_frame_durations(durations);
+    }
+
+    // Custom frame indices with even duration
+    Animation(const std::vector<int>& indices, float frameDuration, bool looping = true)
+      : frames(), startTime(Engine::Time::get_time()), totalDuration(0.0f), is_looping(looping)
+    {
+      frames.resize(indices.size());
+      for (size_t i = 0; i < indices.size(); ++i) {
+        frames[i].atlas_index = indices[i];
+      }
+      set_frame_even(frameDuration);
+    }
+
+    // Custom frame indices with custom durations
+    Animation(const std::vector<int>& indices, const std::vector<float>& durations, bool looping = true)
+      : frames(), startTime(Engine::Time::get_time()), totalDuration(0.0f), is_looping(looping)
+    {
+      if (indices.size() != durations.size()) {
+        Log::warning("Animation: indices and durations size mismatch");
+      }
+
+      size_t frameCount = std::min(indices.size(), durations.size());
+      frames.resize(frameCount);
+
+      for (size_t i = 0; i < frameCount; ++i) {
+        frames[i].atlas_index = indices[i];
+      }
+
+      set_frame_durations(durations);
+    }
+
+    // Check if the animation has completed one full cycle
+    bool has_ended() const {
+      float elapsed = Engine::Time::get_time() - startTime;
+      return elapsed >= totalDuration;
+    }
+
+    // Get the elapsed time since animation started
+    float get_elapsed_time() const {
+      return Engine::Time::get_time() - startTime;
+    }
+
+    // Get the current frame index
+    int get_current_frame_index() const {
+      if (frames.empty()) {
+        return 0;
+      }
+
+      float elapsed = Engine::Time::get_time() - startTime;
+      float time_to_use = elapsed;
+
+      // Handle looping vs non-looping animations
+      if (is_looping) {
+        time_to_use = fmod(elapsed, totalDuration);
+      }
+      else {
+        if (time_to_use > totalDuration) {
+          time_to_use = totalDuration;
+        }
+      }
+
+      // Find which frame should be displayed based on elapsed time
+      int current_frame = 0;
+      for (int i = 0; i < static_cast<int>(frames.size()); ++i) {
+        if (time_to_use >= frames[i].before_time) {
+          current_frame = i;
+        }
+        else {
+          break;
+        }
+      }
+
+      return current_frame;
+    }
+
+    // Get the current atlas index for rendering
+    int get_current_atlas_index() const {
+      int frame_idx = get_current_frame_index();
+      if (frame_idx >= 0 && frame_idx < static_cast<int>(frames.size())) {
+        return frames[frame_idx].atlas_index;
+      }
+      return 0; // Default to first frame
+    }
+
+    // Set specific frame durations (allows different duration per frame)
+    void set_frame_durations(const std::vector<float>& durations) {
+      if (durations.empty() || durations.size() != frames.size()) {
+        return; // Invalid input - must match frame count
+      }
+
+      totalDuration = 0.0f;
+      for (size_t i = 0; i < frames.size(); ++i) {
+        frames[i].duration = durations[i];
+        frames[i].before_time = totalDuration;
+        totalDuration += durations[i];
+      }
+    }
+
+    // Set all frames to have the same duration (evenly distributed)
+    void set_frame_even(float frameDuration) {
+      if (frames.empty()) {
+        return;
+      }
+
+      std::vector<float> even_durations(frames.size(), frameDuration);
+      set_frame_durations(even_durations);
+    }
+
+    // Set specific frame durations using initializer list for convenience
+    void set_frame_durations(std::initializer_list<float> durations) {
+      set_frame_durations(std::vector<float>(durations));
     }
 
     struct Reflector {
       std::vector<float> durations;
       std::vector<float> before_times;
+      std::vector<int> atlas_indices;
       float startTime;
       float totalDuration;
+      bool is_looping;
 
       static Reflector reflect(const Animation& anim) {
         Reflector r;
         r.startTime = anim.startTime;
         r.totalDuration = anim.totalDuration;
+        r.is_looping = anim.is_looping;
         r.durations.reserve(anim.frames.size());
         r.before_times.reserve(anim.frames.size());
+        r.atlas_indices.reserve(anim.frames.size());
         for (const auto& frame : anim.frames) {
           r.durations.push_back(frame.duration);
           r.before_times.push_back(frame.before_time);
+          r.atlas_indices.push_back(frame.atlas_index);
         }
         return r;
       }
 
       static Animation create(const Reflector& r) {
-        Animation anim(0, 0.0f);
-        anim.startTime = r.startTime;
+        Animation anim{};  // Use braced initialization to explicitly call default constructor
+        anim.startTime = Engine::Time::get_time(); // Reset to current time when instantiating
         anim.totalDuration = r.totalDuration;
+        anim.is_looping = r.is_looping;
         anim.frames.resize(r.durations.size());
         for (size_t i = 0; i < r.durations.size(); ++i) {
           anim.frames[i].duration = r.durations[i];
           anim.frames[i].before_time = r.before_times[i];
+          anim.frames[i].atlas_index = r.atlas_indices[i];
+          // // Use atlas_indices if available, otherwise default to sequential indices
+          // // TODO: HOLIDAY: backwards compatibility, remove later
+          // if (i < r.atlas_indices.size()) {
+          //   anim.frames[i].atlas_index = r.atlas_indices[i];
+          // }
+          // else {
+          //   anim.frames[i].atlas_index = static_cast<int>(i);
+          // }
         }
         return anim;
       }
@@ -211,13 +401,10 @@ namespace Components
   {
     std::string name = "Camera";
     bool is_active = false;  // Whether this camera is currently active
-    Math::Vec2D position = { 0.0f, 0.0f };  // Camera position in world space
-    f32 rotation = 0.0f;  // Camera rotation in degrees
-    f32 zoom = 1.0f;  // Camera zoom level (1.0 = normal, >1.0 = zoom in, <1.0 = zoom out)
 
-    Camera() : name("Camera"), is_active(false), position(0.0f, 0.0f), rotation(0.0f), zoom(1.0f) {}
-    Camera(const std::string& cam_name, bool active = false, const Math::Vec2D& pos = { 0.0f, 0.0f }, f32 rot = 0.0f, f32 z = 1.0f)
-      : name(cam_name), is_active(active), position(pos), rotation(rot), zoom(z) {
+    Camera() : name("Camera"), is_active(false) {}
+    Camera(const std::string& cam_name, bool active = false)
+      : name(cam_name), is_active(active) {
     }
   };
 
@@ -229,6 +416,15 @@ namespace Components
 
     Distortion() : intensity(1.0f), speed(1.0f), mesh_intensity(0.0f) {}
     Distortion(f32 inten, f32 spd, f32 mesh_inten = 0.0f) : intensity(inten), speed(spd), mesh_intensity(mesh_inten) {}
+  };
+
+  struct Flip
+  {
+    Math::Vec2D value = { 1.0f, 1.0f }; // 1.0f = no flip, -1.0f = flip (x for horizontal, y for vertical)
+
+    Flip() : value(1.0f, 1.0f) {}
+    Flip(f32 x, f32 y) : value(x, y) {}
+    Flip(const Math::Vec2D& v) : value(v) {}
   };
 
   struct Color : public Math::Vec4D {
@@ -287,6 +483,10 @@ namespace Components
       a = alpha;
     }
 
+    Math::Vec4D to_vec4d() const {
+      return Math::Vec4D(r, g, b, a);
+    }
+
     // Clamp color values to [0, 1] range
     void clamp() {
       r = (r < 0.0f) ? 0.0f : (r > 1.0f) ? 1.0f : r;
@@ -325,51 +525,15 @@ namespace Components
     };
   };
 
-  // Stores a map of animation states by name
-  // NOT FINALIZED, STILL EXPERIMENTAL
-  struct AnimationState
-  {
-    struct StateData {
-      Texture texture;
-      TextureAtlas texture_atlas;
-      Animation animation;
-      std::optional<Math::Vec2D> scale; // Optional scale override for this state
-      bool is_looping = true; // Does the animation loop continuously?
-      std::optional<std::string> next_state; // Auto-transition to this state when non-looping animation completes
-    };
-
-    bool dirty = false; // Whether the state has been modified
-    std::string current_state;
-    std::unordered_map<std::string, StateData> states;
-
-    void add_state(
-      const std::string& name,
-      const Texture& texture,
-      const TextureAtlas& atlas,
-      const Animation& animation,
-      std::optional<Math::Vec2D> scale = std::nullopt,
-      bool is_looping = true,
-      std::optional<std::string> next_state = std::nullopt
-    ) {
-      states[name] = { texture, atlas, animation, scale, is_looping, next_state };
-    }
-
-    void set_entity_state(const std::string& name) {
-      // Log::info("Switching to animation state: " + name);
-      current_state = name;
-      dirty = true;
-    }
-  };
 
 }
 
 REGISTER_COMPONENT(Components::Text, content)
-REGISTER_COMPONENT(Components::Camera, name, is_active, position, rotation, zoom)
+REGISTER_COMPONENT(Components::Camera, name, is_active)
 REGISTER_COMPONENT(Components::Distortion, intensity, speed, mesh_intensity)
+REGISTER_COMPONENT(Components::Flip, value)
 REGISTER_COMPONENT_CUSTOM(Components::Color, r, g, b, a)
 REGISTER_COMPONENT_CUSTOM(Components::Texture, path)
 REGISTER_COMPONENT_CUSTOM(Components::Font, path, font_size)
 REGISTER_COMPONENT_CUSTOM(Components::TextureAtlas, tex_coords_list, drawIndex)
-REGISTER_COMPONENT_CUSTOM(Components::Animation, durations, before_times, startTime, totalDuration)
-REFLECT_FIELDS(Components::AnimationState::StateData, texture, texture_atlas, animation, scale, is_looping, next_state)
-REGISTER_COMPONENT(Components::AnimationState, dirty, current_state, states)
+REGISTER_COMPONENT_CUSTOM(Components::Animation, durations, before_times, atlas_indices, startTime, totalDuration, is_looping)

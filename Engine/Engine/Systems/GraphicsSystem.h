@@ -24,6 +24,7 @@
 #include "../FileIO/SettingsManager.h"
 #include "../FileIO/Settings.h"
 #include "../GUI/TilemapPanel.h"
+#include "../Logger.h"
 
 namespace Engine
 {
@@ -40,13 +41,17 @@ namespace Engine
         auto* transform = entity.get_component<Components::Transform2D>();
         auto* color = entity.get_component<Components::Color>();
         auto* texture = entity.get_component<Components::Texture>();
+        auto* flip = entity.get_component<Components::Flip>();
+
+        Math::Vec2D flip_value = flip ? flip->value : Math::Vec2D(1.0f, 1.0f);
 
         Engine::Graphics::draw_texture(
           texture->texture_handle,
           Math::Vec2D(transform->position.x, transform->position.y),
           Math::Vec2D(transform->scale.x, transform->scale.y),
           transform->rotation,
-          *color
+          *color,
+          flip_value
         );
       }
     };
@@ -63,6 +68,9 @@ namespace Engine
         auto* color = entity.get_component<Components::Color>();
         auto* texture = entity.get_component<Components::Texture>();
         auto* atlas = entity.get_component<Components::TextureAtlas>();
+        auto* flip = entity.get_component<Components::Flip>();
+
+        Math::Vec2D flip_value = flip ? flip->value : Math::Vec2D(1.0f, 1.0f);
 
         // Ensure drawIndex is within bounds
         if (atlas->drawIndex < atlas->subTextures.size()) {
@@ -74,7 +82,8 @@ namespace Engine
             Math::Vec2D(transform->position.x, transform->position.y),
             Math::Vec2D(transform->scale.x, transform->scale.y),
             transform->rotation,
-            *color
+            *color,
+            flip_value
           );
         }
       }
@@ -86,8 +95,16 @@ namespace Engine
         require_components<Components::TileMap>();
       }
 
+      void update_entity(Engine::ECS::Entity& entity) override {  // Determine the color based on tilemap mode and selected layer
+        auto* color_comp = entity.get_component<Components::Color>();
+        if (!color_comp) {
+          entity.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
+        }
+      }
+
       void draw_entity(const Engine::ECS::Entity& entity) override {
         auto* int_map = entity.get_component<Components::TileMap>();
+        auto* color_comp = entity.get_component<Components::Color>();
 
         // Skip if tilemap is empty
         if (!int_map || int_map->is_empty()) {
@@ -97,8 +114,11 @@ namespace Engine
         // Get the atlas entries from project settings
         const auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get();
 
-        // Determine the color based on tilemap mode and selected layer
-        Math::Vec4D color(1.0f, 1.0f, 1.0f, 1.0f); // Default: white (full brightness)
+        Math::Vec4D color(1.0f, 1.0f, 1.0f, 1.0f);
+        if (color_comp)
+        {
+          color = *color_comp;
+        }
 
         // Check if tilemap mode is enabled AND dimming is enabled
         if (TilemapPanel::is_tilemap_mode_enabled() && TilemapPanel::is_dim_non_selected_layers_enabled()) {
@@ -110,7 +130,9 @@ namespace Engine
 
           if (!on_selected_layer) {
             // Darken tiles on non-selected layers
-            color = Math::Vec4D(0.3f, 0.3f, 0.3f, 1.0f);
+            color.x *= 0.3f;
+            color.y *= 0.3f;
+            color.z *= 0.3f;
           }
         }
 
@@ -167,13 +189,24 @@ namespace Engine
         // Calculate elapsed time since animation started
         float elapsed = Engine::Time::get_time() - animation->startTime;
 
-        // Loop the animation by wrapping elapsed time
-        float wrapped_time = fmod(elapsed, animation->totalDuration);
+        float time_to_use = elapsed;
+
+        // Handle looping vs non-looping animations
+        if (animation->is_looping) {
+          // Loop the animation by wrapping elapsed time
+          time_to_use = fmod(elapsed, animation->totalDuration);
+        }
+        else {
+          // Clamp to the end of the animation (stay at last frame)
+          if (time_to_use > animation->totalDuration) {
+            time_to_use = animation->totalDuration;
+          }
+        }
 
         // Find which frame should be displayed based on elapsed time
         int current_frame = 0;
         for (int i = 0; i < animation->frames.size(); ++i) {
-          if (wrapped_time >= animation->frames[i].before_time) {
+          if (time_to_use >= animation->frames[i].before_time) {
             current_frame = i;
           }
           else {
@@ -181,8 +214,14 @@ namespace Engine
           }
         }
 
-        // Update the atlas drawIndex to the current frame
-        atlas->drawIndex = current_frame;
+        // Update the atlas drawIndex using the frame's atlas_index
+        if (current_frame >= 0 && current_frame < static_cast<int>(animation->frames.size())) {
+          atlas->drawIndex = animation->frames[current_frame].atlas_index;
+        }
+        else {
+          Log::warning("current_frame out of bounds in AnimationUpdateSystem");
+          atlas->drawIndex = 0; // Fallback to first frame
+        }
       }
     };
 
@@ -192,18 +231,20 @@ namespace Engine
 
     public:
       CameraSystem() {
+        require_components<Components::Camera, Components::Transform2D>();
       }
 
       void update() override {
-        Engine::ECS::for_each_entity_with<Components::Camera>(
+        Engine::ECS::for_each_entity_with<Components::Camera, Components::Transform2D>(
           [this](Engine::ECS::Entity entity) {
             auto* camera_component = entity.get_component<Components::Camera>();
+            auto* transform = entity.get_component<Components::Transform2D>();
 
             // If this camera is marked as active, use its parameters
             if (camera_component->is_active) {
-              camera.position = camera_component->position;
-              camera.rotation = camera_component->rotation;
-              camera.zoom = camera_component->zoom;
+              camera.position = transform->position;
+              camera.rotation = transform->rotation;
+              camera.zoom = transform->scale.x; // Use x scale for zoom TODO: have x and y zoom
             }
           }
         );
@@ -321,6 +362,9 @@ namespace Engine
         auto* color = entity.get_component<Components::Color>();
         auto* texture = entity.get_component<Components::Texture>();
         auto* distortion = entity.get_component<Components::Distortion>();
+        auto* flip = entity.get_component<Components::Flip>();
+
+        Math::Vec2D flip_value = flip ? flip->value : Math::Vec2D(1.0f, 1.0f);
 
         Engine::Graphics::draw_texture_distortion(
           texture->texture_handle,
@@ -330,7 +374,8 @@ namespace Engine
           *color,
           distortion->intensity,
           distortion->speed,
-          distortion->mesh_intensity
+          distortion->mesh_intensity,
+          flip_value
         );
       }
     };
@@ -347,6 +392,9 @@ namespace Engine
         auto* texture = entity.get_component<Components::Texture>();
         auto* atlas = entity.get_component<Components::TextureAtlas>();
         auto* distortion = entity.get_component<Components::Distortion>();
+        auto* flip = entity.get_component<Components::Flip>();
+
+        Math::Vec2D flip_value = flip ? flip->value : Math::Vec2D(1.0f, 1.0f);
 
         // Ensure drawIndex is within bounds
         if (atlas->drawIndex < atlas->subTextures.size()) {
@@ -361,67 +409,13 @@ namespace Engine
             *color,
             distortion->intensity,
             distortion->speed,
-            distortion->mesh_intensity
+            distortion->mesh_intensity,
+            flip_value
           );
         }
       }
     };
 
-    // NOT FINALIZED, STILL EXPERIMENTAL
-    class AnimationStateSystem : public Engine::ECS::System {
-    public:
-      AnimationStateSystem() {
-        require_components<Components::AnimationState, Components::Texture, Components::TextureAtlas, Components::Animation>();
-      }
-
-      void update_entity(Engine::ECS::Entity& entity) override {
-        auto* anim_state = entity.get_component<Components::AnimationState>();
-        auto* texture = entity.get_component<Components::Texture>();
-        auto* atlas = entity.get_component<Components::TextureAtlas>();
-        auto* animation = entity.get_component<Components::Animation>();
-
-        // Apply state changes when dirty flag is set
-        if (anim_state->dirty) {
-          // Log::info("Updating animation state for entity: " + std::to_string(entity.get_id()));
-          auto it = anim_state->states.find(anim_state->current_state);
-          if (it != anim_state->states.end()) {
-            // Log::info("Found animation state: " + anim_state->current_state);
-            const auto& state_data = it->second;
-            texture->texture_handle = state_data.texture.texture_handle;
-            atlas->subTextures = state_data.texture_atlas.subTextures;
-            atlas->drawIndex = state_data.texture_atlas.drawIndex;
-            animation->frames = state_data.animation.frames;
-            animation->startTime = Engine::Time::get_time(); // Reset start time to NOW when transitioning
-            animation->totalDuration = state_data.animation.totalDuration;
-
-            // Apply scale if provided
-            if (state_data.scale.has_value()) {
-              auto* transform = entity.get_component<Components::Transform2D>();
-              if (transform) {
-                transform->scale = state_data.scale.value();
-              }
-            }
-          }
-          anim_state->dirty = false; // Clear dirty flag after update
-        }
-
-        // Check for non-looping animation completion and auto-transition
-        auto it = anim_state->states.find(anim_state->current_state);
-        if (it != anim_state->states.end()) {
-          const auto& state_data = it->second;
-
-          // Only check for completion if animation is non-looping and has a next state
-          if (!state_data.is_looping && state_data.next_state.has_value()) {
-            // Check if animation has completed
-            float elapsed = Engine::Time::get_time() - animation->startTime;
-            if (elapsed >= animation->totalDuration) {
-              // Animation finished, transition to next state
-              anim_state->set_entity_state(state_data.next_state.value());
-            }
-          }
-        }
-      }
-    };
 
   }; // namespace Systems
 } // namespace Engine

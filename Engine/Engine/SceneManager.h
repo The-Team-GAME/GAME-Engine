@@ -65,8 +65,9 @@ namespace Engine
   namespace SceneManager {
     // Declare as extern - actual definition in SceneManager.cpp
     extern Scene* current_scene;
-    extern std::unordered_map<std::string, std::unique_ptr<Scene>> scenes;
+    extern std::unordered_map<std::string, std::shared_ptr<Scene>> scenes;
     extern std::vector<std::string> scene_order;
+    extern std::vector<std::shared_ptr<Scene>> scene_stack;
 
     /**
      * @brief Registers a new scene type with the manager.
@@ -77,7 +78,7 @@ namespace Engine
     void register_scene(const std::string& name) {
       static_assert(std::is_base_of<Scene, T>::value,
         "T must derive from Scene");
-      scenes[name] = std::make_unique<T>();
+      scenes[name] = std::make_shared<T>();
       scene_order.push_back(name);
     }
 
@@ -86,6 +87,17 @@ namespace Engine
      * @param name Name of the scene to load.
      */
     void load_scene(const std::string& name);
+
+    /**
+     * @brief Pushes a scene onto the stack without unloading the current one.
+     * @param name Name of the scene to push.
+     */
+    void push_scene(const std::string& name);
+
+    /**
+     * @brief Pops the top scene from the stack and resumes the previous one.
+     */
+    void pop_scene();
 
     /**
      * @brief Unloads the current scene and performs cleanup.

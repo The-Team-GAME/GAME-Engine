@@ -14,7 +14,7 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "ResourceExplorerPanel.h"
-#include <imgui.h>
+#include "../Precompiled.h"
 #include "../Resources.h"
 #include "../Path.h"
 #include "../Logger.h"
@@ -23,6 +23,8 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include "../EventManager/EventManager.h"
+#include "../Events/EngineEvents.h"
 
 namespace {
   // Current directory path (relative to resource root)
@@ -79,7 +81,7 @@ namespace {
       }
     }
     catch (const std::filesystem::filesystem_error& e) {
-      Log::error("Failed to read directory: " + std::string(e.what()));
+      Log::error("Failed to read directory: {}", e.what());
     }
 
     // Sort: directories first, then by name
@@ -221,10 +223,10 @@ void ResourceExplorerPanel() {
 
       try {
         std::filesystem::create_directory(full_path);
-        Log::info("Created folder: " + new_folder_path);
+        Log::info("Created folder: {}", new_folder_path);
       }
       catch (const std::filesystem::filesystem_error& e) {
-        Log::error("Failed to create folder: " + std::string(e.what()));
+        Log::error("Failed to create folder: {}", e.what());
       }
 
       ImGui::CloseCurrentPopup();
@@ -276,10 +278,10 @@ void ResourceExplorerPanel() {
         Engine::Level empty_level;
 
         if (Engine::FileIO::serialize_level_to_json_file(full_path, empty_level)) {
-          Log::info("Created level: " + file_path);
+          Log::info("Created level: {}", file_path);
         }
         else {
-          Log::error("Failed to create level: " + file_path);
+          Log::error("Failed to create level: {}", file_path);
         }
       }
     }
@@ -349,7 +351,7 @@ void ResourceExplorerPanel() {
           if (!Engine::Resources::open(entry.path, true)) {
             // If open fails or is not supported, fall back to loading
             Engine::Resources::load(entry.path, true, false);
-            Log::info("Loaded resource: " + entry.path);
+            Log::info("Loaded resource: {}", entry.path);
           }
         }
       }
@@ -368,17 +370,18 @@ void ResourceExplorerPanel() {
         if (ImGui::MenuItem("Open")) {
           if (!Engine::Resources::open(entry.path, true)) {
             Log::warning("Cannot open this resource type");
+            Engine::EventManager::send_event<Engine::Events::ToastEvent>("Cannot open this resource type", Engine::Events::ToastType::Warning);
           }
         }
 
         if (ImGui::MenuItem("Load Resource")) {
           Engine::Resources::load(entry.path, true, false);
-          Log::info("Loaded resource: " + entry.path);
+          Log::info("Loaded resource: {}", entry.path);
         }
 
         if (ImGui::MenuItem("Load Resource (Persistent)")) {
           Engine::Resources::load(entry.path, true, true);
-          Log::info("Loaded resource (persistent): " + entry.path);
+          Log::info("Loaded resource (persistent): {}", entry.path);
         }
       }
 
@@ -390,7 +393,7 @@ void ResourceExplorerPanel() {
           if (entry.is_directory) {
             // For directories, recursively remove all cached resources within
             std::filesystem::remove_all(full_path);
-            Log::info("Deleted directory: " + entry.path);
+            Log::info("Deleted directory: {}", entry.path);
             // TODO: Could iterate through all files in directory and remove from cache
           }
           else {
@@ -399,7 +402,7 @@ void ResourceExplorerPanel() {
 
             // Then delete the file
             std::filesystem::remove(full_path);
-            Log::info("Deleted file: " + entry.path);
+            Log::info("Deleted file: {}", entry.path);
           }
 
           if (selected_item == entry.path) {
@@ -408,7 +411,7 @@ void ResourceExplorerPanel() {
           }
         }
         catch (const std::filesystem::filesystem_error& e) {
-          Log::error("Failed to delete: " + std::string(e.what()));
+          Log::error("Failed to delete: {}", e.what());
         }
       }
 

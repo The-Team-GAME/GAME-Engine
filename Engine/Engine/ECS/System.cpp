@@ -43,7 +43,10 @@ namespace Engine {
         if (!containers.layer_active_state.test(layer))
           continue;
 
-        for (EntityID entityId : containers.layer_entities[layer]) {
+        // Make a copy to avoid iterator invalidation when entities are added/removed from layers during update
+        auto layer_entities_copy = containers.layer_entities[layer];
+
+        for (EntityID entityId : layer_entities_copy) {
           // Only consider entities in this system's entity set
           if (!entities.contains(entityId)) {
             continue;

@@ -19,10 +19,10 @@ void ShowcaseState::load() {
   background_texture = Engine::Resources::load_texture("images/sample_bg.png");
 
   // Load audio
-  walk_sound = Engine::Resources::load_sound("sounds/move1.wav");
-  jump_sound = Engine::Resources::load_sound("sounds/jump.wav");
-  punch_sound = Engine::Resources::load_sound("sounds/Punch.wav");
-  bgm_sound = Engine::Resources::load_sound("sounds/A STORY TO TELL - Jazz MSCLJZ2_26.wav");
+  walk_sound = Engine::Resources::load_sound("sounds/SFX/Player/Player Footstep.wav");
+  jump_sound = Engine::Resources::load_sound("sounds/SFX/Player/Player Jump (DJ SY Edition).wav");
+  punch_sound = Engine::Resources::load_sound("sounds/SFX/Player/Player Swing.wav");
+  bgm_sound = Engine::Resources::load_sound("sounds/Level 1 BGM.wav");
 
   // Load fonts
   title_font = Engine::Resources::load_font("fonts/PlayfairDisplay-VariableFont_wght.ttf", 82);
@@ -62,7 +62,7 @@ void ShowcaseState::init() {
   Components::AnimationState player_anim_state;
 
   // Add idle state (24 frames) - looping, no auto-transition
-  player_anim_state.add_state(
+  player_anim_state.add_animation_state(
     IDLE_STATE,
     Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_idle_spritesheet.png")),
     Components::TextureAtlas(64, 64, 1, 24, 24),
@@ -73,7 +73,7 @@ void ShowcaseState::init() {
   );
 
   // Add run state (8 frames) - looping, no auto-transition
-  player_anim_state.add_state(
+  player_anim_state.add_animation_state(
     RUN_STATE,
     Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_run_spritesheet.png")),
     Components::TextureAtlas(64, 64, 1, 8, 8),
@@ -84,7 +84,7 @@ void ShowcaseState::init() {
   );
 
   // Add jump state (8 frames) - looping, uses run animation
-  player_anim_state.add_state(
+  player_anim_state.add_animation_state(
     JUMP_STATE,
     Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_run_spritesheet.png")),
     Components::TextureAtlas(64, 64, 1, 8, 8),
@@ -95,7 +95,7 @@ void ShowcaseState::init() {
   );
 
   // Add punch state (6 frames) - one-shot, auto-transitions to idle
-  player_anim_state.add_state(
+  player_anim_state.add_animation_state(
     PUNCH_STATE,
     Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_threehit_spritesheet.png")),
     Components::TextureAtlas(96, 64, 1, 19, 6),
@@ -106,7 +106,7 @@ void ShowcaseState::init() {
   );
 
   // Set initial state to idle
-  player_anim_state.set_entity_state(IDLE_STATE);
+  player_anim_state.set_animation_state(IDLE_STATE);
 
   // Create player with AnimationState
   player = Engine::ECS::create_entity()
@@ -194,6 +194,8 @@ void ShowcaseState::init() {
 
   // Subscribe to attack events
   Engine::EventManager::add_event_listener<AttackEvent>([this](const AttackEvent& event) {
+    Log::info("Attack event! Entity {} attacks Entity {} for {} damage!", event.attacker, event.target, event.damage);
+
     // Play attack animation
     if (event.attacker == player.get_id()) {
       // Stop walk sound if playing
@@ -208,7 +210,8 @@ void ShowcaseState::init() {
       // Switch to punch animation state
       auto* anim_state = player.get_component<Components::AnimationState>();
       if (anim_state) {
-        anim_state->set_entity_state(PUNCH_STATE);
+        anim_state->set_animation_state(PUNCH_STATE);
+        Log::info("Playing punch animation");
       }
     }
 
@@ -226,11 +229,16 @@ void ShowcaseState::init() {
     // Apply damage to enemy
     auto target_entity = Engine::ECS::get_entity(event.target);
     if (target_entity.is_valid()) {
+      Log::info("Target entity is valid");
 
       if (target_entity.has_component<Components::Health>()) {
+        Log::info("Target has health component");
         auto* health = target_entity.get_component<Components::Health>();
+        Log::info("Health before damage: {}", health->value);
 
         health->damage(event.damage);
+
+        Log::info("Health after damage: {}", health->value);
 
         // Update enemy health text
         if (enemy_health_text.is_valid() && enemy_health_text.has_component<Components::Text>()) {
@@ -239,14 +247,23 @@ void ShowcaseState::init() {
         }
 
         if (health->is_dead()) {
+          Log::info("Entity {} has been defeated!", event.target);
           target_entity.destroy();
         }
       }
+      else {
+        Log::error("ERROR: Target entity does not have health component!");
+      }
+    }
+    else {
+      Log::error("ERROR: Target entity is not valid!");
     }
     });
 
   // Subscribe to collect events
   Engine::EventManager::add_event_listener<CollectEvent>([this](const CollectEvent& event) {
+    Log::info("Collect event! Entity {} collected Entity {} for {} points!", event.collector, event.collected, event.points);
+
     // Update score
     if (event.collector == player.get_id()) {
       banana_collected += event.points;
@@ -271,19 +288,6 @@ void ShowcaseState::init() {
 
   // Start playing background music (looped)
   bgm_channel = Engine::Audio::play_sound(bgm_sound, 0.5f, true);
-
-
-  //Chatbox
-  chatbox_system = std::make_unique<Engine::Systems::ChatBox>();
-
-  // Load dialogue box texture directly (no ECS entities)
-  auto chatbox_bg_tex = Engine::Resources::load_texture("images/BroDialogueBox/DarkRed Dialogue.png");
-
-  chatbox_system->init(info_font, chatbox_bg_tex);
-// Optionally follow player:
-// chatbox_system->set_follow_entity(player);
-// chatbox_system->set_follow_offset(Math::Vec2D(0.0f, -150.0f));
-
 }
 
 void ShowcaseState::update() {
@@ -322,7 +326,7 @@ void ShowcaseState::update() {
     if (Engine::Input::is_pressed(Engine::KeyCode::Space) && rigid->on_ground) {
       Engine::Systems::Physics2DSystem::jump(*rigid);
       Engine::Audio::play_sound(jump_sound);
-      anim_state->set_entity_state(JUMP_STATE);
+      anim_state->set_animation_state(JUMP_STATE);
 
       // Stop walking sound when jumping
       if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
@@ -335,7 +339,7 @@ void ShowcaseState::update() {
     if (!rigid->on_ground) {
       // In the air - use jump animation
       if (anim_state->current_state != JUMP_STATE) {
-        anim_state->set_entity_state(JUMP_STATE);
+        anim_state->set_animation_state(JUMP_STATE);
 
         // Stop walking sound when in air
         if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
@@ -347,14 +351,14 @@ void ShowcaseState::update() {
     else if (moving_horizontally) {
       // On ground and moving - use run animation
       if (anim_state->current_state != RUN_STATE) {
-        anim_state->set_entity_state(RUN_STATE);
+        anim_state->set_animation_state(RUN_STATE);
         walk_sound_channel = Engine::Audio::play_sound(walk_sound, 1.0f, true);
       }
     }
     else {
       // On ground and not moving - use idle animation
       if (anim_state->current_state != IDLE_STATE) {
-        anim_state->set_entity_state(IDLE_STATE);
+        anim_state->set_animation_state(IDLE_STATE);
 
         if (walk_sound_channel != Engine::Audio::INVALID_CHANNEL) {
           Engine::Audio::stop_channel(walk_sound_channel);
@@ -370,6 +374,8 @@ void ShowcaseState::update() {
 
   // Attack enemy with E key (using event system)
   if (Engine::Input::is_pressed(Engine::KeyCode::E) && anim_state->current_state != PUNCH_STATE) {
+    Log::info("E key pressed! Player ID: {}, Enemy ID: {}", player.get_id(), enemy.get_id());
+
     // Send attack event 
     Engine::EventManager::send_event<AttackEvent>(player.get_id(), enemy.get_id(), 10);
 
@@ -391,17 +397,10 @@ void ShowcaseState::update() {
     //camera_comp->position.y = player_transform->position.y - Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().window_height / 2.0f;
   }
 
-  // Update chatbox system (do not recreate it every frame)
-  if (chatbox_system) {
-    chatbox_system->update_entities(Engine::Time::get_fixed_dt());
-  }
 }
 
 void ShowcaseState::draw() {
   Engine::Graphics::clear_screen(background_texture);
-  if (chatbox_system) {
-    chatbox_system->draw_ui();
-  }
 }
 
 void ShowcaseState::free() {
@@ -422,11 +421,6 @@ void ShowcaseState::free() {
   // Remove event listeners
   Engine::EventManager::remove_event_listener<AttackEvent>();
   Engine::EventManager::remove_event_listener<CollectEvent>();
-
-	// Clear chatbox system
-  if (chatbox_system) {
-    chatbox_system->cleanup();
-  }
 }
 
 void ShowcaseState::unload() {

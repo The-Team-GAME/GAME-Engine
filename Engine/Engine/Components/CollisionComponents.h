@@ -17,6 +17,8 @@
 #include "../ECS/Macros.h"
 #include <limits>
 
+using Math::Vec2D;
+
 struct CollisionResult {
   bool collided = false;
   Vec2D mtv;  // Minimum Translation Vector aka penetration vector
@@ -28,11 +30,15 @@ struct CollisionResult {
   }
 
   // Helper methods
-  Vec2D get_normal() const {
+  Vec2D get_normalise_mtv() const {
     return normalise_vector(mtv);
   }
   f32 get_penetration() const {
     return mtv.get_magnitude();
+  }
+  Vec2D get_tangent() const {
+    // Here we flip the normal clockwise because we flip the vector counter clockwise to get the normal
+    return rotate(mtv, -90.f);
   }
 };
 
@@ -73,8 +79,8 @@ struct AABB {
 
     return  (pos.x - half_width < rhs.pos.x + rhs.half_width)   &&
             (rhs.pos.x - rhs.half_width < pos.x + half_width)   &&
-            (pos.y - half_height < rhs.pos.y + rhs.half_height) &&
-            (rhs.pos.y - rhs.half_height < pos.y + half_height);
+      (pos.y - half_height < rhs.pos.y + rhs.half_height) &&
+      (rhs.pos.y - rhs.half_height < pos.y + half_height);
   }
 };
 
@@ -128,7 +134,7 @@ struct Polygon
   }
 
   // For this function, it dosent matter if the vertices are in clockwise or anticlockwise order, as long as they are inserted in the intended order
-  std::vector<Vec2D> get_axes() const 
+  std::vector<Vec2D> get_axes() const
   {
     std::vector<Vec2D> transformed = get_transformed_vertices();
     std::vector<Vec2D> axes;
@@ -147,26 +153,26 @@ struct Polygon
   }
 
   // Projection of polygon onto an axis
-  struct Projection 
+  struct Projection
   {
     f32 min;
     f32 max;
 
     // Checking if 2 projections overlap
-    bool overlaps(const Projection& other) const 
+    bool overlaps(const Projection& other) const
     {
       return !(max < other.min || other.max < min);
     }
 
     // Checking how much 2 projections overlap when they overlap
-    f32 get_overlap(const Projection& other) const 
+    f32 get_overlap(const Projection& other) const
     {
       return std::min(max, other.max) - std::max(min, other.min);
     }
   };
 
   // Projecting the polygon onto an axis -> only one ah, means need call once per axis check
-  Projection project_onto_axis(Vec2D const& axis) const 
+  Projection project_onto_axis(Vec2D const& axis) const
   {
     std::vector<Vec2D> transformed = get_transformed_vertices();
 
@@ -178,7 +184,7 @@ struct Polygon
       min = projection < min ? projection : min;
       max = projection > max ? projection : max;
     }
-    
+
     return { min, max };
   }
 
@@ -194,14 +200,14 @@ struct Polygon
       Projection other_projection = other.project_onto_axis(axis);
 
       // If even one axis dosent overlap, the 2 polygons do not collide
-      if (!my_projection.overlaps(other_projection)) 
+      if (!my_projection.overlaps(other_projection))
       {
         // No collision
         return CollisionResult(false, Vec2D(0, 0));
       }
 
       f32 overlap = my_projection.get_overlap(other_projection);
-      if (overlap < smallest_overlap) 
+      if (overlap < smallest_overlap)
       {
         smallest_overlap = overlap;
         smallest_axis = axis;
@@ -215,13 +221,13 @@ struct Polygon
       Projection other_projection = other.project_onto_axis(axis);
 
       // The order of checking dosent matter here :>
-      if (!my_projection.overlaps(other_projection)) 
+      if (!my_projection.overlaps(other_projection))
       {
         return CollisionResult(false, Vec2D(0, 0));
       }
 
       f32 overlap = my_projection.get_overlap(other_projection);
-      if (overlap < smallest_overlap) 
+      if (overlap < smallest_overlap)
       {
         smallest_overlap = overlap;
         smallest_axis = axis;
@@ -269,9 +275,17 @@ namespace Components
     f32 width;
     f32 height;
     f32 radius;
-
     // Polygon data (for rotated/custom shapes)
     Polygon polygon;
+
+    // Offset from the entity's position
+    Vec2D offset = { 0.0f, 0.0f };
+
+    // For friction, 1 is no friction and 0 is 100% energy loss
+    // Used when an object is at rest to make it harder to start moving (used when objects are on a slope)
+    f32 static_friction; 
+    // Used when an object is moving, acts against the direction the object is moving
+    f32 kinetic_friction = 1.f; 
 
     // AABB constructor (existing - no rotation)
     BoxCollider(f32 width, f32 height, bool is_static_object)
@@ -298,12 +312,15 @@ namespace Components
     }
 
     // Default constructor for reflection
-    BoxCollider() : width(0.0f), height(0.0f), radius(0.0f), resolve_collisions(false)
+    BoxCollider() : width(0.0f), height(0.0f), radius(0.0f), resolve_collisions(false), offset(0.0f, 0.0f)
     {
       /* empty by design */
     }
+
   };
 }
 
+REFLECT_ENUM(Components::ColliderType, AABB, OBB, POLYGON)
 REFLECT_FIELDS(AABB, pos, half_width, half_height)
-REGISTER_COMPONENT(Components::BoxCollider, resolve_collisions, width, height, radius, aabb)
+REFLECT_FIELDS(Polygon, vertices, position, rotation)
+REGISTER_COMPONENT(Components::BoxCollider, resolve_collisions, type, width, height, radius, polygon, aabb, offset, kinetic_friction)

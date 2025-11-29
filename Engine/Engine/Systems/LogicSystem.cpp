@@ -1,3 +1,17 @@
+//-----------------------------------------------------------------------------------
+// file:    LogicSystem.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Cheng Ming Xian (100%)
+//          Primary author
+//
+// email:   c.mingxian@digipen.edu
+//
+// brief:   This file defines a system that handles the prototype state machine testing
+//          for the player and NPCs
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "LogicSystem.h"
 #include "../Math/Vector2D.h"
 #include "../InputManager.h"
@@ -13,9 +27,9 @@ namespace { // in the cpp file
   /*===============/
   / Movement stuff /
   /===============*/
-  f32 walking_x_vel = 400.f;
+  f32 walking_speed = 400.f;
   Vec2D patrol_speed(150.f, 0.f);
-  Vec2D jumping_force(0.f, -3500000.f);
+  Vec2D jumping_force(0.f, -35000.f);
 
   /*==================/
   / Enemy Logic stuff /
@@ -37,8 +51,7 @@ void logi::load_values()
 
 void logi::update_entity(Engine::ECS::Entity& entity)
 {
-  run_state(entity);
-
+  run_state(entity); 
 }
 
 void logi::take_input(ECS::Entity player)
@@ -183,12 +196,36 @@ void logi::run_state(ECS::Entity entity)
 
 void logi::move_left(Components::RigidBody& rigid)
 {
-  rigid.velocity.x = -walking_x_vel;
+  if (rigid.on_ground)
+  {
+    Vec2D direction = rigid.last_surface_dir_vector;
+    if (dot_product(direction, Vec2D(-1.f, 0.f)) < 0)
+    {
+      direction *= -1;
+    }
+    rigid.velocity = direction * walking_speed;
+  }
+  else
+  {
+    rigid.velocity.x = -walking_speed;
+  }
 }
 
 void logi::move_right(Components::RigidBody& rigid)
 {
-  rigid.velocity.x = walking_x_vel;
+  if (rigid.on_ground)
+  {
+    Vec2D direction = rigid.last_surface_dir_vector;
+    if (dot_product(direction, Vec2D(1.f, 0.f)) < 0)
+    {
+      direction *= -1;
+    }
+    rigid.velocity = direction * walking_speed;
+  }
+  else
+  {
+    rigid.velocity.x = walking_speed;
+  }
 }
 
 void logi::jump(Components::RigidBody& rigid)

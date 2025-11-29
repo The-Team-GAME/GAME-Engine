@@ -2,10 +2,10 @@
 // file:    CollisionSystem.cpp
 // project: Monkey Stole My GPA
 //
-// author:   (100%)
+// author:  Cheng Ming Xian (100%)
 //          Primary author
 //
-// email:   @digipen.edu
+// email:   c.mingxian@digipen.edu
 //
 // brief:   This file defines a system that handles the collision detection and
 //          collision resolution for entities that contain the components of
@@ -63,6 +63,9 @@ void col2D::update()
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
 
+    // Reset rigid->on_ground here
+    rigid->on_ground = false;
+
     // Get entity's layers
     ECS::LayerSignature entity_layers = entity.get_layers();
 
@@ -71,9 +74,16 @@ void col2D::update()
     // In the future the range for the find near entity could be expanded to the range that entity could travel in that frame, but for now ill double the current entity's aabb
     spatial_tree_sat->find_near_entity(AABB(box->aabb.pos, box->width, box->height), nearby);
 
+    // This is because the entity can collide with more than one hard surface (floor and wall corner) in one frame, so we have to identify them
+    Vec2D best_ground_normal;
+    f32 best_ground_penetration = 0;
+    bool found_ground = false;
+
     // Check collision only with nearby entities
     for (ECS::Entity& other : nearby)
     {
+
+#pragma region collision checks
       // Skip self-collision
       if (entity == other) { continue; }
 
@@ -97,6 +107,7 @@ void col2D::update()
         // skip other_entity if they dont collide
         continue;
       }
+#pragma endregion
 
       /*===============================
       / Start of Collision Resolution /
@@ -107,12 +118,64 @@ void col2D::update()
       {
         Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
 
-        xform->position -= collision.mtv;
-        phy2D::kill_normal_component(*rigid, collision.mtv);
-
-        if (collision.mtv.y > 0) // make smth to calculate the angle here maybe
+        // we add the MTV here because it is not the penetration vector but rather how far the object needs to be pushed out to resolve the collision
+        
+        // Apply Slop (Threshold)
+        // We allow a small amount of penetration to prevent jittering when gravity fights collision resolution
+        const f32 COLLISION_SLOP = 0.5f; // Allow 0.5 pixels of penetration
+        f32 penetration = collision.get_penetration();
+        
+        // Only resolve if penetration is deeper than the slop
+        if (penetration > COLLISION_SLOP)
         {
-          rigid->on_ground = true;
+          // Calculate the correction vector (push out only the amount exceeding the slop)
+          // We want to push out by (penetration - slop), not the full penetration
+          // This keeps the object slightly "resting" in the surface, preventing the 1-frame jitter cycle
+          Vec2D correction = collision.get_normalise_mtv() * (penetration - COLLISION_SLOP);
+          xform->position += correction;
+        }
+
+        // Check if this is a ground collision (MTV pointing mostly upward)
+        Vec2D normal = normalise_vector(collision.mtv);
+        if (normal.y < -0.f) // Pointing upward (remember: -y is up)
+        {
+          // For ground detection, we still use the full penetration to find the "best" ground
+          if (!found_ground || penetration > best_ground_penetration)
+          {
+            best_ground_normal = normal;
+            best_ground_penetration = penetration;
+            found_ground = true;
+          }
+        }
+        f32 combined_static = box->static_friction * other_box->static_friction; // not used yet
+        f32 combined_kinetic = box->kinetic_friction * other_box->kinetic_friction;
+        phy2D::zero_normal_velocity(*rigid, collision);
+        phy2D::apply_surface_friction(*rigid, collision, combined_static, combined_kinetic);
+
+        // Gona calculate the angle of the slope that the player last interacted with
+        // Note:: i will not take direction into account as all the values are going to be absolute values
+        if (found_ground)
+        {
+          rigid->last_surface_dir_vector = normalise_vector(rotate(best_ground_normal, -90));
+          if (angle_of_slope(rigid->last_surface_dir_vector) < phy2D::get_slope_angle_limit())
+          {
+            rigid->on_ground = true;
+
+            // Calculate gravity force vector
+            Vec2D gravity_force = phy2D::get_gravity() * rigid->mass;
+            Vec2D surface_tangent = rigid->last_surface_dir_vector;
+
+            // How much does gravity pull ALONG the slope?
+            f32 gravity_along_slope = dot_product(gravity_force, surface_tangent);
+
+            // Only counter it if pulling down slope AND entity nearly stationary
+            if (gravity_along_slope < 0.f)
+            {
+              // Apply force ALONG the slope that cancels gravity's slope component
+              Vec2D anti_gravity_force = surface_tangent * -gravity_along_slope;
+              phy2D::add_force(*rigid, anti_gravity_force);
+            }
+          }
         }
       }
       /*=============================
@@ -207,7 +270,7 @@ CollisionResult col2D::check_collision(
     AABB minkowski = minkowski_AABB(lhs, rhs);
     Vec2D pen_vec = penetration_vector(minkowski);
 
-    return CollisionResult{ true, pen_vec };
+    return CollisionResult{ true, -pen_vec };
   }
   else
   {
@@ -215,16 +278,19 @@ CollisionResult col2D::check_collision(
     if (lhs.type == Components::ColliderType::AABB)
     {
       Polygon poly_a = Polygon(lhs.aabb);
-      return poly_a.intersects(rhs.polygon);
+      CollisionResult result = poly_a.intersects(rhs.polygon);
+      return result;
     }
     else if (rhs.type == Components::ColliderType::AABB)
     {
       Polygon poly_b = Polygon(rhs.aabb);
-      return poly_b.intersects(lhs.polygon);
+      CollisionResult result = poly_b.intersects(lhs.polygon);
+      return result;
     }
     else
     {
-      return lhs.polygon.intersects(rhs.polygon);
+      CollisionResult result = lhs.polygon.intersects(rhs.polygon);
+      return result;
     }
   }
 }
@@ -698,12 +764,6 @@ AABB col2D::minkowski_AABB(Components::BoxCollider const& dynamic_obj, Component
   AABB minkowski;
   // get the direction vector wrt the static object so that static obj becomes the "origin"
   minkowski.pos = dynamic_obj.aabb.pos - static_obj.aabb.pos;
-#if 0
-  f32 half_width = (dynamic_obj.width + static_obj.width) / 2;
-  f32 half_height = (dynamic_obj.height + static_obj.height) / 2;
-  minkowski.min = Vec2D(minkowski.pos.x - half_width, minkowski.pos.y - half_height);
-  minkowski.max = Vec2D(minkowski.pos.x + half_width, minkowski.pos.y + half_height);
-#endif
   minkowski.half_width = dynamic_obj.aabb.half_width + static_obj.aabb.half_width;
   minkowski.half_height = dynamic_obj.aabb.half_height + static_obj.aabb.half_height;
   return minkowski;

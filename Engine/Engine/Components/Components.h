@@ -18,6 +18,7 @@
 
 
 #include "UtilityComponents.h"
+#include "AudioComponents.h"
 #include "GraphicsComponents.h"
 #include "PhysicsComponents.h"
 #include "SpatialComponents.h"
@@ -26,3 +27,6 @@
 #include "UIComponents.h"
 #include "TilemapComponents.h"
 #include "GizmoComponents.h"
+#include "StateMachineComponents.h"
+#include "EffectComponents.h"
+#include "LevelComponent.h"
