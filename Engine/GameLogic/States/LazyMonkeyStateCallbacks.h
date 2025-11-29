@@ -188,7 +188,7 @@ namespace LazyMonkeyStateCallbacks
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
     auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
-    auto* transform = entity.get_component<Components::Transform2D>();
+    // auto* transform = entity.get_component<Components::Transform2D>();
 
     if (rigid && flip && lazy_monkey && rigid->on_ground) {
       // Throw monkey forward based on facing direction
@@ -197,31 +197,15 @@ namespace LazyMonkeyStateCallbacks
       rigid->velocity.y = -lazy_monkey->leap_height; // Negative is up
     }
 
-    // Create attack hitbox entity in damage_player layer
-    if (transform && lazy_monkey && flip) {
-      float offset_x = (flip->value.x > 0) ? lazy_monkey->hitbox_offset_x : -lazy_monkey->hitbox_offset_x;
-      float offset_y = lazy_monkey->hitbox_offset_y;
-
-      auto hitbox = Engine::ECS::create_entity()
-        .add_component<Components::Tag<"MonkeyAttackHitbox">>()
-        .add_component<Components::Attack>(lazy_monkey->damage)
-        .add_component<Components::Transform2D>(
-          transform->position.x + offset_x,
-          transform->position.y + offset_y,
-          0.0f,
-          lazy_monkey->hitbox_width,
-          lazy_monkey->hitbox_height
-        )
-        .add_component<Components::RigidBody>(true, false)
-        .add_component<Components::BoxCollider>(lazy_monkey->hitbox_width, lazy_monkey->hitbox_height, false)
-        .add_component<Components::Parent>(entity)
-        .add_component<Components::Lifetime>(1.0f) // Attack animation duration
-        .remove_from_layer("default")
-        .add_to_layer("damage_player");
-
-      // Apply knockback direction based on facing
-      auto* attack = hitbox.get_component<Components::Attack>();
+    // Make the monkey itself the hitbox
+    if (lazy_monkey && flip) {
+      // Add Attack component to the monkey
+      // Note: We use the monkey's own collider for the attack hitbox now
+      entity.add_component<Components::Attack>(lazy_monkey->damage);
+      auto* attack = entity.get_component<Components::Attack>();
+      
       if (attack) {
+        // Apply knockback direction based on facing
         attack->knockback = lazy_monkey->knockback;
         if (flip->value.x < 0) {
           attack->knockback.x = -attack->knockback.x;
@@ -229,6 +213,10 @@ namespace LazyMonkeyStateCallbacks
         // Knockback Y is always positive (up) in our config, but physics needs negative for up
         attack->knockback.y = -std::abs(attack->knockback.y);
       }
+
+      // Add to damage_player layer so it collides with player
+      // We KEEP the enemy layer so it still collides with ground
+      entity.add_to_layer("damage_player");
     }
 
     Log::info("Lazy Monkey: Entered Attacking state");
@@ -251,6 +239,12 @@ namespace LazyMonkeyStateCallbacks
       // Update last attack time for cooldown
       lazy_monkey->last_attack_time = Engine::Time::get_time();
     }
+
+    // Remove Attack component and damage_player layer
+    if (entity.has_component<Components::Attack>()) {
+      entity.remove_component<Components::Attack>();
+    }
+    entity.remove_from_layer("damage_player");
   }
 
   //// ========================================================================
