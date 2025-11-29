@@ -52,12 +52,14 @@ void PauseState::load()
       Engine::ECS::for_each_entity([&](Engine::ECS::Entity entity) {
         if (entity.has_component<Components::Parent>()) {
           auto* parent_comp = entity.get_component<Components::Parent>();
-          if (parent_comp->parent_id == level_entity.get_id()) {
+          if (parent_comp && parent_comp->parent_id == level_entity.get_id()) {
             // This entity is a child of the Pause Level, move it to camera position
             if (entity.has_component<Components::Transform2D>()) {
               auto* transform = entity.get_component<Components::Transform2D>();
-              transform->position.x = cam_x;
-              transform->position.y = cam_y;
+              if (transform) {
+                transform->position.x = cam_x;
+                transform->position.y = cam_y;
+              }
             }
           }
         }
@@ -175,7 +177,7 @@ void PauseState::unload()
       Engine::ECS::for_each_entity([&](Engine::ECS::Entity entity) {
         if (entity.has_component<Components::Parent>()) {
           auto* parent_comp = entity.get_component<Components::Parent>();
-          if (parent_comp->parent_id == level_entity.get_id()) {
+          if (parent_comp && parent_comp->parent_id == level_entity.get_id()) {
             // This entity is a child of the Pause Level, destroy it
             entity.destroy();
           }
