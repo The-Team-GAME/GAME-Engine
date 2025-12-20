@@ -597,12 +597,69 @@ namespace ImGuiWidgets {
 
     std::string current_function = name_field.getString();
 
+    std::string label = "Function##" + field_name;
+
+    // Display all functions from all registries
+    auto& easing_functions = Engine::FunctionRegistry<f32(f32, f32, f32, f32)>::get_functions();
+    auto& entity_functions = Engine::FunctionRegistry<void(Engine::ECS::Entity&)>::get_functions();
+    auto& void_functions = Engine::FunctionRegistry<void()>::get_functions();
+
+    if (ImGui::BeginCombo(label.c_str(), current_function.empty() ? "<None>" : current_function.c_str())) {
+      bool is_selected = current_function.empty();
+      if (ImGui::Selectable("<None>", is_selected)) {
+        name_field = std::string("");
+        modified = true;
+      }
+      if (is_selected) ImGui::SetItemDefaultFocus();
+
+      // Display easing functions
+      if (!easing_functions.empty()) {
+        ImGui::TextDisabled("--- Easing Functions (f32(f32,f32,f32,f32)) ---");
+        for (const auto& [name, func] : easing_functions) {
+          is_selected = (current_function == name);
+          if (ImGui::Selectable(name.c_str(), is_selected)) {
+            name_field = name;
+            modified = true;
+          }
+          if (is_selected) ImGui::SetItemDefaultFocus();
+        }
+      }
+
+      // Display entity callback functions
+      if (!entity_functions.empty()) {
+        ImGui::TextDisabled("--- Entity Callbacks (void(Entity&)) ---");
+        for (const auto& [name, func] : entity_functions) {
+          is_selected = (current_function == name);
+          if (ImGui::Selectable(name.c_str(), is_selected)) {
+            name_field = name;
+            modified = true;
+          }
+          if (is_selected) ImGui::SetItemDefaultFocus();
+        }
+      }
+
+      // Display void functions
+      if (!void_functions.empty()) {
+        ImGui::TextDisabled("--- Void Functions (void()) ---");
+        for (const auto& [name, func] : void_functions) {
+          is_selected = (current_function == name);
+          if (ImGui::Selectable(name.c_str(), is_selected)) {
+            name_field = name;
+            modified = true;
+          }
+          if (is_selected) ImGui::SetItemDefaultFocus();
+        }
+      }
+
+      ImGui::EndCombo();
+    }
+    return true;
+
+    /* COMMENTED OUT: Original implementation that filtered by field name
     // Determine which signature to use based on field name
     // Common patterns: callbacks ending in "callback" use void(Entity&)
     //                  easing functions use f32(f32,f32,f32,f32)
     //                  click handlers use void()
-
-    std::string label = "Function##" + field_name;
 
     // Check if it's an easing function
     if (field_name.find("easing") != std::string::npos) {
@@ -677,6 +734,7 @@ namespace ImGuiWidgets {
       }
       return true;
     }
+    */
   }
 
   bool render_box_collider_field(ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity, Engine::ECS::Prefab* prefab, const std::string& prefab_path) {

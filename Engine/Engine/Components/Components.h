@@ -28,3 +28,4 @@
 #include "GizmoComponents.h"
 #include "StateMachineComponents.h"
 #include "EffectComponents.h"
+#include "LevelComponent.h"

@@ -27,22 +27,31 @@ namespace {
   float rand_range(float a, float b) { return a + (b - a) * rand01(); }
 }
 
+ParticleSystem* ParticleSystem::s_instance = nullptr;
+
 // ------------- ctor / init -------------
 ParticleSystem::ParticleSystem() {
   Engine::EventManager::add_event_listener<SpawnParticlesEvent>(
     [this](const SpawnParticlesEvent& e) {
       if (!initialized_) lazy_init();
-      emitter_.position = e.pos;
-      spawn_burst(std::max(0, e.count));
-      });
+      on_spawn(e);
+    });
+  Engine::EventManager::add_event_listener<SetParticleParamsEvent>(
+    [this](const SetParticleParamsEvent& e) {
+      if (!initialized_) lazy_init();
+      on_set(e);
+    });
   subscribed_ = true;
+  s_instance = this;
 }
 
 ParticleSystem::~ParticleSystem() {
   if (subscribed_) { 
-    Engine::EventManager::remove_event_listener<SpawnParticlesEvent>(); 
+    Engine::EventManager::remove_event_listener<SpawnParticlesEvent>();
+    Engine::EventManager::remove_event_listener<SetParticleParamsEvent>();
     subscribed_ = false; 
   }
+  if (s_instance == this) s_instance = nullptr;
 }
 
 // ------------- init -------------
@@ -60,8 +69,24 @@ bool ParticleSystem::ensure_entity(ParticleSlot& s) {
     .add_component<Components::Tag<"Particle">>()
     .add_component<Components::Transform2D>(emitter_.position.x, emitter_.position.y, 0.f, 3.f, 3.f)
     .add_component<Components::Texture>(white)
-    .add_component<Components::Color>(1.f, 1.f, 1.f, 1.f);
+    .add_component<Components::Color>(1.f, 1.f, 1.f, 1.f)
+    .remove_from_layer("default")
+    .add_to_layer("enemy");
   return s.entity.is_valid();
+}
+
+void ParticleSystem::on_set(const SetParticleParamsEvent& e) {
+  if (!initialized_) lazy_init();
+  if (e.angle_deg)  emitter_.angle_deg = *e.angle_deg;
+  if (e.spread_deg) emitter_.spread_deg = *e.spread_deg;
+  if (e.rate)       emitter_.rate = *e.rate;
+  if (e.playing)    emitter_.playing = *e.playing;
+}
+
+void ParticleSystem::on_spawn(const SpawnParticlesEvent& e) {
+  if (!initialized_) lazy_init();
+  emitter_.position = e.pos;
+  spawn_burst(std::max(0, e.count));
 }
 
 // ------------- spawning -------------

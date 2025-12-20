@@ -28,6 +28,7 @@
 #include "SceneChooserPanel.h"
 #include "LayerManagerPanel.h"
 #include "ColliderEditorPanel.h"
+#include "SelectiveLevelSavePanel.h"
 
 void register_all_panels()
 {
@@ -43,4 +44,5 @@ void register_all_panels()
   ImGuiManager::register_panel("Scene Chooser", SceneChooserPanel);
   ImGuiManager::register_panel("Layer Manager", LayerManagerPanel);
   ImGuiManager::register_panel("Collider Editor", ColliderEditorPanel);
+  ImGuiManager::register_panel("Selective Level Save", SelectiveLevelSavePanel);
 }

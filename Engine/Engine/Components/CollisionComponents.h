@@ -30,11 +30,15 @@ struct CollisionResult {
   }
 
   // Helper methods
-  Vec2D get_normal() const {
+  Vec2D get_normalise_mtv() const {
     return normalise_vector(mtv);
   }
   f32 get_penetration() const {
     return mtv.get_magnitude();
+  }
+  Vec2D get_tangent() const {
+    // Here we flip the normal clockwise because we flip the vector counter clockwise to get the normal
+    return rotate(mtv, -90.f);
   }
 };
 
@@ -271,12 +275,17 @@ namespace Components
     f32 width;
     f32 height;
     f32 radius;
-
     // Polygon data (for rotated/custom shapes)
     Polygon polygon;
 
     // Offset from the entity's position
     Vec2D offset = { 0.0f, 0.0f };
+
+    // For friction, 1 is no friction and 0 is 100% energy loss
+    // Used when an object is at rest to make it harder to start moving (used when objects are on a slope)
+    f32 static_friction; 
+    // Used when an object is moving, acts against the direction the object is moving
+    f32 kinetic_friction = 1.f; 
 
     // AABB constructor (existing - no rotation)
     BoxCollider(f32 width, f32 height, bool is_static_object)
@@ -311,5 +320,7 @@ namespace Components
   };
 }
 
+REFLECT_ENUM(Components::ColliderType, AABB, OBB, POLYGON)
 REFLECT_FIELDS(AABB, pos, half_width, half_height)
-REGISTER_COMPONENT(Components::BoxCollider, resolve_collisions, width, height, radius, aabb, offset)
+REFLECT_FIELDS(Polygon, vertices, position, rotation)
+REGISTER_COMPONENT(Components::BoxCollider, resolve_collisions, type, width, height, radius, polygon, aabb, offset, kinetic_friction)

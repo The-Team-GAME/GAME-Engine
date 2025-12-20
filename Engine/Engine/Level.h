@@ -13,7 +13,7 @@ namespace Engine {
 
     static Level from_world();
 
-    void instantiate_into_world();
+    void instantiate_into_world(bool clear_world = true);
 
   };
 

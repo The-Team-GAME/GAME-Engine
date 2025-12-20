@@ -19,7 +19,7 @@ Engine::Level Engine::Level::from_world()
 
   Engine::ECS::for_each_entity([&](Engine::ECS::Entity entity) {
     // Skip tile entities - they are temporary and rebuilt by TilemapManager
-    if (entity.has_components<Components::TileCollider>()) {
+    if (entity.has_components<Components::TileCollider, Components::Level>()) {
       return;
     }
 
@@ -30,22 +30,35 @@ Engine::Level Engine::Level::from_world()
   return level;
 }
 
-void Engine::Level::instantiate_into_world()
+void Engine::Level::instantiate_into_world(bool clear_world)
 {
   //Engine::SceneManager::load_scene("EmptyState"); // TODO: very hacky, just use empty scene for now, need better scene/level management
 
   std::cout << "Instantiating level with " << entities.size() << " entities." << std::endl;
 
-  Engine::ECS::for_each_entity([](Engine::ECS::Entity entity) {
-    entity.destroy();
-    });
+  if (clear_world) {
+    Engine::ECS::for_each_entity([](Engine::ECS::Entity entity) {
+      entity.destroy();
+      });
+  }
 
   // Process housekeeping to ensure old entities (including tile colliders) are actually destroyed
   // before creating new ones. This prevents tile colliders from previous levels from persisting.
   Engine::ECS::process_housekeeping();
 
+  // Create the Level entity
+  Engine::ECS::Entity level_entity = Engine::ECS::create_entity();
+  level_entity.add_component<Components::Level>(Engine::Resources::get_relative_path(LevelManager::get_current_level_path()));
+  level_entity.add_component<Components::Transform2D>(); // Level needs transform to be a parent
+
   for (const auto& entity_value : entities) {
-    Engine::ECS::create_entity_from_generic_value(entity_value);
+    Engine::ECS::Entity new_entity = Engine::ECS::create_entity_from_generic_value(entity_value);
+    
+    // If the entity doesn't have a parent, make it a child of the Level entity
+    if (new_entity.is_valid() && !new_entity.has_component<Components::Parent>()) {
+      new_entity.add_component<Components::Parent>(level_entity.get_id());
+    }
+    
     // This creates all entities including TileMap entities which store the tile data
   }
 

@@ -44,7 +44,6 @@
     <ClCompile Include="Engine\Math\Vector3D.cpp" />
     <ClCompile Include="Engine\Math\Vector4D.cpp" />
     <ClCompile Include="Engine\WindowManager.cpp" />
-    <ClCompile Include="GameLogic\GameStates\RectPainterState.cpp" />
     <ClCompile Include="GameLogic\WinMain.cpp" />
     <ClCompile Include="Engine\Systems\ParticleSystem.cpp" />
     <ClCompile Include="Engine\ECS\Types.cpp" />
@@ -104,6 +103,7 @@
     <ClCompile Include="Engine\GUI\ColliderEditorPanel.cpp" />
     <ClCompile Include="Engine\Random.cpp" />
     <ClCompile Include="Engine\GUI\widgets\ColliderEditorWidget.cpp" />
+    <ClCompile Include="GameLogic\GameStates\PauseState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -172,7 +172,6 @@
     <ClInclude Include="Engine\Precompiled.h" />
     <ClInclude Include="Engine\Graphics\Renderer.h" />
     <ClInclude Include="Engine\Systems\PhysicsSystem.h" />
-    <ClInclude Include="GameLogic\GameStates\RectPainterState.h" />
     <ClInclude Include="GameLogic\GameStates\Rubric2500ParticlesState.h" />
     <ClInclude Include="Engine\FileHandler.h" />
     <ClInclude Include="Engine\Time.h" />
@@ -230,6 +229,12 @@
     <ClInclude Include="Engine\GUI\ColliderEditorPanel.h" />
     <ClInclude Include="Engine\Random.h" />
     <ClInclude Include="Engine\GUI\widgets\ColliderEditorWidget.h" />
+    <ClInclude Include="GameLogic\Systems\DebugHitboxRenderSystem.h" />
+    <ClInclude Include="GameLogic\Systems\EnemyHealthSystem.h" />
+    <ClInclude Include="GameLogic\Systems\HeartrateSystem.h" />
+    <ClInclude Include="GameLogic\Systems\TrailSystem.h" />
+    <ClInclude Include="GameLogic\GameStates\PauseState.h" />
+    <ClInclude Include="GameLogic\GameStates\GameplayState.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />

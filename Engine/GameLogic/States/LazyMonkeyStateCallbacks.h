@@ -172,6 +172,53 @@ namespace LazyMonkeyStateCallbacks
   //// Hit State Callbacks
   //// ========================================================================
 
+  //static inline void emit_hit_particles(const Engine::ECS::Entity& enemy) {
+  //  using namespace Engine;
+  //  using Components::Transform2D;
+
+  //  const auto player = Engine::ECS::get_first_entity_with<Components::Player>();
+  //  const auto* et = enemy.get_component<Transform2D>();
+  //  if (!et) return;
+
+  //  Systems::SetParticleParamsEvent set{};
+  //  set.spread_deg = 55.f;     // cone
+  //  set.rate = 0.f;      // burst only
+  //  set.playing = false;
+
+  //  Math::Vec2D spawn = et->position;
+
+  //  // Aim away from attacker if player is valid
+  //  if (player.is_valid()) {
+  //    if (const auto* pt = player.get_component<Transform2D>()) {
+  //      // Vector from attacker -> enemy
+  //      const float vx = et->position.x - pt->position.x;
+  //      const float vy = et->position.y - pt->position.y;
+
+  //      // Normalized hit-normal (away from attacker)
+  //      const float len = std::max(1e-4f, std::sqrt(vx * vx + vy * vy));
+  //      const float nx = vx / len;
+  //      const float ny = vy / len;
+
+  //      // Emission angle: along the normal (screen up is -Y)
+  //      const float deg = std::atan2(-ny, nx) * 57.29577951308232f;
+  //      set.angle_deg = deg;
+
+  //      const float lateral_offset_px = 15.f;  // adjust offset horizontal
+  //      const float vertical_offset_px = 0.f;  // adjust offset vertical
+  //      spawn.x += nx * lateral_offset_px;
+  //      spawn.y += ny * lateral_offset_px + vertical_offset_px;
+  //    }
+  //  }
+
+  //  // Post to the particle system
+  //  Engine::Systems::ParticleSystem::post(set);
+
+  //  Systems::SpawnParticlesEvent burst{};
+  //  burst.pos = spawn;
+  //  burst.count = 100;
+  //  Engine::Systems::ParticleSystem::post(burst);
+  //}
+
   inline void hit_on_enter(Engine::ECS::Entity& entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
