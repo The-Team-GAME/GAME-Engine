@@ -1,3 +1,16 @@
+//-----------------------------------------------------------------------------------
+// file:    ProjectSaveManager.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements the ProjectSaveManager, which handles the tracking and saving of dirty states for project settings, levels, and prefabs.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "ProjectSaveManager.h"
 #include "Logger.h"
 #include "FileIO/Settings.h"

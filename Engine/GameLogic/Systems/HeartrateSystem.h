@@ -1,3 +1,16 @@
+//-----------------------------------------------------------------------------------
+// file:    HeartrateSystem.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements the HeartrateSystem, which updates the player's heart rate, applies visual effects (tint, distortion) based on the heart rate state, and handles heart rate decay.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 
 #pragma once
 

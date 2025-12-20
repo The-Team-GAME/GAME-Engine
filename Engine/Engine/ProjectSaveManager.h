@@ -1,3 +1,16 @@
+//-----------------------------------------------------------------------------------
+// file:    ProjectSaveManager.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines the ProjectSaveManager namespace and DirtyStates, providing a system to track unsaved changes in the project and save them to disk.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 // This file contains functions to manage project save data
 
 #pragma once

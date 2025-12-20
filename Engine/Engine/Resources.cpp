@@ -30,6 +30,8 @@
 #include "Level.h"
 #include "FileIO/LevelFileIO.h"
 #include "Reflection/ReflectionLibrary.h"
+#include "EventManager/EventManager.h"
+#include "Events/EngineEvents.h"
 
 // Define the actual storage for the extern variables
 std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> Engine::Resources::texture_cache;
@@ -797,6 +799,11 @@ bool Engine::Resources::open(const std::string& filepath, bool append_resource_p
       }
       else {
         Log::warning("Unknown dataType in JSON file: {}", data_type);
+        Engine::EventManager::send_event<Engine::Events::ToastEvent>(
+          "Cannot open file: Unknown JSON data type",
+          Engine::Events::ToastType::Error,
+          5.0f
+        );
         return false;
       }
     }
@@ -807,6 +814,11 @@ bool Engine::Resources::open(const std::string& filepath, bool append_resource_p
   }
 
   Log::warning("Unsupported file type for opening: {}", extension);
+  Engine::EventManager::send_event<Engine::Events::ToastEvent>(
+    "Cannot open file: Unsupported file type",
+    Engine::Events::ToastType::Error,
+    5.0f
+  );
   return false;
 }
 

@@ -1,8 +1,22 @@
+//-----------------------------------------------------------------------------------
+// file:    UndoManager.h
+// project: Monkey Stole My GPA
+//
+// author:  How Hong Chin Ryan (100%)
+//          Primary author
+//
+// email:   hongchinryan.how@digipen.edu
+//
+// brief:   This file defines the UndoManager and Action struct, implementing a command pattern-based undo/redo system with history management.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
+
 #pragma once
 #include <functional>
 #include <deque>
 #include <memory>
-#include <iostream>
+#include "../Logger.h"
 
 namespace Engine {
 
@@ -20,7 +34,7 @@ namespace Engine {
   };
 
   namespace UndoManager {
-    constexpr size_t MAX_HISTORY = 500;
+    constexpr size_t MAX_HISTORY = 40;
     inline std::deque<std::unique_ptr<Action>> undo_stack;
     inline std::deque<std::unique_ptr<Action>> redo_stack;
 
@@ -30,7 +44,7 @@ namespace Engine {
       while (undo_stack.size() > MAX_HISTORY)
         undo_stack.pop_front();
       redo_stack.clear();
-      std::cout << "Adding to list\n";
+      // Log::info("Adding to list");
     }
 
     // Takes lambdas directly but does not execute them
@@ -47,7 +61,7 @@ namespace Engine {
     inline void execute(std::unique_ptr<Action> action) {
       action->do_action();
       record(std::move(action));
-      std::cout << "Adding to list and executing\n";
+      Log::info("Adding to list and executing");
     }
 
     // Take lambdas directly and executes immediately
@@ -68,10 +82,10 @@ namespace Engine {
         redo_stack.push_back(std::move(action));
         while (redo_stack.size() > MAX_HISTORY)
           redo_stack.pop_front();
-        std::cout << "Undo from list\n";
+        Log::info("Undo from list");
       }
       else
-        std::cout << "Undo stack empty\n";
+        Log::warning("Undo stack empty");
     }
 
     inline void redo() {

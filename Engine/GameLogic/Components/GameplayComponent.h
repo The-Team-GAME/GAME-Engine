@@ -1,3 +1,16 @@
+//-----------------------------------------------------------------------------------
+// file:    GameplayComponent.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines gameplay-related component structs, including Player (with AttackData), Enemy, LazyMonkey, Attack, and PendingKnockback, which store data for game mechanics.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "../../Engine/ECS/Macros.h"
@@ -21,7 +34,7 @@ namespace Components
 
     // Movement speeds
     float walk_speed = 600.0f;
-    float air_speed = 150.0f;
+    float air_speed = 600.0f;
     float jump_force = 900.0f;
 
     // Attacks
