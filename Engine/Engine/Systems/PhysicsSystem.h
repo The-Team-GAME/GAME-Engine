@@ -27,7 +27,7 @@ namespace Engine {
     class Physics2DSystem : public Engine::ECS::System 
     {
     public:
-      Physics2DSystem(); // Default dtor that includes all the components needed for the entities called in the physics engine
+      Physics2DSystem(); // Default Ctor that includes all the components needed for the entities called in the physics engine
       
       void update() override;
 
@@ -37,7 +37,10 @@ namespace Engine {
       // Update the linear velocities if said entities here
       void update_kinematics(
         Components::RigidBody& rigid,
-        Components::BoxCollider& box,
+        Components::Transform2D& xform);
+
+      void update_position(
+        Components::RigidBody& rigid,
         Components::Transform2D& xform);
 
       // Called when resolving collisions to zero the rigidbody's velocity that is pushing against the normal

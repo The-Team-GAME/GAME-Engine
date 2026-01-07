@@ -74,28 +74,28 @@ void phy2D::update()
 void phy2D::update_entity(ECS::Entity& entity) {
   Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
   Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
-  Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
-  phy2D::update_kinematics(*rigid, *box, *xform);
-  rigid->force.zero();
+  phy2D::update_kinematics(*rigid, *xform);
+  phy2D::update_position  (*rigid, *xform);
   //Log::info("velocity: ({}, {}) || position: ({}, {})", rigid->velocity.x, rigid->velocity.y, rigid->curr_pos.x, rigid->curr_pos.y);
 }
 
 void phy2D::update_kinematics(
   Components::RigidBody& rigid, 
-  Components::BoxCollider& box, 
   Components::Transform2D& xform)
 {
   // F = m x a => Force equals mass x acceleration
   // acceleration will contain a value if the entity is affected by gravity
-  rigid.acceleration = rigid.force / rigid.mass;
   if (rigid.use_gravity)
   {
-    rigid.acceleration += gravity_acc;
+    rigid.force += gravity_acc * rigid.mass;
   }
+  rigid.acceleration = rigid.force / rigid.mass;
   
+  // We zero the forces here because their effects have already been accounted for
+  rigid.force.zero();
+
   // From now on we will apply friction on collision like how its supposed to be
   // There wont be any air resistance so that the player can be controlled more accurately
-  rigid.velocity.x *= box.kinetic_friction;
   rigid.velocity += rigid.acceleration * Time::get_fixed_dt();
 
   // Checking terminal velocity here
@@ -104,6 +104,12 @@ void phy2D::update_kinematics(
   {
     rigid.velocity = Math::normalise_vector(rigid.velocity) * rigid.terminal_velocity;
   }
+}
+
+void phy2D::update_position(
+  Components::RigidBody& rigid,
+  Components::Transform2D& xform)
+{
   // setting the next position
   Vec2D next_pos = xform.position + rigid.velocity * Time::get_fixed_dt();
 
