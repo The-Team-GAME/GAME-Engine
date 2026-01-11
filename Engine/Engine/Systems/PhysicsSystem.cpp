@@ -71,24 +71,24 @@ void phy2D::update()
   // collision check afterwards
 }
 
-void phy2D::update_entity(ECS::Entity& entity) {
+void phy2D::update_entity(ECS::Entity& entity) 
+{
   Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
   Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
-  phy2D::update_kinematics(*rigid, *xform);
+
+  // We account for the gravitational forces here so that the update_kinematics function can be used for post physics as well
+  if (rigid->use_gravity)
+  {
+    rigid->force += gravity_acc * rigid->mass;
+  }
+
+  phy2D::update_kinematics(*rigid);
   phy2D::update_position  (*rigid, *xform);
   //Log::info("velocity: ({}, {}) || position: ({}, {})", rigid->velocity.x, rigid->velocity.y, rigid->curr_pos.x, rigid->curr_pos.y);
 }
 
-void phy2D::update_kinematics(
-  Components::RigidBody& rigid, 
-  Components::Transform2D& xform)
+void phy2D::update_kinematics( Components::RigidBody& rigid )
 {
-  // F = m x a => Force equals mass x acceleration
-  // acceleration will contain a value if the entity is affected by gravity
-  if (rigid.use_gravity)
-  {
-    rigid.force += gravity_acc * rigid.mass;
-  }
   rigid.acceleration = rigid.force / rigid.mass;
   
   // We zero the forces here because their effects have already been accounted for

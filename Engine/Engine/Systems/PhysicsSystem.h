@@ -35,11 +35,10 @@ namespace Engine {
 
       // void knockback(Components::RigidBody& rigid, Vec2D force);
       // Update the linear velocities if said entities here
-      void update_kinematics(
-        Components::RigidBody& rigid,
-        Components::Transform2D& xform);
+      static void update_kinematics( 
+        Components::RigidBody& rigid );
 
-      void update_position(
+      static void update_position(
         Components::RigidBody& rigid,
         Components::Transform2D& xform);
 
