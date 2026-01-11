@@ -162,6 +162,49 @@ void phy2D::apply_surface_friction(
   rigid.velocity -= friction_direction * friction_magnitude;
 }
 
+Vec2D phy2D::get_friction_force(
+  Components::RigidBody& rigid,
+  CollisionResult const& collision
+)
+{
+  f32 normal_magnitude = collision.get_penetration();
+  // dealing with epsilon values here for very small friction
+  if (normal_magnitude < 0.0001f)
+  {
+    return Vec2D(0.0f, 0.0f);
+  }
+  Vec2D normalised_tangent = normalise_vector(collision.get_tangent());
+  // Here we check for the angle of the slope, if it is too steep then we take it as there is no friction to allow the object to free fall
+  if (angle_of_slope(normalised_tangent) > phy2D::get_slope_angle_limit())
+    return Vec2D(0.0f, 0.0f);
+
+
+}
+
+Vec2D phy2D::get_normal_force(
+  Components::RigidBody const& rigid,
+  CollisionResult const& collision)
+{
+  // Get the collision normal (points away from surface)
+  Vec2D normal = normalise_vector(collision.mtv);
+
+  // Calculate total force pushing into surface
+  // For now, this is just gravity, but could include other forces
+  Vec2D gravity_force = gravity_acc * rigid.mass;
+
+  // Magnitude of the normal force
+  // We negate because normal points OUT, gravity points IN (downward)
+  f32 force_into_surface = -dot_product(gravity_force, normal);
+
+  // Surface can only push, not pull
+  // This should not happen btw
+  if (force_into_surface <= 0.0f)
+    return Vec2D(0.0f, 0.0f);
+
+  // Calculate the Normal force vector: magnitude × direction (pointing out of surface)
+  return normal * force_into_surface;
+}
+
 void phy2D::add_force(Components::RigidBody& rigid, Vec2D force)
 {
   rigid.force += force;

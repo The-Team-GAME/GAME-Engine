@@ -48,6 +48,9 @@ namespace Components
     // This should be updated in the script
     dir direction; // not sure if its needed
 
+    f32 static_friction_coefficient = 0.6f;
+    f32 kinetic_friction_coefficient = 0.4f;
+
     /*
     no use for these yet*/
     f32 rotation = 0.0f; // In degrees

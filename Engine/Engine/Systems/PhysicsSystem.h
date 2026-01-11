@@ -56,11 +56,16 @@ namespace Engine {
         f32 kinetic_friction
       );
 
-      // Used to generate the normal force 
-      static f32 estimate_normal_force(
-        Components::RigidBody const& rigid,
+      // Used to apply friction when colliding into another object
+      static Vec2D get_friction_force(
+        Components::RigidBody& rigid,
         CollisionResult const& collision
       );
+
+      // Used to generate the normal force 
+      static Vec2D get_normal_force(
+        Components::RigidBody const& rigid,
+        CollisionResult const& collision );
       
       static Vec2D get_gravity();
 
