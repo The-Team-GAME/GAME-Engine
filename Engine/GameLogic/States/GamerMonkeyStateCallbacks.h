@@ -24,22 +24,22 @@ namespace GamerMonkeyStateCallbacks
   // ========================================================================
 
   inline void idle_on_enter(Engine::ECS::Entity& entity) {
-    auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
-    if (lazy_monkey) {
+    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
+    if (Gamer_monkey) {
       // Store when we entered idle (for recovery delay after being hit)
-      lazy_monkey->last_attack_time = Engine::Time::get_time(); // Reusing this field as "idle_enter_time"
+      Gamer_monkey->last_attack_time = Engine::Time::get_time(); // Reusing this field as "idle_enter_time"
     }
-    Log::info("Lazy Monkey: Entered Idle state");
+    Log::info("Gamer Monkey: Entered Idle state");
   }
 
   inline void idle_on_update(Engine::ECS::Entity& entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
-    auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
+    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
 
-    if (!lazy_monkey) return;
+    if (!Gamer_monkey) return;
 
     float current_time = Engine::Time::get_time();
-    float time_in_idle = current_time - lazy_monkey->last_attack_time;
+    float time_in_idle = current_time - Gamer_monkey->last_attack_time;
 
     // Don't chase immediately after entering idle (recovery from hit)
     if (time_in_idle < 0.3f) {
@@ -53,16 +53,16 @@ namespace GamerMonkeyStateCallbacks
       return;
     }
 
-    auto* lazy_monkey_transform = entity.get_component<Components::Transform2D>();
+    auto* Gamer_monkey_transform = entity.get_component<Components::Transform2D>();
     auto* player_transform = player_entity.get_component<Components::Transform2D>();
 
-    if (lazy_monkey_transform && player_transform) {
-      float dx = player_transform->position.x - lazy_monkey_transform->position.x;
-      float dy = player_transform->position.y - lazy_monkey_transform->position.y;
+    if (Gamer_monkey_transform && player_transform) {
+      float dx = player_transform->position.x - Gamer_monkey_transform->position.x;
+      float dy = player_transform->position.y - Gamer_monkey_transform->position.y;
       float distance = std::sqrt(dx * dx + dy * dy);
 
       // Start chasing if player is within detection range
-      if (distance < lazy_monkey->detection_range) {
+      if (distance < Gamer_monkey->detection_range) {
         state_machine->change_state("Chasing");
       }
     }
@@ -73,33 +73,33 @@ namespace GamerMonkeyStateCallbacks
   // ========================================================================
 
   inline void chasing_on_enter([[maybe_unused]] Engine::ECS::Entity& entity) {
-    Log::info("Lazy Monkey: Entered Chasing state");
+    Log::info("Gamer Monkey: Entered Chasing state");
   }
 
   inline void chasing_on_update(Engine::ECS::Entity& entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* rigid = entity.get_component<Components::RigidBody>();
-    auto* lazy_monkey_transform = entity.get_component<Components::Transform2D>();
+    auto* Gamer_monkey_transform = entity.get_component<Components::Transform2D>();
     auto* flip = entity.get_component<Components::Flip>();
-    auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
+    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
 
-    if (!lazy_monkey) return;
+    if (!Gamer_monkey) return;
 
     float current_time = Engine::Time::get_time();
 
     // Get player entity
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
 
-    if (player_entity.is_valid() && rigid && lazy_monkey_transform) {
+    if (player_entity.is_valid() && rigid && Gamer_monkey_transform) {
       auto* player_transform = player_entity.get_component<Components::Transform2D>();
 
       if (player_transform) {
-        float dx = player_transform->position.x - lazy_monkey_transform->position.x;
+        float dx = player_transform->position.x - Gamer_monkey_transform->position.x;
         float distance = std::abs(dx); // Only horizontal distance for sidescrolling
 
         // Chase player horizontally, but stop when within attack range
-        if (distance > lazy_monkey->attack_range) {
-          rigid->velocity.x = (dx > 0 ? lazy_monkey->chase_speed : -lazy_monkey->chase_speed);
+        if (distance > Gamer_monkey->close_attack_range) {
+          rigid->velocity.x = (dx > 0 ? Gamer_monkey->chase_speed : -Gamer_monkey->chase_speed);
           // Update flip direction based on movement
           if (flip) {
             flip->value.x = (dx > 0 ? 1.0f : -1.0f);
@@ -112,13 +112,13 @@ namespace GamerMonkeyStateCallbacks
         }
 
         // Return to idle if player is far away
-        if (distance > lazy_monkey->chase_range) {
+        if (distance > Gamer_monkey->chase_range) {
           state_machine->change_state("Idle");
         }
 
         // If close enough and cooldown has elapsed, go to windup before attacking
-        if (distance < lazy_monkey->attack_range &&
-          (current_time - lazy_monkey->last_attack_time) >= lazy_monkey->attack_cooldown) {
+        if (distance < Gamer_monkey->close_attack_range &&
+          (current_time - Gamer_monkey->last_attack_time) >= Gamer_monkey->attack_cooldown) {
           state_machine->change_state("Windup");
         }
       }
@@ -134,7 +134,7 @@ namespace GamerMonkeyStateCallbacks
   // ========================================================================
 
   inline void windup_on_enter(Engine::ECS::Entity& entity) {
-    auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
+    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
     auto* rigid = entity.get_component<Components::RigidBody>();
 
     // Stop moving during windup
@@ -143,40 +143,40 @@ namespace GamerMonkeyStateCallbacks
     }
 
     // Record when windup started (reuse last_attack_time)
-    if (lazy_monkey) {
-      lazy_monkey->last_attack_time = Engine::Time::get_time();
+    if (Gamer_monkey) {
+      Gamer_monkey->last_attack_time = Engine::Time::get_time();
     }
 
-    Log::info("Lazy Monkey: Winding up for attack");
+    Log::info("Gamer Monkey: Winding up for attack");
   }
 
   inline void windup_on_update(Engine::ECS::Entity& entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
-    auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
+    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
     auto* flip = entity.get_component<Components::Flip>();
 
-    if (!lazy_monkey) return;
+    if (!Gamer_monkey) return;
 
     float current_time = Engine::Time::get_time();
-    float windup_elapsed = current_time - lazy_monkey->last_attack_time;
+    float windup_elapsed = current_time - Gamer_monkey->last_attack_time;
 
     // Get player entity to face them during windup
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
 
     if (player_entity.is_valid()) {
-      auto* lazy_monkey_transform = entity.get_component<Components::Transform2D>();
+      auto* Gamer_monkey_transform = entity.get_component<Components::Transform2D>();
       auto* player_transform = player_entity.get_component<Components::Transform2D>();
 
-      if (lazy_monkey_transform && player_transform && flip) {
-        float dx = player_transform->position.x - lazy_monkey_transform->position.x;
+      if (Gamer_monkey_transform && player_transform && flip) {
+        float dx = player_transform->position.x - Gamer_monkey_transform->position.x;
         // Update flip direction to face player during wind-up
         flip->value.x = (dx > 0 ? 1.0f : -1.0f);
       }
     }
 
     // After windup duration, attack
-    if (windup_elapsed >= lazy_monkey->attack_windup) {
-      lazy_monkey->last_attack_time = current_time;
+    if (windup_elapsed >= Gamer_monkey->attack_windup) {
+      Gamer_monkey->last_attack_time = current_time;
       state_machine->change_state("Attacking");
     }
   }
@@ -188,26 +188,26 @@ namespace GamerMonkeyStateCallbacks
   inline void attacking_on_enter(Engine::ECS::Entity& entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
-    auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
+    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
     // auto* transform = entity.get_component<Components::Transform2D>();
 
-    if (rigid && flip && lazy_monkey && rigid->on_ground) {
+    if (rigid && flip && Gamer_monkey && rigid->on_ground) {
       // Throw monkey forward based on facing direction
-      rigid->velocity.x = (flip->value.x > 0 ? lazy_monkey->leap_speed : -lazy_monkey->leap_speed);
+      rigid->velocity.x = (flip->value.x > 0 ? Gamer_monkey->leap_speed : -Gamer_monkey->leap_speed);
       // Add upward velocity for a leap effect
-      rigid->velocity.y = -lazy_monkey->leap_height; // Negative is up
+      rigid->velocity.y = -Gamer_monkey->leap_height; // Negative is up
     }
 
     // Make the monkey itself the hitbox
-    if (lazy_monkey && flip) {
+    if (Gamer_monkey && flip) {
       // Add Attack component to the monkey
       // Note: We use the monkey's own collider for the attack hitbox now
-      entity.add_component<Components::Attack>(lazy_monkey->damage);
+      entity.add_component<Components::Attack>(Gamer_monkey->damage);
       auto* attack = entity.get_component<Components::Attack>();
 
       if (attack) {
         // Apply knockback direction based on facing
-        attack->knockback = lazy_monkey->knockback;
+        attack->knockback = Gamer_monkey->knockback;
         if (flip->value.x < 0) {
           attack->knockback.x = -attack->knockback.x;
         }
@@ -220,7 +220,7 @@ namespace GamerMonkeyStateCallbacks
       entity.add_to_layer("damage_player");
     }
 
-    Log::info("Lazy Monkey: Entered Attacking state");
+    Log::info("Gamer Monkey: Entered Attacking state");
   }
 
 
@@ -235,10 +235,10 @@ namespace GamerMonkeyStateCallbacks
   }
 
   inline void attacking_on_exit(Engine::ECS::Entity& entity) {
-    auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
-    if (lazy_monkey) {
+    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
+    if (Gamer_monkey) {
       // Update last attack time for cooldown
-      lazy_monkey->last_attack_time = Engine::Time::get_time();
+      Gamer_monkey->last_attack_time = Engine::Time::get_time();
     }
 
     // Remove Attack component and damage_player layer
@@ -301,17 +301,17 @@ namespace GamerMonkeyStateCallbacks
 
   inline void hit_on_enter(Engine::ECS::Entity& entity) {
     (void)entity; // Suppress unused parameter warning
-    Log::info("Lazy Monkey: Stunned!");
+    Log::info("Gamer Monkey: Stunned!");
   }
 
   inline void hit_on_update(Engine::ECS::Entity& entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
-    auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
+    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* animation = entity.get_component<Components::Animation>();
     auto* pending_knockback = entity.get_component<Components::PendingKnockback>();
 
-    if (!lazy_monkey) return;
+    if (!Gamer_monkey) return;
 
     // When animation ends, detach from hitbox and apply knockback
     if (animation->has_ended() && pending_knockback && rigid) {
@@ -345,14 +345,14 @@ namespace GamerMonkeyStateCallbacks
   // ========================================================================
 
   inline void death_on_enter([[maybe_unused]] Engine::ECS::Entity& entity) {
-    Log::info("Lazy Monkey: Died!");
+    Log::info("Gamer Monkey: Died!");
   }
 
   inline void death_on_update(Engine::ECS::Entity& entity) {
     auto* animation = entity.get_component<Components::Animation>();
     if (animation && animation->has_ended()) {
       Engine::ECS::destroy_entity(entity);
-      Log::info("Lazy Monkey: Destroyed after death animation.");
+      Log::info("Gamer Monkey: Destroyed after death animation.");
     }
   }
 
@@ -360,22 +360,22 @@ namespace GamerMonkeyStateCallbacks
     // Should not happen unless respawning
   }
 
-} // namespace LazyMonkeyStateCallbacks
+} // namespace GamerMonkeyStateCallbacks
 
-// Register all lazy monkey state callbacks
-REGISTER_FUNCTION(lazy_monkey_idle_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::idle_on_enter)
-REGISTER_FUNCTION(lazy_monkey_idle_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::idle_on_update)
-REGISTER_FUNCTION(lazy_monkey_chasing_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::chasing_on_enter)
-REGISTER_FUNCTION(lazy_monkey_chasing_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::chasing_on_update)
-REGISTER_FUNCTION(lazy_monkey_chasing_exit, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::chasing_on_exit)
-REGISTER_FUNCTION(lazy_monkey_windup_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::windup_on_enter)
-REGISTER_FUNCTION(lazy_monkey_windup_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::windup_on_update)
-REGISTER_FUNCTION(lazy_monkey_attacking_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::attacking_on_enter)
-REGISTER_FUNCTION(lazy_monkey_attacking_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::attacking_on_update)
-REGISTER_FUNCTION(lazy_monkey_attacking_exit, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::attacking_on_exit)
-REGISTER_FUNCTION(lazy_monkey_hit_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::hit_on_enter)
-REGISTER_FUNCTION(lazy_monkey_hit_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::hit_on_update)
-REGISTER_FUNCTION(lazy_monkey_hit_exit, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::hit_on_exit)
-REGISTER_FUNCTION(lazy_monkey_death_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::death_on_enter)
-REGISTER_FUNCTION(lazy_monkey_death_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::death_on_update)
-REGISTER_FUNCTION(lazy_monkey_death_exit, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::death_on_exit)
+// Register all Gamer monkey state callbacks
+REGISTER_FUNCTION(Gamer_monkey_idle_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::idle_on_enter)
+REGISTER_FUNCTION(Gamer_monkey_idle_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::idle_on_update)
+REGISTER_FUNCTION(Gamer_monkey_chasing_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::chasing_on_enter)
+REGISTER_FUNCTION(Gamer_monkey_chasing_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::chasing_on_update)
+REGISTER_FUNCTION(Gamer_monkey_chasing_exit, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::chasing_on_exit)
+REGISTER_FUNCTION(Gamer_monkey_windup_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::windup_on_enter)
+REGISTER_FUNCTION(Gamer_monkey_windup_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::windup_on_update)
+REGISTER_FUNCTION(Gamer_monkey_attacking_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::attacking_on_enter)
+REGISTER_FUNCTION(Gamer_monkey_attacking_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::attacking_on_update)
+REGISTER_FUNCTION(Gamer_monkey_attacking_exit, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::attacking_on_exit)
+REGISTER_FUNCTION(Gamer_monkey_hit_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::hit_on_enter)
+REGISTER_FUNCTION(Gamer_monkey_hit_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::hit_on_update)
+REGISTER_FUNCTION(Gamer_monkey_hit_exit, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::hit_on_exit)
+REGISTER_FUNCTION(Gamer_monkey_death_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::death_on_enter)
+REGISTER_FUNCTION(Gamer_monkey_death_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::death_on_update)
+REGISTER_FUNCTION(Gamer_monkey_death_exit, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::death_on_exit)

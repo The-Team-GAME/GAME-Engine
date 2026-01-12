@@ -106,6 +106,34 @@ namespace Components
     float attack_range = 180.0f;
   };
 
+  struct GamerMonkey
+  {
+    // Movement speeds
+    float chase_speed = 100.0f;
+
+    // Attack parameters
+    float leap_speed = 2000.0f;
+    float leap_height = 300.0f;
+    float attack_cooldown = 3.0f;
+    float last_attack_time = 0.0f;
+    float attack_windup = 0.5f;  // Time to wait in windup state before attacking
+
+    // Attack hitbox parameters
+    float hitbox_offset_x = 80.0f;
+    float hitbox_offset_y = 0.0f;
+    float hitbox_width = 120.0f;
+    float hitbox_height = 128.0f;
+    int damage = 15;
+    Math::Vec2D knockback = Math::Vec2D(500.0f, -100.0f);
+
+    // Detection ranges
+    float detection_range = 600.0f;
+    float chase_range = 700.0f;
+    float close_attack_range = 180.0f;
+		float long_attack_range = 400.0f;
+  };
+
+
   struct Attack
   {
     int damage = 10;

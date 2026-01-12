@@ -240,6 +240,7 @@
     <ClInclude Include="Engine\Lua\LuaComponentBindings.h" />
     <ClInclude Include="GameLogic\GameStates\OptionsState.h" />
     <ClInclude Include="Engine\Systems\ChatBoxSystem.h" />
+    <ClInclude Include="GameLogic\GameStates\GameMonkeyTestState.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
