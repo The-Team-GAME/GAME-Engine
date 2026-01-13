@@ -15,7 +15,7 @@
 //-----------------------------------------------------------------------------------
 #include "InputManager.h"
 #include "Core.h"
-#include "Precompiled.h"
+#include "pch.h"
 #include "Logger.h"
 #include <array>
 #include <glm/glm.hpp>
@@ -26,7 +26,7 @@
 #include "GUI/ViewportPanel.h"
 #include "FileIO/Settings.h"
 #include "ImGuiManager.h"
-#include "Precompiled.h"
+#include "pch.h"
 
 namespace
 {

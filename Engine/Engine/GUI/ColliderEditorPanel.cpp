@@ -11,7 +11,7 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "ColliderEditorPanel.h"
-#include "../Precompiled.h"
+#include "../pch.h"
 #include "widgets/ColliderEditorWidget.h"
 #include "../ECS/ECS.h"
 #include "../ECS/Prefab.h"

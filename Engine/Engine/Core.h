@@ -15,9 +15,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 #include <string>
-
 // This will initialize most of the engine subsystems
-#include "Precompiled.h"
 #include "TypeDef.h"
 #include "StateManager.h"
 

@@ -15,7 +15,6 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "Precompiled.h"
 #include "../ECS/ECS.h"
 #include "../Components/GraphicsComponents.h"
 #include "../Components/SpatialComponents.h"

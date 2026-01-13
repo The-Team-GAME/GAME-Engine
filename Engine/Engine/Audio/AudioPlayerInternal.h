@@ -16,7 +16,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "../Precompiled.h"
+#include "../pch.h"
 #include "../TypeDef.h"
 #include "../Logger.h"
 #include <string>

@@ -18,7 +18,7 @@
 
 // TODO: Documentation
 
-#include "Precompiled.h"
+#include "pch.h"
 #include "Core.h"
 #include "ECS/ECS.h"
 #include "Graphics/Renderer.h"

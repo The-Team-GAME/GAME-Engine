@@ -14,7 +14,7 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 
-#include "../../Precompiled.h"
+#include "../../pch.h"
 #include "ReflectionFieldWidgets.h"
 #include "TextureAtlasWidget.h"
 #include "../ColliderEditorPanel.h"

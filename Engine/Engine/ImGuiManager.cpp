@@ -15,7 +15,7 @@
 //-----------------------------------------------------------------------------------
 #include "ImGuiManager.h"
 #include "WindowManager.h"
-#include "Precompiled.h"
+#include "pch.h"
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
 #include "InputManager.h"

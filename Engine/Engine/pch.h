@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------------
-// file:    Precompiled.h
+// file:    pch.h
 // project: Monkey Stole My GPA
 //
 // author:  Chew Shee Yang (100%)
@@ -32,3 +32,5 @@
 
 #include <imgui.h>
 #include <imgui_internal.h>
+#include <time.h>
+#include <ctime>

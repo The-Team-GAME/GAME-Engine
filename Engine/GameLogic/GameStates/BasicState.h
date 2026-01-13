@@ -14,7 +14,6 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
-
 #include "../../Engine/MonkeyEngine.h"
 
 class BasicState : public Engine::Scene

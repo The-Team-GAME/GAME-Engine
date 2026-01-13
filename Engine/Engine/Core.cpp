@@ -13,8 +13,9 @@
 //
 // Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
+
+#include "pch.h"
 #include "Core.h"
-#include "Precompiled.h"
 #include "Logger.h"
 #include "FileHandler.h"
 #include "SceneManager.h"

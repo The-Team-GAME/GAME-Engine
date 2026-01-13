@@ -12,5 +12,6 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
+#include "pch.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"

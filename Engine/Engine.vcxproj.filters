@@ -36,7 +36,7 @@
     <ClCompile Include="Engine\Logger.cpp" />
     <ClCompile Include="Engine\FileHandler.cpp" />
     <ClCompile Include="Engine\Perf.cpp" />
-    <ClCompile Include="Engine\Precompiled.cpp" />
+    <ClCompile Include="Engine\pch.cpp" />
     <ClCompile Include="Engine\Time.cpp" />
     <ClCompile Include="Engine\GUI\Timeline.cpp" />
     <ClCompile Include="Engine\Math\Vector2D.cpp" />
@@ -170,7 +170,7 @@
     <ClInclude Include="Engine\Logger.h" />
     <ClInclude Include="Engine\Perf.h" />
     <ClInclude Include="Engine\GUI\PerformanceViewer.h" />
-    <ClInclude Include="Engine\Precompiled.h" />
+    <ClInclude Include="Engine\pch.h" />
     <ClInclude Include="Engine\Graphics\Renderer.h" />
     <ClInclude Include="Engine\Systems\PhysicsSystem.h" />
     <ClInclude Include="GameLogic\GameStates\Rubric2500ParticlesState.h" />

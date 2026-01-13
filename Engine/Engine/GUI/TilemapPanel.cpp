@@ -17,7 +17,7 @@
 //-----------------------------------------------------------------------------------
 #include "TilemapPanel.h"
 #include "TileColliderEditorPanel.h"
-#include "../Precompiled.h"
+#include "../pch.h"
 #include "../ECS/ECS.h"
 #include "../Components/Components.h"
 #include "../InputManager.h"

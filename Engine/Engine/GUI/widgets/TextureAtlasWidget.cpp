@@ -13,7 +13,7 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 
-#include "../../Precompiled.h"
+#include "../../pch.h"
 #include "TextureAtlasWidget.h"
 #include <algorithm>
 
