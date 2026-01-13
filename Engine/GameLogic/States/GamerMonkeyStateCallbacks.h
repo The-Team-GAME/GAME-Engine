@@ -68,10 +68,69 @@ namespace GamerMonkeyStateCallbacks
     }
   }
 
+//// ========================================================================
+//// Dashing State Callbacks
+//// ========================================================================
+//  inline void dashing_on_enter(Engine::ECS::Entity& entity) {
+//    Log::Info("Gamer Monkey : Entered Dash state");
+//  }
+//
+//  inline void dashing_on_update(Engine::ECS::Entity& entity) {
+//    auto* state_machine = entity.get_component<Components::StateMachine>();
+//    auto* rigid = entity.get_component<Components::RigidBody>();
+//    auto* Gamer_monkey_transform = entity.get_component<Components::Transform2D>();
+//    auto* flip = entity.get_component<Components::Flip>();
+//    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
+//
+//    if (!Gamer_monkey) return;
+//
+//    float current_time = Engine::Time::get_time();
+//
+//    // Get player entity
+//    auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+//
+//    if (player_entity.is_valid() && rigid && Gamer_monkey_transform) {
+//      auto* player_transform = player_entity.get_component<Components::Transform2D>();
+//
+//      if (player_transform) {
+//        float dx = player_transform->position.x - Gamer_monkey_transform->position.x;
+//        float distance = std::abs(dx); // Only horizontal distance for sidescrolling
+//
+//        // Chase player horizontally, but stop when within attack range
+//        if (distance > Gamer_monkey->close_attack_range) {
+//          rigid->velocity.x = (dx > 0 ? Gamer_monkey->chase_speed : -Gamer_monkey->chase_speed);
+//          // Update flip direction based on movement
+//          if (flip) {
+//            flip->value.x = (dx > 0 ? 1.0f : -1.0f);
+//          }
+//          // Don't modify velocity.y - let gravity handle it
+//        }
+//        else {
+//          // Stop moving when close enough to attack
+//          rigid->velocity.x = 0.0f;
+//        }
+//
+//        // Return to idle if player is far away
+//        if (distance > Gamer_monkey->chase_range) {
+//          state_machine->change_state("Idle");
+//        }
+//
+//        // If close enough and cooldown has elapsed, go to windup before attacking
+//        if (distance < Gamer_monkey->close_attack_range &&
+//          (current_time - Gamer_monkey->last_attack_time) >= Gamer_monkey->attack_cooldown) {
+//          state_machine->change_state("Windup");
+//        }
+//      }
+//    }
+//  }
+//
+//  inline void dashing_on_exit([[maybe_unused]] Engine::ECS::Entity& entity) {
+//
+//  }
+
   // ========================================================================
   // Chasing State Callbacks
   // ========================================================================
-
   inline void chasing_on_enter([[maybe_unused]] Engine::ECS::Entity& entity) {
     Log::info("Gamer Monkey: Entered Chasing state");
   }
@@ -97,7 +156,7 @@ namespace GamerMonkeyStateCallbacks
         float dx = player_transform->position.x - Gamer_monkey_transform->position.x;
         float distance = std::abs(dx); // Only horizontal distance for sidescrolling
 
-        // Chase player horizontally, but stop when within attack range
+        // dash towards player horizontally, but stop when within attack range
         if (distance > Gamer_monkey->close_attack_range) {
           rigid->velocity.x = (dx > 0 ? Gamer_monkey->chase_speed : -Gamer_monkey->chase_speed);
           // Update flip direction based on movement
