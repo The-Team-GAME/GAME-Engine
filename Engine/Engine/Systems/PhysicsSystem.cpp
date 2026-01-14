@@ -32,7 +32,7 @@ using col2D = Collision2DSystem;
 // eventually we'll deserialise these values from file bah
 namespace {
   Vec2D knockback_force{ -1000000.f, 50000.f };
-  const Vec2D gravity_acc = { 0.f, 1000.f };
+  const f32 gravity_acc = 1000.f;
   const f32 STATIC_FRICTION_THRESHOLD = 20.0f;
 
   const f32 slope_angle_limit = 60.f; // This is basically the limit of what will count as a slope
@@ -48,7 +48,7 @@ f32 phy2D::get_slope_angle_limit()
   return slope_angle_limit;
 }
 
-Vec2D phy2D::get_gravity()
+f32 phy2D::get_gravity()
 {
   return gravity_acc;
 }
@@ -79,7 +79,7 @@ void phy2D::update_entity(ECS::Entity& entity)
   // We account for the gravitational forces here so that the update_kinematics function can be used for post physics as well
   if (rigid->use_gravity)
   {
-    rigid->force += gravity_acc * rigid->mass;
+    rigid->force += Vec2D(0.f, 1.f) * gravity_acc * rigid->mass;
   }
 
   phy2D::update_kinematics(*rigid);
@@ -178,6 +178,10 @@ Vec2D phy2D::get_friction_force(
   if (angle_of_slope(normalised_tangent) > phy2D::get_slope_angle_limit())
     return Vec2D(0.0f, 0.0f);
 
+  // Basically this is how fast the object is going down the slope
+  f32 tangental_speed = dot_product(rigid.velocity, normalised_tangent); 
+  Vec2D tangental_velocity = normalised_tangent * tangental_speed;
+
 
 }
 
@@ -192,17 +196,16 @@ Vec2D phy2D::get_normal_force(
   // For now, this is just gravity, but could include other forces
   Vec2D gravity_force = gravity_acc * rigid.mass;
 
-  // Magnitude of the normal force
   // We negate because normal points OUT, gravity points IN (downward)
-  f32 force_into_surface = -dot_product(gravity_force, normal);
+  f32 normal_magnitude = -dot_product(gravity_force, normal);
 
   // Surface can only push, not pull
   // This should not happen btw
-  if (force_into_surface <= 0.0f)
+  if (normal_magnitude <= 0.0f)
     return Vec2D(0.0f, 0.0f);
 
   // Calculate the Normal force vector: magnitude × direction (pointing out of surface)
-  return normal * force_into_surface;
+  return normal * normal_magnitude;
 }
 
 void phy2D::add_force(Components::RigidBody& rigid, Vec2D force)

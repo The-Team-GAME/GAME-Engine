@@ -48,8 +48,8 @@ namespace Components
     // This should be updated in the script
     dir direction; // not sure if its needed
 
-    f32 static_friction_coefficient = 0.6f;
-    f32 kinetic_friction_coefficient = 0.4f;
+    f32 static_friction_coefficient = 0.6f; // not used, maybe ever
+    f32 kinetic_coefficient = 0.9f;
 
     /*
     no use for these yet*/

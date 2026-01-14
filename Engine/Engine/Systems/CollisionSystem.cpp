@@ -89,26 +89,18 @@ void col2D::update()
     // Check collision only with nearby entities
     for (ECS::Entity& other : nearby)
     {
-
 #pragma region collision checks
       // Skip self-collision
       if (entity == other) { continue; }
-
-      //Components::RigidBody* other_rigid = other.get_component<Components::RigidBody>();
       Components::BoxCollider* other_box = other.get_component<Components::BoxCollider>();
-
       // Get other entity's layers
       ECS::LayerSignature other_layers = other.get_layers();
-
       // Check if these entities' layers should collide using the global collision matrix
       if (!ECS::LayerRegistry::should_layers_collide(entity_layers, other_layers))
-      {
-        continue;
-      }
+      { continue; }
 
       // Check if both entities intersect
       CollisionResult collision = check_collision(*box, *other_box);
-
       if (!collision.collided)
       {
         // skip other_entity if they dont collide
@@ -147,11 +139,22 @@ void col2D::update()
         }
 
         // Ok so the part above works now but we need another way to check if the player/ entity is on the ground / a jumpable surface
-        // Behold the power of dot product
-        f32 normal_dot_up = dot_product(normal_dir_vtr, Vec2D(0.f, -0.1f));
-        if (normal_dot_up >= cos(slope_angle_threshold))
+        // Behold the power of dot product (all the math need to re sketch out to explain cuz my whiteboard has limited space KEKW)
+        f32 cos_of_angle_of_slope = dot_product(normal_dir_vtr, Vec2D(0.f, -0.1f));
+        if (cos_of_angle_of_slope <= cos(slope_angle_threshold))
         {
           rigid->on_ground = true;
+          // We will do friction and normal force in here because we want the player to just slide off the wall
+          f32 weight_magnitude = rigid->mass * phy2D::get_gravity();
+          // cos x (angle of slope) = adjacent (weight) / hypotenuse(normal)
+          f32 normal_magnitude = weight_magnitude;// / cos_of_angle_of_slope;
+          Vec2D normal_force = normal_dir_vtr * normal_magnitude;
+
+          // now we calculate the friction obtained from velocity dir vtr * normal magnitude * kinetic friction coefficient 
+          Components::RigidBody* other_rigid = other.get_component<Components::RigidBody>();
+          // First we need to check if the velocity is perpendicular to the normal (no point accounting for friction if the player is falling / slamming into a wall)
+          Vec2D friction_force = -normalise_vector(rigid->velocity) * normal_magnitude * (rigid->kinetic_coefficient * other_rigid->kinetic_coefficient);
+          rigid->force += normal_force;
         }
 #if 0
         f32 penetration = collision.get_penetration();
