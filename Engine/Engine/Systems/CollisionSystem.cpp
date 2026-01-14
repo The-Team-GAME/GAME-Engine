@@ -141,7 +141,7 @@ void col2D::update()
         // Ok so the part above works now but we need another way to check if the player/ entity is on the ground / a jumpable surface
         // Behold the power of dot product (all the math need to re sketch out to explain cuz my whiteboard has limited space KEKW)
         f32 cos_of_angle_of_slope = dot_product(normal_dir_vtr, Vec2D(0.f, -0.1f));
-        if (cos_of_angle_of_slope <= cos(slope_angle_threshold))
+        if (cos_of_angle_of_slope >= cos(slope_angle_threshold))
         {
           rigid->on_ground = true;
           // We will do friction and normal force in here because we want the player to just slide off the wall
