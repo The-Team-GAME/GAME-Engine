@@ -28,7 +28,10 @@ using settings = Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>
 // Need to define cuz we made spatial tree static so we could make a static function to call its draw function in another system
 //std::unique_ptr<col2D::QuadTree> col2D::spatial_tree = nullptr;
 std::unique_ptr<col2D::QuadTreeSAT> col2D::spatial_tree_sat = nullptr;
-
+namespace {
+  // Basically this value is how seep a slope can be before its no longer considered walkable/ on the ground
+  constexpr f32 slope_angle_threshold = 60.0f;
+}
 col2D::Collision2DSystem() {
   require_components<Components::Transform2D, Components::RigidBody, Components::BoxCollider>();
 
@@ -82,7 +85,6 @@ void col2D::update()
     // This is because the entity can collide with more than one hard surface (floor and wall corner) in one frame, so we have to identify them
     Vec2D best_ground_normal;
     f32 best_ground_penetration = 0;
-    bool found_ground = false;
 
     // Check collision only with nearby entities
     for (ECS::Entity& other : nearby)
@@ -124,21 +126,35 @@ void col2D::update()
         Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
 
         // we add the MTV here because it is not the penetration vector but rather how far the object needs to be pushed out to resolve the collision
-        
-        // Apply Slop (Threshold)
-        // We allow a small amount of penetration to prevent jittering when gravity fights collision resolution
-        const f32 COLLISION_SLOP = 0.5f; // Allow 0.5 pixels of penetration
-        f32 penetration = collision.get_penetration();
-        
-        // Only resolve if penetration is deeper than the slop
-        if (penetration > COLLISION_SLOP)
+        // Basically we snapping the object out of the collided surface
+        xform->position += collision.mtv;
+
+        // The new plan:
+        // 1. After collision i'm gona cancel out the velocity of the object parallel to the direction of the collision as a way to kill the momenthum of the object
+        // 2. After the momentum is killed, i will apply a normal force to specifically cancel out the force from gravity in the next frame
+        // 3. After that, i will calculate and apply friction to the object to prevent it from sliding across surfaces
+
+        // Since the mtv can also be seen as the normal, i can do this
+        Vec2D normal_dir_vtr = collision.get_normalise_mtv();
+
+        // This is a scalar value
+        f32 speed_into_surface = dot_product(rigid->velocity, normal_dir_vtr);
+
+        if (speed_into_surface < 0) 
+          // -ve dot product means pointing diff direction
         {
-          // Calculate the correction vector (push out only the amount exceeding the slop)
-          // We want to push out by (penetration - slop), not the full penetration
-          // This keeps the object slightly "resting" in the surface, preventing the 1-frame jitter cycle
-          Vec2D correction = collision.get_normalise_mtv() * (penetration - COLLISION_SLOP);
-          xform->position += correction;
+          rigid->velocity -= normal_dir_vtr * speed_into_surface;
         }
+
+        // Ok so the part above works now but we need another way to check if the player/ entity is on the ground / a jumpable surface
+        // Behold the power of dot product
+        f32 normal_dot_up = dot_product(normal_dir_vtr, Vec2D(0.f, -0.1f));
+        if (normal_dot_up >= cos(slope_angle_threshold))
+        {
+          rigid->on_ground = true;
+        }
+#if 0
+        f32 penetration = collision.get_penetration();
 
         // Check if this is a ground collision (MTV pointing mostly upward)
         Vec2D normal = normalise_vector(collision.mtv);
@@ -182,6 +198,7 @@ void col2D::update()
             }
           }
         }
+#endif
       }
       /*=============================
       / End of Collision Resolution /
