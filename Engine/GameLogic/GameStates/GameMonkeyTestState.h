@@ -66,7 +66,7 @@ public:
     // ========================================================================
     Gamer_monkey_entity = Engine::ECS::create_entity()
       .add_component<Components::Enemy>()
-      .add_component<Components::LazyMonkey>()
+      .add_component<Components::GamerMonkey>()
       .add_component<Components::Transform2D>(800.0f, 400.0f, 0.0f, GamerMonkeyStates::WIDTH, GamerMonkeyStates::HEIGHT)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/idle.png"))
       .add_component<Components::TextureAtlas>(64, 64, 1, 5, 5)

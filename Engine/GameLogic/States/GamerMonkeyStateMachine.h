@@ -20,7 +20,7 @@
 namespace GamerMonkeyStates
 {
   // Gamer Monkey dimensions
-  constexpr f32 WIDTH = 600.0f;
+  constexpr f32 WIDTH = 400.0f;
   constexpr f32 HEIGHT = 400.0f;
   constexpr f32 ATTACK_WIDTH = 600.0f;
   constexpr f32 ATTACK_HEIGHT = 400.0f;
