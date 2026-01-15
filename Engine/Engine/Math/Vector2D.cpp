@@ -13,8 +13,7 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "Vector2D.h"
-#include <cmath>
-#include <numbers>
+#include "Math.h"
 
 namespace Math {
 

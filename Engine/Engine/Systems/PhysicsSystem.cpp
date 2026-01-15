@@ -17,6 +17,7 @@
 #include "../Perf.h"
 #include "CollisionSystem.h"
 #include "PhysicsSystem.h"
+#include "../Math/Math.h"
 #include "../Logger.h"
 using namespace Engine;
 using namespace Systems;
@@ -32,20 +33,22 @@ using col2D = Collision2DSystem;
 // eventually we'll deserialise these values from file bah
 namespace {
   Vec2D knockback_force{ -1000000.f, 50000.f };
-  const f32 gravity_acc = 1000.f;
+  const f32 gravity_acc = 100.f;
   const f32 STATIC_FRICTION_THRESHOLD = 20.0f;
 
-  const f32 slope_angle_limit = 60.f; // This is basically the limit of what will count as a slope
-  /*
-        /
-       /
-      /_____ (60 degree slope for example)
-  */
+  // Basically this value is how seep a slope can be before its no longer considered walkable/ on the ground
+  constexpr f32 slope_angle_threshold = 60.0f;
+  const f32 slope_radian_threshold = slope_angle_threshold * static_cast<f32>(std::numbers::pi / 180.0f);
 }
 
-f32 phy2D::get_slope_angle_limit()
+f32 phy2D::get_slope_angle_threshold()
 {
-  return slope_angle_limit;
+  return slope_angle_threshold;
+}
+
+f32 phy2D::get_slope_radian_threshold()
+{
+  return slope_radian_threshold;
 }
 
 f32 phy2D::get_gravity()
@@ -74,16 +77,17 @@ void phy2D::update()
 void phy2D::update_entity(ECS::Entity& entity) 
 {
   Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
-  Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
+  //Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
 
   // We account for the gravitational forces here so that the update_kinematics function can be used for post physics as well
   if (rigid->use_gravity)
   {
-    rigid->force += Vec2D(0.f, 1.f) * gravity_acc * rigid->mass;
+    Vec2D gravity_force = Vec2D(0.f, 1.f) * gravity_acc * rigid->mass;
+    rigid->force += gravity_force;
+    std::cout << "Gravity Force: " << gravity_force << std::endl;
   }
 
-  phy2D::update_kinematics(*rigid);
-  phy2D::update_position  (*rigid, *xform);
+  // Moved update kinematics and update position to post physics so that all the forces are applied at once
   //Log::info("velocity: ({}, {}) || position: ({}, {})", rigid->velocity.x, rigid->velocity.y, rigid->curr_pos.x, rigid->curr_pos.y);
 }
 
@@ -127,6 +131,7 @@ void phy2D::zero_normal_velocity(
   rigid.velocity -= normalised_mtv * normal_velocity_magnitude;
 }
 
+#if 0
 void phy2D::apply_surface_friction(
   Components::RigidBody& rigid,
   CollisionResult const& collision,
@@ -161,6 +166,7 @@ void phy2D::apply_surface_friction(
   // Apply friction as a velocity change
   rigid.velocity -= friction_direction * friction_magnitude;
 }
+#endif
 
 Vec2D phy2D::get_friction_force(
   Components::RigidBody& rigid,
@@ -175,7 +181,7 @@ Vec2D phy2D::get_friction_force(
   }
   Vec2D normalised_tangent = normalise_vector(collision.get_tangent());
   // Here we check for the angle of the slope, if it is too steep then we take it as there is no friction to allow the object to free fall
-  if (angle_of_slope(normalised_tangent) > phy2D::get_slope_angle_limit())
+  if (angle_of_slope(normalised_tangent) > phy2D::get_slope_angle_threshold())
     return Vec2D(0.0f, 0.0f);
 
   // Basically this is how fast the object is going down the slope

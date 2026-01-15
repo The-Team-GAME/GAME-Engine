@@ -15,6 +15,7 @@
 //-----------------------------------------------------------------------------------
 #include "CollisionSystem.h"
 #include "PhysicsSystem.h"
+#include "../Math/Math.h"
 #include "../Perf.h"
 #include "../FileIO/Settings.h"
 #include "../Graphics/Renderer.h" // for picturing the quad tree
@@ -29,8 +30,7 @@ using settings = Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>
 //std::unique_ptr<col2D::QuadTree> col2D::spatial_tree = nullptr;
 std::unique_ptr<col2D::QuadTreeSAT> col2D::spatial_tree_sat = nullptr;
 namespace {
-  // Basically this value is how seep a slope can be before its no longer considered walkable/ on the ground
-  constexpr f32 slope_angle_threshold = 60.0f;
+
 }
 col2D::Collision2DSystem() {
   require_components<Components::Transform2D, Components::RigidBody, Components::BoxCollider>();
@@ -140,14 +140,14 @@ void col2D::update()
 
         // Ok so the part above works now but we need another way to check if the player/ entity is on the ground / a jumpable surface
         // Behold the power of dot product (all the math need to re sketch out to explain cuz my whiteboard has limited space KEKW)
-        f32 cos_of_angle_of_slope = dot_product(normal_dir_vtr, Vec2D(0.f, -0.1f));
-        if (cos_of_angle_of_slope >= cos(slope_angle_threshold))
+        f32 cos_of_angle_of_slope = dot_product(normal_dir_vtr, Vec2D(0.f, -1.f));
+        if (cos_of_angle_of_slope >= cos(static_cast<float>(phy2D::get_slope_radian_threshold)))
         {
           rigid->on_ground = true;
           // We will do friction and normal force in here because we want the player to just slide off the wall
           f32 weight_magnitude = rigid->mass * phy2D::get_gravity();
           // cos x (angle of slope) = adjacent (weight) / hypotenuse(normal)
-          f32 normal_magnitude = weight_magnitude;// / cos_of_angle_of_slope;
+          f32 normal_magnitude = weight_magnitude / cos_of_angle_of_slope;
           Vec2D normal_force = normal_dir_vtr * normal_magnitude;
 
           // now we calculate the friction obtained from velocity dir vtr * normal magnitude * kinetic friction coefficient 
@@ -155,6 +155,7 @@ void col2D::update()
           // First we need to check if the velocity is perpendicular to the normal (no point accounting for friction if the player is falling / slamming into a wall)
           Vec2D friction_force = -normalise_vector(rigid->velocity) * normal_magnitude * (rigid->kinetic_coefficient * other_rigid->kinetic_coefficient);
           rigid->force += normal_force;
+          std::cout << "Normal Force: " << normal_force << std::endl;
         }
 #if 0
         f32 penetration = collision.get_penetration();
