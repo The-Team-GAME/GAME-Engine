@@ -61,72 +61,96 @@ namespace GamerMonkeyStateCallbacks
       float dy = player_transform->position.y - Gamer_monkey_transform->position.y;
       float distance = std::sqrt(dx * dx + dy * dy);
 
-      // Start chasing if player is within detection range
+      // Start chasing if player is within normal detection range,
+      // otherwise start a long-range dash if within the extended chase range
       if (distance < Gamer_monkey->detection_range) {
         state_machine->change_state("Chasing");
+      }
+      else if (distance < Gamer_monkey->chase_range) {
+        state_machine->change_state("Dash");
       }
     }
   }
 
-//// ========================================================================
-//// Dashing State Callbacks
-//// ========================================================================
-//  inline void dashing_on_enter(Engine::ECS::Entity& entity) {
-//    Log::Info("Gamer Monkey : Entered Dash state");
-//  }
-//
-//  inline void dashing_on_update(Engine::ECS::Entity& entity) {
-//    auto* state_machine = entity.get_component<Components::StateMachine>();
-//    auto* rigid = entity.get_component<Components::RigidBody>();
-//    auto* Gamer_monkey_transform = entity.get_component<Components::Transform2D>();
-//    auto* flip = entity.get_component<Components::Flip>();
-//    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
-//
-//    if (!Gamer_monkey) return;
-//
-//    float current_time = Engine::Time::get_time();
-//
-//    // Get player entity
-//    auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
-//
-//    if (player_entity.is_valid() && rigid && Gamer_monkey_transform) {
-//      auto* player_transform = player_entity.get_component<Components::Transform2D>();
-//
-//      if (player_transform) {
-//        float dx = player_transform->position.x - Gamer_monkey_transform->position.x;
-//        float distance = std::abs(dx); // Only horizontal distance for sidescrolling
-//
-//        // Chase player horizontally, but stop when within attack range
-//        if (distance > Gamer_monkey->close_attack_range) {
-//          rigid->velocity.x = (dx > 0 ? Gamer_monkey->chase_speed : -Gamer_monkey->chase_speed);
-//          // Update flip direction based on movement
-//          if (flip) {
-//            flip->value.x = (dx > 0 ? 1.0f : -1.0f);
-//          }
-//          // Don't modify velocity.y - let gravity handle it
-//        }
-//        else {
-//          // Stop moving when close enough to attack
-//          rigid->velocity.x = 0.0f;
-//        }
-//
-//        // Return to idle if player is far away
-//        if (distance > Gamer_monkey->chase_range) {
-//          state_machine->change_state("Idle");
-//        }
-//
-//        // If close enough and cooldown has elapsed, go to windup before attacking
-//        if (distance < Gamer_monkey->close_attack_range &&
-//          (current_time - Gamer_monkey->last_attack_time) >= Gamer_monkey->attack_cooldown) {
-//          state_machine->change_state("Windup");
-//        }
-//      }
-//    }
-//  }
-//
-//  inline void dashing_on_exit([[maybe_unused]] Engine::ECS::Entity& entity) {
-//
-//  }
+  // ========================================================================
+  // Dashing State Callbacks
+  // ========================================================================
+  inline void dashing_on_enter(Engine::ECS::Entity& entity) {
+    auto* flip = entity.get_component<Components::Flip>();
+    auto* Gamer_monkey_transform = entity.get_component<Components::Transform2D>();
+
+    // Face the player immediately when starting the dash
+    auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+    if (player_entity.is_valid() && Gamer_monkey_transform && flip) {
+      auto* player_transform = player_entity.get_component<Components::Transform2D>();
+      if (player_transform) {
+        float dx = player_transform->position.x - Gamer_monkey_transform->position.x;
+        flip->value.x = (dx >= 0.0f ? 1.0f : -1.0f);
+      }
+    }
+
+    // Make the monkey itself deal 1 damage on collision while dashing
+    entity.add_component<Components::Attack>(1); // fixed 1 damage for dash
+    entity.add_to_layer("damage_player");
+
+    Log::info("Gamer Monkey: Entered Dash state");
+  }
+
+  inline void dashing_on_update(Engine::ECS::Entity& entity) {
+    auto* state_machine = entity.get_component<Components::StateMachine>();
+    auto* rigid = entity.get_component<Components::RigidBody>();
+    auto* Gamer_monkey_transform = entity.get_component<Components::Transform2D>();
+    auto* flip = entity.get_component<Components::Flip>();
+    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
+
+    if (!Gamer_monkey || !state_machine) return;
+
+    // Get player entity
+    auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+    if (!player_entity.is_valid() || !rigid || !Gamer_monkey_transform) {
+      state_machine->change_state("Idle");
+      return;
+    }
+
+    auto* player_transform = player_entity.get_component<Components::Transform2D>();
+    if (!player_transform) {
+      state_machine->change_state("Idle");
+      return;
+    }
+
+    float dx = player_transform->position.x - Gamer_monkey_transform->position.x;
+    float distance = std::abs(dx); // Only horizontal distance for sidescrolling
+
+    // Dash faster than normal chase speed towards the player
+    float dash_speed = Gamer_monkey->chase_speed * 3.0f;
+    if (rigid) {
+      rigid->velocity.x = (dx > 0.0f ? dash_speed : -dash_speed);
+    }
+
+    if (flip) {
+      flip->value.x = (dx >= 0.0f ? 1.0f : -1.0f);
+    }
+
+    // If we have closed the gap enough, fall back to normal chasing
+    if (distance <= Gamer_monkey->detection_range) {
+      state_machine->change_state("Chasing");
+      return;
+    }
+
+    // If player is now too far, stop dashing and go idle
+    if (distance > Gamer_monkey->chase_range) {
+      state_machine->change_state("Idle");
+      return;
+    }
+  }
+
+  inline void dashing_on_exit(Engine::ECS::Entity& entity) {
+    // Remove dash attack effect and damage layer
+    if (entity.has_component<Components::Attack>()) {
+      entity.remove_component<Components::Attack>();
+    }
+    entity.remove_from_layer("damage_player");
+  }
 
   // ========================================================================
   // Chasing State Callbacks
@@ -156,7 +180,7 @@ namespace GamerMonkeyStateCallbacks
         float dx = player_transform->position.x - Gamer_monkey_transform->position.x;
         float distance = std::abs(dx); // Only horizontal distance for sidescrolling
 
-        // dash towards player horizontally, but stop when within attack range
+        // Chase player horizontally, but stop when within attack range
         if (distance > Gamer_monkey->close_attack_range) {
           rigid->velocity.x = (dx > 0 ? Gamer_monkey->chase_speed : -Gamer_monkey->chase_speed);
           // Update flip direction based on movement
@@ -170,7 +194,14 @@ namespace GamerMonkeyStateCallbacks
           rigid->velocity.x = 0.0f;
         }
 
-        // Return to idle if player is far away
+        // If player moves out of normal chase detection but is still within
+        // extended range, switch to dash for a long-range approach
+        if (distance > Gamer_monkey->detection_range && distance <= Gamer_monkey->chase_range) {
+          state_machine->change_state("Dash");
+          return;
+        }
+
+        // Return to idle if player is completely out of range
         if (distance > Gamer_monkey->chase_range) {
           state_machine->change_state("Idle");
         }
@@ -374,6 +405,9 @@ namespace GamerMonkeyStateCallbacks
 // Register all Gamer monkey state callbacks
 REGISTER_FUNCTION(Gamer_monkey_idle_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::idle_on_enter)
 REGISTER_FUNCTION(Gamer_monkey_idle_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::idle_on_update)
+REGISTER_FUNCTION(Gamer_monkey_dashing_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::dashing_on_enter)
+REGISTER_FUNCTION(Gamer_monkey_dashing_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::dashing_on_update)
+REGISTER_FUNCTION(Gamer_monkey_dashing_exit, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::dashing_on_exit)
 REGISTER_FUNCTION(Gamer_monkey_chasing_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::chasing_on_enter)
 REGISTER_FUNCTION(Gamer_monkey_chasing_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::chasing_on_update)
 REGISTER_FUNCTION(Gamer_monkey_chasing_exit, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::chasing_on_exit)

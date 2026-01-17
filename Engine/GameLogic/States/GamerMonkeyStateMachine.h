@@ -22,8 +22,9 @@ namespace GamerMonkeyStates
   // Gamer Monkey dimensions
   constexpr f32 WIDTH = 400.0f;
   constexpr f32 HEIGHT = 400.0f;
-  constexpr f32 ATTACK_WIDTH = 600.0f;
+  constexpr f32 ATTACK_WIDTH = 800.0f;
   constexpr f32 ATTACK_HEIGHT = 400.0f;
+  constexpr f32 _DASH_ATTACK_WIDTH = 1200.0f;
 
   inline Components::StateMachine create_state_machine()
   {
