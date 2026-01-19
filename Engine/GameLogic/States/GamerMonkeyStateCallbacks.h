@@ -25,10 +25,18 @@ namespace GamerMonkeyStateCallbacks
 
   inline void idle_on_enter(Engine::ECS::Entity& entity) {
     auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
+    auto* rigid = entity.get_component<Components::RigidBody>();
+    
     if (Gamer_monkey) {
       // Store when we entered idle (for recovery delay after being hit)
-      Gamer_monkey->last_attack_time = Engine::Time::get_time(); // Reusing this field as "idle_enter_time"
+      Gamer_monkey->last_attack_time = Engine::Time::get_time();
     }
+    
+    // Stop movement when entering idle
+    if (rigid) {
+      rigid->velocity.x = 0.0f;
+    }
+    
     Log::info("Gamer Monkey: Entered Idle state");
   }
 
@@ -36,7 +44,7 @@ namespace GamerMonkeyStateCallbacks
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
 
-    if (!Gamer_monkey) return;
+    if (!Gamer_monkey || !state_machine) return;
 
     float current_time = Engine::Time::get_time();
     float time_in_idle = current_time - Gamer_monkey->last_attack_time;
@@ -58,56 +66,107 @@ namespace GamerMonkeyStateCallbacks
 
     if (Gamer_monkey_transform && player_transform) {
       float dx = player_transform->position.x - Gamer_monkey_transform->position.x;
-      float dy = player_transform->position.y - Gamer_monkey_transform->position.y;
-      float distance = std::sqrt(dx * dx + dy * dy);
+      float distance = std::abs(dx); // Use horizontal distance for sidescroller
 
-      // Start chasing if player is within normal detection range,
-      // otherwise start a long-range dash if within the extended chase range
-      if (distance < Gamer_monkey->detection_range) {
-        state_machine->change_state("Chasing");
-      }
-      else if (distance < Gamer_monkey->chase_range) {
-        state_machine->change_state("Dash");
+      // Check if dash is ready
+      bool dash_ready = (current_time - Gamer_monkey->last_dash_time) >= Gamer_monkey->dash_cooldown;
+
+      // If player is within chase range, decide whether to dash or chase
+      if (distance < Gamer_monkey->chase_range) {
+        // If player is far (beyond close attack range) and dash is ready, do dash windup
+        if (distance > Gamer_monkey->close_attack_range && dash_ready) {
+          state_machine->change_state("DashWindup");
+        }
+        // Otherwise just chase normally
+        else if (distance > Gamer_monkey->close_attack_range) {
+          state_machine->change_state("Chasing");
+        }
+        // If very close, go straight to chasing (will attack)
+        else {
+          state_machine->change_state("Chasing");
+        }
       }
     }
   }
 
   // ========================================================================
-  // Dashing State Callbacks
+  // Dash Windup State Callbacks
   // ========================================================================
-  inline void dashing_on_enter(Engine::ECS::Entity& entity) {
-    auto* flip = entity.get_component<Components::Flip>();
+  inline void dash_windup_on_enter(Engine::ECS::Entity& entity) {
+    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
     auto* Gamer_monkey_transform = entity.get_component<Components::Transform2D>();
+    auto* flip = entity.get_component<Components::Flip>();
+    auto* rigid = entity.get_component<Components::RigidBody>();
 
-    // Face the player immediately when starting the dash
+    if (!Gamer_monkey || !Gamer_monkey_transform) return;
+
+    // Stop moving during windup
+    if (rigid) {
+      rigid->velocity.x = 0.0f;
+    }
+
+    // Record when dash windup started
+    Gamer_monkey->dash_windup_start_time = Engine::Time::get_time();
+
+    // Get player position to determine direction
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
-    if (player_entity.is_valid() && Gamer_monkey_transform && flip) {
+    float player_x = Gamer_monkey_transform->position.x; // Default to monkey position
+
+    if (player_entity.is_valid()) {
       auto* player_transform = player_entity.get_component<Components::Transform2D>();
       if (player_transform) {
-        float dx = player_transform->position.x - Gamer_monkey_transform->position.x;
-        flip->value.x = (dx >= 0.0f ? 1.0f : -1.0f);
+        player_x = player_transform->position.x;
+
+        // Face the player
+        if (flip) {
+          float dx = player_x - Gamer_monkey_transform->position.x;
+          flip->value.x = (dx >= 0.0f ? 1.0f : -1.0f);
+        }
       }
     }
 
-    // Make the monkey itself deal 1 damage on collision while dashing
-    entity.add_component<Components::Attack>(1); // fixed 1 damage for dash
-    entity.add_to_layer("damage_player");
+    // Create the warning indicator rectangle entity
+    float monkey_x = Gamer_monkey_transform->position.x;
+    float monkey_y = Gamer_monkey_transform->position.y;
+    float direction = (player_x >= monkey_x) ? 1.0f : -1.0f;
 
-    Log::info("Gamer Monkey: Entered Dash state");
+    // Start with a small width rectangle at the monkey's position
+    float initial_width = 50.0f;
+    float indicator_x = monkey_x + (direction * initial_width * 0.5f);
+
+    // Create indicator entity with a colored rectangle (uses default white texture with color tint)
+    Gamer_monkey->dash_indicator_entity = Engine::ECS::create_entity()
+      .add_component<Components::Transform2D>(
+        indicator_x,
+        monkey_y,
+        0.0f,
+        initial_width,
+        Gamer_monkey->dash_indicator_height
+      )
+      .add_component<Components::Texture>(Engine::Resources::load_texture("images/white.png")) // Use a white texture for colored rect
+      .add_component<Components::Color>(Math::Vec4D(1.0f, 0.3f, 0.3f, 0.5f)); // Semi-transparent red
+
+    // Store initial direction for the indicator
+    Gamer_monkey->dash_target_x = player_x; // Temporarily store player x for direction
+
+    Log::info("Gamer Monkey: Entered Dash Windup state");
   }
 
-  inline void dashing_on_update(Engine::ECS::Entity& entity) {
+  inline void dash_windup_on_update(Engine::ECS::Entity& entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
-    auto* rigid = entity.get_component<Components::RigidBody>();
+    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
     auto* Gamer_monkey_transform = entity.get_component<Components::Transform2D>();
     auto* flip = entity.get_component<Components::Flip>();
-    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
 
-    if (!Gamer_monkey || !state_machine) return;
+    if (!Gamer_monkey || !Gamer_monkey_transform || !state_machine) return;
 
-    // Get player entity
+    float current_time = Engine::Time::get_time();
+    float elapsed = current_time - Gamer_monkey->dash_windup_start_time;
+    float progress = std::min(elapsed / Gamer_monkey->dash_windup_duration, 1.0f);
+
+    // Get current player position
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
-    if (!player_entity.is_valid() || !rigid || !Gamer_monkey_transform) {
+    if (!player_entity.is_valid()) {
       state_machine->change_state("Idle");
       return;
     }
@@ -118,38 +177,185 @@ namespace GamerMonkeyStateCallbacks
       return;
     }
 
-    float dx = player_transform->position.x - Gamer_monkey_transform->position.x;
-    float distance = std::abs(dx); // Only horizontal distance for sidescrolling
+    float monkey_x = Gamer_monkey_transform->position.x;
+    float monkey_y = Gamer_monkey_transform->position.y;
+    float player_x = player_transform->position.x;
+    float direction = (player_x >= monkey_x) ? 1.0f : -1.0f;
 
-    // Dash faster than normal chase speed towards the player
-    float dash_speed = Gamer_monkey->chase_speed * 3.0f;
-    if (rigid) {
-      rigid->velocity.x = (dx > 0.0f ? dash_speed : -dash_speed);
+    // Update flip to face player
+    if (flip) {
+      flip->value.x = direction;
     }
 
+    // Calculate target distance and current rectangle width based on progress
+    float distance_to_player = std::abs(player_x - monkey_x);
+    float min_width = 50.0f;
+    float target_width = distance_to_player + 50.0f; // Extend slightly past player
+    float current_width = min_width + (target_width - min_width) * progress;
+
+    // Update the warning indicator rectangle
+    if (Gamer_monkey->dash_indicator_entity.is_valid()) {
+      auto* indicator_transform = Gamer_monkey->dash_indicator_entity.get_component<Components::Transform2D>();
+      if (indicator_transform) {
+        // Position the rectangle so it starts at monkey and extends toward player
+        float indicator_x = monkey_x + (direction * current_width * 0.5f);
+        indicator_transform->position.x = indicator_x;
+        indicator_transform->position.y = monkey_y;
+        indicator_transform->scale.x = current_width;
+        indicator_transform->scale.y = Gamer_monkey->dash_indicator_height;
+      }
+
+      // Make the indicator flash/pulse by adjusting alpha and color intensity
+      auto* indicator_color = Gamer_monkey->dash_indicator_entity.get_component<Components::Color>();
+      if (indicator_color) {
+        // Pulse faster as progress increases, getting more intense
+        float pulse_speed = 10.0f + progress * 20.0f;
+        float alpha = 0.4f + 0.3f * std::sin(current_time * pulse_speed);
+        float red_intensity = 0.8f + 0.2f * progress; // Gets more red as it progresses
+        indicator_color->r = red_intensity;
+        indicator_color->g = 0.2f * (1.0f - progress);
+        indicator_color->b = 0.2f * (1.0f - progress);
+        indicator_color->a = alpha;
+      }
+    }
+
+    // When windup is complete, store the target position and transition to dash
+    if (progress >= 1.0f) {
+      // Store the player's current X as the dash target (where the monkey will dash to)
+      Gamer_monkey->dash_target_x = player_x;
+      state_machine->change_state("Dash");
+    }
+  }
+
+  inline void dash_windup_on_exit(Engine::ECS::Entity& entity) {
+    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
+
+    // Destroy the warning indicator entity
+    if (Gamer_monkey && Gamer_monkey->dash_indicator_entity.is_valid()) {
+      Engine::ECS::destroy_entity(Gamer_monkey->dash_indicator_entity);
+      Gamer_monkey->dash_indicator_entity = Engine::ECS::Entity(); // Reset to invalid
+    }
+    
+    Log::info("Gamer Monkey: Exited Dash Windup state");
+  }
+
+  // ========================================================================
+  // Dashing State Callbacks
+  // ========================================================================
+  inline void dashing_on_enter(Engine::ECS::Entity& entity) {
+    auto* flip = entity.get_component<Components::Flip>();
+    auto* Gamer_monkey_transform = entity.get_component<Components::Transform2D>();
+    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
+    auto* rigid = entity.get_component<Components::RigidBody>();
+
+    if (!Gamer_monkey) return;
+
+    // Record when dash started (for cooldown tracking)
+    Gamer_monkey->last_dash_time = Engine::Time::get_time();
+
+    // Calculate direction to dash target
+    float dx = 0.0f;
+    if (Gamer_monkey_transform) {
+      dx = Gamer_monkey->dash_target_x - Gamer_monkey_transform->position.x;
+    }
+
+    // Face toward the stored dash target position
     if (flip) {
       flip->value.x = (dx >= 0.0f ? 1.0f : -1.0f);
     }
 
-    // If we have closed the gap enough, fall back to normal chasing
-    if (distance <= Gamer_monkey->detection_range) {
+    // Apply dash velocity toward the stored target X position
+    if (rigid) {
+      // Use a high dash speed to ensure reaching the target
+      rigid->velocity.x = (dx >= 0.0f ? Gamer_monkey->dash_speed : -Gamer_monkey->dash_speed);
+      // Small upward boost for visual effect
+      rigid->velocity.y = -100.0f;
+    }
+
+    // Make the monkey itself deal damage on collision while dashing
+    if (!entity.has_component<Components::Attack>()) {
+      entity.add_component<Components::Attack>(Gamer_monkey->damage);
+      auto* attack = entity.get_component<Components::Attack>();
+      if (attack && flip) {
+        attack->knockback = Gamer_monkey->knockback;
+        if (flip->value.x < 0) {
+          attack->knockback.x = -attack->knockback.x;
+        }
+        attack->knockback.y = -std::abs(attack->knockback.y);
+      }
+    }
+    entity.add_to_layer("damage_player");
+
+    // Note: Logging target X here previously used std::to_string in a header, which caused a compile-time
+    // constant expression issue on some compilers. If needed, log from a .cpp or use a simpler message.
+    Log::info("Gamer Monkey: Entered Dash state");
+  }
+
+  inline void dashing_on_update(Engine::ECS::Entity& entity) {
+    auto* state_machine = entity.get_component<Components::StateMachine>();
+    auto* rigid = entity.get_component<Components::RigidBody>();
+    auto* Gamer_monkey_transform = entity.get_component<Components::Transform2D>();
+    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
+
+    if (!Gamer_monkey || !state_machine) return;
+
+    if (!rigid || !Gamer_monkey_transform) {
+      state_machine->change_state("Idle");
+      return;
+    }
+
+    // Keep applying dash velocity (in case friction slows it down)
+    float current_x = Gamer_monkey_transform->position.x;
+    float target_x = Gamer_monkey->dash_target_x;
+    float dx = target_x - current_x;
+    
+    // Maintain dash speed
+    if (std::abs(dx) > 10.0f) {
+      rigid->velocity.x = (dx >= 0.0f ? Gamer_monkey->dash_speed : -Gamer_monkey->dash_speed);
+    }
+
+    // Check if we've reached or passed the target X position
+    float direction = (dx >= 0.0f) ? 1.0f : -1.0f;
+    float velocity_dir = (rigid->velocity.x >= 0.0f) ? 1.0f : -1.0f;
+
+    // If moving right and passed target, or moving left and passed target
+    bool reached_target = (velocity_dir > 0.0f && current_x >= target_x) ||
+                          (velocity_dir < 0.0f && current_x <= target_x);
+
+    // Also check if we're very close to target
+    bool close_to_target = std::abs(dx) < 50.0f;
+
+    if (reached_target || close_to_target) {
+      // Stop horizontal movement
+      rigid->velocity.x = 0.0f;
       state_machine->change_state("Chasing");
       return;
     }
 
-    // If player is now too far, stop dashing and go idle
-    if (distance > Gamer_monkey->chase_range) {
-      state_machine->change_state("Idle");
+    // Safety: If dash takes too long (e.g., hit a wall), exit after 2 seconds
+    float dash_time = Engine::Time::get_time() - Gamer_monkey->last_dash_time;
+    if (dash_time > 2.0f) {
+      rigid->velocity.x = 0.0f;
+      state_machine->change_state("Chasing");
       return;
     }
   }
 
   inline void dashing_on_exit(Engine::ECS::Entity& entity) {
+    auto* rigid = entity.get_component<Components::RigidBody>();
+    
+    // Stop movement when exiting dash
+    if (rigid) {
+      rigid->velocity.x = 0.0f;
+    }
+    
     // Remove dash attack effect and damage layer
     if (entity.has_component<Components::Attack>()) {
       entity.remove_component<Components::Attack>();
     }
     entity.remove_from_layer("damage_player");
+    
+    Log::info("Gamer Monkey: Exited Dash state");
   }
 
   // ========================================================================
@@ -195,10 +401,14 @@ namespace GamerMonkeyStateCallbacks
         }
 
         // If player moves out of normal chase detection but is still within
-        // extended range, switch to dash for a long-range approach
+        // extended range, switch to dash windup for a long-range approach (if cooldown is ready)
         if (distance > Gamer_monkey->detection_range && distance <= Gamer_monkey->chase_range) {
-          state_machine->change_state("Dash");
-          return;
+          bool dash_ready = (current_time - Gamer_monkey->last_dash_time) >= Gamer_monkey->dash_cooldown;
+          if (dash_ready) {
+            state_machine->change_state("DashWindup");
+            return;
+          }
+          // If dash is on cooldown, continue chasing normally
         }
 
         // Return to idle if player is completely out of range
@@ -405,6 +615,9 @@ namespace GamerMonkeyStateCallbacks
 // Register all Gamer monkey state callbacks
 REGISTER_FUNCTION(Gamer_monkey_idle_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::idle_on_enter)
 REGISTER_FUNCTION(Gamer_monkey_idle_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::idle_on_update)
+REGISTER_FUNCTION(Gamer_monkey_dash_windup_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::dash_windup_on_enter)
+REGISTER_FUNCTION(Gamer_monkey_dash_windup_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::dash_windup_on_update)
+REGISTER_FUNCTION(Gamer_monkey_dash_windup_exit, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::dash_windup_on_exit)
 REGISTER_FUNCTION(Gamer_monkey_dashing_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::dashing_on_enter)
 REGISTER_FUNCTION(Gamer_monkey_dashing_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::dashing_on_update)
 REGISTER_FUNCTION(Gamer_monkey_dashing_exit, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::dashing_on_exit)

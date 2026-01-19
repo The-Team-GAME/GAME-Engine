@@ -22,9 +22,8 @@ namespace GamerMonkeyStates
   // Gamer Monkey dimensions
   constexpr f32 WIDTH = 400.0f;
   constexpr f32 HEIGHT = 400.0f;
-  constexpr f32 ATTACK_WIDTH = 800.0f;
+  constexpr f32 ATTACK_WIDTH = 400.0f;
   constexpr f32 ATTACK_HEIGHT = 400.0f;
-  constexpr f32 _DASH_ATTACK_WIDTH = 1200.0f;
 
   inline Components::StateMachine create_state_machine()
   {
@@ -70,6 +69,17 @@ namespace GamerMonkeyStates
     Gamer_monkey_dashing_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
 
     Components::State Gamer_monkey_dashing("Dash", "Gamer_monkey_dashing_enter", "Gamer_monkey_dashing_update", "Gamer_monkey_dashing_exit", Gamer_monkey_dashing_anim, footstep_audio);
+
+    // ========================================================================
+    // Gamer Monkey Dash Windup State
+    // ========================================================================
+    Components::StateAnimation Gamer_monkey_dash_windup_anim;
+    Gamer_monkey_dash_windup_anim.texture = Components::Texture(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/idle.png"));
+    Gamer_monkey_dash_windup_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 5, 5);
+    Gamer_monkey_dash_windup_anim.animation = Components::Animation(4, 0.15f);
+    Gamer_monkey_dash_windup_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
+
+    Components::State Gamer_monkey_dash_windup("DashWindup", "Gamer_monkey_dash_windup_enter", "Gamer_monkey_dash_windup_update", "Gamer_monkey_dash_windup_exit", Gamer_monkey_dash_windup_anim);
 
     // ========================================================================
     // Gamer Monkey Chase State
@@ -132,6 +142,7 @@ namespace GamerMonkeyStates
     // ========================================================================
     Components::StateMachine Gamer_monkey_sm;
     Gamer_monkey_sm.add_state(Gamer_monkey_idle);
+    Gamer_monkey_sm.add_state(Gamer_monkey_dash_windup);
     Gamer_monkey_sm.add_state(Gamer_monkey_dashing);
     Gamer_monkey_sm.add_state(Gamer_monkey_chasing);
     Gamer_monkey_sm.add_state(Gamer_monkey_windup);
