@@ -95,6 +95,7 @@ namespace Math {
     return result < 0 ? -result : result;
   }
 
+  // Rotates the angle 90 degrees ccw
   Vec2D outward_normal(Vec2D const& vect)
   {
     return Vec2D(-vect.y, vect.x);

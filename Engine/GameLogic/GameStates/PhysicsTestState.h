@@ -71,7 +71,7 @@ class PhysicsTestState : public Engine::Scene {
 private:
   Engine::ECS::Entity prefab_instance;
 
-public:
+public: 
   void load() {
     // Free falling box
     player = make_player(player_pos, npc_scale);

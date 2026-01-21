@@ -141,7 +141,7 @@ void col2D::update()
         // Ok so the part above works now but we need another way to check if the player/ entity is on the ground / a jumpable surface
         // Behold the power of dot product (all the math need to re sketch out to explain cuz my whiteboard has limited space KEKW)
         f32 cos_of_angle_of_slope = dot_product(normal_dir_vtr, Vec2D(0.f, -1.f));
-        if (cos_of_angle_of_slope >= cos(static_cast<float>(phy2D::get_slope_radian_threshold)))
+        if (cos_of_angle_of_slope >= cosf(phy2D::get_slope_radian_threshold()))
         {
           rigid->on_ground = true;
           // We will do friction and normal force in here because we want the player to just slide off the wall
@@ -154,7 +154,7 @@ void col2D::update()
           Components::RigidBody* other_rigid = other.get_component<Components::RigidBody>();
           // First we need to check if the velocity is perpendicular to the normal (no point accounting for friction if the player is falling / slamming into a wall)
           Vec2D friction_force = -normalise_vector(rigid->velocity) * normal_magnitude * (rigid->kinetic_coefficient * other_rigid->kinetic_coefficient);
-          rigid->force += normal_force;
+          rigid->force += normal_force;// +friction_force;
           std::cout << "Normal Force: " << normal_force << std::endl;
         }
 #if 0

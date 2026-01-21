@@ -123,11 +123,11 @@ void logi::run_state(ECS::Entity entity)
     break;
   case entity_state::MOVING_LEFT:
     // Physics Movement code here
-    move_left(*rigid);
+    rigid->force -= walking_speed * rigid->mass;
     break;
   case entity_state::MOVING_RIGHT:
     // Physics Movement code here
-    move_right(*rigid);
+    rigid->force += walking_speed * rigid->mass;
     break;
   case entity_state::JUMPING:
     // Physics Movement code here
@@ -203,7 +203,7 @@ void logi::move_left(Components::RigidBody& rigid)
     {
       direction *= -1;
     }
-    rigid.velocity = direction * walking_speed;
+    rigid.force += direction * walking_speed;
   }
   else
   {
