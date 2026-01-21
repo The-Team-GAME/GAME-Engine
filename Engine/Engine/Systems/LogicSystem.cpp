@@ -27,7 +27,7 @@ namespace { // in the cpp file
   /*===============/
   / Movement stuff /
   /===============*/
-  f32 walking_speed = 400.f;
+  f32 walking_force = 1'000.f;
   Vec2D patrol_speed(150.f, 0.f);
   Vec2D jumping_force(0.f, -35000.f);
 
@@ -123,11 +123,11 @@ void logi::run_state(ECS::Entity entity)
     break;
   case entity_state::MOVING_LEFT:
     // Physics Movement code here
-    rigid->force -= walking_speed * rigid->mass;
+    rigid->force -= walking_force * rigid->mass;
     break;
   case entity_state::MOVING_RIGHT:
     // Physics Movement code here
-    rigid->force += walking_speed * rigid->mass;
+    rigid->force += walking_force * rigid->mass;
     break;
   case entity_state::JUMPING:
     // Physics Movement code here
@@ -203,11 +203,11 @@ void logi::move_left(Components::RigidBody& rigid)
     {
       direction *= -1;
     }
-    rigid.force += direction * walking_speed;
+    rigid.force += direction * walking_force;
   }
   else
   {
-    rigid.velocity.x = -walking_speed;
+    rigid.velocity.x = -walking_force;
   }
 }
 
@@ -220,11 +220,11 @@ void logi::move_right(Components::RigidBody& rigid)
     {
       direction *= -1;
     }
-    rigid.velocity = direction * walking_speed;
+    rigid.velocity = direction * walking_force;
   }
   else
   {
-    rigid.velocity.x = walking_speed;
+    rigid.velocity.x = walking_force;
   }
 }
 

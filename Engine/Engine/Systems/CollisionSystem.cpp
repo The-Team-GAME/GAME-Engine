@@ -150,11 +150,30 @@ void col2D::update()
           f32 normal_magnitude = weight_magnitude / cos_of_angle_of_slope;
           Vec2D normal_force = normal_dir_vtr * normal_magnitude;
 
-          // now we calculate the friction obtained from velocity dir vtr * normal magnitude * kinetic friction coefficient 
-          Components::RigidBody* other_rigid = other.get_component<Components::RigidBody>();
-          // First we need to check if the velocity is perpendicular to the normal (no point accounting for friction if the player is falling / slamming into a wall)
-          Vec2D friction_force = -normalise_vector(rigid->velocity) * normal_magnitude * (rigid->kinetic_coefficient * other_rigid->kinetic_coefficient);
-          rigid->force += normal_force;// +friction_force;
+          Vec2D friction_force;
+          if (cos_of_angle_of_slope < 1) // No friction on flat surface
+          {
+            Components::RigidBody* other_rigid = other.get_component<Components::RigidBody>();
+            // So from what i know, you are supposed to calculate the net force of the object after the normal and gravity and external force has been added, then you see if the friction is big enough to counter said net force
+            // We also need to know the direction of the net forces so that we can tell which direction the friction needs to be pointing
+            Vec2D net_force_before_friction = rigid->force + normal_force;
+            Vec2D friction_dir = collision.get_tangent();
+            f32 force_along_slope = dot_product(net_force_before_friction, friction_dir);
+            if (force_along_slope != 0) {
+              friction_dir = (force_along_slope > 0) ? -friction_dir : friction_dir;
+            }
+            f32 friction_magnitude = normal_magnitude * (rigid->kinetic_coefficient * other_rigid->kinetic_coefficient);
+            f32 required_friction_magnitude = abs(force_along_slope);
+            if (friction_magnitude >= required_friction_magnitude) 
+            {
+              friction_force = friction_dir * abs(dot_product(net_force_before_friction, friction_dir));
+            }
+            else 
+            {
+              friction_force = friction_dir * friction_magnitude;
+            }
+          }
+          rigid->force += normal_force +friction_force;
           std::cout << "Normal Force: " << normal_force << std::endl;
         }
 #if 0
