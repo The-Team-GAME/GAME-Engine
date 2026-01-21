@@ -75,14 +75,19 @@ void phy2D::update_entity(ECS::Entity& entity) {
   Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
   Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
   Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
+
+  if (!rigid || !xform || !box) {
+    return;
+  }
+
   phy2D::update_kinematics(*rigid, *box, *xform);
   rigid->force.zero();
   //Log::info("velocity: ({}, {}) || position: ({}, {})", rigid->velocity.x, rigid->velocity.y, rigid->curr_pos.x, rigid->curr_pos.y);
 }
 
 void phy2D::update_kinematics(
-  Components::RigidBody& rigid, 
-  Components::BoxCollider& box, 
+  Components::RigidBody& rigid,
+  Components::BoxCollider& box,
   Components::Transform2D& xform)
 {
   // F = m x a => Force equals mass x acceleration
@@ -92,7 +97,7 @@ void phy2D::update_kinematics(
   {
     rigid.acceleration += gravity_acc;
   }
-  
+
   // From now on we will apply friction on collision like how its supposed to be
   // There wont be any air resistance so that the player can be controlled more accurately
   rigid.velocity.x *= box.kinetic_friction;

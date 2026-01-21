@@ -613,7 +613,33 @@ Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, 
   if (!prefab.is_valid())
   {
     Log::warning("Failed to deserialize prefab: {}", full_path);
+    Engine::EventManager::send_event<Engine::Events::ToastEvent>(
+      "Failed to load prefab: " + actual_filepath,
+      Engine::Events::ToastType::Error,
+      5.0f
+    );
     return Engine::ECS::Prefab(); // Return empty prefab handle
+  }
+
+  // Check for loading errors (corrupted data, missing components, etc.)
+  if (prefab.get_impl()->has_load_errors())
+  {
+    const auto& errors = prefab.get_impl()->get_load_errors();
+    std::string error_summary = "Prefab '" + actual_filepath + "' loaded with errors:\n";
+    for (size_t i = 0; i < errors.size() && i < 3; ++i) // Show first 3 errors
+    {
+      error_summary += "- " + errors[i] + "\n";
+    }
+    if (errors.size() > 3)
+    {
+      error_summary += "... and " + std::to_string(errors.size() - 3) + " more errors";
+    }
+    Log::warning("{}", error_summary);
+    Engine::EventManager::send_event<Engine::Events::ToastEvent>(
+      error_summary,
+      Engine::Events::ToastType::Warning,
+      8.0f
+    );
   }
 
   // Set the filepath in the prefab

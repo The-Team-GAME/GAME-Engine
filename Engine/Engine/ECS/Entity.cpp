@@ -16,6 +16,8 @@
 #include "World.h"
 #include "WorldData.h"
 #include "Reflection.h"
+#include "../EventManager/EventManager.h"
+#include "../Events/EngineEvents.h"
 
 namespace Engine {
   namespace ECS {
@@ -159,12 +161,29 @@ namespace Engine {
 
       // Deserialize components using helper function
       const auto& components_array = value["components"].getArray();
-      Serialization::deserialize_components_to_storage(
+      auto deserialize_result = Serialization::deserialize_components_to_storage(
         components_array,
         containers.component_arrays,
         containers.entity_signatures[entity_id],
         entity_id
       );
+
+      // Check for deserialization errors and warn the user
+      if (deserialize_result.has_errors()) {
+        std::string error_summary = "Entity loaded with errors:\n";
+        for (size_t i = 0; i < deserialize_result.errors.size() && i < 3; ++i) {
+          error_summary += "- " + deserialize_result.errors[i] + "\n";
+        }
+        if (deserialize_result.errors.size() > 3) {
+          error_summary += "... and " + std::to_string(deserialize_result.errors.size() - 3) + " more errors";
+        }
+        Log::warning("{}", error_summary);
+        Engine::EventManager::send_event<Engine::Events::ToastEvent>(
+          error_summary,
+          Engine::Events::ToastType::Warning,
+          8.0f
+        );
+      }
 
       // Deserialize prefab instance data if present
       if (value.has("prefab_reference") && value["prefab_reference"].isObject()) {
