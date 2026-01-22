@@ -27,7 +27,7 @@ namespace { // in the cpp file
   /*===============/
   / Movement stuff /
   /===============*/
-  f32 walking_force = 1'000.f;
+  f32 walking_force = 3'000.f;
   Vec2D patrol_speed(150.f, 0.f);
   Vec2D jumping_force(0.f, -35000.f);
 
