@@ -118,7 +118,7 @@ void logi::run_state(ECS::Entity entity)
 #pragma region player states
   // PLAYER SPECIFIC STATES
   case entity_state::IDLE:
-    rigid->velocity.x = 0.f;
+    rigid->force = 0.f;
     // Animation here
     break;
   case entity_state::MOVING_LEFT:

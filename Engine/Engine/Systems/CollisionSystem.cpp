@@ -119,7 +119,10 @@ void col2D::update()
 
         // we add the MTV here because it is not the penetration vector but rather how far the object needs to be pushed out to resolve the collision
         // Basically we snapping the object out of the collided surface
-        xform->position += collision.mtv;
+        if (collision.get_penetration() > 0.5f)
+        {
+          xform->position += collision.mtv * 0.95f;
+        }
 
         // The new plan:
         // 1. After collision i'm gona cancel out the velocity of the object parallel to the direction of the collision as a way to kill the momenthum of the object
@@ -147,7 +150,7 @@ void col2D::update()
           // We will do friction and normal force in here because we want the player to just slide off the wall
           f32 weight_magnitude = rigid->mass * phy2D::get_gravity();
           // cos x (angle of slope) = adjacent (weight) / hypotenuse(normal)
-          f32 normal_magnitude = weight_magnitude / cos_of_angle_of_slope;
+          f32 normal_magnitude = weight_magnitude * cos_of_angle_of_slope;
           Vec2D normal_force = normal_dir_vtr * normal_magnitude;
 
           Vec2D friction_force;
@@ -157,24 +160,29 @@ void col2D::update()
             // So from what i know, you are supposed to calculate the net force of the object after the normal and gravity and external force has been added, then you see if the friction is big enough to counter said net force
             // We also need to know the direction of the net forces so that we can tell which direction the friction needs to be pointing
             Vec2D net_force_before_friction = rigid->force + normal_force;
-            Vec2D friction_dir = collision.get_tangent();
-            f32 force_along_slope = dot_product(net_force_before_friction, friction_dir);
-            if (force_along_slope != 0) {
-              friction_dir = (force_along_slope > 0) ? -friction_dir : friction_dir;
-            }
-            f32 friction_magnitude = normal_magnitude * (rigid->kinetic_coefficient * other_rigid->kinetic_coefficient);
-            f32 required_friction_magnitude = abs(force_along_slope);
-            if (friction_magnitude >= required_friction_magnitude) 
+            Vec2D friction_dir = normalise_vector(collision.get_tangent());
+            friction_dir = dot_product(rigid->velocity, friction_dir) < 0 ? friction_dir : -friction_dir;
+
+            // This is how much friction can be generated in this frame
+            f32 calculated_friction_magnitude = normal_magnitude * (rigid->kinetic_coefficient * other_rigid->kinetic_coefficient);
+
+            // Now we calculate how much friction is needed to stop the object within this frame
+            f32 friction_acc = rigid->velocity.get_magnitude() / Time::get_fixed_dt();
+            f32 required_friction_force = friction_acc * rigid->mass;
+
+            //f32 force_along_slope = abs(dot_product(net_force_before_friction, friction_dir));
+            if (required_friction_force < calculated_friction_magnitude)
             {
-              friction_force = friction_dir * abs(dot_product(net_force_before_friction, friction_dir));
+              friction_force = friction_dir * required_friction_force;
             }
             else 
             {
-              friction_force = friction_dir * friction_magnitude;
+              friction_force = friction_dir * calculated_friction_magnitude;
             }
           }
           rigid->force += normal_force +friction_force;
-          std::cout << "Normal Force: " << normal_force << std::endl;
+          std::cout << "Normal Force: " << normal_force << " Normal Magnitude" << normal_force.get_magnitude() << std::endl;
+          std::cout << "Friction Force: " << friction_force << " Friction Magnitude" << friction_force.get_magnitude()  << std::endl;
         }
 #if 0
         f32 penetration = collision.get_penetration();

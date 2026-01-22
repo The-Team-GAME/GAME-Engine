@@ -33,7 +33,7 @@ using col2D = Collision2DSystem;
 // eventually we'll deserialise these values from file bah
 namespace {
   Vec2D knockback_force{ -1000000.f, 50000.f };
-  const f32 gravity_acc = 150.f;
+  const f32 gravity_acc = 250.f;
   const f32 STATIC_FRICTION_THRESHOLD = 20.0f;
 
   // Basically this value is how seep a slope can be before its no longer considered walkable/ on the ground
@@ -129,89 +129,6 @@ void phy2D::zero_normal_velocity(
   Vec2D normalised_mtv = normalise_vector(collision.mtv);
   f32 normal_velocity_magnitude = dot_product(rigid.velocity, normalised_mtv);
   rigid.velocity -= normalised_mtv * normal_velocity_magnitude;
-}
-
-#if 0
-void phy2D::apply_surface_friction(
-  Components::RigidBody& rigid,
-  CollisionResult const& collision,
-  [[maybe_unused]] f32 static_friction,
-  f32 kinetic_friction)
-{
-  // At this point, the velocity of the entity should already be parallel to the surface its colliding with since zero_normal_velocity was called prior to this function.
-  Vec2D normal = normalise_vector(collision.mtv);
-  Vec2D tangent = normalise_vector(collision.get_tangent());
-  if (angle_of_slope(tangent) > phy2D::get_slope_angle_limit())
-  {
-    return;
-  }
-  // Get velocity component parallel to the surface
-  f32 tangent_speed = dot_product(rigid.velocity, tangent);
-  f32 speed = fabsf(tangent_speed);
-
-  if (speed < STATIC_FRICTION_THRESHOLD)
-  {
-    // Entity is moving very slowly - apply static friction
-    // Remove the tangent velocity component completely
-    rigid.velocity -= tangent * tangent_speed;
-    return;  // Exit early - entity is now stationary relative to surface
-  }
-
-  // Entity is moving fast enough - apply kinetic friction
-  // Apply friction force proportional to speed
-  // Direction opposes motion along the surface
-  Vec2D friction_direction = (tangent_speed < 0) ? (tangent * -1.0f) : tangent;
-  f32 friction_magnitude = speed * kinetic_friction;
-
-  // Apply friction as a velocity change
-  rigid.velocity -= friction_direction * friction_magnitude;
-}
-#endif
-
-Vec2D phy2D::get_friction_force(
-  Components::RigidBody& rigid,
-  CollisionResult const& collision
-)
-{
-  f32 normal_magnitude = collision.get_penetration();
-  // dealing with epsilon values here for very small friction
-  if (normal_magnitude < 0.0001f)
-  {
-    return Vec2D(0.0f, 0.0f);
-  }
-  Vec2D normalised_tangent = normalise_vector(collision.get_tangent());
-  // Here we check for the angle of the slope, if it is too steep then we take it as there is no friction to allow the object to free fall
-  if (angle_of_slope(normalised_tangent) > phy2D::get_slope_angle_threshold())
-    return Vec2D(0.0f, 0.0f);
-
-  // Basically this is how fast the object is going down the slope
-  f32 tangental_speed = dot_product(rigid.velocity, normalised_tangent); 
-  Vec2D tangental_velocity = normalised_tangent * tangental_speed;
-
-
-}
-
-Vec2D phy2D::get_normal_force(
-  Components::RigidBody const& rigid,
-  CollisionResult const& collision)
-{
-  // Get the collision normal (points away from surface)
-  Vec2D normal = normalise_vector(collision.mtv);
-
-  // Calculate total force pushing into surface
-  // For now, this is just gravity, but could include other forces
-  Vec2D gravity_force = gravity_acc * rigid.mass;
-
-  // We negate because normal points OUT, gravity points IN (downward)
-  f32 normal_magnitude = -dot_product(gravity_force, normal);
-
-  // Surface can only push, not pull
-  // This should not happen btw
-  if (normal_magnitude <= 0.0f)
-    return Vec2D(0.0f, 0.0f);
-
-  // Calculate the Normal force vector: magnitude × direction (pointing out of surface)
-  return normal * normal_magnitude;
 }
 
 void phy2D::add_force(Components::RigidBody& rigid, Vec2D force)
