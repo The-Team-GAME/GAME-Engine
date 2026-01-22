@@ -32,8 +32,13 @@ Engine::Level Engine::Level::from_world()
   Level level;
 
   Engine::ECS::for_each_entity([&](Engine::ECS::Entity entity) {
-    // Skip tile entities - they are temporary and rebuilt by TilemapManager
-    if (entity.has_components<Components::TileCollider, Components::Level>()) {
+    // Skip tile collision entities - they are temporary and rebuilt by TilemapManager
+    if (entity.has_component<Components::TileCollider>()) {
+      return;
+    }
+
+    // Skip the Level entity itself - it's created during instantiation
+    if (entity.has_component<Components::Level>()) {
       return;
     }
 
