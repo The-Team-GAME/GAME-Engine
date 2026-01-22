@@ -43,28 +43,19 @@ void PauseState::load()
 
   // Find ALL Level entities and locate the Pause level specifically
   auto level_entities = Engine::ECS::get_entities_with<Components::Level>();
-  
+
   for (auto& level_entity : level_entities) {
     // Check if this is the Pause level
     auto* level_comp = level_entity.get_component<Components::Level>();
     if (level_comp && level_comp->level_path == "levels/Pause.json") {
-      // Move all entities that are children of the Pause Level to the camera position
-      Engine::ECS::for_each_entity([&](Engine::ECS::Entity entity) {
-        if (entity.has_component<Components::Parent>()) {
-          auto* parent_comp = entity.get_component<Components::Parent>();
-          if (parent_comp && parent_comp->parent_id == level_entity.get_id()) {
-            // This entity is a child of the Pause Level, move it to camera position
-            if (entity.has_component<Components::Transform2D>()) {
-              auto* transform = entity.get_component<Components::Transform2D>();
-              if (transform) {
-                transform->position.x = cam_x;
-                transform->position.y = cam_y;
-              }
-            }
-          }
+      // Move this entity to the camera position
+      if (level_entity.has_component<Components::Transform2D>()) {
+        auto* transform = level_entity.get_component<Components::Transform2D>();
+        if (transform) {
+          transform->position.x = cam_x;
+          transform->position.y = cam_y;
         }
-      });
-      break; // Found and processed the Pause level, no need to continue
+      }
     }
   }
 
@@ -165,30 +156,8 @@ void PauseState::free()
 
 void PauseState::unload()
 {
-  // Destroy entities created in level
-  // Find ALL Level entities and locate the Pause level specifically
-  auto level_entities = Engine::ECS::get_entities_with<Components::Level>();
-  
-  for (auto& level_entity : level_entities) {
-    // Check if this is the Pause level
-    auto* level_comp = level_entity.get_component<Components::Level>();
-    if (level_comp && level_comp->level_path == "levels/Pause.json") {
-      // Destroy all entities that are children of the Pause Level
-      Engine::ECS::for_each_entity([&](Engine::ECS::Entity entity) {
-        if (entity.has_component<Components::Parent>()) {
-          auto* parent_comp = entity.get_component<Components::Parent>();
-          if (parent_comp && parent_comp->parent_id == level_entity.get_id()) {
-            // This entity is a child of the Pause Level, destroy it
-            entity.destroy();
-          }
-        }
-      });
-      
-      // Finally, destroy the Pause Level entity itself
-      level_entity.destroy();
-      break; // Found and destroyed the Pause level, no need to continue
-    }
-  }
+  // Destroy all entities belonging to the Pause level
+  Engine::LevelManager::clear_level_entities("levels/Pause.json");
 
   Engine::Time::set_time_scale(1.0f);
 }

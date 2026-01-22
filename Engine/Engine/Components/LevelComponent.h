@@ -20,9 +20,12 @@
 
 namespace Components
 {
+  // Marks an entity as belonging to a level.
+  // All entities loaded from a level file will have this component.
+  // Used for tracking and cleanup - does NOT affect transforms.
   struct Level {
     std::string level_path;
-    
+
     Level() = default;
     Level(const std::string& path) : level_path(path) {}
   };

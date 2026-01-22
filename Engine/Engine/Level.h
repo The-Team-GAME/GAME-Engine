@@ -33,6 +33,10 @@ namespace Engine {
   namespace LevelManager {
     std::string get_current_level_path();
     void set_current_level_path(const std::string& level_name); // Only used in SceneManager, when loading scenes instead of levels
+
+    // Destroys all entities that belong to the current level (have LevelMember component)
+    // Optionally specify a level path, or leave empty to clear current level
+    void clear_level_entities(const std::string& level_path = "");
   }
 
 }

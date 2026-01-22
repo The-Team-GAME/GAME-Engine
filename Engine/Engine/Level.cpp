@@ -37,8 +37,8 @@ Engine::Level Engine::Level::from_world()
       return;
     }
 
-    // Skip the Level entity itself - it's created during instantiation
-    if (entity.has_component<Components::Level>()) {
+    // Skip entities with Internal component
+    if (entity.has_component<Components::Internal>()) {
       return;
     }
 
@@ -65,10 +65,7 @@ void Engine::Level::instantiate_into_world(bool clear_world)
   // before creating new ones. This prevents tile colliders from previous levels from persisting.
   Engine::ECS::process_housekeeping();
 
-  // Create the Level entity
-  Engine::ECS::Entity level_entity = Engine::ECS::create_entity();
-  level_entity.add_component<Components::Level>(Engine::Resources::get_relative_path(LevelManager::get_current_level_path()));
-  level_entity.add_component<Components::Transform2D>(); // Level needs transform to be a parent
+  std::string level_path = Engine::Resources::get_relative_path(LevelManager::get_current_level_path());
 
   // Build old ID -> new ID remap table as we create entities
   std::unordered_map<Engine::ECS::EntityID, Engine::ECS::EntityID> id_remap;
@@ -87,9 +84,9 @@ void Engine::Level::instantiate_into_world(bool clear_world)
       id_remap[old_id] = new_entity.get_id();
     }
 
-    // If the entity doesn't have a parent, make it a child of the Level entity
-    if (new_entity.is_valid() && !new_entity.has_component<Components::Parent>()) {
-      new_entity.add_component<Components::Parent>(level_entity.get_id());
+    // Mark entity as belonging to this level (for tracking/cleanup)
+    if (new_entity.is_valid() && !new_entity.has_component<Components::Level>()) {
+      new_entity.add_component<Components::Level>(level_path);
     }
 
     // This creates all entities including TileMap entities which store the tile data
@@ -157,4 +154,28 @@ std::string Engine::LevelManager::get_current_level_path()
 void Engine::LevelManager::set_current_level_path(const std::string& level_name)
 {
   current_level_path = level_name;
+}
+
+void Engine::LevelManager::clear_level_entities(const std::string& level_path)
+{
+  std::string target_path = level_path.empty()
+    ? Engine::Resources::get_relative_path(current_level_path)
+    : level_path;
+
+  // Collect entities to destroy (can't destroy while iterating)
+  std::vector<Engine::ECS::Entity> to_destroy;
+
+  for (auto& entity : Engine::ECS::get_entities_with<Components::Level>()) {
+    auto* level = entity.get_component<Components::Level>();
+    if (level && level->level_path == target_path) {
+      to_destroy.push_back(entity);
+    }
+  }
+
+  // Destroy collected entities
+  for (auto& entity : to_destroy) {
+    entity.destroy();
+  }
+
+  Log::info("Cleared {} entities from level: {}", to_destroy.size(), target_path);
 }
