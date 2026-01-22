@@ -29,6 +29,7 @@
 #include "GameStates/LevelTestState.h"
 #include "GameStates/GameplayState.h"
 #include "GameStates/GameMonkeyTestState.h"
+#include "GameStates/TurretMonkeyTestState.h"
 #include "GameStates/PauseState.h"
 #include "GameStates/OptionsState.h"
 #include "Systems/HealthSystem.h"
@@ -265,6 +266,7 @@ void RunGame()
   Engine::SceneManager::register_scene<LevelTestState>("LevelTestState");
   Engine::SceneManager::register_scene<BehaviourState>("BehaviourState");
   Engine::SceneManager::register_scene<GameMonkeyTestState>("GameMonkeyTestState");
+  Engine::SceneManager::register_scene<TurretMonkeyTestState>("TurretMonkeyTestState");
   Engine::SceneManager::register_scene<PauseState>("PauseState");
   Engine::SceneManager::register_scene<OptionsState>("OptionsState");
 

@@ -145,6 +145,27 @@ namespace Components
     Engine::ECS::Entity dash_indicator_entity; // Runtime reference to the warning indicator entity
   };
 
+  struct TurretMonkey
+  {
+    // Movement speeds
+    float chase_speed = 100.0f;
+
+    // Attack parameters (serialized/configurable)
+    float attack_cooldown = 3.0f;
+    float attack_windup = 0.5f;  // Time to wait in windup state before attacking
+
+    // Attack hitbox parameters
+    float hitbox_offset_x = 80.0f;
+    float hitbox_offset_y = 0.0f;
+    float hitbox_width = 120.0f;
+    float hitbox_height = 128.0f;
+    int damage = 15;
+    Math::Vec2D knockback = Math::Vec2D(500.0f, -100.0f);
+
+    // Detection ranges
+    float long_attack_range = 1000.0f;
+  };
+
 
   struct Attack
   {
@@ -217,6 +238,7 @@ namespace Components
 REFLECT_FIELDS(Components::Player::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, dash_speed, damage, heartrate_cost, knockback)
 REGISTER_COMPONENT(Components::Player, walk_speed, air_speed, jump_force, attack1, attack2, attack3)
 REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height, attack_cooldown, last_attack_time, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, attack_range)
+REGISTER_COMPONENT(Components::TurretMonkey, chase_speed, attack_cooldown, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, long_attack_range)
 REGISTER_COMPONENT(Components::GamerMonkey, chase_speed, dash_speed, dash_cooldown, dash_windup_duration, dash_indicator_height, leap_speed, leap_height, attack_cooldown, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, close_attack_range, dash_attack_range)
 REGISTER_COMPONENT(Components::Attack, damage, knockback, is_continuous, damage_interval, impact_vfx_texture)
 REGISTER_COMPONENT(Components::PendingKnockback, knockback)

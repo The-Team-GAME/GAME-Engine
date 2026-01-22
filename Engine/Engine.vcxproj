@@ -302,6 +302,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="GameLogic\GameStates\PhysicsTestState.h" />
     <ClInclude Include="GameLogic\GameStates\PrefabsState.h" />
     <ClInclude Include="GameLogic\GameStates\TimelineState.h" />
+    <ClInclude Include="GameLogic\GameStates\TurretMonkeyTestState.h" />
     <ClInclude Include="GameLogic\Reflection\ImGuiHelpers.h" />
     <ClInclude Include="Engine\Reflection\JsonHelpers.h" />
     <ClInclude Include="Engine\GUI\CameraPanel.h" />
@@ -352,6 +353,8 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="GameLogic\States\LazyMonkeyStateMachine.h" />
     <ClInclude Include="GameLogic\States\PlayerStateCallbacks.h" />
     <ClInclude Include="GameLogic\States\PlayerStateMachine.h" />
+    <ClInclude Include="GameLogic\States\TurretMonkeyStateCallbacks.h" />
+    <ClInclude Include="GameLogic\States\TurretMonkeyStateMachine.h" />
     <ClInclude Include="GameLogic\Systems\DebugHitboxRenderSystem.h" />
     <ClInclude Include="GameLogic\Systems\EnemyHealthSystem.h" />
     <ClInclude Include="GameLogic\Systems\HealthSystem.h" />
