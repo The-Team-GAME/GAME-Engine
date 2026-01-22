@@ -48,6 +48,9 @@ namespace Components
     // This should be updated in the script
     dir direction; // not sure if its needed
 
+    f32 static_friction_coefficient = 0.6f; // not used, maybe ever
+    f32 kinetic_coefficient = 0.9f;
+
     /*
     no use for these yet*/
     f32 rotation = 0.0f; // In degrees
@@ -71,4 +74,4 @@ namespace Components
   };
 }
 
-REGISTER_COMPONENT(Components::RigidBody, mass, force, acceleration, velocity, terminal_velocity, use_gravity, is_static, on_ground, is_jumping, rotation, rotation_terminal_velocity, angular_velocity)
+REGISTER_COMPONENT(Components::RigidBody, mass, force, acceleration, velocity, terminal_velocity, use_gravity, is_static, on_ground, is_jumping)
