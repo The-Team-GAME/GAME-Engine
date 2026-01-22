@@ -80,27 +80,27 @@ public:
     // make_npc(Vec2D{ 1000.f, 825.f }, npc_scale, 600.f, 750.f, 1050.f, 1200.f);
 
     // Walling the player in
-    //make_wall(Vec2D(800.0f, 875.0f), Vec2D(1600.0f, 50.0f));
-    //make_wall(Vec2D(800.0f, 25.0f) , Vec2D(1600.0f, 50.0f));
-    //make_wall(Vec2D(25.f, 450.0f)  , Vec2D(50.0f, 900.0f));
-    //make_wall(Vec2D(1575.f, 450.0f), Vec2D(50.0f, 900.0f));
+    make_wall(Vec2D(800.0f, 875.0f), Vec2D(1600.0f, 50.0f));
+    make_wall(Vec2D(800.0f, 25.0f) , Vec2D(1600.0f, 50.0f));
+    make_wall(Vec2D(25.f, 450.0f)  , Vec2D(50.0f, 900.0f));
+    make_wall(Vec2D(1575.f, 450.0f), Vec2D(50.0f, 900.0f));
 
     // Platforms to jump on
-    //make_wall(Vec2D(100.0f, 725.0f), Vec2D(100.0f, 50.0f));
-    //make_wall(Vec2D(150.0f, 775.0f), Vec2D(200.0f, 50.0f));
-    //make_wall(Vec2D(200.0f, 825.0f), Vec2D(300.0f, 50.0f));
+    make_wall(Vec2D(100.0f, 725.0f), Vec2D(100.0f, 50.0f));
+    make_wall(Vec2D(150.0f, 775.0f), Vec2D(200.0f, 50.0f));
+    make_wall(Vec2D(200.0f, 825.0f), Vec2D(300.0f, 50.0f));
 
     ECS::Entity slope = make_wall(Vec2D(500.0f, 675.0f), Vec2D(500.0f, 50.0f), 30.f);
     Components::BoxCollider* box_slope = slope.get_component< Components::BoxCollider>();
     box_slope->kinetic_friction = 1.f;
 
-    //make_wall(Vec2D(1300.0f, 675.0f), Vec2D(300.0f, 50.0f));
+    make_wall(Vec2D(1300.0f, 675.0f), Vec2D(300.0f, 50.0f));
 
     //// the jummping blocks
-    //make_wall(Vec2D(300.0f, 375.0f), Vec2D(50.0f, 50.0f));
-    //make_wall(Vec2D(500.0f, 450.0f), Vec2D(50.0f, 50.0f));
-    //make_wall(Vec2D(700.0f, 525.0f), Vec2D(50.0f, 50.0f));
-    //make_wall(Vec2D(900.0f, 600.0f), Vec2D(50.0f, 50.0f));
+    make_wall(Vec2D(300.0f, 375.0f), Vec2D(50.0f, 50.0f));
+    make_wall(Vec2D(500.0f, 450.0f), Vec2D(50.0f, 50.0f));
+    make_wall(Vec2D(700.0f, 525.0f), Vec2D(50.0f, 50.0f));
+    make_wall(Vec2D(900.0f, 600.0f), Vec2D(50.0f, 50.0f));
   };
 
   void init() {};

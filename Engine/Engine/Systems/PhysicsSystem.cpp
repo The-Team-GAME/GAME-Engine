@@ -84,7 +84,7 @@ void phy2D::update_entity(ECS::Entity& entity)
   {
     Vec2D gravity_force = Vec2D(0.f, 1.f) * gravity_acc * rigid->mass;
     rigid->force += gravity_force;
-    std::cout << "Gravity Force: " << gravity_force << std::endl;
+    //std::cout << "Gravity Force: " << gravity_force << std::endl;
   }
 
   // Moved update kinematics and update position to post physics so that all the forces are applied at once

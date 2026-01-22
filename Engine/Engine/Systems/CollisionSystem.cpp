@@ -181,8 +181,8 @@ void col2D::update()
             }
           }
           rigid->force += normal_force +friction_force;
-          std::cout << "Normal Force: " << normal_force << " Normal Magnitude" << normal_force.get_magnitude() << std::endl;
-          std::cout << "Friction Force: " << friction_force << " Friction Magnitude" << friction_force.get_magnitude()  << std::endl;
+          //std::cout << "Normal Force: " << normal_force << " Normal Magnitude" << normal_force.get_magnitude() << std::endl;
+          //std::cout << "Friction Force: " << friction_force << " Friction Magnitude" << friction_force.get_magnitude()  << std::endl;
         }
 #if 0
         f32 penetration = collision.get_penetration();
