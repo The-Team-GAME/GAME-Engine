@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------------
-// file:    GamerMonkeyStateCallbacks.h
+// file:    TurretMonkeyStateCallbacks.h
 // project: Monkey Stole My GPA
 //
 // author:  Ryan Ang An Kiat (100%)
@@ -7,7 +7,7 @@
 //
 // email:   a.ryanankiat@digipen.edu
 //
-// brief:   Gamer Monkey state machine callback implementations (serializable)
+// brief:   Turret Monkey state machine callback implementations (serializable)
 //
 // Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
@@ -24,30 +24,22 @@ namespace TurretMonkeyStateCallbacks
   // ========================================================================
 
   inline void idle_on_enter(Engine::ECS::Entity& entity) {
-    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
-    auto* rigid = entity.get_component<Components::RigidBody>();
-    
-    if (Gamer_monkey) {
+    auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
+    if (Turret_monkey) {
       // Store when we entered idle (for recovery delay after being hit)
-      Gamer_monkey->last_attack_time = Engine::Time::get_time();
+      Turret_monkey->last_attack_time = Engine::Time::get_time(); // Reusing this field as "idle_enter_time"
     }
-    
-    // Stop movement when entering idle
-    if (rigid) {
-      rigid->velocity.x = 0.0f;
-    }
-    
-    Log::info("Gamer Monkey: Entered Idle state");
+    Log::info("Turret Monkey: Entered Idle state");
   }
 
   inline void idle_on_update(Engine::ECS::Entity& entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
-    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
+    auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
 
-    if (!Gamer_monkey || !state_machine) return;
+    if (!Turret_monkey) return;
 
     float current_time = Engine::Time::get_time();
-    float time_in_idle = current_time - Gamer_monkey->last_attack_time;
+    float time_in_idle = current_time - Turret_monkey->last_attack_time;
 
     // Don't chase immediately after entering idle (recovery from hit)
     if (time_in_idle < 0.3f) {
@@ -61,30 +53,17 @@ namespace TurretMonkeyStateCallbacks
       return;
     }
 
-    auto* Gamer_monkey_transform = entity.get_component<Components::Transform2D>();
+    auto* Turret_monkey_transform = entity.get_component<Components::Transform2D>();
     auto* player_transform = player_entity.get_component<Components::Transform2D>();
 
-    if (Gamer_monkey_transform && player_transform) {
-      float dx = player_transform->position.x - Gamer_monkey_transform->position.x;
-      float distance = std::abs(dx); // Use horizontal distance for sidescroller
+    if (Turret_monkey_transform && player_transform) {
+      float dx = player_transform->position.x - Turret_monkey_transform->position.x;
+      float dy = player_transform->position.y - Turret_monkey_transform->position.y;
+      float distance = std::sqrt(dx * dx + dy * dy);
 
-      // Check if dash is ready
-      bool dash_ready = (current_time - Gamer_monkey->last_dash_time) >= Gamer_monkey->dash_cooldown;
-
-      // If player is within chase range, decide whether to dash or chase
-      if (distance < Gamer_monkey->chase_range) {
-        // If player is far (beyond close attack range) and dash is ready, do dash windup
-        if (distance > Gamer_monkey->close_attack_range && dash_ready) {
-          state_machine->change_state("DashWindup");
-        }
-        // Otherwise just chase normally
-        else if (distance > Gamer_monkey->close_attack_range) {
-          state_machine->change_state("Chasing");
-        }
-        // If very close, go straight to chasing (will attack)
-        else {
-          state_machine->change_state("Chasing");
-        }
+      // Start chasing if player is within detection range
+      if (distance < Turret_monkey->detection_range) {
+        state_machine->change_state("Chasing");
       }
     }
   }
@@ -93,33 +72,33 @@ namespace TurretMonkeyStateCallbacks
   // Chasing State Callbacks
   // ========================================================================
   inline void chasing_on_enter([[maybe_unused]] Engine::ECS::Entity& entity) {
-    Log::info("Gamer Monkey: Entered Chasing state");
+    Log::info("Turret Monkey: Entered Chasing state");
   }
 
   inline void chasing_on_update(Engine::ECS::Entity& entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* rigid = entity.get_component<Components::RigidBody>();
-    auto* Gamer_monkey_transform = entity.get_component<Components::Transform2D>();
+    auto* Turret_monkey_transform = entity.get_component<Components::Transform2D>();
     auto* flip = entity.get_component<Components::Flip>();
-    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
+    auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
 
-    if (!Gamer_monkey) return;
+    if (!Turret_monkey) return;
 
     float current_time = Engine::Time::get_time();
 
     // Get player entity
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
 
-    if (player_entity.is_valid() && rigid && Gamer_monkey_transform) {
+    if (player_entity.is_valid() && rigid && Turret_monkey_transform) {
       auto* player_transform = player_entity.get_component<Components::Transform2D>();
 
       if (player_transform) {
-        float dx = player_transform->position.x - Gamer_monkey_transform->position.x;
+        float dx = player_transform->position.x - Turret_monkey_transform->position.x;
         float distance = std::abs(dx); // Only horizontal distance for sidescrolling
 
         // Chase player horizontally, but stop when within attack range
-        if (distance > Gamer_monkey->close_attack_range) {
-          rigid->velocity.x = (dx > 0 ? Gamer_monkey->chase_speed : -Gamer_monkey->chase_speed);
+        if (distance > Turret_monkey->long_attack_range) {
+          rigid->velocity.x = (dx > 0 ? Turret_monkey->chase_speed : -Turret_monkey->chase_speed);
           // Update flip direction based on movement
           if (flip) {
             flip->value.x = (dx > 0 ? 1.0f : -1.0f);
@@ -129,28 +108,6 @@ namespace TurretMonkeyStateCallbacks
         else {
           // Stop moving when close enough to attack
           rigid->velocity.x = 0.0f;
-        }
-
-        // If player moves out of normal chase detection but is still within
-        // extended range, switch to dash windup for a long-range approach (if cooldown is ready)
-        if (distance > Gamer_monkey->detection_range && distance <= Gamer_monkey->chase_range) {
-          bool dash_ready = (current_time - Gamer_monkey->last_dash_time) >= Gamer_monkey->dash_cooldown;
-          if (dash_ready) {
-            state_machine->change_state("DashWindup");
-            return;
-          }
-          // If dash is on cooldown, continue chasing normally
-        }
-
-        // Return to idle if player is completely out of range
-        if (distance > Gamer_monkey->chase_range) {
-          state_machine->change_state("Idle");
-        }
-
-        // If close enough and cooldown has elapsed, go to windup before attacking
-        if (distance < Gamer_monkey->close_attack_range &&
-          (current_time - Gamer_monkey->last_attack_time) >= Gamer_monkey->attack_cooldown) {
-          state_machine->change_state("Windup");
         }
       }
     }
@@ -165,7 +122,7 @@ namespace TurretMonkeyStateCallbacks
   // ========================================================================
 
   inline void windup_on_enter(Engine::ECS::Entity& entity) {
-    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
+    auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
     auto* rigid = entity.get_component<Components::RigidBody>();
 
     // Stop moving during windup
@@ -174,40 +131,40 @@ namespace TurretMonkeyStateCallbacks
     }
 
     // Record when windup started (reuse last_attack_time)
-    if (Gamer_monkey) {
-      Gamer_monkey->last_attack_time = Engine::Time::get_time();
+    if (Turret_monkey) {
+      Turret_monkey->last_attack_time = Engine::Time::get_time();
     }
 
-    Log::info("Gamer Monkey: Winding up for attack");
+    Log::info("Turret Monkey: Winding up for attack");
   }
 
   inline void windup_on_update(Engine::ECS::Entity& entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
-    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
+    auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
     auto* flip = entity.get_component<Components::Flip>();
 
-    if (!Gamer_monkey) return;
+    if (!Turret_monkey) return;
 
     float current_time = Engine::Time::get_time();
-    float windup_elapsed = current_time - Gamer_monkey->last_attack_time;
+    float windup_elapsed = current_time - Turret_monkey->last_attack_time;
 
     // Get player entity to face them during windup
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
 
     if (player_entity.is_valid()) {
-      auto* Gamer_monkey_transform = entity.get_component<Components::Transform2D>();
+      auto* Turret_monkey_transform = entity.get_component<Components::Transform2D>();
       auto* player_transform = player_entity.get_component<Components::Transform2D>();
 
-      if (Gamer_monkey_transform && player_transform && flip) {
-        float dx = player_transform->position.x - Gamer_monkey_transform->position.x;
+      if (Turret_monkey_transform && player_transform && flip) {
+        float dx = player_transform->position.x - Turret_monkey_transform->position.x;
         // Update flip direction to face player during wind-up
         flip->value.x = (dx > 0 ? 1.0f : -1.0f);
       }
     }
 
     // After windup duration, attack
-    if (windup_elapsed >= Gamer_monkey->attack_windup) {
-      Gamer_monkey->last_attack_time = current_time;
+    if (windup_elapsed >= Turret_monkey->attack_windup) {
+      Turret_monkey->last_attack_time = current_time;
       state_machine->change_state("Attacking");
     }
   }
@@ -219,26 +176,26 @@ namespace TurretMonkeyStateCallbacks
   inline void attacking_on_enter(Engine::ECS::Entity& entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
-    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
+    auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
     // auto* transform = entity.get_component<Components::Transform2D>();
 
-    if (rigid && flip && Gamer_monkey && rigid->on_ground) {
-      // Throw monkey forward based on facing direction
-      rigid->velocity.x = (flip->value.x > 0 ? Gamer_monkey->leap_speed : -Gamer_monkey->leap_speed);
-      // Add upward velocity for a leap effect
-      rigid->velocity.y = -Gamer_monkey->leap_height; // Negative is up
-    }
+    //if (rigid && flip && Turret_monkey && rigid->on_ground) {
+    //  // Throw monkey forward based on facing direction
+    //  rigid->velocity.x = (flip->value.x > 0 ? Turret_monkey->leap_speed : -Turret_monkey->leap_speed);
+    //  // Add upward velocity for a leap effect
+    //  rigid->velocity.y = -Turret_monkey->leap_height; // Negative is up
+    //}
 
     // Make the monkey itself the hitbox
-    if (Gamer_monkey && flip) {
+    if (Turret_monkey && flip) {
       // Add Attack component to the monkey
       // Note: We use the monkey's own collider for the attack hitbox now
-      entity.add_component<Components::Attack>(Gamer_monkey->damage);
+      entity.add_component<Components::Attack>(Turret_monkey->damage);
       auto* attack = entity.get_component<Components::Attack>();
 
       if (attack) {
         // Apply knockback direction based on facing
-        attack->knockback = Gamer_monkey->knockback;
+        attack->knockback = Turret_monkey->knockback;
         if (flip->value.x < 0) {
           attack->knockback.x = -attack->knockback.x;
         }
@@ -251,7 +208,7 @@ namespace TurretMonkeyStateCallbacks
       entity.add_to_layer("damage_player");
     }
 
-    Log::info("Gamer Monkey: Entered Attacking state");
+    Log::info("Turret Monkey: Entered Attacking state");
   }
 
 
@@ -266,10 +223,10 @@ namespace TurretMonkeyStateCallbacks
   }
 
   inline void attacking_on_exit(Engine::ECS::Entity& entity) {
-    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
-    if (Gamer_monkey) {
+    auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
+    if (Turret_monkey) {
       // Update last attack time for cooldown
-      Gamer_monkey->last_attack_time = Engine::Time::get_time();
+      Turret_monkey->last_attack_time = Engine::Time::get_time();
     }
 
     // Remove Attack component and damage_player layer
@@ -282,17 +239,17 @@ namespace TurretMonkeyStateCallbacks
 
   inline void hit_on_enter(Engine::ECS::Entity& entity) {
     (void)entity; // Suppress unused parameter warning
-    Log::info("Gamer Monkey: Stunned!");
+    Log::info("tURRET Monkey: Stunned!");
   }
 
   inline void hit_on_update(Engine::ECS::Entity& entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
-    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
+    auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* animation = entity.get_component<Components::Animation>();
     auto* pending_knockback = entity.get_component<Components::PendingKnockback>();
 
-    if (!Gamer_monkey) return;
+    if (!Turret_monkey) return;
 
     // When animation ends, detach from hitbox and apply knockback
     if (animation->has_ended() && pending_knockback && rigid) {
@@ -326,14 +283,14 @@ namespace TurretMonkeyStateCallbacks
   // ========================================================================
 
   inline void death_on_enter([[maybe_unused]] Engine::ECS::Entity& entity) {
-    Log::info("Gamer Monkey: Died!");
+    Log::info("Turret Monkey: Died!");
   }
 
   inline void death_on_update(Engine::ECS::Entity& entity) {
     auto* animation = entity.get_component<Components::Animation>();
     if (animation && animation->has_ended()) {
       Engine::ECS::destroy_entity(entity);
-      Log::info("Gamer Monkey: Destroyed after death animation.");
+      Log::info("Turret Monkey: Destroyed after death animation.");
     }
   }
 
@@ -341,9 +298,9 @@ namespace TurretMonkeyStateCallbacks
     // Should not happen unless respawning
   }
 
-} // namespace GamerMonkeyStateCallbacks
+} // namespace TurretMonkeyStateCallbacks
 
-// Register all Gamer monkey state callbacks
+// Register all Turret monkey state callbacks
 REGISTER_FUNCTION(Turret_monkey_idle_enter, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::idle_on_enter)
 REGISTER_FUNCTION(Turret_monkey_idle_update, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::idle_on_update)
 REGISTER_FUNCTION(Turret_monkey_chasing_enter, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::chasing_on_enter)

@@ -1,0 +1,88 @@
+{
+    "data": {
+        "entities": [
+            {
+                "components": [],
+                "layers": [
+                    "default"
+                ]
+            },
+            {
+                "components": [],
+                "layers": [
+                    "default"
+                ]
+            },
+            {
+                "components": [],
+                "layers": [
+                    "default"
+                ]
+            },
+            {
+                "components": [],
+                "layers": [
+                    "default"
+                ]
+            },
+            {
+                "components": [],
+                "layers": [
+                    "default"
+                ]
+            },
+            {
+                "components": [],
+                "layers": [
+                    "default"
+                ]
+            },
+            {
+                "components": [],
+                "layers": [
+                    "default"
+                ]
+            },
+            {
+                "components": [],
+                "layers": [
+                    "default"
+                ]
+            },
+            {
+                "components": [],
+                "layers": [
+                    "default",
+                    "ui"
+                ]
+            },
+            {
+                "components": [],
+                "layers": [
+                    "default",
+                    "ui"
+                ]
+            },
+            {
+                "components": [],
+                "layers": [
+                    "default",
+                    "ui"
+                ]
+            },
+            {
+                "components": [],
+                "layers": [
+                    "default"
+                ]
+            },
+            {
+                "components": [],
+                "layers": [
+                    "default"
+                ]
+            }
+        ]
+    },
+    "dataType": "Level"
+}
