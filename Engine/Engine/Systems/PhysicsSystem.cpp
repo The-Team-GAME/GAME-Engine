@@ -33,7 +33,7 @@ using col2D = Collision2DSystem;
 // eventually we'll deserialise these values from file bah
 namespace {
   Vec2D knockback_force{ -1000000.f, 50000.f };
-  const f32 gravity_acc = 250.f;
+  const f32 gravity_acc = 1000.f;
   const f32 STATIC_FRICTION_THRESHOLD = 20.0f;
 
   // Basically this value is how seep a slope can be before its no longer considered walkable/ on the ground
