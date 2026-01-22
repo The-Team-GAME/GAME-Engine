@@ -154,7 +154,7 @@ void col2D::update()
           Vec2D normal_force = normal_dir_vtr * normal_magnitude;
 
           Vec2D friction_force;
-          if (cos_of_angle_of_slope < 1) // No friction on flat surface
+          if (/*cos_of_angle_of_slope <*/ 1) // No friction on flat surface
           {
             Components::RigidBody* other_rigid = other.get_component<Components::RigidBody>();
             // So from what i know, you are supposed to calculate the net force of the object after the normal and gravity and external force has been added, then you see if the friction is big enough to counter said net force

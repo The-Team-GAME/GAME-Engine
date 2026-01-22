@@ -76,7 +76,7 @@ public:
     // Free falling box
     player = make_player(player_pos, npc_scale);
     Components::BoxCollider* player_box = player.get_component< Components::BoxCollider>();
-    player_box->kinetic_friction = 1.f;
+    //player_box->kinetic_friction = 0.8f;
     // make_npc(Vec2D{ 1000.f, 825.f }, npc_scale, 600.f, 750.f, 1050.f, 1200.f);
 
     // Walling the player in
@@ -92,7 +92,7 @@ public:
 
     ECS::Entity slope = make_wall(Vec2D(500.0f, 675.0f), Vec2D(500.0f, 50.0f), 30.f);
     Components::BoxCollider* box_slope = slope.get_component< Components::BoxCollider>();
-    box_slope->kinetic_friction = 1.f;
+    //box_slope->kinetic_friction = 1.f;
 
     make_wall(Vec2D(1300.0f, 675.0f), Vec2D(300.0f, 50.0f));
 
