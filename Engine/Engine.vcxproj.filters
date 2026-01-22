@@ -105,6 +105,7 @@
     <ClCompile Include="GameLogic\GameStates\PauseState.cpp" />
     <ClCompile Include="Engine\GUI\SelectiveLevelSavePanel.cpp" />
     <ClCompile Include="GameLogic\GameStates\OptionsState.cpp" />
+    <ClCompile Include="Engine\FileIO\ColliderMeshFileIO.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -240,6 +241,7 @@
     <ClInclude Include="Engine\Lua\LuaComponentBindings.h" />
     <ClInclude Include="GameLogic\GameStates\OptionsState.h" />
     <ClInclude Include="Engine\Systems\ChatBoxSystem.h" />
+    <ClInclude Include="Engine\FileIO\ColliderMeshFileIO.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />

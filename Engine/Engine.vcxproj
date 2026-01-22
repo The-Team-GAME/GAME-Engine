@@ -156,6 +156,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Engine\ECS\PrefabMergeUtils.cpp" />
+    <ClCompile Include="Engine\FileIO\ColliderMeshFileIO.cpp" />
     <ClCompile Include="Engine\GUI\ColliderEditorPanel.cpp" />
     <ClCompile Include="Engine\GUI\SelectiveLevelSavePanel.cpp" />
     <ClCompile Include="Engine\GUI\TileColliderEditorPanel.cpp" />
@@ -225,6 +226,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\ECS\PrefabMergeUtils.h" />
+    <ClInclude Include="Engine\FileIO\ColliderMeshFileIO.h" />
     <ClInclude Include="Engine\GUI\ColliderEditorPanel.h" />
     <ClInclude Include="Engine\GUI\SelectiveLevelSavePanel.h" />
     <ClInclude Include="Engine\GUI\TileColliderEditorPanel.h" />
