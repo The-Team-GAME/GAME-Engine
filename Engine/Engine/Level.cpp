@@ -70,15 +70,55 @@ void Engine::Level::instantiate_into_world(bool clear_world)
   level_entity.add_component<Components::Level>(Engine::Resources::get_relative_path(LevelManager::get_current_level_path()));
   level_entity.add_component<Components::Transform2D>(); // Level needs transform to be a parent
 
+  // Build old ID -> new ID remap table as we create entities
+  std::unordered_map<Engine::ECS::EntityID, Engine::ECS::EntityID> id_remap;
+
   for (const auto& entity_value : entities) {
+    // Get the original ID if it exists
+    Engine::ECS::EntityID old_id = Engine::ECS::INVALID_ENTITY;
+    if (entity_value.has("id") && entity_value["id"].isInt()) {
+      old_id = static_cast<Engine::ECS::EntityID>(entity_value["id"].getInt());
+    }
+
     Engine::ECS::Entity new_entity = Engine::ECS::create_entity_from_generic_value(entity_value);
-    
+
+    // Store the mapping from old ID to new ID
+    if (old_id != Engine::ECS::INVALID_ENTITY && new_entity.is_valid()) {
+      id_remap[old_id] = new_entity.get_id();
+    }
+
     // If the entity doesn't have a parent, make it a child of the Level entity
     if (new_entity.is_valid() && !new_entity.has_component<Components::Parent>()) {
       new_entity.add_component<Components::Parent>(level_entity.get_id());
     }
-    
+
     // This creates all entities including TileMap entities which store the tile data
+  }
+
+  // Fix up Parent references using the remap table
+  for (auto& entity : Engine::ECS::get_entities_with<Components::Parent>()) {
+    auto* parent_comp = entity.get_component<Components::Parent>();
+    if (parent_comp && parent_comp->parent_id != Engine::ECS::INVALID_ENTITY) {
+      auto it = id_remap.find(parent_comp->parent_id);
+      if (it != id_remap.end()) {
+        parent_comp->parent_id = it->second;
+      }
+      // If old ID not found in remap, the parent might be the Level entity (already correct)
+      // or the reference is invalid
+    }
+  }
+
+  // Fix up Children references using the remap table
+  for (auto& entity : Engine::ECS::get_entities_with<Components::Children>()) {
+    auto* children_comp = entity.get_component<Components::Children>();
+    if (children_comp) {
+      for (auto& child_id : children_comp->child_ids) {
+        auto it = id_remap.find(child_id);
+        if (it != id_remap.end()) {
+          child_id = it->second;
+        }
+      }
+    }
   }
 
   // Rebuild collision entities from all TileMap entities

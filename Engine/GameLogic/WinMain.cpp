@@ -134,7 +134,7 @@ void RunGame()
 
         if (rigid) {
           // Make enemy child of hitbox (offset will be auto-calculated by HierarchySystem)
-          enemy_entity.add_component<Components::Parent>(attack_entity);
+          enemy_entity.add_component<Components::Parent>(attack_entity.get_id());
 
           // Store knockback to apply when detaching (from Player struct via Attack component)
           enemy_entity.add_component<Components::PendingKnockback>(attack->knockback);
@@ -163,7 +163,7 @@ void RunGame()
               128.0f, // 2x scale
               128.0f
             )
-            .add_component<Components::Parent>(enemy_entity)
+            .add_component<Components::Parent>(enemy_entity.get_id())
             .add_component<Components::Texture>(attack->impact_vfx_texture)
             .add_component<Components::TextureAtlas>(64, 64, 1, 4, 4) // 4 frames, 64x64 each
             .add_component<Components::Animation>(0, 3, 0.05f, false)

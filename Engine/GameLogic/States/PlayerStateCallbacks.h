@@ -211,7 +211,7 @@ namespace PlayerStateCallbacks
         )
         .add_component<Components::RigidBody>(true, false)
         .add_component<Components::BoxCollider>(player_comp->attack1.hitbox_width, player_comp->attack1.hitbox_height, false)
-        .add_component<Components::Parent>(entity)
+        .add_component<Components::Parent>(entity.get_id())
         .add_component<Components::Lifetime>(0.48f) // Attack1 duration: 6 frames × 0.08f
         .remove_from_layer("default")
         .add_to_layer("damage_enemy");
@@ -301,7 +301,7 @@ namespace PlayerStateCallbacks
         )
         .add_component<Components::RigidBody>(true, false)
         .add_component<Components::BoxCollider>(player_comp->attack2.hitbox_width, player_comp->attack2.hitbox_height, false)
-        .add_component<Components::Parent>(entity)
+        .add_component<Components::Parent>(entity.get_id())
         .add_component<Components::Lifetime>(0.24f) // Attack2 duration: 3 frames × 0.08f
         .remove_from_layer("default")
         .add_to_layer("damage_enemy");
@@ -391,7 +391,7 @@ namespace PlayerStateCallbacks
         )
         .add_component<Components::RigidBody>(true, false)
         .add_component<Components::BoxCollider>(player_comp->attack3.hitbox_width, player_comp->attack3.hitbox_height, false)
-        .add_component<Components::Parent>(entity)
+        .add_component<Components::Parent>(entity.get_id())
         .add_component<Components::Lifetime>(0.6f) // Attack3 duration: 10 frames × 0.06f
         .remove_from_layer("default")
         .add_to_layer("damage_enemy");

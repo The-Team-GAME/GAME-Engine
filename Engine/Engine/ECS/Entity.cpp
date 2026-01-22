@@ -103,8 +103,8 @@ namespace Engine {
       }
 
       ReflectionLibrary::GenericValue result;
-      // result["dataType"] = "Entity";
-      // result["id"] = static_cast<int>(entity.get_id());
+      // Store the original entity ID for remapping on load
+      result["id"] = static_cast<int>(entity.get_id());
 
       // Serialize layers and components using helper functions
       result["layers"] = Serialization::serialize_layers(entity.get_layers());

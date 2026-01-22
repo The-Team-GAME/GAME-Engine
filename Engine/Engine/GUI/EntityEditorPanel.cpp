@@ -77,10 +77,10 @@ namespace {
       auto* level_comp = entity.get_component<Components::Level>();
       entity_label += " (Level: " + level_comp->level_path + ")";
     }
-    
+
     // Check if this entity is selected
     bool is_selected = (selected_entity_id == static_cast<s32>(entity.get_id()));
-    
+
     ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
     if (is_selected) {
       node_flags |= ImGuiTreeNodeFlags_Selected;
@@ -127,7 +127,7 @@ namespace {
     // For now, this helper assumes LEAF behavior if is_leaf is true.
     // If is_leaf is false, the caller MUST call TreePop() if node_open is true.
   }
-  
+
   // Recursive function to render hierarchy
   void render_hierarchy_node(Engine::ECS::Entity entity, const std::unordered_map<Engine::ECS::EntityID, std::vector<Engine::ECS::Entity>>& parent_to_children) {
     auto it = parent_to_children.find(entity.get_id());
@@ -144,7 +144,7 @@ namespace {
 
     // Check if this entity is selected
     bool is_selected = (selected_entity_id == static_cast<s32>(entity.get_id()));
-    
+
     ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
     if (is_selected) {
       node_flags |= ImGuiTreeNodeFlags_Selected;
@@ -283,7 +283,7 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
 void EntityEditorPanel()
 {
   static char entitySearchBuffer[256] = "";
-  
+
   // Initialize event listener on first call
   init_selection_listener();
 
@@ -373,8 +373,8 @@ void EntityEditorPanel()
 
         if (entity.has_component<Components::Parent>()) {
           auto* parent_comp = entity.get_component<Components::Parent>();
-          if (parent_comp->parent_id.is_valid()) {
-            parent_to_children[parent_comp->parent_id.get_id()].push_back(entity);
+          if (parent_comp->parent_id != Engine::ECS::INVALID_ENTITY) {
+            parent_to_children[parent_comp->parent_id].push_back(entity);
           }
           else {
             // Parent invalid, treat as root
@@ -788,7 +788,7 @@ void EntityEditorPanel()
 
           // Load existing prefab to get its UUID
           Engine::ECS::Prefab existing_prefab = Engine::FileIO::deserialize_prefab_from_json_file(full_path);
-          
+
           if (existing_prefab.is_valid()) {
             std::string preserved_uuid = existing_prefab.get_impl()->get_prefab_id();
 

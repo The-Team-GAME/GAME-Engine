@@ -326,8 +326,8 @@ namespace ImGuiWidgets {
     }
 
     // Only process click interactions when this window is focused and hovered
-    bool window_can_receive_clicks = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && 
-                                      ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
+    bool window_can_receive_clicks = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) &&
+      ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
 
     // Right-click to delete vertex
     if (window_can_receive_clicks && hovered_vertex >= 0 && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {

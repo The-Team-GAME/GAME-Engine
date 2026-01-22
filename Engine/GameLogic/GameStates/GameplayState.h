@@ -37,7 +37,7 @@ public:
     Engine::ECS::Entity camera = Engine::ECS::create_entity();
     camera.add_component<Components::Transform2D>(0.0f, 200.0f, 0.0f, 1.0f, 1.0f);
     camera.add_component<Components::Camera>("player camera", true);
-    camera.add_component<Components::Parent>(player_entity);
+    camera.add_component<Components::Parent>(player_entity.get_id());
 
     player_entity.add_component<Components::HeartHUDSprite>();
 
