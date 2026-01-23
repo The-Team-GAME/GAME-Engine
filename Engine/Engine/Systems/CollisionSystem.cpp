@@ -15,6 +15,7 @@
 //-----------------------------------------------------------------------------------
 #include "CollisionSystem.h"
 #include "PhysicsSystem.h"
+#include "../Math/Math.h"
 #include "../Perf.h"
 #include "../FileIO/Settings.h"
 #include "../Graphics/Renderer.h" // for picturing the quad tree
@@ -28,7 +29,9 @@ using settings = Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>
 // Need to define cuz we made spatial tree static so we could make a static function to call its draw function in another system
 //std::unique_ptr<col2D::QuadTree> col2D::spatial_tree = nullptr;
 std::unique_ptr<col2D::QuadTreeSAT> col2D::spatial_tree_sat = nullptr;
+namespace {
 
+}
 col2D::Collision2DSystem() {
   require_components<Components::Transform2D, Components::RigidBody, Components::BoxCollider>();
 
@@ -82,31 +85,22 @@ void col2D::update()
     // This is because the entity can collide with more than one hard surface (floor and wall corner) in one frame, so we have to identify them
     Vec2D best_ground_normal;
     f32 best_ground_penetration = 0;
-    bool found_ground = false;
 
     // Check collision only with nearby entities
     for (ECS::Entity& other : nearby)
     {
-
 #pragma region collision checks
       // Skip self-collision
       if (entity == other) { continue; }
-
-      //Components::RigidBody* other_rigid = other.get_component<Components::RigidBody>();
       Components::BoxCollider* other_box = other.get_component<Components::BoxCollider>();
-
       // Get other entity's layers
       ECS::LayerSignature other_layers = other.get_layers();
-
       // Check if these entities' layers should collide using the global collision matrix
       if (!ECS::LayerRegistry::should_layers_collide(entity_layers, other_layers))
-      {
-        continue;
-      }
+      { continue; }
 
       // Check if both entities intersect
       CollisionResult collision = check_collision(*box, *other_box);
-
       if (!collision.collided)
       {
         // skip other_entity if they dont collide
@@ -124,21 +118,74 @@ void col2D::update()
         Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
 
         // we add the MTV here because it is not the penetration vector but rather how far the object needs to be pushed out to resolve the collision
-        
-        // Apply Slop (Threshold)
-        // We allow a small amount of penetration to prevent jittering when gravity fights collision resolution
-        const f32 COLLISION_SLOP = 0.5f; // Allow 0.5 pixels of penetration
-        f32 penetration = collision.get_penetration();
-        
-        // Only resolve if penetration is deeper than the slop
-        if (penetration > COLLISION_SLOP)
+        // Basically we snapping the object out of the collided surface
+        if (collision.get_penetration() > 0.5f)
         {
-          // Calculate the correction vector (push out only the amount exceeding the slop)
-          // We want to push out by (penetration - slop), not the full penetration
-          // This keeps the object slightly "resting" in the surface, preventing the 1-frame jitter cycle
-          Vec2D correction = collision.get_normalise_mtv() * (penetration - COLLISION_SLOP);
-          xform->position += correction;
+          xform->position += collision.mtv * 0.95f;
         }
+
+        // The new plan:
+        // 1. After collision i'm gona cancel out the velocity of the object parallel to the direction of the collision as a way to kill the momenthum of the object
+        // 2. After the momentum is killed, i will apply a normal force to specifically cancel out the force from gravity in the next frame
+        // 3. After that, i will calculate and apply friction to the object to prevent it from sliding across surfaces
+
+        // Since the mtv can also be seen as the normal, i can do this
+        Vec2D normal_dir_vtr = collision.get_normalise_mtv();
+
+        // This is a scalar value
+        f32 speed_into_surface = dot_product(rigid->velocity, normal_dir_vtr);
+
+        if (speed_into_surface < 0) 
+          // -ve dot product means pointing diff direction
+        {
+          rigid->velocity -= normal_dir_vtr * speed_into_surface;
+        }
+
+        // Ok so the part above works now but we need another way to check if the player/ entity is on the ground / a jumpable surface
+        // Behold the power of dot product (all the math need to re sketch out to explain cuz my whiteboard has limited space KEKW)
+        f32 cos_of_angle_of_slope = dot_product(normal_dir_vtr, Vec2D(0.f, -1.f));
+        if (cos_of_angle_of_slope >= cosf(phy2D::get_slope_radian_threshold()))
+        {
+          rigid->on_ground = true;
+          // We will do friction and normal force in here because we want the player to just slide off the wall
+          f32 weight_magnitude = rigid->mass * phy2D::get_gravity();
+          // cos x (angle of slope) = adjacent (weight) / hypotenuse(normal)
+          f32 normal_magnitude = weight_magnitude * cos_of_angle_of_slope;
+          Vec2D normal_force = normal_dir_vtr * normal_magnitude;
+
+          Vec2D friction_force;
+          if (/*cos_of_angle_of_slope <*/ 1) // No friction on flat surface
+          {
+            Components::RigidBody* other_rigid = other.get_component<Components::RigidBody>();
+            // So from what i know, you are supposed to calculate the net force of the object after the normal and gravity and external force has been added, then you see if the friction is big enough to counter said net force
+            // We also need to know the direction of the net forces so that we can tell which direction the friction needs to be pointing
+            Vec2D net_force_before_friction = rigid->force + normal_force;
+            Vec2D friction_dir = normalise_vector(collision.get_tangent());
+            friction_dir = dot_product(rigid->velocity, friction_dir) < 0 ? friction_dir : -friction_dir;
+
+            // This is how much friction can be generated in this frame
+            f32 calculated_friction_magnitude = normal_magnitude * (rigid->kinetic_coefficient * other_rigid->kinetic_coefficient);
+
+            // Now we calculate how much friction is needed to stop the object within this frame
+            f32 friction_acc = rigid->velocity.get_magnitude() / Time::get_fixed_dt();
+            f32 required_friction_force = friction_acc * rigid->mass;
+
+            //f32 force_along_slope = abs(dot_product(net_force_before_friction, friction_dir));
+            if (required_friction_force < calculated_friction_magnitude)
+            {
+              friction_force = friction_dir * required_friction_force;
+            }
+            else 
+            {
+              friction_force = friction_dir * calculated_friction_magnitude;
+            }
+          }
+          rigid->force += normal_force +friction_force;
+          //std::cout << "Normal Force: " << normal_force << " Normal Magnitude" << normal_force.get_magnitude() << std::endl;
+          //std::cout << "Friction Force: " << friction_force << " Friction Magnitude" << friction_force.get_magnitude()  << std::endl;
+        }
+#if 0
+        f32 penetration = collision.get_penetration();
 
         // Check if this is a ground collision (MTV pointing mostly upward)
         Vec2D normal = normalise_vector(collision.mtv);
@@ -182,6 +229,7 @@ void col2D::update()
             }
           }
         }
+#endif
       }
       /*=============================
       / End of Collision Resolution /
