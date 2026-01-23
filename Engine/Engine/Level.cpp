@@ -7,24 +7,21 @@
 //
 // email:   chew.s@digipen.edu
 //
-// brief:   This file implements the Level class, which handles level instantiation from the world, clearing the world, and managing level paths.
+// brief:   This file implements the Level class, which handles level instantiation
+//          from the world and serialization of entity data.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "Level.h"
-#include "SceneManager.h"
+#include "LevelManager.h"
 #include "Components/Components.h"
 #include "TilemapManager.h"
 #include "FileIO/SettingsManager.h"
 #include "FileIO/Settings.h"
 #include "Systems/CollisionSystem.h"
 #include "Logger.h"
+#include "Resources.h"
 #include <unordered_set>
-
-namespace
-{
-  std::string current_level_path = "";
-}
 
 
 Engine::Level Engine::Level::from_world()
@@ -149,12 +146,41 @@ void Engine::Level::instantiate_into_world(bool clear_world)
   TilemapManager::broadcast_world_bounds();
 }
 
-std::string Engine::LevelManager::get_current_level_path()
+void Engine::Level::call_init() const
 {
-  return current_level_path;
+  if (!on_init.empty()) {
+    auto func = on_init.get<LevelCallback>();
+    if (func) {
+      func();
+    }
+    else {
+      Log::warning("Level on_init callback '{}' not found in FunctionRegistry", on_init.name);
+    }
+  }
 }
 
-void Engine::LevelManager::set_current_level_path(const std::string& level_name)
+void Engine::Level::call_update() const
 {
-  current_level_path = level_name;
+  if (!on_update.empty()) {
+    auto func = on_update.get<LevelCallback>();
+    if (func) {
+      func();
+    }
+    else {
+      Log::warning("Level on_update callback '{}' not found in FunctionRegistry", on_update.name);
+    }
+  }
+}
+
+void Engine::Level::call_exit() const
+{
+  if (!on_exit.empty()) {
+    auto func = on_exit.get<LevelCallback>();
+    if (func) {
+      func();
+    }
+    else {
+      Log::warning("Level on_exit callback '{}' not found in FunctionRegistry", on_exit.name);
+    }
+  }
 }

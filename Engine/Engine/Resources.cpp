@@ -28,6 +28,7 @@
 #include "FileIO/Helpers.h"
 #include "Path.h"
 #include "Level.h"
+#include "LevelManager.h"
 #include "FileIO/LevelFileIO.h"
 #include "LevelTabManager.h"
 #include "Reflection/ReflectionLibrary.h"
@@ -777,22 +778,13 @@ bool Engine::Resources::open_level(const std::string& filepath, bool append_reso
 #ifndef GAME_BUILD
   // In editor mode, use the tab manager for level opening
   if (!additive) {
-    return LevelTabManager::open_level_tab(filepath, append_resource_path);
+    return LevelTabManager::open_tab(filepath, append_resource_path);
   }
 #endif
 
-  // In game mode or for additive loading, use direct instantiation
-  Engine::Level level = load_level(filepath, append_resource_path, false);
-
-  // Update the current level path
-  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
-  Engine::LevelManager::set_current_level_path(full_path);
-
-  // Instantiate the level into the world
-  level.instantiate_into_world(!additive);
-
-  Log::info("Opened level: {}", filepath);
-  return true;
+  // In game mode or for additive loading, use LevelManager
+  std::string level_id = LevelManager::open_level(filepath, append_resource_path);
+  return !level_id.empty();
 }
 
 bool Engine::Resources::open(const std::string& filepath, bool append_resource_path)

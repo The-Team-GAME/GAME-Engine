@@ -242,7 +242,7 @@ namespace ViewportPanel {
 
       // "+" button to create new level
       if (ImGui::TabItemButton("+", ImGuiTabItemFlags_Trailing | ImGuiTabItemFlags_NoTooltip)) {
-        Engine::LevelTabManager::create_new_level_tab();
+        Engine::LevelTabManager::create_new_tab();
         needs_selection = true;
         last_known_active = Engine::LevelTabManager::get_active_tab_id();
       }

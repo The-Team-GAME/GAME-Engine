@@ -34,7 +34,7 @@
 #include "../ProjectSaveManager.h"
 #include "../UndoManager/UndoManager.h"
 #include "../TilemapManager.h"
-#include "../Level.h"
+#include "../LevelManager.h"
 #include "../ImGuiManager.h"
 #include "../Logger.h"
 
@@ -794,7 +794,7 @@ namespace TilemapPanel {
         static int dest_layer_idx = 0;
 
         ImGui::Text("Move all tiles:");
-        
+
         // Source layer combo
         ImGui::Text("From:");
         ImGui::SameLine();
@@ -848,9 +848,9 @@ namespace TilemapPanel {
         // Confirmation popup
         bool modal_open_move = true;
         if (ImGui::BeginPopupModal("Move Tiles Confirm", &modal_open_move, ImGuiWindowFlags_AlwaysAutoResize)) {
-          ImGui::Text("Move all tiles from '%s' to '%s'?", 
-                      available_layers[source_layer_idx].c_str(), 
-                      available_layers[dest_layer_idx].c_str());
+          ImGui::Text("Move all tiles from '%s' to '%s'?",
+            available_layers[source_layer_idx].c_str(),
+            available_layers[dest_layer_idx].c_str());
           ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.0f, 1.0f), "This action can be undone.");
           ImGui::Separator();
 

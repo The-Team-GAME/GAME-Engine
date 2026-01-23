@@ -7,34 +7,31 @@
 //
 // email:   chew.s@digipen.edu
 //
-// brief:   This file implements the LevelTabManager for managing multiple open level
-//          tabs with virtual world caching for seamless tab switching.
+// brief:   UI-only tab management for the level editor. Delegates all level
+//          operations to LevelManager while maintaining tab display state.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "LevelTabManager.h"
-#include "Resources.h"
+#include "LevelManager.h"
 #include "Path.h"
+#include "Resources.h"
 #include "Logger.h"
-#include "ECS/ECS.h"
-#include "FileIO/LevelFileIO.h"
-#include "EventManager/EventManager.h"
-#include "Events/EngineEvents.h"
 #include <algorithm>
-#include <filesystem>
 
 namespace {
-  std::unordered_map<std::string, Engine::LevelTab> open_tabs;
-  std::vector<std::string> tab_order; // Maintains display order
+  std::unordered_map<std::string, Engine::LevelTab> tabs;
+  std::vector<std::string> tab_order;
   std::string active_tab_id;
   const std::string empty_string;
+  size_t new_tab_counter = 1;
 
-  // Find the next available number for new levels
-  size_t find_next_new_level_number() {
+  // Find next available number for new level tabs
+  size_t find_next_new_number() {
     size_t num = 1;
     while (true) {
       std::string tab_id = "__new_" + std::to_string(num);
-      if (open_tabs.find(tab_id) == open_tabs.end()) {
+      if (tabs.find(tab_id) == tabs.end()) {
         return num;
       }
       ++num;
@@ -45,289 +42,183 @@ namespace {
 namespace Engine {
   namespace LevelTabManager {
 
-    bool open_level_tab(const std::string& filepath, bool append_resource_path)
+    bool open_tab(const std::string& filepath, bool append_resource_path)
     {
-      // Get the full normalized path - this becomes the tab ID
+      // Get the full normalized path - this is the tab ID
       std::string full_path = append_resource_path
         ? Path(Resources::resource_path).join(filepath).normalize().to_string()
         : Path(filepath).normalize().to_string();
 
-      // Check if this level is already open
+      // If tab already exists, just switch to it
       if (tab_exists(full_path)) {
         switch_to_tab(full_path);
-        open_tabs[full_path].needs_selection = true;  // Auto-select in UI
-        Log::info("Switched to existing tab for level: {}", full_path);
+        tabs[full_path].needs_selection = true;
         return true;
       }
 
-      // Cache the current active tab before opening a new one
-      if (!active_tab_id.empty()) {
-        cache_active_tab();
+      // Delegate level opening to LevelManager
+      std::string level_id = LevelManager::open_level(filepath, append_resource_path);
+      if (level_id.empty()) {
+        return false;
       }
 
-      // Load the level from disk
-      Level level = Resources::load_level(filepath, append_resource_path, false);
-
-      // Create a new tab
+      // Create tab UI state
       LevelTab new_tab;
       new_tab.display_name = Path(full_path).get_filename();
       new_tab.is_dirty = false;
       new_tab.is_new = false;
-      new_tab.cached_level = Level(); // Empty - will be loaded into world
-      new_tab.needs_selection = true;  // Auto-select in UI
+      new_tab.needs_selection = true;
 
-      open_tabs[full_path] = std::move(new_tab);
+      tabs[full_path] = std::move(new_tab);
       tab_order.push_back(full_path);
       active_tab_id = full_path;
-
-      // Set the current level path and instantiate into world
-      LevelManager::set_current_level_path(full_path);
-      level.instantiate_into_world(true);
-
-      Log::info("Opened level in new tab: {}", full_path);
-      EventManager::send_event<Events::ToastEvent>(
-        "Opened: " + open_tabs[full_path].display_name,
-        Events::ToastType::Info,
-        2.0f
-      );
 
       return true;
     }
 
-    std::string create_new_level_tab(const std::string& name)
+    std::string create_new_tab(const std::string& name)
     {
-      // Cache the current active tab before creating a new one
-      if (!active_tab_id.empty()) {
-        cache_active_tab();
+      // Delegate level creation to LevelManager
+      std::string level_id = LevelManager::create_new_level();
+      if (level_id.empty()) {
+        return "";
       }
 
-      // Find the next available number for new levels
-      size_t next_num = find_next_new_level_number();
-
-      // Generate a unique tab ID for new unsaved levels
-      std::string tab_id = "__new_" + std::to_string(next_num);
+      // Find next number for display name
+      size_t next_num = find_next_new_number();
       std::string display_name = name + " " + std::to_string(next_num);
 
-      // Create a new tab
+      // Create tab UI state
       LevelTab new_tab;
       new_tab.display_name = display_name;
       new_tab.is_dirty = true;
       new_tab.is_new = true;
-      new_tab.cached_level = Level();
-      new_tab.needs_selection = true;  // Mark for selection in UI
+      new_tab.needs_selection = true;
 
-      open_tabs[tab_id] = std::move(new_tab);
-      tab_order.push_back(tab_id);
-      active_tab_id = tab_id;
+      tabs[level_id] = std::move(new_tab);
+      tab_order.push_back(level_id);
+      active_tab_id = level_id;
 
-      // Clear the current level path and clear the world
-      LevelManager::set_current_level_path("");
-
-      ECS::for_each_entity([](ECS::Entity entity) {
-        entity.destroy();
-        });
-      ECS::process_housekeeping();
-
-      Log::info("Created new level tab: {}", display_name);
-
-      return tab_id;
+      return level_id;
     }
 
     void switch_to_tab(const std::string& tab_id)
     {
       if (!tab_exists(tab_id)) {
-        Log::warning("Invalid tab ID: {}", tab_id);
+        Log::warning("LevelTabManager: Tab not found: {}", tab_id);
         return;
       }
 
       if (tab_id == active_tab_id) {
-        return; // Already on this tab
+        return;
       }
 
-      // Cache the current tab's world state
-      cache_active_tab();
-
-      // Switch to the new tab
+      // Delegate to LevelManager
+      LevelManager::switch_to_level(tab_id);
       active_tab_id = tab_id;
-      LevelTab& target_tab = open_tabs[tab_id];
-
-      // Update the current level path (empty for new unsaved levels)
-      std::string level_path = tab_id.starts_with("__new_") ? "" : tab_id;
-      LevelManager::set_current_level_path(level_path);
-
-      // Instantiate the cached level into the world
-      target_tab.cached_level.instantiate_into_world(true);
-
-      // Clear the cache since it's now in the world
-      target_tab.cached_level = Level();
-
-      Log::info("Switched to tab: {}", target_tab.display_name);
     }
 
     bool close_tab(const std::string& tab_id, bool force)
     {
       if (!tab_exists(tab_id)) {
-        Log::warning("Invalid tab ID for closing: {}", tab_id);
         return false;
       }
 
-      LevelTab& tab = open_tabs[tab_id];
+      LevelTab& tab = tabs[tab_id];
 
-      // Check for unsaved changes
+      // Check dirty state
       if (!force && tab.is_dirty) {
         Log::warning("Tab '{}' has unsaved changes", tab.display_name);
         return false;
       }
 
-      std::string closed_name = tab.display_name;
-
-      // Find position in tab_order
+      // Find position
       auto it = std::find(tab_order.begin(), tab_order.end(), tab_id);
       size_t index = std::distance(tab_order.begin(), it);
 
-      // If closing the active tab, switch to another tab first
+      // Delegate level closing to LevelManager
+      LevelManager::close_level(tab_id);
+
+      // Update active tab
       if (tab_id == active_tab_id) {
         if (tab_order.size() > 1) {
-          // Switch to adjacent tab
           size_t new_index = (index > 0) ? index - 1 : 1;
-          std::string new_active = tab_order[new_index];
-
-          LevelTab& target_tab = open_tabs[new_active];
-          std::string level_path = new_active.starts_with("__new_") ? "" : new_active;
-          LevelManager::set_current_level_path(level_path);
-          target_tab.cached_level.instantiate_into_world(true);
-          target_tab.cached_level = Level();
-          active_tab_id = new_active;
+          active_tab_id = tab_order[new_index];
         }
         else {
-          // Closing the last tab - clear the world
-          ECS::for_each_entity([](ECS::Entity entity) {
-            entity.destroy();
-            });
-          ECS::process_housekeeping();
-          LevelManager::set_current_level_path("");
           active_tab_id = "";
         }
       }
 
-      // Remove from both containers
-      open_tabs.erase(tab_id);
+      // Remove tab
+      tabs.erase(tab_id);
       tab_order.erase(it);
 
-      Log::info("Closed tab: {}", closed_name);
       return true;
     }
 
     bool save_tab(const std::string& tab_id)
     {
       if (!tab_exists(tab_id)) {
-        Log::warning("Invalid tab ID for saving: {}", tab_id);
         return false;
       }
 
-      // Can't save a new level without a path
       if (tab_id.starts_with("__new_")) {
-        Log::warning("Cannot save new level without path. Use save_tab_as instead.");
+        Log::warning("Cannot save new tab without path. Use save_tab_as.");
         return false;
       }
 
-      LevelTab& tab = open_tabs[tab_id];
-
-      // Get the level data to save
-      Level level_to_save;
-      if (tab_id == active_tab_id) {
-        level_to_save = Level::from_world();
-      }
-      else {
-        level_to_save = tab.cached_level;
-      }
-
-      // Save to disk (tab_id is the file path)
-      if (Resources::save_level(tab_id, level_to_save, false)) {
-        tab.is_dirty = false;
-        tab.is_new = false;
-        Log::info("Saved tab: {}", tab.display_name);
-        EventManager::send_event<Events::ToastEvent>(
-          "Saved: " + tab.display_name,
-          Events::ToastType::Info,
-          2.0f
-        );
+      // Delegate to LevelManager
+      if (LevelManager::save_level(tab_id)) {
+        tabs[tab_id].is_dirty = false;
+        tabs[tab_id].is_new = false;
         return true;
       }
 
-      Log::error("Failed to save tab: {}", tab.display_name);
       return false;
     }
 
     std::string save_tab_as(const std::string& tab_id, const std::string& filepath, bool append_resource_path)
     {
       if (!tab_exists(tab_id)) {
-        Log::warning("Invalid tab ID for save as: {}", tab_id);
         return "";
       }
 
-      // Get the full normalized path - this becomes the new tab ID
-      std::string new_tab_id = append_resource_path
-        ? Path(Resources::resource_path).join(filepath).normalize().to_string()
-        : Path(filepath).normalize().to_string();
-
-      LevelTab& old_tab = open_tabs[tab_id];
-
-      // Get the level data to save
-      Level level_to_save;
-      if (tab_id == active_tab_id) {
-        level_to_save = Level::from_world();
-      }
-      else {
-        level_to_save = old_tab.cached_level;
-      }
-
-      // Save to disk
-      if (!Resources::save_level(new_tab_id, level_to_save, false)) {
-        Log::error("Failed to save tab as: {}", new_tab_id);
+      // Delegate to LevelManager
+      std::string new_level_id = LevelManager::save_level_as(tab_id, filepath, append_resource_path);
+      if (new_level_id.empty()) {
         return "";
       }
 
-      // Create new tab entry with updated info
-      LevelTab new_tab;
-      new_tab.display_name = Path(new_tab_id).get_filename();
-      new_tab.is_dirty = false;
-      new_tab.is_new = false;
-      new_tab.cached_level = old_tab.cached_level;
+      // Move tab to new ID
+      LevelTab old_tab = std::move(tabs[tab_id]);
+      old_tab.display_name = Path(new_level_id).get_filename();
+      old_tab.is_dirty = false;
+      old_tab.is_new = false;
 
-      // Replace old tab with new one in the same position
       auto it = std::find(tab_order.begin(), tab_order.end(), tab_id);
-      *it = new_tab_id;
+      *it = new_level_id;
 
-      open_tabs.erase(tab_id);
-      open_tabs[new_tab_id] = std::move(new_tab);
+      tabs.erase(tab_id);
+      tabs[new_level_id] = std::move(old_tab);
 
-      // Update active tab if needed
       if (active_tab_id == tab_id) {
-        active_tab_id = new_tab_id;
-        LevelManager::set_current_level_path(new_tab_id);
+        active_tab_id = new_level_id;
       }
 
-      Log::info("Saved tab as: {}", new_tab_id);
-      EventManager::send_event<Events::ToastEvent>(
-        "Saved as: " + open_tabs[new_tab_id].display_name,
-        Events::ToastType::Info,
-        2.0f
-      );
-
-      return new_tab_id;
+      return new_level_id;
     }
 
     void mark_active_dirty()
     {
       if (!active_tab_id.empty() && tab_exists(active_tab_id)) {
-        open_tabs[active_tab_id].is_dirty = true;
+        tabs[active_tab_id].is_dirty = true;
       }
     }
 
     const std::unordered_map<std::string, LevelTab>& get_tabs()
     {
-      return open_tabs;
+      return tabs;
     }
 
     const std::vector<std::string>& get_tab_order()
@@ -342,61 +233,41 @@ namespace Engine {
 
     LevelTab* get_active_tab()
     {
-      if (active_tab_id.empty() || !tab_exists(active_tab_id)) {
-        return nullptr;
-      }
-      return &open_tabs[active_tab_id];
+      if (active_tab_id.empty()) return nullptr;
+      return get_tab(active_tab_id);
     }
 
     LevelTab* get_tab(const std::string& tab_id)
     {
-      auto it = open_tabs.find(tab_id);
-      return (it != open_tabs.end()) ? &it->second : nullptr;
+      auto it = tabs.find(tab_id);
+      return (it != tabs.end()) ? &it->second : nullptr;
     }
 
     bool has_unsaved_changes()
     {
-      return std::any_of(open_tabs.begin(), open_tabs.end(),
+      return std::any_of(tabs.begin(), tabs.end(),
         [](const auto& pair) { return pair.second.is_dirty; });
     }
 
     bool tab_exists(const std::string& tab_id)
     {
-      return open_tabs.find(tab_id) != open_tabs.end();
-    }
-
-    void cache_active_tab()
-    {
-      if (active_tab_id.empty() || !tab_exists(active_tab_id)) {
-        return;
-      }
-
-      LevelTab& active = open_tabs[active_tab_id];
-      active.cached_level = Level::from_world();
-
-      Log::info("Cached active tab: {} ({} entities)",
-        active.display_name,
-        active.cached_level.entities.size());
-    }
-
-    void clear_all()
-    {
-      open_tabs.clear();
-      tab_order.clear();
-      active_tab_id = "";
-
-      ECS::for_each_entity([](ECS::Entity entity) {
-        entity.destroy();
-        });
-      ECS::process_housekeeping();
-      LevelManager::set_current_level_path("");
-
-      Log::info("Cleared all level tabs");
+      return tabs.find(tab_id) != tabs.end();
     }
 
     size_t get_tab_count()
     {
-      return open_tabs.size();
+      return tabs.size();
+    }
+
+    void clear_all()
+    {
+      // Delegate to LevelManager
+      LevelManager::clear_all();
+
+      // Clear tab state
+      tabs.clear();
+      tab_order.clear();
+      active_tab_id = "";
     }
 
   } // namespace LevelTabManager

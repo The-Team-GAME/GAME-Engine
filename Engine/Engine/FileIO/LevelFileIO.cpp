@@ -33,6 +33,17 @@ namespace Engine {
         level_value["data"]["entities"].push_back(entity_value);
       }
 
+      // Serialize callbacks (only if set)
+      if (!level.on_init.empty()) {
+        level_value["data"]["on_init"] = level.on_init.name;
+      }
+      if (!level.on_update.empty()) {
+        level_value["data"]["on_update"] = level.on_update.name;
+      }
+      if (!level.on_exit.empty()) {
+        level_value["data"]["on_exit"] = level.on_exit.name;
+      }
+
       return ReflectionLibrary::generic_value_to_json(level_value, true);
     }
 
@@ -50,6 +61,17 @@ namespace Engine {
       const auto& entities_array = level_value["data"]["entities"].getArray();
       for (const auto& entity_value : entities_array) {
         level.entities.push_back(entity_value);
+      }
+
+      // Deserialize callbacks (if present)
+      if (level_value["data"].has("on_init") && level_value["data"]["on_init"].isString()) {
+        level.on_init = level_value["data"]["on_init"].getString();
+      }
+      if (level_value["data"].has("on_update") && level_value["data"]["on_update"].isString()) {
+        level.on_update = level_value["data"]["on_update"].getString();
+      }
+      if (level_value["data"].has("on_exit") && level_value["data"]["on_exit"].isString()) {
+        level.on_exit = level_value["data"]["on_exit"].getString();
       }
 
       return level;

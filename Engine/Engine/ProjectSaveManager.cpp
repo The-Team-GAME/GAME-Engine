@@ -19,6 +19,7 @@
 #include "Resources.h"
 #include "ECS/ECS.h"
 #include "LevelTabManager.h"
+#include "LevelManager.h"
 #include <vector>
 #include <algorithm>
 

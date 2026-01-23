@@ -22,7 +22,6 @@
 #include "Core.h"
 #include "ECS/ECS.h"
 #include "Graphics/Renderer.h"
-#include "StateManager.h"
 #include "SceneManager.h"
 #include "TypeDef.h"
 #include "InputManager.h"

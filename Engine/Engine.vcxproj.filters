@@ -40,7 +40,6 @@
     <ClCompile Include="Engine\Time.cpp" />
     <ClCompile Include="Engine\GUI\Timeline.cpp" />
     <ClCompile Include="Engine\Math\Vector2D.cpp" />
-    <ClCompile Include="Engine\StateManager.cpp" />
     <ClCompile Include="Engine\Math\Vector3D.cpp" />
     <ClCompile Include="Engine\Math\Vector4D.cpp" />
     <ClCompile Include="Engine\WindowManager.cpp" />
@@ -106,6 +105,8 @@
     <ClCompile Include="Engine\GUI\SelectiveLevelSavePanel.cpp" />
     <ClCompile Include="GameLogic\GameStates\OptionsState.cpp" />
     <ClCompile Include="Engine\FileIO\ColliderMeshFileIO.cpp" />
+    <ClCompile Include="Engine\LevelTabManager.cpp" />
+    <ClCompile Include="Engine\LevelManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -180,7 +181,6 @@
     <ClInclude Include="Engine\GUI\Timeline.h" />
     <ClInclude Include="Engine\Math\Vector2D.h" />
     <ClInclude Include="GameLogic\GUI\StateChooser.h" />
-    <ClInclude Include="Engine\StateManager.h" />
     <ClInclude Include="Engine\TypeDef.h" />
     <ClInclude Include="Engine\Math\Vector3D.h" />
     <ClInclude Include="Engine\Math\Vector4D.h" />
@@ -242,6 +242,8 @@
     <ClInclude Include="GameLogic\GameStates\OptionsState.h" />
     <ClInclude Include="Engine\Systems\ChatBoxSystem.h" />
     <ClInclude Include="Engine\FileIO\ColliderMeshFileIO.h" />
+    <ClInclude Include="Engine\LevelTabManager.h" />
+    <ClInclude Include="Engine\LevelManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />

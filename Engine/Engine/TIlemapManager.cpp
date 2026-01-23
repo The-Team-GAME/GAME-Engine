@@ -15,7 +15,7 @@
 //-----------------------------------------------------------------------------------
 #include "TilemapManager.h"
 #include "ProjectSaveManager.h"
-#include "Level.h"
+#include "LevelManager.h"
 #include <algorithm>
 #include <limits>
 #include "FileIO/Settings.h"
