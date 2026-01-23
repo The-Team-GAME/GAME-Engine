@@ -16,12 +16,6 @@
                             }
                         },
                         "type": "Components::Transform2D"
-                    },
-                    {
-                        "data": {
-                            "level_path": "levels/MainMenu.json"
-                        },
-                        "type": "Components::Level"
                     }
                 ],
                 "id": 1,
@@ -44,12 +38,6 @@
                             }
                         },
                         "type": "Components::Transform2D"
-                    },
-                    {
-                        "data": {
-                            "level_path": "levels/MainMenu.json"
-                        },
-                        "type": "Components::Level"
                     }
                 ],
                 "id": 2,
