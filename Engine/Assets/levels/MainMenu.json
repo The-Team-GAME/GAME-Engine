@@ -16,6 +16,21 @@
                             }
                         },
                         "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 14,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
                 "id": 1,
@@ -38,6 +53,21 @@
                             }
                         },
                         "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 14,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
                 "id": 2,
@@ -75,6 +105,21 @@
                             }
                         },
                         "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 14,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
                 "id": 3,
@@ -112,6 +157,21 @@
                             }
                         },
                         "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 14,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
                 "id": 4,
@@ -149,6 +209,21 @@
                             }
                         },
                         "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 14,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
                 "id": 5,
@@ -186,6 +261,21 @@
                             }
                         },
                         "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 14,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
                 "id": 6,
@@ -223,6 +313,21 @@
                             }
                         },
                         "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 14,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
                 "id": 7,
@@ -322,6 +427,21 @@
                             }
                         },
                         "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 14,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
                 "id": 8,
@@ -421,6 +541,21 @@
                             }
                         },
                         "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 14,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
                 "id": 9,
@@ -521,6 +656,21 @@
                             }
                         },
                         "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 14,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
                 "id": 10,
@@ -621,6 +771,21 @@
                             }
                         },
                         "type": "Components::Clickable"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 14,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
                 "id": 11,
@@ -659,6 +824,21 @@
                             }
                         },
                         "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 14,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
                 "id": 12,
@@ -696,9 +876,47 @@
                             }
                         },
                         "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 14,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
                 "id": 13,
+                "layers": [
+                    "default"
+                ]
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "level_path": "levels/MainMenu.json",
+                            "on_exit": {
+                                "name": ""
+                            },
+                            "on_init": {
+                                "name": ""
+                            },
+                            "on_update": {
+                                "name": ""
+                            }
+                        },
+                        "type": "Components::Level"
+                    }
+                ],
+                "id": 14,
                 "layers": [
                     "default"
                 ]

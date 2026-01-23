@@ -22,6 +22,7 @@
 #include "Events/EngineEvents.h"
 #include "Components/LevelComponent.h"
 #include "Components/Components.h"
+#include "Components/HierarchyComponents.h"
 #include "TilemapManager.h"
 #include <algorithm>
 #include <unordered_set>
@@ -106,6 +107,15 @@ namespace Engine {
       // Instantiate into world
       instantiate_entities(entities, true);
 
+      // Set the level path on the Level component
+      auto level_entity = ECS::get_first_entity_with<Components::Level>();
+      if (level_entity.is_valid()) {
+        auto* level_comp = level_entity.get_component<Components::Level>();
+        if (level_comp) {
+          level_comp->level_path = filepath;
+        }
+      }
+
       // Call on_init callback (via Level component if present)
       call_level_init();
 
@@ -145,6 +155,10 @@ namespace Engine {
         entity.destroy();
         });
       ECS::process_housekeeping();
+
+      // Create the Level entity with Level component
+      ECS::Entity level_entity = ECS::create_entity();
+      level_entity.add_component<Components::Level>();
 
       Log::info("Created new level: {}", level_id);
 
@@ -507,6 +521,33 @@ namespace Engine {
 
       // Update collision world bounds after level load
       TilemapManager::broadcast_world_bounds();
+
+      // Ensure a Level entity exists (for old levels that don't have one)
+      auto level_entity = ECS::get_first_entity_with<Components::Level>();
+      if (!level_entity.is_valid()) {
+        Log::info("Level entity not found, creating one for compatibility.");
+        level_entity = ECS::create_entity();
+        level_entity.add_component<Components::Level>();
+      }
+
+      // Make all root entities (entities without a parent) children of the Level entity
+      ECS::EntityID level_entity_id = level_entity.get_id();
+      ECS::for_each_entity([level_entity_id](ECS::Entity entity) {
+        // Skip the Level entity itself
+        if (entity.has_component<Components::Level>()) {
+          return;
+        }
+        // Skip entities that already have a parent
+        if (entity.has_component<Components::Parent>()) {
+          return;
+        }
+        // Skip tile colliders (temporary entities)
+        if (entity.has_component<Components::TileCollider>()) {
+          return;
+        }
+        // Add Parent component to make this entity a child of the Level entity
+        entity.add_component<Components::Parent>(level_entity_id);
+      });
     }
 
   } // namespace LevelManager
