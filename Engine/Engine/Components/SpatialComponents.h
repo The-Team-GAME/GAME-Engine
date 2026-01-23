@@ -17,6 +17,7 @@
 #pragma once
 
 #include "../Math/Vector2D.h"
+#include "../ECS/Macros.h"
 
 namespace Components
 {
@@ -37,5 +38,4 @@ namespace Components
 
 }
 
-// Lua-accessible (used for position checks in AI)
 REGISTER_COMPONENT(Components::Transform2D, position, rotation, scale)

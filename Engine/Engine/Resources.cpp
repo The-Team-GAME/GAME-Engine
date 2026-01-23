@@ -27,7 +27,6 @@
 #include "FileIO/PrefabsFileIO.h"
 #include "FileIO/Helpers.h"
 #include "Path.h"
-#include "Level.h"
 #include "LevelManager.h"
 #include "FileIO/LevelFileIO.h"
 #include "LevelTabManager.h"
@@ -40,7 +39,7 @@ std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> En
 std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::FontData>> Engine::Resources::font_cache;
 std::unordered_map<std::string, std::weak_ptr<Engine::Audio::SoundData>> Engine::Resources::sound_cache;
 std::unordered_map<std::string, std::weak_ptr<Engine::ECS::PrefabImpl>> Engine::Resources::prefab_cache;
-std::unordered_map<std::string, Engine::Level> Engine::Resources::level_cache;
+std::unordered_map<std::string, Engine::EntityList> Engine::Resources::level_cache;
 
 // Vector to hold shared_ptr references for persistent resources
 std::vector<Engine::Resources::Resource> Engine::Resources::persistent_resources;
@@ -695,7 +694,7 @@ void Engine::Resources::cache_prefab(const std::string& filepath, const Engine::
   Log::info("Prefab cached: {}", full_path);
 }
 
-Engine::Level Engine::Resources::load_level(const std::string& filepath, bool append_resource_path, bool persist)
+Engine::EntityList Engine::Resources::load_level(const std::string& filepath, bool append_resource_path, bool persist)
 {
   // Construct full path using Path class
   std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
@@ -721,13 +720,13 @@ Engine::Level Engine::Resources::load_level(const std::string& filepath, bool ap
   }
 
   // Deserialize level
-  Engine::Level level = Engine::FileIO::deserialize_level_from_json_file(full_path);
+  Engine::EntityList entities = Engine::FileIO::deserialize_level_from_json_file(full_path);
 
   // Cache the level
-  level_cache[full_path] = level;
+  level_cache[full_path] = entities;
   if (persist)
   {
-    persistent_resources.push_back(level);
+    persistent_resources.push_back(entities);
     Log::info("Level loaded (persistent): {}", full_path);
   }
   else
@@ -735,38 +734,38 @@ Engine::Level Engine::Resources::load_level(const std::string& filepath, bool ap
     Log::info("Level loaded: {}", full_path);
   }
 
-  return level;
+  return entities;
 }
 
-bool Engine::Resources::save_level(const std::string& filepath, const Engine::Level& level, bool append_resource_path)
+bool Engine::Resources::save_level(const std::string& filepath, const Engine::EntityList& entities, bool append_resource_path)
 {
   // Construct full path using Path class
   std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
 
   Log::info("Saving level to: {}", full_path);
 
-  if (!Engine::FileIO::serialize_level_to_json_file(full_path, level))
+  if (!Engine::FileIO::serialize_level_to_json_file(full_path, entities))
   {
     return false;
   }
 
   // Update cache with the level
-  level_cache[full_path] = level;
+  level_cache[full_path] = entities;
 
   return true;
 }
 
-void Engine::Resources::cache_level(const std::string& filepath, const Engine::Level& level, bool append_resource_path, bool persist)
+void Engine::Resources::cache_level(const std::string& filepath, const Engine::EntityList& entities, bool append_resource_path, bool persist)
 {
   // Construct full path using Path class
   std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
 
   // Add to cache without saving to disk
-  level_cache[full_path] = level;
+  level_cache[full_path] = entities;
 
   if (persist)
   {
-    persistent_resources.push_back(level);
+    persistent_resources.push_back(entities);
     Log::info("Level cached (persistent): {}", full_path);
   }
 

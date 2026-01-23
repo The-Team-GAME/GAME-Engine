@@ -163,7 +163,6 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClCompile Include="Engine\GUI\LayerManagerPanel.cpp" />
     <ClCompile Include="Engine\GUI\ResourceExplorerPanel.cpp" />
     <ClCompile Include="Engine\GUI\widgets\ColliderEditorWidget.cpp" />
-    <ClCompile Include="Engine\Level.cpp" />
     <ClCompile Include="Engine\LevelManager.cpp" />
     <ClCompile Include="Engine\LevelTabManager.cpp" />
     <ClCompile Include="Engine\ProjectSaveManager.cpp" />
@@ -237,7 +236,6 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="Engine\GUI\widgets\ColliderEditorWidget.h" />
     <ClInclude Include="Engine\ImGuiThemes.h" />
     <ClInclude Include="Engine\KeyCodes.h" />
-    <ClInclude Include="Engine\Level.h" />
     <ClInclude Include="Engine\LevelManager.h" />
     <ClInclude Include="Engine\LevelTabManager.h" />
     <ClInclude Include="Engine\Lua\LuaComponentBindings.h" />

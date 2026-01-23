@@ -24,6 +24,7 @@
                         "type": "Components::Level"
                     }
                 ],
+                "id": 1,
                 "layers": [
                     "default"
                 ]
@@ -51,6 +52,7 @@
                         "type": "Components::Level"
                     }
                 ],
+                "id": 2,
                 "layers": [
                     "default"
                 ]
@@ -87,6 +89,7 @@
                         "type": "Components::Transform2D"
                     }
                 ],
+                "id": 3,
                 "layers": [
                     "default"
                 ]
@@ -123,6 +126,7 @@
                         "type": "Components::Transform2D"
                     }
                 ],
+                "id": 4,
                 "layers": [
                     "default"
                 ]
@@ -159,6 +163,7 @@
                         "type": "Components::Transform2D"
                     }
                 ],
+                "id": 5,
                 "layers": [
                     "default"
                 ]
@@ -195,6 +200,7 @@
                         "type": "Components::Transform2D"
                     }
                 ],
+                "id": 6,
                 "layers": [
                     "default"
                 ]
@@ -231,6 +237,7 @@
                         "type": "Components::Transform2D"
                     }
                 ],
+                "id": 7,
                 "layers": [
                     "default"
                 ]
@@ -329,6 +336,7 @@
                         "type": "Components::Clickable"
                     }
                 ],
+                "id": 8,
                 "layers": [
                     "default"
                 ]
@@ -427,6 +435,7 @@
                         "type": "Components::Clickable"
                     }
                 ],
+                "id": 9,
                 "layers": [
                     "default",
                     "ui"
@@ -526,6 +535,7 @@
                         "type": "Components::Clickable"
                     }
                 ],
+                "id": 10,
                 "layers": [
                     "default",
                     "ui"
@@ -625,6 +635,7 @@
                         "type": "Components::Clickable"
                     }
                 ],
+                "id": 11,
                 "layers": [
                     "default",
                     "ui"
@@ -662,6 +673,7 @@
                         "type": "Components::Transform2D"
                     }
                 ],
+                "id": 12,
                 "layers": [
                     "default"
                 ]
@@ -698,6 +710,7 @@
                         "type": "Components::Transform2D"
                     }
                 ],
+                "id": 13,
                 "layers": [
                     "default"
                 ]

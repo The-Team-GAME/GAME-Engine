@@ -93,7 +93,6 @@
     <ClCompile Include="GameLogic\GameStates\StressTestState.cpp" />
     <ClCompile Include="Engine\Systems\LogicSystem.cpp" />
     <ClCompile Include="Engine\GUI\ResourceExplorerPanel.cpp" />
-    <ClCompile Include="Engine\Level.cpp" />
     <ClCompile Include="Engine\ProjectSaveManager.cpp" />
     <ClCompile Include="Engine\TIlemapManager.cpp" />
     <ClCompile Include="Engine\UndoManager\UndoManager.cpp" />
@@ -210,7 +209,6 @@
     <ClInclude Include="Engine\GUI\ResourceExplorerPanel.h" />
     <ClInclude Include="Engine\ImGuiThemes.h" />
     <ClInclude Include="Engine\KeyCodes.h" />
-    <ClInclude Include="Engine\Level.h" />
     <ClInclude Include="Engine\ProjectSaveManager.h" />
     <ClInclude Include="GameLogic\GameStates\BehaviourState.h" />
     <ClInclude Include="Engine\TIlemapManager.h" />

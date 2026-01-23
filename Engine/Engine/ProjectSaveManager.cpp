@@ -146,13 +146,13 @@ void Engine::ProjectSaveManager::save_all_dirty()
         }
 
         // Generate level from current world state
-        Engine::Level level = Engine::Level::from_world();
+        Engine::EntityList entities = Engine::LevelManager::capture_world_entities();
 
         // Get relative path for saving
         std::string relative_path = Engine::Resources::get_relative_path(level_path);
 
         // Save the level
-        if (Engine::Resources::save_level(relative_path, level, true)) {
+        if (Engine::Resources::save_level(relative_path, entities, true)) {
           Log::info("Level saved successfully: {}", relative_path);
         }
         else {
