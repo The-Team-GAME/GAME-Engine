@@ -18,6 +18,7 @@
 #include "Path.h"
 #include "Resources.h"
 #include "ECS/ECS.h"
+#include "LevelTabManager.h"
 #include <vector>
 #include <algorithm>
 
@@ -31,6 +32,13 @@ void Engine::ProjectSaveManager::set_dirty(DirtyState state)
   if (!check_dirty(state)) {
     dirty_states.push_back(std::move(state));
   }
+
+#ifndef GAME_BUILD
+  // Also mark the active level tab as dirty if it's a level dirty state
+  if (std::holds_alternative<DirtyStates::Level>(state)) {
+    LevelTabManager::mark_active_dirty();
+  }
+#endif
 }
 
 bool Engine::ProjectSaveManager::check_dirty(const DirtyState& state)

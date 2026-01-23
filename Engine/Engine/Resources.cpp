@@ -29,6 +29,7 @@
 #include "Path.h"
 #include "Level.h"
 #include "FileIO/LevelFileIO.h"
+#include "LevelTabManager.h"
 #include "Reflection/ReflectionLibrary.h"
 #include "EventManager/EventManager.h"
 #include "Events/EngineEvents.h"
@@ -773,9 +774,15 @@ void Engine::Resources::cache_level(const std::string& filepath, const Engine::L
 
 bool Engine::Resources::open_level(const std::string& filepath, bool append_resource_path, bool additive)
 {
-  // Load the level
-  Engine::Level level = load_level(filepath, append_resource_path, false);
+#ifndef GAME_BUILD
+  // In editor mode, use the tab manager for level opening
+  if (!additive) {
+    return LevelTabManager::open_level_tab(filepath, append_resource_path);
+  }
+#endif
 
+  // In game mode or for additive loading, use direct instantiation
+  Engine::Level level = load_level(filepath, append_resource_path, false);
 
   // Update the current level path
   std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
