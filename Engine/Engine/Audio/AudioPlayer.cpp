@@ -18,6 +18,7 @@
 #include "AudioPlayerInternal.h"
 #include "../Logger.h"
 #include <fmod.hpp>
+#include <fmod_studio.h>
 #include "../Perf.h"
 
 namespace Engine {

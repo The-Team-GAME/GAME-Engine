@@ -229,7 +229,17 @@ namespace Engine
     private:
       inline static Engine::Graphics::Camera camera{}; // this is the camera that will be sent to the renderer
 
-    public:
+      inline f32 Lerp(f32 a, f32 b, f32 t)
+      {
+        return a + (b - a) * t;
+      }
+
+      inline Vec2D Lerp(const Vec2D& a, const Vec2D& b, f32 t)
+      {
+        return a + (b - a) * t;
+      }
+
+     public:
       CameraSystem() {
         require_components<Components::Camera, Components::Transform2D>();
       }
@@ -237,17 +247,47 @@ namespace Engine
       void update() override {
         Engine::ECS::for_each_entity_with<Components::Camera, Components::Transform2D>(
           [this](Engine::ECS::Entity entity) {
-            auto* camera_component = entity.get_component<Components::Camera>();
-            auto* transform = entity.get_component<Components::Transform2D>();
+            auto* cam = entity.get_component<Components::Camera>();
+            auto* trans = entity.get_component<Components::Transform2D>();
 
-            // If this camera is marked as active, use its parameters
-            if (camera_component->is_active) {
-              camera.position = transform->position;
-              camera.rotation = transform->rotation;
-              camera.zoom = transform->scale.x; // Use x scale for zoom TODO: have x and y zoom
+            if (!cam || !cam->is_active) return;
+
+            // 1. Safe Parent & Flip Retrieval
+            f32 look_dir = 0.0f;
+            if (auto* parent_comp = entity.get_component<Components::Parent>()) {
+              if (auto* p_flip = parent_comp->parent_id.get_component<Components::Flip>()) {
+                // Use the raw flip value (-1 or 1)
+                look_dir = p_flip->value.x;
+              }
             }
-          }
-        );
+
+            const f32 dt = Time::get_fixed_dt();
+
+            // 2. Look-ahead Calculation
+            // Note: If 'Right' feels too far, we can introduce a small 'center_bias' 
+            // to center the camera on the sprite rather than the origin.
+            f32 center_bias = -500.0f;
+            Vec2D desired_offset = { (look_dir * cam->look_ahead_distance) + center_bias, 0.0f };
+
+            f32 t_offset = 1.0f - std::exp(-cam->look_ahead_smooth * dt);
+            cam->look_ahead_offset = Lerp(cam->look_ahead_offset, desired_offset, t_offset);
+
+            // 3. Target Position
+            Vec2D target_position = trans->position + cam->look_ahead_offset;
+
+            // 4. Final Camera Application
+            if (cam->is_smooth) {
+              f32 t = 1.0f - std::exp(-cam->smooth_factor * dt);
+              camera.position = Lerp(camera.position, target_position, t);
+              camera.rotation = Lerp(camera.rotation, trans->rotation, t);
+              camera.zoom = Lerp(camera.zoom, trans->scale.x, t);
+            }
+            else {
+              camera.position = target_position;
+              camera.rotation = trans->rotation;
+              camera.zoom = trans->scale.x;
+            }
+          });
 
         Engine::Graphics::set_camera(camera);
       }

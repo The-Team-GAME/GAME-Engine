@@ -402,9 +402,17 @@ namespace Components
     std::string name = "Camera";
     bool is_active = false;  // Whether this camera is currently active
 
+		bool is_smooth = false; // Whether this camera uses smooth movement
+
+		f32 smooth_factor = 1.0f; // Smoothing factor for camera movement (0.0 to 1.0)
+
+    Math::Vec2D look_ahead_offset = { 1.0f, 0.0f };
+    f32   look_ahead_distance = 500.0f;
+    f32   look_ahead_smooth = 100.0f;
+
     Camera() : name("Camera"), is_active(false) {}
-    Camera(const std::string& cam_name, bool active = false)
-      : name(cam_name), is_active(active) {
+    Camera(const std::string& cam_name, bool active = false, bool smooth = false)
+      : name(cam_name), is_active(active), is_smooth(smooth) {
     }
   };
 
