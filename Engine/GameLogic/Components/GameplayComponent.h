@@ -177,7 +177,7 @@ namespace Components
 
     // Detection ranges
     float detection_range = 1200.0f;
-    float long_attack_range = 500.0f;
+    float long_attack_range = 600.0f;
   };
 
 

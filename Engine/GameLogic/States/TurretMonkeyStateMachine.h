@@ -71,6 +71,12 @@ namespace TurretMonkeyStates
     Components::State Turret_monkey_chasing("Chasing", "Turret_monkey_chasing_enter", "Turret_monkey_chasing_update", "Turret_monkey_chasing_exit", Turret_monkey_chasing_anim, footstep_audio);
 
     // ========================================================================
+    // Turret Monkey Turret State (stuck to wall, reuses idle animation)
+    // ========================================================================
+    Components::StateAnimation Turret_monkey_turret_anim = Turret_monkey_idle_anim;
+    Components::State Turret_monkey_turret("Turret", "Turret_monkey_turret_enter", "Turret_monkey_turret_update", "Turret_monkey_turret_exit", Turret_monkey_turret_anim);
+
+    // ========================================================================
     // Turret Monkey Windup State (uses idle animation)
     // ========================================================================
     Components::StateAnimation Turret_monkey_windup_anim;
@@ -121,6 +127,7 @@ namespace TurretMonkeyStates
     Components::StateMachine Turret_monkey_sm;
     Turret_monkey_sm.add_state(Turret_monkey_idle);
     Turret_monkey_sm.add_state(Turret_monkey_chasing);
+    Turret_monkey_sm.add_state(Turret_monkey_turret);
     Turret_monkey_sm.add_state(Turret_monkey_windup);
     Turret_monkey_sm.add_state(Turret_monkey_attacking);
     Turret_monkey_sm.add_state(Turret_monkey_hit);

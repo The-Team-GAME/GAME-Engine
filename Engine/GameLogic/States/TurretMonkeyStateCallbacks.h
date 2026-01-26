@@ -14,11 +14,176 @@
 #pragma once
 
 #include "../../Engine/MonkeyEngine.h"
+#include "../../Engine/Engine/Systems/CollisionSystem.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/EnemyHealthComponent.h"
 
 namespace TurretMonkeyStateCallbacks
 {
+
+  // ========================================================================
+  // Bannana Projectile
+  // ========================================================================
+
+  inline void fire_turret_projectile(Engine::ECS::Entity& entity) {
+    auto* flip = entity.get_component<Components::Flip>();
+    auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
+    auto* transform = entity.get_component<Components::Transform2D>();
+
+    auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+
+    if (!Turret_monkey || !flip || !transform || !player_entity.is_valid()) {
+      return;
+    }
+
+    // Compute spawn position slightly in front of monkey
+    float offset_x = (flip->value.x < 0.0f) ? -Turret_monkey->hitbox_offset_x : Turret_monkey->hitbox_offset_x;
+    float offset_y = Turret_monkey->hitbox_offset_y;
+
+    float spawn_x = transform->position.x + offset_x;
+    float spawn_y = transform->position.y + offset_y;
+
+    // Decide horizontal direction based on facing
+    float dir_x = (flip->value.x < 0.0f) ? -1.0f : 1.0f;
+    const float projectile_speed = 300.0f;
+
+    const float projectile_width = 70.0f;
+    const float projectile_height = 70.0f;
+
+    auto projectile = Engine::ECS::create_entity()
+      .add_component<Components::Transform2D>(spawn_x, spawn_y, 0.0f, projectile_width, projectile_height)
+      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+      .add_component<Components::Texture>(Engine::Resources::load_texture("images/banana-projectile.png"))
+      .add_component<Components::RigidBody>(false, false) // Dynamic, no gravity for straight shot
+      .add_component<Components::BoxCollider>(projectile_width, projectile_height, false)
+      .add_component<Components::Attack>(Turret_monkey->damage)
+      .add_component<Components::Lifetime>(2.0f) // Despawn after a short time
+      .remove_from_layer("default")
+      .add_to_layer("effect")
+      .add_to_layer("damage_player");
+
+    if (auto* proj_rigid = projectile.get_component<Components::RigidBody>()) {
+      proj_rigid->velocity.x = dir_x * projectile_speed;
+      proj_rigid->angular_velocity = 360.0f; // Constant spin
+    }
+
+    if (auto* attack = projectile.get_component<Components::Attack>()) {
+      attack->knockback = Turret_monkey->knockback;
+      if (dir_x < 0.0f) {
+        attack->knockback.x = -attack->knockback.x;
+      }
+      attack->knockback.y = -std::abs(attack->knockback.y);
+    }
+  }
+
+  
+  // ========================================================================
+  // Ceiling Snapper
+  // ========================================================================
+
+  inline bool is_touching_ceiling(Engine::ECS::Entity& entity) {
+    auto* monkey_collider = entity.get_component<Components::BoxCollider>();
+    if (!monkey_collider) {
+      return false;
+    }
+
+    bool touching_ceiling = false;
+
+    // Scan all tile colliders in the world and see if any overlap the monkey
+    Engine::ECS::for_each_entity_with<Components::TileCollider, Components::BoxCollider>(
+      [&](Engine::ECS::Entity tile_entity) {
+        if (touching_ceiling) {
+          return;
+        }
+
+        auto* tile_collider = tile_entity.get_component<Components::BoxCollider>();
+        if (!tile_collider) {
+          return;
+        }
+
+        // Basic AABB overlap check
+        if (!Engine::Systems::Collision2DSystem::rect_rect_coll(*monkey_collider, *tile_collider)) {
+          return;
+        }
+
+        // Treat only tiles whose center is above the monkey as "ceiling" tiles
+        if (tile_collider->aabb.pos.y < monkey_collider->aabb.pos.y) {
+          touching_ceiling = true;
+        }
+      });
+
+    return touching_ceiling;
+  }
+
+  inline bool try_snap_to_nearby_ceiling(Engine::ECS::Entity& entity) {
+    auto* transform = entity.get_component<Components::Transform2D>();
+    auto* rigid = entity.get_component<Components::RigidBody>();
+    auto* box = entity.get_component<Components::BoxCollider>();
+    auto* state_machine = entity.get_component<Components::StateMachine>();
+
+    if (!transform || !rigid || !box || !state_machine) {
+      return false;
+    }
+
+    const float snap_vertical_threshold = 20.0f;   // how close to ceiling before snapping
+    const float snap_horizontal_margin = 5.0f;    // small extra horizontal leeway
+
+    Components::BoxCollider* best_tile = nullptr;
+    float best_gap = snap_vertical_threshold;
+
+    float monkey_half_w = box->width * 0.5f;
+    float monkey_half_h = box->height * 0.5f;
+    float monkey_center_x = transform->position.x;
+    float monkey_top = transform->position.y - monkey_half_h;
+
+    Engine::ECS::for_each_entity_with<Components::TileCollider, Components::BoxCollider>(
+      [&](Engine::ECS::Entity tile_entity) {
+        auto* tile_collider = tile_entity.get_component<Components::BoxCollider>();
+        if (!tile_collider) {
+          return;
+        }
+
+        float tile_half_w = tile_collider->aabb.half_width;
+        float tile_half_h = tile_collider->aabb.half_height;
+        float tile_center_x = tile_collider->aabb.pos.x;
+        float tile_center_y = tile_collider->aabb.pos.y;
+
+        // Only consider tiles above the monkey
+        if (tile_center_y >= transform->position.y) {
+          return;
+        }
+
+        // Require reasonable horizontal alignment under the tile
+        float horizontal_dist = std::abs(tile_center_x - monkey_center_x);
+        float allowed_horizontal = tile_half_w + monkey_half_w + snap_horizontal_margin;
+        if (horizontal_dist > allowed_horizontal) {
+          return;
+        }
+
+        // Distance between monkey top and tile bottom
+        float tile_bottom = tile_center_y + tile_half_h;
+        float gap = std::abs(tile_bottom - monkey_top);
+        if (gap < best_gap) {
+          best_gap = gap;
+          best_tile = tile_collider;
+        }
+      });
+
+    if (!best_tile) {
+      return false;
+    }
+
+    // Snap monkey so its top touches the tile's bottom
+    float tile_bottom = best_tile->aabb.pos.y + best_tile->aabb.half_height;
+    float new_center_y = tile_bottom + monkey_half_h;
+    transform->position.y = new_center_y;
+
+    rigid->velocity.zero();
+    rigid->use_gravity = false;
+    state_machine->change_state("Turret");
+    return true;
+  }
+
   // ========================================================================
   // Idle State Callbacks
   // ========================================================================
@@ -84,6 +249,11 @@ namespace TurretMonkeyStateCallbacks
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
 
     if (!Turret_monkey) return;
+
+    // If we're close enough under a ceiling, snap up and become a turret
+    if (try_snap_to_nearby_ceiling(entity)) {
+      return;
+    }
 
     float current_time = Engine::Time::get_time();
 
@@ -182,67 +352,86 @@ namespace TurretMonkeyStateCallbacks
   }
 
   // ========================================================================
+  // Turret (Stuck to Wall) State Callbacks
+  // ========================================================================
+
+  inline void turret_on_enter(Engine::ECS::Entity& entity) {
+    auto* rigid = entity.get_component<Components::RigidBody>();
+    auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
+
+    // Freeze movement and disable gravity while stuck
+    if (rigid) {
+      rigid->velocity.zero();
+      rigid->use_gravity = false;
+    }
+
+    if (Turret_monkey) {
+      Turret_monkey->last_attack_time = Engine::Time::get_time();
+    }
+
+    Log::info("Turret Monkey: Entered Turret state (stuck to wall)");
+  }
+
+  inline void turret_on_update(Engine::ECS::Entity& entity) {
+    auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
+    auto* flip = entity.get_component<Components::Flip>();
+
+    if (!Turret_monkey) return;
+
+    float current_time = Engine::Time::get_time();
+
+    // Face the player while stuck
+    auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+    if (player_entity.is_valid()) {
+      auto* Turret_monkey_transform = entity.get_component<Components::Transform2D>();
+      auto* player_transform = player_entity.get_component<Components::Transform2D>();
+
+      if (Turret_monkey_transform && player_transform && flip) {
+        float dx = player_transform->position.x - Turret_monkey_transform->position.x;
+        flip->value.x = (dx > 0 ? 1.0f : -1.0f);
+      }
+    }
+
+    // Auto-fire projectiles on cooldown while in turret state
+    if (player_entity.is_valid()) {
+      auto* Turret_monkey_transform = entity.get_component<Components::Transform2D>();
+      auto* player_transform = player_entity.get_component<Components::Transform2D>();
+
+      if (Turret_monkey_transform && player_transform) {
+        float dx = player_transform->position.x - Turret_monkey_transform->position.x;
+        float distance = std::abs(dx);
+
+        if (distance < Turret_monkey->long_attack_range &&
+          (current_time - Turret_monkey->last_attack_time) >= Turret_monkey->attack_cooldown) {
+          Turret_monkey->last_attack_time = current_time;
+          fire_turret_projectile(entity);
+        }
+      }
+    }
+  }
+
+  inline void turret_on_exit(Engine::ECS::Entity& entity) {
+    auto* rigid = entity.get_component<Components::RigidBody>();
+    if (rigid) {
+      rigid->use_gravity = true;
+    }
+    Log::info("Turret Monkey: Exited Turret state (no longer stuck)");
+  }
+
+  // ========================================================================
   // Attacking State Callbacks
   // ========================================================================
 
   inline void attacking_on_enter(Engine::ECS::Entity& entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
-    auto* flip = entity.get_component<Components::Flip>();
-    auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
-    auto* transform = entity.get_component<Components::Transform2D>();
 
     // Stop moving while firing
     if (rigid) {
       rigid->velocity.x = 0.0f;
     }
 
-    // Fire a long-range projectile towards the player instead of using the body as a hitbox
-    auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
-
-    if (Turret_monkey && flip && transform && player_entity.is_valid()) {
-      // Compute spawn position slightly in front of monkey
-      float offset_x = (flip->value.x < 0.0f) ? -Turret_monkey->hitbox_offset_x : Turret_monkey->hitbox_offset_x;
-      float offset_y = Turret_monkey->hitbox_offset_y;
-
-      float spawn_x = transform->position.x + offset_x;
-      float spawn_y = transform->position.y + offset_y;
-
-      // Decide horizontal direction based on facing
-      float dir_x = (flip->value.x < 0.0f) ? -1.0f : 1.0f;
-      const float projectile_speed = 900.0f; // Tunable projectile speed
-
-      const float projectile_width = 50.0f;
-      const float projectile_height = 50.0f;
-
-      //projectile entity
-      auto projectile = Engine::ECS::create_entity()
-        .add_component<Components::Transform2D>(spawn_x, spawn_y, 0.0f, projectile_width, projectile_height)
-        .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-        .add_component<Components::Texture>(Engine::Resources::load_texture("images/banana.png"))
-        .add_component<Components::RigidBody>(false, false) // Dynamic, no gravity for straight shot
-        .add_component<Components::BoxCollider>(projectile_width, projectile_height, false)
-        .add_component<Components::Attack>(Turret_monkey->damage)
-        .add_component<Components::Lifetime>(2.0f) // Despawn after a short time
-        .remove_from_layer("default")
-        .add_to_layer("effect")
-        .add_to_layer("damage_player");
-
-      // Set projectile velocity
-      if (auto* proj_rigid = projectile.get_component<Components::RigidBody>()) {
-        proj_rigid->velocity.x = dir_x * projectile_speed;
-        // Constant spin (degrees per second)
-        proj_rigid->angular_velocity = 360.0f;
-      }
-
-      // Configure knockback to push the player away and slightly upwards
-      if (auto* attack = projectile.get_component<Components::Attack>()) {
-        attack->knockback = Turret_monkey->knockback;
-        if (dir_x < 0.0f) {
-          attack->knockback.x = -attack->knockback.x;
-        }
-        attack->knockback.y = -std::abs(attack->knockback.y);
-      }
-    }
+    // Fire a long-range projectile towards the player
+    fire_turret_projectile(entity);
 
     Log::info("Turret Monkey: Entered Attacking state (firing projectile)");
   }
@@ -274,7 +463,11 @@ namespace TurretMonkeyStateCallbacks
 
 
   inline void hit_on_enter(Engine::ECS::Entity& entity) {
-    (void)entity; // Suppress unused parameter warning
+    auto* rigid = entity.get_component<Components::RigidBody>();
+    if (rigid) {
+      // Ensure gravity is turned back on when we get hit
+      rigid->use_gravity = true;
+    }
     Log::info("tURRET Monkey: Stunned!");
   }
 
@@ -320,7 +513,7 @@ namespace TurretMonkeyStateCallbacks
   }
 
   inline void hit_on_exit(Engine::ECS::Entity& entity) {
-    // Cleanup: ensure parent is removed (safety check)
+    // removes paretn component on exit
     if (entity.has_component<Components::Parent>()) {
       entity.remove_component<Components::Parent>();
     }
@@ -359,6 +552,9 @@ REGISTER_FUNCTION(Turret_monkey_windup_update, void(Engine::ECS::Entity&), Turre
 REGISTER_FUNCTION(Turret_monkey_attacking_enter, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::attacking_on_enter)
 REGISTER_FUNCTION(Turret_monkey_attacking_update, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::attacking_on_update)
 REGISTER_FUNCTION(Turret_monkey_attacking_exit, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::attacking_on_exit)
+REGISTER_FUNCTION(Turret_monkey_turret_enter, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::turret_on_enter)
+REGISTER_FUNCTION(Turret_monkey_turret_update, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::turret_on_update)
+REGISTER_FUNCTION(Turret_monkey_turret_exit, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::turret_on_exit)
 REGISTER_FUNCTION(Turret_monkey_hit_enter, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::hit_on_enter)
 REGISTER_FUNCTION(Turret_monkey_hit_update, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::hit_on_update)
 REGISTER_FUNCTION(Turret_monkey_hit_exit, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::hit_on_exit)
