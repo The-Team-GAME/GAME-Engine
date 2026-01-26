@@ -189,38 +189,62 @@ namespace TurretMonkeyStateCallbacks
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
-    // auto* transform = entity.get_component<Components::Transform2D>();
+    auto* transform = entity.get_component<Components::Transform2D>();
 
-    //if (rigid && flip && Turret_monkey && rigid->on_ground) {
-    //  // Throw monkey forward based on facing direction
-    //  rigid->velocity.x = (flip->value.x > 0 ? Turret_monkey->leap_speed : -Turret_monkey->leap_speed);
-    //  // Add upward velocity for a leap effect
-    //  rigid->velocity.y = -Turret_monkey->leap_height; // Negative is up
-    //}
-
-    // Make the monkey itself the hitbox
-    if (Turret_monkey && flip) {
-      // Add Attack component to the monkey
-      // Note: We use the monkey's own collider for the attack hitbox now
-      entity.add_component<Components::Attack>(Turret_monkey->damage);
-      auto* attack = entity.get_component<Components::Attack>();
-
-      if (attack) {
-        // Apply knockback direction based on facing
-        attack->knockback = Turret_monkey->knockback;
-        if (flip->value.x < 0) {
-          attack->knockback.x = -attack->knockback.x;
-        }
-        // Knockback Y is always positive (up) in our config, but physics needs negative for up
-        attack->knockback.y = -std::abs(attack->knockback.y);
-      }
-
-      // Add to damage_player layer so it collides with player
-      // We KEEP the enemy layer so it still collides with ground
-      entity.add_to_layer("damage_player");
+    // Stop moving while firing
+    if (rigid) {
+      rigid->velocity.x = 0.0f;
     }
 
-    Log::info("Turret Monkey: Entered Attacking state");
+    // Fire a long-range projectile towards the player instead of using the body as a hitbox
+    auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+
+    if (Turret_monkey && flip && transform && player_entity.is_valid()) {
+      // Compute spawn position slightly in front of monkey
+      float offset_x = (flip->value.x < 0.0f) ? -Turret_monkey->hitbox_offset_x : Turret_monkey->hitbox_offset_x;
+      float offset_y = Turret_monkey->hitbox_offset_y;
+
+      float spawn_x = transform->position.x + offset_x;
+      float spawn_y = transform->position.y + offset_y;
+
+      // Decide horizontal direction based on facing
+      float dir_x = (flip->value.x < 0.0f) ? -1.0f : 1.0f;
+      const float projectile_speed = 900.0f; // Tunable projectile speed
+
+      const float projectile_width = 50.0f;
+      const float projectile_height = 50.0f;
+
+      //projectile entity
+      auto projectile = Engine::ECS::create_entity()
+        .add_component<Components::Transform2D>(spawn_x, spawn_y, 0.0f, projectile_width, projectile_height)
+        .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+        .add_component<Components::Texture>(Engine::Resources::load_texture("images/banana.png"))
+        .add_component<Components::RigidBody>(false, false) // Dynamic, no gravity for straight shot
+        .add_component<Components::BoxCollider>(projectile_width, projectile_height, false)
+        .add_component<Components::Attack>(Turret_monkey->damage)
+        .add_component<Components::Lifetime>(2.0f) // Despawn after a short time
+        .remove_from_layer("default")
+        .add_to_layer("effect")
+        .add_to_layer("damage_player");
+
+      // Set projectile velocity
+      if (auto* proj_rigid = projectile.get_component<Components::RigidBody>()) {
+        proj_rigid->velocity.x = dir_x * projectile_speed;
+        // Constant spin (degrees per second)
+        proj_rigid->angular_velocity = 360.0f;
+      }
+
+      // Configure knockback to push the player away and slightly upwards
+      if (auto* attack = projectile.get_component<Components::Attack>()) {
+        attack->knockback = Turret_monkey->knockback;
+        if (dir_x < 0.0f) {
+          attack->knockback.x = -attack->knockback.x;
+        }
+        attack->knockback.y = -std::abs(attack->knockback.y);
+      }
+    }
+
+    Log::info("Turret Monkey: Entered Attacking state (firing projectile)");
   }
 
 
@@ -271,7 +295,7 @@ namespace TurretMonkeyStateCallbacks
       }
 
       // Apply knockback momentum from Player struct, scaled by TurretMonkey mass
-      float mass = 20.0f; // Reference mass (matches default TurretMonkey mass)
+      float mass = 20.0f; // Reference mass
       if (Turret_monkey) {
         mass = Turret_monkey->mass;
       }

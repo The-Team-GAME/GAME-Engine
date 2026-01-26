@@ -176,8 +176,8 @@ namespace Components
     Math::Vec2D knockback = Math::Vec2D(500.0f, -100.0f);
 
     // Detection ranges
-    float detection_range = 1000.0f;
-    float long_attack_range = 800.0f;
+    float detection_range = 1200.0f;
+    float long_attack_range = 500.0f;
   };
 
 

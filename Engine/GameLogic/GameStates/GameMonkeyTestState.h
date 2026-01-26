@@ -9,7 +9,7 @@
 //
 // brief:   This file defines a an empty state, useful for testing
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
@@ -84,9 +84,28 @@ public:
     //.add_to_layer("damage_player");
 
 
-  // set friction to 0
-    player_entity.get_component<Components::BoxCollider>()->kinetic_friction = 0.8f;
-    Gamer_monkey_entity.get_component<Components::BoxCollider>()->kinetic_friction = 0.8f;
+    // Sync RigidBody mass/friction with gameplay data so knockback doesn't cause long glides
+    if (auto* player_rb = player_entity.get_component<Components::RigidBody>()) {
+      if (auto* player_comp = player_entity.get_component<Components::Player>()) {
+        player_rb->mass = player_comp->mass;
+      }
+      player_rb->kinetic_coefficient = 3.0f; // Stronger ground friction for faster stopping
+    }
+
+    if (auto* gm_rb = Gamer_monkey_entity.get_component<Components::RigidBody>()) {
+      if (auto* gm_comp = Gamer_monkey_entity.get_component<Components::GamerMonkey>()) {
+        gm_rb->mass = gm_comp->mass;
+      }
+      gm_rb->kinetic_coefficient = 3.0f; // Match player friction behaviour
+    }
+
+    // Collider friction value (used by some tools; 1 = no loss, 0 = full loss)
+    if (auto* player_col = player_entity.get_component<Components::BoxCollider>()) {
+      player_col->kinetic_friction = 0.8f;
+    }
+    if (auto* gm_col = Gamer_monkey_entity.get_component<Components::BoxCollider>()) {
+      gm_col->kinetic_friction = 0.8f;
+    }
 
     Log::info("\n=== State Machine Test Level Loaded ===");
     Log::info("Controls (Sidescrolling Platform Game):");
