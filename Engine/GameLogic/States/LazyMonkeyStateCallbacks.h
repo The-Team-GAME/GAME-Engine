@@ -319,8 +319,20 @@ namespace LazyMonkeyStateCallbacks
         entity.remove_component<Components::Parent>();
       }
 
-      // Apply knockback momentum from Player struct
-      rigid->velocity = pending_knockback->knockback;
+      // Apply knockback momentum from Player struct, scaled by LazyMonkey mass
+      float mass = 40.0f; // Reference mass (matches default LazyMonkey mass)
+      if (lazy_monkey) {
+        mass = lazy_monkey->mass;
+      }
+      if (mass < 1.0f) {
+        mass = 1.0f;
+      }
+
+      const float reference_mass = 40.0f;
+      float scale = reference_mass / mass;
+      Math::Vec2D scaled_knockback = pending_knockback->knockback * scale;
+
+      rigid->velocity = scaled_knockback;
 
       // Remove the pending knockback component (one-time use)
       entity.remove_component<Components::PendingKnockback>();

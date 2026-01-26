@@ -33,8 +33,11 @@ namespace Components
       float dash_speed = 1000.0f;
       int damage = 10;
       float heartrate_cost = 5.0f;
-      Math::Vec2D knockback = Math::Vec2D(300.0f, 0.f);
+      Math::Vec2D knockback = Math::Vec2D(300.0f, -50.0f);
     };
+
+    //mass
+    float mass = 50.0f;
 
     // Movement speeds
     float walk_speed = 600.0f;
@@ -50,7 +53,7 @@ namespace Components
       1000.0f,                     // dash_speed
       10,                          // damage
       5.0f,                        // heartrate_cost
-      Math::Vec2D(300.0f, 0.f)  // knockback
+      Math::Vec2D(300.0f, -50.0f)  // knockback
     };
 
     AttackData attack2 = {
@@ -61,7 +64,7 @@ namespace Components
       1000.0f,                     // dash_speed
       15,                          // damage
       5.0f,                        // heartrate_cost
-      Math::Vec2D(300.0f, 0.f)  // knockback
+      Math::Vec2D(300.0f, -50.0f)  // knockback
     };
 
     AttackData attack3 = {
@@ -72,7 +75,7 @@ namespace Components
       2000.0f,                     // dash_speed
       25,                          // damage
       8.0f,                        // heartrate_cost
-      Math::Vec2D(3000.0f, 0.f)// knockback
+      Math::Vec2D(3000.0f, -100.0f)// knockback
     };
   };
 
@@ -82,6 +85,9 @@ namespace Components
 
   struct LazyMonkey
   {
+    //mass
+    float mass = 50.0f;
+
     // Movement speeds
     float chase_speed = 100.0f;
 
@@ -98,7 +104,7 @@ namespace Components
     float hitbox_width = 120.0f;
     float hitbox_height = 128.0f;
     int damage = 15;
-    Math::Vec2D knockback = Math::Vec2D(500.0f, 0.f);
+    Math::Vec2D knockback = Math::Vec2D(500.0f, -100.0f);
 
     // Detection ranges
     float detection_range = 300.0f;
@@ -108,6 +114,9 @@ namespace Components
 
   struct GamerMonkey
   {
+    //mass
+    float mass = 100.0f;
+
     // Movement speeds
     float chase_speed = 100.0f;
 
@@ -147,6 +156,9 @@ namespace Components
 
   struct TurretMonkey
   {
+    //mass
+    float mass = 30.0f;
+
     // Movement speeds
     float chase_speed = 100.0f;
 

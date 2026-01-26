@@ -71,6 +71,7 @@ namespace TurretMonkeyStateCallbacks
   // ========================================================================
   // Chasing State Callbacks
   // ========================================================================
+
   inline void chasing_on_enter([[maybe_unused]] Engine::ECS::Entity& entity) {
     Log::info("Turret Monkey: Entered Chasing state");
   }
@@ -108,6 +109,17 @@ namespace TurretMonkeyStateCallbacks
         else {
           // Stop moving when close enough to attack
           rigid->velocity.x = 0.0f;
+        }
+
+        // Return to idle if player is far away
+        if (distance > Turret_monkey->detection_range) {
+          state_machine->change_state("Idle");
+        }
+
+        // If close enough and cooldown has elapsed, go to windup before attacking
+        if (distance < Turret_monkey->long_attack_range &&
+          (current_time - Turret_monkey->last_attack_time) >= Turret_monkey->attack_cooldown) {
+          state_machine->change_state("Windup");
         }
       }
     }
@@ -258,8 +270,20 @@ namespace TurretMonkeyStateCallbacks
         entity.remove_component<Components::Parent>();
       }
 
-      // Apply knockback momentum from Player struct
-      rigid->velocity = pending_knockback->knockback;
+      // Apply knockback momentum from Player struct, scaled by TurretMonkey mass
+      float mass = 20.0f; // Reference mass (matches default TurretMonkey mass)
+      if (Turret_monkey) {
+        mass = Turret_monkey->mass;
+      }
+      if (mass < 1.0f) {
+        mass = 1.0f;
+      }
+
+      const float reference_mass = 20.0f;
+      float scale = reference_mass / mass;
+      Math::Vec2D scaled_knockback = pending_knockback->knockback * scale;
+
+      rigid->velocity = scaled_knockback;
 
       // Remove the pending knockback component (one-time use)
       entity.remove_component<Components::PendingKnockback>();

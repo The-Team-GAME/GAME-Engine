@@ -192,6 +192,7 @@ void RunGame()
       auto* attack = attack_entity.get_component<Components::Attack>();
       auto* heartrate = player_entity.get_component<Components::Heartrate>();
       auto* rigid = player_entity.get_component<Components::RigidBody>();
+      auto* player_comp = player_entity.get_component<Components::Player>();
       // auto* player_transform = player_entity.get_component<Components::Transform2D>();
       // auto* attack_transform = attack_entity.get_component<Components::Transform2D>();
 
@@ -211,9 +212,22 @@ void RunGame()
         heartrate->increase(static_cast<float>(damage));
         Log::info("Player took {} damage! Heartrate: {}", damage, heartrate->heartrate);
 
-        // Apply knockback (direction is already baked into attack->knockback from the attacker)
-        rigid->velocity.x = attack->knockback.x;
-        rigid->velocity.y = attack->knockback.y; // Usually negative for upward knockback
+        // Apply knockback scaled by gameplay mass so heavier players move less
+        float mass = 50.0f; // Reference mass (matches default Player mass)
+        if (player_comp) {
+          mass = player_comp->mass;
+        }
+        if (mass < 1.0f) {
+          mass = 1.0f;
+        }
+
+        const float reference_mass = 50.0f;
+        float scale = reference_mass / mass;
+        Math::Vec2D scaled_knockback = attack->knockback * scale;
+
+        // Direction is already baked into attack->knockback from the attacker
+        rigid->velocity.x = scaled_knockback.x;
+        rigid->velocity.y = scaled_knockback.y; // Usually negative for upward knockback
 
         Log::info("Player knocked back! Velocity: ({}, {})", rigid->velocity.x, rigid->velocity.y);
       }

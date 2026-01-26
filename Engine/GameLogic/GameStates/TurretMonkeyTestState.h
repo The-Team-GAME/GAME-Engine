@@ -9,7 +9,7 @@
 //
 // brief:   This file defines a an empty state, useful for testing
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
@@ -70,12 +70,12 @@ public:
       .add_component<Components::Transform2D>(576.0f, 24.0f, 0.0f, TurretMonkeyStates::WIDTH, TurretMonkeyStates::HEIGHT)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/TurretMonkeySpriteSheets/Turret.png"))
       .add_component<Components::TextureAtlas>(64, 64, 1, 24, 4)
-      .add_component<Components::Animation>(4, 0.15f)
+      .add_component<Components::Animation>(4, 0.1f)
       .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
       .add_component<Components::Flip>(1.0f, 1.0f) // Start facing right
       .add_component<Components::RigidBody>(Components::RigidBody(false, true))
       .add_component<Components::BoxCollider>(TurretMonkeyStates::WIDTH, TurretMonkeyStates::HEIGHT, false)
-      .add_component<Components::EnemyHealth>(300, 300)
+      .add_component<Components::EnemyHealth>(400, 400)
       .add_component<Components::Attack>(10, Math::Vec2D(900.0f, -300.0f), true, 1.0f)
       .add_component<Components::EnemyHealthBarRect>()
       .add_component<Components::StateMachine>(TurretMonkeyStates::create_state_machine())
@@ -83,10 +83,24 @@ public:
       .add_to_layer("enemy");
     //.add_to_layer("damage_player");
 
+    // Tune physics so player and monkey don't glide
+    if (auto* player_rb = player_entity.get_component<Components::RigidBody>()) {
+      player_rb->mass = 2.0f;
+      player_rb->kinetic_coefficient = 3.0f;  // Stronger ground friction for faster stopping
+    }
 
-  // set friction to 0
-    player_entity.get_component<Components::BoxCollider>()->kinetic_friction = 0.8f;
-    Turret_monkey_entity.get_component<Components::BoxCollider>()->kinetic_friction = 0.8f;
+    if (auto* monkey_rb = Turret_monkey_entity.get_component<Components::RigidBody>()) {
+      monkey_rb->mass = 2.0f;
+      monkey_rb->kinetic_coefficient = 3.0f;  // Match player friction behaviour
+    }
+
+    // Collider friction value (used by some tools; 1 = no loss, 0 = full loss)
+    if (auto* player_col = player_entity.get_component<Components::BoxCollider>()) {
+      player_col->kinetic_friction = 0.8f;
+    }
+    if (auto* monkey_col = Turret_monkey_entity.get_component<Components::BoxCollider>()) {
+      monkey_col->kinetic_friction = 0.8f;
+    }
 
     Log::info("\n=== State Machine Test Level Loaded ===");
     Log::info("Controls (Sidescrolling Platform Game):");
