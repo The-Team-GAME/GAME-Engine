@@ -1,0 +1,95 @@
+{
+    "data": {
+        "components": [
+            {
+                "data": {
+                    "aabb": {
+                        "half_height": 10.0,
+                        "half_width": 10.0,
+                        "pos": {
+                            "x": 742.1376953125,
+                            "y": 840.0944213867188
+                        }
+                    },
+                    "height": 20.0,
+                    "kinetic_friction": 1.0,
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "polygon": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "rotation": 0.0,
+                        "vertices": []
+                    },
+                    "radius": 4.621482335343247e-42,
+                    "resolve_collisions": false,
+                    "type": "AABB",
+                    "width": 20.0
+                },
+                "type": "Components::BoxCollider"
+            },
+            {
+                "data": {
+                    "a": 1.0,
+                    "b": 1.0,
+                    "g": 0.20000000298023224,
+                    "r": 0.20000000298023224
+                },
+                "type": "Components::Color"
+            },
+            {
+                "data": {
+                    "path": "UNIT_RECT"
+                },
+                "type": "Components::Texture"
+            },
+            {
+                "data": {
+                    "position": {
+                        "x": 742.1376953125,
+                        "y": 840.0944213867188
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 20.0,
+                        "y": 20.0
+                    }
+                },
+                "type": "Components::Transform2D"
+            },
+            {
+                "data": {
+                    "acceleration": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "force": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "is_jumping": false,
+                    "is_static": false,
+                    "mass": 1.0,
+                    "on_ground": true,
+                    "terminal_velocity": 1000.0,
+                    "use_gravity": true,
+                    "velocity": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "type": "Components::RigidBody"
+            }
+        ],
+        "filepath": "",
+        "layers": [
+            "default"
+        ],
+        "uuid": "01550635-9993-40499-8d90-87bfae277466"
+    },
+    "dataType": "Prefab"
+}

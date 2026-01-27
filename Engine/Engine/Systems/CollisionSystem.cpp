@@ -146,7 +146,7 @@ void col2D::update()
         {
           rigid->on_ground = true;
           // We will do friction and normal force in here because we want the player to just slide off the wall
-          f32 weight_magnitude = rigid->mass * phy2D::get_gravity();
+          f32 weight_magnitude = rigid->gravity.get_magnitude() * rigid->mass;
           // cos x (angle of slope) = adjacent (weight) / hypotenuse(normal)
           f32 normal_magnitude = weight_magnitude * cos_of_angle_of_slope;
           Vec2D normal_force = normal_dir_vtr * normal_magnitude;
@@ -183,10 +183,6 @@ void col2D::update()
           }
          
           rigid->force += normal_force;
-          if (rigid->force.get_magnitude_sq() > 0.f)
-          {
-            std::cout << rigid->force << std::endl;
-          }
         }
 #if 0
         f32 penetration = collision.get_penetration();

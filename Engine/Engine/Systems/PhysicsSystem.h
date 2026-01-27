@@ -66,8 +66,6 @@ namespace Engine {
       static Vec2D get_normal_force(
         Components::RigidBody const& rigid,
         CollisionResult const& collision );
-      
-      static f32 get_gravity();
 
       static f32 get_slope_angle_threshold();
 

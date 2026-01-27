@@ -51,11 +51,6 @@ f32 phy2D::get_slope_radian_threshold()
   return slope_radian_threshold;
 }
 
-f32 phy2D::get_gravity()
-{
-  return gravity_acc;
-}
-
 phy2D::Physics2DSystem() {
   require_components<Components::Transform2D, Components::RigidBody>();
 } // Components::BoxCollider
@@ -82,8 +77,7 @@ void phy2D::update_entity(ECS::Entity& entity)
   // We account for the gravitational forces here so that the update_kinematics function can be used for post physics as well
   if (rigid->use_gravity)
   {
-    Vec2D gravity_force = Vec2D(0.f, 1.f) * gravity_acc * rigid->mass;
-    rigid->force += gravity_force;
+    rigid->force += rigid->gravity;
     //std::cout << "Gravity Force: " << gravity_force << std::endl;
   }
 
