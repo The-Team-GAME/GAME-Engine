@@ -43,8 +43,20 @@ namespace TurretMonkeyStateCallbacks
     float spawn_x = transform->position.x + offset_x;
     float spawn_y = transform->position.y + offset_y;
 
-    // Decide horizontal direction based on facing
-    float dir_x = (flip->value.x < 0.0f) ? -1.0f : 1.0f;
+    // Get target position (player) and build a full 2D direction
+    auto* player_transform = player_entity.get_component<Components::Transform2D>();
+    Math::Vec2D dir(1.0f, 0.0f);
+    if (player_transform) {
+      Math::Vec2D to_player = player_transform->position - Math::Vec2D(spawn_x, spawn_y);
+      if (to_player.get_magnitude() > 0.001f) {
+        dir = Math::normalise_vector(to_player);
+      }
+      else {
+        dir.x = (flip->value.x < 0.0f) ? -1.0f : 1.0f;
+        dir.y = 0.0f;
+      }
+    }
+
     const float projectile_speed = 300.0f;
 
     const float projectile_width = 70.0f;
@@ -63,126 +75,128 @@ namespace TurretMonkeyStateCallbacks
       .add_to_layer("damage_player");
 
     if (auto* proj_rigid = projectile.get_component<Components::RigidBody>()) {
-      proj_rigid->velocity.x = dir_x * projectile_speed;
+      proj_rigid->velocity = dir * projectile_speed;
       proj_rigid->angular_velocity = 360.0f; // Constant spin
     }
 
     if (auto* attack = projectile.get_component<Components::Attack>()) {
-      attack->knockback = Turret_monkey->knockback;
-      if (dir_x < 0.0f) {
-        attack->knockback.x = -attack->knockback.x;
+      // Scale knockback magnitude to follow the same 360-degree direction
+      Math::Vec2D base = Turret_monkey->knockback;
+      float mag = base.get_magnitude();
+      if (mag <= 0.0f) {
+        mag = 600.0f; // sensible default if not configured
       }
-      attack->knockback.y = -std::abs(attack->knockback.y);
+      attack->knockback = dir * mag;
     }
   }
 
   
-  // ========================================================================
-  // Ceiling Snapper
-  // ========================================================================
+  //// ========================================================================
+  //// Ceiling Snapper
+  //// ========================================================================
 
-  inline bool is_touching_ceiling(Engine::ECS::Entity& entity) {
-    auto* monkey_collider = entity.get_component<Components::BoxCollider>();
-    if (!monkey_collider) {
-      return false;
-    }
+  //inline bool is_touching_ceiling(Engine::ECS::Entity& entity) {
+  //  auto* monkey_collider = entity.get_component<Components::BoxCollider>();
+  //  if (!monkey_collider) {
+  //    return false;
+  //  }
 
-    bool touching_ceiling = false;
+  //  bool touching_ceiling = false;
 
-    // Scan all tile colliders in the world and see if any overlap the monkey
-    Engine::ECS::for_each_entity_with<Components::TileCollider, Components::BoxCollider>(
-      [&](Engine::ECS::Entity tile_entity) {
-        if (touching_ceiling) {
-          return;
-        }
+  //  // Scan all tile colliders in the world and see if any overlap the monkey
+  //  Engine::ECS::for_each_entity_with<Components::TileCollider, Components::BoxCollider>(
+  //    [&](Engine::ECS::Entity tile_entity) {
+  //      if (touching_ceiling) {
+  //        return;
+  //      }
 
-        auto* tile_collider = tile_entity.get_component<Components::BoxCollider>();
-        if (!tile_collider) {
-          return;
-        }
+  //      auto* tile_collider = tile_entity.get_component<Components::BoxCollider>();
+  //      if (!tile_collider) {
+  //        return;
+  //      }
 
-        // Basic AABB overlap check
-        if (!Engine::Systems::Collision2DSystem::rect_rect_coll(*monkey_collider, *tile_collider)) {
-          return;
-        }
+  //      // Basic AABB overlap check
+  //      if (!Engine::Systems::Collision2DSystem::rect_rect_coll(*monkey_collider, *tile_collider)) {
+  //        return;
+  //      }
 
-        // Treat only tiles whose center is above the monkey as "ceiling" tiles
-        if (tile_collider->aabb.pos.y < monkey_collider->aabb.pos.y) {
-          touching_ceiling = true;
-        }
-      });
+  //      // Treat only tiles whose center is above the monkey as "ceiling" tiles
+  //      if (tile_collider->aabb.pos.y < monkey_collider->aabb.pos.y) {
+  //        touching_ceiling = true;
+  //      }
+  //    });
 
-    return touching_ceiling;
-  }
+  //  return touching_ceiling;
+  //}
 
-  inline bool try_snap_to_nearby_ceiling(Engine::ECS::Entity& entity) {
-    auto* transform = entity.get_component<Components::Transform2D>();
-    auto* rigid = entity.get_component<Components::RigidBody>();
-    auto* box = entity.get_component<Components::BoxCollider>();
-    auto* state_machine = entity.get_component<Components::StateMachine>();
+  //inline bool try_snap_to_nearby_ceiling(Engine::ECS::Entity& entity) {
+  //  auto* transform = entity.get_component<Components::Transform2D>();
+  //  auto* rigid = entity.get_component<Components::RigidBody>();
+  //  auto* box = entity.get_component<Components::BoxCollider>();
+  //  auto* state_machine = entity.get_component<Components::StateMachine>();
 
-    if (!transform || !rigid || !box || !state_machine) {
-      return false;
-    }
+  //  if (!transform || !rigid || !box || !state_machine) {
+  //    return false;
+  //  }
 
-    const float snap_vertical_threshold = 20.0f;   // how close to ceiling before snapping
-    const float snap_horizontal_margin = 5.0f;    // small extra horizontal leeway
+  //  const float snap_vertical_threshold = 20.0f;   // how close to ceiling before snapping
+  //  const float snap_horizontal_margin = 5.0f;    // small extra horizontal leeway
 
-    Components::BoxCollider* best_tile = nullptr;
-    float best_gap = snap_vertical_threshold;
+  //  Components::BoxCollider* best_tile = nullptr;
+  //  float best_gap = snap_vertical_threshold;
 
-    float monkey_half_w = box->width * 0.5f;
-    float monkey_half_h = box->height * 0.5f;
-    float monkey_center_x = transform->position.x;
-    float monkey_top = transform->position.y - monkey_half_h;
+  //  float monkey_half_w = box->width * 0.5f;
+  //  float monkey_half_h = box->height * 0.5f;
+  //  float monkey_center_x = transform->position.x;
+  //  float monkey_top = transform->position.y - monkey_half_h;
 
-    Engine::ECS::for_each_entity_with<Components::TileCollider, Components::BoxCollider>(
-      [&](Engine::ECS::Entity tile_entity) {
-        auto* tile_collider = tile_entity.get_component<Components::BoxCollider>();
-        if (!tile_collider) {
-          return;
-        }
+  //  Engine::ECS::for_each_entity_with<Components::TileCollider, Components::BoxCollider>(
+  //    [&](Engine::ECS::Entity tile_entity) {
+  //      auto* tile_collider = tile_entity.get_component<Components::BoxCollider>();
+  //      if (!tile_collider) {
+  //        return;
+  //      }
 
-        float tile_half_w = tile_collider->aabb.half_width;
-        float tile_half_h = tile_collider->aabb.half_height;
-        float tile_center_x = tile_collider->aabb.pos.x;
-        float tile_center_y = tile_collider->aabb.pos.y;
+  //      float tile_half_w = tile_collider->aabb.half_width;
+  //      float tile_half_h = tile_collider->aabb.half_height;
+  //      float tile_center_x = tile_collider->aabb.pos.x;
+  //      float tile_center_y = tile_collider->aabb.pos.y;
 
-        // Only consider tiles above the monkey
-        if (tile_center_y >= transform->position.y) {
-          return;
-        }
+  //      // Only consider tiles above the monkey
+  //      if (tile_center_y >= transform->position.y) {
+  //        return;
+  //      }
 
-        // Require reasonable horizontal alignment under the tile
-        float horizontal_dist = std::abs(tile_center_x - monkey_center_x);
-        float allowed_horizontal = tile_half_w + monkey_half_w + snap_horizontal_margin;
-        if (horizontal_dist > allowed_horizontal) {
-          return;
-        }
+  //      // Require reasonable horizontal alignment under the tile
+  //      float horizontal_dist = std::abs(tile_center_x - monkey_center_x);
+  //      float allowed_horizontal = tile_half_w + monkey_half_w + snap_horizontal_margin;
+  //      if (horizontal_dist > allowed_horizontal) {
+  //        return;
+  //      }
 
-        // Distance between monkey top and tile bottom
-        float tile_bottom = tile_center_y + tile_half_h;
-        float gap = std::abs(tile_bottom - monkey_top);
-        if (gap < best_gap) {
-          best_gap = gap;
-          best_tile = tile_collider;
-        }
-      });
+  //      // Distance between monkey top and tile bottom
+  //      float tile_bottom = tile_center_y + tile_half_h;
+  //      float gap = std::abs(tile_bottom - monkey_top);
+  //      if (gap < best_gap) {
+  //        best_gap = gap;
+  //        best_tile = tile_collider;
+  //      }
+  //    });
 
-    if (!best_tile) {
-      return false;
-    }
+  //  if (!best_tile) {
+  //    return false;
+  //  }
 
-    // Snap monkey so its top touches the tile's bottom
-    float tile_bottom = best_tile->aabb.pos.y + best_tile->aabb.half_height;
-    float new_center_y = tile_bottom + monkey_half_h;
-    transform->position.y = new_center_y;
+  //  // Snap monkey so its top touches the tile's bottom
+  //  float tile_bottom = best_tile->aabb.pos.y + best_tile->aabb.half_height;
+  //  float new_center_y = tile_bottom + monkey_half_h;
+  //  transform->position.y = new_center_y;
 
-    rigid->velocity.zero();
-    rigid->use_gravity = false;
-    state_machine->change_state("Turret");
-    return true;
-  }
+  //  rigid->velocity.zero();
+  //  rigid->use_gravity = false;
+  //  state_machine->change_state("Turret");
+  //  return true;
+  //}
 
   // ========================================================================
   // Idle State Callbacks
@@ -250,10 +264,10 @@ namespace TurretMonkeyStateCallbacks
 
     if (!Turret_monkey) return;
 
-    // If we're close enough under a ceiling, snap up and become a turret
-    if (try_snap_to_nearby_ceiling(entity)) {
-      return;
-    }
+    //// If we're close enough under a ceiling, snap up and become a turret
+    //if (try_snap_to_nearby_ceiling(entity)) {
+    //  return;
+    //}
 
     float current_time = Engine::Time::get_time();
 
@@ -363,6 +377,7 @@ namespace TurretMonkeyStateCallbacks
     if (rigid) {
       rigid->velocity.zero();
       rigid->use_gravity = false;
+
     }
 
     if (Turret_monkey) {
@@ -380,7 +395,7 @@ namespace TurretMonkeyStateCallbacks
 
     float current_time = Engine::Time::get_time();
 
-    // Face the player while stuck
+    // Face the player while stuck()
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
     if (player_entity.is_valid()) {
       auto* Turret_monkey_transform = entity.get_component<Components::Transform2D>();
