@@ -32,6 +32,7 @@ namespace Components
 
     f32 mass = 1.0f; // Mass in kg
     Vec2D force;
+    Vec2D force_view; // This is for debugging purposes
     Vec2D acceleration;
     Vec2D velocity; // Velocity in units per second
     Vec2D gravity{ 0.f, 1000.f };
@@ -75,4 +76,4 @@ namespace Components
   };
 }
 
-REGISTER_COMPONENT(Components::RigidBody, mass, force, acceleration, velocity, terminal_velocity, use_gravity, is_static, on_ground, is_jumping)
+REGISTER_COMPONENT(Components::RigidBody, mass, force_view, acceleration, velocity, terminal_velocity, use_gravity, is_static, on_ground, is_jumping)

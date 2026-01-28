@@ -83,7 +83,7 @@ void col2D::update()
 
     // This is because the entity can collide with more than one hard surface (floor and wall corner) in one frame, so we have to identify them
     Vec2D best_ground_normal;
-    f32 best_ground_penetration = 0;
+    //f32 best_ground_penetration = 0;
 
     // Check collision only with nearby entities
     for (ECS::Entity& other : nearby)
