@@ -30,7 +30,14 @@ namespace PlayerStateCallbacks
     Components::Flip* flip = entity.get_component<Components::Flip>();
 
     // resettng the state
-    state_machine->change_state("Idle");
+    if (state_machine->current_state_name == "Walking")
+    {
+      //empty by deisgn
+    }
+    else
+    {
+      state_machine->change_state("Idle");
+    }
     // put this first because we need to reset the flag if possible
     if (Input::is_released(KeyCode::Space) && player_rigid->is_jumping)
     {
@@ -95,13 +102,13 @@ namespace PlayerStateCallbacks
 
     if (!player_comp) return;
     rigid->force.x += player_comp->walk_speed * flip->value.x;
-    
+    // we set an exit criteria for the walking state instead of reseting it every frame as the animation sequence needs the state to be constant for this to work
+    if (!Input::is_held(KeyCode::A) && !Input::is_held(KeyCode::D))
+    {
+      Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
+      state_machine->change_state("Idle");
+    }
     take_input(entity);
-    //if (!Input::is_held(KeyCode::A) && !Input::is_held(KeyCode::D))
-    //{
-    //  Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
-    //  state_machine->change_state("Idle");
-    //}
   }
 
   inline void walking_on_exit([[maybe_unused]] Engine::ECS::Entity& entity)
@@ -116,10 +123,6 @@ namespace PlayerStateCallbacks
   inline void jumping_on_enter(Engine::ECS::Entity& entity) 
   {
     Log::info("Player: Entered Jumping state");
-  }
-
-  inline void jumping_on_update(Engine::ECS::Entity& entity) 
-  {
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     Components::Player* player_comp = entity.get_component<Components::Player>();
 
@@ -129,6 +132,10 @@ namespace PlayerStateCallbacks
       rigid->on_ground = false;
       rigid->force.y += player_comp->jump_force;
     }
+  }
+
+  inline void jumping_on_update(Engine::ECS::Entity& entity) 
+  {
     take_input(entity);
   }
 
