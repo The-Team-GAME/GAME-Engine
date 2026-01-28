@@ -3,37 +3,6 @@
         "components": [
             {
                 "data": {
-                    "aabb": {
-                        "half_height": 45.839599609375,
-                        "half_width": 20.47762680053711,
-                        "pos": {
-                            "x": 238.7253875732422,
-                            "y": 786.4381713867188
-                        }
-                    },
-                    "height": 91.67919921875,
-                    "kinetic_friction": 0.800000011920929,
-                    "offset": {
-                        "x": 0.000049591064453125,
-                        "y": 18.160400390625
-                    },
-                    "polygon": {
-                        "position": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "rotation": 0.0,
-                        "vertices": []
-                    },
-                    "radius": 1.401298464324817e-45,
-                    "resolve_collisions": false,
-                    "type": "AABB",
-                    "width": 40.95525360107422
-                },
-                "type": "Components::BoxCollider"
-            },
-            {
-                "data": {
                     "drawIndex": 9,
                     "tex_coords_list": [
                         [
@@ -474,6 +443,37 @@
             },
             {
                 "data": {
+                    "aabb": {
+                        "half_height": 45.839599609375,
+                        "half_width": 20.47762680053711,
+                        "pos": {
+                            "x": 459.69580078125,
+                            "y": 722.4674072265625
+                        }
+                    },
+                    "height": 91.67919921875,
+                    "kinetic_friction": 0.9950000047683716,
+                    "offset": {
+                        "x": 0.000049591064453125,
+                        "y": 18.160400390625
+                    },
+                    "polygon": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "rotation": 0.0,
+                        "vertices": []
+                    },
+                    "radius": 1.401298464324817e-45,
+                    "resolve_collisions": false,
+                    "type": "AABB",
+                    "width": 40.95525360107422
+                },
+                "type": "Components::BoxCollider"
+            },
+            {
+                "data": {
                     "intensity": 0.0,
                     "mesh_intensity": 0.0,
                     "speed": 0.0
@@ -483,7 +483,7 @@
             {
                 "data": {
                     "value": {
-                        "x": 1.0,
+                        "x": -1.0,
                         "y": 1.0
                     }
                 },
@@ -585,7 +585,7 @@
                         0.10000000149011612
                     ],
                     "is_looping": true,
-                    "startTime": 80.95516204833984,
+                    "startTime": 470.5614929199219,
                     "totalDuration": 2.3999998569488525
                 },
                 "type": "Components::Animation"
@@ -593,8 +593,8 @@
             {
                 "data": {
                     "position": {
-                        "x": 238.725341796875,
-                        "y": 768.0
+                        "x": 459.69586181640625,
+                        "y": 704.3070068359375
                     },
                     "rotation": 0.0,
                     "scale": {
@@ -606,7 +606,7 @@
             },
             {
                 "data": {
-                    "path": "sounds/SFX/Player/Player Footstep.wav"
+                    "path": "sounds/SFX/Player/Player Jump (DJ SY Edition).wav"
                 },
                 "type": "Components::Sound"
             },
@@ -698,7 +698,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 80.95516204833984,
+                                        "startTime": 470.5614929199219,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": {
@@ -1204,7 +1204,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 80.95516204833984,
+                                        "startTime": 470.5614929199219,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": {
@@ -1429,7 +1429,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 80.95516204833984,
+                                        "startTime": 470.5614929199219,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": {
@@ -1657,7 +1657,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 80.95516204833984,
+                                        "startTime": 470.5614929199219,
                                         "totalDuration": 0.7199999094009399
                                     },
                                     "collider_data": {
@@ -1897,7 +1897,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 80.95516204833984,
+                                        "startTime": 470.5614929199219,
                                         "totalDuration": 0.559999942779541
                                     },
                                     "collider_data": {
@@ -2215,7 +2215,7 @@
                                             0.05999999865889549
                                         ],
                                         "is_looping": false,
-                                        "startTime": 80.95516204833984,
+                                        "startTime": 470.5614929199219,
                                         "totalDuration": 0.5399999618530273
                                     },
                                     "collider_data": {
@@ -2591,34 +2591,35 @@
             {
                 "data": {
                     "acceleration": {
-                        "x": -6.12323437939287e-14,
-                        "y": 1000.0
+                        "x": 0.0,
+                        "y": 0.0
                     },
-                    "angular_velocity": 0.0,
-                    "force": {
-                        "x": -6.12323437939287e-14,
-                        "y": -3.7494000395748785e-30
+                    "force_view": {
+                        "x": 0.0,
+                        "y": 0.0
                     },
                     "is_jumping": false,
                     "is_static": false,
-                    "mass": 1.0,
+                    "mass": 50.0,
                     "on_ground": true,
-                    "rotation": 0.0,
-                    "rotation_terminal_velocity": 360.0,
-                    "terminal_velocity": 1000.0,
+                    "terminal_velocity": 450.0,
                     "use_gravity": true,
                     "velocity": {
                         "x": 0.0,
-                        "y": 6.248999674126681e-32
+                        "y": 0.0
                     }
                 },
                 "type": "Components::RigidBody"
             },
             {
+                "data": null,
+                "type": "Components::Parent"
+            },
+            {
                 "data": {
                     "end_alpha": 0.0,
                     "interval": 0.05000000074505806,
-                    "last_spawn_time": 0.0,
+                    "last_spawn_time": 464.75091552734375,
                     "lifetime": 0.0,
                     "start_alpha": 0.800000011920929
                 },
@@ -2666,8 +2667,8 @@
                             "y": -100.0
                         }
                     },
-                    "jump_force": 700.0,
-                    "walk_speed": 600.0
+                    "jump_force": 1050000.0,
+                    "walk_speed": 150000.0
                 },
                 "type": "Components::Player"
             },

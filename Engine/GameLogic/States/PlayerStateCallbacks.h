@@ -52,7 +52,6 @@ namespace PlayerStateCallbacks
     }
     else if (Input::is_held(KeyCode::D) || Input::is_pressed(KeyCode::D)) //right
     {
-
       flip->value.x = 1.f;
       state_machine->change_state("Walking");
     }
@@ -85,6 +84,11 @@ namespace PlayerStateCallbacks
   inline void walking_on_enter([[maybe_unused]] Engine::ECS::Entity& entity)
   {
     Log::info("Player: Entered Walking state");
+
+  }
+
+  inline void walking_on_update(Engine::ECS::Entity& entity) 
+  {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
     auto* player_comp = entity.get_component<Components::Player>();
@@ -92,11 +96,13 @@ namespace PlayerStateCallbacks
     if (!player_comp) return;
     rigid->force.x += player_comp->walk_speed * flip->value.x;
     std::cout << rigid->force << std::endl;
-  }
-
-  inline void walking_on_update(Engine::ECS::Entity& entity) 
-  {
+    
     take_input(entity);
+    //if (!Input::is_held(KeyCode::A) && !Input::is_held(KeyCode::D))
+    //{
+    //  Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
+    //  state_machine->change_state("Idle");
+    //}
   }
 
   inline void walking_on_exit([[maybe_unused]] Engine::ECS::Entity& entity)
@@ -109,21 +115,22 @@ namespace PlayerStateCallbacks
   // ========================================================================
 
   inline void jumping_on_enter(Engine::ECS::Entity& entity) {
-    auto* rigid = entity.get_component<Components::RigidBody>();
-    auto* player_comp = entity.get_component<Components::Player>();
 
-    if (player_comp) 
-    {
-      rigid->is_jumping = true;
-      rigid->on_ground = false;
-      rigid->force.y += player_comp->jump_force;
-    }
 
     Log::info("Player: Entered Jumping state");
   }
 
   inline void jumping_on_update(Engine::ECS::Entity& entity) 
   {
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+
+    if (player_comp)
+    {
+      rigid->is_jumping = true;
+      rigid->on_ground = false;
+      rigid->force += Vec2D(0.f, -3000000000);
+    }
     take_input(entity);
   }
 

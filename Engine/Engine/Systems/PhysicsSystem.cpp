@@ -77,7 +77,7 @@ void phy2D::update_entity(ECS::Entity& entity)
   // We account for the gravitational forces here so that the update_kinematics function can be used for post physics as well
   if (rigid->use_gravity)
   {
-    rigid->force += rigid->gravity;
+    rigid->force += rigid->gravity * rigid->mass;
     //std::cout << "Gravity Force: " << gravity_force << std::endl;
   }
 
