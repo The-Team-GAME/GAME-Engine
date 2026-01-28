@@ -32,10 +32,6 @@ using col2D = Collision2DSystem;
 
 // eventually we'll deserialise these values from file bah
 namespace {
-  Vec2D knockback_force{ -1000000.f, 50000.f };
-  const f32 gravity_acc = 1000.f;
-  const f32 STATIC_FRICTION_THRESHOLD = 20.0f;
-
   // Basically this value is how seep a slope can be before its no longer considered walkable/ on the ground
   constexpr f32 slope_angle_threshold = 60.0f;
   const f32 slope_radian_threshold = slope_angle_threshold * static_cast<f32>(std::numbers::pi / 180.0f);
@@ -98,9 +94,20 @@ void phy2D::update_kinematics( Components::RigidBody& rigid )
 
   // Checking terminal velocity here
   // using the magnitude squared to check cuz its cheaper than sqrt-ing the value
-  if (rigid.velocity.get_magnitude_sq() > pow(rigid.terminal_velocity, 2))
+  /*if (rigid.velocity.get_magnitude_sq() > pow(rigid.terminal_velocity, 2))
   {
     rigid.velocity = Math::normalise_vector(rigid.velocity) * rigid.terminal_velocity;
+  }*/
+  if (abs(rigid.velocity.x) > rigid.x_terminal_velocity)
+  {
+    if (rigid.velocity.x > 0)
+    {
+      rigid.velocity.x = rigid.x_terminal_velocity;
+    }
+    else
+    {
+      rigid.velocity.x = -rigid.x_terminal_velocity;
+    }
   }
 }
 

@@ -95,7 +95,6 @@ namespace PlayerStateCallbacks
 
     if (!player_comp) return;
     rigid->force.x += player_comp->walk_speed * flip->value.x;
-    std::cout << rigid->force << std::endl;
     
     take_input(entity);
     //if (!Input::is_held(KeyCode::A) && !Input::is_held(KeyCode::D))
@@ -114,9 +113,8 @@ namespace PlayerStateCallbacks
   // Jumping State Callbacks
   // ========================================================================
 
-  inline void jumping_on_enter(Engine::ECS::Entity& entity) {
-
-
+  inline void jumping_on_enter(Engine::ECS::Entity& entity) 
+  {
     Log::info("Player: Entered Jumping state");
   }
 
@@ -129,7 +127,7 @@ namespace PlayerStateCallbacks
     {
       rigid->is_jumping = true;
       rigid->on_ground = false;
-      rigid->force += Vec2D(0.f, -3000000000);
+      rigid->force.y += player_comp->jump_force;
     }
     take_input(entity);
   }
