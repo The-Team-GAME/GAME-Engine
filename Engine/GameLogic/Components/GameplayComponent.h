@@ -37,9 +37,10 @@ namespace Components
     };
 
     // Movement speeds (going to add to force instead of velocity as of 22/01/26)
-    float walk_speed = 2000.0f; 
-    float air_speed = 600.0f;
-    float jump_force = 900.0f;
+    // These values are loaded from file
+    f32 walk_speed;// = 300'000'000.f;
+    f32 air_speed;// = 60'000.f;
+    f32 jump_force;// = -30'000.f;
 
     // Attacks
     AttackData attack1 = {
