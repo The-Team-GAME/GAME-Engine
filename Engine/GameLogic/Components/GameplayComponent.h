@@ -39,9 +39,6 @@ namespace Components
     //mass
     float mass = 50.0f;
 
-    //mass
-    float mass = 50.0f;
-
     // Movement speeds (going to add to force instead of velocity as of 22/01/26)
     float walk_speed = 2000.0f; 
     float air_speed = 600.0f;

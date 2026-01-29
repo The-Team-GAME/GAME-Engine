@@ -90,7 +90,7 @@ namespace TurretMonkeyStateCallbacks
     }
   }
 
-  
+  // I am dumb and did not use gravity instead:>>
   //// ========================================================================
   //// Ceiling Snapper
   //// ========================================================================
