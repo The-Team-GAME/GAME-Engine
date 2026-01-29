@@ -229,6 +229,8 @@ void RunGame()
         rigid->velocity.x = scaled_knockback.x;
         rigid->velocity.y = scaled_knockback.y; // Usually negative for upward knockback
 
+
+
         Log::info("Player knocked back! Velocity: ({}, {})", rigid->velocity.x, rigid->velocity.y);
       }
       else {

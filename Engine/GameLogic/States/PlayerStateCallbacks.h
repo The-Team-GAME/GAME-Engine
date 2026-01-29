@@ -24,8 +24,7 @@ namespace PlayerStateCallbacks
   // ========================================================================
 
   inline void idle_on_enter([[maybe_unused]] Engine::ECS::Entity& entity) {
-    //auto* rigid = entity.get_component<Components::RigidBody>();
-    //if (rigid) rigid->velocity.x = 0.f;
+    /* Empty By Design */
     Log::info("Player: Entered Idle state");
   }
 
@@ -72,16 +71,16 @@ namespace PlayerStateCallbacks
 
     if (!player_comp) return;
 
-    rigid->velocity.x = 0.f;
+    //rigid->velocity.x = 0.f;
     // Don't touch velocity.y - let gravity handle it
 
     // Horizontal movement only (sidescrolling)
     if (Engine::Input::is_held(Engine::KeyCode::A)) {
-      rigid->velocity.x = -player_comp->walk_speed;
+      rigid->force.x = -player_comp->walk_speed;
       if (flip) flip->value.x = -1.0f; // Face left
     }
     if (Engine::Input::is_held(Engine::KeyCode::D)) {
-      rigid->velocity.x = player_comp->walk_speed;
+      rigid->force.x = player_comp->walk_speed;
       if (flip) flip->value.x = 1.0f; // Face right
     }
 
@@ -126,7 +125,7 @@ namespace PlayerStateCallbacks
 
     if (rigid && player_comp) {
       // Apply jump force
-      rigid->velocity.y = -player_comp->jump_force; // Negative is up
+      rigid->force.y = -player_comp->jump_force; // Negative is up
     }
 
     Log::info("Player: Entered Jumping state");

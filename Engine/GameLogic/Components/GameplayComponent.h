@@ -26,21 +26,24 @@ namespace Components
   {
     struct AttackData
     {
-      float hitbox_offset_x = 80.0f;
-      float hitbox_offset_y = 0.0f;
-      float hitbox_width = 100.0f;
-      float hitbox_height = 128.0f;
-      float dash_speed = 1000.0f;
-      int damage = 10;
-      float heartrate_cost = 5.0f;
-      Math::Vec2D knockback = Math::Vec2D(300.0f, -50.0f);
+      f32 hitbox_offset_x = 80.0f;
+      f32 hitbox_offset_y = 0.0f;
+      f32 hitbox_width = 100.0f;
+      f32 hitbox_height = 128.0f;
+      f32 dash_speed = 1000.0f;
+      s32 damage = 10;
+      f32 heartrate_cost = 5.0f;
+      Math::Vec2D knockback = Math::Vec2D(300.0f, 0.f);
     };
 
     //mass
     float mass = 50.0f;
 
-    // Movement speeds
-    float walk_speed = 600.0f;
+    //mass
+    float mass = 50.0f;
+
+    // Movement speeds (going to add to force instead of velocity as of 22/01/26)
+    float walk_speed = 2000.0f; 
     float air_speed = 600.0f;
     float jump_force = 900.0f;
 
@@ -53,7 +56,7 @@ namespace Components
       1000.0f,                     // dash_speed
       10,                          // damage
       5.0f,                        // heartrate_cost
-      Math::Vec2D(300.0f, -50.0f)  // knockback
+      Math::Vec2D(300.0f, 0.f)     // knockback
     };
 
     AttackData attack2 = {
@@ -64,7 +67,7 @@ namespace Components
       1000.0f,                     // dash_speed
       15,                          // damage
       5.0f,                        // heartrate_cost
-      Math::Vec2D(300.0f, -50.0f)  // knockback
+      Math::Vec2D(300.0f, 0.f)     // knockback
     };
 
     AttackData attack3 = {
@@ -75,7 +78,7 @@ namespace Components
       2000.0f,                     // dash_speed
       25,                          // damage
       8.0f,                        // heartrate_cost
-      Math::Vec2D(3000.0f, -100.0f)// knockback
+      Math::Vec2D(3000.0f, 0.f)    // knockback
     };
   };
 

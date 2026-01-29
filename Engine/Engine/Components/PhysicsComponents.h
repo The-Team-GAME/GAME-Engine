@@ -34,6 +34,7 @@ namespace Components
     Vec2D force;
     Vec2D acceleration;
     Vec2D velocity; // Velocity in units per second
+    Vec2D gravity{ 0.f, 1000.f };
     // terminal velocity should be a set value instead of a vector just cuz you want to properly scale the velocity instead of capping it at set values
     f32 terminal_velocity{ 1000.f }; // set to max float
 
