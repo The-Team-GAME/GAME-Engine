@@ -32,8 +32,12 @@ Engine::Level Engine::Level::from_world()
   Level level;
 
   Engine::ECS::for_each_entity([&](Engine::ECS::Entity entity) {
-    // Skip tile entities - they are temporary and rebuilt by TilemapManager
-    if (entity.has_components<Components::TileCollider, Components::Level>()) {
+    // Skip tile collider entities - they are temporary and rebuilt by TilemapManager
+    if (entity.has_component<Components::TileCollider>()) {
+      return;
+    }
+    // Skip level container entities
+    if (entity.has_component<Components::Level>()) {
       return;
     }
 
@@ -75,6 +79,13 @@ void Engine::Level::instantiate_into_world(bool clear_world)
     
     // This creates all entities including TileMap entities which store the tile data
   }
+
+  // Destroy any TileCollider entities that may have been loaded from old level files
+  // (before the fix that prevented them from being serialized)
+  for (auto& entity : Engine::ECS::get_entities_with<Components::TileCollider>()) {
+    entity.destroy();
+  }
+  Engine::ECS::process_housekeeping();
 
   // Rebuild collision entities from all TileMap entities
   for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
