@@ -33,3 +33,8 @@
 #include "ComponentManager.inl"
 #include "ComponentArray.inl"
 #include "Prefab.inl"
+
+// Custom Memory Manager for game objects and components
+#include "../Memory/MemoryManager.h"
+#include "ManagedSparseSet.h"
+#include "ManagedComponentArray.h"
