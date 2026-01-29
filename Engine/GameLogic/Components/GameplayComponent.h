@@ -117,8 +117,9 @@ namespace Components
     Components::Texture impact_vfx_texture;
 
     Attack() = default;
-    explicit Attack(int dmg, Math::Vec2D kb = Math::Vec2D(0.0f, 0.0f), bool continuous = false, float interval = 0.1f) 
-      : damage(dmg), knockback(kb), is_continuous(continuous), damage_interval(interval) {}
+    explicit Attack(int dmg, Math::Vec2D kb = Math::Vec2D(0.0f, 0.0f), bool continuous = false, float interval = 0.1f)
+      : damage(dmg), knockback(kb), is_continuous(continuous), damage_interval(interval) {
+    }
 
     bool should_apply_damage(Engine::ECS::Entity entity) {
       float current_time = Engine::Time::get_time();
