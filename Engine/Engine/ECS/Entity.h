@@ -23,7 +23,7 @@ namespace Engine {
   namespace ECS {
 
     // Forward declaration
-    class IComponentArray;
+    class IManagedComponentArray;
 
     /* ============================ //
     // Entity handle for clean API  //
@@ -213,7 +213,7 @@ namespace Engine {
       Where to call it:
       When you need to iterate through all components an entity has.
       ==================================================================================*/
-      void for_each_component(std::function<void(const std::string&, IComponentArray*)> callback);
+      void for_each_component(std::function<void(const std::string&, IManagedComponentArray*)> callback);
 
       /*=================================================================================
       Function Brief:

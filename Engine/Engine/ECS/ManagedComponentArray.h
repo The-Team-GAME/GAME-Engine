@@ -54,7 +54,7 @@ namespace Engine {
       virtual bool add_component_from_generic_value(EntityID entity, const ReflectionLibrary::GenericValue& value) = 0;
       virtual bool set_component_from_generic_value(EntityID entity, const ReflectionLibrary::GenericValue& value) = 0;
       virtual void add_default_component(EntityID entity) = 0;
-      virtual std::unique_ptr<IManagedComponentArray> create_empty() const = 0;
+      virtual ManagedUniquePtr<IManagedComponentArray> create_empty() const = 0;
 
       // Memory manager specific methods
       virtual size_t get_memory_usage() const = 0;
@@ -337,8 +337,8 @@ namespace Engine {
       /**
        * @brief Creates an empty component array of the same type.
        */
-      std::unique_ptr<IManagedComponentArray> create_empty() const override {
-        return std::make_unique<ManagedComponentArray<T>>();
+      ManagedUniquePtr<IManagedComponentArray> create_empty() const override {
+        return make_managed<ManagedComponentArray<T>>();
       }
 
       // ============================================================================

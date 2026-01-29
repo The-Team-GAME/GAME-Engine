@@ -34,7 +34,7 @@ namespace Engine {
       ReflectionLibrary::GenericValue merge_component_with_overrides(
         const ReflectionLibrary::GenericValue& prefab_data,
         const ReflectionLibrary::GenericValue& instance_data,
-        const std::unordered_set<std::string>& override_fields
+        const ManagedHashSet<std::string>& override_fields
       ) {
         // Start with instance data
         ReflectionLibrary::GenericValue result = instance_data;
@@ -44,7 +44,7 @@ namespace Engine {
 
         // Copy non-overridden fields from prefab
         for (const auto& field_path : all_fields) {
-          if (override_fields.find(field_path) == override_fields.end()) {
+          if (!override_fields.contains(field_path)) {
             // Field is not overridden, copy from prefab
             copy_field_by_path(prefab_data, result, field_path);
           }
@@ -53,11 +53,11 @@ namespace Engine {
         return result;
       }
 
-      std::unordered_set<std::string> get_all_field_paths(
+      ManagedHashSet<std::string> get_all_field_paths(
         const ReflectionLibrary::GenericValue& value,
         const std::string& prefix
       ) {
-        std::unordered_set<std::string> paths;
+        ManagedHashSet<std::string> paths;
 
         if (value.isObject()) {
           for (const auto& [key, val] : value.getObject()) {
@@ -66,7 +66,9 @@ namespace Engine {
 
             // Recursively get nested paths
             auto nested_paths = get_all_field_paths(val, current_path);
-            paths.insert(nested_paths.begin(), nested_paths.end());
+            for (const auto& nested_path : nested_paths) {
+              paths.insert(nested_path);
+            }
           }
         }
         else if (value.isArray()) {
@@ -77,7 +79,9 @@ namespace Engine {
 
             // Recursively get nested paths
             auto nested_paths = get_all_field_paths(arr[i], current_path);
-            paths.insert(nested_paths.begin(), nested_paths.end());
+            for (const auto& nested_path : nested_paths) {
+              paths.insert(nested_path);
+            }
           }
         }
         else {

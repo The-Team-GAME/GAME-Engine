@@ -301,7 +301,7 @@ namespace Engine {
       // Entities are drawn once at their highest layer
 
       // First pass: find the highest layer for each entity
-      std::unordered_map<EntityID, LayerID> entity_highest_layer;
+      ManagedHashMap<EntityID, LayerID> entity_highest_layer;
       for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
         if (!containers.layer_active_state.test(layer))
           continue;
@@ -311,8 +311,9 @@ namespace Engine {
 
         for (EntityID entityId : layer_entities_copy) {
           // Track the highest layer this entity is on
-          if (entity_highest_layer.find(entityId) == entity_highest_layer.end() ||
-            layer > entity_highest_layer[entityId]) {
+          auto it = entity_highest_layer.find(entityId);
+          if (it == entity_highest_layer.end() ||
+            layer > it->second) {
             entity_highest_layer[entityId] = layer;
           }
         }
@@ -415,7 +416,7 @@ namespace Engine {
 
       // In layer order, avoiding duplicates
       auto& containers = Internal::get_containers();
-      std::unordered_set<EntityID> processed; // Track processed entities to avoid duplicates
+      ManagedHashSet<EntityID> processed; // Track processed entities to avoid duplicates
 
       for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
         // Make a copy to avoid iterator invalidation during callback
@@ -423,7 +424,7 @@ namespace Engine {
 
         for (EntityID id : layer_entities_copy) {
           // Skip if already processed or not active
-          if (processed.count(id) || !containers.active_entities.contains(id))
+          if (processed.contains(id) || !containers.active_entities.contains(id))
             continue;
 
           processed.insert(id);
@@ -623,7 +624,7 @@ namespace Engine {
       auto& containers = Internal::get_containers();
 
       // Track processed pairs to avoid duplicates when entities are on multiple layers
-      std::unordered_set<EntityPairHash> processed_pairs;
+      ManagedHashSet<EntityPairHash> processed_pairs;
 
       // Iterate through LHS layers that match the mask
       for (LayerID lhs_layer = 0; lhs_layer < containers.layer_entities.size(); ++lhs_layer) {

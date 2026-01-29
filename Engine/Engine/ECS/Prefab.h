@@ -17,9 +17,8 @@
 
 #include "Entity.h"
 #include "Types.h"
-#include <memory>
+#include "ManagedContainers.h"
 #include <string>
-#include <unordered_map>
 #include <functional>
 #include "../Reflection/ReflectionLibrary.h"
 
@@ -27,7 +26,7 @@ namespace Engine {
   namespace ECS {
 
     // Forward declarations
-    class IComponentArray;
+    class IManagedComponentArray;
 
     /* ====================================== //
     // PrefabImpl - Reusable entity template  //
@@ -36,7 +35,7 @@ namespace Engine {
     private:
       ComponentSignature signature;
       LayerSignature layers;
-      std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> component_storage;
+      ManagedHashMap<ComponentTypeID, ManagedUniquePtr<IManagedComponentArray>> component_storage;
       std::string prefab_id; // Unique UUID identifier for this prefab
       std::string prefab_filepath; // Filepath where this prefab is stored
 
@@ -156,7 +155,7 @@ namespace Engine {
       Where to call it:
       Internally when cloning components to/from entities.
       ==================================================================================*/
-      const std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>>& get_component_storage() const;
+      const ManagedHashMap<ComponentTypeID, ManagedUniquePtr<IManagedComponentArray>>& get_component_storage() const;
 
       /*=================================================================================
       Function Brief:
@@ -168,7 +167,7 @@ namespace Engine {
       Where to call it:
       Internally when modifying prefab configurations.
       ==================================================================================*/
-      std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>>& get_component_storage();
+      ManagedHashMap<ComponentTypeID, ManagedUniquePtr<IManagedComponentArray>>& get_component_storage();
 
       /*=================================================================================
       Function Brief:
@@ -204,7 +203,7 @@ namespace Engine {
       Where to call it:
       When processing all components in a prefab.
       ==================================================================================*/
-      void for_each_component(std::function<void(const std::string&, IComponentArray*)> callback);
+      void for_each_component(std::function<void(const std::string&, IManagedComponentArray*)> callback);
 
       /*=================================================================================
       Function Brief:
@@ -429,7 +428,7 @@ namespace Engine {
       Where to call it:
       When processing all components in a prefab.
       ==================================================================================*/
-      void for_each_component(std::function<void(const std::string&, IComponentArray*)> callback);
+      void for_each_component(std::function<void(const std::string&, IManagedComponentArray*)> callback);
 
       /*=================================================================================
       Function Brief:
@@ -441,7 +440,7 @@ namespace Engine {
       Where to call it:
       When processing all components in a prefab without modification.
       ==================================================================================*/
-      void for_each_component(std::function<void(const std::string&, IComponentArray*)> callback) const;
+      void for_each_component(std::function<void(const std::string&, IManagedComponentArray*)> callback) const;
 
       /*=================================================================================
       Function Brief:

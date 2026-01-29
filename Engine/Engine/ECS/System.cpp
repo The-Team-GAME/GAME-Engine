@@ -85,7 +85,7 @@ namespace Engine {
       }
     }
 
-    const SparseSet<EntityID>& System::get_entities() const {
+    const ManagedSparseSet<EntityID>& System::get_entities() const {
       return entities;
     }
 

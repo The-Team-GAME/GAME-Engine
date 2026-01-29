@@ -239,6 +239,60 @@ namespace Engine {
       const T* begin() const { return data_; }
       const T* end() const { return data_ + size_; }
 
+      /**
+       * @brief Erases element at position.
+       * @param pos Iterator pointing to element to erase.
+       * @return Iterator to the element following the removed element.
+       */
+      T* erase(T* pos) {
+        if (pos < data_ || pos >= data_ + size_) {
+          return end();
+        }
+
+        // Shift all elements after pos one position left
+        size_t index = pos - data_;
+        data_[index].~T();
+
+        for (size_t i = index; i < size_ - 1; ++i) {
+          new (data_ + i) T(std::move(data_[i + 1]));
+          data_[i + 1].~T();
+        }
+
+        --size_;
+        return data_ + index;
+      }
+
+      /**
+       * @brief Erases elements in range [first, last).
+       * @param first Iterator to first element to erase.
+       * @param last Iterator past the last element to erase.
+       * @return Iterator to the element following the last removed element.
+       */
+      T* erase(T* first, T* last) {
+        if (first < data_ || first >= data_ + size_ || last < first) {
+          return end();
+        }
+        if (last > data_ + size_) last = data_ + size_;
+
+        size_t first_index = first - data_;
+        size_t last_index = last - data_;
+        size_t count = last_index - first_index;
+
+        // Destroy elements in range
+        for (size_t i = first_index; i < last_index; ++i) {
+          data_[i].~T();
+        }
+
+        // Shift remaining elements
+        for (size_t i = last_index; i < size_; ++i) {
+          new (data_ + i - count) T(std::move(data_[i]));
+          data_[i].~T();
+        }
+
+        size_ -= count;
+        return data_ + first_index;
+      }
+
     private:
       /**
        * @brief Ensures capacity is at least n.

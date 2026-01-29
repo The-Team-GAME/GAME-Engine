@@ -15,10 +15,14 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
+// Custom Memory Manager - must be included before other ECS headers
+#include "../Memory/MemoryManager.h"
+#include "ManagedSparseSet.h"
+#include "ManagedContainers.h"
+#include "ManagedComponentArray.h"
+
 #include "Types.h"
-#include "SparseSet.h"
 #include "ComponentManager.h"
-#include "ComponentArray.h"
 #include "Entity.h"
 #include "System.h"
 #include "LayerRegistry.h"
@@ -31,10 +35,4 @@
 #include "World.inl"
 #include "System.inl"
 #include "ComponentManager.inl"
-#include "ComponentArray.inl"
 #include "Prefab.inl"
-
-// Custom Memory Manager for game objects and components
-#include "../Memory/MemoryManager.h"
-#include "ManagedSparseSet.h"
-#include "ManagedComponentArray.h"

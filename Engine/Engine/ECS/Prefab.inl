@@ -16,7 +16,7 @@
 #pragma once
 #include "Prefab.h"
 #include "ComponentManager.h"
-#include "ComponentArray.h"
+#include "ManagedComponentArray.h"
 
 namespace Engine {
   namespace ECS {
@@ -31,12 +31,12 @@ namespace Engine {
       ComponentTypeID type_id = ComponentTypeManager::get_type_id<T>();
 
       // Create component array if it doesn't exist
-      if (component_storage.find(type_id) == component_storage.end()) {
-        component_storage[type_id] = std::make_unique<ComponentArray<T>>();
+      if (!component_storage.find(type_id)) {
+        component_storage.insert(type_id, ManagedUniquePtr<IManagedComponentArray>::make<ManagedComponentArray<T>>());
       }
 
       // Add component using a dummy entity ID (0)
-      auto* array = static_cast<ComponentArray<T>*>(component_storage[type_id].get());
+      auto* array = static_cast<ManagedComponentArray<T>*>(component_storage.find(type_id)->get());
       array->add_component(0, T(std::forward<Args>(args)...));
 
       // Update signature
@@ -49,9 +49,8 @@ namespace Engine {
     PrefabImpl& PrefabImpl::remove_component() {
       ComponentTypeID type_id = ComponentTypeManager::get_type_id<T>();
 
-      auto it = component_storage.find(type_id);
-      if (it != component_storage.end()) {
-        component_storage.erase(it);
+      if (component_storage.find(type_id)) {
+        component_storage.erase(type_id);
         signature.reset(type_id);
       }
 
@@ -62,9 +61,9 @@ namespace Engine {
     T* PrefabImpl::get_component() {
       ComponentTypeID type_id = ComponentTypeManager::get_type_id<T>();
 
-      auto it = component_storage.find(type_id);
-      if (it != component_storage.end()) {
-        auto* array = static_cast<ComponentArray<T>*>(it->second.get());
+      auto* ptr = component_storage.find(type_id);
+      if (ptr) {
+        auto* array = static_cast<ManagedComponentArray<T>*>(ptr->get());
         return array->get_component(0); // Using dummy entity ID 0
       }
 
@@ -75,9 +74,9 @@ namespace Engine {
     const T* PrefabImpl::get_component() const {
       ComponentTypeID type_id = ComponentTypeManager::get_type_id<T>();
 
-      auto it = component_storage.find(type_id);
-      if (it != component_storage.end()) {
-        auto* array = static_cast<const ComponentArray<T>*>(it->second.get());
+      auto* ptr = component_storage.find(type_id);
+      if (ptr) {
+        auto* array = static_cast<const ManagedComponentArray<T>*>(ptr->get());
         return array->get_component(0); // Using dummy entity ID 0
       }
 

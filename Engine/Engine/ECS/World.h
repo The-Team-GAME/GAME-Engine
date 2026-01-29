@@ -17,14 +17,11 @@
 #pragma once
 
 #include "Types.h"
-#include "ComponentArray.h"
+#include "ManagedComponentArray.h"
+#include "ManagedContainers.h"
 #include "Entity.h"
 #include "System.h"
 #include "WorldData.h"
-#include <vector>
-#include <unordered_map>
-#include <unordered_set>
-#include <memory>
 #include <functional>
 
 namespace Engine {
@@ -61,7 +58,7 @@ namespace Engine {
     Internally by the ECS when accessing component storage.
     ==================================================================================*/
     template <typename T>
-    ComponentArray<T>* get_component_array();
+    ManagedComponentArray<T>* get_component_array();
 
     /* =================== //
     // Entity management   //

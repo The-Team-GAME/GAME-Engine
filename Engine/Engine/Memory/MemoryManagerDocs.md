@@ -12,10 +12,23 @@ Engine/Engine/
 │   ├── MemoryManager.h      # Main memory manager with Pool Allocator
 │   └── MemoryManager.cpp    # Implementation and debug utilities
 └── ECS/
-    ├── ManagedSparseSet.h      # STL-free sparse set implementation
+    ├── ManagedSparseSet.h       # STL-free sparse set + ManagedArray
+    ├── ManagedContainers.h      # ManagedHashMap, ManagedHashSet, ManagedUniquePtr
     ├── ManagedComponentArray.h  # Component storage using pool allocator
+    ├── ManagedWorldData.h       # WorldContainers using all managed types
+    ├── ManagedWorldData.cpp     # Implementation
     └── ECS.h                    # Updated to include memory manager
 ```
+
+## STL Replacements
+
+| STL Container             | Managed Replacement   | File                |
+| ------------------------- | --------------------- | ------------------- |
+| `std::vector<T>`          | `ManagedArray<T>`     | ManagedSparseSet.h  |
+| `std::unordered_map<K,V>` | `ManagedHashMap<K,V>` | ManagedContainers.h |
+| `std::unordered_set<K>`   | `ManagedHashSet<K>`   | ManagedContainers.h |
+| `std::unique_ptr<T>`      | `ManagedUniquePtr<T>` | ManagedContainers.h |
+| `SparseSet<T>`            | `ManagedSparseSet<T>` | ManagedSparseSet.h  |
 
 ## Key Features
 

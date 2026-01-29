@@ -42,20 +42,22 @@ namespace Engine {
       return id != other.id;
     }
 
-    void Entity::for_each_component(std::function<void(const std::string&, IComponentArray*)> callback) {
+    void Entity::for_each_component(std::function<void(const std::string&, IManagedComponentArray*)> callback) {
       if (!is_valid())
         return;
 
       auto& containers = Internal::get_containers();
-      auto sig_it = containers.entity_signatures.find(id);
+      auto* sig_ptr = containers.entity_signatures.find(id);
 
-      if (sig_it == containers.entity_signatures.end())
+      if (!sig_ptr)
         return;
 
-      const ComponentSignature& signature = sig_it->second;
+      const ComponentSignature& signature = *sig_ptr;
 
       // Iterate through all component arrays
-      for (auto& [type_id, array] : containers.component_arrays) {
+      for (auto it = containers.component_arrays.begin(); it != containers.component_arrays.end(); ++it) {
+        auto type_id = it.key();
+        auto& array = it.value();
         // Check if this entity has this component type
         if (signature.test(type_id)) {
           std::string type_name = array->get_type_name();

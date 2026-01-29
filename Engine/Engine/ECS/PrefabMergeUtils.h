@@ -16,9 +16,9 @@
 #pragma once
 
 #include "../Reflection/ReflectionLibrary.h"
+#include "../Memory/ManagedContainers.h"
 #include "Types.h"
 #include <string>
-#include <unordered_set>
 
 namespace Engine {
   namespace ECS {
@@ -43,7 +43,7 @@ namespace Engine {
       ReflectionLibrary::GenericValue merge_component_with_overrides(
         const ReflectionLibrary::GenericValue& prefab_data,
         const ReflectionLibrary::GenericValue& instance_data,
-        const std::unordered_set<std::string>& override_fields
+        const ManagedHashSet<std::string>& override_fields
       );
 
       /*=================================================================================
@@ -61,7 +61,7 @@ namespace Engine {
       Where to call it:
       When needing to enumerate all possible field paths in a component.
       ==================================================================================*/
-      std::unordered_set<std::string> get_all_field_paths(
+      ManagedHashSet<std::string> get_all_field_paths(
         const ReflectionLibrary::GenericValue& value,
         const std::string& prefix = ""
       );

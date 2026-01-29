@@ -16,7 +16,7 @@
 #include "Prefab.h"
 #include "World.h"
 #include "WorldData.h"
-#include "ComponentArray.h"
+#include "ManagedComponentArray.h"
 #include "Reflection.h"
 #include "../Reflection/ReflectionLibrary.h"
 #include "PrefabMergeUtils.h"
@@ -41,11 +41,11 @@ namespace Engine {
       return signature;
     }
 
-    const std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>>& PrefabImpl::get_component_storage() const {
+    const ManagedHashMap<ComponentTypeID, ManagedUniquePtr<IManagedComponentArray>>& PrefabImpl::get_component_storage() const {
       return component_storage;
     }
 
-    std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>>& PrefabImpl::get_component_storage() {
+    ManagedHashMap<ComponentTypeID, ManagedUniquePtr<IManagedComponentArray>>& PrefabImpl::get_component_storage() {
       return component_storage;
     }
 
@@ -73,8 +73,10 @@ namespace Engine {
       prefab_filepath = filepath;
     }
 
-    void PrefabImpl::for_each_component(std::function<void(const std::string&, IComponentArray*)> callback) {
-      for (auto& [type_id, array] : component_storage) {
+    void PrefabImpl::for_each_component(std::function<void(const std::string&, IManagedComponentArray*)> callback) {
+      for (auto it = component_storage.begin(); it != component_storage.end(); ++it) {
+        auto type_id = it.key();
+        auto& array = it.value();
         if (signature.test(type_id)) {
           callback(array->get_type_name(), array.get());
         }
@@ -99,13 +101,13 @@ namespace Engine {
       return impl;
     }
 
-    void Prefab::for_each_component(std::function<void(const std::string&, IComponentArray*)> callback) {
+    void Prefab::for_each_component(std::function<void(const std::string&, IManagedComponentArray*)> callback) {
       if (impl) {
         impl->for_each_component(callback);
       }
     }
 
-    void Prefab::for_each_component(std::function<void(const std::string&, IComponentArray*)> callback) const {
+    void Prefab::for_each_component(std::function<void(const std::string&, IManagedComponentArray*)> callback) const {
       if (impl) {
         impl->for_each_component(callback);
       }
@@ -495,7 +497,7 @@ namespace Engine {
           ReflectionLibrary::GenericValue instance_component_data = instance_array->to_generic_value(entity_id);
 
           // Get field overrides for this component
-          std::unordered_set<std::string> overrides;
+          ManagedHashSet<std::string> overrides;
           if (override_it != instance_data.field_overrides.end()) {
             overrides = override_it->second;
           }

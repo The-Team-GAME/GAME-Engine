@@ -21,18 +21,18 @@ namespace Engine {
   namespace ECS
   {
     template <typename T>
-    ComponentArray<T>* get_component_array()
+    ManagedComponentArray<T>* get_component_array()
     {
       auto& containers = Internal::get_containers();
       ComponentTypeID typeId = ComponentTypeManager::get_type_id<T>();
       auto it = containers.component_arrays.find(typeId);
       if (it != containers.component_arrays.end())
       {
-        return static_cast<ComponentArray<T> *>(it->second.get());
+        return static_cast<ManagedComponentArray<T> *>(it->second.get());
       }
 
       register_component<T>();
-      return static_cast<ComponentArray<T> *>(containers.component_arrays[typeId].get());
+      return static_cast<ManagedComponentArray<T> *>(containers.component_arrays[typeId].get());
     }
 
     template <typename T>
@@ -44,7 +44,7 @@ namespace Engine {
       {
         return;
       }
-      containers.component_arrays[typeId] = std::make_unique<ComponentArray<T>>();
+      containers.component_arrays[typeId] = make_managed<ManagedComponentArray<T>>();
     }
 
     template <typename... T>
@@ -145,7 +145,7 @@ namespace Engine {
       auto& containers = Internal::get_containers();
       containers.systems.erase(
         std::remove_if(containers.systems.begin(), containers.systems.end(),
-          [](const std::unique_ptr<System>& system)
+          [](const ManagedUniquePtr<System>& system)
           {
             return dynamic_cast<T*>(system.get()) != nullptr;
           }),
@@ -172,7 +172,7 @@ namespace Engine {
     {
       auto& containers = Internal::get_containers();
       std::vector<Entity> result;
-      std::unordered_set<EntityID> processed; // Track processed entities to avoid duplicates
+      ManagedHashSet<EntityID> processed; // Track processed entities to avoid duplicates
 
       // Iterate through each layer in the signature
       for (LayerID layer = 0; layer < MAX_LAYERS; ++layer)
@@ -217,7 +217,7 @@ namespace Engine {
     void for_each_entity_with(const LayerSignature& layers, std::function<void(Entity)> callback)
     {
       auto& containers = Internal::get_containers();
-      std::unordered_set<EntityID> processed; // Track processed entities to avoid duplicates
+      ManagedHashSet<EntityID> processed; // Track processed entities to avoid duplicates
 
       // Iterate through each layer in the signature
       for (LayerID layer = 0; layer < MAX_LAYERS; ++layer)
@@ -233,7 +233,7 @@ namespace Engine {
         for (EntityID entityId : containers.layer_entities[layer])
         {
           // Skip if already processed or doesn't have required components
-          if (processed.count(entityId) || !has_components<T...>(entityId))
+          if (processed.contains(entityId) || !has_components<T...>(entityId))
             continue;
 
           processed.insert(entityId);
@@ -259,7 +259,7 @@ namespace Engine {
       ((required_signature.set(ComponentTypeManager::get_type_id<Components>())), ...);
 
       // Track processed pairs to avoid duplicates
-      std::unordered_set<EntityPairHash> processed_pairs;
+      ManagedHashSet<EntityPairHash> processed_pairs;
 
       // Iterate through all active entities as LHS
       for (size_t i = 0; i < containers.active_entities.size(); ++i)
@@ -321,7 +321,7 @@ namespace Engine {
       ((required_signature.set(ComponentTypeManager::get_type_id<Components>())), ...);
 
       // Track processed pairs to avoid duplicates
-      std::unordered_set<EntityPairHash> processed_pairs;
+      ManagedHashSet<EntityPairHash> processed_pairs;
 
       // Iterate through LHS layers that match the mask
       for (LayerID lhs_layer = 0; lhs_layer < containers.layer_entities.size(); ++lhs_layer) {
@@ -408,13 +408,13 @@ namespace Engine {
 
       // Use a set to track already processed entities to avoid duplicates
       // since entities can be on multiple layers
-      std::unordered_set<EntityID> processed;
+      ManagedHashSet<EntityID> processed;
 
       // Iterate through layers in order (lower layer ID = higher priority = processed first)
       for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
         for (EntityID id : containers.layer_entities[layer]) {
           // Skip if already processed, not active, or doesn't have required components
-          if (processed.count(id) || !containers.active_entities.contains(id) || !has_components<T...>(id))
+          if (processed.contains(id) || !containers.active_entities.contains(id) || !has_components<T...>(id))
             continue;
 
           processed.insert(id);

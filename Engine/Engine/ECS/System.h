@@ -16,7 +16,7 @@
 #pragma once
 
 #include "Types.h"
-#include "SparseSet.h"
+#include "ManagedSparseSet.h"
 #include "../EventManager/EventManager.h"
 
 namespace Engine {
@@ -33,7 +33,7 @@ namespace Engine {
       ComponentSignature excluded_signature;
       Engine::EventManager::EventSignature event_signature;
       LayerSignature active_layers;
-      SparseSet<EntityID> entities; // TODO: Holiday: remove this, just check layer_entities in WorldData every update/draw
+      ManagedSparseSet<EntityID> entities; // TODO: Holiday: remove this, just check layer_entities in WorldData every update/draw
 
     public:
       System();
@@ -211,7 +211,7 @@ namespace Engine {
       Where to call it:
       When you need to access the list of entities this system is processing.
       ==================================================================================*/
-      const SparseSet<EntityID>& get_entities() const;
+      const ManagedSparseSet<EntityID>& get_entities() const;
 
       /*=================================================================================
       Function Brief:

@@ -16,12 +16,10 @@
 #pragma once
 
 #include "Types.h"
-#include "ComponentArray.h"
+#include "ManagedComponentArray.h"
 #include "WorldData.h"
 #include "../Reflection/ReflectionLibrary.h"
 #include "../Logger.h"
-#include <unordered_map>
-#include <memory>
 
 namespace Engine {
   namespace ECS {
@@ -90,7 +88,7 @@ namespace Engine {
 
       Parameters:
       - for_each_component_callback: A callable that takes a callback function
-        accepting (const std::string& type_name, IComponentArray* array).
+        accepting (const std::string& type_name, IManagedComponentArray* array).
       - entity_id: The entity ID to use for component serialization (use 0 for prefabs).
 
       Returns:
@@ -103,7 +101,7 @@ namespace Engine {
       ) {
         ReflectionLibrary::Array components_array;
 
-        for_each_component_callback([&](const std::string& type_name, IComponentArray* array) {
+        for_each_component_callback([&](const std::string& type_name, IManagedComponentArray* array) {
           if (!array->is_reflectable()) {
             return;
           }
@@ -131,7 +129,7 @@ namespace Engine {
       ==================================================================================*/
       inline void deserialize_components_to_storage(
         const ReflectionLibrary::Array& components_array,
-        std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>>& storage,
+        ManagedHashMap<ComponentTypeID, ManagedUniquePtr<IManagedComponentArray>>& storage,
         ComponentSignature& signature,
         EntityID entity_id
       ) {
@@ -151,16 +149,18 @@ namespace Engine {
 
           // Find matching component array type in world
           bool found = false;
-          for (auto& [type_id, world_array] : containers.component_arrays) {
+          for (auto it = containers.component_arrays.begin(); it != containers.component_arrays.end(); ++it) {
+            auto type_id = it.key();
+            auto& world_array = it.value();
             if (world_array->get_type_name() == component_type) {
               found = true;
               // Create storage if it doesn't exist
-              if (storage.find(type_id) == storage.end()) {
-                storage[type_id] = world_array->create_empty();
+              if (!storage.find(type_id)) {
+                storage.insert(type_id, ManagedUniquePtr<IManagedComponentArray>(world_array->create_empty().release()));
               }
 
               // Add component to storage
-              storage[type_id]->add_component_from_generic_value(entity_id, component_data);
+              storage.find(type_id)->add_component_from_generic_value(entity_id, component_data);
 
               // Update signature
               signature.set(type_id);
