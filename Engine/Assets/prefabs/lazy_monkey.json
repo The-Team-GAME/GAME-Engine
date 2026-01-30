@@ -1225,10 +1225,6 @@
                 "type": "Components::RigidBody"
             },
             {
-                "data": null,
-                "type": "Components::Parent"
-            },
-            {
                 "data": {
                     "attack_cooldown": 3.0,
                     "attack_range": 180.0,

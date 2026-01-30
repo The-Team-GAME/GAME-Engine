@@ -13,16 +13,16 @@
             "second": "player"
         },
         {
+            "first": "damage_enemy",
+            "second": "enemy"
+        },
+        {
             "first": "damage_player",
             "second": "enemy"
         },
         {
             "first": "damage_player",
             "second": "player"
-        },
-        {
-            "first": "damage_enemy",
-            "second": "enemy"
         }
     ],
     "loaded_tilemaps": [
@@ -3587,12 +3587,12 @@
             "texture_path": "images/Tilemaps/AdditionalProps_TilemapM1.png",
             "tile_collider_configs": [
                 {
-                    "first": 2,
+                    "first": 18,
                     "second": {
-                        "aabb_height": 14.2626953125,
+                        "aabb_height": 64.0,
                         "aabb_offset": {
-                            "x": 0.0,
-                            "y": 24.86865234375
+                            "x": 51.187110900878906,
+                            "y": -1.7706242799758911
                         },
                         "aabb_width": 64.0,
                         "collider_type": "AABB",
@@ -3600,12 +3600,12 @@
                     }
                 },
                 {
-                    "first": 18,
+                    "first": 2,
                     "second": {
-                        "aabb_height": 64.0,
+                        "aabb_height": 14.2626953125,
                         "aabb_offset": {
-                            "x": 51.187110900878906,
-                            "y": -1.7706242799758911
+                            "x": 0.0,
+                            "y": 24.86865234375
                         },
                         "aabb_width": 64.0,
                         "collider_type": "AABB",
@@ -3639,19 +3639,6 @@
                     }
                 },
                 {
-                    "first": 9,
-                    "second": {
-                        "aabb_height": 64.0,
-                        "aabb_offset": {
-                            "x": -17.8633975982666,
-                            "y": 0.0
-                        },
-                        "aabb_width": 28.273204803466797,
-                        "collider_type": "AABB",
-                        "custom_vertices": []
-                    }
-                },
-                {
                     "first": 1,
                     "second": {
                         "aabb_height": 14.262687683105469,
@@ -3660,6 +3647,19 @@
                             "y": 24.868656158447266
                         },
                         "aabb_width": 64.0,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 9,
+                    "second": {
+                        "aabb_height": 64.0,
+                        "aabb_offset": {
+                            "x": -17.8633975982666,
+                            "y": 0.0
+                        },
+                        "aabb_width": 28.273204803466797,
                         "collider_type": "AABB",
                         "custom_vertices": []
                     }
@@ -3706,6 +3706,19 @@
                 {
                     "first": 4,
                     "second": {
+                        "aabb_height": 14.188678741455078,
+                        "aabb_offset": {
+                            "x": 0.0,
+                            "y": 24.90566062927246
+                        },
+                        "aabb_width": 64.0,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 17,
+                    "second": {
                         "aabb_height": 0.0,
                         "aabb_offset": {
                             "x": 0.0,
@@ -3713,6 +3726,19 @@
                         },
                         "aabb_width": 0.0,
                         "collider_type": "Default",
+                        "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 5,
+                    "second": {
+                        "aabb_height": 14.188682556152344,
+                        "aabb_offset": {
+                            "x": 0.0,
+                            "y": 24.905658721923828
+                        },
+                        "aabb_width": 64.0,
+                        "collider_type": "AABB",
                         "custom_vertices": []
                     }
                 }
@@ -11754,14 +11780,14 @@
             "texture_path": "images/Tilemaps/BoardsPostersTVTrashCanFenceStairsTrainNewWall.png",
             "tile_collider_configs": [
                 {
-                    "first": 155,
+                    "first": 260,
                     "second": {
-                        "aabb_height": 64.0,
+                        "aabb_height": 48.027976989746094,
                         "aabb_offset": {
-                            "x": 0.0,
-                            "y": 0.0
+                            "x": 1.4711017608642578,
+                            "y": 7.986011505126953
                         },
-                        "aabb_width": 64.0,
+                        "aabb_width": 61.057796478271484,
                         "collider_type": "AABB",
                         "custom_vertices": []
                     }
@@ -11780,14 +11806,14 @@
                     }
                 },
                 {
-                    "first": 260,
+                    "first": 155,
                     "second": {
-                        "aabb_height": 48.027976989746094,
+                        "aabb_height": 64.0,
                         "aabb_offset": {
-                            "x": 1.4711017608642578,
-                            "y": 7.986011505126953
+                            "x": 0.0,
+                            "y": 0.0
                         },
-                        "aabb_width": 61.057796478271484,
+                        "aabb_width": 64.0,
                         "collider_type": "AABB",
                         "custom_vertices": []
                     }

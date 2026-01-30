@@ -31,12 +31,12 @@ namespace Engine {
       void update_entity(Engine::ECS::Entity& entity) override {
         auto* parent_comp = entity.get_component<Components::Parent>();
         auto* child_transform = entity.get_component<Components::Transform2D>();
-        
+
         if (!parent_comp || !child_transform) return;
 
-        // Get parent entity
-        auto parent = parent_comp->parent_id;
-        
+        // Get parent entity from ID
+        auto parent = Engine::ECS::get_entity(parent_comp->parent_id);
+
         // Check if parent still exists
         if (!parent.is_valid()) {
           // Parent was destroyed, remove parent component
@@ -68,7 +68,7 @@ namespace Engine {
 
         // Update previous parent position for next frame
         parent_comp->prev_parent_pos = parent_transform->position;
-        
+
         // Update local offset to reflect new relative position (in case child moved independently)
         parent_comp->local_offset = child_transform->position - parent_transform->position;
       }

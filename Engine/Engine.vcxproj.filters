@@ -40,7 +40,6 @@
     <ClCompile Include="Engine\Time.cpp" />
     <ClCompile Include="Engine\GUI\Timeline.cpp" />
     <ClCompile Include="Engine\Math\Vector2D.cpp" />
-    <ClCompile Include="Engine\StateManager.cpp" />
     <ClCompile Include="Engine\Math\Vector3D.cpp" />
     <ClCompile Include="Engine\Math\Vector4D.cpp" />
     <ClCompile Include="Engine\WindowManager.cpp" />
@@ -94,7 +93,6 @@
     <ClCompile Include="GameLogic\GameStates\StressTestState.cpp" />
     <ClCompile Include="Engine\Systems\LogicSystem.cpp" />
     <ClCompile Include="Engine\GUI\ResourceExplorerPanel.cpp" />
-    <ClCompile Include="Engine\Level.cpp" />
     <ClCompile Include="Engine\ProjectSaveManager.cpp" />
     <ClCompile Include="Engine\TIlemapManager.cpp" />
     <ClCompile Include="Engine\UndoManager\UndoManager.cpp" />
@@ -105,6 +103,9 @@
     <ClCompile Include="GameLogic\GameStates\PauseState.cpp" />
     <ClCompile Include="Engine\GUI\SelectiveLevelSavePanel.cpp" />
     <ClCompile Include="GameLogic\GameStates\OptionsState.cpp" />
+    <ClCompile Include="Engine\FileIO\ColliderMeshFileIO.cpp" />
+    <ClCompile Include="Engine\LevelTabManager.cpp" />
+    <ClCompile Include="Engine\LevelManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -179,7 +180,6 @@
     <ClInclude Include="Engine\GUI\Timeline.h" />
     <ClInclude Include="Engine\Math\Vector2D.h" />
     <ClInclude Include="GameLogic\GUI\StateChooser.h" />
-    <ClInclude Include="Engine\StateManager.h" />
     <ClInclude Include="Engine\TypeDef.h" />
     <ClInclude Include="Engine\Math\Vector3D.h" />
     <ClInclude Include="Engine\Math\Vector4D.h" />
@@ -209,7 +209,6 @@
     <ClInclude Include="Engine\GUI\ResourceExplorerPanel.h" />
     <ClInclude Include="Engine\ImGuiThemes.h" />
     <ClInclude Include="Engine\KeyCodes.h" />
-    <ClInclude Include="Engine\Level.h" />
     <ClInclude Include="Engine\ProjectSaveManager.h" />
     <ClInclude Include="GameLogic\GameStates\BehaviourState.h" />
     <ClInclude Include="Engine\TIlemapManager.h" />
@@ -240,6 +239,9 @@
     <ClInclude Include="Engine\Lua\LuaComponentBindings.h" />
     <ClInclude Include="GameLogic\GameStates\OptionsState.h" />
     <ClInclude Include="Engine\Systems\ChatBoxSystem.h" />
+    <ClInclude Include="Engine\FileIO\ColliderMeshFileIO.h" />
+    <ClInclude Include="Engine\LevelTabManager.h" />
+    <ClInclude Include="Engine\LevelManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
