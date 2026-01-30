@@ -2613,10 +2613,6 @@
                 "type": "Components::RigidBody"
             },
             {
-                "data": null,
-                "type": "Components::Parent"
-            },
-            {
                 "data": {
                     "end_alpha": 0.0,
                     "interval": 0.05000000074505806,
