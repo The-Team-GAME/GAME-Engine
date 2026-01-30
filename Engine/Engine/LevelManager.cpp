@@ -34,6 +34,76 @@ namespace {
   std::string current_level_path;  // Actual file path (empty for new levels)
   const std::string empty_string;
 
+  // Helper function to check if a serialized entity is a tile collision entity
+  // These are temporary entities rebuilt by TilemapManager and should not be loaded from files
+  bool is_tile_collision_entity(const ReflectionLibrary::GenericValue& entity_value) {
+    if (!entity_value.isObject() || !entity_value.has("components")) {
+      return false;
+    }
+    const auto& components = entity_value["components"];
+    if (!components.isArray()) {
+      return false;
+    }
+
+    bool has_tile_collider = false;
+    bool has_box_collider = false;
+    bool has_transform2d = false;
+    bool has_rigidbody = false;
+    bool is_static_rigidbody = false;
+    bool has_other_components = false;
+
+    for (const auto& comp : components.getArray()) {
+      if (!comp.isObject() || !comp.has("type")) continue;
+
+      const auto& type_val = comp["type"];
+      if (!type_val.isString()) continue;
+
+      std::string type_name = type_val.getString();
+
+      if (type_name == "Components::TileCollider") {
+        has_tile_collider = true;
+      }
+      else if (type_name == "Components::BoxCollider") {
+        has_box_collider = true;
+      }
+      else if (type_name == "Components::Transform2D") {
+        has_transform2d = true;
+      }
+      else if (type_name == "Components::RigidBody") {
+        has_rigidbody = true;
+        if (comp.has("data") && comp["data"].isObject() && comp["data"].has("is_static")) {
+          const auto& is_static = comp["data"]["is_static"];
+          if (is_static.isBool() && is_static.getBool()) {
+            is_static_rigidbody = true;
+          }
+        }
+      }
+      else if (type_name == "Components::Parent") {
+        // Don't count Parent as "other" - legacy tile colliders have broken Parent
+      }
+      else {
+        has_other_components = true;
+      }
+    }
+
+    // Has TileCollider marker component (current format)
+    if (has_tile_collider) {
+      return true;
+    }
+
+    // Legacy format - has BoxCollider, Transform2D, RigidBody (static), and NO other components
+    if (has_box_collider && has_transform2d && has_rigidbody && is_static_rigidbody && !has_other_components) {
+      return true;
+    }
+
+    // Legacy format 2 - has BoxCollider, Transform2D, RigidBody (static), and NO other components
+    if (has_transform2d && has_rigidbody && is_static_rigidbody && !has_other_components) {
+      return true;
+    }
+
+    return false;
+  }
+
   // Find the next available number for new levels
   size_t find_next_new_level_number() {
     size_t num = 1;
@@ -460,6 +530,12 @@ namespace Engine {
       std::unordered_map<ECS::EntityID, ECS::EntityID> id_remap;
 
       for (const auto& entity_value : entities) {
+        // Skip tile collision entities - they are temporary and rebuilt by TilemapManager
+        // This handles both current format (with TileCollider) and legacy format
+        if (is_tile_collision_entity(entity_value)) {
+          continue;
+        }
+
         // Get the original ID if it exists
         ECS::EntityID old_id = ECS::INVALID_ENTITY;
         if (entity_value.has("id") && entity_value["id"].isInt()) {
@@ -547,7 +623,7 @@ namespace Engine {
         }
         // Add Parent component to make this entity a child of the Level entity
         entity.add_component<Components::Parent>(level_entity_id);
-      });
+        });
     }
 
   } // namespace LevelManager
