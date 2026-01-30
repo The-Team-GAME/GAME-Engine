@@ -82,6 +82,17 @@ namespace PlayerStates
     Components::State player_jumping("Jumping", "player_jumping_enter", "player_jumping_update", "", player_jumping_anim, jump_audio);
 
     // ========================================================================
+    // Player Dash State
+    // ========================================================================
+    Components::StateAnimation player_dashinging_anim;
+    player_dashinging_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_dash_spritesheet.png"));
+    player_dashinging_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 8, 8);
+    player_dashinging_anim.animation = Components::Animation(8, 0.1f);
+    player_dashinging_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
+
+    Components::State player_dash("Dash", "dash_on_enter", "dash_on_update", "", player_dashinging_anim, walk_audio );
+
+    // ========================================================================
     // Player Attack 1 State (First Punch)
     // ========================================================================
     Components::StateAnimation player_attack1_anim;
@@ -121,6 +132,7 @@ namespace PlayerStates
     player_sm.add_state(player_idle);
     player_sm.add_state(player_walking);
     player_sm.add_state(player_jumping);
+    player_sm.add_state(player_dash);
     player_sm.add_state(player_attack1);
     player_sm.add_state(player_attack2);
     player_sm.add_state(player_attack3);

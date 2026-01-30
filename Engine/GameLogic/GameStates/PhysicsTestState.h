@@ -91,7 +91,7 @@ public:
     make_wall(Vec2D(200.0f, 825.0f), Vec2D(300.0f, 50.0f));
 
     ECS::Entity slope = make_wall(Vec2D(500.0f, 675.0f), Vec2D(500.0f, 50.0f), 30.f);
-    Components::BoxCollider* box_slope = slope.get_component< Components::BoxCollider>();
+    //Components::BoxCollider* box_slope = slope.get_component< Components::BoxCollider>();
     //box_slope->kinetic_friction = 1.f;
 
     make_wall(Vec2D(1300.0f, 675.0f), Vec2D(300.0f, 50.0f));

@@ -18,6 +18,10 @@
 #include "../Components/GameplayComponent.h"
 #include "../Components/HeartrateComponent.h"
 #include <assert.h>
+namespace {
+  f32 timer;
+  f32 dash_cooldown;
+}
 namespace PlayerStateCallbacks
 {
   // ========================================================================
@@ -38,6 +42,13 @@ namespace PlayerStateCallbacks
     {
       state_machine->change_state("Idle");
     }
+
+    // Handling cooldowns
+    if (dash_cooldown > 0)
+    {
+      dash_cooldown -= Time::get_fixed_dt();
+    }
+
     // put this first because we need to reset the flag if possible
     if (Input::is_released(KeyCode::Space) && player_rigid->is_jumping)
     {
@@ -45,6 +56,10 @@ namespace PlayerStateCallbacks
     }
 
     // Check for movement input
+    if (Input::is_held(KeyCode::ShiftLeft) && dash_cooldown <= 0.f)
+    {
+      state_machine->change_state("Dash");
+    }
     if (Input::is_held(KeyCode::Space)
         && player_rigid->on_ground
         && !player_rigid->is_jumping)
@@ -70,7 +85,7 @@ namespace PlayerStateCallbacks
     }
   }
    
-   
+#pragma region idle state;
   // ========================================================================
   // Idle State Callbacks
   // ========================================================================
@@ -83,7 +98,9 @@ namespace PlayerStateCallbacks
   inline void idle_on_update(Engine::ECS::Entity& entity) {
     take_input(entity);
   }
+#pragma endregion
 
+#pragma region Walking State
   // ========================================================================
   // Walking State Callbacks
   // ========================================================================
@@ -115,7 +132,9 @@ namespace PlayerStateCallbacks
   {
     // Empty by design
   }
+#pragma endregion
 
+#pragma region Jumping State
   // ========================================================================
   // Jumping State Callbacks
   // ========================================================================
@@ -137,6 +156,50 @@ namespace PlayerStateCallbacks
   inline void jumping_on_update(Engine::ECS::Entity& entity) 
   {
     take_input(entity);
+  }
+#pragma endregion
+
+  // ========================================================================
+  // Dash State Callbacks
+  // ========================================================================
+
+  inline void dash_on_enter(ECS::Entity& entity)
+  {
+    Log::info("Player: Entered Dashing state");
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(player_comp);
+    if (player_comp)
+    {
+      timer = player_comp->dash_duration;
+    }
+  }
+
+  inline void dash_on_update(ECS::Entity& entity)
+  {
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    Components::Flip* flip = entity.get_component<Components::Flip>();
+    assert(rigid);
+    assert(player_comp);
+    assert(flip);
+    if (timer <= 0.f)
+    {
+      timer = 0.f;
+      Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
+      assert(state_machine);
+      state_machine->change_state("Idle");
+    }
+    rigid->velocity.x = flip->value.x * player_comp->dash_speed;
+    rigid->gravity = false;
+    timer -= Time::get_fixed_dt();
+  }
+
+  inline void dashing_on_exit([[maybe_unused]] ECS::Entity& entity)
+  {
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    assert(rigid);
+    rigid->gravity = true;
+    timer = 0.f;
   }
 
   // ========================================================================

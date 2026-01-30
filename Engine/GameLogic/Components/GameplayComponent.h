@@ -38,9 +38,13 @@ namespace Components
 
     // Movement speeds (going to add to force instead of velocity as of 22/01/26)
     // These values are loaded from file
-    f32 walk_speed;// = 300'000'000.f;
-    f32 air_speed;// = 60'000.f;
-    f32 jump_force;// = -30'000.f;
+    f32 walk_speed = 300'000.f;
+    f32 jump_force = -30'000.f;
+
+    f32 dash_duration = 0.5f;
+    f32 dash_cooldown = 0.6f;
+    f32 dash_speed = 1000.f;  // Scalar for the velocity value since direction is to be decided
+    f32 stun_duration = 0.3f; // Will remember to give player i frames during stun
 
     // Attacks
     AttackData attack1 = {
@@ -177,7 +181,7 @@ namespace Components
 
 
 REFLECT_FIELDS(Components::Player::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, dash_speed, damage, heartrate_cost, knockback)
-REGISTER_COMPONENT(Components::Player, walk_speed, air_speed, jump_force, attack1, attack2, attack3)
+REGISTER_COMPONENT(Components::Player, walk_speed, jump_force, attack1, attack2, attack3)
 REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height, attack_cooldown, last_attack_time, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, attack_range)
 REGISTER_COMPONENT(Components::Attack, damage, knockback, is_continuous, damage_interval, impact_vfx_texture)
 REGISTER_COMPONENT(Components::PendingKnockback, knockback)
