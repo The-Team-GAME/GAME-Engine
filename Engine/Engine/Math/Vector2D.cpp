@@ -13,8 +13,7 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "Vector2D.h"
-#include <cmath>
-#include <numbers>
+#include "Math.h"
 
 namespace Math {
 
@@ -96,6 +95,7 @@ namespace Math {
     return result < 0 ? -result : result;
   }
 
+  // Rotates the angle 90 degrees ccw
   Vec2D outward_normal(Vec2D const& vect)
   {
     return Vec2D(-vect.y, vect.x);

@@ -40,6 +40,7 @@ namespace Engine
       GizmoSelectionSystem() {
         require_components<Components::Transform2D>();
         exclude_components<Components::Text, Components::TileCollider>(); // Only process entities without Text
+        set_editor_system(); // Editor system - runs even when paused
       }
 
       void update() override {
@@ -101,6 +102,7 @@ namespace Engine
     public:
       GizmoTextSelectionSystem() {
         require_components<Components::Transform2D, Components::Text, Components::Font>();
+        set_editor_system(); // Editor system - runs even when paused
       }
 
       void update() override {
@@ -169,6 +171,7 @@ namespace Engine
     public:
       GizmoManipulationSystem() {
         require_components<Components::Transform2D, Components::Gizmo>();
+        set_editor_system(); // Editor system - runs even when paused
       }
 
       static inline bool point_in_rect(const Math::Vec2D& p, const Math::Vec2D& c, const Math::Vec2D& size) {

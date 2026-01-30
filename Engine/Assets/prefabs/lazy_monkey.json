@@ -3,7 +3,7 @@
         "components": [
             {
                 "data": {
-                    "drawIndex": 1,
+                    "drawIndex": 3,
                     "tex_coords_list": [
                         [
                             {
@@ -105,8 +105,8 @@
                         "half_height": 36.366294860839844,
                         "half_width": 21.029491424560547,
                         "pos": {
-                            "x": 874.55322265625,
-                            "y": 795.9114990234375
+                            "x": 59.74905014038086,
+                            "y": 732.0220336914063
                         }
                     },
                     "height": 72.73258972167969,
@@ -150,7 +150,7 @@
             {
                 "data": {
                     "value": {
-                        "x": -1.0,
+                        "x": 1.0,
                         "y": 1.0
                     }
                 },
@@ -195,7 +195,7 @@
                         0.15000000596046448
                     ],
                     "is_looping": true,
-                    "startTime": 3.8504583835601807,
+                    "startTime": 68.99198913574219,
                     "totalDuration": 0.75
                 },
                 "type": "Components::Animation"
@@ -203,8 +203,8 @@
             {
                 "data": {
                     "position": {
-                        "x": 883.5343017578125,
-                        "y": 768.0
+                        "x": 50.767974853515625,
+                        "y": 704.3883056640625
                     },
                     "rotation": 0.0,
                     "scale": {
@@ -251,7 +251,7 @@
                                             0.5
                                         ],
                                         "is_looping": true,
-                                        "startTime": 3.8504583835601807,
+                                        "startTime": 68.99198913574219,
                                         "totalDuration": 1.0
                                     },
                                     "collider_data": {
@@ -413,7 +413,7 @@
                                             0.15000000596046448
                                         ],
                                         "is_looping": true,
-                                        "startTime": 3.8504583835601807,
+                                        "startTime": 68.99198913574219,
                                         "totalDuration": 0.75
                                     },
                                     "collider_data": {
@@ -571,7 +571,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 3.8504583835601807,
+                                        "startTime": 68.99198913574219,
                                         "totalDuration": 0.6000000238418579
                                     },
                                     "collider_data": {
@@ -739,7 +739,7 @@
                                             0.4000000059604645
                                         ],
                                         "is_looping": true,
-                                        "startTime": 3.8504583835601807,
+                                        "startTime": 68.99198913574219,
                                         "totalDuration": 0.4000000059604645
                                     },
                                     "collider_data": {
@@ -865,7 +865,7 @@
                                             0.15000000596046448
                                         ],
                                         "is_looping": true,
-                                        "startTime": 3.8504583835601807,
+                                        "startTime": 68.99198913574219,
                                         "totalDuration": 0.75
                                     },
                                     "collider_data": {
@@ -1014,7 +1014,7 @@
                                             1.5
                                         ],
                                         "is_looping": true,
-                                        "startTime": 3.8504583835601807,
+                                        "startTime": 68.99198913574219,
                                         "totalDuration": 1.7999999523162842
                                     },
                                     "collider_data": {
@@ -1203,28 +1203,30 @@
             {
                 "data": {
                     "acceleration": {
-                        "x": -6.12323437939287e-14,
-                        "y": 1000.0
+                        "x": 0.0,
+                        "y": 0.0
                     },
-                    "angular_velocity": 0.0,
-                    "force": {
-                        "x": -6.12323437939287e-14,
-                        "y": -3.7494000395748785e-30
+                    "force_view": {
+                        "x": 0.0,
+                        "y": 0.0
                     },
                     "is_jumping": false,
                     "is_static": false,
                     "mass": 1.0,
                     "on_ground": true,
-                    "rotation": 0.0,
-                    "rotation_terminal_velocity": 360.0,
-                    "terminal_velocity": 1000.0,
                     "use_gravity": true,
                     "velocity": {
-                        "x": 0.0,
-                        "y": 6.248999674126681e-32
-                    }
+                        "x": 6.28024137523566e-32,
+                        "y": -1.025641173248539e-15
+                    },
+                    "x_terminal_velocity": 500.0,
+                    "y_terminal_velocity": 500.0
                 },
                 "type": "Components::RigidBody"
+            },
+            {
+                "data": null,
+                "type": "Components::Parent"
             },
             {
                 "data": {
@@ -1243,7 +1245,7 @@
                         "x": 500.0,
                         "y": -100.0
                     },
-                    "last_attack_time": 101.71050262451172,
+                    "last_attack_time": 61.69614791870117,
                     "leap_height": 300.0,
                     "leap_speed": 2000.0
                 },
@@ -1252,14 +1254,15 @@
             {
                 "data": {
                     "damage": 10,
-                    "damage_interval": 1.0,
+                    "damage_interval": 0.10000000149011612,
+                    "directional_knockback": false,
                     "impact_vfx_texture": {
                         "path": ""
                     },
                     "is_continuous": true,
                     "knockback": {
-                        "x": 900.0,
-                        "y": -300.0
+                        "x": -500.0,
+                        "y": -100.0
                     }
                 },
                 "type": "Components::Attack"
@@ -1274,6 +1277,7 @@
         ],
         "filepath": "prefabs/lazy_monkey.json",
         "layers": [
+            "damage_player",
             "enemy"
         ],
         "uuid": "b6c2bc8a-65bb-409c3-8420-1e137e6d59da"

@@ -285,6 +285,7 @@ namespace Engine
     public:
       CameraControlSystem() {
         // No component requirements - this system works globally
+        set_editor_system(); // Editor system - runs even when paused
       }
 
       void update() override {

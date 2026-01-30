@@ -79,6 +79,10 @@ namespace Math {
   // This one not really cross product, more like finding area of //gram formed
   f32 cross_product(Vec2D const& lhs, Vec2D const& rhs);
   Vec2D outward_normal(Vec2D const& vect);
+
+  //This function always returns an angle between 0° and 90°, regardless of which quadrant 
+  //the original vector points to.It essentially calculates the acute angle the slope 
+  // makes with the horizontal axis.
   f32 angle_of_slope(Vec2D const& line);
 
 

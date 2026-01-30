@@ -13,6 +13,7 @@
 // Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "Time.h"
+#include "Audio/AudioPlayer.h"
 #include <chrono>
 namespace chrono = std::chrono;
 
@@ -25,6 +26,7 @@ namespace {
   f32 fixed_dt{ 1.f / tick_rate };  // precalulate fixed_dt so we dont have to do it every time get_tick_rate is called
   f32 time_scale{ 1.f };            // time scale multiplier
   f32 elapsed_time{};               // total scaled time since engine start
+  bool is_paused{ false };          // whether the game is paused (separate from time_scale)
 }
 
 namespace Engine {
@@ -100,25 +102,31 @@ namespace Engine {
 
     bool get_paused()
     {
-      return time_scale == 0.0f;
+      return is_paused;
     }
 
     bool set_paused(bool paused)
     {
-      if (paused)
+      if (is_paused == paused) return is_paused; // No change needed
+      
+      is_paused = paused;
+      
+      // Pause/resume audio when game is paused/unpaused
+      if (is_paused)
       {
-        time_scale = 0.0f;
+        Engine::Audio::pause_all_sounds();
       }
       else
       {
-        time_scale = 1.0f;
+        Engine::Audio::resume_all_sounds();
       }
-      return get_paused();
+      
+      return is_paused;
     }
 
     bool toggle_paused()
     {
-      return set_paused(!get_paused());
+      return set_paused(!is_paused);
     }
   }
 };

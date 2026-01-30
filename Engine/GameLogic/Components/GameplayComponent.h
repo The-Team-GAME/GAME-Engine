@@ -26,20 +26,21 @@ namespace Components
   {
     struct AttackData
     {
-      float hitbox_offset_x = 80.0f;
-      float hitbox_offset_y = 0.0f;
-      float hitbox_width = 100.0f;
-      float hitbox_height = 128.0f;
-      float dash_speed = 1000.0f;
-      int damage = 10;
-      float heartrate_cost = 5.0f;
-      Math::Vec2D knockback = Math::Vec2D(300.0f, -50.0f);
+      f32 hitbox_offset_x = 80.0f;
+      f32 hitbox_offset_y = 0.0f;
+      f32 hitbox_width = 100.0f;
+      f32 hitbox_height = 128.0f;
+      f32 dash_speed = 1000.0f;
+      s32 damage = 10;
+      f32 heartrate_cost = 5.0f;
+      Math::Vec2D knockback = Math::Vec2D(300.0f, 0.f);
     };
 
-    // Movement speeds
-    float walk_speed = 600.0f;
-    float air_speed = 600.0f;
-    float jump_force = 900.0f;
+    // Movement speeds (going to add to force instead of velocity as of 22/01/26)
+    // These values are loaded from file
+    f32 walk_speed;// = 300'000'000.f;
+    f32 air_speed;// = 60'000.f;
+    f32 jump_force;// = -30'000.f;
 
     // Attacks
     AttackData attack1 = {
@@ -50,7 +51,7 @@ namespace Components
       1000.0f,                     // dash_speed
       10,                          // damage
       5.0f,                        // heartrate_cost
-      Math::Vec2D(300.0f, -50.0f)  // knockback
+      Math::Vec2D(300.0f, 0.f)     // knockback
     };
 
     AttackData attack2 = {
@@ -61,7 +62,7 @@ namespace Components
       1000.0f,                     // dash_speed
       15,                          // damage
       5.0f,                        // heartrate_cost
-      Math::Vec2D(300.0f, -50.0f)  // knockback
+      Math::Vec2D(300.0f, 0.f)     // knockback
     };
 
     AttackData attack3 = {
@@ -72,7 +73,7 @@ namespace Components
       2000.0f,                     // dash_speed
       25,                          // damage
       8.0f,                        // heartrate_cost
-      Math::Vec2D(3000.0f, -100.0f)// knockback
+      Math::Vec2D(3000.0f, 0.f)    // knockback
     };
   };
 
@@ -98,7 +99,7 @@ namespace Components
     float hitbox_width = 120.0f;
     float hitbox_height = 128.0f;
     int damage = 15;
-    Math::Vec2D knockback = Math::Vec2D(500.0f, -100.0f);
+    Math::Vec2D knockback = Math::Vec2D(500.0f, 0.f);
 
     // Detection ranges
     float detection_range = 300.0f;
@@ -116,8 +117,9 @@ namespace Components
     Components::Texture impact_vfx_texture;
 
     Attack() = default;
-    explicit Attack(int dmg, Math::Vec2D kb = Math::Vec2D(0.0f, 0.0f), bool continuous = false, float interval = 0.1f) 
-      : damage(dmg), knockback(kb), is_continuous(continuous), damage_interval(interval) {}
+    explicit Attack(int dmg, Math::Vec2D kb = Math::Vec2D(0.0f, 0.0f), bool continuous = false, float interval = 0.1f)
+      : damage(dmg), knockback(kb), is_continuous(continuous), damage_interval(interval) {
+    }
 
     bool should_apply_damage(Engine::ECS::Entity entity) {
       float current_time = Engine::Time::get_time();
