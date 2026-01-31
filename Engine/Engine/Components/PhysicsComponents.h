@@ -78,4 +78,4 @@ namespace Components
   };
 }
 
-REGISTER_COMPONENT(Components::RigidBody, mass, force_view, acceleration, velocity, x_terminal_velocity, y_terminal_velocity, use_gravity, is_static, on_ground, is_jumping)
+REGISTER_COMPONENT(Components::RigidBody, mass, force_view, acceleration, velocity, x_terminal_velocity, y_terminal_velocity, use_gravity, gravity, is_static, on_ground, is_jumping)

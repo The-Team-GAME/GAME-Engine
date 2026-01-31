@@ -90,7 +90,7 @@ namespace PlayerStates
     player_dashinging_anim.animation = Components::Animation(8, 0.1f);
     player_dashinging_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
 
-    Components::State player_dash("Dash", "dash_on_enter", "dash_on_update", "", player_dashinging_anim, walk_audio );
+    Components::State player_dash("Dash", "player_dash_enter", "player_dash_update", "player_dash_exit", player_dashinging_anim, walk_audio );
 
     // ========================================================================
     // Player Attack 1 State (First Punch)

@@ -21,6 +21,7 @@
 namespace {
   f32 timer;
   f32 dash_cooldown;
+  f32 terminal_vel_placeholder;
 }
 namespace PlayerStateCallbacks
 {
@@ -44,10 +45,7 @@ namespace PlayerStateCallbacks
     }
 
     // Handling cooldowns
-    if (dash_cooldown > 0)
-    {
-      dash_cooldown -= Time::get_fixed_dt();
-    }
+    if (dash_cooldown > 0) { dash_cooldown -= Time::get_fixed_dt(); }
 
     // put this first because we need to reset the flag if possible
     if (Input::is_released(KeyCode::Space) && player_rigid->is_jumping)
@@ -60,7 +58,7 @@ namespace PlayerStateCallbacks
     {
       state_machine->change_state("Dash");
     }
-    if (Input::is_held(KeyCode::Space)
+    else if (Input::is_held(KeyCode::Space)
         && player_rigid->on_ground
         && !player_rigid->is_jumping)
     {
@@ -166,40 +164,50 @@ namespace PlayerStateCallbacks
   inline void dash_on_enter(ECS::Entity& entity)
   {
     Log::info("Player: Entered Dashing state");
+
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
-    if (player_comp)
-    {
-      timer = player_comp->dash_duration;
-    }
+    player_comp->dash_timer = player_comp->dash_duration;
+    
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    assert(rigid);
+    rigid->use_gravity = false;
+    rigid->velocity.zero();
+    rigid->force.zero();
+    terminal_vel_placeholder = rigid->x_terminal_velocity;
   }
 
   inline void dash_on_update(ECS::Entity& entity)
   {
+
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     Components::Player* player_comp = entity.get_component<Components::Player>();
     Components::Flip* flip = entity.get_component<Components::Flip>();
     assert(rigid);
     assert(player_comp);
     assert(flip);
-    if (timer <= 0.f)
+    if (player_comp->dash_timer <= 0.f)
     {
-      timer = 0.f;
+      player_comp->dash_timer = 0.f;
       Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
       assert(state_machine);
       state_machine->change_state("Idle");
     }
+    rigid->x_terminal_velocity = player_comp->dash_speed;
     rigid->velocity.x = flip->value.x * player_comp->dash_speed;
-    rigid->gravity = false;
-    timer -= Time::get_fixed_dt();
+    player_comp->dash_timer -= Time::get_fixed_dt();
   }
 
-  inline void dashing_on_exit([[maybe_unused]] ECS::Entity& entity)
+  inline void dash_on_exit([[maybe_unused]] ECS::Entity& entity)
   {
+    Log::info("Player: Exited Dashing state");
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
-    rigid->gravity = true;
-    timer = 0.f;
+    rigid->use_gravity = true;
+    rigid->x_terminal_velocity = terminal_vel_placeholder;
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(player_comp);
+    dash_cooldown = player_comp->dash_cooldown;
   }
 
   // ========================================================================
@@ -468,14 +476,23 @@ namespace PlayerStateCallbacks
 // Register all player state callbacks
 REGISTER_FUNCTION(player_idle_enter, void(Engine::ECS::Entity&), PlayerStateCallbacks::idle_on_enter)
 REGISTER_FUNCTION(player_idle_update, void(Engine::ECS::Entity&), PlayerStateCallbacks::idle_on_update)
+
 REGISTER_FUNCTION(player_walking_enter, void(Engine::ECS::Entity&), PlayerStateCallbacks::walking_on_enter)
 REGISTER_FUNCTION(player_walking_update, void(Engine::ECS::Entity&), PlayerStateCallbacks::walking_on_update)
 REGISTER_FUNCTION(player_walking_exit, void(Engine::ECS::Entity&), PlayerStateCallbacks::walking_on_exit)
+
 REGISTER_FUNCTION(player_jumping_enter, void(Engine::ECS::Entity&), PlayerStateCallbacks::jumping_on_enter)
 REGISTER_FUNCTION(player_jumping_update, void(Engine::ECS::Entity&), PlayerStateCallbacks::jumping_on_update)
+
+REGISTER_FUNCTION(player_dash_enter, void(Engine::ECS::Entity&), PlayerStateCallbacks::dash_on_enter)
+REGISTER_FUNCTION(player_dash_update, void(Engine::ECS::Entity&), PlayerStateCallbacks::dash_on_update)
+REGISTER_FUNCTION(player_dash_exit, void(Engine::ECS::Entity&), PlayerStateCallbacks::dash_on_exit)
+
 REGISTER_FUNCTION(player_attack1_enter, void(Engine::ECS::Entity&), PlayerStateCallbacks::attack1_on_enter)
 REGISTER_FUNCTION(player_attack1_update, void(Engine::ECS::Entity&), PlayerStateCallbacks::attack1_on_update)
+
 REGISTER_FUNCTION(player_attack2_enter, void(Engine::ECS::Entity&), PlayerStateCallbacks::attack2_on_enter)
 REGISTER_FUNCTION(player_attack2_update, void(Engine::ECS::Entity&), PlayerStateCallbacks::attack2_on_update)
+
 REGISTER_FUNCTION(player_attack3_enter, void(Engine::ECS::Entity&), PlayerStateCallbacks::attack3_on_enter)
 REGISTER_FUNCTION(player_attack3_update, void(Engine::ECS::Entity&), PlayerStateCallbacks::attack3_on_update)
