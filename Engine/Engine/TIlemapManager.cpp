@@ -262,8 +262,8 @@ namespace TilemapManager {
         .add_component<Components::RigidBody>(true, false) // is_static = true, no gravity
         .add_component<Components::BoxCollider>(scale.x, scale.y, true); // resolve_collisions = true
 
-      // Set friction to 0
-      entity.get_component<Components::BoxCollider>()->kinetic_friction = 0.0f;
+      // Set friction to 1.0
+      entity.get_component<Components::BoxCollider>()->kinetic_friction = 1.0f;
 
       entity.clear_layers();
       entity.add_to_layer(layer_name);
