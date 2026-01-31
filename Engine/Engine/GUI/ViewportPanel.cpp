@@ -20,6 +20,11 @@
 #include "../WindowManager.h"
 #include "../Math/Vector2D.h"
 #include "../FileIO/Settings.h"
+#include "../LevelTabManager.h"
+#include "../FileIO/FileDialog.h"
+#include "../Resources.h"
+#include "../EventManager/EventManager.h"
+#include "../Events/EngineEvents.h"
 #include <algorithm>
 
 namespace ViewportPanel {
@@ -37,6 +42,9 @@ namespace ViewportPanel {
     // Store viewport image bounds for input conversion
     ImVec2 viewport_image_min = { 0, 0 };
     ImVec2 viewport_image_max = { 0, 0 };
+
+    // Tab close confirmation state
+    bool show_close_confirmation = false;
   }
 
   void init() {
@@ -106,17 +114,218 @@ namespace ViewportPanel {
     glViewport(0, 0, window_width, window_height);
   }
 
+  // Helper function to draw level tabs
+  static void draw_level_tabs() {
+    const auto& tabs = Engine::LevelTabManager::get_tabs();
+    const auto& tab_order = Engine::LevelTabManager::get_tab_order();
+    const std::string& active_tab_id = Engine::LevelTabManager::get_active_tab_id();
+
+    // Track if we need to programmatically select a tab (e.g., after opening a new level)
+    static std::string last_known_active;
+    static bool needs_selection = false;
+
+    if (active_tab_id != last_known_active) {
+      needs_selection = true;
+      last_known_active = active_tab_id;
+    }
+
+    if (tabs.empty()) {
+      ImGui::TextDisabled("No levels open");
+      needs_selection = false;
+      last_known_active = "";
+      return;
+    }
+
+    // Track which tab to close (by ID now)
+    static std::string tab_id_pending_close;
+
+    ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_Reorderable |
+      ImGuiTabBarFlags_FittingPolicyScroll;
+
+    if (ImGui::BeginTabBar("LevelTabs", tab_bar_flags)) {
+      for (size_t i = 0; i < tab_order.size(); ++i) {
+        const std::string& tab_id = tab_order[i];
+        Engine::LevelTab* tab = Engine::LevelTabManager::get_tab(tab_id);
+        if (!tab) continue;
+
+        // Build tab label with dirty indicator
+        std::string tab_label = tab->display_name;
+        if (tab->is_dirty) {
+          tab_label += " *";
+        }
+        tab_label += "###Tab" + std::to_string(i); // Unique ID for ImGui
+
+        // Only use SetSelected when we need to programmatically select this tab
+        ImGuiTabItemFlags item_flags = ImGuiTabItemFlags_None;
+        if ((needs_selection && tab_id == active_tab_id) || tab->needs_selection) {
+          item_flags |= ImGuiTabItemFlags_SetSelected;
+          tab->needs_selection = false;  // Clear the flag after using it
+        }
+
+        bool tab_open = true;
+        bool is_tab_selected = ImGui::BeginTabItem(tab_label.c_str(), &tab_open, item_flags);
+
+        if (is_tab_selected) {
+          ImGui::EndTabItem();
+
+          // User clicked this tab - switch our internal state to match
+          if (tab_id != active_tab_id) {
+            Engine::LevelTabManager::switch_to_tab(tab_id);
+            last_known_active = tab_id;
+          }
+        }
+
+        // Handle tab close
+        if (!tab_open) {
+          if (tab->is_dirty) {
+            // Show confirmation dialog
+            tab_id_pending_close = tab_id;
+            show_close_confirmation = true;
+          }
+          else {
+            Engine::LevelTabManager::close_tab(tab_id);
+          }
+        }
+
+        // Right-click context menu for tab
+        if (ImGui::BeginPopupContextItem()) {
+          bool is_new_level = tab_id.starts_with("__new_");
+
+          if (ImGui::MenuItem("Save", "Ctrl+S")) {
+            if (is_new_level) {
+              // Need to prompt for save location
+              auto save_path = Engine::FileIO::show_save_file_dialog("Save Level", "untitled.json", "Level Files (*.json)\0*.json\0", "json", Engine::Resources::resource_path + "/levels");
+              if (save_path.has_value()) {
+                Engine::LevelTabManager::save_tab_as(tab_id, save_path.value(), false);
+              }
+            }
+            else {
+              Engine::LevelTabManager::save_tab(tab_id);
+            }
+          }
+
+          if (ImGui::MenuItem("Save As...")) {
+            auto save_path = Engine::FileIO::show_save_file_dialog("Save Level As", "untitled.json", "Level Files (*.json)\0*.json\0", "json", Engine::Resources::resource_path + "/levels");
+            if (save_path.has_value()) {
+              Engine::LevelTabManager::save_tab_as(tab_id, save_path.value(), false);
+            }
+          }
+
+          ImGui::Separator();
+
+          if (ImGui::MenuItem("Close")) {
+            if (tab->is_dirty) {
+              tab_id_pending_close = tab_id;
+              show_close_confirmation = true;
+            }
+            else {
+              Engine::LevelTabManager::close_tab(tab_id);
+            }
+          }
+
+          if (ImGui::MenuItem("Close Others")) {
+            // Close all tabs except this one
+            for (auto it2 = tab_order.rbegin(); it2 != tab_order.rend(); ++it2) {
+              if (*it2 != tab_id) {
+                Engine::LevelTabManager::close_tab(*it2, true);
+              }
+            }
+          }
+
+          if (ImGui::MenuItem("Close All")) {
+            Engine::LevelTabManager::clear_all();
+          }
+
+          ImGui::EndPopup();
+        }
+      }
+
+      // "+" button to create new level
+      if (ImGui::TabItemButton("+", ImGuiTabItemFlags_Trailing | ImGuiTabItemFlags_NoTooltip)) {
+        Engine::LevelTabManager::create_new_tab();
+        needs_selection = true;
+        last_known_active = Engine::LevelTabManager::get_active_tab_id();
+      }
+      if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Create New Level");
+      }
+
+      ImGui::EndTabBar();
+
+      // Clear the selection request after processing
+      needs_selection = false;
+    }
+
+    // Close confirmation modal
+    if (show_close_confirmation && !tab_id_pending_close.empty()) {
+      ImGui::OpenPopup("Close Level?");
+    }
+
+    if (ImGui::BeginPopupModal("Close Level?", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+      Engine::LevelTab* tab_to_close = Engine::LevelTabManager::get_tab(tab_id_pending_close);
+      if (tab_to_close) {
+        ImGui::Text("'%s' has unsaved changes.", tab_to_close->display_name.c_str());
+        ImGui::Text("Do you want to save before closing?");
+        ImGui::Separator();
+
+        if (ImGui::Button("Save", ImVec2(80, 0))) {
+          bool is_new_level = tab_id_pending_close.starts_with("__new_");
+          if (is_new_level) {
+            auto save_path = Engine::FileIO::show_save_file_dialog("Save Level", "untitled.json", "Level Files (*.json)\0*.json\0", "json", Engine::Resources::resource_path + "/levels");
+            if (save_path.has_value()) {
+              std::string new_id = Engine::LevelTabManager::save_tab_as(tab_id_pending_close, save_path.value(), false);
+              if (!new_id.empty()) {
+                Engine::LevelTabManager::close_tab(new_id);
+              }
+            }
+          }
+          else {
+            Engine::LevelTabManager::save_tab(tab_id_pending_close);
+            Engine::LevelTabManager::close_tab(tab_id_pending_close);
+          }
+          tab_id_pending_close = "";
+          show_close_confirmation = false;
+          ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+
+        if (ImGui::Button("Don't Save", ImVec2(80, 0))) {
+          Engine::LevelTabManager::close_tab(tab_id_pending_close, true);
+          tab_id_pending_close = "";
+          show_close_confirmation = false;
+          ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+
+        if (ImGui::Button("Cancel", ImVec2(80, 0))) {
+          tab_id_pending_close = "";
+          show_close_confirmation = false;
+          ImGui::CloseCurrentPopup();
+        }
+      }
+      else {
+        tab_id_pending_close = "";
+        show_close_confirmation = false;
+        ImGui::CloseCurrentPopup();
+      }
+      ImGui::EndPopup();
+    }
+  }
+
   void draw_panel() {
     // Only show the viewport panel if panel viewport mode is enabled
     if (!Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode) {
       return;
     }
 
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(5, 5));
     ImGui::SetNextWindowSize(ImVec2(1280, 720), ImGuiCond_FirstUseEver);
     ImGui::Begin("Viewport");
 
-    // Get the size of the window
+    // Draw level tabs at the top
+    draw_level_tabs();
+
+    // Get the remaining size for the viewport
     ImVec2 viewport_panel_size = ImGui::GetContentRegionAvail();
 
     // Calculate aspect ratio (16:9)

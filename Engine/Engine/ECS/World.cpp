@@ -233,6 +233,43 @@ namespace Engine {
       Engine::Perf::stop("ECS Update");
     }
 
+    void update_game()
+    {
+      auto& containers = Internal::get_containers();
+      Engine::Perf::start("ECS Update Game");
+
+      // Update only game systems (SystemType::Game)
+      for (auto& system : containers.systems)
+      {
+        if (system->get_system_type() == SystemType::Game)
+        {
+          system->update();
+        }
+      }
+
+      Engine::Perf::stop("ECS Update Game");
+    }
+
+    void update_editor()
+    {
+      auto& containers = Internal::get_containers();
+      Engine::Perf::start("ECS Update Editor");
+
+      // Always dispatch events (needed for editor systems to work when paused)
+      EventManager::update_events(containers.systems);
+
+      // Update only editor systems (SystemType::Editor)
+      for (auto& system : containers.systems)
+      {
+        if (system->get_system_type() == SystemType::Editor)
+        {
+          system->update();
+        }
+      }
+
+      Engine::Perf::stop("ECS Update Editor");
+    }
+
     void process_housekeeping()
     {
       auto& containers = Internal::get_containers();

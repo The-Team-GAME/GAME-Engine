@@ -325,8 +325,12 @@ namespace ImGuiWidgets {
       }
     }
 
+    // Only process click interactions when this window is focused and hovered
+    bool window_can_receive_clicks = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) &&
+      ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
+
     // Right-click to delete vertex
-    if (hovered_vertex >= 0 && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
+    if (window_can_receive_clicks && hovered_vertex >= 0 && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
       if (collider_data.vertices.size() > 3) { // Keep at least 3 vertices
         collider_data.vertices.erase(collider_data.vertices.begin() + hovered_vertex);
         changed = true;
@@ -335,7 +339,7 @@ namespace ImGuiWidgets {
     }
 
     // Click on sprite (but not on a vertex) to add new vertex
-    if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && hovered_vertex == -1) {
+    if (window_can_receive_clicks && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && hovered_vertex == -1) {
       ImVec2 mouse_pos = ImGui::GetMousePos();
 
       // Check if mouse is within the sprite bounds (if bounds provided)

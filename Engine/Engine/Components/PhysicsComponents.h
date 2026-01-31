@@ -32,10 +32,14 @@ namespace Components
 
     f32 mass = 1.0f; // Mass in kg
     Vec2D force;
+    Vec2D force_view; // This is for debugging purposes
     Vec2D acceleration;
     Vec2D velocity; // Velocity in units per second
+    Vec2D gravity{ 0.f, 1000.f };
     // terminal velocity should be a set value instead of a vector just cuz you want to properly scale the velocity instead of capping it at set values
     f32 terminal_velocity{ 1000.f }; // set to max float
+    f32 x_terminal_velocity = 500.f;
+    f32 y_terminal_velocity = 500.f;
 
     Vec2D last_surface_dir_vector{ 1.f, 0.f };
 
@@ -74,4 +78,4 @@ namespace Components
   };
 }
 
-REGISTER_COMPONENT(Components::RigidBody, mass, force, acceleration, velocity, terminal_velocity, use_gravity, is_static, on_ground, is_jumping)
+REGISTER_COMPONENT(Components::RigidBody, mass, force_view, acceleration, velocity, x_terminal_velocity, y_terminal_velocity, use_gravity, is_static, on_ground, is_jumping)

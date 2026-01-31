@@ -362,6 +362,32 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
+    Updates only game systems (SystemType::Game). Skipped when game is paused.
+    Also processes queued events.
+
+    Parameters:
+    None.
+
+    Where to call it:
+    In the main game loop, only when the game is not paused.
+    ==================================================================================*/
+    void update_game();
+
+    /*=================================================================================
+    Function Brief:
+    Updates only editor systems (SystemType::Editor). Always runs, even when paused.
+    These include gizmo manipulation, camera control, etc.
+
+    Parameters:
+    None.
+
+    Where to call it:
+    In the main game loop, every frame regardless of pause state.
+    ==================================================================================*/
+    void update_editor();
+
+    /*=================================================================================
+    Function Brief:
     Processes pending entity deletions and component modifications. Called every frame
     even when physics is paused to ensure ECS state changes are applied.
 

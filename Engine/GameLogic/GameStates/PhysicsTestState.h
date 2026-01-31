@@ -75,7 +75,7 @@ public:
   void load() {
     // Free falling box
     player = make_player(player_pos, npc_scale);
-    Components::BoxCollider* player_box = player.get_component< Components::BoxCollider>();
+    //Components::BoxCollider* player_box = player.get_component< Components::BoxCollider>();
     //player_box->kinetic_friction = 0.8f;
     // make_npc(Vec2D{ 1000.f, 825.f }, npc_scale, 600.f, 750.f, 1050.f, 1200.f);
 

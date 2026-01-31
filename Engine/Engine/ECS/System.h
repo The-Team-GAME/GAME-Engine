@@ -24,6 +24,12 @@ namespace Engine {
 
     class Entity; // Forward declaration
 
+    // Enum to categorize systems as game or editor systems
+    enum class SystemType {
+      Game,   // Runs only when game is not paused
+      Editor  // Runs always, even when paused (e.g., gizmo, camera control)
+    };
+
     /* ============================================================= //
     // System base class with clean required components specification //
     // ============================================================= */
@@ -34,6 +40,7 @@ namespace Engine {
       Engine::EventManager::EventSignature event_signature;
       LayerSignature active_layers;
       SparseSet<EntityID> entities; // TODO: Holiday: remove this, just check layer_entities in WorldData every update/draw
+      SystemType system_type = SystemType::Game; // Default to game system
 
     public:
       System();
@@ -276,6 +283,31 @@ namespace Engine {
       Internally by the ECS to determine if entities match this system.
       ==================================================================================*/
       const LayerSignature& get_layer_signature() const;
+
+      /*=================================================================================
+      Function Brief:
+      Returns the system type (Game or Editor).
+
+      Parameters:
+      None.
+
+      Where to call it:
+      Internally by the ECS to determine if the system should run when paused.
+      ==================================================================================*/
+      SystemType get_system_type() const { return system_type; }
+
+      /*=================================================================================
+      Function Brief:
+      Marks this system as an editor system. Editor systems run even when the game
+      is paused (e.g., gizmo manipulation, camera control).
+
+      Parameters:
+      None.
+
+      Where to call it:
+      In the system's constructor to mark it as an editor system.
+      ==================================================================================*/
+      void set_editor_system() { system_type = SystemType::Editor; }
     };
 
   } // namespace ECS

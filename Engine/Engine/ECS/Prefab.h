@@ -39,9 +39,58 @@ namespace Engine {
       std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> component_storage;
       std::string prefab_id; // Unique UUID identifier for this prefab
       std::string prefab_filepath; // Filepath where this prefab is stored
+      std::vector<std::string> load_errors; // Errors encountered during loading
 
     public:
       PrefabImpl() = default;
+
+      /*=================================================================================
+      Function Brief:
+      Checks if this prefab has any loading errors.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When validating prefab before instantiation.
+      ==================================================================================*/
+      bool has_load_errors() const { return !load_errors.empty(); }
+
+      /*=================================================================================
+      Function Brief:
+      Gets the list of loading errors for this prefab.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When displaying error information to the user.
+      ==================================================================================*/
+      const std::vector<std::string>& get_load_errors() const { return load_errors; }
+
+      /*=================================================================================
+      Function Brief:
+      Adds a loading error to this prefab.
+
+      Parameters:
+      error - The error message to add.
+
+      Where to call it:
+      During prefab deserialization when an error is encountered.
+      ==================================================================================*/
+      void add_load_error(const std::string& error) { load_errors.push_back(error); }
+
+      /*=================================================================================
+      Function Brief:
+      Clears all loading errors from this prefab.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When reloading or resetting a prefab.
+      ==================================================================================*/
+      void clear_load_errors() { load_errors.clear(); }
 
       /*=================================================================================
       Function Brief:

@@ -20,6 +20,31 @@
 namespace LazyMonkeyStateCallbacks
 {
   // ========================================================================
+  // Helper Function - Update knockback direction based on player position
+  // ========================================================================
+  inline void update_contact_knockback_direction(Engine::ECS::Entity& entity) {
+    auto* attack = entity.get_component<Components::Attack>();
+    auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
+    auto* enemy_transform = entity.get_component<Components::Transform2D>();
+
+    if (!attack || !lazy_monkey || !enemy_transform) return;
+
+    auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+    if (!player_entity.is_valid()) return;
+
+    auto* player_transform = player_entity.get_component<Components::Transform2D>();
+    if (!player_transform) return;
+
+    // Calculate direction from enemy to player
+    float dir_x = player_transform->position.x - enemy_transform->position.x;
+    float sign = (dir_x >= 0.0f ? 1.0f : -1.0f);
+
+    // Set knockback with correct direction
+    attack->knockback.x = sign * std::abs(lazy_monkey->knockback.x);
+    attack->knockback.y = -std::abs(lazy_monkey->knockback.y); // Negative for upward
+  }
+
+  // ========================================================================
   // Idle State Callbacks
   // ========================================================================
 
@@ -33,6 +58,9 @@ namespace LazyMonkeyStateCallbacks
   }
 
   inline void idle_on_update(Engine::ECS::Entity& entity) {
+    // Update knockback direction for contact damage
+    update_contact_knockback_direction(entity);
+
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
 
@@ -77,6 +105,9 @@ namespace LazyMonkeyStateCallbacks
   }
 
   inline void chasing_on_update(Engine::ECS::Entity& entity) {
+    // Update knockback direction for contact damage
+    update_contact_knockback_direction(entity);
+
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* lazy_monkey_transform = entity.get_component<Components::Transform2D>();
@@ -105,7 +136,8 @@ namespace LazyMonkeyStateCallbacks
             flip->value.x = (dx > 0 ? 1.0f : -1.0f);
           }
           // Don't modify velocity.y - let gravity handle it
-        } else {
+        }
+        else {
           // Stop moving when close enough to attack
           rigid->velocity.x = 0.0f;
         }
@@ -135,21 +167,24 @@ namespace LazyMonkeyStateCallbacks
   inline void windup_on_enter(Engine::ECS::Entity& entity) {
     auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
     auto* rigid = entity.get_component<Components::RigidBody>();
-    
+
     // Stop moving during windup
     if (rigid) {
       rigid->velocity.x = 0.0f;
     }
-    
+
     // Record when windup started (reuse last_attack_time)
     if (lazy_monkey) {
       lazy_monkey->last_attack_time = Engine::Time::get_time();
     }
-    
+
     Log::info("Lazy Monkey: Winding up for attack");
   }
 
   inline void windup_on_update(Engine::ECS::Entity& entity) {
+    // Update knockback direction for contact damage
+    update_contact_knockback_direction(entity);
+
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
     auto* flip = entity.get_component<Components::Flip>();
@@ -161,11 +196,11 @@ namespace LazyMonkeyStateCallbacks
 
     // Get player entity to face them during windup
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
-    
+
     if (player_entity.is_valid()) {
       auto* lazy_monkey_transform = entity.get_component<Components::Transform2D>();
       auto* player_transform = player_entity.get_component<Components::Transform2D>();
-      
+
       if (lazy_monkey_transform && player_transform && flip) {
         float dx = player_transform->position.x - lazy_monkey_transform->position.x;
         // Update flip direction to face player during wind-up
@@ -197,33 +232,16 @@ namespace LazyMonkeyStateCallbacks
       rigid->velocity.y = -lazy_monkey->leap_height; // Negative is up
     }
 
-    // Make the monkey itself the hitbox
-    if (lazy_monkey && flip) {
-      // Add Attack component to the monkey
-      // Note: We use the monkey's own collider for the attack hitbox now
-      entity.add_component<Components::Attack>(lazy_monkey->damage);
-      auto* attack = entity.get_component<Components::Attack>();
-      
-      if (attack) {
-        // Apply knockback direction based on facing
-        attack->knockback = lazy_monkey->knockback;
-        if (flip->value.x < 0) {
-          attack->knockback.x = -attack->knockback.x;
-        }
-        // Knockback Y is always positive (up) in our config, but physics needs negative for up
-        attack->knockback.y = -std::abs(attack->knockback.y);
-      }
-
-      // Add to damage_player layer so it collides with player
-      // We KEEP the enemy layer so it still collides with ground
-      entity.add_to_layer("damage_player");
-    }
+    // Knockback direction is now handled by update_contact_knockback_direction in update
 
     Log::info("Lazy Monkey: Entered Attacking state");
   }
 
 
   inline void attacking_on_update(Engine::ECS::Entity& entity) {
+    // Update knockback direction for contact damage
+    update_contact_knockback_direction(entity);
+
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* animation = entity.get_component<Components::Animation>();
 
@@ -239,12 +257,6 @@ namespace LazyMonkeyStateCallbacks
       // Update last attack time for cooldown
       lazy_monkey->last_attack_time = Engine::Time::get_time();
     }
-
-    // Remove Attack component and damage_player layer
-    if (entity.has_component<Components::Attack>()) {
-      entity.remove_component<Components::Attack>();
-    }
-    entity.remove_from_layer("damage_player");
   }
 
   //// ========================================================================
@@ -304,6 +316,9 @@ namespace LazyMonkeyStateCallbacks
   }
 
   inline void hit_on_update(Engine::ECS::Entity& entity) {
+    // Update knockback direction for contact damage
+    update_contact_knockback_direction(entity);
+
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
     auto* rigid = entity.get_component<Components::RigidBody>();

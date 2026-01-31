@@ -22,7 +22,6 @@
 #include "Core.h"
 #include "ECS/ECS.h"
 #include "Graphics/Renderer.h"
-#include "StateManager.h"
 #include "SceneManager.h"
 #include "TypeDef.h"
 #include "InputManager.h"
@@ -44,6 +43,6 @@
 #include "Systems/PhysicsSystem.h"
 #include "Lua/LuaManager.h"
 #include "FileIO/Settings.h" // Remove in the future, we should not expose this directly
-#include "Level.h"
+#include "LevelManager.h"
 #include "FileIO/LevelFileIO.h"
 #include "Logger.h"

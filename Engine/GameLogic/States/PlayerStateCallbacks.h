@@ -2,8 +2,9 @@
 // file:    PlayerStateCallbacks.h
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (100%)
+// author:  Chew Shee Yang (50%)
 //          Primary author
+//          Cheng Ming Xian (50%)
 //
 // email:   chew.s@digipen.edu
 //
@@ -16,37 +17,50 @@
 #include "../../Engine/MonkeyEngine.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/HeartrateComponent.h"
-
+#include <assert.h>
 namespace PlayerStateCallbacks
 {
   // ========================================================================
-  // Idle State Callbacks
+  // Taking Updates in to handle the states
   // ========================================================================
+  void take_input(ECS::Entity& entity)
+  {
+    Components::StateMachine *state_machine = entity.get_component<Components::StateMachine>();
+    Components::RigidBody* player_rigid = entity.get_component<Components::RigidBody>();
+    Components::Flip* flip = entity.get_component<Components::Flip>();
 
-  inline void idle_on_enter([[maybe_unused]] Engine::ECS::Entity& entity) {
-    //auto* rigid = entity.get_component<Components::RigidBody>();
-    //if (rigid) rigid->velocity.x = 0.f;
-    Log::info("Player: Entered Idle state");
-  }
-
-  inline void idle_on_update(Engine::ECS::Entity& entity) {
-    auto* state_machine = entity.get_component<Components::StateMachine>();
-
-    // Check for horizontal movement input (A/D only for sidescrolling)
-    if (Engine::Input::is_held(Engine::KeyCode::A) ||
-      Engine::Input::is_held(Engine::KeyCode::D))
+    // resettng the state
+    if (state_machine->current_state_name == "Walking")
     {
-      state_machine->change_state("Walking");
+      //empty by deisgn
+    }
+    else
+    {
+      state_machine->change_state("Idle");
+    }
+    // put this first because we need to reset the flag if possible
+    if (Input::is_released(KeyCode::Space) && player_rigid->is_jumping)
+    {
+      player_rigid->is_jumping = false;
     }
 
-    // Check for jump input
-    if (Engine::Input::is_pressed(Engine::KeyCode::Space))
+    // Check for movement input
+    if (Input::is_held(KeyCode::Space)
+        && player_rigid->on_ground
+        && !player_rigid->is_jumping)
     {
-      auto* rigid = entity.get_component<Components::RigidBody>();
-      // Only jump if on ground
-      if (rigid && rigid->on_ground) {
-        state_machine->change_state("Jumping");
-      }
+      state_machine->change_state("Jumping");
+      player_rigid->is_jumping = true;
+    }
+    else if (Input::is_held(KeyCode::A) || Input::is_pressed(KeyCode::A)) //left
+    {
+      flip->value.x = -1.f;
+      state_machine->change_state("Walking");
+    }
+    else if (Input::is_held(KeyCode::D) || Input::is_pressed(KeyCode::D)) //right
+    {
+      flip->value.x = 1.f;
+      state_machine->change_state("Walking");
     }
 
     // Check for attack input
@@ -55,121 +69,74 @@ namespace PlayerStateCallbacks
       state_machine->change_state("Attack1");
     }
   }
+   
+   
+  // ========================================================================
+  // Idle State Callbacks
+  // ========================================================================
+
+  inline void idle_on_enter([[maybe_unused]] Engine::ECS::Entity& entity) {
+    /* Empty By Design */
+    Log::info("Player: Entered Idle state");
+  }
+
+  inline void idle_on_update(Engine::ECS::Entity& entity) {
+    take_input(entity);
+  }
 
   // ========================================================================
   // Walking State Callbacks
   // ========================================================================
 
-  inline void walking_on_enter([[maybe_unused]] Engine::ECS::Entity& entity) {
+  inline void walking_on_enter([[maybe_unused]] Engine::ECS::Entity& entity)
+  {
     Log::info("Player: Entered Walking state");
+
   }
 
-  inline void walking_on_update(Engine::ECS::Entity& entity) {
+  inline void walking_on_update(Engine::ECS::Entity& entity) 
+  {
     auto* rigid = entity.get_component<Components::RigidBody>();
-    auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* flip = entity.get_component<Components::Flip>();
     auto* player_comp = entity.get_component<Components::Player>();
 
     if (!player_comp) return;
-
-    rigid->velocity.x = 0.f;
-    // Don't touch velocity.y - let gravity handle it
-
-    // Horizontal movement only (sidescrolling)
-    if (Engine::Input::is_held(Engine::KeyCode::A)) {
-      rigid->velocity.x = -player_comp->walk_speed;
-      if (flip) flip->value.x = -1.0f; // Face left
-    }
-    if (Engine::Input::is_held(Engine::KeyCode::D)) {
-      rigid->velocity.x = player_comp->walk_speed;
-      if (flip) flip->value.x = 1.0f; // Face right
-    }
-
-    // Return to idle if no horizontal input
-    if (!Engine::Input::is_held(Engine::KeyCode::A) &&
-      !Engine::Input::is_held(Engine::KeyCode::D))
+    rigid->force.x += player_comp->walk_speed * flip->value.x;
+    // we set an exit criteria for the walking state instead of reseting it every frame as the animation sequence needs the state to be constant for this to work
+    if (!Input::is_held(KeyCode::A) && !Input::is_held(KeyCode::D))
     {
+      Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
       state_machine->change_state("Idle");
     }
-
-    // Check for jump input
-    if (Engine::Input::is_pressed(Engine::KeyCode::Space))
-    {
-      // Only jump if on ground
-      if (rigid && rigid->on_ground) {
-        state_machine->change_state("Jumping");
-      }
-    }
-
-    // Can attack while moving
-    if (Engine::Input::is_pressed(Engine::KeyCode::F))
-    {
-      state_machine->change_state("Attack1");
-    }
+    take_input(entity);
   }
 
-  inline void walking_on_exit(Engine::ECS::Entity& entity) {
-    auto* rigid = entity.get_component<Components::RigidBody>();
-    if (rigid) {
-      rigid->velocity.x = 0.f;
-      // Don't reset velocity.y - let gravity/physics handle it
-    }
+  inline void walking_on_exit([[maybe_unused]] Engine::ECS::Entity& entity)
+  {
+    // Empty by design
   }
 
   // ========================================================================
   // Jumping State Callbacks
   // ========================================================================
 
-  inline void jumping_on_enter(Engine::ECS::Entity& entity) {
-    auto* rigid = entity.get_component<Components::RigidBody>();
-    auto* player_comp = entity.get_component<Components::Player>();
-
-    if (rigid && player_comp) {
-      // Apply jump force
-      rigid->velocity.y = -player_comp->jump_force; // Negative is up
-    }
-
+  inline void jumping_on_enter(Engine::ECS::Entity& entity) 
+  {
     Log::info("Player: Entered Jumping state");
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+
+    if (player_comp)
+    {
+      rigid->is_jumping = true;
+      rigid->on_ground = false;
+      rigid->force.y += player_comp->jump_force;
+    }
   }
 
-  inline void jumping_on_update(Engine::ECS::Entity& entity) {
-    auto* rigid = entity.get_component<Components::RigidBody>();
-    auto* state_machine = entity.get_component<Components::StateMachine>();
-    auto* flip = entity.get_component<Components::Flip>();
-    auto* player_comp = entity.get_component<Components::Player>();
-
-    if (!player_comp) return;
-
-    // Allow horizontal air control
-    rigid->velocity.x = 0.f;
-
-    if (Engine::Input::is_held(Engine::KeyCode::A)) {
-      rigid->velocity.x = -player_comp->air_speed;
-      if (flip) flip->value.x = -1.0f; // Face left
-    }
-    if (Engine::Input::is_held(Engine::KeyCode::D)) {
-      rigid->velocity.x = player_comp->air_speed;
-      if (flip) flip->value.x = 1.0f; // Face right
-    }
-
-    // Return to idle when landing
-    if (rigid && rigid->on_ground) {
-      // Check if moving horizontally
-      if (Engine::Input::is_held(Engine::KeyCode::A) ||
-        Engine::Input::is_held(Engine::KeyCode::D))
-      {
-        state_machine->change_state("Walking");
-      }
-      else {
-        state_machine->change_state("Idle");
-      }
-    }
-
-    // Can attack while jumping
-    if (Engine::Input::is_pressed(Engine::KeyCode::F))
-    {
-      state_machine->change_state("Attack1");
-    }
+  inline void jumping_on_update(Engine::ECS::Entity& entity) 
+  {
+    take_input(entity);
   }
 
   // ========================================================================
@@ -211,7 +178,7 @@ namespace PlayerStateCallbacks
         )
         .add_component<Components::RigidBody>(true, false)
         .add_component<Components::BoxCollider>(player_comp->attack1.hitbox_width, player_comp->attack1.hitbox_height, false)
-        .add_component<Components::Parent>(entity)
+        .add_component<Components::Parent>(entity.get_id())
         .add_component<Components::Lifetime>(0.48f) // Attack1 duration: 6 frames × 0.08f
         .remove_from_layer("default")
         .add_to_layer("damage_enemy");
@@ -301,7 +268,7 @@ namespace PlayerStateCallbacks
         )
         .add_component<Components::RigidBody>(true, false)
         .add_component<Components::BoxCollider>(player_comp->attack2.hitbox_width, player_comp->attack2.hitbox_height, false)
-        .add_component<Components::Parent>(entity)
+        .add_component<Components::Parent>(entity.get_id())
         .add_component<Components::Lifetime>(0.24f) // Attack2 duration: 3 frames × 0.08f
         .remove_from_layer("default")
         .add_to_layer("damage_enemy");
@@ -391,7 +358,7 @@ namespace PlayerStateCallbacks
         )
         .add_component<Components::RigidBody>(true, false)
         .add_component<Components::BoxCollider>(player_comp->attack3.hitbox_width, player_comp->attack3.hitbox_height, false)
-        .add_component<Components::Parent>(entity)
+        .add_component<Components::Parent>(entity.get_id())
         .add_component<Components::Lifetime>(0.6f) // Attack3 duration: 10 frames × 0.06f
         .remove_from_layer("default")
         .add_to_layer("damage_enemy");

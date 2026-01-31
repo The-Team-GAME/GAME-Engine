@@ -25,6 +25,8 @@
 #include "ComponentManager.h"
 #include "../Random.h"
 #include "../Graphics/Renderer.h"
+#include "../EventManager/EventManager.h"
+#include "../Events/EngineEvents.h"
 
 namespace Engine {
   namespace ECS {
@@ -203,12 +205,33 @@ namespace Engine {
         return Entity(INVALID_ENTITY);
       }
 
+      auto prefab_impl = prefab.get_impl();
+
+      // Check for loading errors and warn the user
+      if (prefab_impl->has_load_errors()) {
+        const auto& errors = prefab_impl->get_load_errors();
+        std::string error_msg = "Cannot instantiate prefab '" + prefab_impl->get_prefab_filepath() +
+          "' due to loading errors:\n";
+        for (size_t i = 0; i < errors.size() && i < 3; ++i) {
+          error_msg += "- " + errors[i] + "\n";
+        }
+        if (errors.size() > 3) {
+          error_msg += "... and " + std::to_string(errors.size() - 3) + " more errors";
+        }
+        Log::error("{}", error_msg);
+        Engine::EventManager::send_event<Engine::Events::ToastEvent>(
+          error_msg,
+          Engine::Events::ToastType::Error,
+          8.0f
+        );
+        return Entity(INVALID_ENTITY);
+      }
+
       // Create new entity
       Entity entity = create_entity();
       EntityID entity_id = entity.get_id();
 
       auto& containers = Internal::get_containers();
-      auto prefab_impl = prefab.get_impl();
 
       // Copy signature
       containers.entity_signatures[entity_id] = prefab_impl->get_signature();
@@ -415,12 +438,20 @@ namespace Engine {
       auto& prefab_storage = prefab_impl->get_component_storage();
       auto& prefab_signature = prefab_impl->get_signature();
 
-      Serialization::deserialize_components_to_storage(
+      auto deserialize_result = Serialization::deserialize_components_to_storage(
         components_array,
         prefab_storage,
         prefab_signature,
         0 // Using dummy entity ID 0 for prefabs
       );
+
+      // Store any deserialization errors in the prefab
+      if (deserialize_result.has_errors()) {
+        for (const auto& error : deserialize_result.errors) {
+          prefab_impl->add_load_error(error);
+        }
+        Log::warning("Prefab loaded with {} errors", deserialize_result.errors.size());
+      }
 
       Log::info("Prefab now has {} components in storage", prefab_storage.size());
 
