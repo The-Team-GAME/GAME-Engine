@@ -156,26 +156,40 @@ void col2D::update()
         {
           rigid->on_ground = true;
           
+          /*==========================
+          / Calculating Normal Force /
+          ==========================*/
           // Normal = Mass * Gravity * Cos(angle of normal) 
           f32 normal_magnitude = rigid->gravity.get_magnitude() * rigid->mass * cos_of_angle_of_slope;
           Vec2D normal_force = normal_dir_vtr * normal_magnitude;
 
+
           f32 tangential_weight = rigid->gravity.get_magnitude() * rigid->mass * sinf(acosf(cos_of_angle_of_slope));
 
+          // TAKE NOTE: At this point, we have the normal force as well as the weight, and all that there is left would be the friction to be calculated
+
+          /*================================================
+          / Determining the direction vector of the entity /
+          ================================================*/
           Vec2D tangent = normalise_vector(collision.get_tangent());
           tangent = dot_product(rigid->velocity, tangent) < 0 ? -tangent : tangent;
 
           // This is how much friction can be generated in this frame
-          f32 max_available_friction = normal_magnitude * (rigid->kinetic_coefficient * other_rigid->kinetic_coefficient);
+          f32 friction_experienced = normal_magnitude * (rigid->kinetic_coefficient * other_rigid->kinetic_coefficient) * 2.f;
 
-          // Now we calculate how much friction is needed to stop the object within this frame
+          /*====================================================================================
+          / Calculating the friction force needed to immediately stop the entity in this frame /
+          ====================================================================================*/
           f32 friction_acc = rigid->velocity.get_magnitude() / Time::get_fixed_dt();
           f32 required_friction_force_to_stop = friction_acc * rigid->mass + tangential_weight;
 
           f32 velocity_along_slope = dot_product(rigid->velocity, tangent);
-          bool nearly_at_rest = fabsf(velocity_along_slope) < 20.0f; // Velocity threshold
+          bool nearly_at_rest = fabsf(velocity_along_slope) < 10.0f; // Velocity threshold
 
-          if (nearly_at_rest && tangential_weight <= max_available_friction)
+          /*std::cout << "friction experienced: " << friction_experienced << std::endl;
+          std::cout << "friction to stop: " << required_friction_force_to_stop << std::endl;*/
+
+          if (nearly_at_rest)// && tangential_weight <= friction_experienced)
           {
             // Static friction can hold the object
             // Apply friction force to exactly counter the tangential weight
@@ -183,15 +197,24 @@ void col2D::update()
 
             // Also zero out the small remaining velocity to prevent drift
             rigid->velocity -= tangent * velocity_along_slope;
+            if (rigid->velocity.get_magnitude() < 1.f)
+            {
+              rigid->velocity.zero();
+            }
+            //std::cout << "Coming to a stop \n";
           }
           else
           {
             // Object is sliding - apply kinetic friction opposing motion
-            Vec2D friction_dir = -tangent;
-            rigid->force += friction_dir * std::min(required_friction_force_to_stop, max_available_friction);
+            rigid->force += -tangent * std::min(required_friction_force_to_stop, friction_experienced);
+            rigid->force += normal_force;
+            //if (friction_experienced > required_friction_force_to_stop)
+            //{
+            //  std::cout << "Applying Friction Rquired to stop\n";
+            //}
+            //else { std::cout << "Applying Experienced Friction\n"; }
           }
-         
-          rigid->force += normal_force;
+          //std::cout << "current velocity: " << rigid->velocity << std::endl << std::endl;
         }
         //==================================//
       }
