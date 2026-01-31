@@ -105,6 +105,8 @@
     <ClCompile Include="GameLogic\GameStates\PauseState.cpp" />
     <ClCompile Include="Engine\GUI\SelectiveLevelSavePanel.cpp" />
     <ClCompile Include="GameLogic\GameStates\OptionsState.cpp" />
+    <ClCompile Include="Engine\Audio\AudioSystem.cpp" />
+    <ClCompile Include="Engine\Audio\AudioSystemExample.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -240,6 +242,8 @@
     <ClInclude Include="Engine\Lua\LuaComponentBindings.h" />
     <ClInclude Include="GameLogic\GameStates\OptionsState.h" />
     <ClInclude Include="Engine\Systems\ChatBoxSystem.h" />
+    <ClInclude Include="Engine\Audio\AudioSystem.h" />
+    <ClInclude Include="Engine\Audio\GameAudio.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />

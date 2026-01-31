@@ -18,7 +18,6 @@
 #include "AudioPlayerInternal.h"
 #include "../Logger.h"
 #include <fmod.hpp>
-#include <fmod_studio.h>
 #include "../Perf.h"
 
 namespace Engine {
@@ -44,6 +43,7 @@ namespace Engine {
           Log::error("Failed to initialize audio system");
           return false;
         }
+
 
         // Create channel groups
         system->createChannelGroup("BGM", &bgm_group);

@@ -155,6 +155,8 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Engine\Audio\AudioSystem.cpp" />
+    <ClCompile Include="Engine\Audio\AudioSystemExample.cpp" />
     <ClCompile Include="Engine\ECS\PrefabMergeUtils.cpp" />
     <ClCompile Include="Engine\GUI\ColliderEditorPanel.cpp" />
     <ClCompile Include="Engine\GUI\SelectiveLevelSavePanel.cpp" />
@@ -224,6 +226,8 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClCompile Include="Engine\UndoManager\UndoManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\Audio\AudioSystem.h" />
+    <ClInclude Include="Engine\Audio\GameAudio.h" />
     <ClInclude Include="Engine\ECS\PrefabMergeUtils.h" />
     <ClInclude Include="Engine\GUI\ColliderEditorPanel.h" />
     <ClInclude Include="Engine\GUI\SelectiveLevelSavePanel.h" />
