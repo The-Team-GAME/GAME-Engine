@@ -74,7 +74,7 @@ namespace Engine
         }
       }
 
-      bool is_entity_under_mouse(Engine::ECS::Entity& entity) {
+      bool is_entity_under_mouse(Engine::ECS::Entity entity) {
         auto* tr = entity.get_component<Components::Transform2D>();
         if (!tr) return false;
 
@@ -94,7 +94,7 @@ namespace Engine
           (mouse.y >= top) && (mouse.y <= bottom);
       }
 
-      //void update_entity(Engine::ECS::Entity& entity) override {}
+      //void update_entity(Engine::ECS::Entity entity) override {}
     };
 
     // System to select text entities when clicked
@@ -134,7 +134,7 @@ namespace Engine
         }
       }
 
-      bool is_entity_under_mouse(Engine::ECS::Entity& entity) {
+      bool is_entity_under_mouse(Engine::ECS::Entity entity) {
         auto* tr = entity.get_component<Components::Transform2D>();
         auto* text = entity.get_component<Components::Text>();
         auto* font = entity.get_component<Components::Font>();
@@ -163,7 +163,7 @@ namespace Engine
           (mouse.y >= top) && (mouse.y <= bottom);
       }
 
-      //void update_entity(Engine::ECS::Entity& entity) override {}
+      //void update_entity(Engine::ECS::Entity entity) override {}
     };
 
     // System to handle dragging and drawing selected entities
@@ -208,7 +208,7 @@ namespace Engine
         return { a.x + k * b.x, a.y + k * b.y };
       }
 
-      void update_entity(Engine::ECS::Entity& entity) override {
+      void update_entity(Engine::ECS::Entity entity) override {
         auto* tr = entity.get_component<Components::Transform2D>();
         auto* gizmo = entity.get_component<Components::Gizmo>();
 
@@ -506,7 +506,7 @@ namespace Engine
         }
       }
 
-      void draw_entity(const Engine::ECS::Entity& entity) override {
+      void draw_entity(const Engine::ECS::Entity entity) override {
         auto* tr = entity.get_component<Components::Transform2D>();
         auto* gizmo = entity.get_component<Components::Gizmo>();
 

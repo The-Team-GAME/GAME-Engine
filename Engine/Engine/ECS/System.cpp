@@ -63,13 +63,13 @@ namespace Engine {
     // TODO: Holiday: DEPRECATE
     void System::draw() {} // empty now, can be overridden by derived systems
 
-    void System::update_entity([[maybe_unused]] Entity& entity) {}
+    void System::update_entity([[maybe_unused]] Entity entity) {}
 
-    void System::draw_entity([[maybe_unused]] const Entity& entity) {}
+    void System::draw_entity([[maybe_unused]] const Entity entity) {}
 
-    void System::on_entity_added([[maybe_unused]] const Entity& entity) {}
+    void System::on_entity_added([[maybe_unused]] const Entity entity) {}
 
-    void System::on_entity_removed([[maybe_unused]] const Entity& entity) {}
+    void System::on_entity_removed([[maybe_unused]] const Entity entity) {}
 
     void System::add_entity(EntityID entity) {
       if (!entities.contains(entity)) {

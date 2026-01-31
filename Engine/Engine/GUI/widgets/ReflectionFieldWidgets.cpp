@@ -262,6 +262,7 @@ namespace ImGuiWidgets {
         static_cast<float>(field_value["position"]["y"].getDouble())
     };
     ImGui::Text("Position");
+    ImGui::SameLine();
     if (ImGui::DragFloat2("##Position", pos, 0.1f)) {
       field_value["position"]["x"] = pos[0];
       field_value["position"]["y"] = pos[1];
@@ -271,6 +272,7 @@ namespace ImGuiWidgets {
     // Rotation
     float rotation = static_cast<float>(field_value["rotation"].getDouble());
     ImGui::Text("Rotation");
+    ImGui::SameLine();
     if (ImGui::DragFloat("##Rotation", &rotation, 0.1f)) {
       field_value["rotation"] = rotation;
       modified = true;
@@ -281,7 +283,8 @@ namespace ImGuiWidgets {
         static_cast<float>(field_value["scale"]["x"].getDouble()),
         static_cast<float>(field_value["scale"]["y"].getDouble())
     };
-    ImGui::Text("Scale");
+    ImGui::Text("Scale   ");
+    ImGui::SameLine();
     if (ImGui::DragFloat2("##Scale", scale, 0.1f)) {
       field_value["scale"]["x"] = scale[0];
       field_value["scale"]["y"] = scale[1];
@@ -427,8 +430,8 @@ namespace ImGuiWidgets {
     std::string current_script = field_value.getString();
 
     // Get all registered functions with the correct signature
-    // Note: This assumes all state callbacks have the signature void(Engine::ECS::Entity&)
-    auto& functions = Engine::FunctionRegistry<void(Engine::ECS::Entity&)>::get_functions();
+    // Note: This assumes all state callbacks have the signature void(Engine::ECS::Entity)
+    auto& functions = Engine::FunctionRegistry<void(Engine::ECS::Entity)>::get_functions();
 
     if (ImGui::BeginCombo(label.c_str(), current_script.empty() ? "<None>" : current_script.c_str())) {
 
@@ -598,14 +601,14 @@ namespace ImGuiWidgets {
 
     std::string current_function = name_field.getString();
 
-    std::string label = "Function##" + field_name;
-
     // Display all functions from all registries
     auto& easing_functions = Engine::FunctionRegistry<f32(f32, f32, f32, f32)>::get_functions();
-    auto& entity_functions = Engine::FunctionRegistry<void(Engine::ECS::Entity&)>::get_functions();
+    auto& entity_functions = Engine::FunctionRegistry<void(Engine::ECS::Entity)>::get_functions();
     auto& void_functions = Engine::FunctionRegistry<void()>::get_functions();
 
-    if (ImGui::BeginCombo(label.c_str(), current_function.empty() ? "<None>" : current_function.c_str())) {
+    ImGui::Text("%s", field_name.c_str());
+    ImGui::SameLine();
+    if (ImGui::BeginCombo(("##" + field_name).c_str(), current_function.empty() ? "<None>" : current_function.c_str())) {
       bool is_selected = current_function.empty();
       if (ImGui::Selectable("<None>", is_selected)) {
         name_field = std::string("");
@@ -628,7 +631,7 @@ namespace ImGuiWidgets {
 
       // Display entity callback functions
       if (!entity_functions.empty()) {
-        ImGui::TextDisabled("--- Entity Callbacks (void(Entity&)) ---");
+        ImGui::TextDisabled("--- Entity Callbacks (void(Entity)) ---");
         for (const auto& [name, func] : entity_functions) {
           is_selected = (current_function == name);
           if (ImGui::Selectable(name.c_str(), is_selected)) {
@@ -658,7 +661,7 @@ namespace ImGuiWidgets {
 
     /* COMMENTED OUT: Original implementation that filtered by field name
     // Determine which signature to use based on field name
-    // Common patterns: callbacks ending in "callback" use void(Entity&)
+    // Common patterns: callbacks ending in "callback" use void(Entity)
     //                  easing functions use f32(f32,f32,f32,f32)
     //                  click handlers use void()
 
@@ -689,7 +692,7 @@ namespace ImGuiWidgets {
     // Check if it's a state callback
     else if (field_name.find("callback") != std::string::npos || field_name.find("on_enter") != std::string::npos ||
       field_name.find("on_update") != std::string::npos || field_name.find("on_exit") != std::string::npos) {
-      auto& functions = Engine::FunctionRegistry<void(Engine::ECS::Entity&)>::get_functions();
+      auto& functions = Engine::FunctionRegistry<void(Engine::ECS::Entity)>::get_functions();
 
       if (ImGui::BeginCombo(label.c_str(), current_function.empty() ? "<None>" : current_function.c_str())) {
         bool is_selected = current_function.empty();
@@ -828,6 +831,7 @@ namespace ImGuiWidgets {
     else if (field_value.isInt()) {
       int val = static_cast<int>(field_value.getInt());
       ImGui::Text("%s", display_name.c_str());
+      ImGui::SameLine();
       if (ImGui::DragInt(("##" + display_name).c_str(), &val)) {
         field_value = static_cast<ReflectionLibrary::Integer>(val);
         modified = true;
@@ -836,6 +840,7 @@ namespace ImGuiWidgets {
     else if (field_value.isDouble()) {
       float val = static_cast<float>(field_value.getDouble());
       ImGui::Text("%s", display_name.c_str());
+      ImGui::SameLine();
       if (ImGui::DragFloat(("##" + display_name).c_str(), &val, 0.01f)) {
         field_value = static_cast<double>(val);
         modified = true;
@@ -847,6 +852,7 @@ namespace ImGuiWidgets {
       strncpy_s(buffer, str_val.c_str(), sizeof(buffer) - 1);
       buffer[sizeof(buffer) - 1] = '\0';
       ImGui::Text("%s", display_name.c_str());
+      ImGui::SameLine();
       if (ImGui::InputText(("##" + display_name).c_str(), buffer, sizeof(buffer))) {
         field_value = std::string(buffer);
         modified = true;

@@ -86,7 +86,7 @@ void col2D::update()
     //f32 best_ground_penetration = 0;
 
     // Check collision only with nearby entities
-    for (ECS::Entity& other : nearby)
+    for (ECS::Entity other : nearby)
     {
 #pragma region collision checks
       // Skip self-collision
@@ -212,7 +212,7 @@ void col2D::update()
   Engine::Perf::stop("Collision Update");
 }
 
-void col2D::update_entity(Engine::ECS::Entity& entity)
+void col2D::update_entity(Engine::ECS::Entity entity)
 {
   Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
   Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
@@ -246,7 +246,7 @@ void col2D::update_entity(Engine::ECS::Entity& entity)
 
 // Helper to get AABB for any collider type (for spatial partitioning)
 // OBB and POLYGON types will use their bounding AABB
-AABB col2D::get_entity_aabb(ECS::Entity& entity)
+AABB col2D::get_entity_aabb(ECS::Entity entity)
 {
   Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
 
@@ -406,7 +406,7 @@ void col2D::QuadTree::clear()
 }
 
 // Inserts an entity into the quad tree
-bool col2D::QuadTree::insert(ECS::Entity& entity)
+bool col2D::QuadTree::insert(ECS::Entity entity)
 {
   Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
   // Check if the entity intersects with this node of the quad tree
@@ -433,7 +433,7 @@ bool col2D::QuadTree::insert(ECS::Entity& entity)
     // Now we split kekw
     this->split();
     std::vector<ECS::Entity> remaining_entities;
-    for (ECS::Entity& existing_entity : entity_vec)
+    for (ECS::Entity existing_entity : entity_vec)
     {
       // Try to insert the existing entities into the child nodes that have been created
       if (!insert_in_child_node(existing_entity))
@@ -464,7 +464,7 @@ bool col2D::QuadTree::insert(ECS::Entity& entity)
 }
 
 // Check if an entity can be fully contained within the current node's boundary
-bool col2D::QuadTree::can_contain(ECS::Entity& entity) const
+bool col2D::QuadTree::can_contain(ECS::Entity entity) const
 {
   Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
   Vec2D box_min = box->aabb.min();
@@ -479,7 +479,7 @@ bool col2D::QuadTree::can_contain(ECS::Entity& entity) const
 }
 
 // Insert an entity into a child node
-bool col2D::QuadTree::insert_in_child_node(ECS::Entity& entity)
+bool col2D::QuadTree::insert_in_child_node(ECS::Entity entity)
 {
   // Try to find a child that fully contains the rectangle
   for (u32 i{}; i < 4; ++i)
@@ -597,7 +597,7 @@ void col2D::QuadTreeSAT::split()
 }
 
 // Check if entity's AABB can be contained in this node
-bool col2D::QuadTreeSAT::can_contain_entity(ECS::Entity& entity) const
+bool col2D::QuadTreeSAT::can_contain_entity(ECS::Entity entity) const
 {
   AABB aabb = get_entity_aabb(entity);
   Vec2D aabb_min = aabb.min();
@@ -629,7 +629,7 @@ void col2D::QuadTreeSAT::clear()
 }
 
 // Same implementation as QuadTree
-bool col2D::QuadTreeSAT::insert(ECS::Entity& entity)
+bool col2D::QuadTreeSAT::insert(ECS::Entity entity)
 {
   // Check if the entity intersects with this node of the quad tree
   // We need to use the get_entity_aabb function here because not every box collider uses aabb anymore
@@ -657,7 +657,7 @@ bool col2D::QuadTreeSAT::insert(ECS::Entity& entity)
     // Now we split kekw
     this->split();
     std::vector<ECS::Entity> remaining_entities;
-    for (ECS::Entity& existing_entity : entity_vec)
+    for (ECS::Entity existing_entity : entity_vec)
     {
       // Try to insert the existing entities into the child nodes that have been created
       if (!insert_in_child_node(existing_entity))
@@ -688,7 +688,7 @@ bool col2D::QuadTreeSAT::insert(ECS::Entity& entity)
 }
 
 // Same implementation as QuadTree
-bool col2D::QuadTreeSAT::insert_in_child_node(ECS::Entity& entity)
+bool col2D::QuadTreeSAT::insert_in_child_node(ECS::Entity entity)
 {
   // Try to find a child that fully contains the rectangle
   for (u32 i{}; i < 4; ++i)

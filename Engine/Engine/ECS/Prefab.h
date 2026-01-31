@@ -607,7 +607,7 @@ namespace Engine {
     Where to call it:
     When creating a reusable template from an existing entity.
     ==================================================================================*/
-    Prefab entity_to_prefab(const Entity& entity);
+    Prefab entity_to_prefab(const Entity entity);
 
     /*=================================================================================
     Function Brief:

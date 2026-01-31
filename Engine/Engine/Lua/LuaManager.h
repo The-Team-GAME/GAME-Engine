@@ -116,7 +116,7 @@ namespace Engine
      * @param entity Entity to pass to the Lua function.
      * @return True if the Lua function was called successfully, false if not found or error.
      */
-    bool try_call_state_function(const std::string& func_name, Engine::ECS::Entity& entity);
+    bool try_call_state_function(const std::string& func_name, Engine::ECS::Entity entity);
 
     /**
      * @brief Automatically binds a component type to Lua using reflection metadata.

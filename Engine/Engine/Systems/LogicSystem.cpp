@@ -49,7 +49,7 @@ void logi::load_values()
   // Fill up soon
 }
 
-void logi::update_entity(Engine::ECS::Entity& entity)
+void logi::update_entity(Engine::ECS::Entity entity)
 {
   run_state(entity); 
 }

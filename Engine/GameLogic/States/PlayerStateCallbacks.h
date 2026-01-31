@@ -28,7 +28,7 @@ namespace PlayerStateCallbacks
   // ========================================================================
   // Taking Updates in to handle the states
   // ========================================================================
-  void take_input(ECS::Entity& entity)
+  void take_input(ECS::Entity entity)
   {
     Components::StateMachine *state_machine = entity.get_component<Components::StateMachine>();
     Components::RigidBody* player_rigid = entity.get_component<Components::RigidBody>();
@@ -88,12 +88,12 @@ namespace PlayerStateCallbacks
   // Idle State Callbacks
   // ========================================================================
 
-  inline void idle_on_enter([[maybe_unused]] Engine::ECS::Entity& entity) {
+  inline void idle_on_enter([[maybe_unused]] Engine::ECS::Entity entity) {
     /* Empty By Design */
     Log::info("Player: Entered Idle state");
   }
 
-  inline void idle_on_update(Engine::ECS::Entity& entity) {
+  inline void idle_on_update(Engine::ECS::Entity entity) {
     take_input(entity);
   }
 #pragma endregion
@@ -103,13 +103,13 @@ namespace PlayerStateCallbacks
   // Walking State Callbacks
   // ========================================================================
 
-  inline void walking_on_enter([[maybe_unused]] Engine::ECS::Entity& entity)
+  inline void walking_on_enter([[maybe_unused]] Engine::ECS::Entity entity)
   {
     Log::info("Player: Entered Walking state");
 
   }
 
-  inline void walking_on_update(Engine::ECS::Entity& entity) 
+  inline void walking_on_update(Engine::ECS::Entity entity) 
   {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
@@ -126,7 +126,7 @@ namespace PlayerStateCallbacks
     take_input(entity);
   }
 
-  inline void walking_on_exit([[maybe_unused]] Engine::ECS::Entity& entity)
+  inline void walking_on_exit([[maybe_unused]] Engine::ECS::Entity entity)
   {
     // Empty by design
   }
@@ -137,7 +137,7 @@ namespace PlayerStateCallbacks
   // Jumping State Callbacks
   // ========================================================================
 
-  inline void jumping_on_enter(Engine::ECS::Entity& entity) 
+  inline void jumping_on_enter(Engine::ECS::Entity entity) 
   {
     Log::info("Player: Entered Jumping state");
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
@@ -151,7 +151,7 @@ namespace PlayerStateCallbacks
     }
   }
 
-  inline void jumping_on_update(Engine::ECS::Entity& entity) 
+  inline void jumping_on_update(Engine::ECS::Entity entity) 
   {
     take_input(entity);
   }
@@ -161,7 +161,7 @@ namespace PlayerStateCallbacks
   // Dash State Callbacks
   // ========================================================================
 
-  inline void dash_on_enter(ECS::Entity& entity)
+  inline void dash_on_enter(ECS::Entity entity)
   {
     Log::info("Player: Entered Dashing state");
 
@@ -177,7 +177,7 @@ namespace PlayerStateCallbacks
     terminal_vel_placeholder = rigid->x_terminal_velocity;
   }
 
-  inline void dash_on_update(ECS::Entity& entity)
+  inline void dash_on_update(ECS::Entity entity)
   {
 
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
@@ -198,7 +198,7 @@ namespace PlayerStateCallbacks
     player_comp->dash_timer -= Time::get_fixed_dt();
   }
 
-  inline void dash_on_exit([[maybe_unused]] ECS::Entity& entity)
+  inline void dash_on_exit([[maybe_unused]] ECS::Entity entity)
   {
     Log::info("Player: Exited Dashing state");
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
@@ -214,7 +214,7 @@ namespace PlayerStateCallbacks
   // Attack 1 State Callbacks (First Punch)
   // ========================================================================
 
-  inline void attack1_on_enter(Engine::ECS::Entity& entity) {
+  inline void attack1_on_enter(Engine::ECS::Entity entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
     auto* player_comp = entity.get_component<Components::Player>();
@@ -272,7 +272,7 @@ namespace PlayerStateCallbacks
     Log::info("Player: Attack 1 (First Punch)");
   }
 
-  inline void attack1_on_update(Engine::ECS::Entity& entity) {
+  inline void attack1_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* animation = entity.get_component<Components::Animation>();
 
@@ -304,7 +304,7 @@ namespace PlayerStateCallbacks
   // Attack 2 State Callbacks (Second Punch)
   // ========================================================================
 
-  inline void attack2_on_enter(Engine::ECS::Entity& entity) {
+  inline void attack2_on_enter(Engine::ECS::Entity entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
     auto* player_comp = entity.get_component<Components::Player>();
@@ -362,7 +362,7 @@ namespace PlayerStateCallbacks
     Log::info("Player: Attack 2 (Second Punch)");
   }
 
-  inline void attack2_on_update(Engine::ECS::Entity& entity) {
+  inline void attack2_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* animation = entity.get_component<Components::Animation>();
 
@@ -394,7 +394,7 @@ namespace PlayerStateCallbacks
   // Attack 3 State Callbacks (Third Punch - Finisher)
   // ========================================================================
 
-  inline void attack3_on_enter(Engine::ECS::Entity& entity) {
+  inline void attack3_on_enter(Engine::ECS::Entity entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
     auto* player_comp = entity.get_component<Components::Player>();
@@ -452,7 +452,7 @@ namespace PlayerStateCallbacks
     Log::info("Player: Attack 3 (Third Punch - Finisher!)");
   }
 
-  inline void attack3_on_update(Engine::ECS::Entity& entity) {
+  inline void attack3_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* animation = entity.get_component<Components::Animation>();
 
@@ -474,25 +474,25 @@ namespace PlayerStateCallbacks
 } // namespace PlayerStateCallbacks
 
 // Register all player state callbacks
-REGISTER_FUNCTION(player_idle_enter, void(Engine::ECS::Entity&), PlayerStateCallbacks::idle_on_enter)
-REGISTER_FUNCTION(player_idle_update, void(Engine::ECS::Entity&), PlayerStateCallbacks::idle_on_update)
+REGISTER_FUNCTION(player_idle_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::idle_on_enter)
+REGISTER_FUNCTION(player_idle_update, void(Engine::ECS::Entity), PlayerStateCallbacks::idle_on_update)
 
-REGISTER_FUNCTION(player_walking_enter, void(Engine::ECS::Entity&), PlayerStateCallbacks::walking_on_enter)
-REGISTER_FUNCTION(player_walking_update, void(Engine::ECS::Entity&), PlayerStateCallbacks::walking_on_update)
-REGISTER_FUNCTION(player_walking_exit, void(Engine::ECS::Entity&), PlayerStateCallbacks::walking_on_exit)
+REGISTER_FUNCTION(player_walking_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::walking_on_enter)
+REGISTER_FUNCTION(player_walking_update, void(Engine::ECS::Entity), PlayerStateCallbacks::walking_on_update)
+REGISTER_FUNCTION(player_walking_exit, void(Engine::ECS::Entity), PlayerStateCallbacks::walking_on_exit)
 
-REGISTER_FUNCTION(player_jumping_enter, void(Engine::ECS::Entity&), PlayerStateCallbacks::jumping_on_enter)
-REGISTER_FUNCTION(player_jumping_update, void(Engine::ECS::Entity&), PlayerStateCallbacks::jumping_on_update)
+REGISTER_FUNCTION(player_jumping_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::jumping_on_enter)
+REGISTER_FUNCTION(player_jumping_update, void(Engine::ECS::Entity), PlayerStateCallbacks::jumping_on_update)
 
-REGISTER_FUNCTION(player_dash_enter, void(Engine::ECS::Entity&), PlayerStateCallbacks::dash_on_enter)
-REGISTER_FUNCTION(player_dash_update, void(Engine::ECS::Entity&), PlayerStateCallbacks::dash_on_update)
-REGISTER_FUNCTION(player_dash_exit, void(Engine::ECS::Entity&), PlayerStateCallbacks::dash_on_exit)
+REGISTER_FUNCTION(player_dash_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::dash_on_enter)
+REGISTER_FUNCTION(player_dash_update, void(Engine::ECS::Entity), PlayerStateCallbacks::dash_on_update)
+REGISTER_FUNCTION(player_dash_exit, void(Engine::ECS::Entity), PlayerStateCallbacks::dash_on_exit)
 
-REGISTER_FUNCTION(player_attack1_enter, void(Engine::ECS::Entity&), PlayerStateCallbacks::attack1_on_enter)
-REGISTER_FUNCTION(player_attack1_update, void(Engine::ECS::Entity&), PlayerStateCallbacks::attack1_on_update)
+REGISTER_FUNCTION(player_attack1_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::attack1_on_enter)
+REGISTER_FUNCTION(player_attack1_update, void(Engine::ECS::Entity), PlayerStateCallbacks::attack1_on_update)
 
-REGISTER_FUNCTION(player_attack2_enter, void(Engine::ECS::Entity&), PlayerStateCallbacks::attack2_on_enter)
-REGISTER_FUNCTION(player_attack2_update, void(Engine::ECS::Entity&), PlayerStateCallbacks::attack2_on_update)
+REGISTER_FUNCTION(player_attack2_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::attack2_on_enter)
+REGISTER_FUNCTION(player_attack2_update, void(Engine::ECS::Entity), PlayerStateCallbacks::attack2_on_update)
 
-REGISTER_FUNCTION(player_attack3_enter, void(Engine::ECS::Entity&), PlayerStateCallbacks::attack3_on_enter)
-REGISTER_FUNCTION(player_attack3_update, void(Engine::ECS::Entity&), PlayerStateCallbacks::attack3_on_update)
+REGISTER_FUNCTION(player_attack3_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::attack3_on_enter)
+REGISTER_FUNCTION(player_attack3_update, void(Engine::ECS::Entity), PlayerStateCallbacks::attack3_on_update)

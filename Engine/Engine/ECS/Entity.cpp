@@ -36,11 +36,11 @@ namespace Engine {
       ECS::destroy_entity(*this);
     }
 
-    bool Entity::operator==(const Entity& other) const {
+    bool Entity::operator==(const Entity other) const {
       return id == other.id;
     }
 
-    bool Entity::operator!=(const Entity& other) const {
+    bool Entity::operator!=(const Entity other) const {
       return id != other.id;
     }
 
@@ -231,12 +231,12 @@ namespace Engine {
       return ECS::get_entity_layers(*this);
     }
 
-    Entity& Entity::clear_layers() {
+    Entity Entity::clear_layers() {
       ECS::clear_layers(*this);
       return *this;
     }
 
-    Entity& Entity::add_to_layer(const std::string& layer_name) {
+    Entity Entity::add_to_layer(const std::string& layer_name) {
       LayerID layer = ECS::get_layer_id(layer_name);
       if (layer != INVALID_LAYER) {
         auto& containers = Internal::get_containers();
@@ -255,7 +255,7 @@ namespace Engine {
       return *this;
     }
 
-    Entity& Entity::remove_from_layer(const std::string& layer_name) {
+    Entity Entity::remove_from_layer(const std::string& layer_name) {
       LayerID layer = ECS::get_layer_id(layer_name);
       if (layer != INVALID_LAYER) {
         auto& containers = Internal::get_containers();

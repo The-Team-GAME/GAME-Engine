@@ -141,7 +141,7 @@ namespace Engine {
       Where to call it:
       Called automatically by the system's update() method for each entity.
       ==================================================================================*/
-      virtual void update_entity(Entity& entity);
+      virtual void update_entity(Entity entity);
 
       /*=================================================================================
       Function Brief:
@@ -153,7 +153,7 @@ namespace Engine {
       Where to call it:
       Called automatically by the system's draw() method for each entity.
       ==================================================================================*/
-      virtual void draw_entity(const Entity& entity);
+      virtual void draw_entity(const Entity entity);
 
       /*=================================================================================
       Function Brief:
@@ -167,7 +167,7 @@ namespace Engine {
       Called automatically by the ECS when an entity starts matching the system's
       requirements.
       ==================================================================================*/
-      virtual void on_entity_added(const Entity& entity);
+      virtual void on_entity_added(const Entity entity);
 
       /*=================================================================================
       Function Brief:
@@ -181,7 +181,7 @@ namespace Engine {
       Called automatically by the ECS when an entity stops matching the system's
       requirements.
       ==================================================================================*/
-      virtual void on_entity_removed(const Entity& entity);
+      virtual void on_entity_removed(const Entity entity);
 
       /*=================================================================================
       Function Brief:

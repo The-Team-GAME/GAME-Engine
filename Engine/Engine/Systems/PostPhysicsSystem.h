@@ -27,7 +27,7 @@ namespace Engine {
     public:
       PostPhysics2DSystem(); //Default Ctor
 
-      void update_entity(Engine::ECS::Entity& entity) override;
+      void update_entity(Engine::ECS::Entity entity) override;
     };
   }
 }
