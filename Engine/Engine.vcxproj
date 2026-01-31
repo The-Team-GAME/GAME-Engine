@@ -1,4 +1,4 @@
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
@@ -224,6 +224,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClCompile Include="Engine\Lua\LuaManager.cpp" />
     <ClCompile Include="Engine\Systems\LogicSystem.cpp" />
     <ClCompile Include="Engine\UndoManager\UndoManager.cpp" />
+    <ClCompile Include="Engine\Systems\PostPhysicsSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Audio\AudioSystem.h" />
@@ -363,6 +364,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="Engine\Systems\LogicSystem.h" />
     <ClInclude Include="Engine\UndoManager\UndoManager.h" />
     <ClInclude Include="GameLogic\Systems\TrailSystem.h" />
+    <ClInclude Include="Engine\Systems\PostPhysicsSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\scripts\behaviour_test.lua" />
