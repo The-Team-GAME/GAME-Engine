@@ -604,6 +604,7 @@ namespace ImGuiWidgets {
     // Display all functions from all registries
     auto& easing_functions = Engine::FunctionRegistry<f32(f32, f32, f32, f32)>::get_functions();
     auto& entity_functions = Engine::FunctionRegistry<void(Engine::ECS::Entity)>::get_functions();
+    auto& two_entity_functions = Engine::FunctionRegistry<void(Engine::ECS::Entity, Engine::ECS::Entity)>::get_functions();
     auto& void_functions = Engine::FunctionRegistry<void()>::get_functions();
 
     ImGui::Text("%s", field_name.c_str());
@@ -633,6 +634,19 @@ namespace ImGuiWidgets {
       if (!entity_functions.empty()) {
         ImGui::TextDisabled("--- Entity Callbacks (void(Entity)) ---");
         for (const auto& [name, func] : entity_functions) {
+          is_selected = (current_function == name);
+          if (ImGui::Selectable(name.c_str(), is_selected)) {
+            name_field = name;
+            modified = true;
+          }
+          if (is_selected) ImGui::SetItemDefaultFocus();
+        }
+      }
+
+      // Display two-entity callback functions (e.g., Interactable callbacks)
+      if (!two_entity_functions.empty()) {
+        ImGui::TextDisabled("--- Interactable Callbacks (void(Entity, Entity)) ---");
+        for (const auto& [name, func] : two_entity_functions) {
           is_selected = (current_function == name);
           if (ImGui::Selectable(name.c_str(), is_selected)) {
             name_field = name;

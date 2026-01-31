@@ -30,11 +30,12 @@
 #include "GameStates/GameplayState.h"
 #include "GameStates/PauseState.h"
 #include "GameStates/OptionsState.h"
-#include "LevelCallbacks/LevelCallbacksRegistry.h"
 #include "Systems/HealthSystem.h"
 #include "Systems/EnemyHealthSystem.h"
 #include "Systems/HeartrateSystem.h"
 #include "Systems/DebugHitboxRenderSystem.h"
+#include "Systems/InteractableSystem.h"
+#include "InteractableCallbacks/OldMan.h"
 
 /*=================================================================================
 Function Brief:
@@ -270,13 +271,11 @@ void RunGame()
   Engine::SceneManager::register_scene<PauseState>("PauseState");
   Engine::SceneManager::register_scene<OptionsState>("OptionsState");
 
-  // Register level callbacks (replaces scenes for level-based gameplay)
-  LevelCallbacks::register_all();
-
   // Register game systems at startup
   Engine::ECS::add_system<Engine::Systems::HealthSystem>();
   Engine::ECS::add_system<Engine::Systems::EnemyHealthSystem>();
   Engine::ECS::add_system<Engine::Systems::HeartrateSystem>();
+  Engine::ECS::add_system<Engine::Systems::InteractableSystem>();
   Engine::ECS::add_system<Engine::Systems::DebugHitboxRenderSystem>();
   Engine::ECS::add_system<Engine::Systems::EnemyHealthBarRectSystem>();
   Engine::ECS::add_system<Engine::Systems::HeartHUDSpriteSystem>();
