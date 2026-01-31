@@ -1139,6 +1139,180 @@ namespace Engine {
       return Math::Vec2D(width, height);
     }
 
+    // Helper function to split text into words
+    static std::vector<std::string> split_into_words(const std::string& text) {
+      std::vector<std::string> words;
+      std::string current_word;
+
+      for (size_t i = 0; i < text.length(); ++i) {
+        char c = text[i];
+        if (c == ' ' || c == '\n' || c == '\t') {
+          if (!current_word.empty()) {
+            words.push_back(current_word);
+            current_word.clear();
+          }
+          // Add newline as a special "word" to force line break
+          if (c == '\n') {
+            words.push_back("\n");
+          }
+        }
+        else {
+          current_word += c;
+        }
+      }
+
+      // Don't forget the last word
+      if (!current_word.empty()) {
+        words.push_back(current_word);
+      }
+
+      return words;
+    }
+
+    // Helper function to wrap text into lines based on max_width
+    static std::vector<std::string> wrap_text_into_lines(Engine::Graphics::Font font, const std::string& text, f32 scale, f32 max_width) {
+      std::vector<std::string> lines;
+
+      if (!font || max_width <= 0.0f) {
+        // No wrapping, return single line
+        lines.push_back(text);
+        return lines;
+      }
+
+      std::vector<std::string> words = split_into_words(text);
+      std::string current_line;
+
+      // Measure space width
+      f32 space_width = 0.0f;
+      auto space_it = font->glyphs.find(' ');
+      if (space_it != font->glyphs.end()) {
+        space_width = (space_it->second.advance >> 6) * scale;
+      }
+
+      for (const auto& word : words) {
+        // Handle explicit newlines
+        if (word == "\n") {
+          lines.push_back(current_line);
+          current_line.clear();
+          continue;
+        }
+
+        // Measure the word
+        f32 word_width = measure_text(font, word, scale).x;
+
+        if (current_line.empty()) {
+          // First word on the line
+          current_line = word;
+        }
+        else {
+          // Check if adding this word would exceed max_width
+          f32 line_width = measure_text(font, current_line, scale).x;
+          f32 potential_width = line_width + space_width + word_width;
+
+          if (potential_width <= max_width) {
+            // Word fits, add it
+            current_line += " " + word;
+          }
+          else {
+            // Word doesn't fit, start new line
+            lines.push_back(current_line);
+            current_line = word;
+          }
+        }
+      }
+
+      // Don't forget the last line
+      if (!current_line.empty()) {
+        lines.push_back(current_line);
+      }
+
+      // Handle empty text
+      if (lines.empty()) {
+        lines.push_back("");
+      }
+
+      return lines;
+    }
+
+    void draw_text_wrapped(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color, f32 max_width, f32 line_spacing, int alignment) {
+      if (!font || font->texture_atlas.id == 0) {
+        Log::warning("Attempted to draw wrapped text with invalid font");
+        return;
+      }
+
+      if (text.empty()) {
+        return;
+      }
+
+      // If max_width is 0 or negative, just use regular draw_text
+      if (max_width <= 0.0f) {
+        draw_text(font, text, position, scale, color);
+        return;
+      }
+
+      // Wrap text into lines
+      std::vector<std::string> lines = wrap_text_into_lines(font, text, scale, max_width);
+
+      // Calculate line height
+      f32 line_height = font->baseline * scale * line_spacing;
+
+      // Draw each line
+      f32 y = position.y;
+      for (const auto& line : lines) {
+        f32 x = position.x;
+
+        // Apply alignment
+        if (alignment != 0 && !line.empty()) {
+          f32 line_width = measure_text(font, line, scale).x;
+          if (alignment == 1) {
+            // Center alignment
+            x = position.x + (max_width - line_width) * 0.5f;
+          }
+          else if (alignment == 2) {
+            // Right alignment
+            x = position.x + max_width - line_width;
+          }
+        }
+
+        draw_text(font, line, Math::Vec2D(x, y), scale, color);
+        y += line_height;
+      }
+    }
+
+    Math::Vec2D measure_text_wrapped(Engine::Graphics::Font font, const std::string& text, f32 scale, f32 max_width) {
+      if (!font || font->texture_atlas.id == 0) {
+        Log::warning("Attempted to measure wrapped text with invalid font");
+        return Math::Vec2D(0.0f, 0.0f);
+      }
+
+      if (text.empty()) {
+        return Math::Vec2D(0.0f, 0.0f);
+      }
+
+      // If max_width is 0 or negative, just use regular measure_text
+      if (max_width <= 0.0f) {
+        return measure_text(font, text, scale);
+      }
+
+      // Wrap text into lines
+      std::vector<std::string> lines = wrap_text_into_lines(font, text, scale, max_width);
+
+      // Calculate total dimensions
+      f32 total_width = 0.0f;
+      f32 line_height = font->baseline * scale;
+
+      for (const auto& line : lines) {
+        f32 line_width = measure_text(font, line, scale).x;
+        if (line_width > total_width) {
+          total_width = line_width;
+        }
+      }
+
+      f32 total_height = line_height * static_cast<f32>(lines.size());
+
+      return Math::Vec2D(total_width, total_height);
+    }
+
     void clear_screen(const Math::Vec4D& color) {
       // Flush any pending batches before clearing
       end_batch();
@@ -1740,6 +1914,51 @@ namespace Engine {
 
         // Advance cursor to next glyph
         x += (glyph.advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64)
+      }
+    }
+
+    void draw_text_wrapped_ui(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color, f32 max_width, f32 line_spacing, int alignment) {
+      if (!font || font->texture_atlas.id == 0) {
+        Log::warning("Attempted to draw wrapped UI text with invalid font");
+        return;
+      }
+
+      if (text.empty()) {
+        return;
+      }
+
+      // If max_width is 0 or negative, just use regular draw_text_ui
+      if (max_width <= 0.0f) {
+        draw_text_ui(font, text, position, scale, color);
+        return;
+      }
+
+      // Wrap text into lines
+      std::vector<std::string> lines = wrap_text_into_lines(font, text, scale, max_width);
+
+      // Calculate line height
+      f32 line_height = font->baseline * scale * line_spacing;
+
+      // Draw each line
+      f32 y = position.y;
+      for (const auto& line : lines) {
+        f32 x = position.x;
+
+        // Apply alignment
+        if (alignment != 0 && !line.empty()) {
+          f32 line_width = measure_text(font, line, scale).x;
+          if (alignment == 1) {
+            // Center alignment
+            x = position.x + (max_width - line_width) * 0.5f;
+          }
+          else if (alignment == 2) {
+            // Right alignment
+            x = position.x + max_width - line_width;
+          }
+        }
+
+        draw_text_ui(font, line, Math::Vec2D(x, y), scale, color);
+        y += line_height;
       }
     }
 
