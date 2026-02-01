@@ -59,6 +59,15 @@ namespace TilemapPanel {
     int atlas_rows = 1;
     int atlas_cols = 1;
 
+    // Animated atlas preview state
+    bool is_animated_atlas = false;
+    int anim_prop_cols = 1;    // How many grid columns one prop occupies in the world
+    int anim_prop_rows = 1;    // How many grid rows one prop occupies in the world
+    int anim_frame_cols = 1;   // How many columns of animation frames
+    int anim_frame_rows = 1;   // How many rows of animation frames
+    float anim_frame_duration = 0.1f;
+    bool anim_is_looping = true;
+
     // Painting state
     bool enable_tilemap_mode = false;
 
@@ -107,6 +116,32 @@ namespace TilemapPanel {
       tile_height,
       atlas_rows,
       atlas_cols
+    );
+  }
+
+  // Regenerate atlas for animated tiles
+  // For animated atlases, each "prop" spans multiple grid cells and has multiple animation frames
+  // The texture is divided as: (anim_frame_cols * anim_prop_cols) columns x (anim_frame_rows * anim_prop_rows) rows
+  void regenerate_animated_atlas() {
+    if (!preview_texture.texture_handle) {
+      return;
+    }
+
+    int texture_width = preview_texture.texture_handle->width;
+    int texture_height = preview_texture.texture_handle->height;
+
+    // Total columns and rows in the texture
+    int total_cols = anim_frame_cols * anim_prop_cols;
+    int total_rows = anim_frame_rows * anim_prop_rows;
+
+    int tile_width = texture_width / total_cols;
+    int tile_height = texture_height / total_rows;
+
+    preview_atlas = Components::TextureAtlas(
+      tile_width,
+      tile_height,
+      total_rows,
+      total_cols
     );
   }
 
@@ -518,6 +553,12 @@ namespace TilemapPanel {
         return;
       }
 
+      // Toggle between static and animated atlas modes
+      ImGui::Checkbox("Animated Atlas", &is_animated_atlas);
+      ImGui::SameLine();
+      ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(For animated props/tiles)");
+      ImGui::Separator();
+
       if (ImGui::CollapsingHeader("Atlas Selection", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::Indent();
 
@@ -550,15 +591,25 @@ namespace TilemapPanel {
                 if (auto tex = Engine::Resources::texture_cache[texture_paths[i]].lock()) {
                   preview_texture = Components::Texture(tex);
 
-                  // Automatically calculate columns and rows by dividing by 32
-                  atlas_cols = preview_texture.texture_handle->width / 32;
-                  atlas_rows = preview_texture.texture_handle->height / 32;
+                  if (is_animated_atlas) {
+                    // For animated atlas, reset to defaults
+                    anim_prop_cols = 1;
+                    anim_prop_rows = 1;
+                    anim_frame_cols = 1;
+                    anim_frame_rows = 1;
+                    regenerate_animated_atlas();
+                  }
+                  else {
+                    // Automatically calculate columns and rows by dividing by 32
+                    atlas_cols = preview_texture.texture_handle->width / 32;
+                    atlas_rows = preview_texture.texture_handle->height / 32;
 
-                  // Ensure at least 1 row and 1 column
-                  if (atlas_cols < 1) atlas_cols = 1;
-                  if (atlas_rows < 1) atlas_rows = 1;
+                    // Ensure at least 1 row and 1 column
+                    if (atlas_cols < 1) atlas_cols = 1;
+                    if (atlas_rows < 1) atlas_rows = 1;
 
-                  regenerate_atlas();
+                    regenerate_atlas();
+                  }
                 }
               }
               if (is_selected) {
@@ -571,31 +622,99 @@ namespace TilemapPanel {
           // Atlas configuration and preview
           if (preview_texture.texture_handle) {
             ImGui::Separator();
-            ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Atlas Configuration");
+            
+            if (is_animated_atlas) {
+              // === ANIMATED ATLAS CONFIGURATION ===
+              ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.5f, 1.0f), "Animated Atlas Configuration");
 
-            ImGui::Text("Texture: %dx%d",
-              preview_texture.texture_handle->width,
-              preview_texture.texture_handle->height);
+              ImGui::Text("Texture: %dx%d",
+                preview_texture.texture_handle->width,
+                preview_texture.texture_handle->height);
 
-            // Rows and columns input
-            if (ImGui::DragInt("Columns", &atlas_cols, 1.0f, 1, 100)) {
-              regenerate_atlas();
+              ImGui::Separator();
+              ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.0f, 1.0f), "World Size (Grid Cells):");
+              ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "How many grid cells this prop occupies");
+
+              if (ImGui::DragInt("Prop Columns##world", &anim_prop_cols, 1.0f, 1, 20)) {
+                regenerate_animated_atlas();
+              }
+              ImGui::SameLine();
+              ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(width)");
+
+              if (ImGui::DragInt("Prop Rows##world", &anim_prop_rows, 1.0f, 1, 20)) {
+                regenerate_animated_atlas();
+              }
+              ImGui::SameLine();
+              ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(height)");
+
+              ImGui::Separator();
+              ImGui::TextColored(ImVec4(0.5f, 0.8f, 1.0f, 1.0f), "Animation Frames:");
+              ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "How many animation frames in the texture");
+
+              if (ImGui::DragInt("Frame Columns##anim", &anim_frame_cols, 1.0f, 1, 50)) {
+                regenerate_animated_atlas();
+              }
+              ImGui::SameLine();
+              ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(horizontal)");
+
+              if (ImGui::DragInt("Frame Rows##anim", &anim_frame_rows, 1.0f, 1, 50)) {
+                regenerate_animated_atlas();
+              }
+              ImGui::SameLine();
+              ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(vertical)");
+
+              ImGui::Separator();
+              ImGui::TextColored(ImVec4(0.8f, 0.5f, 1.0f, 1.0f), "Animation Settings:");
+
+              ImGui::DragFloat("Frame Duration (s)", &anim_frame_duration, 0.01f, 0.01f, 10.0f, "%.3f");
+              ImGui::Checkbox("Loop Animation", &anim_is_looping);
+
+              // Display calculated info
+              ImGui::Separator();
+              int total_cols = anim_frame_cols * anim_prop_cols;
+              int total_rows = anim_frame_rows * anim_prop_rows;
+              int total_frames = anim_frame_cols * anim_frame_rows;
+              float total_duration = anim_frame_duration * total_frames;
+
+              ImGui::Text("Total Texture Divisions: %dx%d", total_cols, total_rows);
+              ImGui::Text("Total Animation Frames: %d", total_frames);
+              ImGui::Text("Total Animation Duration: %.2fs", total_duration);
+              ImGui::Text("Tiles per frame: %d", anim_prop_cols * anim_prop_rows);
             }
+            else {
+              // === STATIC ATLAS CONFIGURATION ===
+              ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Atlas Configuration");
 
-            if (ImGui::DragInt("Rows", &atlas_rows, 1.0f, 1, 100)) {
-              regenerate_atlas();
+              ImGui::Text("Texture: %dx%d",
+                preview_texture.texture_handle->width,
+                preview_texture.texture_handle->height);
+
+              // Rows and columns input
+              if (ImGui::DragInt("Columns", &atlas_cols, 1.0f, 1, 100)) {
+                regenerate_atlas();
+              }
+
+              if (ImGui::DragInt("Rows", &atlas_rows, 1.0f, 1, 100)) {
+                regenerate_atlas();
+              }
+
+              ImGui::Text("Tiles: %zu", preview_atlas.subTextures.size());
             }
-
-            ImGui::Text("Tiles: %zu", preview_atlas.subTextures.size());
 
             // Atlas preview
             if (!preview_atlas.subTextures.empty()) {
               ImGui::Separator();
               ImGui::Text("Preview:");
+
+              // Calculate preview height to make tiles uniform size (64x64), same as Tile Selection
+              const float desired_tile_size = 64.0f;
+              int preview_rows = is_animated_atlas ? (anim_frame_rows * anim_prop_rows) : atlas_rows;
+              float preview_height = desired_tile_size * preview_rows;
+
               ImGuiWidgets::TextureAtlasPreview(
                 preview_texture,
                 preview_atlas,
-                600.0f,
+                preview_height,
                 preview_widget_state
               );
             }
@@ -603,12 +722,24 @@ namespace TilemapPanel {
             // Submit button
             ImGui::Separator();
 
-            if (ImGui::Button("Submit Atlas", ImVec2(-1, 0))) {
+            if (ImGui::Button(is_animated_atlas ? "Submit Animated Atlas" : "Submit Atlas", ImVec2(-1, 0))) {
               Engine::Graphics::AtlasEntry entry;
               entry.texture_handle = preview_texture.texture_handle;
               entry.texture_path = Engine::Resources::get_relative_path(preview_texture.texture_handle->path);
               entry.subTextures = preview_atlas.subTextures;
               entry.drawIndex = preview_atlas.drawIndex;
+
+              // Set animation config if this is an animated atlas
+              if (is_animated_atlas) {
+                entry.animation_config.is_animated = true;
+                entry.animation_config.prop_cols = anim_prop_cols;
+                entry.animation_config.prop_rows = anim_prop_rows;
+                entry.animation_config.anim_cols = anim_frame_cols;
+                entry.animation_config.anim_rows = anim_frame_rows;
+                entry.animation_config.frame_duration = anim_frame_duration;
+                entry.animation_config.is_looping = anim_is_looping;
+              }
+
               loaded_tilemaps.push_back(entry);
 
               // Add a new widget state for this atlas
