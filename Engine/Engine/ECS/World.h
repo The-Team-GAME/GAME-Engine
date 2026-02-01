@@ -551,6 +551,37 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
+    Iterates over entities with specific components and passes the components directly
+    to the callback. This is a more convenient version that avoids repeated get_component
+    calls inside the callback.
+
+    Parameters:
+    callback - Function that receives the Entity and component pointers directly.
+
+    Where to call it:
+    When you need to iterate over entities and immediately work with their components.
+    More convenient than for_each_entity_with when you need component access.
+
+    Example (single component):
+    for_each<Transform>([](Entity e, Transform* t) {
+      t->position.x += 1.0f;
+    });
+
+    Example (multiple components):
+    for_each<Transform, Velocity>([](Entity e, Transform* t, Velocity* v) {
+      t->position += v->value * dt;
+    });
+
+    Example (without entity):
+    for_each<Transform, Velocity>([](Transform* t, Velocity* v) {
+      t->position += v->value * dt;
+    });
+    ==================================================================================*/
+    template <typename... Components, typename Func>
+    void for_each(Func&& callback);
+
+    /*=================================================================================
+    Function Brief:
     Iterates over entities on a specific layer and calls the callback for each.
 
     Parameters:

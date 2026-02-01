@@ -42,6 +42,7 @@ void register_engine_systems()
   Engine::ECS::add_system<Engine::Systems::Collision2DSystem>();
   Engine::ECS::add_system<Engine::Systems::PostPhysics2DSystem>();
   Engine::ECS::add_system<Engine::Systems::AnimationUpdateSystem>();
+  Engine::ECS::add_system<Engine::Systems::TransformAnimationSystem>();
   Engine::ECS::add_system<Engine::Systems::DynamicButtonSystem>();
   Engine::ECS::add_system<Engine::Systems::ClickableSystem>();
 
@@ -99,6 +100,7 @@ void unregister_engine_systems()
 
   Engine::ECS::remove_system<Engine::Systems::ClickableSystem>();
   Engine::ECS::remove_system<Engine::Systems::DynamicButtonSystem>();
+  Engine::ECS::remove_system<Engine::Systems::TransformAnimationSystem>();
   Engine::ECS::remove_system<Engine::Systems::AnimationUpdateSystem>();
   Engine::ECS::remove_system<Engine::Systems::PostPhysics2DSystem>();
   Engine::ECS::remove_system<Engine::Systems::Collision2DSystem>();

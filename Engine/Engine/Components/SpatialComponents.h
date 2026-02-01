@@ -18,6 +18,8 @@
 
 #include "../Math/Vector2D.h"
 #include "../ECS/Macros.h"
+#include <vector>
+#include <string>
 
 namespace Components
 {
@@ -36,6 +38,60 @@ namespace Components
     }
   };
 
+  // ============================================================================
+  // Transform Keyframe Animation
+  // ============================================================================
+
+  /// A single keyframe in a transform animation with per-property easing
+  struct TransformKeyframe
+  {
+    Math::Vec2D position{ 0.0f, 0.0f };
+    float rotation = 0.0f;
+    Math::Vec2D scale{ 1.0f, 1.0f };
+
+    float time = 0.0f;  // Normalized time (0.0 to 1.0) when this keyframe occurs
+
+    // Per-property easing functions (names from FunctionRegistry)
+    std::string position_easing = "EaseLinearNone";
+    std::string rotation_easing = "EaseLinearNone";
+    std::string scale_easing = "EaseLinearNone";
+
+    TransformKeyframe() = default;
+    TransformKeyframe(const Math::Vec2D& pos, float rot, const Math::Vec2D& scl, float t,
+      const std::string& pos_ease = "EaseLinearNone",
+      const std::string& rot_ease = "EaseLinearNone",
+      const std::string& scl_ease = "EaseLinearNone")
+      : position(pos), rotation(rot), scale(scl), time(t),
+      position_easing(pos_ease), rotation_easing(rot_ease), scale_easing(scl_ease) {
+    }
+  };
+
+  /// Component for animating Transform2D over time using keyframes
+  struct TransformAnimation
+  {
+    std::vector<TransformKeyframe> keyframes;
+
+    float duration = 1.0f;        // Total animation duration in seconds
+    float elapsed = 0.0f;         // Current elapsed time
+    float start_time = -1.0f;     // When the animation started (-1 = not started)
+
+    bool is_playing = true;       // Whether the animation is currently playing
+    bool is_looping = false;      // Whether to loop when finished
+    bool ping_pong = false;       // Reverse direction on each loop
+    bool use_relative = false;    // If true, keyframe values are relative to initial transform
+
+    // Internal state
+    bool is_reversed = false;     // Current direction (for ping_pong)
+    Math::Vec2D initial_position{ 0.0f, 0.0f };  // Stored initial transform (for relative mode)
+    float initial_rotation = 0.0f;
+    Math::Vec2D initial_scale{ 1.0f, 1.0f };
+    bool has_initialized = false; // Whether initial values have been captured
+
+    TransformAnimation() = default;
+  };
+
 }
 
 REGISTER_COMPONENT(Components::Transform2D, position, rotation, scale)
+REGISTER_COMPONENT(Components::TransformKeyframe, position, rotation, scale, time, position_easing, rotation_easing, scale_easing)
+REGISTER_COMPONENT(Components::TransformAnimation, keyframes, duration, elapsed, is_playing, is_looping, ping_pong, use_relative)

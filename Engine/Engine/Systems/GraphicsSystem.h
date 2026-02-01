@@ -25,6 +25,9 @@
 #include "../FileIO/Settings.h"
 #include "../GUI/TilemapPanel.h"
 #include "../Logger.h"
+#include "../Easing.h"
+#include "../FunctionRegistry.h"
+#include "../Time.h"
 
 namespace Engine
 {
@@ -414,6 +417,174 @@ namespace Engine
             flip_value
           );
         }
+      }
+    };
+
+    // ============================================================================
+    // Transform Animation System
+    // ============================================================================
+
+    class TransformAnimationSystem : public Engine::ECS::System {
+    private:
+      using EasingFunc = f32(f32, f32, f32, f32);
+
+      // Helper to get easing function, returns linear if not found
+      static std::function<EasingFunc> get_easing(const std::string& name) {
+        auto func = FunctionRegistry<EasingFunc>::get_function(name);
+        if (!func) {
+          return Engine::Easing::EaseLinearNone;
+        }
+        return func;
+      }
+
+      // Helper to interpolate between two keyframes
+      static void interpolate_transform(
+        Components::Transform2D* transform,
+        const Components::TransformKeyframe& from,
+        const Components::TransformKeyframe& to,
+        float local_t,  // 0-1 between these two keyframes
+        float duration_between  // duration between keyframes in seconds
+      ) {
+        // Get easing functions for each property
+        auto pos_ease = get_easing(to.position_easing);
+        auto rot_ease = get_easing(to.rotation_easing);
+        auto scl_ease = get_easing(to.scale_easing);
+
+        // Apply easing: t=local_t*duration, b=0, c=1, d=duration
+        float eased_pos = pos_ease(local_t * duration_between, 0.0f, 1.0f, duration_between);
+        float eased_rot = rot_ease(local_t * duration_between, 0.0f, 1.0f, duration_between);
+        float eased_scl = scl_ease(local_t * duration_between, 0.0f, 1.0f, duration_between);
+
+        // Interpolate position
+        transform->position.x = from.position.x + (to.position.x - from.position.x) * eased_pos;
+        transform->position.y = from.position.y + (to.position.y - from.position.y) * eased_pos;
+
+        // Interpolate rotation
+        transform->rotation = from.rotation + (to.rotation - from.rotation) * eased_rot;
+
+        // Interpolate scale
+        transform->scale.x = from.scale.x + (to.scale.x - from.scale.x) * eased_scl;
+        transform->scale.y = from.scale.y + (to.scale.y - from.scale.y) * eased_scl;
+      }
+
+    public:
+      TransformAnimationSystem() {
+        require_components<Components::Transform2D, Components::TransformAnimation>();
+      }
+
+      void update_entity(Engine::ECS::Entity entity) override {
+        auto* transform = entity.get_component<Components::Transform2D>();
+        auto* anim = entity.get_component<Components::TransformAnimation>();
+
+        // Skip if not playing or no keyframes
+        if (!anim->is_playing || anim->keyframes.empty()) {
+          return;
+        }
+
+        // Initialize on first run
+        if (!anim->has_initialized) {
+          anim->initial_position = transform->position;
+          anim->initial_rotation = transform->rotation;
+          anim->initial_scale = transform->scale;
+          anim->has_initialized = true;
+          anim->start_time = Engine::Time::get_time();
+          anim->elapsed = 0.0f;
+        }
+
+        // Update elapsed time
+        anim->elapsed = Engine::Time::get_time() - anim->start_time;
+
+        // Calculate normalized time (0-1)
+        float normalized_time = anim->elapsed / anim->duration;
+
+        // Handle looping
+        if (normalized_time >= 1.0f) {
+          if (anim->is_looping) {
+            if (anim->ping_pong) {
+              // Ping-pong: reverse direction
+              anim->is_reversed = !anim->is_reversed;
+            }
+            // Reset timer
+            anim->start_time = Engine::Time::get_time();
+            anim->elapsed = 0.0f;
+            normalized_time = 0.0f;
+          }
+          else {
+            // Animation finished - clamp to end
+            normalized_time = 1.0f;
+            anim->is_playing = false;
+          }
+        }
+
+        // Apply ping-pong reversal
+        float effective_time = anim->is_reversed ? (1.0f - normalized_time) : normalized_time;
+
+        // Find the two keyframes to interpolate between
+        const auto& keyframes = anim->keyframes;
+        size_t num_keyframes = keyframes.size();
+
+        // Single keyframe - just set the transform
+        if (num_keyframes == 1) {
+          const auto& kf = keyframes[0];
+          if (anim->use_relative) {
+            transform->position = anim->initial_position + kf.position;
+            transform->rotation = anim->initial_rotation + kf.rotation;
+            transform->scale.x = anim->initial_scale.x * kf.scale.x;
+            transform->scale.y = anim->initial_scale.y * kf.scale.y;
+          }
+          else {
+            transform->position = kf.position;
+            transform->rotation = kf.rotation;
+            transform->scale = kf.scale;
+          }
+          return;
+        }
+
+        // Find keyframe pair
+        size_t from_idx = 0;
+        size_t to_idx = 1;
+
+        for (size_t i = 0; i < num_keyframes - 1; ++i) {
+          if (effective_time >= keyframes[i].time && effective_time <= keyframes[i + 1].time) {
+            from_idx = i;
+            to_idx = i + 1;
+            break;
+          }
+          // Handle case where we're past the last keyframe
+          if (i == num_keyframes - 2 && effective_time > keyframes[i + 1].time) {
+            from_idx = i;
+            to_idx = i + 1;
+          }
+        }
+
+        const auto& from_kf = keyframes[from_idx];
+        const auto& to_kf = keyframes[to_idx];
+
+        // Calculate local interpolation factor between these two keyframes
+        float keyframe_duration = to_kf.time - from_kf.time;
+        float local_t = (keyframe_duration > 0.0001f)
+          ? (effective_time - from_kf.time) / keyframe_duration
+          : 0.0f;
+        local_t = std::clamp(local_t, 0.0f, 1.0f);
+
+        // Create adjusted keyframes for relative mode
+        Components::TransformKeyframe adjusted_from = from_kf;
+        Components::TransformKeyframe adjusted_to = to_kf;
+
+        if (anim->use_relative) {
+          adjusted_from.position = anim->initial_position + from_kf.position;
+          adjusted_from.rotation = anim->initial_rotation + from_kf.rotation;
+          adjusted_from.scale.x = anim->initial_scale.x * from_kf.scale.x;
+          adjusted_from.scale.y = anim->initial_scale.y * from_kf.scale.y;
+
+          adjusted_to.position = anim->initial_position + to_kf.position;
+          adjusted_to.rotation = anim->initial_rotation + to_kf.rotation;
+          adjusted_to.scale.x = anim->initial_scale.x * to_kf.scale.x;
+          adjusted_to.scale.y = anim->initial_scale.y * to_kf.scale.y;
+        }
+
+        // Interpolate!
+        interpolate_transform(transform, adjusted_from, adjusted_to, local_t, keyframe_duration * anim->duration);
       }
     };
 
