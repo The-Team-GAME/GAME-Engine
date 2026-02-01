@@ -36,11 +36,6 @@ namespace {
   bool selection_initialized = false;
   int selected_keyframe_index = -1;
 
-  // Preview state
-  bool preview_playing = false;
-  float preview_time = 0.0f;
-  float preview_start_real_time = 0.0f;
-
   // Available easing function names
   const std::vector<std::string> easing_names = {
     "EaseLinearNone",
@@ -259,44 +254,50 @@ void TransformAnimationEditorPanel()
 
   ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
-  // ============================================================================
-  // Playback Controls
-  // ============================================================================
-  ImGui::Text("Playback Controls");
-  ImGui::Separator();
-
-  if (ImGui::Button(preview_playing ? "Pause" : "Play")) {
-    preview_playing = !preview_playing;
-    if (preview_playing) {
-      preview_start_real_time = Engine::Time::get_unscaled_time() - preview_time * anim->duration;
+  // Calculate current normalized time from actual animation state
+  float current_normalized_time = 0.0f;
+  if (anim->duration > 0.0f) {
+    current_normalized_time = anim->elapsed / anim->duration;
+    if (anim->is_looping) {
+      current_normalized_time = fmod(current_normalized_time, 1.0f);
+    } else {
+      current_normalized_time = std::clamp(current_normalized_time, 0.0f, 1.0f);
+    }
+    // Apply ping-pong reversal for display
+    if (anim->is_reversed) {
+      current_normalized_time = 1.0f - current_normalized_time;
     }
   }
+
+  // ============================================================================
+  // Animation State (Read-only display)
+  // ============================================================================
+  ImGui::Text("Animation State");
+  ImGui::Separator();
+
+  // Show current time info
+  ImGui::Text("Elapsed: %.2fs / %.2fs (%.1f%%)", 
+    anim->elapsed, anim->duration, current_normalized_time * 100.0f);
+  
   ImGui::SameLine();
-  if (ImGui::Button("Stop")) {
-    preview_playing = false;
-    preview_time = 0.0f;
-    // Reset animation
+  if (anim->is_playing) {
+    ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "[Playing]");
+  } else {
+    ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.4f, 1.0f), "[Stopped]");
+  }
+
+  if (anim->is_reversed) {
+    ImGui::SameLine();
+    ImGui::TextColored(ImVec4(0.6f, 0.6f, 1.0f, 1.0f), "[Reversed]");
+  }
+
+  // Reset button to restart animation
+  if (ImGui::Button("Reset Animation")) {
     anim->elapsed = 0.0f;
     anim->start_time = Engine::Time::get_time();
     anim->is_reversed = false;
     anim->has_initialized = false;
   }
-  ImGui::SameLine();
-  if (ImGui::Button("Reset")) {
-    anim->elapsed = 0.0f;
-    anim->start_time = Engine::Time::get_time();
-    anim->is_reversed = false;
-    anim->has_initialized = false;
-  }
-
-  // Update preview time
-  if (preview_playing) {
-    float real_elapsed = Engine::Time::get_unscaled_time() - preview_start_real_time;
-    preview_time = fmod(real_elapsed / anim->duration, 1.0f);
-  }
-
-  // Timeline scrubber
-  ImGui::SliderFloat("Preview Time", &preview_time, 0.0f, 1.0f, "%.2f");
 
   ImGui::Spacing();
 
@@ -324,7 +325,7 @@ void TransformAnimationEditorPanel()
   // ============================================================================
   // Timeline View
   // ============================================================================
-  ImGui::Text("Timeline");
+  ImGui::Text("Timeline (click or drag to scrub)");
   ImGui::Separator();
 
   ImVec2 timeline_pos = ImGui::GetCursorScreenPos();
@@ -333,14 +334,19 @@ void TransformAnimationEditorPanel()
   // Reserve space for timeline
   ImGui::Dummy(timeline_size);
 
-  DrawTimeline(draw_list, timeline_pos, timeline_size, anim, preview_time);
+  DrawTimeline(draw_list, timeline_pos, timeline_size, anim, current_normalized_time);
 
-  // Click on timeline to set preview time
+  // Click/drag on timeline to scrub
   ImGui::SetCursorScreenPos(timeline_pos);
-  ImGui::InvisibleButton("##timeline_click", timeline_size);
-  if (ImGui::IsItemClicked()) {
+  ImGui::InvisibleButton("##timeline_scrub", timeline_size);
+  if (ImGui::IsItemActive()) {
     float click_x = ImGui::GetMousePos().x - timeline_pos.x;
-    preview_time = std::clamp(click_x / timeline_size.x, 0.0f, 1.0f);
+    float new_time = std::clamp(click_x / timeline_size.x, 0.0f, 1.0f);
+    
+    // Set the animation's elapsed time based on scrub position
+    anim->elapsed = new_time * anim->duration;
+    anim->start_time = Engine::Time::get_time() - anim->elapsed;
+    anim->is_reversed = false;
   }
 
   ImGui::Spacing();
@@ -374,7 +380,7 @@ void TransformAnimationEditorPanel()
     new_kf.position = transform->position;
     new_kf.rotation = transform->rotation;
     new_kf.scale = transform->scale;
-    new_kf.time = preview_time;
+    new_kf.time = current_normalized_time;
     anim->keyframes.push_back(new_kf);
     selected_keyframe_index = static_cast<int>(anim->keyframes.size()) - 1;
 
