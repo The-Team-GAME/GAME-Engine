@@ -62,8 +62,8 @@ namespace TilemapPanel {
 
     // Animated atlas preview state
     bool is_animated_atlas = false;
-    int anim_prop_cols = 1;    // How many grid columns one prop occupies in the world
-    int anim_prop_rows = 1;    // How many grid rows one prop occupies in the world
+    int anim_sheet_cols = 1;   // How many grid columns the whole sheet occupies in the world
+    int anim_sheet_rows = 1;   // How many grid rows the whole sheet occupies in the world
     int anim_frame_cols = 1;   // How many columns of animation frames
     int anim_frame_rows = 1;   // How many rows of animation frames
     float anim_frame_duration = 0.1f;
@@ -121,8 +121,9 @@ namespace TilemapPanel {
   }
 
   // Regenerate atlas for animated tiles
-  // For animated atlases, each "prop" spans multiple grid cells and has multiple animation frames
-  // The texture is divided as: (anim_frame_cols * anim_prop_cols) columns x (anim_frame_rows * anim_prop_rows) rows
+  // For animated atlases, the whole sheet spans anim_sheet_cols x anim_sheet_rows grid cells
+  // The texture is divided into anim_frame_cols x anim_frame_rows animation frames
+  // Each prop size = sheet_size / frame_count
   void regenerate_animated_atlas() {
     if (!preview_texture.texture_handle) {
       return;
@@ -131,9 +132,9 @@ namespace TilemapPanel {
     int texture_width = preview_texture.texture_handle->width;
     int texture_height = preview_texture.texture_handle->height;
 
-    // Total columns and rows in the texture
-    int total_cols = anim_frame_cols * anim_prop_cols;
-    int total_rows = anim_frame_rows * anim_prop_rows;
+    // Total tile divisions in the texture = sheet grid size (since each grid cell = 1 tile)
+    int total_cols = anim_sheet_cols;
+    int total_rows = anim_sheet_rows;
 
     int tile_width = texture_width / total_cols;
     int tile_height = texture_height / total_rows;
@@ -593,9 +594,14 @@ namespace TilemapPanel {
                   preview_texture = Components::Texture(tex);
 
                   if (is_animated_atlas) {
-                    // For animated atlas, reset to defaults
-                    anim_prop_cols = 1;
-                    anim_prop_rows = 1;
+                    // For animated atlas, auto-calculate sheet size by dividing by 32 (like static)
+                    anim_sheet_cols = preview_texture.texture_handle->width / 32;
+                    anim_sheet_rows = preview_texture.texture_handle->height / 32;
+
+                    // Ensure at least 1 row and 1 column
+                    if (anim_sheet_cols < 1) anim_sheet_cols = 1;
+                    if (anim_sheet_rows < 1) anim_sheet_rows = 1;
+
                     anim_frame_cols = 1;
                     anim_frame_rows = 1;
                     regenerate_animated_atlas();
@@ -633,16 +639,16 @@ namespace TilemapPanel {
                 preview_texture.texture_handle->height);
 
               ImGui::Separator();
-              ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.0f, 1.0f), "World Size (Grid Cells):");
-              ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "How many grid cells this prop occupies");
+              ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.0f, 1.0f), "Sheet Size (Grid Cells):");
+              ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "How many grid cells the whole sheet occupies");
 
-              if (ImGui::DragInt("Prop Columns##world", &anim_prop_cols, 1.0f, 1, 20)) {
+              if (ImGui::DragInt("Sheet Columns##world", &anim_sheet_cols, 1.0f, 1, 0)) {
                 regenerate_animated_atlas();
               }
               ImGui::SameLine();
               ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(width)");
 
-              if (ImGui::DragInt("Prop Rows##world", &anim_prop_rows, 1.0f, 1, 20)) {
+              if (ImGui::DragInt("Sheet Rows##world", &anim_sheet_rows, 1.0f, 1, 0)) {
                 regenerate_animated_atlas();
               }
               ImGui::SameLine();
@@ -652,13 +658,13 @@ namespace TilemapPanel {
               ImGui::TextColored(ImVec4(0.5f, 0.8f, 1.0f, 1.0f), "Animation Frames:");
               ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "How many animation frames in the texture");
 
-              if (ImGui::DragInt("Frame Columns##anim", &anim_frame_cols, 1.0f, 1, 50)) {
+              if (ImGui::DragInt("Frame Columns##anim", &anim_frame_cols, 1.0f, 1, 0)) {
                 regenerate_animated_atlas();
               }
               ImGui::SameLine();
               ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(horizontal)");
 
-              if (ImGui::DragInt("Frame Rows##anim", &anim_frame_rows, 1.0f, 1, 50)) {
+              if (ImGui::DragInt("Frame Rows##anim", &anim_frame_rows, 1.0f, 1, 0)) {
                 regenerate_animated_atlas();
               }
               ImGui::SameLine();
@@ -670,17 +676,18 @@ namespace TilemapPanel {
               ImGui::DragFloat("Frame Duration (s)", &anim_frame_duration, 0.01f, 0.01f, 10.0f, "%.3f");
               ImGui::Checkbox("Loop Animation", &anim_is_looping);
 
-              // Display calculated info
-              ImGui::Separator();
-              int total_cols = anim_frame_cols * anim_prop_cols;
-              int total_rows = anim_frame_rows * anim_prop_rows;
+              // Calculate prop size from sheet size and frame count
+              int prop_cols = anim_sheet_cols / anim_frame_cols;
+              int prop_rows = anim_sheet_rows / anim_frame_rows;
               int total_frames = anim_frame_cols * anim_frame_rows;
               float total_duration = anim_frame_duration * total_frames;
 
-              ImGui::Text("Total Texture Divisions: %dx%d", total_cols, total_rows);
+              // Display calculated info
+              ImGui::Separator();
+              ImGui::Text("Prop Size: %dx%d grid cells", prop_cols, prop_rows);
               ImGui::Text("Total Animation Frames: %d", total_frames);
               ImGui::Text("Total Animation Duration: %.2fs", total_duration);
-              ImGui::Text("Tiles per frame: %d", anim_prop_cols * anim_prop_rows);
+              ImGui::Text("Tiles per frame: %d", prop_cols * prop_rows);
             }
             else {
               // === STATIC ATLAS CONFIGURATION ===
@@ -691,11 +698,11 @@ namespace TilemapPanel {
                 preview_texture.texture_handle->height);
 
               // Rows and columns input
-              if (ImGui::DragInt("Columns", &atlas_cols, 1.0f, 1, 100)) {
+              if (ImGui::DragInt("Columns", &atlas_cols, 1.0f, 1, 0)) {
                 regenerate_atlas();
               }
 
-              if (ImGui::DragInt("Rows", &atlas_rows, 1.0f, 1, 100)) {
+              if (ImGui::DragInt("Rows", &atlas_rows, 1.0f, 1, 0)) {
                 regenerate_atlas();
               }
 
@@ -709,18 +716,22 @@ namespace TilemapPanel {
 
               // Calculate preview height to make tiles uniform size (64x64), same as in Tile Selection
               const float desired_tile_size = 64.0f;
-              int preview_rows = is_animated_atlas ? (anim_frame_rows * anim_prop_rows) : atlas_rows;
+              int preview_rows = is_animated_atlas ? anim_sheet_rows : atlas_rows;
               float calc_preview_height = desired_tile_size * preview_rows;
 
               if (is_animated_atlas) {
-                // Use overload with prop size to draw blue outlines
+                // Calculate prop size from sheet size and frame count
+                int prop_cols = anim_sheet_cols / anim_frame_cols;
+                int prop_rows = anim_sheet_rows / anim_frame_rows;
+
+                // Use overload with prop size to draw green outlines
                 ImGuiWidgets::TextureAtlasPreview(
                   preview_texture,
                   preview_atlas,
                   calc_preview_height,
                   preview_widget_state,
-                  anim_prop_cols,
-                  anim_prop_rows
+                  prop_cols,
+                  prop_rows
                 );
               }
               else {
@@ -745,9 +756,13 @@ namespace TilemapPanel {
 
               // Set animation config if this is an animated atlas
               if (is_animated_atlas) {
+                // Calculate prop size from sheet size and frame count
+                int prop_cols = anim_sheet_cols / anim_frame_cols;
+                int prop_rows = anim_sheet_rows / anim_frame_rows;
+
                 entry.animation_config.is_animated = true;
-                entry.animation_config.prop_cols = anim_prop_cols;
-                entry.animation_config.prop_rows = anim_prop_rows;
+                entry.animation_config.prop_cols = prop_cols;
+                entry.animation_config.prop_rows = prop_rows;
                 entry.animation_config.anim_cols = anim_frame_cols;
                 entry.animation_config.anim_rows = anim_frame_rows;
                 entry.animation_config.frame_duration = anim_frame_duration;
