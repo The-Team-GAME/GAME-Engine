@@ -27,7 +27,7 @@ namespace { // in the cpp file
   /*===============/
   / Movement stuff /
   /===============*/
-  f32 walking_force = 3'000.f;
+  f32 walking_force = 30000'000.f;
   Vec2D patrol_speed(150.f, 0.f);
   Vec2D jumping_force(0.f, -35000.f);
 
@@ -207,7 +207,7 @@ void logi::move_left(Components::RigidBody& rigid)
   }
   else
   {
-    rigid.velocity.x = -walking_force;
+    rigid.force.x = -walking_force;
   }
 }
 

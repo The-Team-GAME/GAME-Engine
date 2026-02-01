@@ -37,6 +37,7 @@
 #include "../LevelManager.h"
 #include "../ImGuiManager.h"
 #include "../Logger.h"
+#include "../Time.h"
 
 namespace TilemapPanel {
   // Internal state
@@ -58,6 +59,15 @@ namespace TilemapPanel {
     ImGuiWidgets::TextureAtlasState preview_widget_state;
     int atlas_rows = 1;
     int atlas_cols = 1;
+
+    // Animated atlas preview state
+    bool is_animated_atlas = false;
+    int anim_sheet_cols = 1;   // How many grid columns the whole sheet occupies in the world
+    int anim_sheet_rows = 1;   // How many grid rows the whole sheet occupies in the world
+    int anim_frame_cols = 1;   // How many columns of animation frames
+    int anim_frame_rows = 1;   // How many rows of animation frames
+    float anim_frame_duration = 0.1f;
+    bool anim_is_looping = true;
 
     // Painting state
     bool enable_tilemap_mode = false;
@@ -107,6 +117,33 @@ namespace TilemapPanel {
       tile_height,
       atlas_rows,
       atlas_cols
+    );
+  }
+
+  // Regenerate atlas for animated tiles
+  // For animated atlases, the whole sheet spans anim_sheet_cols x anim_sheet_rows grid cells
+  // The texture is divided into anim_frame_cols x anim_frame_rows animation frames
+  // Each prop size = sheet_size / frame_count
+  void regenerate_animated_atlas() {
+    if (!preview_texture.texture_handle) {
+      return;
+    }
+
+    int texture_width = preview_texture.texture_handle->width;
+    int texture_height = preview_texture.texture_handle->height;
+
+    // Total tile divisions in the texture = sheet grid size (since each grid cell = 1 tile)
+    int total_cols = anim_sheet_cols;
+    int total_rows = anim_sheet_rows;
+
+    int tile_width = texture_width / total_cols;
+    int tile_height = texture_height / total_rows;
+
+    preview_atlas = Components::TextureAtlas(
+      tile_width,
+      tile_height,
+      total_rows,
+      total_cols
     );
   }
 
@@ -518,6 +555,34 @@ namespace TilemapPanel {
         return;
       }
 
+      // Toggle between static and animated atlas modes
+      if (ImGui::Checkbox("Animated Atlas", &is_animated_atlas)) {
+        // When toggling, recalculate based on current texture if one is loaded
+        if (preview_texture.texture_handle) {
+          if (is_animated_atlas) {
+            // Switching to animated - auto-calculate sheet size by dividing by 32
+            anim_sheet_cols = preview_texture.texture_handle->width / 32;
+            anim_sheet_rows = preview_texture.texture_handle->height / 32;
+            if (anim_sheet_cols < 1) anim_sheet_cols = 1;
+            if (anim_sheet_rows < 1) anim_sheet_rows = 1;
+            anim_frame_cols = 1;
+            anim_frame_rows = 1;
+            regenerate_animated_atlas();
+          }
+          else {
+            // Switching to static - auto-calculate columns and rows by dividing by 32
+            atlas_cols = preview_texture.texture_handle->width / 32;
+            atlas_rows = preview_texture.texture_handle->height / 32;
+            if (atlas_cols < 1) atlas_cols = 1;
+            if (atlas_rows < 1) atlas_rows = 1;
+            regenerate_atlas();
+          }
+        }
+      }
+      ImGui::SameLine();
+      ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(For animated props/tiles)");
+      ImGui::Separator();
+
       if (ImGui::CollapsingHeader("Atlas Selection", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::Indent();
 
@@ -550,15 +615,30 @@ namespace TilemapPanel {
                 if (auto tex = Engine::Resources::texture_cache[texture_paths[i]].lock()) {
                   preview_texture = Components::Texture(tex);
 
-                  // Automatically calculate columns and rows by dividing by 32
-                  atlas_cols = preview_texture.texture_handle->width / 32;
-                  atlas_rows = preview_texture.texture_handle->height / 32;
+                  if (is_animated_atlas) {
+                    // For animated atlas, auto-calculate sheet size by dividing by 32 (like static)
+                    anim_sheet_cols = preview_texture.texture_handle->width / 32;
+                    anim_sheet_rows = preview_texture.texture_handle->height / 32;
 
-                  // Ensure at least 1 row and 1 column
-                  if (atlas_cols < 1) atlas_cols = 1;
-                  if (atlas_rows < 1) atlas_rows = 1;
+                    // Ensure at least 1 row and 1 column
+                    if (anim_sheet_cols < 1) anim_sheet_cols = 1;
+                    if (anim_sheet_rows < 1) anim_sheet_rows = 1;
 
-                  regenerate_atlas();
+                    anim_frame_cols = 1;
+                    anim_frame_rows = 1;
+                    regenerate_animated_atlas();
+                  }
+                  else {
+                    // Automatically calculate columns and rows by dividing by 32
+                    atlas_cols = preview_texture.texture_handle->width / 32;
+                    atlas_rows = preview_texture.texture_handle->height / 32;
+
+                    // Ensure at least 1 row and 1 column
+                    if (atlas_cols < 1) atlas_cols = 1;
+                    if (atlas_rows < 1) atlas_rows = 1;
+
+                    regenerate_atlas();
+                  }
                 }
               }
               if (is_selected) {
@@ -571,44 +651,219 @@ namespace TilemapPanel {
           // Atlas configuration and preview
           if (preview_texture.texture_handle) {
             ImGui::Separator();
-            ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Atlas Configuration");
 
-            ImGui::Text("Texture: %dx%d",
-              preview_texture.texture_handle->width,
-              preview_texture.texture_handle->height);
+            if (is_animated_atlas) {
+              // === ANIMATED ATLAS CONFIGURATION ===
+              ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.5f, 1.0f), "Animated Atlas Configuration");
 
-            // Rows and columns input
-            if (ImGui::DragInt("Columns", &atlas_cols, 1.0f, 1, 100)) {
-              regenerate_atlas();
+              ImGui::Text("Texture: %dx%d",
+                preview_texture.texture_handle->width,
+                preview_texture.texture_handle->height);
+
+              ImGui::Separator();
+              ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.0f, 1.0f), "Sheet Size (Grid Cells):");
+              ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "How many grid cells the whole sheet occupies");
+
+              if (ImGui::DragInt("Sheet Columns##world", &anim_sheet_cols, 1.0f, 1, 0)) {
+                regenerate_animated_atlas();
+              }
+              ImGui::SameLine();
+              ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(width)");
+
+              if (ImGui::DragInt("Sheet Rows##world", &anim_sheet_rows, 1.0f, 1, 0)) {
+                regenerate_animated_atlas();
+              }
+              ImGui::SameLine();
+              ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(height)");
+
+              ImGui::Separator();
+              ImGui::TextColored(ImVec4(0.5f, 0.8f, 1.0f, 1.0f), "Animation Frames:");
+              ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "How many animation frames in the texture");
+
+              if (ImGui::DragInt("Frame Columns##anim", &anim_frame_cols, 1.0f, 1, 0)) {
+                regenerate_animated_atlas();
+              }
+              ImGui::SameLine();
+              ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(horizontal)");
+
+              if (ImGui::DragInt("Frame Rows##anim", &anim_frame_rows, 1.0f, 1, 0)) {
+                regenerate_animated_atlas();
+              }
+              ImGui::SameLine();
+              ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(vertical)");
+
+              ImGui::Separator();
+              ImGui::TextColored(ImVec4(0.8f, 0.5f, 1.0f, 1.0f), "Animation Settings:");
+
+              ImGui::DragFloat("Frame Duration (s)", &anim_frame_duration, 0.01f, 0.01f, 10.0f, "%.3f");
+              ImGui::Checkbox("Loop Animation", &anim_is_looping);
+
+              // Calculate prop size from sheet size and frame count
+              int prop_cols = anim_sheet_cols / anim_frame_cols;
+              int prop_rows = anim_sheet_rows / anim_frame_rows;
+              int total_frames = anim_frame_cols * anim_frame_rows;
+              float total_duration = anim_frame_duration * total_frames;
+
+              // Display calculated info
+              ImGui::Separator();
+              ImGui::Text("Prop Size: %dx%d grid cells", prop_cols, prop_rows);
+              ImGui::Text("Total Animation Frames: %d", total_frames);
+              ImGui::Text("Total Animation Duration: %.2fs", total_duration);
+              ImGui::Text("Tiles per frame: %d", prop_cols * prop_rows);
+
+              // Animation preview - shows the animation cycling through frames
+              if (total_frames > 0 && prop_cols > 0 && prop_rows > 0 && !preview_atlas.subTextures.empty()) {
+                ImGui::Separator();
+                ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "Animation Preview:");
+
+                // Calculate current frame based on time
+                float current_time = static_cast<float>(Engine::Time::get_time());
+                int current_frame = 0;
+                if (anim_is_looping) {
+                  current_frame = static_cast<int>(current_time / anim_frame_duration) % total_frames;
+                }
+                else {
+                  current_frame = std::min(static_cast<int>(current_time / anim_frame_duration), total_frames - 1);
+                }
+
+                // Calculate frame position in the grid (which frame column and row)
+                int frame_col = current_frame % anim_frame_cols;
+                int frame_row = current_frame / anim_frame_cols;
+
+                // Calculate the starting tile index for this frame
+                // Each frame occupies prop_cols x prop_rows tiles
+                int start_tile_col = frame_col * prop_cols;
+                int start_tile_row = frame_row * prop_rows;
+
+                // Draw the animated preview using multiple tile UVs combined
+                const float preview_tile_size = 64.0f;
+                float preview_width = preview_tile_size * prop_cols;
+                float preview_height = preview_tile_size * prop_rows;
+
+                ImVec2 cursor_pos = ImGui::GetCursorScreenPos();
+
+                // Draw each tile of the current frame
+                for (int ty = 0; ty < prop_rows; ++ty) {
+                  for (int tx = 0; tx < prop_cols; ++tx) {
+                    int tile_col = start_tile_col + tx;
+                    int tile_row = start_tile_row + ty;
+                    int tile_index = tile_row * anim_sheet_cols + tile_col;
+
+                    if (tile_index >= 0 && tile_index < static_cast<int>(preview_atlas.subTextures.size())) {
+                      const auto& sub_tex = preview_atlas.subTextures[tile_index];
+
+                      ImVec2 tile_min(
+                        cursor_pos.x + tx * preview_tile_size,
+                        cursor_pos.y + ty * preview_tile_size
+                      );
+                      ImVec2 tile_max(
+                        tile_min.x + preview_tile_size,
+                        tile_min.y + preview_tile_size
+                      );
+
+                      // tex_coords: [0]=bottom-left, [1]=bottom-right, [2]=top-right, [3]=top-left
+                      // For ImGui: uv0 = top-left, uv1 = bottom-right
+                      ImVec2 uv0(sub_tex.tex_coords[3].x, sub_tex.tex_coords[3].y); // top-left
+                      ImVec2 uv1(sub_tex.tex_coords[1].x, sub_tex.tex_coords[1].y); // bottom-right
+
+                      ImGui::GetWindowDrawList()->AddImage(
+                        (ImTextureID)(intptr_t)preview_texture.texture_handle->id,
+                        tile_min,
+                        tile_max,
+                        uv0,
+                        uv1
+                      );
+                    }
+                  }
+                }
+
+                // Reserve space for the preview
+                ImGui::Dummy(ImVec2(preview_width, preview_height));
+
+                // Display current frame info
+                ImGui::Text("Frame: %d / %d", current_frame + 1, total_frames);
+              }
             }
+            else {
+              // === STATIC ATLAS CONFIGURATION ===
+              ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Atlas Configuration");
 
-            if (ImGui::DragInt("Rows", &atlas_rows, 1.0f, 1, 100)) {
-              regenerate_atlas();
+              ImGui::Text("Texture: %dx%d",
+                preview_texture.texture_handle->width,
+                preview_texture.texture_handle->height);
+
+              // Rows and columns input
+              if (ImGui::DragInt("Columns", &atlas_cols, 1.0f, 1, 0)) {
+                regenerate_atlas();
+              }
+
+              if (ImGui::DragInt("Rows", &atlas_rows, 1.0f, 1, 0)) {
+                regenerate_atlas();
+              }
+
+              ImGui::Text("Tiles: %zu", preview_atlas.subTextures.size());
             }
-
-            ImGui::Text("Tiles: %zu", preview_atlas.subTextures.size());
 
             // Atlas preview
             if (!preview_atlas.subTextures.empty()) {
               ImGui::Separator();
               ImGui::Text("Preview:");
-              ImGuiWidgets::TextureAtlasPreview(
-                preview_texture,
-                preview_atlas,
-                600.0f,
-                preview_widget_state
-              );
+
+              // Calculate preview height to make tiles uniform size (64x64), same as in Tile Selection
+              const float desired_tile_size = 64.0f;
+              int preview_rows = is_animated_atlas ? anim_sheet_rows : atlas_rows;
+              float calc_preview_height = desired_tile_size * preview_rows;
+
+              if (is_animated_atlas) {
+                // Calculate prop size from sheet size and frame count
+                int prop_cols = anim_sheet_cols / anim_frame_cols;
+                int prop_rows = anim_sheet_rows / anim_frame_rows;
+
+                // Use overload with prop size to draw green outlines
+                ImGuiWidgets::TextureAtlasPreview(
+                  preview_texture,
+                  preview_atlas,
+                  calc_preview_height,
+                  preview_widget_state,
+                  prop_cols,
+                  prop_rows
+                );
+              }
+              else {
+                ImGuiWidgets::TextureAtlasPreview(
+                  preview_texture,
+                  preview_atlas,
+                  calc_preview_height,
+                  preview_widget_state
+                );
+              }
             }
 
             // Submit button
             ImGui::Separator();
 
-            if (ImGui::Button("Submit Atlas", ImVec2(-1, 0))) {
+            if (ImGui::Button(is_animated_atlas ? "Submit Animated Atlas" : "Submit Atlas", ImVec2(-1, 0))) {
               Engine::Graphics::AtlasEntry entry;
               entry.texture_handle = preview_texture.texture_handle;
               entry.texture_path = Engine::Resources::get_relative_path(preview_texture.texture_handle->path);
               entry.subTextures = preview_atlas.subTextures;
               entry.drawIndex = preview_atlas.drawIndex;
+
+              // Set animation config if this is an animated atlas
+              if (is_animated_atlas) {
+                // Calculate prop size from sheet size and frame count
+                int prop_cols = anim_sheet_cols / anim_frame_cols;
+                int prop_rows = anim_sheet_rows / anim_frame_rows;
+
+                entry.animation_config.is_animated = true;
+                entry.animation_config.prop_cols = prop_cols;
+                entry.animation_config.prop_rows = prop_rows;
+                entry.animation_config.anim_cols = anim_frame_cols;
+                entry.animation_config.anim_rows = anim_frame_rows;
+                entry.animation_config.frame_duration = anim_frame_duration;
+                entry.animation_config.is_looping = anim_is_looping;
+              }
+
               loaded_tilemaps.push_back(entry);
 
               // Add a new widget state for this atlas
@@ -1130,65 +1385,142 @@ namespace TilemapPanel {
             continue;
           }
 
-          // Create Components wrapper types for TextureAtlasPreview widget
-          Components::Texture temp_texture;
-          temp_texture.texture_handle = entry.texture_handle;
+          // Check if this is an animated atlas
+          if (entry.animation_config.is_animated) {
+            // === ANIMATED ATLAS DISPLAY ===
+            const auto& anim_config = entry.animation_config;
 
-          Components::TextureAtlas temp_atlas;
-          temp_atlas.subTextures = entry.subTextures;
+            // Calculate current animation frame
+            float current_time = Engine::Time::get_time();
+            int total_frames = anim_config.get_frame_count();
+            float total_duration = anim_config.get_total_duration();
 
-          // Set the drawIndex to the first selected tile if this is the selected atlas
-          if (is_selected && !multi_tile_selection.is_empty()) {
-            temp_atlas.drawIndex = multi_tile_selection.indices[0];
+            float time_in_anim = fmod(current_time, total_duration);
+            int current_frame = static_cast<int>(time_in_anim / anim_config.frame_duration);
+            current_frame = std::clamp(current_frame, 0, total_frames - 1);
+
+            // Calculate which tiles make up this frame
+            int tiles_per_frame = anim_config.prop_cols * anim_config.prop_rows;
+            int frame_start_tile = current_frame * tiles_per_frame;
+
+            // Calculate the UV coordinates for the animated frame
+            // The texture is laid out as: (anim_cols * prop_cols) columns x (anim_rows * prop_rows) rows
+            int total_cols = anim_config.anim_cols * anim_config.prop_cols;
+
+            // Calculate frame position in the animation grid
+            int frame_col = current_frame % anim_config.anim_cols;
+            int frame_row = current_frame / anim_config.anim_cols;
+
+            // Calculate UV coordinates for the current frame (prop)
+            float uv_tile_width = 1.0f / static_cast<float>(total_cols);
+            float uv_tile_height = 1.0f / static_cast<float>(anim_config.anim_rows * anim_config.prop_rows);
+
+            float uv_x0 = frame_col * anim_config.prop_cols * uv_tile_width;
+            float uv_y0 = frame_row * anim_config.prop_rows * uv_tile_height;
+            float uv_x1 = uv_x0 + anim_config.prop_cols * uv_tile_width;
+            float uv_y1 = uv_y0 + anim_config.prop_rows * uv_tile_height;
+
+            // Display animated preview
+            ImGui::Text("Animated Atlas (Frame %d/%d)", current_frame + 1, total_frames);
+            ImGui::Text("Prop Size: %dx%d tiles", anim_config.prop_cols, anim_config.prop_rows);
+
+            // Calculate display size - show prop at 64px per tile
+            const float desired_tile_size = 64.0f;
+            float display_width = desired_tile_size * anim_config.prop_cols;
+            float display_height = desired_tile_size * anim_config.prop_rows;
+
+            // Draw the animated frame
+            ImGui::Image(
+              (ImTextureID)(intptr_t)entry.texture_handle->id,
+              ImVec2(display_width, display_height),
+              ImVec2(uv_x0, uv_y0),
+              ImVec2(uv_x1, uv_y1),
+              ImVec4(1, 1, 1, 1),
+              is_selected ? ImVec4(0.0f, 1.0f, 0.0f, 1.0f) : ImVec4(0.5f, 0.5f, 0.5f, 0.5f) // Green border if selected
+            );
+
+            // Handle selection - clicking on animated atlas selects all tiles in the prop
+            if (ImGui::IsItemClicked()) {
+              selected_atlas_index = i;
+
+              // Select all tiles that make up this prop (frame 0's tiles)
+              multi_tile_selection.indices.clear();
+              for (int t = 0; t < tiles_per_frame; ++t) {
+                multi_tile_selection.indices.push_back(t);
+              }
+              multi_tile_selection.grid_width = anim_config.prop_cols;
+              multi_tile_selection.grid_height = anim_config.prop_rows;
+              multi_tile_selection.min_row = 0;
+              multi_tile_selection.min_col = 0;
+
+              // Clear selection from other atlases
+              for (size_t j = 0; j < atlas_widget_states.size(); ++j) {
+                atlas_widget_states[j].reset();
+              }
+            }
           }
           else {
-            temp_atlas.drawIndex = -1; // No tile selected in this atlas
-          }
+            // === STATIC ATLAS DISPLAY ===
+            // Create Components wrapper types for TextureAtlasPreview widget
+            Components::Texture temp_texture;
+            temp_texture.texture_handle = entry.texture_handle;
 
-          // Calculate rows and cols from UV coordinates
-          int cols = 1;
-          int rows = 1;
+            Components::TextureAtlas temp_atlas;
+            temp_atlas.subTextures = entry.subTextures;
 
-          if (!entry.subTextures.empty()) {
-            // Get the first tile's UV width to determine column count
-            const auto& first_coords = entry.subTextures[0].tex_coords;
-            float tile_uv_width = std::abs(first_coords[1].x - first_coords[0].x);
-            float tile_uv_height = std::abs(first_coords[0].y - first_coords[3].y);
-
-            if (tile_uv_width > 0.0f) {
-              cols = static_cast<int>(std::round(1.0f / tile_uv_width));
+            // Set the drawIndex to the first selected tile if this is the selected atlas
+            if (is_selected && !multi_tile_selection.is_empty()) {
+              temp_atlas.drawIndex = multi_tile_selection.indices[0];
             }
-            if (tile_uv_height > 0.0f) {
-              rows = static_cast<int>(std::round(1.0f / tile_uv_height));
+            else {
+              temp_atlas.drawIndex = -1; // No tile selected in this atlas
             }
-          }
 
-          // Calculate preview height to make tiles uniform size (64x64)
-          const float desired_tile_size = 64.0f;
-          float preview_height = desired_tile_size * rows;
+            // Calculate rows and cols from UV coordinates
+            int cols = 1;
+            int rows = 1;
 
-          // Ensure we have a state for this atlas
-          if (i >= static_cast<int>(atlas_widget_states.size())) {
-            atlas_widget_states.resize(i + 1);
-          }
+            if (!entry.subTextures.empty()) {
+              // Get the first tile's UV width to determine column count
+              const auto& first_coords = entry.subTextures[0].tex_coords;
+              float tile_uv_width = std::abs(first_coords[1].x - first_coords[0].x);
+              float tile_uv_height = std::abs(first_coords[0].y - first_coords[3].y);
 
-          ImGuiWidgets::TextureAtlasPreview(
-            temp_texture,
-            temp_atlas,
-            preview_height,
-            atlas_widget_states[i]
-          );
+              if (tile_uv_width > 0.0f) {
+                cols = static_cast<int>(std::round(1.0f / tile_uv_width));
+              }
+              if (tile_uv_height > 0.0f) {
+                rows = static_cast<int>(std::round(1.0f / tile_uv_height));
+              }
+            }
 
-          // Handle selection changes after widget returns
-          if (!atlas_widget_states[i].current_selection.is_empty()) {
-            // Update the multi-tile selection and selected atlas
-            multi_tile_selection = atlas_widget_states[i].current_selection;
-            selected_atlas_index = i;
+            // Calculate preview height to make tiles uniform size (64x64)
+            const float desired_tile_size = 64.0f;
+            float preview_height = desired_tile_size * rows;
 
-            // Clear selection from other atlases
-            for (size_t j = 0; j < atlas_widget_states.size(); ++j) {
-              if (static_cast<int>(j) != i) {
-                atlas_widget_states[j].reset();
+            // Ensure we have a state for this atlas
+            if (i >= static_cast<int>(atlas_widget_states.size())) {
+              atlas_widget_states.resize(i + 1);
+            }
+
+            ImGuiWidgets::TextureAtlasPreview(
+              temp_texture,
+              temp_atlas,
+              preview_height,
+              atlas_widget_states[i]
+            );
+
+            // Handle selection changes after widget returns
+            if (!atlas_widget_states[i].current_selection.is_empty()) {
+              // Update the multi-tile selection and selected atlas
+              multi_tile_selection = atlas_widget_states[i].current_selection;
+              selected_atlas_index = i;
+
+              // Clear selection from other atlases
+              for (size_t j = 0; j < atlas_widget_states.size(); ++j) {
+                if (static_cast<int>(j) != i) {
+                  atlas_widget_states[j].reset();
+                }
               }
             }
           }

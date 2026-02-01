@@ -158,8 +158,15 @@ namespace Engine {
     // Draw text using a font
     void draw_text(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color);
 
+    // Draw text with word wrapping
+    // alignment: 0 = left, 1 = center, 2 = right
+    void draw_text_wrapped(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color, f32 max_width, f32 line_spacing = 1.2f, int alignment = 0);
+
     // Measure text dimensions
     Math::Vec2D measure_text(Engine::Graphics::Font font, const std::string& text, f32 scale);
+
+    // Measure wrapped text dimensions (returns bounding box of all lines)
+    Math::Vec2D measure_text_wrapped(Engine::Graphics::Font font, const std::string& text, f32 scale, f32 max_width);
 
     // Clear the screen with a color or texture
     void clear_screen(const Math::Vec4D& color);
@@ -201,6 +208,10 @@ namespace Engine {
 
     // Draw UI text using a font
     void draw_text_ui(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color);
+
+    // Draw UI text with word wrapping
+    // alignment: 0 = left, 1 = center, 2 = right
+    void draw_text_wrapped_ui(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color, f32 max_width, f32 line_spacing = 1.2f, int alignment = 0);
 
   } // namespace Graphics
 } // namespace Engine
