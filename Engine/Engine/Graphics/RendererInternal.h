@@ -153,7 +153,7 @@ namespace Engine {
 
       // Get total frame count
       int get_frame_count() const { return anim_cols * anim_rows; }
-      
+
       // Get total animation duration
       float get_total_duration() const { return frame_duration * get_frame_count(); }
     };

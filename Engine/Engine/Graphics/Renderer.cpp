@@ -1875,7 +1875,7 @@ namespace Engine {
         }
 
         const auto& atlas_entry = loaded_tilemaps[rect.tile.atlas_index];
-        
+
         int tile_index_to_draw = rect.tile.tile_index;
 
         // Handle animated tiles
@@ -1887,10 +1887,11 @@ namespace Engine {
           // Calculate current frame
           float elapsed = current_time;
           float time_in_anim;
-          
+
           if (anim_config.is_looping) {
             time_in_anim = fmod(elapsed, total_duration);
-          } else {
+          }
+          else {
             time_in_anim = std::min(elapsed, total_duration - 0.001f);
           }
 
@@ -1905,7 +1906,7 @@ namespace Engine {
           // Frame 0 tiles: 0 to (prop_cols * prop_rows - 1)
           // Frame 1 tiles: (prop_cols * prop_rows) to (2 * prop_cols * prop_rows - 1)
           // etc.
-          
+
           int tiles_per_frame = anim_config.prop_cols * anim_config.prop_rows;
           int base_tile = rect.tile.tile_index % tiles_per_frame;
           tile_index_to_draw = current_frame * tiles_per_frame + base_tile;

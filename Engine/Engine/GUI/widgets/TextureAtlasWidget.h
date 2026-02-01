@@ -60,4 +60,14 @@ namespace ImGuiWidgets {
     TextureAtlasState& state
   );
 
+  // Overload with prop size for animated atlases - draws blue outlines around prop boundaries
+  void TextureAtlasPreview(
+    const Components::Texture& texture,
+    Components::TextureAtlas& atlas,
+    float preview_height,
+    TextureAtlasState& state,
+    int prop_cols,
+    int prop_rows
+  );
+
 } // namespace ImGuiWidgets
