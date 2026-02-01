@@ -132,16 +132,16 @@ public:
     relative_anim.keyframes.push_back({
       {0.0f, 0.0f},     // offset from initial
       0.0f,             // rotation offset
-      {1.0f, 1.0f},     // scale multiplier (1 = no change)
+      {0.0f, 0.0f},     // scale offset (0 = no change)
       0.0f,
       "EaseLinearNone", "EaseLinearNone", "EaseLinearNone"
       });
 
-    // Keyframe 1: Move up 100px, rotate 45 degrees, scale 1.5x
+    // Keyframe 1: Move up 100px, rotate 45 degrees, scale +32px (64->96)
     relative_anim.keyframes.push_back({
       {0.0f, -100.0f},  // move up
       45.0f,            // rotate
-      {1.5f, 1.5f},     // scale up
+      {32.0f, 32.0f},   // scale offset (+32 to each axis)
       1.0f,
       "EaseSineInOut",
       "EaseBackOut",
@@ -166,17 +166,17 @@ public:
     pulse_anim.is_looping = true;
     pulse_anim.use_relative = true;
 
-    // Pulse: scale from 1.0 -> 1.2 -> 1.0
+    // Pulse: scale from 80 -> 104 (+24) -> 80
     pulse_anim.keyframes.push_back({
-      {0.0f, 0.0f}, 0.0f, {1.0f, 1.0f}, 0.0f,
+      {0.0f, 0.0f}, 0.0f, {0.0f, 0.0f}, 0.0f,
       "EaseLinearNone", "EaseLinearNone", "EaseLinearNone"
       });
     pulse_anim.keyframes.push_back({
-      {0.0f, 0.0f}, 0.0f, {1.3f, 1.3f}, 0.5f,
+      {0.0f, 0.0f}, 0.0f, {24.0f, 24.0f}, 0.5f,
       "EaseLinearNone", "EaseLinearNone", "EaseSineOut"
       });
     pulse_anim.keyframes.push_back({
-      {0.0f, 0.0f}, 0.0f, {1.0f, 1.0f}, 1.0f,
+      {0.0f, 0.0f}, 0.0f, {0.0f, 0.0f}, 1.0f,
       "EaseLinearNone", "EaseLinearNone", "EaseSineIn"
       });
 

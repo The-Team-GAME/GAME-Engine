@@ -529,8 +529,7 @@ namespace Engine
           if (anim->use_relative) {
             transform->position = anim->initial_position + kf.position;
             transform->rotation = anim->initial_rotation + kf.rotation;
-            transform->scale.x = anim->initial_scale.x * kf.scale.x;
-            transform->scale.y = anim->initial_scale.y * kf.scale.y;
+            transform->scale = anim->initial_scale + kf.scale;
           }
           else {
             transform->position = kf.position;
@@ -574,13 +573,11 @@ namespace Engine
         if (anim->use_relative) {
           adjusted_from.position = anim->initial_position + from_kf.position;
           adjusted_from.rotation = anim->initial_rotation + from_kf.rotation;
-          adjusted_from.scale.x = anim->initial_scale.x * from_kf.scale.x;
-          adjusted_from.scale.y = anim->initial_scale.y * from_kf.scale.y;
+          adjusted_from.scale = anim->initial_scale + from_kf.scale;
 
           adjusted_to.position = anim->initial_position + to_kf.position;
           adjusted_to.rotation = anim->initial_rotation + to_kf.rotation;
-          adjusted_to.scale.x = anim->initial_scale.x * to_kf.scale.x;
-          adjusted_to.scale.y = anim->initial_scale.y * to_kf.scale.y;
+          adjusted_to.scale = anim->initial_scale + to_kf.scale;
         }
 
         // Interpolate!

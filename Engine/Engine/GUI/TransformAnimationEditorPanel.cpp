@@ -260,7 +260,8 @@ void TransformAnimationEditorPanel()
     current_normalized_time = anim->elapsed / anim->duration;
     if (anim->is_looping) {
       current_normalized_time = fmod(current_normalized_time, 1.0f);
-    } else {
+    }
+    else {
       current_normalized_time = std::clamp(current_normalized_time, 0.0f, 1.0f);
     }
     // Apply ping-pong reversal for display
@@ -276,13 +277,14 @@ void TransformAnimationEditorPanel()
   ImGui::Separator();
 
   // Show current time info
-  ImGui::Text("Elapsed: %.2fs / %.2fs (%.1f%%)", 
+  ImGui::Text("Elapsed: %.2fs / %.2fs (%.1f%%)",
     anim->elapsed, anim->duration, current_normalized_time * 100.0f);
-  
+
   ImGui::SameLine();
   if (anim->is_playing) {
     ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "[Playing]");
-  } else {
+  }
+  else {
     ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.4f, 1.0f), "[Stopped]");
   }
 
@@ -342,12 +344,12 @@ void TransformAnimationEditorPanel()
   if (ImGui::IsItemActive()) {
     float click_x = ImGui::GetMousePos().x - timeline_pos.x;
     float new_time = std::clamp(click_x / timeline_size.x, 0.0f, 1.0f);
-    
+
     // Set the animation's elapsed time based on scrub position
     anim->elapsed = new_time * anim->duration;
     anim->start_time = Engine::Time::get_time() - anim->elapsed;
     anim->is_reversed = false;
-    
+
     // Request one-shot update for this entity (works even when paused)
     Engine::ECS::request_entity_update(entity.get_id());
   }
