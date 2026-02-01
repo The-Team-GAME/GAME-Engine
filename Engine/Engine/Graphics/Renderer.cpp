@@ -1748,6 +1748,9 @@ namespace Engine {
         return;
       }
 
+      // Get current time for animation
+      float current_time = Engine::Time::get_time();
+
       // Get bounds of the tilemap
       int min_x = INT_MAX, min_y = INT_MAX;
       int max_x = INT_MIN, max_y = INT_MIN;
@@ -1792,6 +1795,7 @@ namespace Engine {
 
       // Find all rectangles using greedy algorithm
       // Tiles can only merge if they have the same atlas_index AND tile_index
+      // EXCEPT for animated atlases - those cannot be merged
       for (int rel_y = 0; rel_y < height; ++rel_y) {
         for (int rel_x = 0; rel_x < width; ++rel_x) {
           if (processed[rel_y][rel_x]) continue;
@@ -1808,6 +1812,13 @@ namespace Engine {
           const auto& atlas_entry = loaded_tilemaps[tile.atlas_index];
           if (tile.tile_index >= static_cast<int>(atlas_entry.subTextures.size())) {
             processed[rel_y][rel_x] = true;
+            continue;
+          }
+
+          // Check if this is an animated atlas - don't merge animated tiles
+          if (atlas_entry.animation_config.is_animated) {
+            processed[rel_y][rel_x] = true;
+            rectangles.push_back({ abs_x, abs_y, 1, 1, tile });
             continue;
           }
 
@@ -1864,11 +1875,48 @@ namespace Engine {
         }
 
         const auto& atlas_entry = loaded_tilemaps[rect.tile.atlas_index];
-        if (rect.tile.tile_index >= static_cast<int>(atlas_entry.subTextures.size())) {
+
+        int tile_index_to_draw = rect.tile.tile_index;
+
+        // Handle animated tiles
+        if (atlas_entry.animation_config.is_animated) {
+          const auto& anim_config = atlas_entry.animation_config;
+          int total_frames = anim_config.get_frame_count();
+          float total_duration = anim_config.get_total_duration();
+
+          // Calculate current frame
+          float elapsed = current_time;
+          float time_in_anim;
+
+          if (anim_config.is_looping) {
+            time_in_anim = fmod(elapsed, total_duration);
+          }
+          else {
+            time_in_anim = std::min(elapsed, total_duration - 0.001f);
+          }
+
+          int current_frame = static_cast<int>(time_in_anim / anim_config.frame_duration);
+          current_frame = std::clamp(current_frame, 0, total_frames - 1);
+
+          // Calculate the tile index offset for animation
+          // For animated tiles, the tile_index stores the base position within the prop
+          // We need to offset it to the correct frame
+          // 
+          // Layout: Each frame contains (prop_cols * prop_rows) tiles
+          // Frame 0 tiles: 0 to (prop_cols * prop_rows - 1)
+          // Frame 1 tiles: (prop_cols * prop_rows) to (2 * prop_cols * prop_rows - 1)
+          // etc.
+
+          int tiles_per_frame = anim_config.prop_cols * anim_config.prop_rows;
+          int base_tile = rect.tile.tile_index % tiles_per_frame;
+          tile_index_to_draw = current_frame * tiles_per_frame + base_tile;
+        }
+
+        if (tile_index_to_draw >= static_cast<int>(atlas_entry.subTextures.size())) {
           continue;
         }
 
-        const auto& subTexture = atlas_entry.subTextures[rect.tile.tile_index];
+        const auto& subTexture = atlas_entry.subTextures[tile_index_to_draw];
 
         // Calculate the world position for the center of the rectangle
         f32 center_x = gridOffset.x + rect.x * tileSize.x + (rect.width * tileSize.x) * 0.5f;
