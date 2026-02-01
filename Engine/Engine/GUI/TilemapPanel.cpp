@@ -556,7 +556,29 @@ namespace TilemapPanel {
       }
 
       // Toggle between static and animated atlas modes
-      ImGui::Checkbox("Animated Atlas", &is_animated_atlas);
+      if (ImGui::Checkbox("Animated Atlas", &is_animated_atlas)) {
+        // When toggling, recalculate based on current texture if one is loaded
+        if (preview_texture.texture_handle) {
+          if (is_animated_atlas) {
+            // Switching to animated - auto-calculate sheet size by dividing by 32
+            anim_sheet_cols = preview_texture.texture_handle->width / 32;
+            anim_sheet_rows = preview_texture.texture_handle->height / 32;
+            if (anim_sheet_cols < 1) anim_sheet_cols = 1;
+            if (anim_sheet_rows < 1) anim_sheet_rows = 1;
+            anim_frame_cols = 1;
+            anim_frame_rows = 1;
+            regenerate_animated_atlas();
+          }
+          else {
+            // Switching to static - auto-calculate columns and rows by dividing by 32
+            atlas_cols = preview_texture.texture_handle->width / 32;
+            atlas_rows = preview_texture.texture_handle->height / 32;
+            if (atlas_cols < 1) atlas_cols = 1;
+            if (atlas_rows < 1) atlas_rows = 1;
+            regenerate_atlas();
+          }
+        }
+      }
       ImGui::SameLine();
       ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(For animated props/tiles)");
       ImGui::Separator();
