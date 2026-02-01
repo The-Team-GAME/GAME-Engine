@@ -313,12 +313,6 @@ void TransformAnimationEditorPanel()
   ImGui::Checkbox("Looping", &anim->is_looping);
   ImGui::SameLine();
   ImGui::Checkbox("Ping Pong", &anim->ping_pong);
-  ImGui::SameLine();
-  ImGui::Checkbox("Relative Mode", &anim->use_relative);
-
-  if (ImGui::IsItemHovered()) {
-    ImGui::SetTooltip("When enabled, keyframe values are added to the entity's initial transform");
-  }
 
   ImGui::Checkbox("Is Playing", &anim->is_playing);
 

@@ -483,9 +483,6 @@ namespace Engine
 
         // Initialize on first run
         if (!anim->has_initialized) {
-          anim->initial_position = transform->position;
-          anim->initial_rotation = transform->rotation;
-          anim->initial_scale = transform->scale;
           anim->has_initialized = true;
           anim->start_time = Engine::Time::get_time();
           anim->elapsed = 0.0f;
@@ -526,16 +523,9 @@ namespace Engine
         // Single keyframe - just set the transform
         if (num_keyframes == 1) {
           const auto& kf = keyframes[0];
-          if (anim->use_relative) {
-            transform->position = anim->initial_position + kf.position;
-            transform->rotation = anim->initial_rotation + kf.rotation;
-            transform->scale = anim->initial_scale + kf.scale;
-          }
-          else {
-            transform->position = kf.position;
-            transform->rotation = kf.rotation;
-            transform->scale = kf.scale;
-          }
+          transform->position = kf.position;
+          transform->rotation = kf.rotation;
+          transform->scale = kf.scale;
           return;
         }
 
@@ -566,22 +556,8 @@ namespace Engine
           : 0.0f;
         local_t = std::clamp(local_t, 0.0f, 1.0f);
 
-        // Create adjusted keyframes for relative mode
-        Components::TransformKeyframe adjusted_from = from_kf;
-        Components::TransformKeyframe adjusted_to = to_kf;
-
-        if (anim->use_relative) {
-          adjusted_from.position = anim->initial_position + from_kf.position;
-          adjusted_from.rotation = anim->initial_rotation + from_kf.rotation;
-          adjusted_from.scale = anim->initial_scale + from_kf.scale;
-
-          adjusted_to.position = anim->initial_position + to_kf.position;
-          adjusted_to.rotation = anim->initial_rotation + to_kf.rotation;
-          adjusted_to.scale = anim->initial_scale + to_kf.scale;
-        }
-
-        // Interpolate!
-        interpolate_transform(transform, adjusted_from, adjusted_to, local_t, keyframe_duration * anim->duration);
+        // Interpolate between keyframes
+        interpolate_transform(transform, from_kf, to_kf, local_t, keyframe_duration * anim->duration);
       }
     };
 

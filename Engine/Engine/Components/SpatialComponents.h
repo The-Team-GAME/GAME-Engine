@@ -78,14 +78,10 @@ namespace Components
     bool is_playing = true;       // Whether the animation is currently playing
     bool is_looping = false;      // Whether to loop when finished
     bool ping_pong = false;       // Reverse direction on each loop
-    bool use_relative = false;    // If true, keyframe values are relative to initial transform
 
     // Internal state
     bool is_reversed = false;     // Current direction (for ping_pong)
-    Math::Vec2D initial_position{ 0.0f, 0.0f };  // Stored initial transform (for relative mode)
-    float initial_rotation = 0.0f;
-    Math::Vec2D initial_scale{ 1.0f, 1.0f };
-    bool has_initialized = false; // Whether initial values have been captured
+    bool has_initialized = false; // Whether animation has started
 
     TransformAnimation() = default;
   };
@@ -94,4 +90,4 @@ namespace Components
 
 REGISTER_COMPONENT(Components::Transform2D, position, rotation, scale)
 REGISTER_COMPONENT(Components::TransformKeyframe, position, rotation, scale, time, position_easing, rotation_easing, scale_easing)
-REGISTER_COMPONENT(Components::TransformAnimation, keyframes, duration, elapsed, is_playing, is_looping, ping_pong, use_relative)
+REGISTER_COMPONENT(Components::TransformAnimation, keyframes, duration, elapsed, is_playing, is_looping, ping_pong)

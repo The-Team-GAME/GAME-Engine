@@ -112,7 +112,7 @@ public:
     complex_entity.add_component<Components::TransformAnimation>(complex_anim);
 
     // =========================================================================
-    // Example 3: Relative animation (adds to current transform)
+    // Example 3: Ping-pong animation
     // =========================================================================
     auto relative_entity = Engine::ECS::create_entity();
     relative_entity
@@ -126,22 +126,21 @@ public:
     relative_anim.duration = 1.5f;
     relative_anim.is_looping = true;
     relative_anim.ping_pong = true;
-    relative_anim.use_relative = true;  // Values are ADDED to initial transform
 
-    // Keyframe 0: No offset (at initial position)
+    // Keyframe 0: Start position
     relative_anim.keyframes.push_back({
-      {0.0f, 0.0f},     // offset from initial
-      0.0f,             // rotation offset
-      {0.0f, 0.0f},     // scale offset (0 = no change)
+      {1100.0f, 400.0f}, // position
+      0.0f,              // rotation
+      {64.0f, 64.0f},    // scale
       0.0f,
       "EaseLinearNone", "EaseLinearNone", "EaseLinearNone"
       });
 
-    // Keyframe 1: Move up 100px, rotate 45 degrees, scale +32px (64->96)
+    // Keyframe 1: Move up 100px, rotate 45 degrees, scale to 96x96
     relative_anim.keyframes.push_back({
-      {0.0f, -100.0f},  // move up
-      45.0f,            // rotate
-      {32.0f, 32.0f},   // scale offset (+32 to each axis)
+      {1100.0f, 300.0f}, // position (100px up)
+      45.0f,             // rotation
+      {96.0f, 96.0f},    // scale
       1.0f,
       "EaseSineInOut",
       "EaseBackOut",
@@ -164,19 +163,18 @@ public:
     Components::TransformAnimation pulse_anim;
     pulse_anim.duration = 0.8f;
     pulse_anim.is_looping = true;
-    pulse_anim.use_relative = true;
 
-    // Pulse: scale from 80 -> 104 (+24) -> 80
+    // Pulse: scale from 80 -> 104 -> 80
     pulse_anim.keyframes.push_back({
-      {0.0f, 0.0f}, 0.0f, {0.0f, 0.0f}, 0.0f,
+      {400.0f, 600.0f}, 0.0f, {80.0f, 80.0f}, 0.0f,
       "EaseLinearNone", "EaseLinearNone", "EaseLinearNone"
       });
     pulse_anim.keyframes.push_back({
-      {0.0f, 0.0f}, 0.0f, {24.0f, 24.0f}, 0.5f,
+      {400.0f, 600.0f}, 0.0f, {104.0f, 104.0f}, 0.5f,
       "EaseLinearNone", "EaseLinearNone", "EaseSineOut"
       });
     pulse_anim.keyframes.push_back({
-      {0.0f, 0.0f}, 0.0f, {0.0f, 0.0f}, 1.0f,
+      {400.0f, 600.0f}, 0.0f, {80.0f, 80.0f}, 1.0f,
       "EaseLinearNone", "EaseLinearNone", "EaseSineIn"
       });
 
