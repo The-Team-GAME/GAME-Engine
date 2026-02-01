@@ -710,6 +710,79 @@ namespace TilemapPanel {
               ImGui::Text("Total Animation Frames: %d", total_frames);
               ImGui::Text("Total Animation Duration: %.2fs", total_duration);
               ImGui::Text("Tiles per frame: %d", prop_cols * prop_rows);
+
+              // Animation preview - shows the animation cycling through frames
+              if (total_frames > 0 && prop_cols > 0 && prop_rows > 0 && !preview_atlas.subTextures.empty()) {
+                ImGui::Separator();
+                ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "Animation Preview:");
+
+                // Calculate current frame based on time
+                float current_time = static_cast<float>(Engine::Time::get_time());
+                int current_frame = 0;
+                if (anim_is_looping) {
+                  current_frame = static_cast<int>(current_time / anim_frame_duration) % total_frames;
+                }
+                else {
+                  current_frame = std::min(static_cast<int>(current_time / anim_frame_duration), total_frames - 1);
+                }
+
+                // Calculate frame position in the grid (which frame column and row)
+                int frame_col = current_frame % anim_frame_cols;
+                int frame_row = current_frame / anim_frame_cols;
+
+                // Calculate the starting tile index for this frame
+                // Each frame occupies prop_cols x prop_rows tiles
+                int start_tile_col = frame_col * prop_cols;
+                int start_tile_row = frame_row * prop_rows;
+
+                // Draw the animated preview using multiple tile UVs combined
+                const float preview_tile_size = 64.0f;
+                float preview_width = preview_tile_size * prop_cols;
+                float preview_height = preview_tile_size * prop_rows;
+
+                ImVec2 cursor_pos = ImGui::GetCursorScreenPos();
+
+                // Draw each tile of the current frame
+                for (int ty = 0; ty < prop_rows; ++ty) {
+                  for (int tx = 0; tx < prop_cols; ++tx) {
+                    int tile_col = start_tile_col + tx;
+                    int tile_row = start_tile_row + ty;
+                    int tile_index = tile_row * anim_sheet_cols + tile_col;
+
+                    if (tile_index >= 0 && tile_index < static_cast<int>(preview_atlas.subTextures.size())) {
+                      const auto& sub_tex = preview_atlas.subTextures[tile_index];
+
+                      ImVec2 tile_min(
+                        cursor_pos.x + tx * preview_tile_size,
+                        cursor_pos.y + ty * preview_tile_size
+                      );
+                      ImVec2 tile_max(
+                        tile_min.x + preview_tile_size,
+                        tile_min.y + preview_tile_size
+                      );
+
+                      // tex_coords: [0]=bottom-left, [1]=bottom-right, [2]=top-right, [3]=top-left
+                      // For ImGui: uv0 = top-left, uv1 = bottom-right
+                      ImVec2 uv0(sub_tex.tex_coords[3].x, sub_tex.tex_coords[3].y); // top-left
+                      ImVec2 uv1(sub_tex.tex_coords[1].x, sub_tex.tex_coords[1].y); // bottom-right
+
+                      ImGui::GetWindowDrawList()->AddImage(
+                        (ImTextureID)(intptr_t)preview_texture.texture_handle->id,
+                        tile_min,
+                        tile_max,
+                        uv0,
+                        uv1
+                      );
+                    }
+                  }
+                }
+
+                // Reserve space for the preview
+                ImGui::Dummy(ImVec2(preview_width, preview_height));
+
+                // Display current frame info
+                ImGui::Text("Frame: %d / %d", current_frame + 1, total_frames);
+              }
             }
             else {
               // === STATIC ATLAS CONFIGURATION ===
