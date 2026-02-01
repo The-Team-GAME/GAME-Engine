@@ -128,6 +128,10 @@ void col2D::update()
         // 2. After the momentum is killed, i will apply a normal force to specifically cancel out the force from gravity in the next frame
         // 3. After that, i will calculate and apply friction to the object to prevent it from sliding across surfaces
 
+
+        /*======================================
+        / Killing the moving object's momemtum /
+        ======================================*/
         // Since the mtv can also be seen as the normal, i can do this
         Vec2D normal_dir_vtr = collision.get_normalise_mtv();
 
@@ -138,20 +142,25 @@ void col2D::update()
         {
           rigid->velocity -= normal_dir_vtr * speed_into_surface;
         }
-
+        //====================================//
+        
+        
         // Ok so the part above works now but we need another way to check if the player/ entity is on the ground / a jumpable surface
         // Behold the power of dot product (all the math need to re sketch out to explain cuz my whiteboard has limited space KEKW)
+
+        /*====================================
+        / Checking for and applying friction /
+        ====================================*/
         f32 cos_of_angle_of_slope = dot_product(normal_dir_vtr, Vec2D(0.f, -1.f));
         if (cos_of_angle_of_slope >= cosf(phy2D::get_slope_radian_threshold()))
         {
           rigid->on_ground = true;
-          // We will do friction and normal force in here because we want the player to just slide off the wall
-          f32 weight_magnitude = rigid->gravity.get_magnitude() * rigid->mass;
-          // cos x (angle of slope) = adjacent (weight) / hypotenuse(normal)
-          f32 normal_magnitude = weight_magnitude * cos_of_angle_of_slope;
+          
+          // Normal = Mass * Gravity * Cos(angle of normal) 
+          f32 normal_magnitude = rigid->gravity.get_magnitude() * rigid->mass * cos_of_angle_of_slope;
           Vec2D normal_force = normal_dir_vtr * normal_magnitude;
 
-          f32 tangential_weight = weight_magnitude * sinf(acosf(cos_of_angle_of_slope));
+          f32 tangential_weight = rigid->gravity.get_magnitude() * rigid->mass * sinf(acosf(cos_of_angle_of_slope));
 
           Vec2D tangent = normalise_vector(collision.get_tangent());
           tangent = dot_product(rigid->velocity, tangent) < 0 ? -tangent : tangent;
@@ -184,52 +193,7 @@ void col2D::update()
          
           rigid->force += normal_force;
         }
-#if 0
-        f32 penetration = collision.get_penetration();
-
-        // Check if this is a ground collision (MTV pointing mostly upward)
-        Vec2D normal = normalise_vector(collision.mtv);
-        if (normal.y < -0.f) // Pointing upward (remember: -y is up)
-        {
-          // For ground detection, we still use the full penetration to find the "best" ground
-          if (!found_ground || penetration > best_ground_penetration)
-          {
-            best_ground_normal = normal;
-            best_ground_penetration = penetration;
-            found_ground = true;
-          }
-        }
-        f32 combined_static = box->static_friction * other_box->static_friction; // not used yet
-        f32 combined_kinetic = box->kinetic_friction * other_box->kinetic_friction;
-        phy2D::zero_normal_velocity(*rigid, collision);
-        phy2D::apply_surface_friction(*rigid, collision, combined_static, combined_kinetic);
-
-        // Gona calculate the angle of the slope that the player last interacted with
-        // Note:: i will not take direction into account as all the values are going to be absolute values
-        if (found_ground)
-        {
-          rigid->last_surface_dir_vector = normalise_vector(rotate(best_ground_normal, -90));
-          if (angle_of_slope(rigid->last_surface_dir_vector) < phy2D::get_slope_angle_limit())
-          {
-            rigid->on_ground = true;
-
-            // Calculate gravity force vector
-            Vec2D gravity_force = phy2D::get_gravity() * rigid->mass;
-            Vec2D surface_tangent = rigid->last_surface_dir_vector;
-
-            // How much does gravity pull ALONG the slope?
-            f32 gravity_along_slope = dot_product(gravity_force, surface_tangent);
-
-            // Only counter it if pulling down slope AND entity nearly stationary
-            if (gravity_along_slope < 0.f)
-            {
-              // Apply force ALONG the slope that cancels gravity's slope component
-              Vec2D anti_gravity_force = surface_tangent * -gravity_along_slope;
-              phy2D::add_force(*rigid, anti_gravity_force);
-            }
-          }
-        }
-#endif
+        //==================================//
       }
       /*=============================
       / End of Collision Resolution /
