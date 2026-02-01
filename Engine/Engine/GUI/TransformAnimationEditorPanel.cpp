@@ -347,6 +347,9 @@ void TransformAnimationEditorPanel()
     anim->elapsed = new_time * anim->duration;
     anim->start_time = Engine::Time::get_time() - anim->elapsed;
     anim->is_reversed = false;
+    
+    // Request one-shot update for this entity (works even when paused)
+    Engine::ECS::request_entity_update(entity.get_id());
   }
 
   ImGui::Spacing();

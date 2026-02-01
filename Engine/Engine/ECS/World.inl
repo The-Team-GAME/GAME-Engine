@@ -152,6 +152,20 @@ namespace Engine {
         containers.systems.end());
     }
 
+    template <typename T>
+    void request_system_update()
+    {
+      auto& containers = Internal::get_containers();
+      for (auto& system : containers.systems)
+      {
+        if (dynamic_cast<T*>(system.get()) != nullptr)
+        {
+          containers.systems_to_update_once.insert(system.get());
+          break;
+        }
+      }
+    }
+
     template <typename... T>
     std::vector<Entity> get_entities_with()
     {

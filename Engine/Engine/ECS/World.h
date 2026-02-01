@@ -388,6 +388,35 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
+    Requests a one-shot update for a specific system type. The system will be
+    updated once during the next update_editor() call, even if it's a Game system
+    and the game is paused. Useful for editor scrubbing/previewing.
+
+    Parameters:
+    None (template parameter T specifies the system type to update).
+
+    Where to call it:
+    In editor code when you need to trigger a system update while paused.
+    ==================================================================================*/
+    template<typename T>
+    void request_system_update();
+
+    /*=================================================================================
+    Function Brief:
+    Requests a one-shot update for a specific entity. All systems that track this
+    entity will process it once during the next update_editor() call, even if
+    the game is paused. Useful for editor scrubbing/previewing.
+
+    Parameters:
+    entity - The EntityID to update.
+
+    Where to call it:
+    In editor code when you need to trigger an entity update while paused.
+    ==================================================================================*/
+    void request_entity_update(EntityID entity);
+
+    /*=================================================================================
+    Function Brief:
     Processes pending entity deletions and component modifications. Called every frame
     even when physics is paused to ensure ECS state changes are applied.
 
