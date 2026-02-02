@@ -866,6 +866,8 @@ namespace TilemapPanel {
                 int prop_rows = anim_sheet_rows / anim_frame_rows;
 
                 entry.animation_config.is_animated = true;
+                entry.animation_config.sheet_cols = anim_sheet_cols;  // Store actual sheet dimensions
+                entry.animation_config.sheet_rows = anim_sheet_rows;  // to avoid precision loss from integer division
                 entry.animation_config.prop_cols = prop_cols;
                 entry.animation_config.prop_rows = prop_rows;
                 entry.animation_config.anim_cols = anim_frame_cols;
@@ -1413,17 +1415,17 @@ namespace TilemapPanel {
             int tiles_per_frame = anim_config.prop_cols * anim_config.prop_rows;
             int frame_start_tile = current_frame * tiles_per_frame;
 
-            // Calculate the UV coordinates for the animated frame
-            // The texture is laid out as: (anim_cols * prop_cols) columns x (anim_rows * prop_rows) rows
-            int total_cols = anim_config.anim_cols * anim_config.prop_cols;
+            // Use stored sheet dimensions (avoid precision loss from integer division)
+            int sheet_cols = anim_config.sheet_cols;
+            int sheet_rows = anim_config.sheet_rows;
 
             // Calculate frame position in the animation grid
             int frame_col = current_frame % anim_config.anim_cols;
             int frame_row = current_frame / anim_config.anim_cols;
 
             // Calculate UV coordinates for the current frame (prop)
-            float uv_tile_width = 1.0f / static_cast<float>(total_cols);
-            float uv_tile_height = 1.0f / static_cast<float>(anim_config.anim_rows * anim_config.prop_rows);
+            float uv_tile_width = 1.0f / static_cast<float>(sheet_cols);
+            float uv_tile_height = 1.0f / static_cast<float>(sheet_rows);
 
             float uv_x0 = frame_col * anim_config.prop_cols * uv_tile_width;
             float uv_y0 = frame_row * anim_config.prop_rows * uv_tile_height;
