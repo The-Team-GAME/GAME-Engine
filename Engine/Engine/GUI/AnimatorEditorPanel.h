@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------------
-// file:    TransformAnimationEditorPanel.h
+// file:    AnimatorEditorPanel.h
 // project: Monkey Stole My GPA
 //
 // author:  Chew Shee Yang (100%)
@@ -7,9 +7,9 @@
 //
 // email:   chew.s@digipen.edu
 //
-// brief:   This file defines the TransformAnimationEditorPanel ImGui interface for
-//          visually editing TransformAnimation keyframes with a timeline, curve
-//          preview, and easing function selection.
+// brief:   This file defines the AnimatorEditorPanel ImGui interface for
+//          visually editing Animator components with multiple tracks, keyframes,
+//          and easing function selection for any component property.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
@@ -22,9 +22,9 @@ namespace Engine::ECS {
   class Prefab;
 }
 
-namespace TransformAnimationEditor {
+namespace AnimatorEditor {
   void Open(Engine::ECS::Entity entity);
   void Open(Engine::ECS::Prefab prefab, const std::string& prefab_path);
 }
 
-void TransformAnimationEditorPanel();
+void AnimatorEditorPanel();

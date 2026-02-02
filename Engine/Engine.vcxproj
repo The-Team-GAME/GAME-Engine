@@ -157,12 +157,12 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
   <ItemGroup>
     <ClCompile Include="Engine\ECS\PrefabMergeUtils.cpp" />
     <ClCompile Include="Engine\FileIO\ColliderMeshFileIO.cpp" />
+    <ClCompile Include="Engine\GUI\AnimatorEditorPanel.cpp" />
     <ClCompile Include="Engine\GUI\ColliderEditorPanel.cpp" />
     <ClCompile Include="Engine\GUI\SelectiveLevelSavePanel.cpp" />
     <ClCompile Include="Engine\GUI\TileColliderEditorPanel.cpp" />
     <ClCompile Include="Engine\GUI\LayerManagerPanel.cpp" />
     <ClCompile Include="Engine\GUI\ResourceExplorerPanel.cpp" />
-    <ClCompile Include="Engine\GUI\TransformAnimationEditorPanel.cpp" />
     <ClCompile Include="Engine\GUI\widgets\ColliderEditorWidget.cpp" />
     <ClCompile Include="Engine\LevelManager.cpp" />
     <ClCompile Include="Engine\LevelTabManager.cpp" />
@@ -229,13 +229,14 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
   <ItemGroup>
     <ClInclude Include="Engine\ECS\PrefabMergeUtils.h" />
     <ClInclude Include="Engine\FileIO\ColliderMeshFileIO.h" />
+    <ClInclude Include="Engine\GUI\AnimatorEditorPanel.h" />
     <ClInclude Include="Engine\GUI\ColliderEditorPanel.h" />
+    <ClInclude Include="Engine\GUI\FPSOverlay.h" />
     <ClInclude Include="Engine\GUI\SelectiveLevelSavePanel.h" />
     <ClInclude Include="Engine\GUI\TileColliderEditorPanel.h" />
     <ClInclude Include="Engine\GUI\LayerManagerPanel.h" />
     <ClInclude Include="Engine\GUI\RegisterAllPanels.h" />
     <ClInclude Include="Engine\GUI\ResourceExplorerPanel.h" />
-    <ClInclude Include="Engine\GUI\TransformAnimationEditorPanel.h" />
     <ClInclude Include="Engine\GUI\widgets\ColliderEditorWidget.h" />
     <ClInclude Include="Engine\ImGuiThemes.h" />
     <ClInclude Include="Engine\KeyCodes.h" />
