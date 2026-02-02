@@ -37,6 +37,13 @@ namespace {
   int selected_track_index = -1;
   int selected_keyframe_index = -1;
 
+  // Popup state
+  bool show_add_track_popup = false;
+  bool show_edit_track_popup = false;
+  int editing_track_index = -1;
+  std::string popup_component_type = "Components::Color";
+  std::string popup_field_path = "r";
+
   // Available easing function names
   const std::vector<std::string> easing_names = {
     "EaseLinearNone",
@@ -204,16 +211,25 @@ namespace {
   }
 
   // Draw timeline with all tracks and keyframes
-  void DrawTimeline(ImDrawList* draw_list, ImVec2 pos, ImVec2 size,
+  // label_width: width reserved for track labels on the left
+  void DrawTimeline(ImDrawList* draw_list, ImVec2 pos, ImVec2 size, float label_width,
     Components::Animator* anim, float preview_normalized_time, Engine::ECS::Entity entity) {
-    // Background
-    draw_list->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(30, 30, 35, 255));
-    draw_list->AddRect(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(80, 80, 80, 255));
+    
+    float timeline_x = pos.x + label_width;
+    float timeline_width = size.x - label_width;
+    
+    // Background for timeline area
+    draw_list->AddRectFilled(ImVec2(timeline_x, pos.y), ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(30, 30, 35, 255));
+    draw_list->AddRect(ImVec2(timeline_x, pos.y), ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(80, 80, 80, 255));
+    
+    // Background for label area
+    draw_list->AddRectFilled(pos, ImVec2(timeline_x, pos.y + size.y), IM_COL32(25, 25, 30, 255));
+    draw_list->AddRect(pos, ImVec2(timeline_x, pos.y + size.y), IM_COL32(60, 60, 60, 255));
 
     // Draw time markers
     for (int i = 0; i <= 10; ++i) {
       float t = i / 10.0f;
-      float x = pos.x + t * size.x;
+      float x = timeline_x + t * timeline_width;
       draw_list->AddLine(ImVec2(x, pos.y), ImVec2(x, pos.y + 5), IM_COL32(100, 100, 100, 255));
 
       if (i % 2 == 0) {
@@ -236,22 +252,46 @@ namespace {
       bool is_selected_track = (selected_track_index == static_cast<int>(track_idx));
       ImU32 bg_color = is_selected_track ? IM_COL32(50, 50, 60, 255) : IM_COL32(35, 35, 40, 255);
       draw_list->AddRectFilled(
-        ImVec2(pos.x, track_y),
+        ImVec2(timeline_x, track_y),
         ImVec2(pos.x + size.x, track_y + track_height - 2),
         bg_color
       );
+      
+      // Label background
+      ImU32 label_bg = is_selected_track ? IM_COL32(45, 45, 55, 255) : IM_COL32(30, 30, 35, 255);
+      draw_list->AddRectFilled(
+        ImVec2(pos.x, track_y),
+        ImVec2(timeline_x, track_y + track_height - 2),
+        label_bg
+      );
 
-      // Track label (abbreviated)
+      // Track label - clickable for selection, right-click for edit
       std::string label = track.field_path;
-      if (label.length() > 12) {
-        label = label.substr(0, 10) + "..";
+      if (label.length() > 10) {
+        label = label.substr(0, 8) + "..";
       }
-      draw_list->AddText(ImVec2(pos.x + 2, track_y + 2), track_color, label.c_str());
+      draw_list->AddText(ImVec2(pos.x + 4, track_y + 2), track_color, label.c_str());
+      
+      // Make label clickable
+      ImGui::SetCursorScreenPos(ImVec2(pos.x, track_y));
+      ImGui::PushID(static_cast<int>(track_idx + 10000));
+      if (ImGui::InvisibleButton("##track_label", ImVec2(label_width, track_height - 2))) {
+        selected_track_index = static_cast<int>(track_idx);
+        selected_keyframe_index = -1;
+      }
+      // Right-click to edit track
+      if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+        editing_track_index = static_cast<int>(track_idx);
+        popup_component_type = track.component_type;
+        popup_field_path = track.field_path;
+        show_edit_track_popup = true;
+      }
+      ImGui::PopID();
 
       // Draw keyframes for this track
       for (size_t kf_idx = 0; kf_idx < track.keyframes.size(); ++kf_idx) {
         const auto& kf = track.keyframes[kf_idx];
-        float x = pos.x + kf.time * size.x;
+        float x = timeline_x + kf.time * timeline_width;
         float y = track_y + track_height * 0.5f;
 
         bool is_selected = (selected_track_index == static_cast<int>(track_idx) &&
@@ -280,7 +320,7 @@ namespace {
         // Drag to reposition
         if (ImGui::IsItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
           float new_x = ImGui::GetMousePos().x;
-          float new_time = (new_x - pos.x) / size.x;
+          float new_time = (new_x - timeline_x) / timeline_width;
           anim->tracks[track_idx].keyframes[kf_idx].time = std::clamp(new_time, 0.0f, 1.0f);
           
           // Update entity to reflect keyframe change (preserves playhead)
@@ -291,7 +331,7 @@ namespace {
     }
 
     // Draw playhead
-    float playhead_x = pos.x + preview_normalized_time * size.x;
+    float playhead_x = timeline_x + preview_normalized_time * timeline_width;
     draw_list->AddLine(ImVec2(playhead_x, pos.y), ImVec2(playhead_x, pos.y + size.y),
       IM_COL32(255, 100, 100, 255), 2.0f);
 
@@ -382,42 +422,6 @@ void AnimatorEditorPanel()
   }
 
   // ============================================================================
-  // Animation State
-  // ============================================================================
-  ImGui::Text("Animation State");
-  ImGui::Separator();
-
-  ImGui::Text("Elapsed: %.2fs / %.2fs (%.1f%%)",
-    anim->elapsed, anim->duration, current_normalized_time * 100.0f);
-
-  ImGui::SameLine();
-  if (anim->is_playing) {
-    ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "[Playing]");
-  }
-  else {
-    ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.4f, 1.0f), "[Stopped]");
-  }
-
-  if (ImGui::Button("Reset")) {
-    anim->elapsed = 0.0f;
-    anim->start_time = Engine::Time::get_time();
-    anim->is_reversed = false;
-    anim->has_initialized = false;
-
-    // Request update so the reset is visible even when paused
-    Engine::ECS::request_entity_update(entity.get_id());
-  }
-  ImGui::SameLine();
-  if (ImGui::Button(anim->is_playing ? "Pause" : "Play")) {
-    anim->is_playing = !anim->is_playing;
-    if (anim->is_playing) {
-      anim->start_time = Engine::Time::get_time() - anim->elapsed;
-    }
-  }
-
-  ImGui::Spacing();
-
-  // ============================================================================
   // Animation Settings
   // ============================================================================
   ImGui::Text("Settings");
@@ -431,11 +435,67 @@ void AnimatorEditorPanel()
   ImGui::Spacing();
 
   // ============================================================================
+  // Timeline Controls (always visible above timeline)
+  // ============================================================================
+  bool has_track_selected = selected_track_index >= 0 && selected_track_index < static_cast<int>(anim->tracks.size());
+  bool has_keyframe_selected = has_track_selected && selected_keyframe_index >= 0 && 
+    selected_keyframe_index < static_cast<int>(anim->tracks[selected_track_index].keyframes.size());
+
+  // Add Track button - always enabled
+  if (ImGui::Button("Add Track")) {
+    popup_component_type = "Components::Color";
+    popup_field_path = "r";
+    show_add_track_popup = true;
+  }
+  
+  ImGui::SameLine();
+  
+  // Delete Track button - disabled if no track selected
+  ImGui::BeginDisabled(!has_track_selected);
+  if (ImGui::Button("Delete Track")) {
+    anim->tracks.erase(anim->tracks.begin() + selected_track_index);
+    selected_track_index = -1;
+    selected_keyframe_index = -1;
+  }
+  ImGui::EndDisabled();
+  
+  ImGui::SameLine();
+  
+  // Add Keyframe button - disabled if no track selected
+  ImGui::BeginDisabled(!has_track_selected);
+  if (ImGui::Button("Add Keyframe") && has_track_selected) {
+    auto& track = anim->tracks[selected_track_index];
+    Components::FloatKeyframe new_kf;
+    float current_value = get_field_value(entity, track.component_type, track.field_path);
+    new_kf.time = current_normalized_time;
+    new_kf.value = current_value;
+    track.keyframes.push_back(new_kf);
+    std::sort(track.keyframes.begin(), track.keyframes.end(),
+      [](const auto& a, const auto& b) { return a.time < b.time; });
+    for (size_t i = 0; i < track.keyframes.size(); ++i) {
+      if (track.keyframes[i].time == new_kf.time && track.keyframes[i].value == new_kf.value) {
+        selected_keyframe_index = static_cast<int>(i);
+        break;
+      }
+    }
+  }
+  ImGui::EndDisabled();
+  
+  ImGui::SameLine();
+  
+  // Delete Keyframe button - disabled if no keyframe selected
+  ImGui::BeginDisabled(!has_keyframe_selected);
+  if (ImGui::Button("Delete Keyframe") && has_keyframe_selected) {
+    auto& track = anim->tracks[selected_track_index];
+    track.keyframes.erase(track.keyframes.begin() + selected_keyframe_index);
+    selected_keyframe_index = -1;
+  }
+  ImGui::EndDisabled();
+
+  // ============================================================================
   // Timeline View
   // ============================================================================
-  ImGui::Text("Timeline (click/drag to scrub)");
-  ImGui::Separator();
-
+  float label_width = 80.0f;
   float timeline_height = 30.0f + anim->tracks.size() * 20.0f;
   timeline_height = std::max(60.0f, std::min(timeline_height, 200.0f));
 
@@ -444,14 +504,16 @@ void AnimatorEditorPanel()
 
   ImGui::Dummy(timeline_size);
 
-  DrawTimeline(draw_list, timeline_pos, timeline_size, anim, current_normalized_time, entity);
+  DrawTimeline(draw_list, timeline_pos, timeline_size, label_width, anim, current_normalized_time, entity);
 
-  // Scrubbing
-  ImGui::SetCursorScreenPos(timeline_pos);
-  ImGui::InvisibleButton("##timeline_scrub", timeline_size);
+  // Scrubbing - only cover the timeline area, not the label area
+  float timeline_x_start = timeline_pos.x + label_width;
+  float timeline_actual_width = timeline_size.x - label_width;
+  ImGui::SetCursorScreenPos(ImVec2(timeline_x_start, timeline_pos.y));
+  ImGui::InvisibleButton("##timeline_scrub", ImVec2(timeline_actual_width, timeline_size.y));
   if (ImGui::IsItemActive()) {
-    float click_x = ImGui::GetMousePos().x - timeline_pos.x;
-    float new_time = std::clamp(click_x / timeline_size.x, 0.0f, 1.0f);
+    float click_x = ImGui::GetMousePos().x - timeline_x_start;
+    float new_time = std::clamp(click_x / timeline_actual_width, 0.0f, 1.0f);
 
     anim->elapsed = new_time * anim->duration;
     anim->start_time = Engine::Time::get_time() - anim->elapsed;
@@ -463,81 +525,25 @@ void AnimatorEditorPanel()
   ImGui::Spacing();
 
   // ============================================================================
-  // Tracks List
+  // Add Track Popup
   // ============================================================================
-  ImGui::Text("Tracks (%zu)", anim->tracks.size());
-  ImGui::Separator();
-
-  if (ImGui::Button("Add Track")) {
-    Components::AnimationTrack new_track;
-    new_track.component_type = "Components::Color";
-    new_track.field_path = "r";
-    
-    // Get current value from component
-    float current_value = get_field_value(entity, new_track.component_type, new_track.field_path);
-    
-    new_track.keyframes.push_back({ current_value, 0.0f, "EaseLinearNone" });
-    new_track.keyframes.push_back({ current_value, 1.0f, "EaseLinearNone" });
-    anim->tracks.push_back(new_track);
-    selected_track_index = static_cast<int>(anim->tracks.size()) - 1;
-    selected_keyframe_index = -1;
+  if (show_add_track_popup) {
+    ImGui::OpenPopup("Add Track##popup");
+    show_add_track_popup = false;
   }
-  ImGui::SameLine();
-  if (selected_track_index >= 0 && selected_track_index < static_cast<int>(anim->tracks.size())) {
-    if (ImGui::Button("Delete Track")) {
-      anim->tracks.erase(anim->tracks.begin() + selected_track_index);
-      selected_track_index = -1;
-      selected_keyframe_index = -1;
-    }
-  }
-
-  // Track list
-  ImGui::BeginChild("TrackList", ImVec2(0, 100), true);
-  for (size_t i = 0; i < anim->tracks.size(); ++i) {
-    auto& track = anim->tracks[i];
-    bool is_selected = (selected_track_index == static_cast<int>(i));
-
-    ImGui::PushID(static_cast<int>(i));
-
-    // Colored indicator
-    ImU32 track_color = GetTrackColor(static_cast<int>(i));
-    ImVec2 indicator_pos = ImGui::GetCursorScreenPos();
-    draw_list->AddRectFilled(indicator_pos, ImVec2(indicator_pos.x + 4, indicator_pos.y + 16), track_color);
-    ImGui::Dummy(ImVec2(8, 0));
-    ImGui::SameLine();
-
-    if (ImGui::Selectable(("##track" + std::to_string(i)).c_str(), is_selected, 0, ImVec2(0, 18))) {
-      selected_track_index = static_cast<int>(i);
-      selected_keyframe_index = -1;
-    }
-    ImGui::SameLine();
-    ImGui::Text("%s -> %s (%zu kf)",
-      track.component_type.c_str(), track.field_path.c_str(), track.keyframes.size());
-
-    ImGui::PopID();
-  }
-  ImGui::EndChild();
-
-  ImGui::Spacing();
-
-  // ============================================================================
-  // Selected Track Editor
-  // ============================================================================
-  if (selected_track_index >= 0 && selected_track_index < static_cast<int>(anim->tracks.size())) {
-    auto& track = anim->tracks[selected_track_index];
-
-    ImGui::Text("Edit Track %d", selected_track_index);
+  if (ImGui::BeginPopup("Add Track##popup")) {
+    ImGui::Text("Add New Track");
     ImGui::Separator();
-
+    
     // Component type dropdown
-    if (ImGui::BeginCombo("Component", track.component_type.c_str())) {
+    if (ImGui::BeginCombo("Component", popup_component_type.c_str())) {
       for (const auto& comp : common_component_types) {
-        if (ImGui::Selectable(comp.c_str(), track.component_type == comp)) {
-          track.component_type = comp;
+        if (ImGui::Selectable(comp.c_str(), popup_component_type == comp)) {
+          popup_component_type = comp;
           // Reset field path to first option
           auto it = common_field_paths.find(comp);
           if (it != common_field_paths.end() && !it->second.empty()) {
-            track.field_path = it->second[0];
+            popup_field_path = it->second[0];
           }
         }
       }
@@ -545,84 +551,117 @@ void AnimatorEditorPanel()
     }
 
     // Field path dropdown
-    auto it = common_field_paths.find(track.component_type);
+    auto it = common_field_paths.find(popup_component_type);
     if (it != common_field_paths.end()) {
-      if (ImGui::BeginCombo("Field", track.field_path.c_str())) {
+      if (ImGui::BeginCombo("Field", popup_field_path.c_str())) {
         for (const auto& field : it->second) {
-          if (ImGui::Selectable(field.c_str(), track.field_path == field)) {
-            track.field_path = field;
+          if (ImGui::Selectable(field.c_str(), popup_field_path == field)) {
+            popup_field_path = field;
           }
         }
         ImGui::EndCombo();
       }
     }
-    else {
-      // Custom field input
-      static char field_buffer[128] = "";
-      strncpy_s(field_buffer, track.field_path.c_str(), sizeof(field_buffer) - 1);
-      if (ImGui::InputText("Field Path", field_buffer, sizeof(field_buffer))) {
-        track.field_path = field_buffer;
+
+    ImGui::Spacing();
+    if (ImGui::Button("Create Track")) {
+      Components::AnimationTrack new_track;
+      new_track.component_type = popup_component_type;
+      new_track.field_path = popup_field_path;
+      
+      float current_value = get_field_value(entity, new_track.component_type, new_track.field_path);
+      
+      new_track.keyframes.push_back({ current_value, 0.0f, "EaseLinearNone" });
+      new_track.keyframes.push_back({ current_value, 1.0f, "EaseLinearNone" });
+      anim->tracks.push_back(new_track);
+      selected_track_index = static_cast<int>(anim->tracks.size()) - 1;
+      selected_keyframe_index = -1;
+      ImGui::CloseCurrentPopup();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Cancel")) {
+      ImGui::CloseCurrentPopup();
+    }
+    ImGui::EndPopup();
+  }
+
+  // ============================================================================
+  // Edit Track Popup (right-click context menu)
+  // ============================================================================
+  if (show_edit_track_popup) {
+    ImGui::OpenPopup("Edit Track##popup");
+    show_edit_track_popup = false;
+  }
+  if (ImGui::BeginPopup("Edit Track##popup")) {
+    ImGui::Text("Edit Track");
+    ImGui::Separator();
+    
+    // Component type dropdown
+    if (ImGui::BeginCombo("Component", popup_component_type.c_str())) {
+      for (const auto& comp : common_component_types) {
+        if (ImGui::Selectable(comp.c_str(), popup_component_type == comp)) {
+          popup_component_type = comp;
+          // Reset field path to first option
+          auto it = common_field_paths.find(comp);
+          if (it != common_field_paths.end() && !it->second.empty()) {
+            popup_field_path = it->second[0];
+          }
+        }
+      }
+      ImGui::EndCombo();
+    }
+
+    // Field path dropdown
+    auto it = common_field_paths.find(popup_component_type);
+    if (it != common_field_paths.end()) {
+      if (ImGui::BeginCombo("Field", popup_field_path.c_str())) {
+        for (const auto& field : it->second) {
+          if (ImGui::Selectable(field.c_str(), popup_field_path == field)) {
+            popup_field_path = field;
+          }
+        }
+        ImGui::EndCombo();
       }
     }
 
     ImGui::Spacing();
-
-    // Keyframes for this track
-    ImGui::Text("Keyframes (%zu)", track.keyframes.size());
-
-    if (ImGui::Button("Add Keyframe")) {
-      Components::FloatKeyframe new_kf;
-      // Get current value from component
-      float current_value = get_field_value(entity, track.component_type, track.field_path);
-      
-      // Add keyframe at current playhead position
-      new_kf.time = current_normalized_time;
-      new_kf.value = current_value;
-      
-      track.keyframes.push_back(new_kf);
-      
-      // Sort keyframes by time
-      std::sort(track.keyframes.begin(), track.keyframes.end(),
-        [](const auto& a, const auto& b) { return a.time < b.time; });
-      
-      // Find the new keyframe index after sorting
-      for (size_t i = 0; i < track.keyframes.size(); ++i) {
-        if (track.keyframes[i].time == new_kf.time && track.keyframes[i].value == new_kf.value) {
-          selected_keyframe_index = static_cast<int>(i);
-          break;
-        }
+    if (ImGui::Button("Apply")) {
+      if (editing_track_index >= 0 && editing_track_index < static_cast<int>(anim->tracks.size())) {
+        anim->tracks[editing_track_index].component_type = popup_component_type;
+        anim->tracks[editing_track_index].field_path = popup_field_path;
       }
+      ImGui::CloseCurrentPopup();
     }
     ImGui::SameLine();
-    if (selected_keyframe_index >= 0 && selected_keyframe_index < static_cast<int>(track.keyframes.size())) {
-      if (ImGui::Button("Delete Keyframe")) {
-        track.keyframes.erase(track.keyframes.begin() + selected_keyframe_index);
-        selected_keyframe_index = -1;
+    if (ImGui::Button("Delete Track")) {
+      if (editing_track_index >= 0 && editing_track_index < static_cast<int>(anim->tracks.size())) {
+        anim->tracks.erase(anim->tracks.begin() + editing_track_index);
+        if (selected_track_index == editing_track_index) {
+          selected_track_index = -1;
+          selected_keyframe_index = -1;
+        }
       }
+      ImGui::CloseCurrentPopup();
     }
-
-    // Keyframe list for this track
-    ImGui::BeginChild("KeyframeList", ImVec2(0, 80), true);
-    for (size_t i = 0; i < track.keyframes.size(); ++i) {
-      auto& kf = track.keyframes[i];
-      bool is_selected = (selected_keyframe_index == static_cast<int>(i));
-
-      ImGui::PushID(static_cast<int>(i));
-      if (ImGui::Selectable(("##kf" + std::to_string(i)).c_str(), is_selected, 0, ImVec2(0, 16))) {
-        selected_keyframe_index = static_cast<int>(i);
-      }
-      ImGui::SameLine();
-      ImGui::Text("t=%.2f | v=%.3f | %s", kf.time, kf.value, kf.easing.c_str());
-      ImGui::PopID();
+    ImGui::SameLine();
+    if (ImGui::Button("Cancel")) {
+      ImGui::CloseCurrentPopup();
     }
-    ImGui::EndChild();
+    ImGui::EndPopup();
+  }
+
+  // ============================================================================
+  // Selected Keyframe Editor
+  // ============================================================================
+  if (selected_track_index >= 0 && selected_track_index < static_cast<int>(anim->tracks.size())) {
+    auto& track = anim->tracks[selected_track_index];
 
     // Selected keyframe editor
     if (selected_keyframe_index >= 0 && selected_keyframe_index < static_cast<int>(track.keyframes.size())) {
       auto& kf = track.keyframes[selected_keyframe_index];
 
       ImGui::Spacing();
-      ImGui::Text("Edit Keyframe %d", selected_keyframe_index);
+      ImGui::Text("Keyframe %d", selected_keyframe_index);
       ImGui::Separator();
 
       if (ImGui::DragFloat("Time", &kf.time, 0.01f, 0.0f, 1.0f, "%.3f")) {
