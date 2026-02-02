@@ -658,8 +658,12 @@ namespace Engine {
     template<typename Key, typename Value, typename Hash>
     HashMap<Key, Value, Hash>::~HashMap() {
       clear();
-      if (m_buckets) {
-        MemoryManager::instance().deallocate(m_buckets, m_capacity * sizeof(Bucket));
+      if (m_buckets && m_capacity > 0) {
+        // Check if MemoryManager is still valid (static destruction order safety)
+        if (MemoryManager::is_instance_valid()) {
+          MemoryManager::instance().deallocate(m_buckets, m_capacity * sizeof(Bucket));
+        }
+        // Always null out the pointer to prevent double-free
         m_buckets = nullptr;
       }
       m_capacity = 0;
@@ -685,8 +689,10 @@ namespace Engine {
     HashMap<Key, Value, Hash>& HashMap<Key, Value, Hash>::operator=(HashMap&& other) noexcept {
       if (this != &other) {
         clear();
-        if (m_buckets) {
-          MemoryManager::instance().deallocate(m_buckets, m_capacity * sizeof(Bucket));
+        if (m_buckets && m_capacity > 0) {
+          if (MemoryManager::is_instance_valid()) {
+            MemoryManager::instance().deallocate(m_buckets, m_capacity * sizeof(Bucket));
+          }
         }
 
         m_buckets = other.m_buckets;
@@ -962,6 +968,14 @@ namespace Engine {
 
     template<typename Key, typename Value, typename Hash>
     void HashMap<Key, Value, Hash>::clear() {
+      // Guard against null or invalid m_buckets (e.g., after move or during destruction)
+      // Also check if MemoryManager is destroyed - if so, m_buckets may point to freed memory
+      if (!m_buckets || m_capacity == 0 || !MemoryManager::is_instance_valid()) {
+        m_size = 0;
+        m_tombstones = 0;
+        return;
+      }
+
       for (size_t i = 0; i < m_capacity; ++i) {
         if (m_buckets[i].state == BucketState::Occupied) {
           m_buckets[i].key.~Key();
