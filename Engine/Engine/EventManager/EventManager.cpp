@@ -31,34 +31,6 @@ namespace Engine {
       Internal::event_handlers.erase(eventType);
     }
 
-    void update_events(const std::vector<std::unique_ptr<ECS::System>>& systems)
-    {
-      // Dispatch all queued events
-      for (const auto& event : Internal::event_queue)
-      {
-        // Call global event handlers
-        auto handlerIt = Internal::event_handlers.find(event.type_id);
-        if (handlerIt != Internal::event_handlers.end()) {
-          for (const auto& handler : handlerIt->second) {
-            handler(event);
-          }
-        }
-
-        // Dispatch to systems that listen to this event type
-        for (auto& system : systems)
-        {
-          const auto& systemEventSignature = system->get_event_signature();
-          if (systemEventSignature.test(event.type_id))
-          {
-            for (ECS::EntityID entity : system->get_entities()) {
-              system->on_event(event, entity);
-            }
-          }
-        }
-      }
-
-      // Clear the queue after processing
-      Internal::event_queue.clear();
-    }
+    // Note: update_events is now a template function defined in EventManager.inl
   }
 }
