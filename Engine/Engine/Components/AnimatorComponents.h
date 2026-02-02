@@ -68,6 +68,7 @@ namespace Components
     // Internal state
     bool is_reversed = false;     // Current direction (for ping_pong)
     bool has_initialized = false; // Whether animation has started
+    bool force_update = false;    // Force apply animation at current elapsed (for editor scrubbing)
 
     Animator() = default;
   };

@@ -64,6 +64,57 @@ namespace {
     {"Components::Distortion", {"intensity", "speed", "mesh_intensity"}}
   };
 
+  // Helper to read a field value from an entity's component using reflection
+  float get_field_value(Engine::ECS::Entity entity, const std::string& component_type, const std::string& field_path) {
+    auto& containers = Engine::ECS::Internal::get_containers();
+
+    // Find the component array
+    for (auto& [type_id, array] : containers.component_arrays) {
+      if (array->get_type_name() != component_type) continue;
+      if (!array->is_reflectable()) return 0.0f;
+
+      auto generic = array->to_generic_value(entity.get_id());
+      if (!generic.isObject()) return 0.0f;
+
+      // Parse field path (e.g., "position.x")
+      std::vector<std::string> parts;
+      size_t start = 0, pos = 0;
+      while ((pos = field_path.find('.', start)) != std::string::npos) {
+        parts.push_back(field_path.substr(start, pos - start));
+        start = pos + 1;
+      }
+      parts.push_back(field_path.substr(start));
+
+      // Navigate to the field
+      if (parts.size() == 1) {
+        if (generic.has(parts[0])) {
+          ReflectionLibrary::GenericValue val = generic[parts[0]].get();
+          if (val.isDouble()) return static_cast<float>(val.getDouble());
+          if (val.isInt()) return static_cast<float>(val.getInt());
+        }
+      }
+      else if (parts.size() == 2) {
+        if (generic.has(parts[0])) {
+          ReflectionLibrary::GenericValue nested = generic[parts[0]].get();
+          if (nested.isObject() && nested.has(parts[1])) {
+            ReflectionLibrary::GenericValue val = nested[parts[1]].get();
+            if (val.isDouble()) return static_cast<float>(val.getDouble());
+            if (val.isInt()) return static_cast<float>(val.getInt());
+          }
+        }
+      }
+      break;
+    }
+    return 0.0f;
+  }
+
+  // Helper to update entity without moving the playhead
+  // Uses force_update flag to apply animation at current elapsed without recalculating
+  void update_entity_preserve_playhead(Engine::ECS::Entity entity, Components::Animator* anim) {
+    anim->force_update = true;
+    Engine::ECS::request_entity_update(entity.get_id());
+  }
+
   void init_selection_listener() {
     if (selection_initialized) return;
     selection_initialized = true;
@@ -154,7 +205,7 @@ namespace {
 
   // Draw timeline with all tracks and keyframes
   void DrawTimeline(ImDrawList* draw_list, ImVec2 pos, ImVec2 size,
-    Components::Animator* anim, float preview_normalized_time) {
+    Components::Animator* anim, float preview_normalized_time, Engine::ECS::Entity entity) {
     // Background
     draw_list->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(30, 30, 35, 255));
     draw_list->AddRect(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(80, 80, 80, 255));
@@ -231,6 +282,9 @@ namespace {
           float new_x = ImGui::GetMousePos().x;
           float new_time = (new_x - pos.x) / size.x;
           anim->tracks[track_idx].keyframes[kf_idx].time = std::clamp(new_time, 0.0f, 1.0f);
+          
+          // Update entity to reflect keyframe change (preserves playhead)
+          update_entity_preserve_playhead(entity, anim);
         }
         ImGui::PopID();
       }
@@ -390,7 +444,7 @@ void AnimatorEditorPanel()
 
   ImGui::Dummy(timeline_size);
 
-  DrawTimeline(draw_list, timeline_pos, timeline_size, anim, current_normalized_time);
+  DrawTimeline(draw_list, timeline_pos, timeline_size, anim, current_normalized_time, entity);
 
   // Scrubbing
   ImGui::SetCursorScreenPos(timeline_pos);
@@ -418,8 +472,12 @@ void AnimatorEditorPanel()
     Components::AnimationTrack new_track;
     new_track.component_type = "Components::Color";
     new_track.field_path = "r";
-    new_track.keyframes.push_back({ 0.0f, 0.0f, "EaseLinearNone" });
-    new_track.keyframes.push_back({ 1.0f, 1.0f, "EaseLinearNone" });
+    
+    // Get current value from component
+    float current_value = get_field_value(entity, new_track.component_type, new_track.field_path);
+    
+    new_track.keyframes.push_back({ current_value, 0.0f, "EaseLinearNone" });
+    new_track.keyframes.push_back({ current_value, 1.0f, "EaseLinearNone" });
     anim->tracks.push_back(new_track);
     selected_track_index = static_cast<int>(anim->tracks.size()) - 1;
     selected_keyframe_index = -1;
@@ -514,16 +572,26 @@ void AnimatorEditorPanel()
 
     if (ImGui::Button("Add Keyframe")) {
       Components::FloatKeyframe new_kf;
-      if (track.keyframes.empty()) {
-        new_kf.time = 0.0f;
-        new_kf.value = 0.0f;
-      }
-      else {
-        new_kf.time = std::min(track.keyframes.back().time + 0.25f, 1.0f);
-        new_kf.value = track.keyframes.back().value;
-      }
+      // Get current value from component
+      float current_value = get_field_value(entity, track.component_type, track.field_path);
+      
+      // Add keyframe at current playhead position
+      new_kf.time = current_normalized_time;
+      new_kf.value = current_value;
+      
       track.keyframes.push_back(new_kf);
-      selected_keyframe_index = static_cast<int>(track.keyframes.size()) - 1;
+      
+      // Sort keyframes by time
+      std::sort(track.keyframes.begin(), track.keyframes.end(),
+        [](const auto& a, const auto& b) { return a.time < b.time; });
+      
+      // Find the new keyframe index after sorting
+      for (size_t i = 0; i < track.keyframes.size(); ++i) {
+        if (track.keyframes[i].time == new_kf.time && track.keyframes[i].value == new_kf.value) {
+          selected_keyframe_index = static_cast<int>(i);
+          break;
+        }
+      }
     }
     ImGui::SameLine();
     if (selected_keyframe_index >= 0 && selected_keyframe_index < static_cast<int>(track.keyframes.size())) {
@@ -557,11 +625,17 @@ void AnimatorEditorPanel()
       ImGui::Text("Edit Keyframe %d", selected_keyframe_index);
       ImGui::Separator();
 
-      ImGui::DragFloat("Time", &kf.time, 0.01f, 0.0f, 1.0f, "%.3f");
-      ImGui::DragFloat("Value", &kf.value, 0.01f, -10000.0f, 10000.0f, "%.4f");
+      if (ImGui::DragFloat("Time", &kf.time, 0.01f, 0.0f, 1.0f, "%.3f")) {
+        update_entity_preserve_playhead(entity, anim);
+      }
+      if (ImGui::DragFloat("Value", &kf.value, 0.01f, -10000.0f, 10000.0f, "%.4f")) {
+        update_entity_preserve_playhead(entity, anim);
+      }
 
       ImGui::SetNextItemWidth(200);
-      EasingCombo("Easing", kf.easing);
+      if (EasingCombo("Easing", kf.easing)) {
+        update_entity_preserve_playhead(entity, anim);
+      }
 
       // Curve preview
       ImVec2 curve_pos = ImGui::GetCursorScreenPos();

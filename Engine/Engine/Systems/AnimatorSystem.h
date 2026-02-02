@@ -252,6 +252,23 @@ namespace Engine
       void update_entity(Engine::ECS::Entity entity) override {
         auto* anim = entity.get_component<Components::Animator>();
 
+        // Handle force_update (editor scrubbing/keyframe editing)
+        if (anim->force_update) {
+          anim->force_update = false;
+          
+          if (anim->tracks.empty()) return;
+          
+          // Apply animation at current elapsed time without recalculating
+          float normalized_time = anim->duration > 0.0f ? (anim->elapsed / anim->duration) : 0.0f;
+          normalized_time = std::clamp(normalized_time, 0.0f, 1.0f);
+          float effective_time = anim->is_reversed ? (1.0f - normalized_time) : normalized_time;
+          
+          for (const auto& track : anim->tracks) {
+            interpolate_and_apply_track(entity, track, effective_time);
+          }
+          return;
+        }
+
         if (!anim->is_playing || anim->tracks.empty()) {
           return;
         }
