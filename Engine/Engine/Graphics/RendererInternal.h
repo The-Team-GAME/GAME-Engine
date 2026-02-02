@@ -144,6 +144,8 @@ namespace Engine {
     // Animation configuration for animated tile atlases
     struct AnimatedTileConfig {
       bool is_animated = false;           // Whether this atlas contains animated tiles
+      int sheet_cols = 1;                 // Total columns in the sheet (exact value, not derived)
+      int sheet_rows = 1;                 // Total rows in the sheet (exact value, not derived)
       int prop_cols = 1;                  // How many grid columns one prop occupies in the world
       int prop_rows = 1;                  // How many grid rows one prop occupies in the world  
       int anim_cols = 1;                  // How many columns of animation frames in the texture
@@ -177,5 +179,5 @@ REFLECT_ENUM(Engine::Graphics::TileColliderType, Default, AABB, Polygon);
 REFLECT_FIELDS(Engine::Graphics::SubTexture, tex_coords);
 REFLECT_FIELDS(Engine::Graphics::Tile, atlas_index, tile_index);
 REFLECT_FIELDS(Engine::Graphics::TileColliderConfig, collider_type, aabb_width, aabb_height, aabb_offset, custom_vertices);
-REFLECT_FIELDS(Engine::Graphics::AnimatedTileConfig, is_animated, prop_cols, prop_rows, anim_cols, anim_rows, frame_duration, is_looping);
+REFLECT_FIELDS(Engine::Graphics::AnimatedTileConfig, is_animated, sheet_cols, sheet_rows, prop_cols, prop_rows, anim_cols, anim_rows, frame_duration, is_looping);
 REFLECT_FIELDS(Engine::Graphics::AtlasEntry, texture_path, subTextures, drawIndex, tile_collider_configs, animation_config);

@@ -1899,17 +1899,31 @@ namespace Engine {
           current_frame = std::clamp(current_frame, 0, total_frames - 1);
 
           // Calculate the tile index offset for animation
-          // For animated tiles, the tile_index stores the base position within the prop
-          // We need to offset it to the correct frame
-          // 
-          // Layout: Each frame contains (prop_cols * prop_rows) tiles
-          // Frame 0 tiles: 0 to (prop_cols * prop_rows - 1)
-          // Frame 1 tiles: (prop_cols * prop_rows) to (2 * prop_cols * prop_rows - 1)
-          // etc.
+          // The texture is laid out as a 2D grid:
+          // - Total sheet cols/rows are stored in sheet_cols/sheet_rows
+          // - Tiles are indexed row by row from top-left
+          //
+          // For a base tile index within frame 0, we need to:
+          // 1. Find the tile's local position within the prop (local_col, local_row)
+          // 2. Find the frame's position in the animation grid (frame_col, frame_row)
+          // 3. Calculate the actual tile position in the sheet
 
           int tiles_per_frame = anim_config.prop_cols * anim_config.prop_rows;
           int base_tile = rect.tile.tile_index % tiles_per_frame;
-          tile_index_to_draw = current_frame * tiles_per_frame + base_tile;
+
+          // Local position within the prop
+          int local_col = base_tile % anim_config.prop_cols;
+          int local_row = base_tile / anim_config.prop_cols;
+
+          // Frame position in the animation grid
+          int frame_col = current_frame % anim_config.anim_cols;
+          int frame_row = current_frame / anim_config.anim_cols;
+
+          // Calculate sheet position using stored sheet dimensions (avoids integer division precision loss)
+          int tile_col = frame_col * anim_config.prop_cols + local_col;
+          int tile_row = frame_row * anim_config.prop_rows + local_row;
+
+          tile_index_to_draw = tile_row * anim_config.sheet_cols + tile_col;
         }
 
         if (tile_index_to_draw >= static_cast<int>(atlas_entry.subTextures.size())) {
