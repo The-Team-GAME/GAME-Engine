@@ -11,12 +11,16 @@
 //          in the ECS. Provides O(1) insertion, deletion, and lookup operations while
 //          maintaining dense iteration. Useful for component arrays and entity sets.
 //
+//          Now uses the custom Memory Manager for all allocations. The underlying
+//          storage uses Memory::Array instead of std::vector, eliminating STL
+//          container usage and ensuring all memory flows through the pool allocators.
+//
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
 #include "Types.h"
-#include <vector>
+#include "../Memory/Memory.h"
 #include <algorithm>
 #include <stdexcept>
 #include <limits>
@@ -26,13 +30,14 @@ namespace Engine {
 
     /* ============================================================ //
     // SparseSet - Efficient storage with O(1) operations          //
+    // Uses Memory Manager for all allocations (no STL containers) //
     // ============================================================ */
     template<typename T = size_t>
     class SparseSet {
     private:
-      std::vector<size_t> sparse;    // Maps key to dense array index
-      std::vector<size_t> dense;     // Dense array of keys
-      std::vector<T> data;           // Dense array of data (optional)
+      Memory::Array<size_t> sparse;    // Maps key to dense array index
+      Memory::Array<size_t> dense;     // Dense array of keys
+      Memory::Array<T> data;           // Dense array of data (optional)
 
       static constexpr size_t NULL_INDEX = std::numeric_limits<size_t>::max();
 
@@ -380,7 +385,7 @@ namespace Engine {
       Where to call it:
       When iterating over keys using range-based for loops.
       ==================================================================================*/
-      const std::vector<size_t>& keys() const noexcept { return dense; }
+      const Memory::Array<size_t>& keys() const noexcept { return dense; }
 
       /*=================================================================================
       Function Brief:
@@ -392,18 +397,19 @@ namespace Engine {
       Where to call it:
       When iterating over values using range-based for loops.
       ==================================================================================*/
-      const std::vector<T>& values() const noexcept requires (!std::is_same_v<T, size_t>) { return data; }
-      std::vector<T>& values() noexcept requires (!std::is_same_v<T, size_t>) { return data; }
+      const Memory::Array<T>& values() const noexcept requires (!std::is_same_v<T, size_t>) { return data; }
+      Memory::Array<T>& values() noexcept requires (!std::is_same_v<T, size_t>) { return data; }
     };
 
     // ============================================================================
     // SparseSet<void> - Key-only specialization (no data storage)
+    // Uses Memory Manager for all allocations
     // ============================================================================
     template<>
     class SparseSet<void> {
     private:
-      std::vector<size_t> sparse;
-      std::vector<size_t> dense;
+      Memory::Array<size_t> sparse;
+      Memory::Array<size_t> dense;
       static constexpr size_t NULL_INDEX = std::numeric_limits<size_t>::max();
 
     public:
@@ -430,7 +436,7 @@ namespace Engine {
       auto end() { return dense.end(); }
       auto begin() const { return dense.begin(); }
       auto end() const { return dense.end(); }
-      const std::vector<size_t>& keys() const noexcept { return dense; }
+      const Memory::Array<size_t>& keys() const noexcept { return dense; }
     };
 
     // ============================================================================
@@ -693,26 +699,42 @@ namespace Engine {
     template<typename T>
     template<typename Compare>
     void SparseSet<T>::sort(Compare compare) {
-      // Create indices array to track the new order
-      std::vector<size_t> indices(dense.size());
+      // Create indices array to track the new order using Memory::Array
+      Memory::Array<size_t> indices(dense.size());
       for (size_t i = 0; i < indices.size(); ++i) {
         indices[i] = i;
       }
 
-      // Sort indices based on the comparator applied to dense array
-      std::sort(indices.begin(), indices.end(), [&](size_t a, size_t b) {
-        return compare(dense[a], dense[b]);
-        });
+      // Simple insertion sort (efficient for small arrays, stable)
+      // For large arrays, consider implementing quicksort
+      for (size_t i = 1; i < indices.size(); ++i) {
+        size_t key = indices[i];
+        size_t j = i;
+        while (j > 0 && compare(dense[key], dense[indices[j - 1]])) {
+          indices[j] = indices[j - 1];
+          --j;
+        }
+        indices[j] = key;
+      }
 
       // Apply permutation in-place using cycles
       for (size_t i = 0; i < indices.size(); ++i) {
         while (indices[i] != i) {
           size_t target = indices[i];
-          std::swap(dense[i], dense[target]);
+          // Swap dense[i] and dense[target]
+          size_t temp_key = dense[i];
+          dense[i] = dense[target];
+          dense[target] = temp_key;
+
           if constexpr (!std::is_same_v<T, size_t>) {
-            std::swap(data[i], data[target]);
+            T temp_data = std::move(data[i]);
+            data[i] = std::move(data[target]);
+            data[target] = std::move(temp_data);
           }
-          std::swap(indices[i], indices[target]);
+
+          size_t temp_idx = indices[i];
+          indices[i] = indices[target];
+          indices[target] = temp_idx;
         }
       }
 
@@ -811,20 +833,32 @@ namespace Engine {
 
     template<typename Compare>
     void SparseSet<void>::sort(Compare compare) {
-      std::vector<size_t> indices(dense.size());
+      Memory::Array<size_t> indices(dense.size());
       for (size_t i = 0; i < indices.size(); ++i) {
         indices[i] = i;
       }
 
-      std::sort(indices.begin(), indices.end(), [&](size_t a, size_t b) {
-        return compare(dense[a], dense[b]);
-        });
+      // Simple insertion sort
+      for (size_t i = 1; i < indices.size(); ++i) {
+        size_t key = indices[i];
+        size_t j = i;
+        while (j > 0 && compare(dense[key], dense[indices[j - 1]])) {
+          indices[j] = indices[j - 1];
+          --j;
+        }
+        indices[j] = key;
+      }
 
       for (size_t i = 0; i < indices.size(); ++i) {
         while (indices[i] != i) {
           size_t target = indices[i];
-          std::swap(dense[i], dense[target]);
-          std::swap(indices[i], indices[target]);
+          size_t temp = dense[i];
+          dense[i] = dense[target];
+          dense[target] = temp;
+
+          size_t temp_idx = indices[i];
+          indices[i] = indices[target];
+          indices[target] = temp_idx;
         }
       }
 
