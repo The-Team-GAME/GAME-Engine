@@ -8,7 +8,7 @@
 // email:   chew.s@digipen.edu
 //
 // brief:   This file implements the centralized container accessor for the ECS World.
-//          Uses a static local variable to ensure single instance initialization.
+//          Uses a heap-allocated object so we can control destruction timing.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
@@ -18,14 +18,26 @@ namespace Engine {
   namespace ECS {
     namespace Internal {
 
+      // Use a pointer so we can control destruction timing
+      // This avoids false positive memory leak reports from CRT
+      static WorldContainers* s_containers = nullptr;
+
       WorldContainers& get_containers() {
-        static WorldContainers containers;
-        return containers;
+        if (!s_containers) {
+          // Use operator new directly to avoid going through MemoryManager
+          // (which may not be initialized yet during static init)
+          s_containers = new WorldContainers();
+        }
+        return *s_containers;
       }
 
       void cleanup_containers() {
-        WorldContainers& containers = get_containers();
-        
+        if (!s_containers) {
+          return;
+        }
+
+        WorldContainers& containers = *s_containers;
+
         // Clear all containers to properly destruct contained objects
         // This MUST be called before MemoryManager::shutdown()
         containers.collision_callbacks.clear();
@@ -40,6 +52,11 @@ namespace Engine {
         containers.layer_entities.clear();
         containers.active_entities.clear();
         containers.entities_to_destroy.clear();
+
+        // Now destroy the container object itself
+        // This will deallocate the internal HashMap/Array bucket arrays
+        delete s_containers;
+        s_containers = nullptr;
       }
 
     } // namespace Internal
