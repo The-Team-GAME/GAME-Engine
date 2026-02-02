@@ -349,6 +349,9 @@ void AnimatorEditorPanel()
     anim->start_time = Engine::Time::get_time();
     anim->is_reversed = false;
     anim->has_initialized = false;
+
+    // Request update so the reset is visible even when paused
+    Engine::ECS::request_entity_update(entity.get_id());
   }
   ImGui::SameLine();
   if (ImGui::Button(anim->is_playing ? "Pause" : "Play")) {

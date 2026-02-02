@@ -247,7 +247,6 @@ namespace Engine
     public:
       AnimatorSystem() {
         require_components<Components::Animator>();
-        set_editor_system(); // Runs even when paused (for scrubbing in editor)
       }
 
       void update_entity(Engine::ECS::Entity entity) override {
