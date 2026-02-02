@@ -38,6 +38,7 @@
 #include "../ImGuiManager.h"
 #include "../Logger.h"
 #include "../Time.h"
+#include "ResourcePicker.h"
 
 namespace TilemapPanel {
   // Internal state
@@ -587,65 +588,54 @@ namespace TilemapPanel {
         ImGui::Indent();
 
         // Get all loaded textures from Resources
-        std::vector<std::string> texture_paths;
-        for (const auto& pair : Engine::Resources::texture_cache) {
-          if (auto texture = pair.second.lock()) {
-            texture_paths.push_back(pair.first);
-          }
-        }
+        auto all_textures = ResourcePicker::get_all_loaded_textures();
 
-        if (texture_paths.empty()) {
+        if (all_textures.empty()) {
           ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.0f, 1.0f), "No textures loaded in Resources!");
           ImGui::Text("Load textures first using Resources::load_texture()");
         }
         else {
-          ImGui::Text("Available Textures:");
+          // Display current selection and button to open picker
+          std::string current_path = preview_texture.texture_handle ? preview_texture.texture_handle->path : "";
+          ImGui::Text("Selected: %s", current_path.empty() ? "(none)" : current_path.c_str());
 
-          // Texture selection combo box
-          const char* preview_name = preview_texture.texture_handle ?
-            preview_texture.texture_handle->path.c_str() : "Select texture...";
+          if (ImGui::Button("Select Texture...", ImVec2(-1, 0))) {
+            ImGui::OpenPopup("Atlas Texture Picker");
+          }
 
-          if (ImGui::BeginCombo("##TextureSelect", preview_name)) {
-            for (int i = 0; i < static_cast<int>(texture_paths.size()); ++i) {
-              bool is_selected = preview_texture.texture_handle &&
-                (preview_texture.texture_handle->path == texture_paths[i]);
+          // Handle texture picker popup
+          std::string selected_path;
+          if (ResourcePicker::texture_picker_popup("Atlas Texture Picker", selected_path, current_path)) {
+            // Load the selected texture
+            auto tex = Engine::Resources::load_texture(Engine::Resources::get_relative_path(selected_path));
+            if (tex) {
+              preview_texture = Components::Texture(tex);
 
-              if (ImGui::Selectable(texture_paths[i].c_str(), is_selected)) {
-                // Load the texture
-                if (auto tex = Engine::Resources::texture_cache[texture_paths[i]].lock()) {
-                  preview_texture = Components::Texture(tex);
+              if (is_animated_atlas) {
+                // For animated atlas, auto-calculate sheet size by dividing by 32 (like static)
+                anim_sheet_cols = preview_texture.texture_handle->width / 32;
+                anim_sheet_rows = preview_texture.texture_handle->height / 32;
 
-                  if (is_animated_atlas) {
-                    // For animated atlas, auto-calculate sheet size by dividing by 32 (like static)
-                    anim_sheet_cols = preview_texture.texture_handle->width / 32;
-                    anim_sheet_rows = preview_texture.texture_handle->height / 32;
+                // Ensure at least 1 row and 1 column
+                if (anim_sheet_cols < 1) anim_sheet_cols = 1;
+                if (anim_sheet_rows < 1) anim_sheet_rows = 1;
 
-                    // Ensure at least 1 row and 1 column
-                    if (anim_sheet_cols < 1) anim_sheet_cols = 1;
-                    if (anim_sheet_rows < 1) anim_sheet_rows = 1;
-
-                    anim_frame_cols = 1;
-                    anim_frame_rows = 1;
-                    regenerate_animated_atlas();
-                  }
-                  else {
-                    // Automatically calculate columns and rows by dividing by 32
-                    atlas_cols = preview_texture.texture_handle->width / 32;
-                    atlas_rows = preview_texture.texture_handle->height / 32;
-
-                    // Ensure at least 1 row and 1 column
-                    if (atlas_cols < 1) atlas_cols = 1;
-                    if (atlas_rows < 1) atlas_rows = 1;
-
-                    regenerate_atlas();
-                  }
-                }
+                anim_frame_cols = 1;
+                anim_frame_rows = 1;
+                regenerate_animated_atlas();
               }
-              if (is_selected) {
-                ImGui::SetItemDefaultFocus();
+              else {
+                // Automatically calculate columns and rows by dividing by 32
+                atlas_cols = preview_texture.texture_handle->width / 32;
+                atlas_rows = preview_texture.texture_handle->height / 32;
+
+                // Ensure at least 1 row and 1 column
+                if (atlas_cols < 1) atlas_cols = 1;
+                if (atlas_rows < 1) atlas_rows = 1;
+
+                regenerate_atlas();
               }
             }
-            ImGui::EndCombo();
           }
 
           // Atlas configuration and preview
