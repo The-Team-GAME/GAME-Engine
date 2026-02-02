@@ -65,6 +65,22 @@ namespace Engine {
             ==================================================================================*/
             static MemoryManager& instance();
 
+            /*=================================================================================
+            Function Brief:
+            Checks if the singleton instance is still valid (not destroyed).
+            This is used to handle static destruction order issues.
+
+            Parameters:
+            None.
+
+            Returns:
+            true if the instance is valid, false if it has been destroyed.
+
+            Where to call it:
+            Before accessing the MemoryManager during shutdown.
+            ==================================================================================*/
+            static bool is_instance_valid();
+
             //=================================================================================
             // Initialization / Shutdown
             //=================================================================================

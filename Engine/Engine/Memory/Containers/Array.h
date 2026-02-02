@@ -557,8 +557,11 @@ namespace Engine {
         template<typename T>
         Array<T>::~Array() {
             clear();
-            if (m_data) {
-                MemoryManager::instance().deallocate(m_data, m_capacity * sizeof(T));
+            if (m_data && m_capacity > 0) {
+                // Check if MemoryManager is still valid (static destruction order safety)
+                if (MemoryManager::is_instance_valid()) {
+                    MemoryManager::instance().deallocate(m_data, m_capacity * sizeof(T));
+                }
                 m_data = nullptr;
             }
             m_capacity = 0;
@@ -581,8 +584,10 @@ namespace Engine {
         Array<T>& Array<T>::operator=(Array&& other) noexcept {
             if (this != &other) {
                 clear();
-                if (m_data) {
-                    MemoryManager::instance().deallocate(m_data, m_capacity * sizeof(T));
+                if (m_data && m_capacity > 0) {
+                    if (MemoryManager::is_instance_valid()) {
+                        MemoryManager::instance().deallocate(m_data, m_capacity * sizeof(T));
+                    }
                 }
 
                 m_data = other.m_data;
@@ -684,6 +689,12 @@ namespace Engine {
 
         template<typename T>
         void Array<T>::clear() {
+            // Guard against null m_data (e.g., after move or during destruction)
+            // Also check if MemoryManager is destroyed - if so, m_data may point to freed memory
+            if (!m_data || !MemoryManager::is_instance_valid()) {
+                m_size = 0;
+                return;
+            }
             // Call destructors for all elements
             for (size_t i = 0; i < m_size; ++i) {
                 m_data[i].~T();

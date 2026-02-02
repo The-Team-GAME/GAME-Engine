@@ -24,6 +24,14 @@ namespace Engine {
         // Singleton Implementation
         //=================================================================================
 
+        // Static flag to track if the MemoryManager singleton has been destroyed
+        // This helps handle the static destruction order fiasco
+        static bool s_instance_destroyed = false;
+
+        bool MemoryManager::is_instance_valid() {
+            return !s_instance_destroyed;
+        }
+
         MemoryManager& MemoryManager::instance() {
             static MemoryManager instance;
             return instance;
@@ -46,6 +54,8 @@ namespace Engine {
 
         MemoryManager::~MemoryManager() {
             shutdown();
+            // Mark the instance as destroyed to prevent access after destruction
+            s_instance_destroyed = true;
         }
 
         //=================================================================================
@@ -57,6 +67,9 @@ namespace Engine {
                 Log::memory("MemoryManager already initialized - skipping");
                 return true;
             }
+
+            // Reset the destroyed flag in case of re-initialization
+            s_instance_destroyed = false;
 
             Log::memory("=== Memory Manager Initialization ===");
             Log::memory("Configuration:");
@@ -109,6 +122,11 @@ namespace Engine {
                 return;
             }
 
+            // IMPORTANT: Set the destroyed flag BEFORE freeing any memory!
+            // This prevents containers from trying to access freed pool memory
+            // during static destruction order cleanup.
+            s_instance_destroyed = true;
+
             Log::memory("=== Memory Manager Shutdown ===");
 
             // Collect final statistics before shutdown
@@ -159,6 +177,12 @@ namespace Engine {
                 return nullptr;
             }
 
+            // Check if MemoryManager is being destroyed (static destruction order issue)
+            if (s_instance_destroyed) {
+                // Fall back to OS allocation - this should be very rare
+                return ::operator new(size, std::nothrow);
+            }
+
             // Check if we can use a pool allocator
             if (is_poolable_size(size)) {
                 size_t pool_index = get_size_class_index(size);
@@ -181,6 +205,13 @@ namespace Engine {
 
         void MemoryManager::deallocate(void* ptr, size_t size) {
             if (!ptr || size == 0) {
+                return;
+            }
+
+            // Check if MemoryManager is being destroyed (static destruction order issue)
+            // During shutdown, containers may try to deallocate after MemoryManager is destroyed
+            if (s_instance_destroyed) {
+                // Memory will be reclaimed by the OS when the process exits
                 return;
             }
 
