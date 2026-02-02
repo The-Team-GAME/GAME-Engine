@@ -13,6 +13,7 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "WorldData.h"
+#include "../Logger.h"
 
 namespace Engine {
   namespace ECS {
@@ -27,12 +28,15 @@ namespace Engine {
           // Use operator new directly to avoid going through MemoryManager
           // (which may not be initialized yet during static init)
           s_containers = new WorldContainers();
+          Log::memory("WorldContainers created at {}", static_cast<void*>(s_containers));
         }
         return *s_containers;
       }
 
       void cleanup_containers() {
+        Log::memory("cleanup_containers() called, s_containers = {}", static_cast<void*>(s_containers));
         if (!s_containers) {
+          Log::memory("cleanup_containers() - already null, returning");
           return;
         }
 
@@ -53,10 +57,14 @@ namespace Engine {
         containers.active_entities.clear();
         containers.entities_to_destroy.clear();
 
+        Log::memory("cleanup_containers() - all containers cleared, deleting WorldContainers");
+
         // Now destroy the container object itself
         // This will deallocate the internal HashMap/Array bucket arrays
         delete s_containers;
         s_containers = nullptr;
+
+        Log::memory("cleanup_containers() - WorldContainers deleted successfully");
       }
 
     } // namespace Internal
