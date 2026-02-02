@@ -122,11 +122,6 @@ namespace Engine {
                 return;
             }
 
-            // IMPORTANT: Set the destroyed flag BEFORE freeing any memory!
-            // This prevents containers from trying to access freed pool memory
-            // during static destruction order cleanup.
-            s_instance_destroyed = true;
-
             Log::memory("=== Memory Manager Shutdown ===");
 
             // Collect final statistics before shutdown
@@ -160,6 +155,12 @@ namespace Engine {
             m_large_allocation_count = 0;
             m_large_allocation_bytes = 0;
             m_initialized = false;
+
+            // IMPORTANT: Set the destroyed flag AFTER freeing pools!
+            // This allows containers destroyed during cleanup to still call clear()
+            // and destruct their contained objects properly.
+            // Only containers destroyed AFTER this point (static destruction) will skip clear().
+            s_instance_destroyed = true;
 
             Log::memory("=== Memory Manager Shut Down ===");
         }

@@ -814,7 +814,7 @@ namespace Engine {
         template<typename T>
         typename Array<T>::iterator Array<T>::erase(iterator pos) {
             if (pos < begin() || pos >= end()) return end();
-            
+
             size_t index = pos - begin();
             erase(index);
             return begin() + index;
@@ -823,20 +823,20 @@ namespace Engine {
         template<typename T>
         typename Array<T>::iterator Array<T>::erase(iterator first, iterator last) {
             if (first >= last || first < begin() || last > end()) return last;
-            
+
             size_t first_index = first - begin();
             size_t count = last - first;
-            
+
             // Move elements after the range to fill the gap
             for (size_t i = first_index; i + count < m_size; ++i) {
                 m_data[i] = std::move(m_data[i + count]);
             }
-            
+
             // Destroy the elements at the end
             for (size_t i = 0; i < count; ++i) {
                 m_data[m_size - 1 - i].~T();
             }
-            
+
             m_size -= count;
             return begin() + first_index;
         }
