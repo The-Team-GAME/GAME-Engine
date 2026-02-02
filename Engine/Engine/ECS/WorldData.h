@@ -105,6 +105,19 @@ namespace Engine {
       ==================================================================================*/
       WorldContainers& get_containers();
 
+      /*=================================================================================
+      Function Brief:
+      Clears all containers to properly destruct contained objects.
+      MUST be called before MemoryManager::shutdown() to avoid memory leaks.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      In Core::exit() before MemoryManager::shutdown().
+      ==================================================================================*/
+      void cleanup_containers();
+
     } // namespace Internal
   } // namespace ECS
 } // namespace Engine

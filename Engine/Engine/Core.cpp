@@ -32,6 +32,7 @@
 #include "Lua/LuaManager.h"
 #include "Resources.h"
 #include "ECS/ECS.h"
+#include "ECS/WorldData.h"  // For cleanup_containers
 #include "Events/WindowEvents.h"
 #include "Systems/Systems.h"
 #include "EventManager/EventManager.h"
@@ -404,6 +405,10 @@ namespace Engine
     Engine::LuaManager::cleanup();
     ImGuiManager::exit();
     WindowManager::exit();
+
+    // Clean up ECS containers BEFORE shutting down Memory Manager
+    // This ensures all contained objects (like std::function) have their destructors called
+    Engine::ECS::Internal::cleanup_containers();
 
     // Shutdown Memory Manager LAST - after all other systems are cleaned up
     Engine::Memory::MemoryManager::instance().print_statistics();
