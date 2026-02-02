@@ -61,7 +61,7 @@ namespace {
   }
 
   // Helper to render a single entity node in the tree
-  void render_entity_node(Engine::ECS::Entity& entity, bool is_leaf = true) {
+  void render_entity_node(Engine::ECS::Entity entity, bool is_leaf = true) {
     if (!entity.is_valid()) return;
 
     // Build entity label
@@ -195,7 +195,7 @@ namespace {
   }
 }
 
-void EntityEditorPanelHelpers::render_component_tree(const std::string& component_name, Engine::ECS::Entity& entity, Engine::ECS::IComponentArray* array)
+void EntityEditorPanelHelpers::render_component_tree(const std::string& component_name, Engine::ECS::Entity entity, Engine::ECS::IComponentArray* array)
 {
   // Render component tree node directly (namespace grouping handled by caller)
   if (ImGui::TreeNode(component_name.c_str())) {

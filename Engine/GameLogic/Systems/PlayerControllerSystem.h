@@ -25,7 +25,7 @@ public:
     require_components<Components::PlayerController, Components::RigidBody, Components::Collider>();
   }
 
-  void update_entity(Engine::ECS::Entity& entity) override {
+  void update_entity(Engine::ECS::Entity entity) override {
     auto* rb = entity.get_component<Components::RigidBody>();
     //auto* controller = entity.get_component<Components::PlayerController>();
     //auto* col = entity.get_component<Components::Collider>();

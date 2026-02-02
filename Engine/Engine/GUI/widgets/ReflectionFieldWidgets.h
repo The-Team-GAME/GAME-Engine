@@ -161,7 +161,7 @@ namespace ImGuiWidgets {
   Function Brief:
   Renders a dropdown for Engine::SerializableFunction fields with all registered
   functions. Automatically determines the correct signature based on field name
-  (easing functions use f32(f32,f32,f32,f32), callbacks use void(Entity&), others use void()).
+  (easing functions use f32(f32,f32,f32,f32), callbacks use void(Entity), others use void()).
 
   Parameters:
   field_value - Reference to the GenericValue containing SerializableFunction data

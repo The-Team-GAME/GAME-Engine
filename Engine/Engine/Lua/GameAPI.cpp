@@ -154,7 +154,7 @@ void register_component_type(sol::state& lua, const std::string& name) {
     }
 
     template<typename Entity>
-    void add_tag_helper(Entity& ent, const std::string& tag) {
+    void add_tag_helper(Entity ent, const std::string& tag) {
 
       //**temp fix 
       if (tag == "MainMenuState") {

@@ -144,7 +144,7 @@ namespace Engine {
       return Entity(INVALID_ENTITY);
     }
 
-    Entity clone_entity(const Entity& source)
+    Entity clone_entity(const Entity source)
     {
       auto& containers = Internal::get_containers();
       EntityID source_id = source.get_id();
@@ -191,7 +191,7 @@ namespace Engine {
       return newEntity;
     }
 
-    void destroy_entity(const Entity& entity)
+    void destroy_entity(const Entity entity)
     {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
@@ -209,7 +209,7 @@ namespace Engine {
       }
     }
 
-    bool is_entity_active(const Entity& entity)
+    bool is_entity_active(const Entity entity)
     {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
@@ -442,7 +442,7 @@ namespace Engine {
       return {};
     }
 
-    void for_each_entity(std::function<void(Entity&)> callback)
+    void for_each_entity(std::function<void(Entity)> callback)
     {
       // auto& containers = Internal::get_containers();
       // for (EntityID id : containers.active_entities) {
@@ -470,7 +470,7 @@ namespace Engine {
       }
     }
 
-    void for_each_entity_on_layer(LayerID layer, std::function<void(Entity&)> callback)
+    void for_each_entity_on_layer(LayerID layer, std::function<void(Entity)> callback)
     {
       auto& containers = Internal::get_containers();
       if (layer >= containers.layer_entities.size()) {
@@ -488,7 +488,7 @@ namespace Engine {
       }
     }
 
-    void for_each_entity_on_layer(const std::string& layer_name, std::function<void(Entity&)> callback)
+    void for_each_entity_on_layer(const std::string& layer_name, std::function<void(Entity)> callback)
     {
       LayerID layer = get_layer_id(layer_name);
       if (layer != INVALID_LAYER) {
@@ -604,7 +604,7 @@ namespace Engine {
       return false;
     }
 
-    bool is_on_layer(const Entity& entity, LayerID layer)
+    bool is_on_layer(const Entity entity, LayerID layer)
     {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
@@ -616,7 +616,7 @@ namespace Engine {
       return it->second.test(layer);
     }
 
-    LayerSignature get_entity_layers(const Entity& entity)
+    LayerSignature get_entity_layers(const Entity entity)
     {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
@@ -628,7 +628,7 @@ namespace Engine {
       return it->second;
     }
 
-    void clear_layers(const Entity& entity)
+    void clear_layers(const Entity entity)
     {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();

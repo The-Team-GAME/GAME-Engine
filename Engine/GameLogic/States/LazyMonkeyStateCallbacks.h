@@ -22,7 +22,7 @@ namespace LazyMonkeyStateCallbacks
   // ========================================================================
   // Helper Function - Update knockback direction based on player position
   // ========================================================================
-  inline void update_contact_knockback_direction(Engine::ECS::Entity& entity) {
+  inline void update_contact_knockback_direction(Engine::ECS::Entity entity) {
     auto* attack = entity.get_component<Components::Attack>();
     auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
     auto* enemy_transform = entity.get_component<Components::Transform2D>();
@@ -48,7 +48,7 @@ namespace LazyMonkeyStateCallbacks
   // Idle State Callbacks
   // ========================================================================
 
-  inline void idle_on_enter(Engine::ECS::Entity& entity) {
+  inline void idle_on_enter(Engine::ECS::Entity entity) {
     auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
     if (lazy_monkey) {
       // Store when we entered idle (for recovery delay after being hit)
@@ -57,7 +57,7 @@ namespace LazyMonkeyStateCallbacks
     Log::info("Lazy Monkey: Entered Idle state");
   }
 
-  inline void idle_on_update(Engine::ECS::Entity& entity) {
+  inline void idle_on_update(Engine::ECS::Entity entity) {
     // Update knockback direction for contact damage
     update_contact_knockback_direction(entity);
 
@@ -100,11 +100,11 @@ namespace LazyMonkeyStateCallbacks
   // Chasing State Callbacks
   // ========================================================================
 
-  inline void chasing_on_enter([[maybe_unused]] Engine::ECS::Entity& entity) {
+  inline void chasing_on_enter([[maybe_unused]] Engine::ECS::Entity entity) {
     Log::info("Lazy Monkey: Entered Chasing state");
   }
 
-  inline void chasing_on_update(Engine::ECS::Entity& entity) {
+  inline void chasing_on_update(Engine::ECS::Entity entity) {
     // Update knockback direction for contact damage
     update_contact_knockback_direction(entity);
 
@@ -156,7 +156,7 @@ namespace LazyMonkeyStateCallbacks
     }
   }
 
-  inline void chasing_on_exit([[maybe_unused]] Engine::ECS::Entity& entity) {
+  inline void chasing_on_exit([[maybe_unused]] Engine::ECS::Entity entity) {
 
   }
 
@@ -164,7 +164,7 @@ namespace LazyMonkeyStateCallbacks
   // Windup State Callbacks
   // ========================================================================
 
-  inline void windup_on_enter(Engine::ECS::Entity& entity) {
+  inline void windup_on_enter(Engine::ECS::Entity entity) {
     auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
     auto* rigid = entity.get_component<Components::RigidBody>();
 
@@ -181,7 +181,7 @@ namespace LazyMonkeyStateCallbacks
     Log::info("Lazy Monkey: Winding up for attack");
   }
 
-  inline void windup_on_update(Engine::ECS::Entity& entity) {
+  inline void windup_on_update(Engine::ECS::Entity entity) {
     // Update knockback direction for contact damage
     update_contact_knockback_direction(entity);
 
@@ -219,7 +219,7 @@ namespace LazyMonkeyStateCallbacks
   // Attacking State Callbacks
   // ========================================================================
 
-  inline void attacking_on_enter(Engine::ECS::Entity& entity) {
+  inline void attacking_on_enter(Engine::ECS::Entity entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
     auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
@@ -238,7 +238,7 @@ namespace LazyMonkeyStateCallbacks
   }
 
 
-  inline void attacking_on_update(Engine::ECS::Entity& entity) {
+  inline void attacking_on_update(Engine::ECS::Entity entity) {
     // Update knockback direction for contact damage
     update_contact_knockback_direction(entity);
 
@@ -251,7 +251,7 @@ namespace LazyMonkeyStateCallbacks
     }
   }
 
-  inline void attacking_on_exit(Engine::ECS::Entity& entity) {
+  inline void attacking_on_exit(Engine::ECS::Entity entity) {
     auto* lazy_monkey = entity.get_component<Components::LazyMonkey>();
     if (lazy_monkey) {
       // Update last attack time for cooldown
@@ -263,7 +263,7 @@ namespace LazyMonkeyStateCallbacks
   //// Hit State Callbacks
   //// ========================================================================
 
-  //static inline void emit_hit_particles(const Engine::ECS::Entity& enemy) {
+  //static inline void emit_hit_particles(const Engine::ECS::Entity enemy) {
   //  using namespace Engine;
   //  using Components::Transform2D;
 
@@ -310,12 +310,12 @@ namespace LazyMonkeyStateCallbacks
   //  Engine::Systems::ParticleSystem::post(burst);
   //}
 
-  inline void hit_on_enter(Engine::ECS::Entity& entity) {
+  inline void hit_on_enter(Engine::ECS::Entity entity) {
     (void)entity; // Suppress unused parameter warning
     Log::info("Lazy Monkey: Stunned!");
   }
 
-  inline void hit_on_update(Engine::ECS::Entity& entity) {
+  inline void hit_on_update(Engine::ECS::Entity entity) {
     // Update knockback direction for contact damage
     update_contact_knockback_direction(entity);
 
@@ -347,7 +347,7 @@ namespace LazyMonkeyStateCallbacks
     }
   }
 
-  inline void hit_on_exit(Engine::ECS::Entity& entity) {
+  inline void hit_on_exit(Engine::ECS::Entity entity) {
     // Cleanup: ensure parent is removed (safety check)
     if (entity.has_component<Components::Parent>()) {
       entity.remove_component<Components::Parent>();
@@ -358,11 +358,11 @@ namespace LazyMonkeyStateCallbacks
   // Death State Callbacks
   // ========================================================================
 
-  inline void death_on_enter([[maybe_unused]] Engine::ECS::Entity& entity) {
+  inline void death_on_enter([[maybe_unused]] Engine::ECS::Entity entity) {
     Log::info("Lazy Monkey: Died!");
   }
 
-  inline void death_on_update(Engine::ECS::Entity& entity) {
+  inline void death_on_update(Engine::ECS::Entity entity) {
     auto* animation = entity.get_component<Components::Animation>();
     if (animation && animation->has_ended()) {
       Engine::ECS::destroy_entity(entity);
@@ -370,26 +370,26 @@ namespace LazyMonkeyStateCallbacks
     }
   }
 
-  inline void death_on_exit([[maybe_unused]] Engine::ECS::Entity& entity) {
+  inline void death_on_exit([[maybe_unused]] Engine::ECS::Entity entity) {
     // Should not happen unless respawning
   }
 
 } // namespace LazyMonkeyStateCallbacks
 
 // Register all lazy monkey state callbacks
-REGISTER_FUNCTION(lazy_monkey_idle_enter, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::idle_on_enter)
-REGISTER_FUNCTION(lazy_monkey_idle_update, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::idle_on_update)
-REGISTER_FUNCTION(lazy_monkey_chasing_enter, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::chasing_on_enter)
-REGISTER_FUNCTION(lazy_monkey_chasing_update, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::chasing_on_update)
-REGISTER_FUNCTION(lazy_monkey_chasing_exit, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::chasing_on_exit)
-REGISTER_FUNCTION(lazy_monkey_windup_enter, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::windup_on_enter)
-REGISTER_FUNCTION(lazy_monkey_windup_update, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::windup_on_update)
-REGISTER_FUNCTION(lazy_monkey_attacking_enter, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::attacking_on_enter)
-REGISTER_FUNCTION(lazy_monkey_attacking_update, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::attacking_on_update)
-REGISTER_FUNCTION(lazy_monkey_attacking_exit, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::attacking_on_exit)
-REGISTER_FUNCTION(lazy_monkey_hit_enter, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::hit_on_enter)
-REGISTER_FUNCTION(lazy_monkey_hit_update, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::hit_on_update)
-REGISTER_FUNCTION(lazy_monkey_hit_exit, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::hit_on_exit)
-REGISTER_FUNCTION(lazy_monkey_death_enter, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::death_on_enter)
-REGISTER_FUNCTION(lazy_monkey_death_update, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::death_on_update)
-REGISTER_FUNCTION(lazy_monkey_death_exit, void(Engine::ECS::Entity&), LazyMonkeyStateCallbacks::death_on_exit)
+REGISTER_FUNCTION(lazy_monkey_idle_enter, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::idle_on_enter)
+REGISTER_FUNCTION(lazy_monkey_idle_update, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::idle_on_update)
+REGISTER_FUNCTION(lazy_monkey_chasing_enter, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::chasing_on_enter)
+REGISTER_FUNCTION(lazy_monkey_chasing_update, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::chasing_on_update)
+REGISTER_FUNCTION(lazy_monkey_chasing_exit, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::chasing_on_exit)
+REGISTER_FUNCTION(lazy_monkey_windup_enter, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::windup_on_enter)
+REGISTER_FUNCTION(lazy_monkey_windup_update, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::windup_on_update)
+REGISTER_FUNCTION(lazy_monkey_attacking_enter, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::attacking_on_enter)
+REGISTER_FUNCTION(lazy_monkey_attacking_update, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::attacking_on_update)
+REGISTER_FUNCTION(lazy_monkey_attacking_exit, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::attacking_on_exit)
+REGISTER_FUNCTION(lazy_monkey_hit_enter, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::hit_on_enter)
+REGISTER_FUNCTION(lazy_monkey_hit_update, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::hit_on_update)
+REGISTER_FUNCTION(lazy_monkey_hit_exit, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::hit_on_exit)
+REGISTER_FUNCTION(lazy_monkey_death_enter, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::death_on_enter)
+REGISTER_FUNCTION(lazy_monkey_death_update, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::death_on_update)
+REGISTER_FUNCTION(lazy_monkey_death_exit, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::death_on_exit)

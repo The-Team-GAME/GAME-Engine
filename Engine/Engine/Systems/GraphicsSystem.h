@@ -37,7 +37,7 @@ namespace Engine
         exclude_components<Components::TextureAtlas, Components::Distortion >();
       }
 
-      void draw_entity(const Engine::ECS::Entity& entity) override {
+      void draw_entity(const Engine::ECS::Entity entity) override {
         auto* transform = entity.get_component<Components::Transform2D>();
         auto* color = entity.get_component<Components::Color>();
         auto* texture = entity.get_component<Components::Texture>();
@@ -63,7 +63,7 @@ namespace Engine
         exclude_components<Components::Distortion >();
       }
 
-      void draw_entity(const Engine::ECS::Entity& entity) override {
+      void draw_entity(const Engine::ECS::Entity entity) override {
         auto* transform = entity.get_component<Components::Transform2D>();
         auto* color = entity.get_component<Components::Color>();
         auto* texture = entity.get_component<Components::Texture>();
@@ -95,14 +95,14 @@ namespace Engine
         require_components<Components::TileMap>();
       }
 
-      void update_entity(Engine::ECS::Entity& entity) override {  // Determine the color based on tilemap mode and selected layer
+      void update_entity(Engine::ECS::Entity entity) override {  // Determine the color based on tilemap mode and selected layer
         auto* color_comp = entity.get_component<Components::Color>();
         if (!color_comp) {
           entity.add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f);
         }
       }
 
-      void draw_entity(const Engine::ECS::Entity& entity) override {
+      void draw_entity(const Engine::ECS::Entity entity) override {
         auto* int_map = entity.get_component<Components::TileMap>();
         auto* color_comp = entity.get_component<Components::Color>();
 
@@ -153,21 +153,30 @@ namespace Engine
         require_components<Components::Transform2D, Components::Color, Components::Font, Components::Text>();
       }
 
-      void draw_entity(const Engine::ECS::Entity& entity) override {
+      void draw_entity(const Engine::ECS::Entity entity) override {
         auto* transform = entity.get_component<Components::Transform2D>();
         auto* color = entity.get_component<Components::Color>();
         auto* font = entity.get_component<Components::Font>();
         auto* text = entity.get_component<Components::Text>();
 
-        // Use the average of scale.x and scale.y as the text scale
-        float text_scale = (transform->scale.x + transform->scale.y) * 0.5f;
+        // Transform2D scale defines the text box bounds in world units
+        // Text starts at top-left corner of the bounding box
+        f32 box_width = transform->scale.x;
+        f32 text_x = transform->position.x - box_width * 0.5f;
+        f32 text_y = transform->position.y - transform->scale.y * 0.5f;
 
-        Engine::Graphics::draw_text(
+        // Always use wrapped text rendering with bounding box width as max_width
+        // box_width is in world units, font_scale scales text relative to world units
+        // So max_width should be box_width (both in world units)
+        Engine::Graphics::draw_text_wrapped(
           font->font_handle,
           text->content,
-          Math::Vec2D(transform->position.x, transform->position.y),
-          text_scale,
-          *color
+          Math::Vec2D(text_x, text_y),
+          text->font_scale,
+          *color,
+          box_width,
+          text->line_spacing,
+          static_cast<int>(text->alignment)
         );
       }
     };
@@ -178,7 +187,7 @@ namespace Engine
         require_components<Components::Animation, Components::TextureAtlas>();
       }
 
-      void update_entity(Engine::ECS::Entity& entity) override {
+      void update_entity(Engine::ECS::Entity entity) override {
         auto* animation = entity.get_component<Components::Animation>();
         auto* atlas = entity.get_component<Components::TextureAtlas>();
 
@@ -358,7 +367,7 @@ namespace Engine
         exclude_components<Components::TextureAtlas>();
       }
 
-      void draw_entity(const Engine::ECS::Entity& entity) override {
+      void draw_entity(const Engine::ECS::Entity entity) override {
         auto* transform = entity.get_component<Components::Transform2D>();
         auto* color = entity.get_component<Components::Color>();
         auto* texture = entity.get_component<Components::Texture>();
@@ -387,7 +396,7 @@ namespace Engine
         require_components<Components::Transform2D, Components::Color, Components::Texture, Components::TextureAtlas, Components::Distortion>();
       }
 
-      void draw_entity(const Engine::ECS::Entity& entity) override {
+      void draw_entity(const Engine::ECS::Entity entity) override {
         auto* transform = entity.get_component<Components::Transform2D>();
         auto* color = entity.get_component<Components::Color>();
         auto* texture = entity.get_component<Components::Texture>();

@@ -25,7 +25,7 @@ namespace Engine {
         require_components<Components::EnemyHealth>();
       }
 
-      void update_entity(Engine::ECS::Entity& entity) override {
+      void update_entity(Engine::ECS::Entity entity) override {
         auto* enemy_health = entity.get_component<Components::EnemyHealth>();
         if (!enemy_health) return;
 

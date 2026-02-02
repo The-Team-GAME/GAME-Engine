@@ -340,7 +340,7 @@ namespace Engine {
       return entity;
     }
 
-    Prefab entity_to_prefab(const Entity& entity) {
+    Prefab entity_to_prefab(const Entity entity) {
       if (!entity.is_valid()) {
         return Prefab();
       }

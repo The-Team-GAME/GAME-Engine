@@ -31,7 +31,7 @@ namespace Engine
         require_components<Components::Lifetime>();
       }
 
-      void update_entity(Engine::ECS::Entity& entity) override {
+      void update_entity(Engine::ECS::Entity entity) override {
         auto* lifetime = entity.get_component<Components::Lifetime>();
 
         if (lifetime) {
@@ -49,7 +49,7 @@ namespace Engine
         require_components<Components::FrameLifetime>();
       }
 
-      void update_entity(Engine::ECS::Entity& entity) override {
+      void update_entity(Engine::ECS::Entity entity) override {
         auto* frame_lifetime = entity.get_component<Components::FrameLifetime>();
 
         if (frame_lifetime) {

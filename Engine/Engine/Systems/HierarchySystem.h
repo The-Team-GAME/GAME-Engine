@@ -28,7 +28,7 @@ namespace Engine {
         require_components<Components::Parent, Components::Transform2D>();
       }
 
-      void update_entity(Engine::ECS::Entity& entity) override {
+      void update_entity(Engine::ECS::Entity entity) override {
         auto* parent_comp = entity.get_component<Components::Parent>();
         auto* child_transform = entity.get_component<Components::Transform2D>();
 
