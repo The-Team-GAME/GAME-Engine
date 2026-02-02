@@ -320,12 +320,26 @@ namespace Engine {
             // Index 0 = 16 bytes, Index 1 = 32 bytes, Index 2 = 64 bytes, etc.
             PoolAllocator* m_pools[NUM_SIZE_CLASSES];
 
-            // Track large allocations that don't fit in pools
-            // We don't use a container - just count for statistics
+            // Track large allocations that don't fit in pools (or pre-init allocations)
+            // We need to track pointers because:
+            // 1. Allocations may happen before pools are initialized
+            // 2. When deallocating, we need to know if it came from OS or pool
+            static constexpr size_t MAX_OS_ALLOCATIONS = 256;
+            struct OSAllocation {
+                void* ptr;
+                size_t size;
+            };
+            OSAllocation m_os_allocations[MAX_OS_ALLOCATIONS];
+            size_t m_os_allocation_count;
+
+            // Legacy counters for statistics
             size_t m_large_allocation_count;
             size_t m_large_allocation_bytes;
 
             bool m_initialized;
+
+            // Helper to find an OS allocation by pointer
+            size_t find_os_allocation(void* ptr) const;
         };
 
         //=================================================================================

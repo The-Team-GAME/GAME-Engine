@@ -42,7 +42,8 @@ namespace Engine {
     //=================================================================================
 
     MemoryManager::MemoryManager()
-      : m_large_allocation_count(0)
+      : m_os_allocation_count(0)
+      , m_large_allocation_count(0)
       , m_large_allocation_bytes(0)
       , m_initialized(false)
     {
@@ -50,12 +51,27 @@ namespace Engine {
       for (size_t i = 0; i < NUM_SIZE_CLASSES; ++i) {
         m_pools[i] = nullptr;
       }
+      // Initialize OS allocation tracking
+      for (size_t i = 0; i < MAX_OS_ALLOCATIONS; ++i) {
+        m_os_allocations[i].ptr = nullptr;
+        m_os_allocations[i].size = 0;
+      }
     }
 
     MemoryManager::~MemoryManager() {
       shutdown();
       // Mark the instance as destroyed to prevent access after destruction
       s_instance_destroyed = true;
+    }
+
+    // Helper to find an OS allocation by pointer
+    size_t MemoryManager::find_os_allocation(void* ptr) const {
+      for (size_t i = 0; i < m_os_allocation_count; ++i) {
+        if (m_os_allocations[i].ptr == ptr) {
+          return i;
+        }
+      }
+      return MAX_OS_ALLOCATIONS; // Not found sentinel
     }
 
     //=================================================================================
@@ -193,11 +209,17 @@ namespace Engine {
         }
       }
 
-      // Fall back to OS allocation for large sizes
+      // Fall back to OS allocation for large sizes OR when pools aren't ready
       // This should be rare - log it for tracking
       Log::memory("Large allocation (OS): {} bytes - bypassing pool system", size);
       void* ptr = ::operator new(size, std::nothrow);
       if (ptr) {
+        // Track this OS allocation so we can properly deallocate it later
+        if (m_os_allocation_count < MAX_OS_ALLOCATIONS) {
+          m_os_allocations[m_os_allocation_count].ptr = ptr;
+          m_os_allocations[m_os_allocation_count].size = size;
+          ++m_os_allocation_count;
+        }
         ++m_large_allocation_count;
         m_large_allocation_bytes += size;
       }
@@ -219,6 +241,28 @@ namespace Engine {
         return;
       }
 
+      // FIRST: Check if this is a tracked OS allocation
+      // This handles allocations made before pools were initialized (poolable size but OS allocated)
+      size_t os_index = find_os_allocation(ptr);
+      if (os_index < MAX_OS_ALLOCATIONS) {
+        // Found in OS allocation tracker - deallocate via OS
+        Log::memory("Large deallocation (OS): {} bytes returned to system", m_os_allocations[os_index].size);
+        ::operator delete(ptr);
+        
+        // Update tracking
+        if (m_large_allocation_count > 0) {
+          --m_large_allocation_count;
+          m_large_allocation_bytes -= m_os_allocations[os_index].size;
+        }
+        
+        // Remove from tracker by swapping with last element
+        m_os_allocations[os_index] = m_os_allocations[m_os_allocation_count - 1];
+        m_os_allocations[m_os_allocation_count - 1].ptr = nullptr;
+        m_os_allocations[m_os_allocation_count - 1].size = 0;
+        --m_os_allocation_count;
+        return;
+      }
+
       // Check if this came from a pool allocator
       if (is_poolable_size(size)) {
         size_t pool_index = get_size_class_index(size);
@@ -229,13 +273,9 @@ namespace Engine {
         }
       }
 
-      // Fall back to OS deallocation for large sizes
-      Log::memory("Large deallocation (OS): {} bytes returned to system", size);
+      // Fall back to OS deallocation for large sizes (shouldn't reach here normally)
+      Log::memory("Large deallocation (OS): {} bytes returned to system (untracked)", size);
       ::operator delete(ptr);
-      if (m_large_allocation_count > 0) {
-        --m_large_allocation_count;
-        m_large_allocation_bytes -= size;
-      }
     }
 
     //=================================================================================
