@@ -310,6 +310,14 @@ namespace ImGuiWidgets {
       return true;
     }
 
+    // Edit Atlas Configuration button
+    if (ImGui::Button("Edit Atlas Configuration")) {
+      extern void TextureAtlasEditor_Open(Engine::ECS::Entity entity);
+      TextureAtlasEditor_Open(entity);
+    }
+    ImGui::SameLine();
+    ImGui::TextDisabled("(%d tiles)", static_cast<int>(atlas->subTextures.size()));
+
     // Use a static state per entity ID (basic but works for most cases)
     static std::unordered_map<Engine::ECS::EntityID, ImGuiWidgets::TextureAtlasState> entity_atlas_states;
 

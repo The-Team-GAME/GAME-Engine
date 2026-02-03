@@ -5,39 +5,6 @@
                 "components": [
                     {
                         "data": {
-                            "duration": 7.0,
-                            "elapsed": 5.1142578125,
-                            "is_looping": true,
-                            "is_playing": true,
-                            "ping_pong": false,
-                            "tracks": [
-                                {
-                                    "component_type": "Components::Transform2D",
-                                    "field_path": "position.x",
-                                    "keyframes": [
-                                        {
-                                            "easing": "EaseLinearNone",
-                                            "time": 0.0,
-                                            "value": 2720.0
-                                        },
-                                        {
-                                            "easing": "EaseLinearNone",
-                                            "time": 1.0,
-                                            "value": -1150.0
-                                        },
-                                        {
-                                            "easing": "EaseLinearNone",
-                                            "time": 10.0,
-                                            "value": 2250.0
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        "type": "Components::Animator"
-                    },
-                    {
-                        "data": {
                             "a": 1.0,
                             "b": 1.0,
                             "g": 1.0,
@@ -47,20 +14,210 @@
                     },
                     {
                         "data": {
-                            "path": "images/UI/MainMenu/BackGround/BackSky.png"
+                            "path": "images/UI/MainMenu (Start)/Brosleepy3-Sheet.png"
                         },
                         "type": "Components::Texture"
                     },
                     {
                         "data": {
+                            "drawIndex": 1,
+                            "tex_coords_list": [
+                                [
+                                    {
+                                        "x": 0.0,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.125,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.125,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.0,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.125,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.25,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.25,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.125,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.25,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.375,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.375,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.25,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.375,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.5,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.5,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.375,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.5,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.625,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.625,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.5,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.625,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.75,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.75,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.625,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.75,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.875,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.875,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.75,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.875,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 1.0,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 1.0,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.875,
+                                        "y": 0.0
+                                    }
+                                ]
+                            ]
+                        },
+                        "type": "Components::TextureAtlas"
+                    },
+                    {
+                        "data": {
+                            "atlas_indices": [
+                                0,
+                                1,
+                                2,
+                                3,
+                                4,
+                                5,
+                                6,
+                                7
+                            ],
+                            "before_times": [
+                                0.0,
+                                0.15000000596046448,
+                                0.30000001192092896,
+                                0.45000001788139343,
+                                0.6000000238418579,
+                                0.75,
+                                0.8999999761581421,
+                                1.0499999523162842
+                            ],
+                            "durations": [
+                                0.15000000596046448,
+                                0.15000000596046448,
+                                0.15000000596046448,
+                                0.15000000596046448,
+                                0.15000000596046448,
+                                0.15000000596046448,
+                                0.15000000596046448,
+                                0.15000000596046448
+                            ],
+                            "is_looping": true,
+                            "startTime": 462.93865966796875,
+                            "totalDuration": 1.1999999284744263
+                        },
+                        "type": "Components::Animation"
+                    },
+                    {
+                        "data": {
                             "position": {
-                                "x": -107.4541015625,
-                                "y": 450.0
+                                "x": 1453.4969482421875,
+                                "y": 831.7842407226563
                             },
                             "rotation": 0.0,
                             "scale": {
-                                "x": 5760.0,
-                                "y": 1080.0
+                                "x": 520.0,
+                                "y": 520.0
                             }
                         },
                         "type": "Components::Transform2D"
@@ -68,11 +225,11 @@
                     {
                         "data": {
                             "local_offset": {
-                                "x": 0.0,
-                                "y": 0.0
+                                "x": 1453.4969482421875,
+                                "y": 831.7842407226563
                             },
-                            "offset_initialized": false,
-                            "parent_id": 38,
+                            "offset_initialized": true,
+                            "parent_id": 66,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -81,10 +238,19 @@
                         "type": "Components::Parent"
                     }
                 ],
-                "id": 34,
+                "id": 68,
                 "layers": [
-                    "default"
-                ]
+                    "default",
+                    "ui"
+                ],
+                "prefab_reference": {
+                    "id": "8537288d-f7cc-40636-b2b5-22823b27f922",
+                    "overrides": {
+                        "16": [
+                            "*"
+                        ]
+                    }
+                }
             },
             {
                 "components": [
@@ -107,7 +273,7 @@
                         "data": {
                             "position": {
                                 "x": 800.0,
-                                "y": 463.872802734375
+                                "y": 443.5595397949219
                             },
                             "rotation": 0.0,
                             "scale": {
@@ -121,21 +287,22 @@
                         "data": {
                             "local_offset": {
                                 "x": 800.0,
-                                "y": 450.00384521484375
+                                "y": 443.5595397949219
                             },
                             "offset_initialized": true,
-                            "parent_id": 37,
+                            "parent_id": 66,
                             "prev_parent_pos": {
                                 "x": 0.0,
-                                "y": 13.868971824645996
+                                "y": 0.0
                             }
                         },
                         "type": "Components::Parent"
                     }
                 ],
-                "id": 35,
+                "id": 64,
                 "layers": [
-                    "default"
+                    "default",
+                    "ui"
                 ]
             },
             {
@@ -159,7 +326,7 @@
                         "data": {
                             "position": {
                                 "x": 800.0,
-                                "y": 463.87274169921875
+                                "y": 450.0038757324219
                             },
                             "rotation": 0.0,
                             "scale": {
@@ -173,19 +340,49 @@
                         "data": {
                             "local_offset": {
                                 "x": 800.0,
-                                "y": 450.0037841796875
+                                "y": 450.0038757324219
                             },
                             "offset_initialized": true,
-                            "parent_id": 37,
+                            "parent_id": 66,
                             "prev_parent_pos": {
                                 "x": 0.0,
-                                "y": 13.868971824645996
+                                "y": 0.0
                             }
                         },
                         "type": "Components::Parent"
+                    },
+                    {
+                        "data": {
+                            "child_ids": []
+                        },
+                        "type": "Components::Children"
                     }
                 ],
-                "id": 36,
+                "id": 65,
+                "layers": [
+                    "default",
+                    "ui_foreground"
+                ]
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "level_path": "levels/MainMenuStart.json",
+                            "on_exit": {
+                                "name": ""
+                            },
+                            "on_init": {
+                                "name": ""
+                            },
+                            "on_update": {
+                                "name": ""
+                            }
+                        },
+                        "type": "Components::Level"
+                    }
+                ],
+                "id": 67,
                 "layers": [
                     "default"
                 ]
@@ -195,7 +392,7 @@
                     {
                         "data": {
                             "duration": 3.0,
-                            "elapsed": 1.448486328125,
+                            "elapsed": 0.3514404296875,
                             "is_looping": true,
                             "is_playing": true,
                             "ping_pong": false,
@@ -244,7 +441,7 @@
                         "data": {
                             "position": {
                                 "x": 0.0,
-                                "y": 18.490758895874023
+                                "y": 0.0
                             },
                             "rotation": 0.0,
                             "scale": {
@@ -261,7 +458,7 @@
                                 "y": 0.0
                             },
                             "offset_initialized": false,
-                            "parent_id": 38,
+                            "parent_id": 67,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -272,14 +469,15 @@
                     {
                         "data": {
                             "child_ids": [
-                                36,
-                                35
+                                65,
+                                64,
+                                68
                             ]
                         },
                         "type": "Components::Children"
                     }
                 ],
-                "id": 37,
+                "id": 66,
                 "layers": [
                     "default"
                 ]
@@ -288,23 +486,85 @@
                 "components": [
                     {
                         "data": {
-                            "level_path": "levels/MainMenuStart.json",
-                            "on_exit": {
-                                "name": ""
+                            "duration": 7.0,
+                            "elapsed": 4.36761474609375,
+                            "is_looping": true,
+                            "is_playing": true,
+                            "ping_pong": false,
+                            "tracks": [
+                                {
+                                    "component_type": "Components::Transform2D",
+                                    "field_path": "position.x",
+                                    "keyframes": [
+                                        {
+                                            "easing": "EaseLinearNone",
+                                            "time": 0.0,
+                                            "value": 2720.0
+                                        },
+                                        {
+                                            "easing": "EaseLinearNone",
+                                            "time": 1.0,
+                                            "value": -1150.0
+                                        },
+                                        {
+                                            "easing": "EaseLinearNone",
+                                            "time": 10.0,
+                                            "value": 2250.0
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        "type": "Components::Animator"
+                    },
+                    {
+                        "data": {
+                            "a": 1.0,
+                            "b": 1.0,
+                            "g": 1.0,
+                            "r": 1.0
+                        },
+                        "type": "Components::Color"
+                    },
+                    {
+                        "data": {
+                            "path": "images/UI/MainMenu/BackGround/BackSky.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 305.3330078125,
+                                "y": 450.0
                             },
-                            "on_init": {
-                                "name": ""
-                            },
-                            "on_update": {
-                                "name": ""
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 5760.0,
+                                "y": 1080.0
                             }
                         },
-                        "type": "Components::Level"
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 67,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
-                "id": 38,
+                "id": 63,
                 "layers": [
-                    "default"
+                    "ui_background"
                 ]
             }
         ]
