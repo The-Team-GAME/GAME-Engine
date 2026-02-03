@@ -59,6 +59,8 @@ namespace Engine {
     }
 
     MemoryManager::~MemoryManager() {
+      // Print statistics before shutdown (during static destruction)
+      print_statistics();
       shutdown();
       // Mark the instance as destroyed to prevent access after destruction
       s_instance_destroyed = true;
@@ -145,13 +147,11 @@ namespace Engine {
       size_t total_used = get_total_used();
 
       // Destroy all pool allocators
+      // Note: Some blocks may still be allocated by containers that will be destroyed
+      // during static destruction. This is expected - deallocate() will fall back to
+      // OS delete for any deallocations that occur after shutdown.
       for (size_t i = 0; i < NUM_SIZE_CLASSES; ++i) {
         if (m_pools[i]) {
-          size_t pool_used = m_pools[i]->get_allocated_blocks();
-          size_t pool_total = m_pools[i]->get_total_blocks();
-          if (pool_used > 0) {
-            Log::memory("  Pool[{}]: {} blocks still allocated (potential leak)", i, pool_used);
-          }
           m_pools[i]->shutdown();
           m_pools[i]->~PoolAllocator();
           ::operator delete(m_pools[i]);
@@ -159,11 +159,8 @@ namespace Engine {
         }
       }
 
-      // Log large allocation statistics
-      if (m_large_allocation_count > 0) {
-        Log::memory("  Large (OS) allocations remaining: {} ({} bytes)",
-          m_large_allocation_count, m_large_allocation_bytes);
-      }
+      // Note: Large allocations may still exist - they will be freed during static destruction
+      // via deallocate() which falls back to OS delete after shutdown
 
       Log::memory("Final stats - Allocated: {} KB, Used: {} KB",
         total_allocated / 1024, total_used / 1024);

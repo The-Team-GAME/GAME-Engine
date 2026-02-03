@@ -405,12 +405,9 @@ namespace Engine
     ImGuiManager::exit();
     WindowManager::exit();
 
-    // Shutdown Memory Manager LAST - after all other systems are cleaned up
-    // Note: ECS containers will be cleaned up during static destruction
-    // The Memory Manager handles post-shutdown deallocations gracefully
-    Engine::Memory::MemoryManager::instance().print_statistics();
-    Engine::Memory::MemoryManager::instance().shutdown();
-    Log::info("Memory Manager shut down");
+    // Memory Manager will shutdown automatically during static destruction
+    // This ensures pools remain valid while other static objects (like UndoManager)
+    // clean up their contents. The destructor will print statistics and free pools.
   }
 
   void Core::stop()
