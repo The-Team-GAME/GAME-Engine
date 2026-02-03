@@ -92,17 +92,17 @@ namespace Components
     float chase_speed = 80.0f;
 
     // Attack parameters
-    float attack_cooldown = 2.0f;
+    float attack_cooldown = 5.0f;
     float last_attack_time = 0.0f;
     float attack_windup = 0.5f;  // Time to wait in windup state before attacking
 
     // Detection ranges
-    float detection_range = 300.0f;
-    float chase_range = 400.0f;
+    float detection_range = 700.0f;
+    float chase_range = 500.0f;
     float attack_range = 200.0f;
 
     // Spray-specific properties
-    float spray_duration = 5.0f;
+    float spray_duration = 7.0f;
     float spray_range = 150.0f;
     float spray_width = 80.0f;
 
