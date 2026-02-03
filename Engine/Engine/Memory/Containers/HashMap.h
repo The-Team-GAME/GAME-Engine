@@ -659,10 +659,9 @@ namespace Engine {
     HashMap<Key, Value, Hash>::~HashMap() {
       clear();
       if (m_buckets && m_capacity > 0) {
-        // Check if MemoryManager is still valid (static destruction order safety)
-        if (MemoryManager::is_instance_valid()) {
-          MemoryManager::instance().deallocate(m_buckets, m_capacity * sizeof(Bucket));
-        }
+        // Always call deallocate - Memory Manager handles post-shutdown gracefully
+        // by falling back to OS delete if pools are already freed
+        MemoryManager::instance().deallocate(m_buckets, m_capacity * sizeof(Bucket));
         // Always null out the pointer to prevent double-free
         m_buckets = nullptr;
       }
@@ -690,9 +689,8 @@ namespace Engine {
       if (this != &other) {
         clear();
         if (m_buckets && m_capacity > 0) {
-          if (MemoryManager::is_instance_valid()) {
-            MemoryManager::instance().deallocate(m_buckets, m_capacity * sizeof(Bucket));
-          }
+          // Always call deallocate - Memory Manager handles post-shutdown gracefully
+          MemoryManager::instance().deallocate(m_buckets, m_capacity * sizeof(Bucket));
         }
 
         m_buckets = other.m_buckets;
@@ -968,9 +966,8 @@ namespace Engine {
 
     template<typename Key, typename Value, typename Hash>
     void HashMap<Key, Value, Hash>::clear() {
-      // Guard against null or invalid m_buckets (e.g., after move or during destruction)
-      // Also check if MemoryManager is destroyed - if so, m_buckets may point to freed memory
-      if (!m_buckets || m_capacity == 0 || !MemoryManager::is_instance_valid()) {
+      // Guard against null or invalid m_buckets (e.g., after move)
+      if (!m_buckets || m_capacity == 0) {
         m_size = 0;
         m_tombstones = 0;
         return;

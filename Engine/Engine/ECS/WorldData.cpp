@@ -33,40 +33,6 @@ namespace Engine {
         return *s_containers;
       }
 
-      void cleanup_containers() {
-        Log::memory("cleanup_containers() called, s_containers = {}", static_cast<void*>(s_containers));
-        if (!s_containers) {
-          Log::memory("cleanup_containers() - already null, returning");
-          return;
-        }
-
-        WorldContainers& containers = *s_containers;
-
-        // Clear all containers to properly destruct contained objects
-        // This MUST be called before MemoryManager::shutdown()
-        containers.collision_callbacks.clear();
-        containers.component_arrays.clear();
-        containers.systems.clear();
-        containers.components_to_remove.clear();
-        containers.entity_signatures.clear();
-        containers.entity_layers.clear();
-        containers.prefab_instances.clear();
-        containers.layer_name_to_id.clear();
-        containers.layer_id_to_name.clear();
-        containers.layer_entities.clear();
-        containers.active_entities.clear();
-        containers.entities_to_destroy.clear();
-
-        Log::memory("cleanup_containers() - all containers cleared, deleting WorldContainers");
-
-        // Now destroy the container object itself
-        // This will deallocate the internal HashMap/Array bucket arrays
-        delete s_containers;
-        s_containers = nullptr;
-
-        Log::memory("cleanup_containers() - WorldContainers deleted successfully");
-      }
-
     } // namespace Internal
   } // namespace ECS
 } // namespace Engine
