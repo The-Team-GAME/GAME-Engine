@@ -23,7 +23,7 @@ namespace GamerMonkeyStateCallbacks
   // Idle State Callbacks
   // ========================================================================
 
-  inline void idle_on_enter(Engine::ECS::Entity& entity) {
+  inline void idle_on_enter(Engine::ECS::Entity entity) {
     auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
     auto* rigid = entity.get_component<Components::RigidBody>();
     
@@ -40,7 +40,7 @@ namespace GamerMonkeyStateCallbacks
     Log::info("Gamer Monkey: Entered Idle state");
   }
 
-  inline void idle_on_update(Engine::ECS::Entity& entity) {
+  inline void idle_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
 
@@ -92,7 +92,7 @@ namespace GamerMonkeyStateCallbacks
   // ========================================================================
   // Dash Windup State Callbacks
   // ========================================================================
-  inline void dash_windup_on_enter(Engine::ECS::Entity& entity) {
+  inline void dash_windup_on_enter(Engine::ECS::Entity entity) {
     auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
     auto* Gamer_monkey_transform = entity.get_component<Components::Transform2D>();
     auto* flip = entity.get_component<Components::Flip>();
@@ -152,7 +152,7 @@ namespace GamerMonkeyStateCallbacks
     Log::info("Gamer Monkey: Entered Dash Windup state");
   }
 
-  inline void dash_windup_on_update(Engine::ECS::Entity& entity) {
+  inline void dash_windup_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
     auto* Gamer_monkey_transform = entity.get_component<Components::Transform2D>();
@@ -227,7 +227,7 @@ namespace GamerMonkeyStateCallbacks
     }
   }
 
-  inline void dash_windup_on_exit(Engine::ECS::Entity& entity) {
+  inline void dash_windup_on_exit(Engine::ECS::Entity entity) {
     auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
 
     // Destroy the warning indicator entity
@@ -242,7 +242,7 @@ namespace GamerMonkeyStateCallbacks
   // ========================================================================
   // Dashing State Callbacks
   // ========================================================================
-  inline void dashing_on_enter(Engine::ECS::Entity& entity) {
+  inline void dashing_on_enter(Engine::ECS::Entity entity) {
     auto* flip = entity.get_component<Components::Flip>();
     auto* Gamer_monkey_transform = entity.get_component<Components::Transform2D>();
     auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
@@ -291,7 +291,7 @@ namespace GamerMonkeyStateCallbacks
     Log::info("Gamer Monkey: Entered Dash state");
   }
 
-  inline void dashing_on_update(Engine::ECS::Entity& entity) {
+  inline void dashing_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* Gamer_monkey_transform = entity.get_component<Components::Transform2D>();
@@ -341,7 +341,7 @@ namespace GamerMonkeyStateCallbacks
     }
   }
 
-  inline void dashing_on_exit(Engine::ECS::Entity& entity) {
+  inline void dashing_on_exit(Engine::ECS::Entity entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     
     // Stop movement when exiting dash
@@ -361,11 +361,11 @@ namespace GamerMonkeyStateCallbacks
   // ========================================================================
   // Chasing State Callbacks
   // ========================================================================
-  inline void chasing_on_enter([[maybe_unused]] Engine::ECS::Entity& entity) {
+  inline void chasing_on_enter([[maybe_unused]] Engine::ECS::Entity entity) {
     Log::info("Gamer Monkey: Entered Chasing state");
   }
 
-  inline void chasing_on_update(Engine::ECS::Entity& entity) {
+  inline void chasing_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* Gamer_monkey_transform = entity.get_component<Components::Transform2D>();
@@ -393,7 +393,6 @@ namespace GamerMonkeyStateCallbacks
           if (flip) {
             flip->value.x = (dx > 0 ? 1.0f : -1.0f);
           }
-          // Don't modify velocity.y - let gravity handle it
         }
         else {
           // Stop moving when close enough to attack
@@ -425,7 +424,7 @@ namespace GamerMonkeyStateCallbacks
     }
   }
 
-  inline void chasing_on_exit([[maybe_unused]] Engine::ECS::Entity& entity) {
+  inline void chasing_on_exit([[maybe_unused]] Engine::ECS::Entity entity) {
 
   }
 
@@ -433,7 +432,7 @@ namespace GamerMonkeyStateCallbacks
   // Windup State Callbacks
   // ========================================================================
 
-  inline void windup_on_enter(Engine::ECS::Entity& entity) {
+  inline void windup_on_enter(Engine::ECS::Entity entity) {
     auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
     auto* rigid = entity.get_component<Components::RigidBody>();
 
@@ -450,7 +449,7 @@ namespace GamerMonkeyStateCallbacks
     Log::info("Gamer Monkey: Winding up for attack");
   }
 
-  inline void windup_on_update(Engine::ECS::Entity& entity) {
+  inline void windup_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
     auto* flip = entity.get_component<Components::Flip>();
@@ -485,7 +484,7 @@ namespace GamerMonkeyStateCallbacks
   // Attacking State Callbacks
   // ========================================================================
 
-  inline void attacking_on_enter(Engine::ECS::Entity& entity) {
+  inline void attacking_on_enter(Engine::ECS::Entity entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
     auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
@@ -524,7 +523,7 @@ namespace GamerMonkeyStateCallbacks
   }
 
 
-  inline void attacking_on_update(Engine::ECS::Entity& entity) {
+  inline void attacking_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* animation = entity.get_component<Components::Animation>();
 
@@ -534,7 +533,7 @@ namespace GamerMonkeyStateCallbacks
     }
   }
 
-  inline void attacking_on_exit(Engine::ECS::Entity& entity) {
+  inline void attacking_on_exit(Engine::ECS::Entity entity) {
     auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
     if (Gamer_monkey) {
       // Update last attack time for cooldown
@@ -549,12 +548,12 @@ namespace GamerMonkeyStateCallbacks
   }
 
 
-  inline void hit_on_enter(Engine::ECS::Entity& entity) {
+  inline void hit_on_enter(Engine::ECS::Entity entity) {
     (void)entity; // Suppress unused parameter warning
     Log::info("Gamer Monkey: Stunned!");
   }
 
-  inline void hit_on_update(Engine::ECS::Entity& entity) {
+  inline void hit_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
     auto* rigid = entity.get_component<Components::RigidBody>();
@@ -571,7 +570,7 @@ namespace GamerMonkeyStateCallbacks
       }
 
       // Apply knockback momentum from Player struct, scaled by GamerMonkey mass
-      float mass = 70.0f; // Reference mass (matches default GamerMonkey mass)
+      float mass = 70.0f;
       if (Gamer_monkey) {
         mass = Gamer_monkey->mass;
       }
@@ -595,7 +594,7 @@ namespace GamerMonkeyStateCallbacks
     }
   }
 
-  inline void hit_on_exit(Engine::ECS::Entity& entity) {
+  inline void hit_on_exit(Engine::ECS::Entity entity) {
     // Cleanup: ensure parent is removed (safety check)
     if (entity.has_component<Components::Parent>()) {
       entity.remove_component<Components::Parent>();
@@ -606,11 +605,11 @@ namespace GamerMonkeyStateCallbacks
   // Death State Callbacks
   // ========================================================================
 
-  inline void death_on_enter([[maybe_unused]] Engine::ECS::Entity& entity) {
+  inline void death_on_enter([[maybe_unused]] Engine::ECS::Entity entity) {
     Log::info("Gamer Monkey: Died!");
   }
 
-  inline void death_on_update(Engine::ECS::Entity& entity) {
+  inline void death_on_update(Engine::ECS::Entity entity) {
     auto* animation = entity.get_component<Components::Animation>();
     if (animation && animation->has_ended()) {
       Engine::ECS::destroy_entity(entity);
@@ -618,32 +617,32 @@ namespace GamerMonkeyStateCallbacks
     }
   }
 
-  inline void death_on_exit([[maybe_unused]] Engine::ECS::Entity& entity) {
+  inline void death_on_exit([[maybe_unused]] Engine::ECS::Entity entity) {
     // Should not happen unless respawning
   }
 
 } // namespace GamerMonkeyStateCallbacks
 
 // Register all Gamer monkey state callbacks
-REGISTER_FUNCTION(Gamer_monkey_idle_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::idle_on_enter)
-REGISTER_FUNCTION(Gamer_monkey_idle_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::idle_on_update)
-REGISTER_FUNCTION(Gamer_monkey_dash_windup_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::dash_windup_on_enter)
-REGISTER_FUNCTION(Gamer_monkey_dash_windup_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::dash_windup_on_update)
-REGISTER_FUNCTION(Gamer_monkey_dash_windup_exit, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::dash_windup_on_exit)
-REGISTER_FUNCTION(Gamer_monkey_dashing_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::dashing_on_enter)
-REGISTER_FUNCTION(Gamer_monkey_dashing_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::dashing_on_update)
-REGISTER_FUNCTION(Gamer_monkey_dashing_exit, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::dashing_on_exit)
-REGISTER_FUNCTION(Gamer_monkey_chasing_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::chasing_on_enter)
-REGISTER_FUNCTION(Gamer_monkey_chasing_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::chasing_on_update)
-REGISTER_FUNCTION(Gamer_monkey_chasing_exit, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::chasing_on_exit)
-REGISTER_FUNCTION(Gamer_monkey_windup_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::windup_on_enter)
-REGISTER_FUNCTION(Gamer_monkey_windup_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::windup_on_update)
-REGISTER_FUNCTION(Gamer_monkey_attacking_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::attacking_on_enter)
-REGISTER_FUNCTION(Gamer_monkey_attacking_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::attacking_on_update)
-REGISTER_FUNCTION(Gamer_monkey_attacking_exit, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::attacking_on_exit)
-REGISTER_FUNCTION(Gamer_monkey_hit_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::hit_on_enter)
-REGISTER_FUNCTION(Gamer_monkey_hit_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::hit_on_update)
-REGISTER_FUNCTION(Gamer_monkey_hit_exit, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::hit_on_exit)
-REGISTER_FUNCTION(Gamer_monkey_death_enter, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::death_on_enter)
-REGISTER_FUNCTION(Gamer_monkey_death_update, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::death_on_update)
-REGISTER_FUNCTION(Gamer_monkey_death_exit, void(Engine::ECS::Entity&), GamerMonkeyStateCallbacks::death_on_exit)
+REGISTER_FUNCTION(Gamer_monkey_idle_enter, void(Engine::ECS::Entity), GamerMonkeyStateCallbacks::idle_on_enter)
+REGISTER_FUNCTION(Gamer_monkey_idle_update, void(Engine::ECS::Entity), GamerMonkeyStateCallbacks::idle_on_update)
+REGISTER_FUNCTION(Gamer_monkey_dash_windup_enter, void(Engine::ECS::Entity), GamerMonkeyStateCallbacks::dash_windup_on_enter)
+REGISTER_FUNCTION(Gamer_monkey_dash_windup_update, void(Engine::ECS::Entity), GamerMonkeyStateCallbacks::dash_windup_on_update)
+REGISTER_FUNCTION(Gamer_monkey_dash_windup_exit, void(Engine::ECS::Entity), GamerMonkeyStateCallbacks::dash_windup_on_exit)
+REGISTER_FUNCTION(Gamer_monkey_dashing_enter, void(Engine::ECS::Entity), GamerMonkeyStateCallbacks::dashing_on_enter)
+REGISTER_FUNCTION(Gamer_monkey_dashing_update, void(Engine::ECS::Entity), GamerMonkeyStateCallbacks::dashing_on_update)
+REGISTER_FUNCTION(Gamer_monkey_dashing_exit, void(Engine::ECS::Entity), GamerMonkeyStateCallbacks::dashing_on_exit)
+REGISTER_FUNCTION(Gamer_monkey_chasing_enter, void(Engine::ECS::Entity), GamerMonkeyStateCallbacks::chasing_on_enter)
+REGISTER_FUNCTION(Gamer_monkey_chasing_update, void(Engine::ECS::Entity), GamerMonkeyStateCallbacks::chasing_on_update)
+REGISTER_FUNCTION(Gamer_monkey_chasing_exit, void(Engine::ECS::Entity), GamerMonkeyStateCallbacks::chasing_on_exit)
+REGISTER_FUNCTION(Gamer_monkey_windup_enter, void(Engine::ECS::Entity), GamerMonkeyStateCallbacks::windup_on_enter)
+REGISTER_FUNCTION(Gamer_monkey_windup_update, void(Engine::ECS::Entity), GamerMonkeyStateCallbacks::windup_on_update)
+REGISTER_FUNCTION(Gamer_monkey_attacking_enter, void(Engine::ECS::Entity), GamerMonkeyStateCallbacks::attacking_on_enter)
+REGISTER_FUNCTION(Gamer_monkey_attacking_update, void(Engine::ECS::Entity), GamerMonkeyStateCallbacks::attacking_on_update)
+REGISTER_FUNCTION(Gamer_monkey_attacking_exit, void(Engine::ECS::Entity), GamerMonkeyStateCallbacks::attacking_on_exit)
+REGISTER_FUNCTION(Gamer_monkey_hit_enter, void(Engine::ECS::Entity), GamerMonkeyStateCallbacks::hit_on_enter)
+REGISTER_FUNCTION(Gamer_monkey_hit_update, void(Engine::ECS::Entity), GamerMonkeyStateCallbacks::hit_on_update)
+REGISTER_FUNCTION(Gamer_monkey_hit_exit, void(Engine::ECS::Entity), GamerMonkeyStateCallbacks::hit_on_exit)
+REGISTER_FUNCTION(Gamer_monkey_death_enter, void(Engine::ECS::Entity), GamerMonkeyStateCallbacks::death_on_enter)
+REGISTER_FUNCTION(Gamer_monkey_death_update, void(Engine::ECS::Entity), GamerMonkeyStateCallbacks::death_on_update)
+REGISTER_FUNCTION(Gamer_monkey_death_exit, void(Engine::ECS::Entity), GamerMonkeyStateCallbacks::death_on_exit)

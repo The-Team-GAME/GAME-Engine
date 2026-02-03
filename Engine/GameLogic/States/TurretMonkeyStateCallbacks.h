@@ -202,7 +202,7 @@ namespace TurretMonkeyStateCallbacks
   // Idle State Callbacks
   // ========================================================================
 
-  inline void idle_on_enter(Engine::ECS::Entity& entity) {
+  inline void idle_on_enter(Engine::ECS::Entity entity) {
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
     if (Turret_monkey) {
       // Store when we entered idle (for recovery delay after being hit)
@@ -211,7 +211,7 @@ namespace TurretMonkeyStateCallbacks
     Log::info("Turret Monkey: Entered Idle state");
   }
 
-  inline void idle_on_update(Engine::ECS::Entity& entity) {
+  inline void idle_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
 
@@ -251,11 +251,11 @@ namespace TurretMonkeyStateCallbacks
   // Chasing State Callbacks
   // ========================================================================
 
-  inline void chasing_on_enter([[maybe_unused]] Engine::ECS::Entity& entity) {
+  inline void chasing_on_enter([[maybe_unused]] Engine::ECS::Entity entity) {
     Log::info("Turret Monkey: Entered Chasing state");
   }
 
-  inline void chasing_on_update(Engine::ECS::Entity& entity) {
+  inline void chasing_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* Turret_monkey_transform = entity.get_component<Components::Transform2D>();
@@ -263,11 +263,6 @@ namespace TurretMonkeyStateCallbacks
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
 
     if (!Turret_monkey) return;
-
-    //// If we're close enough under a ceiling, snap up and become a turret
-    //if (try_snap_to_nearby_ceiling(entity)) {
-    //  return;
-    //}
 
     float current_time = Engine::Time::get_time();
 
@@ -288,7 +283,6 @@ namespace TurretMonkeyStateCallbacks
           if (flip) {
             flip->value.x = (dx > 0 ? 1.0f : -1.0f);
           }
-          // Don't modify velocity.y - let gravity handle it
         }
         else {
           // Stop moving when close enough to attack
@@ -309,7 +303,7 @@ namespace TurretMonkeyStateCallbacks
     }
   }
 
-  inline void chasing_on_exit([[maybe_unused]] Engine::ECS::Entity& entity) {
+  inline void chasing_on_exit([[maybe_unused]] Engine::ECS::Entity entity) {
 
   }
 
@@ -317,7 +311,7 @@ namespace TurretMonkeyStateCallbacks
   // Windup State Callbacks
   // ========================================================================
 
-  inline void windup_on_enter(Engine::ECS::Entity& entity) {
+  inline void windup_on_enter(Engine::ECS::Entity entity) {
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
     auto* rigid = entity.get_component<Components::RigidBody>();
 
@@ -334,7 +328,7 @@ namespace TurretMonkeyStateCallbacks
     Log::info("Turret Monkey: Winding up for attack");
   }
 
-  inline void windup_on_update(Engine::ECS::Entity& entity) {
+  inline void windup_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
     auto* flip = entity.get_component<Components::Flip>();
@@ -369,15 +363,14 @@ namespace TurretMonkeyStateCallbacks
   // Turret (Stuck to Wall) State Callbacks
   // ========================================================================
 
-  inline void turret_on_enter(Engine::ECS::Entity& entity) {
+  inline void turret_on_enter(Engine::ECS::Entity entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
 
     // Freeze movement and disable gravity while stuck
     if (rigid) {
       rigid->velocity.zero();
-      rigid->use_gravity = false;
-
+      rigid->use_gravity = true;
     }
 
     if (Turret_monkey) {
@@ -387,7 +380,7 @@ namespace TurretMonkeyStateCallbacks
     Log::info("Turret Monkey: Entered Turret state (stuck to wall)");
   }
 
-  inline void turret_on_update(Engine::ECS::Entity& entity) {
+  inline void turret_on_update(Engine::ECS::Entity entity) {
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
     auto* flip = entity.get_component<Components::Flip>();
 
@@ -425,7 +418,7 @@ namespace TurretMonkeyStateCallbacks
     }
   }
 
-  inline void turret_on_exit(Engine::ECS::Entity& entity) {
+  inline void turret_on_exit(Engine::ECS::Entity entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     if (rigid) {
       rigid->use_gravity = true;
@@ -437,7 +430,7 @@ namespace TurretMonkeyStateCallbacks
   // Attacking State Callbacks
   // ========================================================================
 
-  inline void attacking_on_enter(Engine::ECS::Entity& entity) {
+  inline void attacking_on_enter(Engine::ECS::Entity entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
 
     // Stop moving while firing
@@ -452,7 +445,7 @@ namespace TurretMonkeyStateCallbacks
   }
 
 
-  inline void attacking_on_update(Engine::ECS::Entity& entity) {
+  inline void attacking_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* animation = entity.get_component<Components::Animation>();
 
@@ -462,7 +455,7 @@ namespace TurretMonkeyStateCallbacks
     }
   }
 
-  inline void attacking_on_exit(Engine::ECS::Entity& entity) {
+  inline void attacking_on_exit(Engine::ECS::Entity entity) {
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
     if (Turret_monkey) {
       // Update last attack time for cooldown
@@ -477,7 +470,7 @@ namespace TurretMonkeyStateCallbacks
   }
 
 
-  inline void hit_on_enter(Engine::ECS::Entity& entity) {
+  inline void hit_on_enter(Engine::ECS::Entity entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     if (rigid) {
       // Ensure gravity is turned back on when we get hit
@@ -486,7 +479,7 @@ namespace TurretMonkeyStateCallbacks
     Log::info("tURRET Monkey: Stunned!");
   }
 
-  inline void hit_on_update(Engine::ECS::Entity& entity) {
+  inline void hit_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
     auto* rigid = entity.get_component<Components::RigidBody>();
@@ -527,7 +520,7 @@ namespace TurretMonkeyStateCallbacks
     }
   }
 
-  inline void hit_on_exit(Engine::ECS::Entity& entity) {
+  inline void hit_on_exit(Engine::ECS::Entity entity) {
     // removes paretn component on exit
     if (entity.has_component<Components::Parent>()) {
       entity.remove_component<Components::Parent>();
@@ -538,11 +531,11 @@ namespace TurretMonkeyStateCallbacks
   // Death State Callbacks
   // ========================================================================
 
-  inline void death_on_enter([[maybe_unused]] Engine::ECS::Entity& entity) {
+  inline void death_on_enter([[maybe_unused]] Engine::ECS::Entity entity) {
     Log::info("Turret Monkey: Died!");
   }
 
-  inline void death_on_update(Engine::ECS::Entity& entity) {
+  inline void death_on_update(Engine::ECS::Entity entity) {
     auto* animation = entity.get_component<Components::Animation>();
     if (animation && animation->has_ended()) {
       Engine::ECS::destroy_entity(entity);
@@ -550,29 +543,29 @@ namespace TurretMonkeyStateCallbacks
     }
   }
 
-  inline void death_on_exit([[maybe_unused]] Engine::ECS::Entity& entity) {
+  inline void death_on_exit([[maybe_unused]] Engine::ECS::Entity entity) {
     // Should not happen unless respawning
   }
 
 } // namespace TurretMonkeyStateCallbacks
 
 // Register all Turret monkey state callbacks
-REGISTER_FUNCTION(Turret_monkey_idle_enter, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::idle_on_enter)
-REGISTER_FUNCTION(Turret_monkey_idle_update, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::idle_on_update)
-REGISTER_FUNCTION(Turret_monkey_chasing_enter, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::chasing_on_enter)
-REGISTER_FUNCTION(Turret_monkey_chasing_update, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::chasing_on_update)
-REGISTER_FUNCTION(Turret_monkey_chasing_exit, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::chasing_on_exit)
-REGISTER_FUNCTION(Turret_monkey_windup_enter, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::windup_on_enter)
-REGISTER_FUNCTION(Turret_monkey_windup_update, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::windup_on_update)
-REGISTER_FUNCTION(Turret_monkey_attacking_enter, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::attacking_on_enter)
-REGISTER_FUNCTION(Turret_monkey_attacking_update, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::attacking_on_update)
-REGISTER_FUNCTION(Turret_monkey_attacking_exit, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::attacking_on_exit)
-REGISTER_FUNCTION(Turret_monkey_turret_enter, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::turret_on_enter)
-REGISTER_FUNCTION(Turret_monkey_turret_update, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::turret_on_update)
-REGISTER_FUNCTION(Turret_monkey_turret_exit, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::turret_on_exit)
-REGISTER_FUNCTION(Turret_monkey_hit_enter, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::hit_on_enter)
-REGISTER_FUNCTION(Turret_monkey_hit_update, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::hit_on_update)
-REGISTER_FUNCTION(Turret_monkey_hit_exit, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::hit_on_exit)
-REGISTER_FUNCTION(Turret_monkey_death_enter, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::death_on_enter)
-REGISTER_FUNCTION(Turret_monkey_death_update, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::death_on_update)
-REGISTER_FUNCTION(Turret_monkey_death_exit, void(Engine::ECS::Entity&), TurretMonkeyStateCallbacks::death_on_exit)
+REGISTER_FUNCTION(Turret_monkey_idle_enter, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::idle_on_enter)
+REGISTER_FUNCTION(Turret_monkey_idle_update, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::idle_on_update)
+REGISTER_FUNCTION(Turret_monkey_chasing_enter, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::chasing_on_enter)
+REGISTER_FUNCTION(Turret_monkey_chasing_update, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::chasing_on_update)
+REGISTER_FUNCTION(Turret_monkey_chasing_exit, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::chasing_on_exit)
+REGISTER_FUNCTION(Turret_monkey_windup_enter, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::windup_on_enter)
+REGISTER_FUNCTION(Turret_monkey_windup_update, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::windup_on_update)
+REGISTER_FUNCTION(Turret_monkey_attacking_enter, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::attacking_on_enter)
+REGISTER_FUNCTION(Turret_monkey_attacking_update, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::attacking_on_update)
+REGISTER_FUNCTION(Turret_monkey_attacking_exit, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::attacking_on_exit)
+REGISTER_FUNCTION(Turret_monkey_turret_enter, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::turret_on_enter)
+REGISTER_FUNCTION(Turret_monkey_turret_update, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::turret_on_update)
+REGISTER_FUNCTION(Turret_monkey_turret_exit, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::turret_on_exit)
+REGISTER_FUNCTION(Turret_monkey_hit_enter, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::hit_on_enter)
+REGISTER_FUNCTION(Turret_monkey_hit_update, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::hit_on_update)
+REGISTER_FUNCTION(Turret_monkey_hit_exit, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::hit_on_exit)
+REGISTER_FUNCTION(Turret_monkey_death_enter, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::death_on_enter)
+REGISTER_FUNCTION(Turret_monkey_death_update, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::death_on_update)
+REGISTER_FUNCTION(Turret_monkey_death_exit, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::death_on_exit)

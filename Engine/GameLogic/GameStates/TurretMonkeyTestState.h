@@ -59,7 +59,7 @@ public:
     Engine::ECS::create_entity()
       .add_component<Components::Camera>("Main Camera", true)
       .add_component<Components::Transform2D>(0.0f, -400.0f, 0.0f, 1.0f, 1.0f) // Relative to parent
-      .add_component<Components::Parent>(player_entity);
+      .add_component<Components::Parent>(player_entity.get_id());
 
     // ========================================================================
     // Create Turret Monkey Entity
@@ -67,14 +67,14 @@ public:
     Turret_monkey_entity = Engine::ECS::create_entity()
       .add_component<Components::Enemy>()
       .add_component<Components::TurretMonkey>()
-      .add_component<Components::Transform2D>(576.0f, 450.0f, 0.0f, TurretMonkeyStates::WIDTH, TurretMonkeyStates::HEIGHT)
-      .add_component<Components::Texture>(Engine::Resources::load_texture("images/TurretMonkeySpriteSheets/Turret.png"))
-      .add_component<Components::TextureAtlas>(64, 64, 1, 24, 4)
-      .add_component<Components::Animation>(4, 0.1f)
+      .add_component<Components::Transform2D>(576.0f, 450.0f, 0.0f, TurretMonkeyStates::TURRET_WIDTH, TurretMonkeyStates::TURRET_HEIGHT)
+      .add_component<Components::Texture>(Engine::Resources::load_texture("images/TurretMonkeySpriteSheets/ceiling_atk.png"))
+      .add_component<Components::TextureAtlas>(64, 64, 1, 6, 6)
+      .add_component<Components::Animation>(6, 0.1f)
       .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
       .add_component<Components::Flip>(1.0f, 1.0f) // Start facing right
       .add_component<Components::RigidBody>(Components::RigidBody(false, false))
-      .add_component<Components::BoxCollider>(TurretMonkeyStates::WIDTH, TurretMonkeyStates::HEIGHT, false)
+      .add_component<Components::BoxCollider>(TurretMonkeyStates::TURRET_WIDTH, TurretMonkeyStates::TURRET_HEIGHT, false)
       .add_component<Components::EnemyHealth>(400, 400)
       .add_component<Components::Attack>(10, Math::Vec2D(900.0f, -300.0f), true, 1.0f)
       .add_component<Components::EnemyHealthBarRect>()

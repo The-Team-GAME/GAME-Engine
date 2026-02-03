@@ -133,8 +133,8 @@ namespace Components
     float dash_indicator_height = 100.0f; // Height of the warning rectangle
 
     // Attack parameters (serialized/configurable)
-    float leap_speed = 2000.0f;
-    float leap_height = 300.0f;
+    float leap_speed = 200.0f;
+    float leap_height = 50.0f;
     float attack_cooldown = 3.0f;
     float attack_windup = 0.5f;  // Time to wait in windup state before attacking
 
