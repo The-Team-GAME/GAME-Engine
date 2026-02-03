@@ -407,13 +407,14 @@ namespace {
       float wheel = ImGui::GetIO().MouseWheel;
       if (wheel != 0.0f) {
         bool ctrl_held = ImGui::GetIO().KeyCtrl;
-        
+
         if (ctrl_held) {
           // Ctrl+scroll: Zoom in/out (uncapped)
           float zoom_factor = 1.0f + wheel * 0.15f;
           timeline_zoom *= zoom_factor;
           timeline_zoom = std::max(0.01f, timeline_zoom); // Only enforce minimum to prevent zero/negative
-        } else {
+        }
+        else {
           // Normal scroll: Horizontal pan
           // Calculate total timeline width
           float total_width = 0.0f;
@@ -645,6 +646,51 @@ void FrameAnimationEditorPanel() {
 
   // Right: Selected frame properties
   ImGui::BeginChild("PropertiesPanel", ImVec2(0, panel_height), true);
+
+  // Animation Preview (when playing)
+  if (is_previewing && !frame_indices.empty()) {
+    ImGui::Text("Animation Preview");
+    ImGui::Separator();
+
+    // Calculate current frame based on elapsed time
+    float elapsed = Engine::Time::get_time() - preview_start_time;
+    float total_dur = 0.0f;
+    for (float d : frame_durations) total_dur += d;
+
+    int preview_frame_index = 0;
+    if (total_dur > 0.0f) {
+      float time_pos = is_looping ? fmod(elapsed, total_dur) : std::min(elapsed, total_dur);
+      float accumulated = 0.0f;
+      for (size_t i = 0; i < frame_durations.size(); i++) {
+        accumulated += frame_durations[i];
+        if (time_pos < accumulated) {
+          preview_frame_index = static_cast<int>(i);
+          break;
+        }
+        preview_frame_index = static_cast<int>(i);
+      }
+    }
+
+    // Draw large animated preview
+    ImDrawList* draw_list = ImGui::GetWindowDrawList();
+    ImVec2 preview_pos = ImGui::GetCursorScreenPos();
+    float preview_size = 150.0f;
+
+    draw_frame_thumbnail(draw_list, preview_pos, ImVec2(preview_size, preview_size), frame_indices[preview_frame_index]);
+    draw_list->AddRect(preview_pos, ImVec2(preview_pos.x + preview_size, preview_pos.y + preview_size),
+      IM_COL32(255, 80, 80, 255), 0.0f, 0, 2.0f); // Red border when playing
+
+    ImGui::Dummy(ImVec2(preview_size, preview_size));
+
+    ImGui::Spacing();
+    ImGui::Text("Frame %d / %d", preview_frame_index + 1, static_cast<int>(frame_indices.size()));
+    ImGui::Text("Time: %.2fs / %.2fs", is_looping ? fmod(elapsed, total_dur) : std::min(elapsed, total_dur), total_dur);
+
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+  }
+
   ImGui::Text("Frame Properties");
   ImGui::Separator();
 
