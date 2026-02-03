@@ -40,6 +40,19 @@ namespace FrameAnimationEditor {
 
   /*=================================================================================
   Function Brief:
+  Opens the Frame Animation Editor panel for editing an entity's standalone Animation
+  component directly. The entity must have Animation, Texture, and TextureAtlas components.
+
+  Parameters:
+  entity - The entity with Animation, Texture, and TextureAtlas components
+
+  Where to call it:
+  Called from the Entity Editor when user wants to edit an Animation component's frames.
+  ==================================================================================*/
+  void OpenForAnimation(Engine::ECS::Entity entity);
+
+  /*=================================================================================
+  Function Brief:
   Closes the Frame Animation Editor panel and clears any selection state.
 
   Where to call it:

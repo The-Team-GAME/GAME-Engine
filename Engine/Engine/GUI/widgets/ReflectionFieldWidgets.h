@@ -138,7 +138,7 @@ namespace ImGuiWidgets {
   Where to call it:
   From specialized field renderers for animation components.
   ==================================================================================*/
-  bool render_animation_field(ReflectionLibrary::GenericValue& field_value, bool& modified);
+  bool render_animation_field(ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity);
 
   /*=================================================================================
   Function Brief:
