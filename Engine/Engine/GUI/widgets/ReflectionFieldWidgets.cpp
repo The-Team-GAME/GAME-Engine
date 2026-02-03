@@ -457,7 +457,7 @@ namespace ImGuiWidgets {
     }
   }
 
-  bool render_statemachine_field(ReflectionLibrary::GenericValue& field_value, bool& modified) {
+  bool render_statemachine_field(ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity) {
     // StateMachine structure:
     // - states: unordered_map<string, State> (Serialized as Array of Pairs or Object)
     // Each State has:
@@ -566,6 +566,23 @@ namespace ImGuiWidgets {
                 ImGui::Unindent();
               }
 
+              // Edit Frames Button - opens Frame Animation Editor
+              ImGui::Spacing();
+              if (entity.is_valid()) {
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.5f, 0.8f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.6f, 0.9f, 1.0f));
+                std::string edit_btn_label = "Edit Animation Frames##" + state_name;
+                if (ImGui::Button(edit_btn_label.c_str(), ImVec2(-1, 0))) {
+                  // Forward declare and call the editor opener
+                  extern void FrameAnimationEditor_Open(Engine::ECS::Entity entity, const std::string & state_name);
+                  FrameAnimationEditor_Open(entity, state_name);
+                }
+                ImGui::PopStyleColor(2);
+                if (ImGui::IsItemHovered()) {
+                  ImGui::SetTooltip("Open the Frame Animation Editor to select specific frames from the texture atlas");
+                }
+              }
+
               ImGui::Unindent();
             }
             else {
@@ -604,6 +621,7 @@ namespace ImGuiWidgets {
     // Display all functions from all registries
     auto& easing_functions = Engine::FunctionRegistry<f32(f32, f32, f32, f32)>::get_functions();
     auto& entity_functions = Engine::FunctionRegistry<void(Engine::ECS::Entity)>::get_functions();
+    auto& two_entity_functions = Engine::FunctionRegistry<void(Engine::ECS::Entity, Engine::ECS::Entity)>::get_functions();
     auto& void_functions = Engine::FunctionRegistry<void()>::get_functions();
 
     ImGui::Text("%s", field_name.c_str());
@@ -633,6 +651,19 @@ namespace ImGuiWidgets {
       if (!entity_functions.empty()) {
         ImGui::TextDisabled("--- Entity Callbacks (void(Entity)) ---");
         for (const auto& [name, func] : entity_functions) {
+          is_selected = (current_function == name);
+          if (ImGui::Selectable(name.c_str(), is_selected)) {
+            name_field = name;
+            modified = true;
+          }
+          if (is_selected) ImGui::SetItemDefaultFocus();
+        }
+      }
+
+      // Display two-entity callback functions (e.g., Interactable callbacks)
+      if (!two_entity_functions.empty()) {
+        ImGui::TextDisabled("--- Interactable Callbacks (void(Entity, Entity)) ---");
+        for (const auto& [name, func] : two_entity_functions) {
           is_selected = (current_function == name);
           if (ImGui::Selectable(name.c_str(), is_selected)) {
             name_field = name;
@@ -803,7 +834,7 @@ namespace ImGuiWidgets {
     }
 
     if (type_hint == "Components::StateMachine") {
-      return render_statemachine_field(field_value, modified);
+      return render_statemachine_field(field_value, modified, entity);
     }
 
     // Not handled by specialized renderer

@@ -19,6 +19,7 @@
 #include "../TypeDef.h"
 #include "../ECS/Macros.h"
 #include "../Time.h"
+#include <string>
 
 namespace Components
 {
@@ -55,7 +56,17 @@ namespace Components
     FrameLifetime(s32 frame_count) : frames_remaining(frame_count) {}
   };
 
+  // Component for naming entities - displays in editor and can be used for lookups
+  struct Name {
+    std::string name;
+
+    Name() : name("Entity") {}
+    Name(const std::string& n) : name(n) {}
+    Name(const char* n) : name(n) {}
+  };
+
 }
 
 // REGISTER_COMPONENT(Components::Lifetime, destroy_at)
 // REGISTER_COMPONENT(Components::FrameLifetime, frames_remaining)
+REGISTER_COMPONENT(Components::Name, name)

@@ -68,6 +68,10 @@ namespace Engine {
         // Entity order in callback matches layer order: callback(entity_on_layer_a, entity_on_layer_b)
         std::unordered_map<u64, std::function<void(Entity, Entity)>> collision_callbacks;
 
+        // One-shot update requests (processed even when paused)
+        std::unordered_set<System*> systems_to_update_once;
+        std::unordered_set<EntityID> entities_to_update_once;
+
         // Constructor to initialize default layer
         WorldContainers() {
           // Pre-register default layer as ID 1 (DEFAULT_LAYER constant)
