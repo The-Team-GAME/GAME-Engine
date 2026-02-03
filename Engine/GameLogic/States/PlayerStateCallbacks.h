@@ -142,7 +142,8 @@ namespace PlayerStateCallbacks
     Log::info("Player: Entered Jumping state");
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     Components::Player* player_comp = entity.get_component<Components::Player>();
-
+    assert(rigid);
+    assert(player_comp);
     if (player_comp)
     {
       rigid->is_jumping = true;
@@ -151,9 +152,37 @@ namespace PlayerStateCallbacks
     }
   }
 
-  inline void jumping_on_update(Engine::ECS::Entity entity) 
+  inline void jumping_on_update(Engine::ECS::Entity entity)
   {
-    take_input(entity);
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    Components::Flip* flip = entity.get_component<Components::Flip>();
+    assert(rigid);
+    assert(player_comp);
+    if (Input::is_held(KeyCode::D) || Input::is_held(KeyCode::A))
+    {
+      if (Input::is_held(KeyCode::A)) //left
+      {
+        flip->value.x = -1.f;
+      }
+      else if (Input::is_held(KeyCode::D)) //right
+      {
+        flip->value.x = 1.f;
+      }
+      rigid->force.x += player_comp->walk_speed * flip->value.x;
+    }
+    if (!rigid->is_jumping && rigid->on_ground) // Exit Condition
+    {
+      Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
+      state_machine->change_state("Idle");
+    }
+  }
+
+  inline void jumping_on_exit([[maybe_unused]]ECS::Entity entity)
+  {
+
+    std::cout << "jumping exit\n";
+    Log::info("Player: Exiting Jumping state");
   }
 #pragma endregion
 
@@ -483,6 +512,7 @@ REGISTER_FUNCTION(player_walking_exit, void(Engine::ECS::Entity), PlayerStateCal
 
 REGISTER_FUNCTION(player_jumping_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::jumping_on_enter)
 REGISTER_FUNCTION(player_jumping_update, void(Engine::ECS::Entity), PlayerStateCallbacks::jumping_on_update)
+REGISTER_FUNCTION(player_jumping_exit, void(Engine::ECS::Entity), PlayerStateCallbacks::jumping_on_exit)
 
 REGISTER_FUNCTION(player_dash_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::dash_on_enter)
 REGISTER_FUNCTION(player_dash_update, void(Engine::ECS::Entity), PlayerStateCallbacks::dash_on_update)

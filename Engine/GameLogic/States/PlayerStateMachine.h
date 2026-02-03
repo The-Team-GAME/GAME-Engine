@@ -74,12 +74,12 @@ namespace PlayerStates
     // Player Jumping State
     // ========================================================================
     Components::StateAnimation player_jumping_anim;
-    player_jumping_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_run_spritesheet.png"));
+    player_jumping_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_jump_spritesheet.png"));
     player_jumping_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 8, 8);
     player_jumping_anim.animation = Components::Animation(8, 0.1f);
     player_jumping_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
 
-    Components::State player_jumping("Jumping", "player_jumping_enter", "player_jumping_update", "", player_jumping_anim, jump_audio);
+    Components::State player_jumping("Jumping", "player_jumping_enter", "player_jumping_update", "player_jumping_exit", player_jumping_anim, jump_audio);
 
     // ========================================================================
     // Player Dash State
