@@ -10,10 +10,6 @@
 // brief:   This file defines the internal data containers for the ECS World.
 //          Provides centralized access to all ECS state through a container struct.
 //
-//          Now uses custom Memory Manager containers (HashMap, Array) instead of
-//          STL containers for entity/component storage. This ensures all ECS memory
-//          flows through the pool allocators for efficient allocation.
-//
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
@@ -22,13 +18,12 @@
 #include "SparseSet.h"
 #include "ComponentArray.h"
 #include "System.h"
-#include "../Memory/Memory.h"
+#include <unordered_map>
 #include <memory>
+#include <vector>
 #include <array>
 #include <functional>
 #include <unordered_set>
-#include <unordered_map>
-#include <string>
 
 namespace Engine {
   namespace ECS {
@@ -51,19 +46,15 @@ namespace Engine {
         LayerID next_layer_id = 2; // Start at 2 (0 = INVALID_LAYER, 1 = DEFAULT_LAYER)
         SparseSet<EntityID> active_entities;
         SparseSet<EntityID> entities_to_destroy;
-        // Using Memory::HashMap for entity signatures - maps EntityID to ComponentSignature
-        Memory::HashMap<EntityID, ComponentSignature> entity_signatures;
-        Memory::HashMap<EntityID, LayerSignature> entity_layers;
-        Memory::HashMap<EntityID, PrefabInstanceData> prefab_instances;
-        // Component arrays still use unique_ptr for polymorphism
-        Memory::HashMap<ComponentTypeID, std::unique_ptr<IComponentArray>> component_arrays;
-        // Systems use unique_ptr for polymorphism
-        Memory::Array<std::unique_ptr<System>> systems;
-        Memory::Array<std::pair<EntityID, ComponentTypeID>> components_to_remove;
-        // Layer management uses Memory containers
-        Memory::HashMap<std::string, LayerID> layer_name_to_id;
-        Memory::Array<std::string> layer_id_to_name;
-        Memory::Array<SparseSet<EntityID>> layer_entities;
+        std::unordered_map<EntityID, ComponentSignature> entity_signatures;
+        std::unordered_map<EntityID, LayerSignature> entity_layers;
+        std::unordered_map<EntityID, PrefabInstanceData> prefab_instances;
+        std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> component_arrays;
+        std::vector<std::unique_ptr<System>> systems;
+        std::vector<std::pair<EntityID, ComponentTypeID>> components_to_remove;
+        std::unordered_map<std::string, LayerID> layer_name_to_id;
+        std::vector<std::string> layer_id_to_name;
+        std::vector<SparseSet<EntityID>> layer_entities;
         std::bitset<MAX_LAYERS> layer_active_state; // Track which layers are active/enabled
 
         // Collision matrix: collision_matrix[layerA][layerB] = true if they should collide
@@ -75,7 +66,7 @@ namespace Engine {
         // (layer_a, layer_b) and (layer_b, layer_a) are different keys
         // u64 key = (layer_a << 32) | layer_b
         // Entity order in callback matches layer order: callback(entity_on_layer_a, entity_on_layer_b)
-        Memory::HashMap<u64, std::function<void(Entity, Entity)>> collision_callbacks;
+        std::unordered_map<u64, std::function<void(Entity, Entity)>> collision_callbacks;
 
         // One-shot update requests (processed even when paused)
         std::unordered_set<System*> systems_to_update_once;
