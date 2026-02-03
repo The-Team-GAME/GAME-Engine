@@ -3620,12 +3620,12 @@
             "texture_path": "images/Tilemaps/AdditionalProps_TilemapM1.png",
             "tile_collider_configs": [
                 {
-                    "first": 18,
+                    "first": 2,
                     "second": {
-                        "aabb_height": 64.0,
+                        "aabb_height": 14.2626953125,
                         "aabb_offset": {
-                            "x": 51.187110900878906,
-                            "y": -1.7706242799758911
+                            "x": 0.0,
+                            "y": 24.86865234375
                         },
                         "aabb_width": 64.0,
                         "collider_type": "AABB",
@@ -3633,12 +3633,12 @@
                     }
                 },
                 {
-                    "first": 2,
+                    "first": 18,
                     "second": {
-                        "aabb_height": 14.2626953125,
+                        "aabb_height": 64.0,
                         "aabb_offset": {
-                            "x": 0.0,
-                            "y": 24.86865234375
+                            "x": 51.187110900878906,
+                            "y": -1.7706242799758911
                         },
                         "aabb_width": 64.0,
                         "collider_type": "AABB",
@@ -3672,19 +3672,6 @@
                     }
                 },
                 {
-                    "first": 1,
-                    "second": {
-                        "aabb_height": 14.262687683105469,
-                        "aabb_offset": {
-                            "x": 0.0,
-                            "y": 24.868656158447266
-                        },
-                        "aabb_width": 64.0,
-                        "collider_type": "AABB",
-                        "custom_vertices": []
-                    }
-                },
-                {
                     "first": 9,
                     "second": {
                         "aabb_height": 64.0,
@@ -3693,6 +3680,19 @@
                             "y": 0.0
                         },
                         "aabb_width": 28.273204803466797,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 1,
+                    "second": {
+                        "aabb_height": 14.262687683105469,
+                        "aabb_offset": {
+                            "x": 0.0,
+                            "y": 24.868656158447266
+                        },
+                        "aabb_width": 64.0,
                         "collider_type": "AABB",
                         "custom_vertices": []
                     }
@@ -58097,7 +58097,34 @@
                 }
             ],
             "texture_path": "images/AnimatedProps/VMRightFlush-Sheet.png",
-            "tile_collider_configs": []
+            "tile_collider_configs": [
+                {
+                    "first": 0,
+                    "second": {
+                        "aabb_height": 14.08087158203125,
+                        "aabb_offset": {
+                            "x": 0.0,
+                            "y": 24.959564208984375
+                        },
+                        "aabb_width": 64.0,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 1,
+                    "second": {
+                        "aabb_height": 14.080852508544922,
+                        "aabb_offset": {
+                            "x": 0.0,
+                            "y": 24.95957374572754
+                        },
+                        "aabb_width": 64.0,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                }
+            ]
         },
         {
             "animation_config": {
@@ -64348,6 +64375,19 @@
                     }
                 },
                 {
+                    "first": 116,
+                    "second": {
+                        "aabb_height": 12.247993469238281,
+                        "aabb_offset": {
+                            "x": 11.913745880126953,
+                            "y": 24.043121337890625
+                        },
+                        "aabb_width": 40.172508239746094,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
                     "first": 52,
                     "second": {
                         "aabb_height": 4.161735534667969,
@@ -64361,12 +64401,12 @@
                     }
                 },
                 {
-                    "first": 116,
+                    "first": 117,
                     "second": {
-                        "aabb_height": 12.247995376586914,
+                        "aabb_height": 12.247991561889648,
                         "aabb_offset": {
-                            "x": 0.0,
-                            "y": -8.08625602722168
+                            "x": -0.10781672596931458,
+                            "y": 24.150938034057617
                         },
                         "aabb_width": 64.0,
                         "collider_type": "AABB",
@@ -64380,19 +64420,6 @@
                         "aabb_offset": {
                             "x": 0.0,
                             "y": 29.91912841796875
-                        },
-                        "aabb_width": 64.0,
-                        "collider_type": "AABB",
-                        "custom_vertices": []
-                    }
-                },
-                {
-                    "first": 117,
-                    "second": {
-                        "aabb_height": 12.247991561889648,
-                        "aabb_offset": {
-                            "x": 0.0,
-                            "y": -8.086255073547363
                         },
                         "aabb_width": 64.0,
                         "collider_type": "AABB",
@@ -64443,8 +64470,8 @@
                     "second": {
                         "aabb_height": 12.355802536010742,
                         "aabb_offset": {
-                            "x": 0.0,
-                            "y": -8.032342910766602
+                            "x": 0.21563348174095154,
+                            "y": 24.204853057861328
                         },
                         "aabb_width": 64.0,
                         "collider_type": "AABB",
@@ -64456,8 +64483,8 @@
                     "second": {
                         "aabb_height": 12.247983932495117,
                         "aabb_offset": {
-                            "x": 0.0,
-                            "y": -7.978438377380371
+                            "x": -0.10781685262918472,
+                            "y": 24.15093994140625
                         },
                         "aabb_width": 64.0,
                         "collider_type": "AABB",
@@ -64467,12 +64494,12 @@
                 {
                     "first": 120,
                     "second": {
-                        "aabb_height": 12.032354354858398,
+                        "aabb_height": 12.032356262207031,
                         "aabb_offset": {
-                            "x": 0.0,
-                            "y": -7.978437423706055
+                            "x": -14.878705978393555,
+                            "y": 23.827489852905273
                         },
-                        "aabb_width": 64.0,
+                        "aabb_width": 34.67386245727539,
                         "collider_type": "AABB",
                         "custom_vertices": []
                     }
