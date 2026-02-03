@@ -264,9 +264,12 @@ namespace Engine
             // 1. Safe Parent & Flip Retrieval
             f32 look_dir = 0.0f;
             if (auto* parent_comp = entity.get_component<Components::Parent>()) {
-              if (auto* p_flip = parent_comp->parent_id.get_component<Components::Flip>()) {
-                // Use the raw flip value (-1 or 1)
-                look_dir = p_flip->value.x;
+              auto parent_entity = Engine::ECS::get_entity(parent_comp->parent_id);
+              if (parent_entity.is_valid()) {
+                if (auto* p_flip = parent_entity.get_component<Components::Flip>()) {
+                  // Use the raw flip value (-1 or 1)
+                  look_dir = p_flip->value.x;
+                }
               }
             }
 
