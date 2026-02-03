@@ -1139,6 +1139,180 @@ namespace Engine {
       return Math::Vec2D(width, height);
     }
 
+    // Helper function to split text into words
+    static std::vector<std::string> split_into_words(const std::string& text) {
+      std::vector<std::string> words;
+      std::string current_word;
+
+      for (size_t i = 0; i < text.length(); ++i) {
+        char c = text[i];
+        if (c == ' ' || c == '\n' || c == '\t') {
+          if (!current_word.empty()) {
+            words.push_back(current_word);
+            current_word.clear();
+          }
+          // Add newline as a special "word" to force line break
+          if (c == '\n') {
+            words.push_back("\n");
+          }
+        }
+        else {
+          current_word += c;
+        }
+      }
+
+      // Don't forget the last word
+      if (!current_word.empty()) {
+        words.push_back(current_word);
+      }
+
+      return words;
+    }
+
+    // Helper function to wrap text into lines based on max_width
+    static std::vector<std::string> wrap_text_into_lines(Engine::Graphics::Font font, const std::string& text, f32 scale, f32 max_width) {
+      std::vector<std::string> lines;
+
+      if (!font || max_width <= 0.0f) {
+        // No wrapping, return single line
+        lines.push_back(text);
+        return lines;
+      }
+
+      std::vector<std::string> words = split_into_words(text);
+      std::string current_line;
+
+      // Measure space width
+      f32 space_width = 0.0f;
+      auto space_it = font->glyphs.find(' ');
+      if (space_it != font->glyphs.end()) {
+        space_width = (space_it->second.advance >> 6) * scale;
+      }
+
+      for (const auto& word : words) {
+        // Handle explicit newlines
+        if (word == "\n") {
+          lines.push_back(current_line);
+          current_line.clear();
+          continue;
+        }
+
+        // Measure the word
+        f32 word_width = measure_text(font, word, scale).x;
+
+        if (current_line.empty()) {
+          // First word on the line
+          current_line = word;
+        }
+        else {
+          // Check if adding this word would exceed max_width
+          f32 line_width = measure_text(font, current_line, scale).x;
+          f32 potential_width = line_width + space_width + word_width;
+
+          if (potential_width <= max_width) {
+            // Word fits, add it
+            current_line += " " + word;
+          }
+          else {
+            // Word doesn't fit, start new line
+            lines.push_back(current_line);
+            current_line = word;
+          }
+        }
+      }
+
+      // Don't forget the last line
+      if (!current_line.empty()) {
+        lines.push_back(current_line);
+      }
+
+      // Handle empty text
+      if (lines.empty()) {
+        lines.push_back("");
+      }
+
+      return lines;
+    }
+
+    void draw_text_wrapped(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color, f32 max_width, f32 line_spacing, int alignment) {
+      if (!font || font->texture_atlas.id == 0) {
+        Log::warning("Attempted to draw wrapped text with invalid font");
+        return;
+      }
+
+      if (text.empty()) {
+        return;
+      }
+
+      // If max_width is 0 or negative, just use regular draw_text
+      if (max_width <= 0.0f) {
+        draw_text(font, text, position, scale, color);
+        return;
+      }
+
+      // Wrap text into lines
+      std::vector<std::string> lines = wrap_text_into_lines(font, text, scale, max_width);
+
+      // Calculate line height
+      f32 line_height = font->baseline * scale * line_spacing;
+
+      // Draw each line
+      f32 y = position.y;
+      for (const auto& line : lines) {
+        f32 x = position.x;
+
+        // Apply alignment
+        if (alignment != 0 && !line.empty()) {
+          f32 line_width = measure_text(font, line, scale).x;
+          if (alignment == 1) {
+            // Center alignment
+            x = position.x + (max_width - line_width) * 0.5f;
+          }
+          else if (alignment == 2) {
+            // Right alignment
+            x = position.x + max_width - line_width;
+          }
+        }
+
+        draw_text(font, line, Math::Vec2D(x, y), scale, color);
+        y += line_height;
+      }
+    }
+
+    Math::Vec2D measure_text_wrapped(Engine::Graphics::Font font, const std::string& text, f32 scale, f32 max_width) {
+      if (!font || font->texture_atlas.id == 0) {
+        Log::warning("Attempted to measure wrapped text with invalid font");
+        return Math::Vec2D(0.0f, 0.0f);
+      }
+
+      if (text.empty()) {
+        return Math::Vec2D(0.0f, 0.0f);
+      }
+
+      // If max_width is 0 or negative, just use regular measure_text
+      if (max_width <= 0.0f) {
+        return measure_text(font, text, scale);
+      }
+
+      // Wrap text into lines
+      std::vector<std::string> lines = wrap_text_into_lines(font, text, scale, max_width);
+
+      // Calculate total dimensions
+      f32 total_width = 0.0f;
+      f32 line_height = font->baseline * scale;
+
+      for (const auto& line : lines) {
+        f32 line_width = measure_text(font, line, scale).x;
+        if (line_width > total_width) {
+          total_width = line_width;
+        }
+      }
+
+      f32 total_height = line_height * static_cast<f32>(lines.size());
+
+      return Math::Vec2D(total_width, total_height);
+    }
+
     void clear_screen(const Math::Vec4D& color) {
       // Flush any pending batches before clearing
       end_batch();
@@ -1574,6 +1748,9 @@ namespace Engine {
         return;
       }
 
+      // Get current time for animation
+      float current_time = Engine::Time::get_time();
+
       // Get bounds of the tilemap
       int min_x = INT_MAX, min_y = INT_MAX;
       int max_x = INT_MIN, max_y = INT_MIN;
@@ -1618,6 +1795,7 @@ namespace Engine {
 
       // Find all rectangles using greedy algorithm
       // Tiles can only merge if they have the same atlas_index AND tile_index
+      // EXCEPT for animated atlases - those cannot be merged
       for (int rel_y = 0; rel_y < height; ++rel_y) {
         for (int rel_x = 0; rel_x < width; ++rel_x) {
           if (processed[rel_y][rel_x]) continue;
@@ -1634,6 +1812,13 @@ namespace Engine {
           const auto& atlas_entry = loaded_tilemaps[tile.atlas_index];
           if (tile.tile_index >= static_cast<int>(atlas_entry.subTextures.size())) {
             processed[rel_y][rel_x] = true;
+            continue;
+          }
+
+          // Check if this is an animated atlas - don't merge animated tiles
+          if (atlas_entry.animation_config.is_animated) {
+            processed[rel_y][rel_x] = true;
+            rectangles.push_back({ abs_x, abs_y, 1, 1, tile });
             continue;
           }
 
@@ -1690,11 +1875,62 @@ namespace Engine {
         }
 
         const auto& atlas_entry = loaded_tilemaps[rect.tile.atlas_index];
-        if (rect.tile.tile_index >= static_cast<int>(atlas_entry.subTextures.size())) {
+
+        int tile_index_to_draw = rect.tile.tile_index;
+
+        // Handle animated tiles
+        if (atlas_entry.animation_config.is_animated) {
+          const auto& anim_config = atlas_entry.animation_config;
+          int total_frames = anim_config.get_frame_count();
+          float total_duration = anim_config.get_total_duration();
+
+          // Calculate current frame
+          float elapsed = current_time;
+          float time_in_anim;
+
+          if (anim_config.is_looping) {
+            time_in_anim = fmod(elapsed, total_duration);
+          }
+          else {
+            time_in_anim = std::min(elapsed, total_duration - 0.001f);
+          }
+
+          int current_frame = static_cast<int>(time_in_anim / anim_config.frame_duration);
+          current_frame = std::clamp(current_frame, 0, total_frames - 1);
+
+          // Calculate the tile index offset for animation
+          // The texture is laid out as a 2D grid:
+          // - Total sheet cols/rows are stored in sheet_cols/sheet_rows
+          // - Tiles are indexed row by row from top-left
+          //
+          // For a base tile index within frame 0, we need to:
+          // 1. Find the tile's local position within the prop (local_col, local_row)
+          // 2. Find the frame's position in the animation grid (frame_col, frame_row)
+          // 3. Calculate the actual tile position in the sheet
+
+          int tiles_per_frame = anim_config.prop_cols * anim_config.prop_rows;
+          int base_tile = rect.tile.tile_index % tiles_per_frame;
+
+          // Local position within the prop
+          int local_col = base_tile % anim_config.prop_cols;
+          int local_row = base_tile / anim_config.prop_cols;
+
+          // Frame position in the animation grid
+          int frame_col = current_frame % anim_config.anim_cols;
+          int frame_row = current_frame / anim_config.anim_cols;
+
+          // Calculate sheet position using stored sheet dimensions (avoids integer division precision loss)
+          int tile_col = frame_col * anim_config.prop_cols + local_col;
+          int tile_row = frame_row * anim_config.prop_rows + local_row;
+
+          tile_index_to_draw = tile_row * anim_config.sheet_cols + tile_col;
+        }
+
+        if (tile_index_to_draw >= static_cast<int>(atlas_entry.subTextures.size())) {
           continue;
         }
 
-        const auto& subTexture = atlas_entry.subTextures[rect.tile.tile_index];
+        const auto& subTexture = atlas_entry.subTextures[tile_index_to_draw];
 
         // Calculate the world position for the center of the rectangle
         f32 center_x = gridOffset.x + rect.x * tileSize.x + (rect.width * tileSize.x) * 0.5f;
@@ -1740,6 +1976,51 @@ namespace Engine {
 
         // Advance cursor to next glyph
         x += (glyph.advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64)
+      }
+    }
+
+    void draw_text_wrapped_ui(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color, f32 max_width, f32 line_spacing, int alignment) {
+      if (!font || font->texture_atlas.id == 0) {
+        Log::warning("Attempted to draw wrapped UI text with invalid font");
+        return;
+      }
+
+      if (text.empty()) {
+        return;
+      }
+
+      // If max_width is 0 or negative, just use regular draw_text_ui
+      if (max_width <= 0.0f) {
+        draw_text_ui(font, text, position, scale, color);
+        return;
+      }
+
+      // Wrap text into lines
+      std::vector<std::string> lines = wrap_text_into_lines(font, text, scale, max_width);
+
+      // Calculate line height
+      f32 line_height = font->baseline * scale * line_spacing;
+
+      // Draw each line
+      f32 y = position.y;
+      for (const auto& line : lines) {
+        f32 x = position.x;
+
+        // Apply alignment
+        if (alignment != 0 && !line.empty()) {
+          f32 line_width = measure_text(font, line, scale).x;
+          if (alignment == 1) {
+            // Center alignment
+            x = position.x + (max_width - line_width) * 0.5f;
+          }
+          else if (alignment == 2) {
+            // Right alignment
+            x = position.x + max_width - line_width;
+          }
+        }
+
+        draw_text_ui(font, line, Math::Vec2D(x, y), scale, color);
+        y += line_height;
       }
     }
 

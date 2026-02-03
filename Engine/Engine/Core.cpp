@@ -16,6 +16,7 @@
 #include "Core.h"
 #include "Precompiled.h"
 #include "Logger.h"
+#include "Memory/Memory.h"  // Custom Memory Manager
 #include "FileHandler.h"
 #include "SceneManager.h"
 #include "ImGuiManager.h"
@@ -58,6 +59,13 @@ namespace Engine
   void Core::init()
   {
     is_running = true;
+
+    // Initialize Memory Manager FIRST - all subsequent allocations use this
+    // Pre-allocate pools for entities, components, and other ECS data
+    if (!Engine::Memory::MemoryManager::instance().initialize(512)) {
+      throw std::runtime_error("Failed to initialize Memory Manager");
+    }
+    Log::info("Memory Manager initialized with pool allocators");
 
     // Load engine settings
     if (!Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::load("Assets/settings/engine_settings.json")) {
@@ -327,7 +335,16 @@ namespace Engine
 
         // Main gameloop here
         Engine::SceneManager::update();
-        Engine::ECS::update();
+
+        // Two-phase ECS update:
+        // 1. Game systems only run when not paused (or during single-step)
+        if (!Engine::Time::get_paused() || single_step_requested)
+        {
+          Engine::ECS::update_game();
+        }
+
+        // 2. Editor systems always run (gizmo, camera control, etc.)
+        Engine::ECS::update_editor();
 
         // Always process ECS housekeeping (entity deletions, component modifications)
         // even when paused so entities can be created/destroyed in the editor
@@ -409,6 +426,10 @@ namespace Engine
     Engine::LuaManager::cleanup();
     ImGuiManager::exit();
     WindowManager::exit();
+
+    // Memory Manager will shutdown automatically during static destruction
+    // This ensures pools remain valid while other static objects (like UndoManager)
+    // clean up their contents. The destructor will print statistics and free pools.
   }
 
   void Core::stop()

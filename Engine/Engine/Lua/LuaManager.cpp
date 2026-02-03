@@ -146,7 +146,7 @@ namespace Engine
       }
     }
 
-    bool try_call_state_function(const std::string& func_name, Engine::ECS::Entity& entity)
+    bool try_call_state_function(const std::string& func_name, Engine::ECS::Entity entity)
     {
       if (!lua_state.lua_state()) {
         return false;

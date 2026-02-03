@@ -274,10 +274,10 @@ void ResourceExplorerPanel() {
 
         std::string full_path = Engine::Path(Engine::Resources::resource_path).join(file_path).to_string();
 
-        // Create an empty level
-        Engine::Level empty_level;
+        // Create an empty level (empty entity list)
+        Engine::EntityList empty_entities;
 
-        if (Engine::FileIO::serialize_level_to_json_file(full_path, empty_level)) {
+        if (Engine::FileIO::serialize_level_to_json_file(full_path, empty_entities)) {
           Log::info("Created level: {}", file_path);
         }
         else {

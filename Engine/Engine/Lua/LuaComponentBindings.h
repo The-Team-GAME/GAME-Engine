@@ -136,7 +136,7 @@ namespace Engine
       );
 
       // Generic get_component using string name
-      entity_type["get_component"] = [](ECS::Entity& e, const std::string& component_name) -> sol::object {
+      entity_type["get_component"] = [](ECS::Entity e, const std::string& component_name) -> sol::object {
         sol::state& lua = LuaManager::get_state();
         
         // Map component names to actual types
@@ -177,7 +177,7 @@ namespace Engine
       };
 
       // Has component check
-      entity_type["has_component"] = [](ECS::Entity& e, const std::string& component_name) -> bool {
+      entity_type["has_component"] = [](ECS::Entity e, const std::string& component_name) -> bool {
         if (component_name == "Parent") {
           return e.has_component<Components::Parent>();
         }
@@ -194,7 +194,7 @@ namespace Engine
       };
       
       // Remove component
-      entity_type["remove_component"] = [](ECS::Entity& e, const std::string& component_name) {
+      entity_type["remove_component"] = [](ECS::Entity e, const std::string& component_name) {
         if (component_name == "Parent") {
           e.remove_component<Components::Parent>();
         }
@@ -228,7 +228,7 @@ namespace Engine
       };
       
       // Destroy entity
-      ecs_table["destroy_entity"] = [](ECS::Entity& entity) {
+      ecs_table["destroy_entity"] = [](ECS::Entity entity) {
         ECS::destroy_entity(entity);
       };
       

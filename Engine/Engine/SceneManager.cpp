@@ -15,6 +15,7 @@
 //-----------------------------------------------------------------------------------
 
 #include "SceneManager.h"
+#include "LevelManager.h"
 #include "Logger.h"
 #include "Systems/GraphicsSystem.h"
 #include "EventManager/EventManager.h"
@@ -102,7 +103,7 @@ namespace Engine
         current_scene = nullptr;
         Log::info("Popped last scene. Stack is empty.");
       }
-      
+
       Log::info("Stack size after: {}", scene_stack.size());
     }
 
@@ -112,15 +113,16 @@ namespace Engine
         current_scene->unload();
         // Remove from stack if it's the top one
         if (!scene_stack.empty() && scene_stack.back().get() == current_scene) {
-            scene_stack.pop_back();
+          scene_stack.pop_back();
         }
-        
+
         if (!scene_stack.empty()) {
-            current_scene = scene_stack.back().get();
-        } else {
-            current_scene = nullptr;
+          current_scene = scene_stack.back().get();
         }
-        
+        else {
+          current_scene = nullptr;
+        }
+
         Log::info("Unloaded current scene");
       }
     }
@@ -129,7 +131,8 @@ namespace Engine
       if (current_scene != nullptr) {
         // Log::info("Updating scene: {}", get_current_scene_name()); // Spammy but useful for debugging
         current_scene->update();
-      } else {
+      }
+      else {
         Log::warning("SceneManager::update called but current_scene is null!");
       }
     }

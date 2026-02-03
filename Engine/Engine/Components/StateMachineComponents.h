@@ -47,7 +47,7 @@ namespace Components
     bool loop = false;
     bool stop_on_exit = true;
   };
-  
+
   // ============================================================================
   // State Animation Definition
   // ============================================================================
@@ -116,27 +116,27 @@ namespace Components
     }
 
     // Helper methods to invoke callbacks (looks them up in registry)
-    void invoke_on_enter(Engine::ECS::Entity& entity) const {
+    void invoke_on_enter(Engine::ECS::Entity entity) const {
       if (!on_enter_callback.empty()) {
-        auto callback = on_enter_callback.get<void(Engine::ECS::Entity&)>();
+        auto callback = on_enter_callback.get<void(Engine::ECS::Entity)>();
         if (callback) {
           callback(entity);
         }
       }
     }
 
-    void invoke_on_update(Engine::ECS::Entity& entity) const {
+    void invoke_on_update(Engine::ECS::Entity entity) const {
       if (!on_update_callback.empty()) {
-        auto callback = on_update_callback.get<void(Engine::ECS::Entity&)>();
+        auto callback = on_update_callback.get<void(Engine::ECS::Entity)>();
         if (callback) {
           callback(entity);
         }
       }
     }
 
-    void invoke_on_exit(Engine::ECS::Entity& entity) const {
+    void invoke_on_exit(Engine::ECS::Entity entity) const {
       if (!on_exit_callback.empty()) {
-        auto callback = on_exit_callback.get<void(Engine::ECS::Entity&)>();
+        auto callback = on_exit_callback.get<void(Engine::ECS::Entity)>();
         if (callback) {
           callback(entity);
         }
@@ -221,7 +221,7 @@ namespace Components
 
     /// Update the current state and handle deferred transitions
     /// Should be called once per frame by the StateMachineSystem
-    void update(Engine::ECS::Entity& entity) {
+    void update(Engine::ECS::Entity entity) {
       // Store entity reference
       owner_entity_ = &entity;
 

@@ -40,6 +40,7 @@ namespace Engine
       GizmoSelectionSystem() {
         require_components<Components::Transform2D>();
         exclude_components<Components::Text, Components::TileCollider>(); // Only process entities without Text
+        set_editor_system(); // Editor system - runs even when paused
       }
 
       void update() override {
@@ -73,7 +74,7 @@ namespace Engine
         }
       }
 
-      bool is_entity_under_mouse(Engine::ECS::Entity& entity) {
+      bool is_entity_under_mouse(Engine::ECS::Entity entity) {
         auto* tr = entity.get_component<Components::Transform2D>();
         if (!tr) return false;
 
@@ -93,7 +94,7 @@ namespace Engine
           (mouse.y >= top) && (mouse.y <= bottom);
       }
 
-      //void update_entity(Engine::ECS::Entity& entity) override {}
+      //void update_entity(Engine::ECS::Entity entity) override {}
     };
 
     // System to select text entities when clicked
@@ -101,6 +102,7 @@ namespace Engine
     public:
       GizmoTextSelectionSystem() {
         require_components<Components::Transform2D, Components::Text, Components::Font>();
+        set_editor_system(); // Editor system - runs even when paused
       }
 
       void update() override {
@@ -132,7 +134,7 @@ namespace Engine
         }
       }
 
-      bool is_entity_under_mouse(Engine::ECS::Entity& entity) {
+      bool is_entity_under_mouse(Engine::ECS::Entity entity) {
         auto* tr = entity.get_component<Components::Transform2D>();
         auto* text = entity.get_component<Components::Text>();
         auto* font = entity.get_component<Components::Font>();
@@ -161,7 +163,7 @@ namespace Engine
           (mouse.y >= top) && (mouse.y <= bottom);
       }
 
-      //void update_entity(Engine::ECS::Entity& entity) override {}
+      //void update_entity(Engine::ECS::Entity entity) override {}
     };
 
     // System to handle dragging and drawing selected entities
@@ -169,6 +171,7 @@ namespace Engine
     public:
       GizmoManipulationSystem() {
         require_components<Components::Transform2D, Components::Gizmo>();
+        set_editor_system(); // Editor system - runs even when paused
       }
 
       static inline bool point_in_rect(const Math::Vec2D& p, const Math::Vec2D& c, const Math::Vec2D& size) {
@@ -205,7 +208,7 @@ namespace Engine
         return { a.x + k * b.x, a.y + k * b.y };
       }
 
-      void update_entity(Engine::ECS::Entity& entity) override {
+      void update_entity(Engine::ECS::Entity entity) override {
         auto* tr = entity.get_component<Components::Transform2D>();
         auto* gizmo = entity.get_component<Components::Gizmo>();
 
@@ -223,33 +226,14 @@ namespace Engine
 
         const auto mouse = mouse_opt.value();
 
-        // Check if this is a text entity
-        auto* text = entity.get_component<Components::Text>();
-        auto* font = entity.get_component<Components::Font>();
-        bool is_text = (text && font);
-
-        Math::Vec2D rect_center{}, rect_size{};
-        Math::Vec2D tl{}, trc{}, br{}, bl{};
-
-        if (is_text) {
-          float ts = (tr->scale.x + tr->scale.y) * 0.5f;
-          Math::Vec2D sz = Engine::Graphics::measure_text(font->font_handle, text->content, ts);
-          rect_center = { tr->position.x + sz.x * 0.5f, tr->position.y + sz.y * 0.5f };
-          rect_size = sz;
-          tl = { tr->position.x, tr->position.y };
-          trc = { tr->position.x + sz.x, tr->position.y };
-          br = { tr->position.x + sz.x, tr->position.y + sz.y };
-          bl = { tr->position.x, tr->position.y + sz.y };
-        }
-        else {
-          rect_center = tr->position;
-          rect_size = tr->scale;
-          const float hw = tr->scale.x * 0.5f, hh = tr->scale.y * 0.5f;
-          tl = { tr->position.x - hw, tr->position.y - hh };
-          trc = { tr->position.x + hw, tr->position.y - hh };
-          br = { tr->position.x + hw, tr->position.y + hh };
-          bl = { tr->position.x - hw, tr->position.y + hh };
-        }
+        // Text entities now use Transform2D position as center and scale as bounds (like regular entities)
+        Math::Vec2D rect_center = tr->position;
+        Math::Vec2D rect_size = tr->scale;
+        const float hw = tr->scale.x * 0.5f, hh = tr->scale.y * 0.5f;
+        Math::Vec2D tl = { tr->position.x - hw, tr->position.y - hh };
+        Math::Vec2D trc = { tr->position.x + hw, tr->position.y - hh };
+        Math::Vec2D br = { tr->position.x + hw, tr->position.y + hh };
+        Math::Vec2D bl = { tr->position.x - hw, tr->position.y + hh };
 
         // Local axes from rotation
         const float ang = tr->rotation * 3.14159265358979323846f / 180.0f;
@@ -257,7 +241,6 @@ namespace Engine
         const Math::Vec2D ydir{ -std::sin(ang), std::cos(ang) };    // local +Y
 
         // Rotated corners & midpoints
-        const float hw = rect_size.x * 0.5f, hh = rect_size.y * 0.5f;
         const Math::Vec2D tl_r = { rect_center.x + (-hw) * xdir.x + (-hh) * ydir.x, rect_center.y + (-hw) * xdir.y + (-hh) * ydir.y };
         const Math::Vec2D tr_r = { rect_center.x + (hw)*xdir.x + (-hh) * ydir.x, rect_center.y + (hw)*xdir.y + (-hh) * ydir.y };
         const Math::Vec2D br_r = { rect_center.x + (hw)*xdir.x + (hh)*ydir.x, rect_center.y + (hw)*xdir.y + (hh)*ydir.y };
@@ -357,12 +340,6 @@ namespace Engine
               gizmo->start_angle_rad = std::atan2(mouse.y - rect_center.y, mouse.x - rect_center.x);
               break;
             default: break;
-            }
-            if (is_text) {
-              float tscale0 = (tr->scale.x + tr->scale.y) * 0.5f;
-              gizmo->text_start_size = Engine::Graphics::measure_text(font->font_handle, text->content, tscale0);
-              if (gizmo->text_start_size.x <= 0.f) gizmo->text_start_size.x = 1.f;
-              if (gizmo->text_start_size.y <= 0.f) gizmo->text_start_size.y = 1.f;
             }
           }
           else if (!ImGui::GetIO().WantCaptureMouse) {
@@ -479,23 +456,6 @@ namespace Engine
           const Math::Vec2D center_world = rot_deg(center_local, rect_center, tr->rotation);
           tr->position = center_world;
           tr->scale = { size_local.x, size_local.y };
-
-          // Text: keep top-left anchored scaling semantics
-          if (is_text) {
-            const float minx = std::min(gizmo->scale_anchor.x, mouse.x);
-            const float miny = std::min(gizmo->scale_anchor.y, mouse.y);
-            const float maxx = std::max(gizmo->scale_anchor.x, mouse.x);
-            const float maxy = std::max(gizmo->scale_anchor.y, mouse.y);
-            Math::Vec2D desired{ std::max(4.0f, maxx - minx), std::max(4.0f, maxy - miny) };
-            float sx = desired.x / gizmo->text_start_size.x;
-            float sy = desired.y / gizmo->text_start_size.y;
-            if (shift) {
-              float s = std::max(sx, sy); sx = sy = s;
-            }
-            tr->scale.x = gizmo->start_scale.x * sx;
-            tr->scale.y = gizmo->start_scale.y * sy;
-            tr->position = { minx, miny };
-          }
         } break;
 
         default: break;
@@ -503,28 +463,15 @@ namespace Engine
         }
       }
 
-      void draw_entity(const Engine::ECS::Entity& entity) override {
+      void draw_entity(const Engine::ECS::Entity entity) override {
         auto* tr = entity.get_component<Components::Transform2D>();
         auto* gizmo = entity.get_component<Components::Gizmo>();
 
         if (!tr || !gizmo) return;
 
-        // Check if this is a text entity
-        auto* text = entity.get_component<Components::Text>();
-        auto* font = entity.get_component<Components::Font>();
-        bool is_text = (text && font);
-
-        Math::Vec2D rect_center{}, rect_size{};
-        if (is_text) {
-          float ts = (tr->scale.x + tr->scale.y) * 0.5f;
-          Math::Vec2D sz = Engine::Graphics::measure_text(font->font_handle, text->content, ts);
-          rect_center = { tr->position.x + sz.x * 0.5f, tr->position.y + sz.y * 0.5f };
-          rect_size = sz;
-        }
-        else {
-          rect_center = tr->position;
-          rect_size = tr->scale;
-        }
+        // All entities (including text) use Transform2D position as center and scale as bounds
+        Math::Vec2D rect_center = tr->position;
+        Math::Vec2D rect_size = tr->scale;
 
         Engine::Graphics::draw_rect_outline(
           rect_center,
@@ -639,12 +586,7 @@ namespace Engine
 
             if (ImGui::RadioButton("Grab / Move", mode == 0)) mode = 0;
             if (ImGui::RadioButton("Arrows (X/Y)", mode == 1)) mode = 1;
-
-            //Disable rotation for text
-            if (is_text) ImGui::BeginDisabled();
             if (ImGui::RadioButton("Rotate", mode == 2)) mode = 2;
-            if (is_text) ImGui::EndDisabled();
-
             if (ImGui::RadioButton("Scale", mode == 3)) mode = 3;
 
             ImGui::Separator();

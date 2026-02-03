@@ -23,7 +23,7 @@
 #include "Graphics/Renderer.h"
 #include "Audio/AudioPlayer.h"
 #include "ECS/Prefab.h"
-#include "Level.h"
+#include "LevelManager.h"
 
 namespace Engine {
   namespace Resources {
@@ -34,14 +34,14 @@ namespace Engine {
       Engine::Graphics::Font,
       Engine::Audio::Sound,
       Engine::ECS::Prefab,
-      Engine::Level
+      Engine::EntityList
     >;
     // Declare as extern - actual definition in Resources.cpp
     extern std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> texture_cache;
     extern std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::FontData>> font_cache;
     extern std::unordered_map<std::string, std::weak_ptr<Engine::Audio::SoundData>> sound_cache;
     extern std::unordered_map<std::string, std::weak_ptr<Engine::ECS::PrefabImpl>> prefab_cache;
-    extern std::unordered_map<std::string, Engine::Level> level_cache;
+    extern std::unordered_map<std::string, Engine::EntityList> level_cache;
 
     // Vector to hold shared_ptr references for persistent resources
     extern std::vector<Resource> persistent_resources;
@@ -99,11 +99,11 @@ namespace Engine {
     void cache_prefab(const std::string& filepath, const Engine::ECS::Prefab& prefab, bool append_resource_path = true, bool persist = false);
 
     // Level loading and saving
-    Engine::Level load_level(const std::string& filepath, bool append_resource_path = true, bool persist = false);
-    bool save_level(const std::string& filepath, const Engine::Level& level, bool append_resource_path = true);
+    Engine::EntityList load_level(const std::string& filepath, bool append_resource_path = true, bool persist = false);
+    bool save_level(const std::string& filepath, const Engine::EntityList& entities, bool append_resource_path = true);
 
     // Add level to cache without saving to disk
-    void cache_level(const std::string& filepath, const Engine::Level& level, bool append_resource_path = true, bool persist = false);
+    void cache_level(const std::string& filepath, const Engine::EntityList& entities, bool append_resource_path = true, bool persist = false);
 
     // Open (instantiate) a level into the world
     bool open_level(const std::string& filepath, bool append_resource_path = true, bool additive = false);

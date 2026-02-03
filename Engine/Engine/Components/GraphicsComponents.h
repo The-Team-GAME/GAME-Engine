@@ -389,12 +389,23 @@ namespace Components
     };
   };
 
+  // Text alignment options for wrapped text
+  enum class TextAlignment {
+    Left = 0,
+    Center = 1,
+    Right = 2
+  };
+
   struct Text
   {
     std::string content;
+    f32 font_scale = 1.0f;       // Scale of the text (independent from bounding box)
+    f32 line_spacing = 1.2f;     // Line height multiplier (1.0 = no extra spacing)
+    TextAlignment alignment = TextAlignment::Left;  // Text alignment for wrapped lines
 
-    Text() : content("") {}
-    Text(const std::string& str) : content(str) {}
+    Text() : content(""), font_scale(1.0f), line_spacing(1.2f), alignment(TextAlignment::Left) {}
+    Text(const std::string& str) : content(str), font_scale(1.0f), line_spacing(1.2f), alignment(TextAlignment::Left) {}
+    Text(const std::string& str, f32 scale) : content(str), font_scale(scale), line_spacing(1.2f), alignment(TextAlignment::Left) {}
   };
 
   struct Camera
@@ -536,7 +547,8 @@ namespace Components
 
 }
 
-REGISTER_COMPONENT(Components::Text, content)
+REFLECT_ENUM(Components::TextAlignment, Left, Center, Right);
+REGISTER_COMPONENT(Components::Text, content, font_scale, line_spacing, alignment)
 REGISTER_COMPONENT(Components::Camera, name, is_active)
 REGISTER_COMPONENT(Components::Distortion, intensity, speed, mesh_intensity)
 REGISTER_COMPONENT(Components::Flip, value)

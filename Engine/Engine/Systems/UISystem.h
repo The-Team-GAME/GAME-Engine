@@ -38,7 +38,7 @@ namespace Engine
         require_components<Components::Clickable, Components::Transform2D, Components::BoxCollider>();
       }
 
-      void update_entity(Engine::ECS::Entity& entity) override {
+      void update_entity(Engine::ECS::Entity entity) override {
         auto* clickable = entity.get_component<Components::Clickable>();
         auto* tr = entity.get_component<Components::Transform2D>();
         auto* box_collider = entity.get_component<Components::BoxCollider>();
@@ -97,7 +97,7 @@ namespace Engine
       // Update collider position to match transform
       void update_collider_position(Components::BoxCollider& collider,
         const Components::Transform2D& transform,
-        Engine::ECS::Entity& entity) {
+        Engine::ECS::Entity entity) {
         // Calculate flipped offset
         Vec2D flipped_offset = collider.offset;
         if (auto* flip = entity.get_component<Components::Flip>()) {
@@ -158,7 +158,7 @@ namespace Engine
         require_components<Components::DynamicButton, Components::Transform2D, Components::BoxCollider>();
       }
 
-      void update_entity(Engine::ECS::Entity& entity) override {
+      void update_entity(Engine::ECS::Entity entity) override {
         auto* dynamic_button = entity.get_component<Components::DynamicButton>();
         auto* box_collider = entity.get_component<Components::BoxCollider>();
         auto* transform = entity.get_component<Components::Transform2D>();
@@ -350,7 +350,7 @@ namespace Engine
 
       void update_collider_position(Components::BoxCollider& collider,
         const Components::Transform2D& transform,
-        Engine::ECS::Entity& entity) {
+        Engine::ECS::Entity entity) {
         Vec2D flipped_offset = collider.offset;
         if (auto* flip = entity.get_component<Components::Flip>()) {
           flipped_offset.x *= flip->value.x;

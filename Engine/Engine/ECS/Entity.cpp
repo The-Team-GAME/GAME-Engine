@@ -16,6 +16,8 @@
 #include "World.h"
 #include "WorldData.h"
 #include "Reflection.h"
+#include "../EventManager/EventManager.h"
+#include "../Events/EngineEvents.h"
 
 namespace Engine {
   namespace ECS {
@@ -34,11 +36,11 @@ namespace Engine {
       ECS::destroy_entity(*this);
     }
 
-    bool Entity::operator==(const Entity& other) const {
+    bool Entity::operator==(const Entity other) const {
       return id == other.id;
     }
 
-    bool Entity::operator!=(const Entity& other) const {
+    bool Entity::operator!=(const Entity other) const {
       return id != other.id;
     }
 
@@ -47,19 +49,20 @@ namespace Engine {
         return;
 
       auto& containers = Internal::get_containers();
-      auto sig_it = containers.entity_signatures.find(id);
+      auto signature_it = containers.entity_signatures.find(id);
 
-      if (sig_it == containers.entity_signatures.end())
+      if (signature_it == containers.entity_signatures.end())
         return;
 
-      const ComponentSignature& signature = sig_it->second;
+      const ComponentSignature& signature = signature_it->second;
 
       // Iterate through all component arrays
-      for (auto& [type_id, array] : containers.component_arrays) {
+      for (auto& [type_id, array_ptr] : containers.component_arrays) {
+        IComponentArray* array = array_ptr.get();
         // Check if this entity has this component type
         if (signature.test(type_id)) {
           std::string type_name = array->get_type_name();
-          callback(type_name, array.get());
+          callback(type_name, array);
         }
       }
     }
@@ -71,7 +74,8 @@ namespace Engine {
       auto& containers = Internal::get_containers();
 
       // Find the component array with matching type name
-      for (auto& [type_id, array] : containers.component_arrays) {
+      for (auto& [type_id, array_ptr] : containers.component_arrays) {
+        IComponentArray* array = array_ptr.get();
         if (array->get_type_name() == component_name) {
           // Check if entity already has this component
           auto sig_it = containers.entity_signatures.find(id);
@@ -101,8 +105,8 @@ namespace Engine {
       }
 
       ReflectionLibrary::GenericValue result;
-      // result["dataType"] = "Entity";
-      // result["id"] = static_cast<int>(entity.get_id());
+      // Store the original entity ID for remapping on load
+      result["id"] = static_cast<int>(entity.get_id());
 
       // Serialize layers and components using helper functions
       result["layers"] = Serialization::serialize_layers(entity.get_layers());
@@ -159,12 +163,29 @@ namespace Engine {
 
       // Deserialize components using helper function
       const auto& components_array = value["components"].getArray();
-      Serialization::deserialize_components_to_storage(
+      auto deserialize_result = Serialization::deserialize_components_to_storage(
         components_array,
         containers.component_arrays,
         containers.entity_signatures[entity_id],
         entity_id
       );
+
+      // Check for deserialization errors and warn the user
+      if (deserialize_result.has_errors()) {
+        std::string error_summary = "Entity loaded with errors:\n";
+        for (size_t i = 0; i < deserialize_result.errors.size() && i < 3; ++i) {
+          error_summary += "- " + deserialize_result.errors[i] + "\n";
+        }
+        if (deserialize_result.errors.size() > 3) {
+          error_summary += "... and " + std::to_string(deserialize_result.errors.size() - 3) + " more errors";
+        }
+        Log::warning("{}", error_summary);
+        Engine::EventManager::send_event<Engine::Events::ToastEvent>(
+          error_summary,
+          Engine::Events::ToastType::Warning,
+          8.0f
+        );
+      }
 
       // Deserialize prefab instance data if present
       if (value.has("prefab_reference") && value["prefab_reference"].isObject()) {
@@ -212,12 +233,12 @@ namespace Engine {
       return ECS::get_entity_layers(*this);
     }
 
-    Entity& Entity::clear_layers() {
+    Entity Entity::clear_layers() {
       ECS::clear_layers(*this);
       return *this;
     }
 
-    Entity& Entity::add_to_layer(const std::string& layer_name) {
+    Entity Entity::add_to_layer(const std::string& layer_name) {
       LayerID layer = ECS::get_layer_id(layer_name);
       if (layer != INVALID_LAYER) {
         auto& containers = Internal::get_containers();
@@ -236,7 +257,7 @@ namespace Engine {
       return *this;
     }
 
-    Entity& Entity::remove_from_layer(const std::string& layer_name) {
+    Entity Entity::remove_from_layer(const std::string& layer_name) {
       LayerID layer = ECS::get_layer_id(layer_name);
       if (layer != INVALID_LAYER) {
         auto& containers = Internal::get_containers();

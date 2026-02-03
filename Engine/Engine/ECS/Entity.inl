@@ -21,13 +21,13 @@ namespace Engine {
 
     template<typename T, typename... Args>
       requires std::is_constructible_v<T, Args...>
-    Entity& Entity::add_component(Args&&... args) {
+    Entity Entity::add_component(Args&&... args) {
       ECS::add_component<T>(*this, std::forward<Args>(args)...);
       return *this;
     }
 
     template<typename T>
-    Entity& Entity::remove_component() {
+    Entity Entity::remove_component() {
       ECS::remove_component<T>(*this);
       return *this;
     }
@@ -57,19 +57,19 @@ namespace Engine {
     // ============================================================================
 
     template<LayerID... Layers>
-    Entity& Entity::add_to_layers() {
+    Entity Entity::add_to_layers() {
       ECS::add_to_layers<Layers...>(*this);
       return *this;
     }
 
     template<LayerID... Layers>
-    Entity& Entity::remove_from_layers() {
+    Entity Entity::remove_from_layers() {
       ECS::remove_from_layers<Layers...>(*this);
       return *this;
     }
 
     template<LayerID... Layers>
-    Entity& Entity::set_layers() {
+    Entity Entity::set_layers() {
       ECS::set_layers<Layers...>(*this);
       return *this;
     }
