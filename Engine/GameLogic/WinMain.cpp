@@ -76,7 +76,7 @@ void RunGame()
   Engine::ECS::register_layer("player"); // Player character layer
   Engine::ECS::register_layer("effect"); // Visual effects like particles
   Engine::ECS::register_layer("main_menu_backsky"); // Main menu background sky layer
-  Engine::ECS::register_layer("main_menu_midbuildings"); // Main menu mid
+  Engine::ECS::register_layer("main_menu_buildings"); // Main menu mid
   Engine::ECS::register_layer("main_menu_carriage"); // Main menu carriage layer
   Engine::ECS::register_layer("ui_background"); // User interface elements
   Engine::ECS::register_layer("ui"); // User interface elements
