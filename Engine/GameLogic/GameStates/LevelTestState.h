@@ -96,16 +96,16 @@ public:
       .add_component<Components::Enemy>()
       .add_component<Components::SprayCanMonkey>()
       .add_component<Components::Transform2D>(500.0f, 300.0f, 0.0f,
-        SprayCanMonkeyStates::WIDTH * 3.0f,
-        SprayCanMonkeyStates::HEIGHT * 3.0f)
+        SprayCanMonkeyStates::WIDTH * 2.0f,
+        SprayCanMonkeyStates::HEIGHT * 2.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/SprayPaintMonkeySpriteSheets/Spraypaint_Walk_Spritesheet.png"))
       .add_component<Components::TextureAtlas>(64, 64, 1, 6, 6)
       .add_component<Components::Animation>(5, 0.15f)
       .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
       .add_component<Components::Flip>(1.0f, 1.0f)
       .add_component<Components::RigidBody>(Components::RigidBody(false, true))
-      .add_component<Components::BoxCollider>(SprayCanMonkeyStates::WIDTH * 3.0f,
-        SprayCanMonkeyStates::HEIGHT * 3.0f, false)
+      .add_component<Components::BoxCollider>(SprayCanMonkeyStates::WIDTH * 2.0f,
+        SprayCanMonkeyStates::HEIGHT * 2.0f, false)
       .add_component<Components::EnemyHealth>(300, 300)
       .add_component<Components::Attack>(20, Math::Vec2D(300.0f, 400.0f)) // Contact damage
       .add_component<Components::EnemyHealthBarRect>()

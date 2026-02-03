@@ -20,8 +20,8 @@
 namespace SprayCanMonkeyStates
 {
   // Spray Can Monkey dimensions
-  constexpr f32 WIDTH = 64.0f;
-  constexpr f32 HEIGHT = 64.0f;
+  constexpr f32 WIDTH = 80.0f;
+  constexpr f32 HEIGHT = 80.0f;
   constexpr f32 SPRAY_WIDTH = 80.0f;
 
   inline Components::StateMachine create_state_machine()
@@ -51,8 +51,8 @@ namespace SprayCanMonkeyStates
     // Spray Can Monkey Idle State
     // ========================================================================
     Components::StateAnimation spray_monkey_idle_anim;
-    spray_monkey_idle_anim.texture = Components::Texture(Engine::Resources::load_texture("images/images/SprayPaintMonkeySpriteSheets/Spraypaint_Walk_Spritesheet.png"));
-    spray_monkey_idle_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 5, 5);
+    spray_monkey_idle_anim.texture = Components::Texture(Engine::Resources::load_texture("images/SprayPaintMonkeySpriteSheets/Spraypaint_Walk_Spritesheet.png"));
+    spray_monkey_idle_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 6, 6);
     spray_monkey_idle_anim.animation = Components::Animation(5, 0.15f);
     spray_monkey_idle_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
@@ -73,8 +73,8 @@ namespace SprayCanMonkeyStates
     // Spray Can Monkey Windup State
     // ========================================================================
     Components::StateAnimation spray_monkey_windup_anim;
-    spray_monkey_windup_anim.texture = Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Idle_Spritesheet.png"));
-    spray_monkey_windup_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 4, 4);
+    spray_monkey_windup_anim.texture = Components::Texture(Engine::Resources::load_texture("images/SprayPaintMonkeySpriteSheets/Spraypaint_Walk_Spritesheet.png"));
+    spray_monkey_windup_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 6, 6);
     spray_monkey_windup_anim.animation = Components::Animation(4, 0.1f);
     spray_monkey_windup_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
@@ -85,9 +85,9 @@ namespace SprayCanMonkeyStates
     // ========================================================================
     Components::StateAnimation spray_monkey_spraying_anim;
     spray_monkey_spraying_anim.texture = Components::Texture(Engine::Resources::load_texture("images/SprayPaintMonkeySpriteSheets/Spraypaint_Attack_Spritesheet.png"));
-    spray_monkey_spraying_anim.texture_atlas = Components::TextureAtlas(80, 64, 1, 6, 6);
-    spray_monkey_spraying_anim.animation = Components::Animation({ 0.1f, 0.1f, 0.2f, 0.1f, 0.1f, 0.1f });
-    spray_monkey_spraying_anim.scale = Math::Vec2D(80.0f * 2.0f, HEIGHT * 2.0f);
+    spray_monkey_spraying_anim.texture_atlas = Components::TextureAtlas(80, 64, 1, 7, 7);
+    spray_monkey_spraying_anim.animation = Components::Animation({ 0.1f, 0.1f, 0.2f, 0.1f, 0.1f, 0.1f, 0.1f });
+    spray_monkey_spraying_anim.scale = Math::Vec2D(160.0f * 2.0f, HEIGHT * 2.0f);
 
     Components::State spray_monkey_spraying("Spraying", "spraycan_monkey_spraying_enter", "spraycan_monkey_spraying_update", "spraycan_monkey_spraying_exit", spray_monkey_spraying_anim, spray_audio);
 
@@ -95,8 +95,8 @@ namespace SprayCanMonkeyStates
     // Spray Can Monkey Hit State
     // ========================================================================
     Components::StateAnimation spray_monkey_hit_anim;
-    spray_monkey_hit_anim.texture = Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Damaged_Spritesheet.png"));
-    spray_monkey_hit_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 3, 3);
+    spray_monkey_hit_anim.texture = Components::Texture(Engine::Resources::load_texture("images/SprayPaintMonkeySpriteSheets/Spraypaint_Walk_Spritesheet.png"));
+    spray_monkey_hit_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 6, 6);
     spray_monkey_hit_anim.animation = Components::Animation(std::initializer_list{ 2 }, { 0.4f });
     spray_monkey_hit_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
@@ -106,8 +106,8 @@ namespace SprayCanMonkeyStates
     // Spray Can Monkey Death State
     // ========================================================================
     Components::StateAnimation spray_monkey_death_anim;
-    spray_monkey_death_anim.texture = Components::Texture(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Death_Spritesheet.png"));
-    spray_monkey_death_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 8, 8);
+    spray_monkey_death_anim.texture = Components::Texture(Engine::Resources::load_texture("images/SprayPaintMonkeySpriteSheets/Spraypaint_Walk_Spritesheet.png"));
+    spray_monkey_death_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 6, 6);
     spray_monkey_death_anim.animation = Components::Animation({ 0.2f, 0.1f, 1.5f });
     spray_monkey_death_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 

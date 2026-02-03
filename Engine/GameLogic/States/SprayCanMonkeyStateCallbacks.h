@@ -56,23 +56,23 @@ namespace SprayCanMonkey
     Math::Vec2D cloud_pos = transform->position;
     cloud_pos.x += dir * (spray->spray_range * 0.6f);
 
-    const float w = spray->cloud_width;
-    const float h = spray->cloud_height;
+    // Use hardcoded values instead of component fields
+    const float w = 150.0f;  // was: spray->cloud_width
+    const float h = 80.0f;   // was: spray->cloud_height
 
     Engine::ECS::Entity cloud = Engine::ECS::create_entity()
       .add_component<Components::Tag<"SprayCloud">>()
       .add_component<Components::Attack>(
-        spray->cloud_damage_per_tick,
+        5,  // was: spray->cloud_damage_per_tick
         Math::Vec2D(0.f, 0.f),
         true,                        // is_continuous
-        spray->cloud_damage_interval
+        0.5f  // was: spray->cloud_damage_interval
       )
       .add_component<Components::Transform2D>(cloud_pos.x, cloud_pos.y, 0.0f, w, h)
-      // Match Player hitbox requirements so collision/overlap triggers properly
       .add_component<Components::RigidBody>(true, false)
       .add_component<Components::BoxCollider>(w, h, false)
-      .add_component<Components::Lifetime>(spray->cloud_duration)
-      .add_component<Components::Texture>(Engine::Resources::load_texture(spray->cloud_texture))
+      .add_component<Components::Lifetime>(3.0f)  // was: spray->cloud_duration
+      .add_component<Components::Texture>(Engine::Resources::load_texture("images/LazyMonkeySpriteSheets/LazyMonkey_Death_Spritesheet.png"))
       .add_component<Components::Color>(Math::Vec4D(1.f, 1.f, 1.f, 1.f))
       .remove_from_layer("default")
       .add_to_layer("damage_player");
@@ -253,7 +253,7 @@ namespace SprayCanMonkey
     auto* spray_monkey = entity.get_component<Components::SprayCanMonkey>();
 
     if (spray_monkey) {
-      spray_monkey->last_spray_time = Engine::Time::get_time();
+      spray_monkey->last_attack_time = Engine::Time::get_time();
 
       spawn_spray_cloud(entity);
     }
@@ -269,7 +269,7 @@ namespace SprayCanMonkey
     if (!spray_monkey) return;
 
     float current_time = Engine::Time::get_time();
-    float spray_elapsed = current_time - spray_monkey->last_spray_time;
+    float spray_elapsed = current_time - spray_monkey->last_attack_time;
 
     // End spray after duration or animation completes
     if (spray_elapsed >= spray_monkey->spray_duration || (animation && animation->has_ended())) {
