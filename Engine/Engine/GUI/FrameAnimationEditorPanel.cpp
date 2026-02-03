@@ -49,6 +49,9 @@ namespace {
   float timeline_zoom = 1.0f;           // Timeline zoom level
   float timeline_scroll = 0.0f;         // Timeline horizontal scroll
 
+  // Panel layout state
+  float atlas_panel_width = 300.0f;     // Resizable atlas panel width
+
   // Atlas preview state
   ImGuiWidgets::TextureAtlasState atlas_state;
   bool was_dragging_last_frame = false;
@@ -551,9 +554,13 @@ void FrameAnimationEditorPanel() {
   // Main content: Atlas on left, Frame properties on right
   // ============================================================================
   float panel_height = ImGui::GetContentRegionAvail().y - TIMELINE_HEIGHT - 30;
+  float total_width = ImGui::GetContentRegionAvail().x;
+  
+  // Clamp atlas panel width
+  atlas_panel_width = std::clamp(atlas_panel_width, 150.0f, total_width - 200.0f);
   
   // Left: Texture Atlas
-  ImGui::BeginChild("AtlasPanel", ImVec2(300, panel_height), true);
+  ImGui::BeginChild("AtlasPanel", ImVec2(atlas_panel_width, panel_height), true);
   ImGui::Text("Texture Atlas");
   ImGui::SameLine();
   ImGui::TextDisabled("(?)");
@@ -566,7 +573,9 @@ void FrameAnimationEditorPanel() {
     float available_width = ImGui::GetContentRegionAvail().x - 10;
     float aspect = static_cast<float>(cached_texture.texture_handle->width) /
       static_cast<float>(cached_texture.texture_handle->height);
-    float preview_height = std::min(250.0f, available_width / aspect);
+    constexpr float MIN_ATLAS_HEIGHT = 150.0f;
+    // No max height - let it grow and scroll if needed
+    float preview_height = std::max(MIN_ATLAS_HEIGHT, available_width / aspect);
 
     ImGuiWidgets::TextureAtlasPreview(cached_texture, cached_atlas, preview_height, atlas_state);
 
@@ -588,6 +597,25 @@ void FrameAnimationEditorPanel() {
     ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.0f, 1.0f), "No texture/atlas");
   }
   ImGui::EndChild();
+
+  ImGui::SameLine();
+
+  // Splitter between Atlas and Properties panels
+  ImGui::InvisibleButton("##Splitter", ImVec2(8.0f, panel_height));
+  if (ImGui::IsItemActive()) {
+    atlas_panel_width += ImGui::GetIO().MouseDelta.x;
+  }
+  if (ImGui::IsItemHovered() || ImGui::IsItemActive()) {
+    ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
+  }
+  
+  // Draw splitter visual
+  ImVec2 splitter_min = ImGui::GetItemRectMin();
+  ImVec2 splitter_max = ImGui::GetItemRectMax();
+  ImDrawList* splitter_dl = ImGui::GetWindowDrawList();
+  ImU32 splitter_col = ImGui::IsItemActive() ? IM_COL32(100, 150, 255, 255) : 
+                       ImGui::IsItemHovered() ? IM_COL32(100, 100, 100, 255) : IM_COL32(60, 60, 60, 255);
+  splitter_dl->AddRectFilled(ImVec2(splitter_min.x + 3, splitter_min.y), ImVec2(splitter_min.x + 5, splitter_max.y), splitter_col);
 
   ImGui::SameLine();
 
