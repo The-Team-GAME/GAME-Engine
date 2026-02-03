@@ -33,7 +33,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 15,
+                "id": 434,
                 "layers": [
                     "default"
                 ]
@@ -70,7 +70,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 16,
+                "id": 435,
                 "layers": [
                     "default"
                 ]
@@ -107,7 +107,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 17,
+                "id": 436,
                 "layers": [
                     "default"
                 ]
@@ -144,7 +144,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 18,
+                "id": 437,
                 "layers": [
                     "default"
                 ]
@@ -181,7 +181,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 19,
+                "id": 438,
                 "layers": [
                     "default"
                 ]
@@ -218,7 +218,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 20,
+                "id": 439,
                 "layers": [
                     "default"
                 ]
@@ -255,7 +255,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 21,
+                "id": 440,
                 "layers": [
                     "default"
                 ]
@@ -292,7 +292,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 22,
+                "id": 441,
                 "layers": [
                     "default"
                 ]
@@ -329,7 +329,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 23,
+                "id": 442,
                 "layers": [
                     "default"
                 ]
@@ -366,7 +366,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 24,
+                "id": 443,
                 "layers": [
                     "default"
                 ]
@@ -403,7 +403,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 25,
+                "id": 444,
                 "layers": [
                     "default"
                 ]
@@ -440,7 +440,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 26,
+                "id": 445,
                 "layers": [
                     "default"
                 ]
@@ -477,7 +477,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 27,
+                "id": 446,
                 "layers": [
                     "default"
                 ]
@@ -514,7 +514,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 28,
+                "id": 447,
                 "layers": [
                     "default"
                 ]
@@ -551,7 +551,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 29,
+                "id": 448,
                 "layers": [
                     "default"
                 ]
@@ -588,7 +588,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 30,
+                "id": 449,
                 "layers": [
                     "default"
                 ]
@@ -625,7 +625,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 31,
+                "id": 450,
                 "layers": [
                     "default"
                 ]
@@ -662,7 +662,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 32,
+                "id": 451,
                 "layers": [
                     "default"
                 ]
@@ -699,7 +699,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 33,
+                "id": 452,
                 "layers": [
                     "default"
                 ]
@@ -736,7 +736,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 34,
+                "id": 453,
                 "layers": [
                     "default"
                 ]
@@ -773,7 +773,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 35,
+                "id": 454,
                 "layers": [
                     "default"
                 ]
@@ -810,7 +810,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 36,
+                "id": 455,
                 "layers": [
                     "default"
                 ]
@@ -847,7 +847,7 @@
                         "type": "Components::Level"
                     }
                 ],
-                "id": 37,
+                "id": 456,
                 "layers": [
                     "default"
                 ]
@@ -862,21 +862,6 @@
                             "r": 0.9999982118606567
                         },
                         "type": "Components::Color"
-                    },
-                    {
-                        "data": {
-                            "local_offset": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "offset_initialized": false,
-                            "parent_id": 15,
-                            "prev_parent_pos": {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        },
-                        "type": "Components::Parent"
                     },
                     {
                         "data": {
@@ -967,13 +952,6 @@
                                     }
                                 },
                                 {
-                                    "first": 47244640242,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
-                                    }
-                                },
-                                {
                                     "first": 60129542181,
                                     "second": {
                                         "atlas_index": 0,
@@ -1055,13 +1033,6 @@
                                     "second": {
                                         "atlas_index": 0,
                                         "tile_index": 17
-                                    }
-                                },
-                                {
-                                    "first": 60129542122,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 50
                                     }
                                 },
                                 {
@@ -1478,13 +1449,6 @@
                                     }
                                 },
                                 {
-                                    "first": 51539607538,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
-                                    }
-                                },
-                                {
                                     "first": 55834575047,
                                     "second": {
                                         "atlas_index": 1,
@@ -1517,13 +1481,6 @@
                                     "second": {
                                         "atlas_index": 0,
                                         "tile_index": 9
-                                    }
-                                },
-                                {
-                                    "first": 38654705650,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
                                     }
                                 },
                                 {
@@ -1562,13 +1519,6 @@
                                     }
                                 },
                                 {
-                                    "first": 42949672946,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
-                                    }
-                                },
-                                {
                                     "first": 30064771088,
                                     "second": {
                                         "atlas_index": 1,
@@ -1580,13 +1530,6 @@
                                     "second": {
                                         "atlas_index": 0,
                                         "tile_index": 23
-                                    }
-                                },
-                                {
-                                    "first": 47244640240,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
                                     }
                                 },
                                 {
@@ -1615,13 +1558,6 @@
                                     "second": {
                                         "atlas_index": 0,
                                         "tile_index": 25
-                                    }
-                                },
-                                {
-                                    "first": 51539607536,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
                                     }
                                 },
                                 {
@@ -1758,13 +1694,6 @@
                                     }
                                 },
                                 {
-                                    "first": 51539607539,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
-                                    }
-                                },
-                                {
                                     "first": 34359738387,
                                     "second": {
                                         "atlas_index": 1,
@@ -1797,13 +1726,6 @@
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 35
-                                    }
-                                },
-                                {
-                                    "first": 47244640243,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
                                     }
                                 },
                                 {
@@ -1849,13 +1771,6 @@
                                     }
                                 },
                                 {
-                                    "first": 42949672947,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
-                                    }
-                                },
-                                {
                                     "first": 42949672979,
                                     "second": {
                                         "atlas_index": 1,
@@ -1877,13 +1792,6 @@
                                     }
                                 },
                                 {
-                                    "first": 73014444010,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 137
-                                    }
-                                },
-                                {
                                     "first": 120259084453,
                                     "second": {
                                         "atlas_index": 1,
@@ -1895,13 +1803,6 @@
                                     "second": {
                                         "atlas_index": 0,
                                         "tile_index": 17
-                                    }
-                                },
-                                {
-                                    "first": 38654705651,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
                                     }
                                 },
                                 {
@@ -2143,13 +2044,6 @@
                                     }
                                 },
                                 {
-                                    "first": 42949672945,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
-                                    }
-                                },
-                                {
                                     "first": 73014444058,
                                     "second": {
                                         "atlas_index": 1,
@@ -2175,13 +2069,6 @@
                                     "second": {
                                         "atlas_index": 0,
                                         "tile_index": 17
-                                    }
-                                },
-                                {
-                                    "first": 73014444008,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 135
                                     }
                                 },
                                 {
@@ -2241,13 +2128,6 @@
                                     }
                                 },
                                 {
-                                    "first": 38654705652,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
-                                    }
-                                },
-                                {
                                     "first": 17179869219,
                                     "second": {
                                         "atlas_index": 0,
@@ -2273,13 +2153,6 @@
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 42949672948,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
                                     }
                                 },
                                 {
@@ -2598,13 +2471,6 @@
                                     }
                                 },
                                 {
-                                    "first": 68719476718,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 112
-                                    }
-                                },
-                                {
                                     "first": 94489280668,
                                     "second": {
                                         "atlas_index": 1,
@@ -2728,13 +2594,6 @@
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 60129542126,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 54
                                     }
                                 },
                                 {
@@ -2885,13 +2744,6 @@
                                     }
                                 },
                                 {
-                                    "first": 60129542124,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 52
-                                    }
-                                },
-                                {
                                     "first": 85899346078,
                                     "second": {
                                         "atlas_index": 1,
@@ -3001,13 +2853,6 @@
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 34359738355,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
                                     }
                                 },
                                 {
@@ -3172,13 +3017,6 @@
                                     }
                                 },
                                 {
-                                    "first": 73014444007,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 134
-                                    }
-                                },
-                                {
                                     "first": 51539607532,
                                     "second": {
                                         "atlas_index": 1,
@@ -3312,13 +3150,6 @@
                                     }
                                 },
                                 {
-                                    "first": 68719476711,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 105
-                                    }
-                                },
-                                {
                                     "first": 77309411473,
                                     "second": {
                                         "atlas_index": 1,
@@ -3365,13 +3196,6 @@
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 5
-                                    }
-                                },
-                                {
-                                    "first": 51539607537,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
                                     }
                                 },
                                 {
@@ -3508,13 +3332,6 @@
                                     }
                                 },
                                 {
-                                    "first": 55834574811,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 6
-                                    }
-                                },
-                                {
                                     "first": 17179869232,
                                     "second": {
                                         "atlas_index": 1,
@@ -3568,13 +3385,6 @@
                                     "second": {
                                         "atlas_index": 0,
                                         "tile_index": 25
-                                    }
-                                },
-                                {
-                                    "first": 47244640241,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
                                     }
                                 },
                                 {
@@ -3788,13 +3598,6 @@
                                     }
                                 },
                                 {
-                                    "first": 64424509403,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 64
-                                    }
-                                },
-                                {
                                     "first": 25769803824,
                                     "second": {
                                         "atlas_index": 1,
@@ -3820,13 +3623,6 @@
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 60129542107,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 35
                                     }
                                 },
                                 {
@@ -4054,13 +3850,6 @@
                                     }
                                 },
                                 {
-                                    "first": 68719476699,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 93
-                                    }
-                                },
-                                {
                                     "first": 30064771120,
                                     "second": {
                                         "atlas_index": 1,
@@ -4121,13 +3910,6 @@
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 64424509399,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 60
                                     }
                                 },
                                 {
@@ -4292,13 +4074,6 @@
                                     }
                                 },
                                 {
-                                    "first": 73014444009,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 136
-                                    }
-                                },
-                                {
                                     "first": 81604378651,
                                     "second": {
                                         "atlas_index": 1,
@@ -4348,13 +4123,6 @@
                                     }
                                 },
                                 {
-                                    "first": 55834574833,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 28
-                                    }
-                                },
-                                {
                                     "first": 120259084434,
                                     "second": {
                                         "atlas_index": 1,
@@ -4366,13 +4134,6 @@
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 60129542129,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 57
                                     }
                                 },
                                 {
@@ -4390,13 +4151,6 @@
                                     }
                                 },
                                 {
-                                    "first": 60129542128,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 56
-                                    }
-                                },
-                                {
                                     "first": 51539607570,
                                     "second": {
                                         "atlas_index": 1,
@@ -4411,24 +4165,10 @@
                                     }
                                 },
                                 {
-                                    "first": 60129542127,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 55
-                                    }
-                                },
-                                {
                                     "first": 47244640338,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 60129542125,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 53
                                     }
                                 },
                                 {
@@ -4572,13 +4312,6 @@
                                     }
                                 },
                                 {
-                                    "first": 68719476713,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 107
-                                    }
-                                },
-                                {
                                     "first": 111669149871,
                                     "second": {
                                         "atlas_index": 1,
@@ -4642,24 +4375,10 @@
                                     }
                                 },
                                 {
-                                    "first": 68719476716,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 110
-                                    }
-                                },
-                                {
                                     "first": 60129542246,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 68719476717,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 111
                                     }
                                 },
                                 {
@@ -4684,13 +4403,6 @@
                                     }
                                 },
                                 {
-                                    "first": 68719476719,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 113
-                                    }
-                                },
-                                {
                                     "first": 38654705746,
                                     "second": {
                                         "atlas_index": 1,
@@ -4712,13 +4424,6 @@
                                     }
                                 },
                                 {
-                                    "first": 73014444016,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 143
-                                    }
-                                },
-                                {
                                     "first": 34359738394,
                                     "second": {
                                         "atlas_index": 1,
@@ -4730,13 +4435,6 @@
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 73014444017,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 144
                                     }
                                 },
                                 {
@@ -4761,31 +4459,10 @@
                                     }
                                 },
                                 {
-                                    "first": 64424509425,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 86
-                                    }
-                                },
-                                {
                                     "first": 55834574866,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 55834574832,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 27
-                                    }
-                                },
-                                {
-                                    "first": 51539607535,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
                                     }
                                 },
                                 {
@@ -4807,13 +4484,6 @@
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 60129542121,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 49
                                     }
                                 },
                                 {
@@ -4845,13 +4515,6 @@
                                     }
                                 },
                                 {
-                                    "first": 64424509417,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 78
-                                    }
-                                },
-                                {
                                     "first": 115964117167,
                                     "second": {
                                         "atlas_index": 1,
@@ -4880,13 +4543,6 @@
                                     }
                                 },
                                 {
-                                    "first": 64424509422,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 83
-                                    }
-                                },
-                                {
                                     "first": 94489280621,
                                     "second": {
                                         "atlas_index": 1,
@@ -4901,24 +4557,10 @@
                                     }
                                 },
                                 {
-                                    "first": 64424509423,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 84
-                                    }
-                                },
-                                {
                                     "first": 38654705699,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 64424509424,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 85
                                     }
                                 },
                                 {
@@ -4957,13 +4599,6 @@
                                     }
                                 },
                                 {
-                                    "first": 34359738356,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
-                                    }
-                                },
-                                {
                                     "first": 64424509543,
                                     "second": {
                                         "atlas_index": 1,
@@ -4999,24 +4634,10 @@
                                     }
                                 },
                                 {
-                                    "first": 60129542123,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 51
-                                    }
-                                },
-                                {
                                     "first": 81604378660,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 64424509418,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 79
                                     }
                                 },
                                 {
@@ -5034,13 +4655,6 @@
                                     }
                                 },
                                 {
-                                    "first": 64424509419,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 80
-                                    }
-                                },
-                                {
                                     "first": 12884901941,
                                     "second": {
                                         "atlas_index": 1,
@@ -5055,31 +4669,10 @@
                                     }
                                 },
                                 {
-                                    "first": 64424509420,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 81
-                                    }
-                                },
-                                {
-                                    "first": 34359738357,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
-                                    }
-                                },
-                                {
                                     "first": 64424509542,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 64424509421,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 82
                                     }
                                 },
                                 {
@@ -5097,13 +4690,6 @@
                                     }
                                 },
                                 {
-                                    "first": 73014444018,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
-                                    }
-                                },
-                                {
                                     "first": 85899345957,
                                     "second": {
                                         "atlas_index": 1,
@@ -5118,24 +4704,10 @@
                                     }
                                 },
                                 {
-                                    "first": 68719476722,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
-                                    }
-                                },
-                                {
                                     "first": 47244640455,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 14
-                                    }
-                                },
-                                {
-                                    "first": 60129542130,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
                                     }
                                 },
                                 {
@@ -5157,13 +4729,6 @@
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 14
-                                    }
-                                },
-                                {
-                                    "first": 55834574834,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
                                     }
                                 },
                                 {
@@ -5195,20 +4760,6 @@
                                     }
                                 },
                                 {
-                                    "first": 64424509426,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
-                                    }
-                                },
-                                {
-                                    "first": 64424509427,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
-                                    }
-                                },
-                                {
                                     "first": 55834574867,
                                     "second": {
                                         "atlas_index": 1,
@@ -5216,24 +4767,10 @@
                                     }
                                 },
                                 {
-                                    "first": 68719476723,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
-                                    }
-                                },
-                                {
                                     "first": 51539607571,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 60129542131,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
                                     }
                                 },
                                 {
@@ -5248,13 +4785,6 @@
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 55834574835,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
                                     }
                                 },
                                 {
@@ -5279,13 +4809,6 @@
                                     }
                                 },
                                 {
-                                    "first": 47244640244,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
-                                    }
-                                },
-                                {
                                     "first": 42949672990,
                                     "second": {
                                         "atlas_index": 1,
@@ -5293,31 +4816,10 @@
                                     }
                                 },
                                 {
-                                    "first": 51539607540,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
-                                    }
-                                },
-                                {
-                                    "first": 51539607541,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
-                                    }
-                                },
-                                {
                                     "first": 73014444148,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 55834574837,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
                                     }
                                 },
                                 {
@@ -5342,13 +4844,6 @@
                                     }
                                 },
                                 {
-                                    "first": 64424509428,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
-                                    }
-                                },
-                                {
                                     "first": 51539607582,
                                     "second": {
                                         "atlas_index": 1,
@@ -5356,31 +4851,10 @@
                                     }
                                 },
                                 {
-                                    "first": 60129542132,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
-                                    }
-                                },
-                                {
-                                    "first": 55834574836,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
-                                    }
-                                },
-                                {
                                     "first": 55834574878,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 60129542133,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
                                     }
                                 },
                                 {
@@ -5395,13 +4869,6 @@
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 47244640245,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
                                     }
                                 },
                                 {
@@ -6378,13 +5845,6 @@
                                     }
                                 },
                                 {
-                                    "first": 68719476695,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 89
-                                    }
-                                },
-                                {
                                     "first": 30064771076,
                                     "second": {
                                         "atlas_index": 1,
@@ -6417,13 +5877,6 @@
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 68719476693,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 87
                                     }
                                 },
                                 {
@@ -6861,13 +6314,6 @@
                                     }
                                 },
                                 {
-                                    "first": 60129542115,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 43
-                                    }
-                                },
-                                {
                                     "first": 30064771098,
                                     "second": {
                                         "atlas_index": 1,
@@ -6879,13 +6325,6 @@
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 4
-                                    }
-                                },
-                                {
-                                    "first": 60129542114,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 42
                                     }
                                 },
                                 {
@@ -7036,13 +6475,6 @@
                                     }
                                 },
                                 {
-                                    "first": 60129542110,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 38
-                                    }
-                                },
-                                {
                                     "first": 55834574819,
                                     "second": {
                                         "atlas_index": 24,
@@ -7099,13 +6531,6 @@
                                     }
                                 },
                                 {
-                                    "first": 64424509411,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 72
-                                    }
-                                },
-                                {
                                     "first": 51539607651,
                                     "second": {
                                         "atlas_index": 1,
@@ -7117,20 +6542,6 @@
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 68719476707,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 101
-                                    }
-                                },
-                                {
-                                    "first": 55834574814,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 9
                                     }
                                 },
                                 {
@@ -7705,13 +7116,6 @@
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 73014443996,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 123
                                     }
                                 },
                                 {
@@ -8674,24 +8078,10 @@
                                     }
                                 },
                                 {
-                                    "first": 60129542112,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 40
-                                    }
-                                },
-                                {
                                     "first": 34359738423,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 55834574816,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 11
                                     }
                                 },
                                 {
@@ -8758,24 +8148,10 @@
                                     }
                                 },
                                 {
-                                    "first": 60129542101,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 29
-                                    }
-                                },
-                                {
                                     "first": 38654705721,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 64424509397,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 58
                                     }
                                 },
                                 {
@@ -9871,13 +9247,6 @@
                                     }
                                 },
                                 {
-                                    "first": 64424509401,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 62
-                                    }
-                                },
-                                {
                                     "first": 85899346017,
                                     "second": {
                                         "atlas_index": 1,
@@ -9913,13 +9282,6 @@
                                     }
                                 },
                                 {
-                                    "first": 55834574818,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 13
-                                    }
-                                },
-                                {
                                     "first": 85899346025,
                                     "second": {
                                         "atlas_index": 1,
@@ -9934,13 +9296,6 @@
                                     }
                                 },
                                 {
-                                    "first": 68719476706,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 100
-                                    }
-                                },
-                                {
                                     "first": 98784247913,
                                     "second": {
                                         "atlas_index": 1,
@@ -9952,13 +9307,6 @@
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 64424509410,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 71
                                     }
                                 },
                                 {
@@ -10298,13 +9646,6 @@
                                     }
                                 },
                                 {
-                                    "first": 73014443993,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 120
-                                    }
-                                },
-                                {
                                     "first": 77309411435,
                                     "second": {
                                         "atlas_index": 1,
@@ -10543,24 +9884,10 @@
                                     }
                                 },
                                 {
-                                    "first": 60129542105,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 33
-                                    }
-                                },
-                                {
                                     "first": 64424509545,
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 55834574809,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 4
                                     }
                                 },
                                 {
@@ -12594,13 +11921,6 @@
                                     }
                                 },
                                 {
-                                    "first": 64424509409,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 70
-                                    }
-                                },
-                                {
                                     "first": 115964117144,
                                     "second": {
                                         "atlas_index": 1,
@@ -13056,13 +12376,6 @@
                                     }
                                 },
                                 {
-                                    "first": 55834574817,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 12
-                                    }
-                                },
-                                {
                                     "first": 68719476877,
                                     "second": {
                                         "atlas_index": 1,
@@ -13469,13 +12782,6 @@
                                     }
                                 },
                                 {
-                                    "first": 68719476705,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 99
-                                    }
-                                },
-                                {
                                     "first": 81604378767,
                                     "second": {
                                         "atlas_index": 1,
@@ -13585,13 +12891,6 @@
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 60129542113,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 41
                                     }
                                 },
                                 {
@@ -14120,13 +13419,6 @@
                                     }
                                 },
                                 {
-                                    "first": 60129542102,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 30
-                                    }
-                                },
-                                {
                                     "first": 94489280681,
                                     "second": {
                                         "atlas_index": 1,
@@ -14271,13 +13563,6 @@
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 68719476696,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 90
                                     }
                                 },
                                 {
@@ -14463,13 +13748,6 @@
                                     }
                                 },
                                 {
-                                    "first": 64424509400,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 61
-                                    }
-                                },
-                                {
                                     "first": 128849019050,
                                     "second": {
                                         "atlas_index": 1,
@@ -14607,13 +13885,6 @@
                                     "second": {
                                         "atlas_index": 1,
                                         "tile_index": 22
-                                    }
-                                },
-                                {
-                                    "first": 60129542104,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 32
                                     }
                                 },
                                 {
@@ -15632,97 +14903,6 @@
                                     }
                                 },
                                 {
-                                    "first": 60129542103,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 31
-                                    }
-                                },
-                                {
-                                    "first": 60129542106,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 34
-                                    }
-                                },
-                                {
-                                    "first": 60129542108,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 36
-                                    }
-                                },
-                                {
-                                    "first": 60129542109,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 37
-                                    }
-                                },
-                                {
-                                    "first": 60129542111,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 39
-                                    }
-                                },
-                                {
-                                    "first": 60129542116,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 44
-                                    }
-                                },
-                                {
-                                    "first": 64424509398,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 59
-                                    }
-                                },
-                                {
-                                    "first": 64424509402,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 63
-                                    }
-                                },
-                                {
-                                    "first": 64424509404,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 65
-                                    }
-                                },
-                                {
-                                    "first": 64424509405,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 66
-                                    }
-                                },
-                                {
-                                    "first": 64424509406,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 67
-                                    }
-                                },
-                                {
-                                    "first": 64424509407,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 68
-                                    }
-                                },
-                                {
-                                    "first": 64424509408,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 69
-                                    }
-                                },
-                                {
                                     "first": 64424509412,
                                     "second": {
                                         "atlas_index": 24,
@@ -15730,45 +14910,10 @@
                                     }
                                 },
                                 {
-                                    "first": 64424509413,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 74
-                                    }
-                                },
-                                {
                                     "first": 64424509414,
                                     "second": {
                                         "atlas_index": 24,
                                         "tile_index": 75
-                                    }
-                                },
-                                {
-                                    "first": 68719476694,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 88
-                                    }
-                                },
-                                {
-                                    "first": 68719476698,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 92
-                                    }
-                                },
-                                {
-                                    "first": 68719476700,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 94
-                                    }
-                                },
-                                {
-                                    "first": 68719476701,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 95
                                     }
                                 },
                                 {
@@ -15800,83 +14945,6 @@
                                     }
                                 },
                                 {
-                                    "first": 68719476709,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 103
-                                    }
-                                },
-                                {
-                                    "first": 68719476710,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 104
-                                    }
-                                },
-                                {
-                                    "first": 73014443989,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 116
-                                    }
-                                },
-                                {
-                                    "first": 73014443990,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 117
-                                    }
-                                },
-                                {
-                                    "first": 73014443991,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 118
-                                    }
-                                },
-                                {
-                                    "first": 73014443992,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 119
-                                    }
-                                },
-                                {
-                                    "first": 73014443994,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 121
-                                    }
-                                },
-                                {
-                                    "first": 73014443995,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 122
-                                    }
-                                },
-                                {
-                                    "first": 73014444004,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 131
-                                    }
-                                },
-                                {
-                                    "first": 73014444005,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 132
-                                    }
-                                },
-                                {
-                                    "first": 73014444006,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 133
-                                    }
-                                },
-                                {
                                     "first": 51539607637,
                                     "second": {
                                         "atlas_index": 1,
@@ -15902,34 +14970,6 @@
                                     "second": {
                                         "atlas_index": 24,
                                         "tile_index": 2
-                                    }
-                                },
-                                {
-                                    "first": 55834574810,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 5
-                                    }
-                                },
-                                {
-                                    "first": 55834574812,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 7
-                                    }
-                                },
-                                {
-                                    "first": 55834574813,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 8
-                                    }
-                                },
-                                {
-                                    "first": 55834574815,
-                                    "second": {
-                                        "atlas_index": 24,
-                                        "tile_index": 10
                                     }
                                 },
                                 {
@@ -15991,9 +15031,24 @@
                             ]
                         },
                         "type": "Components::TileMap"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 434,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
-                "id": 38,
+                "id": 457,
                 "layers": [
                     "default"
                 ]
@@ -16008,21 +15063,6 @@
                             "r": 0.9999982118606567
                         },
                         "type": "Components::Color"
-                    },
-                    {
-                        "data": {
-                            "local_offset": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "offset_initialized": false,
-                            "parent_id": 15,
-                            "prev_parent_pos": {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        },
-                        "type": "Components::Parent"
                     },
                     {
                         "data": {
@@ -19335,9 +18375,24 @@
                             ]
                         },
                         "type": "Components::TileMap"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 434,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
-                "id": 39,
+                "id": 458,
                 "layers": [
                     "background"
                 ]
@@ -19352,21 +18407,6 @@
                             "r": 0.9999982118606567
                         },
                         "type": "Components::Color"
-                    },
-                    {
-                        "data": {
-                            "local_offset": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "offset_initialized": false,
-                            "parent_id": 15,
-                            "prev_parent_pos": {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        },
-                        "type": "Components::Parent"
                     },
                     {
                         "data": {
@@ -21321,9 +20361,24 @@
                             ]
                         },
                         "type": "Components::TileMap"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 434,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
-                "id": 40,
+                "id": 459,
                 "layers": [
                     "tilemap_background_mid"
                 ]
@@ -21338,21 +20393,6 @@
                             "r": 0.9999982118606567
                         },
                         "type": "Components::Color"
-                    },
-                    {
-                        "data": {
-                            "local_offset": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "offset_initialized": false,
-                            "parent_id": 15,
-                            "prev_parent_pos": {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        },
-                        "type": "Components::Parent"
                     },
                     {
                         "data": {
@@ -22684,9 +21724,24 @@
                             ]
                         },
                         "type": "Components::TileMap"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 434,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
-                "id": 41,
+                "id": 460,
                 "layers": [
                     "tilemap_background_near"
                 ]
@@ -22701,21 +21756,6 @@
                             "r": 0.9999982118606567
                         },
                         "type": "Components::Color"
-                    },
-                    {
-                        "data": {
-                            "local_offset": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "offset_initialized": false,
-                            "parent_id": 15,
-                            "prev_parent_pos": {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        },
-                        "type": "Components::Parent"
                     },
                     {
                         "data": {
@@ -28961,9 +28001,24 @@
                             ]
                         },
                         "type": "Components::TileMap"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 434,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
-                "id": 42,
+                "id": 461,
                 "layers": [
                     "tilemap_foreground_mid"
                 ]
@@ -28978,21 +28033,6 @@
                             "r": 0.9999982118606567
                         },
                         "type": "Components::Color"
-                    },
-                    {
-                        "data": {
-                            "local_offset": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "offset_initialized": false,
-                            "parent_id": 15,
-                            "prev_parent_pos": {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        },
-                        "type": "Components::Parent"
                     },
                     {
                         "data": {
@@ -29141,9 +28181,24 @@
                             ]
                         },
                         "type": "Components::TileMap"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 434,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
-                "id": 43,
+                "id": 462,
                 "layers": [
                     "hazard"
                 ]
@@ -29161,21 +28216,6 @@
                     },
                     {
                         "data": {
-                            "local_offset": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "offset_initialized": false,
-                            "parent_id": 15,
-                            "prev_parent_pos": {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        },
-                        "type": "Components::Parent"
-                    },
-                    {
-                        "data": {
                             "grid_offset": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -29187,9 +28227,24 @@
                             "tiles": []
                         },
                         "type": "Components::TileMap"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 434,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
-                "id": 44,
+                "id": 463,
                 "layers": [
                     "damage_enemy"
                 ]
@@ -29207,21 +28262,6 @@
                     },
                     {
                         "data": {
-                            "local_offset": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "offset_initialized": false,
-                            "parent_id": 15,
-                            "prev_parent_pos": {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        },
-                        "type": "Components::Parent"
-                    },
-                    {
-                        "data": {
                             "grid_offset": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -29233,55 +28273,30 @@
                             "tiles": []
                         },
                         "type": "Components::TileMap"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 434,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
-                "id": 45,
+                "id": 464,
                 "layers": [
                     "enemy"
                 ]
             },
             {
                 "components": [
-                    {
-                        "data": {
-                            "aabb": {
-                                "half_height": 64.0,
-                                "half_width": 64.0,
-                                "pos": {
-                                    "x": 7354.56298828125,
-                                    "y": 1472.5849609375
-                                }
-                            },
-                            "height": 128.0,
-                            "kinetic_friction": 0.800000011920929,
-                            "offset": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "polygon": {
-                                "position": {
-                                    "x": 0.0,
-                                    "y": 0.0
-                                },
-                                "rotation": 0.0,
-                                "vertices": []
-                            },
-                            "radius": 0.0,
-                            "resolve_collisions": false,
-                            "type": "AABB",
-                            "width": 128.0
-                        },
-                        "type": "Components::BoxCollider"
-                    },
-                    {
-                        "data": {
-                            "value": {
-                                "x": -1.0,
-                                "y": 1.0
-                            }
-                        },
-                        "type": "Components::Flip"
-                    },
                     {
                         "data": {
                             "a": 1.0,
@@ -29293,107 +28308,9 @@
                     },
                     {
                         "data": {
-                            "path": "images/LazyMonkeySpriteSheets/LazyMonkey_Idle_Spritesheet.png"
+                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
                         },
-                        "type": "Components::Texture"
-                    },
-                    {
-                        "data": {
-                            "drawIndex": 1,
-                            "tex_coords_list": [
-                                [
-                                    {
-                                        "x": 0.0,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.20000000298023224,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.20000000298023224,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.0,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.20000000298023224,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.4000000059604645,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.4000000059604645,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.20000000298023224,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.4000000059604645,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.6000000238418579,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.6000000238418579,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.4000000059604645,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.6000000238418579,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.800000011920929,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.800000011920929,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.6000000238418579,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.800000011920929,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 1.0,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 1.0,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.800000011920929,
-                                        "y": 0.0
-                                    }
-                                ]
-                            ]
-                        },
-                        "type": "Components::TextureAtlas"
+                        "type": "Components::Sound"
                     },
                     {
                         "data": {
@@ -29419,30 +28336,84 @@
                                 0.15000000596046448
                             ],
                             "is_looping": true,
-                            "startTime": 18.248878479003906,
+                            "startTime": 15.53311824798584,
                             "totalDuration": 0.75
                         },
                         "type": "Components::Animation"
                     },
                     {
                         "data": {
-                            "position": {
-                                "x": 7354.56298828125,
-                                "y": 1472.30712890625
+                            "acceleration": {
+                                "x": 0.0,
+                                "y": 1000.0
                             },
-                            "rotation": 0.0,
-                            "scale": {
-                                "x": 128.0,
-                                "y": 128.0
-                            }
+                            "force_view": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "gravity": {
+                                "x": 0.0,
+                                "y": 1000.0
+                            },
+                            "is_jumping": false,
+                            "is_static": false,
+                            "mass": 1.0,
+                            "on_ground": true,
+                            "use_gravity": true,
+                            "velocity": {
+                                "x": 0.0,
+                                "y": 16.666667938232422
+                            },
+                            "x_terminal_velocity": 500.0,
+                            "y_terminal_velocity": 500.0
                         },
-                        "type": "Components::Transform2D"
+                        "type": "Components::RigidBody"
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
+                            "value": {
+                                "x": -1.0,
+                                "y": 1.0
+                            }
                         },
-                        "type": "Components::Sound"
+                        "type": "Components::Flip"
+                    },
+                    {
+                        "data": {
+                            "path": "images/LazyMonkeySpriteSheets/LazyMonkey_Idle_Spritesheet.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "aabb": {
+                                "half_height": 64.0,
+                                "half_width": 64.0,
+                                "pos": {
+                                    "x": 7351.22314453125,
+                                    "y": 1472.5849609375
+                                }
+                            },
+                            "height": 128.0,
+                            "kinetic_friction": 0.800000011920929,
+                            "offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                },
+                                "rotation": 0.0,
+                                "vertices": []
+                            },
+                            "radius": 0.0,
+                            "resolve_collisions": false,
+                            "type": "AABB",
+                            "width": 128.0
+                        },
+                        "type": "Components::BoxCollider"
                     },
                     {
                         "data": {
@@ -29475,7 +28446,7 @@
                                                     0.15000000596046448
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 18.248878479003906,
+                                                "startTime": 15.53311824798584,
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": null,
@@ -29622,7 +28593,7 @@
                                                     0.5
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 18.248878479003906,
+                                                "startTime": 15.53311824798584,
                                                 "totalDuration": 1.0
                                             },
                                             "collider_data": null,
@@ -29779,7 +28750,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 18.248878479003906,
+                                                "startTime": 15.53311824798584,
                                                 "totalDuration": 0.6000000238418579
                                             },
                                             "collider_data": null,
@@ -29951,7 +28922,7 @@
                                                     0.15000000596046448
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 18.248878479003906,
+                                                "startTime": 15.53311824798584,
                                                 "totalDuration": 0.75
                                             },
                                             "collider_data": null,
@@ -30086,7 +29057,7 @@
                                                     0.4000000059604645
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 18.248878479003906,
+                                                "startTime": 15.53311824798584,
                                                 "totalDuration": 0.4000000059604645
                                             },
                                             "collider_data": null,
@@ -30198,7 +29169,7 @@
                                                     1.5
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 18.248878479003906,
+                                                "startTime": 15.53311824798584,
                                                 "totalDuration": 1.7999999523162842
                                             },
                                             "collider_data": null,
@@ -30378,46 +29349,137 @@
                     },
                     {
                         "data": {
-                            "acceleration": {
-                                "x": 0.0,
-                                "y": 1000.0
-                            },
-                            "force_view": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "gravity": {
-                                "x": 0.0,
-                                "y": 1000.0
-                            },
-                            "is_jumping": false,
-                            "is_static": false,
-                            "mass": 1.0,
-                            "on_ground": true,
-                            "use_gravity": true,
-                            "velocity": {
-                                "x": 0.0,
-                                "y": 16.666667938232422
-                            },
-                            "x_terminal_velocity": 500.0,
-                            "y_terminal_velocity": 500.0
+                            "drawIndex": 4,
+                            "tex_coords_list": [
+                                [
+                                    {
+                                        "x": 0.0,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.20000000298023224,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.20000000298023224,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.0,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.20000000298023224,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.4000000059604645,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.4000000059604645,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.20000000298023224,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.4000000059604645,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.6000000238418579,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.6000000238418579,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.4000000059604645,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.6000000238418579,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.800000011920929,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.800000011920929,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.6000000238418579,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.800000011920929,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 1.0,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 1.0,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.800000011920929,
+                                        "y": 0.0
+                                    }
+                                ]
+                            ]
                         },
-                        "type": "Components::RigidBody"
+                        "type": "Components::TextureAtlas"
+                    },
+                    {
+                        "data": {
+                            "position": {
+                                "x": 7351.22314453125,
+                                "y": 1472.30712890625
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 128.0,
+                                "y": 128.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
                     },
                     {
                         "data": {
                             "local_offset": {
-                                "x": 7354.56298828125,
+                                "x": 7351.22314453125,
                                 "y": 1472.5849609375
                             },
                             "offset_initialized": true,
-                            "parent_id": 15,
+                            "parent_id": 434,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
                             }
                         },
                         "type": "Components::Parent"
+                    },
+                    {
+                        "data": {
+                            "current_hp": 5,
+                            "max_hp": 5
+                        },
+                        "type": "Components::EnemyHealth"
                     },
                     {
                         "data": {
@@ -30436,21 +29498,14 @@
                                 "x": 500.0,
                                 "y": 0.0
                             },
-                            "last_attack_time": 18.321044921875,
+                            "last_attack_time": 15.575719833374023,
                             "leap_height": 300.0,
                             "leap_speed": 2000.0
                         },
                         "type": "Components::LazyMonkey"
-                    },
-                    {
-                        "data": {
-                            "current_hp": 5,
-                            "max_hp": 5
-                        },
-                        "type": "Components::EnemyHealth"
                     }
                 ],
-                "id": 46,
+                "id": 465,
                 "layers": [
                     "enemy"
                 ],
@@ -30467,51 +29522,11 @@
                 "components": [
                     {
                         "data": {
-                            "aabb": {
-                                "half_height": 57.70079040527344,
-                                "half_width": 39.81103515625,
-                                "pos": {
-                                    "x": 5224.09619140625,
-                                    "y": 1031.176513671875
-                                }
-                            },
-                            "height": 115.40158081054688,
-                            "kinetic_friction": 0.800000011920929,
-                            "offset": {
-                                "x": -1.2598419189453125,
-                                "y": 8.06298828125
-                            },
-                            "polygon": {
-                                "position": {
-                                    "x": 0.0,
-                                    "y": 0.0
-                                },
-                                "rotation": 0.0,
-                                "vertices": []
-                            },
-                            "radius": 0.0,
-                            "resolve_collisions": false,
-                            "type": "AABB",
-                            "width": 79.6220703125
-                        },
-                        "type": "Components::BoxCollider"
-                    },
-                    {
-                        "data": {
                             "intensity": 0.0,
                             "mesh_intensity": 0.0,
                             "speed": 0.0
                         },
                         "type": "Components::Distortion"
-                    },
-                    {
-                        "data": {
-                            "value": {
-                                "x": -1.0,
-                                "y": 1.0
-                            }
-                        },
-                        "type": "Components::Flip"
                     },
                     {
                         "data": {
@@ -30524,449 +29539,9 @@
                     },
                     {
                         "data": {
-                            "path": "images/BroSpriteSheets/Bro_idle_spritesheet.png"
+                            "path": "sounds/SFX/Player/Player Footstep.wav"
                         },
-                        "type": "Components::Texture"
-                    },
-                    {
-                        "data": {
-                            "drawIndex": 22,
-                            "tex_coords_list": [
-                                [
-                                    {
-                                        "x": 0.0,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.0416666679084301,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.0416666679084301,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.0,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.0416666679084301,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.0833333358168602,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.0833333358168602,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.0416666679084301,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.0833333358168602,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.125,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.125,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.0833333358168602,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.125,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.1666666716337204,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.1666666716337204,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.125,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.1666666716337204,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.2083333283662796,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.2083333283662796,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.1666666716337204,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.2083333283662796,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.25,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.25,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.2083333283662796,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.25,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.2916666567325592,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.2916666567325592,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.25,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.2916666567325592,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.3333333432674408,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.3333333432674408,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.2916666567325592,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.3333333432674408,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.375,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.375,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.3333333432674408,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.375,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.4166666567325592,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.4166666567325592,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.375,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.4166666567325592,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.4583333432674408,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.4583333432674408,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.4166666567325592,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.4583333432674408,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.5,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.5,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.4583333432674408,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.5,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.5416666865348816,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.5416666865348816,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.5,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.5416666865348816,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.5833333134651184,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.5833333134651184,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.5416666865348816,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.5833333134651184,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.625,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.625,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.5833333134651184,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.625,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.6666666865348816,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.6666666865348816,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.625,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.6666666865348816,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.7083333134651184,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.7083333134651184,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.6666666865348816,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.7083333134651184,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.75,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.75,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.7083333134651184,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.75,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.7916666865348816,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.7916666865348816,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.75,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.7916666865348816,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.8333333134651184,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.8333333134651184,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.7916666865348816,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.8333333134651184,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.875,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.875,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.8333333134651184,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.875,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.9166666865348816,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.9166666865348816,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.875,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.9166666865348816,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.9583333134651184,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 0.9583333134651184,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.9166666865348816,
-                                        "y": 0.0
-                                    }
-                                ],
-                                [
-                                    {
-                                        "x": 0.9583333134651184,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 1.0,
-                                        "y": 1.0
-                                    },
-                                    {
-                                        "x": 1.0,
-                                        "y": 0.0
-                                    },
-                                    {
-                                        "x": 0.9583333134651184,
-                                        "y": 0.0
-                                    }
-                                ]
-                            ]
-                        },
-                        "type": "Components::TextureAtlas"
+                        "type": "Components::Sound"
                     },
                     {
                         "data": {
@@ -31049,30 +29624,148 @@
                                 0.10000000149011612
                             ],
                             "is_looping": true,
-                            "startTime": 280.48681640625,
+                            "startTime": 15.53311824798584,
                             "totalDuration": 2.3999998569488525
                         },
                         "type": "Components::Animation"
                     },
                     {
                         "data": {
-                            "position": {
-                                "x": 5222.83642578125,
-                                "y": 1022.6967163085938
+                            "acceleration": {
+                                "x": 0.0,
+                                "y": 1500.0
                             },
-                            "rotation": 0.0,
-                            "scale": {
-                                "x": 128.0,
-                                "y": 128.0
-                            }
+                            "force_view": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "gravity": {
+                                "x": 0.0,
+                                "y": 1500.0
+                            },
+                            "is_jumping": false,
+                            "is_static": false,
+                            "mass": 1.0,
+                            "on_ground": true,
+                            "use_gravity": true,
+                            "velocity": {
+                                "x": 0.0,
+                                "y": 25.000001907348633
+                            },
+                            "x_terminal_velocity": 500.0,
+                            "y_terminal_velocity": 500.0
                         },
-                        "type": "Components::Transform2D"
+                        "type": "Components::RigidBody"
                     },
                     {
                         "data": {
-                            "path": "sounds/SFX/Player/Player Footstep.wav"
+                            "crash_out": 160.0,
+                            "decay_rate": 1.0,
+                            "heartrate": 80.0,
+                            "high": 120.0,
+                            "low": 80.0,
+                            "max_brightness": 1.0,
+                            "min_brightness": 0.5,
+                            "normal": 100.0,
+                            "very_high": 140.0
                         },
-                        "type": "Components::Sound"
+                        "type": "Components::Heartrate"
+                    },
+                    {
+                        "data": {
+                            "attack1": {
+                                "damage": 1,
+                                "dash_speed": 1000.0,
+                                "heartrate_cost": 5.0,
+                                "hitbox_height": 128.0,
+                                "hitbox_offset_x": 80.0,
+                                "hitbox_offset_y": 0.0,
+                                "hitbox_width": 100.0,
+                                "knockback": {
+                                    "x": 300.0,
+                                    "y": 0.0
+                                }
+                            },
+                            "attack2": {
+                                "damage": 1,
+                                "dash_speed": 1000.0,
+                                "heartrate_cost": 5.0,
+                                "hitbox_height": 128.0,
+                                "hitbox_offset_x": 80.0,
+                                "hitbox_offset_y": 0.0,
+                                "hitbox_width": 100.0,
+                                "knockback": {
+                                    "x": 300.0,
+                                    "y": 0.0
+                                }
+                            },
+                            "attack3": {
+                                "damage": 3,
+                                "dash_speed": 2000.0,
+                                "heartrate_cost": 8.0,
+                                "hitbox_height": 128.0,
+                                "hitbox_offset_x": 80.0,
+                                "hitbox_offset_y": 0.0,
+                                "hitbox_width": 120.0,
+                                "knockback": {
+                                    "x": 3000.0,
+                                    "y": 0.0
+                                }
+                            },
+                            "dash_cooldown": 5.0,
+                            "dash_duration": 0.10000000149011612,
+                            "dash_speed": 2500.0,
+                            "jump_force": -45000.0,
+                            "stun_duration": 0.30000001192092896,
+                            "walk_speed": 300000.0
+                        },
+                        "type": "Components::Player"
+                    },
+                    {
+                        "data": {
+                            "value": {
+                                "x": 1.0,
+                                "y": 1.0
+                            }
+                        },
+                        "type": "Components::Flip"
+                    },
+                    {
+                        "data": {
+                            "path": "images/BroSpriteSheets/Bro_idle_spritesheet.png"
+                        },
+                        "type": "Components::Texture"
+                    },
+                    {
+                        "data": {
+                            "aabb": {
+                                "half_height": 57.70079040527344,
+                                "half_width": 39.81103515625,
+                                "pos": {
+                                    "x": 5225.82177734375,
+                                    "y": 1031.1763916015625
+                                }
+                            },
+                            "height": 115.40158081054688,
+                            "kinetic_friction": 0.800000011920929,
+                            "offset": {
+                                "x": -1.2598419189453125,
+                                "y": 8.06298828125
+                            },
+                            "polygon": {
+                                "position": {
+                                    "x": 0.0,
+                                    "y": 0.0
+                                },
+                                "rotation": 0.0,
+                                "vertices": []
+                            },
+                            "radius": 0.0,
+                            "resolve_collisions": false,
+                            "type": "AABB",
+                            "width": 79.6220703125
+                        },
+                        "type": "Components::BoxCollider"
                     },
                     {
                         "data": {
@@ -31162,7 +29855,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 18.248878479003906,
+                                                "startTime": 15.53311824798584,
                                                 "totalDuration": 2.3999998569488525
                                             },
                                             "collider_data": null,
@@ -31660,7 +30353,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 18.248878479003906,
+                                                "startTime": 15.53311824798584,
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": null,
@@ -31877,7 +30570,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 18.248878479003906,
+                                                "startTime": 15.53311824798584,
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": null,
@@ -32094,7 +30787,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 18.248878479003906,
+                                                "startTime": 15.53311824798584,
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": null,
@@ -32308,7 +31001,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 18.248878479003906,
+                                                "startTime": 15.53311824798584,
                                                 "totalDuration": 0.559999942779541
                                             },
                                             "collider_data": null,
@@ -32618,7 +31311,7 @@
                                                     0.07999999821186066
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 18.248878479003906,
+                                                "startTime": 15.53311824798584,
                                                 "totalDuration": 0.7199999094009399
                                             },
                                             "collider_data": null,
@@ -32856,7 +31549,7 @@
                                                     0.05999999865889549
                                                 ],
                                                 "is_looping": false,
-                                                "startTime": 18.248878479003906,
+                                                "startTime": 15.53311824798584,
                                                 "totalDuration": 0.5399999618530273
                                             },
                                             "collider_data": null,
@@ -33223,46 +31916,457 @@
                     },
                     {
                         "data": {
-                            "acceleration": {
-                                "x": 0.0,
-                                "y": 1500.0
-                            },
-                            "force_view": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "gravity": {
-                                "x": 0.0,
-                                "y": 1500.0
-                            },
-                            "is_jumping": false,
-                            "is_static": false,
-                            "mass": 1.0,
-                            "on_ground": true,
-                            "use_gravity": true,
-                            "velocity": {
-                                "x": 0.0,
-                                "y": 25.000001907348633
-                            },
-                            "x_terminal_velocity": 500.0,
-                            "y_terminal_velocity": 500.0
+                            "drawIndex": 15,
+                            "tex_coords_list": [
+                                [
+                                    {
+                                        "x": 0.0,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.0416666679084301,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.0416666679084301,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.0,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.0416666679084301,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.0833333358168602,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.0833333358168602,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.0416666679084301,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.0833333358168602,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.125,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.125,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.0833333358168602,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.125,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.1666666716337204,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.1666666716337204,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.125,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.1666666716337204,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.2083333283662796,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.2083333283662796,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.1666666716337204,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.2083333283662796,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.25,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.25,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.2083333283662796,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.25,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.2916666567325592,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.2916666567325592,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.25,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.2916666567325592,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.3333333432674408,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.3333333432674408,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.2916666567325592,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.3333333432674408,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.375,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.375,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.3333333432674408,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.375,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.4166666567325592,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.4166666567325592,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.375,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.4166666567325592,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.4583333432674408,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.4583333432674408,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.4166666567325592,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.4583333432674408,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.5,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.5,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.4583333432674408,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.5,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.5416666865348816,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.5416666865348816,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.5,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.5416666865348816,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.5833333134651184,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.5833333134651184,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.5416666865348816,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.5833333134651184,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.625,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.625,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.5833333134651184,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.625,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.6666666865348816,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.6666666865348816,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.625,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.6666666865348816,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.7083333134651184,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.7083333134651184,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.6666666865348816,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.7083333134651184,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.75,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.75,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.7083333134651184,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.75,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.7916666865348816,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.7916666865348816,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.75,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.7916666865348816,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.8333333134651184,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.8333333134651184,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.7916666865348816,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.8333333134651184,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.875,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.875,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.8333333134651184,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.875,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.9166666865348816,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.9166666865348816,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.875,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.9166666865348816,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.9583333134651184,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 0.9583333134651184,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.9166666865348816,
+                                        "y": 0.0
+                                    }
+                                ],
+                                [
+                                    {
+                                        "x": 0.9583333134651184,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 1.0,
+                                        "y": 1.0
+                                    },
+                                    {
+                                        "x": 1.0,
+                                        "y": 0.0
+                                    },
+                                    {
+                                        "x": 0.9583333134651184,
+                                        "y": 0.0
+                                    }
+                                ]
+                            ]
                         },
-                        "type": "Components::RigidBody"
+                        "type": "Components::TextureAtlas"
                     },
                     {
                         "data": {
-                            "local_offset": {
-                                "x": 5222.83642578125,
-                                "y": 1023.1134643554688
+                            "position": {
+                                "x": 5227.08154296875,
+                                "y": 1022.69677734375
                             },
-                            "offset_initialized": true,
-                            "parent_id": 15,
-                            "prev_parent_pos": {
-                                "x": 0.0,
-                                "y": 0.0
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 128.0,
+                                "y": 128.0
                             }
                         },
-                        "type": "Components::Parent"
+                        "type": "Components::Transform2D"
                     },
                     {
                         "data": {
@@ -33276,70 +32380,21 @@
                     },
                     {
                         "data": {
-                            "attack1": {
-                                "damage": 1,
-                                "dash_speed": 1000.0,
-                                "heartrate_cost": 5.0,
-                                "hitbox_height": 128.0,
-                                "hitbox_offset_x": 80.0,
-                                "hitbox_offset_y": 0.0,
-                                "hitbox_width": 100.0,
-                                "knockback": {
-                                    "x": 300.0,
-                                    "y": 0.0
-                                }
+                            "local_offset": {
+                                "x": 5227.08154296875,
+                                "y": 1023.1134033203125
                             },
-                            "attack2": {
-                                "damage": 1,
-                                "dash_speed": 1000.0,
-                                "heartrate_cost": 5.0,
-                                "hitbox_height": 128.0,
-                                "hitbox_offset_x": 80.0,
-                                "hitbox_offset_y": 0.0,
-                                "hitbox_width": 100.0,
-                                "knockback": {
-                                    "x": 300.0,
-                                    "y": 0.0
-                                }
-                            },
-                            "attack3": {
-                                "damage": 3,
-                                "dash_speed": 2000.0,
-                                "heartrate_cost": 8.0,
-                                "hitbox_height": 128.0,
-                                "hitbox_offset_x": 80.0,
-                                "hitbox_offset_y": 0.0,
-                                "hitbox_width": 120.0,
-                                "knockback": {
-                                    "x": 3000.0,
-                                    "y": 0.0
-                                }
-                            },
-                            "dash_cooldown": 5.0,
-                            "dash_duration": 0.10000000149011612,
-                            "dash_speed": 2500.0,
-                            "jump_force": -45000.0,
-                            "stun_duration": 0.30000001192092896,
-                            "walk_speed": 300000.0
+                            "offset_initialized": true,
+                            "parent_id": 434,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
                         },
-                        "type": "Components::Player"
-                    },
-                    {
-                        "data": {
-                            "crash_out": 160.0,
-                            "decay_rate": 1.0,
-                            "heartrate": 80.0,
-                            "high": 120.0,
-                            "low": 80.0,
-                            "max_brightness": 1.0,
-                            "min_brightness": 0.5,
-                            "normal": 100.0,
-                            "very_high": 140.0
-                        },
-                        "type": "Components::Heartrate"
+                        "type": "Components::Parent"
                     }
                 ],
-                "id": 47,
+                "id": 466,
                 "layers": [
                     "player"
                 ],
@@ -33362,21 +32417,6 @@
                             "r": 0.9999982118606567
                         },
                         "type": "Components::Color"
-                    },
-                    {
-                        "data": {
-                            "local_offset": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "offset_initialized": false,
-                            "parent_id": 15,
-                            "prev_parent_pos": {
-                                "x": 0.0,
-                                "y": 0.0
-                            }
-                        },
-                        "type": "Components::Parent"
                     },
                     {
                         "data": {
@@ -33588,9 +32628,24 @@
                             ]
                         },
                         "type": "Components::TileMap"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 434,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
                     }
                 ],
-                "id": 48,
+                "id": 467,
                 "layers": [
                     "effect"
                 ]
