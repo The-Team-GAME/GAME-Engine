@@ -34,6 +34,14 @@ class MainMenuState : public Engine::Scene
   // Store entity IDs for cleanup when transitioning
   std::vector<Engine::ECS::EntityID> start_screen_entities;
 
+  // For manual animations
+  Engine::ECS::EntityID carriage_parent_id = 0;
+  Engine::ECS::EntityID text_any_key_id = 0;
+  float bounce_timer = 0.0f;
+  float bounce_duration = 3.0f;
+  float blink_timer = 0.0f;
+  float blink_duration = 1.4f;
+
   // Check if any key or mouse button was pressed this frame
   bool any_key_pressed() {
     // Check all keyboard keys
@@ -60,34 +68,11 @@ class MainMenuState : public Engine::Scene
       .add_to_layer("ui_background");
     start_screen_entities.push_back(backsky.get_id());
 
-    // Entity 103: Parent entity with bounce animator (moves children up/down)
-    Components::Animator bounce_animator;
-    bounce_animator.duration = 3.0f;
-    bounce_animator.is_looping = true;
-    bounce_animator.is_playing = true;
-
-    Components::AnimationTrack bounce_track;
-    bounce_track.component_type = "Components::Transform2D";
-    bounce_track.field_path = "position.y";
-    bounce_track.keyframes = {
-      Components::FloatKeyframe(0.0f, 0.0f, "EaseLinearNone"),
-      Components::FloatKeyframe(0.0f, 0.368f, "EaseLinearNone"),
-      Components::FloatKeyframe(8.33f, 0.391f, "EaseLinearNone"),
-      Components::FloatKeyframe(8.33f, 0.416f, "EaseLinearNone"),
-      Components::FloatKeyframe(0.0f, 0.442f, "EaseLinearNone"),
-      Components::FloatKeyframe(0.0f, 0.5f, "EaseLinearNone"),
-      Components::FloatKeyframe(8.33f, 0.522f, "EaseLinearNone"),
-      Components::FloatKeyframe(8.33f, 0.546f, "EaseLinearNone"),
-      Components::FloatKeyframe(0.0f, 0.569f, "EaseLinearNone"),
-      Components::FloatKeyframe(0.0f, 1.0f, "EaseLinearNone")
-    };
-    bounce_animator.tracks.push_back(bounce_track);
-
+    // Entity 103: Parent entity for bounce animation (moves children up/down)
     auto carriage_parent = Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(Math::Vec2D(0.0f, 0.0f), 0.0f, Math::Vec2D(1.0f, 1.0f))
-      .add_component<Components::Animator>(bounce_animator);
+      .add_component<Components::Transform2D>(Math::Vec2D(0.0f, 0.0f), 0.0f, Math::Vec2D(1.0f, 1.0f));
     start_screen_entities.push_back(carriage_parent.get_id());
-    auto carriage_parent_id = carriage_parent.get_id();
+    carriage_parent_id = carriage_parent.get_id();
 
     // Entity 100: BackCarriage - ui layer (child of carriage_parent)
     auto back_carriage = Engine::ECS::create_entity()
@@ -100,12 +85,12 @@ class MainMenuState : public Engine::Scene
 
     // Entity 99: Bro sleeping animation - ui layer (child of carriage_parent)
     auto bro_sleeping = Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(Math::Vec2D(1211.25f, 693.13f), 0.0f, Math::Vec2D(433.33f, 433.33f))
+      .add_component<Components::Transform2D>(Math::Vec2D(1360.0f, 785.0f), 0.0f, Math::Vec2D(433.33f, 433.33f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu (Start)/Brosleepy3-Sheet.png"))
       .add_component<Components::TextureAtlas>(520, 520, 1, 8, 8) // 8 frames in a row
       .add_component<Components::Animation>(0, 7, 0.15f, true) // 8 frames, 0.15s each, looping
-      .add_component<Components::Parent>(carriage_parent_id, Math::Vec2D(1211.25f, 693.13f))
+      .add_component<Components::Parent>(carriage_parent_id, Math::Vec2D(1360.0f, 785.0f))
       .add_to_layer("ui");
     start_screen_entities.push_back(bro_sleeping.get_id());
 
@@ -127,31 +112,13 @@ class MainMenuState : public Engine::Scene
     start_screen_entities.push_back(any_key_bg.get_id());
 
     // Entity 105: TextAnyKey with blinking animation - ui_foreground layer
-    Components::Animator blink_animator;
-    blink_animator.duration = 1.4f;
-    blink_animator.is_looping = true;
-    blink_animator.is_playing = true;
-
-    Components::AnimationTrack alpha_track;
-    alpha_track.component_type = "Components::Color";
-    alpha_track.field_path = "a";
-    alpha_track.keyframes = {
-      Components::FloatKeyframe(1.0f, 0.0f, "EaseLinearNone"),
-      Components::FloatKeyframe(1.0f, 0.306f, "EaseLinearNone"),
-      Components::FloatKeyframe(0.0f, 0.322f, "EaseLinearNone"),
-      Components::FloatKeyframe(0.0f, 0.671f, "EaseLinearNone"),
-      Components::FloatKeyframe(1.0f, 0.688f, "EaseLinearNone"),
-      Components::FloatKeyframe(1.0f, 1.0f, "EaseLinearNone")
-    };
-    blink_animator.tracks.push_back(alpha_track);
-
     auto text_any_key = Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu (Start)/TextAnyKey.png"))
-      .add_component<Components::Animator>(blink_animator)
       .add_to_layer("ui_foreground");
     start_screen_entities.push_back(text_any_key.get_id());
+    text_any_key_id = text_any_key.get_id();
   }
 
   void destroy_start_screen() {
@@ -161,6 +128,8 @@ class MainMenuState : public Engine::Scene
       }
     }
     start_screen_entities.clear();
+    carriage_parent_id = 0;
+    text_any_key_id = 0;
   }
 
   void create_main_menu() {
@@ -300,11 +269,88 @@ public:
   };
 
   void init() {
+    bounce_timer = 0.0f;
+    blink_timer = 0.0f;
   };
 
   void update() {
     if (showing_start_screen) {
-      // Animator system handles the blinking animation
+      float dt = Engine::Time::get_fixed_dt();
+
+      // Bounce animation for carriage parent
+      bounce_timer += dt;
+      if (bounce_timer >= bounce_duration) {
+        bounce_timer -= bounce_duration;
+      }
+      float bounce_t = bounce_timer / bounce_duration;
+      float bounce_y = 0.0f;
+      // Keyframes: 0->0, 0.368->0, 0.391->8.33, 0.416->8.33, 0.442->0, 0.5->0, 0.522->8.33, 0.546->8.33, 0.569->0, 1->0
+      if (bounce_t < 0.368f) {
+        bounce_y = 0.0f;
+      }
+      else if (bounce_t < 0.391f) {
+        bounce_y = 8.33f * (bounce_t - 0.368f) / (0.391f - 0.368f);
+      }
+      else if (bounce_t < 0.416f) {
+        bounce_y = 8.33f;
+      }
+      else if (bounce_t < 0.442f) {
+        bounce_y = 8.33f * (1.0f - (bounce_t - 0.416f) / (0.442f - 0.416f));
+      }
+      else if (bounce_t < 0.5f) {
+        bounce_y = 0.0f;
+      }
+      else if (bounce_t < 0.522f) {
+        bounce_y = 8.33f * (bounce_t - 0.5f) / (0.522f - 0.5f);
+      }
+      else if (bounce_t < 0.546f) {
+        bounce_y = 8.33f;
+      }
+      else if (bounce_t < 0.569f) {
+        bounce_y = 8.33f * (1.0f - (bounce_t - 0.546f) / (0.569f - 0.546f));
+      }
+      else {
+        bounce_y = 0.0f;
+      }
+
+      if (carriage_parent_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(carriage_parent_id))) {
+        auto* transform = Engine::ECS::Entity(carriage_parent_id).get_component<Components::Transform2D>();
+        if (transform) {
+          transform->position.y = bounce_y;
+        }
+      }
+
+      // Blink animation for "Press Any Key" text
+      blink_timer += dt;
+      if (blink_timer >= blink_duration) {
+        blink_timer -= blink_duration;
+      }
+      float blink_t = blink_timer / blink_duration;
+      float alpha = 1.0f;
+      // Keyframes: 0->1, 0.306->1, 0.322->0, 0.671->0, 0.688->1, 1->1
+      if (blink_t < 0.306f) {
+        alpha = 1.0f;
+      }
+      else if (blink_t < 0.322f) {
+        alpha = 1.0f - (blink_t - 0.306f) / (0.322f - 0.306f);
+      }
+      else if (blink_t < 0.671f) {
+        alpha = 0.0f;
+      }
+      else if (blink_t < 0.688f) {
+        alpha = (blink_t - 0.671f) / (0.688f - 0.671f);
+      }
+      else {
+        alpha = 1.0f;
+      }
+
+      if (text_any_key_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(text_any_key_id))) {
+        auto* color = Engine::ECS::Entity(text_any_key_id).get_component<Components::Color>();
+        if (color) {
+          color->a = alpha;
+        }
+      }
+
       // Check for any key press to transition to main menu
       if (any_key_pressed()) {
         destroy_start_screen();
