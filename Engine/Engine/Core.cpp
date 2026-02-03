@@ -304,13 +304,12 @@ namespace Engine
           Engine::Time::set_time_scale(1.0f);
         }
 
-        // Main gameloop here
-        Engine::SceneManager::update();
 
         // Two-phase ECS update:
         // 1. Game systems only run when not paused (or during single-step)
         if (!Engine::Time::get_paused() || single_step_requested)
         {
+          Engine::SceneManager::update(); // LEgacy: Scene update
           Engine::ECS::update_game();
         }
 
