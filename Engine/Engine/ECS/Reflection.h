@@ -134,17 +134,16 @@ namespace Engine {
 
       Parameters:
       - components_array: The JSON array containing component entries.
-      - storage: The component storage map to add components to (supports std::unordered_map or Memory::HashMap).
+      - storage: The component storage map to add components to.
       - signature: The component signature to update.
       - entity_id: The entity ID to use for component deserialization (use 0 for prefabs).
 
       Returns:
       A DeserializeResult containing any errors encountered during deserialization.
       ==================================================================================*/
-      template <typename StorageMap>
       inline DeserializeResult deserialize_components_to_storage(
         const ReflectionLibrary::Array& components_array,
-        StorageMap& storage,
+        std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>>& storage,
         ComponentSignature& signature,
         EntityID entity_id
       ) {
