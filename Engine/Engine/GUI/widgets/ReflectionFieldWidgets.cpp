@@ -317,7 +317,7 @@ namespace ImGuiWidgets {
     return true;
   }
 
-  bool render_animation_field(ReflectionLibrary::GenericValue& field_value, bool& modified) {
+  bool render_animation_field(ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity) {
     // Animation structure:
     // - durations: array of floats
     // - before_times: array of floats (cumulative times)
@@ -326,6 +326,15 @@ namespace ImGuiWidgets {
     // - is_looping: bool
 
     if (!field_value.isObject()) return false;
+
+    // Edit Animation Frames button (if entity is valid and has Texture + TextureAtlas)
+    if (entity.is_valid() && entity.has_component<Components::Texture>() && entity.has_component<Components::TextureAtlas>()) {
+      if (ImGui::Button("Edit Animation Frames")) {
+        extern void ImGuiWidgets_FrameAnimationEditor_OpenForAnimation(Engine::ECS::Entity entity);
+        ImGuiWidgets_FrameAnimationEditor_OpenForAnimation(entity);
+      }
+      ImGui::Separator();
+    }
 
     // Get values
     float total_duration = field_value["totalDuration"].isDouble() ?
@@ -562,7 +571,7 @@ namespace ImGuiWidgets {
               if (anim_field_it != state_anim_obj.end()) {
                 ImGui::Text("Animation:");
                 ImGui::Indent();
-                render_animation_field(anim_field_it->second, local_modified);
+                render_animation_field(anim_field_it->second, local_modified, entity);
                 ImGui::Unindent();
               }
 
@@ -830,7 +839,7 @@ namespace ImGuiWidgets {
     }
 
     if (type_hint == "Components::Animation") {
-      return render_animation_field(field_value, modified);
+      return render_animation_field(field_value, modified, entity);
     }
 
     if (type_hint == "Components::StateMachine") {
