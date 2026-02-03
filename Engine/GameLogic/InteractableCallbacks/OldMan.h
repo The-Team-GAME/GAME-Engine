@@ -3,14 +3,20 @@
 
 namespace OldManCallbacks
 {
-  void old_man_on_interact(Engine::ECS::Entity entity) {
-    Log::info("Interacted with entity ID {}", entity.get_id());
+  void old_man_on_enter(Engine::ECS::Entity interactable, Engine::ECS::Entity player_entity) {
+    Log::info("Player {} entered interaction range of entity {}", player_entity.get_id(), interactable.get_id());
   }
-  void old_man_on_update(Engine::ECS::Entity entity) {
-    Log::info("Updating interaction with entity ID {}", entity.get_id());
+
+  void old_man_on_update(Engine::ECS::Entity interactable, Engine::ECS::Entity player_entity) {
+    Log::info("Player {} is within interaction range of entity {}", player_entity.get_id(), interactable.get_id());
+  }
+
+  void old_man_on_exit(Engine::ECS::Entity interactable, Engine::ECS::Entity player_entity) {
+    Log::info("Player {} exited interaction range of entity {}", player_entity.get_id(), interactable.get_id());
   }
 } // namespace OldManCallbacks
 
 
-REGISTER_FUNCTION(OldManCallbacks::old_man_on_interact, void(Engine::ECS::Entity), OldManCallbacks::old_man_on_interact);
-REGISTER_FUNCTION(OldManCallbacks::old_man_on_update, void(Engine::ECS::Entity), OldManCallbacks::old_man_on_update);
+REGISTER_FUNCTION(old_man_on_enter, void(Engine::ECS::Entity, Engine::ECS::Entity), OldManCallbacks::old_man_on_enter);
+REGISTER_FUNCTION(old_man_on_update, void(Engine::ECS::Entity, Engine::ECS::Entity), OldManCallbacks::old_man_on_update);
+REGISTER_FUNCTION(old_man_on_exit, void(Engine::ECS::Entity, Engine::ECS::Entity), OldManCallbacks::old_man_on_exit);
