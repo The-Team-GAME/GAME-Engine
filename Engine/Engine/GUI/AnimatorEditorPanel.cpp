@@ -44,6 +44,9 @@ namespace {
   std::string popup_component_type = "Components::Color";
   std::string popup_field_path = "r";
 
+  // Playback state
+  bool is_playing = false;
+
   // Available easing function names
   const std::vector<std::string> easing_names = {
     "EaseLinearNone",
@@ -431,6 +434,35 @@ void AnimatorEditorPanel()
   ImGui::Checkbox("Looping", &anim->is_looping);
   ImGui::SameLine();
   ImGui::Checkbox("Ping Pong", &anim->ping_pong);
+
+  ImGui::Spacing();
+
+  // ============================================================================
+  // Playback Controls
+  // ============================================================================
+  if (is_playing) {
+    if (ImGui::Button("Stop", ImVec2(60, 0))) {
+      is_playing = false;
+    }
+  } else {
+    if (ImGui::Button("Play", ImVec2(60, 0))) {
+      is_playing = true;
+      anim->start_time = Engine::Time::get_time() - anim->elapsed;
+    }
+  }
+  ImGui::SameLine();
+  if (ImGui::Button("Reset", ImVec2(60, 0))) {
+    anim->elapsed = 0.0f;
+    anim->start_time = Engine::Time::get_time();
+    anim->is_reversed = false;
+    Engine::ECS::request_entity_update(entity.get_id());
+  }
+  
+  // Update animation when playing
+  if (is_playing) {
+    anim->elapsed = Engine::Time::get_time() - anim->start_time;
+    Engine::ECS::request_entity_update(entity.get_id());
+  }
 
   ImGui::Spacing();
 
