@@ -51,12 +51,11 @@ namespace Engine {
         if (!containers.active_entities.contains(entity))
           return false;
 
-        // Use HashMap's find() which returns an iterator
-        auto signature_it = containers.entity_signatures.find(entity);
-        if (signature_it == containers.entity_signatures.end())
+        auto it = containers.entity_signatures.find(entity);
+        if (it == containers.entity_signatures.end())
           return false;
 
-        const auto& entitySignature = signature_it->second;
+        const auto& entitySignature = it->second;
         const auto& requiredSignature = system.get_required_signature();
         const auto& excludedSignature = system.get_excluded_signature();
 
@@ -179,9 +178,8 @@ namespace Engine {
         }
       }
 
-      for (auto& [typeId, componentArrayPtr] : containers.component_arrays)
+      for (auto const& [typeId, componentArray] : containers.component_arrays)
       {
-        IComponentArray* componentArray = componentArrayPtr.get();
         if (sourceSignature.test(typeId))
         {
           componentArray->clone_component(source_id, newEntity.get_id());
@@ -269,7 +267,42 @@ namespace Engine {
         }
       }
 
+      // Process one-shot system updates (for paused scrubbing, etc.)
+      for (System* system : containers.systems_to_update_once)
+      {
+        if (system) {
+          system->update();
+        }
+      }
+      containers.systems_to_update_once.clear();
+
+      // Process one-shot entity updates
+      if (!containers.entities_to_update_once.empty())
+      {
+        for (EntityID entityId : containers.entities_to_update_once)
+        {
+          Entity entity(entityId);
+          if (!entity.is_valid()) continue;
+
+          // Run update_entity on all systems that track this entity
+          for (auto& system : containers.systems)
+          {
+            if (system->get_entities().contains(entityId))
+            {
+              system->update_entity(entity);
+            }
+          }
+        }
+        containers.entities_to_update_once.clear();
+      }
+
       Engine::Perf::stop("ECS Update Editor");
+    }
+
+    void request_entity_update(EntityID entity)
+    {
+      auto& containers = Internal::get_containers();
+      containers.entities_to_update_once.insert(entity);
     }
 
     void process_housekeeping()
@@ -311,9 +344,9 @@ namespace Engine {
 
           containers.active_entities.erase(entityId);
 
-          for (auto& [typeId, componentArrayPtr] : containers.component_arrays)
+          for (auto& [typeId, array] : containers.component_arrays)
           {
-            componentArrayPtr->remove_entity(entityId);
+            array->remove_entity(entityId);
           }
 
           containers.entity_signatures.erase(entityId);
@@ -611,11 +644,11 @@ namespace Engine {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
 
-      auto layers_it = containers.entity_layers.find(id);
-      if (layers_it == containers.entity_layers.end())
+      auto it = containers.entity_layers.find(id);
+      if (it == containers.entity_layers.end())
         return false;
 
-      return layers_it->second.test(layer);
+      return it->second.test(layer);
     }
 
     LayerSignature get_entity_layers(const Entity entity)
@@ -623,11 +656,11 @@ namespace Engine {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
 
-      auto layers_it = containers.entity_layers.find(id);
-      if (layers_it == containers.entity_layers.end())
+      auto it = containers.entity_layers.find(id);
+      if (it == containers.entity_layers.end())
         return LayerSignature{};
 
-      return layers_it->second;
+      return it->second;
     }
 
     void clear_layers(const Entity entity)
