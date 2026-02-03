@@ -275,26 +275,68 @@ namespace Engine
 
             const f32 dt = Time::get_fixed_dt();
 
-            // 2. Look-ahead Calculation
-            // Note: If 'Right' feels too far, we can introduce a small 'center_bias' 
-            // to center the camera on the sprite rather than the origin.
-            f32 center_bias = -500.0f;
-            Vec2D desired_offset = { (look_dir * cam->look_ahead_distance) + center_bias, 0.0f };
+            // 2. Look-ahead Calculation (smooth camera leading in movement direction)
+            Vec2D desired_look_ahead = { look_dir * cam->look_ahead_distance, 0.0f };
+            
+            // Smoothly interpolate look-ahead offset
+            f32 t_look_ahead = 1.0f - std::exp(-cam->look_ahead_smooth * dt);
+            cam->look_ahead_offset = Lerp(cam->look_ahead_offset, desired_look_ahead, t_look_ahead);
 
-            f32 t_offset = 1.0f - std::exp(-cam->look_ahead_smooth * dt);
-            cam->look_ahead_offset = Lerp(cam->look_ahead_offset, desired_offset, t_offset);
-
-            // 3. Target Position
+            // 3. Calculate Target Position
             Vec2D target_position = trans->position + cam->look_ahead_offset;
 
-            // 4. Final Camera Application
+            // 4. Detect Direction Change
+            Vec2D current_velocity = target_position - camera.position;
+            f32 direction_consistency = 1.0f;
+            
+            // Calculate how aligned current movement is with previous movement
+            f32 prev_mag = std::sqrt(cam->prev_velocity.x * cam->prev_velocity.x + cam->prev_velocity.y * cam->prev_velocity.y);
+            f32 curr_mag = std::sqrt(current_velocity.x * current_velocity.x + current_velocity.y * current_velocity.y);
+            
+            if (prev_mag > 0.01f && curr_mag > 0.01f) {
+              // Dot product normalized = cosine of angle between vectors
+              f32 dot = (cam->prev_velocity.x * current_velocity.x + cam->prev_velocity.y * current_velocity.y);
+              direction_consistency = dot / (prev_mag * curr_mag);
+              direction_consistency = std::max(0.0f, direction_consistency); // Clamp to 0-1
+            }
+            
+            // Store current velocity for next frame
+            cam->prev_velocity = current_velocity;
+
+            // 5. Apply Dead Zone (optional - prevents jittery movement)
+            if (cam->dead_zone_radius > 0.0f) {
+              Vec2D to_target = target_position - camera.position;
+              f32 distance = std::sqrt(to_target.x * to_target.x + to_target.y * to_target.y);
+              
+              if (distance < cam->dead_zone_radius) {
+                // Within dead zone - don't move camera
+                target_position = camera.position;
+              }
+              else {
+                // Outside dead zone - adjust target to edge of dead zone
+                f32 scale = (distance - cam->dead_zone_radius) / distance;
+                target_position = camera.position + (to_target * scale);
+              }
+            }
+
+            // 6. Apply Smooth Camera Movement
             if (cam->is_smooth) {
-              f32 t = 1.0f - std::exp(-cam->smooth_factor * dt);
-              camera.position = Lerp(camera.position, target_position, t);
-              camera.rotation = Lerp(camera.rotation, trans->rotation, t);
-              camera.zoom = Lerp(camera.zoom, trans->scale.x, t);
+              // Blend smoothing factor based on direction consistency
+              // Same direction (1.0) = use fast smooth_factor
+              // Direction change (0.0) = use slow smooth_factor_direction_change
+              f32 blended_smooth = Lerp(cam->smooth_factor_direction_change, cam->smooth_factor, direction_consistency);
+              
+              // Exponential smoothing for natural, framerate-independent movement
+              f32 t_pos = 1.0f - std::exp(-blended_smooth * dt);
+              f32 t_rot = 1.0f - std::exp(-cam->rotation_smooth * dt);
+              f32 t_zoom = 1.0f - std::exp(-cam->zoom_smooth * dt);
+              
+              camera.position = Lerp(camera.position, target_position, t_pos);
+              camera.rotation = Lerp(camera.rotation, trans->rotation, t_rot);
+              camera.zoom = Lerp(camera.zoom, trans->scale.x, t_zoom);
             }
             else {
+              // Instant camera (no smoothing)
               camera.position = target_position;
               camera.rotation = trans->rotation;
               camera.zoom = trans->scale.x;
