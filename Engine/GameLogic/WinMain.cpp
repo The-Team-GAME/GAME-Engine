@@ -75,6 +75,9 @@ void RunGame()
   Engine::ECS::register_layer("player_trail"); // Specific layer for player trail effect
   Engine::ECS::register_layer("player"); // Player character layer
   Engine::ECS::register_layer("effect"); // Visual effects like particles
+  Engine::ECS::register_layer("main_menu_backsky"); // Main menu background sky layer
+  Engine::ECS::register_layer("main_menu_midbuildings"); // Main menu mid
+  Engine::ECS::register_layer("main_menu_carriage"); // Main menu carriage layer
   Engine::ECS::register_layer("ui_background"); // User interface elements
   Engine::ECS::register_layer("ui"); // User interface elements
   Engine::ECS::register_layer("ui_foreground"); // User interface elements
@@ -248,6 +251,18 @@ void RunGame()
       color->a = 1.0f;
     }
     });
+
+  // Register main menu button callbacks
+  Engine::FunctionRegistry<void()>::register_function("start_game", []() {
+    Engine::SceneManager::load_scene("GameplayState");
+    });
+  Engine::FunctionRegistry<void()>::register_function("options_menu", []() {
+    // Engine::SceneManager::push_scene("OptionsState");
+    });
+  Engine::FunctionRegistry<void()>::register_function("exit_game", []() {
+    Engine::Core::stop();
+    });
+
 
   Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_menu_button_exit_hover", [](Engine::ECS::Entity entity) {
     auto* color = entity.get_component<Components::Color>();

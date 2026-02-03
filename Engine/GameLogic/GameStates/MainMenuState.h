@@ -32,49 +32,35 @@ public:
   Engine::Audio::Sound bgm;
 
   void load() {
-    // Register button callbacks
-    Engine::FunctionRegistry<void()>::register_function("start_game", []() {
-      Engine::SceneManager::load_scene("GameplayState");
-      });
-    Engine::FunctionRegistry<void()>::register_function("options_menu", []() {
-      // Engine::SceneManager::push_scene("OptionsState");
-      });
-    Engine::FunctionRegistry<void()>::register_function("exit_game", []() {
-      Engine::Core::stop();
-      });
-
-    // Create all main menu entities programmatically instead of loading from level
 
     // Background layers (back to front)
     // Entity 3: BackSky background
     Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-      .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/BackGround/BackSky.png"));
+      .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/BackGround/BackSky.png"))
+      .add_to_layer("main_menu_backsky");
 
     // Entity 4: MidBuildings
     Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-      .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/BackGround/MidBuildings.png"));
-
-    // Entity 5: FrontBuildings
-    Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
-      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-      .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/BackGround/FrontBuildings.png"));
+      .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/BackGround/BuildingsCombined.png"))
+      .add_to_layer("main_menu_midbuildings");
 
     // Entity 6: Carriage
     Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-      .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/BackGround/Carriage.png"));
+      .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/BackGround/Carriage.png"))
+      .add_to_layer("main_menu_carriage");
 
     // Entity 7: MainMenuImpact (title/logo)
     Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-      .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/UI/MainMenuImpact.png"));
+      .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/UI/MainMenuImpact.png"))
+      .add_to_layer("ui_background");
 
     // Helper lambda to create a polygon collider with proper offset
     auto create_polygon_collider = [](const std::vector<Math::Vec2D>& vertices, Math::Vec2D offset = Math::Vec2D(0.0f, 0.0f)) {
@@ -95,7 +81,8 @@ public:
         Math::Vec2D(173.73f, -178.52f),
         Math::Vec2D(165.90f, -447.70f)
     }))
-      .add_component<Components::Clickable>("start_game", "", "");
+      .add_component<Components::Clickable>("start_game", "", "")
+      .add_to_layer("ui");
 
     // Entity 9: Options Button (with polygon collider) - offset (0, 0)
     Engine::ECS::create_entity()
@@ -109,7 +96,8 @@ public:
         Math::Vec2D(3.91f, 90.02f),
         Math::Vec2D(-11.74f, -66.54f)
     }))
-      .add_component<Components::Clickable>("options_menu", "", "");
+      .add_component<Components::Clickable>("options_menu", "", "")
+      .add_to_layer("ui");
 
     // Entity 10: Credits Button (with polygon collider) - offset (315.07, 62.62)
     Engine::ECS::create_entity()
@@ -123,7 +111,8 @@ public:
         Math::Vec2D(162.93f, 180.54f),
         Math::Vec2D(386.02f, -94.43f)
     }, Math::Vec2D(315.07f, 62.62f)))
-      .add_component<Components::Clickable>("", "", "");
+      .add_component<Components::Clickable>("", "", "")
+      .add_to_layer("ui");
 
     // Entity 11: Exit Button (with polygon collider) - offset (293.54, 80.23)
     Engine::ECS::create_entity()
@@ -137,19 +126,22 @@ public:
         Math::Vec2D(-81.69f, 342.97f),
         Math::Vec2D(67.04f, 185.41f)
     }, Math::Vec2D(293.54f, 80.23f)))
-      .add_component<Components::Clickable>("exit_game", "", "");
+      .add_component<Components::Clickable>("exit_game", "", "")
+      .add_to_layer("ui");
 
     // Entity 12: Monkey character
     Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-      .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/UI/Monkey.png"));
+      .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/UI/Monkey.png"))
+      .add_to_layer("ui_foreground");
 
     // Entity 13: Bro character
     Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-      .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/UI/Bro.png"));
+      .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/UI/Bro.png"))
+      .add_to_layer("ui_foreground");
 
     // Load and play background music
     bgm = Engine::Resources::load_sound("sounds/BGM/Main Menu/Ricoche_LO-fi_Cut-Scene_Loop_120bpm.wav");
