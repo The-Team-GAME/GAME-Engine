@@ -66,7 +66,7 @@ class MainMenuState : public Engine::Scene
   void create_start_screen() {
     // Entity 106: BackSky background (scrolling) - layer 0
     auto backsky = Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(Math::Vec2D(2267.0f, 450.0f), 0.0f, Math::Vec2D(4800.0f, 900.0f))
+      .add_component<Components::Transform2D>(Math::Vec2D(2400.0f, 450.0f), 0.0f, Math::Vec2D(4800.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/BackGround/BackSky.png"))
       .add_to_layer("main_menu_0");
@@ -153,7 +153,7 @@ class MainMenuState : public Engine::Scene
     // Background layers (back to front)
     // Entity 3: BackSky background (scrolling) - layer 0
     auto menu_backsky = Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(Math::Vec2D(2267.0f, 450.0f), 0.0f, Math::Vec2D(4800.0f, 900.0f))
+      .add_component<Components::Transform2D>(Math::Vec2D(2400.0f, 450.0f), 0.0f, Math::Vec2D(4800.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/BackGround/BackSky.png"))
       .add_to_layer("main_menu_0");
@@ -300,8 +300,8 @@ public:
         sky_timer -= sky_duration;
       }
       float sky_t = sky_timer / sky_duration;
-      // Keyframes: 0->2267 (scaled from 2720), 1->-958 (scaled from -1150)
-      float sky_x = 2267.0f + ((-958.0f) - 2267.0f) * sky_t;
+      // Keyframes: 0->2400, 1->-800
+      float sky_x = 2400.0f + ((-800.0f) - 2400.0f) * sky_t;
 
       if (backsky_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(backsky_id))) {
         auto* transform = Engine::ECS::Entity(backsky_id).get_component<Components::Transform2D>();
@@ -399,7 +399,7 @@ public:
         sky_timer -= sky_duration;
       }
       float sky_t = sky_timer / sky_duration;
-      float sky_x = 2267.0f + ((-958.0f) - 2267.0f) * sky_t;
+      float sky_x = 2400.0f + ((-800.0f) - 2400.0f) * sky_t;
 
       if (main_menu_backsky_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(main_menu_backsky_id))) {
         auto* transform = Engine::ECS::Entity(main_menu_backsky_id).get_component<Components::Transform2D>();
