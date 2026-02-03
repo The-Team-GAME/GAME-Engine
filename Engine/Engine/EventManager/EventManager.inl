@@ -72,5 +72,37 @@ namespace Engine {
       remove_event_listener(eventType);
     }
 
+    template <typename SystemsContainer>
+    void update_events(const SystemsContainer& systems)
+    {
+      // Dispatch all queued events
+      for (const auto& event : Internal::event_queue)
+      {
+        // Call global event handlers
+        auto handlerIt = Internal::event_handlers.find(event.type_id);
+        if (handlerIt != Internal::event_handlers.end()) {
+          for (const auto& handler : handlerIt->second) {
+            handler(event);
+          }
+        }
+
+        // Dispatch to systems that listen to this event type
+        for (size_t i = 0; i < systems.size(); ++i)
+        {
+          auto& system = systems[i];
+          const auto& systemEventSignature = system->get_event_signature();
+          if (systemEventSignature.test(event.type_id))
+          {
+            for (auto entity : system->get_entities()) {
+              system->on_event(event, entity);
+            }
+          }
+        }
+      }
+
+      // Clear the queue after processing
+      Internal::event_queue.clear();
+    }
+
   } // namespace EventManager
 } // namespace Engine
