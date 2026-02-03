@@ -172,11 +172,10 @@ namespace Engine {
       m_large_allocation_bytes = 0;
       m_initialized = false;
 
-      // IMPORTANT: Set the destroyed flag AFTER freeing pools!
-      // This allows containers destroyed during cleanup to still call clear()
-      // and destruct their contained objects properly.
-      // Only containers destroyed AFTER this point (static destruction) will skip clear().
-      s_instance_destroyed = true;
+      // NOTE: We do NOT set s_instance_destroyed = true here!
+      // Containers may still need to deallocate during static destruction.
+      // The deallocate() function checks if pools are null and falls back to OS delete.
+      // s_instance_destroyed is only set in the destructor.
 
       Log::memory("=== Memory Manager Shut Down ===");
     }
@@ -231,30 +230,38 @@ namespace Engine {
         return;
       }
 
-      // Check if MemoryManager is being destroyed (static destruction order issue)
-      // During shutdown, containers may try to deallocate after MemoryManager is destroyed
+      // Check if MemoryManager singleton is being destroyed (static destruction order issue)
       if (s_instance_destroyed) {
-        // Pool memory was already freed during shutdown - just use OS delete
-        // This handles allocations that happened before MemoryManager was initialized
-        // or large allocations that bypassed the pool system
+        // Memory Manager destructor is running - just use OS delete
         ::operator delete(ptr);
         return;
       }
 
-      // FIRST: Check if this is a tracked OS allocation
-      // This handles allocations made before pools were initialized (poolable size but OS allocated)
+      // Check if this came from a pool allocator and pool is still valid
+      if (is_poolable_size(size)) {
+        size_t pool_index = get_size_class_index(size);
+
+        // Check if pool exists and is initialized (may be null after shutdown())
+        if (m_pools[pool_index] && m_pools[pool_index]->is_initialized()) {
+          m_pools[pool_index]->deallocate(ptr);
+          return;
+        }
+        // Pool was freed during shutdown() - fall through to OS delete
+      }
+
+      // Check if this is a tracked OS allocation
       size_t os_index = find_os_allocation(ptr);
       if (os_index < MAX_OS_ALLOCATIONS) {
         // Found in OS allocation tracker - deallocate via OS
         Log::memory("Large deallocation (OS): {} bytes returned to system", m_os_allocations[os_index].size);
         ::operator delete(ptr);
-        
+
         // Update tracking
         if (m_large_allocation_count > 0) {
           --m_large_allocation_count;
           m_large_allocation_bytes -= m_os_allocations[os_index].size;
         }
-        
+
         // Remove from tracker by swapping with last element
         m_os_allocations[os_index] = m_os_allocations[m_os_allocation_count - 1];
         m_os_allocations[m_os_allocation_count - 1].ptr = nullptr;
@@ -263,18 +270,10 @@ namespace Engine {
         return;
       }
 
-      // Check if this came from a pool allocator
-      if (is_poolable_size(size)) {
-        size_t pool_index = get_size_class_index(size);
-
-        if (m_pools[pool_index] && m_pools[pool_index]->is_initialized()) {
-          m_pools[pool_index]->deallocate(ptr);
-          return;
-        }
-      }
-
-      // Fall back to OS deallocation for large sizes (shouldn't reach here normally)
-      Log::memory("Large deallocation (OS): {} bytes returned to system (untracked)", size);
+      // Not tracked and not in a valid pool - must be:
+      // 1. A large allocation made after tracker was full, OR
+      // 2. A pooled allocation being freed after shutdown() freed the pools
+      // Either way, use OS delete
       ::operator delete(ptr);
     }
 

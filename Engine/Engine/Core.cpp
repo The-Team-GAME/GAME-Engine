@@ -32,8 +32,6 @@
 #include "Lua/LuaManager.h"
 #include "Resources.h"
 #include "ECS/ECS.h"
-#include "ECS/WorldData.h"  // For cleanup_containers
-#include "UndoManager/UndoManager.h"  // For UndoManager::clear()
 #include "Events/WindowEvents.h"
 #include "Systems/Systems.h"
 #include "EventManager/EventManager.h"
@@ -407,15 +405,9 @@ namespace Engine
     ImGuiManager::exit();
     WindowManager::exit();
 
-    // Clear undo/redo history BEFORE cleanup_containers
-    // UndoManager may hold Prefabs that contain component data allocated from Memory Manager
-    Engine::UndoManager::clear();
-
-    // Clean up ECS containers BEFORE shutting down Memory Manager
-    // This ensures all contained objects (like std::function) have their destructors called
-    Engine::ECS::Internal::cleanup_containers();
-
     // Shutdown Memory Manager LAST - after all other systems are cleaned up
+    // Note: ECS containers will be cleaned up during static destruction
+    // The Memory Manager handles post-shutdown deallocations gracefully
     Engine::Memory::MemoryManager::instance().print_statistics();
     Engine::Memory::MemoryManager::instance().shutdown();
     Log::info("Memory Manager shut down");
