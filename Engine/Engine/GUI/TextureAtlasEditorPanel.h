@@ -16,6 +16,8 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
+#include <string>
+
 namespace Engine::ECS {
     class Entity;
 }
@@ -33,6 +35,21 @@ namespace TextureAtlasEditor {
     Called from the Entity Editor when user wants to configure a TextureAtlas.
     ==================================================================================*/
     void Open(Engine::ECS::Entity entity);
+
+    /*=================================================================================
+    Function Brief:
+    Opens the Texture Atlas Editor panel for editing a specific state's texture atlas
+    within a StateMachine component.
+
+    Parameters:
+    entity - The entity with a StateMachine component
+    state_name - The name of the state whose texture atlas should be edited
+
+    Where to call it:
+    Called from the StateMachine inspector when user wants to configure a state's
+    texture atlas grid.
+    ==================================================================================*/
+    void OpenForState(Engine::ECS::Entity entity, const std::string& state_name);
 
     /*=================================================================================
     Function Brief:

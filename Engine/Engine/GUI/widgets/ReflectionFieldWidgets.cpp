@@ -586,6 +586,20 @@ namespace ImGuiWidgets {
               // Edit Frames Button - opens Frame Animation Editor
               ImGui::Spacing();
               if (entity.is_valid()) {
+                // Edit Atlas Button
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.5f, 0.4f, 0.2f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.6f, 0.5f, 0.3f, 1.0f));
+                std::string edit_atlas_btn_label = "Edit Atlas Configuration##" + state_name;
+                if (ImGui::Button(edit_atlas_btn_label.c_str(), ImVec2(-1, 0))) {
+                  extern void TextureAtlasEditor_OpenForState(Engine::ECS::Entity entity, const std::string& state_name);
+                  TextureAtlasEditor_OpenForState(entity, state_name);
+                }
+                ImGui::PopStyleColor(2);
+                if (ImGui::IsItemHovered()) {
+                  ImGui::SetTooltip("Open the Texture Atlas Editor to configure the grid layout");
+                }
+
+                // Edit Animation Frames Button
                 ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.5f, 0.8f, 1.0f));
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.6f, 0.9f, 1.0f));
                 std::string edit_btn_label = "Edit Animation Frames##" + state_name;

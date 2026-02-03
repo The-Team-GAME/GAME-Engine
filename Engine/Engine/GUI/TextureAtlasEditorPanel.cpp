@@ -16,15 +16,24 @@
 #include "TextureAtlasEditorPanel.h"
 #include "../ECS/ECS.h"
 #include "../Components/GraphicsComponents.h"
+#include "../Components/StateMachineComponents.h"
 #include "../Time.h"
 #include "../Logger.h"
 #include "widgets/TextureAtlasWidget.h"
 #include <algorithm>
 
 namespace {
+  // Editor mode
+  enum class EditorMode {
+    EntityComponent,  // Editing an entity's TextureAtlas component directly
+    StateMachine      // Editing a state's texture_atlas within a StateMachine
+  };
+
   // Editor state
   bool is_open = false;
   s32 selected_entity_id = -1;
+  std::string selected_state_name = "";
+  EditorMode editor_mode = EditorMode::EntityComponent;
 
   // Atlas configuration state
   int config_rows = 1;
@@ -43,8 +52,21 @@ namespace {
   Components::TextureAtlas preview_atlas;
   bool cache_valid = false;
 
-  // Load current atlas configuration from entity
-  void load_from_entity() {
+  // Helper to get state animation from entity
+  Components::StateAnimation* get_state_animation(Engine::ECS::Entity entity, const std::string& state_name) {
+    auto* state_machine = entity.get_component<Components::StateMachine>();
+    if (!state_machine) return nullptr;
+
+    auto it = state_machine->states.find(state_name);
+    if (it == state_machine->states.end()) return nullptr;
+
+    if (!it->second.animation.has_value()) return nullptr;
+
+    return &it->second.animation.value();
+  }
+
+  // Load current atlas configuration from source (entity component or state)
+  void load_from_source() {
     if (selected_entity_id < 0) {
       cache_valid = false;
       return;
@@ -56,15 +78,31 @@ namespace {
       return;
     }
 
-    auto* texture = entity.get_component<Components::Texture>();
-    auto* atlas = entity.get_component<Components::TextureAtlas>();
+    Components::Texture* texture = nullptr;
+    Components::TextureAtlas* atlas = nullptr;
 
-    if (!texture || !atlas) {
-      cache_valid = false;
-      return;
+    if (editor_mode == EditorMode::EntityComponent) {
+      texture = entity.get_component<Components::Texture>();
+      atlas = entity.get_component<Components::TextureAtlas>();
+
+      if (!texture || !atlas) {
+        cache_valid = false;
+        return;
+      }
+
+      cached_texture = *texture;
     }
+    else {
+      // StateMachine mode
+      auto* state_anim = get_state_animation(entity, selected_state_name);
+      if (!state_anim) {
+        cache_valid = false;
+        return;
+      }
 
-    cached_texture = *texture;
+      cached_texture = state_anim->texture;
+      atlas = &state_anim->texture_atlas;
+    }
 
     // Try to infer grid parameters from existing atlas
     size_t subtex_count = atlas->subTextures.size();
@@ -102,25 +140,39 @@ namespace {
     );
   }
 
-  // Apply configuration to entity's TextureAtlas
-  void apply_to_entity() {
+  // Apply configuration to source (entity component or state)
+  void apply_to_source() {
     if (selected_entity_id < 0) return;
 
     Engine::ECS::Entity entity(static_cast<u32>(selected_entity_id));
     if (!entity.is_valid()) return;
 
-    auto* atlas = entity.get_component<Components::TextureAtlas>();
-    if (!atlas) return;
-
-    *atlas = Components::TextureAtlas(
+    Components::TextureAtlas new_atlas(
       config_tile_width, config_tile_height,
       static_cast<size_t>(config_rows), static_cast<size_t>(config_cols),
       config_total_subtextures > 0 ? static_cast<size_t>(config_total_subtextures) : 0
     );
 
-    Log::info("Applied TextureAtlas configuration: {}x{} grid, {}x{} tile size, {} subtextures",
-      config_cols, config_rows, config_tile_width, config_tile_height,
-      config_total_subtextures > 0 ? config_total_subtextures : config_rows * config_cols);
+    if (editor_mode == EditorMode::EntityComponent) {
+      auto* atlas = entity.get_component<Components::TextureAtlas>();
+      if (!atlas) return;
+
+      *atlas = new_atlas;
+
+      Log::info("Applied TextureAtlas configuration: {}x{} grid, {}x{} tile size, {} subtextures",
+        config_cols, config_rows, config_tile_width, config_tile_height,
+        config_total_subtextures > 0 ? config_total_subtextures : config_rows * config_cols);
+    }
+    else {
+      auto* state_anim = get_state_animation(entity, selected_state_name);
+      if (!state_anim) return;
+
+      state_anim->texture_atlas = new_atlas;
+
+      Log::info("Applied TextureAtlas configuration to state '{}': {}x{} grid, {}x{} tile size, {} subtextures",
+        selected_state_name, config_cols, config_rows, config_tile_width, config_tile_height,
+        config_total_subtextures > 0 ? config_total_subtextures : config_rows * config_cols);
+    }
   }
 
   // Auto-calculate tile dimensions from texture size
@@ -138,15 +190,28 @@ namespace TextureAtlasEditor {
 
   void Open(Engine::ECS::Entity entity) {
     selected_entity_id = static_cast<s32>(entity.get_id());
+    selected_state_name = "";
+    editor_mode = EditorMode::EntityComponent;
     is_open = true;
     cache_valid = false;
     preview_zoom = 1.0f;
-    load_from_entity();
+    load_from_source();
+  }
+
+  void OpenForState(Engine::ECS::Entity entity, const std::string& state_name) {
+    selected_entity_id = static_cast<s32>(entity.get_id());
+    selected_state_name = state_name;
+    editor_mode = EditorMode::StateMachine;
+    is_open = true;
+    cache_valid = false;
+    preview_zoom = 1.0f;
+    load_from_source();
   }
 
   void Close() {
     is_open = false;
     selected_entity_id = -1;
+    selected_state_name = "";
     cache_valid = false;
   }
 
@@ -156,11 +221,20 @@ namespace TextureAtlasEditor {
 
 } // namespace TextureAtlasEditor
 
-// Wrapper function for extern declaration (inside ImGuiWidgets namespace)
+// Wrapper functions for extern declarations (inside ImGuiWidgets namespace)
 namespace ImGuiWidgets {
   void TextureAtlasEditor_Open(Engine::ECS::Entity entity) {
     TextureAtlasEditor::Open(entity);
   }
+
+  void TextureAtlasEditor_OpenForState(Engine::ECS::Entity entity, const std::string& state_name) {
+    TextureAtlasEditor::OpenForState(entity, state_name);
+  }
+}
+
+// Global wrapper for extern declaration (without namespace)
+void TextureAtlasEditor_OpenForState(Engine::ECS::Entity entity, const std::string& state_name) {
+  TextureAtlasEditor::OpenForState(entity, state_name);
 }
 
 void TextureAtlasEditorPanel() {
@@ -168,7 +242,11 @@ void TextureAtlasEditorPanel() {
 
   ImGui::SetNextWindowSize(ImVec2(600, 500), ImGuiCond_FirstUseEver);
 
-  std::string window_title = "Texture Atlas Editor###TextureAtlasEditor";
+  std::string window_title = "Texture Atlas Editor";
+  if (editor_mode == EditorMode::StateMachine && !selected_state_name.empty()) {
+    window_title += " - " + selected_state_name;
+  }
+  window_title += "###TextureAtlasEditor";
 
   if (!ImGui::Begin(window_title.c_str(), &is_open)) {
     ImGui::End();
@@ -189,25 +267,36 @@ void TextureAtlasEditorPanel() {
     return;
   }
 
-  if (!entity.has_component<Components::Texture>() || !entity.has_component<Components::TextureAtlas>()) {
-    ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "Entity needs Texture and TextureAtlas components");
-    ImGui::End();
-    return;
+  // Mode-specific validation
+  if (editor_mode == EditorMode::EntityComponent) {
+    if (!entity.has_component<Components::Texture>() || !entity.has_component<Components::TextureAtlas>()) {
+      ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "Entity needs Texture and TextureAtlas components");
+      ImGui::End();
+      return;
+    }
+  }
+  else {
+    auto* state_anim = get_state_animation(entity, selected_state_name);
+    if (!state_anim) {
+      ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "State '%s' has no animation data", selected_state_name.c_str());
+      ImGui::End();
+      return;
+    }
   }
 
   if (!cache_valid) {
-    load_from_entity();
+    load_from_source();
   }
 
   // ============================================================================
   // Header: Apply/Revert buttons
   // ============================================================================
   if (ImGui::Button("Apply", ImVec2(80, 0))) {
-    apply_to_entity();
+    apply_to_source();
   }
   ImGui::SameLine();
   if (ImGui::Button("Revert", ImVec2(80, 0))) {
-    load_from_entity();
+    load_from_source();
   }
   ImGui::SameLine();
   ImGui::TextDisabled("(?)");
