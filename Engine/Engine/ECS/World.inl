@@ -110,8 +110,8 @@ namespace Engine {
       auto& containers = Internal::get_containers();
       EntityID entityId = entity.get_id();
       ComponentTypeID typeId = ComponentTypeManager::get_type_id<T>();
-      auto sig_it = containers.entity_signatures.find(entityId);
-      return sig_it != containers.entity_signatures.end() && sig_it->second.test(typeId);
+      auto it = containers.entity_signatures.find(entityId);
+      return it != containers.entity_signatures.end() && it->second.test(typeId);
     }
 
     template <typename... T>
@@ -150,6 +150,20 @@ namespace Engine {
             return dynamic_cast<T*>(system.get()) != nullptr;
           }),
         containers.systems.end());
+    }
+
+    template <typename T>
+    void request_system_update()
+    {
+      auto& containers = Internal::get_containers();
+      for (auto& system : containers.systems)
+      {
+        if (dynamic_cast<T*>(system.get()) != nullptr)
+        {
+          containers.systems_to_update_once.insert(system.get());
+          break;
+        }
+      }
     }
 
     template <typename... T>
@@ -265,12 +279,12 @@ namespace Engine {
       for (size_t i = 0; i < containers.active_entities.size(); ++i)
       {
         EntityID lhs_id = containers.active_entities.key_at(i);
-        auto lhs_sig_it = containers.entity_signatures.find(lhs_id);
-        if (lhs_sig_it == containers.entity_signatures.end())
+        auto lhs_it = containers.entity_signatures.find(lhs_id);
+        if (lhs_it == containers.entity_signatures.end())
           continue;
 
         // Check if LHS has all required components
-        const auto& lhs_sig = lhs_sig_it->second;
+        const auto& lhs_sig = lhs_it->second;
         if ((lhs_sig & required_signature) != required_signature)
           continue;
 
@@ -280,12 +294,12 @@ namespace Engine {
           EntityID rhs_id = containers.active_entities.key_at(j);
           if (lhs_id == rhs_id) continue; // Skip self-pairs
 
-          auto rhs_sig_it = containers.entity_signatures.find(rhs_id);
-          if (rhs_sig_it == containers.entity_signatures.end())
+          auto rhs_it = containers.entity_signatures.find(rhs_id);
+          if (rhs_it == containers.entity_signatures.end())
             continue;
 
           // Check if RHS has all required components
-          const auto& rhs_sig = rhs_sig_it->second;
+          const auto& rhs_sig = rhs_it->second;
           if ((rhs_sig & required_signature) != required_signature)
             continue;
 
@@ -338,11 +352,11 @@ namespace Engine {
           // Iterate all entity pairs between these two layers
           for (EntityID lhs_id : lhs_layer_set) {
             // Check if LHS has all required components
-            auto lhs_sig_it = containers.entity_signatures.find(lhs_id);
-            if (lhs_sig_it == containers.entity_signatures.end())
+            auto lhs_it = containers.entity_signatures.find(lhs_id);
+            if (lhs_it == containers.entity_signatures.end())
               continue;
 
-            const auto& lhs_sig = lhs_sig_it->second;
+            const auto& lhs_sig = lhs_it->second;
             if ((lhs_sig & required_signature) != required_signature)
               continue;
 
@@ -350,11 +364,11 @@ namespace Engine {
               if (lhs_id == rhs_id) continue; // Skip self-pairs
 
               // Check if RHS has all required components
-              auto rhs_sig_it = containers.entity_signatures.find(rhs_id);
-              if (rhs_sig_it == containers.entity_signatures.end())
+              auto rhs_it = containers.entity_signatures.find(rhs_id);
+              if (rhs_it == containers.entity_signatures.end())
                 continue;
 
-              const auto& rhs_sig = rhs_sig_it->second;
+              const auto& rhs_sig = rhs_it->second;
               if ((rhs_sig & required_signature) != required_signature)
                 continue;
 
@@ -420,6 +434,54 @@ namespace Engine {
           processed.insert(id);
           Entity entity(id);
           callback(entity);
+        }
+      }
+    }
+
+    // ============================================================================
+    // for_each - Convenient iteration with direct component access
+    // ============================================================================
+
+    namespace Internal {
+      // Helper to detect if callback wants Entity as first argument
+      template<typename Func, typename Entity, typename... Components>
+      concept CallbackWithEntity = requires(Func f, Entity e, Components*... comps) {
+        f(e, comps...);
+      };
+
+      template<typename Func, typename... Components>
+      concept CallbackWithoutEntity = requires(Func f, Components*... comps) {
+        f(comps...);
+      };
+    }
+
+    template <typename... Components, typename Func>
+    void for_each(Func&& callback)
+    {
+      auto& containers = Internal::get_containers();
+      std::unordered_set<EntityID> processed;
+
+      for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
+        for (EntityID id : containers.layer_entities[layer]) {
+          if (processed.count(id) || !containers.active_entities.contains(id) || !has_components<Components...>(id))
+            continue;
+
+          processed.insert(id);
+          Entity entity(id);
+
+          // Get all component pointers
+          if constexpr (Internal::CallbackWithEntity<Func, Entity, Components...>) {
+            // Callback signature: void(Entity, Components*...)
+            callback(entity, get_component<Components>(entity)...);
+          }
+          else if constexpr (Internal::CallbackWithoutEntity<Func, Components...>) {
+            // Callback signature: void(Components*...)
+            callback(get_component<Components>(entity)...);
+          }
+          else {
+            static_assert(sizeof(Func) == 0,
+              "for_each callback must have signature void(Entity, Components*...) or void(Components*...)");
+          }
         }
       }
     }
@@ -509,14 +571,14 @@ namespace Engine {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
 
-      auto layers_it = containers.entity_layers.find(id);
-      if (layers_it == containers.entity_layers.end())
+      auto it = containers.entity_layers.find(id);
+      if (it == containers.entity_layers.end())
         return false;
 
       LayerSignature check_layers;
       ((check_layers.set(Layers)), ...);
 
-      return (layers_it->second & check_layers).any();
+      return (it->second & check_layers).any();
     }
 
     template<LayerID... Layers>
@@ -525,14 +587,14 @@ namespace Engine {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
 
-      auto layers_it = containers.entity_layers.find(id);
-      if (layers_it == containers.entity_layers.end())
+      auto it = containers.entity_layers.find(id);
+      if (it == containers.entity_layers.end())
         return false;
 
       LayerSignature check_layers;
       ((check_layers.set(Layers)), ...);
 
-      return (layers_it->second & check_layers) == check_layers;
+      return (it->second & check_layers) == check_layers;
     }
 
   } // namespace ECS

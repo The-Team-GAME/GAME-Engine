@@ -81,7 +81,6 @@
     <ClCompile Include="Engine\Time.cpp" />
     <ClCompile Include="Engine\GUI\Timeline.cpp" />
     <ClCompile Include="Engine\Math\Vector2D.cpp" />
-    <ClCompile Include="Engine\StateManager.cpp" />
     <ClCompile Include="Engine\Math\Vector3D.cpp" />
     <ClCompile Include="Engine\Math\Vector4D.cpp" />
     <ClCompile Include="Engine\WindowManager.cpp" />
@@ -106,6 +105,8 @@
     <ClCompile Include="Engine\FileIO\ColliderMeshFileIO.cpp" />
     <ClCompile Include="Engine\LevelTabManager.cpp" />
     <ClCompile Include="Engine\LevelManager.cpp" />
+    <ClCompile Include="Engine\Systems\PostPhysicsSystem.cpp" />
+    <ClCompile Include="Engine\GUI\TransformAnimationEditorPanel.cpp" />
     <ClCompile Include="Engine\Audio\AudioSystem.cpp" />
     <ClCompile Include="Engine\Audio\AudioSystemExample.cpp" />
   </ItemGroup>
@@ -244,6 +245,8 @@
     <ClInclude Include="Engine\FileIO\ColliderMeshFileIO.h" />
     <ClInclude Include="Engine\LevelTabManager.h" />
     <ClInclude Include="Engine\LevelManager.h" />
+    <ClInclude Include="Engine\Systems\PostPhysicsSystem.h" />
+    <ClInclude Include="Engine\GUI\TransformAnimationEditorPanel.h" />
     <ClInclude Include="Engine\Audio\AudioSystem.h" />
     <ClInclude Include="Engine\Audio\GameAudio.h" />
   </ItemGroup>
@@ -310,7 +313,6 @@
     <ClInclude Include="Engine\GUI\Timeline.h" />
     <ClInclude Include="Engine\Math\Vector2D.h" />
     <ClInclude Include="GameLogic\GUI\StateChooser.h" />
-    <ClInclude Include="Engine\StateManager.h" />
     <ClInclude Include="Engine\TypeDef.h" />
     <ClInclude Include="Engine\Math\Vector3D.h" />
     <ClInclude Include="Engine\Math\Vector4D.h" />

@@ -388,6 +388,35 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
+    Requests a one-shot update for a specific system type. The system will be
+    updated once during the next update_editor() call, even if it's a Game system
+    and the game is paused. Useful for editor scrubbing/previewing.
+
+    Parameters:
+    None (template parameter T specifies the system type to update).
+
+    Where to call it:
+    In editor code when you need to trigger a system update while paused.
+    ==================================================================================*/
+    template<typename T>
+    void request_system_update();
+
+    /*=================================================================================
+    Function Brief:
+    Requests a one-shot update for a specific entity. All systems that track this
+    entity will process it once during the next update_editor() call, even if
+    the game is paused. Useful for editor scrubbing/previewing.
+
+    Parameters:
+    entity - The EntityID to update.
+
+    Where to call it:
+    In editor code when you need to trigger an entity update while paused.
+    ==================================================================================*/
+    void request_entity_update(EntityID entity);
+
+    /*=================================================================================
+    Function Brief:
     Processes pending entity deletions and component modifications. Called every frame
     even when physics is paused to ensure ECS state changes are applied.
 
@@ -548,6 +577,37 @@ namespace Engine {
     ==================================================================================*/
     template <typename... Components>
     void for_each_entity_with(std::function<void(Entity)> callback);
+
+    /*=================================================================================
+    Function Brief:
+    Iterates over entities with specific components and passes the components directly
+    to the callback. This is a more convenient version that avoids repeated get_component
+    calls inside the callback.
+
+    Parameters:
+    callback - Function that receives the Entity and component pointers directly.
+
+    Where to call it:
+    When you need to iterate over entities and immediately work with their components.
+    More convenient than for_each_entity_with when you need component access.
+
+    Example (single component):
+    for_each<Transform>([](Entity e, Transform* t) {
+      t->position.x += 1.0f;
+    });
+
+    Example (multiple components):
+    for_each<Transform, Velocity>([](Entity e, Transform* t, Velocity* v) {
+      t->position += v->value * dt;
+    });
+
+    Example (without entity):
+    for_each<Transform, Velocity>([](Transform* t, Velocity* v) {
+      t->position += v->value * dt;
+    });
+    ==================================================================================*/
+    template <typename... Components, typename Func>
+    void for_each(Func&& callback);
 
     /*=================================================================================
     Function Brief:
