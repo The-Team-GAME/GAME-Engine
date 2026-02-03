@@ -116,12 +116,12 @@ class MainMenuState : public Engine::Scene
       .add_to_layer("main_menu_5");
     start_screen_entities.push_back(any_key_bg.get_id());
 
-    // Entity 105: TextAnyKey with blinking animation - layer 5
+    // Entity 105: TextAnyKey with blinking animation - layer 6
     auto text_any_key = Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu (Start)/TextAnyKey.png"))
-      .add_to_layer("main_menu_5");
+      .add_to_layer("main_menu_6");
     start_screen_entities.push_back(text_any_key.get_id());
     text_any_key_id = text_any_key.get_id();
   }

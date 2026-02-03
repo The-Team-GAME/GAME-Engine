@@ -81,6 +81,7 @@ void RunGame()
   Engine::ECS::register_layer("main_menu_3"); // Main menu: characters (Bro, Monkey)
   Engine::ECS::register_layer("main_menu_4"); // Main menu: front overlay
   Engine::ECS::register_layer("main_menu_5"); // Main menu: buttons, interactive UI
+  Engine::ECS::register_layer("main_menu_6"); // Main menu: text any key
 #ifndef GAME_BUILD
   Engine::ECS::register_layer("debug"); // Debug overlays and information
 #endif
