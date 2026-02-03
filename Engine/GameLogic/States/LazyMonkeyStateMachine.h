@@ -73,6 +73,12 @@ namespace LazyMonkeyStates
     fmod_hurt_audio.volume = 0.6f;
     fmod_hurt_audio.stop_on_state_exit = false;
 
+    Components::FMODStateAudio fmod_chase_audio;
+    fmod_chase_audio.event_path = "event:/SFX/MonkeyChasing";
+    fmod_chase_audio.loop = false;
+    fmod_chase_audio.volume = 0.6f;
+    fmod_chase_audio.stop_on_state_exit = false;
+
     // ========================================================================
     // Lazy Monkey Idle State
     // ========================================================================
@@ -94,7 +100,7 @@ namespace LazyMonkeyStates
     lazy_monkey_chasing_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
     // Try FMOD first, fallback to old audio if FMOD fails
-    Components::State lazy_monkey_chasing("Chasing", "lazy_monkey_chasing_enter", "lazy_monkey_chasing_update", "lazy_monkey_chasing_exit", lazy_monkey_chasing_anim, footstep_audio, fmod_footstep_audio);
+    Components::State lazy_monkey_chasing("Chasing", "lazy_monkey_chasing_enter", "lazy_monkey_chasing_update", "lazy_monkey_chasing_exit", lazy_monkey_chasing_anim, footstep_audio, fmod_chase_audio);
 
     // ========================================================================
     // Lazy Monkey Windup State (uses idle animation)
