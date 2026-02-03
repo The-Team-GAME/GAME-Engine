@@ -174,9 +174,16 @@ namespace TilemapManager {
     std::vector<std::vector<bool>> processed(height, std::vector<bool>(width, false));
     std::vector<Rectangle> rectangles;
 
-    // Find all rectangles using greedy algorithm (merge only tiles with Default collider type)
-    for (int rel_y = 0; rel_y < height; ++rel_y) {
-      for (int rel_x = 0; rel_x < width; ++rel_x) {
+    // Find all rectangles using COLUMN-FIRST greedy algorithm (merge only tiles with Default collider type)
+    // This prioritizes vertical merging to create tall columns, which prevents seam issues when
+    // the player slides along walls. For example, a layout like:
+    //   1234
+    //   5
+    //   6
+    // Will create a 1x3 column (tiles 1,5,6) and a 3x1 row (tiles 2,3,4), ensuring the player
+    // doesn't get stuck at the seam between differently-sized horizontal rectangles.
+    for (int rel_x = 0; rel_x < width; ++rel_x) {
+      for (int rel_y = 0; rel_y < height; ++rel_y) {
         if (processed[rel_y][rel_x]) continue;
 
         int abs_x = min_x + rel_x;
@@ -198,28 +205,28 @@ namespace TilemapManager {
           continue;
         }
 
-        // Find maximum width at this row (only merge Default collider type tiles)
-        int max_width = 0;
-        for (int w = 0; rel_x + w < width; ++w) {
-          if (processed[rel_y][rel_x + w]) break;
+        // First, expand VERTICALLY (downward) to find maximum column height
+        int max_height = 0;
+        for (int h = 0; rel_y + h < height; ++h) {
+          if (processed[rel_y + h][rel_x]) break;
 
-          Engine::Graphics::Tile check_tile = int_map->get_tile(abs_x + w, abs_y);
+          Engine::Graphics::Tile check_tile = int_map->get_tile(abs_x, abs_y + h);
           if (!check_tile.is_valid()) break;
           if (get_tile_collider_type(check_tile) != Engine::Graphics::TileColliderType::Default) break;
 
-          max_width++;
+          max_height++;
         }
 
-        if (max_width == 0) {
+        if (max_height == 0) {
           processed[rel_y][rel_x] = true;
           continue;
         }
 
-        // Expand downward while maintaining the width (only Default collider type tiles)
-        int rect_height = 1;
-        for (int h = 1; rel_y + h < height; ++h) {
+        // Then, expand HORIZONTALLY (rightward) while maintaining the column height
+        int rect_width = 1;
+        for (int w = 1; rel_x + w < width; ++w) {
           bool can_expand = true;
-          for (int w = 0; w < max_width; ++w) {
+          for (int h = 0; h < max_height; ++h) {
             if (processed[rel_y + h][rel_x + w]) {
               can_expand = false;
               break;
@@ -232,18 +239,18 @@ namespace TilemapManager {
             }
           }
           if (!can_expand) break;
-          rect_height++;
+          rect_width++;
         }
 
         // Mark all tiles in this rectangle as processed
-        for (int h = 0; h < rect_height; ++h) {
-          for (int w = 0; w < max_width; ++w) {
+        for (int h = 0; h < max_height; ++h) {
+          for (int w = 0; w < rect_width; ++w) {
             processed[rel_y + h][rel_x + w] = true;
           }
         }
 
         // Store rectangle with absolute coordinates
-        rectangles.push_back({ abs_x, abs_y, max_width, rect_height });
+        rectangles.push_back({ abs_x, abs_y, rect_width, max_height });
       }
     }
 

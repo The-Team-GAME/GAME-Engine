@@ -51,11 +51,12 @@ namespace Engine {
         if (!containers.active_entities.contains(entity))
           return false;
 
-        auto it = containers.entity_signatures.find(entity);
-        if (it == containers.entity_signatures.end())
+        // Use HashMap's find() which returns an iterator
+        auto signature_it = containers.entity_signatures.find(entity);
+        if (signature_it == containers.entity_signatures.end())
           return false;
 
-        const auto& entitySignature = it->second;
+        const auto& entitySignature = signature_it->second;
         const auto& requiredSignature = system.get_required_signature();
         const auto& excludedSignature = system.get_excluded_signature();
 
@@ -178,8 +179,9 @@ namespace Engine {
         }
       }
 
-      for (auto const& [typeId, componentArray] : containers.component_arrays)
+      for (auto& [typeId, componentArrayPtr] : containers.component_arrays)
       {
+        IComponentArray* componentArray = componentArrayPtr.get();
         if (sourceSignature.test(typeId))
         {
           componentArray->clone_component(source_id, newEntity.get_id());
@@ -344,9 +346,9 @@ namespace Engine {
 
           containers.active_entities.erase(entityId);
 
-          for (auto& [typeId, array] : containers.component_arrays)
+          for (auto& [typeId, componentArrayPtr] : containers.component_arrays)
           {
-            array->remove_entity(entityId);
+            componentArrayPtr->remove_entity(entityId);
           }
 
           containers.entity_signatures.erase(entityId);
@@ -644,11 +646,11 @@ namespace Engine {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
 
-      auto it = containers.entity_layers.find(id);
-      if (it == containers.entity_layers.end())
+      auto layers_it = containers.entity_layers.find(id);
+      if (layers_it == containers.entity_layers.end())
         return false;
 
-      return it->second.test(layer);
+      return layers_it->second.test(layer);
     }
 
     LayerSignature get_entity_layers(const Entity entity)
@@ -656,11 +658,11 @@ namespace Engine {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
 
-      auto it = containers.entity_layers.find(id);
-      if (it == containers.entity_layers.end())
+      auto layers_it = containers.entity_layers.find(id);
+      if (layers_it == containers.entity_layers.end())
         return LayerSignature{};
 
-      return it->second;
+      return layers_it->second;
     }
 
     void clear_layers(const Entity entity)

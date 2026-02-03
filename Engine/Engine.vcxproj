@@ -166,6 +166,9 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClCompile Include="Engine\GUI\widgets\ColliderEditorWidget.cpp" />
     <ClCompile Include="Engine\LevelManager.cpp" />
     <ClCompile Include="Engine\LevelTabManager.cpp" />
+    <ClCompile Include="Engine\Memory\MemoryManager.cpp" />
+    <ClCompile Include="Engine\Memory\MemoryPage.cpp" />
+    <ClCompile Include="Engine\Memory\PoolAllocator.cpp" />
     <ClCompile Include="Engine\ProjectSaveManager.cpp" />
     <ClCompile Include="Engine\Random.cpp" />
     <ClCompile Include="Engine\Systems\DebugDrawSystem.cpp" />
@@ -243,6 +246,15 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="Engine\LevelManager.h" />
     <ClInclude Include="Engine\LevelTabManager.h" />
     <ClInclude Include="Engine\Lua\LuaComponentBindings.h" />
+    <ClInclude Include="Engine\Memory\Containers\Array.h" />
+    <ClInclude Include="Engine\Memory\Containers\Containers.h" />
+    <ClInclude Include="Engine\Memory\Containers\HashMap.h" />
+    <ClInclude Include="Engine\Memory\Containers\MCSparseSet.h" />
+    <ClInclude Include="Engine\Memory\Memory.h" />
+    <ClInclude Include="Engine\Memory\MemoryConfig.h" />
+    <ClInclude Include="Engine\Memory\MemoryManager.h" />
+    <ClInclude Include="Engine\Memory\MemoryPage.h" />
+    <ClInclude Include="Engine\Memory\PoolAllocator.h" />
     <ClInclude Include="Engine\ProjectSaveManager.h" />
     <ClInclude Include="Engine\Random.h" />
     <ClInclude Include="Engine\Systems\ChatBoxSystem.h" />
