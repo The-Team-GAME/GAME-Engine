@@ -560,7 +560,7 @@ void FrameAnimationEditorPanel() {
   atlas_panel_width = std::clamp(atlas_panel_width, 150.0f, total_width - 200.0f);
   
   // Left: Texture Atlas
-  ImGui::BeginChild("AtlasPanel", ImVec2(atlas_panel_width, panel_height), true);
+  ImGui::BeginChild("AtlasPanel", ImVec2(atlas_panel_width, panel_height), true, ImGuiWindowFlags_HorizontalScrollbar);
   ImGui::Text("Texture Atlas");
   ImGui::SameLine();
   ImGui::TextDisabled("(?)");
