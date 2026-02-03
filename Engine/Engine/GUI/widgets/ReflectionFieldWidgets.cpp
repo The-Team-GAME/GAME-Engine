@@ -574,7 +574,7 @@ namespace ImGuiWidgets {
                 std::string edit_btn_label = "Edit Animation Frames##" + state_name;
                 if (ImGui::Button(edit_btn_label.c_str(), ImVec2(-1, 0))) {
                   // Forward declare and call the editor opener
-                  extern void FrameAnimationEditor_Open(Engine::ECS::Entity entity, const std::string& state_name);
+                  extern void FrameAnimationEditor_Open(Engine::ECS::Entity entity, const std::string & state_name);
                   FrameAnimationEditor_Open(entity, state_name);
                 }
                 ImGui::PopStyleColor(2);
