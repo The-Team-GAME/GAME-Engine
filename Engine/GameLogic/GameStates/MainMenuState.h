@@ -42,68 +42,116 @@ class MainMenuState : public Engine::Scene
         return true;
       }
     }
-    // Check mouse buttons
-    if (Engine::Input::is_pressed(Engine::KeyCode::MouseLeft) ||
-      Engine::Input::is_pressed(Engine::KeyCode::MouseRight) ||
-      Engine::Input::is_pressed(Engine::KeyCode::MouseMiddle)) {
-      return true;
-    }
+    // // Check mouse buttons
+    // if (Engine::Input::is_pressed(Engine::KeyCode::MouseLeft) ||
+    //   Engine::Input::is_pressed(Engine::KeyCode::MouseRight) ||
+    //   Engine::Input::is_pressed(Engine::KeyCode::MouseMiddle)) {
+    //   return true;
+    // }
     return false;
   }
 
   void create_start_screen() {
     // Entity 106: BackSky background (scrolling) - ui_background layer
     auto backsky = Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(5760.0f, 1080.0f))
+      .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(4800.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/BackGround/BackSky.png"))
       .add_to_layer("ui_background");
     start_screen_entities.push_back(backsky.get_id());
 
-    // Entity 100: BackCarriage - ui layer
+    // Entity 103: Parent entity with bounce animator (moves children up/down)
+    Components::Animator bounce_animator;
+    bounce_animator.duration = 3.0f;
+    bounce_animator.is_looping = true;
+    bounce_animator.is_playing = true;
+
+    Components::AnimationTrack bounce_track;
+    bounce_track.component_type = "Components::Transform2D";
+    bounce_track.field_path = "position.y";
+    bounce_track.keyframes = {
+      Components::FloatKeyframe(0.0f, 0.0f, "EaseLinearNone"),
+      Components::FloatKeyframe(0.0f, 0.368f, "EaseLinearNone"),
+      Components::FloatKeyframe(8.33f, 0.391f, "EaseLinearNone"),
+      Components::FloatKeyframe(8.33f, 0.416f, "EaseLinearNone"),
+      Components::FloatKeyframe(0.0f, 0.442f, "EaseLinearNone"),
+      Components::FloatKeyframe(0.0f, 0.5f, "EaseLinearNone"),
+      Components::FloatKeyframe(8.33f, 0.522f, "EaseLinearNone"),
+      Components::FloatKeyframe(8.33f, 0.546f, "EaseLinearNone"),
+      Components::FloatKeyframe(0.0f, 0.569f, "EaseLinearNone"),
+      Components::FloatKeyframe(0.0f, 1.0f, "EaseLinearNone")
+    };
+    bounce_animator.tracks.push_back(bounce_track);
+
+    auto carriage_parent = Engine::ECS::create_entity()
+      .add_component<Components::Transform2D>(Math::Vec2D(0.0f, 0.0f), 0.0f, Math::Vec2D(1.0f, 1.0f))
+      .add_component<Components::Animator>(bounce_animator);
+    start_screen_entities.push_back(carriage_parent.get_id());
+    auto carriage_parent_id = carriage_parent.get_id();
+
+    // Entity 100: BackCarriage - ui layer (child of carriage_parent)
     auto back_carriage = Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 443.54f), 0.0f, Math::Vec2D(1920.0f, 1080.0f))
+      .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 369.62f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu (Start)/BackCarriage.png"))
+      .add_component<Components::Parent>(carriage_parent_id, Math::Vec2D(800.0f, 369.62f))
       .add_to_layer("ui");
     start_screen_entities.push_back(back_carriage.get_id());
 
-    // Entity 99: Bro sleeping animation - ui layer
+    // Entity 99: Bro sleeping animation - ui layer (child of carriage_parent)
     auto bro_sleeping = Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(Math::Vec2D(1453.5f, 831.76f), 0.0f, Math::Vec2D(520.0f, 520.0f))
+      .add_component<Components::Transform2D>(Math::Vec2D(1211.25f, 693.13f), 0.0f, Math::Vec2D(433.33f, 433.33f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu (Start)/Brosleepy3-Sheet.png"))
       .add_component<Components::TextureAtlas>(520, 520, 1, 8, 8) // 8 frames in a row
       .add_component<Components::Animation>(0, 7, 0.15f, true) // 8 frames, 0.15s each, looping
+      .add_component<Components::Parent>(carriage_parent_id, Math::Vec2D(1211.25f, 693.13f))
       .add_to_layer("ui");
     start_screen_entities.push_back(bro_sleeping.get_id());
 
-    // Entity 101: Front - ui_foreground layer
+    // Entity 101: Front - ui_foreground layer (child of carriage_parent)
     auto front = Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1920.0f, 1080.0f))
+      .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu (Start)/Front.png"))
+      .add_component<Components::Parent>(carriage_parent_id, Math::Vec2D(800.0f, 450.0f))
       .add_to_layer("ui_foreground");
     start_screen_entities.push_back(front.get_id());
 
     // Entity 104: AnyKeyToStartBackground - ui_foreground layer
     auto any_key_bg = Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 444.61f), 0.0f, Math::Vec2D(1920.0f, 1080.0f))
+      .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu (Start)/AnyKeyToStartBackground.png"))
       .add_to_layer("ui_foreground");
     start_screen_entities.push_back(any_key_bg.get_id());
 
     // Entity 105: TextAnyKey with blinking animation - ui_foreground layer
+    Components::Animator blink_animator;
+    blink_animator.duration = 1.4f;
+    blink_animator.is_looping = true;
+    blink_animator.is_playing = true;
+
+    Components::AnimationTrack alpha_track;
+    alpha_track.component_type = "Components::Color";
+    alpha_track.field_path = "a";
+    alpha_track.keyframes = {
+      Components::FloatKeyframe(1.0f, 0.0f, "EaseLinearNone"),
+      Components::FloatKeyframe(1.0f, 0.306f, "EaseLinearNone"),
+      Components::FloatKeyframe(0.0f, 0.322f, "EaseLinearNone"),
+      Components::FloatKeyframe(0.0f, 0.671f, "EaseLinearNone"),
+      Components::FloatKeyframe(1.0f, 0.688f, "EaseLinearNone"),
+      Components::FloatKeyframe(1.0f, 1.0f, "EaseLinearNone")
+    };
+    blink_animator.tracks.push_back(alpha_track);
+
     auto text_any_key = Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 444.61f), 0.0f, Math::Vec2D(1920.0f, 1080.0f))
+      .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu (Start)/TextAnyKey.png"))
+      .add_component<Components::Animator>(blink_animator)
       .add_to_layer("ui_foreground");
     start_screen_entities.push_back(text_any_key.get_id());
-
-    // Store for blinking animation
-    text_any_key_entity = text_any_key.get_id();
   }
 
   void destroy_start_screen() {
@@ -113,7 +161,6 @@ class MainMenuState : public Engine::Scene
       }
     }
     start_screen_entities.clear();
-    text_any_key_entity = 0;
   }
 
   void create_main_menu() {
@@ -239,11 +286,6 @@ class MainMenuState : public Engine::Scene
       .add_to_layer("ui_foreground");
   }
 
-  // For blinking "Press Any Key" text
-  Engine::ECS::EntityID text_any_key_entity = 0;
-  float blink_timer = 0.0f;
-  float blink_duration = 1.4f;
-
 public:
   Engine::Audio::Sound bgm;
 
@@ -258,47 +300,11 @@ public:
   };
 
   void init() {
-    blink_timer = 0.0f;
   };
 
   void update() {
     if (showing_start_screen) {
-      // Update blinking animation for "Press Any Key" text
-      blink_timer += Engine::Time::get_fixed_dt();
-      if (blink_timer >= blink_duration) {
-        blink_timer -= blink_duration;
-      }
-
-      // Calculate alpha based on blink timer (fade in/out)
-      float normalized_time = blink_timer / blink_duration;
-      float alpha = 1.0f;
-
-      // Keyframes from JSON: 0->1.0, 0.306->1.0, 0.321->0.0, 0.671->0.0, 0.688->1.0, 1.0->1.0
-      if (normalized_time < 0.306f) {
-        alpha = 1.0f;
-      }
-      else if (normalized_time < 0.321f) {
-        alpha = 1.0f - (normalized_time - 0.306f) / (0.321f - 0.306f);
-      }
-      else if (normalized_time < 0.671f) {
-        alpha = 0.0f;
-      }
-      else if (normalized_time < 0.688f) {
-        alpha = (normalized_time - 0.671f) / (0.688f - 0.671f);
-      }
-      else {
-        alpha = 1.0f;
-      }
-
-      // Apply alpha to text entity
-      if (text_any_key_entity != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(text_any_key_entity))) {
-        auto entity = Engine::ECS::Entity(text_any_key_entity);
-        auto* color = entity.get_component<Components::Color>();
-        if (color) {
-          color->a = alpha;
-        }
-      }
-
+      // Animator system handles the blinking animation
       // Check for any key press to transition to main menu
       if (any_key_pressed()) {
         destroy_start_screen();
