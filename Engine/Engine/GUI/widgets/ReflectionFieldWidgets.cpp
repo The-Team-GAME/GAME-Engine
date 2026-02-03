@@ -564,27 +564,7 @@ namespace ImGuiWidgets {
               ImGui::Text("State Animation:");
               ImGui::Indent();
 
-              // Render Texture field
-              auto tex_it = state_anim_obj.find("texture");
-              if (tex_it != state_anim_obj.end()) {
-                ImGui::Text("Texture:");
-                ImGui::Indent();
-                render_texture_field(tex_it->second, local_modified);
-                ImGui::Unindent();
-                ImGui::Separator();
-              }
-
-              // Render Animation field
-              auto anim_field_it = state_anim_obj.find("animation");
-              if (anim_field_it != state_anim_obj.end()) {
-                ImGui::Text("Animation:");
-                ImGui::Indent();
-                render_animation_field(anim_field_it->second, local_modified, entity);
-                ImGui::Unindent();
-              }
-
-              // Edit Frames Button - opens Frame Animation Editor
-              ImGui::Spacing();
+              // Edit buttons at the top
               if (entity.is_valid()) {
                 // Edit Atlas Button
                 ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.5f, 0.4f, 0.2f, 1.0f));
@@ -604,14 +584,33 @@ namespace ImGuiWidgets {
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.6f, 0.9f, 1.0f));
                 std::string edit_btn_label = "Edit Animation Frames##" + state_name;
                 if (ImGui::Button(edit_btn_label.c_str(), ImVec2(-1, 0))) {
-                  // Forward declare and call the editor opener
-                  extern void FrameAnimationEditor_Open(Engine::ECS::Entity entity, const std::string & state_name);
+                  extern void FrameAnimationEditor_Open(Engine::ECS::Entity entity, const std::string& state_name);
                   FrameAnimationEditor_Open(entity, state_name);
                 }
                 ImGui::PopStyleColor(2);
                 if (ImGui::IsItemHovered()) {
                   ImGui::SetTooltip("Open the Frame Animation Editor to select specific frames from the texture atlas");
                 }
+                ImGui::Spacing();
+              }
+
+              // Render Texture field
+              auto tex_it = state_anim_obj.find("texture");
+              if (tex_it != state_anim_obj.end()) {
+                ImGui::Text("Texture:");
+                ImGui::Indent();
+                render_texture_field(tex_it->second, local_modified);
+                ImGui::Unindent();
+                ImGui::Separator();
+              }
+
+              // Render Animation field
+              auto anim_field_it = state_anim_obj.find("animation");
+              if (anim_field_it != state_anim_obj.end()) {
+                ImGui::Text("Animation:");
+                ImGui::Indent();
+                render_animation_field(anim_field_it->second, local_modified, entity);
+                ImGui::Unindent();
               }
 
               ImGui::Unindent();
