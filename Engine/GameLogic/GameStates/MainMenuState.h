@@ -64,12 +64,12 @@ class MainMenuState : public Engine::Scene
   }
 
   void create_start_screen() {
-    // Entity 106: BackSky background (scrolling) - ui_background layer
+    // Entity 106: BackSky background (scrolling) - layer 0
     auto backsky = Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(2267.0f, 450.0f), 0.0f, Math::Vec2D(4800.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/BackGround/BackSky.png"))
-      .add_to_layer("ui_background");
+      .add_to_layer("main_menu_0");
     start_screen_entities.push_back(backsky.get_id());
     backsky_id = backsky.get_id();
 
@@ -79,16 +79,16 @@ class MainMenuState : public Engine::Scene
     start_screen_entities.push_back(carriage_parent.get_id());
     carriage_parent_id = carriage_parent.get_id();
 
-    // Entity 100: BackCarriage - ui layer (child of carriage_parent)
+    // Entity 100: BackCarriage - layer 2 (child of carriage_parent)
     auto back_carriage = Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 369.62f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu (Start)/BackCarriage.png"))
       .add_component<Components::Parent>(carriage_parent_id, Math::Vec2D(800.0f, 369.62f))
-      .add_to_layer("ui");
+      .add_to_layer("main_menu_2");
     start_screen_entities.push_back(back_carriage.get_id());
 
-    // Entity 99: Bro sleeping animation - ui layer (child of carriage_parent)
+    // Entity 99: Bro sleeping animation - layer 3 (child of carriage_parent)
     auto bro_sleeping = Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(1360.0f, 785.0f), 0.0f, Math::Vec2D(433.33f, 433.33f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
@@ -96,32 +96,32 @@ class MainMenuState : public Engine::Scene
       .add_component<Components::TextureAtlas>(520, 520, 1, 8, 8) // 8 frames in a row
       .add_component<Components::Animation>(0, 7, 0.15f, true) // 8 frames, 0.15s each, looping
       .add_component<Components::Parent>(carriage_parent_id, Math::Vec2D(1360.0f, 785.0f))
-      .add_to_layer("ui");
+      .add_to_layer("main_menu_3");
     start_screen_entities.push_back(bro_sleeping.get_id());
 
-    // Entity 101: Front - ui_foreground layer (child of carriage_parent)
+    // Entity 101: Front - layer 4 (child of carriage_parent)
     auto front = Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu (Start)/Front.png"))
       .add_component<Components::Parent>(carriage_parent_id, Math::Vec2D(800.0f, 450.0f))
-      .add_to_layer("ui_foreground");
+      .add_to_layer("main_menu_4");
     start_screen_entities.push_back(front.get_id());
 
-    // Entity 104: AnyKeyToStartBackground - ui_foreground layer
+    // Entity 104: AnyKeyToStartBackground - layer 5
     auto any_key_bg = Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu (Start)/AnyKeyToStartBackground.png"))
-      .add_to_layer("ui_foreground");
+      .add_to_layer("main_menu_5");
     start_screen_entities.push_back(any_key_bg.get_id());
 
-    // Entity 105: TextAnyKey with blinking animation - ui_foreground layer
+    // Entity 105: TextAnyKey with blinking animation - layer 5
     auto text_any_key = Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu (Start)/TextAnyKey.png"))
-      .add_to_layer("ui_foreground");
+      .add_to_layer("main_menu_5");
     start_screen_entities.push_back(text_any_key.get_id());
     text_any_key_id = text_any_key.get_id();
   }
@@ -139,48 +139,48 @@ class MainMenuState : public Engine::Scene
   }
 
   void create_main_menu() {
-    // Register button callbacks
-    Engine::FunctionRegistry<void()>::register_function("start_game", []() {
-      Engine::SceneManager::load_scene("GameplayState");
-      });
-    Engine::FunctionRegistry<void()>::register_function("options_menu", []() {
-      // Engine::SceneManager::push_scene("OptionsState");
-      });
-    Engine::FunctionRegistry<void()>::register_function("exit_game", []() {
-      Engine::Core::stop();
-      });
+    // // Register button callbacks
+    // Engine::FunctionRegistry<void()>::register_function("start_game", []() {
+    //   Engine::SceneManager::load_scene("GameplayState");
+    //   });
+    // Engine::FunctionRegistry<void()>::register_function("options_menu", []() {
+    //   // Engine::SceneManager::push_scene("OptionsState");
+    //   });
+    // Engine::FunctionRegistry<void()>::register_function("exit_game", []() {
+    //   Engine::Core::stop();
+    //   });
 
     // Background layers (back to front)
-    // Entity 3: BackSky background (scrolling)
+    // Entity 3: BackSky background (scrolling) - layer 0
     auto menu_backsky = Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(2267.0f, 450.0f), 0.0f, Math::Vec2D(4800.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/BackGround/BackSky.png"))
-      .add_to_layer("main_menu_backsky");
+      .add_to_layer("main_menu_0");
     main_menu_backsky_id = menu_backsky.get_id();
 
 
     //TODO: ask darren to make moving buildings
-    // // Entity 4: Buildings
+    // // Entity 4: Buildings - layer 1
     // Engine::ECS::create_entity()
     //   .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
     //   .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
     //   .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/BackGround/BuildingsCombined.png"))
-    //   .add_to_layer("main_menu_buildings");
+    //   .add_to_layer("main_menu_1");
 
-    // Entity 6: BackCarriage
+    // Entity 6: BackCarriage - layer 2
     Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu (Start)/BackCarriage.png"))
-      .add_to_layer("main_menu_carriage");
+      .add_to_layer("main_menu_2");
 
-    // Entity 7: MainMenuImpact (title/logo)
+    // Entity 7: MainMenuImpact (title/logo) - layer 2
     Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/UI/MainMenuImpact.png"))
-      .add_to_layer("ui_background");
+      .add_to_layer("main_menu_2");
 
     // Helper lambda to create a polygon collider with proper offset
     auto create_polygon_collider = [](const std::vector<Math::Vec2D>& vertices, Math::Vec2D offset = Math::Vec2D(0.0f, 0.0f)) {
@@ -189,7 +189,7 @@ class MainMenuState : public Engine::Scene
       return collider;
       };
 
-    // Entity 8: Play Button (with polygon collider) - offset (0, 0)
+    // Entity 8: Play Button (with polygon collider) - layer 5
     Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
@@ -202,9 +202,9 @@ class MainMenuState : public Engine::Scene
         Math::Vec2D(165.90f, -447.70f)
     }))
       .add_component<Components::Clickable>("start_game", "", "")
-      .add_to_layer("ui_foreground");
+      .add_to_layer("main_menu_5");
 
-    // Entity 9: Options Button (with polygon collider) - offset (0, 0)
+    // Entity 9: Options Button (with polygon collider) - layer 5
     Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
@@ -217,9 +217,9 @@ class MainMenuState : public Engine::Scene
         Math::Vec2D(-11.74f, -66.54f)
     }))
       .add_component<Components::Clickable>("options_menu", "", "")
-      .add_to_layer("ui_foreground");
+      .add_to_layer("main_menu_5");
 
-    // Entity 10: Credits Button (with polygon collider) - offset (315.07, 62.62)
+    // Entity 10: Credits Button (with polygon collider) - layer 5
     Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
@@ -232,9 +232,9 @@ class MainMenuState : public Engine::Scene
         Math::Vec2D(386.02f, -94.43f)
     }, Math::Vec2D(315.07f, 62.62f)))
       .add_component<Components::Clickable>("", "", "")
-      .add_to_layer("ui_foreground");
+      .add_to_layer("main_menu_5");
 
-    // Entity 11: Exit Button (with polygon collider) - offset (293.54, 80.23)
+    // Entity 11: Exit Button (with polygon collider) - layer 5
     Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
@@ -247,28 +247,28 @@ class MainMenuState : public Engine::Scene
         Math::Vec2D(67.04f, 185.41f)
     }, Math::Vec2D(293.54f, 80.23f)))
       .add_component<Components::Clickable>("exit_game", "", "")
-      .add_to_layer("ui_foreground");
+      .add_to_layer("main_menu_5");
 
-    // Entity 12: Monkey character (behind Front)
+    // Entity 12: Monkey character - layer 3 (behind Front)
     Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/UI/Monkey.png"))
-      .add_to_layer("ui");
+      .add_to_layer("main_menu_3");
 
-    // Entity 13: Bro character (behind Front)
+    // Entity 13: Bro character - layer 3 (behind Front)
     Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/UI/Bro.png"))
-      .add_to_layer("ui");
+      .add_to_layer("main_menu_3");
 
-    // Entity 14: Front overlay (in front of Bro and Monkey)
+    // Entity 14: Front overlay - layer 4 (in front of Bro and Monkey, behind buttons)
     Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu (Start)/Front - no graffiti.png"))
-      .add_to_layer("ui_foreground");
+      .add_to_layer("main_menu_4");
   }
 
 public:

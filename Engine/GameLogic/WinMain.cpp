@@ -75,12 +75,12 @@ void RunGame()
   Engine::ECS::register_layer("player_trail"); // Specific layer for player trail effect
   Engine::ECS::register_layer("player"); // Player character layer
   Engine::ECS::register_layer("effect"); // Visual effects like particles
-  Engine::ECS::register_layer("main_menu_backsky"); // Main menu background sky layer
-  Engine::ECS::register_layer("main_menu_buildings"); // Main menu mid
-  Engine::ECS::register_layer("main_menu_carriage"); // Main menu carriage layer
-  Engine::ECS::register_layer("ui_background"); // User interface elements
-  Engine::ECS::register_layer("ui"); // User interface elements
-  Engine::ECS::register_layer("ui_foreground"); // User interface elements
+  Engine::ECS::register_layer("main_menu_0"); // Main menu: sky background
+  Engine::ECS::register_layer("main_menu_1"); // Main menu: buildings
+  Engine::ECS::register_layer("main_menu_2"); // Main menu: carriage, title
+  Engine::ECS::register_layer("main_menu_3"); // Main menu: characters (Bro, Monkey)
+  Engine::ECS::register_layer("main_menu_4"); // Main menu: front overlay
+  Engine::ECS::register_layer("main_menu_5"); // Main menu: buttons, interactive UI
 #ifndef GAME_BUILD
   Engine::ECS::register_layer("debug"); // Debug overlays and information
 #endif
