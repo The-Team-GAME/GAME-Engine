@@ -37,10 +37,14 @@ class MainMenuState : public Engine::Scene
   // For manual animations
   Engine::ECS::EntityID carriage_parent_id = 0;
   Engine::ECS::EntityID text_any_key_id = 0;
+  Engine::ECS::EntityID backsky_id = 0;
+  Engine::ECS::EntityID main_menu_backsky_id = 0;
   float bounce_timer = 0.0f;
   float bounce_duration = 3.0f;
   float blink_timer = 0.0f;
   float blink_duration = 1.4f;
+  float sky_timer = 0.0f;
+  float sky_duration = 7.0f;
 
   // Check if any key or mouse button was pressed this frame
   bool any_key_pressed() {
@@ -62,11 +66,12 @@ class MainMenuState : public Engine::Scene
   void create_start_screen() {
     // Entity 106: BackSky background (scrolling) - ui_background layer
     auto backsky = Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(4800.0f, 900.0f))
+      .add_component<Components::Transform2D>(Math::Vec2D(2267.0f, 450.0f), 0.0f, Math::Vec2D(4800.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/BackGround/BackSky.png"))
       .add_to_layer("ui_background");
     start_screen_entities.push_back(backsky.get_id());
+    backsky_id = backsky.get_id();
 
     // Entity 103: Parent entity for bounce animation (moves children up/down)
     auto carriage_parent = Engine::ECS::create_entity()
@@ -130,6 +135,7 @@ class MainMenuState : public Engine::Scene
     start_screen_entities.clear();
     carriage_parent_id = 0;
     text_any_key_id = 0;
+    backsky_id = 0;
   }
 
   void create_main_menu() {
@@ -145,25 +151,28 @@ class MainMenuState : public Engine::Scene
       });
 
     // Background layers (back to front)
-    // Entity 3: BackSky background
-    Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
+    // Entity 3: BackSky background (scrolling)
+    auto menu_backsky = Engine::ECS::create_entity()
+      .add_component<Components::Transform2D>(Math::Vec2D(2267.0f, 450.0f), 0.0f, Math::Vec2D(4800.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/BackGround/BackSky.png"))
       .add_to_layer("main_menu_backsky");
+    main_menu_backsky_id = menu_backsky.get_id();
 
-    // Entity 4: Buildings
+
+    //TODO: ask darren to make moving buildings
+    // // Entity 4: Buildings
+    // Engine::ECS::create_entity()
+    //   .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
+    //   .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+    //   .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/BackGround/BuildingsCombined.png"))
+    //   .add_to_layer("main_menu_buildings");
+
+    // Entity 6: BackCarriage
     Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-      .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/BackGround/BuildingsCombined.png"))
-      .add_to_layer("main_menu_buildings");
-
-    // Entity 6: Carriage
-    Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
-      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-      .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/BackGround/Carriage.png"))
+      .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu (Start)/BackCarriage.png"))
       .add_to_layer("main_menu_carriage");
 
     // Entity 7: MainMenuImpact (title/logo)
@@ -193,7 +202,7 @@ class MainMenuState : public Engine::Scene
         Math::Vec2D(165.90f, -447.70f)
     }))
       .add_component<Components::Clickable>("start_game", "", "")
-      .add_to_layer("ui");
+      .add_to_layer("ui_foreground");
 
     // Entity 9: Options Button (with polygon collider) - offset (0, 0)
     Engine::ECS::create_entity()
@@ -208,7 +217,7 @@ class MainMenuState : public Engine::Scene
         Math::Vec2D(-11.74f, -66.54f)
     }))
       .add_component<Components::Clickable>("options_menu", "", "")
-      .add_to_layer("ui");
+      .add_to_layer("ui_foreground");
 
     // Entity 10: Credits Button (with polygon collider) - offset (315.07, 62.62)
     Engine::ECS::create_entity()
@@ -223,7 +232,7 @@ class MainMenuState : public Engine::Scene
         Math::Vec2D(386.02f, -94.43f)
     }, Math::Vec2D(315.07f, 62.62f)))
       .add_component<Components::Clickable>("", "", "")
-      .add_to_layer("ui");
+      .add_to_layer("ui_foreground");
 
     // Entity 11: Exit Button (with polygon collider) - offset (293.54, 80.23)
     Engine::ECS::create_entity()
@@ -238,20 +247,27 @@ class MainMenuState : public Engine::Scene
         Math::Vec2D(67.04f, 185.41f)
     }, Math::Vec2D(293.54f, 80.23f)))
       .add_component<Components::Clickable>("exit_game", "", "")
-      .add_to_layer("ui");
+      .add_to_layer("ui_foreground");
 
-    // Entity 12: Monkey character
+    // Entity 12: Monkey character (behind Front)
     Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/UI/Monkey.png"))
-      .add_to_layer("ui_foreground");
+      .add_to_layer("ui");
 
-    // Entity 13: Bro character
+    // Entity 13: Bro character (behind Front)
     Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/UI/Bro.png"))
+      .add_to_layer("ui");
+
+    // Entity 14: Front overlay (in front of Bro and Monkey)
+    Engine::ECS::create_entity()
+      .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
+      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+      .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu (Start)/Front - no graffiti.png"))
       .add_to_layer("ui_foreground");
   }
 
@@ -271,11 +287,28 @@ public:
   void init() {
     bounce_timer = 0.0f;
     blink_timer = 0.0f;
+    sky_timer = 0.0f;
   };
 
   void update() {
     if (showing_start_screen) {
       float dt = Engine::Time::get_fixed_dt();
+
+      // Sky scrolling animation (moves from right to left)
+      sky_timer += dt;
+      if (sky_timer >= sky_duration) {
+        sky_timer -= sky_duration;
+      }
+      float sky_t = sky_timer / sky_duration;
+      // Keyframes: 0->2267 (scaled from 2720), 1->-958 (scaled from -1150)
+      float sky_x = 2267.0f + ((-958.0f) - 2267.0f) * sky_t;
+
+      if (backsky_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(backsky_id))) {
+        auto* transform = Engine::ECS::Entity(backsky_id).get_component<Components::Transform2D>();
+        if (transform) {
+          transform->position.x = sky_x;
+        }
+      }
 
       // Bounce animation for carriage parent
       bounce_timer += dt;
@@ -356,6 +389,23 @@ public:
         destroy_start_screen();
         create_main_menu();
         showing_start_screen = false;
+      }
+    }
+    else {
+      // Main menu sky scrolling animation
+      float dt = Engine::Time::get_fixed_dt();
+      sky_timer += dt;
+      if (sky_timer >= sky_duration) {
+        sky_timer -= sky_duration;
+      }
+      float sky_t = sky_timer / sky_duration;
+      float sky_x = 2267.0f + ((-958.0f) - 2267.0f) * sky_t;
+
+      if (main_menu_backsky_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(main_menu_backsky_id))) {
+        auto* transform = Engine::ECS::Entity(main_menu_backsky_id).get_component<Components::Transform2D>();
+        if (transform) {
+          transform->position.x = sky_x;
+        }
       }
     }
   };
