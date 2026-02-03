@@ -55,14 +55,14 @@ public:
       .add_component<Components::HeartHUDSprite>()
       .remove_from_layer("default")
       .add_to_layer("player");
- 
+
     // ========================================================================
     // Create Camera Entity
     // ========================================================================
     Engine::ECS::create_entity()
       .add_component<Components::Camera>("Main Camera", true)
       .add_component<Components::Transform2D>(0.0f, -400.0f, 0.0f, 1.0f, 1.0f) // Relative to parent
-      .add_component<Components::Parent>(player_entity);
+      .add_component<Components::Parent>(player_entity.get_id());
 
     // ========================================================================
     // Create Lazy Monkey Entity
@@ -84,10 +84,10 @@ public:
       .add_component<Components::StateMachine>(LazyMonkeyStates::create_state_machine())
       .remove_from_layer("default")
       .add_to_layer("enemy");
-      //.add_to_layer("damage_player");
+    //.add_to_layer("damage_player");
 
 
-    // set friction to 0
+  // set friction to 0
     player_entity.get_component<Components::BoxCollider>()->kinetic_friction = 0.8f;
     lazy_monkey_entity.get_component<Components::BoxCollider>()->kinetic_friction = 0.8f;
 

@@ -20,7 +20,7 @@ namespace Engine {
         require_components<Components::Transform2D>();
       }
 
-      void draw_entity(const Engine::ECS::Entity& entity) override {
+      void draw_entity(const Engine::ECS::Entity entity) override {
         if (!Engine::ECS::is_layer_active("debug")) return;
 
         auto* transform = entity.get_component<Components::Transform2D>();

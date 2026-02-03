@@ -144,7 +144,7 @@ namespace Engine {
       return Entity(INVALID_ENTITY);
     }
 
-    Entity clone_entity(const Entity& source)
+    Entity clone_entity(const Entity source)
     {
       auto& containers = Internal::get_containers();
       EntityID source_id = source.get_id();
@@ -191,7 +191,7 @@ namespace Engine {
       return newEntity;
     }
 
-    void destroy_entity(const Entity& entity)
+    void destroy_entity(const Entity entity)
     {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
@@ -209,7 +209,7 @@ namespace Engine {
       }
     }
 
-    bool is_entity_active(const Entity& entity)
+    bool is_entity_active(const Entity entity)
     {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
@@ -231,6 +231,43 @@ namespace Engine {
       }
 
       Engine::Perf::stop("ECS Update");
+    }
+
+    void update_game()
+    {
+      auto& containers = Internal::get_containers();
+      Engine::Perf::start("ECS Update Game");
+
+      // Update only game systems (SystemType::Game)
+      for (auto& system : containers.systems)
+      {
+        if (system->get_system_type() == SystemType::Game)
+        {
+          system->update();
+        }
+      }
+
+      Engine::Perf::stop("ECS Update Game");
+    }
+
+    void update_editor()
+    {
+      auto& containers = Internal::get_containers();
+      Engine::Perf::start("ECS Update Editor");
+
+      // Always dispatch events (needed for editor systems to work when paused)
+      EventManager::update_events(containers.systems);
+
+      // Update only editor systems (SystemType::Editor)
+      for (auto& system : containers.systems)
+      {
+        if (system->get_system_type() == SystemType::Editor)
+        {
+          system->update();
+        }
+      }
+
+      Engine::Perf::stop("ECS Update Editor");
     }
 
     void process_housekeeping()
@@ -405,7 +442,7 @@ namespace Engine {
       return {};
     }
 
-    void for_each_entity(std::function<void(Entity&)> callback)
+    void for_each_entity(std::function<void(Entity)> callback)
     {
       // auto& containers = Internal::get_containers();
       // for (EntityID id : containers.active_entities) {
@@ -433,7 +470,7 @@ namespace Engine {
       }
     }
 
-    void for_each_entity_on_layer(LayerID layer, std::function<void(Entity&)> callback)
+    void for_each_entity_on_layer(LayerID layer, std::function<void(Entity)> callback)
     {
       auto& containers = Internal::get_containers();
       if (layer >= containers.layer_entities.size()) {
@@ -451,7 +488,7 @@ namespace Engine {
       }
     }
 
-    void for_each_entity_on_layer(const std::string& layer_name, std::function<void(Entity&)> callback)
+    void for_each_entity_on_layer(const std::string& layer_name, std::function<void(Entity)> callback)
     {
       LayerID layer = get_layer_id(layer_name);
       if (layer != INVALID_LAYER) {
@@ -567,7 +604,7 @@ namespace Engine {
       return false;
     }
 
-    bool is_on_layer(const Entity& entity, LayerID layer)
+    bool is_on_layer(const Entity entity, LayerID layer)
     {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
@@ -579,7 +616,7 @@ namespace Engine {
       return it->second.test(layer);
     }
 
-    LayerSignature get_entity_layers(const Entity& entity)
+    LayerSignature get_entity_layers(const Entity entity)
     {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
@@ -591,7 +628,7 @@ namespace Engine {
       return it->second;
     }
 
-    void clear_layers(const Entity& entity)
+    void clear_layers(const Entity entity)
     {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();

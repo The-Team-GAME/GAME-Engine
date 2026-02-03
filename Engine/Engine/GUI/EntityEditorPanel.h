@@ -34,7 +34,7 @@ namespace EntityEditorPanelHelpers {
   Where to call it:
   Called from EntityEditorPanel for each reflectable component on the selected entity.
   ==================================================================================*/
-  void render_component_tree(const std::string& component_name, Engine::ECS::Entity& entity, Engine::ECS::IComponentArray* array);
+  void render_component_tree(const std::string& component_name, Engine::ECS::Entity entity, Engine::ECS::IComponentArray* array);
 };
 
 void EntityEditorPanel();

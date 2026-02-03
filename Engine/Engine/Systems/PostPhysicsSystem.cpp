@@ -25,7 +25,7 @@ pphy2D::PostPhysics2DSystem()
 	require_components<Components::Transform2D, Components::RigidBody>();
 }
 
-void pphy2D::update_entity(ECS::Entity& entity)
+void pphy2D::update_entity(ECS::Entity entity)
 {
 	Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
 	Components::Transform2D* xform = entity.get_component<Components::Transform2D>();

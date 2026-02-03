@@ -107,7 +107,7 @@ namespace Engine
       // Public setters for resources and follow target
       void set_background_texture(Engine::Graphics::Texture tex) { background_texture = tex; }
       void set_font(Engine::Graphics::Font f) { font = f; }
-      void set_follow_entity(const Engine::ECS::Entity& entity) { follow_entity = entity; }
+      void set_follow_entity(const Engine::ECS::Entity entity) { follow_entity = entity; }
       void set_follow_offset(const Math::Vec2D& offset) { follow_offset_world = offset; }
 
       // Initialize the system with resources and reset state

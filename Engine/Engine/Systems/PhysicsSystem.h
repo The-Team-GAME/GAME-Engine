@@ -31,7 +31,7 @@ namespace Engine {
       
       void update() override;
 
-      void update_entity(Engine::ECS::Entity& entity) override;
+      void update_entity(Engine::ECS::Entity entity) override;
 
       // void knockback(Components::RigidBody& rigid, Vec2D force);
       // Update the linear velocities if said entities here

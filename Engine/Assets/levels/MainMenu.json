@@ -19,11 +19,58 @@
                     },
                     {
                         "data": {
-                            "level_path": "levels/MainMenu.json"
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 14,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
                         },
-                        "type": "Components::Level"
+                        "type": "Components::Parent"
                     }
                 ],
+                "id": 1,
+                "layers": [
+                    "default"
+                ]
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "position": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "rotation": 0.0,
+                            "scale": {
+                                "x": 1.0,
+                                "y": 1.0
+                            }
+                        },
+                        "type": "Components::Transform2D"
+                    },
+                    {
+                        "data": {
+                            "local_offset": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "offset_initialized": false,
+                            "parent_id": 14,
+                            "prev_parent_pos": {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        },
+                        "type": "Components::Parent"
+                    }
+                ],
+                "id": 2,
                 "layers": [
                     "default"
                 ]
@@ -62,11 +109,11 @@
                     {
                         "data": {
                             "local_offset": {
-                                "x": 800.0,
-                                "y": 450.0
+                                "x": 0.0,
+                                "y": 0.0
                             },
-                            "offset_initialized": true,
-                            "parent_id": null,
+                            "offset_initialized": false,
+                            "parent_id": 14,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -75,6 +122,7 @@
                         "type": "Components::Parent"
                     }
                 ],
+                "id": 3,
                 "layers": [
                     "default"
                 ]
@@ -113,11 +161,11 @@
                     {
                         "data": {
                             "local_offset": {
-                                "x": 800.0,
-                                "y": 450.0
+                                "x": 0.0,
+                                "y": 0.0
                             },
-                            "offset_initialized": true,
-                            "parent_id": null,
+                            "offset_initialized": false,
+                            "parent_id": 14,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -126,6 +174,7 @@
                         "type": "Components::Parent"
                     }
                 ],
+                "id": 4,
                 "layers": [
                     "default"
                 ]
@@ -164,11 +213,11 @@
                     {
                         "data": {
                             "local_offset": {
-                                "x": 800.0,
-                                "y": 450.0
+                                "x": 0.0,
+                                "y": 0.0
                             },
-                            "offset_initialized": true,
-                            "parent_id": null,
+                            "offset_initialized": false,
+                            "parent_id": 14,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -177,6 +226,7 @@
                         "type": "Components::Parent"
                     }
                 ],
+                "id": 5,
                 "layers": [
                     "default"
                 ]
@@ -215,11 +265,11 @@
                     {
                         "data": {
                             "local_offset": {
-                                "x": 800.0,
-                                "y": 450.0
+                                "x": 0.0,
+                                "y": 0.0
                             },
-                            "offset_initialized": true,
-                            "parent_id": null,
+                            "offset_initialized": false,
+                            "parent_id": 14,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -228,6 +278,7 @@
                         "type": "Components::Parent"
                     }
                 ],
+                "id": 6,
                 "layers": [
                     "default"
                 ]
@@ -266,11 +317,11 @@
                     {
                         "data": {
                             "local_offset": {
-                                "x": 800.0,
-                                "y": 450.0
+                                "x": 0.0,
+                                "y": 0.0
                             },
-                            "offset_initialized": true,
-                            "parent_id": null,
+                            "offset_initialized": false,
+                            "parent_id": 14,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -279,6 +330,7 @@
                         "type": "Components::Parent"
                     }
                 ],
+                "id": 7,
                 "layers": [
                     "default"
                 ]
@@ -379,11 +431,11 @@
                     {
                         "data": {
                             "local_offset": {
-                                "x": 800.0,
-                                "y": 450.0
+                                "x": 0.0,
+                                "y": 0.0
                             },
-                            "offset_initialized": true,
-                            "parent_id": null,
+                            "offset_initialized": false,
+                            "parent_id": 14,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -392,6 +444,7 @@
                         "type": "Components::Parent"
                     }
                 ],
+                "id": 8,
                 "layers": [
                     "default"
                 ]
@@ -492,11 +545,11 @@
                     {
                         "data": {
                             "local_offset": {
-                                "x": 800.0,
-                                "y": 450.0
+                                "x": 0.0,
+                                "y": 0.0
                             },
-                            "offset_initialized": true,
-                            "parent_id": null,
+                            "offset_initialized": false,
+                            "parent_id": 14,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -505,6 +558,7 @@
                         "type": "Components::Parent"
                     }
                 ],
+                "id": 9,
                 "layers": [
                     "default",
                     "ui"
@@ -606,11 +660,11 @@
                     {
                         "data": {
                             "local_offset": {
-                                "x": 800.0,
-                                "y": 450.0
+                                "x": 0.0,
+                                "y": 0.0
                             },
-                            "offset_initialized": true,
-                            "parent_id": null,
+                            "offset_initialized": false,
+                            "parent_id": 14,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -619,6 +673,7 @@
                         "type": "Components::Parent"
                     }
                 ],
+                "id": 10,
                 "layers": [
                     "default",
                     "ui"
@@ -720,11 +775,11 @@
                     {
                         "data": {
                             "local_offset": {
-                                "x": 800.0,
-                                "y": 450.0
+                                "x": 0.0,
+                                "y": 0.0
                             },
-                            "offset_initialized": true,
-                            "parent_id": null,
+                            "offset_initialized": false,
+                            "parent_id": 14,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -733,6 +788,7 @@
                         "type": "Components::Parent"
                     }
                 ],
+                "id": 11,
                 "layers": [
                     "default",
                     "ui"
@@ -772,11 +828,11 @@
                     {
                         "data": {
                             "local_offset": {
-                                "x": 800.0,
-                                "y": 450.0
+                                "x": 0.0,
+                                "y": 0.0
                             },
-                            "offset_initialized": true,
-                            "parent_id": null,
+                            "offset_initialized": false,
+                            "parent_id": 14,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -785,6 +841,7 @@
                         "type": "Components::Parent"
                     }
                 ],
+                "id": 12,
                 "layers": [
                     "default"
                 ]
@@ -823,11 +880,11 @@
                     {
                         "data": {
                             "local_offset": {
-                                "x": 800.0,
-                                "y": 450.0
+                                "x": 0.0,
+                                "y": 0.0
                             },
-                            "offset_initialized": true,
-                            "parent_id": null,
+                            "offset_initialized": false,
+                            "parent_id": 14,
                             "prev_parent_pos": {
                                 "x": 0.0,
                                 "y": 0.0
@@ -836,6 +893,30 @@
                         "type": "Components::Parent"
                     }
                 ],
+                "id": 13,
+                "layers": [
+                    "default"
+                ]
+            },
+            {
+                "components": [
+                    {
+                        "data": {
+                            "level_path": "levels/MainMenu.json",
+                            "on_exit": {
+                                "name": ""
+                            },
+                            "on_init": {
+                                "name": ""
+                            },
+                            "on_update": {
+                                "name": ""
+                            }
+                        },
+                        "type": "Components::Level"
+                    }
+                ],
+                "id": 14,
                 "layers": [
                     "default"
                 ]

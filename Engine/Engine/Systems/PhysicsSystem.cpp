@@ -65,7 +65,7 @@ void phy2D::update()
   // collision check afterwards
 }
 
-void phy2D::update_entity(ECS::Entity& entity) 
+void phy2D::update_entity(ECS::Entity entity) 
 {
   Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
   //Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
@@ -163,7 +163,7 @@ void phy2D::jump(Components::RigidBody& rigid) // not used
   phy2D::add_force(rigid, Vec2D(0.f, -3500000.f));
 }
 
-//void phy2D::knockback(ECS::Entity& victim, Vec2D force)
+//void phy2D::knockback(ECS::Entity victim, Vec2D force)
 //{
 //  Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
 //  Components::Transform2D* xform = entity.get_component<Components::Transform2D>();

@@ -306,7 +306,16 @@ namespace Engine
 
         // Main gameloop here
         Engine::SceneManager::update();
-        Engine::ECS::update();
+
+        // Two-phase ECS update:
+        // 1. Game systems only run when not paused (or during single-step)
+        if (!Engine::Time::get_paused() || single_step_requested)
+        {
+          Engine::ECS::update_game();
+        }
+
+        // 2. Editor systems always run (gizmo, camera control, etc.)
+        Engine::ECS::update_editor();
 
         // Always process ECS housekeeping (entity deletions, component modifications)
         // even when paused so entities can be created/destroyed in the editor

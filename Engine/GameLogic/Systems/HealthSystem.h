@@ -35,7 +35,7 @@ namespace Engine {
         require_components<Components::Health>();
       }
 
-      void update_entity(Engine::ECS::Entity& e) override {
+      void update_entity(Engine::ECS::Entity e) override {
         using namespace Components;
 
         auto* hp = e.get_component<Health>();
@@ -110,7 +110,7 @@ namespace Engine {
         require_components<Components::EnemyHealth, Components::Transform2D, Components::EnemyHealthBar>();
       }
 
-      void update_entity(Engine::ECS::Entity& e) override {
+      void update_entity(Engine::ECS::Entity e) override {
         using namespace Components;
         auto* hp = e.get_component<EnemyHealth>();
         auto* tr = e.get_component<Transform2D>();
@@ -165,7 +165,7 @@ namespace Engine {
       static Engine::Graphics::Texture rect() { return Engine::Resources::get_rect_texture(); }
       static inline float DEG(float d) { return d * 0.01745329251994329577f; }
 
-      void ensure_bar(Engine::ECS::Entity&, Components::EnemyHealthBar& bar) {
+      void ensure_bar(Engine::ECS::Entity, Components::EnemyHealthBar& bar) {
         using namespace Components;
         if (bar.initialized) return;
         bar.initialized = true;
@@ -222,7 +222,7 @@ namespace Engine {
       }
 
       // Layout smooth arc
-      void layout_arc(Engine::ECS::Entity& owner, Components::EnemyHealthBar& bar) {
+      void layout_arc(Engine::ECS::Entity owner, Components::EnemyHealthBar& bar) {
         using namespace Components;
         auto* to = owner.get_component<Components::Transform2D>();
         if (!to) return;
@@ -322,7 +322,7 @@ namespace Engine {
         require_components<Components::EnemyHealth, Components::Transform2D, Components::EnemyHealthBarRect>();
       }
 
-      void update_entity(Engine::ECS::Entity& e) override {
+      void update_entity(Engine::ECS::Entity e) override {
         using namespace Components;
         auto* hp = e.get_component<EnemyHealth>();
         auto* tr = e.get_component<Transform2D>();
@@ -454,7 +454,7 @@ namespace Engine {
         require_components<Components::Heartrate, Components::HeartHUDSprite>();
       }
 
-      void update_entity(Engine::ECS::Entity& e) override {
+      void update_entity(Engine::ECS::Entity e) override {
         using namespace Components;
         auto* hr = e.get_component<Heartrate>();
         auto* hud = e.get_component<HeartHUDSprite>();
@@ -529,7 +529,7 @@ namespace Engine {
       }
 
       // ---- UI draw path (screen-space, no camera) ----
-      void draw_entity(const Engine::ECS::Entity& e) override {
+      void draw_entity(const Engine::ECS::Entity e) override {
         using namespace Components;
 
         auto* hr = e.get_component<Heartrate>();

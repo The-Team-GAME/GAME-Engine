@@ -175,7 +175,7 @@ public:
 
 	void free() {};
 	void unload() {
-		for (Engine::ECS::Entity& entity : timeline_entities) {
+		for (Engine::ECS::Entity entity : timeline_entities) {
 			if (entity.is_valid()) {
 				Engine::ECS::destroy_entity(entity);
 			}
