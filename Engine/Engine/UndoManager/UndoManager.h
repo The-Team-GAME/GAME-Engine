@@ -98,5 +98,12 @@ namespace Engine {
           undo_stack.pop_front();
       }
     }
+
+    // Clears all undo/redo history. Call before Memory Manager shutdown
+    // to release any captured resources (e.g., Prefabs with component data).
+    inline void clear() {
+      undo_stack.clear();
+      redo_stack.clear();
+    }
   }
 }
