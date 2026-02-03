@@ -86,6 +86,60 @@ namespace Components
   {
   };
 
+  struct SprayCanMonkey
+  {
+
+    // Combat stats
+    float health = 100.0f;
+    float damage = 20.0f;
+    float attack_range = 200.0f;     // Range for spraying
+    float detection_range = 300.0f;  // When to notice player
+    float chase_range = 400.0f;      // Max chasing distance
+    float chase_speed = 80.0f;       // Movement speed
+
+    // Attack properties
+    float attack_cooldown = 2.0f;    // Time between attacks
+    float attack_windup = 0.5f;      // Wind-up time before spraying
+    float spray_duration = 1.0f;     // How long the spray lasts
+    float spray_range = 150.0f;      // How far the spray reaches
+    float spray_width = 80.0f;       // Width of spray cone
+
+    // Knockback
+    Math::Vec2D knockback = { 300.0f, 400.0f };
+
+    // Timing
+    float last_attack_time = 0.0f;
+    float last_spray_time = 0.0f;
+
+    Engine::ECS::Entity active_cloud{};
+
+    // Spray projectile info
+    std::string spray_projectile_texture = "images/LazyMonkeySpriteSheets/LazyMonkey_Death_Spritesheet.png";
+    float spray_projectile_speed = 300.0f;
+
+    // Spray cloud properties
+    float cloud_duration = 3.0f;           // How long the cloud lingers
+    float cloud_width = 150.0f;            // Width of the cloud area
+    float cloud_height = 80.0f;            // Height of the cloud area
+    float cloud_damage_interval = 0.5f;    // Time between damage ticks
+    int cloud_damage_per_tick = 5;         // Damage per tick
+
+    // Cloud visual properties
+    std::string cloud_texture = "images/LazyMonkeySpriteSheets/LazyMonkey_Death_Spritesheet.png";
+    float cloud_fade_time = 0.5f;          // Time to fade out at the end
+
+    // Serialization support
+    template<typename Archive>
+    void serialize(Archive& archive) {
+      archive(
+        health, damage, attack_range, detection_range, chase_range,
+        chase_speed, attack_cooldown, attack_windup, spray_duration,
+        spray_range, spray_width, knockback, last_attack_time, last_spray_time,
+        spray_projectile_texture, spray_projectile_speed
+      );
+    }
+  };
+
   struct LazyMonkey
   {
     // Movement speeds
