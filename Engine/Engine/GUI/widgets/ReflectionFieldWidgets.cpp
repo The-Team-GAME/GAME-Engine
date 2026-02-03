@@ -457,7 +457,7 @@ namespace ImGuiWidgets {
     }
   }
 
-  bool render_statemachine_field(ReflectionLibrary::GenericValue& field_value, bool& modified) {
+  bool render_statemachine_field(ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity) {
     // StateMachine structure:
     // - states: unordered_map<string, State> (Serialized as Array of Pairs or Object)
     // Each State has:
@@ -564,6 +564,23 @@ namespace ImGuiWidgets {
                 ImGui::Indent();
                 render_animation_field(anim_field_it->second, local_modified);
                 ImGui::Unindent();
+              }
+
+              // Edit Frames Button - opens Frame Animation Editor
+              ImGui::Spacing();
+              if (entity.is_valid()) {
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.5f, 0.8f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.6f, 0.9f, 1.0f));
+                std::string edit_btn_label = "Edit Animation Frames##" + state_name;
+                if (ImGui::Button(edit_btn_label.c_str(), ImVec2(-1, 0))) {
+                  // Forward declare and call the editor opener
+                  extern void FrameAnimationEditor_Open(Engine::ECS::Entity entity, const std::string& state_name);
+                  FrameAnimationEditor_Open(entity, state_name);
+                }
+                ImGui::PopStyleColor(2);
+                if (ImGui::IsItemHovered()) {
+                  ImGui::SetTooltip("Open the Frame Animation Editor to select specific frames from the texture atlas");
+                }
               }
 
               ImGui::Unindent();
@@ -817,7 +834,7 @@ namespace ImGuiWidgets {
     }
 
     if (type_hint == "Components::StateMachine") {
-      return render_statemachine_field(field_value, modified);
+      return render_statemachine_field(field_value, modified, entity);
     }
 
     // Not handled by specialized renderer
