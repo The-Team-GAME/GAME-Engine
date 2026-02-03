@@ -51,6 +51,7 @@ namespace {
 
   // Panel layout state
   float atlas_panel_width = 300.0f;     // Resizable atlas panel width
+  float atlas_zoom = 1.0f;              // Atlas preview zoom level
 
   // Atlas preview state
   ImGuiWidgets::TextureAtlasState atlas_state;
@@ -168,8 +169,8 @@ namespace {
 
   // Draw a frame thumbnail
   void draw_frame_thumbnail(ImDrawList* draw_list, ImVec2 pos, ImVec2 size, int atlas_index) {
-    if (!cached_texture.texture_handle || atlas_index < 0 || 
-        atlas_index >= static_cast<int>(cached_atlas.subTextures.size())) {
+    if (!cached_texture.texture_handle || atlas_index < 0 ||
+      atlas_index >= static_cast<int>(cached_atlas.subTextures.size())) {
       draw_list->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(60, 60, 60, 255));
       return;
     }
@@ -191,12 +192,12 @@ namespace {
   void draw_timeline() {
     ImGui::Text("Timeline");
     ImGui::SameLine();
-    
+
     // Zoom controls
     ImGui::SameLine(ImGui::GetWindowWidth() - 200);
     ImGui::SetNextItemWidth(100);
-    ImGui::SliderFloat("Zoom", &timeline_zoom, 0.5f, 3.0f, "%.1fx");
-    
+    ImGui::SliderFloat("Zoom", &timeline_zoom, 0.1f, 10.0f, "%.2fx");
+
     ImGui::SameLine();
     if (ImGui::Button("Fit")) {
       float total_duration = 0.0f;
@@ -204,35 +205,35 @@ namespace {
       if (total_duration > 0.0f) {
         float available_width = ImGui::GetContentRegionAvail().x - 20;
         timeline_zoom = available_width / (total_duration * PIXELS_PER_SECOND);
-        timeline_zoom = std::clamp(timeline_zoom, 0.5f, 3.0f);
+        timeline_zoom = std::max(0.01f, timeline_zoom); // Only enforce minimum
       }
     }
 
     // Timeline area
     ImVec2 timeline_pos = ImGui::GetCursorScreenPos();
     ImVec2 timeline_size(ImGui::GetContentRegionAvail().x, TIMELINE_HEIGHT);
-    
+
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
-    
+
     // Background
-    draw_list->AddRectFilled(timeline_pos, 
+    draw_list->AddRectFilled(timeline_pos,
       ImVec2(timeline_pos.x + timeline_size.x, timeline_pos.y + timeline_size.y),
       IM_COL32(30, 30, 35, 255));
-    
+
     // Border
     draw_list->AddRect(timeline_pos,
       ImVec2(timeline_pos.x + timeline_size.x, timeline_pos.y + timeline_size.y),
       IM_COL32(60, 60, 70, 255));
 
     // Set clip rect for timeline content
-    draw_list->PushClipRect(timeline_pos, 
+    draw_list->PushClipRect(timeline_pos,
       ImVec2(timeline_pos.x + timeline_size.x, timeline_pos.y + timeline_size.y), true);
 
     // Draw time markers
     float time_step = 0.1f; // 100ms markers
     float total_duration = 0.0f;
     for (float d : frame_durations) total_duration += d;
-    
+
     for (float t = 0.0f; t <= total_duration + 0.01f; t += time_step) {
       float x = timeline_pos.x + t * PIXELS_PER_SECOND * timeline_zoom - timeline_scroll;
       if (x >= timeline_pos.x && x <= timeline_pos.x + timeline_size.x) {
@@ -254,18 +255,18 @@ namespace {
     // Draw frames on timeline
     float frame_y = timeline_pos.y + 18.0f;
     float current_x = timeline_pos.x - timeline_scroll;
-    
+
     ImVec2 mouse_pos = ImGui::GetMousePos();
-    bool mouse_in_timeline = mouse_pos.x >= timeline_pos.x && 
-                             mouse_pos.x <= timeline_pos.x + timeline_size.x &&
-                             mouse_pos.y >= timeline_pos.y && 
-                             mouse_pos.y <= timeline_pos.y + timeline_size.y;
+    bool mouse_in_timeline = mouse_pos.x >= timeline_pos.x &&
+      mouse_pos.x <= timeline_pos.x + timeline_size.x &&
+      mouse_pos.y >= timeline_pos.y &&
+      mouse_pos.y <= timeline_pos.y + timeline_size.y;
 
     drop_target_index = -1;
 
     for (int i = 0; i < static_cast<int>(frame_indices.size()); ++i) {
       float frame_width = std::max(TIMELINE_FRAME_MIN_WIDTH, frame_durations[i] * PIXELS_PER_SECOND * timeline_zoom);
-      
+
       ImVec2 frame_pos(current_x, frame_y);
       ImVec2 frame_end(current_x + frame_width - 2, frame_y + TIMELINE_FRAME_HEIGHT);
 
@@ -330,7 +331,7 @@ namespace {
 
         // Handle clicking and dragging
         ImGui::SetCursorScreenPos(frame_pos);
-        ImGui::InvisibleButton(("frame_btn_" + std::to_string(i)).c_str(), 
+        ImGui::InvisibleButton(("frame_btn_" + std::to_string(i)).c_str(),
           ImVec2(frame_width - 2, TIMELINE_FRAME_HEIGHT));
 
         if (ImGui::IsItemClicked(0)) {
@@ -377,8 +378,8 @@ namespace {
 
     // Handle drop
     if (dragging_frame_index >= 0 && ImGui::IsMouseReleased(0)) {
-      if (drop_target_index >= 0 && drop_target_index != dragging_frame_index && 
-          drop_target_index != dragging_frame_index + 1) {
+      if (drop_target_index >= 0 && drop_target_index != dragging_frame_index &&
+        drop_target_index != dragging_frame_index + 1) {
         // Perform reorder
         int idx_to_move = frame_indices[dragging_frame_index];
         float dur_to_move = frame_durations[dragging_frame_index];
@@ -398,22 +399,32 @@ namespace {
     // Pop clip rect before drawing playhead (so it's not clipped)
     draw_list->PopClipRect();
 
-    // Handle horizontal scrolling with mouse wheel when hovering timeline
+    // Handle horizontal scrolling and zooming with mouse wheel when hovering timeline
     ImGui::SetCursorScreenPos(timeline_pos);
     ImGui::InvisibleButton("timeline_scroll_area", timeline_size);
     if (ImGui::IsItemHovered()) {
-      ImGui::SetTooltip("Scroll: Mouse wheel\nMiddle-click frame: Delete");
+      ImGui::SetTooltip("Scroll: Mouse wheel\nCtrl+Scroll: Zoom\nMiddle-click frame: Delete");
       float wheel = ImGui::GetIO().MouseWheel;
       if (wheel != 0.0f) {
-        // Calculate total timeline width
-        float total_width = 0.0f;
-        for (float d : frame_durations) {
-          total_width += std::max(TIMELINE_FRAME_MIN_WIDTH, d * PIXELS_PER_SECOND * timeline_zoom);
-        }
-        float max_scroll = std::max(0.0f, total_width - timeline_size.x + 20.0f);
+        bool ctrl_held = ImGui::GetIO().KeyCtrl;
         
-        timeline_scroll -= wheel * 50.0f; // Scroll speed
-        timeline_scroll = std::clamp(timeline_scroll, 0.0f, max_scroll);
+        if (ctrl_held) {
+          // Ctrl+scroll: Zoom in/out (uncapped)
+          float zoom_factor = 1.0f + wheel * 0.15f;
+          timeline_zoom *= zoom_factor;
+          timeline_zoom = std::max(0.01f, timeline_zoom); // Only enforce minimum to prevent zero/negative
+        } else {
+          // Normal scroll: Horizontal pan
+          // Calculate total timeline width
+          float total_width = 0.0f;
+          for (float d : frame_durations) {
+            total_width += std::max(TIMELINE_FRAME_MIN_WIDTH, d * PIXELS_PER_SECOND * timeline_zoom);
+          }
+          float max_scroll = std::max(0.0f, total_width - timeline_size.x + 20.0f);
+
+          timeline_scroll -= wheel * 50.0f; // Scroll speed
+          timeline_scroll = std::clamp(timeline_scroll, 0.0f, max_scroll);
+        }
       }
     }
 
@@ -524,16 +535,17 @@ void FrameAnimationEditorPanel() {
     if (ImGui::Button("Stop", ImVec2(60, 0))) {
       is_previewing = false;
     }
-  } else {
+  }
+  else {
     if (ImGui::Button("Play", ImVec2(60, 0))) {
       is_previewing = true;
       preview_start_time = Engine::Time::get_time();
     }
   }
-  
+
   ImGui::SameLine();
   ImGui::Checkbox("Loop", &is_looping);
-  
+
   ImGui::SameLine();
   float total_duration = 0.0f;
   for (float d : frame_durations) total_duration += d;
@@ -555,27 +567,38 @@ void FrameAnimationEditorPanel() {
   // ============================================================================
   float panel_height = ImGui::GetContentRegionAvail().y - TIMELINE_HEIGHT - 30;
   float total_width = ImGui::GetContentRegionAvail().x;
-  
+
   // Clamp atlas panel width
   atlas_panel_width = std::clamp(atlas_panel_width, 150.0f, total_width - 200.0f);
-  
+
   // Left: Texture Atlas
   ImGui::BeginChild("AtlasPanel", ImVec2(atlas_panel_width, panel_height), true, ImGuiWindowFlags_HorizontalScrollbar);
   ImGui::Text("Texture Atlas");
   ImGui::SameLine();
   ImGui::TextDisabled("(?)");
   if (ImGui::IsItemHovered()) {
-    ImGui::SetTooltip("Click a tile to add it to the timeline");
+    ImGui::SetTooltip("Click a tile to add it to the timeline\nCtrl+Scroll: Zoom");
   }
   ImGui::Separator();
+
+  // Handle Ctrl+scroll zoom for atlas
+  if (ImGui::IsWindowHovered() && ImGui::GetIO().KeyCtrl) {
+    float wheel = ImGui::GetIO().MouseWheel;
+    if (wheel != 0.0f) {
+      float zoom_factor = 1.0f + wheel * 0.15f;
+      atlas_zoom *= zoom_factor;
+      atlas_zoom = std::max(0.1f, atlas_zoom); // Minimum zoom
+    }
+  }
 
   if (cached_texture.texture_handle && cached_texture.texture_handle->id != 0 && !cached_atlas.subTextures.empty()) {
     float available_width = ImGui::GetContentRegionAvail().x - 10;
     float aspect = static_cast<float>(cached_texture.texture_handle->width) /
       static_cast<float>(cached_texture.texture_handle->height);
     constexpr float MIN_ATLAS_HEIGHT = 150.0f;
-    // No max height - let it grow and scroll if needed
-    float preview_height = std::max(MIN_ATLAS_HEIGHT, available_width / aspect);
+    // Apply zoom to the preview height
+    float base_height = std::max(MIN_ATLAS_HEIGHT, available_width / aspect);
+    float preview_height = base_height * atlas_zoom;
 
     ImGuiWidgets::TextureAtlasPreview(cached_texture, cached_atlas, preview_height, atlas_state);
 
@@ -593,7 +616,8 @@ void FrameAnimationEditorPanel() {
 
     ImGui::Spacing();
     ImGui::TextDisabled("%d tiles available", static_cast<int>(cached_atlas.subTextures.size()));
-  } else {
+  }
+  else {
     ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.0f, 1.0f), "No texture/atlas");
   }
   ImGui::EndChild();
@@ -608,13 +632,13 @@ void FrameAnimationEditorPanel() {
   if (ImGui::IsItemHovered() || ImGui::IsItemActive()) {
     ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
   }
-  
+
   // Draw splitter visual
   ImVec2 splitter_min = ImGui::GetItemRectMin();
   ImVec2 splitter_max = ImGui::GetItemRectMax();
   ImDrawList* splitter_dl = ImGui::GetWindowDrawList();
-  ImU32 splitter_col = ImGui::IsItemActive() ? IM_COL32(100, 150, 255, 255) : 
-                       ImGui::IsItemHovered() ? IM_COL32(100, 100, 100, 255) : IM_COL32(60, 60, 60, 255);
+  ImU32 splitter_col = ImGui::IsItemActive() ? IM_COL32(100, 150, 255, 255) :
+    ImGui::IsItemHovered() ? IM_COL32(100, 100, 100, 255) : IM_COL32(60, 60, 60, 255);
   splitter_dl->AddRectFilled(ImVec2(splitter_min.x + 3, splitter_min.y), ImVec2(splitter_min.x + 5, splitter_max.y), splitter_col);
 
   ImGui::SameLine();
@@ -629,17 +653,17 @@ void FrameAnimationEditorPanel() {
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
     ImVec2 preview_pos = ImGui::GetCursorScreenPos();
     float preview_size = 120.0f;
-    
+
     draw_frame_thumbnail(draw_list, preview_pos, ImVec2(preview_size, preview_size), frame_indices[selected_frame_index]);
     draw_list->AddRect(preview_pos, ImVec2(preview_pos.x + preview_size, preview_pos.y + preview_size),
       IM_COL32(100, 100, 100, 255));
-    
+
     ImGui::Dummy(ImVec2(preview_size, preview_size));
-    
+
     ImGui::Spacing();
     ImGui::Text("Frame %d of %d", selected_frame_index + 1, static_cast<int>(frame_indices.size()));
     ImGui::Text("Atlas Index: %d", frame_indices[selected_frame_index]);
-    
+
     ImGui::Spacing();
     ImGui::Separator();
     ImGui::Spacing();
@@ -650,9 +674,9 @@ void FrameAnimationEditorPanel() {
     if (ImGui::SliderFloat("##duration", &frame_durations[selected_frame_index], 0.01f, 2.0f, "%.3f s")) {
       // Clamped by slider
     }
-    
+
     ImGui::Spacing();
-    
+
     // Quick duration buttons
     ImGui::Text("Quick Set:");
     if (ImGui::Button("0.05s", ImVec2(50, 0))) frame_durations[selected_frame_index] = 0.05f;
@@ -681,7 +705,7 @@ void FrameAnimationEditorPanel() {
       frame_durations.insert(frame_durations.begin() + selected_frame_index + 1, dur);
       selected_frame_index++;
     }
-    
+
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.2f, 0.2f, 1.0f));
     if (ImGui::Button("Delete Frame", ImVec2(-1, 0))) {
       frame_indices.erase(frame_indices.begin() + selected_frame_index);
@@ -705,13 +729,14 @@ void FrameAnimationEditorPanel() {
       for (float& d : frame_durations) d = default_duration;
     }
 
-  } else {
+  }
+  else {
     ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "Select a frame in the timeline\nto edit its properties");
-    
+
     ImGui::Spacing();
     ImGui::Separator();
     ImGui::Spacing();
-    
+
     if (ImGui::Button("Clear All Frames", ImVec2(-1, 0))) {
       frame_indices.clear();
       frame_durations.clear();
