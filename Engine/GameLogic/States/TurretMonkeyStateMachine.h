@@ -76,11 +76,34 @@ namespace TurretMonkeyStates
     // ========================================================================
     Components::StateAnimation Turret_monkey_turret_anim;
     Turret_monkey_turret_anim.texture = Components::Texture(Engine::Resources::load_texture("images/TurretMonkeySpriteSheets/ceiling_atk.png"));
-    Turret_monkey_turret_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 6, 6);
-    Turret_monkey_turret_anim.animation = Components::Animation(6, 0.1f);
-    Turret_monkey_turret_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
+    Turret_monkey_turret_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 6, 3);
+    Turret_monkey_turret_anim.animation = Components::Animation(3, 0.5f);
+    Turret_monkey_turret_anim.scale = Math::Vec2D(TURRET_WIDTH, TURRET_HEIGHT);
 
-    Components::State Turret_monkey_turret("Turret", "Turret_monkey_Turret_enter", "Turret_monkey_Turret_update", "Turret_monkey_Turret_exit", Turret_monkey_turret_anim);
+    // Turret state uses ceiling_atk sprite and turret callbacks
+    Components::State Turret_monkey_turret("Turret", "Turret_monkey_turret_enter", "Turret_monkey_turret_update", "Turret_monkey_turret_exit", Turret_monkey_turret_anim);
+
+    // ========================================================================
+    // Turret Monkey Turret Windup State (ceiling windup before shot)
+    // ========================================================================
+    Components::StateAnimation Turret_monkey_turret_windup_anim;
+    Turret_monkey_turret_windup_anim.texture = Components::Texture(Engine::Resources::load_texture("images/TurretMonkeySpriteSheets/ceiling_atk.png"));
+    Turret_monkey_turret_windup_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 6, 3);
+    Turret_monkey_turret_windup_anim.animation = Components::Animation({0.2f, 0.3f, 0.6f});
+    Turret_monkey_turret_windup_anim.scale = Math::Vec2D(TURRET_WIDTH, TURRET_HEIGHT);
+
+    Components::State Turret_monkey_turret_windup("TurretWindup", "Turret_monkey_turret_windup_enter", "Turret_monkey_turret_windup_update", "Turret_monkey_turret_windup_exit", Turret_monkey_turret_windup_anim);
+
+    // ========================================================================
+    // Turret Monkey Turret Attacking State (ceiling projectile shot)
+    // ========================================================================
+    Components::StateAnimation Turret_monkey_turret_attacking_anim;
+    Turret_monkey_turret_attacking_anim.texture = Components::Texture(Engine::Resources::load_texture("images/TurretMonkeySpriteSheets/ceiling_atk.png"));
+    Turret_monkey_turret_attacking_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 6, 6);
+    Turret_monkey_turret_attacking_anim.animation = Components::Animation({0.0f,0.0f,0.0f,0.2f,0.2f,0.3f});
+    Turret_monkey_turret_attacking_anim.scale = Math::Vec2D(TURRET_WIDTH, TURRET_HEIGHT);
+
+    Components::State Turret_monkey_turret_attacking("TurretAttacking", "Turret_monkey_turret_attacking_enter", "Turret_monkey_turret_attacking_update", "Turret_monkey_turret_attacking_exit", Turret_monkey_turret_attacking_anim, attack_audio);
 
     // ========================================================================
     // Turret Monkey Windup State
@@ -133,6 +156,8 @@ namespace TurretMonkeyStates
     Turret_monkey_sm.add_state(Turret_monkey_idle);
     Turret_monkey_sm.add_state(Turret_monkey_chasing);
     Turret_monkey_sm.add_state(Turret_monkey_turret);
+    Turret_monkey_sm.add_state(Turret_monkey_turret_windup);
+    Turret_monkey_sm.add_state(Turret_monkey_turret_attacking);
     Turret_monkey_sm.add_state(Turret_monkey_windup);
     Turret_monkey_sm.add_state(Turret_monkey_attacking);
     Turret_monkey_sm.add_state(Turret_monkey_hit);

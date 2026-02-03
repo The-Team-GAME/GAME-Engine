@@ -370,7 +370,7 @@ namespace TurretMonkeyStateCallbacks
     // Freeze movement and disable gravity while stuck
     if (rigid) {
       rigid->velocity.zero();
-      rigid->use_gravity = true;
+      rigid->use_gravity = false;
     }
 
     if (Turret_monkey) {
@@ -382,6 +382,7 @@ namespace TurretMonkeyStateCallbacks
 
   inline void turret_on_update(Engine::ECS::Entity entity) {
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
+    auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* flip = entity.get_component<Components::Flip>();
 
     if (!Turret_monkey) return;
@@ -400,8 +401,9 @@ namespace TurretMonkeyStateCallbacks
       }
     }
 
-    // Auto-fire projectiles on cooldown while in turret state
-    if (player_entity.is_valid()) {
+    // When player is in range and cooldown has elapsed, go into
+    // a dedicated turret windup state before firing.
+    if (player_entity.is_valid() && state_machine) {
       auto* Turret_monkey_transform = entity.get_component<Components::Transform2D>();
       auto* player_transform = player_entity.get_component<Components::Transform2D>();
 
@@ -411,19 +413,109 @@ namespace TurretMonkeyStateCallbacks
 
         if (distance < Turret_monkey->long_attack_range &&
           (current_time - Turret_monkey->last_attack_time) >= Turret_monkey->attack_cooldown) {
-          Turret_monkey->last_attack_time = current_time;
-          fire_turret_projectile(entity);
+          // Start turret windup sequence; projectile will be
+          // fired in the turret attacking state.
+          state_machine->change_state("TurretWindup");
         }
       }
     }
   }
 
   inline void turret_on_exit(Engine::ECS::Entity entity) {
+    // Leaving the turret state does not itself re-enable gravity.
+    // Gravity is turned back on explicitly in states like Hit.
+    Log::info("Turret Monkey: Exited Turret state");
+  }
+
+  // ========================================================================
+  // Turret Windup State Callbacks (while stuck to ceiling)
+  // ========================================================================
+
+  inline void turret_windup_on_enter(Engine::ECS::Entity entity) {
+    auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
     auto* rigid = entity.get_component<Components::RigidBody>();
+
+    // Ensure we stay stuck in place during windup
     if (rigid) {
-      rigid->use_gravity = true;
+      rigid->velocity.zero();
+      rigid->use_gravity = false;
     }
-    Log::info("Turret Monkey: Exited Turret state (no longer stuck)");
+
+    if (Turret_monkey) {
+      Turret_monkey->last_attack_time = Engine::Time::get_time();
+    }
+
+    Log::info("Turret Monkey: Entered TurretWindup state");
+  }
+
+  inline void turret_windup_on_update(Engine::ECS::Entity entity) {
+    auto* state_machine = entity.get_component<Components::StateMachine>();
+    auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
+    auto* flip = entity.get_component<Components::Flip>();
+
+    if (!Turret_monkey || !state_machine) return;
+
+    float current_time = Engine::Time::get_time();
+    float windup_elapsed = current_time - Turret_monkey->last_attack_time;
+
+    // Face the player during windup
+    auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+    if (player_entity.is_valid()) {
+      auto* Turret_monkey_transform = entity.get_component<Components::Transform2D>();
+      auto* player_transform = player_entity.get_component<Components::Transform2D>();
+
+      if (Turret_monkey_transform && player_transform && flip) {
+        float dx = player_transform->position.x - Turret_monkey_transform->position.x;
+        flip->value.x = (dx > 0 ? 1.0f : -1.0f);
+      }
+    }
+
+    // After windup duration, fire in the turret attacking state
+    if (windup_elapsed >= Turret_monkey->attack_windup) {
+      state_machine->change_state("TurretAttacking");
+    }
+  }
+
+  inline void turret_windup_on_exit([[maybe_unused]] Engine::ECS::Entity entity) {
+  }
+
+  // ========================================================================
+  // Turret Attacking State Callbacks (ceiling projectile)
+  // ========================================================================
+
+  inline void turret_attacking_on_enter(Engine::ECS::Entity entity) {
+    auto* rigid = entity.get_component<Components::RigidBody>();
+
+    // Stay fixed while firing
+    if (rigid) {
+      rigid->velocity.zero();
+      rigid->use_gravity = false;
+    }
+
+    // Fire a long-range projectile towards the player (ceiling turret)
+    fire_turret_projectile(entity);
+
+    Log::info("Turret Monkey: Entered TurretAttacking state (ceiling projectile)");
+  }
+
+  inline void turret_attacking_on_update(Engine::ECS::Entity entity) {
+    auto* state_machine = entity.get_component<Components::StateMachine>();
+    auto* animation = entity.get_component<Components::Animation>();
+
+    if (!state_machine) return;
+
+    // When the attack animation is done, return to turret idle state
+    if (animation && animation->has_ended()) {
+      state_machine->change_state("Turret");
+    }
+  }
+
+  inline void turret_attacking_on_exit(Engine::ECS::Entity entity) {
+    auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
+    if (Turret_monkey) {
+      // Start cooldown from the end of the attack
+      Turret_monkey->last_attack_time = Engine::Time::get_time();
+    }
   }
 
   // ========================================================================
@@ -563,6 +655,12 @@ REGISTER_FUNCTION(Turret_monkey_attacking_exit, void(Engine::ECS::Entity), Turre
 REGISTER_FUNCTION(Turret_monkey_turret_enter, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::turret_on_enter)
 REGISTER_FUNCTION(Turret_monkey_turret_update, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::turret_on_update)
 REGISTER_FUNCTION(Turret_monkey_turret_exit, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::turret_on_exit)
+REGISTER_FUNCTION(Turret_monkey_turret_windup_enter, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::turret_windup_on_enter)
+REGISTER_FUNCTION(Turret_monkey_turret_windup_update, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::turret_windup_on_update)
+REGISTER_FUNCTION(Turret_monkey_turret_windup_exit, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::turret_windup_on_exit)
+REGISTER_FUNCTION(Turret_monkey_turret_attacking_enter, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::turret_attacking_on_enter)
+REGISTER_FUNCTION(Turret_monkey_turret_attacking_update, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::turret_attacking_on_update)
+REGISTER_FUNCTION(Turret_monkey_turret_attacking_exit, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::turret_attacking_on_exit)
 REGISTER_FUNCTION(Turret_monkey_hit_enter, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::hit_on_enter)
 REGISTER_FUNCTION(Turret_monkey_hit_update, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::hit_on_update)
 REGISTER_FUNCTION(Turret_monkey_hit_exit, void(Engine::ECS::Entity), TurretMonkeyStateCallbacks::hit_on_exit)

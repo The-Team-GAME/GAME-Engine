@@ -314,8 +314,6 @@ namespace GamerMonkeyStateCallbacks
       rigid->velocity.x = (dx >= 0.0f ? Gamer_monkey->dash_speed : -Gamer_monkey->dash_speed);
     }
 
-    // Check if we've reached or passed the target X position
-    float direction = (dx >= 0.0f) ? 1.0f : -1.0f;
     float velocity_dir = (rigid->velocity.x >= 0.0f) ? 1.0f : -1.0f;
 
     // If moving right and passed target, or moving left and passed target

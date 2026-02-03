@@ -70,7 +70,7 @@ public:
       .add_component<Components::Transform2D>(576.0f, 450.0f, 0.0f, TurretMonkeyStates::TURRET_WIDTH, TurretMonkeyStates::TURRET_HEIGHT)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/TurretMonkeySpriteSheets/ceiling_atk.png"))
       .add_component<Components::TextureAtlas>(64, 64, 1, 6, 6)
-      .add_component<Components::Animation>(6, 0.1f)
+      .add_component<Components::Animation>(3, 0.3f)
       .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
       .add_component<Components::Flip>(1.0f, 1.0f) // Start facing right
       .add_component<Components::RigidBody>(Components::RigidBody(false, false))
@@ -100,6 +100,12 @@ public:
     }
     if (auto* monkey_col = Turret_monkey_entity.get_component<Components::BoxCollider>()) {
       monkey_col->kinetic_friction = 0.8f;
+    }
+
+    // Start the turret monkey in ceiling turret mode so it uses
+    // the ceiling_atk sprite and turret behaviour from frame 1.
+    if (auto* turret_sm = Turret_monkey_entity.get_component<Components::StateMachine>()) {
+      turret_sm->set_initial_state("Turret");
     }
 
     Log::info("\n=== State Machine Test Level Loaded ===");
