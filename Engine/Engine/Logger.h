@@ -24,6 +24,7 @@ namespace Log {
 		void info_impl(std::string text);
 		void error_impl(std::string text);
 		void crash_impl(std::string text);
+		void memory_impl(std::string text);
 	}
 
 	/*=================================================================================
@@ -93,6 +94,29 @@ namespace Log {
 	void crash(std::format_string<Args...> fmt, Args&&... args) {
 #ifndef GAME_BUILD
 		detail::crash_impl(std::format(fmt, std::forward<Args>(args)...));
+#else
+		(void)fmt;
+		((void)args, ...);
+#endif
+	}
+
+	/*=================================================================================
+			Function Brief:
+			Outputs a memory-related log message to the console with [MEMORY] prefix.
+			Used specifically for tracking memory allocations, deallocations, pool expansions,
+			and other memory management operations.
+
+			Where to call it:
+			Call this function in the Memory Manager and related systems to track:
+			- Pool initializations and shutdowns
+			- Page allocations and expansions
+			- Large (OS) allocations that bypass the pool system
+			- Memory statistics and diagnostics
+			==================================================================================*/
+	template<typename... Args>
+	void memory(std::format_string<Args...> fmt, Args&&... args) {
+#ifndef GAME_BUILD
+		detail::memory_impl(std::format(fmt, std::forward<Args>(args)...));
 #else
 		(void)fmt;
 		((void)args, ...);
