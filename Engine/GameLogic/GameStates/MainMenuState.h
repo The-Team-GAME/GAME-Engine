@@ -76,56 +76,67 @@ public:
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/UI/MainMenuImpact.png"));
 
-    // Entity 8: Play Button (with polygon collider)
+    // Helper lambda to create a polygon collider with proper offset
+    auto create_polygon_collider = [](const std::vector<Math::Vec2D>& vertices, Math::Vec2D offset = Math::Vec2D(0.0f, 0.0f)) {
+      Components::BoxCollider collider(vertices, false);
+      collider.offset = offset;
+      return collider;
+      };
+
+    // Entity 8: Play Button (with polygon collider) - offset (0, 0)
     Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/UI/PlayButton.png"))
-      .add_component<Components::BoxCollider>(std::vector<Math::Vec2D>{
+      .add_component<Components::BoxCollider>(create_polygon_collider(
+        std::vector<Math::Vec2D>{
       Math::Vec2D(-298.97f, -79.79f),
         Math::Vec2D(-275.49f, 68.05f),
         Math::Vec2D(173.73f, -178.52f),
         Math::Vec2D(165.90f, -447.70f)
-    }, false)
+    }))
       .add_component<Components::Clickable>("start_game", "", "");
 
-    // Entity 9: Options Button (with polygon collider)
+    // Entity 9: Options Button (with polygon collider) - offset (0, 0)
     Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/UI/OptionsButton.png"))
-      .add_component<Components::BoxCollider>(std::vector<Math::Vec2D>{
+      .add_component<Components::BoxCollider>(create_polygon_collider(
+        std::vector<Math::Vec2D>{
       Math::Vec2D(551.86f, -379.65f),
         Math::Vec2D(524.46f, -54.79f),
         Math::Vec2D(3.91f, 90.02f),
         Math::Vec2D(-11.74f, -66.54f)
-    }, false)
+    }))
       .add_component<Components::Clickable>("options_menu", "", "");
 
-    // Entity 10: Credits Button (with polygon collider)
+    // Entity 10: Credits Button (with polygon collider) - offset (315.07, 62.62)
     Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/UI/CreditsButton.png"))
-      .add_component<Components::BoxCollider>(std::vector<Math::Vec2D>{
+      .add_component<Components::BoxCollider>(create_polygon_collider(
+        std::vector<Math::Vec2D>{
       Math::Vec2D(-272.52f, 7.33f),
         Math::Vec2D(-276.43f, 145.31f),
         Math::Vec2D(162.93f, 180.54f),
         Math::Vec2D(386.02f, -94.43f)
-    }, false)
+    }, Math::Vec2D(315.07f, 62.62f)))
       .add_component<Components::Clickable>("", "", "");
 
-    // Entity 11: Exit Button (with polygon collider)
+    // Entity 11: Exit Button (with polygon collider) - offset (293.54, 80.23)
     Engine::ECS::create_entity()
       .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu/UI/ExitButton.png"))
-      .add_component<Components::BoxCollider>(std::vector<Math::Vec2D>{
+      .add_component<Components::BoxCollider>(create_polygon_collider(
+        std::vector<Math::Vec2D>{
       Math::Vec2D(-290.13f, 122.79f),
         Math::Vec2D(-325.35f, 213.81f),
         Math::Vec2D(-81.69f, 342.97f),
         Math::Vec2D(67.04f, 185.41f)
-    }, false)
+    }, Math::Vec2D(293.54f, 80.23f)))
       .add_component<Components::Clickable>("exit_game", "", "");
 
     // Entity 12: Monkey character
