@@ -9,6 +9,7 @@ namespace OldManCallbacks
   inline Engine::ECS::EntityID npc_portrait_id = 0;
   inline Engine::ECS::EntityID dialogue_text_id = 0;
   inline bool dialogue_shown = false;
+  inline bool e_key_was_down = false;  // Track previous E key state for edge detection
 
   void spawn_dialogue(Engine::ECS::Entity player_entity) {
     if (dialogue_shown) return;
@@ -44,6 +45,9 @@ namespace OldManCallbacks
       .add_to_layer("main_menu_5");
     dialogue_text_id = dialogue_text.get_id();
 
+    // Pause the game while dialogue is showing
+    Engine::Time::set_time_scale(0.0001f); // Can't set to 0 or input won't work
+
     Log::info("Old man dialogue spawned!");
   }
 
@@ -65,6 +69,9 @@ namespace OldManCallbacks
     dialogue_text_id = 0;
     dialogue_shown = false;
 
+    // Resume the game
+    Engine::Time::set_time_scale(1.0f);
+
     Log::info("Old man dialogue destroyed!");
   }
 
@@ -73,10 +80,20 @@ namespace OldManCallbacks
   }
 
   void old_man_on_update(Engine::ECS::Entity interactable, Engine::ECS::Entity player_entity) {
-    // Check if E key is pressed to show dialogue
-    if (Engine::Input::is_pressed(Engine::KeyCode::E)) {
-      spawn_dialogue(player_entity);
+    // Manual edge detection for E key (since time scale affects is_pressed behavior)
+    bool e_key_down = Engine::Input::is_held(Engine::KeyCode::E);
+
+    // Only trigger on the rising edge (key just went from up to down)
+    if (e_key_down && !e_key_was_down) {
+      if (dialogue_shown) {
+        destroy_dialogue();
+      }
+      else {
+        spawn_dialogue(player_entity);
+      }
     }
+
+    e_key_was_down = e_key_down;
   }
 
   void old_man_on_exit(Engine::ECS::Entity interactable, Engine::ECS::Entity player_entity) {
