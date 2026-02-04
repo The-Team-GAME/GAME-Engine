@@ -246,6 +246,42 @@ void RunGame()
     Log::info("Exiting to main menu from pause menu");
     Engine::SceneManager::load_scene("MainMenuState");
     });
+
+  // Pause menu hover callbacks - change menu sprite texture
+  // Uses hovered_button tracker to prevent exit_hover from resetting when moving between buttons
+  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_hover_resume", [](Engine::ECS::Entity) {
+    if (PauseState::menu_sprite_id == 0) return;
+    if (!Engine::ECS::is_entity_active(Engine::ECS::Entity(PauseState::menu_sprite_id))) return;
+    PauseState::hovered_button = 1;
+    auto* tex = Engine::ECS::Entity(PauseState::menu_sprite_id).get_component<Components::Texture>();
+    if (tex) *tex = PauseState::resume_selected_tex;
+    });
+  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_hover_restart", [](Engine::ECS::Entity) {
+    if (PauseState::menu_sprite_id == 0) return;
+    if (!Engine::ECS::is_entity_active(Engine::ECS::Entity(PauseState::menu_sprite_id))) return;
+    PauseState::hovered_button = 2;
+    auto* tex = Engine::ECS::Entity(PauseState::menu_sprite_id).get_component<Components::Texture>();
+    if (tex) *tex = PauseState::restart_selected_tex;
+    });
+  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_hover_options", [](Engine::ECS::Entity) {
+    if (PauseState::menu_sprite_id == 0) return;
+    if (!Engine::ECS::is_entity_active(Engine::ECS::Entity(PauseState::menu_sprite_id))) return;
+    PauseState::hovered_button = 3;
+    auto* tex = Engine::ECS::Entity(PauseState::menu_sprite_id).get_component<Components::Texture>();
+    if (tex) *tex = PauseState::options_selected_tex;
+    });
+  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_hover_exit", [](Engine::ECS::Entity) {
+    if (PauseState::menu_sprite_id == 0) return;
+    if (!Engine::ECS::is_entity_active(Engine::ECS::Entity(PauseState::menu_sprite_id))) return;
+    PauseState::hovered_button = 4;
+    auto* tex = Engine::ECS::Entity(PauseState::menu_sprite_id).get_component<Components::Texture>();
+    if (tex) *tex = PauseState::exit_selected_tex;
+    });
+  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_hover_none", [](Engine::ECS::Entity) {
+    // Do nothing here - let the on_hover callbacks handle setting the texture
+    // This prevents the race condition when moving between buttons
+    });
+
   Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_menu_button_hover", [](Engine::ECS::Entity entity) {
     auto* color = entity.get_component<Components::Color>();
     if (color) {
