@@ -554,6 +554,13 @@ namespace Components
   };
 
 
+  // Tag component for UI elements - renders in screen space (not affected by camera)
+  struct UI
+  {
+    UI() = default;
+  };
+
+
 }
 
 REFLECT_ENUM(Components::TextAlignment, Left, Center, Right);
@@ -561,6 +568,7 @@ REGISTER_COMPONENT(Components::Text, content, font_scale, line_spacing, alignmen
 REGISTER_COMPONENT(Components::Camera, name, is_active)
 REGISTER_COMPONENT(Components::Distortion, intensity, speed, mesh_intensity)
 REGISTER_COMPONENT(Components::Flip, value)
+REGISTER_COMPONENT(Components::UI)
 REGISTER_COMPONENT_CUSTOM(Components::Color, r, g, b, a)
 REGISTER_COMPONENT_CUSTOM(Components::Texture, path)
 REGISTER_COMPONENT_CUSTOM(Components::Font, path, font_size)
