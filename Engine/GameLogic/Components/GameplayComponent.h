@@ -2,8 +2,11 @@
 // file:    GameplayComponent.h
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (100%)
+// author:  Chew Shee Yang (70%)
 //          Primary author
+//          Cheng Ming Xian (30%)
+//          Co-Author
+// 
 //
 // email:   chew.s@digipen.edu
 //
@@ -44,10 +47,10 @@ namespace Components
     f32 walk_speed = 300'000.f;
     f32 jump_force = -30'000.f;
 
-    f32 dash_duration = 0.1f;
+    f32 dash_duration = 0.2f;
     f32 dash_timer;
     f32 dash_cooldown = 5.f;
-    f32 dash_speed = 2500.f;  // Scalar for the velocity value since direction is to be decided
+    f32 dash_speed = 1250.f;  // Scalar for the velocity value since direction is to be decided
     f32 stun_duration = 0.3f; // Will remember to give player i frames during stun
 
     // Attacks

@@ -2,10 +2,13 @@
 // file:    PlayerStateMachine.h
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (100%)
+// author:  Chew Shee Yang (80%)
 //          Primary author
+//          Cheng Ming Xian (20%)
+//          Co-Author
 //
 // email:   chew.s@digipen.edu
+//          c.mingxian@digipen.edu
 //
 // brief:   This file defines the player state machine and all player states
 //
@@ -48,6 +51,31 @@ namespace PlayerStates
     attack_audio.volume = 0.5f;
     attack_audio.stop_on_exit = false;
 
+
+    // ========================================================================
+    // FMOD Audio Setup (NEW SYSTEM - preferred if FMOD banks are available)
+    // ========================================================================
+    // NOTE: Uncomment these when you have FMOD Studio events created and banks built
+
+
+    Components::FMODStateAudio fmod_hurt_audio;
+    fmod_hurt_audio.event_path = "event:/SFX/PlayerHurt";
+    fmod_hurt_audio.loop = false;
+    fmod_hurt_audio.volume = 0.6f;
+    fmod_hurt_audio.stop_on_state_exit = false;
+
+    Components::FMODStateAudio fmod_walking_audio;
+    fmod_walking_audio.event_path = "event:/SFX/PlayerWalking";
+    fmod_walking_audio.loop = false;
+    fmod_walking_audio.volume = 0.6f;
+    fmod_walking_audio.stop_on_state_exit = false;
+
+    Components::FMODStateAudio fmod_jump_audio;
+    fmod_jump_audio.event_path = "event:/SFX/PlayerJump";
+    fmod_jump_audio.loop = false;
+    fmod_jump_audio.volume = 0.6f;
+    fmod_jump_audio.stop_on_state_exit = false;
+
     // ========================================================================
     // Player Idle State
     // ========================================================================
@@ -68,18 +96,18 @@ namespace PlayerStates
     player_walking_anim.animation = Components::Animation(8, 0.1f);
     player_walking_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
 
-    Components::State player_walking("Walking", "player_walking_enter", "player_walking_update", "player_walking_exit", player_walking_anim, walk_audio);
+    Components::State player_walking("Walking", "player_walking_enter", "player_walking_update", "player_walking_exit", player_walking_anim, walk_audio, fmod_walking_audio);
 
     // ========================================================================
     // Player Jumping State
     // ========================================================================
     Components::StateAnimation player_jumping_anim;
-    player_jumping_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_run_spritesheet.png"));
+    player_jumping_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_jump_spritesheet.png"));
     player_jumping_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 8, 8);
     player_jumping_anim.animation = Components::Animation(8, 0.1f);
     player_jumping_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
 
-    Components::State player_jumping("Jumping", "player_jumping_enter", "player_jumping_update", "", player_jumping_anim, jump_audio);
+    Components::State player_jumping("Jumping", "player_jumping_enter", "player_jumping_update", "player_jumping_exit", player_jumping_anim, jump_audio, fmod_jump_audio);
 
     // ========================================================================
     // Player Dash State

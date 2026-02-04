@@ -18,6 +18,7 @@
 #include "../../Engine/MonkeyEngine.h"
 
 #include "../Components/GameplayComponent.h"
+#include "../Components/InteractableComponents.h"
 
 
 class GameplayState : public Engine::Scene
@@ -26,7 +27,7 @@ class GameplayState : public Engine::Scene
 
 public:
   void load() {
-    Engine::Resources::open_level("levels/LevelOne.json");
+    Engine::Resources::open_level("levels/LevelOneTestingExtra.json");
 
     bgm = Engine::Resources::load_sound("sounds/BGM/Level 1 BGM.wav");
     Engine::Audio::play_sound(bgm, 0.3f, true); // TODO: get from settings
@@ -35,11 +36,27 @@ public:
 
     // Camera entity
     Engine::ECS::Entity camera = Engine::ECS::create_entity();
-    camera.add_component<Components::Transform2D>(0.0f, 200.0f, 0.0f, 1.0f, 1.0f);
+    camera.add_component<Components::Transform2D>(-3239.0f, 471.58f, 0.0f, 1.0f, 1.0f);
     camera.add_component<Components::Camera>("player camera", true);
     camera.add_component<Components::Parent>(player_entity.get_id());
 
-    player_entity.add_component<Components::HeartHUDSprite>();
+    // player_entity.add_component<Components::HeartHUDSprite>();
+
+    // Victory zone - triggers victory screen when player enters
+    // TODO: Position this at the end of the level
+    Engine::ECS::create_entity()
+      .add_component<Components::Transform2D>(14600.0f, 830.0f, 0.0f, 100.0f, 200.0f)
+      .add_component<Components::Interactable>(50.0f, "show_victory", "", "")
+      .add_to_layer("effect");
+
+    // // Old man NPC - press E to interact and show dialogue
+    // auto old_man = Engine::ECS::create_entity()
+    //   .add_component<Components::Transform2D>(200.0f, 800.0f, 0.0f, 64.0f, 64.0f)
+    //   .add_component<Components::Texture>(Engine::Resources::load_texture("images/NPCOldman.png"))
+    //   .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+    //   .add_component<Components::Interactable>(100.0f, "", "old_man_on_update", "old_man_on_exit")
+    //   .add_to_layer("player");
+    // Log::info("Old man entity created with ID: {}", old_man.get_id());
 
   };
 
