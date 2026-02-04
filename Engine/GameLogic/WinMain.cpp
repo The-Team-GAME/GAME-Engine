@@ -74,6 +74,7 @@ void RunGame()
   Engine::ECS::register_layer("hazard"); // Hazard layer (e.g., spikes, lava) 
   Engine::ECS::register_layer("damage_enemy"); // Damage enemy layer (e.g., hitboxes for player attacks)
   Engine::ECS::register_layer("damage_player"); // Damage player layer (e.g., hitboxes for enemy attacks, hazards)
+  Engine::ECS::register_layer("projectiles"); // Projectiles layer (e.g., bullets, arrows)
   Engine::ECS::register_layer("enemy"); // Enemy characters layer
   Engine::ECS::register_layer("player_trail"); // Specific layer for player trail effect
   Engine::ECS::register_layer("player"); // Player character layer
@@ -233,6 +234,22 @@ void RunGame()
       else {
         Log::error("Error: Heartrate or RigidBody component missing from player!");
       }
+    });
+
+  // Register collision callback for enemy projectiles hitting tilemap (despawn on impact)
+  Engine::ECS::LayerRegistry::register_collision_callback("projectiles", "tilemap_foreground_mid",
+    [](Engine::ECS::Entity projectile_entity, [[maybe_unused]] Engine::ECS::Entity tile_entity)
+    {
+      Log::info("Projectile hit tile, destroying");
+      projectile_entity.destroy();
+    });
+
+  // Register collision callback for enemy projectiles hitting player (despawn on impact)
+  Engine::ECS::LayerRegistry::register_collision_callback("projectiles", "player",
+    [](Engine::ECS::Entity projectile_entity, [[maybe_unused]] Engine::ECS::Entity player_entity)
+    {
+      Log::info("Projectile hit player, destroying");
+      projectile_entity.destroy();
     });
 
 
