@@ -71,11 +71,16 @@ namespace SprayCanMonkey
       .add_component<Components::Transform2D>(cloud_pos.x, cloud_pos.y, 0.0f, w, h)
       .add_component<Components::RigidBody>(true, false)
       .add_component<Components::BoxCollider>(w, h, false)
-      .add_component<Components::Lifetime>(3.0f)  // was: spray->cloud_duration
+      .add_component<Components::Lifetime>(4.0f)  // was: spray->cloud_duration
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/SprayPaintMonkeySpriteSheets/GreenCloud.png"))
       .add_component<Components::Color>(Math::Vec4D(1.f, 1.f, 1.f, 1.f))
       .remove_from_layer("default")
       .add_to_layer("damage_player");
+
+    if (auto* rb = cloud.get_component<Components::RigidBody>())
+    {
+      rb->velocity.x = dir * 150.0f;  // drift speed
+    }
 
     return cloud;
   }
@@ -215,6 +220,9 @@ namespace SprayCanMonkey
   }
 
   inline void windup_on_update(Engine::ECS::Entity entity) {
+
+    update_contact_knockback_direction(entity);
+
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* spray_monkey = entity.get_component<Components::SprayCanMonkey>();
     auto* flip = entity.get_component<Components::Flip>();
@@ -262,6 +270,9 @@ namespace SprayCanMonkey
   }
 
   inline void spraying_on_update(Engine::ECS::Entity entity) {
+
+    update_contact_knockback_direction(entity);
+
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* spray_monkey = entity.get_component<Components::SprayCanMonkey>();
     auto* animation = entity.get_component<Components::Animation>();
@@ -296,6 +307,9 @@ namespace SprayCanMonkey
   }
 
   inline void hit_on_update(Engine::ECS::Entity entity) {
+
+    update_contact_knockback_direction(entity);
+
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* spray_monkey = entity.get_component<Components::SprayCanMonkey>();
     auto* rigid = entity.get_component<Components::RigidBody>();

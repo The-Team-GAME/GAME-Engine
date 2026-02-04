@@ -97,9 +97,9 @@ namespace Components
     float attack_windup = 0.5f;  // Time to wait in windup state before attacking
 
     // Detection ranges
-    float detection_range = 700.0f;
-    float chase_range = 500.0f;
-    float attack_range = 200.0f;
+    float detection_range = 1200.0f;
+    float chase_range = 1000.0f;
+    float attack_range = 500.0f;
 
     // Spray-specific properties
     float spray_duration = 7.0f;
@@ -116,6 +116,7 @@ namespace Components
     int damage = 20;
 
   };
+
 
   struct LazyMonkey
   {

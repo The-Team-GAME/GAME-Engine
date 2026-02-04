@@ -95,9 +95,9 @@ namespace SprayCanMonkeyStates
     // Spray Can Monkey Hit State
     // ========================================================================
     Components::StateAnimation spray_monkey_hit_anim;
-    spray_monkey_hit_anim.texture = Components::Texture(Engine::Resources::load_texture("images/SprayPaintMonkeySpriteSheets/Spraypaint_Walk_Spritesheet.png"));
-    spray_monkey_hit_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 6, 6);
-    spray_monkey_hit_anim.animation = Components::Animation(std::initializer_list{ 2 }, { 0.4f });
+    spray_monkey_hit_anim.texture = Components::Texture(Engine::Resources::load_texture("images/SprayPaintMonkeySpriteSheets/Spraypaint_Damaged_Spritesheet.png"));
+    spray_monkey_hit_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 1, 1);
+    spray_monkey_hit_anim.animation = Components::Animation(1, 0.3f);
     spray_monkey_hit_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
     Components::State spray_monkey_hit("Hit", "spraycan_monkey_hit_enter", "spraycan_monkey_hit_update", "spraycan_monkey_hit_exit", spray_monkey_hit_anim, hurt_audio);
@@ -106,9 +106,9 @@ namespace SprayCanMonkeyStates
     // Spray Can Monkey Death State
     // ========================================================================
     Components::StateAnimation spray_monkey_death_anim;
-    spray_monkey_death_anim.texture = Components::Texture(Engine::Resources::load_texture("images/SprayPaintMonkeySpriteSheets/Spraypaint_Walk_Spritesheet.png"));
-    spray_monkey_death_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 6, 6);
-    spray_monkey_death_anim.animation = Components::Animation({ 0.2f, 0.1f, 1.5f });
+    spray_monkey_death_anim.texture = Components::Texture(Engine::Resources::load_texture("images/SprayPaintMonkeySpriteSheets/Spraypaint_Damaged_Spritesheet.png"));
+    spray_monkey_death_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 1, 1);
+    spray_monkey_death_anim.animation = Components::Animation(1, 0.5f);
     spray_monkey_death_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
     Components::State spray_monkey_death("Death", "spraycan_monkey_death_enter", "spraycan_monkey_death_update", "spraycan_monkey_death_exit", spray_monkey_death_anim);
