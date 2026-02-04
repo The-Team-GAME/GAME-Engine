@@ -48,10 +48,10 @@ namespace PlayerStateCallbacks
     if (dash_cooldown > 0) { dash_cooldown -= Time::get_fixed_dt(); }
 
     // put this first because we need to reset the flag if possible
-    if (Input::is_released(KeyCode::Space) && player_rigid->is_jumping)
-    {
-      player_rigid->is_jumping = false;
-    }
+    //if (Input::is_released(KeyCode::Space) && player_rigid->is_jumping)
+    //{
+    //  player_rigid->is_jumping = false;
+    //}
 
     // Check for movement input
     if (Input::is_held(KeyCode::ShiftLeft) && dash_cooldown <= 0.f)
@@ -63,7 +63,6 @@ namespace PlayerStateCallbacks
         && !player_rigid->is_jumping)
     {
       state_machine->change_state("Jumping");
-      player_rigid->is_jumping = true;
     }
     else if (Input::is_held(KeyCode::A) || Input::is_pressed(KeyCode::A)) //left
     {
@@ -159,6 +158,7 @@ namespace PlayerStateCallbacks
     Components::Flip* flip = entity.get_component<Components::Flip>();
     assert(rigid);
     assert(player_comp);
+    assert(flip);
     if (Input::is_held(KeyCode::D) || Input::is_held(KeyCode::A))
     {
       if (Input::is_held(KeyCode::A)) //left
@@ -171,21 +171,25 @@ namespace PlayerStateCallbacks
       }
       rigid->force.x += player_comp->walk_speed * flip->value.x;
     }
-    if (!rigid->is_jumping && rigid->on_ground) // Exit Condition
+    if (rigid->on_ground && rigid->velocity.y >= 0.0f)
     {
+      rigid->is_jumping = false;
       Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
       state_machine->change_state("Idle");
     }
   }
 
-  inline void jumping_on_exit([[maybe_unused]]ECS::Entity entity)
+  inline void jumping_on_exit(Engine::ECS::Entity entity)
   {
-
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    assert(rigid);
+    rigid->is_jumping = false;
     std::cout << "jumping exit\n";
     Log::info("Player: Exiting Jumping state");
   }
 #pragma endregion
 
+#pragma region Dash
   // ========================================================================
   // Dash State Callbacks
   // ========================================================================
@@ -227,7 +231,7 @@ namespace PlayerStateCallbacks
     player_comp->dash_timer -= Time::get_fixed_dt();
   }
 
-  inline void dash_on_exit([[maybe_unused]] ECS::Entity entity)
+  inline void dash_on_exit(ECS::Entity entity)
   {
     Log::info("Player: Exited Dashing state");
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
@@ -238,7 +242,9 @@ namespace PlayerStateCallbacks
     assert(player_comp);
     dash_cooldown = player_comp->dash_cooldown;
   }
+#pragma endregion
 
+#pragma region attack 1
   // ========================================================================
   // Attack 1 State Callbacks (First Punch)
   // ========================================================================
@@ -328,7 +334,9 @@ namespace PlayerStateCallbacks
       state_machine->change_state("Idle");
     }
   }
+#pragma endregion
 
+#pragma region attack 2
   // ========================================================================
   // Attack 2 State Callbacks (Second Punch)
   // ========================================================================
@@ -418,7 +426,9 @@ namespace PlayerStateCallbacks
       state_machine->change_state("Idle");
     }
   }
+#pragma endregion
 
+#pragma region attack 3
   // ========================================================================
   // Attack 3 State Callbacks (Third Punch - Finisher)
   // ========================================================================
@@ -499,7 +509,7 @@ namespace PlayerStateCallbacks
       state_machine->change_state("Idle");
     }
   }
-
+#pragma endregion
 } // namespace PlayerStateCallbacks
 
 // Register all player state callbacks
