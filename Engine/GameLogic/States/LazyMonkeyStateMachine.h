@@ -28,7 +28,7 @@ namespace LazyMonkeyStates
   inline Components::StateMachine create_state_machine()
   {
     // ========================================================================
-    // Audio Setup
+    // Audio Setup (OLD SYSTEM - kept as fallback)
     // ========================================================================
     Components::StateAudio footstep_audio;
     footstep_audio.sound = Engine::Resources::load_sound("sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav");
@@ -43,10 +43,41 @@ namespace LazyMonkeyStates
     attack_audio.stop_on_exit = false;
 
     Components::StateAudio hurt_audio;
-    hurt_audio.sound = Engine::Resources::load_sound("sounds/SFX/Monkey/Monkey VO/Monkey-1_8_Hurt.wav");
+   /* hurt_audio.sound = Engine::Resources::load_sound("sounds/SFX/Monkey/Monkey VO/Monkey-1_8_Hurt.wav");
     hurt_audio.loop = false;
     hurt_audio.volume = 0.6f;
-    hurt_audio.stop_on_exit = false;
+    hurt_audio.stop_on_exit = false;*/
+
+    
+
+    // ========================================================================
+    // FMOD Audio Setup (NEW SYSTEM - preferred if FMOD banks are available)
+    // ========================================================================
+    // NOTE: Uncomment these when you have FMOD Studio events created and banks built
+    
+    Components::FMODStateAudio fmod_footstep_audio;
+    fmod_footstep_audio.event_path = "event:/SFX/MonkeyFootsteps";
+    fmod_footstep_audio.loop = true;
+    fmod_footstep_audio.volume = 0.5f;
+    fmod_footstep_audio.stop_on_state_exit = true;
+
+    Components::FMODStateAudio fmod_attack_audio;
+    fmod_attack_audio.event_path = "event:/SFX/MonkeyAttack";
+    fmod_attack_audio.loop = false;
+    fmod_attack_audio.volume = 0.6f;
+    fmod_attack_audio.stop_on_state_exit = false;
+
+    Components::FMODStateAudio fmod_hurt_audio;
+    fmod_hurt_audio.event_path = "event:/SFX/MonkeyHurt";
+    fmod_hurt_audio.loop = false;
+    fmod_hurt_audio.volume = 0.6f;
+    fmod_hurt_audio.stop_on_state_exit = false;
+
+    Components::FMODStateAudio fmod_chase_audio;
+    fmod_chase_audio.event_path = "event:/SFX/MonkeyChasing";
+    fmod_chase_audio.loop = false;
+    fmod_chase_audio.volume = 0.6f;
+    fmod_chase_audio.stop_on_state_exit = false;
 
     // ========================================================================
     // Lazy Monkey Idle State
@@ -68,7 +99,8 @@ namespace LazyMonkeyStates
     lazy_monkey_chasing_anim.animation = Components::Animation(6, 0.1f);
     lazy_monkey_chasing_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
-    Components::State lazy_monkey_chasing("Chasing", "lazy_monkey_chasing_enter", "lazy_monkey_chasing_update", "lazy_monkey_chasing_exit", lazy_monkey_chasing_anim, footstep_audio);
+    // Try FMOD first, fallback to old audio if FMOD fails
+    Components::State lazy_monkey_chasing("Chasing", "lazy_monkey_chasing_enter", "lazy_monkey_chasing_update", "lazy_monkey_chasing_exit", lazy_monkey_chasing_anim, footstep_audio, fmod_chase_audio);
 
     // ========================================================================
     // Lazy Monkey Windup State (uses idle animation)
@@ -90,7 +122,8 @@ namespace LazyMonkeyStates
     lazy_monkey_attacking_anim.animation = Components::Animation({ 0.2f, 0.1f, 0.1f, 0.1f, 0.5f });
     lazy_monkey_attacking_anim.scale = Math::Vec2D(ATTACK_WIDTH * 2.0f, ATTACK_HEIGHT * 2.0f);
 
-    Components::State lazy_monkey_attacking("Attacking", "lazy_monkey_attacking_enter", "lazy_monkey_attacking_update", "lazy_monkey_attacking_exit", lazy_monkey_attacking_anim, attack_audio);
+    // Try FMOD first, fallback to old audio if FMOD fails
+    Components::State lazy_monkey_attacking("Attacking", "lazy_monkey_attacking_enter", "lazy_monkey_attacking_update", "lazy_monkey_attacking_exit", lazy_monkey_attacking_anim, attack_audio, fmod_attack_audio);
 
     // ========================================================================
     // Lazy Monkey Hit State
@@ -101,7 +134,8 @@ namespace LazyMonkeyStates
     lazy_monkey_hit_anim.animation = Components::Animation(std::initializer_list{ 2 }, { 0.4f });
     lazy_monkey_hit_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
-    Components::State lazy_monkey_hit("Hit", "lazy_monkey_hit_enter", "lazy_monkey_hit_update", "lazy_monkey_hit_exit", lazy_monkey_hit_anim, hurt_audio);
+    // FMOD only (no fallback) - old audio commented out above
+    Components::State lazy_monkey_hit("Hit", "lazy_monkey_hit_enter", "lazy_monkey_hit_update", "lazy_monkey_hit_exit", lazy_monkey_hit_anim, std::nullopt, fmod_hurt_audio);
 
     // ========================================================================
     // Lazy Monkey Death State

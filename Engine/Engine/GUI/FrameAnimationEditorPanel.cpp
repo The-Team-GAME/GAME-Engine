@@ -23,18 +23,34 @@
 #include "widgets/TextureAtlasWidget.h"
 #include <algorithm>
 
-// Global wrapper function for extern declaration in ReflectionFieldWidgets.cpp
+// Global wrapper functions for extern declarations in ReflectionFieldWidgets.cpp
 namespace ImGuiWidgets {
   void FrameAnimationEditor_Open(Engine::ECS::Entity entity, const std::string& state_name) {
     FrameAnimationEditor::Open(entity, state_name);
   }
+
+  void FrameAnimationEditor_OpenForAnimation(Engine::ECS::Entity entity) {
+    FrameAnimationEditor::OpenForAnimation(entity);
+  }
+
+  // Wrapper with prefixed name for extern declaration inside ImGuiWidgets namespace
+  void ImGuiWidgets_FrameAnimationEditor_OpenForAnimation(Engine::ECS::Entity entity) {
+    FrameAnimationEditor::OpenForAnimation(entity);
+  }
 }
 
 namespace {
+  // Editor mode
+  enum class EditorMode {
+    StateMachine,  // Editing a state's animation within a StateMachine
+    Standalone     // Editing an entity's Animation component directly
+  };
+
   // Editor state
   bool is_open = false;
   s32 selected_entity_id = -1;
   std::string selected_state_name = "";
+  EditorMode editor_mode = EditorMode::StateMachine;
 
   // Frame editing state
   std::vector<int> frame_indices;       // Selected frame indices from atlas
@@ -85,9 +101,9 @@ namespace {
     return &it->second.animation.value();
   }
 
-  // Load frame data from the state's animation
-  void load_from_state() {
-    if (selected_entity_id < 0 || selected_state_name.empty()) {
+  // Load frame data from the animation source (StateMachine state or standalone Animation)
+  void load_from_source() {
+    if (selected_entity_id < 0) {
       cache_valid = false;
       return;
     }
@@ -98,27 +114,59 @@ namespace {
       return;
     }
 
-    auto* state_anim = get_state_animation(entity, selected_state_name);
-    if (!state_anim) {
-      cache_valid = false;
-      return;
-    }
-
-    // Cache texture and atlas
-    cached_texture = state_anim->texture;
-    cached_atlas = state_anim->texture_atlas;
-
-    // Load frame indices and durations
     frame_indices.clear();
     frame_durations.clear();
 
-    const auto& frames = state_anim->animation.frames;
-    for (const auto& frame : frames) {
-      frame_indices.push_back(frame.atlas_index);
-      frame_durations.push_back(frame.duration);
-    }
+    if (editor_mode == EditorMode::StateMachine) {
+      // Load from StateMachine state
+      if (selected_state_name.empty()) {
+        cache_valid = false;
+        return;
+      }
 
-    is_looping = state_anim->animation.is_looping;
+      auto* state_anim = get_state_animation(entity, selected_state_name);
+      if (!state_anim) {
+        cache_valid = false;
+        return;
+      }
+
+      // Cache texture and atlas from state
+      cached_texture = state_anim->texture;
+      cached_atlas = state_anim->texture_atlas;
+
+      // Load frame indices and durations
+      const auto& frames = state_anim->animation.frames;
+      for (const auto& frame : frames) {
+        frame_indices.push_back(frame.atlas_index);
+        frame_durations.push_back(frame.duration);
+      }
+
+      is_looping = state_anim->animation.is_looping;
+    }
+    else {
+      // Load from standalone Animation component
+      auto* animation = entity.get_component<Components::Animation>();
+      auto* texture = entity.get_component<Components::Texture>();
+      auto* atlas = entity.get_component<Components::TextureAtlas>();
+
+      if (!animation || !texture || !atlas) {
+        cache_valid = false;
+        return;
+      }
+
+      // Cache texture and atlas from entity components
+      cached_texture = *texture;
+      cached_atlas = *atlas;
+
+      // Load frame indices and durations
+      const auto& frames = animation->frames;
+      for (const auto& frame : frames) {
+        frame_indices.push_back(frame.atlas_index);
+        frame_durations.push_back(frame.duration);
+      }
+
+      is_looping = animation->is_looping;
+    }
 
     if (!frame_durations.empty()) {
       default_duration = frame_durations[0];
@@ -129,20 +177,33 @@ namespace {
     atlas_state.reset();
   }
 
-  // Apply frame data back to the state's animation
-  void apply_to_state() {
-    if (selected_entity_id < 0 || selected_state_name.empty()) return;
+  // Apply frame data back to the animation source
+  void apply_to_source() {
+    if (selected_entity_id < 0) return;
 
     Engine::ECS::Entity entity(static_cast<u32>(selected_entity_id));
     if (!entity.is_valid()) return;
 
-    auto* state_anim = get_state_animation(entity, selected_state_name);
-    if (!state_anim) return;
+    if (editor_mode == EditorMode::StateMachine) {
+      if (selected_state_name.empty()) return;
 
-    state_anim->animation = Components::Animation(frame_indices, frame_durations, is_looping);
+      auto* state_anim = get_state_animation(entity, selected_state_name);
+      if (!state_anim) return;
 
-    Log::info("Applied animation changes: {} frames to state '{}'",
-      frame_indices.size(), selected_state_name);
+      state_anim->animation = Components::Animation(frame_indices, frame_durations, is_looping);
+
+      Log::info("Applied animation changes: {} frames to state '{}'",
+        frame_indices.size(), selected_state_name);
+    }
+    else {
+      auto* animation = entity.get_component<Components::Animation>();
+      if (!animation) return;
+
+      *animation = Components::Animation(frame_indices, frame_durations, is_looping);
+
+      Log::info("Applied animation changes: {} frames to Animation component",
+        frame_indices.size());
+    }
   }
 
   // Get the current preview frame index
@@ -465,10 +526,21 @@ namespace FrameAnimationEditor {
   void Open(Engine::ECS::Entity entity, const std::string& state_name) {
     selected_entity_id = static_cast<s32>(entity.get_id());
     selected_state_name = state_name;
+    editor_mode = EditorMode::StateMachine;
     is_open = true;
     is_previewing = false;
     dragging_frame_index = -1;
-    load_from_state();
+    load_from_source();
+  }
+
+  void OpenForAnimation(Engine::ECS::Entity entity) {
+    selected_entity_id = static_cast<s32>(entity.get_id());
+    selected_state_name = "";
+    editor_mode = EditorMode::Standalone;
+    is_open = true;
+    is_previewing = false;
+    dragging_frame_index = -1;
+    load_from_source();
   }
 
   void Close() {
@@ -493,8 +565,11 @@ void FrameAnimationEditorPanel() {
   ImGui::SetNextWindowSize(ImVec2(800, 500), ImGuiCond_FirstUseEver);
 
   std::string window_title = "Frame Animation Editor";
-  if (!selected_state_name.empty()) {
+  if (editor_mode == EditorMode::StateMachine && !selected_state_name.empty()) {
     window_title += " - " + selected_state_name;
+  }
+  else if (editor_mode == EditorMode::Standalone) {
+    window_title += " - Animation Component";
   }
   window_title += "###FrameAnimationEditor";
 
@@ -517,15 +592,31 @@ void FrameAnimationEditorPanel() {
     return;
   }
 
-  auto* state_anim = get_state_animation(entity, selected_state_name);
-  if (!state_anim) {
-    ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "State '%s' has no animation data", selected_state_name.c_str());
-    ImGui::End();
-    return;
+  // Mode-specific validation
+  if (editor_mode == EditorMode::StateMachine) {
+    auto* state_anim = get_state_animation(entity, selected_state_name);
+    if (!state_anim) {
+      ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "State '%s' has no animation data", selected_state_name.c_str());
+      ImGui::End();
+      return;
+    }
+  }
+  else {
+    // Standalone mode - check for Animation, Texture, and TextureAtlas components
+    if (!entity.has_component<Components::Animation>()) {
+      ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "Entity has no Animation component");
+      ImGui::End();
+      return;
+    }
+    if (!entity.has_component<Components::Texture>() || !entity.has_component<Components::TextureAtlas>()) {
+      ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "Entity needs Texture and TextureAtlas components");
+      ImGui::End();
+      return;
+    }
   }
 
   if (!cache_valid) {
-    load_from_state();
+    load_from_source();
   }
 
   // ============================================================================
@@ -554,11 +645,11 @@ void FrameAnimationEditorPanel() {
 
   ImGui::SameLine(ImGui::GetWindowWidth() - 180);
   if (ImGui::Button("Apply", ImVec2(80, 0))) {
-    apply_to_state();
+    apply_to_source();
   }
   ImGui::SameLine();
   if (ImGui::Button("Revert", ImVec2(80, 0))) {
-    load_from_state();
+    load_from_source();
   }
 
   ImGui::Separator();

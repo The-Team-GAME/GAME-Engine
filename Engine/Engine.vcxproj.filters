@@ -107,6 +107,8 @@
     <ClCompile Include="Engine\LevelManager.cpp" />
     <ClCompile Include="Engine\Systems\PostPhysicsSystem.cpp" />
     <ClCompile Include="Engine\GUI\TransformAnimationEditorPanel.cpp" />
+    <ClCompile Include="Engine\Audio\AudioSystem.cpp" />
+    <ClCompile Include="Engine\Audio\AudioSystemExample.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -245,6 +247,8 @@
     <ClInclude Include="Engine\LevelManager.h" />
     <ClInclude Include="Engine\Systems\PostPhysicsSystem.h" />
     <ClInclude Include="Engine\GUI\TransformAnimationEditorPanel.h" />
+    <ClInclude Include="Engine\Audio\AudioSystem.h" />
+    <ClInclude Include="Engine\Audio\GameAudio.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />

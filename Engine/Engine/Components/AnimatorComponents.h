@@ -62,7 +62,7 @@ namespace Components
     float start_time = -1.0f;     // When the animation started
 
     bool is_playing = true;       // Whether the animation is currently playing
-    bool is_looping = false;      // Whether to loop when finished
+    bool is_looping = true;      // Whether to loop when finished
     bool ping_pong = false;       // Reverse direction on each loop
 
     // Internal state
