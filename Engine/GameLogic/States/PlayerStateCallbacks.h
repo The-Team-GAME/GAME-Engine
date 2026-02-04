@@ -5,8 +5,10 @@
 // author:  Chew Shee Yang (50%)
 //          Primary author
 //          Cheng Ming Xian (50%)
-//
+//          Co-Author
+// 
 // email:   chew.s@digipen.edu
+//          c.mingxian@digipen.edu
 //
 // brief:   Player state machine callback implementations (serializable)
 //
@@ -114,9 +116,6 @@ namespace PlayerStateCallbacks
 
   inline void walking_on_update(Engine::ECS::Entity entity) 
   {
-    auto* rigid = entity.get_component<Components::RigidBody>();
-    auto* flip = entity.get_component<Components::Flip>();
-
     // we set an exit criteria for the walking state instead of reseting it every frame as the animation sequence needs the state to be constant for this to work
     if (!Input::is_held(KeyCode::A) && !Input::is_held(KeyCode::D))
     {
@@ -156,11 +155,9 @@ namespace PlayerStateCallbacks
   {
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     Components::Player* player_comp = entity.get_component<Components::Player>();
-    Components::Flip* flip = entity.get_component<Components::Flip>();
     Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
     assert(rigid);
     assert(player_comp);
-    assert(flip);
     assert(state_machine);
 
     if (rigid->on_ground && rigid->velocity.y >= 0.0f)

@@ -2650,7 +2650,7 @@
                                     "name": "player_jumping_enter"
                                 },
                                 "on_exit_callback": {
-                                    "name": ""
+                                    "name": "player_jumping_exit"
                                 },
                                 "on_update_callback": {
                                     "name": "player_jumping_update"

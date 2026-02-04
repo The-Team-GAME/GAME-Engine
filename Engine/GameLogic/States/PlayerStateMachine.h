@@ -2,10 +2,13 @@
 // file:    PlayerStateMachine.h
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (100%)
+// author:  Chew Shee Yang (80%)
 //          Primary author
+//          Cheng Ming Xian (20%)
+//          Co-Author
 //
 // email:   chew.s@digipen.edu
+//          c.mingxian@digipen.edu
 //
 // brief:   This file defines the player state machine and all player states
 //

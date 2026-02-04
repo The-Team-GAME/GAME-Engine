@@ -2,8 +2,11 @@
 // file:    GameplayComponent.h
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (100%)
+// author:  Chew Shee Yang (70%)
 //          Primary author
+//          Cheng Ming Xian (30%)
+//          Co-Author
+// 
 //
 // email:   chew.s@digipen.edu
 //
