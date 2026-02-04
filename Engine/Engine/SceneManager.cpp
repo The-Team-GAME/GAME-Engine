@@ -16,6 +16,7 @@
 
 #include "SceneManager.h"
 #include "LevelManager.h"
+#include "LevelTabManager.h"
 #include "Logger.h"
 #include "Systems/GraphicsSystem.h"
 #include "EventManager/EventManager.h"
@@ -46,8 +47,13 @@ namespace Engine
       }
       current_scene = nullptr;
 
-      // Clear all entities from previous scene
-      Engine::ECS::destroy_all_entities();
+      // Clear all level state before loading new scene
+      // This prevents flickering between old and new levels
+#ifndef GAME_BUILD
+      Engine::LevelTabManager::clear_all();
+#else
+      Engine::LevelManager::clear_all();
+#endif
 
       Engine::Systems::CameraSystem::reset_camera();
 
@@ -58,8 +64,6 @@ namespace Engine
 
       current_scene->load();
       current_scene->init();
-
-      Engine::LevelManager::set_current_level_path(""); // TODO: very hacky, we need a better way to manage levels vs scenes
 
       Log::info("Loaded scene: {}", name);
     }
