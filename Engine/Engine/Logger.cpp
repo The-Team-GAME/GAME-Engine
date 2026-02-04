@@ -72,31 +72,5 @@ namespace Log {
 			// Also output to console
 			std::cerr << "CRASH>> " << text << std::endl;
 		}
-
-		// Outputs a memory-specific log message to the console with [MEMORY] prefix
-		// Also logs to memory.log file for detailed memory tracking
-		void memory_impl(std::string text)
-		{
-			// Get current time using chrono for precise memory tracking
-			auto now = std::chrono::system_clock::now();
-			auto duration = now.time_since_epoch();
-			auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-
-			// Format timestamp
-			std::stringstream timeStream;
-			timeStream << millis;
-			std::string timeStr = timeStream.str();
-
-			// Write to memory log file for persistent tracking
-			std::ofstream logFile("memory.log", std::ios::app);
-			if (logFile.is_open())
-			{
-				logFile << "[" << timeStr << "] " << text << std::endl;
-				logFile.close();
-			}
-
-			// Output to console with special prefix for easy filtering
-			std::cout << "[MEMORY] " << text << std::endl;
-		}
 	}
 }

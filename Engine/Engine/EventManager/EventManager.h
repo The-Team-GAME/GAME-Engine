@@ -113,9 +113,7 @@ namespace Engine {
     template <typename T>
     void remove_event_listener();
 
-    // Template function to support both std::vector and Memory::Array
-    template <typename SystemsContainer>
-    void update_events(const SystemsContainer& systems);
+    void update_events(const std::vector<std::unique_ptr<ECS::System>>& systems);
 
     /* =============== //
     // Internal state  //

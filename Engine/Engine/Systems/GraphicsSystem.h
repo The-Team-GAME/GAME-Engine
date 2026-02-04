@@ -25,6 +25,9 @@
 #include "../FileIO/Settings.h"
 #include "../GUI/TilemapPanel.h"
 #include "../Logger.h"
+#include "../Easing.h"
+#include "../FunctionRegistry.h"
+#include "../Time.h"
 
 namespace Engine
 {
@@ -425,7 +428,7 @@ namespace Engine
         }
       }
     };
-
+     
 
   }; // namespace Systems
 } // namespace Engine
