@@ -310,6 +310,14 @@ namespace ImGuiWidgets {
       return true;
     }
 
+    // Edit Atlas Configuration button
+    if (ImGui::Button("Edit Atlas Configuration")) {
+      extern void TextureAtlasEditor_Open(Engine::ECS::Entity entity);
+      TextureAtlasEditor_Open(entity);
+    }
+    ImGui::SameLine();
+    ImGui::TextDisabled("(%d tiles)", static_cast<int>(atlas->subTextures.size()));
+
     // Use a static state per entity ID (basic but works for most cases)
     static std::unordered_map<Engine::ECS::EntityID, ImGuiWidgets::TextureAtlasState> entity_atlas_states;
 
@@ -317,7 +325,7 @@ namespace ImGuiWidgets {
     return true;
   }
 
-  bool render_animation_field(ReflectionLibrary::GenericValue& field_value, bool& modified) {
+  bool render_animation_field(ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity) {
     // Animation structure:
     // - durations: array of floats
     // - before_times: array of floats (cumulative times)
@@ -326,6 +334,15 @@ namespace ImGuiWidgets {
     // - is_looping: bool
 
     if (!field_value.isObject()) return false;
+
+    // Edit Animation Frames button (if entity is valid and has Texture + TextureAtlas)
+    if (entity.is_valid() && entity.has_component<Components::Texture>() && entity.has_component<Components::TextureAtlas>()) {
+      if (ImGui::Button("Edit Animation Frames")) {
+        extern void ImGuiWidgets_FrameAnimationEditor_OpenForAnimation(Engine::ECS::Entity entity);
+        ImGuiWidgets_FrameAnimationEditor_OpenForAnimation(entity);
+      }
+      ImGui::Separator();
+    }
 
     // Get values
     float total_duration = field_value["totalDuration"].isDouble() ?
@@ -457,7 +474,7 @@ namespace ImGuiWidgets {
     }
   }
 
-  bool render_statemachine_field(ReflectionLibrary::GenericValue& field_value, bool& modified) {
+  bool render_statemachine_field(ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity) {
     // StateMachine structure:
     // - states: unordered_map<string, State> (Serialized as Array of Pairs or Object)
     // Each State has:
@@ -547,6 +564,36 @@ namespace ImGuiWidgets {
               ImGui::Text("State Animation:");
               ImGui::Indent();
 
+              // Edit buttons at the top
+              if (entity.is_valid()) {
+                // Edit Atlas Button
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.5f, 0.4f, 0.2f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.6f, 0.5f, 0.3f, 1.0f));
+                std::string edit_atlas_btn_label = "Edit Atlas Configuration##" + state_name;
+                if (ImGui::Button(edit_atlas_btn_label.c_str(), ImVec2(-1, 0))) {
+                  extern void TextureAtlasEditor_OpenForState(Engine::ECS::Entity entity, const std::string& state_name);
+                  TextureAtlasEditor_OpenForState(entity, state_name);
+                }
+                ImGui::PopStyleColor(2);
+                if (ImGui::IsItemHovered()) {
+                  ImGui::SetTooltip("Open the Texture Atlas Editor to configure the grid layout");
+                }
+
+                // Edit Animation Frames Button
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.5f, 0.8f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.6f, 0.9f, 1.0f));
+                std::string edit_btn_label = "Edit Animation Frames##" + state_name;
+                if (ImGui::Button(edit_btn_label.c_str(), ImVec2(-1, 0))) {
+                  extern void FrameAnimationEditor_Open(Engine::ECS::Entity entity, const std::string& state_name);
+                  FrameAnimationEditor_Open(entity, state_name);
+                }
+                ImGui::PopStyleColor(2);
+                if (ImGui::IsItemHovered()) {
+                  ImGui::SetTooltip("Open the Frame Animation Editor to select specific frames from the texture atlas");
+                }
+                ImGui::Spacing();
+              }
+
               // Render Texture field
               auto tex_it = state_anim_obj.find("texture");
               if (tex_it != state_anim_obj.end()) {
@@ -562,7 +609,7 @@ namespace ImGuiWidgets {
               if (anim_field_it != state_anim_obj.end()) {
                 ImGui::Text("Animation:");
                 ImGui::Indent();
-                render_animation_field(anim_field_it->second, local_modified);
+                render_animation_field(anim_field_it->second, local_modified, entity);
                 ImGui::Unindent();
               }
 
@@ -604,6 +651,7 @@ namespace ImGuiWidgets {
     // Display all functions from all registries
     auto& easing_functions = Engine::FunctionRegistry<f32(f32, f32, f32, f32)>::get_functions();
     auto& entity_functions = Engine::FunctionRegistry<void(Engine::ECS::Entity)>::get_functions();
+    auto& two_entity_functions = Engine::FunctionRegistry<void(Engine::ECS::Entity, Engine::ECS::Entity)>::get_functions();
     auto& void_functions = Engine::FunctionRegistry<void()>::get_functions();
 
     ImGui::Text("%s", field_name.c_str());
@@ -633,6 +681,19 @@ namespace ImGuiWidgets {
       if (!entity_functions.empty()) {
         ImGui::TextDisabled("--- Entity Callbacks (void(Entity)) ---");
         for (const auto& [name, func] : entity_functions) {
+          is_selected = (current_function == name);
+          if (ImGui::Selectable(name.c_str(), is_selected)) {
+            name_field = name;
+            modified = true;
+          }
+          if (is_selected) ImGui::SetItemDefaultFocus();
+        }
+      }
+
+      // Display two-entity callback functions (e.g., Interactable callbacks)
+      if (!two_entity_functions.empty()) {
+        ImGui::TextDisabled("--- Interactable Callbacks (void(Entity, Entity)) ---");
+        for (const auto& [name, func] : two_entity_functions) {
           is_selected = (current_function == name);
           if (ImGui::Selectable(name.c_str(), is_selected)) {
             name_field = name;
@@ -799,11 +860,11 @@ namespace ImGuiWidgets {
     }
 
     if (type_hint == "Components::Animation") {
-      return render_animation_field(field_value, modified);
+      return render_animation_field(field_value, modified, entity);
     }
 
     if (type_hint == "Components::StateMachine") {
-      return render_statemachine_field(field_value, modified);
+      return render_statemachine_field(field_value, modified, entity);
     }
 
     // Not handled by specialized renderer

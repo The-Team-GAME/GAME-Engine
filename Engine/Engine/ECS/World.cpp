@@ -267,7 +267,42 @@ namespace Engine {
         }
       }
 
+      // Process one-shot system updates (for paused scrubbing, etc.)
+      for (System* system : containers.systems_to_update_once)
+      {
+        if (system) {
+          system->update();
+        }
+      }
+      containers.systems_to_update_once.clear();
+
+      // Process one-shot entity updates
+      if (!containers.entities_to_update_once.empty())
+      {
+        for (EntityID entityId : containers.entities_to_update_once)
+        {
+          Entity entity(entityId);
+          if (!entity.is_valid()) continue;
+
+          // Run update_entity on all systems that track this entity
+          for (auto& system : containers.systems)
+          {
+            if (system->get_entities().contains(entityId))
+            {
+              system->update_entity(entity);
+            }
+          }
+        }
+        containers.entities_to_update_once.clear();
+      }
+
       Engine::Perf::stop("ECS Update Editor");
+    }
+
+    void request_entity_update(EntityID entity)
+    {
+      auto& containers = Internal::get_containers();
+      containers.entities_to_update_once.insert(entity);
     }
 
     void process_housekeeping()
