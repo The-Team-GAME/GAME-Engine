@@ -65,11 +65,11 @@ namespace Components {
     float dead_mesh_distortion_intensity = 0.5f;
 
     float low_trail_lifetime = 0.0f;
-    float normal_trail_lifetime = 0.2f;
-    float high_trail_lifetime = 0.4f;
-    float very_high_trail_lifetime = 0.8f;
-    float crash_out_trail_lifetime = 1.0f;
-    float dead_trail_lifetime = 1.0f;
+    float normal_trail_lifetime = 0.1f;
+    float high_trail_lifetime = 0.1f;
+    float very_high_trail_lifetime = 0.1f;
+    float crash_out_trail_lifetime = 0.3f;
+    float dead_trail_lifetime = 0.3f;
 
     enum class HeartrateState {
       Low,

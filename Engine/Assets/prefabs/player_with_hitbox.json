@@ -3,7 +3,73 @@
         "components": [
             {
                 "data": {
-                    "drawIndex": 18,
+                    "path": "sounds/SFX/Player/Player Jump (DJ SY Edition).wav"
+                },
+                "type": "Components::Sound"
+            },
+            {
+                "data": {
+                    "acceleration": {
+                        "x": 0.0,
+                        "y": 1500.0
+                    },
+                    "force_view": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "gravity": {
+                        "x": 0.0,
+                        "y": 1500.0
+                    },
+                    "is_jumping": false,
+                    "is_static": false,
+                    "mass": 1.0,
+                    "on_ground": true,
+                    "use_gravity": true,
+                    "velocity": {
+                        "x": 0.0,
+                        "y": 25.000001907348633
+                    },
+                    "x_terminal_velocity": 500.0,
+                    "y_terminal_velocity": 500.0
+                },
+                "type": "Components::RigidBody"
+            },
+            {
+                "data": {
+                    "intensity": 0.0,
+                    "mesh_intensity": 0.0,
+                    "speed": 0.0
+                },
+                "type": "Components::Distortion"
+            },
+            {
+                "data": {
+                    "value": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "type": "Components::Flip"
+            },
+            {
+                "data": {
+                    "a": 1.0,
+                    "b": 1.0,
+                    "g": 1.0,
+                    "r": 1.0
+                },
+                "type": "Components::Color"
+            },
+            {
+                "data": {
+                    "path": "images/BroSpriteSheets/Bro_idle_spritesheet.png"
+                },
+                "type": "Components::Texture"
+            },
+            {
+                "data": {
+                    "drawIndex": 13,
                     "tex_coords_list": [
                         [
                             {
@@ -443,44 +509,6 @@
             },
             {
                 "data": {
-                    "a": 1.0,
-                    "b": 1.0,
-                    "g": 1.0,
-                    "r": 1.0
-                },
-                "type": "Components::Color"
-            },
-            {
-                "data": {
-                    "path": "sounds/SFX/Player/Player Jump (DJ SY Edition).wav"
-                },
-                "type": "Components::Sound"
-            },
-            {
-                "data": {
-                    "intensity": 0.0,
-                    "mesh_intensity": 0.0,
-                    "speed": 0.0
-                },
-                "type": "Components::Distortion"
-            },
-            {
-                "data": {
-                    "value": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "type": "Components::Flip"
-            },
-            {
-                "data": {
-                    "path": "images/BroSpriteSheets/Bro_idle_spritesheet.png"
-                },
-                "type": "Components::Texture"
-            },
-            {
-                "data": {
                     "atlas_indices": [
                         0,
                         1,
@@ -560,44 +588,16 @@
                         0.10000000149011612
                     ],
                     "is_looping": true,
-                    "startTime": 74.62454223632813,
+                    "startTime": 89.80844116210938,
                     "totalDuration": 2.3999998569488525
                 },
                 "type": "Components::Animation"
             },
             {
                 "data": {
-                    "acceleration": {
-                        "x": 0.0,
-                        "y": 1500.0
-                    },
-                    "force_view": {
-                        "x": 0.0,
-                        "y": 0.0
-                    },
-                    "gravity": {
-                        "x": 0.0,
-                        "y": 1500.0
-                    },
-                    "is_jumping": false,
-                    "is_static": false,
-                    "mass": 1.0,
-                    "on_ground": true,
-                    "use_gravity": true,
-                    "velocity": {
-                        "x": 0.0,
-                        "y": 25.000001907348633
-                    },
-                    "x_terminal_velocity": 500.0,
-                    "y_terminal_velocity": 500.0
-                },
-                "type": "Components::RigidBody"
-            },
-            {
-                "data": {
                     "position": {
-                        "x": 738.1904296875,
-                        "y": 703.1134643554688
+                        "x": -2502.7958984375,
+                        "y": 1023.1134033203125
                     },
                     "rotation": 0.0,
                     "scale": {
@@ -613,8 +613,8 @@
                         "half_height": 57.70079040527344,
                         "half_width": 39.81103515625,
                         "pos": {
-                            "x": 739.4502563476563,
-                            "y": 710.759765625
+                            "x": -2504.0556640625,
+                            "y": 1030.759765625
                         }
                     },
                     "height": 115.40158081054688,
@@ -641,11 +641,11 @@
             {
                 "data": {
                     "local_offset": {
-                        "x": 738.1904296875,
-                        "y": 702.69677734375
+                        "x": -2502.7958984375,
+                        "y": 1022.6967163085938
                     },
                     "offset_initialized": true,
-                    "parent_id": 637,
+                    "parent_id": 18,
                     "prev_parent_pos": {
                         "x": 0.0,
                         "y": 0.0
@@ -696,7 +696,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 74.62454223632813,
+                                        "startTime": 89.80844116210938,
                                         "totalDuration": 0.7199999094009399
                                     },
                                     "collider_data": null,
@@ -897,6 +897,224 @@
                             }
                         },
                         {
+                            "first": "Dash",
+                            "second": {
+                                "animation": {
+                                    "animation": {
+                                        "atlas_indices": [
+                                            0,
+                                            1,
+                                            2,
+                                            3,
+                                            4,
+                                            5,
+                                            6,
+                                            7
+                                        ],
+                                        "before_times": [
+                                            0.0,
+                                            0.10000000149011612,
+                                            0.20000000298023224,
+                                            0.30000001192092896,
+                                            0.4000000059604645,
+                                            0.5,
+                                            0.6000000238418579,
+                                            0.7000000476837158
+                                        ],
+                                        "durations": [
+                                            0.10000000149011612,
+                                            0.10000000149011612,
+                                            0.10000000149011612,
+                                            0.10000000149011612,
+                                            0.10000000149011612,
+                                            0.10000000149011612,
+                                            0.10000000149011612,
+                                            0.10000000149011612
+                                        ],
+                                        "is_looping": true,
+                                        "startTime": 89.80844116210938,
+                                        "totalDuration": 0.8000000715255737
+                                    },
+                                    "collider_data": null,
+                                    "scale": {
+                                        "x": 128.0,
+                                        "y": 128.0
+                                    },
+                                    "texture": {
+                                        "path": "images/BroSpriteSheets/Bro_dash_spritesheet.png"
+                                    },
+                                    "texture_atlas": {
+                                        "drawIndex": -1,
+                                        "tex_coords_list": [
+                                            [
+                                                {
+                                                    "x": 0.0,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.125,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.125,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.0,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.125,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.25,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.25,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.125,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.25,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.375,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.375,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.25,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.375,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.5,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.5,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.375,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.5,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.625,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.625,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.5,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.625,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.75,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.75,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.625,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.75,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.875,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.875,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.75,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.875,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 1.0,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 1.0,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.875,
+                                                    "y": 0.0
+                                                }
+                                            ]
+                                        ]
+                                    }
+                                },
+                                "audio": {
+                                    "loop": true,
+                                    "sound": {
+                                        "path": "sounds/SFX/Player/Player Footstep.wav"
+                                    },
+                                    "stop_on_exit": true,
+                                    "volume": 0.5
+                                },
+                                "fmod_audio": null,
+                                "name": "Dash",
+                                "on_enter_callback": {
+                                    "name": "player_dash_enter"
+                                },
+                                "on_exit_callback": {
+                                    "name": "player_dash_exit"
+                                },
+                                "on_update_callback": {
+                                    "name": "player_dash_update"
+                                }
+                            }
+                        },
+                        {
                             "first": "Attack2",
                             "second": {
                                 "animation": {
@@ -929,7 +1147,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 74.62454223632813,
+                                        "startTime": 89.80844116210938,
                                         "totalDuration": 0.559999942779541
                                     },
                                     "collider_data": null,
@@ -1202,224 +1420,6 @@
                             }
                         },
                         {
-                            "first": "Dash",
-                            "second": {
-                                "animation": {
-                                    "animation": {
-                                        "atlas_indices": [
-                                            0,
-                                            1,
-                                            2,
-                                            3,
-                                            4,
-                                            5,
-                                            6,
-                                            7
-                                        ],
-                                        "before_times": [
-                                            0.0,
-                                            0.10000000149011612,
-                                            0.20000000298023224,
-                                            0.30000001192092896,
-                                            0.4000000059604645,
-                                            0.5,
-                                            0.6000000238418579,
-                                            0.7000000476837158
-                                        ],
-                                        "durations": [
-                                            0.10000000149011612,
-                                            0.10000000149011612,
-                                            0.10000000149011612,
-                                            0.10000000149011612,
-                                            0.10000000149011612,
-                                            0.10000000149011612,
-                                            0.10000000149011612,
-                                            0.10000000149011612
-                                        ],
-                                        "is_looping": true,
-                                        "startTime": 74.62454223632813,
-                                        "totalDuration": 0.8000000715255737
-                                    },
-                                    "collider_data": null,
-                                    "scale": {
-                                        "x": 128.0,
-                                        "y": 128.0
-                                    },
-                                    "texture": {
-                                        "path": "images/BroSpriteSheets/Bro_dash_spritesheet.png"
-                                    },
-                                    "texture_atlas": {
-                                        "drawIndex": -1,
-                                        "tex_coords_list": [
-                                            [
-                                                {
-                                                    "x": 0.0,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.125,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.125,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.0,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.125,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.25,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.25,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.125,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.25,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.375,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.375,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.25,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.375,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.5,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.5,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.375,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.5,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.625,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.625,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.5,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.625,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.75,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.75,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.625,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.75,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.875,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.875,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.75,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.875,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 1.0,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 1.0,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.875,
-                                                    "y": 0.0
-                                                }
-                                            ]
-                                        ]
-                                    }
-                                },
-                                "audio": {
-                                    "loop": true,
-                                    "sound": {
-                                        "path": "sounds/SFX/Player/Player Footstep.wav"
-                                    },
-                                    "stop_on_exit": true,
-                                    "volume": 0.5
-                                },
-                                "fmod_audio": null,
-                                "name": "Dash",
-                                "on_enter_callback": {
-                                    "name": "player_dash_enter"
-                                },
-                                "on_exit_callback": {
-                                    "name": "player_dash_exit"
-                                },
-                                "on_update_callback": {
-                                    "name": "player_dash_update"
-                                }
-                            }
-                        },
-                        {
                             "first": "Attack3",
                             "second": {
                                 "animation": {
@@ -1458,7 +1458,7 @@
                                             0.05999999865889549
                                         ],
                                         "is_looping": false,
-                                        "startTime": 74.62454223632813,
+                                        "startTime": 89.80844116210938,
                                         "totalDuration": 0.5399999618530273
                                     },
                                     "collider_data": null,
@@ -1821,6 +1821,302 @@
                             }
                         },
                         {
+                            "first": "Jumping",
+                            "second": {
+                                "animation": {
+                                    "animation": {
+                                        "atlas_indices": [
+                                            3,
+                                            4,
+                                            5,
+                                            6
+                                        ],
+                                        "before_times": [
+                                            0.0,
+                                            0.05000000074505806,
+                                            0.10000000149011612,
+                                            0.15000000596046448
+                                        ],
+                                        "durations": [
+                                            0.05000000074505806,
+                                            0.05000000074505806,
+                                            0.05000000074505806,
+                                            2.0
+                                        ],
+                                        "is_looping": true,
+                                        "startTime": 89.80844116210938,
+                                        "totalDuration": 2.1500000953674316
+                                    },
+                                    "collider_data": null,
+                                    "scale": {
+                                        "x": 128.0,
+                                        "y": 128.0
+                                    },
+                                    "texture": {
+                                        "path": "images/BroSpriteSheets/Bro_jump_spritesheet.png"
+                                    },
+                                    "texture_atlas": {
+                                        "drawIndex": -1,
+                                        "tex_coords_list": [
+                                            [
+                                                {
+                                                    "x": 0.0,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.07692307978868484,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.07692307978868484,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.0,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.07692307978868484,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.1538461595773697,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.1538461595773697,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.07692307978868484,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.1538461595773697,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.23076923191547394,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.23076923191547394,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.1538461595773697,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.23076923191547394,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.3076923191547394,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.3076923191547394,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.23076923191547394,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.3076923191547394,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.38461539149284363,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.38461539149284363,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.3076923191547394,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.38461539149284363,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.4615384638309479,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.4615384638309479,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.38461539149284363,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.4615384638309479,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.5384615659713745,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.5384615659713745,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.4615384638309479,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.5384615659713745,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.6153846383094788,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.6153846383094788,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.5384615659713745,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.6153846383094788,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.692307710647583,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.692307710647583,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.6153846383094788,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.692307710647583,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.7692307829856873,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.7692307829856873,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.692307710647583,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.7692307829856873,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.8461538553237915,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.8461538553237915,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.7692307829856873,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.8461538553237915,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.9230769276618958,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.9230769276618958,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.8461538553237915,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.9230769276618958,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 1.0,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 1.0,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.9230769276618958,
+                                                    "y": 0.0
+                                                }
+                                            ]
+                                        ]
+                                    }
+                                },
+                                "audio": {
+                                    "loop": false,
+                                    "sound": {
+                                        "path": "sounds/SFX/Player/Player Jump (DJ SY Edition).wav"
+                                    },
+                                    "stop_on_exit": false,
+                                    "volume": 0.5
+                                },
+                                "fmod_audio": null,
+                                "name": "Jumping",
+                                "on_enter_callback": {
+                                    "name": "player_jumping_enter"
+                                },
+                                "on_exit_callback": {
+                                    "name": "player_jumping_exit"
+                                },
+                                "on_update_callback": {
+                                    "name": "player_jumping_update"
+                                }
+                            }
+                        },
+                        {
                             "first": "Idle",
                             "second": {
                                 "animation": {
@@ -1904,7 +2200,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 74.62454223632813,
+                                        "startTime": 89.80844116210938,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": null,
@@ -2368,302 +2664,6 @@
                             }
                         },
                         {
-                            "first": "Jumping",
-                            "second": {
-                                "animation": {
-                                    "animation": {
-                                        "atlas_indices": [
-                                            3,
-                                            4,
-                                            5,
-                                            6
-                                        ],
-                                        "before_times": [
-                                            0.0,
-                                            0.05000000074505806,
-                                            0.10000000149011612,
-                                            0.15000000596046448
-                                        ],
-                                        "durations": [
-                                            0.05000000074505806,
-                                            0.05000000074505806,
-                                            0.05000000074505806,
-                                            2.0
-                                        ],
-                                        "is_looping": true,
-                                        "startTime": 74.62454223632813,
-                                        "totalDuration": 2.1500000953674316
-                                    },
-                                    "collider_data": null,
-                                    "scale": {
-                                        "x": 128.0,
-                                        "y": 128.0
-                                    },
-                                    "texture": {
-                                        "path": "images/BroSpriteSheets/Bro_jump_spritesheet.png"
-                                    },
-                                    "texture_atlas": {
-                                        "drawIndex": -1,
-                                        "tex_coords_list": [
-                                            [
-                                                {
-                                                    "x": 0.0,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.07692307978868484,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.07692307978868484,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.0,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.07692307978868484,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.1538461595773697,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.1538461595773697,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.07692307978868484,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.1538461595773697,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.23076923191547394,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.23076923191547394,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.1538461595773697,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.23076923191547394,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.3076923191547394,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.3076923191547394,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.23076923191547394,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.3076923191547394,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.38461539149284363,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.38461539149284363,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.3076923191547394,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.38461539149284363,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.4615384638309479,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.4615384638309479,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.38461539149284363,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.4615384638309479,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.5384615659713745,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.5384615659713745,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.4615384638309479,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.5384615659713745,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.6153846383094788,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.6153846383094788,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.5384615659713745,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.6153846383094788,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.692307710647583,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.692307710647583,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.6153846383094788,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.692307710647583,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.7692307829856873,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.7692307829856873,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.692307710647583,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.7692307829856873,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.8461538553237915,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.8461538553237915,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.7692307829856873,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.8461538553237915,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.9230769276618958,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 0.9230769276618958,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.8461538553237915,
-                                                    "y": 0.0
-                                                }
-                                            ],
-                                            [
-                                                {
-                                                    "x": 0.9230769276618958,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 1.0,
-                                                    "y": 1.0
-                                                },
-                                                {
-                                                    "x": 1.0,
-                                                    "y": 0.0
-                                                },
-                                                {
-                                                    "x": 0.9230769276618958,
-                                                    "y": 0.0
-                                                }
-                                            ]
-                                        ]
-                                    }
-                                },
-                                "audio": {
-                                    "loop": false,
-                                    "sound": {
-                                        "path": "sounds/SFX/Player/Player Jump (DJ SY Edition).wav"
-                                    },
-                                    "stop_on_exit": false,
-                                    "volume": 0.5
-                                },
-                                "fmod_audio": null,
-                                "name": "Jumping",
-                                "on_enter_callback": {
-                                    "name": "player_jumping_enter"
-                                },
-                                "on_exit_callback": {
-                                    "name": "player_jumping_exit"
-                                },
-                                "on_update_callback": {
-                                    "name": "player_jumping_update"
-                                }
-                            }
-                        },
-                        {
                             "first": "Walking",
                             "second": {
                                 "animation": {
@@ -2699,7 +2699,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 74.62454223632813,
+                                        "startTime": 89.80844116210938,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": null,
@@ -2889,7 +2889,7 @@
                 "data": {
                     "end_alpha": 0.0,
                     "interval": 0.05000000074505806,
-                    "last_spawn_time": 685.2648315429688,
+                    "last_spawn_time": 0.0,
                     "lifetime": 0.0,
                     "start_alpha": 0.800000011920929
                 },
@@ -2936,7 +2936,7 @@
                             "y": 0.0
                         }
                     },
-                    "dash_cooldown": 5.0,
+                    "dash_cooldown": 1.0,
                     "dash_duration": 0.20000000298023224,
                     "dash_speed": 1250.0,
                     "jump_force": -45000.0,
@@ -2948,7 +2948,7 @@
             {
                 "data": {
                     "crash_out": 160.0,
-                    "decay_rate": 1.0,
+                    "decay_rate": 5.0,
                     "heartrate": 80.0,
                     "high": 120.0,
                     "low": 80.0,

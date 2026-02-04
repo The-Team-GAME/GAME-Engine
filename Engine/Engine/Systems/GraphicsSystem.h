@@ -37,7 +37,7 @@ namespace Engine
     public:
       StaticSpriteRenderSystem() {
         require_components<Components::Transform2D, Components::Color, Components::Texture>();
-        exclude_components<Components::TextureAtlas, Components::Distortion >();
+        exclude_components<Components::TextureAtlas, Components::Distortion>();
       }
 
       void draw_entity(const Engine::ECS::Entity entity) override {
@@ -45,17 +45,31 @@ namespace Engine
         auto* color = entity.get_component<Components::Color>();
         auto* texture = entity.get_component<Components::Texture>();
         auto* flip = entity.get_component<Components::Flip>();
+        auto* ui = entity.get_component<Components::UI>();
 
         Math::Vec2D flip_value = flip ? flip->value : Math::Vec2D(1.0f, 1.0f);
 
-        Engine::Graphics::draw_texture(
-          texture->texture_handle,
-          Math::Vec2D(transform->position.x, transform->position.y),
-          Math::Vec2D(transform->scale.x, transform->scale.y),
-          transform->rotation,
-          *color,
-          flip_value
-        );
+        if (ui) {
+          // Render in screen space (not affected by camera)
+          Engine::Graphics::draw_texture_ui(
+            texture->texture_handle,
+            Math::Vec2D(transform->position.x, transform->position.y),
+            Math::Vec2D(transform->scale.x, transform->scale.y),
+            transform->rotation,
+            *color,
+            flip_value
+          );
+        } else {
+          // Render in world space
+          Engine::Graphics::draw_texture(
+            texture->texture_handle,
+            Math::Vec2D(transform->position.x, transform->position.y),
+            Math::Vec2D(transform->scale.x, transform->scale.y),
+            transform->rotation,
+            *color,
+            flip_value
+          );
+        }
       }
     };
 
@@ -63,7 +77,7 @@ namespace Engine
     public:
       AtlasSpriteRenderSystem() {
         require_components<Components::Transform2D, Components::Color, Components::Texture, Components::TextureAtlas>();
-        exclude_components<Components::Distortion >();
+        exclude_components<Components::Distortion>();
       }
 
       void draw_entity(const Engine::ECS::Entity entity) override {
@@ -72,6 +86,7 @@ namespace Engine
         auto* texture = entity.get_component<Components::Texture>();
         auto* atlas = entity.get_component<Components::TextureAtlas>();
         auto* flip = entity.get_component<Components::Flip>();
+        auto* ui = entity.get_component<Components::UI>();
 
         Math::Vec2D flip_value = flip ? flip->value : Math::Vec2D(1.0f, 1.0f);
 
@@ -79,15 +94,29 @@ namespace Engine
         if (atlas->drawIndex < atlas->subTextures.size()) {
           const auto& subTexture = atlas->subTextures[atlas->drawIndex];
 
-          Engine::Graphics::draw_subtexture(
-            texture->texture_handle,
-            subTexture.tex_coords,
-            Math::Vec2D(transform->position.x, transform->position.y),
-            Math::Vec2D(transform->scale.x, transform->scale.y),
-            transform->rotation,
-            *color,
-            flip_value
-          );
+          if (ui) {
+            // Render in screen space (not affected by camera)
+            Engine::Graphics::draw_subtexture_ui(
+              texture->texture_handle,
+              subTexture.tex_coords,
+              Math::Vec2D(transform->position.x, transform->position.y),
+              Math::Vec2D(transform->scale.x, transform->scale.y),
+              transform->rotation,
+              *color,
+              flip_value
+            );
+          } else {
+            // Render in world space
+            Engine::Graphics::draw_subtexture(
+              texture->texture_handle,
+              subTexture.tex_coords,
+              Math::Vec2D(transform->position.x, transform->position.y),
+              Math::Vec2D(transform->scale.x, transform->scale.y),
+              transform->rotation,
+              *color,
+              flip_value
+            );
+          }
         }
       }
     };
