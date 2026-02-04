@@ -97,6 +97,12 @@ namespace Engine
     {
       Engine::Resources::load_all_assets();
     }
+    else
+    {
+      // Always load prefabs even if load_all_assets_on_startup is disabled
+      // This is required for trail effects and other prefab-dependent features
+      Engine::Resources::load_all_prefabs();
+    }
 
     // Initialize audio manager
     if (!Engine::Audio::init()) {

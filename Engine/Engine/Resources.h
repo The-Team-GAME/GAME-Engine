@@ -72,6 +72,9 @@ namespace Engine {
     // Load all assets from the resource path and its subfolders
     void load_all_assets();
 
+    // Load all prefabs from the prefabs subfolder (always loaded regardless of load_all_assets_on_startup)
+    void load_all_prefabs();
+
     // Copy a file to the resource folder root (or subfolder) if it's not already there
     std::string copy_to_resources(const std::string& filepath, const std::string& subfolder = "");
 
