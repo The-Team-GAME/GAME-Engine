@@ -89,6 +89,38 @@ namespace Components
   {
   };
 
+  struct SprayCanMonkey
+  {
+    // Combat stats
+    float chase_speed = 80.0f;
+
+    // Attack parameters
+    float attack_cooldown = 5.0f;
+    float last_attack_time = 0.0f;
+    float attack_windup = 0.5f;  // Time to wait in windup state before attacking
+
+    // Detection ranges
+    float detection_range = 1200.0f;
+    float chase_range = 1000.0f;
+    float attack_range = 500.0f;
+
+    // Spray-specific properties
+    float spray_duration = 7.0f;
+    float spray_range = 150.0f;
+    float spray_width = 80.0f;
+
+    float cloud_spawn_delay = 1.1f;     // spawn delay
+    bool cloud_spawned = false;
+
+    // Knockback
+    Math::Vec2D knockback = { 300.0f, 400.0f };
+
+    // Damage
+    int damage = 20;
+
+  };
+
+
   struct LazyMonkey
   {
     // Movement speeds
@@ -113,6 +145,7 @@ namespace Components
     float detection_range = 300.0f;
     float chase_range = 400.0f;
     float attack_range = 180.0f;
+
   };
 
   struct Attack
@@ -187,5 +220,10 @@ namespace Components
 REFLECT_FIELDS(Components::Player::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, dash_speed, damage, heartrate_cost, knockback)
 REGISTER_COMPONENT(Components::Player, walk_speed, jump_force, dash_duration, dash_cooldown, dash_speed, stun_duration, attack1, attack2, attack3)
 REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height, attack_cooldown, last_attack_time, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, attack_range)
+REGISTER_COMPONENT(Components::SprayCanMonkey,
+  chase_speed, attack_cooldown, last_attack_time, attack_windup,
+  detection_range, chase_range, attack_range,
+  spray_duration, spray_range, spray_width,
+  knockback, damage)
 REGISTER_COMPONENT(Components::Attack, damage, knockback, is_continuous, damage_interval, impact_vfx_texture)
 REGISTER_COMPONENT(Components::PendingKnockback, knockback)
