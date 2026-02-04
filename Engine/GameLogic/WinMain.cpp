@@ -301,6 +301,13 @@ void RunGame()
     Engine::Core::stop();
     });
 
+  // Victory interactable callback - shows victory screen when player enters the zone
+  Engine::FunctionRegistry<void(Engine::ECS::Entity, Engine::ECS::Entity)>::register_function("show_victory",
+    [](Engine::ECS::Entity interactable, Engine::ECS::Entity player) {
+      Log::info("Victory! Player reached the goal.");
+      Engine::SceneManager::push_scene("VictoryState");
+    });
+
 
   Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_menu_button_exit_hover", [](Engine::ECS::Entity entity) {
     auto* color = entity.get_component<Components::Color>();

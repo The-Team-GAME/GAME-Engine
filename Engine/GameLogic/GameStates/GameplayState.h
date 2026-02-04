@@ -18,6 +18,7 @@
 #include "../../Engine/MonkeyEngine.h"
 
 #include "../Components/GameplayComponent.h"
+#include "../Components/InteractableComponents.h"
 
 
 class GameplayState : public Engine::Scene
@@ -40,6 +41,13 @@ public:
     camera.add_component<Components::Parent>(player_entity.get_id());
 
     player_entity.add_component<Components::HeartHUDSprite>();
+
+    // Victory zone - triggers victory screen when player enters
+    // TODO: Position this at the end of the level
+    Engine::ECS::create_entity()
+      .add_component<Components::Transform2D>(14600.0f, 830.0f, 0.0f, 100.0f, 200.0f)
+      .add_component<Components::Interactable>(50.0f, "show_victory", "", "")
+      .add_to_layer("effect");
 
   };
 
