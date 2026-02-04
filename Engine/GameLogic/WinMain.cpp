@@ -120,6 +120,10 @@ void RunGame()
         enemy_health->take_damage(damage);
         Log::info("Enemy took {} damage! HP: {}/{}", damage, enemy_health->current_hp, enemy_health->max_hp);
 
+        // Play hit sound effect
+        Engine::AudioSystem::playEvent("event:/SFX/PlayerHit");
+        Log::info("Playing FMOD event: event:/SFX/PlayerHit");
+
         // Trigger hit or death state
         if (enemy_health->current_hp <= 0) {
           if (state_machine->get_current_state() != "Death") {
@@ -215,6 +219,7 @@ void RunGame()
         // Apply knockback (direction is already baked into attack->knockback from the attacker)
         rigid->velocity.x = attack->knockback.x;
         rigid->velocity.y = attack->knockback.y; // Usually negative for upward knockback
+
 
         Engine::AudioSystem::playEvent("event:/SFX/PlayerHurt");
         Log::info("Playing FMOD event: event:/SFX/PlayerHurt");

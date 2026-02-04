@@ -73,6 +73,12 @@ namespace PlayerStates
     fmod_jump_audio.volume = 0.6f;
     fmod_jump_audio.stop_on_state_exit = false;
 
+    Components::FMODStateAudio fmod_dash_audio;
+    fmod_dash_audio.event_path = "event:/SFX/PlayerDash";
+    fmod_dash_audio.loop = false;
+    fmod_dash_audio.volume = 0.6f;
+    fmod_dash_audio.stop_on_state_exit = false;
+
     // ========================================================================
     // Player Idle State
     // ========================================================================
@@ -115,7 +121,7 @@ namespace PlayerStates
     player_dashinging_anim.animation = Components::Animation(8, 0.1f);
     player_dashinging_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
 
-    Components::State player_dash("Dash", "player_dash_enter", "player_dash_update", "player_dash_exit", player_dashinging_anim, walk_audio );
+    Components::State player_dash("Dash", "player_dash_enter", "player_dash_update", "player_dash_exit", player_dashinging_anim, walk_audio, fmod_dash_audio);
 
     // ========================================================================
     // Player Attack 1 State (First Punch)
