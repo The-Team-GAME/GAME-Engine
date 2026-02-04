@@ -235,6 +235,11 @@ namespace Components
     Math::Vec2D knockback;
   };
 
+  // Marker component to identify projectile entities (e.g., turret bullets)
+  struct Projectile
+  {
+  };
+
 } // namespace Components
 
 
@@ -257,3 +262,4 @@ REGISTER_COMPONENT(Components::TurretMonkey, chase_speed, attack_cooldown, attac
 REGISTER_COMPONENT(Components::GamerMonkey, chase_speed, dash_speed, dash_cooldown, dash_windup_duration, dash_indicator_height, leap_speed, leap_height, attack_cooldown, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, close_attack_range, dash_attack_range)
 REGISTER_COMPONENT(Components::Attack, damage, knockback, is_continuous, damage_interval, impact_vfx_texture)
 REGISTER_COMPONENT(Components::PendingKnockback, knockback)
+REGISTER_COMPONENT(Components::Projectile)

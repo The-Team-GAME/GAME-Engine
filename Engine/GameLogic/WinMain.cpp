@@ -229,9 +229,26 @@ void RunGame()
 
 
         Log::info("Player knocked back! Force applied: ({}, {})", attack->knockback.x, attack->knockback.y);
+
+        // If this hitbox is a projectile, despawn it on player hit
+        if (attack_entity.has_component<Components::Projectile>()) {
+          Engine::ECS::destroy_entity(attack_entity);
+          Log::info("Projectile despawned after hitting player (entity {}).", attack_entity.get_id());
+        }
       }
       else {
         Log::error("Error: Heartrate or RigidBody component missing from player!");
+      }
+    });
+
+  // Despawn projectiles when they collide with collidable tilemap (e.g., ground, walls)
+  Engine::ECS::LayerRegistry::register_collision_callback("damage_player", "tilemap_foreground_mid",
+    [](Engine::ECS::Entity attack_entity, Engine::ECS::Entity tile_entity)
+    {
+      (void)tile_entity; // not used; just need to know a collision occurred
+      if (attack_entity.has_component<Components::Projectile>()) {
+        Engine::ECS::destroy_entity(attack_entity);
+        Log::info("Projectile despawned on terrain collision (entity {}).", attack_entity.get_id());
       }
     });
 
@@ -348,6 +365,7 @@ void RunGame()
   Engine::ECS::add_system<Engine::Systems::DebugHitboxRenderSystem>();
   Engine::ECS::add_system<Engine::Systems::EnemyHealthBarRectSystem>();
   Engine::ECS::add_system<Engine::Systems::HeartHUDSpriteSystem>();
+  // Ensure tile walls/floors become collidable via generated static colliders
 
   // Run the main menu state
   Engine::Core::run("MainMenuState");

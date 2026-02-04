@@ -30,7 +30,6 @@ namespace TurretMonkeyStateCallbacks
     auto* flip = entity.get_component<Components::Flip>();
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
     auto* transform = entity.get_component<Components::Transform2D>();
-
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
 
     if (!Turret_monkey || !flip || !transform || !player_entity.is_valid()) {
@@ -70,7 +69,8 @@ namespace TurretMonkeyStateCallbacks
       .add_component<Components::RigidBody>(false, false) // Dynamic, no gravity for straight shot
       .add_component<Components::BoxCollider>(projectile_width, projectile_height, false)
       .add_component<Components::Attack>(Turret_monkey->damage)
-      .add_component<Components::Lifetime>(2.0f) // Despawn after a short time
+      .add_component<Components::Lifetime>(1.1f) // Despawn earlier over time
+      .add_component<Components::Projectile>() // Tag as projectile for collision callbacks
       .remove_from_layer("default")
       .add_to_layer("effect")
       .add_to_layer("damage_player");
