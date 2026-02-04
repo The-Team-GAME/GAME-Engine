@@ -49,20 +49,19 @@ namespace Engine {
         return;
 
       auto& containers = Internal::get_containers();
-      auto signature_it = containers.entity_signatures.find(id);
+      auto sig_it = containers.entity_signatures.find(id);
 
-      if (signature_it == containers.entity_signatures.end())
+      if (sig_it == containers.entity_signatures.end())
         return;
 
-      const ComponentSignature& signature = signature_it->second;
+      const ComponentSignature& signature = sig_it->second;
 
       // Iterate through all component arrays
-      for (auto& [type_id, array_ptr] : containers.component_arrays) {
-        IComponentArray* array = array_ptr.get();
+      for (auto& [type_id, array] : containers.component_arrays) {
         // Check if this entity has this component type
         if (signature.test(type_id)) {
           std::string type_name = array->get_type_name();
-          callback(type_name, array);
+          callback(type_name, array.get());
         }
       }
     }
@@ -74,8 +73,7 @@ namespace Engine {
       auto& containers = Internal::get_containers();
 
       // Find the component array with matching type name
-      for (auto& [type_id, array_ptr] : containers.component_arrays) {
-        IComponentArray* array = array_ptr.get();
+      for (auto& [type_id, array] : containers.component_arrays) {
         if (array->get_type_name() == component_name) {
           // Check if entity already has this component
           auto sig_it = containers.entity_signatures.find(id);
