@@ -32,54 +32,58 @@ namespace PlayerStateCallbacks
   {
     Components::StateMachine *state_machine = entity.get_component<Components::StateMachine>();
     Components::RigidBody* player_rigid = entity.get_component<Components::RigidBody>();
+    Components::Player* player_comp = entity.get_component<Components::Player>();
     Components::Flip* flip = entity.get_component<Components::Flip>();
-
-    // resettng the state
-    if (state_machine->current_state_name == "Walking")
-    {
-      //empty by deisgn
-    }
-    else
-    {
-      state_machine->change_state("Idle");
-    }
 
     // Handling cooldowns
     if (dash_cooldown > 0) { dash_cooldown -= Time::get_fixed_dt(); }
-
-    // put this first because we need to reset the flag if possible
-    //if (Input::is_released(KeyCode::Space) && player_rigid->is_jumping)
-    //{
-    //  player_rigid->is_jumping = false;
-    //}
-
-    // Check for movement input
-    if (Input::is_held(KeyCode::ShiftLeft) && dash_cooldown <= 0.f)
-    {
-      state_machine->change_state("Dash");
-    }
-    else if (Input::is_held(KeyCode::Space)
-        && player_rigid->on_ground
-        && !player_rigid->is_jumping)
-    {
-      state_machine->change_state("Jumping");
-    }
-    else if (Input::is_held(KeyCode::A) || Input::is_pressed(KeyCode::A)) //left
-    {
-      flip->value.x = -1.f;
-      state_machine->change_state("Walking");
-    }
-    else if (Input::is_held(KeyCode::D) || Input::is_pressed(KeyCode::D)) //right
-    {
-      flip->value.x = 1.f;
-      state_machine->change_state("Walking");
-    }
 
     // Check for attack input
     if (Engine::Input::is_pressed(Engine::KeyCode::F))
     {
       state_machine->change_state("Attack1");
+      return;
     }
+
+    // Check for movement input
+    if (Input::is_held(KeyCode::ShiftLeft) && dash_cooldown <= 0.f)
+    {
+      state_machine->change_state("Dash");
+      return;
+    }
+
+    if (Input::is_held(KeyCode::Space)
+        && player_rigid->on_ground
+        && !player_rigid->is_jumping)
+    {
+      state_machine->change_state("Jumping");
+      return;
+    }
+    
+    if (Input::is_held(KeyCode::D) || Input::is_held(KeyCode::A))
+    {
+      if (Input::is_held(KeyCode::A)) //left
+      {
+        flip->value.x = -1.f;
+      }
+      else if (Input::is_held(KeyCode::D)) //right
+      {
+        flip->value.x = 1.f;
+      }
+      player_rigid->force.x += player_comp->walk_speed * flip->value.x;
+      if (state_machine->get_current_state() != "Jumping")
+      {
+        state_machine->change_state("Walking");
+      }
+      return;
+    }
+
+    // If no valid inputs
+    if (state_machine->get_current_state() != "Jumping")
+    {
+      state_machine->change_state("Idle");
+    }
+    
   }
    
 #pragma region idle state;
@@ -112,10 +116,7 @@ namespace PlayerStateCallbacks
   {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
-    auto* player_comp = entity.get_component<Components::Player>();
 
-    if (!player_comp) return;
-    rigid->force.x += player_comp->walk_speed * flip->value.x;
     // we set an exit criteria for the walking state instead of reseting it every frame as the animation sequence needs the state to be constant for this to work
     if (!Input::is_held(KeyCode::A) && !Input::is_held(KeyCode::D))
     {
@@ -156,27 +157,17 @@ namespace PlayerStateCallbacks
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     Components::Player* player_comp = entity.get_component<Components::Player>();
     Components::Flip* flip = entity.get_component<Components::Flip>();
+    Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
     assert(rigid);
     assert(player_comp);
     assert(flip);
-    if (Input::is_held(KeyCode::D) || Input::is_held(KeyCode::A))
-    {
-      if (Input::is_held(KeyCode::A)) //left
-      {
-        flip->value.x = -1.f;
-      }
-      else if (Input::is_held(KeyCode::D)) //right
-      {
-        flip->value.x = 1.f;
-      }
-      rigid->force.x += player_comp->walk_speed * flip->value.x;
-    }
+    assert(state_machine);
+
     if (rigid->on_ground && rigid->velocity.y >= 0.0f)
     {
-      rigid->is_jumping = false;
-      Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
       state_machine->change_state("Idle");
     }
+    take_input(entity);
   }
 
   inline void jumping_on_exit(Engine::ECS::Entity entity)
@@ -184,7 +175,6 @@ namespace PlayerStateCallbacks
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
     rigid->is_jumping = false;
-    std::cout << "jumping exit\n";
     Log::info("Player: Exiting Jumping state");
   }
 #pragma endregion
