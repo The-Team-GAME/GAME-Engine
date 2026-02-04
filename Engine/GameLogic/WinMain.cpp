@@ -29,6 +29,7 @@
 #include "GameStates/LevelTestState.h"
 #include "GameStates/GameplayState.h"
 #include "GameStates/PauseState.h"
+#include "GameStates/VictoryState.h"
 #include "GameStates/OptionsState.h"
 #include "GameStates/AnimatorTestState.h"
 #include "Systems/HealthSystem.h"
@@ -75,9 +76,13 @@ void RunGame()
   Engine::ECS::register_layer("player_trail"); // Specific layer for player trail effect
   Engine::ECS::register_layer("player"); // Player character layer
   Engine::ECS::register_layer("effect"); // Visual effects like particles
-  Engine::ECS::register_layer("ui_background"); // User interface elements
-  Engine::ECS::register_layer("ui"); // User interface elements
-  Engine::ECS::register_layer("ui_foreground"); // User interface elements
+  Engine::ECS::register_layer("main_menu_0"); // Main menu: sky background
+  Engine::ECS::register_layer("main_menu_1"); // Main menu: buildings
+  Engine::ECS::register_layer("main_menu_2"); // Main menu: carriage, title
+  Engine::ECS::register_layer("main_menu_3"); // Main menu: characters (Bro, Monkey)
+  Engine::ECS::register_layer("main_menu_4"); // Main menu: front overlay
+  Engine::ECS::register_layer("main_menu_5"); // Main menu: buttons, interactive UI
+  Engine::ECS::register_layer("main_menu_6"); // Main menu: text any key
 #ifndef GAME_BUILD
   Engine::ECS::register_layer("debug"); // Debug overlays and information
 #endif
@@ -242,12 +247,67 @@ void RunGame()
     Log::info("Exiting to main menu from pause menu");
     Engine::SceneManager::load_scene("MainMenuState");
     });
+
+  // Pause menu hover callbacks - change menu sprite texture
+  // Uses hovered_button tracker to prevent exit_hover from resetting when moving between buttons
+  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_hover_resume", [](Engine::ECS::Entity) {
+    if (PauseState::menu_sprite_id == 0) return;
+    if (!Engine::ECS::is_entity_active(Engine::ECS::Entity(PauseState::menu_sprite_id))) return;
+    PauseState::hovered_button = 1;
+    auto* tex = Engine::ECS::Entity(PauseState::menu_sprite_id).get_component<Components::Texture>();
+    if (tex) *tex = PauseState::resume_selected_tex;
+    });
+  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_hover_restart", [](Engine::ECS::Entity) {
+    if (PauseState::menu_sprite_id == 0) return;
+    if (!Engine::ECS::is_entity_active(Engine::ECS::Entity(PauseState::menu_sprite_id))) return;
+    PauseState::hovered_button = 2;
+    auto* tex = Engine::ECS::Entity(PauseState::menu_sprite_id).get_component<Components::Texture>();
+    if (tex) *tex = PauseState::restart_selected_tex;
+    });
+  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_hover_options", [](Engine::ECS::Entity) {
+    if (PauseState::menu_sprite_id == 0) return;
+    if (!Engine::ECS::is_entity_active(Engine::ECS::Entity(PauseState::menu_sprite_id))) return;
+    PauseState::hovered_button = 3;
+    auto* tex = Engine::ECS::Entity(PauseState::menu_sprite_id).get_component<Components::Texture>();
+    if (tex) *tex = PauseState::options_selected_tex;
+    });
+  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_hover_exit", [](Engine::ECS::Entity) {
+    if (PauseState::menu_sprite_id == 0) return;
+    if (!Engine::ECS::is_entity_active(Engine::ECS::Entity(PauseState::menu_sprite_id))) return;
+    PauseState::hovered_button = 4;
+    auto* tex = Engine::ECS::Entity(PauseState::menu_sprite_id).get_component<Components::Texture>();
+    if (tex) *tex = PauseState::exit_selected_tex;
+    });
+  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_hover_none", [](Engine::ECS::Entity) {
+    // Do nothing here - let the on_hover callbacks handle setting the texture
+    // This prevents the race condition when moving between buttons
+    });
+
   Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_menu_button_hover", [](Engine::ECS::Entity entity) {
     auto* color = entity.get_component<Components::Color>();
     if (color) {
       color->a = 1.0f;
     }
     });
+
+  // Register main menu button callbacks
+  Engine::FunctionRegistry<void()>::register_function("start_game", []() {
+    Engine::SceneManager::load_scene("GameplayState");
+    });
+  Engine::FunctionRegistry<void()>::register_function("options_menu", []() {
+    // Engine::SceneManager::push_scene("OptionsState");
+    });
+  Engine::FunctionRegistry<void()>::register_function("exit_game", []() {
+    Engine::Core::stop();
+    });
+
+  // Victory interactable callback - shows victory screen when player enters the zone
+  Engine::FunctionRegistry<void(Engine::ECS::Entity, Engine::ECS::Entity)>::register_function("show_victory",
+    [](Engine::ECS::Entity interactable, Engine::ECS::Entity player) {
+      Log::info("Victory! Player reached the goal.");
+      Engine::SceneManager::push_scene("VictoryState");
+    });
+
 
   Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_menu_button_exit_hover", [](Engine::ECS::Entity entity) {
     auto* color = entity.get_component<Components::Color>();
@@ -270,6 +330,7 @@ void RunGame()
   Engine::SceneManager::register_scene<BehaviourState>("BehaviourState");
   Engine::SceneManager::register_scene<GameplayState>("GameplayState");
   Engine::SceneManager::register_scene<PauseState>("PauseState");
+  Engine::SceneManager::register_scene<VictoryState>("VictoryState");
   Engine::SceneManager::register_scene<OptionsState>("OptionsState");
   Engine::SceneManager::register_scene<AnimatorTestState>("AnimatorTestState");
 

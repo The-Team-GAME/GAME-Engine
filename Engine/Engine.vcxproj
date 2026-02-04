@@ -222,6 +222,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClCompile Include="GameLogic\GameStates\OptionsState.cpp" />
     <ClCompile Include="GameLogic\GameStates\PauseState.cpp" />
     <ClCompile Include="GameLogic\GameStates\StressTestState.cpp" />
+    <ClCompile Include="GameLogic\GameStates\VictoryState.cpp" />
     <ClCompile Include="GameLogic\WinMain.cpp" />
     <ClCompile Include="Engine\Lua\LuaManager.cpp" />
     <ClCompile Include="Engine\Systems\LogicSystem.cpp" />
@@ -311,6 +312,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClInclude Include="GameLogic\GameStates\PhysicsTestState.h" />
     <ClInclude Include="GameLogic\GameStates\PrefabsState.h" />
     <ClInclude Include="GameLogic\GameStates\TimelineState.h" />
+    <ClInclude Include="GameLogic\GameStates\VictoryState.h" />
     <ClInclude Include="GameLogic\Reflection\ImGuiHelpers.h" />
     <ClInclude Include="Engine\Reflection\JsonHelpers.h" />
     <ClInclude Include="Engine\GUI\CameraPanel.h" />
