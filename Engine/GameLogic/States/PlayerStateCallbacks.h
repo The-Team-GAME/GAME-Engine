@@ -32,7 +32,7 @@ namespace PlayerStateCallbacks
   // ========================================================================
   void take_input(ECS::Entity entity)
   {
-    Components::StateMachine *state_machine = entity.get_component<Components::StateMachine>();
+    Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
     Components::RigidBody* player_rigid = entity.get_component<Components::RigidBody>();
     Components::Player* player_comp = entity.get_component<Components::Player>();
     Components::Flip* flip = entity.get_component<Components::Flip>();
@@ -55,13 +55,13 @@ namespace PlayerStateCallbacks
     }
 
     if (Input::is_held(KeyCode::Space)
-        && player_rigid->on_ground
-        && !player_rigid->is_jumping)
+      && player_rigid->on_ground
+      && !player_rigid->is_jumping)
     {
       state_machine->change_state("Jumping");
       return;
     }
-    
+
     if (Input::is_held(KeyCode::D) || Input::is_held(KeyCode::A))
     {
       if (Input::is_held(KeyCode::A)) //left
@@ -85,9 +85,9 @@ namespace PlayerStateCallbacks
     {
       state_machine->change_state("Idle");
     }
-    
+
   }
-   
+
 #pragma region idle state;
   // ========================================================================
   // Idle State Callbacks
@@ -114,7 +114,7 @@ namespace PlayerStateCallbacks
 
   }
 
-  inline void walking_on_update(Engine::ECS::Entity entity) 
+  inline void walking_on_update(Engine::ECS::Entity entity)
   {
     // we set an exit criteria for the walking state instead of reseting it every frame as the animation sequence needs the state to be constant for this to work
     if (!Input::is_held(KeyCode::A) && !Input::is_held(KeyCode::D))
@@ -136,7 +136,7 @@ namespace PlayerStateCallbacks
   // Jumping State Callbacks
   // ========================================================================
 
-  inline void jumping_on_enter(Engine::ECS::Entity entity) 
+  inline void jumping_on_enter(Engine::ECS::Entity entity)
   {
     Log::info("Player: Entered Jumping state");
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
@@ -188,7 +188,7 @@ namespace PlayerStateCallbacks
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
     player_comp->dash_timer = player_comp->dash_duration;
-    
+
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
     rigid->use_gravity = false;
@@ -301,7 +301,7 @@ namespace PlayerStateCallbacks
     if (!animation) return;
 
     // Check if player pressed attack again during this combo window
-    if (Engine::Input::is_pressed(Engine::KeyCode::F) && !animation->has_ended()) {
+    if (Engine::Input::is_pressed(Engine::KeyCode::J) && !animation->has_ended()) {
       // Queue up next attack
       if (animation->get_current_frame_index() >= 3) { // Allow combo after frame 3
         state_machine->change_state("Attack2");
@@ -393,7 +393,7 @@ namespace PlayerStateCallbacks
     if (!animation) return;
 
     // Check if player pressed attack again during this combo window
-    if (Engine::Input::is_pressed(Engine::KeyCode::F) && !animation->has_ended()) {
+    if (Engine::Input::is_pressed(Engine::KeyCode::J) && !animation->has_ended()) {
       // Allow combo after frame 1 of this attack
       if (animation->get_current_frame_index() >= 1) {
         state_machine->change_state("Attack3");
