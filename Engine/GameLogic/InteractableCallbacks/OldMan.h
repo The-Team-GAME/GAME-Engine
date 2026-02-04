@@ -28,16 +28,16 @@ namespace OldManCallbacks
     dialogue_bg_id = dialogue_bg.get_id();
 
     // Create NPC portrait (NPCOldman.png) - bottom right of screen
-    auto npc_portrait = Engine::ECS::create_entity()  // 318, 317
-      .add_component<Components::Transform2D>(cam_x + 550.0f, cam_y + 300.0f, 0.0f, 320.0f, 320.0f)
+    auto npc_portrait = Engine::ECS::create_entity()
+      .add_component<Components::Transform2D>(cam_x + 509.0f, cam_y + 173.0f, 0.0f, 320.0f, 320.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/NPCOldman.png"))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_to_layer("main_menu_5");
     npc_portrait_id = npc_portrait.get_id();
 
     // Create dialogue text - bottom of screen
-    auto dialogue_text = Engine::ECS::create_entity()// 807, 769
-      .add_component<Components::Transform2D>(cam_x - 100.0f, cam_y + 300.0f, 0.0f, 631.0f, 166.0f)
+    auto dialogue_text = Engine::ECS::create_entity()
+      .add_component<Components::Transform2D>(cam_x - 177.0f, cam_y + 270.0f, 0.0f, 631.0f, 166.0f)
       .add_component<Components::Font>(Engine::Resources::load_font("fonts/FiveFontsatFreddy's-Regular.ttf", 48))
       .add_component<Components::Text>("Its time to retrieve your homework boy! Reach the end of the station and take down the big monkey FOR YOUR GPA!", 0.5f)
       .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 1.0f)
