@@ -25,6 +25,7 @@
 #include <sstream>
 #include <unordered_map>
 #include <map>
+#include <algorithm>
 #include "../Components/SpatialComponents.h"
 #include "../Components/UtilityComponents.h"
 #include "../Components/HierarchyComponents.h"
@@ -34,6 +35,7 @@
 #include "../UndoManager/UndoManager.h"
 #include "../InputManager.h"
 #include "../ProjectSaveManager.h"
+#include "../LevelManager.h"
 
 namespace {
   // Shared state for entity selection
@@ -41,12 +43,12 @@ namespace {
   bool selection_initialized = false;
 
   enum class EntityViewMode {
-    Flat,
+    Hierarchy,
     Layer,
-    Hierarchy
+    Flat
   };
 
-  EntityViewMode current_view_mode = EntityViewMode::Flat;
+  EntityViewMode current_view_mode = EntityViewMode::Hierarchy;
 
   // Event listener to sync selection from other sources (like Gizmo system)
   void init_selection_listener() {
@@ -61,7 +63,7 @@ namespace {
   }
 
   // Helper to render a single entity node in the tree
-  void render_entity_node(Engine::ECS::Entity& entity, bool is_leaf = true) {
+  void render_entity_node(Engine::ECS::Entity entity, bool is_leaf = true) {
     if (!entity.is_valid()) return;
 
     // Build entity label
@@ -77,10 +79,10 @@ namespace {
       auto* level_comp = entity.get_component<Components::Level>();
       entity_label += " (Level: " + level_comp->level_path + ")";
     }
-    
+
     // Check if this entity is selected
     bool is_selected = (selected_entity_id == static_cast<s32>(entity.get_id()));
-    
+
     ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
     if (is_selected) {
       node_flags |= ImGuiTreeNodeFlags_Selected;
@@ -127,7 +129,83 @@ namespace {
     // For now, this helper assumes LEAF behavior if is_leaf is true.
     // If is_leaf is false, the caller MUST call TreePop() if node_open is true.
   }
-  
+
+  // Payload type for entity drag-drop
+  const char* ENTITY_DRAG_DROP_TYPE = "ENTITY_HIERARCHY";
+
+  // Helper function to check if an entity is an ancestor of another (to prevent circular parenting)
+  bool is_ancestor_of(Engine::ECS::EntityID potential_ancestor, Engine::ECS::EntityID entity_id) {
+    Engine::ECS::Entity current = Engine::ECS::get_entity(entity_id);
+    while (current.is_valid() && current.has_component<Components::Parent>()) {
+      auto* parent_comp = current.get_component<Components::Parent>();
+      if (parent_comp->parent_id == Engine::ECS::INVALID_ENTITY) break;
+      if (parent_comp->parent_id == potential_ancestor) return true;
+      current = Engine::ECS::get_entity(parent_comp->parent_id);
+    }
+    return false;
+  }
+
+  // Helper function to set parent of an entity
+  void set_entity_parent(Engine::ECS::Entity child, Engine::ECS::EntityID new_parent_id) {
+    if (!child.is_valid()) return;
+
+    // Get old parent ID if exists
+    Engine::ECS::EntityID old_parent_id = Engine::ECS::INVALID_ENTITY;
+    if (child.has_component<Components::Parent>()) {
+      old_parent_id = child.get_component<Components::Parent>()->parent_id;
+    }
+
+    // Skip if same parent
+    if (old_parent_id == new_parent_id) return;
+
+    // Remove from old parent's Children component if exists
+    if (old_parent_id != Engine::ECS::INVALID_ENTITY) {
+      Engine::ECS::Entity old_parent = Engine::ECS::get_entity(old_parent_id);
+      if (old_parent.is_valid() && old_parent.has_component<Components::Children>()) {
+        auto* children_comp = old_parent.get_component<Components::Children>();
+        auto& child_ids = children_comp->child_ids;
+        child_ids.erase(std::remove(child_ids.begin(), child_ids.end(), child.get_id()), child_ids.end());
+      }
+    }
+
+    // Update or add Parent component
+    if (new_parent_id == Engine::ECS::INVALID_ENTITY) {
+      // Unparenting - remove Parent component
+      if (child.has_component<Components::Parent>()) {
+        child.remove_component<Components::Parent>();
+      }
+    }
+    else {
+      // Setting new parent
+      if (child.has_component<Components::Parent>()) {
+        auto* parent_comp = child.get_component<Components::Parent>();
+        parent_comp->parent_id = new_parent_id;
+        parent_comp->offset_initialized = false; // Let HierarchySystem recalculate offset
+      }
+      else {
+        child.add_component<Components::Parent>(new_parent_id);
+      }
+
+      // Add to new parent's Children component
+      Engine::ECS::Entity new_parent = Engine::ECS::get_entity(new_parent_id);
+      if (new_parent.is_valid()) {
+        if (!new_parent.has_component<Components::Children>()) {
+          new_parent.add_component<Components::Children>();
+        }
+        auto* children_comp = new_parent.get_component<Components::Children>();
+        // Only add if not already in list
+        if (std::find(children_comp->child_ids.begin(), children_comp->child_ids.end(), child.get_id()) == children_comp->child_ids.end()) {
+          children_comp->child_ids.push_back(child.get_id());
+        }
+      }
+    }
+
+    // Mark level as dirty
+    Engine::ProjectSaveManager::set_dirty(
+      Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path())
+    );
+  }
+
   // Recursive function to render hierarchy
   void render_hierarchy_node(Engine::ECS::Entity entity, const std::unordered_map<Engine::ECS::EntityID, std::vector<Engine::ECS::Entity>>& parent_to_children) {
     auto it = parent_to_children.find(entity.get_id());
@@ -144,7 +222,7 @@ namespace {
 
     // Check if this entity is selected
     bool is_selected = (selected_entity_id == static_cast<s32>(entity.get_id()));
-    
+
     ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
     if (is_selected) {
       node_flags |= ImGuiTreeNodeFlags_Selected;
@@ -164,9 +242,33 @@ namespace {
     );
 
     // Handle selection
-    if (ImGui::IsItemClicked()) {
+    if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
       selected_entity_id = static_cast<s32>(entity.get_id());
       Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(entity.get_id());
+    }
+
+    // Drag source - allow dragging this entity
+    if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
+      Engine::ECS::EntityID entity_id = entity.get_id();
+      ImGui::SetDragDropPayload(ENTITY_DRAG_DROP_TYPE, &entity_id, sizeof(Engine::ECS::EntityID));
+      ImGui::Text("Move: %s", entity_label.c_str());
+      ImGui::EndDragDropSource();
+    }
+
+    // Drop target - allow dropping other entities onto this one to parent them
+    if (ImGui::BeginDragDropTarget()) {
+      if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(ENTITY_DRAG_DROP_TYPE)) {
+        Engine::ECS::EntityID dropped_entity_id = *(const Engine::ECS::EntityID*)payload->Data;
+        
+        // Don't allow parenting to self
+        if (dropped_entity_id != entity.get_id()) {
+          // Check for circular parenting (don't allow parenting to a descendant)
+          if (!is_ancestor_of(dropped_entity_id, entity.get_id())) {
+            set_entity_parent(Engine::ECS::get_entity(dropped_entity_id), entity.get_id());
+          }
+        }
+      }
+      ImGui::EndDragDropTarget();
     }
 
     // Right-click context menu
@@ -183,6 +285,15 @@ namespace {
         selected_entity_id = static_cast<s32>(cloned.get_id());
         Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(cloned.get_id());
       }
+      // Add unparent option if entity has a parent
+      if (entity.has_component<Components::Parent>()) {
+        auto* parent_comp = entity.get_component<Components::Parent>();
+        if (parent_comp->parent_id != Engine::ECS::INVALID_ENTITY) {
+          if (ImGui::MenuItem("Unparent")) {
+            set_entity_parent(entity, Engine::ECS::INVALID_ENTITY);
+          }
+        }
+      }
       ImGui::EndPopup();
     }
 
@@ -195,7 +306,7 @@ namespace {
   }
 }
 
-void EntityEditorPanelHelpers::render_component_tree(const std::string& component_name, Engine::ECS::Entity& entity, Engine::ECS::IComponentArray* array)
+void EntityEditorPanelHelpers::render_component_tree(const std::string& component_name, Engine::ECS::Entity entity, Engine::ECS::IComponentArray* array)
 {
   // Render component tree node directly (namespace grouping handled by caller)
   if (ImGui::TreeNode(component_name.c_str())) {
@@ -283,7 +394,7 @@ void EntityEditorPanelHelpers::render_component_tree(const std::string& componen
 void EntityEditorPanel()
 {
   static char entitySearchBuffer[256] = "";
-  
+
   // Initialize event listener on first call
   init_selection_listener();
 
@@ -293,11 +404,11 @@ void EntityEditorPanel()
   if (ImGui::CollapsingHeader("Entities", ImGuiTreeNodeFlags_DefaultOpen))
   {
     // View Mode Selector (Radio Buttons)
-    if (ImGui::RadioButton("Flat", current_view_mode == EntityViewMode::Flat)) current_view_mode = EntityViewMode::Flat;
+    if (ImGui::RadioButton("Hierarchy", current_view_mode == EntityViewMode::Hierarchy)) current_view_mode = EntityViewMode::Hierarchy;
     ImGui::SameLine();
     if (ImGui::RadioButton("Layer", current_view_mode == EntityViewMode::Layer)) current_view_mode = EntityViewMode::Layer;
     ImGui::SameLine();
-    if (ImGui::RadioButton("Hierarchy", current_view_mode == EntityViewMode::Hierarchy)) current_view_mode = EntityViewMode::Hierarchy;
+    if (ImGui::RadioButton("Flat", current_view_mode == EntityViewMode::Flat)) current_view_mode = EntityViewMode::Flat;
 
     ImGui::Separator();
 
@@ -373,8 +484,8 @@ void EntityEditorPanel()
 
         if (entity.has_component<Components::Parent>()) {
           auto* parent_comp = entity.get_component<Components::Parent>();
-          if (parent_comp->parent_id.is_valid()) {
-            parent_to_children[parent_comp->parent_id.get_id()].push_back(entity);
+          if (parent_comp->parent_id != Engine::ECS::INVALID_ENTITY) {
+            parent_to_children[parent_comp->parent_id].push_back(entity);
           }
           else {
             // Parent invalid, treat as root
@@ -390,6 +501,19 @@ void EntityEditorPanel()
       // Render roots (and recursively children)
       for (auto& entity : root_entities) {
         render_hierarchy_node(entity, parent_to_children);
+      }
+
+      // Fill remaining space with an invisible button to catch drops for unparenting
+      ImVec2 avail = ImGui::GetContentRegionAvail();
+      if (avail.y > 0) {
+        ImGui::InvisibleButton("##unparent_drop_zone", ImVec2(-1, avail.y));
+        if (ImGui::BeginDragDropTarget()) {
+          if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(ENTITY_DRAG_DROP_TYPE)) {
+            Engine::ECS::EntityID dropped_entity_id = *(const Engine::ECS::EntityID*)payload->Data;
+            set_entity_parent(Engine::ECS::get_entity(dropped_entity_id), Engine::ECS::INVALID_ENTITY);
+          }
+          ImGui::EndDragDropTarget();
+        }
       }
     }
     else {
@@ -788,7 +912,7 @@ void EntityEditorPanel()
 
           // Load existing prefab to get its UUID
           Engine::ECS::Prefab existing_prefab = Engine::FileIO::deserialize_prefab_from_json_file(full_path);
-          
+
           if (existing_prefab.is_valid()) {
             std::string preserved_uuid = existing_prefab.get_impl()->get_prefab_id();
 

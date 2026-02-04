@@ -1,3 +1,16 @@
+//-----------------------------------------------------------------------------------
+// file:    ProjectSaveManager.cpp
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements the ProjectSaveManager, which handles the tracking and saving of dirty states for project settings, levels, and prefabs.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "ProjectSaveManager.h"
 #include "Logger.h"
 #include "FileIO/Settings.h"
@@ -5,6 +18,8 @@
 #include "Path.h"
 #include "Resources.h"
 #include "ECS/ECS.h"
+#include "LevelTabManager.h"
+#include "LevelManager.h"
 #include <vector>
 #include <algorithm>
 
@@ -18,6 +33,13 @@ void Engine::ProjectSaveManager::set_dirty(DirtyState state)
   if (!check_dirty(state)) {
     dirty_states.push_back(std::move(state));
   }
+
+#ifndef GAME_BUILD
+  // Also mark the active level tab as dirty if it's a level dirty state
+  if (std::holds_alternative<DirtyStates::Level>(state)) {
+    LevelTabManager::mark_active_dirty();
+  }
+#endif
 }
 
 bool Engine::ProjectSaveManager::check_dirty(const DirtyState& state)
@@ -124,13 +146,13 @@ void Engine::ProjectSaveManager::save_all_dirty()
         }
 
         // Generate level from current world state
-        Engine::Level level = Engine::Level::from_world();
+        Engine::EntityList entities = Engine::LevelManager::capture_world_entities();
 
         // Get relative path for saving
         std::string relative_path = Engine::Resources::get_relative_path(level_path);
 
         // Save the level
-        if (Engine::Resources::save_level(relative_path, level, true)) {
+        if (Engine::Resources::save_level(relative_path, entities, true)) {
           Log::info("Level saved successfully: {}", relative_path);
         }
         else {

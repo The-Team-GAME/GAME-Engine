@@ -40,7 +40,6 @@
     <ClCompile Include="Engine\Time.cpp" />
     <ClCompile Include="Engine\GUI\Timeline.cpp" />
     <ClCompile Include="Engine\Math\Vector2D.cpp" />
-    <ClCompile Include="Engine\StateManager.cpp" />
     <ClCompile Include="Engine\Math\Vector3D.cpp" />
     <ClCompile Include="Engine\Math\Vector4D.cpp" />
     <ClCompile Include="Engine\WindowManager.cpp" />
@@ -82,11 +81,9 @@
     <ClCompile Include="Engine\Time.cpp" />
     <ClCompile Include="Engine\GUI\Timeline.cpp" />
     <ClCompile Include="Engine\Math\Vector2D.cpp" />
-    <ClCompile Include="Engine\StateManager.cpp" />
     <ClCompile Include="Engine\Math\Vector3D.cpp" />
     <ClCompile Include="Engine\Math\Vector4D.cpp" />
     <ClCompile Include="Engine\WindowManager.cpp" />
-    <ClCompile Include="GameLogic\GameStates\RectPainterState.cpp" />
     <ClCompile Include="GameLogic\WinMain.cpp" />
     <ClCompile Include="Engine\Lua\LuaManager.cpp" />
     <ClCompile Include="Engine\Lua\GameAPI.cpp" />
@@ -95,7 +92,6 @@
     <ClCompile Include="GameLogic\GameStates\StressTestState.cpp" />
     <ClCompile Include="Engine\Systems\LogicSystem.cpp" />
     <ClCompile Include="Engine\GUI\ResourceExplorerPanel.cpp" />
-    <ClCompile Include="Engine\Level.cpp" />
     <ClCompile Include="Engine\ProjectSaveManager.cpp" />
     <ClCompile Include="Engine\TIlemapManager.cpp" />
     <ClCompile Include="Engine\UndoManager\UndoManager.cpp" />
@@ -104,6 +100,15 @@
     <ClCompile Include="Engine\Random.cpp" />
     <ClCompile Include="Engine\GUI\widgets\ColliderEditorWidget.cpp" />
     <ClCompile Include="GameLogic\GameStates\PauseState.cpp" />
+    <ClCompile Include="Engine\GUI\SelectiveLevelSavePanel.cpp" />
+    <ClCompile Include="GameLogic\GameStates\OptionsState.cpp" />
+    <ClCompile Include="Engine\FileIO\ColliderMeshFileIO.cpp" />
+    <ClCompile Include="Engine\LevelTabManager.cpp" />
+    <ClCompile Include="Engine\LevelManager.cpp" />
+    <ClCompile Include="Engine\Systems\PostPhysicsSystem.cpp" />
+    <ClCompile Include="Engine\GUI\TransformAnimationEditorPanel.cpp" />
+    <ClCompile Include="Engine\Audio\AudioSystem.cpp" />
+    <ClCompile Include="Engine\Audio\AudioSystemExample.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -178,7 +183,6 @@
     <ClInclude Include="Engine\GUI\Timeline.h" />
     <ClInclude Include="Engine\Math\Vector2D.h" />
     <ClInclude Include="GameLogic\GUI\StateChooser.h" />
-    <ClInclude Include="Engine\StateManager.h" />
     <ClInclude Include="Engine\TypeDef.h" />
     <ClInclude Include="Engine\Math\Vector3D.h" />
     <ClInclude Include="Engine\Math\Vector4D.h" />
@@ -208,7 +212,6 @@
     <ClInclude Include="Engine\GUI\ResourceExplorerPanel.h" />
     <ClInclude Include="Engine\ImGuiThemes.h" />
     <ClInclude Include="Engine\KeyCodes.h" />
-    <ClInclude Include="Engine\Level.h" />
     <ClInclude Include="Engine\ProjectSaveManager.h" />
     <ClInclude Include="GameLogic\GameStates\BehaviourState.h" />
     <ClInclude Include="Engine\TIlemapManager.h" />
@@ -235,6 +238,17 @@
     <ClInclude Include="GameLogic\Systems\TrailSystem.h" />
     <ClInclude Include="GameLogic\GameStates\PauseState.h" />
     <ClInclude Include="GameLogic\GameStates\GameplayState.h" />
+    <ClInclude Include="Engine\GUI\SelectiveLevelSavePanel.h" />
+    <ClInclude Include="Engine\Lua\LuaComponentBindings.h" />
+    <ClInclude Include="GameLogic\GameStates\OptionsState.h" />
+    <ClInclude Include="Engine\Systems\ChatBoxSystem.h" />
+    <ClInclude Include="Engine\FileIO\ColliderMeshFileIO.h" />
+    <ClInclude Include="Engine\LevelTabManager.h" />
+    <ClInclude Include="Engine\LevelManager.h" />
+    <ClInclude Include="Engine\Systems\PostPhysicsSystem.h" />
+    <ClInclude Include="Engine\GUI\TransformAnimationEditorPanel.h" />
+    <ClInclude Include="Engine\Audio\AudioSystem.h" />
+    <ClInclude Include="Engine\Audio\GameAudio.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -293,14 +307,12 @@
     <ClInclude Include="Engine\Precompiled.h" />
     <ClInclude Include="Engine\Graphics\Renderer.h" />
     <ClInclude Include="Engine\Systems\PhysicsSystem.h" />
-    <ClInclude Include="GameLogic\GameStates\RectPainterState.h" />
     <ClInclude Include="GameLogic\GameStates\Rubric2500ParticlesState.h" />
     <ClInclude Include="Engine\FileHandler.h" />
     <ClInclude Include="Engine\Time.h" />
     <ClInclude Include="Engine\GUI\Timeline.h" />
     <ClInclude Include="Engine\Math\Vector2D.h" />
     <ClInclude Include="GameLogic\GUI\StateChooser.h" />
-    <ClInclude Include="Engine\StateManager.h" />
     <ClInclude Include="Engine\TypeDef.h" />
     <ClInclude Include="Engine\Math\Vector3D.h" />
     <ClInclude Include="Engine\Math\Vector4D.h" />

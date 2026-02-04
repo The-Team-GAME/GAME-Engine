@@ -76,7 +76,7 @@ namespace Engine {
 
       static void load_values();
 
-      void update_entity(Engine::ECS::Entity& entity) override;
+      void update_entity(Engine::ECS::Entity entity) override;
 
       static void take_input(ECS::Entity player);
 

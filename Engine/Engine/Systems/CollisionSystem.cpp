@@ -15,6 +15,7 @@
 //-----------------------------------------------------------------------------------
 #include "CollisionSystem.h"
 #include "PhysicsSystem.h"
+#include "../Math/Math.h"
 #include "../Perf.h"
 #include "../FileIO/Settings.h"
 #include "../Graphics/Renderer.h" // for picturing the quad tree
@@ -28,7 +29,8 @@ using settings = Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>
 // Need to define cuz we made spatial tree static so we could make a static function to call its draw function in another system
 //std::unique_ptr<col2D::QuadTree> col2D::spatial_tree = nullptr;
 std::unique_ptr<col2D::QuadTreeSAT> col2D::spatial_tree_sat = nullptr;
-
+namespace {
+}
 col2D::Collision2DSystem() {
   require_components<Components::Transform2D, Components::RigidBody, Components::BoxCollider>();
 
@@ -81,32 +83,23 @@ void col2D::update()
 
     // This is because the entity can collide with more than one hard surface (floor and wall corner) in one frame, so we have to identify them
     Vec2D best_ground_normal;
-    f32 best_ground_penetration = 0;
-    bool found_ground = false;
+    //f32 best_ground_penetration = 0;
 
     // Check collision only with nearby entities
-    for (ECS::Entity& other : nearby)
+    for (ECS::Entity other : nearby)
     {
-
 #pragma region collision checks
       // Skip self-collision
       if (entity == other) { continue; }
-
-      //Components::RigidBody* other_rigid = other.get_component<Components::RigidBody>();
       Components::BoxCollider* other_box = other.get_component<Components::BoxCollider>();
-
       // Get other entity's layers
       ECS::LayerSignature other_layers = other.get_layers();
-
       // Check if these entities' layers should collide using the global collision matrix
       if (!ECS::LayerRegistry::should_layers_collide(entity_layers, other_layers))
-      {
-        continue;
-      }
+      { continue; }
 
       // Check if both entities intersect
       CollisionResult collision = check_collision(*box, *other_box);
-
       if (!collision.collided)
       {
         // skip other_entity if they dont collide
@@ -122,66 +115,108 @@ void col2D::update()
       if (!box->resolve_collisions && other_box->resolve_collisions)
       {
         Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
-
+        Components::RigidBody* other_rigid = other.get_component<Components::RigidBody>();
         // we add the MTV here because it is not the penetration vector but rather how far the object needs to be pushed out to resolve the collision
-        
-        // Apply Slop (Threshold)
-        // We allow a small amount of penetration to prevent jittering when gravity fights collision resolution
-        const f32 COLLISION_SLOP = 0.5f; // Allow 0.5 pixels of penetration
-        f32 penetration = collision.get_penetration();
-        
-        // Only resolve if penetration is deeper than the slop
-        if (penetration > COLLISION_SLOP)
+        // Basically we snapping the object out of the collided surface
+        if (collision.get_penetration() > 0.5f)
         {
-          // Calculate the correction vector (push out only the amount exceeding the slop)
-          // We want to push out by (penetration - slop), not the full penetration
-          // This keeps the object slightly "resting" in the surface, preventing the 1-frame jitter cycle
-          Vec2D correction = collision.get_normalise_mtv() * (penetration - COLLISION_SLOP);
-          xform->position += correction;
+          xform->position += collision.mtv * 0.95f;
         }
 
-        // Check if this is a ground collision (MTV pointing mostly upward)
-        Vec2D normal = normalise_vector(collision.mtv);
-        if (normal.y < -0.f) // Pointing upward (remember: -y is up)
+        // The new plan:
+        // 1. After collision i'm gona cancel out the velocity of the object parallel to the direction of the collision as a way to kill the momenthum of the object
+        // 2. After the momentum is killed, i will apply a normal force to specifically cancel out the force from gravity in the next frame
+        // 3. After that, i will calculate and apply friction to the object to prevent it from sliding across surfaces
+
+
+        /*======================================
+        / Killing the moving object's momemtum /
+        ======================================*/
+        // Since the mtv can also be seen as the normal, i can do this
+        Vec2D normal_dir_vtr = collision.get_normalise_mtv();
+
+        // This is a scalar value
+        f32 speed_into_surface = dot_product(rigid->velocity, normal_dir_vtr);
+
+        if (speed_into_surface < 0) // -ve dot product means pointing diff direction
         {
-          // For ground detection, we still use the full penetration to find the "best" ground
-          if (!found_ground || penetration > best_ground_penetration)
-          {
-            best_ground_normal = normal;
-            best_ground_penetration = penetration;
-            found_ground = true;
-          }
+          rigid->velocity -= normal_dir_vtr * speed_into_surface;
         }
-        f32 combined_static = box->static_friction * other_box->static_friction; // not used yet
-        f32 combined_kinetic = box->kinetic_friction * other_box->kinetic_friction;
-        phy2D::zero_normal_velocity(*rigid, collision);
-        phy2D::apply_surface_friction(*rigid, collision, combined_static, combined_kinetic);
+        //====================================//
+        
+        
+        // Ok so the part above works now but we need another way to check if the player/ entity is on the ground / a jumpable surface
+        // Behold the power of dot product (all the math need to re sketch out to explain cuz my whiteboard has limited space KEKW)
 
-        // Gona calculate the angle of the slope that the player last interacted with
-        // Note:: i will not take direction into account as all the values are going to be absolute values
-        if (found_ground)
+        /*====================================
+        / Checking for and applying friction /
+        ====================================*/
+        f32 cos_of_angle_of_slope = dot_product(normal_dir_vtr, Vec2D(0.f, -1.f));
+        if (cos_of_angle_of_slope >= cosf(phy2D::get_slope_radian_threshold()))
         {
-          rigid->last_surface_dir_vector = normalise_vector(rotate(best_ground_normal, -90));
-          if (angle_of_slope(rigid->last_surface_dir_vector) < phy2D::get_slope_angle_limit())
+          rigid->on_ground = true;
+          
+          /*==========================
+          / Calculating Normal Force /
+          ==========================*/
+          // Normal = Mass * Gravity * Cos(angle of normal) 
+          f32 normal_magnitude = rigid->gravity.get_magnitude() * rigid->mass * cos_of_angle_of_slope;
+          Vec2D normal_force = normal_dir_vtr * normal_magnitude;
+
+
+          f32 tangential_weight = rigid->gravity.get_magnitude() * rigid->mass * sinf(acosf(cos_of_angle_of_slope));
+
+          // TAKE NOTE: At this point, we have the normal force as well as the weight, and all that there is left would be the friction to be calculated
+
+          /*================================================
+          / Determining the direction vector of the entity /
+          ================================================*/
+          Vec2D tangent = normalise_vector(collision.get_tangent());
+          tangent = dot_product(rigid->velocity, tangent) < 0 ? -tangent : tangent;
+
+          // This is how much friction can be generated in this frame
+          f32 friction_experienced = normal_magnitude * (rigid->kinetic_coefficient * other_rigid->kinetic_coefficient) * 2.f;
+
+          /*====================================================================================
+          / Calculating the friction force needed to immediately stop the entity in this frame /
+          ====================================================================================*/
+          f32 friction_acc = rigid->velocity.get_magnitude() / Time::get_fixed_dt();
+          f32 required_friction_force_to_stop = friction_acc * rigid->mass + tangential_weight;
+
+          f32 velocity_along_slope = dot_product(rigid->velocity, tangent);
+          bool nearly_at_rest = fabsf(velocity_along_slope) < 10.0f; // Velocity threshold
+
+          /*std::cout << "friction experienced: " << friction_experienced << std::endl;
+          std::cout << "friction to stop: " << required_friction_force_to_stop << std::endl;*/
+
+          if (nearly_at_rest)// && tangential_weight <= friction_experienced)
           {
-            rigid->on_ground = true;
+            // Static friction can hold the object
+            // Apply friction force to exactly counter the tangential weight
+            rigid->force -= tangent * tangential_weight;
 
-            // Calculate gravity force vector
-            Vec2D gravity_force = phy2D::get_gravity() * rigid->mass;
-            Vec2D surface_tangent = rigid->last_surface_dir_vector;
-
-            // How much does gravity pull ALONG the slope?
-            f32 gravity_along_slope = dot_product(gravity_force, surface_tangent);
-
-            // Only counter it if pulling down slope AND entity nearly stationary
-            if (gravity_along_slope < 0.f)
+            // Also zero out the small remaining velocity to prevent drift
+            rigid->velocity -= tangent * velocity_along_slope;
+            if (rigid->velocity.get_magnitude() < 1.f)
             {
-              // Apply force ALONG the slope that cancels gravity's slope component
-              Vec2D anti_gravity_force = surface_tangent * -gravity_along_slope;
-              phy2D::add_force(*rigid, anti_gravity_force);
+              rigid->velocity.zero();
             }
+            //std::cout << "Coming to a stop \n";
           }
+          else
+          {
+            // Object is sliding - apply kinetic friction opposing motion
+            rigid->force += -tangent * std::min(required_friction_force_to_stop, friction_experienced);
+            rigid->force += normal_force;
+            //if (friction_experienced > required_friction_force_to_stop)
+            //{
+            //  std::cout << "Applying Friction Rquired to stop\n";
+            //}
+            //else { std::cout << "Applying Experienced Friction\n"; }
+          }
+          //std::cout << "current velocity: " << rigid->velocity << std::endl << std::endl;
         }
+        //==================================//
       }
       /*=============================
       / End of Collision Resolution /
@@ -200,7 +235,7 @@ void col2D::update()
   Engine::Perf::stop("Collision Update");
 }
 
-void col2D::update_entity(Engine::ECS::Entity& entity)
+void col2D::update_entity(Engine::ECS::Entity entity)
 {
   Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
   Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
@@ -234,7 +269,7 @@ void col2D::update_entity(Engine::ECS::Entity& entity)
 
 // Helper to get AABB for any collider type (for spatial partitioning)
 // OBB and POLYGON types will use their bounding AABB
-AABB col2D::get_entity_aabb(ECS::Entity& entity)
+AABB col2D::get_entity_aabb(ECS::Entity entity)
 {
   Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
 
@@ -394,7 +429,7 @@ void col2D::QuadTree::clear()
 }
 
 // Inserts an entity into the quad tree
-bool col2D::QuadTree::insert(ECS::Entity& entity)
+bool col2D::QuadTree::insert(ECS::Entity entity)
 {
   Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
   // Check if the entity intersects with this node of the quad tree
@@ -421,7 +456,7 @@ bool col2D::QuadTree::insert(ECS::Entity& entity)
     // Now we split kekw
     this->split();
     std::vector<ECS::Entity> remaining_entities;
-    for (ECS::Entity& existing_entity : entity_vec)
+    for (ECS::Entity existing_entity : entity_vec)
     {
       // Try to insert the existing entities into the child nodes that have been created
       if (!insert_in_child_node(existing_entity))
@@ -452,7 +487,7 @@ bool col2D::QuadTree::insert(ECS::Entity& entity)
 }
 
 // Check if an entity can be fully contained within the current node's boundary
-bool col2D::QuadTree::can_contain(ECS::Entity& entity) const
+bool col2D::QuadTree::can_contain(ECS::Entity entity) const
 {
   Components::BoxCollider* box = entity.get_component<Components::BoxCollider>();
   Vec2D box_min = box->aabb.min();
@@ -467,7 +502,7 @@ bool col2D::QuadTree::can_contain(ECS::Entity& entity) const
 }
 
 // Insert an entity into a child node
-bool col2D::QuadTree::insert_in_child_node(ECS::Entity& entity)
+bool col2D::QuadTree::insert_in_child_node(ECS::Entity entity)
 {
   // Try to find a child that fully contains the rectangle
   for (u32 i{}; i < 4; ++i)
@@ -585,7 +620,7 @@ void col2D::QuadTreeSAT::split()
 }
 
 // Check if entity's AABB can be contained in this node
-bool col2D::QuadTreeSAT::can_contain_entity(ECS::Entity& entity) const
+bool col2D::QuadTreeSAT::can_contain_entity(ECS::Entity entity) const
 {
   AABB aabb = get_entity_aabb(entity);
   Vec2D aabb_min = aabb.min();
@@ -617,7 +652,7 @@ void col2D::QuadTreeSAT::clear()
 }
 
 // Same implementation as QuadTree
-bool col2D::QuadTreeSAT::insert(ECS::Entity& entity)
+bool col2D::QuadTreeSAT::insert(ECS::Entity entity)
 {
   // Check if the entity intersects with this node of the quad tree
   // We need to use the get_entity_aabb function here because not every box collider uses aabb anymore
@@ -645,7 +680,7 @@ bool col2D::QuadTreeSAT::insert(ECS::Entity& entity)
     // Now we split kekw
     this->split();
     std::vector<ECS::Entity> remaining_entities;
-    for (ECS::Entity& existing_entity : entity_vec)
+    for (ECS::Entity existing_entity : entity_vec)
     {
       // Try to insert the existing entities into the child nodes that have been created
       if (!insert_in_child_node(existing_entity))
@@ -676,7 +711,7 @@ bool col2D::QuadTreeSAT::insert(ECS::Entity& entity)
 }
 
 // Same implementation as QuadTree
-bool col2D::QuadTreeSAT::insert_in_child_node(ECS::Entity& entity)
+bool col2D::QuadTreeSAT::insert_in_child_node(ECS::Entity entity)
 {
   // Try to find a child that fully contains the rectangle
   for (u32 i{}; i < 4; ++i)

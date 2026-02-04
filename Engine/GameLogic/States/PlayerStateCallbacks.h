@@ -2,10 +2,13 @@
 // file:    PlayerStateCallbacks.h
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (100%)
+// author:  Chew Shee Yang (50%)
 //          Primary author
-//
+//          Cheng Ming Xian (50%)
+//          Co-Author
+// 
 // email:   chew.s@digipen.edu
+//          c.mingxian@digipen.edu
 //
 // brief:   Player state machine callback implementations (serializable)
 //
@@ -16,167 +19,222 @@
 #include "../../Engine/MonkeyEngine.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/HeartrateComponent.h"
-
+#include <assert.h>
+namespace {
+  f32 timer;
+  f32 dash_cooldown;
+  f32 terminal_vel_placeholder;
+}
 namespace PlayerStateCallbacks
 {
   // ========================================================================
-  // Idle State Callbacks
+  // Taking Updates in to handle the states
   // ========================================================================
+  void take_input(ECS::Entity entity)
+  {
+    Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
+    Components::RigidBody* player_rigid = entity.get_component<Components::RigidBody>();
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    Components::Flip* flip = entity.get_component<Components::Flip>();
 
-  inline void idle_on_enter(Engine::ECS::Entity& entity) {
-    //auto* rigid = entity.get_component<Components::RigidBody>();
-    //if (rigid) rigid->velocity.x = 0.f;
-    Log::info("Player: Entered Idle state");
-  }
-
-  inline void idle_on_update(Engine::ECS::Entity& entity) {
-    auto* state_machine = entity.get_component<Components::StateMachine>();
-
-    // Check for horizontal movement input (A/D only for sidescrolling)
-    if (Engine::Input::is_held(Engine::KeyCode::A) ||
-      Engine::Input::is_held(Engine::KeyCode::D))
-    {
-      state_machine->change_state("Walking");
-    }
-
-    // Check for jump input
-    if (Engine::Input::is_pressed(Engine::KeyCode::Space))
-    {
-      auto* rigid = entity.get_component<Components::RigidBody>();
-      // Only jump if on ground
-      if (rigid && rigid->on_ground) {
-        state_machine->change_state("Jumping");
-      }
-    }
+    // Handling cooldowns
+    if (dash_cooldown > 0) { dash_cooldown -= Time::get_fixed_dt(); }
 
     // Check for attack input
     if (Engine::Input::is_pressed(Engine::KeyCode::J))
     {
       state_machine->change_state("Attack1");
-    }
-  }
-
-  // ========================================================================
-  // Walking State Callbacks
-  // ========================================================================
-
-  inline void walking_on_enter([[maybe_unused]] Engine::ECS::Entity& entity) {
-    Log::info("Player: Entered Walking state");
-  }
-
-  inline void walking_on_update(Engine::ECS::Entity& entity) {
-    auto* rigid = entity.get_component<Components::RigidBody>();
-    auto* state_machine = entity.get_component<Components::StateMachine>();
-    auto* flip = entity.get_component<Components::Flip>();
-    auto* player_comp = entity.get_component<Components::Player>();
-
-    if (!player_comp) return;
-
-    rigid->velocity.x = 0.f;
-    // Don't touch velocity.y - let gravity handle it
-
-    // Horizontal movement only (sidescrolling)
-    if (Engine::Input::is_held(Engine::KeyCode::A)) {
-      rigid->velocity.x = -player_comp->walk_speed;
-      if (flip) flip->value.x = -1.0f; // Face left
-    }
-    if (Engine::Input::is_held(Engine::KeyCode::D)) {
-      rigid->velocity.x = player_comp->walk_speed;
-      if (flip) flip->value.x = 1.0f; // Face right
+      return;
     }
 
-    // Return to idle if no horizontal input
-    if (!Engine::Input::is_held(Engine::KeyCode::A) &&
-      !Engine::Input::is_held(Engine::KeyCode::D))
+    // Check for movement input
+    if (Input::is_held(KeyCode::ShiftLeft) && dash_cooldown <= 0.f)
+    {
+      state_machine->change_state("Dash");
+      return;
+    }
+
+    if (Input::is_held(KeyCode::Space)
+      && player_rigid->on_ground
+      && !player_rigid->is_jumping)
+    {
+      state_machine->change_state("Jumping");
+      return;
+    }
+
+    if (Input::is_held(KeyCode::D) || Input::is_held(KeyCode::A))
+    {
+      if (Input::is_held(KeyCode::A)) //left
+      {
+        flip->value.x = -1.f;
+      }
+      else if (Input::is_held(KeyCode::D)) //right
+      {
+        flip->value.x = 1.f;
+      }
+      player_rigid->force.x += player_comp->walk_speed * flip->value.x;
+      if (state_machine->get_current_state() != "Jumping")
+      {
+        state_machine->change_state("Walking");
+      }
+      return;
+    }
+
+    // If no valid inputs
+    if (state_machine->get_current_state() != "Jumping")
     {
       state_machine->change_state("Idle");
     }
 
-    // Check for jump input
-    if (Engine::Input::is_pressed(Engine::KeyCode::Space))
-    {
-      // Only jump if on ground
-      if (rigid && rigid->on_ground) {
-        state_machine->change_state("Jumping");
-      }
-    }
-
-    // Can attack while moving
-    if (Engine::Input::is_pressed(Engine::KeyCode::J))
-    {
-      state_machine->change_state("Attack1");
-    }
   }
 
-  inline void walking_on_exit(Engine::ECS::Entity& entity) {
-    auto* rigid = entity.get_component<Components::RigidBody>();
-    if (rigid) {
-      rigid->velocity.x = 0.f;
-      // Don't reset velocity.y - let gravity/physics handle it
-    }
+#pragma region idle state;
+  // ========================================================================
+  // Idle State Callbacks
+  // ========================================================================
+
+  inline void idle_on_enter([[maybe_unused]] Engine::ECS::Entity entity) {
+    /* Empty By Design */
+    Log::info("Player: Entered Idle state");
   }
 
+  inline void idle_on_update(Engine::ECS::Entity entity) {
+    take_input(entity);
+  }
+#pragma endregion
+
+#pragma region Walking State
+  // ========================================================================
+  // Walking State Callbacks
+  // ========================================================================
+
+  inline void walking_on_enter([[maybe_unused]] Engine::ECS::Entity entity)
+  {
+    Log::info("Player: Entered Walking state");
+
+  }
+
+  inline void walking_on_update(Engine::ECS::Entity entity)
+  {
+    // we set an exit criteria for the walking state instead of reseting it every frame as the animation sequence needs the state to be constant for this to work
+    if (!Input::is_held(KeyCode::A) && !Input::is_held(KeyCode::D))
+    {
+      Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
+      state_machine->change_state("Idle");
+    }
+    take_input(entity);
+  }
+
+  inline void walking_on_exit([[maybe_unused]] Engine::ECS::Entity entity)
+  {
+    // Empty by design
+  }
+#pragma endregion
+
+#pragma region Jumping State
   // ========================================================================
   // Jumping State Callbacks
   // ========================================================================
 
-  inline void jumping_on_enter(Engine::ECS::Entity& entity) {
-    auto* rigid = entity.get_component<Components::RigidBody>();
-    auto* player_comp = entity.get_component<Components::Player>();
-
-    if (rigid && player_comp) {
-      // Apply jump force
-      rigid->velocity.y = -player_comp->jump_force; // Negative is up
-    }
-
+  inline void jumping_on_enter(Engine::ECS::Entity entity)
+  {
     Log::info("Player: Entered Jumping state");
-  }
-
-  inline void jumping_on_update(Engine::ECS::Entity& entity) {
-    auto* rigid = entity.get_component<Components::RigidBody>();
-    auto* state_machine = entity.get_component<Components::StateMachine>();
-    auto* flip = entity.get_component<Components::Flip>();
-    auto* player_comp = entity.get_component<Components::Player>();
-
-    if (!player_comp) return;
-
-    // Allow horizontal air control
-    rigid->velocity.x = 0.f;
-
-    if (Engine::Input::is_held(Engine::KeyCode::A)) {
-      rigid->velocity.x = -player_comp->air_speed;
-      if (flip) flip->value.x = -1.0f; // Face left
-    }
-    if (Engine::Input::is_held(Engine::KeyCode::D)) {
-      rigid->velocity.x = player_comp->air_speed;
-      if (flip) flip->value.x = 1.0f; // Face right
-    }
-
-    // Return to idle when landing
-    if (rigid && rigid->on_ground) {
-      // Check if moving horizontally
-      if (Engine::Input::is_held(Engine::KeyCode::A) ||
-        Engine::Input::is_held(Engine::KeyCode::D))
-      {
-        state_machine->change_state("Walking");
-      }
-      else {
-        state_machine->change_state("Idle");
-      }
-    }
-
-    // Can attack while jumping
-    if (Engine::Input::is_pressed(Engine::KeyCode::J))
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(rigid);
+    assert(player_comp);
+    if (player_comp)
     {
-      state_machine->change_state("Attack1");
+      rigid->is_jumping = true;
+      rigid->on_ground = false;
+      rigid->force.y += player_comp->jump_force;
     }
   }
 
+  inline void jumping_on_update(Engine::ECS::Entity entity)
+  {
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
+    assert(rigid);
+    assert(state_machine);
+
+    if (rigid->on_ground && rigid->velocity.y >= 0.0f)
+    {
+      state_machine->change_state("Idle");
+    }
+    take_input(entity);
+  }
+
+  inline void jumping_on_exit(Engine::ECS::Entity entity)
+  {
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    assert(rigid);
+    rigid->is_jumping = false;
+    Log::info("Player: Exiting Jumping state");
+  }
+#pragma endregion
+
+#pragma region Dash
+  // ========================================================================
+  // Dash State Callbacks
+  // ========================================================================
+
+  inline void dash_on_enter(ECS::Entity entity)
+  {
+    Log::info("Player: Entered Dashing state");
+
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(player_comp);
+    player_comp->dash_timer = player_comp->dash_duration;
+
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    assert(rigid);
+    rigid->use_gravity = false;
+    rigid->velocity.zero();
+    rigid->force.zero();
+    terminal_vel_placeholder = rigid->x_terminal_velocity;
+  }
+
+  inline void dash_on_update(ECS::Entity entity)
+  {
+
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    Components::Flip* flip = entity.get_component<Components::Flip>();
+    assert(rigid);
+    assert(player_comp);
+    assert(flip);
+    if (player_comp->dash_timer <= 0.f)
+    {
+      player_comp->dash_timer = 0.f;
+      Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
+      assert(state_machine);
+      state_machine->change_state("Idle");
+    }
+    rigid->x_terminal_velocity = player_comp->dash_speed;
+    rigid->velocity.x = flip->value.x * player_comp->dash_speed;
+    player_comp->dash_timer -= Time::get_fixed_dt();
+  }
+
+  inline void dash_on_exit(ECS::Entity entity)
+  {
+    Log::info("Player: Exited Dashing state");
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    assert(rigid);
+    rigid->use_gravity = true;
+    rigid->x_terminal_velocity = terminal_vel_placeholder;
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(player_comp);
+    dash_cooldown = player_comp->dash_cooldown;
+  }
+#pragma endregion
+
+#pragma region attack 1
   // ========================================================================
   // Attack 1 State Callbacks (First Punch)
   // ========================================================================
 
-  inline void attack1_on_enter(Engine::ECS::Entity& entity) {
+  inline void attack1_on_enter(Engine::ECS::Entity entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
     auto* player_comp = entity.get_component<Components::Player>();
@@ -211,7 +269,7 @@ namespace PlayerStateCallbacks
         )
         .add_component<Components::RigidBody>(true, false)
         .add_component<Components::BoxCollider>(player_comp->attack1.hitbox_width, player_comp->attack1.hitbox_height, false)
-        .add_component<Components::Parent>(entity)
+        .add_component<Components::Parent>(entity.get_id())
         .add_component<Components::Lifetime>(0.48f) // Attack1 duration: 6 frames × 0.08f
         .remove_from_layer("default")
         .add_to_layer("damage_enemy");
@@ -234,7 +292,7 @@ namespace PlayerStateCallbacks
     Log::info("Player: Attack 1 (First Punch)");
   }
 
-  inline void attack1_on_update(Engine::ECS::Entity& entity) {
+  inline void attack1_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* animation = entity.get_component<Components::Animation>();
 
@@ -261,12 +319,14 @@ namespace PlayerStateCallbacks
       state_machine->change_state("Idle");
     }
   }
+#pragma endregion
 
+#pragma region attack 2
   // ========================================================================
   // Attack 2 State Callbacks (Second Punch)
   // ========================================================================
 
-  inline void attack2_on_enter(Engine::ECS::Entity& entity) {
+  inline void attack2_on_enter(Engine::ECS::Entity entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
     auto* player_comp = entity.get_component<Components::Player>();
@@ -301,7 +361,7 @@ namespace PlayerStateCallbacks
         )
         .add_component<Components::RigidBody>(true, false)
         .add_component<Components::BoxCollider>(player_comp->attack2.hitbox_width, player_comp->attack2.hitbox_height, false)
-        .add_component<Components::Parent>(entity)
+        .add_component<Components::Parent>(entity.get_id())
         .add_component<Components::Lifetime>(0.24f) // Attack2 duration: 3 frames × 0.08f
         .remove_from_layer("default")
         .add_to_layer("damage_enemy");
@@ -324,7 +384,7 @@ namespace PlayerStateCallbacks
     Log::info("Player: Attack 2 (Second Punch)");
   }
 
-  inline void attack2_on_update(Engine::ECS::Entity& entity) {
+  inline void attack2_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* animation = entity.get_component<Components::Animation>();
 
@@ -351,12 +411,14 @@ namespace PlayerStateCallbacks
       state_machine->change_state("Idle");
     }
   }
+#pragma endregion
 
+#pragma region attack 3
   // ========================================================================
   // Attack 3 State Callbacks (Third Punch - Finisher)
   // ========================================================================
 
-  inline void attack3_on_enter(Engine::ECS::Entity& entity) {
+  inline void attack3_on_enter(Engine::ECS::Entity entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
     auto* player_comp = entity.get_component<Components::Player>();
@@ -391,7 +453,7 @@ namespace PlayerStateCallbacks
         )
         .add_component<Components::RigidBody>(true, false)
         .add_component<Components::BoxCollider>(player_comp->attack3.hitbox_width, player_comp->attack3.hitbox_height, false)
-        .add_component<Components::Parent>(entity)
+        .add_component<Components::Parent>(entity.get_id())
         .add_component<Components::Lifetime>(0.6f) // Attack3 duration: 10 frames × 0.06f
         .remove_from_layer("default")
         .add_to_layer("damage_enemy");
@@ -414,7 +476,7 @@ namespace PlayerStateCallbacks
     Log::info("Player: Attack 3 (Third Punch - Finisher!)");
   }
 
-  inline void attack3_on_update(Engine::ECS::Entity& entity) {
+  inline void attack3_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* animation = entity.get_component<Components::Animation>();
 
@@ -432,20 +494,30 @@ namespace PlayerStateCallbacks
       state_machine->change_state("Idle");
     }
   }
-
+#pragma endregion
 } // namespace PlayerStateCallbacks
 
 // Register all player state callbacks
-REGISTER_FUNCTION(player_idle_enter, void(Engine::ECS::Entity&), PlayerStateCallbacks::idle_on_enter)
-REGISTER_FUNCTION(player_idle_update, void(Engine::ECS::Entity&), PlayerStateCallbacks::idle_on_update)
-REGISTER_FUNCTION(player_walking_enter, void(Engine::ECS::Entity&), PlayerStateCallbacks::walking_on_enter)
-REGISTER_FUNCTION(player_walking_update, void(Engine::ECS::Entity&), PlayerStateCallbacks::walking_on_update)
-REGISTER_FUNCTION(player_walking_exit, void(Engine::ECS::Entity&), PlayerStateCallbacks::walking_on_exit)
-REGISTER_FUNCTION(player_jumping_enter, void(Engine::ECS::Entity&), PlayerStateCallbacks::jumping_on_enter)
-REGISTER_FUNCTION(player_jumping_update, void(Engine::ECS::Entity&), PlayerStateCallbacks::jumping_on_update)
-REGISTER_FUNCTION(player_attack1_enter, void(Engine::ECS::Entity&), PlayerStateCallbacks::attack1_on_enter)
-REGISTER_FUNCTION(player_attack1_update, void(Engine::ECS::Entity&), PlayerStateCallbacks::attack1_on_update)
-REGISTER_FUNCTION(player_attack2_enter, void(Engine::ECS::Entity&), PlayerStateCallbacks::attack2_on_enter)
-REGISTER_FUNCTION(player_attack2_update, void(Engine::ECS::Entity&), PlayerStateCallbacks::attack2_on_update)
-REGISTER_FUNCTION(player_attack3_enter, void(Engine::ECS::Entity&), PlayerStateCallbacks::attack3_on_enter)
-REGISTER_FUNCTION(player_attack3_update, void(Engine::ECS::Entity&), PlayerStateCallbacks::attack3_on_update)
+REGISTER_FUNCTION(player_idle_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::idle_on_enter)
+REGISTER_FUNCTION(player_idle_update, void(Engine::ECS::Entity), PlayerStateCallbacks::idle_on_update)
+
+REGISTER_FUNCTION(player_walking_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::walking_on_enter)
+REGISTER_FUNCTION(player_walking_update, void(Engine::ECS::Entity), PlayerStateCallbacks::walking_on_update)
+REGISTER_FUNCTION(player_walking_exit, void(Engine::ECS::Entity), PlayerStateCallbacks::walking_on_exit)
+
+REGISTER_FUNCTION(player_jumping_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::jumping_on_enter)
+REGISTER_FUNCTION(player_jumping_update, void(Engine::ECS::Entity), PlayerStateCallbacks::jumping_on_update)
+REGISTER_FUNCTION(player_jumping_exit, void(Engine::ECS::Entity), PlayerStateCallbacks::jumping_on_exit)
+
+REGISTER_FUNCTION(player_dash_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::dash_on_enter)
+REGISTER_FUNCTION(player_dash_update, void(Engine::ECS::Entity), PlayerStateCallbacks::dash_on_update)
+REGISTER_FUNCTION(player_dash_exit, void(Engine::ECS::Entity), PlayerStateCallbacks::dash_on_exit)
+
+REGISTER_FUNCTION(player_attack1_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::attack1_on_enter)
+REGISTER_FUNCTION(player_attack1_update, void(Engine::ECS::Entity), PlayerStateCallbacks::attack1_on_update)
+
+REGISTER_FUNCTION(player_attack2_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::attack2_on_enter)
+REGISTER_FUNCTION(player_attack2_update, void(Engine::ECS::Entity), PlayerStateCallbacks::attack2_on_update)
+
+REGISTER_FUNCTION(player_attack3_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::attack3_on_enter)
+REGISTER_FUNCTION(player_attack3_update, void(Engine::ECS::Entity), PlayerStateCallbacks::attack3_on_update)

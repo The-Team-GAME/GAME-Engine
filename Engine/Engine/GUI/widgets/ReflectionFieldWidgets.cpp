@@ -262,6 +262,7 @@ namespace ImGuiWidgets {
         static_cast<float>(field_value["position"]["y"].getDouble())
     };
     ImGui::Text("Position");
+    ImGui::SameLine();
     if (ImGui::DragFloat2("##Position", pos, 0.1f)) {
       field_value["position"]["x"] = pos[0];
       field_value["position"]["y"] = pos[1];
@@ -271,6 +272,7 @@ namespace ImGuiWidgets {
     // Rotation
     float rotation = static_cast<float>(field_value["rotation"].getDouble());
     ImGui::Text("Rotation");
+    ImGui::SameLine();
     if (ImGui::DragFloat("##Rotation", &rotation, 0.1f)) {
       field_value["rotation"] = rotation;
       modified = true;
@@ -281,7 +283,8 @@ namespace ImGuiWidgets {
         static_cast<float>(field_value["scale"]["x"].getDouble()),
         static_cast<float>(field_value["scale"]["y"].getDouble())
     };
-    ImGui::Text("Scale");
+    ImGui::Text("Scale   ");
+    ImGui::SameLine();
     if (ImGui::DragFloat2("##Scale", scale, 0.1f)) {
       field_value["scale"]["x"] = scale[0];
       field_value["scale"]["y"] = scale[1];
@@ -307,6 +310,14 @@ namespace ImGuiWidgets {
       return true;
     }
 
+    // Edit Atlas Configuration button
+    if (ImGui::Button("Edit Atlas Configuration")) {
+      extern void TextureAtlasEditor_Open(Engine::ECS::Entity entity);
+      TextureAtlasEditor_Open(entity);
+    }
+    ImGui::SameLine();
+    ImGui::TextDisabled("(%d tiles)", static_cast<int>(atlas->subTextures.size()));
+
     // Use a static state per entity ID (basic but works for most cases)
     static std::unordered_map<Engine::ECS::EntityID, ImGuiWidgets::TextureAtlasState> entity_atlas_states;
 
@@ -314,7 +325,7 @@ namespace ImGuiWidgets {
     return true;
   }
 
-  bool render_animation_field(ReflectionLibrary::GenericValue& field_value, bool& modified) {
+  bool render_animation_field(ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity) {
     // Animation structure:
     // - durations: array of floats
     // - before_times: array of floats (cumulative times)
@@ -323,6 +334,15 @@ namespace ImGuiWidgets {
     // - is_looping: bool
 
     if (!field_value.isObject()) return false;
+
+    // Edit Animation Frames button (if entity is valid and has Texture + TextureAtlas)
+    if (entity.is_valid() && entity.has_component<Components::Texture>() && entity.has_component<Components::TextureAtlas>()) {
+      if (ImGui::Button("Edit Animation Frames")) {
+        extern void ImGuiWidgets_FrameAnimationEditor_OpenForAnimation(Engine::ECS::Entity entity);
+        ImGuiWidgets_FrameAnimationEditor_OpenForAnimation(entity);
+      }
+      ImGui::Separator();
+    }
 
     // Get values
     float total_duration = field_value["totalDuration"].isDouble() ?
@@ -427,8 +447,8 @@ namespace ImGuiWidgets {
     std::string current_script = field_value.getString();
 
     // Get all registered functions with the correct signature
-    // Note: This assumes all state callbacks have the signature void(Engine::ECS::Entity&)
-    auto& functions = Engine::FunctionRegistry<void(Engine::ECS::Entity&)>::get_functions();
+    // Note: This assumes all state callbacks have the signature void(Engine::ECS::Entity)
+    auto& functions = Engine::FunctionRegistry<void(Engine::ECS::Entity)>::get_functions();
 
     if (ImGui::BeginCombo(label.c_str(), current_script.empty() ? "<None>" : current_script.c_str())) {
 
@@ -454,7 +474,7 @@ namespace ImGuiWidgets {
     }
   }
 
-  bool render_statemachine_field(ReflectionLibrary::GenericValue& field_value, bool& modified) {
+  bool render_statemachine_field(ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity) {
     // StateMachine structure:
     // - states: unordered_map<string, State> (Serialized as Array of Pairs or Object)
     // Each State has:
@@ -544,6 +564,36 @@ namespace ImGuiWidgets {
               ImGui::Text("State Animation:");
               ImGui::Indent();
 
+              // Edit buttons at the top
+              if (entity.is_valid()) {
+                // Edit Atlas Button
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.5f, 0.4f, 0.2f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.6f, 0.5f, 0.3f, 1.0f));
+                std::string edit_atlas_btn_label = "Edit Atlas Configuration##" + state_name;
+                if (ImGui::Button(edit_atlas_btn_label.c_str(), ImVec2(-1, 0))) {
+                  extern void TextureAtlasEditor_OpenForState(Engine::ECS::Entity entity, const std::string& state_name);
+                  TextureAtlasEditor_OpenForState(entity, state_name);
+                }
+                ImGui::PopStyleColor(2);
+                if (ImGui::IsItemHovered()) {
+                  ImGui::SetTooltip("Open the Texture Atlas Editor to configure the grid layout");
+                }
+
+                // Edit Animation Frames Button
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.5f, 0.8f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.6f, 0.9f, 1.0f));
+                std::string edit_btn_label = "Edit Animation Frames##" + state_name;
+                if (ImGui::Button(edit_btn_label.c_str(), ImVec2(-1, 0))) {
+                  extern void FrameAnimationEditor_Open(Engine::ECS::Entity entity, const std::string& state_name);
+                  FrameAnimationEditor_Open(entity, state_name);
+                }
+                ImGui::PopStyleColor(2);
+                if (ImGui::IsItemHovered()) {
+                  ImGui::SetTooltip("Open the Frame Animation Editor to select specific frames from the texture atlas");
+                }
+                ImGui::Spacing();
+              }
+
               // Render Texture field
               auto tex_it = state_anim_obj.find("texture");
               if (tex_it != state_anim_obj.end()) {
@@ -559,7 +609,7 @@ namespace ImGuiWidgets {
               if (anim_field_it != state_anim_obj.end()) {
                 ImGui::Text("Animation:");
                 ImGui::Indent();
-                render_animation_field(anim_field_it->second, local_modified);
+                render_animation_field(anim_field_it->second, local_modified, entity);
                 ImGui::Unindent();
               }
 
@@ -598,14 +648,15 @@ namespace ImGuiWidgets {
 
     std::string current_function = name_field.getString();
 
-    std::string label = "Function##" + field_name;
-
     // Display all functions from all registries
     auto& easing_functions = Engine::FunctionRegistry<f32(f32, f32, f32, f32)>::get_functions();
-    auto& entity_functions = Engine::FunctionRegistry<void(Engine::ECS::Entity&)>::get_functions();
+    auto& entity_functions = Engine::FunctionRegistry<void(Engine::ECS::Entity)>::get_functions();
+    auto& two_entity_functions = Engine::FunctionRegistry<void(Engine::ECS::Entity, Engine::ECS::Entity)>::get_functions();
     auto& void_functions = Engine::FunctionRegistry<void()>::get_functions();
 
-    if (ImGui::BeginCombo(label.c_str(), current_function.empty() ? "<None>" : current_function.c_str())) {
+    ImGui::Text("%s", field_name.c_str());
+    ImGui::SameLine();
+    if (ImGui::BeginCombo(("##" + field_name).c_str(), current_function.empty() ? "<None>" : current_function.c_str())) {
       bool is_selected = current_function.empty();
       if (ImGui::Selectable("<None>", is_selected)) {
         name_field = std::string("");
@@ -628,8 +679,21 @@ namespace ImGuiWidgets {
 
       // Display entity callback functions
       if (!entity_functions.empty()) {
-        ImGui::TextDisabled("--- Entity Callbacks (void(Entity&)) ---");
+        ImGui::TextDisabled("--- Entity Callbacks (void(Entity)) ---");
         for (const auto& [name, func] : entity_functions) {
+          is_selected = (current_function == name);
+          if (ImGui::Selectable(name.c_str(), is_selected)) {
+            name_field = name;
+            modified = true;
+          }
+          if (is_selected) ImGui::SetItemDefaultFocus();
+        }
+      }
+
+      // Display two-entity callback functions (e.g., Interactable callbacks)
+      if (!two_entity_functions.empty()) {
+        ImGui::TextDisabled("--- Interactable Callbacks (void(Entity, Entity)) ---");
+        for (const auto& [name, func] : two_entity_functions) {
           is_selected = (current_function == name);
           if (ImGui::Selectable(name.c_str(), is_selected)) {
             name_field = name;
@@ -658,7 +722,7 @@ namespace ImGuiWidgets {
 
     /* COMMENTED OUT: Original implementation that filtered by field name
     // Determine which signature to use based on field name
-    // Common patterns: callbacks ending in "callback" use void(Entity&)
+    // Common patterns: callbacks ending in "callback" use void(Entity)
     //                  easing functions use f32(f32,f32,f32,f32)
     //                  click handlers use void()
 
@@ -689,7 +753,7 @@ namespace ImGuiWidgets {
     // Check if it's a state callback
     else if (field_name.find("callback") != std::string::npos || field_name.find("on_enter") != std::string::npos ||
       field_name.find("on_update") != std::string::npos || field_name.find("on_exit") != std::string::npos) {
-      auto& functions = Engine::FunctionRegistry<void(Engine::ECS::Entity&)>::get_functions();
+      auto& functions = Engine::FunctionRegistry<void(Engine::ECS::Entity)>::get_functions();
 
       if (ImGui::BeginCombo(label.c_str(), current_function.empty() ? "<None>" : current_function.c_str())) {
         bool is_selected = current_function.empty();
@@ -796,11 +860,11 @@ namespace ImGuiWidgets {
     }
 
     if (type_hint == "Components::Animation") {
-      return render_animation_field(field_value, modified);
+      return render_animation_field(field_value, modified, entity);
     }
 
     if (type_hint == "Components::StateMachine") {
-      return render_statemachine_field(field_value, modified);
+      return render_statemachine_field(field_value, modified, entity);
     }
 
     // Not handled by specialized renderer
@@ -828,6 +892,7 @@ namespace ImGuiWidgets {
     else if (field_value.isInt()) {
       int val = static_cast<int>(field_value.getInt());
       ImGui::Text("%s", display_name.c_str());
+      ImGui::SameLine();
       if (ImGui::DragInt(("##" + display_name).c_str(), &val)) {
         field_value = static_cast<ReflectionLibrary::Integer>(val);
         modified = true;
@@ -836,6 +901,7 @@ namespace ImGuiWidgets {
     else if (field_value.isDouble()) {
       float val = static_cast<float>(field_value.getDouble());
       ImGui::Text("%s", display_name.c_str());
+      ImGui::SameLine();
       if (ImGui::DragFloat(("##" + display_name).c_str(), &val, 0.01f)) {
         field_value = static_cast<double>(val);
         modified = true;
@@ -847,6 +913,7 @@ namespace ImGuiWidgets {
       strncpy_s(buffer, str_val.c_str(), sizeof(buffer) - 1);
       buffer[sizeof(buffer) - 1] = '\0';
       ImGui::Text("%s", display_name.c_str());
+      ImGui::SameLine();
       if (ImGui::InputText(("##" + display_name).c_str(), buffer, sizeof(buffer))) {
         field_value = std::string(buffer);
         modified = true;

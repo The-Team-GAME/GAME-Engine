@@ -28,12 +28,18 @@
 #include "GameStates/BehaviourState.h"
 #include "GameStates/LevelTestState.h"
 #include "GameStates/GameplayState.h"
+#include "GameStates/GameMonkeyTestState.h"
+#include "GameStates/TurretMonkeyTestState.h"
 #include "GameStates/PauseState.h"
+#include "GameStates/VictoryState.h"
 #include "GameStates/OptionsState.h"
+#include "GameStates/AnimatorTestState.h"
 #include "Systems/HealthSystem.h"
 #include "Systems/EnemyHealthSystem.h"
 #include "Systems/HeartrateSystem.h"
 #include "Systems/DebugHitboxRenderSystem.h"
+#include "Systems/InteractableSystem.h"
+#include "InteractableCallbacks/OldMan.h"
 
 /*=================================================================================
 Function Brief:
@@ -68,13 +74,19 @@ void RunGame()
   Engine::ECS::register_layer("hazard"); // Hazard layer (e.g., spikes, lava) 
   Engine::ECS::register_layer("damage_enemy"); // Damage enemy layer (e.g., hitboxes for player attacks)
   Engine::ECS::register_layer("damage_player"); // Damage player layer (e.g., hitboxes for enemy attacks, hazards)
+  Engine::ECS::register_layer("projectiles"); // Projectiles layer (e.g., bullets, arrows)
+  Engine::ECS::register_layer("spray"); // Special layer for Spray can monkey spray clouds
   Engine::ECS::register_layer("enemy"); // Enemy characters layer
   Engine::ECS::register_layer("player_trail"); // Specific layer for player trail effect
   Engine::ECS::register_layer("player"); // Player character layer
   Engine::ECS::register_layer("effect"); // Visual effects like particles
-  Engine::ECS::register_layer("ui_background"); // User interface elements
-  Engine::ECS::register_layer("ui"); // User interface elements
-  Engine::ECS::register_layer("ui_foreground"); // User interface elements
+  Engine::ECS::register_layer("main_menu_0"); // Main menu: sky background
+  Engine::ECS::register_layer("main_menu_1"); // Main menu: buildings
+  Engine::ECS::register_layer("main_menu_2"); // Main menu: carriage, title
+  Engine::ECS::register_layer("main_menu_3"); // Main menu: characters (Bro, Monkey)
+  Engine::ECS::register_layer("main_menu_4"); // Main menu: front overlay
+  Engine::ECS::register_layer("main_menu_5"); // Main menu: buttons, interactive UI
+  Engine::ECS::register_layer("main_menu_6"); // Main menu: text any key
 #ifndef GAME_BUILD
   Engine::ECS::register_layer("debug"); // Debug overlays and information
 #endif
@@ -134,7 +146,7 @@ void RunGame()
 
         if (rigid) {
           // Make enemy child of hitbox (offset will be auto-calculated by HierarchySystem)
-          enemy_entity.add_component<Components::Parent>(attack_entity);
+          enemy_entity.add_component<Components::Parent>(attack_entity.get_id());
 
           // Store knockback to apply when detaching (from Player struct via Attack component)
           enemy_entity.add_component<Components::PendingKnockback>(attack->knockback);
@@ -163,7 +175,7 @@ void RunGame()
               128.0f, // 2x scale
               128.0f
             )
-            .add_component<Components::Parent>(enemy_entity)
+            .add_component<Components::Parent>(enemy_entity.get_id())
             .add_component<Components::Texture>(attack->impact_vfx_texture)
             .add_component<Components::TextureAtlas>(64, 64, 1, 4, 4) // 4 frames, 64x64 each
             .add_component<Components::Animation>(0, 3, 0.05f, false)
@@ -185,6 +197,8 @@ void RunGame()
     [](Engine::ECS::Entity attack_entity, Engine::ECS::Entity player_entity)
     {
       Log::info("Player took damage!");
+
+
 
       // When enemy attack hitbox collides with player
       auto* attack = attack_entity.get_component<Components::Attack>();
@@ -209,15 +223,33 @@ void RunGame()
         heartrate->increase(static_cast<float>(damage));
         Log::info("Player took {} damage! Heartrate: {}", damage, heartrate->heartrate);
 
-        // Apply knockback (direction is already baked into attack->knockback from the attacker)
-        rigid->velocity.x = attack->knockback.x;
-        rigid->velocity.y = attack->knockback.y; // Usually negative for upward knockback
+        Engine::Systems::Physics2DSystem::add_force(*rigid, attack->knockback);
 
-        Log::info("Player knocked back! Velocity: ({}, {})", rigid->velocity.x, rigid->velocity.y);
+        Engine::AudioSystem::playEvent("event:/SFX/PlayerHurt");
+        Log::info("Playing FMOD event: event:/SFX/PlayerHurt");
+
+
+        Log::info("Player knocked back! Force applied: ({}, {})", attack->knockback.x, attack->knockback.y);
       }
       else {
         Log::error("Error: Heartrate or RigidBody component missing from player!");
       }
+    });
+
+  // Register collision callback for enemy projectiles hitting tilemap (despawn on impact)
+  Engine::ECS::LayerRegistry::register_collision_callback("projectiles", "tilemap_foreground_mid",
+    [](Engine::ECS::Entity projectile_entity, [[maybe_unused]] Engine::ECS::Entity tile_entity)
+    {
+      Log::info("Projectile hit tile, destroying");
+      projectile_entity.destroy();
+    });
+
+  // Register collision callback for enemy projectiles hitting player (despawn on impact)
+  Engine::ECS::LayerRegistry::register_collision_callback("projectiles", "player",
+    [](Engine::ECS::Entity projectile_entity, [[maybe_unused]] Engine::ECS::Entity player_entity)
+    {
+      Log::info("Projectile hit player, destroying");
+      projectile_entity.destroy();
     });
 
 
@@ -237,12 +269,67 @@ void RunGame()
     Log::info("Exiting to main menu from pause menu");
     Engine::SceneManager::load_scene("MainMenuState");
     });
+
+  // Pause menu hover callbacks - change menu sprite texture
+  // Uses hovered_button tracker to prevent exit_hover from resetting when moving between buttons
+  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_hover_resume", [](Engine::ECS::Entity) {
+    if (PauseState::menu_sprite_id == 0) return;
+    if (!Engine::ECS::is_entity_active(Engine::ECS::Entity(PauseState::menu_sprite_id))) return;
+    PauseState::hovered_button = 1;
+    auto* tex = Engine::ECS::Entity(PauseState::menu_sprite_id).get_component<Components::Texture>();
+    if (tex) *tex = PauseState::resume_selected_tex;
+    });
+  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_hover_restart", [](Engine::ECS::Entity) {
+    if (PauseState::menu_sprite_id == 0) return;
+    if (!Engine::ECS::is_entity_active(Engine::ECS::Entity(PauseState::menu_sprite_id))) return;
+    PauseState::hovered_button = 2;
+    auto* tex = Engine::ECS::Entity(PauseState::menu_sprite_id).get_component<Components::Texture>();
+    if (tex) *tex = PauseState::restart_selected_tex;
+    });
+  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_hover_options", [](Engine::ECS::Entity) {
+    if (PauseState::menu_sprite_id == 0) return;
+    if (!Engine::ECS::is_entity_active(Engine::ECS::Entity(PauseState::menu_sprite_id))) return;
+    PauseState::hovered_button = 3;
+    auto* tex = Engine::ECS::Entity(PauseState::menu_sprite_id).get_component<Components::Texture>();
+    if (tex) *tex = PauseState::options_selected_tex;
+    });
+  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_hover_exit", [](Engine::ECS::Entity) {
+    if (PauseState::menu_sprite_id == 0) return;
+    if (!Engine::ECS::is_entity_active(Engine::ECS::Entity(PauseState::menu_sprite_id))) return;
+    PauseState::hovered_button = 4;
+    auto* tex = Engine::ECS::Entity(PauseState::menu_sprite_id).get_component<Components::Texture>();
+    if (tex) *tex = PauseState::exit_selected_tex;
+    });
+  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_hover_none", [](Engine::ECS::Entity) {
+    // Do nothing here - let the on_hover callbacks handle setting the texture
+    // This prevents the race condition when moving between buttons
+    });
+
   Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_menu_button_hover", [](Engine::ECS::Entity entity) {
     auto* color = entity.get_component<Components::Color>();
     if (color) {
       color->a = 1.0f;
     }
     });
+
+  // Register main menu button callbacks
+  Engine::FunctionRegistry<void()>::register_function("start_game", []() {
+    Engine::SceneManager::load_scene("GameplayState");
+    });
+  Engine::FunctionRegistry<void()>::register_function("options_menu", []() {
+    // Engine::SceneManager::push_scene("OptionsState");
+    });
+  Engine::FunctionRegistry<void()>::register_function("exit_game", []() {
+    Engine::Core::stop();
+    });
+
+  // Victory interactable callback - shows victory screen when player enters the zone
+  Engine::FunctionRegistry<void(Engine::ECS::Entity, Engine::ECS::Entity)>::register_function("show_victory",
+    [](Engine::ECS::Entity, Engine::ECS::Entity) {
+      Log::info("Victory! Player reached the goal.");
+      Engine::SceneManager::push_scene("VictoryState");
+    });
+
 
   Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_menu_button_exit_hover", [](Engine::ECS::Entity entity) {
     auto* color = entity.get_component<Components::Color>();
@@ -254,6 +341,7 @@ void RunGame()
   // Register game scenes at startup
   Engine::SceneManager::register_scene<EmptyState>("EmptyState");
   Engine::SceneManager::register_scene<MainMenuState>("MainMenuState");
+  Engine::SceneManager::register_scene<GameplayState>("GameplayState");
   Engine::SceneManager::register_scene<Rubric2500ParticlesState>("Rubric2500ParticlesState");
   Engine::SceneManager::register_scene<StressTestState>("StressTestState");
   Engine::SceneManager::register_scene<BasicState>("BasicState");
@@ -263,14 +351,18 @@ void RunGame()
   Engine::SceneManager::register_scene<LuaState>("LuaState");
   Engine::SceneManager::register_scene<LevelTestState>("LevelTestState");
   Engine::SceneManager::register_scene<BehaviourState>("BehaviourState");
-  Engine::SceneManager::register_scene<GameplayState>("GameplayState");
+  Engine::SceneManager::register_scene<GameMonkeyTestState>("GameMonkeyTestState");
+  Engine::SceneManager::register_scene<TurretMonkeyTestState>("TurretMonkeyTestState");
   Engine::SceneManager::register_scene<PauseState>("PauseState");
+  Engine::SceneManager::register_scene<VictoryState>("VictoryState");
   Engine::SceneManager::register_scene<OptionsState>("OptionsState");
+  Engine::SceneManager::register_scene<AnimatorTestState>("AnimatorTestState");
 
   // Register game systems at startup
   Engine::ECS::add_system<Engine::Systems::HealthSystem>();
   Engine::ECS::add_system<Engine::Systems::EnemyHealthSystem>();
   Engine::ECS::add_system<Engine::Systems::HeartrateSystem>();
+  Engine::ECS::add_system<Engine::Systems::InteractableSystem>();
   Engine::ECS::add_system<Engine::Systems::DebugHitboxRenderSystem>();
   Engine::ECS::add_system<Engine::Systems::EnemyHealthBarRectSystem>();
   Engine::ECS::add_system<Engine::Systems::HeartHUDSpriteSystem>();

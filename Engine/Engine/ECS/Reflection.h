@@ -120,6 +120,15 @@ namespace Engine {
 
       /*=================================================================================
       Function Brief:
+      Result structure for component deserialization, containing any errors encountered.
+      ==================================================================================*/
+      struct DeserializeResult {
+        std::vector<std::string> errors;
+        bool has_errors() const { return !errors.empty(); }
+      };
+
+      /*=================================================================================
+      Function Brief:
       Deserializes components from a JSON array and adds them to the specified storage.
       Creates component arrays as needed and updates the component signature.
 
@@ -128,17 +137,22 @@ namespace Engine {
       - storage: The component storage map to add components to.
       - signature: The component signature to update.
       - entity_id: The entity ID to use for component deserialization (use 0 for prefabs).
+
+      Returns:
+      A DeserializeResult containing any errors encountered during deserialization.
       ==================================================================================*/
-      inline void deserialize_components_to_storage(
+      inline DeserializeResult deserialize_components_to_storage(
         const ReflectionLibrary::Array& components_array,
         std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>>& storage,
         ComponentSignature& signature,
         EntityID entity_id
       ) {
+        DeserializeResult result;
         auto& containers = Internal::get_containers();
 
         for (const auto& component_entry : components_array) {
           if (!component_entry.isObject() || !component_entry.has("type") || !component_entry.has("data")) {
+            result.errors.push_back("Invalid component entry: missing 'type' or 'data' field");
             continue;
           }
 
@@ -159,21 +173,29 @@ namespace Engine {
                 storage[type_id] = world_array->create_empty();
               }
 
-              // Add component to storage
-              storage[type_id]->add_component_from_generic_value(entity_id, component_data);
-
-              // Update signature
-              signature.set(type_id);
+              // Add component to storage and check for errors
+              if (!storage[type_id]->add_component_from_generic_value(entity_id, component_data)) {
+                std::string error = "Failed to deserialize component '" + component_type + "': data may be corrupted or component structure has changed";
+                Log::warning("{}", error);
+                result.errors.push_back(error);
+              }
+              else {
+                // Update signature only on success
+                signature.set(type_id);
+              }
 
               break;
             }
           }
 
           if (!found) {
-            Log::warning("No registered component type found for '{}' during deserialization.", component_type);
+            std::string error = "No registered component type found for '" + component_type + "' during deserialization";
+            Log::warning("{}", error);
+            result.errors.push_back(error);
           }
 
         }
+        return result;
       }
 
     } // namespace Serialization

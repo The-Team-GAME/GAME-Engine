@@ -2,7 +2,7 @@
 // file:    Easing.h
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (100%)
+// author:  Ryan Ang An Kiat (100%)
 //          Primary author
 //
 // email:   chew.s@digipen.edu

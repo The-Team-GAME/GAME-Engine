@@ -27,8 +27,9 @@
 #include "FileIO/PrefabsFileIO.h"
 #include "FileIO/Helpers.h"
 #include "Path.h"
-#include "Level.h"
+#include "LevelManager.h"
 #include "FileIO/LevelFileIO.h"
+#include "LevelTabManager.h"
 #include "Reflection/ReflectionLibrary.h"
 #include "EventManager/EventManager.h"
 #include "Events/EngineEvents.h"
@@ -38,7 +39,7 @@ std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> En
 std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::FontData>> Engine::Resources::font_cache;
 std::unordered_map<std::string, std::weak_ptr<Engine::Audio::SoundData>> Engine::Resources::sound_cache;
 std::unordered_map<std::string, std::weak_ptr<Engine::ECS::PrefabImpl>> Engine::Resources::prefab_cache;
-std::unordered_map<std::string, Engine::Level> Engine::Resources::level_cache;
+std::unordered_map<std::string, Engine::EntityList> Engine::Resources::level_cache;
 
 // Vector to hold shared_ptr references for persistent resources
 std::vector<Engine::Resources::Resource> Engine::Resources::persistent_resources;
@@ -613,7 +614,33 @@ Engine::ECS::Prefab Engine::Resources::load_prefab(const std::string& filepath, 
   if (!prefab.is_valid())
   {
     Log::warning("Failed to deserialize prefab: {}", full_path);
+    Engine::EventManager::send_event<Engine::Events::ToastEvent>(
+      "Failed to load prefab: " + actual_filepath,
+      Engine::Events::ToastType::Error,
+      5.0f
+    );
     return Engine::ECS::Prefab(); // Return empty prefab handle
+  }
+
+  // Check for loading errors (corrupted data, missing components, etc.)
+  if (prefab.get_impl()->has_load_errors())
+  {
+    const auto& errors = prefab.get_impl()->get_load_errors();
+    std::string error_summary = "Prefab '" + actual_filepath + "' loaded with errors:\n";
+    for (size_t i = 0; i < errors.size() && i < 3; ++i) // Show first 3 errors
+    {
+      error_summary += "- " + errors[i] + "\n";
+    }
+    if (errors.size() > 3)
+    {
+      error_summary += "... and " + std::to_string(errors.size() - 3) + " more errors";
+    }
+    Log::warning("{}", error_summary);
+    Engine::EventManager::send_event<Engine::Events::ToastEvent>(
+      error_summary,
+      Engine::Events::ToastType::Warning,
+      8.0f
+    );
   }
 
   // Set the filepath in the prefab
@@ -667,7 +694,7 @@ void Engine::Resources::cache_prefab(const std::string& filepath, const Engine::
   Log::info("Prefab cached: {}", full_path);
 }
 
-Engine::Level Engine::Resources::load_level(const std::string& filepath, bool append_resource_path, bool persist)
+Engine::EntityList Engine::Resources::load_level(const std::string& filepath, bool append_resource_path, bool persist)
 {
   // Construct full path using Path class
   std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
@@ -693,13 +720,13 @@ Engine::Level Engine::Resources::load_level(const std::string& filepath, bool ap
   }
 
   // Deserialize level
-  Engine::Level level = Engine::FileIO::deserialize_level_from_json_file(full_path);
+  Engine::EntityList entities = Engine::FileIO::deserialize_level_from_json_file(full_path);
 
   // Cache the level
-  level_cache[full_path] = level;
+  level_cache[full_path] = entities;
   if (persist)
   {
-    persistent_resources.push_back(level);
+    persistent_resources.push_back(entities);
     Log::info("Level loaded (persistent): {}", full_path);
   }
   else
@@ -707,59 +734,54 @@ Engine::Level Engine::Resources::load_level(const std::string& filepath, bool ap
     Log::info("Level loaded: {}", full_path);
   }
 
-  return level;
+  return entities;
 }
 
-bool Engine::Resources::save_level(const std::string& filepath, const Engine::Level& level, bool append_resource_path)
+bool Engine::Resources::save_level(const std::string& filepath, const Engine::EntityList& entities, bool append_resource_path)
 {
   // Construct full path using Path class
   std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
 
   Log::info("Saving level to: {}", full_path);
 
-  if (!Engine::FileIO::serialize_level_to_json_file(full_path, level))
+  if (!Engine::FileIO::serialize_level_to_json_file(full_path, entities))
   {
     return false;
   }
 
   // Update cache with the level
-  level_cache[full_path] = level;
+  level_cache[full_path] = entities;
 
   return true;
 }
 
-void Engine::Resources::cache_level(const std::string& filepath, const Engine::Level& level, bool append_resource_path, bool persist)
+void Engine::Resources::cache_level(const std::string& filepath, const Engine::EntityList& entities, bool append_resource_path, bool persist)
 {
   // Construct full path using Path class
   std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
 
   // Add to cache without saving to disk
-  level_cache[full_path] = level;
+  level_cache[full_path] = entities;
 
   if (persist)
   {
-    persistent_resources.push_back(level);
+    persistent_resources.push_back(entities);
     Log::info("Level cached (persistent): {}", full_path);
   }
 
   Log::info("Level cached: {}", full_path);
 }
 
-bool Engine::Resources::open_level(const std::string& filepath, bool append_resource_path, bool additive)
+bool Engine::Resources::open_level(const std::string& filepath, bool append_resource_path)
 {
-  // Load the level
-  Engine::Level level = load_level(filepath, append_resource_path, false);
+#ifndef GAME_BUILD
+  // In editor mode, use the tab manager for level opening
+  return LevelTabManager::open_tab(filepath, append_resource_path);
+#endif
 
-
-  // Update the current level path
-  std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
-  Engine::LevelManager::set_current_level_path(full_path);
-
-  // Instantiate the level into the world
-  level.instantiate_into_world(!additive);
-
-  Log::info("Opened level: {}", filepath);
-  return true;
+  // In game mode or for additive loading, use LevelManager
+  std::string level_id = LevelManager::open_level(filepath, append_resource_path);
+  return !level_id.empty();
 }
 
 bool Engine::Resources::open(const std::string& filepath, bool append_resource_path)

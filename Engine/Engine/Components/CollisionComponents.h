@@ -15,6 +15,7 @@
 #pragma once
 #include "../Math/Vector2D.h"
 #include "../ECS/Macros.h"
+#include "../FileIO/ColliderMeshFileIO.h"
 #include <limits>
 
 using Math::Vec2D;
@@ -77,8 +78,8 @@ struct AABB {
     // (lhs_min.y < rhs_max.y) &&
     // (lhs_max.y > rhs_min.y);
 
-    return  (pos.x - half_width < rhs.pos.x + rhs.half_width)   &&
-            (rhs.pos.x - rhs.half_width < pos.x + half_width)   &&
+    return  (pos.x - half_width < rhs.pos.x + rhs.half_width) &&
+      (rhs.pos.x - rhs.half_width < pos.x + half_width) &&
       (pos.y - half_height < rhs.pos.y + rhs.half_height) &&
       (rhs.pos.y - rhs.half_height < pos.y + half_height);
   }
@@ -90,7 +91,16 @@ struct Polygon
   Vec2D position;              // World position
   f32 rotation;                // Rotation in radians
 
-  Polygon(Vec2D world_pos = Vec2D(0,0)) : position(world_pos), rotation() {};
+  Polygon(Vec2D world_pos = Vec2D(0, 0)) : position(world_pos), rotation() {};
+
+  // Constructor that loads vertices from a JSON file
+  explicit Polygon(const std::string& filepath) : position(0, 0), rotation(0) {
+    auto mesh_data = Engine::FileIO::deserialize_collider_mesh_from_json_file(filepath);
+    if (mesh_data.has_value()) {
+      vertices = mesh_data->vertices;
+      position = mesh_data->offset;
+    }
+  }
 
   // Cpy Ctor from an AABB
   Polygon(const AABB& aabb) : position(aabb.pos), rotation(0) {
@@ -114,8 +124,8 @@ struct Polygon
     poly.vertices = {
         Vec2D(-hw, -hh),  // Top-left
         Vec2D(-hw,  hh),  // Bottom-left
-        Vec2D( hw,  hh),  // Bottom-right
-        Vec2D( hw, -hh)   // Top-right
+        Vec2D(hw,  hh),  // Bottom-right
+        Vec2D(hw, -hh)   // Top-right
     };
     return poly;
   }
@@ -196,7 +206,7 @@ struct Polygon
 
     std::vector<Vec2D> my_axes = get_axes();
     for (Vec2D const& axis : my_axes) {
-      Projection my_projection    = project_onto_axis(axis);
+      Projection my_projection = project_onto_axis(axis);
       Projection other_projection = other.project_onto_axis(axis);
 
       // If even one axis dosent overlap, the 2 polygons do not collide
@@ -283,9 +293,9 @@ namespace Components
 
     // For friction, 1 is no friction and 0 is 100% energy loss
     // Used when an object is at rest to make it harder to start moving (used when objects are on a slope)
-    f32 static_friction; 
+    f32 static_friction;
     // Used when an object is moving, acts against the direction the object is moving
-    f32 kinetic_friction = 1.f; 
+    f32 kinetic_friction = 1.f;
 
     // AABB constructor (existing - no rotation)
     BoxCollider(f32 width, f32 height, bool is_static_object)

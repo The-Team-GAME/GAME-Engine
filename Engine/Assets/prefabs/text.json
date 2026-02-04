@@ -1,0 +1,51 @@
+{
+    "data": {
+        "components": [
+            {
+                "data": {
+                    "alignment": "Left",
+                    "content": "Sample text",
+                    "font_scale": 1.0,
+                    "line_spacing": 1.2000000476837158
+                },
+                "type": "Components::Text"
+            },
+            {
+                "data": {
+                    "a": 1.0,
+                    "b": 1.0,
+                    "g": 1.0,
+                    "r": 1.0
+                },
+                "type": "Components::Color"
+            },
+            {
+                "data": {
+                    "font_size": 150,
+                    "path": "fonts/PlayfairDisplay-VariableFont_wght.ttf"
+                },
+                "type": "Components::Font"
+            },
+            {
+                "data": {
+                    "position": {
+                        "x": 800.0,
+                        "y": 450.0
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 1000.0,
+                        "y": 200.0
+                    }
+                },
+                "type": "Components::Transform2D"
+            }
+        ],
+        "filepath": "prefabs/text.json",
+        "layers": [
+            "default"
+        ],
+        "uuid": "8e95656d-3806-40d42-b7ad-c50628feb334"
+    },
+    "dataType": "Prefab"
+}

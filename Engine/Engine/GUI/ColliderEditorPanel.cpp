@@ -27,6 +27,8 @@
 #include "../ProjectSaveManager.h" // For marking prefabs dirty
 #include "../Resources.h"
 #include "../Logger.h"
+#include "../FileIO/ColliderMeshFileIO.h"
+#include "../FileIO/FileDialog.h"
 
 namespace {
   enum class EditorMode { None, Entity, Prefab };
@@ -804,6 +806,99 @@ void ColliderEditorPanel()
           );
         }
         Engine::ECS::update_prefab_instances(selected_prefab.get_impl()->get_prefab_id());
+      }
+    }
+  }
+
+  // Export/Import collider mesh buttons
+  ImGui::Separator();
+  ImGui::Text("Collider Mesh File I/O:");
+
+  if (ImGui::Button("Export Collider...")) {
+    auto save_path = Engine::FileIO::show_save_file_dialog(
+      "Export Collider Mesh",
+      "collider_mesh",
+      "Collider Mesh (*.collider.json)\0*.collider.json\0JSON Files (*.json)\0*.json\0All Files\0*.*\0",
+      ".collider.json",
+      Engine::Resources::resource_path
+    );
+
+    if (save_path.has_value()) {
+      Engine::FileIO::ColliderMeshData mesh_data;
+      mesh_data.vertices = col_vertices;
+      mesh_data.offset = col_offset;
+      mesh_data.width = col_width;
+      mesh_data.height = col_height;
+
+      if (Engine::FileIO::serialize_collider_mesh_to_json_file(save_path.value(), mesh_data)) {
+        Log::info("Exported collider mesh to: {}", save_path.value());
+      }
+    }
+  }
+
+  ImGui::SameLine();
+
+  if (ImGui::Button("Import Collider...")) {
+    auto open_path = Engine::FileIO::show_open_file_dialog(
+      "Import Collider Mesh",
+      "Collider Mesh (*.collider.json)\0*.collider.json\0JSON Files (*.json)\0*.json\0All Files\0*.*\0",
+      Engine::Resources::resource_path
+    );
+
+    if (open_path.has_value()) {
+      auto mesh_data = Engine::FileIO::deserialize_collider_mesh_from_json_file(open_path.value());
+
+      if (mesh_data.has_value()) {
+        col_vertices = mesh_data->vertices;
+        col_offset = mesh_data->offset;
+        col_width = mesh_data->width;
+        col_height = mesh_data->height;
+
+        // Switch to polygon mode if vertices were loaded
+        if (!col_vertices.empty()) {
+          col_type = Components::ColliderType::POLYGON;
+          current_type_index = 1;
+        }
+
+        changed = true;
+
+        // Apply the imported data
+        if (editing_specific_state) {
+          auto& state = state_machine->states[current_editing_state];
+          if (state.animation.has_value()) {
+            if (!state.animation->collider_data.has_value()) {
+              state.animation->collider_data = Components::ColliderData();
+            }
+            state.animation->collider_data->type = col_type;
+            state.animation->collider_data->width = col_width;
+            state.animation->collider_data->height = col_height;
+            state.animation->collider_data->offset = col_offset;
+            state.animation->collider_data->vertices = col_vertices;
+          }
+        }
+        else {
+          collider->type = col_type;
+          collider->width = col_width;
+          collider->height = col_height;
+          collider->offset = col_offset;
+          collider->aabb.half_width = col_width / 2.0f;
+          collider->aabb.half_height = col_height / 2.0f;
+          collider->polygon.vertices = col_vertices;
+
+          if (current_mode == EditorMode::Prefab) {
+            if (!selected_prefab_path.empty()) {
+              Engine::ProjectSaveManager::set_dirty(
+                Engine::ProjectSaveManager::DirtyStates::Prefab(selected_prefab_path)
+              );
+            }
+            Engine::ECS::update_prefab_instances(selected_prefab.get_impl()->get_prefab_id());
+          }
+        }
+
+        Log::info("Imported collider mesh from: {}", open_path.value());
+      }
+      else {
+        Log::warning("Failed to import collider mesh from: {}", open_path.value());
       }
     }
   }

@@ -115,7 +115,7 @@ namespace Engine {
     Where to call it:
     When spawning copies of existing entities or implementing duplication features.
     ==================================================================================*/
-    Entity clone_entity(const Entity& source);
+    Entity clone_entity(const Entity source);
 
     /*=================================================================================
     Function Brief:
@@ -128,7 +128,7 @@ namespace Engine {
     Where to call it:
     When removing game objects or entities from the world.
     ==================================================================================*/
-    void destroy_entity(const Entity& entity);
+    void destroy_entity(const Entity entity);
 
     /*=================================================================================
     Function Brief:
@@ -167,7 +167,7 @@ namespace Engine {
     Where to call it:
     Before performing operations on an entity to ensure it hasn't been destroyed.
     ==================================================================================*/
-    bool is_entity_active(const Entity& entity);
+    bool is_entity_active(const Entity entity);
 
     /* ====================== //
     // Component management   //
@@ -187,7 +187,7 @@ namespace Engine {
     ==================================================================================*/
     template <typename T, typename... Args>
       requires std::is_constructible_v<T, Args...>
-    void add_component(const Entity& entity, Args &&...args);
+    void add_component(const Entity entity, Args &&...args);
 
     /*=================================================================================
     Function Brief:
@@ -200,7 +200,7 @@ namespace Engine {
     When detaching a component from an entity.
     ==================================================================================*/
     template <typename T>
-    void remove_component(const Entity& entity);
+    void remove_component(const Entity entity);
 
     /*=================================================================================
     Function Brief:
@@ -213,7 +213,7 @@ namespace Engine {
     When you need to access or modify a component's data.
     ==================================================================================*/
     template <typename T>
-    T* get_component(const Entity& entity);
+    T* get_component(const Entity entity);
 
     /*=================================================================================
     Function Brief:
@@ -226,7 +226,7 @@ namespace Engine {
     Before accessing multiple components to verify they all exist.
     ==================================================================================*/
     template <typename... T>
-    bool has_components(const Entity& entity);
+    bool has_components(const Entity entity);
 
     /*=================================================================================
     Function Brief:
@@ -239,7 +239,7 @@ namespace Engine {
     Before accessing a component to verify it exists.
     ==================================================================================*/
     template <typename T>
-    bool has_component(const Entity& entity);
+    bool has_component(const Entity entity);
 
     /* ================== //
     // System management  //
@@ -359,6 +359,61 @@ namespace Engine {
     In the main game loop, once per frame.
     ==================================================================================*/
     void update();
+
+    /*=================================================================================
+    Function Brief:
+    Updates only game systems (SystemType::Game). Skipped when game is paused.
+    Also processes queued events.
+
+    Parameters:
+    None.
+
+    Where to call it:
+    In the main game loop, only when the game is not paused.
+    ==================================================================================*/
+    void update_game();
+
+    /*=================================================================================
+    Function Brief:
+    Updates only editor systems (SystemType::Editor). Always runs, even when paused.
+    These include gizmo manipulation, camera control, etc.
+
+    Parameters:
+    None.
+
+    Where to call it:
+    In the main game loop, every frame regardless of pause state.
+    ==================================================================================*/
+    void update_editor();
+
+    /*=================================================================================
+    Function Brief:
+    Requests a one-shot update for a specific system type. The system will be
+    updated once during the next update_editor() call, even if it's a Game system
+    and the game is paused. Useful for editor scrubbing/previewing.
+
+    Parameters:
+    None (template parameter T specifies the system type to update).
+
+    Where to call it:
+    In editor code when you need to trigger a system update while paused.
+    ==================================================================================*/
+    template<typename T>
+    void request_system_update();
+
+    /*=================================================================================
+    Function Brief:
+    Requests a one-shot update for a specific entity. All systems that track this
+    entity will process it once during the next update_editor() call, even if
+    the game is paused. Useful for editor scrubbing/previewing.
+
+    Parameters:
+    entity - The EntityID to update.
+
+    Where to call it:
+    In editor code when you need to trigger an entity update while paused.
+    ==================================================================================*/
+    void request_entity_update(EntityID entity);
 
     /*=================================================================================
     Function Brief:
@@ -499,7 +554,7 @@ namespace Engine {
     When you need to perform an operation on all entities without creating a vector.
     More efficient than get_all_entities() when you just need to iterate.
     ==================================================================================*/
-    void for_each_entity(std::function<void(Entity&)> callback);
+    void for_each_entity(std::function<void(Entity)> callback);
 
     /*=================================================================================
     Function Brief:
@@ -525,6 +580,37 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
+    Iterates over entities with specific components and passes the components directly
+    to the callback. This is a more convenient version that avoids repeated get_component
+    calls inside the callback.
+
+    Parameters:
+    callback - Function that receives the Entity and component pointers directly.
+
+    Where to call it:
+    When you need to iterate over entities and immediately work with their components.
+    More convenient than for_each_entity_with when you need component access.
+
+    Example (single component):
+    for_each<Transform>([](Entity e, Transform* t) {
+      t->position.x += 1.0f;
+    });
+
+    Example (multiple components):
+    for_each<Transform, Velocity>([](Entity e, Transform* t, Velocity* v) {
+      t->position += v->value * dt;
+    });
+
+    Example (without entity):
+    for_each<Transform, Velocity>([](Transform* t, Velocity* v) {
+      t->position += v->value * dt;
+    });
+    ==================================================================================*/
+    template <typename... Components, typename Func>
+    void for_each(Func&& callback);
+
+    /*=================================================================================
+    Function Brief:
     Iterates over entities on a specific layer and calls the callback for each.
 
     Parameters:
@@ -534,7 +620,7 @@ namespace Engine {
     Where to call it:
     When you need to perform operations on entities in a specific layer.
     ==================================================================================*/
-    void for_each_entity_on_layer(LayerID layer, std::function<void(Entity&)> callback);
+    void for_each_entity_on_layer(LayerID layer, std::function<void(Entity)> callback);
 
     /*=================================================================================
     Function Brief:
@@ -547,7 +633,7 @@ namespace Engine {
     Where to call it:
     When you need to perform operations on entities in a specific layer by name.
     ==================================================================================*/
-    void for_each_entity_on_layer(const std::string& layer_name, std::function<void(Entity&)> callback);
+    void for_each_entity_on_layer(const std::string& layer_name, std::function<void(Entity)> callback);
 
     /*=================================================================================
     Function Brief:
@@ -847,7 +933,7 @@ namespace Engine {
     When you want to add an entity to additional layers.
     ==================================================================================*/
     template<LayerID... Layers>
-    void add_to_layers(const Entity& entity);
+    void add_to_layers(const Entity entity);
 
     /*=================================================================================
     Function Brief:
@@ -860,7 +946,7 @@ namespace Engine {
     When you want to remove an entity from specific layers.
     ==================================================================================*/
     template<LayerID... Layers>
-    void remove_from_layers(const Entity& entity);
+    void remove_from_layers(const Entity entity);
 
     /*=================================================================================
     Function Brief:
@@ -873,7 +959,7 @@ namespace Engine {
     When you want to explicitly define which layers an entity is on.
     ==================================================================================*/
     template<LayerID... Layers>
-    void set_layers(const Entity& entity);
+    void set_layers(const Entity entity);
 
     /*=================================================================================
     Function Brief:
@@ -886,7 +972,7 @@ namespace Engine {
     Where to call it:
     When you need to know if an entity is on a specific layer.
     ==================================================================================*/
-    bool is_on_layer(const Entity& entity, LayerID layer);
+    bool is_on_layer(const Entity entity, LayerID layer);
 
     /*=================================================================================
     Function Brief:
@@ -899,7 +985,7 @@ namespace Engine {
     When you need to know if an entity is on at least one of several layers.
     ==================================================================================*/
     template<LayerID... Layers>
-    bool is_on_any_layer(const Entity& entity);
+    bool is_on_any_layer(const Entity entity);
 
     /*=================================================================================
     Function Brief:
@@ -912,7 +998,7 @@ namespace Engine {
     When you need to know if an entity is on all specified layers.
     ==================================================================================*/
     template<LayerID... Layers>
-    bool is_on_all_layers(const Entity& entity);
+    bool is_on_all_layers(const Entity entity);
 
     /*=================================================================================
     Function Brief:
@@ -924,7 +1010,7 @@ namespace Engine {
     Where to call it:
     When you need the full layer signature of an entity.
     ==================================================================================*/
-    LayerSignature get_entity_layers(const Entity& entity);
+    LayerSignature get_entity_layers(const Entity entity);
 
     /*=================================================================================
     Function Brief:
@@ -936,7 +1022,7 @@ namespace Engine {
     Where to call it:
     When you want to remove an entity from all layers.
     ==================================================================================*/
-    void clear_layers(const Entity& entity);
+    void clear_layers(const Entity entity);
 
     /* =============== //
     // Internal state  //

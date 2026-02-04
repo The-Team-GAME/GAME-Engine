@@ -1,3 +1,16 @@
+//-----------------------------------------------------------------------------------
+// file:    TrailSystem.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file implements the TrailSystem and FadeOutSystem, which manage the spawning and updating of trail effects and the fading of entities over time.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 #include "../ECS/ECS.h"
 #include "../Components/EffectComponents.h"
@@ -16,7 +29,7 @@ namespace Engine {
         require_components<Components::Trail, Components::Transform2D>();
       }
 
-      void update_entity(Engine::ECS::Entity& entity) override {
+      void update_entity(Engine::ECS::Entity entity) override {
         auto* trail = entity.get_component<Components::Trail>();
         auto* transform = entity.get_component<Components::Transform2D>();
 
@@ -39,7 +52,7 @@ namespace Engine {
         }
       }
 
-      void spawn_trail(Engine::ECS::Entity& source_entity, Components::Trail& trail, Components::Transform2D& transform) {
+      void spawn_trail(Engine::ECS::Entity source_entity, Components::Trail& trail, Components::Transform2D& transform) {
         auto trail_entity = Engine::ECS::create_entity();
 
         // Copy Transform
@@ -86,7 +99,7 @@ namespace Engine {
         require_components<Components::FadeOut, Components::Color>();
       }
 
-      void update_entity(Engine::ECS::Entity& entity) override {
+      void update_entity(Engine::ECS::Entity entity) override {
         auto* fade = entity.get_component<Components::FadeOut>();
         auto* color = entity.get_component<Components::Color>();
 

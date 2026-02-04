@@ -47,7 +47,7 @@ namespace Components
     bool loop = false;
     bool stop_on_exit = true;
   };
-  
+
   // ============================================================================
   // State Animation Definition
   // ============================================================================
@@ -91,8 +91,10 @@ namespace Components
 
     // Optional animation data for this state
     std::optional<StateAnimation> animation;
-    // Optional audio data for this state
+    // Optional audio data for this state (OLD SYSTEM - kept for backwards compatibility)
     std::optional<StateAudio> audio;
+    // Optional FMOD audio data for this state (NEW SYSTEM - preferred)
+    std::optional<FMODStateAudio> fmod_audio;
 
     State() = default;
 
@@ -101,38 +103,40 @@ namespace Components
       const std::string& update_callback = "",
       const std::string& exit_callback = "",
       std::optional<StateAnimation> state_animation = std::nullopt,
-      std::optional<StateAudio> state_audio = std::nullopt)
+      std::optional<StateAudio> state_audio = std::nullopt,
+      std::optional<FMODStateAudio> fmod_state_audio = std::nullopt)
       : name(state_name)
       , on_enter_callback(enter_callback)
       , on_update_callback(update_callback)
       , on_exit_callback(exit_callback)
       , animation(state_animation)
       , audio(state_audio)
+      , fmod_audio(fmod_state_audio)
     {
     }
 
     // Helper methods to invoke callbacks (looks them up in registry)
-    void invoke_on_enter(Engine::ECS::Entity& entity) const {
+    void invoke_on_enter(Engine::ECS::Entity entity) const {
       if (!on_enter_callback.empty()) {
-        auto callback = on_enter_callback.get<void(Engine::ECS::Entity&)>();
+        auto callback = on_enter_callback.get<void(Engine::ECS::Entity)>();
         if (callback) {
           callback(entity);
         }
       }
     }
 
-    void invoke_on_update(Engine::ECS::Entity& entity) const {
+    void invoke_on_update(Engine::ECS::Entity entity) const {
       if (!on_update_callback.empty()) {
-        auto callback = on_update_callback.get<void(Engine::ECS::Entity&)>();
+        auto callback = on_update_callback.get<void(Engine::ECS::Entity)>();
         if (callback) {
           callback(entity);
         }
       }
     }
 
-    void invoke_on_exit(Engine::ECS::Entity& entity) const {
+    void invoke_on_exit(Engine::ECS::Entity entity) const {
       if (!on_exit_callback.empty()) {
-        auto callback = on_exit_callback.get<void(Engine::ECS::Entity&)>();
+        auto callback = on_exit_callback.get<void(Engine::ECS::Entity)>();
         if (callback) {
           callback(entity);
         }
@@ -153,7 +157,8 @@ namespace Components
     bool is_first_frame_ = false;     // Track if we just entered current state
     bool has_started_ = false;        // Track if the state machine has started running
     std::vector<std::string> state_history_; // Track previous states
-    Engine::Audio::ChannelHandle current_audio_channel_ = Engine::Audio::INVALID_CHANNEL; // Track currently playing audio
+    Engine::Audio::ChannelHandle current_audio_channel_ = Engine::Audio::INVALID_CHANNEL; // Track currently playing audio (OLD SYSTEM)
+    std::string current_fmod_instance_; // Track current FMOD instance name (NEW SYSTEM)
 
     Engine::ECS::Entity* owner_entity_ = nullptr;  // Reference to owning entity
 
@@ -216,7 +221,7 @@ namespace Components
 
     /// Update the current state and handle deferred transitions
     /// Should be called once per frame by the StateMachineSystem
-    void update(Engine::ECS::Entity& entity) {
+    void update(Engine::ECS::Entity entity) {
       // Store entity reference
       owner_entity_ = &entity;
 
@@ -317,7 +322,7 @@ namespace Components
           state_history_.erase(state_history_.begin());
         }
 
-        // Handle audio stop
+        // Handle OLD audio system stop
         if (current_audio_channel_ != Engine::Audio::INVALID_CHANNEL) {
           bool should_stop = true;
           if (old_state.audio.has_value()) {
@@ -328,6 +333,20 @@ namespace Components
             Engine::Audio::stop_channel(current_audio_channel_);
           }
           current_audio_channel_ = Engine::Audio::INVALID_CHANNEL;
+        }
+
+        // Handle NEW FMOD audio system stop
+        if (!current_fmod_instance_.empty()) {
+          bool should_stop = true;
+          if (old_state.fmod_audio.has_value()) {
+            should_stop = old_state.fmod_audio->stop_on_state_exit;
+          }
+
+          if (should_stop) {
+            Engine::AudioSystem::stopEventInstance(current_fmod_instance_, true);
+            Engine::AudioSystem::releaseEventInstance(current_fmod_instance_);
+          }
+          current_fmod_instance_.clear();
         }
       }
 
@@ -341,8 +360,11 @@ namespace Components
         apply_state_animation(new_state_obj.animation.value());
       }
 
-      // Apply state audio if it exists
-      if (new_state_obj.audio.has_value()) {
+      // Priority: Use FMOD audio if available, otherwise fall back to old audio system
+      if (new_state_obj.fmod_audio.has_value()) {
+        current_fmod_instance_ = apply_fmod_state_audio(new_state_obj.fmod_audio.value());
+      }
+      else if (new_state_obj.audio.has_value()) {
         current_audio_channel_ = apply_state_audio(new_state_obj.audio.value());
       }
     }
@@ -397,7 +419,7 @@ namespace Components
       }
     }
 
-    // Apply the audio data
+    // Apply the audio data (OLD SYSTEM)
     Engine::Audio::ChannelHandle apply_state_audio(const StateAudio& audio) {
       if (!owner_entity_) return Engine::Audio::INVALID_CHANNEL;
 
@@ -417,12 +439,37 @@ namespace Components
       // Play the sound via the component
       return sound_comp->play(audio.volume, audio.loop);
     }
+
+    // Apply FMOD state audio (NEW SYSTEM)
+    std::string apply_fmod_state_audio(const FMODStateAudio& fmod_audio) {
+      if (!owner_entity_) return "";
+
+      if (fmod_audio.event_path.empty()) {
+        return "";
+      }
+
+      // Generate unique instance name using entity ID and state name
+      std::string instance_name = "StateAudio_" + std::to_string(owner_entity_->get_id()) + "_" + current_state_name;
+
+      // If looping, create persistent instance
+      if (fmod_audio.loop) {
+        Engine::AudioSystem::createEventInstance(instance_name, fmod_audio.event_path);
+        Engine::AudioSystem::setEventInstanceVolume(instance_name, fmod_audio.volume);
+        Engine::AudioSystem::startEventInstance(instance_name);
+        return instance_name;
+      }
+      else {
+        // One-shot event
+        Engine::AudioSystem::playEvent(fmod_audio.event_path);
+        return ""; // No instance to track for one-shot
+      }
+    }
   };
 
 } // namespace Components
 
 REFLECT_FIELDS(Components::ColliderData, width, height, offset, vertices)
-REFLECT_FIELDS(Components::State, name, on_enter_callback, on_update_callback, on_exit_callback, animation, audio)
+REFLECT_FIELDS(Components::State, name, on_enter_callback, on_update_callback, on_exit_callback, animation, audio, fmod_audio)
 REFLECT_FIELDS(Components::StateAnimation, texture, texture_atlas, animation, scale, collider_data)
 REFLECT_FIELDS(Components::StateAudio, sound, volume, loop, stop_on_exit)
 REGISTER_COMPONENT(Components::StateMachine, states, current_state_name)

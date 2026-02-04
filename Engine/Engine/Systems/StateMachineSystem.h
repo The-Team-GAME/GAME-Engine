@@ -28,7 +28,7 @@ namespace Engine
         require_components<Components::StateMachine>();
       }
 
-      void update_entity(Engine::ECS::Entity& entity) override {
+      void update_entity(Engine::ECS::Entity entity) override {
         auto* state_machine = entity.get_component<Components::StateMachine>();
         if (state_machine) {
           state_machine->update(entity);

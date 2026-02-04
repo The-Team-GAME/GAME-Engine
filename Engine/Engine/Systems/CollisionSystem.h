@@ -76,13 +76,13 @@ namespace Engine {
         void clear();
 
         // Inserts an entity into the quad tree
-        bool insert(ECS::Entity& entity);
+        bool insert(ECS::Entity entity);
 
         // Insert an entity into a child node
-        bool insert_in_child_node(ECS::Entity& entity);
+        bool insert_in_child_node(ECS::Entity entity);
 
         // Check if an entity is fully contained within the current node's boundary
-        bool can_contain(ECS::Entity& entity) const;
+        bool can_contain(ECS::Entity entity) const;
 
         //
         void find_near_entity(AABB const& range, std::vector<ECS::Entity>& nearby);
@@ -115,15 +115,15 @@ namespace Engine {
 
 
         // Helper to check if entity's AABB can be contained in this node
-        bool can_contain_entity(ECS::Entity& entity) const;
+        bool can_contain_entity(ECS::Entity entity) const;
 
       public:
         QuadTreeSAT(AABB boundary, u32 depth = 0);
         ~QuadTreeSAT();
 
         void clear();
-        bool insert(ECS::Entity& entity);
-        bool insert_in_child_node(ECS::Entity& entity);
+        bool insert(ECS::Entity entity);
+        bool insert_in_child_node(ECS::Entity entity);
 
         // Find nearby entities using AABB broad-phase
         void find_near_entity(const AABB& range, std::vector<ECS::Entity>& nearby);
@@ -148,7 +148,7 @@ namespace Engine {
 
       void update() override;
 
-      void update_entity(ECS::Entity& entity) override;
+      void update_entity(ECS::Entity entity) override;
 
       // update the AABB of the entity after it gets transformed
       // No longer used
@@ -156,7 +156,7 @@ namespace Engine {
 
       // Helper to get AABB for any collider type (for spatial partitioning)
       // OBB and POLYGON types will use their bounding AABB
-      static AABB get_entity_aabb(ECS::Entity& entity);
+      static AABB get_entity_aabb(ECS::Entity entity);
 
       static CollisionResult check_collision(
         Components::BoxCollider const& lhs,

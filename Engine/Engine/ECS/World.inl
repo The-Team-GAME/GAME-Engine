@@ -73,7 +73,7 @@ namespace Engine {
 
     template <typename T, typename... Args>
       requires std::is_constructible_v<T, Args...>
-    void add_component(const Entity& entity, Args &&...args)
+    void add_component(const Entity entity, Args &&...args)
     {
       auto& containers = Internal::get_containers();
       EntityID entityId = entity.get_id();
@@ -86,7 +86,7 @@ namespace Engine {
     }
 
     template <typename T>
-    void remove_component(const Entity& entity)
+    void remove_component(const Entity entity)
     {
       auto& containers = Internal::get_containers();
       EntityID entityId = entity.get_id();
@@ -97,7 +97,7 @@ namespace Engine {
     }
 
     template <typename T>
-    T* get_component(const Entity& entity)
+    T* get_component(const Entity entity)
     {
       EntityID entityId = entity.get_id();
       auto* array = get_component_array<T>();
@@ -105,7 +105,7 @@ namespace Engine {
     }
 
     template <typename T>
-    bool has_component(const Entity& entity)
+    bool has_component(const Entity entity)
     {
       auto& containers = Internal::get_containers();
       EntityID entityId = entity.get_id();
@@ -115,7 +115,7 @@ namespace Engine {
     }
 
     template <typename... T>
-    bool has_components(const Entity& entity)
+    bool has_components(const Entity entity)
     {
       return (has_component<T>(entity) && ...);
     }
@@ -150,6 +150,20 @@ namespace Engine {
             return dynamic_cast<T*>(system.get()) != nullptr;
           }),
         containers.systems.end());
+    }
+
+    template <typename T>
+    void request_system_update()
+    {
+      auto& containers = Internal::get_containers();
+      for (auto& system : containers.systems)
+      {
+        if (dynamic_cast<T*>(system.get()) != nullptr)
+        {
+          containers.systems_to_update_once.insert(system.get());
+          break;
+        }
+      }
     }
 
     template <typename... T>
@@ -425,11 +439,59 @@ namespace Engine {
     }
 
     // ============================================================================
+    // for_each - Convenient iteration with direct component access
+    // ============================================================================
+
+    namespace Internal {
+      // Helper to detect if callback wants Entity as first argument
+      template<typename Func, typename Entity, typename... Components>
+      concept CallbackWithEntity = requires(Func f, Entity e, Components*... comps) {
+        f(e, comps...);
+      };
+
+      template<typename Func, typename... Components>
+      concept CallbackWithoutEntity = requires(Func f, Components*... comps) {
+        f(comps...);
+      };
+    }
+
+    template <typename... Components, typename Func>
+    void for_each(Func&& callback)
+    {
+      auto& containers = Internal::get_containers();
+      std::unordered_set<EntityID> processed;
+
+      for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
+        for (EntityID id : containers.layer_entities[layer]) {
+          if (processed.count(id) || !containers.active_entities.contains(id) || !has_components<Components...>(id))
+            continue;
+
+          processed.insert(id);
+          Entity entity(id);
+
+          // Get all component pointers
+          if constexpr (Internal::CallbackWithEntity<Func, Entity, Components...>) {
+            // Callback signature: void(Entity, Components*...)
+            callback(entity, get_component<Components>(entity)...);
+          }
+          else if constexpr (Internal::CallbackWithoutEntity<Func, Components...>) {
+            // Callback signature: void(Components*...)
+            callback(get_component<Components>(entity)...);
+          }
+          else {
+            static_assert(sizeof(Func) == 0,
+              "for_each callback must have signature void(Entity, Components*...) or void(Components*...)");
+          }
+        }
+      }
+    }
+
+    // ============================================================================
     // Layer Management Template Implementation
     // ============================================================================
 
     template<LayerID... Layers>
-    void add_to_layers(const Entity& entity)
+    void add_to_layers(const Entity entity)
     {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
@@ -452,7 +514,7 @@ namespace Engine {
     }
 
     template<LayerID... Layers>
-    void remove_from_layers(const Entity& entity)
+    void remove_from_layers(const Entity entity)
     {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
@@ -475,7 +537,7 @@ namespace Engine {
     }
 
     template<LayerID... Layers>
-    void set_layers(const Entity& entity)
+    void set_layers(const Entity entity)
     {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
@@ -504,7 +566,7 @@ namespace Engine {
     }
 
     template<LayerID... Layers>
-    bool is_on_any_layer(const Entity& entity)
+    bool is_on_any_layer(const Entity entity)
     {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
@@ -520,7 +582,7 @@ namespace Engine {
     }
 
     template<LayerID... Layers>
-    bool is_on_all_layers(const Entity& entity)
+    bool is_on_all_layers(const Entity entity)
     {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();

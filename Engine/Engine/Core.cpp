@@ -28,6 +28,7 @@
 #include "InputManager.h"
 #include "Audio/AudioPlayer.h"
 #include "Audio/AudioPlayerInternal.h"
+#include "Audio/AudioSystem.h"
 #include "Lua/LuaManager.h"
 #include "Resources.h"
 #include "ECS/ECS.h"
@@ -39,6 +40,7 @@
 #include "Events/RegisterAllEvents.h"
 #include "UndoManager/UndoManager.h"
 #include "Easing.h"
+#include "Lua/LuaComponentBindings.h"
 
 namespace Engine
 {
@@ -101,6 +103,18 @@ namespace Engine
       throw std::runtime_error("Failed to initialize audio manager");
     }
 
+    // Initialize FMOD Studio system
+    if (!Engine::AudioSystem::init()) {
+      throw std::runtime_error("Failed to initialize FMOD Studio audio system");
+    }
+
+    // Load FMOD sound banks
+    Log::info("Loading FMOD sound banks...");
+    Engine::AudioSystem::loadBank("Assets/sounds/Master.bank");
+    Engine::AudioSystem::loadBank("Assets/sounds/Master.strings.bank");
+    Engine::AudioSystem::loadBank("Assets/sounds/SFX.bank");
+    Log::info("FMOD sound banks loaded successfully");
+
     // Load game settings (Window mode, Audio volumes)
     if (!Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::load("Assets/settings/game_settings.json")) {
       Log::warning("Failed to load game settings, using defaults");
@@ -119,6 +133,9 @@ namespace Engine
     if (!Engine::LuaManager::init()) {
       throw std::runtime_error("Failed to initialize Lua manager");
     }
+
+    Engine::LuaBindings::register_all_bindings(); // For lua bindings
+    Engine::LuaManager::load_script("Assets/scripts/LazyMonkeyStateCallbacks.lua");
 
     Engine::Graphics::set_viewport({ 0, 0, engine_settings.window_width, engine_settings.window_height });
 
@@ -230,6 +247,7 @@ namespace Engine
       WindowManager::update_title();
 
       Engine::Audio::update();
+      Engine::AudioSystem::update();  // Update FMOD Studio system
       ImGuiManager::begin();
 
       // Only runs the main gameloop if the accumulator is more than the fixed dt and limits the number of loops to loop_cap
@@ -259,6 +277,13 @@ namespace Engine
         {
           Engine::Time::toggle_paused();
           Log::info("Physics Step Mode: {}", (Engine::Time::get_paused() ? "ON" : "OFF"));
+        }
+
+        // FMOD Test: Press H to play hurt sound
+        if (Engine::Input::is_pressed(KeyCode::H))
+        {
+          Engine::AudioSystem::playEvent("event:/SFX/MonkeyHurt");
+          Log::info("Playing FMOD event: event:/SFX/MonkeyHurt");
         }
 
         // Single-step when paused
@@ -300,9 +325,17 @@ namespace Engine
           Engine::Time::set_time_scale(1.0f);
         }
 
-        // Main gameloop here
-        Engine::SceneManager::update();
-        Engine::ECS::update();
+
+        // Two-phase ECS update:
+        // 1. Game systems only run when not paused (or during single-step)
+        if (!Engine::Time::get_paused() || single_step_requested)
+        {
+          Engine::SceneManager::update(); // LEgacy: Scene update
+          Engine::ECS::update_game();
+        }
+
+        // 2. Editor systems always run (gizmo, camera control, etc.)
+        Engine::ECS::update_editor();
 
         // Always process ECS housekeeping (entity deletions, component modifications)
         // even when paused so entities can be created/destroyed in the editor
@@ -377,6 +410,7 @@ namespace Engine
     ViewportPanel::exit();
 #endif
     Engine::Audio::exit();
+    Engine::AudioSystem::shutdown();  // Shutdown FMOD Studio system
     Engine::Resources::exit();
     Engine::Graphics::exit();
 

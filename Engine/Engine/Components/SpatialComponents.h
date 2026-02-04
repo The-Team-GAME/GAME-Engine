@@ -17,6 +17,9 @@
 #pragma once
 
 #include "../Math/Vector2D.h"
+#include "../ECS/Macros.h"
+#include <vector>
+#include <string>
 
 namespace Components
 {
@@ -34,7 +37,6 @@ namespace Components
       : position(x, y), rotation(rot), scale(scaleX, scaleY) {
     }
   };
-
 }
 
 REGISTER_COMPONENT(Components::Transform2D, position, rotation, scale)

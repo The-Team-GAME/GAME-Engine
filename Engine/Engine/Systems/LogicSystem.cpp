@@ -27,7 +27,7 @@ namespace { // in the cpp file
   /*===============/
   / Movement stuff /
   /===============*/
-  f32 walking_speed = 400.f;
+  f32 walking_force = 30000'000.f;
   Vec2D patrol_speed(150.f, 0.f);
   Vec2D jumping_force(0.f, -35000.f);
 
@@ -49,7 +49,7 @@ void logi::load_values()
   // Fill up soon
 }
 
-void logi::update_entity(Engine::ECS::Entity& entity)
+void logi::update_entity(Engine::ECS::Entity entity)
 {
   run_state(entity); 
 }
@@ -118,16 +118,16 @@ void logi::run_state(ECS::Entity entity)
 #pragma region player states
   // PLAYER SPECIFIC STATES
   case entity_state::IDLE:
-    rigid->velocity.x = 0.f;
+    rigid->force = 0.f;
     // Animation here
     break;
   case entity_state::MOVING_LEFT:
     // Physics Movement code here
-    move_left(*rigid);
+    rigid->force -= walking_force * rigid->mass;
     break;
   case entity_state::MOVING_RIGHT:
     // Physics Movement code here
-    move_right(*rigid);
+    rigid->force += walking_force * rigid->mass;
     break;
   case entity_state::JUMPING:
     // Physics Movement code here
@@ -203,11 +203,11 @@ void logi::move_left(Components::RigidBody& rigid)
     {
       direction *= -1;
     }
-    rigid.velocity = direction * walking_speed;
+    rigid.force += direction * walking_force;
   }
   else
   {
-    rigid.velocity.x = -walking_speed;
+    rigid.force.x = -walking_force;
   }
 }
 
@@ -220,11 +220,11 @@ void logi::move_right(Components::RigidBody& rigid)
     {
       direction *= -1;
     }
-    rigid.velocity = direction * walking_speed;
+    rigid.velocity = direction * walking_force;
   }
   else
   {
-    rigid.velocity.x = walking_speed;
+    rigid.velocity.x = walking_force;
   }
 }
 

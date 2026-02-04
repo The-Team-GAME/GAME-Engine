@@ -3,7 +3,7 @@
         "components": [
             {
                 "data": {
-                    "drawIndex": 1,
+                    "drawIndex": 3,
                     "tex_coords_list": [
                         [
                             {
@@ -11,11 +11,11 @@
                                 "y": 1.0
                             },
                             {
-                                "x": 0.20000000298023224,
+                                "x": 0.1666666716337204,
                                 "y": 1.0
                             },
                             {
-                                "x": 0.20000000298023224,
+                                "x": 0.1666666716337204,
                                 "y": 0.0
                             },
                             {
@@ -25,61 +25,79 @@
                         ],
                         [
                             {
-                                "x": 0.20000000298023224,
+                                "x": 0.1666666716337204,
                                 "y": 1.0
                             },
                             {
-                                "x": 0.4000000059604645,
+                                "x": 0.3333333432674408,
                                 "y": 1.0
                             },
                             {
-                                "x": 0.4000000059604645,
+                                "x": 0.3333333432674408,
                                 "y": 0.0
                             },
                             {
-                                "x": 0.20000000298023224,
-                                "y": 0.0
-                            }
-                        ],
-                        [
-                            {
-                                "x": 0.4000000059604645,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.6000000238418579,
-                                "y": 1.0
-                            },
-                            {
-                                "x": 0.6000000238418579,
-                                "y": 0.0
-                            },
-                            {
-                                "x": 0.4000000059604645,
+                                "x": 0.1666666716337204,
                                 "y": 0.0
                             }
                         ],
                         [
                             {
-                                "x": 0.6000000238418579,
+                                "x": 0.3333333432674408,
                                 "y": 1.0
                             },
                             {
-                                "x": 0.800000011920929,
+                                "x": 0.5,
                                 "y": 1.0
                             },
                             {
-                                "x": 0.800000011920929,
+                                "x": 0.5,
                                 "y": 0.0
                             },
                             {
-                                "x": 0.6000000238418579,
+                                "x": 0.3333333432674408,
                                 "y": 0.0
                             }
                         ],
                         [
                             {
-                                "x": 0.800000011920929,
+                                "x": 0.5,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.6666666865348816,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.6666666865348816,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.5,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.6666666865348816,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.8333333134651184,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.8333333134651184,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.6666666865348816,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.8333333134651184,
                                 "y": 1.0
                             },
                             {
@@ -91,7 +109,7 @@
                                 "y": 0.0
                             },
                             {
-                                "x": 0.800000011920929,
+                                "x": 0.8333333134651184,
                                 "y": 0.0
                             }
                         ]
@@ -101,56 +119,59 @@
             },
             {
                 "data": {
+                    "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
+                },
+                "type": "Components::Sound"
+            },
+            {
+                "data": {
                     "aabb": {
-                        "half_height": 36.366294860839844,
-                        "half_width": 21.029491424560547,
+                        "half_height": 37.96825408935547,
+                        "half_width": 24.793655395507813,
                         "pos": {
-                            "x": 874.55322265625,
-                            "y": 795.9114990234375
+                            "x": 220.49118041992188,
+                            "y": 768.2528076171875
                         }
                     },
-                    "height": 72.73258972167969,
+                    "height": 75.93650817871094,
                     "kinetic_friction": 0.800000011920929,
                     "offset": {
-                        "x": 8.981075286865234,
-                        "y": 27.633705139160156
+                        "x": 9.682525634765625,
+                        "y": 26.03174591064453
                     },
                     "polygon": {
                         "position": {
-                            "x": 938.4150390625,
-                            "y": 543.9224853515625
+                            "x": 0.0,
+                            "y": 0.0
                         },
                         "rotation": 0.0,
-                        "vertices": [
-                            {
-                                "x": -64.0,
-                                "y": -64.0
-                            },
-                            {
-                                "x": -64.0,
-                                "y": 64.0
-                            },
-                            {
-                                "x": 64.0,
-                                "y": 64.0
-                            },
-                            {
-                                "x": 64.0,
-                                "y": -64.0
-                            }
-                        ]
+                        "vertices": []
                     },
-                    "radius": 1.401298464324817e-45,
+                    "radius": 0.0,
                     "resolve_collisions": false,
                     "type": "AABB",
-                    "width": 42.058982849121094
+                    "width": 49.587310791015625
                 },
                 "type": "Components::BoxCollider"
             },
             {
                 "data": {
+                    "position": {
+                        "x": 221.29100036621094,
+                        "y": 768.2528076171875
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 128.0,
+                        "y": 128.0
+                    }
+                },
+                "type": "Components::Transform2D"
+            },
+            {
+                "data": {
                     "value": {
-                        "x": -1.0,
+                        "x": 1.0,
                         "y": 1.0
                     }
                 },
@@ -167,7 +188,7 @@
             },
             {
                 "data": {
-                    "path": "images/LazyMonkeySpriteSheets/LazyMonkey_Idle_Spritesheet.png"
+                    "path": "images/LazyMonkeySpriteSheets/LazyMonkey_Walk_Spritesheet.png"
                 },
                 "type": "Components::Texture"
             },
@@ -178,51 +199,34 @@
                         1,
                         2,
                         3,
-                        4
+                        4,
+                        5
                     ],
                     "before_times": [
                         0.0,
-                        0.15000000596046448,
+                        0.10000000149011612,
+                        0.20000000298023224,
                         0.30000001192092896,
-                        0.45000001788139343,
-                        0.6000000238418579
+                        0.4000000059604645,
+                        0.5
                     ],
                     "durations": [
-                        0.15000000596046448,
-                        0.15000000596046448,
-                        0.15000000596046448,
-                        0.15000000596046448,
-                        0.15000000596046448
+                        0.10000000149011612,
+                        0.10000000149011612,
+                        0.10000000149011612,
+                        0.10000000149011612,
+                        0.10000000149011612,
+                        0.10000000149011612
                     ],
                     "is_looping": true,
-                    "startTime": 3.8504583835601807,
-                    "totalDuration": 0.75
+                    "startTime": 7.740355491638184,
+                    "totalDuration": 0.6000000238418579
                 },
                 "type": "Components::Animation"
             },
             {
                 "data": {
-                    "position": {
-                        "x": 883.5343017578125,
-                        "y": 768.0
-                    },
-                    "rotation": 0.0,
-                    "scale": {
-                        "x": 128.0,
-                        "y": 128.0
-                    }
-                },
-                "type": "Components::Transform2D"
-            },
-            {
-                "data": {
-                    "path": "sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav"
-                },
-                "type": "Components::Sound"
-            },
-            {
-                "data": {
-                    "current_state_name": "Idle",
+                    "current_state_name": "Chasing",
                     "states": [
                         {
                             "first": "Attacking",
@@ -251,17 +255,17 @@
                                             0.5
                                         ],
                                         "is_looping": true,
-                                        "startTime": 3.8504583835601807,
+                                        "startTime": 7.740355491638184,
                                         "totalDuration": 1.0
                                     },
                                     "collider_data": {
-                                        "height": 41.038177490234375,
+                                        "height": 41.14814758300781,
                                         "offset": {
-                                            "x": 10.632881164550781,
-                                            "y": 43.48091125488281
+                                            "x": 10.443492889404297,
+                                            "y": 43.425926208496094
                                         },
                                         "vertices": [],
-                                        "width": 63.64588928222656
+                                        "width": 64.14334869384766
                                     },
                                     "scale": {
                                         "x": 192.0,
@@ -374,6 +378,7 @@
                                     "stop_on_exit": false,
                                     "volume": 0.6000000238418579
                                 },
+                                "fmod_audio": null,
                                 "name": "Attacking",
                                 "on_enter_callback": {
                                     "name": "lazy_monkey_attacking_enter"
@@ -413,17 +418,17 @@
                                             0.15000000596046448
                                         ],
                                         "is_looping": true,
-                                        "startTime": 3.8504583835601807,
+                                        "startTime": 7.740355491638184,
                                         "totalDuration": 0.75
                                     },
                                     "collider_data": {
-                                        "height": 72.73258972167969,
+                                        "height": 69.823974609375,
                                         "offset": {
-                                            "x": 8.981075286865234,
-                                            "y": 27.633705139160156
+                                            "x": 1.3881454467773438,
+                                            "y": 29.0880126953125
                                         },
                                         "vertices": [],
-                                        "width": 42.058982849121094
+                                        "width": 50.14137268066406
                                     },
                                     "scale": {
                                         "x": 128.0,
@@ -529,6 +534,7 @@
                                     }
                                 },
                                 "audio": null,
+                                "fmod_audio": null,
                                 "name": "Idle",
                                 "on_enter_callback": {
                                     "name": "lazy_monkey_idle_enter"
@@ -571,17 +577,17 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 3.8504583835601807,
+                                        "startTime": 7.740355491638184,
                                         "totalDuration": 0.6000000238418579
                                     },
                                     "collider_data": {
-                                        "height": 74.66677856445313,
+                                        "height": 71.09375,
                                         "offset": {
-                                            "x": 7.185054302215576,
-                                            "y": 24.732242584228516
+                                            "x": 14.403993606567383,
+                                            "y": 28.453125
                                         },
                                         "vertices": [],
-                                        "width": 46.20429229736328
+                                        "width": 44.42708969116211
                                     },
                                     "scale": {
                                         "x": 128.0,
@@ -712,6 +718,7 @@
                                     "stop_on_exit": true,
                                     "volume": 0.5
                                 },
+                                "fmod_audio": null,
                                 "name": "Chasing",
                                 "on_enter_callback": {
                                     "name": "lazy_monkey_chasing_enter"
@@ -739,17 +746,17 @@
                                             0.4000000059604645
                                         ],
                                         "is_looping": true,
-                                        "startTime": 3.8504583835601807,
+                                        "startTime": 7.740355491638184,
                                         "totalDuration": 0.4000000059604645
                                     },
                                     "collider_data": {
-                                        "height": 59.40800476074219,
+                                        "height": 61.61048889160156,
                                         "offset": {
-                                            "x": 1.6431307792663574,
-                                            "y": 34.01966094970703
+                                            "x": -6.528110504150391,
+                                            "y": 33.19475555419922
                                         },
                                         "vertices": [],
-                                        "width": 44.515953063964844
+                                        "width": 36.213722229003906
                                     },
                                     "scale": {
                                         "x": 128.0,
@@ -826,6 +833,7 @@
                                     "stop_on_exit": false,
                                     "volume": 0.6000000238418579
                                 },
+                                "fmod_audio": null,
                                 "name": "Hit",
                                 "on_enter_callback": {
                                     "name": "lazy_monkey_hit_enter"
@@ -865,17 +873,17 @@
                                             0.15000000596046448
                                         ],
                                         "is_looping": true,
-                                        "startTime": 3.8504583835601807,
+                                        "startTime": 7.740355491638184,
                                         "totalDuration": 0.75
                                     },
                                     "collider_data": {
-                                        "height": 65.51771545410156,
+                                        "height": 63.71122741699219,
                                         "offset": {
-                                            "x": 7.046684265136719,
-                                            "y": 31.24114227294922
+                                            "x": 6.626186370849609,
+                                            "y": 32.144386291503906
                                         },
                                         "vertices": [],
-                                        "width": 36.53235626220703
+                                        "width": 44.744544982910156
                                     },
                                     "scale": {
                                         "x": 128.0,
@@ -981,6 +989,7 @@
                                     }
                                 },
                                 "audio": null,
+                                "fmod_audio": null,
                                 "name": "Windup",
                                 "on_enter_callback": {
                                     "name": "lazy_monkey_windup_enter"
@@ -1014,17 +1023,17 @@
                                             1.5
                                         ],
                                         "is_looping": true,
-                                        "startTime": 3.8504583835601807,
+                                        "startTime": 7.740355491638184,
                                         "totalDuration": 1.7999999523162842
                                     },
                                     "collider_data": {
-                                        "height": 41.50630187988281,
+                                        "height": 43.076171875,
                                         "offset": {
-                                            "x": -6.355749130249023,
-                                            "y": 43.246849060058594
+                                            "x": -8.432912826538086,
+                                            "y": 42.4619140625
                                         },
                                         "vertices": [],
-                                        "width": 56.7050895690918
+                                        "width": 62.88035202026367
                                     },
                                     "scale": {
                                         "x": 128.0,
@@ -1184,6 +1193,7 @@
                                     }
                                 },
                                 "audio": null,
+                                "fmod_audio": null,
                                 "name": "Death",
                                 "on_enter_callback": {
                                     "name": "lazy_monkey_death_enter"
@@ -1203,26 +1213,28 @@
             {
                 "data": {
                     "acceleration": {
-                        "x": -6.12323437939287e-14,
-                        "y": 1000.0
+                        "x": 0.0,
+                        "y": 0.0
                     },
-                    "angular_velocity": 0.0,
-                    "force": {
-                        "x": -6.12323437939287e-14,
-                        "y": -3.7494000395748785e-30
+                    "force_view": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "gravity": {
+                        "x": 0.0,
+                        "y": 1000.0
                     },
                     "is_jumping": false,
                     "is_static": false,
                     "mass": 1.0,
                     "on_ground": true,
-                    "rotation": 0.0,
-                    "rotation_terminal_velocity": 360.0,
-                    "terminal_velocity": 1000.0,
                     "use_gravity": true,
                     "velocity": {
                         "x": 0.0,
-                        "y": 6.248999674126681e-32
-                    }
+                        "y": 0.0
+                    },
+                    "x_terminal_velocity": 500.0,
+                    "y_terminal_velocity": 500.0
                 },
                 "type": "Components::RigidBody"
             },
@@ -1235,15 +1247,15 @@
                     "chase_speed": 100.0,
                     "damage": 15,
                     "detection_range": 300.0,
-                    "hitbox_height": 80.0,
-                    "hitbox_offset_x": 0.0,
+                    "hitbox_height": 128.0,
+                    "hitbox_offset_x": 80.0,
                     "hitbox_offset_y": 0.0,
                     "hitbox_width": 120.0,
                     "knockback": {
                         "x": 500.0,
-                        "y": -100.0
+                        "y": 0.0
                     },
-                    "last_attack_time": 101.71050262451172,
+                    "last_attack_time": 139.53662109375,
                     "leap_height": 300.0,
                     "leap_speed": 2000.0
                 },
@@ -1258,16 +1270,16 @@
                     },
                     "is_continuous": true,
                     "knockback": {
-                        "x": 900.0,
-                        "y": -300.0
+                        "x": 500.0,
+                        "y": -0.0
                     }
                 },
                 "type": "Components::Attack"
             },
             {
                 "data": {
-                    "current_hp": 200,
-                    "max_hp": 200
+                    "current_hp": 5,
+                    "max_hp": 5
                 },
                 "type": "Components::EnemyHealth"
             }

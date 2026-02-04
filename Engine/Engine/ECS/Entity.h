@@ -82,7 +82,7 @@ namespace Engine {
       ==================================================================================*/
       template<typename T, typename... Args>
         requires std::is_constructible_v<T, Args...>
-      Entity& add_component(Args&&... args);
+      Entity add_component(Args&&... args);
 
       /*=================================================================================
       Function Brief:
@@ -112,7 +112,7 @@ namespace Engine {
       When detaching a component from an entity.
       ==================================================================================*/
       template<typename T>
-      Entity& remove_component();
+      Entity remove_component();
 
       /*=================================================================================
       Function Brief:
@@ -188,7 +188,7 @@ namespace Engine {
       Where to call it:
       When checking if two entity handles refer to the same entity.
       ==================================================================================*/
-      bool operator==(const Entity& other) const;
+      bool operator==(const Entity other) const;
 
       /*=================================================================================
       Function Brief:
@@ -200,7 +200,7 @@ namespace Engine {
       Where to call it:
       When checking if two entity handles refer to different entities.
       ==================================================================================*/
-      bool operator!=(const Entity& other) const;
+      bool operator!=(const Entity other) const;
 
       /*=================================================================================
       Function Brief:
@@ -226,7 +226,7 @@ namespace Engine {
       When you want to add an entity to additional layers.
       ==================================================================================*/
       template<LayerID... Layers>
-      Entity& add_to_layers();
+      Entity add_to_layers();
 
       /*=================================================================================
       Function Brief:
@@ -239,7 +239,7 @@ namespace Engine {
       When you want to remove an entity from specific layers.
       ==================================================================================*/
       template<LayerID... Layers>
-      Entity& remove_from_layers();
+      Entity remove_from_layers();
 
       /*=================================================================================
       Function Brief:
@@ -252,7 +252,7 @@ namespace Engine {
       When you want to explicitly define which layers an entity is on.
       ==================================================================================*/
       template<LayerID... Layers>
-      Entity& set_layers();
+      Entity set_layers();
 
       /*=================================================================================
       Function Brief:
@@ -314,7 +314,7 @@ namespace Engine {
       Where to call it:
       When you want to remove an entity from all layers.
       ==================================================================================*/
-      Entity& clear_layers();
+      Entity clear_layers();
 
       /*=================================================================================
       Function Brief:
@@ -326,7 +326,7 @@ namespace Engine {
       Where to call it:
       When you want to add an entity to a layer using its name.
       ==================================================================================*/
-      Entity& add_to_layer(const std::string& layer_name);
+      Entity add_to_layer(const std::string& layer_name);
 
       /*=================================================================================
       Function Brief:
@@ -338,7 +338,7 @@ namespace Engine {
       Where to call it:
       When you want to remove an entity from a layer using its name.
       ==================================================================================*/
-      Entity& remove_from_layer(const std::string& layer_name);
+      Entity remove_from_layer(const std::string& layer_name);
 
       /*=================================================================================
       Function Brief:

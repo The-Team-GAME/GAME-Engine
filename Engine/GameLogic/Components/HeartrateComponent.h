@@ -1,3 +1,16 @@
+//-----------------------------------------------------------------------------------
+// file:    HeartrateComponent.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (100%)
+//          Primary author
+//
+// email:   chew.s@digipen.edu
+//
+// brief:   This file defines the Heartrate component, which tracks the player's heart rate, manages heart rate states (Low to Dead), and defines visual effects (tint, distortion) associated with each state.
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #pragma once
 
 #include "../../Engine/MonkeyEngine.h"
@@ -52,11 +65,11 @@ namespace Components {
     float dead_mesh_distortion_intensity = 0.5f;
 
     float low_trail_lifetime = 0.0f;
-    float normal_trail_lifetime = 0.2f;
-    float high_trail_lifetime = 0.4f;
-    float very_high_trail_lifetime = 0.8f;
-    float crash_out_trail_lifetime = 1.0f;
-    float dead_trail_lifetime = 1.0f;
+    float normal_trail_lifetime = 0.1f;
+    float high_trail_lifetime = 0.1f;
+    float very_high_trail_lifetime = 0.1f;
+    float crash_out_trail_lifetime = 0.3f;
+    float dead_trail_lifetime = 0.3f;
 
     enum class HeartrateState {
       Low,

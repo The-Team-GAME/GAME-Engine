@@ -34,7 +34,7 @@ void ShowcaseState::load() {
 void ShowcaseState::init() {
   camera = Engine::ECS::create_entity()
     .add_component<Components::Tag<"ShowcaseState">>()
-    .add_component<Components::Camera>("Main Camera", true);
+    .add_component<Components::Camera>("Main Camera", true, true);
 
   // Create enemy
   enemy = Engine::ECS::create_entity()
