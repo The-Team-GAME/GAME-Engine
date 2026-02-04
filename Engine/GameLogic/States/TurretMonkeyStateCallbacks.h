@@ -15,6 +15,7 @@
 
 #include "../../Engine/MonkeyEngine.h"
 #include "../../Engine/Engine/Systems/CollisionSystem.h"
+#include "../../Engine/Engine/Systems/PhysicsSystem.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/EnemyHealthComponent.h"
 
@@ -587,20 +588,8 @@ namespace TurretMonkeyStateCallbacks
         entity.remove_component<Components::Parent>();
       }
 
-      // Apply knockback momentum from Player struct, scaled by TurretMonkey mass
-      float mass = 20.0f; // Reference mass
-      if (Turret_monkey) {
-        mass = Turret_monkey->mass;
-      }
-      if (mass < 1.0f) {
-        mass = 1.0f;
-      }
-
-      const float reference_mass = 20.0f;
-      float scale = reference_mass / mass;
-      Math::Vec2D scaled_knockback = pending_knockback->knockback * scale;
-
-      rigid->velocity = scaled_knockback;
+      // Apply knockback using physics system
+      Engine::Systems::Physics2DSystem::add_force(*rigid, pending_knockback->knockback);
 
       // Remove the pending knockback component (one-time use)
       entity.remove_component<Components::PendingKnockback>();

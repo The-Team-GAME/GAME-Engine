@@ -14,6 +14,7 @@
 #pragma once
 
 #include "../../Engine/MonkeyEngine.h"
+#include "../../Engine/Engine/Systems/PhysicsSystem.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/EnemyHealthComponent.h"
 
@@ -334,20 +335,8 @@ namespace LazyMonkeyStateCallbacks
         entity.remove_component<Components::Parent>();
       }
 
-      // Apply knockback momentum from Player struct, scaled by LazyMonkey mass
-      float mass = 40.0f; // Reference mass (matches default LazyMonkey mass)
-      if (lazy_monkey) {
-        mass = lazy_monkey->mass;
-      }
-      if (mass < 1.0f) {
-        mass = 1.0f;
-      }
-
-      const float reference_mass = 40.0f;
-      float scale = reference_mass / mass;
-      Math::Vec2D scaled_knockback = pending_knockback->knockback * scale;
-
-      rigid->velocity = scaled_knockback;
+			// Apply knockback using physics system
+      Engine::Systems::Physics2DSystem::add_force(*rigid, pending_knockback->knockback);
 
       // Remove the pending knockback component (one-time use)
       entity.remove_component<Components::PendingKnockback>();

@@ -91,9 +91,6 @@ namespace Components
 
   struct LazyMonkey
   {
-    //mass
-    float mass = 50.0f;
-
     // Movement speeds
     float chase_speed = 100.0f;
 
@@ -120,9 +117,6 @@ namespace Components
 
   struct GamerMonkey
   {
-    //mass
-    float mass = 100.0f;
-
     // Movement speeds
     float chase_speed = 100.0f;
 
@@ -162,9 +156,6 @@ namespace Components
 
   struct TurretMonkey
   {
-    //mass
-    float mass = 30.0f;
-
     // Movement speeds
     float chase_speed = 100.0f;
 

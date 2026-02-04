@@ -52,9 +52,9 @@ namespace GamerMonkeyStates
     // Gamer Monkey Idle State
     // ========================================================================
     Components::StateAnimation Gamer_monkey_idle_anim;
-    Gamer_monkey_idle_anim.texture = Components::Texture(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/idle.png"));
-    Gamer_monkey_idle_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 5, 5);
-    Gamer_monkey_idle_anim.animation = Components::Animation(4, 0.15f);
+    Gamer_monkey_idle_anim.texture = Components::Texture(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/walk.png"));
+    Gamer_monkey_idle_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 6, 6);
+    Gamer_monkey_idle_anim.animation = Components::Animation(6, 0.2f);
     Gamer_monkey_idle_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
 
     Components::State Gamer_monkey_idle("Idle", "Gamer_monkey_idle_enter", "Gamer_monkey_idle_update", "", Gamer_monkey_idle_anim);
@@ -63,9 +63,10 @@ namespace GamerMonkeyStates
     // Gamer Monkey Dash State
     // ========================================================================
     Components::StateAnimation Gamer_monkey_dashing_anim;
-    Gamer_monkey_dashing_anim.texture = Components::Texture(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/dash.png"));
-    Gamer_monkey_dashing_anim.texture_atlas = Components::TextureAtlas(64, 64, 2, 6, 12);
-    Gamer_monkey_dashing_anim.animation = Components::Animation(12, 0.1f);
+    Gamer_monkey_dashing_anim.texture = Components::Texture(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/atk.png"));
+    Gamer_monkey_dashing_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 24, 24);
+    Gamer_monkey_dashing_anim.animation = Components::Animation({ 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+      0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f});
     Gamer_monkey_dashing_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
 
     Components::State Gamer_monkey_dashing("Dash", "Gamer_monkey_dashing_enter", "Gamer_monkey_dashing_update", "Gamer_monkey_dashing_exit", Gamer_monkey_dashing_anim, footstep_audio);
@@ -74,9 +75,9 @@ namespace GamerMonkeyStates
     // Gamer Monkey Dash Windup State
     // ========================================================================
     Components::StateAnimation Gamer_monkey_dash_windup_anim;
-    Gamer_monkey_dash_windup_anim.texture = Components::Texture(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/idle.png"));
-    Gamer_monkey_dash_windup_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 5, 5);
-    Gamer_monkey_dash_windup_anim.animation = Components::Animation(4, 0.15f);
+    Gamer_monkey_dash_windup_anim.texture = Components::Texture(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/atk.png"));
+    Gamer_monkey_dash_windup_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 24, 14);
+    Gamer_monkey_dash_windup_anim.animation = Components::Animation({ 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.1f, 0.2f, 0.2f, 0.3f, 0.4f, 0.5f});
     Gamer_monkey_dash_windup_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
 
     Components::State Gamer_monkey_dash_windup("DashWindup", "Gamer_monkey_dash_windup_enter", "Gamer_monkey_dash_windup_update", "Gamer_monkey_dash_windup_exit", Gamer_monkey_dash_windup_anim);
@@ -85,20 +86,20 @@ namespace GamerMonkeyStates
     // Gamer Monkey Chase State
     // ========================================================================
     Components::StateAnimation Gamer_monkey_chasing_anim;
-    Gamer_monkey_chasing_anim.texture = Components::Texture(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/dash.png"));
-    Gamer_monkey_chasing_anim.texture_atlas = Components::TextureAtlas(64, 64, 2, 6, 12);
-    Gamer_monkey_chasing_anim.animation = Components::Animation(12, 0.1f);
+    Gamer_monkey_chasing_anim.texture = Components::Texture(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/walk.png"));
+    Gamer_monkey_chasing_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 6, 6);
+    Gamer_monkey_chasing_anim.animation = Components::Animation(6, 0.2f);
     Gamer_monkey_chasing_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
 
     Components::State Gamer_monkey_chasing("Chasing", "Gamer_monkey_chasing_enter", "Gamer_monkey_chasing_update", "Gamer_monkey_chasing_exit", Gamer_monkey_chasing_anim, footstep_audio);
 
     // ========================================================================
-    // Gamer Monkey Windup State (uses idle animation)
+    // Gamer Monkey Windup State
     // ========================================================================
     Components::StateAnimation Gamer_monkey_windup_anim;
-    Gamer_monkey_windup_anim.texture = Components::Texture(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/attacking.png"));
-    Gamer_monkey_windup_anim.texture_atlas = Components::TextureAtlas(64, 64, 3, 6, 2);
-    Gamer_monkey_windup_anim.animation = Components::Animation(2, 0.5f);
+    Gamer_monkey_windup_anim.texture = Components::Texture(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/atk.png"));
+    Gamer_monkey_windup_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 24, 5);
+    Gamer_monkey_windup_anim.animation = Components::Animation(5, 0.3f);
     Gamer_monkey_windup_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
 
     Components::State Gamer_monkey_windup("Windup", "Gamer_monkey_windup_enter", "Gamer_monkey_windup_update", "", Gamer_monkey_windup_anim);
@@ -107,9 +108,9 @@ namespace GamerMonkeyStates
     // Gamer Monkey Attacking State
     // ========================================================================
     Components::StateAnimation Gamer_monkey_attacking_anim;
-    Gamer_monkey_attacking_anim.texture = Components::Texture(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/attacking.png"));
-    Gamer_monkey_attacking_anim.texture_atlas = Components::TextureAtlas(64, 64, 3, 6, 13);
-    Gamer_monkey_attacking_anim.animation = Components::Animation({ 0.0f, 0.0f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.5f });
+    Gamer_monkey_attacking_anim.texture = Components::Texture(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/atk.png"));
+    Gamer_monkey_attacking_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 24, 8);
+    Gamer_monkey_attacking_anim.animation = Components::Animation({ 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.3f, 0.3f, 0.3f});
     Gamer_monkey_attacking_anim.scale = Math::Vec2D(ATTACK_WIDTH, ATTACK_HEIGHT);
 
     Components::State Gamer_monkey_attacking("Attacking", "Gamer_monkey_attacking_enter", "Gamer_monkey_attacking_update", "Gamer_monkey_attacking_exit", Gamer_monkey_attacking_anim, attack_audio);
@@ -118,9 +119,9 @@ namespace GamerMonkeyStates
     // Gamer Monkey Hit State
     // ========================================================================
     Components::StateAnimation Gamer_monkey_hit_anim;
-    Gamer_monkey_hit_anim.texture = Components::Texture(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/idle.png"));
-    Gamer_monkey_hit_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 5, 5);
-    Gamer_monkey_hit_anim.animation = Components::Animation(4, 0.15f);  // Changed from Gamer_monkey_idle_anim
+    Gamer_monkey_hit_anim.texture = Components::Texture(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/walk.png"));
+    Gamer_monkey_hit_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 6, 6);
+    Gamer_monkey_hit_anim.animation = Components::Animation(6, 0.2f);  // Changed from Gamer_monkey_idle_anim
     //Gamer_monkey_hit_anim.animation = Components::Animation(std::initializer_list{ 2 }, { 0.4f });
     Gamer_monkey_hit_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
 
@@ -130,9 +131,9 @@ namespace GamerMonkeyStates
     // Gamer Monkey Death State
     // ========================================================================
     Components::StateAnimation Gamer_monkey_death_anim;
-    Gamer_monkey_death_anim.texture = Components::Texture(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/death.png"));
-    Gamer_monkey_death_anim.texture_atlas = Components::TextureAtlas(64, 64, 2, 10, 20);
-    Gamer_monkey_death_anim.animation = Components::Animation(20, 0.1f);
+    Gamer_monkey_death_anim.texture = Components::Texture(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/walk.png"));
+    Gamer_monkey_death_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 6, 6);
+    Gamer_monkey_death_anim.animation = Components::Animation(6, 0.2f);
     Gamer_monkey_death_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
 
     Components::State Gamer_monkey_death("Death", "Gamer_monkey_death_enter", "Gamer_monkey_death_update", "Gamer_monkey_death_exit", Gamer_monkey_death_anim);

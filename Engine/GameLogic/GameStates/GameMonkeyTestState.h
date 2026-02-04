@@ -68,9 +68,9 @@ public:
       .add_component<Components::Enemy>()
       .add_component<Components::GamerMonkey>()
       .add_component<Components::Transform2D>(800.0f, 400.0f, 0.0f, GamerMonkeyStates::WIDTH, GamerMonkeyStates::HEIGHT)
-      .add_component<Components::Texture>(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/idle.png"))
-      .add_component<Components::TextureAtlas>(64, 64, 1, 5, 5)
-      .add_component<Components::Animation>(4, 0.15f)
+      .add_component<Components::Texture>(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/walk.png"))
+      .add_component<Components::TextureAtlas>(64, 64, 1, 6, 6)
+      .add_component<Components::Animation>(6, 0.2f)
       .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
       .add_component<Components::Flip>(1.0f, 1.0f) // Start facing right
       .add_component<Components::RigidBody>(Components::RigidBody(false, true))
@@ -93,10 +93,7 @@ public:
     }
 
     if (auto* gm_rb = Gamer_monkey_entity.get_component<Components::RigidBody>()) {
-      if (auto* gm_comp = Gamer_monkey_entity.get_component<Components::GamerMonkey>()) {
-        gm_rb->mass = gm_comp->mass;
-      }
-      gm_rb->kinetic_coefficient = 3.0f; // Match player friction behaviour
+      gm_rb->kinetic_coefficient = 3.0f;
     }
 
     // Collider friction value (used by some tools; 1 = no loss, 0 = full loss)
