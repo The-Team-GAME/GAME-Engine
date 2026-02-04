@@ -64,9 +64,10 @@ namespace GamerMonkeyStates
     // ========================================================================
     Components::StateAnimation Gamer_monkey_dashing_anim;
     Gamer_monkey_dashing_anim.texture = Components::Texture(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/atk.png"));
-    Gamer_monkey_dashing_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 24, 24);
+    // atk.png frames are 96x64; update atlas to match
+    Gamer_monkey_dashing_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 25, 25);
     Gamer_monkey_dashing_anim.animation = Components::Animation({ 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-      0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f});
+      0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f});
     Gamer_monkey_dashing_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
 
     Components::State Gamer_monkey_dashing("Dash", "Gamer_monkey_dashing_enter", "Gamer_monkey_dashing_update", "Gamer_monkey_dashing_exit", Gamer_monkey_dashing_anim, footstep_audio);
@@ -76,7 +77,7 @@ namespace GamerMonkeyStates
     // ========================================================================
     Components::StateAnimation Gamer_monkey_dash_windup_anim;
     Gamer_monkey_dash_windup_anim.texture = Components::Texture(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/atk.png"));
-    Gamer_monkey_dash_windup_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 24, 14);
+    Gamer_monkey_dash_windup_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 25, 14);
     Gamer_monkey_dash_windup_anim.animation = Components::Animation({ 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.1f, 0.2f, 0.2f, 0.3f, 0.4f, 0.5f});
     Gamer_monkey_dash_windup_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
 
@@ -98,7 +99,7 @@ namespace GamerMonkeyStates
     // ========================================================================
     Components::StateAnimation Gamer_monkey_windup_anim;
     Gamer_monkey_windup_anim.texture = Components::Texture(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/atk.png"));
-    Gamer_monkey_windup_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 24, 5);
+    Gamer_monkey_windup_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 25, 5);
     Gamer_monkey_windup_anim.animation = Components::Animation(5, 0.3f);
     Gamer_monkey_windup_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
 
@@ -109,7 +110,7 @@ namespace GamerMonkeyStates
     // ========================================================================
     Components::StateAnimation Gamer_monkey_attacking_anim;
     Gamer_monkey_attacking_anim.texture = Components::Texture(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/atk.png"));
-    Gamer_monkey_attacking_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 24, 8);
+    Gamer_monkey_attacking_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 25, 8);
     Gamer_monkey_attacking_anim.animation = Components::Animation({ 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.3f, 0.3f, 0.3f});
     Gamer_monkey_attacking_anim.scale = Math::Vec2D(ATTACK_WIDTH, ATTACK_HEIGHT);
 

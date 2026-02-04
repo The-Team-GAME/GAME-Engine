@@ -385,9 +385,13 @@ namespace GamerMonkeyStateCallbacks
         float dx = player_transform->position.x - Gamer_monkey_transform->position.x;
         float distance = std::abs(dx); // Only horizontal distance for sidescrolling
 
-        // Chase player horizontally, but stop when within attack range
+        // Chase player horizontally using physics (force-based)
         if (distance > Gamer_monkey->close_attack_range) {
-          rigid->velocity.x = (dx > 0 ? Gamer_monkey->chase_speed : -Gamer_monkey->chase_speed);
+          float desired_vx = (dx > 0 ? Gamer_monkey->chase_speed : -Gamer_monkey->chase_speed);
+          float dt = Engine::Time::get_fixed_dt();
+          float delta_v = desired_vx - rigid->velocity.x;
+          float force_x = (delta_v / dt) * rigid->mass; // F = m * dv/dt
+          Engine::Systems::Physics2DSystem::add_force(*rigid, Math::Vec2D(force_x, 0.0f));
           // Update flip direction based on movement
           if (flip) {
             flip->value.x = (dx > 0 ? 1.0f : -1.0f);
