@@ -60,35 +60,93 @@ namespace TurretMonkeyStateCallbacks
 
     const float projectile_speed = 300.0f;
 
-    const float projectile_width = 70.0f;
-    const float projectile_height = 70.0f;
+    // const float projectile_width = 70.0f;
+    // const float projectile_height = 70.0f;
 
-    auto projectile = Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(spawn_x, spawn_y, 0.0f, projectile_width, projectile_height)
-      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-      .add_component<Components::Texture>(Engine::Resources::load_texture("images/banana-projectile.png"))
-      .add_component<Components::RigidBody>(false, false) // Dynamic, no gravity for straight shot
-      .add_component<Components::BoxCollider>(projectile_width, projectile_height, false)
-      .add_component<Components::Attack>(Turret_monkey->damage)
-      .add_component<Components::Lifetime>(2.0f) // Despawn after a short time
-      .remove_from_layer("default")
-      .add_to_layer("effect")
-      .add_to_layer("damage_player")
-      .add_to_layer("projectiles");
+    // auto projectile = Engine::ECS::create_entity()
+    //   .add_component<Components::Transform2D>(spawn_x, spawn_y, 0.0f, projectile_width, projectile_height)
+    //   .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+    //   .add_component<Components::Texture>(Engine::Resources::load_texture("images/banana-projectile.png"))
+    //   .add_component<Components::RigidBody>(false, false) // Dynamic, no gravity for straight shot
+    //   .add_component<Components::BoxCollider>(projectile_width, projectile_height, false)
+    //   .add_component<Components::Attack>(Turret_monkey->damage)
+    //   .add_component<Components::Lifetime>(2.0f) // Despawn after a short time
+    //   .remove_from_layer("default")
+    //   .add_to_layer("effect")
+    //   .add_to_layer("damage_player")
+    //   .add_to_layer("projectiles");
 
+    // Spawn banana projectile from prefab
+    auto prefab = Engine::Resources::load_prefab("prefabs/banana_projectile.json");
+    auto projectile = Engine::ECS::instantiate_prefab(prefab);
+
+    // Add lifetime component (despawn after 2 seconds)
+    projectile.add_component<Components::Lifetime>(2.0f);
+
+    // Set spawn position
+    if (auto* proj_transform = projectile.get_component<Components::Transform2D>()) {
+      proj_transform->position.x = spawn_x;
+      proj_transform->position.y = spawn_y;
+    }
+
+    // Set velocity and spin
     if (auto* proj_rigid = projectile.get_component<Components::RigidBody>()) {
       proj_rigid->velocity = dir * projectile_speed;
       proj_rigid->angular_velocity = 360.0f; // Constant spin
     }
 
+    // Set knockback direction and damage
     if (auto* attack = projectile.get_component<Components::Attack>()) {
-      // Scale knockback magnitude to follow the same 360-degree direction
+      attack->damage = Turret_monkey->damage;
       Math::Vec2D base = Turret_monkey->knockback;
       float mag = base.get_magnitude();
       if (mag <= 0.0f) {
         mag = 600.0f; // sensible default if not configured
       }
       attack->knockback = dir * mag;
+    }
+  }
+
+  // ========================================================================
+  // Spray Cloud Projectile
+  // ========================================================================
+
+  inline void fire_spray_cloud(Engine::ECS::Entity& entity) {
+    auto* flip = entity.get_component<Components::Flip>();
+    auto* transform = entity.get_component<Components::Transform2D>();
+
+    if (!flip || !transform) {
+      return;
+    }
+
+    // Compute spawn position slightly in front of monkey
+    float offset_x = (flip->value.x < 0.0f) ? -50.0f : 50.0f;
+    float spawn_x = transform->position.x + offset_x;
+    float spawn_y = transform->position.y;
+
+    // Direction based on flip
+    Math::Vec2D dir((flip->value.x < 0.0f) ? -1.0f : 1.0f, 0.0f);
+
+    const float projectile_speed = 100.0f;
+
+    // Spawn spray cloud from prefab
+    auto prefab = Engine::Resources::load_prefab("prefabs/spray_cloud.json");
+    auto projectile = Engine::ECS::instantiate_prefab(prefab);
+
+    // Set spawn position
+    if (auto* proj_transform = projectile.get_component<Components::Transform2D>()) {
+      proj_transform->position.x = spawn_x;
+      proj_transform->position.y = spawn_y;
+    }
+
+    // Set velocity
+    if (auto* proj_rigid = projectile.get_component<Components::RigidBody>()) {
+      proj_rigid->velocity = dir * projectile_speed;
+    }
+
+    // Flip the spray cloud sprite if needed
+    if (auto* proj_flip = projectile.get_component<Components::Flip>()) {
+      proj_flip->value.x = flip->value.x;
     }
   }
 

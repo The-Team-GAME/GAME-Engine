@@ -56,33 +56,49 @@ namespace SprayCanMonkey
     Math::Vec2D cloud_pos = transform->position;
     cloud_pos.x += dir * (spray->spray_range * 1.0f);
 
-    // Use hardcoded values instead of component fields
-    const float w = 160.0f;  // was: spray->cloud_width
-    const float h = 160.0f;   // was: spray->cloud_height
+    //   // Use hardcoded values instead of component fields
+    //   const float w = 160.0f;  // was: spray->cloud_width
+    //   const float h = 160.0f;   // was: spray->cloud_height
 
-    const float cloud_life = 4.0f;
+    //   const float cloud_life = 4.0f;
+    //   const float start_vx = dir * 150.0f;
+
+    //   Engine::ECS::Entity cloud = Engine::ECS::create_entity()
+    //     .add_component<Components::Tag<"SprayCloud">>()
+    //     .add_component<Components::Attack>(
+    //       1,  // was: spray->cloud_damage_per_tick
+    //       Math::Vec2D(10.f, 10.f),
+    //       true,                        // is_continuous
+    //       0.5f  // was: spray->cloud_damage_interval
+    //     )
+    //     .add_component<Components::Transform2D>(cloud_pos.x, cloud_pos.y, 0.0f, w, h)
+    //     .add_component<Components::RigidBody>(true, false)
+    //     .add_component<Components::BoxCollider>(w, h, false)
+    //     .add_component<Components::Lifetime>(4.0f)  // was: spray->cloud_duration
+    //     .add_component<Components::Texture>(Engine::Resources::load_texture("images/SprayPaintMonkeySpriteSheets/GreenCloud.png"))
+    //     .add_component<Components::Color>(Math::Vec4D(1.f, 1.f, 1.f, 1.f))
+    //     .remove_from_layer("default")
+    //     .add_to_layer("damage_player")
+    //     .add_to_layer("spray");
+
     const float start_vx = dir * 150.0f;
 
-    Engine::ECS::Entity cloud = Engine::ECS::create_entity()
-      .add_component<Components::Tag<"SprayCloud">>()
-      .add_component<Components::Attack>(
-        1,  // was: spray->cloud_damage_per_tick
-        Math::Vec2D(10.f, 10.f),
-        true,                        // is_continuous
-        0.5f  // was: spray->cloud_damage_interval
-      )
-      .add_component<Components::Transform2D>(cloud_pos.x, cloud_pos.y, 0.0f, w, h)
-      .add_component<Components::RigidBody>(true, false)
-      .add_component<Components::BoxCollider>(w, h, false)
-      .add_component<Components::Lifetime>(4.0f)  // was: spray->cloud_duration
-      .add_component<Components::Texture>(Engine::Resources::load_texture("images/SprayPaintMonkeySpriteSheets/GreenCloud.png"))
-      .add_component<Components::Color>(Math::Vec4D(1.f, 1.f, 1.f, 1.f))
-      .remove_from_layer("default")
-      .add_to_layer("damage_player")
-      .add_to_layer("spray");
+    // Spawn spray cloud from prefab
+    auto prefab = Engine::Resources::load_prefab("prefabs/spray_cloud.json");
+    Engine::ECS::Entity cloud = Engine::ECS::instantiate_prefab(prefab);
 
-    if (auto* rb = cloud.get_component<Components::RigidBody>())
+    // Add lifetime component (despawn after 4 seconds)
+    cloud.add_component<Components::Lifetime>(4.0f);
+
+    // Set spawn position
+    if (auto* cloud_transform = cloud.get_component<Components::Transform2D>()) {
+      cloud_transform->position = cloud_pos;
+    }
+
+    // Set velocity
+    if (auto* rb = cloud.get_component<Components::RigidBody>()) {
       rb->velocity.x = start_vx;
+    }
 
     return cloud;
   }

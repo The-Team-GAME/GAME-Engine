@@ -1,0 +1,116 @@
+{
+    "data": {
+        "components": [
+            {
+                "data": {
+                    "a": 1.0,
+                    "b": 1.0,
+                    "g": 1.0,
+                    "r": 1.0
+                },
+                "type": "Components::Color"
+            },
+            {
+                "data": {
+                    "path": "images/SprayPaintMonkeySpriteSheets/GreenCloud.png"
+                },
+                "type": "Components::Texture"
+            },
+            {
+                "data": {
+                    "acceleration": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "force_view": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "gravity": {
+                        "x": 0.0,
+                        "y": 1000.0
+                    },
+                    "is_jumping": false,
+                    "is_static": true,
+                    "mass": 1.0,
+                    "on_ground": false,
+                    "use_gravity": false,
+                    "velocity": {
+                        "x": -83.53569030761719,
+                        "y": -16.666667938232422
+                    },
+                    "x_terminal_velocity": 500.0,
+                    "y_terminal_velocity": 500.0
+                },
+                "type": "Components::RigidBody"
+            },
+            {
+                "data": {
+                    "position": {
+                        "x": 8810.0048828125,
+                        "y": 1891.34765625
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 160.0,
+                        "y": 160.0
+                    }
+                },
+                "type": "Components::Transform2D"
+            },
+            {
+                "data": {
+                    "damage": 1,
+                    "damage_interval": 0.5,
+                    "impact_vfx_texture": {
+                        "path": ""
+                    },
+                    "is_continuous": true,
+                    "knockback": {
+                        "x": 10.0,
+                        "y": 10.0
+                    }
+                },
+                "type": "Components::Attack"
+            },
+            {
+                "data": {
+                    "aabb": {
+                        "half_height": 34.71263122558594,
+                        "half_width": 31.724124908447266,
+                        "pos": {
+                            "x": 8812.7900390625,
+                            "y": 1891.9033203125
+                        }
+                    },
+                    "height": 69.42526245117188,
+                    "kinetic_friction": 1.0,
+                    "offset": {
+                        "x": -0.000003814697265625,
+                        "y": -0.6896591186523438
+                    },
+                    "polygon": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "rotation": 0.0,
+                        "vertices": []
+                    },
+                    "radius": 1000.0,
+                    "resolve_collisions": false,
+                    "type": "AABB",
+                    "width": 63.44824981689453
+                },
+                "type": "Components::BoxCollider"
+            }
+        ],
+        "filepath": "prefabs/spray.json",
+        "layers": [
+            "damage_player",
+            "spray"
+        ],
+        "uuid": "53762d03-a26f-409e3-82e6-4d0943344032"
+    },
+    "dataType": "Prefab"
+}

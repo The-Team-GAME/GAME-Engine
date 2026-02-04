@@ -1,0 +1,117 @@
+{
+    "data": {
+        "components": [
+            {
+                "data": {
+                    "a": 1.0,
+                    "b": 1.0,
+                    "g": 1.0,
+                    "r": 1.0
+                },
+                "type": "Components::Color"
+            },
+            {
+                "data": {
+                    "path": "images/banana-projectile.png"
+                },
+                "type": "Components::Texture"
+            },
+            {
+                "data": {
+                    "acceleration": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "force_view": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "gravity": {
+                        "x": 0.0,
+                        "y": 1000.0
+                    },
+                    "is_jumping": false,
+                    "is_static": false,
+                    "mass": 1.0,
+                    "on_ground": false,
+                    "use_gravity": false,
+                    "velocity": {
+                        "x": -298.2402648925781,
+                        "y": 32.446014404296875
+                    },
+                    "x_terminal_velocity": 500.0,
+                    "y_terminal_velocity": 500.0
+                },
+                "type": "Components::RigidBody"
+            },
+            {
+                "data": {
+                    "position": {
+                        "x": 1885.105712890625,
+                        "y": 1184.3739013671875
+                    },
+                    "rotation": 324.0000305175781,
+                    "scale": {
+                        "x": 70.0,
+                        "y": 70.0
+                    }
+                },
+                "type": "Components::Transform2D"
+            },
+            {
+                "data": {
+                    "damage": 15,
+                    "damage_interval": 0.10000000149011612,
+                    "impact_vfx_texture": {
+                        "path": ""
+                    },
+                    "is_continuous": false,
+                    "knockback": {
+                        "x": -506.9109802246094,
+                        "y": 55.147621154785156
+                    }
+                },
+                "type": "Components::Attack"
+            },
+            {
+                "data": {
+                    "aabb": {
+                        "half_height": 7.619421005249023,
+                        "half_width": 8.015497207641602,
+                        "pos": {
+                            "x": 1900.017822265625,
+                            "y": 1182.7515869140625
+                        }
+                    },
+                    "height": 15.238842010498047,
+                    "kinetic_friction": 1.0,
+                    "offset": {
+                        "x": -0.15966224670410156,
+                        "y": -0.5557174682617188
+                    },
+                    "polygon": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "rotation": 0.0,
+                        "vertices": []
+                    },
+                    "radius": 1000.0,
+                    "resolve_collisions": false,
+                    "type": "AABB",
+                    "width": 16.030994415283203
+                },
+                "type": "Components::BoxCollider"
+            }
+        ],
+        "filepath": "",
+        "layers": [
+            "damage_player",
+            "projectiles",
+            "effect"
+        ],
+        "uuid": "25fbc702-4e79-40637-885d-8cd049404611"
+    },
+    "dataType": "Prefab"
+}
