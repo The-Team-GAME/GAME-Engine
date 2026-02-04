@@ -45,7 +45,7 @@ namespace PlayerStates
     Components::StateAudio attack_audio;
     attack_audio.sound = Engine::Resources::load_sound("sounds/SFX/Player/Player Swing.wav");
     attack_audio.loop = false;
-    attack_audio.volume = 0.5f;
+    attack_audio.volume = 0.2f;
     attack_audio.stop_on_exit = false;
 
 
@@ -78,6 +78,12 @@ namespace PlayerStates
     fmod_dash_audio.loop = false;
     fmod_dash_audio.volume = 0.6f;
     fmod_dash_audio.stop_on_state_exit = false;
+
+    Components::FMODStateAudio fmod_attack_audio;
+    fmod_attack_audio.event_path = "event:/SFX/PlayerPunch";
+    fmod_attack_audio.loop = false;
+    fmod_attack_audio.volume = 0.2f;
+    fmod_attack_audio.stop_on_state_exit = false;
 
     // ========================================================================
     // Player Idle State
@@ -132,7 +138,7 @@ namespace PlayerStates
     player_attack1_anim.animation = Components::Animation({ 0, 1, 2, 3, 4, 5, 6, 7, 8 }, { 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f }, false);
     player_attack1_anim.scale = Math::Vec2D(ATTACK_WIDTH * 2.0f, ATTACK_HEIGHT * 2.0f);
 
-    Components::State player_attack1("Attack1", "player_attack1_enter", "player_attack1_update", "", player_attack1_anim, attack_audio);
+    Components::State player_attack1("Attack1", "player_attack1_enter", "player_attack1_update", "", player_attack1_anim, attack_audio, fmod_attack_audio);
 
     // ========================================================================
     // Player Attack 2 State (Second Punch)
@@ -143,7 +149,7 @@ namespace PlayerStates
     player_attack2_anim.animation = Components::Animation({ 6, 7, 8, 9, 10, 11, 12 }, { 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f }, false);
     player_attack2_anim.scale = Math::Vec2D(ATTACK_WIDTH * 2.0f, ATTACK_HEIGHT * 2.0f);
 
-    Components::State player_attack2("Attack2", "player_attack2_enter", "player_attack2_update", "", player_attack2_anim, attack_audio);
+    Components::State player_attack2("Attack2", "player_attack2_enter", "player_attack2_update", "", player_attack2_anim, attack_audio, fmod_attack_audio);
 
     // ========================================================================
     // Player Attack 3 State (Third Punch - Finisher)
@@ -154,7 +160,7 @@ namespace PlayerStates
     player_attack3_anim.animation = Components::Animation({ 9, 10, 11, 12, 13, 14, 15, 16, 17 }, { 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f }, false);
     player_attack3_anim.scale = Math::Vec2D(ATTACK_WIDTH * 2.0f, ATTACK_HEIGHT * 2.0f);
 
-    Components::State player_attack3("Attack3", "player_attack3_enter", "player_attack3_update", "", player_attack3_anim, attack_audio);
+    Components::State player_attack3("Attack3", "player_attack3_enter", "player_attack3_update", "", player_attack3_anim, attack_audio, fmod_attack_audio);
 
     // ========================================================================
     // Build and return state machine
