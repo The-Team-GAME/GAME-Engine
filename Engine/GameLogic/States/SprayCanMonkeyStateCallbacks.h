@@ -60,6 +60,9 @@ namespace SprayCanMonkey
     const float w = 160.0f;  // was: spray->cloud_width
     const float h = 160.0f;   // was: spray->cloud_height
 
+    const float cloud_life = 4.0f;
+    const float start_vx = dir * 150.0f;
+
     Engine::ECS::Entity cloud = Engine::ECS::create_entity()
       .add_component<Components::Tag<"SprayCloud">>()
       .add_component<Components::Attack>(
@@ -78,9 +81,7 @@ namespace SprayCanMonkey
       .add_to_layer("damage_player");
 
     if (auto* rb = cloud.get_component<Components::RigidBody>())
-    {
-      rb->velocity.x = dir * 150.0f;  // drift speed
-    }
+      rb->velocity.x = start_vx;
 
     return cloud;
   }
@@ -283,8 +284,38 @@ namespace SprayCanMonkey
     float spray_elapsed = current_time - spray_monkey->last_attack_time;
 
     if (!spray_monkey->cloud_spawned && spray_elapsed >= spray_monkey->cloud_spawn_delay) {
-      spawn_spray_cloud(entity);
+      auto cloud =  spawn_spray_cloud(entity);
+
+      spray_monkey->cloud_entity = cloud;
+      spray_monkey->cloud_spawn_time = current_time;
+
+      spray_monkey->cloud_initial_vx =
+        (cloud.get_component<Components::RigidBody>())
+        ? cloud.get_component<Components::RigidBody>()->velocity.x
+        : 0.f;
+
       spray_monkey->cloud_spawned = true;
+    }
+
+    if (spray_monkey->cloud_spawned && spray_monkey->cloud_entity.is_valid())
+    {
+      float tempst = (spray_elapsed) / spray_monkey->spray_duration;
+
+      // Slow down
+      if (auto* rb = spray_monkey->cloud_entity.get_component<Components::RigidBody>())
+      {
+        rb->velocity.x = spray_monkey->cloud_initial_vx * (0.8f - tempst);
+      }
+
+      if (!(spray_elapsed >= (spray_monkey->cloud_spawn_delay - 2.0f))) {
+        if (tempst >= 1.0f) tempst = 1.0f;
+        // Fade out
+        if (auto* color = spray_monkey->cloud_entity.get_component<Components::Color>())
+        {
+          color->w -= tempst / 10.0f;   // alpha fades to 0
+        }
+      }
+      
     }
 
     // End spray after duration or animation completes
@@ -296,6 +327,11 @@ namespace SprayCanMonkey
   inline void spraying_on_exit(Engine::ECS::Entity entity) {
     // Note: Cloud entity manages its own lifetime
     // No need to manually clean up here
+    if (auto* spray_monkey = entity.get_component<Components::SprayCanMonkey>())
+    {
+      spray_monkey->cloud_entity = {};
+      spray_monkey->cloud_spawned = false;
+    }
   }
 
   // ========================================================================
