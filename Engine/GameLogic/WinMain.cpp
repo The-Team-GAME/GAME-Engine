@@ -29,6 +29,7 @@
 #include "GameStates/LevelTestState.h"
 #include "GameStates/GameplayState.h"
 #include "GameStates/PauseState.h"
+#include "GameStates/VictoryState.h"
 #include "GameStates/OptionsState.h"
 #include "GameStates/AnimatorTestState.h"
 #include "Systems/HealthSystem.h"
@@ -322,6 +323,7 @@ void RunGame()
   Engine::SceneManager::register_scene<BehaviourState>("BehaviourState");
   Engine::SceneManager::register_scene<GameplayState>("GameplayState");
   Engine::SceneManager::register_scene<PauseState>("PauseState");
+  Engine::SceneManager::register_scene<VictoryState>("VictoryState");
   Engine::SceneManager::register_scene<OptionsState>("OptionsState");
   Engine::SceneManager::register_scene<AnimatorTestState>("AnimatorTestState");
 
