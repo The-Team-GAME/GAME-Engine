@@ -154,10 +154,8 @@ namespace PlayerStateCallbacks
   inline void jumping_on_update(Engine::ECS::Entity entity)
   {
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
-    Components::Player* player_comp = entity.get_component<Components::Player>();
     Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
     assert(rigid);
-    assert(player_comp);
     assert(state_machine);
 
     if (rigid->on_ground && rigid->velocity.y >= 0.0f)

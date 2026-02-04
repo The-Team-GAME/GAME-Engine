@@ -355,7 +355,7 @@ namespace SprayCanMonkey
   // Hit State Callbacks
   // ========================================================================
 
-  inline void hit_on_enter(Engine::ECS::Entity entity) {
+  inline void hit_on_enter(Engine::ECS::Entity) {
     Log::info("Spray Can Monkey: Hit!");
   }
 

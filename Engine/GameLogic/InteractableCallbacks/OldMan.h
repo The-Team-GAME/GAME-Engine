@@ -11,7 +11,7 @@ namespace OldManCallbacks
   inline bool dialogue_shown = false;
   inline bool e_key_was_down = false;  // Track previous E key state for edge detection
 
-  void spawn_dialogue(Engine::ECS::Entity player_entity) {
+  void spawn_dialogue(Engine::ECS::Entity) {
     if (dialogue_shown) return;
     dialogue_shown = true;
 
@@ -75,11 +75,11 @@ namespace OldManCallbacks
     Log::info("Old man dialogue destroyed!");
   }
 
-  void old_man_on_enter(Engine::ECS::Entity interactable, Engine::ECS::Entity player_entity) {
-    Log::info("Player {} entered interaction range of entity {}", player_entity.get_id(), interactable.get_id());
+  void old_man_on_enter(Engine::ECS::Entity, Engine::ECS::Entity player_entity) {
+    Log::info("Player {} entered interaction range", player_entity.get_id());
   }
 
-  void old_man_on_update(Engine::ECS::Entity interactable, Engine::ECS::Entity player_entity) {
+  void old_man_on_update(Engine::ECS::Entity, Engine::ECS::Entity player_entity) {
     // Manual edge detection for E key (since time scale affects is_pressed behavior)
     bool e_key_down = Engine::Input::is_held(Engine::KeyCode::E);
 

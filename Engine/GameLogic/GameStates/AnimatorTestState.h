@@ -154,7 +154,7 @@ public:
   void update() {
     // Press R to restart animations
     if (Engine::Input::is_pressed(KeyCode::R)) {
-      Engine::ECS::for_each<Components::Animator>([](Engine::ECS::Entity entity, Components::Animator* anim) {
+      Engine::ECS::for_each<Components::Animator>([](Engine::ECS::Entity, Components::Animator* anim) {
         anim->elapsed = 0.0f;
         anim->start_time = Engine::Time::get_time();
         anim->is_playing = true;

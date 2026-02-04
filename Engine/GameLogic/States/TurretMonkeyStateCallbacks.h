@@ -485,7 +485,7 @@ namespace TurretMonkeyStateCallbacks
     }
   }
 
-  inline void turret_on_exit(Engine::ECS::Entity entity) {
+  inline void turret_on_exit(Engine::ECS::Entity) {
     // Leaving the turret state does not itself re-enable gravity.
     // Gravity is turned back on explicitly in states like Hit.
     Log::info("Turret Monkey: Exited Turret state");

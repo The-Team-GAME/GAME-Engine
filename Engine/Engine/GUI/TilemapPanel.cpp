@@ -1413,7 +1413,6 @@ namespace TilemapPanel {
 
             // Calculate which tiles make up this frame
             int tiles_per_frame = anim_config.prop_cols * anim_config.prop_rows;
-            int frame_start_tile = current_frame * tiles_per_frame;
 
             // Use stored sheet dimensions (avoid precision loss from integer division)
             int sheet_cols = anim_config.sheet_cols;

@@ -772,13 +772,11 @@ void Engine::Resources::cache_level(const std::string& filepath, const Engine::E
   Log::info("Level cached: {}", full_path);
 }
 
-bool Engine::Resources::open_level(const std::string& filepath, bool append_resource_path, bool additive)
+bool Engine::Resources::open_level(const std::string& filepath, bool append_resource_path)
 {
 #ifndef GAME_BUILD
   // In editor mode, use the tab manager for level opening
-  if (!additive) {
-    return LevelTabManager::open_tab(filepath, append_resource_path);
-  }
+  return LevelTabManager::open_tab(filepath, append_resource_path);
 #endif
 
   // In game mode or for additive loading, use LevelManager

@@ -204,7 +204,6 @@ void RunGame()
       auto* attack = attack_entity.get_component<Components::Attack>();
       auto* heartrate = player_entity.get_component<Components::Heartrate>();
       auto* rigid = player_entity.get_component<Components::RigidBody>();
-      auto* player_comp = player_entity.get_component<Components::Player>();
       // auto* player_transform = player_entity.get_component<Components::Transform2D>();
       // auto* attack_transform = attack_entity.get_component<Components::Transform2D>();
 
@@ -326,7 +325,7 @@ void RunGame()
 
   // Victory interactable callback - shows victory screen when player enters the zone
   Engine::FunctionRegistry<void(Engine::ECS::Entity, Engine::ECS::Entity)>::register_function("show_victory",
-    [](Engine::ECS::Entity interactable, Engine::ECS::Entity player) {
+    [](Engine::ECS::Entity, Engine::ECS::Entity) {
       Log::info("Victory! Player reached the goal.");
       Engine::SceneManager::push_scene("VictoryState");
     });
