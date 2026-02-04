@@ -106,6 +106,9 @@ namespace Components
     float spray_range = 150.0f;
     float spray_width = 80.0f;
 
+    float cloud_spawn_delay = 1.1f;     // spawn delay
+    bool cloud_spawned = false;
+
     // Knockback
     Math::Vec2D knockback = { 300.0f, 400.0f };
 
@@ -138,6 +141,7 @@ namespace Components
     float detection_range = 300.0f;
     float chase_range = 400.0f;
     float attack_range = 180.0f;
+
   };
 
   struct Attack

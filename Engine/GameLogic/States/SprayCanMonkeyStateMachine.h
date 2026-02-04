@@ -85,9 +85,9 @@ namespace SprayCanMonkeyStates
     // ========================================================================
     Components::StateAnimation spray_monkey_spraying_anim;
     spray_monkey_spraying_anim.texture = Components::Texture(Engine::Resources::load_texture("images/SprayPaintMonkeySpriteSheets/Spraypaint_Attack_Spritesheet.png"));
-    spray_monkey_spraying_anim.texture_atlas = Components::TextureAtlas(80, 64, 1, 7, 7);
-    spray_monkey_spraying_anim.animation = Components::Animation({ 0.1f, 0.1f, 0.2f, 0.1f, 0.1f, 0.1f, 0.1f });
-    spray_monkey_spraying_anim.scale = Math::Vec2D(160.0f * 2.0f, HEIGHT * 2.0f);
+    spray_monkey_spraying_anim.texture_atlas = Components::TextureAtlas(80, 64, 1, 15, 15);
+    spray_monkey_spraying_anim.animation = Components::Animation({ 0.1f, 0.1f, 0.2f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.2f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f });
+    spray_monkey_spraying_anim.scale = Math::Vec2D(WIDTH * 3.0f, HEIGHT * 2.0f);
 
     Components::State spray_monkey_spraying("Spraying", "spraycan_monkey_spraying_enter", "spraycan_monkey_spraying_update", "spraycan_monkey_spraying_exit", spray_monkey_spraying_anim, spray_audio);
 
