@@ -49,6 +49,15 @@ public:
       .add_component<Components::Interactable>(50.0f, "show_victory", "", "")
       .add_to_layer("effect");
 
+    // Old man NPC - press E to interact and show dialogue
+    auto old_man = Engine::ECS::create_entity()
+      .add_component<Components::Transform2D>(200.0f, 800.0f, 0.0f, 64.0f, 64.0f)
+      .add_component<Components::Texture>(Engine::Resources::load_texture("images/NPCOldman.png"))
+      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+      .add_component<Components::Interactable>(100.0f, "", "old_man_on_update", "old_man_on_exit")
+      .add_to_layer("player");
+    Log::info("Old man entity created with ID: {}", old_man.get_id());
+
   };
 
   void init() {};

@@ -1,0 +1,57 @@
+{
+    "data": {
+        "components": [
+            {
+                "data": {
+                    "a": 1.0,
+                    "b": 1.0,
+                    "g": 1.0,
+                    "r": 1.0
+                },
+                "type": "Components::Color"
+            },
+            {
+                "data": {
+                    "on_enter": {
+                        "name": ""
+                    },
+                    "on_exit": {
+                        "name": "old_man_on_exit"
+                    },
+                    "on_update": {
+                        "name": "old_man_on_update"
+                    },
+                    "radius": 100.0
+                },
+                "type": "Components::Interactable"
+            },
+            {
+                "data": {
+                    "path": "images/NPCOldman.png"
+                },
+                "type": "Components::Texture"
+            },
+            {
+                "data": {
+                    "position": {
+                        "x": 2221.233154296875,
+                        "y": 688.8931274414063
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 128.0,
+                        "y": 128.0
+                    }
+                },
+                "type": "Components::Transform2D"
+            }
+        ],
+        "filepath": "prefabs/Oldman.json",
+        "layers": [
+            "default",
+            "player"
+        ],
+        "uuid": "1b1219df-4242-4007b-ab1a-c63f7d5cb181"
+    },
+    "dataType": "Prefab"
+}

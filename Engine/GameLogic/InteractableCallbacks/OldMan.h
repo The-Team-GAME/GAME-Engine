@@ -1,18 +1,87 @@
 
 #include "../../Engine/MonkeyEngine.h"
+#include "../../Engine/Systems/GraphicsSystem.h"
 
 namespace OldManCallbacks
 {
+  // Static entity IDs for dialogue UI (to track and clean up)
+  inline Engine::ECS::EntityID dialogue_bg_id = 0;
+  inline Engine::ECS::EntityID npc_portrait_id = 0;
+  inline Engine::ECS::EntityID dialogue_text_id = 0;
+  inline bool dialogue_shown = false;
+
+  void spawn_dialogue(Engine::ECS::Entity player_entity) {
+    if (dialogue_shown) return;
+    dialogue_shown = true;
+
+    // Get camera position to center dialogue on screen
+    auto& camera = Engine::Systems::CameraSystem::get_camera();
+    float cam_x = camera.position.x + 800.0f;  // Screen center X
+    float cam_y = camera.position.y + 450.0f;  // Screen center Y
+
+    // Create dialogue background - covers whole screen
+    auto dialogue_bg = Engine::ECS::create_entity()
+      .add_component<Components::Transform2D>(cam_x, cam_y, 0.0f, 1600.0f, 900.0f)
+      .add_component<Components::Texture>(Engine::Resources::load_texture("images/NotBroDialogue.png"))
+      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+      .add_to_layer("main_menu_4");
+    dialogue_bg_id = dialogue_bg.get_id();
+
+    // Create NPC portrait (NPCOldman.png) - bottom right of screen
+    auto npc_portrait = Engine::ECS::create_entity()  // 318, 317
+      .add_component<Components::Transform2D>(cam_x + 550.0f, cam_y + 300.0f, 0.0f, 320.0f, 320.0f)
+      .add_component<Components::Texture>(Engine::Resources::load_texture("images/NPCOldman.png"))
+      .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+      .add_to_layer("main_menu_5");
+    npc_portrait_id = npc_portrait.get_id();
+
+    // Create dialogue text - bottom of screen
+    auto dialogue_text = Engine::ECS::create_entity()// 807, 769
+      .add_component<Components::Transform2D>(cam_x - 100.0f, cam_y + 300.0f, 0.0f, 631.0f, 166.0f)
+      .add_component<Components::Font>(Engine::Resources::load_font("fonts/FiveFontsatFreddy's-Regular.ttf", 48))
+      .add_component<Components::Text>("Its time to retrieve your homework boy! Reach the end of the station and take down the big monkey FOR YOUR GPA!", 0.5f)
+      .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 1.0f)
+      .add_to_layer("main_menu_5");
+    dialogue_text_id = dialogue_text.get_id();
+
+    Log::info("Old man dialogue spawned!");
+  }
+
+  void destroy_dialogue() {
+    if (!dialogue_shown) return;
+
+    if (dialogue_bg_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(dialogue_bg_id))) {
+      Engine::ECS::destroy_entity(Engine::ECS::Entity(dialogue_bg_id));
+    }
+    if (npc_portrait_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(npc_portrait_id))) {
+      Engine::ECS::destroy_entity(Engine::ECS::Entity(npc_portrait_id));
+    }
+    if (dialogue_text_id != 0 && Engine::ECS::is_entity_active(Engine::ECS::Entity(dialogue_text_id))) {
+      Engine::ECS::destroy_entity(Engine::ECS::Entity(dialogue_text_id));
+    }
+
+    dialogue_bg_id = 0;
+    npc_portrait_id = 0;
+    dialogue_text_id = 0;
+    dialogue_shown = false;
+
+    Log::info("Old man dialogue destroyed!");
+  }
+
   void old_man_on_enter(Engine::ECS::Entity interactable, Engine::ECS::Entity player_entity) {
     Log::info("Player {} entered interaction range of entity {}", player_entity.get_id(), interactable.get_id());
   }
 
   void old_man_on_update(Engine::ECS::Entity interactable, Engine::ECS::Entity player_entity) {
-    Log::info("Player {} is within interaction range of entity {}", player_entity.get_id(), interactable.get_id());
+    // Check if E key is pressed to show dialogue
+    if (Engine::Input::is_pressed(Engine::KeyCode::E)) {
+      spawn_dialogue(player_entity);
+    }
   }
 
   void old_man_on_exit(Engine::ECS::Entity interactable, Engine::ECS::Entity player_entity) {
     Log::info("Player {} exited interaction range of entity {}", player_entity.get_id(), interactable.get_id());
+    destroy_dialogue();
   }
 } // namespace OldManCallbacks
 
