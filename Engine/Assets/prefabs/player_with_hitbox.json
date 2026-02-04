@@ -443,6 +443,15 @@
             },
             {
                 "data": {
+                    "a": 1.0,
+                    "b": 1.0,
+                    "g": 1.0,
+                    "r": 1.0
+                },
+                "type": "Components::Color"
+            },
+            {
+                "data": {
                     "path": "sounds/SFX/Player/Player Jump (DJ SY Edition).wav"
                 },
                 "type": "Components::Sound"
@@ -458,20 +467,11 @@
             {
                 "data": {
                     "value": {
-                        "x": -1.0,
+                        "x": 1.0,
                         "y": 1.0
                     }
                 },
                 "type": "Components::Flip"
-            },
-            {
-                "data": {
-                    "a": 1.0,
-                    "b": 1.0,
-                    "g": 1.0,
-                    "r": 1.0
-                },
-                "type": "Components::Color"
             },
             {
                 "data": {
@@ -560,7 +560,7 @@
                         0.10000000149011612
                     ],
                     "is_looping": true,
-                    "startTime": 299.77978515625,
+                    "startTime": 74.62454223632813,
                     "totalDuration": 2.3999998569488525
                 },
                 "type": "Components::Animation"
@@ -696,7 +696,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 299.77978515625,
+                                        "startTime": 74.62454223632813,
                                         "totalDuration": 0.7199999094009399
                                     },
                                     "collider_data": null,
@@ -883,6 +883,7 @@
                                     "stop_on_exit": false,
                                     "volume": 0.5
                                 },
+                                "fmod_audio": null,
                                 "name": "Attack1",
                                 "on_enter_callback": {
                                     "name": "player_attack1_enter"
@@ -928,7 +929,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 299.77978515625,
+                                        "startTime": 74.62454223632813,
                                         "totalDuration": 0.559999942779541
                                     },
                                     "collider_data": null,
@@ -1187,6 +1188,7 @@
                                     "stop_on_exit": false,
                                     "volume": 0.5
                                 },
+                                "fmod_audio": null,
                                 "name": "Attack2",
                                 "on_enter_callback": {
                                     "name": "player_attack2_enter"
@@ -1235,7 +1237,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 299.77978515625,
+                                        "startTime": 74.62454223632813,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": null,
@@ -1404,6 +1406,7 @@
                                     "stop_on_exit": true,
                                     "volume": 0.5
                                 },
+                                "fmod_audio": null,
                                 "name": "Dash",
                                 "on_enter_callback": {
                                     "name": "player_dash_enter"
@@ -1455,7 +1458,7 @@
                                             0.05999999865889549
                                         ],
                                         "is_looping": false,
-                                        "startTime": 299.77978515625,
+                                        "startTime": 74.62454223632813,
                                         "totalDuration": 0.5399999618530273
                                     },
                                     "collider_data": null,
@@ -1804,6 +1807,7 @@
                                     "stop_on_exit": false,
                                     "volume": 0.5
                                 },
+                                "fmod_audio": null,
                                 "name": "Attack3",
                                 "on_enter_callback": {
                                     "name": "player_attack3_enter"
@@ -1900,7 +1904,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 299.77978515625,
+                                        "startTime": 74.62454223632813,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": null,
@@ -2350,6 +2354,7 @@
                                     }
                                 },
                                 "audio": null,
+                                "fmod_audio": null,
                                 "name": "Idle",
                                 "on_enter_callback": {
                                     "name": "player_idle_enter"
@@ -2386,7 +2391,7 @@
                                             2.0
                                         ],
                                         "is_looping": true,
-                                        "startTime": 299.77978515625,
+                                        "startTime": 74.62454223632813,
                                         "totalDuration": 2.1500000953674316
                                     },
                                     "collider_data": null,
@@ -2645,6 +2650,7 @@
                                     "stop_on_exit": false,
                                     "volume": 0.5
                                 },
+                                "fmod_audio": null,
                                 "name": "Jumping",
                                 "on_enter_callback": {
                                     "name": "player_jumping_enter"
@@ -2693,7 +2699,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 299.77978515625,
+                                        "startTime": 74.62454223632813,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": null,
@@ -2862,6 +2868,7 @@
                                     "stop_on_exit": true,
                                     "volume": 0.5
                                 },
+                                "fmod_audio": null,
                                 "name": "Walking",
                                 "on_enter_callback": {
                                     "name": "player_walking_enter"
