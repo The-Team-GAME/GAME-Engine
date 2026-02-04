@@ -78,7 +78,8 @@ namespace SprayCanMonkey
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/SprayPaintMonkeySpriteSheets/GreenCloud.png"))
       .add_component<Components::Color>(Math::Vec4D(1.f, 1.f, 1.f, 1.f))
       .remove_from_layer("default")
-      .add_to_layer("damage_player");
+      .add_to_layer("damage_player")
+      .add_to_layer("spray");
 
     if (auto* rb = cloud.get_component<Components::RigidBody>())
       rb->velocity.x = start_vx;
@@ -284,7 +285,7 @@ namespace SprayCanMonkey
     float spray_elapsed = current_time - spray_monkey->last_attack_time;
 
     if (!spray_monkey->cloud_spawned && spray_elapsed >= spray_monkey->cloud_spawn_delay) {
-      auto cloud =  spawn_spray_cloud(entity);
+      auto cloud = spawn_spray_cloud(entity);
 
       spray_monkey->cloud_entity = cloud;
       spray_monkey->cloud_spawn_time = current_time;
@@ -315,7 +316,7 @@ namespace SprayCanMonkey
           color->w -= tempst / 10.0f;   // alpha fades to 0
         }
       }
-      
+
     }
 
     // End spray after duration or animation completes

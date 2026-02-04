@@ -75,6 +75,7 @@ void RunGame()
   Engine::ECS::register_layer("damage_enemy"); // Damage enemy layer (e.g., hitboxes for player attacks)
   Engine::ECS::register_layer("damage_player"); // Damage player layer (e.g., hitboxes for enemy attacks, hazards)
   Engine::ECS::register_layer("projectiles"); // Projectiles layer (e.g., bullets, arrows)
+  Engine::ECS::register_layer("spray"); // Special layer for Spray can monkey spray clouds
   Engine::ECS::register_layer("enemy"); // Enemy characters layer
   Engine::ECS::register_layer("player_trail"); // Specific layer for player trail effect
   Engine::ECS::register_layer("player"); // Player character layer
