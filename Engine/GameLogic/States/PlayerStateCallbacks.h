@@ -41,7 +41,7 @@ namespace PlayerStateCallbacks
     if (dash_cooldown > 0) { dash_cooldown -= Time::get_fixed_dt(); }
 
     // Check for attack input
-    if (Engine::Input::is_pressed(Engine::KeyCode::F))
+    if (Engine::Input::is_pressed(Engine::KeyCode::J))
     {
       state_machine->change_state("Attack1");
       return;
