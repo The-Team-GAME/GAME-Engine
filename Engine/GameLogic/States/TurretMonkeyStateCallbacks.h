@@ -73,7 +73,8 @@ namespace TurretMonkeyStateCallbacks
       .add_component<Components::Lifetime>(2.0f) // Despawn after a short time
       .remove_from_layer("default")
       .add_to_layer("effect")
-      .add_to_layer("damage_player");
+      .add_to_layer("damage_player")
+      .add_to_layer("projectiles");
 
     if (auto* proj_rigid = projectile.get_component<Components::RigidBody>()) {
       proj_rigid->velocity = dir * projectile_speed;
