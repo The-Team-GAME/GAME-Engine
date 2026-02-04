@@ -81,10 +81,10 @@ class MainMenuState : public Engine::Scene
 
     // Entity 100: BackCarriage - layer 2 (child of carriage_parent)
     auto back_carriage = Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 369.62f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
+      .add_component<Components::Transform2D>(Math::Vec2D(800.0f, 450.0f), 0.0f, Math::Vec2D(1600.0f, 900.0f))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/MainMenu (Start)/BackCarriage.png"))
-      .add_component<Components::Parent>(carriage_parent_id, Math::Vec2D(800.0f, 369.62f))
+      .add_component<Components::Parent>(carriage_parent_id, Math::Vec2D(800.0f, 450.0f))
       .add_to_layer("main_menu_2");
     start_screen_entities.push_back(back_carriage.get_id());
 
