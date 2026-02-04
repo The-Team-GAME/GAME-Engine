@@ -90,8 +90,15 @@
       <Command>xcopy "$(ProjectDir)Assets\*" "$(OutDir)Assets\" /s /r /y /q
 
 
+
 xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q
-xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Command>
+
+
+
+xcopy "$(SolutionDir)Dependencies\FMOD Studio\lib\fmodstudio.dll" "$(OutDir)" /s /r /y /q
+
+xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q
+</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -120,8 +127,15 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
       <Command>xcopy "$(ProjectDir)Assets\*" "$(OutDir)Assets\" /s /r /y /q
 
 
+
 xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q
-xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Command>
+
+
+
+xcopy "$(SolutionDir)Dependencies\FMOD Studio\lib\fmodstudio.dll" "$(OutDir)" /s /r /y /q
+
+xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q
+</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Game|x64'">
@@ -150,11 +164,20 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
       <Command>xcopy "$(ProjectDir)Assets\*" "$(OutDir)Assets\" /s /r /y /q
 
 
+
 xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q
-xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Command>
+
+
+
+xcopy "$(SolutionDir)Dependencies\FMOD Studio\lib\fmodstudio.dll" "$(OutDir)" /s /r /y /q
+
+xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q
+</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Engine\Audio\AudioSystem.cpp" />
+    <ClCompile Include="Engine\Audio\AudioSystemExample.cpp" />
     <ClCompile Include="Engine\ECS\PrefabMergeUtils.cpp" />
     <ClCompile Include="Engine\FileIO\ColliderMeshFileIO.cpp" />
     <ClCompile Include="Engine\GUI\AnimatorEditorPanel.cpp" />
@@ -230,6 +253,8 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q</Comman
     <ClCompile Include="Engine\Systems\PostPhysicsSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\Audio\AudioSystem.h" />
+    <ClInclude Include="Engine\Audio\GameAudio.h" />
     <ClInclude Include="Engine\ECS\PrefabMergeUtils.h" />
     <ClInclude Include="Engine\FileIO\ColliderMeshFileIO.h" />
     <ClInclude Include="Engine\GUI\AnimatorEditorPanel.h" />

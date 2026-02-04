@@ -44,6 +44,7 @@ namespace Engine {
           return false;
         }
 
+
         // Create channel groups
         system->createChannelGroup("BGM", &bgm_group);
         system->createChannelGroup("SFX", &sfx_group);

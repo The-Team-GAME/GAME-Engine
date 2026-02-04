@@ -194,6 +194,8 @@ void RunGame()
     {
       Log::info("Player took damage!");
 
+
+
       // When enemy attack hitbox collides with player
       auto* attack = attack_entity.get_component<Components::Attack>();
       auto* heartrate = player_entity.get_component<Components::Heartrate>();
@@ -221,6 +223,8 @@ void RunGame()
         rigid->velocity.x = attack->knockback.x;
         rigid->velocity.y = attack->knockback.y; // Usually negative for upward knockback
 
+        Engine::AudioSystem::playEvent("event:/SFX/PlayerHurt");
+        Log::info("Playing FMOD event: event:/SFX/PlayerHurt");
 
 
         Log::info("Player knocked back! Velocity: ({}, {})", rigid->velocity.x, rigid->velocity.y);
