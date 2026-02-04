@@ -3,15 +3,6 @@
         "components": [
             {
                 "data": {
-                    "value": {
-                        "x": 1.0,
-                        "y": 1.0
-                    }
-                },
-                "type": "Components::Flip"
-            },
-            {
-                "data": {
                     "position": {
                         "x": 843.25,
                         "y": 280.7819519042969
@@ -23,6 +14,15 @@
                     }
                 },
                 "type": "Components::Transform2D"
+            },
+            {
+                "data": {
+                    "value": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "type": "Components::Flip"
             },
             {
                 "data": {
@@ -179,7 +179,7 @@
                         0.15000000596046448
                     ],
                     "is_looping": true,
-                    "startTime": 5.974565029144287,
+                    "startTime": 0.0,
                     "totalDuration": 0.75
                 },
                 "type": "Components::Animation"
@@ -274,7 +274,7 @@
                                             0.15000000596046448
                                         ],
                                         "is_looping": true,
-                                        "startTime": 105.83997344970703,
+                                        "startTime": 0.0,
                                         "totalDuration": 0.75
                                     },
                                     "collider_data": {
@@ -478,7 +478,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 105.83997344970703,
+                                        "startTime": 0.0,
                                         "totalDuration": 1.700000286102295
                                     },
                                     "collider_data": {
@@ -824,7 +824,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 105.83997344970703,
+                                        "startTime": 0.0,
                                         "totalDuration": 0.6000000238418579
                                     },
                                     "collider_data": {
@@ -993,7 +993,7 @@
                                             0.30000001192092896
                                         ],
                                         "is_looping": true,
-                                        "startTime": 105.83997344970703,
+                                        "startTime": 0.0,
                                         "totalDuration": 0.30000001192092896
                                     },
                                     "collider_data": {
@@ -1081,7 +1081,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 105.83997344970703,
+                                        "startTime": 0.0,
                                         "totalDuration": 0.4000000059604645
                                     },
                                     "collider_data": {
@@ -1243,7 +1243,7 @@
                                             0.5
                                         ],
                                         "is_looping": true,
-                                        "startTime": 105.83997344970703,
+                                        "startTime": 0.0,
                                         "totalDuration": 0.5
                                     },
                                     "collider_data": {
@@ -1306,8 +1306,8 @@
             },
             {
                 "data": {
-                    "attack_cooldown": 5.0,
-                    "attack_range": 500.0,
+                    "attack_cooldown": 2.0,
+                    "attack_range": 1000.0,
                     "attack_windup": 0.5,
                     "chase_range": 1000.0,
                     "chase_speed": 80.0,
@@ -1343,8 +1343,8 @@
             },
             {
                 "data": {
-                    "current_hp": 300,
-                    "max_hp": 300
+                    "current_hp": 10,
+                    "max_hp": 10
                 },
                 "type": "Components::EnemyHealth"
             }
