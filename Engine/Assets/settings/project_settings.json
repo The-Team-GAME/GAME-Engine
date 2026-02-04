@@ -3620,12 +3620,12 @@
             "texture_path": "images/Tilemaps/AdditionalProps_TilemapM1.png",
             "tile_collider_configs": [
                 {
-                    "first": 2,
+                    "first": 18,
                     "second": {
-                        "aabb_height": 14.2626953125,
+                        "aabb_height": 64.0,
                         "aabb_offset": {
-                            "x": 0.0,
-                            "y": 24.86865234375
+                            "x": 51.187110900878906,
+                            "y": -1.7706242799758911
                         },
                         "aabb_width": 64.0,
                         "collider_type": "AABB",
@@ -3633,12 +3633,12 @@
                     }
                 },
                 {
-                    "first": 18,
+                    "first": 2,
                     "second": {
-                        "aabb_height": 64.0,
+                        "aabb_height": 14.2626953125,
                         "aabb_offset": {
-                            "x": 51.187110900878906,
-                            "y": -1.7706242799758911
+                            "x": 0.0,
+                            "y": 24.86865234375
                         },
                         "aabb_width": 64.0,
                         "collider_type": "AABB",
@@ -3672,19 +3672,6 @@
                     }
                 },
                 {
-                    "first": 9,
-                    "second": {
-                        "aabb_height": 64.0,
-                        "aabb_offset": {
-                            "x": -17.8633975982666,
-                            "y": 0.0
-                        },
-                        "aabb_width": 28.273204803466797,
-                        "collider_type": "AABB",
-                        "custom_vertices": []
-                    }
-                },
-                {
                     "first": 1,
                     "second": {
                         "aabb_height": 14.262687683105469,
@@ -3693,6 +3680,19 @@
                             "y": 24.868656158447266
                         },
                         "aabb_width": 64.0,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                },
+                {
+                    "first": 9,
+                    "second": {
+                        "aabb_height": 64.0,
+                        "aabb_offset": {
+                            "x": -17.8633975982666,
+                            "y": 0.0
+                        },
+                        "aabb_width": 28.273204803466797,
                         "collider_type": "AABB",
                         "custom_vertices": []
                     }
@@ -6281,7 +6281,21 @@
                 }
             ],
             "texture_path": "images/Tilemaps/MaroonPipe_TilemapM3.png",
-            "tile_collider_configs": []
+            "tile_collider_configs": [
+                {
+                    "first": 12,
+                    "second": {
+                        "aabb_height": 17.641868591308594,
+                        "aabb_offset": {
+                            "x": 0.0,
+                            "y": 20.92554473876953
+                        },
+                        "aabb_width": 64.0,
+                        "collider_type": "AABB",
+                        "custom_vertices": []
+                    }
+                }
+            ]
         },
         {
             "animation_config": {

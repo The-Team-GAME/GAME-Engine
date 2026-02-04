@@ -28,6 +28,8 @@
 #include "GameStates/BehaviourState.h"
 #include "GameStates/LevelTestState.h"
 #include "GameStates/GameplayState.h"
+#include "GameStates/GameMonkeyTestState.h"
+#include "GameStates/TurretMonkeyTestState.h"
 #include "GameStates/PauseState.h"
 #include "GameStates/VictoryState.h"
 #include "GameStates/OptionsState.h"
@@ -200,6 +202,7 @@ void RunGame()
       auto* attack = attack_entity.get_component<Components::Attack>();
       auto* heartrate = player_entity.get_component<Components::Heartrate>();
       auto* rigid = player_entity.get_component<Components::RigidBody>();
+      auto* player_comp = player_entity.get_component<Components::Player>();
       // auto* player_transform = player_entity.get_component<Components::Transform2D>();
       // auto* attack_transform = attack_entity.get_component<Components::Transform2D>();
 
@@ -219,15 +222,13 @@ void RunGame()
         heartrate->increase(static_cast<float>(damage));
         Log::info("Player took {} damage! Heartrate: {}", damage, heartrate->heartrate);
 
-        // Apply knockback (direction is already baked into attack->knockback from the attacker)
-        rigid->velocity.x = attack->knockback.x;
-        rigid->velocity.y = attack->knockback.y; // Usually negative for upward knockback
+        Engine::Systems::Physics2DSystem::add_force(*rigid, attack->knockback);
 
         Engine::AudioSystem::playEvent("event:/SFX/PlayerHurt");
         Log::info("Playing FMOD event: event:/SFX/PlayerHurt");
 
 
-        Log::info("Player knocked back! Velocity: ({}, {})", rigid->velocity.x, rigid->velocity.y);
+        Log::info("Player knocked back! Force applied: ({}, {})", attack->knockback.x, attack->knockback.y);
       }
       else {
         Log::error("Error: Heartrate or RigidBody component missing from player!");
@@ -332,7 +333,8 @@ void RunGame()
   Engine::SceneManager::register_scene<LuaState>("LuaState");
   Engine::SceneManager::register_scene<LevelTestState>("LevelTestState");
   Engine::SceneManager::register_scene<BehaviourState>("BehaviourState");
-  Engine::SceneManager::register_scene<GameplayState>("GameplayState");
+  Engine::SceneManager::register_scene<GameMonkeyTestState>("GameMonkeyTestState");
+  Engine::SceneManager::register_scene<TurretMonkeyTestState>("TurretMonkeyTestState");
   Engine::SceneManager::register_scene<PauseState>("PauseState");
   Engine::SceneManager::register_scene<VictoryState>("VictoryState");
   Engine::SceneManager::register_scene<OptionsState>("OptionsState");
