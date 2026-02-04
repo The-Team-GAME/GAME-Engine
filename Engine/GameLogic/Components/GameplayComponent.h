@@ -108,12 +108,16 @@ namespace Components
     float attack_range = 500.0f;
 
     // Spray-specific properties
-    float spray_duration = 7.0f;
+    float spray_duration = 4.0f;
     float spray_range = 150.0f;
     float spray_width = 80.0f;
 
     float cloud_spawn_delay = 1.1f;     // spawn delay
     bool cloud_spawned = false;
+
+    Engine::ECS::Entity cloud_entity{};
+    float cloud_spawn_time = 0.f;
+    float cloud_initial_vx = 0.f;
 
     // Knockback
     Math::Vec2D knockback = { 300.0f, 400.0f };
@@ -292,6 +296,6 @@ REGISTER_COMPONENT(Components::SprayCanMonkey,
   chase_speed, attack_cooldown, last_attack_time, attack_windup,
   detection_range, chase_range, attack_range,
   spray_duration, spray_range, spray_width,
-  knockback, damage)
+  knockback, damage, cloud_spawn_time, cloud_initial_vx)
 REGISTER_COMPONENT(Components::Attack, damage, knockback, is_continuous, damage_interval, impact_vfx_texture)
 REGISTER_COMPONENT(Components::PendingKnockback, knockback)

@@ -2,10 +2,10 @@
 // file:    SprayCanMonkeyStateMachine.h
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (100%)
+// author:  Ong Zi Ming (100%)
 //          Primary author
 //
-// email:   chew.s@digipen.edu
+// email:   o.ziming@digipen.edu
 //
 // brief:   This file defines the spray can monkey state machine and all spray can monkey states
 //
