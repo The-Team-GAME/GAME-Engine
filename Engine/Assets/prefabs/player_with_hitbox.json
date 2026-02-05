@@ -588,7 +588,7 @@
                         0.10000000149011612
                     ],
                     "is_looping": true,
-                    "startTime": 224.34092712402344,
+                    "startTime": 57.07068634033203,
                     "totalDuration": 2.3999998569488525
                 },
                 "type": "Components::Animation"
@@ -610,18 +610,18 @@
             {
                 "data": {
                     "aabb": {
-                        "half_height": 64.0,
-                        "half_width": 64.0,
+                        "half_height": 52.174591064453125,
+                        "half_width": 21.341270446777344,
                         "pos": {
                             "x": 803.3714599609375,
                             "y": 768.3070068359375
                         }
                     },
-                    "height": 128.0,
+                    "height": 104.34918212890625,
                     "kinetic_friction": 0.800000011920929,
                     "offset": {
-                        "x": 0.0,
-                        "y": 0.0
+                        "x": -0.5158462524414063,
+                        "y": 11.825408935546875
                     },
                     "polygon": {
                         "position": {
@@ -634,7 +634,7 @@
                     "radius": 1000.0,
                     "resolve_collisions": false,
                     "type": "AABB",
-                    "width": 128.0
+                    "width": 42.68254089355469
                 },
                 "type": "Components::BoxCollider"
             },
@@ -678,10 +678,18 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 224.34092712402344,
+                                        "startTime": 57.07068634033203,
                                         "totalDuration": 0.8000000715255737
                                     },
-                                    "collider_data": null,
+                                    "collider_data": {
+                                        "height": 100.340576171875,
+                                        "offset": {
+                                            "x": -2.5599136352539063,
+                                            "y": 13.8297119140625
+                                        },
+                                        "vertices": [],
+                                        "width": 43.51527404785156
+                                    },
                                     "scale": {
                                         "x": 128.0,
                                         "y": 128.0
@@ -1039,10 +1047,18 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 224.34092712402344,
+                                        "startTime": 57.07068634033203,
                                         "totalDuration": 2.3999998569488525
                                     },
-                                    "collider_data": null,
+                                    "collider_data": {
+                                        "height": 103.79214477539063,
+                                        "offset": {
+                                            "x": -0.3579139709472656,
+                                            "y": 12.103927612304688
+                                        },
+                                        "vertices": [],
+                                        "width": 38.39539337158203
+                                    },
                                     "scale": {
                                         "x": 128.0,
                                         "y": 128.0
@@ -1538,10 +1554,18 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 224.34092712402344,
+                                        "startTime": 57.07068634033203,
                                         "totalDuration": 0.8000000715255737
                                     },
-                                    "collider_data": null,
+                                    "collider_data": {
+                                        "height": 99.98263549804688,
+                                        "offset": {
+                                            "x": 7.578609466552734,
+                                            "y": 14.008682250976563
+                                        },
+                                        "vertices": [],
+                                        "width": 39.03034210205078
+                                    },
                                     "scale": {
                                         "x": 128.0,
                                         "y": 128.0
@@ -1773,10 +1797,18 @@
                                             0.5
                                         ],
                                         "is_looping": true,
-                                        "startTime": 224.34092712402344,
+                                        "startTime": 57.07068634033203,
                                         "totalDuration": 2.1499998569488525
                                     },
-                                    "collider_data": null,
+                                    "collider_data": {
+                                        "height": 80.97547912597656,
+                                        "offset": {
+                                            "x": -15.278539657592773,
+                                            "y": 23.51226043701172
+                                        },
+                                        "vertices": [],
+                                        "width": 35.85566329956055
+                                    },
                                     "scale": {
                                         "x": 128.0,
                                         "y": 128.0
@@ -2060,10 +2092,18 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 224.34092712402344,
+                                        "startTime": 57.07068634033203,
                                         "totalDuration": 0.559999942779541
                                     },
-                                    "collider_data": null,
+                                    "collider_data": {
+                                        "height": 96.87992858886719,
+                                        "offset": {
+                                            "x": -37.6815071105957,
+                                            "y": 14.810150146484375
+                                        },
+                                        "vertices": [],
+                                        "width": 48.397621154785156
+                                    },
                                     "scale": {
                                         "x": 192.0,
                                         "y": 128.0
@@ -2368,10 +2408,18 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 224.34092712402344,
+                                        "startTime": 57.07068634033203,
                                         "totalDuration": 0.8000000715255737
                                     },
-                                    "collider_data": null,
+                                    "collider_data": {
+                                        "height": 92.12699890136719,
+                                        "offset": {
+                                            "x": 13.015886306762695,
+                                            "y": 17.936500549316406
+                                        },
+                                        "vertices": [],
+                                        "width": 40.380985260009766
+                                    },
                                     "scale": {
                                         "x": 128.0,
                                         "y": 128.0
@@ -2607,10 +2655,18 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 224.34092712402344,
+                                        "startTime": 57.07068634033203,
                                         "totalDuration": 0.7199999094009399
                                     },
-                                    "collider_data": null,
+                                    "collider_data": {
+                                        "height": 97.25491333007813,
+                                        "offset": {
+                                            "x": -34.869606018066406,
+                                            "y": 15.372543334960938
+                                        },
+                                        "vertices": [],
+                                        "width": 48.02256774902344
+                                    },
                                     "scale": {
                                         "x": 192.0,
                                         "y": 128.0
@@ -2846,10 +2902,18 @@
                                             0.05999999865889549
                                         ],
                                         "is_looping": false,
-                                        "startTime": 224.34092712402344,
+                                        "startTime": 57.07068634033203,
                                         "totalDuration": 0.5399999618530273
                                     },
-                                    "collider_data": null,
+                                    "collider_data": {
+                                        "height": 95.00519561767578,
+                                        "offset": {
+                                            "x": -36.18182373046875,
+                                            "y": 16.87234878540039
+                                        },
+                                        "vertices": [],
+                                        "width": 43.89823913574219
+                                    },
                                     "scale": {
                                         "x": 192.0,
                                         "y": 128.0
@@ -3228,10 +3292,10 @@
                         "damage": 1,
                         "dash_speed": 1000.0,
                         "heartrate_cost": 5.0,
-                        "hitbox_height": 128.0,
-                        "hitbox_offset_x": 80.0,
+                        "hitbox_height": 50.0,
+                        "hitbox_offset_x": 20.0,
                         "hitbox_offset_y": 0.0,
-                        "hitbox_width": 100.0,
+                        "hitbox_width": 50.0,
                         "knockback": {
                             "x": 300.0,
                             "y": 0.0
@@ -3241,10 +3305,10 @@
                         "damage": 1,
                         "dash_speed": 1000.0,
                         "heartrate_cost": 5.0,
-                        "hitbox_height": 128.0,
-                        "hitbox_offset_x": 80.0,
+                        "hitbox_height": 50.0,
+                        "hitbox_offset_x": 20.0,
                         "hitbox_offset_y": 0.0,
-                        "hitbox_width": 100.0,
+                        "hitbox_width": 50.0,
                         "knockback": {
                             "x": 300.0,
                             "y": 0.0
@@ -3254,10 +3318,10 @@
                         "damage": 3,
                         "dash_speed": 2000.0,
                         "heartrate_cost": 8.0,
-                        "hitbox_height": 128.0,
-                        "hitbox_offset_x": 80.0,
+                        "hitbox_height": 50.0,
+                        "hitbox_offset_x": 20.0,
                         "hitbox_offset_y": 0.0,
-                        "hitbox_width": 120.0,
+                        "hitbox_width": 50.0,
                         "knockback": {
                             "x": 3000.0,
                             "y": 0.0
