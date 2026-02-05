@@ -22,7 +22,7 @@ namespace Components {
     float high = 120.0f;
     float very_high = 140.0f;
     float crash_out = 160.0f;
-    float dead = 180.0f;
+    float dead = 200.0f;
 
     float heartrate = low;
     float decay_rate = 1.0f; // bpm per second
@@ -104,4 +104,4 @@ namespace Components {
   };
 }
 
-REGISTER_COMPONENT(Components::Heartrate, low, normal, high, very_high, crash_out, heartrate, decay_rate, min_brightness, max_brightness)
+REGISTER_COMPONENT(Components::Heartrate, low, normal, high, very_high, crash_out, dead, heartrate, decay_rate, min_brightness, max_brightness)
