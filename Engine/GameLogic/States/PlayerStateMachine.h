@@ -103,7 +103,7 @@ namespace PlayerStates
     // ========================================================================
     Components::StateAnimation player_jumping_anim;
     player_jumping_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_jump_spritesheet.png"));
-    player_jumping_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 8, 8);
+    player_jumping_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 13, 13);
     player_jumping_anim.animation = Components::Animation(8, 0.1f);
     player_jumping_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
 
@@ -114,7 +114,7 @@ namespace PlayerStates
     // ========================================================================
     Components::StateAnimation player_dashinging_anim;
     player_dashinging_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_dash_spritesheet.png"));
-    player_dashinging_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 8, 8);
+    player_dashinging_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 9, 9);
     player_dashinging_anim.animation = Components::Animation(8, 0.1f);
     player_dashinging_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
 
@@ -154,6 +154,18 @@ namespace PlayerStates
     Components::State player_attack3("Attack3", "player_attack3_enter", "player_attack3_update", "", player_attack3_anim, attack_audio);
 
     // ========================================================================
+    // Player Death State
+    // ========================================================================
+    Components::StateAnimation player_death_anim;
+    player_death_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_death_spritesheet.png"));
+    player_death_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 12, 12);
+    player_death_anim.animation = Components::Animation(8, 0.1f);
+    player_death_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
+
+    // TODO Change Death Audio
+    Components::State player_dead("Death", "player_death_enter", "player_death_update", "player_death_exit", player_death_anim, walk_audio);
+
+    // ========================================================================
     // Build and return state machine
     // ========================================================================
     Components::StateMachine player_sm;
@@ -164,6 +176,7 @@ namespace PlayerStates
     player_sm.add_state(player_attack1);
     player_sm.add_state(player_attack2);
     player_sm.add_state(player_attack3);
+    player_sm.add_state(player_dead);
     player_sm.set_initial_state("Idle");
 
     return player_sm;
