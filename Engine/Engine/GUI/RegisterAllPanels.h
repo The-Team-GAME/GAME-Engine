@@ -32,6 +32,7 @@
 #include "AnimatorEditorPanel.h"
 #include "FrameAnimationEditorPanel.h"
 #include "TextureAtlasEditorPanel.h"
+#include "ConfigurationPanel.h"
 
 void register_all_panels()
 {
@@ -51,4 +52,5 @@ void register_all_panels()
   ImGuiManager::register_panel("Animator", AnimatorEditorPanel);
   ImGuiManager::register_panel("Frame Animation Editor", FrameAnimationEditorPanel);
   ImGuiManager::register_panel("Texture Atlas Editor", TextureAtlasEditorPanel);
+  ImGuiManager::register_panel("Configuration", ConfigurationPanel);
 }
