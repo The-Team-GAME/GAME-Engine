@@ -316,6 +316,9 @@ namespace LazyMonkeyStateCallbacks
 
   inline void hit_on_enter(Engine::ECS::Entity entity) {
     (void)entity; // Suppress unused parameter warning
+
+
+
     Log::info("Lazy Monkey: Stunned!");
   }
 
