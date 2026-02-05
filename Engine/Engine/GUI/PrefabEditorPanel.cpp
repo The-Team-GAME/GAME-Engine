@@ -22,6 +22,9 @@
 #include "../Resources.h"
 #include "../ProjectSaveManager.h"
 #include "../InputManager.h"
+#include "../EventManager/EventManager.h"
+#include "../Events/EngineEvents.h"
+#include "../LevelManager.h"
 #include <map>
 
 void PrefabEditorPanelHelpers::render_component_tree(const std::string& component_name, Engine::ECS::Prefab& prefab, Engine::ECS::IComponentArray* array, const std::string& prefab_path)
@@ -273,7 +276,26 @@ void PrefabEditorPanel()
     if (ImGui::Button("Instantiate")) {
       auto prefab = Engine::Resources::load_prefab(selected_prefab_path);
       if (prefab.is_valid()) {
-        Engine::ECS::instantiate_prefab(prefab);
+        auto newEntity = Engine::ECS::instantiate_prefab(prefab);
+
+        // Record undo for prefab instantiation
+        Engine::ECS::EntityID entity_id = newEntity.get_id();
+        Engine::ECS::Prefab captured_prefab = prefab;
+        Engine::UndoManager::record(
+          // Do: Recreate the entity from prefab
+          [entity_id, captured_prefab]() {
+            Engine::ECS::instantiate_prefab_with_id(captured_prefab, entity_id);
+            Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(entity_id);
+            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+          },
+          // Undo: Delete the entity
+          [entity_id]() {
+            Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(entity_id, false);
+            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+          }
+        );
+
+        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
       }
     }
   }
