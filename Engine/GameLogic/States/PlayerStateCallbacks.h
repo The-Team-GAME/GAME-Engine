@@ -36,6 +36,13 @@ namespace PlayerStateCallbacks
     Components::RigidBody* player_rigid = entity.get_component<Components::RigidBody>();
     Components::Player* player_comp = entity.get_component<Components::Player>();
     Components::Flip* flip = entity.get_component<Components::Flip>();
+    Components::Heartrate* heartrate = entity.get_component<Components::Heartrate>();
+
+    if (heartrate->heartrate >= heartrate->dead)
+    {
+      state_machine->change_state("Death");
+      return;
+    }
 
     // Handling cooldowns
     if (dash_cooldown > 0) { dash_cooldown -= Time::get_fixed_dt(); }
@@ -495,6 +502,39 @@ namespace PlayerStateCallbacks
     }
   }
 #pragma endregion
+
+#pragma region Death
+  // ========================================================================
+  // Death State Callbacks
+  // ========================================================================
+
+  inline void death_on_enter([[maybe_unused]] ECS::Entity entity)
+  {
+    Log::info("Player: Died!"); 
+  }
+
+  inline void death_on_update(ECS::Entity entity)
+  {
+    Components::Animation* animation = entity.get_component<Components::Animation>();
+    if (animation && animation->has_ended()) {
+      Engine::ECS::destroy_entity(entity);
+      Log::info("Player: Destroyed after death animation.");
+      Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
+      assert(state_machine);
+      state_machine->change_state("Idle");
+    }
+  }
+
+  inline void death_on_exit([[maybe_unused]] ECS::Entity entity)
+  {
+    Log::info("Player: Exited Death state");
+    //Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
+    //assert(state_machine);
+    //state_machine->change_state("Idle");
+    std::string scene = SceneManager::get_current_scene_name();
+    SceneManager::load_scene(scene);
+  }
+#pragma endregion
 } // namespace PlayerStateCallbacks
 
 // Register all player state callbacks
@@ -521,3 +561,7 @@ REGISTER_FUNCTION(player_attack2_update, void(Engine::ECS::Entity), PlayerStateC
 
 REGISTER_FUNCTION(player_attack3_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::attack3_on_enter)
 REGISTER_FUNCTION(player_attack3_update, void(Engine::ECS::Entity), PlayerStateCallbacks::attack3_on_update)
+
+REGISTER_FUNCTION(player_death_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::death_on_enter)
+REGISTER_FUNCTION(player_death_update, void(Engine::ECS::Entity), PlayerStateCallbacks::death_on_update)
+REGISTER_FUNCTION(player_death_exit, void(Engine::ECS::Entity), PlayerStateCallbacks::death_on_exit)
