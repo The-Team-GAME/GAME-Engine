@@ -412,6 +412,7 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q
     <None Include="Engine\EventManager\EventManager.inl" />
     <None Include="Engine\FileIO\SettingsManager.inl" />
     <None Include="Engine\Reflection\ReflectionLibrary\GenericValue.inl" />
+    <None Include="imgui.ini" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
