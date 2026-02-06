@@ -84,8 +84,10 @@ namespace Engine {
         // Add Lifetime
         trail_entity.add_component<Components::Lifetime>(trail.lifetime);
 
-        // Add FadeOut
+        // Add FadeOut - create it and manually set start_time to current time
         trail_entity.add_component<Components::FadeOut>(trail.lifetime, trail.start_alpha, trail.end_alpha);
+        auto* fade_out = trail_entity.get_component<Components::FadeOut>();
+        fade_out->start_time = Engine::Time::get_time(); // Ensure start_time is set to the current time
 
         // Add to player_trail layer
         trail_entity.clear_layers();

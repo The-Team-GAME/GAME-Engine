@@ -125,6 +125,58 @@ void Engine::Resources::load_all_assets()
   }
 }
 
+void Engine::Resources::load_all_prefabs()
+{
+  if (resource_path.empty())
+  {
+    Log::warning("Resource path is empty, cannot load prefabs");
+    return;
+  }
+
+  std::string prefabs_path = resource_path + "prefabs";
+  if (!std::filesystem::exists(prefabs_path))
+  {
+    Log::warning("Prefabs path does not exist: {}", prefabs_path);
+    return;
+  }
+
+  Log::info("Loading all prefabs from: {}", prefabs_path);
+  size_t loaded_count = 0;
+
+  try
+  {
+    // Iterate through all files in the prefabs folder
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(prefabs_path))
+    {
+      if (entry.is_regular_file())
+      {
+        std::string extension = entry.path().extension().string();
+        // Only load .json files (prefabs)
+        if (extension == ".json")
+        {
+          // Get relative path from resource_path
+          std::string relative_path = Engine::Path(entry.path().string()).to_relative(resource_path);
+
+          // Load the prefab (persist=true to keep it loaded)
+          Engine::ECS::Prefab prefab = Engine::Resources::load_prefab(relative_path, true, true);
+
+          // Check if load was successful (prefab is valid)
+          if (prefab.is_valid())
+          {
+            loaded_count++;
+          }
+        }
+      }
+    }
+
+    Log::info("Finished loading all prefabs. Total loaded: {}", loaded_count);
+  }
+  catch (const std::filesystem::filesystem_error& e)
+  {
+    Log::error("Error while loading prefabs: {}", e.what());
+  }
+}
+
 std::string Engine::Resources::copy_to_resources(const std::string& filepath, const std::string& subfolder)
 {
   // Normalize the input path
@@ -772,13 +824,11 @@ void Engine::Resources::cache_level(const std::string& filepath, const Engine::E
   Log::info("Level cached: {}", full_path);
 }
 
-bool Engine::Resources::open_level(const std::string& filepath, bool append_resource_path, bool additive)
+bool Engine::Resources::open_level(const std::string& filepath, bool append_resource_path)
 {
 #ifndef GAME_BUILD
   // In editor mode, use the tab manager for level opening
-  if (!additive) {
-    return LevelTabManager::open_tab(filepath, append_resource_path);
-  }
+  return LevelTabManager::open_tab(filepath, append_resource_path);
 #endif
 
   // In game mode or for additive loading, use LevelManager

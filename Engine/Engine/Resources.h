@@ -72,6 +72,9 @@ namespace Engine {
     // Load all assets from the resource path and its subfolders
     void load_all_assets();
 
+    // Load all prefabs from the prefabs subfolder (always loaded regardless of load_all_assets_on_startup)
+    void load_all_prefabs();
+
     // Copy a file to the resource folder root (or subfolder) if it's not already there
     std::string copy_to_resources(const std::string& filepath, const std::string& subfolder = "");
 
@@ -106,7 +109,7 @@ namespace Engine {
     void cache_level(const std::string& filepath, const Engine::EntityList& entities, bool append_resource_path = true, bool persist = false);
 
     // Open (instantiate) a level into the world
-    bool open_level(const std::string& filepath, bool append_resource_path = true, bool additive = false);
+    bool open_level(const std::string& filepath, bool append_resource_path = true);
 
     // Generic open function - automatically detects resource type and opens it
     // Currently supports: levels

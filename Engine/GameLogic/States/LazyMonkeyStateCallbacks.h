@@ -14,6 +14,7 @@
 #pragma once
 
 #include "../../Engine/MonkeyEngine.h"
+#include "../../Engine/Engine/Systems/PhysicsSystem.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/EnemyHealthComponent.h"
 
@@ -129,13 +130,16 @@ namespace LazyMonkeyStateCallbacks
         float distance = std::abs(dx); // Only horizontal distance for sidescrolling
 
         // Chase player horizontally, but stop when within attack range
-        if (distance > lazy_monkey->attack_range) {
-          rigid->velocity.x = (dx > 0 ? lazy_monkey->chase_speed : -lazy_monkey->chase_speed);
+          if (distance > lazy_monkey->attack_range) {
+            float desired_vx = (dx > 0 ? lazy_monkey->chase_speed : -lazy_monkey->chase_speed);
+            float dt = Engine::Time::get_fixed_dt();
+            float delta_v = desired_vx - rigid->velocity.x;
+            float force_x = (delta_v / dt) * rigid->mass; // F = m * dv/dt
+            Engine::Systems::Physics2DSystem::add_force(*rigid, Math::Vec2D(force_x, 0.0f));
           // Update flip direction based on movement
           if (flip) {
             flip->value.x = (dx > 0 ? 1.0f : -1.0f);
           }
-          // Don't modify velocity.y - let gravity handle it
         }
         else {
           // Stop moving when close enough to attack
@@ -312,6 +316,9 @@ namespace LazyMonkeyStateCallbacks
 
   inline void hit_on_enter(Engine::ECS::Entity entity) {
     (void)entity; // Suppress unused parameter warning
+
+
+
     Log::info("Lazy Monkey: Stunned!");
   }
 
@@ -334,8 +341,8 @@ namespace LazyMonkeyStateCallbacks
         entity.remove_component<Components::Parent>();
       }
 
-      // Apply knockback momentum from Player struct
-      rigid->velocity = pending_knockback->knockback;
+			// Apply knockback using physics system
+      Engine::Systems::Physics2DSystem::add_force(*rigid, pending_knockback->knockback);
 
       // Remove the pending knockback component (one-time use)
       entity.remove_component<Components::PendingKnockback>();

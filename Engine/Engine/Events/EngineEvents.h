@@ -85,7 +85,8 @@ namespace Engine {
       float duration;
 
       ToastEvent(const std::string& msg, ToastType t = ToastType::Info, float dur = 3.0f)
-        : message(msg), type(t), duration(dur) {}
+        : message(msg), type(t), duration(dur) {
+      }
     };
 
   } // namespace Events

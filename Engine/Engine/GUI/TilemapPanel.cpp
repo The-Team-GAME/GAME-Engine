@@ -962,7 +962,7 @@ namespace TilemapPanel {
 
       if (ImGui::BeginPopupModal("Clear Tiles Confirm", &modal_openb, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Are you sure you want to delete all placed tiles?");
-        ImGui::Text("This action cannot be undone!");
+        ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.0f, 1.0f), "This action can be undone.");
         ImGui::Separator();
 
         if (!modal_openb) {
@@ -973,17 +973,53 @@ namespace TilemapPanel {
         }
 
         if (ImGui::Button("Yes, Clear All", ImVec2(120, 0))) {
+          // Capture all entities before deletion for undo
+          std::vector<std::pair<Engine::ECS::EntityID, Engine::ECS::Prefab>> deleted_entities;
+
+          // Capture TileCollider entities
           auto all_entities = Engine::ECS::get_all_entities();
           for (auto& entity : all_entities) {
             if (entity.has_components<Components::TileCollider>()) {
-              entity.destroy();
-              Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+              deleted_entities.push_back({ entity.get_id(), Engine::ECS::entity_to_prefab(entity) });
             }
           }
-          // Also clear all TileMap entities
+
+          // Capture TileMap entities
           for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
-            entity.destroy();
+            // Avoid duplicates (in case entity has both TileCollider and TileMap)
+            bool already_captured = false;
+            for (const auto& [id, prefab] : deleted_entities) {
+              if (id == entity.get_id()) {
+                already_captured = true;
+                break;
+              }
+            }
+            if (!already_captured) {
+              deleted_entities.push_back({ entity.get_id(), Engine::ECS::entity_to_prefab(entity) });
+            }
           }
+
+          // Execute with undo support
+          Engine::UndoManager::execute(
+            // Do: Delete all entities
+            [deleted_entities]() {
+              for (const auto& [entity_id, prefab] : deleted_entities) {
+                auto entity = Engine::ECS::get_entity(entity_id);
+                if (entity.is_valid()) {
+                  entity.destroy();
+                }
+              }
+              Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+            },
+            // Undo: Restore all entities from prefabs
+            [deleted_entities]() {
+              for (const auto& [entity_id, prefab] : deleted_entities) {
+                Engine::ECS::instantiate_prefab_with_id(prefab, entity_id);
+              }
+              Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+            }
+          );
+
           ImGui::CloseCurrentPopup();
         }
 
@@ -1413,7 +1449,6 @@ namespace TilemapPanel {
 
             // Calculate which tiles make up this frame
             int tiles_per_frame = anim_config.prop_cols * anim_config.prop_rows;
-            int frame_start_tile = current_frame * tiles_per_frame;
 
             // Use stored sheet dimensions (avoid precision loss from integer division)
             int sheet_cols = anim_config.sheet_cols;

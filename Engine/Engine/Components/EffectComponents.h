@@ -37,7 +37,8 @@ namespace Components {
 
     FadeOut() = default;
     FadeOut(f32 duration, f32 start_alpha, f32 end_alpha)
-      : duration(duration), start_time(Engine::Time::get_time()), start_alpha(start_alpha), end_alpha(end_alpha) {
+      : duration(duration), start_time(0.0f), start_alpha(start_alpha), end_alpha(end_alpha) {
+      // Note: start_time should be set manually after construction to ensure proper timing
     }
   };
 }

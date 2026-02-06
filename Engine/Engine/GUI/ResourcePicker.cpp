@@ -63,8 +63,7 @@ namespace ResourcePicker {
   }
 
   bool texture_picker_popup(const char* popup_id, std::string& selected_path,
-    const std::string& current_path,
-    int grid_columns, float preview_size) {
+    const std::string& current_path) {
     bool selection_made = false;
 
     ImGui::SetNextWindowSize(ImVec2(900, 600), ImGuiCond_FirstUseEver);

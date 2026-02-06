@@ -368,3 +368,4 @@ FodyWeavers.xsd
 # Project
 /Engine/imgui.ini
 /Engine/Assets/settings/local_settings.json
+/Engine/imgui.ini

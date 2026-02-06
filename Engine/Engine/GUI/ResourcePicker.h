@@ -37,8 +37,7 @@ namespace ResourcePicker {
   After calling ImGui::OpenPopup() with matching popup_id.
   ==================================================================================*/
   bool texture_picker_popup(const char* popup_id, std::string& selected_path,
-    const std::string& current_path = "",
-    int grid_columns = 4, float preview_size = 64.0f);
+    const std::string& current_path = "");
 
   /*=================================================================================
   Function Brief:

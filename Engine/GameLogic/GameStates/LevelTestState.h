@@ -19,6 +19,7 @@
 #include "../Components/GameplayComponent.h"
 #include "../Components/HeartrateComponent.h"
 #include "../Components/HealthComponents.h"
+#include "../States/SprayCanMonkeyStateMachine.h"
 
 class LevelTestState : public Engine::Scene
 {
@@ -59,7 +60,7 @@ public:
     // ========================================================================
     // Create Camera Entity
     // ========================================================================
-    Engine::ECS::create_entity()
+    auto cam = Engine::ECS::create_entity()
       .add_component<Components::Camera>("Main Camera", true)
       .add_component<Components::Transform2D>(0.0f, -400.0f, 0.0f, 1.0f, 1.0f) // Relative to parent
       .add_component<Components::Parent>(player_entity.get_id());
@@ -67,6 +68,7 @@ public:
     // ========================================================================
     // Create Lazy Monkey Entity
     // ========================================================================
+    /*
     lazy_monkey_entity = Engine::ECS::create_entity()
       .add_component<Components::Enemy>()
       .add_component<Components::LazyMonkey>()
@@ -85,11 +87,36 @@ public:
       .remove_from_layer("default")
       .add_to_layer("enemy");
     //.add_to_layer("damage_player");
+    */
+
+    // ========================================================================
+    // Create Spray Can Monkey Entity
+    // ========================================================================
+    Engine::ECS::Entity spray_monkey_entity = Engine::ECS::create_entity()
+      .add_component<Components::Enemy>()
+      .add_component<Components::SprayCanMonkey>()
+      .add_component<Components::Transform2D>(500.0f, 300.0f, 0.0f,
+        SprayCanMonkeyStates::WIDTH * 2.0f,
+        SprayCanMonkeyStates::HEIGHT * 2.0f)
+      .add_component<Components::Texture>(Engine::Resources::load_texture("images/SprayPaintMonkeySpriteSheets/Spraypaint_Walk_Spritesheet.png"))
+      .add_component<Components::TextureAtlas>(64, 64, 1, 6, 6)
+      .add_component<Components::Animation>(5, 0.15f)
+      .add_component<Components::Color>(Math::Vec4D(1.0f, 1.0f, 1.0f, 1.0f))
+      .add_component<Components::Flip>(1.0f, 1.0f)
+      .add_component<Components::RigidBody>(Components::RigidBody(false, true))
+      .add_component<Components::BoxCollider>(SprayCanMonkeyStates::WIDTH * 2.0f,
+        SprayCanMonkeyStates::HEIGHT * 2.0f, false)
+      .add_component<Components::EnemyHealth>(300, 300)
+      .add_component<Components::Attack>(20, Math::Vec2D(300.0f, 400.0f)) // Contact damage
+      .add_component<Components::EnemyHealthBarRect>()
+      .add_component<Components::StateMachine>(SprayCanMonkeyStates::create_state_machine())
+      .remove_from_layer("default")
+      .add_to_layer("enemy");
 
 
   // set friction to 0
     player_entity.get_component<Components::BoxCollider>()->kinetic_friction = 0.8f;
-    lazy_monkey_entity.get_component<Components::BoxCollider>()->kinetic_friction = 0.8f;
+    //lazy_monkey_entity.get_component<Components::BoxCollider>()->kinetic_friction = 0.8f;
 
     Log::info("\n=== State Machine Test Level Loaded ===");
     Log::info("Controls (Sidescrolling Platform Game):");

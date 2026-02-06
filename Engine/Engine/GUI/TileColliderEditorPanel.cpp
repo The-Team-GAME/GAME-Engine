@@ -123,7 +123,6 @@ void TileColliderEditorPanel() {
 
   // Split into two columns
   ImGui::Columns(2, "TileColliderColumns", true);
-  ImGui::SetColumnWidth(0, 400);
 
   // --- LEFT COLUMN: Atlas Preview ---
   ImGui::Text("Select Tile");

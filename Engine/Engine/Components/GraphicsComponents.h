@@ -413,9 +413,26 @@ namespace Components
     std::string name = "Camera";
     bool is_active = false;  // Whether this camera is currently active
 
+    bool is_smooth = true;  // Whether this camera uses smooth movement (enabled by default)
+
+    // Smoothing parameters (higher = faster response, lower = more smoothness)
+    f32 smooth_factor = 6.0f;           // Camera smoothing when moving in same direction
+    f32 smooth_factor_direction_change = 1.0f;  // Slower smoothing when changing direction
+    f32 rotation_smooth = 10.0f;         // Camera rotation smoothing
+    f32 zoom_smooth = 12.0f;             // Camera zoom smoothing
+
+    // Look-ahead system (camera leads movement direction)
+    Math::Vec2D look_ahead_offset = { 0.0f, 0.0f };  // Current look-ahead offset (internal)
+    Math::Vec2D prev_velocity = { 0.0f, 0.0f };      // Previous frame velocity (internal)
+    f32 look_ahead_distance = 300.0f;  // How far ahead to look (pixels)
+    f32 look_ahead_smooth = 6.0f;      // Look-ahead smoothing speed (3-10 recommended)
+
+    // Dead zone - camera won't move if within this distance from target
+    f32 dead_zone_radius = 0.0f;  // Set to 0 to disable (10-50 for platformers)
+
     Camera() : name("Camera"), is_active(false) {}
-    Camera(const std::string& cam_name, bool active = false)
-      : name(cam_name), is_active(active) {
+    Camera(const std::string& cam_name, bool active = false, bool smooth = true)
+      : name(cam_name), is_active(active), is_smooth(smooth) {
     }
   };
 
@@ -537,6 +554,13 @@ namespace Components
   };
 
 
+  // Tag component for UI elements - renders in screen space (not affected by camera)
+  struct UI
+  {
+    UI() = default;
+  };
+
+
 }
 
 REFLECT_ENUM(Components::TextAlignment, Left, Center, Right);
@@ -544,6 +568,7 @@ REGISTER_COMPONENT(Components::Text, content, font_scale, line_spacing, alignmen
 REGISTER_COMPONENT(Components::Camera, name, is_active)
 REGISTER_COMPONENT(Components::Distortion, intensity, speed, mesh_intensity)
 REGISTER_COMPONENT(Components::Flip, value)
+REGISTER_COMPONENT(Components::UI)
 REGISTER_COMPONENT_CUSTOM(Components::Color, r, g, b, a)
 REGISTER_COMPONENT_CUSTOM(Components::Texture, path)
 REGISTER_COMPONENT_CUSTOM(Components::Font, path, font_size)

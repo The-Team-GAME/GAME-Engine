@@ -199,9 +199,7 @@ void Timeline::draw() {
       bool selection_made = ResourcePicker::texture_picker_popup(
         "TexturePickerPopup",
         pending_texture_path,
-        current_resource_path,
-        RESOURCE_GRID_COLUMNS,
-        RESOURCE_PREVIEW_SIZE
+        current_resource_path
       );
 
       if (selection_made) {
