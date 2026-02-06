@@ -180,7 +180,6 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q
     <ClCompile Include="Engine\Audio\AudioSystemExample.cpp" />
     <ClCompile Include="Engine\ECS\PrefabMergeUtils.cpp" />
     <ClCompile Include="Engine\FileIO\ColliderMeshFileIO.cpp" />
-    <ClCompile Include="Engine\GUI\AnimatorEditorPanel.cpp" />
     <ClCompile Include="Engine\GUI\ColliderEditorPanel.cpp" />
     <ClCompile Include="Engine\GUI\FrameAnimationEditorPanel.cpp" />
     <ClCompile Include="Engine\GUI\TextureAtlasEditorPanel.cpp" />
@@ -257,7 +256,6 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q
     <ClInclude Include="Engine\Audio\GameAudio.h" />
     <ClInclude Include="Engine\ECS\PrefabMergeUtils.h" />
     <ClInclude Include="Engine\FileIO\ColliderMeshFileIO.h" />
-    <ClInclude Include="Engine\GUI\AnimatorEditorPanel.h" />
     <ClInclude Include="Engine\GUI\ColliderEditorPanel.h" />
     <ClInclude Include="Engine\GUI\FPSOverlay.h" />
     <ClInclude Include="Engine\GUI\FrameAnimationEditorPanel.h" />
