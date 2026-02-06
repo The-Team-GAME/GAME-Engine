@@ -175,6 +175,10 @@ namespace ImGuiManager {
               Engine::WindowManager::set_fullscreen(Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get().fullscreen);
               Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::save();
             }
+            if (ImGui::MenuItem("Toggle VSync", nullptr, &Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get_mutable().vsync)) {
+              Engine::WindowManager::set_vsync(Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get().vsync);
+              Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::save();
+            }
 
             ImGui::EndMenu();
           }

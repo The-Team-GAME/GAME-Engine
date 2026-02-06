@@ -182,6 +182,13 @@ namespace Engine {
       }
     }
 
+    void set_vsync(bool enable)
+    {
+      if (!window) return;
+      glfwSwapInterval(enable ? 1 : 0);
+      Log::info("VSync {}", enable ? "enabled" : "disabled");
+    }
+
     /* ===================== //
     // Callbacks             //
     // ===================== */

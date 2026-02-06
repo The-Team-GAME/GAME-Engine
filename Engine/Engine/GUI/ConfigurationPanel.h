@@ -55,6 +55,20 @@ inline void ConfigurationPanel()
       ImGui::EndTooltip();
     }
 
+    if (ImGui::Checkbox("VSync", &game_settings.vsync))
+    {
+      Engine::WindowManager::set_vsync(game_settings.vsync);
+      settings_changed = true;
+    }
+    ImGui::SameLine();
+    ImGui::TextDisabled("(?)");
+    if (ImGui::IsItemHovered())
+    {
+      ImGui::BeginTooltip();
+      ImGui::Text("Cap frame rate to monitor refresh rate");
+      ImGui::EndTooltip();
+    }
+
     ImGui::Spacing();
     ImGui::Spacing();
 
