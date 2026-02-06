@@ -1,3 +1,18 @@
+//-----------------------------------------------------------------------------------
+// file:    AudioSystem.cpp
+// project: Monkey Stole My GPA
+//
+// author:  How Hong Chin Ryan (100%)
+//          Primary author
+//
+// email:   hongchinryan.how@digipen.edu
+//
+// brief:   Implementation of the FMOD-based audio system. Handles initialization,
+//          bank loading, event playback, 3D positioning, and volume controls.
+//          Provides both one-shot sound effects and persistent event instances.
+//
+// Copyright © 2026 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "AudioSystem.h"
 
 #include <fmod_studio.hpp>

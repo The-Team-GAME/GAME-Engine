@@ -1,6 +1,18 @@
-// Example usage of the AudioSystem
-// This file shows how to integrate FMOD Studio into your game
-
+//-----------------------------------------------------------------------------------
+// file:    AudioSystemExample.cpp
+// project: Monkey Stole My GPA
+//
+// author:  How Hong Chin Ryan (100%)
+//          Primary author
+//
+// email:   hongchinryan.how@digipen.edu
+//
+// brief:   Example usage and integration guide for the AudioSystem.
+//          Demonstrates initialization, playback, 3D audio, event instances,
+//          parameters, and volume controls for FMOD Studio integration.
+//
+// Copyright © 2026 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
 #include "AudioSystem.h"
 
 // ==============================================================

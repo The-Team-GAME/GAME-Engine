@@ -2,10 +2,16 @@
 // file:    GameAudio.h
 // project: Monkey Stole My GPA
 //
+// author:  How Hong Chin Ryan (100%)
+//          Primary author
+//
+// email:   hongchinryan.how@digipen.edu
+//
 // brief:   Simple helper functions for playing game sounds using FMOD Studio.
 //          Just include this file and call the functions anywhere in your game!
+//          Provides convenient wrappers for common audio events.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright © 2026 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
@@ -124,15 +130,15 @@ namespace Engine {
     // VOLUME CONTROLS
     // ============================================================
     
-    inline void SetMusicVolume(float volume) {
+    inline void SetMusicVolume(f32 volume) {
       AudioSystem::setBusVolume("bus:/Music", volume);
     }
     
-    inline void SetSFXVolume(float volume) {
+    inline void SetSFXVolume(f32 volume) {
       AudioSystem::setBusVolume("bus:/SFX", volume);
     }
     
-    inline void SetMasterVolume(float volume) {
+    inline void SetMasterVolume(f32 volume) {
       AudioSystem::setMasterVolume(volume);
     }
 

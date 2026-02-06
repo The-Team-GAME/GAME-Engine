@@ -1,11 +1,11 @@
 //-----------------------------------------------------------------------------------
 // file:    AudioSystem.h
 // project: Monkey Stole My GPA
-//
-// author:  Chew Shee Yang (100%)
+//C
+// author:  How Hong Chin Ryan (100%)
 //          Primary author
 //
-// email:   chew.s@digipen.edu
+// email:   hongchinryan.how@digipen.edu
 //
 // brief:   Public interface for the FMOD-based audio system. Provides sound
 //          loading, playback control, and spatial audio functionality.
