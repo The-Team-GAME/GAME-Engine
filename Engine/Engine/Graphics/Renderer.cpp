@@ -92,6 +92,10 @@ namespace Engine {
     // Unit rectangle texture (1x1 white pixel)
     Texture unit_rect;
 
+    // Cached camera bounds for frustum culling (updated each frame in begin_batch)
+    CameraBounds cached_camera_bounds;
+    bool frustum_culling_enabled = true;
+
     // Helper function to get the current projection matrix
     glm::mat4 get_projection_matrix() {
       return glm::ortho(0.0f, virtual_width, virtual_height, 0.0f, -1.0f, 1.0f);
@@ -175,6 +179,8 @@ namespace Engine {
     // Begin a new batch (call at start of frame)
     void begin_batch() {
       batch_state.reset();
+      // Cache camera bounds for frustum culling this frame
+      cached_camera_bounds = get_camera_bounds();
     }
 
     // End batch (call at end of frame)
@@ -225,6 +231,15 @@ namespace Engine {
       if (!shader || !shader->is_valid()) {
         Log::error("Instanced shader is not valid");
         return;
+      }
+
+      // Frustum culling - skip if not visible
+      if (frustum_culling_enabled) {
+        f32 half_w = std::abs(size.x) * 0.5f;
+        f32 half_h = std::abs(size.y) * 0.5f;
+        if (!cached_camera_bounds.intersects(position.x, position.y, half_w, half_h)) {
+          return;
+        }
       }
 
       // Build instance data - GPU does the vertex transformation
@@ -560,6 +575,63 @@ namespace Engine {
       current_camera.position = Math::Vec2D(0.0f, 0.0f);
       current_camera.rotation = 0.0f;
       current_camera.zoom = 1.0f;
+    }
+
+    CameraBounds get_camera_bounds() {
+      CameraBounds bounds;
+
+      // The visible area dimensions in world space (accounting for zoom)
+      f32 visible_width = virtual_width / current_camera.zoom;
+      f32 visible_height = virtual_height / current_camera.zoom;
+
+      // Camera position is at the TOP-LEFT of the visible area
+      // So the center of the visible area is offset by half the visible dimensions
+      f32 center_x = current_camera.position.x + visible_width * 0.5f;
+      f32 center_y = current_camera.position.y + visible_height * 0.5f;
+
+      f32 half_width = visible_width * 0.5f;
+      f32 half_height = visible_height * 0.5f;
+
+      // If camera has rotation, we need to expand the AABB to encompass the rotated view
+      if (current_camera.rotation != 0.0f) {
+        f32 angle_rad = glm::radians(current_camera.rotation);
+        f32 cos_a = std::abs(std::cos(angle_rad));
+        f32 sin_a = std::abs(std::sin(angle_rad));
+
+        // Rotated AABB dimensions (bounding box of rotated rectangle)
+        f32 new_half_width = half_width * cos_a + half_height * sin_a;
+        f32 new_half_height = half_width * sin_a + half_height * cos_a;
+
+        half_width = new_half_width;
+        half_height = new_half_height;
+      }
+
+      // Calculate world-space bounds centered on the visible area center
+      bounds.min_x = center_x - half_width;
+      bounds.max_x = center_x + half_width;
+      bounds.min_y = center_y - half_height;
+      bounds.max_y = center_y + half_height;
+
+      return bounds;
+    }
+
+    bool is_visible(const Math::Vec2D& position, const Math::Vec2D& size) {
+      CameraBounds bounds = get_camera_bounds();
+      return is_visible(bounds, position, size);
+    }
+
+    bool is_visible(const CameraBounds& bounds, const Math::Vec2D& position, const Math::Vec2D& size) {
+      f32 half_w = size.x * 0.5f;
+      f32 half_h = size.y * 0.5f;
+      return bounds.intersects(position.x, position.y, half_w, half_h);
+    }
+
+    void set_frustum_culling(bool enabled) {
+      frustum_culling_enabled = enabled;
+    }
+
+    bool is_frustum_culling_enabled() {
+      return frustum_culling_enabled;
     }
 
     void set_viewport(const Viewport& viewport) {
@@ -1297,6 +1369,15 @@ namespace Engine {
       if (!distortion_shader || !distortion_shader->is_valid()) {
         Log::error("Instanced distortion shader is not valid");
         return;
+      }
+
+      // Frustum culling - skip if not visible
+      if (frustum_culling_enabled) {
+        f32 half_w = std::abs(size.x) * 0.5f;
+        f32 half_h = std::abs(size.y) * 0.5f;
+        if (!cached_camera_bounds.intersects(position.x, position.y, half_w, half_h)) {
+          return;
+        }
       }
 
       // Build instance data - GPU does vertex transformation + distortion
