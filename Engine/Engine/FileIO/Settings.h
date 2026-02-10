@@ -89,6 +89,7 @@ namespace Engine
     struct GameSettings
     {
       bool fullscreen = false;
+      bool vsync = true;  // Enable VSync to cap FPS to monitor refresh rate
       float bgm_volume = 1.0f;
       float sfx_volume = 1.0f;
     };
@@ -98,4 +99,4 @@ namespace Engine
 REFLECT_FIELDS(Engine::FileIO::EngineSettings, window_title, window_width, window_height, panel_viewport_mode, load_all_assets_on_startup)
 REFLECT_FIELDS(Engine::FileIO::ProjectSettings, loaded_tilemaps, layer_collision_pairs)
 REFLECT_FIELDS(Engine::FileIO::LocalSettings, imgui_theme)
-REFLECT_FIELDS(Engine::FileIO::GameSettings, fullscreen, bgm_volume, sfx_volume)
+REFLECT_FIELDS(Engine::FileIO::GameSettings, fullscreen, vsync, bgm_volume, sfx_volume)

@@ -131,6 +131,9 @@ namespace Engine
     // Apply window mode
     WindowManager::set_fullscreen(game_settings.fullscreen);
 
+    // Apply VSync setting
+    WindowManager::set_vsync(game_settings.vsync);
+
     // Apply audio volumes
     Engine::Audio::set_bgm_volume(game_settings.bgm_volume);
     Engine::Audio::set_sfx_volume(game_settings.sfx_volume);

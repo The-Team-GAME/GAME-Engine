@@ -531,6 +531,11 @@ namespace Engine {
             overrides = override_it->second;
           }
 
+          // Always preserve Transform2D.position — position is per-instance and should never sync from prefab
+          if (type_id == ComponentTypeManager::get_type_id<Components::Transform2D>()) {
+            overrides.insert("position");
+          }
+
           // Merge prefab data with instance overrides
           ReflectionLibrary::GenericValue merged_data =
             PrefabMergeUtils::merge_component_with_overrides(

@@ -829,11 +829,11 @@ bool Engine::Resources::open_level(const std::string& filepath, bool append_reso
 #ifndef GAME_BUILD
   // In editor mode, use the tab manager for level opening
   return LevelTabManager::open_tab(filepath, append_resource_path);
-#endif
-
+#else
   // In game mode or for additive loading, use LevelManager
   std::string level_id = LevelManager::open_level(filepath, append_resource_path);
   return !level_id.empty();
+#endif
 }
 
 bool Engine::Resources::open(const std::string& filepath, bool append_resource_path)
