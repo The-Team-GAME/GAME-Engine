@@ -56,7 +56,7 @@ namespace SprayCanMonkeyStates
     spray_monkey_idle_anim.animation = Components::Animation(5, 0.15f);
     spray_monkey_idle_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
-    Components::State spray_monkey_idle("Idle", "SprayCanMonkey::idle_on_enter", "SprayCanMonkey::idle_on_update", "", spray_monkey_idle_anim);
+    Components::State spray_monkey_idle("Idle", spray_monkey_idle_anim);
 
     // ========================================================================
     // Spray Can Monkey Chasing State
@@ -67,7 +67,7 @@ namespace SprayCanMonkeyStates
     spray_monkey_chasing_anim.animation = Components::Animation(6, 0.1f);
     spray_monkey_chasing_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
-    Components::State spray_monkey_chasing("Chasing", "SprayCanMonkey::chasing_on_enter", "SprayCanMonkey::chasing_on_update", "SprayCanMonkey::chasing_on_exit", spray_monkey_chasing_anim, footstep_audio);
+    Components::State spray_monkey_chasing("Chasing", spray_monkey_chasing_anim, footstep_audio);
 
     // ========================================================================
     // Spray Can Monkey Windup State
@@ -78,7 +78,7 @@ namespace SprayCanMonkeyStates
     spray_monkey_windup_anim.animation = Components::Animation(4, 0.1f);
     spray_monkey_windup_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
-    Components::State spray_monkey_windup("Windup", "SprayCanMonkey::windup_on_enter", "SprayCanMonkey::windup_on_update", "", spray_monkey_windup_anim);
+    Components::State spray_monkey_windup("Windup", spray_monkey_windup_anim);
 
     // ========================================================================
     // Spray Can Monkey Spraying State
@@ -89,7 +89,7 @@ namespace SprayCanMonkeyStates
     spray_monkey_spraying_anim.animation = Components::Animation({ 0.1f, 0.1f, 0.2f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.2f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f });
     spray_monkey_spraying_anim.scale = Math::Vec2D(WIDTH * 3.0f, HEIGHT * 2.0f);
 
-    Components::State spray_monkey_spraying("Spraying", "SprayCanMonkey::spraying_on_enter", "SprayCanMonkey::spraying_on_update", "SprayCanMonkey::spraying_on_exit", spray_monkey_spraying_anim, spray_audio);
+    Components::State spray_monkey_spraying("Spraying", spray_monkey_spraying_anim, spray_audio);
 
     // ========================================================================
     // Spray Can Monkey Hit State
@@ -100,7 +100,7 @@ namespace SprayCanMonkeyStates
     spray_monkey_hit_anim.animation = Components::Animation(1, 0.3f);
     spray_monkey_hit_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
-    Components::State spray_monkey_hit("Hit", "SprayCanMonkey::hit_on_enter", "SprayCanMonkey::hit_on_update", "SprayCanMonkey::hit_on_exit", spray_monkey_hit_anim, hurt_audio);
+    Components::State spray_monkey_hit("Hit", spray_monkey_hit_anim, hurt_audio);
 
     // ========================================================================
     // Spray Can Monkey Death State
@@ -111,7 +111,7 @@ namespace SprayCanMonkeyStates
     spray_monkey_death_anim.animation = Components::Animation(1, 0.5f);
     spray_monkey_death_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
-    Components::State spray_monkey_death("Death", "SprayCanMonkey::death_on_enter", "SprayCanMonkey::death_on_update", "SprayCanMonkey::death_on_exit", spray_monkey_death_anim);
+    Components::State spray_monkey_death("Death", spray_monkey_death_anim);
 
     // ========================================================================
     // Build and return state machine (without reloading state)

@@ -99,17 +99,13 @@ namespace Components
 
     State() = default;
 
+    // Construct with just a name + optional animation/audio.
+    // Callbacks are left empty — sync_with_blueprint() fills them in from the blueprint.
     State(const std::string& state_name,
-      const std::string& enter_callback = "",
-      const std::string& update_callback = "",
-      const std::string& exit_callback = "",
       std::optional<StateAnimation> state_animation = std::nullopt,
       std::optional<StateAudio> state_audio = std::nullopt,
       std::optional<FMODStateAudio> fmod_state_audio = std::nullopt)
       : name(state_name)
-      , on_enter_callback(enter_callback)
-      , on_update_callback(update_callback)
-      , on_exit_callback(exit_callback)
       , animation(state_animation)
       , audio(state_audio)
       , fmod_audio(fmod_state_audio)

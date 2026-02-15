@@ -88,7 +88,7 @@ namespace LazyMonkeyStates
     lazy_monkey_idle_anim.animation = Components::Animation(5, 0.15f);
     lazy_monkey_idle_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
-    Components::State lazy_monkey_idle("Idle", "LazyMonkeyStateCallbacks::idle_on_enter", "LazyMonkeyStateCallbacks::idle_on_update", "", lazy_monkey_idle_anim);
+    Components::State lazy_monkey_idle("Idle", lazy_monkey_idle_anim);
 
     // ========================================================================
     // Lazy Monkey Chasing State
@@ -100,7 +100,7 @@ namespace LazyMonkeyStates
     lazy_monkey_chasing_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
     // Try FMOD first, fallback to old audio if FMOD fails
-    Components::State lazy_monkey_chasing("Chasing", "LazyMonkeyStateCallbacks::chasing_on_enter", "LazyMonkeyStateCallbacks::chasing_on_update", "LazyMonkeyStateCallbacks::chasing_on_exit", lazy_monkey_chasing_anim, footstep_audio, fmod_chase_audio);
+    Components::State lazy_monkey_chasing("Chasing", lazy_monkey_chasing_anim, footstep_audio, fmod_chase_audio);
 
     // ========================================================================
     // Lazy Monkey Windup State (uses idle animation)
@@ -111,7 +111,7 @@ namespace LazyMonkeyStates
     lazy_monkey_windup_anim.animation = Components::Animation(5, 0.15f);
     lazy_monkey_windup_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
-    Components::State lazy_monkey_windup("Windup", "LazyMonkeyStateCallbacks::windup_on_enter", "LazyMonkeyStateCallbacks::windup_on_update", "", lazy_monkey_windup_anim);
+    Components::State lazy_monkey_windup("Windup", lazy_monkey_windup_anim);
 
     // ========================================================================
     // Lazy Monkey Attacking State
@@ -123,7 +123,7 @@ namespace LazyMonkeyStates
     lazy_monkey_attacking_anim.scale = Math::Vec2D(ATTACK_WIDTH * 2.0f, ATTACK_HEIGHT * 2.0f);
 
     // Try FMOD first, fallback to old audio if FMOD fails
-    Components::State lazy_monkey_attacking("Attacking", "LazyMonkeyStateCallbacks::attacking_on_enter", "LazyMonkeyStateCallbacks::attacking_on_update", "LazyMonkeyStateCallbacks::attacking_on_exit", lazy_monkey_attacking_anim, attack_audio, fmod_attack_audio);
+    Components::State lazy_monkey_attacking("Attacking", lazy_monkey_attacking_anim, attack_audio, fmod_attack_audio);
 
     // ========================================================================
     // Lazy Monkey Hit State
@@ -135,7 +135,7 @@ namespace LazyMonkeyStates
     lazy_monkey_hit_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
     // FMOD only (no fallback) - old audio commented out above
-    Components::State lazy_monkey_hit("Hit", "LazyMonkeyStateCallbacks::hit_on_enter", "LazyMonkeyStateCallbacks::hit_on_update", "LazyMonkeyStateCallbacks::hit_on_exit", lazy_monkey_hit_anim, std::nullopt, fmod_hurt_audio);
+    Components::State lazy_monkey_hit("Hit", lazy_monkey_hit_anim, std::nullopt, fmod_hurt_audio);
 
     // ========================================================================
     // Lazy Monkey Death State
@@ -147,7 +147,7 @@ namespace LazyMonkeyStates
     lazy_monkey_death_anim.animation = Components::Animation({ 0.2f, 0.1f, 1.5f });
     lazy_monkey_death_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
-    Components::State lazy_monkey_death("Death", "LazyMonkeyStateCallbacks::death_on_enter", "LazyMonkeyStateCallbacks::death_on_update", "LazyMonkeyStateCallbacks::death_on_exit", lazy_monkey_death_anim);
+    Components::State lazy_monkey_death("Death", lazy_monkey_death_anim);
 
     // ========================================================================
     // Build and return state machine

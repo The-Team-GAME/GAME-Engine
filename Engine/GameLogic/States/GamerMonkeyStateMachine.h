@@ -57,7 +57,7 @@ namespace GamerMonkeyStates
     Gamer_monkey_idle_anim.animation = Components::Animation(6, 0.2f);
     Gamer_monkey_idle_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
 
-    Components::State Gamer_monkey_idle("Idle", "GamerMonkeyStateCallbacks::idle_on_enter", "GamerMonkeyStateCallbacks::idle_on_update", "", Gamer_monkey_idle_anim);
+    Components::State Gamer_monkey_idle("Idle", Gamer_monkey_idle_anim);
 
     // ========================================================================
     // Gamer Monkey Dash State
@@ -70,7 +70,7 @@ namespace GamerMonkeyStates
       0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f });
     Gamer_monkey_dashing_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
 
-    Components::State Gamer_monkey_dashing("Dash", "GamerMonkeyStateCallbacks::dashing_on_enter", "GamerMonkeyStateCallbacks::dashing_on_update", "GamerMonkeyStateCallbacks::dashing_on_exit", Gamer_monkey_dashing_anim, footstep_audio);
+    Components::State Gamer_monkey_dashing("Dash", Gamer_monkey_dashing_anim, footstep_audio);
 
     // ========================================================================
     // Gamer Monkey Dash Windup State
@@ -81,7 +81,7 @@ namespace GamerMonkeyStates
     Gamer_monkey_dash_windup_anim.animation = Components::Animation({ 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.1f, 0.2f, 0.2f, 0.3f, 0.4f, 0.5f });
     Gamer_monkey_dash_windup_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
 
-    Components::State Gamer_monkey_dash_windup("DashWindup", "GamerMonkeyStateCallbacks::dash_windup_on_enter", "GamerMonkeyStateCallbacks::dash_windup_on_update", "GamerMonkeyStateCallbacks::dash_windup_on_exit", Gamer_monkey_dash_windup_anim);
+    Components::State Gamer_monkey_dash_windup("DashWindup", Gamer_monkey_dash_windup_anim);
 
     // ========================================================================
     // Gamer Monkey Chase State
@@ -92,7 +92,7 @@ namespace GamerMonkeyStates
     Gamer_monkey_chasing_anim.animation = Components::Animation(6, 0.2f);
     Gamer_monkey_chasing_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
 
-    Components::State Gamer_monkey_chasing("Chasing", "GamerMonkeyStateCallbacks::chasing_on_enter", "GamerMonkeyStateCallbacks::chasing_on_update", "GamerMonkeyStateCallbacks::chasing_on_exit", Gamer_monkey_chasing_anim, footstep_audio);
+    Components::State Gamer_monkey_chasing("Chasing", Gamer_monkey_chasing_anim, footstep_audio);
 
     // ========================================================================
     // Gamer Monkey Windup State
@@ -103,7 +103,7 @@ namespace GamerMonkeyStates
     Gamer_monkey_windup_anim.animation = Components::Animation(5, 0.3f);
     Gamer_monkey_windup_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
 
-    Components::State Gamer_monkey_windup("Windup", "GamerMonkeyStateCallbacks::windup_on_enter", "GamerMonkeyStateCallbacks::windup_on_update", "", Gamer_monkey_windup_anim);
+    Components::State Gamer_monkey_windup("Windup", Gamer_monkey_windup_anim);
 
     // ========================================================================
     // Gamer Monkey Attacking State
@@ -114,7 +114,7 @@ namespace GamerMonkeyStates
     Gamer_monkey_attacking_anim.animation = Components::Animation({ 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.3f, 0.3f, 0.3f });
     Gamer_monkey_attacking_anim.scale = Math::Vec2D(ATTACK_WIDTH, ATTACK_HEIGHT);
 
-    Components::State Gamer_monkey_attacking("Attacking", "GamerMonkeyStateCallbacks::attacking_on_enter", "GamerMonkeyStateCallbacks::attacking_on_update", "GamerMonkeyStateCallbacks::attacking_on_exit", Gamer_monkey_attacking_anim, attack_audio);
+    Components::State Gamer_monkey_attacking("Attacking", Gamer_monkey_attacking_anim, attack_audio);
 
     // ========================================================================
     // Gamer Monkey Hit State
@@ -126,7 +126,7 @@ namespace GamerMonkeyStates
     //Gamer_monkey_hit_anim.animation = Components::Animation(std::initializer_list{ 2 }, { 0.4f });
     Gamer_monkey_hit_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
 
-    Components::State Gamer_monkey_hit("Hit", "GamerMonkeyStateCallbacks::hit_on_enter", "GamerMonkeyStateCallbacks::hit_on_update", "GamerMonkeyStateCallbacks::hit_on_exit", Gamer_monkey_hit_anim, hurt_audio);
+    Components::State Gamer_monkey_hit("Hit", Gamer_monkey_hit_anim, hurt_audio);
 
     // ========================================================================
     // Gamer Monkey Death State
@@ -137,7 +137,7 @@ namespace GamerMonkeyStates
     Gamer_monkey_death_anim.animation = Components::Animation(6, 0.2f);
     Gamer_monkey_death_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
 
-    Components::State Gamer_monkey_death("Death", "GamerMonkeyStateCallbacks::death_on_enter", "GamerMonkeyStateCallbacks::death_on_update", "GamerMonkeyStateCallbacks::death_on_exit", Gamer_monkey_death_anim);
+    Components::State Gamer_monkey_death("Death", Gamer_monkey_death_anim);
 
     // ========================================================================
     // Build and return state machine
