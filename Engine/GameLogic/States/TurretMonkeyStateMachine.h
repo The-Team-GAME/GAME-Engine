@@ -17,19 +17,7 @@
 #include "../Components/GameplayComponent.h"
 #include "TurretMonkeyStateCallbacks.h"
 
-// Register the code-defined state topology (callbacks only)
-REGISTER_STATE_MACHINE_BLUEPRINT(TurretMonkey, "Idle",
-  { "Idle",            "TurretMonkeyStateCallbacks::idle_on_enter",              "TurretMonkeyStateCallbacks::idle_on_update",              "" },
-  { "Chasing",         "TurretMonkeyStateCallbacks::chasing_on_enter",           "TurretMonkeyStateCallbacks::chasing_on_update",           "TurretMonkeyStateCallbacks::chasing_on_exit" },
-  { "Turret",          "TurretMonkeyStateCallbacks::turret_on_enter",            "TurretMonkeyStateCallbacks::turret_on_update",            "TurretMonkeyStateCallbacks::turret_on_exit" },
-  { "TurretWindup",    "TurretMonkeyStateCallbacks::turret_windup_on_enter",     "TurretMonkeyStateCallbacks::turret_windup_on_update",     "TurretMonkeyStateCallbacks::turret_windup_on_exit" },
-  { "TurretAttacking", "TurretMonkeyStateCallbacks::turret_attacking_on_enter",  "TurretMonkeyStateCallbacks::turret_attacking_on_update",  "TurretMonkeyStateCallbacks::turret_attacking_on_exit" },
-  { "Windup",          "TurretMonkeyStateCallbacks::windup_on_enter",            "TurretMonkeyStateCallbacks::windup_on_update",            "" },
-  { "Attacking",       "TurretMonkeyStateCallbacks::attacking_on_enter",         "TurretMonkeyStateCallbacks::attacking_on_update",         "TurretMonkeyStateCallbacks::attacking_on_exit" },
-  { "Hit",             "TurretMonkeyStateCallbacks::hit_on_enter",               "TurretMonkeyStateCallbacks::hit_on_update",               "TurretMonkeyStateCallbacks::hit_on_exit" },
-  { "Death",           "TurretMonkeyStateCallbacks::death_on_enter",             "TurretMonkeyStateCallbacks::death_on_update",             "TurretMonkeyStateCallbacks::death_on_exit" })
-
-  namespace TurretMonkeyStates
+namespace TurretMonkeyStates
 {
   // Turret Monkey dimensions
 

@@ -17,16 +17,7 @@
 #include "../Components/GameplayComponent.h"
 #include "LazyMonkeyStateCallbacks.h"
 
-// Register the code-defined state topology (callbacks only)
-REGISTER_STATE_MACHINE_BLUEPRINT(LazyMonkey, "Idle",
-  { "Idle",      "LazyMonkeyStateCallbacks::idle_on_enter",      "LazyMonkeyStateCallbacks::idle_on_update",      "" },
-  { "Chasing",   "LazyMonkeyStateCallbacks::chasing_on_enter",   "LazyMonkeyStateCallbacks::chasing_on_update",   "LazyMonkeyStateCallbacks::chasing_on_exit" },
-  { "Windup",    "LazyMonkeyStateCallbacks::windup_on_enter",    "LazyMonkeyStateCallbacks::windup_on_update",    "" },
-  { "Attacking", "LazyMonkeyStateCallbacks::attacking_on_enter", "LazyMonkeyStateCallbacks::attacking_on_update", "LazyMonkeyStateCallbacks::attacking_on_exit" },
-  { "Hit",       "LazyMonkeyStateCallbacks::hit_on_enter",       "LazyMonkeyStateCallbacks::hit_on_update",       "LazyMonkeyStateCallbacks::hit_on_exit" },
-  { "Death",     "LazyMonkeyStateCallbacks::death_on_enter",     "LazyMonkeyStateCallbacks::death_on_update",     "LazyMonkeyStateCallbacks::death_on_exit" })
-
-  namespace LazyMonkeyStates
+namespace LazyMonkeyStates
 {
   // Lazy Monkey dimensions
   constexpr f32 WIDTH = 64.0f;

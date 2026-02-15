@@ -613,26 +613,14 @@ namespace GamerMonkeyStateCallbacks
 
 } // namespace GamerMonkeyStateCallbacks
 
-// Register all Gamer monkey state callbacks
-REGISTER_FUNCTION(GamerMonkeyStateCallbacks::idle_on_enter)
-REGISTER_FUNCTION(GamerMonkeyStateCallbacks::idle_on_update)
-REGISTER_FUNCTION(GamerMonkeyStateCallbacks::dash_windup_on_enter)
-REGISTER_FUNCTION(GamerMonkeyStateCallbacks::dash_windup_on_update)
-REGISTER_FUNCTION(GamerMonkeyStateCallbacks::dash_windup_on_exit)
-REGISTER_FUNCTION(GamerMonkeyStateCallbacks::dashing_on_enter)
-REGISTER_FUNCTION(GamerMonkeyStateCallbacks::dashing_on_update)
-REGISTER_FUNCTION(GamerMonkeyStateCallbacks::dashing_on_exit)
-REGISTER_FUNCTION(GamerMonkeyStateCallbacks::chasing_on_enter)
-REGISTER_FUNCTION(GamerMonkeyStateCallbacks::chasing_on_update)
-REGISTER_FUNCTION(GamerMonkeyStateCallbacks::chasing_on_exit)
-REGISTER_FUNCTION(GamerMonkeyStateCallbacks::windup_on_enter)
-REGISTER_FUNCTION(GamerMonkeyStateCallbacks::windup_on_update)
-REGISTER_FUNCTION(GamerMonkeyStateCallbacks::attacking_on_enter)
-REGISTER_FUNCTION(GamerMonkeyStateCallbacks::attacking_on_update)
-REGISTER_FUNCTION(GamerMonkeyStateCallbacks::attacking_on_exit)
-REGISTER_FUNCTION(GamerMonkeyStateCallbacks::hit_on_enter)
-REGISTER_FUNCTION(GamerMonkeyStateCallbacks::hit_on_update)
-REGISTER_FUNCTION(GamerMonkeyStateCallbacks::hit_on_exit)
-REGISTER_FUNCTION(GamerMonkeyStateCallbacks::death_on_enter)
-REGISTER_FUNCTION(GamerMonkeyStateCallbacks::death_on_update)
-REGISTER_FUNCTION(GamerMonkeyStateCallbacks::death_on_exit)
+// Register blueprint + all gamer monkey state callbacks
+REGISTER_STATE_MACHINE_BLUEPRINT(GamerMonkey, "Idle",
+  STATE("Idle", GamerMonkeyStateCallbacks::idle_on_enter, GamerMonkeyStateCallbacks::idle_on_update, NO_CALLBACK)
+  STATE("DashWindup", GamerMonkeyStateCallbacks::dash_windup_on_enter, GamerMonkeyStateCallbacks::dash_windup_on_update, GamerMonkeyStateCallbacks::dash_windup_on_exit)
+  STATE("Dash", GamerMonkeyStateCallbacks::dashing_on_enter, GamerMonkeyStateCallbacks::dashing_on_update, GamerMonkeyStateCallbacks::dashing_on_exit)
+  STATE("Chasing", GamerMonkeyStateCallbacks::chasing_on_enter, GamerMonkeyStateCallbacks::chasing_on_update, GamerMonkeyStateCallbacks::chasing_on_exit)
+  STATE("Windup", GamerMonkeyStateCallbacks::windup_on_enter, GamerMonkeyStateCallbacks::windup_on_update, NO_CALLBACK)
+  STATE("Attacking", GamerMonkeyStateCallbacks::attacking_on_enter, GamerMonkeyStateCallbacks::attacking_on_update, GamerMonkeyStateCallbacks::attacking_on_exit)
+  STATE("Hit", GamerMonkeyStateCallbacks::hit_on_enter, GamerMonkeyStateCallbacks::hit_on_update, GamerMonkeyStateCallbacks::hit_on_exit)
+  STATE("Death", GamerMonkeyStateCallbacks::death_on_enter, GamerMonkeyStateCallbacks::death_on_update, GamerMonkeyStateCallbacks::death_on_exit)
+)

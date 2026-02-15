@@ -17,18 +17,7 @@
 #include "../Components/GameplayComponent.h"
 #include "GamerMonkeyStateCallbacks.h"
 
-// Register the code-defined state topology (callbacks only)
-REGISTER_STATE_MACHINE_BLUEPRINT(GamerMonkey, "Idle",
-  { "Idle",       "GamerMonkeyStateCallbacks::idle_on_enter",        "GamerMonkeyStateCallbacks::idle_on_update",        "" },
-  { "DashWindup","GamerMonkeyStateCallbacks::dash_windup_on_enter",  "GamerMonkeyStateCallbacks::dash_windup_on_update", "GamerMonkeyStateCallbacks::dash_windup_on_exit" },
-  { "Dash",      "GamerMonkeyStateCallbacks::dashing_on_enter",      "GamerMonkeyStateCallbacks::dashing_on_update",     "GamerMonkeyStateCallbacks::dashing_on_exit" },
-  { "Chasing",   "GamerMonkeyStateCallbacks::chasing_on_enter",      "GamerMonkeyStateCallbacks::chasing_on_update",     "GamerMonkeyStateCallbacks::chasing_on_exit" },
-  { "Windup",    "GamerMonkeyStateCallbacks::windup_on_enter",       "GamerMonkeyStateCallbacks::windup_on_update",      "" },
-  { "Attacking", "GamerMonkeyStateCallbacks::attacking_on_enter",    "GamerMonkeyStateCallbacks::attacking_on_update",   "GamerMonkeyStateCallbacks::attacking_on_exit" },
-  { "Hit",       "GamerMonkeyStateCallbacks::hit_on_enter",          "GamerMonkeyStateCallbacks::hit_on_update",         "GamerMonkeyStateCallbacks::hit_on_exit" },
-  { "Death",     "GamerMonkeyStateCallbacks::death_on_enter",        "GamerMonkeyStateCallbacks::death_on_update",       "GamerMonkeyStateCallbacks::death_on_exit" })
-
-  namespace GamerMonkeyStates
+namespace GamerMonkeyStates
 {
   // Gamer Monkey dimensions
   constexpr f32 WIDTH = 400.0f;

@@ -537,24 +537,14 @@ namespace PlayerStateCallbacks
 #pragma endregion
 } // namespace PlayerStateCallbacks
 
-// Register all player state callbacks
-REGISTER_FUNCTION(PlayerStateCallbacks::idle_on_enter)
-REGISTER_FUNCTION(PlayerStateCallbacks::idle_on_update)
-REGISTER_FUNCTION(PlayerStateCallbacks::walking_on_enter)
-REGISTER_FUNCTION(PlayerStateCallbacks::walking_on_update)
-REGISTER_FUNCTION(PlayerStateCallbacks::walking_on_exit)
-REGISTER_FUNCTION(PlayerStateCallbacks::jumping_on_enter)
-REGISTER_FUNCTION(PlayerStateCallbacks::jumping_on_update)
-REGISTER_FUNCTION(PlayerStateCallbacks::jumping_on_exit)
-REGISTER_FUNCTION(PlayerStateCallbacks::dash_on_enter)
-REGISTER_FUNCTION(PlayerStateCallbacks::dash_on_update)
-REGISTER_FUNCTION(PlayerStateCallbacks::dash_on_exit)
-REGISTER_FUNCTION(PlayerStateCallbacks::attack1_on_enter)
-REGISTER_FUNCTION(PlayerStateCallbacks::attack1_on_update)
-REGISTER_FUNCTION(PlayerStateCallbacks::attack2_on_enter)
-REGISTER_FUNCTION(PlayerStateCallbacks::attack2_on_update)
-REGISTER_FUNCTION(PlayerStateCallbacks::attack3_on_enter)
-REGISTER_FUNCTION(PlayerStateCallbacks::attack3_on_update)
-REGISTER_FUNCTION(PlayerStateCallbacks::death_on_enter)
-REGISTER_FUNCTION(PlayerStateCallbacks::death_on_update)
-REGISTER_FUNCTION(PlayerStateCallbacks::death_on_exit)
+// Register blueprint + all player state callbacks
+REGISTER_STATE_MACHINE_BLUEPRINT(Player, "Idle",
+  STATE("Idle", PlayerStateCallbacks::idle_on_enter, PlayerStateCallbacks::idle_on_update, NO_CALLBACK)
+  STATE("Walking", PlayerStateCallbacks::walking_on_enter, PlayerStateCallbacks::walking_on_update, PlayerStateCallbacks::walking_on_exit)
+  STATE("Jumping", PlayerStateCallbacks::jumping_on_enter, PlayerStateCallbacks::jumping_on_update, PlayerStateCallbacks::jumping_on_exit)
+  STATE("Dash", PlayerStateCallbacks::dash_on_enter, PlayerStateCallbacks::dash_on_update, PlayerStateCallbacks::dash_on_exit)
+  STATE("Attack1", PlayerStateCallbacks::attack1_on_enter, PlayerStateCallbacks::attack1_on_update, NO_CALLBACK)
+  STATE("Attack2", PlayerStateCallbacks::attack2_on_enter, PlayerStateCallbacks::attack2_on_update, NO_CALLBACK)
+  STATE("Attack3", PlayerStateCallbacks::attack3_on_enter, PlayerStateCallbacks::attack3_on_update, NO_CALLBACK)
+  STATE("Death", PlayerStateCallbacks::death_on_enter, PlayerStateCallbacks::death_on_update, PlayerStateCallbacks::death_on_exit)
+)

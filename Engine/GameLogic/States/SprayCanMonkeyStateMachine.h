@@ -17,16 +17,7 @@
 #include "../Components/GameplayComponent.h"
 #include "SprayCanMonkeyStateCallbacks.h"
 
-// Register the code-defined state topology (callbacks only)
-REGISTER_STATE_MACHINE_BLUEPRINT(SprayCanMonkey, "Idle",
-  { "Idle",     "SprayCanMonkey::idle_on_enter",     "SprayCanMonkey::idle_on_update",     "" },
-  { "Chasing",  "SprayCanMonkey::chasing_on_enter",  "SprayCanMonkey::chasing_on_update",  "SprayCanMonkey::chasing_on_exit" },
-  { "Windup",   "SprayCanMonkey::windup_on_enter",   "SprayCanMonkey::windup_on_update",   "" },
-  { "Spraying", "SprayCanMonkey::spraying_on_enter", "SprayCanMonkey::spraying_on_update", "SprayCanMonkey::spraying_on_exit" },
-  { "Hit",      "SprayCanMonkey::hit_on_enter",      "SprayCanMonkey::hit_on_update",      "SprayCanMonkey::hit_on_exit" },
-  { "Death",    "SprayCanMonkey::death_on_enter",    "SprayCanMonkey::death_on_update",    "SprayCanMonkey::death_on_exit" })
-
-  namespace SprayCanMonkeyStates
+namespace SprayCanMonkeyStates
 {
   // Spray Can Monkey dimensions
   constexpr f32 WIDTH = 80.0f;

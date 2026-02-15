@@ -425,20 +425,12 @@ namespace SprayCanMonkey
 
 } // namespace SprayCanMonkey
 
-// Register all spray can monkey state callbacks (without reloading)
-REGISTER_FUNCTION(SprayCanMonkey::idle_on_enter)
-REGISTER_FUNCTION(SprayCanMonkey::idle_on_update)
-REGISTER_FUNCTION(SprayCanMonkey::chasing_on_enter)
-REGISTER_FUNCTION(SprayCanMonkey::chasing_on_update)
-REGISTER_FUNCTION(SprayCanMonkey::chasing_on_exit)
-REGISTER_FUNCTION(SprayCanMonkey::windup_on_enter)
-REGISTER_FUNCTION(SprayCanMonkey::windup_on_update)
-REGISTER_FUNCTION(SprayCanMonkey::spraying_on_enter)
-REGISTER_FUNCTION(SprayCanMonkey::spraying_on_update)
-REGISTER_FUNCTION(SprayCanMonkey::spraying_on_exit)
-REGISTER_FUNCTION(SprayCanMonkey::hit_on_enter)
-REGISTER_FUNCTION(SprayCanMonkey::hit_on_update)
-REGISTER_FUNCTION(SprayCanMonkey::hit_on_exit)
-REGISTER_FUNCTION(SprayCanMonkey::death_on_enter)
-REGISTER_FUNCTION(SprayCanMonkey::death_on_update)
-REGISTER_FUNCTION(SprayCanMonkey::death_on_exit)
+// Register blueprint + all spray can monkey state callbacks
+REGISTER_STATE_MACHINE_BLUEPRINT(SprayCanMonkey, "Idle",
+  STATE("Idle", SprayCanMonkey::idle_on_enter, SprayCanMonkey::idle_on_update, NO_CALLBACK)
+  STATE("Chasing", SprayCanMonkey::chasing_on_enter, SprayCanMonkey::chasing_on_update, SprayCanMonkey::chasing_on_exit)
+  STATE("Windup", SprayCanMonkey::windup_on_enter, SprayCanMonkey::windup_on_update, NO_CALLBACK)
+  STATE("Spraying", SprayCanMonkey::spraying_on_enter, SprayCanMonkey::spraying_on_update, SprayCanMonkey::spraying_on_exit)
+  STATE("Hit", SprayCanMonkey::hit_on_enter, SprayCanMonkey::hit_on_update, SprayCanMonkey::hit_on_exit)
+  STATE("Death", SprayCanMonkey::death_on_enter, SprayCanMonkey::death_on_update, SprayCanMonkey::death_on_exit)
+)

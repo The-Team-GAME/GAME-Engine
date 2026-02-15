@@ -383,20 +383,12 @@ namespace LazyMonkeyStateCallbacks
 
 } // namespace LazyMonkeyStateCallbacks
 
-// Register all lazy monkey state callbacks
-REGISTER_FUNCTION(LazyMonkeyStateCallbacks::idle_on_enter)
-REGISTER_FUNCTION(LazyMonkeyStateCallbacks::idle_on_update)
-REGISTER_FUNCTION(LazyMonkeyStateCallbacks::chasing_on_enter)
-REGISTER_FUNCTION(LazyMonkeyStateCallbacks::chasing_on_update)
-REGISTER_FUNCTION(LazyMonkeyStateCallbacks::chasing_on_exit)
-REGISTER_FUNCTION(LazyMonkeyStateCallbacks::windup_on_enter)
-REGISTER_FUNCTION(LazyMonkeyStateCallbacks::windup_on_update)
-REGISTER_FUNCTION(LazyMonkeyStateCallbacks::attacking_on_enter)
-REGISTER_FUNCTION(LazyMonkeyStateCallbacks::attacking_on_update)
-REGISTER_FUNCTION(LazyMonkeyStateCallbacks::attacking_on_exit)
-REGISTER_FUNCTION(LazyMonkeyStateCallbacks::hit_on_enter)
-REGISTER_FUNCTION(LazyMonkeyStateCallbacks::hit_on_update)
-REGISTER_FUNCTION(LazyMonkeyStateCallbacks::hit_on_exit)
-REGISTER_FUNCTION(LazyMonkeyStateCallbacks::death_on_enter)
-REGISTER_FUNCTION(LazyMonkeyStateCallbacks::death_on_update)
-REGISTER_FUNCTION(LazyMonkeyStateCallbacks::death_on_exit)
+// Register blueprint + all lazy monkey state callbacks
+REGISTER_STATE_MACHINE_BLUEPRINT(LazyMonkey, "Idle",
+  STATE("Idle", LazyMonkeyStateCallbacks::idle_on_enter, LazyMonkeyStateCallbacks::idle_on_update, NO_CALLBACK)
+  STATE("Chasing", LazyMonkeyStateCallbacks::chasing_on_enter, LazyMonkeyStateCallbacks::chasing_on_update, LazyMonkeyStateCallbacks::chasing_on_exit)
+  STATE("Windup", LazyMonkeyStateCallbacks::windup_on_enter, LazyMonkeyStateCallbacks::windup_on_update, NO_CALLBACK)
+  STATE("Attacking", LazyMonkeyStateCallbacks::attacking_on_enter, LazyMonkeyStateCallbacks::attacking_on_update, LazyMonkeyStateCallbacks::attacking_on_exit)
+  STATE("Hit", LazyMonkeyStateCallbacks::hit_on_enter, LazyMonkeyStateCallbacks::hit_on_update, LazyMonkeyStateCallbacks::hit_on_exit)
+  STATE("Death", LazyMonkeyStateCallbacks::death_on_enter, LazyMonkeyStateCallbacks::death_on_update, LazyMonkeyStateCallbacks::death_on_exit)
+)

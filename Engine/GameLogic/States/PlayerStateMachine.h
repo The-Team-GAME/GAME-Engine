@@ -20,18 +20,7 @@
 #include "../Components/GameplayComponent.h"
 #include "PlayerStateCallbacks.h"
 
-// Register the code-defined state topology (callbacks only)
-REGISTER_STATE_MACHINE_BLUEPRINT(Player, "Idle",
-  { "Idle",     "PlayerStateCallbacks::idle_on_enter",     "PlayerStateCallbacks::idle_on_update",     "" },
-  { "Walking",  "PlayerStateCallbacks::walking_on_enter",  "PlayerStateCallbacks::walking_on_update",  "PlayerStateCallbacks::walking_on_exit" },
-  { "Jumping",  "PlayerStateCallbacks::jumping_on_enter",  "PlayerStateCallbacks::jumping_on_update",  "PlayerStateCallbacks::jumping_on_exit" },
-  { "Dash",     "PlayerStateCallbacks::dash_on_enter",     "PlayerStateCallbacks::dash_on_update",     "PlayerStateCallbacks::dash_on_exit" },
-  { "Attack1",  "PlayerStateCallbacks::attack1_on_enter",  "PlayerStateCallbacks::attack1_on_update",  "" },
-  { "Attack2",  "PlayerStateCallbacks::attack2_on_enter",  "PlayerStateCallbacks::attack2_on_update",  "" },
-  { "Attack3",  "PlayerStateCallbacks::attack3_on_enter",  "PlayerStateCallbacks::attack3_on_update",  "" },
-  { "Death",    "PlayerStateCallbacks::death_on_enter",    "PlayerStateCallbacks::death_on_update",    "PlayerStateCallbacks::death_on_exit" })
-
-  namespace PlayerStates
+namespace PlayerStates
 {
   // Player dimensions
   constexpr f32 IDLE_WIDTH = 64.0f;
