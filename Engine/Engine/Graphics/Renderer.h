@@ -41,6 +41,26 @@ namespace Engine {
       }
     };
 
+    // Axis-aligned bounding box for camera frustum culling
+    struct CameraBounds {
+      f32 min_x = 0.0f;
+      f32 max_x = 0.0f;
+      f32 min_y = 0.0f;
+      f32 max_y = 0.0f;
+
+      // Check if a point is inside the bounds
+      bool contains(const Math::Vec2D& point) const {
+        return point.x >= min_x && point.x <= max_x &&
+               point.y >= min_y && point.y <= max_y;
+      }
+
+      // Check if an AABB intersects with these bounds
+      bool intersects(f32 x, f32 y, f32 half_w, f32 half_h) const {
+        return (x + half_w >= min_x) && (x - half_w <= max_x) &&
+               (y + half_h >= min_y) && (y - half_h <= max_y);
+      }
+    };
+
     // Viewport structure
     struct Viewport {
       int x = 0;
@@ -75,6 +95,22 @@ namespace Engine {
     void set_camera_rotation(f32 rotation);
     void set_camera_zoom(f32 zoom);
     void reset_camera();
+
+    // Frustum culling functions
+    // Get the visible world-space bounds of the current camera (AABB)
+    CameraBounds get_camera_bounds();
+
+    // Check if an axis-aligned bounding box is visible to the camera
+    // position: center of the object in world space
+    // size: full width and height of the object
+    bool is_visible(const Math::Vec2D& position, const Math::Vec2D& size);
+
+    // Check visibility with pre-computed camera bounds (more efficient for batch checks)
+    bool is_visible(const CameraBounds& bounds, const Math::Vec2D& position, const Math::Vec2D& size);
+
+    // Enable or disable automatic frustum culling in draw functions
+    void set_frustum_culling(bool enabled);
+    bool is_frustum_culling_enabled();
 
     // Viewport functions
     void set_viewport(const Viewport& viewport);
