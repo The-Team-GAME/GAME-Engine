@@ -584,10 +584,12 @@ namespace Engine {
       f32 visible_width = virtual_width / current_camera.zoom;
       f32 visible_height = virtual_height / current_camera.zoom;
 
-      // Camera position is at the TOP-LEFT of the visible area
-      // So the center of the visible area is offset by half the visible dimensions
-      f32 center_x = current_camera.position.x + visible_width * 0.5f;
-      f32 center_y = current_camera.position.y + visible_height * 0.5f;
+      // Camera position is at the TOP-LEFT of the visible area (at zoom=1).
+      // Zoom scales around the screen center, so the world-space center of
+      // the view is always at camera.position + virtual_size/2, NOT
+      // camera.position + visible_size/2.
+      f32 center_x = current_camera.position.x + virtual_width * 0.5f;
+      f32 center_y = current_camera.position.y + virtual_height * 0.5f;
 
       f32 half_width = visible_width * 0.5f;
       f32 half_height = visible_height * 0.5f;
