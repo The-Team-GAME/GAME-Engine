@@ -31,6 +31,30 @@ namespace Engine {
         return parts;
       }
 
+      // Helper to check if a field path or any of its parent paths is overridden
+      static bool is_field_overridden(
+        const std::string& field_path,
+        const std::unordered_set<std::string>& override_fields
+      ) {
+        // Direct match
+        if (override_fields.find(field_path) != override_fields.end()) {
+          return true;
+        }
+
+        // Check if any parent path is overridden
+        // e.g., if "position" is overridden, then "position.x" is also considered overridden
+        std::string::size_type pos = field_path.find('.');
+        while (pos != std::string::npos) {
+          std::string parent_path = field_path.substr(0, pos);
+          if (override_fields.find(parent_path) != override_fields.end()) {
+            return true;
+          }
+          pos = field_path.find('.', pos + 1);
+        }
+
+        return false;
+      }
+
       ReflectionLibrary::GenericValue merge_component_with_overrides(
         const ReflectionLibrary::GenericValue& prefab_data,
         const ReflectionLibrary::GenericValue& instance_data,
@@ -44,7 +68,7 @@ namespace Engine {
 
         // Copy non-overridden fields from prefab
         for (const auto& field_path : all_fields) {
-          if (override_fields.find(field_path) == override_fields.end()) {
+          if (!is_field_overridden(field_path, override_fields)) {
             // Field is not overridden, copy from prefab
             copy_field_by_path(prefab_data, result, field_path);
           }

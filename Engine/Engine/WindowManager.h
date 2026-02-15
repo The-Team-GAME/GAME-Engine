@@ -69,6 +69,16 @@ namespace Engine {
     ==================================================================================*/
     void set_fullscreen(bool fullscreen);
 
+    /*=================================================================================
+    Function Brief:
+    Enables or disables VSync (vertical synchronization). When enabled, the frame
+    rate is capped to the monitor's refresh rate.
+
+    Parameters:
+    enable - True to enable VSync, false to disable.
+    ==================================================================================*/
+    void set_vsync(bool enable);
+
     /* ===================== //
     // Accessors             //
     // ===================== */

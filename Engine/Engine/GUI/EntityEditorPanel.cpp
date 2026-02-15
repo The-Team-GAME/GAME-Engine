@@ -120,6 +120,24 @@ namespace {
         Engine::ECS::Entity cloned = Engine::ECS::clone_entity(entity);
         selected_entity_id = static_cast<s32>(cloned.get_id());
         Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(cloned.get_id());
+
+        // Record undo for clone
+        Engine::ECS::EntityID cloned_id = cloned.get_id();
+        Engine::ECS::Prefab cloned_prefab = Engine::ECS::entity_to_prefab(cloned);
+        Engine::UndoManager::record(
+          // Do: Recreate the cloned entity
+          [cloned_id, cloned_prefab]() {
+            Engine::ECS::instantiate_prefab_with_id(cloned_prefab, cloned_id);
+            Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(cloned_id);
+            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+          },
+          // Undo: Delete the cloned entity
+          [cloned_id]() {
+            Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(cloned_id, false);
+            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+          }
+        );
+        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
       }
       ImGui::EndPopup();
     }
@@ -259,7 +277,7 @@ namespace {
     if (ImGui::BeginDragDropTarget()) {
       if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(ENTITY_DRAG_DROP_TYPE)) {
         Engine::ECS::EntityID dropped_entity_id = *(const Engine::ECS::EntityID*)payload->Data;
-        
+
         // Don't allow parenting to self
         if (dropped_entity_id != entity.get_id()) {
           // Check for circular parenting (don't allow parenting to a descendant)
@@ -284,6 +302,24 @@ namespace {
         Engine::ECS::Entity cloned = Engine::ECS::clone_entity(entity);
         selected_entity_id = static_cast<s32>(cloned.get_id());
         Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(cloned.get_id());
+
+        // Record undo for clone
+        Engine::ECS::EntityID cloned_id = cloned.get_id();
+        Engine::ECS::Prefab cloned_prefab = Engine::ECS::entity_to_prefab(cloned);
+        Engine::UndoManager::record(
+          // Do: Recreate the cloned entity
+          [cloned_id, cloned_prefab]() {
+            Engine::ECS::instantiate_prefab_with_id(cloned_prefab, cloned_id);
+            Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(cloned_id);
+            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+          },
+          // Undo: Delete the cloned entity
+          [cloned_id]() {
+            Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(cloned_id, false);
+            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+          }
+        );
+        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
       }
       // Add unparent option if entity has a parent
       if (entity.has_component<Components::Parent>()) {
@@ -544,6 +580,24 @@ void EntityEditorPanel()
       auto newEntity = Engine::ECS::create_entity();
       selected_entity_id = static_cast<int>(newEntity.get_id());
       Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(newEntity.get_id());
+
+      // Record undo for entity creation
+      Engine::ECS::EntityID entity_id = newEntity.get_id();
+      Engine::UndoManager::record(
+        // Do: Recreate the entity
+        [entity_id]() {
+          Engine::ECS::create_entity_with_id(entity_id);
+          Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(entity_id);
+          Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+        },
+        // Undo: Delete the entity
+        [entity_id]() {
+          Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(entity_id, false);
+          Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+        }
+      );
+
+      Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
     }
 
     ImGui::SameLine();
@@ -768,6 +822,24 @@ void EntityEditorPanel()
       auto clonedEntity = Engine::ECS::clone_entity(entity);
       selected_entity_id = static_cast<int>(clonedEntity.get_id());
       Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(clonedEntity.get_id());
+
+      // Record undo for clone
+      Engine::ECS::EntityID cloned_id = clonedEntity.get_id();
+      Engine::ECS::Prefab cloned_prefab = Engine::ECS::entity_to_prefab(clonedEntity);
+      Engine::UndoManager::record(
+        // Do: Recreate the cloned entity
+        [cloned_id, cloned_prefab]() {
+          Engine::ECS::instantiate_prefab_with_id(cloned_prefab, cloned_id);
+          Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(cloned_id);
+          Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+        },
+        // Undo: Delete the cloned entity
+        [cloned_id]() {
+          Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(cloned_id, false);
+          Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+        }
+      );
+      Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
     }
 
     ImGui::SameLine();

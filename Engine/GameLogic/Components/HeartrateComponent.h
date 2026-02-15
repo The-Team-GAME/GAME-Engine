@@ -29,11 +29,11 @@ namespace Components {
 
     // greener the higher the heartrate
     Components::Color low_world_tint = { 1.0f, 1.0f, 1.0f, 1.0f };
-    Components::Color normal_world_tint = { 0.95f, 1.0f, 0.95f, 1.0f };
-    Components::Color high_world_tint = { 0.9f, 1.0f, 0.9f, 1.0f };
-    Components::Color very_high_world_tint = { 0.85f, 1.0f, 0.85f, 1.0f };
-    Components::Color crash_out_world_tint = { 0.7f, 1.0f, 0.7f, 1.0f };
-    Components::Color dead_world_tint = { 0.7f, 1.0f, 0.7f, 1.0f };
+    Components::Color normal_world_tint = { 1.0f, 1.0f, 1.0f, 1.0f };
+    Components::Color high_world_tint = { 1.0f, 1.0f, 1.0f, 1.0f };
+    Components::Color very_high_world_tint = { 1.0f, 1.0f, 1.0f, 1.0f };
+    Components::Color crash_out_world_tint = { 1.0f, 1.0f, 1.0f, 1.0f };
+    Components::Color dead_world_tint = { 1.0f, 1.0f, 1.0f, 1.0f };
 
     // Components::Color low_world_tint = { 1.0f, 1.0f, 1.0f, 1.0f };
     // Components::Color normal_world_tint = { 1.0f, 0.8f, 1.0f, 1.0f };
@@ -104,4 +104,4 @@ namespace Components {
   };
 }
 
-REGISTER_COMPONENT(Components::Heartrate, low, normal, high, very_high, crash_out, heartrate, decay_rate, min_brightness, max_brightness)
+REGISTER_COMPONENT(Components::Heartrate, low, normal, high, very_high, crash_out, dead, heartrate, decay_rate, min_brightness, max_brightness)

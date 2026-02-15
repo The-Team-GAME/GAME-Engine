@@ -106,9 +106,11 @@
     <ClCompile Include="Engine\LevelTabManager.cpp" />
     <ClCompile Include="Engine\LevelManager.cpp" />
     <ClCompile Include="Engine\Systems\PostPhysicsSystem.cpp" />
-    <ClCompile Include="Engine\GUI\TransformAnimationEditorPanel.cpp" />
     <ClCompile Include="Engine\Audio\AudioSystem.cpp" />
     <ClCompile Include="Engine\Audio\AudioSystemExample.cpp" />
+    <ClCompile Include="Engine\GUI\FrameAnimationEditorPanel.cpp" />
+    <ClCompile Include="Engine\GUI\TextureAtlasEditorPanel.cpp" />
+    <ClCompile Include="GameLogic\GameStates\VictoryState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -246,9 +248,12 @@
     <ClInclude Include="Engine\LevelTabManager.h" />
     <ClInclude Include="Engine\LevelManager.h" />
     <ClInclude Include="Engine\Systems\PostPhysicsSystem.h" />
-    <ClInclude Include="Engine\GUI\TransformAnimationEditorPanel.h" />
     <ClInclude Include="Engine\Audio\AudioSystem.h" />
     <ClInclude Include="Engine\Audio\GameAudio.h" />
+    <ClInclude Include="Engine\GUI\FPSOverlay.h" />
+    <ClInclude Include="Engine\GUI\FrameAnimationEditorPanel.h" />
+    <ClInclude Include="Engine\GUI\TextureAtlasEditorPanel.h" />
+    <ClInclude Include="GameLogic\GameStates\VictoryState.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -344,5 +349,6 @@
     <None Include="Engine\Reflection\ReflectionLibrary\GenericValue.inl" />
     <None Include="Assets\scripts\buttons_test.lua" />
     <None Include="Assets\scripts\behaviour_test.lua" />
+    <None Include="imgui.ini" />
   </ItemGroup>
 </Project>

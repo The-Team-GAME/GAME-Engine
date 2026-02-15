@@ -43,5 +43,5 @@ namespace Components {
   };
 }
 
-REGISTER_COMPONENT(Components::Trail, interval, lifetime, last_spawn_time, start_alpha, end_alpha)
+REGISTER_COMPONENT(Components::Trail, interval, lifetime, start_alpha, end_alpha)
 REGISTER_COMPONENT(Components::FadeOut, duration, start_time, start_alpha, end_alpha)
