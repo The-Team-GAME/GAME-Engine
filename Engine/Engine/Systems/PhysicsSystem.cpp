@@ -136,36 +136,3 @@ void phy2D::add_force(Components::RigidBody& rigid, Vec2D force)
 {
   rigid.force += force;
 }
-
-void phy2D::scale_force(Components::RigidBody& rigid, f32 scale)
-{
-  rigid.force *= scale;
-}
-
-void phy2D::zero_force(Components::RigidBody& rigid)
-{
-  rigid.force.zero();
-}
-
-void phy2D::walk_left(Components::RigidBody& rigid) // not used
-{
-  rigid.velocity.x = -200.f;
-}
-
-void phy2D::walk_right(Components::RigidBody& rigid) // not used
-{
-  rigid.velocity.x = 200.f;
-}
-
-void phy2D::jump(Components::RigidBody& rigid) // not used
-{
-  rigid.on_ground = false;
-  phy2D::add_force(rigid, Vec2D(0.f, -3500000.f));
-}
-
-//void phy2D::knockback(ECS::Entity victim, Vec2D force)
-//{
-//  Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
-//  Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
-//  if (rigid.direction == LEFT)
-//}

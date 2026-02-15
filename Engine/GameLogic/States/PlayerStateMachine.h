@@ -160,7 +160,7 @@ namespace PlayerStates
     player_death_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_death_spritesheet.png"));
     player_death_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 12, 12);
     player_death_anim.animation = Components::Animation(8, 0.1f);
-    player_death_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
+    player_death_anim.scale = Math::Vec2D(IDLE_WIDTH * 4.0f, IDLE_HEIGHT * 2.0f);
 
     // TODO Change Death Audio
     Components::State player_dead("Death", "player_death_enter", "player_death_update", "player_death_exit", player_death_anim, walk_audio);

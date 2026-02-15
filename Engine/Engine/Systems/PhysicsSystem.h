@@ -48,43 +48,12 @@ namespace Engine {
         Components::RigidBody& rigid, 
         CollisionResult const& collision);
 
-      // Used to apply friction when colliding into another object
-      static void apply_surface_friction(
-        Components::RigidBody& rigid,
-        CollisionResult const& collision,
-        f32 static_friction,
-        f32 kinetic_friction
-      );
-
-      // Used to apply friction when colliding into another object
-      static Vec2D get_friction_force(
-        Components::RigidBody& rigid,
-        CollisionResult const& collision
-      );
-
-      // Used to generate the normal force 
-      static Vec2D get_normal_force(
-        Components::RigidBody const& rigid,
-        CollisionResult const& collision );
-
       static f32 get_slope_angle_threshold();
 
       static f32 get_slope_radian_threshold();
 
       // Used to add forces to the rigid body
       static void add_force(Components::RigidBody& rigid, Vec2D force);
-
-      // Used to scale forces acting on the rigid body
-      void scale_force(Components::RigidBody& rigid, f32 scale);
-
-      // Used to reset forces acting on the rigid body
-      void zero_force(Components::RigidBody& rigid);
-
-      static void walk_left(Components::RigidBody& rigid);
-
-      static void walk_right(Components::RigidBody& rigid);
-
-      static void jump(Components::RigidBody& rigid);
 
 
     };

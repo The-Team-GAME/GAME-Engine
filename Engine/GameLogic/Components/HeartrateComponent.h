@@ -22,7 +22,7 @@ namespace Components {
     float high = 120.0f;
     float very_high = 140.0f;
     float crash_out = 160.0f;
-    float dead = 180.0f;
+    float dead = 200.0f;
 
     float heartrate = low;
     float decay_rate = 1.0f; // bpm per second

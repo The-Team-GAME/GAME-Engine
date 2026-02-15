@@ -3,7 +3,7 @@
         "components": [
             {
                 "data": {
-                    "path": "sounds/SFX/Player/Player Footstep.wav"
+                    "path": "sounds/SFX/Player/Player Swing.wav"
                 },
                 "type": "Components::Sound"
             },
@@ -69,7 +69,7 @@
             },
             {
                 "data": {
-                    "drawIndex": 2,
+                    "drawIndex": 3,
                     "tex_coords_list": [
                         [
                             {
@@ -588,7 +588,7 @@
                         0.10000000149011612
                     ],
                     "is_looping": true,
-                    "startTime": 224.34092712402344,
+                    "startTime": 121.44154357910156,
                     "totalDuration": 2.3999998569488525
                 },
                 "type": "Components::Animation"
@@ -596,8 +596,8 @@
             {
                 "data": {
                     "position": {
-                        "x": 803.3714599609375,
-                        "y": 768.5847778320313
+                        "x": -1937.909912109375,
+                        "y": 1024.7467041015625
                     },
                     "rotation": 0.0,
                     "scale": {
@@ -610,18 +610,18 @@
             {
                 "data": {
                     "aabb": {
-                        "half_height": 64.0,
-                        "half_width": 64.0,
+                        "half_height": 54.76924133300781,
+                        "half_width": 37.62640380859375,
                         "pos": {
-                            "x": 803.3714599609375,
-                            "y": 768.3070068359375
+                            "x": -1938.7890625,
+                            "y": 1033.815673828125
                         }
                     },
-                    "height": 128.0,
+                    "height": 109.53848266601563,
                     "kinetic_friction": 0.800000011920929,
                     "offset": {
-                        "x": 0.0,
-                        "y": 0.0
+                        "x": -0.8791351318359375,
+                        "y": 8.79119873046875
                     },
                     "polygon": {
                         "position": {
@@ -634,9 +634,24 @@
                     "radius": 1000.0,
                     "resolve_collisions": false,
                     "type": "AABB",
-                    "width": 128.0
+                    "width": 75.2528076171875
                 },
                 "type": "Components::BoxCollider"
+            },
+            {
+                "data": {
+                    "local_offset": {
+                        "x": -1937.909912109375,
+                        "y": 1025.0245361328125
+                    },
+                    "offset_initialized": true,
+                    "parent_id": 2321,
+                    "prev_parent_pos": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "type": "Components::Parent"
             },
             {
                 "data": {
@@ -678,7 +693,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 224.34092712402344,
+                                        "startTime": 121.44154357910156,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": null,
@@ -1039,7 +1054,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 224.34092712402344,
+                                        "startTime": 121.44154357910156,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": null,
@@ -1538,7 +1553,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 224.34092712402344,
+                                        "startTime": 121.44154357910156,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": null,
@@ -1746,39 +1761,39 @@
                                         ],
                                         "before_times": [
                                             0.0,
-                                            0.15000000596046448,
-                                            0.30000001192092896,
-                                            0.45000001788139343,
+                                            0.20000000298023224,
+                                            0.4000000059604645,
                                             0.6000000238418579,
-                                            0.75,
-                                            0.8999999761581421,
-                                            1.0499999523162842,
-                                            1.1999999284744263,
-                                            1.3499999046325684,
-                                            1.4999998807907104,
-                                            1.6499998569488525
+                                            0.800000011920929,
+                                            1.0,
+                                            1.2000000476837158,
+                                            1.4000000953674316,
+                                            1.6000001430511475,
+                                            1.8000001907348633,
+                                            2.000000238418579,
+                                            2.200000286102295
                                         ],
                                         "durations": [
-                                            0.15000000596046448,
-                                            0.15000000596046448,
-                                            0.15000000596046448,
-                                            0.15000000596046448,
-                                            0.15000000596046448,
-                                            0.15000000596046448,
-                                            0.15000000596046448,
-                                            0.15000000596046448,
-                                            0.15000000596046448,
-                                            0.15000000596046448,
-                                            0.15000000596046448,
-                                            0.5
+                                            0.1000000596046448,
+                                            0.1000000596046448,
+                                            0.1000000596046448,
+                                            0.1000000596046448,
+                                            0.1000000596046448,
+                                            0.1000000596046448,
+                                            0.1000000596046448,
+                                            0.1000000596046448,
+                                            0.1000000596046448,
+                                            0.1000000596046448,
+                                            0.1000000596046448,
+                                            1.0
                                         ],
                                         "is_looping": true,
-                                        "startTime": 224.34092712402344,
-                                        "totalDuration": 2.1499998569488525
+                                        "startTime": 121.44154357910156,
+                                        "totalDuration": 2.700000286102295
                                     },
                                     "collider_data": null,
                                     "scale": {
-                                        "x": 128.0,
+                                        "x": 256.0,
                                         "y": 128.0
                                     },
                                     "texture": {
@@ -2060,7 +2075,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 224.34092712402344,
+                                        "startTime": 121.44154357910156,
                                         "totalDuration": 0.559999942779541
                                     },
                                     "collider_data": null,
@@ -2368,7 +2383,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 224.34092712402344,
+                                        "startTime": 121.44154357910156,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": null,
@@ -2607,7 +2622,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 224.34092712402344,
+                                        "startTime": 121.44154357910156,
                                         "totalDuration": 0.7199999094009399
                                     },
                                     "collider_data": null,
@@ -2846,7 +2861,7 @@
                                             0.05999999865889549
                                         ],
                                         "is_looping": false,
-                                        "startTime": 224.34092712402344,
+                                        "startTime": 121.44154357910156,
                                         "totalDuration": 0.5399999618530273
                                     },
                                     "collider_data": null,
@@ -3216,7 +3231,7 @@
                 "data": {
                     "end_alpha": 0.0,
                     "interval": 0.05000000074505806,
-                    "last_spawn_time": 224.32432556152344,
+                    "last_spawn_time": 503.317626953125,
                     "lifetime": 0.0,
                     "start_alpha": 0.800000011920929
                 },
@@ -3227,7 +3242,7 @@
                     "attack1": {
                         "damage": 1,
                         "dash_speed": 1000.0,
-                        "heartrate_cost": 5.0,
+                        "heartrate_cost": 2.0,
                         "hitbox_height": 128.0,
                         "hitbox_offset_x": 80.0,
                         "hitbox_offset_y": 0.0,
@@ -3240,7 +3255,7 @@
                     "attack2": {
                         "damage": 1,
                         "dash_speed": 1000.0,
-                        "heartrate_cost": 5.0,
+                        "heartrate_cost": 2.0,
                         "hitbox_height": 128.0,
                         "hitbox_offset_x": 80.0,
                         "hitbox_offset_y": 0.0,
@@ -3253,7 +3268,7 @@
                     "attack3": {
                         "damage": 3,
                         "dash_speed": 2000.0,
-                        "heartrate_cost": 8.0,
+                        "heartrate_cost": 5.0,
                         "hitbox_height": 128.0,
                         "hitbox_offset_x": 80.0,
                         "hitbox_offset_y": 0.0,
