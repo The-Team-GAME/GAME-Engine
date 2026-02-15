@@ -17,7 +17,18 @@
 #include "../Components/GameplayComponent.h"
 #include "GamerMonkeyStateCallbacks.h"
 
-namespace GamerMonkeyStates
+// Register the code-defined state topology (callbacks only)
+REGISTER_STATE_MACHINE_BLUEPRINT(GamerMonkey, "Idle",
+  { "Idle",       "Gamer_monkey_idle_enter",        "Gamer_monkey_idle_update",        "" },
+  { "DashWindup","Gamer_monkey_dash_windup_enter",  "Gamer_monkey_dash_windup_update", "Gamer_monkey_dash_windup_exit" },
+  { "Dash",      "Gamer_monkey_dashing_enter",      "Gamer_monkey_dashing_update",     "Gamer_monkey_dashing_exit" },
+  { "Chasing",   "Gamer_monkey_chasing_enter",      "Gamer_monkey_chasing_update",     "Gamer_monkey_chasing_exit" },
+  { "Windup",    "Gamer_monkey_windup_enter",       "Gamer_monkey_windup_update",      "" },
+  { "Attacking", "Gamer_monkey_attacking_enter",    "Gamer_monkey_attacking_update",   "Gamer_monkey_attacking_exit" },
+  { "Hit",       "Gamer_monkey_hit_enter",          "Gamer_monkey_hit_update",         "Gamer_monkey_hit_exit" },
+  { "Death",     "Gamer_monkey_death_enter",        "Gamer_monkey_death_update",       "Gamer_monkey_death_exit" })
+
+  namespace GamerMonkeyStates
 {
   // Gamer Monkey dimensions
   constexpr f32 WIDTH = 400.0f;
@@ -67,7 +78,7 @@ namespace GamerMonkeyStates
     // atk.png frames are 96x64; update atlas to match
     Gamer_monkey_dashing_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 25, 25);
     Gamer_monkey_dashing_anim.animation = Components::Animation({ 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-      0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f});
+      0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f });
     Gamer_monkey_dashing_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
 
     Components::State Gamer_monkey_dashing("Dash", "Gamer_monkey_dashing_enter", "Gamer_monkey_dashing_update", "Gamer_monkey_dashing_exit", Gamer_monkey_dashing_anim, footstep_audio);
@@ -78,7 +89,7 @@ namespace GamerMonkeyStates
     Components::StateAnimation Gamer_monkey_dash_windup_anim;
     Gamer_monkey_dash_windup_anim.texture = Components::Texture(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/atk.png"));
     Gamer_monkey_dash_windup_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 25, 14);
-    Gamer_monkey_dash_windup_anim.animation = Components::Animation({ 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.1f, 0.2f, 0.2f, 0.3f, 0.4f, 0.5f});
+    Gamer_monkey_dash_windup_anim.animation = Components::Animation({ 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.1f, 0.2f, 0.2f, 0.3f, 0.4f, 0.5f });
     Gamer_monkey_dash_windup_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
 
     Components::State Gamer_monkey_dash_windup("DashWindup", "Gamer_monkey_dash_windup_enter", "Gamer_monkey_dash_windup_update", "Gamer_monkey_dash_windup_exit", Gamer_monkey_dash_windup_anim);
@@ -111,7 +122,7 @@ namespace GamerMonkeyStates
     Components::StateAnimation Gamer_monkey_attacking_anim;
     Gamer_monkey_attacking_anim.texture = Components::Texture(Engine::Resources::load_texture("images/GameMonkeySpriteSheets/atk.png"));
     Gamer_monkey_attacking_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 25, 8);
-    Gamer_monkey_attacking_anim.animation = Components::Animation({ 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.3f, 0.3f, 0.3f});
+    Gamer_monkey_attacking_anim.animation = Components::Animation({ 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.3f, 0.3f, 0.3f });
     Gamer_monkey_attacking_anim.scale = Math::Vec2D(ATTACK_WIDTH, ATTACK_HEIGHT);
 
     Components::State Gamer_monkey_attacking("Attacking", "Gamer_monkey_attacking_enter", "Gamer_monkey_attacking_update", "Gamer_monkey_attacking_exit", Gamer_monkey_attacking_anim, attack_audio);
@@ -143,6 +154,7 @@ namespace GamerMonkeyStates
     // Build and return state machine
     // ========================================================================
     Components::StateMachine Gamer_monkey_sm;
+    Gamer_monkey_sm.blueprint_id = "GamerMonkey";
     Gamer_monkey_sm.add_state(Gamer_monkey_idle);
     Gamer_monkey_sm.add_state(Gamer_monkey_dash_windup);
     Gamer_monkey_sm.add_state(Gamer_monkey_dashing);

@@ -20,7 +20,18 @@
 #include "../Components/GameplayComponent.h"
 #include "PlayerStateCallbacks.h"
 
-namespace PlayerStates
+// Register the code-defined state topology (callbacks only)
+REGISTER_STATE_MACHINE_BLUEPRINT(Player, "Idle",
+  { "Idle",     "player_idle_enter",     "player_idle_update",     "" },
+  { "Walking",  "player_walking_enter",  "player_walking_update",  "player_walking_exit" },
+  { "Jumping",  "player_jumping_enter",  "player_jumping_update",  "player_jumping_exit" },
+  { "Dash",     "player_dash_enter",     "player_dash_update",     "player_dash_exit" },
+  { "Attack1",  "player_attack1_enter",  "player_attack1_update",  "" },
+  { "Attack2",  "player_attack2_enter",  "player_attack2_update",  "" },
+  { "Attack3",  "player_attack3_enter",  "player_attack3_update",  "" },
+  { "Death",    "player_death_enter",    "player_death_update",    "player_death_exit" })
+
+  namespace PlayerStates
 {
   // Player dimensions
   constexpr f32 IDLE_WIDTH = 64.0f;
@@ -181,6 +192,7 @@ namespace PlayerStates
     // Build and return state machine
     // ========================================================================
     Components::StateMachine player_sm;
+    player_sm.blueprint_id = "Player";
     player_sm.add_state(player_idle);
     player_sm.add_state(player_walking);
     player_sm.add_state(player_jumping);

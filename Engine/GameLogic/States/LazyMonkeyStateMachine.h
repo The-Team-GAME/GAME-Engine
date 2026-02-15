@@ -17,7 +17,16 @@
 #include "../Components/GameplayComponent.h"
 #include "LazyMonkeyStateCallbacks.h"
 
-namespace LazyMonkeyStates
+// Register the code-defined state topology (callbacks only)
+REGISTER_STATE_MACHINE_BLUEPRINT(LazyMonkey, "Idle",
+  { "Idle",      "lazy_monkey_idle_enter",      "lazy_monkey_idle_update",      "" },
+  { "Chasing",   "lazy_monkey_chasing_enter",   "lazy_monkey_chasing_update",   "lazy_monkey_chasing_exit" },
+  { "Windup",    "lazy_monkey_windup_enter",    "lazy_monkey_windup_update",    "" },
+  { "Attacking", "lazy_monkey_attacking_enter", "lazy_monkey_attacking_update", "lazy_monkey_attacking_exit" },
+  { "Hit",       "lazy_monkey_hit_enter",       "lazy_monkey_hit_update",       "lazy_monkey_hit_exit" },
+  { "Death",     "lazy_monkey_death_enter",     "lazy_monkey_death_update",     "lazy_monkey_death_exit" })
+
+  namespace LazyMonkeyStates
 {
   // Lazy Monkey dimensions
   constexpr f32 WIDTH = 64.0f;
@@ -43,18 +52,18 @@ namespace LazyMonkeyStates
     attack_audio.stop_on_exit = false;
 
     Components::StateAudio hurt_audio;
-   /* hurt_audio.sound = Engine::Resources::load_sound("sounds/SFX/Monkey/Monkey VO/Monkey-1_8_Hurt.wav");
-    hurt_audio.loop = false;
-    hurt_audio.volume = 0.6f;
-    hurt_audio.stop_on_exit = false;*/
+    /* hurt_audio.sound = Engine::Resources::load_sound("sounds/SFX/Monkey/Monkey VO/Monkey-1_8_Hurt.wav");
+     hurt_audio.loop = false;
+     hurt_audio.volume = 0.6f;
+     hurt_audio.stop_on_exit = false;*/
 
-    
 
-    // ========================================================================
-    // FMOD Audio Setup (NEW SYSTEM - preferred if FMOD banks are available)
-    // ========================================================================
-    // NOTE: Uncomment these when you have FMOD Studio events created and banks built
-    
+
+     // ========================================================================
+     // FMOD Audio Setup (NEW SYSTEM - preferred if FMOD banks are available)
+     // ========================================================================
+     // NOTE: Uncomment these when you have FMOD Studio events created and banks built
+
     Components::FMODStateAudio fmod_footstep_audio;
     fmod_footstep_audio.event_path = "event:/SFX/MonkeyFootsteps";
     fmod_footstep_audio.loop = true;
@@ -153,6 +162,7 @@ namespace LazyMonkeyStates
     // Build and return state machine
     // ========================================================================
     Components::StateMachine lazy_monkey_sm;
+    lazy_monkey_sm.blueprint_id = "LazyMonkey";
     lazy_monkey_sm.add_state(lazy_monkey_idle);
     lazy_monkey_sm.add_state(lazy_monkey_chasing);
     lazy_monkey_sm.add_state(lazy_monkey_windup);
