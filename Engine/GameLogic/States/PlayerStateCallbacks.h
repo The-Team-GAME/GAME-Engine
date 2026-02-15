@@ -510,7 +510,7 @@ namespace PlayerStateCallbacks
 
   inline void death_on_enter([[maybe_unused]] ECS::Entity entity)
   {
-    Log::info("Player: Died!"); 
+    Log::info("Player: Died!");
   }
 
   inline void death_on_update(ECS::Entity entity)
@@ -538,30 +538,23 @@ namespace PlayerStateCallbacks
 } // namespace PlayerStateCallbacks
 
 // Register all player state callbacks
-REGISTER_FUNCTION(player_idle_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::idle_on_enter)
-REGISTER_FUNCTION(player_idle_update, void(Engine::ECS::Entity), PlayerStateCallbacks::idle_on_update)
-
-REGISTER_FUNCTION(player_walking_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::walking_on_enter)
-REGISTER_FUNCTION(player_walking_update, void(Engine::ECS::Entity), PlayerStateCallbacks::walking_on_update)
-REGISTER_FUNCTION(player_walking_exit, void(Engine::ECS::Entity), PlayerStateCallbacks::walking_on_exit)
-
-REGISTER_FUNCTION(player_jumping_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::jumping_on_enter)
-REGISTER_FUNCTION(player_jumping_update, void(Engine::ECS::Entity), PlayerStateCallbacks::jumping_on_update)
-REGISTER_FUNCTION(player_jumping_exit, void(Engine::ECS::Entity), PlayerStateCallbacks::jumping_on_exit)
-
-REGISTER_FUNCTION(player_dash_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::dash_on_enter)
-REGISTER_FUNCTION(player_dash_update, void(Engine::ECS::Entity), PlayerStateCallbacks::dash_on_update)
-REGISTER_FUNCTION(player_dash_exit, void(Engine::ECS::Entity), PlayerStateCallbacks::dash_on_exit)
-
-REGISTER_FUNCTION(player_attack1_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::attack1_on_enter)
-REGISTER_FUNCTION(player_attack1_update, void(Engine::ECS::Entity), PlayerStateCallbacks::attack1_on_update)
-
-REGISTER_FUNCTION(player_attack2_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::attack2_on_enter)
-REGISTER_FUNCTION(player_attack2_update, void(Engine::ECS::Entity), PlayerStateCallbacks::attack2_on_update)
-
-REGISTER_FUNCTION(player_attack3_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::attack3_on_enter)
-REGISTER_FUNCTION(player_attack3_update, void(Engine::ECS::Entity), PlayerStateCallbacks::attack3_on_update)
-
-REGISTER_FUNCTION(player_death_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::death_on_enter)
-REGISTER_FUNCTION(player_death_update, void(Engine::ECS::Entity), PlayerStateCallbacks::death_on_update)
-REGISTER_FUNCTION(player_death_exit, void(Engine::ECS::Entity), PlayerStateCallbacks::death_on_exit)
+REGISTER_FUNCTION(PlayerStateCallbacks::idle_on_enter)
+REGISTER_FUNCTION(PlayerStateCallbacks::idle_on_update)
+REGISTER_FUNCTION(PlayerStateCallbacks::walking_on_enter)
+REGISTER_FUNCTION(PlayerStateCallbacks::walking_on_update)
+REGISTER_FUNCTION(PlayerStateCallbacks::walking_on_exit)
+REGISTER_FUNCTION(PlayerStateCallbacks::jumping_on_enter)
+REGISTER_FUNCTION(PlayerStateCallbacks::jumping_on_update)
+REGISTER_FUNCTION(PlayerStateCallbacks::jumping_on_exit)
+REGISTER_FUNCTION(PlayerStateCallbacks::dash_on_enter)
+REGISTER_FUNCTION(PlayerStateCallbacks::dash_on_update)
+REGISTER_FUNCTION(PlayerStateCallbacks::dash_on_exit)
+REGISTER_FUNCTION(PlayerStateCallbacks::attack1_on_enter)
+REGISTER_FUNCTION(PlayerStateCallbacks::attack1_on_update)
+REGISTER_FUNCTION(PlayerStateCallbacks::attack2_on_enter)
+REGISTER_FUNCTION(PlayerStateCallbacks::attack2_on_update)
+REGISTER_FUNCTION(PlayerStateCallbacks::attack3_on_enter)
+REGISTER_FUNCTION(PlayerStateCallbacks::attack3_on_update)
+REGISTER_FUNCTION(PlayerStateCallbacks::death_on_enter)
+REGISTER_FUNCTION(PlayerStateCallbacks::death_on_update)
+REGISTER_FUNCTION(PlayerStateCallbacks::death_on_exit)

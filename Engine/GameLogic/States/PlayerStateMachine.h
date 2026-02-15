@@ -22,14 +22,14 @@
 
 // Register the code-defined state topology (callbacks only)
 REGISTER_STATE_MACHINE_BLUEPRINT(Player, "Idle",
-  { "Idle",     "player_idle_enter",     "player_idle_update",     "" },
-  { "Walking",  "player_walking_enter",  "player_walking_update",  "player_walking_exit" },
-  { "Jumping",  "player_jumping_enter",  "player_jumping_update",  "player_jumping_exit" },
-  { "Dash",     "player_dash_enter",     "player_dash_update",     "player_dash_exit" },
-  { "Attack1",  "player_attack1_enter",  "player_attack1_update",  "" },
-  { "Attack2",  "player_attack2_enter",  "player_attack2_update",  "" },
-  { "Attack3",  "player_attack3_enter",  "player_attack3_update",  "" },
-  { "Death",    "player_death_enter",    "player_death_update",    "player_death_exit" })
+  { "Idle",     "PlayerStateCallbacks::idle_on_enter",     "PlayerStateCallbacks::idle_on_update",     "" },
+  { "Walking",  "PlayerStateCallbacks::walking_on_enter",  "PlayerStateCallbacks::walking_on_update",  "PlayerStateCallbacks::walking_on_exit" },
+  { "Jumping",  "PlayerStateCallbacks::jumping_on_enter",  "PlayerStateCallbacks::jumping_on_update",  "PlayerStateCallbacks::jumping_on_exit" },
+  { "Dash",     "PlayerStateCallbacks::dash_on_enter",     "PlayerStateCallbacks::dash_on_update",     "PlayerStateCallbacks::dash_on_exit" },
+  { "Attack1",  "PlayerStateCallbacks::attack1_on_enter",  "PlayerStateCallbacks::attack1_on_update",  "" },
+  { "Attack2",  "PlayerStateCallbacks::attack2_on_enter",  "PlayerStateCallbacks::attack2_on_update",  "" },
+  { "Attack3",  "PlayerStateCallbacks::attack3_on_enter",  "PlayerStateCallbacks::attack3_on_update",  "" },
+  { "Death",    "PlayerStateCallbacks::death_on_enter",    "PlayerStateCallbacks::death_on_update",    "PlayerStateCallbacks::death_on_exit" })
 
   namespace PlayerStates
 {
@@ -108,7 +108,7 @@ REGISTER_STATE_MACHINE_BLUEPRINT(Player, "Idle",
     player_idle_anim.animation = Components::Animation(24, 0.1f);
     player_idle_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
 
-    Components::State player_idle("Idle", "player_idle_enter", "player_idle_update", "", player_idle_anim);
+    Components::State player_idle("Idle", "PlayerStateCallbacks::idle_on_enter", "PlayerStateCallbacks::idle_on_update", "", player_idle_anim);
 
     // ========================================================================
     // Player Walking State
@@ -119,7 +119,7 @@ REGISTER_STATE_MACHINE_BLUEPRINT(Player, "Idle",
     player_walking_anim.animation = Components::Animation(8, 0.1f);
     player_walking_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
 
-    Components::State player_walking("Walking", "player_walking_enter", "player_walking_update", "player_walking_exit", player_walking_anim, walk_audio, fmod_walking_audio);
+    Components::State player_walking("Walking", "PlayerStateCallbacks::walking_on_enter", "PlayerStateCallbacks::walking_on_update", "PlayerStateCallbacks::walking_on_exit", player_walking_anim, walk_audio, fmod_walking_audio);
 
     // ========================================================================
     // Player Jumping State
@@ -130,7 +130,7 @@ REGISTER_STATE_MACHINE_BLUEPRINT(Player, "Idle",
     player_jumping_anim.animation = Components::Animation(8, 0.1f);
     player_jumping_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
 
-    Components::State player_jumping("Jumping", "player_jumping_enter", "player_jumping_update", "player_jumping_exit", player_jumping_anim, jump_audio, fmod_jump_audio);
+    Components::State player_jumping("Jumping", "PlayerStateCallbacks::jumping_on_enter", "PlayerStateCallbacks::jumping_on_update", "PlayerStateCallbacks::jumping_on_exit", player_jumping_anim, jump_audio, fmod_jump_audio);
 
     // ========================================================================
     // Player Dash State
@@ -141,7 +141,7 @@ REGISTER_STATE_MACHINE_BLUEPRINT(Player, "Idle",
     player_dashinging_anim.animation = Components::Animation(8, 0.1f);
     player_dashinging_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
 
-    Components::State player_dash("Dash", "player_dash_enter", "player_dash_update", "player_dash_exit", player_dashinging_anim, walk_audio, fmod_dash_audio);
+    Components::State player_dash("Dash", "PlayerStateCallbacks::dash_on_enter", "PlayerStateCallbacks::dash_on_update", "PlayerStateCallbacks::dash_on_exit", player_dashinging_anim, walk_audio, fmod_dash_audio);
 
     // ========================================================================
     // Player Attack 1 State (First Punch)
@@ -152,7 +152,7 @@ REGISTER_STATE_MACHINE_BLUEPRINT(Player, "Idle",
     player_attack1_anim.animation = Components::Animation({ 0, 1, 2, 3, 4, 5, 6, 7, 8 }, { 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f }, false);
     player_attack1_anim.scale = Math::Vec2D(ATTACK_WIDTH * 2.0f, ATTACK_HEIGHT * 2.0f);
 
-    Components::State player_attack1("Attack1", "player_attack1_enter", "player_attack1_update", "", player_attack1_anim, attack_audio, fmod_attack_audio);
+    Components::State player_attack1("Attack1", "PlayerStateCallbacks::attack1_on_enter", "PlayerStateCallbacks::attack1_on_update", "", player_attack1_anim, attack_audio, fmod_attack_audio);
 
     // ========================================================================
     // Player Attack 2 State (Second Punch)
@@ -163,7 +163,7 @@ REGISTER_STATE_MACHINE_BLUEPRINT(Player, "Idle",
     player_attack2_anim.animation = Components::Animation({ 6, 7, 8, 9, 10, 11, 12 }, { 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f }, false);
     player_attack2_anim.scale = Math::Vec2D(ATTACK_WIDTH * 2.0f, ATTACK_HEIGHT * 2.0f);
 
-    Components::State player_attack2("Attack2", "player_attack2_enter", "player_attack2_update", "", player_attack2_anim, attack_audio, fmod_attack_audio);
+    Components::State player_attack2("Attack2", "PlayerStateCallbacks::attack2_on_enter", "PlayerStateCallbacks::attack2_on_update", "", player_attack2_anim, attack_audio, fmod_attack_audio);
 
     // ========================================================================
     // Player Attack 3 State (Third Punch - Finisher)
@@ -174,7 +174,7 @@ REGISTER_STATE_MACHINE_BLUEPRINT(Player, "Idle",
     player_attack3_anim.animation = Components::Animation({ 9, 10, 11, 12, 13, 14, 15, 16, 17 }, { 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f }, false);
     player_attack3_anim.scale = Math::Vec2D(ATTACK_WIDTH * 2.0f, ATTACK_HEIGHT * 2.0f);
 
-    Components::State player_attack3("Attack3", "player_attack3_enter", "player_attack3_update", "", player_attack3_anim, attack_audio, fmod_attack_audio);
+    Components::State player_attack3("Attack3", "PlayerStateCallbacks::attack3_on_enter", "PlayerStateCallbacks::attack3_on_update", "", player_attack3_anim, attack_audio, fmod_attack_audio);
 
     // ========================================================================
     // Player Death State
@@ -186,7 +186,7 @@ REGISTER_STATE_MACHINE_BLUEPRINT(Player, "Idle",
     player_death_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
 
     // TODO Change Death Audio
-    Components::State player_dead("Death", "player_death_enter", "player_death_update", "player_death_exit", player_death_anim, walk_audio);
+    Components::State player_dead("Death", "PlayerStateCallbacks::death_on_enter", "PlayerStateCallbacks::death_on_update", "PlayerStateCallbacks::death_on_exit", player_death_anim, walk_audio);
 
     // ========================================================================
     // Build and return state machine

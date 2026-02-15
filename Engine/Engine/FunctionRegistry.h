@@ -259,20 +259,54 @@ namespace Engine {
   };
 
   // ============================================================================
+  // Function Traits — deduce signature from function pointer type
+  // ============================================================================
+
+  template<typename T>
+  struct function_traits;
+
+  // Free functions
+  template<typename R, typename... Args>
+  struct function_traits<R(*)(Args...)> {
+    using signature = R(Args...);
+  };
+
+  // Member functions
+  template<typename R, typename C, typename... Args>
+  struct function_traits<R(C::*)(Args...)> {
+    using signature = R(Args...);
+  };
+
+  template<typename R, typename C, typename... Args>
+  struct function_traits<R(C::*)(Args...) const> {
+    using signature = R(Args...);
+  };
+
+  // ============================================================================
   // Helper Macros for Auto-Registration
   // ============================================================================
 
-  /// Register a function at static initialization time
-  /// Usage: REGISTER_FUNCTION(my_callback, void(int, float), my_function)
-#define REGISTER_FUNCTION(NAME, SIGNATURE, FUNC) \
+  // Token-paste helpers (extra indirection forces __COUNTER__ expansion)
+#define _REG_FUNC_CONCAT_IMPL(a, b) a##b
+#define _REG_FUNC_CONCAT(a, b) _REG_FUNC_CONCAT_IMPL(a, b)
+
+  /// Register a function at static initialization time.
+  /// The registry key is the stringified function reference (e.g. "Namespace::func").
+  /// The function signature is auto-deduced — no need to pass it explicitly.
+  ///
+  /// Usage: REGISTER_FUNCTION(MyNamespace::my_callback)
+#define REGISTER_FUNCTION_IMPL(FUNC, ID) \
     namespace { \
-      struct FunctionRegistrar_##NAME { \
-        FunctionRegistrar_##NAME() { \
-          Engine::FunctionRegistry<SIGNATURE>::register_function(#NAME, FUNC); \
+      struct _REG_FUNC_CONCAT(AutoFuncReg_, ID) { \
+        _REG_FUNC_CONCAT(AutoFuncReg_, ID)() { \
+          using _Sig = typename Engine::function_traits<decltype(&FUNC)>::signature; \
+          Engine::FunctionRegistry<_Sig>::register_function(#FUNC, FUNC); \
         } \
       }; \
-      static FunctionRegistrar_##NAME function_registrar_##NAME##_; \
+      static _REG_FUNC_CONCAT(AutoFuncReg_, ID) _REG_FUNC_CONCAT(s_auto_func_reg_, ID); \
     }
+
+#define REGISTER_FUNCTION(FUNC) REGISTER_FUNCTION_IMPL(FUNC, __COUNTER__)
 
   /// Register a function in the multi-signature registry
   /// Usage: REGISTER_MULTI_FUNCTION(my_callback, void(int, float), my_function)

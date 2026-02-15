@@ -3,6 +3,21 @@
         "components": [
             {
                 "data": {
+                    "on_enter": {
+                        "name": "OldManCallbacks::old_man_on_enter"
+                    },
+                    "on_exit": {
+                        "name": "OldManCallbacks::old_man_on_exit"
+                    },
+                    "on_update": {
+                        "name": "OldManCallbacks::old_man_on_update"
+                    },
+                    "radius": 100.0
+                },
+                "type": "Components::Interactable"
+            },
+            {
+                "data": {
                     "local_offset": {
                         "x": -1409.8040771484375,
                         "y": 1022.7408447265625
@@ -30,21 +45,6 @@
                     "path": "images/OldManJorkin_Jorkin_Spritesheet.png"
                 },
                 "type": "Components::Texture"
-            },
-            {
-                "data": {
-                    "on_enter": {
-                        "name": ""
-                    },
-                    "on_exit": {
-                        "name": "old_man_on_exit"
-                    },
-                    "on_update": {
-                        "name": "old_man_on_update"
-                    },
-                    "radius": 100.0
-                },
-                "type": "Components::Interactable"
             },
             {
                 "data": {
@@ -168,7 +168,7 @@
                         0.10000000149011612
                     ],
                     "is_looping": true,
-                    "startTime": 57.57403564453125,
+                    "startTime": 53.0037727355957,
                     "totalDuration": 0.5
                 },
                 "type": "Components::Animation"
