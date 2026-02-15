@@ -226,6 +226,7 @@
             },
             {
                 "data": {
+                    "blueprint_id": "LazyMonkey",
                     "current_state_name": "Chasing",
                     "states": [
                         {

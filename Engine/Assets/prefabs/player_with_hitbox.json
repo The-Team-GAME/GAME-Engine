@@ -647,6 +647,7 @@
             },
             {
                 "data": {
+                    "blueprint_id": "Player",
                     "current_state_name": "Idle",
                     "states": [
                         {

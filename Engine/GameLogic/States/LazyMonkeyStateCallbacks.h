@@ -130,12 +130,12 @@ namespace LazyMonkeyStateCallbacks
         float distance = std::abs(dx); // Only horizontal distance for sidescrolling
 
         // Chase player horizontally, but stop when within attack range
-          if (distance > lazy_monkey->attack_range) {
-            float desired_vx = (dx > 0 ? lazy_monkey->chase_speed : -lazy_monkey->chase_speed);
-            float dt = Engine::Time::get_fixed_dt();
-            float delta_v = desired_vx - rigid->velocity.x;
-            float force_x = (delta_v / dt) * rigid->mass; // F = m * dv/dt
-            Engine::Systems::Physics2DSystem::add_force(*rigid, Math::Vec2D(force_x, 0.0f));
+        if (distance > lazy_monkey->attack_range) {
+          float desired_vx = (dx > 0 ? lazy_monkey->chase_speed : -lazy_monkey->chase_speed);
+          float dt = Engine::Time::get_fixed_dt();
+          float delta_v = desired_vx - rigid->velocity.x;
+          float force_x = (delta_v / dt) * rigid->mass; // F = m * dv/dt
+          Engine::Systems::Physics2DSystem::add_force(*rigid, Math::Vec2D(force_x, 0.0f));
           // Update flip direction based on movement
           if (flip) {
             flip->value.x = (dx > 0 ? 1.0f : -1.0f);
@@ -341,7 +341,7 @@ namespace LazyMonkeyStateCallbacks
         entity.remove_component<Components::Parent>();
       }
 
-			// Apply knockback using physics system
+      // Apply knockback using physics system
       Engine::Systems::Physics2DSystem::add_force(*rigid, pending_knockback->knockback);
 
       // Remove the pending knockback component (one-time use)
@@ -383,20 +383,12 @@ namespace LazyMonkeyStateCallbacks
 
 } // namespace LazyMonkeyStateCallbacks
 
-// Register all lazy monkey state callbacks
-REGISTER_FUNCTION(lazy_monkey_idle_enter, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::idle_on_enter)
-REGISTER_FUNCTION(lazy_monkey_idle_update, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::idle_on_update)
-REGISTER_FUNCTION(lazy_monkey_chasing_enter, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::chasing_on_enter)
-REGISTER_FUNCTION(lazy_monkey_chasing_update, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::chasing_on_update)
-REGISTER_FUNCTION(lazy_monkey_chasing_exit, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::chasing_on_exit)
-REGISTER_FUNCTION(lazy_monkey_windup_enter, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::windup_on_enter)
-REGISTER_FUNCTION(lazy_monkey_windup_update, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::windup_on_update)
-REGISTER_FUNCTION(lazy_monkey_attacking_enter, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::attacking_on_enter)
-REGISTER_FUNCTION(lazy_monkey_attacking_update, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::attacking_on_update)
-REGISTER_FUNCTION(lazy_monkey_attacking_exit, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::attacking_on_exit)
-REGISTER_FUNCTION(lazy_monkey_hit_enter, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::hit_on_enter)
-REGISTER_FUNCTION(lazy_monkey_hit_update, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::hit_on_update)
-REGISTER_FUNCTION(lazy_monkey_hit_exit, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::hit_on_exit)
-REGISTER_FUNCTION(lazy_monkey_death_enter, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::death_on_enter)
-REGISTER_FUNCTION(lazy_monkey_death_update, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::death_on_update)
-REGISTER_FUNCTION(lazy_monkey_death_exit, void(Engine::ECS::Entity), LazyMonkeyStateCallbacks::death_on_exit)
+// Register blueprint + all lazy monkey state callbacks
+REGISTER_STATE_MACHINE_BLUEPRINT(LazyMonkey, "Idle",
+  STATE("Idle", LazyMonkeyStateCallbacks::idle_on_enter, LazyMonkeyStateCallbacks::idle_on_update, NO_CALLBACK)
+  STATE("Chasing", LazyMonkeyStateCallbacks::chasing_on_enter, LazyMonkeyStateCallbacks::chasing_on_update, LazyMonkeyStateCallbacks::chasing_on_exit)
+  STATE("Windup", LazyMonkeyStateCallbacks::windup_on_enter, LazyMonkeyStateCallbacks::windup_on_update, NO_CALLBACK)
+  STATE("Attacking", LazyMonkeyStateCallbacks::attacking_on_enter, LazyMonkeyStateCallbacks::attacking_on_update, LazyMonkeyStateCallbacks::attacking_on_exit)
+  STATE("Hit", LazyMonkeyStateCallbacks::hit_on_enter, LazyMonkeyStateCallbacks::hit_on_update, LazyMonkeyStateCallbacks::hit_on_exit)
+  STATE("Death", LazyMonkeyStateCallbacks::death_on_enter, LazyMonkeyStateCallbacks::death_on_update, LazyMonkeyStateCallbacks::death_on_exit)
+)

@@ -119,6 +119,7 @@
     <ClInclude Include="Engine\Components\GraphicsComponents.h" />
     <ClInclude Include="Engine\Components\PhysicsComponents.h" />
     <ClInclude Include="Engine\Components\UtilityComponents.h" />
+    <ClInclude Include="Engine\Components\StateMachineBlueprintRegistry.h" />
     <ClInclude Include="Engine\ECS\Macros.h" />
     <ClInclude Include="Engine\ECS\Prefab.h" />
     <ClInclude Include="Engine\ECS\WorldData.h" />
@@ -262,6 +263,7 @@
     <ClInclude Include="Engine\Components\GraphicsComponents.h" />
     <ClInclude Include="Engine\Components\PhysicsComponents.h" />
     <ClInclude Include="Engine\Components\UtilityComponents.h" />
+    <ClInclude Include="Engine\Components\StateMachineBlueprintRegistry.h" />
     <ClInclude Include="Engine\ECS\Macros.h" />
     <ClInclude Include="Engine\ECS\Prefab.h" />
     <ClInclude Include="Engine\ECS\WorldData.h" />

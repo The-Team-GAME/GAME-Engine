@@ -510,7 +510,7 @@ namespace PlayerStateCallbacks
 
   inline void death_on_enter([[maybe_unused]] ECS::Entity entity)
   {
-    Log::info("Player: Died!"); 
+    Log::info("Player: Died!");
   }
 
   inline void death_on_update(ECS::Entity entity)
@@ -537,31 +537,14 @@ namespace PlayerStateCallbacks
 #pragma endregion
 } // namespace PlayerStateCallbacks
 
-// Register all player state callbacks
-REGISTER_FUNCTION(player_idle_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::idle_on_enter)
-REGISTER_FUNCTION(player_idle_update, void(Engine::ECS::Entity), PlayerStateCallbacks::idle_on_update)
-
-REGISTER_FUNCTION(player_walking_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::walking_on_enter)
-REGISTER_FUNCTION(player_walking_update, void(Engine::ECS::Entity), PlayerStateCallbacks::walking_on_update)
-REGISTER_FUNCTION(player_walking_exit, void(Engine::ECS::Entity), PlayerStateCallbacks::walking_on_exit)
-
-REGISTER_FUNCTION(player_jumping_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::jumping_on_enter)
-REGISTER_FUNCTION(player_jumping_update, void(Engine::ECS::Entity), PlayerStateCallbacks::jumping_on_update)
-REGISTER_FUNCTION(player_jumping_exit, void(Engine::ECS::Entity), PlayerStateCallbacks::jumping_on_exit)
-
-REGISTER_FUNCTION(player_dash_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::dash_on_enter)
-REGISTER_FUNCTION(player_dash_update, void(Engine::ECS::Entity), PlayerStateCallbacks::dash_on_update)
-REGISTER_FUNCTION(player_dash_exit, void(Engine::ECS::Entity), PlayerStateCallbacks::dash_on_exit)
-
-REGISTER_FUNCTION(player_attack1_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::attack1_on_enter)
-REGISTER_FUNCTION(player_attack1_update, void(Engine::ECS::Entity), PlayerStateCallbacks::attack1_on_update)
-
-REGISTER_FUNCTION(player_attack2_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::attack2_on_enter)
-REGISTER_FUNCTION(player_attack2_update, void(Engine::ECS::Entity), PlayerStateCallbacks::attack2_on_update)
-
-REGISTER_FUNCTION(player_attack3_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::attack3_on_enter)
-REGISTER_FUNCTION(player_attack3_update, void(Engine::ECS::Entity), PlayerStateCallbacks::attack3_on_update)
-
-REGISTER_FUNCTION(player_death_enter, void(Engine::ECS::Entity), PlayerStateCallbacks::death_on_enter)
-REGISTER_FUNCTION(player_death_update, void(Engine::ECS::Entity), PlayerStateCallbacks::death_on_update)
-REGISTER_FUNCTION(player_death_exit, void(Engine::ECS::Entity), PlayerStateCallbacks::death_on_exit)
+// Register blueprint + all player state callbacks
+REGISTER_STATE_MACHINE_BLUEPRINT(Player, "Idle",
+  STATE("Idle", PlayerStateCallbacks::idle_on_enter, PlayerStateCallbacks::idle_on_update, NO_CALLBACK)
+  STATE("Walking", PlayerStateCallbacks::walking_on_enter, PlayerStateCallbacks::walking_on_update, PlayerStateCallbacks::walking_on_exit)
+  STATE("Jumping", PlayerStateCallbacks::jumping_on_enter, PlayerStateCallbacks::jumping_on_update, PlayerStateCallbacks::jumping_on_exit)
+  STATE("Dash", PlayerStateCallbacks::dash_on_enter, PlayerStateCallbacks::dash_on_update, PlayerStateCallbacks::dash_on_exit)
+  STATE("Attack1", PlayerStateCallbacks::attack1_on_enter, PlayerStateCallbacks::attack1_on_update, NO_CALLBACK)
+  STATE("Attack2", PlayerStateCallbacks::attack2_on_enter, PlayerStateCallbacks::attack2_on_update, NO_CALLBACK)
+  STATE("Attack3", PlayerStateCallbacks::attack3_on_enter, PlayerStateCallbacks::attack3_on_update, NO_CALLBACK)
+  STATE("Death", PlayerStateCallbacks::death_on_enter, PlayerStateCallbacks::death_on_update, PlayerStateCallbacks::death_on_exit)
+)
