@@ -42,6 +42,12 @@ namespace {
   s32 selected_entity_id = -1;
   bool selection_initialized = false;
 
+  // Rename state
+  Engine::ECS::EntityID rename_entity_id = Engine::ECS::INVALID_ENTITY;
+  char rename_buf[256] = "";
+  bool rename_focus_set = false;
+  bool open_rename_popup = false;
+
   enum class EntityViewMode {
     Hierarchy,
     Layer,
@@ -136,6 +142,13 @@ namespace {
           }
         );
         Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+      }
+      if (ImGui::MenuItem("Rename")) {
+        rename_entity_id = entity.get_id();
+        const std::string& cur_name = Engine::ECS::get_entity_name(entity);
+        strncpy_s(rename_buf, cur_name.c_str(), sizeof(rename_buf) - 1);
+        rename_focus_set = false;
+        open_rename_popup = true;
       }
       ImGui::EndPopup();
     }
@@ -321,6 +334,13 @@ namespace {
           }
         );
         Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+      }
+      if (ImGui::MenuItem("Rename")) {
+        rename_entity_id = entity.get_id();
+        const std::string& cur_name = Engine::ECS::get_entity_name(entity);
+        strncpy_s(rename_buf, cur_name.c_str(), sizeof(rename_buf) - 1);
+        rename_focus_set = false;
+        open_rename_popup = true;
       }
       // Add unparent option if entity has a parent
       if (entity.has_component<Components::Parent>()) {
@@ -639,27 +659,7 @@ void EntityEditorPanel()
     // Editable entity name
     {
       const std::string& ename = Engine::ECS::get_entity_name(entity);
-      static char name_buf[256] = "";
-      static Engine::ECS::EntityID last_edited_entity = Engine::ECS::INVALID_ENTITY;
-
-      // Reset buffer when switching entities
-      if (last_edited_entity != entity.get_id()) {
-        last_edited_entity = entity.get_id();
-        strncpy_s(name_buf, ename.c_str(), sizeof(name_buf) - 1);
-      }
-
-      ImGui::Text("ID: %d", selected_entity_id);
-      ImGui::SameLine();
-      ImGui::SetNextItemWidth(-1);
-      if (ImGui::InputText("##EntityName", name_buf, sizeof(name_buf), ImGuiInputTextFlags_EnterReturnsTrue)) {
-        Engine::ECS::set_entity_name(entity, name_buf);
-        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
-      }
-      // Also apply on deactivation (clicking away)
-      if (ImGui::IsItemDeactivatedAfterEdit()) {
-        Engine::ECS::set_entity_name(entity, name_buf);
-        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
-      }
+      ImGui::Text("Editing: %s (ID: %d)", ename.empty() ? "Entity" : ename.c_str(), selected_entity_id);
     }
     ImGui::Separator();
 
@@ -1100,6 +1100,31 @@ void EntityEditorPanel()
   }
 
   ImGui::Separator();
+
+  // Rename popup (rendered at window level so it works from any context menu)
+  if (open_rename_popup) {
+    ImGui::OpenPopup("RenameEntityPopup");
+    open_rename_popup = false;
+  }
+  if (ImGui::BeginPopup("RenameEntityPopup")) {
+    ImGui::Text("Rename Entity %zu", rename_entity_id);
+    ImGui::Separator();
+    if (!rename_focus_set) {
+      ImGui::SetKeyboardFocusHere();
+      rename_focus_set = true;
+    }
+    bool confirmed = ImGui::InputText("##RenameInput", rename_buf, sizeof(rename_buf), ImGuiInputTextFlags_EnterReturnsTrue);
+    if (confirmed) {
+      Engine::ECS::Entity rename_entity = Engine::ECS::get_entity(rename_entity_id);
+      if (rename_entity.is_valid()) {
+        Engine::ECS::set_entity_name(rename_entity, rename_buf);
+        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+      }
+      rename_entity_id = Engine::ECS::INVALID_ENTITY;
+      ImGui::CloseCurrentPopup();
+    }
+    ImGui::EndPopup();
+  }
 
   ImGui::End();
 }
