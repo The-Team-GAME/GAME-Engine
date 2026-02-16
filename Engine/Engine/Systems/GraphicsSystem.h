@@ -402,8 +402,8 @@ namespace Engine
             f32 t_look_ahead = 1.0f - std::exp(-cam->look_ahead_smooth * dt);
             cam->look_ahead_offset = Lerp(cam->look_ahead_offset, desired_look_ahead, t_look_ahead);
 
-            // 3. Calculate Target Position
-            Vec2D target_position = trans->position + cam->look_ahead_offset;
+            // 3. Calculate Target Position (apply static offset + look-ahead)
+            Vec2D target_position = trans->position + cam->target_offset + cam->look_ahead_offset;
 
             // 4. Detect Direction Change
             Vec2D current_velocity = target_position - camera.position;

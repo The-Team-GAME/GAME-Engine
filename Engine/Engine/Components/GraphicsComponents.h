@@ -430,6 +430,10 @@ namespace Components
     // Dead zone - camera won't move if within this distance from target
     f32 dead_zone_radius = 0.0f;  // Set to 0 to disable (10-50 for platformers)
 
+    // Static offset from the follow target (in world pixels)
+    // Use this to frame the player off-center (e.g. look ahead vertically in a platformer)
+    Math::Vec2D target_offset = { 0.0f, 0.0f };
+
     Camera() : name("Camera"), is_active(false) {}
     Camera(const std::string& cam_name, bool active = false, bool smooth = true)
       : name(cam_name), is_active(active), is_smooth(smooth) {
@@ -583,7 +587,7 @@ namespace Components
 
 REFLECT_ENUM(Components::TextAlignment, Left, Center, Right);
 REGISTER_COMPONENT(Components::Text, content, font_scale, line_spacing, alignment)
-REGISTER_COMPONENT(Components::Camera, name, is_active)
+REGISTER_COMPONENT(Components::Camera, name, is_active, is_smooth, smooth_factor, smooth_factor_direction_change, rotation_smooth, zoom_smooth, look_ahead_distance, look_ahead_smooth, dead_zone_radius, target_offset)
 REGISTER_COMPONENT(Components::Distortion, intensity, speed, mesh_intensity)
 REGISTER_COMPONENT(Components::Flip, value)
 REGISTER_COMPONENT(Components::UI)
