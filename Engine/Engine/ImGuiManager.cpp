@@ -468,7 +468,7 @@ namespace ImGuiManager {
         y_offset -= toast_spacing;
       }
     }
-    
+
     // ==================================================================================
     // End of toast notifications
     // ==================================================================================
@@ -497,7 +497,7 @@ namespace ImGuiManager {
       ImGui::RenderPlatformWindowsDefault();
       glfwMakeContextCurrent(backup_current_context);
     }
-    
+
     Engine::Perf::stop("ImGui Render");
 #endif
   }
@@ -670,8 +670,11 @@ namespace ImGuiManager {
     if (!ctx || !ctx->NavWindow)
       return false;
 
-    // If the viewport panel is focused, allow game input
-    if (ViewportPanel::is_viewport_focused())
+    // If the viewport panel is focused or hovered, allow game input.
+    // Hover check is needed because focus transfers happen during ImGui render,
+    // which runs AFTER ECS systems — so on the frame the user clicks the viewport
+    // from another panel, focused is still false but hovered is true.
+    if (ViewportPanel::is_viewport_focused() || ViewportPanel::is_viewport_hovered())
       return false;
 
     // Any other ImGui window is focused — block game input
