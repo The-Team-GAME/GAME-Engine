@@ -33,11 +33,50 @@ namespace Engine
 {
   namespace Systems
   {
+    // Helper: compute parallax draw position (center-anchored).
+    // When the camera centers on the entity, it appears at its Transform2D position.
+    // As the camera moves away the entity shifts at scroll_factor speed.
+    inline Math::Vec2D compute_parallax_position(const Math::Vec2D& entity_pos, const Math::Vec2D& scroll_factor) {
+      auto cam = Engine::Graphics::get_camera();
+      auto vres = Engine::Graphics::get_virtual_resolution();
+      Math::Vec2D cam_center = cam.position + vres * 0.5f / cam.zoom;
+      return Math::Vec2D(
+        entity_pos.x + (cam_center.x - entity_pos.x) * (1.0f - scroll_factor.x),
+        entity_pos.y + (cam_center.y - entity_pos.y) * (1.0f - scroll_factor.y)
+      );
+    }
+
+    // Helper: draw a texture tiled across the visible area at a given parallax draw position.
+    template<typename DrawFn>
+    inline void draw_parallax_tiled(const Math::Vec2D& draw_pos, const Math::Vec2D& entity_scale,
+      const Components::Parallax& parallax, DrawFn draw_fn)
+    {
+      Math::Vec2D ts = parallax.tile_size;
+      if (ts.x <= 0.0f) ts.x = entity_scale.x;
+      if (ts.y <= 0.0f) ts.y = entity_scale.y;
+
+      auto bounds = Engine::Graphics::get_camera_bounds();
+
+      f32 wrapped_x = std::fmod(draw_pos.x - bounds.min_x + ts.x, ts.x);
+      if (wrapped_x < 0.0f) wrapped_x += ts.x;
+      f32 start_x = bounds.min_x - ts.x + wrapped_x;
+
+      f32 wrapped_y = std::fmod(draw_pos.y - bounds.min_y + ts.y, ts.y);
+      if (wrapped_y < 0.0f) wrapped_y += ts.y;
+      f32 start_y = bounds.min_y - ts.y + wrapped_y;
+
+      for (f32 ty = start_y; ty < bounds.max_y + ts.y; ty += ts.y) {
+        for (f32 tx = start_x; tx < bounds.max_x + ts.x; tx += ts.x) {
+          draw_fn(Math::Vec2D(tx, ty), ts);
+        }
+      }
+    }
+
     class StaticSpriteRenderSystem : public Engine::ECS::System {
     public:
       StaticSpriteRenderSystem() {
         require_components<Components::Transform2D, Components::Color, Components::Texture>();
-        exclude_components<Components::TextureAtlas, Components::Distortion, Components::Parallax>();
+        exclude_components<Components::TextureAtlas, Components::Distortion>();
       }
 
       void draw_entity(const Engine::ECS::Entity entity) override {
@@ -46,6 +85,7 @@ namespace Engine
         auto* texture = entity.get_component<Components::Texture>();
         auto* flip = entity.get_component<Components::Flip>();
         auto* ui = entity.get_component<Components::UI>();
+        auto* parallax = entity.get_component<Components::Parallax>();
 
         Math::Vec2D flip_value = flip ? flip->value : Math::Vec2D(1.0f, 1.0f);
 
@@ -59,6 +99,24 @@ namespace Engine
             *color,
             flip_value
           );
+        }
+        else if (parallax) {
+          // Parallax background rendering
+          Math::Vec2D draw_pos = compute_parallax_position(transform->position, parallax->scroll_factor);
+
+          if (parallax->tiling) {
+            draw_parallax_tiled(draw_pos, transform->scale, *parallax,
+              [&](const Math::Vec2D& pos, const Math::Vec2D& size) {
+                Engine::Graphics::draw_texture(texture->texture_handle, pos, size, transform->rotation, *color, flip_value);
+              });
+          }
+          else {
+            Engine::Graphics::draw_texture(
+              texture->texture_handle, draw_pos,
+              Math::Vec2D(transform->scale.x, transform->scale.y),
+              transform->rotation, *color, flip_value
+            );
+          }
         }
         else {
           // Render in world space
@@ -78,7 +136,7 @@ namespace Engine
     public:
       AtlasSpriteRenderSystem() {
         require_components<Components::Transform2D, Components::Color, Components::Texture, Components::TextureAtlas>();
-        exclude_components<Components::Distortion, Components::Parallax>();
+        exclude_components<Components::Distortion>();
       }
 
       void draw_entity(const Engine::ECS::Entity entity) override {
@@ -88,6 +146,7 @@ namespace Engine
         auto* atlas = entity.get_component<Components::TextureAtlas>();
         auto* flip = entity.get_component<Components::Flip>();
         auto* ui = entity.get_component<Components::UI>();
+        auto* parallax = entity.get_component<Components::Parallax>();
 
         Math::Vec2D flip_value = flip ? flip->value : Math::Vec2D(1.0f, 1.0f);
 
@@ -106,6 +165,24 @@ namespace Engine
               *color,
               flip_value
             );
+          }
+          else if (parallax) {
+            // Parallax background rendering with atlas subtexture
+            Math::Vec2D draw_pos = compute_parallax_position(transform->position, parallax->scroll_factor);
+
+            if (parallax->tiling) {
+              draw_parallax_tiled(draw_pos, transform->scale, *parallax,
+                [&](const Math::Vec2D& pos, const Math::Vec2D& size) {
+                  Engine::Graphics::draw_subtexture(texture->texture_handle, subTexture.tex_coords, pos, size, transform->rotation, *color, flip_value);
+                });
+            }
+            else {
+              Engine::Graphics::draw_subtexture(
+                texture->texture_handle, subTexture.tex_coords, draw_pos,
+                Math::Vec2D(transform->scale.x, transform->scale.y),
+                transform->rotation, *color, flip_value
+              );
+            }
           }
           else {
             // Render in world space
@@ -479,163 +556,7 @@ namespace Engine
       }
     };
 
-    // Parallax background render system – center-anchored.
-    // When the camera centers on the entity, it appears at its placed Transform2D position.
-    // As the camera moves away, the entity shifts at scroll_factor speed (0 = fully static, 1 = normal world).
-    // Supports optional infinite tiling.
-    class ParallaxSpriteRenderSystem : public Engine::ECS::System {
-    public:
-      ParallaxSpriteRenderSystem() {
-        require_components<Components::Transform2D, Components::Color, Components::Texture, Components::Parallax>();
-        exclude_components<Components::TextureAtlas, Components::Distortion>();
-      }
 
-      void draw_entity(const Engine::ECS::Entity entity) override {
-        auto* transform = entity.get_component<Components::Transform2D>();
-        auto* color = entity.get_component<Components::Color>();
-        auto* texture = entity.get_component<Components::Texture>();
-        auto* parallax = entity.get_component<Components::Parallax>();
-        auto* flip = entity.get_component<Components::Flip>();
-
-        Math::Vec2D flip_value = flip ? flip->value : Math::Vec2D(1.0f, 1.0f);
-
-        // Get current camera position
-        auto cam = Engine::Graphics::get_camera();
-        auto vres = Engine::Graphics::get_virtual_resolution();
-
-        // Camera center in world space
-        Math::Vec2D cam_center = cam.position + vres * 0.5f / cam.zoom;
-
-        // Compute parallax position (center-anchored):
-        // Lerp between entity position and camera center, weighted by scroll_factor.
-        // When camera centers on the entity, it appears at its placed Transform2D position
-        // regardless of scroll_factor.  scroll_factor=1 -> normal world movement,
-        // scroll_factor=0 -> entity stays at screen center (fully static background).
-        Math::Vec2D draw_pos(
-          transform->position.x + (cam_center.x - transform->position.x) * (1.0f - parallax->scroll_factor.x),
-          transform->position.y + (cam_center.y - transform->position.y) * (1.0f - parallax->scroll_factor.y)
-        );
-
-        if (parallax->tiling) {
-          // Determine tile size (fall back to entity scale if tile_size is zero)
-          Math::Vec2D ts = parallax->tile_size;
-          if (ts.x <= 0.0f) ts.x = transform->scale.x;
-          if (ts.y <= 0.0f) ts.y = transform->scale.y;
-
-          // Get visible bounds so we only tile within the camera view
-          auto bounds = Engine::Graphics::get_camera_bounds();
-          f32 view_w = bounds.max_x - bounds.min_x + ts.x * 2.0f;
-          f32 view_h = bounds.max_y - bounds.min_y + ts.y * 2.0f;
-
-          // Wrap draw_pos so it stays near the camera view
-          f32 wrapped_x = std::fmod(draw_pos.x - bounds.min_x + ts.x, ts.x);
-          if (wrapped_x < 0.0f) wrapped_x += ts.x;
-          f32 start_x = bounds.min_x - ts.x + wrapped_x;
-
-          f32 wrapped_y = std::fmod(draw_pos.y - bounds.min_y + ts.y, ts.y);
-          if (wrapped_y < 0.0f) wrapped_y += ts.y;
-          f32 start_y = bounds.min_y - ts.y + wrapped_y;
-
-          for (f32 ty = start_y; ty < bounds.max_y + ts.y; ty += ts.y) {
-            for (f32 tx = start_x; tx < bounds.max_x + ts.x; tx += ts.x) {
-              Engine::Graphics::draw_texture(
-                texture->texture_handle,
-                Math::Vec2D(tx, ty),
-                ts,
-                transform->rotation,
-                *color,
-                flip_value
-              );
-            }
-          }
-        }
-        else {
-          // Single sprite, just draw at the parallax-offset position
-          Engine::Graphics::draw_texture(
-            texture->texture_handle,
-            draw_pos,
-            Math::Vec2D(transform->scale.x, transform->scale.y),
-            transform->rotation,
-            *color,
-            flip_value
-          );
-        }
-      }
-    };
-
-    // Parallax render system for atlas sprites (animated / sub-textured backgrounds)
-    class ParallaxAtlasSpriteRenderSystem : public Engine::ECS::System {
-    public:
-      ParallaxAtlasSpriteRenderSystem() {
-        require_components<Components::Transform2D, Components::Color, Components::Texture, Components::TextureAtlas, Components::Parallax>();
-        exclude_components<Components::Distortion>();
-      }
-
-      void draw_entity(const Engine::ECS::Entity entity) override {
-        auto* transform = entity.get_component<Components::Transform2D>();
-        auto* color = entity.get_component<Components::Color>();
-        auto* texture = entity.get_component<Components::Texture>();
-        auto* atlas = entity.get_component<Components::TextureAtlas>();
-        auto* parallax = entity.get_component<Components::Parallax>();
-        auto* flip = entity.get_component<Components::Flip>();
-
-        if (atlas->drawIndex >= atlas->subTextures.size()) return;
-
-        Math::Vec2D flip_value = flip ? flip->value : Math::Vec2D(1.0f, 1.0f);
-        const auto& subTexture = atlas->subTextures[atlas->drawIndex];
-
-        // Parallax position — center-anchored (same logic as ParallaxSpriteRenderSystem)
-        auto cam = Engine::Graphics::get_camera();
-        auto vres = Engine::Graphics::get_virtual_resolution();
-        Math::Vec2D cam_center = cam.position + vres * 0.5f / cam.zoom;
-
-        Math::Vec2D draw_pos(
-          transform->position.x + (cam_center.x - transform->position.x) * (1.0f - parallax->scroll_factor.x),
-          transform->position.y + (cam_center.y - transform->position.y) * (1.0f - parallax->scroll_factor.y)
-        );
-
-        if (parallax->tiling) {
-          Math::Vec2D ts = parallax->tile_size;
-          if (ts.x <= 0.0f) ts.x = transform->scale.x;
-          if (ts.y <= 0.0f) ts.y = transform->scale.y;
-
-          auto bounds = Engine::Graphics::get_camera_bounds();
-
-          f32 wrapped_x = std::fmod(draw_pos.x - bounds.min_x + ts.x, ts.x);
-          if (wrapped_x < 0.0f) wrapped_x += ts.x;
-          f32 start_x = bounds.min_x - ts.x + wrapped_x;
-
-          f32 wrapped_y = std::fmod(draw_pos.y - bounds.min_y + ts.y, ts.y);
-          if (wrapped_y < 0.0f) wrapped_y += ts.y;
-          f32 start_y = bounds.min_y - ts.y + wrapped_y;
-
-          for (f32 ty = start_y; ty < bounds.max_y + ts.y; ty += ts.y) {
-            for (f32 tx = start_x; tx < bounds.max_x + ts.x; tx += ts.x) {
-              Engine::Graphics::draw_subtexture(
-                texture->texture_handle,
-                subTexture.tex_coords,
-                Math::Vec2D(tx, ty),
-                ts,
-                transform->rotation,
-                *color,
-                flip_value
-              );
-            }
-          }
-        }
-        else {
-          Engine::Graphics::draw_subtexture(
-            texture->texture_handle,
-            subTexture.tex_coords,
-            draw_pos,
-            Math::Vec2D(transform->scale.x, transform->scale.y),
-            transform->rotation,
-            *color,
-            flip_value
-          );
-        }
-      }
-    };
 
     class DistortionSpriteRenderSystem : public Engine::ECS::System {
     public:
