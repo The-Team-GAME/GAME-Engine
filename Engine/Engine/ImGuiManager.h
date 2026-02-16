@@ -52,5 +52,8 @@ namespace ImGuiManager {
 
 	// Get the top-left position of the central dock node (where the game is rendered when not in viewport mode)
 	Math::Vec2D get_game_render_area_min();
+
+	// Check if game input should be blocked (an ImGui panel other than Viewport has focus)
+	bool is_game_input_blocked();
 }
 

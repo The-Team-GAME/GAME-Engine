@@ -169,6 +169,35 @@ namespace Engine {
     ==================================================================================*/
     bool is_entity_active(const Entity entity);
 
+    /* =================== //
+    // Entity naming        //
+    // =================== */
+
+    /*=================================================================================
+    Function Brief:
+    Sets the display name for an entity.
+
+    Parameters:
+    entity - The entity to name.
+    name   - The display name string.
+
+    Where to call it:
+    When creating entities or renaming them in the editor.
+    ==================================================================================*/
+    void set_entity_name(const Entity entity, const std::string& name);
+
+    /*=================================================================================
+    Function Brief:
+    Gets the display name for an entity. Returns "Entity {id}" if no name is set.
+
+    Parameters:
+    entity - The entity to query.
+
+    Where to call it:
+    When displaying entity names in the editor or debug output.
+    ==================================================================================*/
+    const std::string& get_entity_name(const Entity entity);
+
     /* ====================== //
     // Component management   //
     // ====================== */

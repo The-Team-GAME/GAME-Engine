@@ -106,4 +106,16 @@ namespace ViewportPanel {
   ==================================================================================*/
   bool is_viewport_hovered();
 
+  /*=================================================================================
+  Function Brief:
+  Checks if the viewport window is currently focused.
+
+  Returns:
+  bool - True if the viewport window has focus
+
+  Where to call it:
+  Used by ImGuiManager to determine if game input should be blocked.
+  ==================================================================================*/
+  bool is_viewport_focused();
+
 } // namespace ViewportPanel

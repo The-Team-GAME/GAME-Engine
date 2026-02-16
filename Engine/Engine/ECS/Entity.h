@@ -217,6 +217,30 @@ namespace Engine {
 
       /*=================================================================================
       Function Brief:
+      Sets the display name for this entity.
+
+      Parameters:
+      name - The display name string.
+
+      Where to call it:
+      When naming or renaming an entity.
+      ==================================================================================*/
+      Entity set_name(const std::string& name);
+
+      /*=================================================================================
+      Function Brief:
+      Gets the display name for this entity.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When displaying or querying an entity's name.
+      ==================================================================================*/
+      const std::string& get_name() const;
+
+      /*=================================================================================
+      Function Brief:
       Adds this entity to one or more layers.
 
       Parameters:

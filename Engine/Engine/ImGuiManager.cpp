@@ -18,6 +18,7 @@
 #include "Precompiled.h"
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
+#include <imgui_internal.h>
 #include "InputManager.h"
 #include "Perf.h"
 #include "ImGuiThemes.h"
@@ -467,7 +468,7 @@ namespace ImGuiManager {
         y_offset -= toast_spacing;
       }
     }
-    
+
     // ==================================================================================
     // End of toast notifications
     // ==================================================================================
@@ -496,7 +497,7 @@ namespace ImGuiManager {
       ImGui::RenderPlatformWindowsDefault();
       glfwMakeContextCurrent(backup_current_context);
     }
-    
+
     Engine::Perf::stop("ImGui Render");
 #endif
   }
@@ -654,6 +655,32 @@ namespace ImGuiManager {
     }
 #else
     return { 0.0f, 0.0f };
+#endif
+  }
+
+  bool is_game_input_blocked()
+  {
+#ifndef GAME_BUILD
+    // If the GUI is not visible, input is never blocked
+    if (!gui_enabled || !main_gui_visible)
+      return false;
+
+    // Check if any ImGui window has focus
+    ImGuiContext* ctx = ImGui::GetCurrentContext();
+    if (!ctx || !ctx->NavWindow)
+      return false;
+
+    // If the viewport panel is focused or hovered, allow game input.
+    // Hover check is needed because focus transfers happen during ImGui render,
+    // which runs AFTER ECS systems — so on the frame the user clicks the viewport
+    // from another panel, focused is still false but hovered is true.
+    if (ViewportPanel::is_viewport_focused() || ViewportPanel::is_viewport_hovered())
+      return false;
+
+    // Any other ImGui window is focused — block game input
+    return true;
+#else
+    return false;
 #endif
   }
 

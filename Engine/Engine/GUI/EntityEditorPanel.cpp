@@ -42,6 +42,12 @@ namespace {
   s32 selected_entity_id = -1;
   bool selection_initialized = false;
 
+  // Rename state
+  Engine::ECS::EntityID rename_entity_id = Engine::ECS::INVALID_ENTITY;
+  char rename_buf[256] = "";
+  bool rename_focus_set = false;
+  bool open_rename_popup = false;
+
   enum class EntityViewMode {
     Hierarchy,
     Layer,
@@ -66,18 +72,16 @@ namespace {
   void render_entity_node(Engine::ECS::Entity entity, bool is_leaf = true) {
     if (!entity.is_valid()) return;
 
-    // Build entity label
-    std::string entity_label = "Entity " + std::to_string(entity.get_id());
+    // Build entity label from ECS entity name
+    const std::string& name = Engine::ECS::get_entity_name(entity);
+    std::string entity_label = name.empty()
+      ? "Entity " + std::to_string(entity.get_id())
+      : name + " (" + std::to_string(entity.get_id()) + ")";
 
-    // Try to get a name from common components
-    if (entity.has_component<Components::Transform2D>()) {
-      // entity_label += " (Transform)"; // Optional: Add more info
-    }
-
-    // Check for Level component
+    // Append Level info if present
     if (entity.has_component<Components::Level>()) {
       auto* level_comp = entity.get_component<Components::Level>();
-      entity_label += " (Level: " + level_comp->level_path + ")";
+      entity_label += " [Level: " + level_comp->level_path + "]";
     }
 
     // Check if this entity is selected
@@ -138,6 +142,13 @@ namespace {
           }
         );
         Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+      }
+      if (ImGui::MenuItem("Rename")) {
+        rename_entity_id = entity.get_id();
+        const std::string& cur_name = Engine::ECS::get_entity_name(entity);
+        strncpy_s(rename_buf, cur_name.c_str(), sizeof(rename_buf) - 1);
+        rename_focus_set = false;
+        open_rename_popup = true;
       }
       ImGui::EndPopup();
     }
@@ -229,13 +240,16 @@ namespace {
     auto it = parent_to_children.find(entity.get_id());
     bool has_children = (it != parent_to_children.end() && !it->second.empty());
 
-    // Build entity label
-    std::string entity_label = "Entity " + std::to_string(entity.get_id());
+    // Build entity label from ECS entity name
+    const std::string& name = Engine::ECS::get_entity_name(entity);
+    std::string entity_label = name.empty()
+      ? "Entity " + std::to_string(entity.get_id())
+      : name + " (" + std::to_string(entity.get_id()) + ")";
 
-    // Check for Level component
+    // Append Level info if present
     if (entity.has_component<Components::Level>()) {
       auto* level_comp = entity.get_component<Components::Level>();
-      entity_label += " (Level: " + level_comp->level_path + ")";
+      entity_label += " [Level: " + level_comp->level_path + "]";
     }
 
     // Check if this entity is selected
@@ -320,6 +334,13 @@ namespace {
           }
         );
         Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+      }
+      if (ImGui::MenuItem("Rename")) {
+        rename_entity_id = entity.get_id();
+        const std::string& cur_name = Engine::ECS::get_entity_name(entity);
+        strncpy_s(rename_buf, cur_name.c_str(), sizeof(rename_buf) - 1);
+        rename_focus_set = false;
+        open_rename_popup = true;
       }
       // Add unparent option if entity has a parent
       if (entity.has_component<Components::Parent>()) {
@@ -562,7 +583,14 @@ void EntityEditorPanel()
         }
 
         bool isSelected = (selected_entity_id == static_cast<int>(entity.get_id()));
-        std::string label = "Entity " + std::to_string(entity.get_id());
+        const std::string& fname = Engine::ECS::get_entity_name(entity);
+        std::string label = fname.empty()
+          ? "Entity " + std::to_string(entity.get_id())
+          : fname + " (" + std::to_string(entity.get_id()) + ")";
+        if (entity.has_component<Components::Level>()) {
+          auto* level_comp = entity.get_component<Components::Level>();
+          label += " [Level: " + level_comp->level_path + "]";
+        }
 
         if (ImGui::Selectable(label.c_str(), isSelected))
         {
@@ -628,7 +656,11 @@ void EntityEditorPanel()
       return;
     }
 
-    ImGui::Text("Editing Entity: %d", selected_entity_id);
+    // Editable entity name
+    {
+      const std::string& ename = Engine::ECS::get_entity_name(entity);
+      ImGui::Text("Editing: %s (ID: %d)", ename.empty() ? "Entity" : ename.c_str(), selected_entity_id);
+    }
     ImGui::Separator();
 
     // Add Component Section
@@ -1068,6 +1100,31 @@ void EntityEditorPanel()
   }
 
   ImGui::Separator();
+
+  // Rename popup (rendered at window level so it works from any context menu)
+  if (open_rename_popup) {
+    ImGui::OpenPopup("RenameEntityPopup");
+    open_rename_popup = false;
+  }
+  if (ImGui::BeginPopup("RenameEntityPopup")) {
+    ImGui::Text("Rename Entity %zu", rename_entity_id);
+    ImGui::Separator();
+    if (!rename_focus_set) {
+      ImGui::SetKeyboardFocusHere();
+      rename_focus_set = true;
+    }
+    bool confirmed = ImGui::InputText("##RenameInput", rename_buf, sizeof(rename_buf), ImGuiInputTextFlags_EnterReturnsTrue);
+    if (confirmed) {
+      Engine::ECS::Entity rename_entity = Engine::ECS::get_entity(rename_entity_id);
+      if (rename_entity.is_valid()) {
+        Engine::ECS::set_entity_name(rename_entity, rename_buf);
+        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+      }
+      rename_entity_id = Engine::ECS::INVALID_ENTITY;
+      ImGui::CloseCurrentPopup();
+    }
+    ImGui::EndPopup();
+  }
 
   ImGui::End();
 }

@@ -48,6 +48,7 @@ namespace Engine {
         SparseSet<EntityID> entities_to_destroy;
         std::unordered_map<EntityID, ComponentSignature> entity_signatures;
         std::unordered_map<EntityID, LayerSignature> entity_layers;
+        std::unordered_map<EntityID, std::string> entity_names;
         std::unordered_map<EntityID, PrefabInstanceData> prefab_instances;
         std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> component_arrays;
         std::vector<std::unique_ptr<System>> systems;
