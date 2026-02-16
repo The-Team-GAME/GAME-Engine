@@ -247,12 +247,21 @@ namespace Engine
           }
         }
 
+        // Apply parallax offset to grid_offset if the entity has a Parallax component
+        Math::Vec2D draw_offset = int_map->grid_offset;
+        auto* parallax = entity.get_component<Components::Parallax>();
+        if (parallax) {
+          // compute_parallax_position shifts the anchor based on camera distance
+          // We treat grid_offset as the anchor position for the tilemap
+          draw_offset = compute_parallax_position(int_map->grid_offset, parallax->scroll_factor);
+        }
+
         // Draw the tilemap using the optimized renderer function with multiple atlases
         Engine::Graphics::draw_tilemap(
           int_map->tiles,
           project_settings.loaded_tilemaps,
           int_map->tile_size,
-          int_map->grid_offset,
+          draw_offset,
           color
         );
       }
