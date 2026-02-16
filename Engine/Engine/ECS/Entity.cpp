@@ -97,6 +97,15 @@ namespace Engine {
       return false; // Component type not found
     }
 
+    Entity Entity::set_name(const std::string& name) {
+      ECS::set_entity_name(*this, name);
+      return *this;
+    }
+
+    const std::string& Entity::get_name() const {
+      return ECS::get_entity_name(*this);
+    }
+
     ReflectionLibrary::GenericValue entity_to_generic_value(Entity entity) {
       if (!entity.is_valid()) {
         return ReflectionLibrary::GenericValue();
@@ -105,6 +114,12 @@ namespace Engine {
       ReflectionLibrary::GenericValue result;
       // Store the original entity ID for remapping on load
       result["id"] = static_cast<int>(entity.get_id());
+
+      // Serialize entity name
+      const std::string& name = get_entity_name(entity);
+      if (!name.empty()) {
+        result["name"] = name;
+      }
 
       // Serialize layers and components using helper functions
       result["layers"] = Serialization::serialize_layers(entity.get_layers());
@@ -147,6 +162,11 @@ namespace Engine {
 
       Entity entity = ECS::create_entity();
       EntityID entity_id = entity.get_id();
+
+      // Deserialize entity name if present
+      if (value.has("name") && value["name"].isString()) {
+        set_entity_name(entity, value["name"].getString());
+      }
 
       auto& containers = Internal::get_containers();
 

@@ -66,18 +66,16 @@ namespace {
   void render_entity_node(Engine::ECS::Entity entity, bool is_leaf = true) {
     if (!entity.is_valid()) return;
 
-    // Build entity label
-    std::string entity_label = "Entity " + std::to_string(entity.get_id());
+    // Build entity label from ECS entity name
+    const std::string& name = Engine::ECS::get_entity_name(entity);
+    std::string entity_label = name.empty()
+      ? "Entity " + std::to_string(entity.get_id())
+      : name + " (" + std::to_string(entity.get_id()) + ")";
 
-    // Try to get a name from common components
-    if (entity.has_component<Components::Transform2D>()) {
-      // entity_label += " (Transform)"; // Optional: Add more info
-    }
-
-    // Check for Level component
+    // Append Level info if present
     if (entity.has_component<Components::Level>()) {
       auto* level_comp = entity.get_component<Components::Level>();
-      entity_label += " (Level: " + level_comp->level_path + ")";
+      entity_label += " [Level: " + level_comp->level_path + "]";
     }
 
     // Check if this entity is selected
@@ -229,13 +227,16 @@ namespace {
     auto it = parent_to_children.find(entity.get_id());
     bool has_children = (it != parent_to_children.end() && !it->second.empty());
 
-    // Build entity label
-    std::string entity_label = "Entity " + std::to_string(entity.get_id());
+    // Build entity label from ECS entity name
+    const std::string& name = Engine::ECS::get_entity_name(entity);
+    std::string entity_label = name.empty()
+      ? "Entity " + std::to_string(entity.get_id())
+      : name + " (" + std::to_string(entity.get_id()) + ")";
 
-    // Check for Level component
+    // Append Level info if present
     if (entity.has_component<Components::Level>()) {
       auto* level_comp = entity.get_component<Components::Level>();
-      entity_label += " (Level: " + level_comp->level_path + ")";
+      entity_label += " [Level: " + level_comp->level_path + "]";
     }
 
     // Check if this entity is selected
@@ -562,7 +563,14 @@ void EntityEditorPanel()
         }
 
         bool isSelected = (selected_entity_id == static_cast<int>(entity.get_id()));
-        std::string label = "Entity " + std::to_string(entity.get_id());
+        const std::string& fname = Engine::ECS::get_entity_name(entity);
+        std::string label = fname.empty()
+          ? "Entity " + std::to_string(entity.get_id())
+          : fname + " (" + std::to_string(entity.get_id()) + ")";
+        if (entity.has_component<Components::Level>()) {
+          auto* level_comp = entity.get_component<Components::Level>();
+          label += " [Level: " + level_comp->level_path + "]";
+        }
 
         if (ImGui::Selectable(label.c_str(), isSelected))
         {
@@ -628,7 +636,31 @@ void EntityEditorPanel()
       return;
     }
 
-    ImGui::Text("Editing Entity: %d", selected_entity_id);
+    // Editable entity name
+    {
+      const std::string& ename = Engine::ECS::get_entity_name(entity);
+      static char name_buf[256] = "";
+      static Engine::ECS::EntityID last_edited_entity = Engine::ECS::INVALID_ENTITY;
+
+      // Reset buffer when switching entities
+      if (last_edited_entity != entity.get_id()) {
+        last_edited_entity = entity.get_id();
+        strncpy_s(name_buf, ename.c_str(), sizeof(name_buf) - 1);
+      }
+
+      ImGui::Text("ID: %d", selected_entity_id);
+      ImGui::SameLine();
+      ImGui::SetNextItemWidth(-1);
+      if (ImGui::InputText("##EntityName", name_buf, sizeof(name_buf), ImGuiInputTextFlags_EnterReturnsTrue)) {
+        Engine::ECS::set_entity_name(entity, name_buf);
+        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+      }
+      // Also apply on deactivation (clicking away)
+      if (ImGui::IsItemDeactivatedAfterEdit()) {
+        Engine::ECS::set_entity_name(entity, name_buf);
+        Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+      }
+    }
     ImGui::Separator();
 
     // Add Component Section

@@ -108,6 +108,7 @@ namespace Engine {
       containers.active_entities.insert(id);
       containers.entity_signatures[id] = ComponentSignature{};
       containers.entity_layers[id] = LayerSignature{};
+      containers.entity_names[id] = "Entity " + std::to_string(id);
 
       // Add entity to default layer
       containers.entity_layers[id].set(DEFAULT_LAYER);
@@ -128,6 +129,7 @@ namespace Engine {
       containers.active_entities.insert(id);
       containers.entity_signatures[id] = ComponentSignature{};
       containers.entity_layers[id] = LayerSignature{};
+      containers.entity_names[id] = "Entity " + std::to_string(id);
 
       // Add entity to default layer
       containers.entity_layers[id].set(DEFAULT_LAYER);
@@ -155,6 +157,12 @@ namespace Engine {
 
       // Create new entity (this automatically adds it to DEFAULT_LAYER)
       Entity newEntity = create_entity();
+
+      // Clone name from source
+      auto name_it = containers.entity_names.find(source_id);
+      if (name_it != containers.entity_names.end()) {
+        containers.entity_names[newEntity.get_id()] = name_it->second;
+      }
 
       const auto& sourceSignature = containers.entity_signatures.at(source_id);
       containers.entity_signatures[newEntity.get_id()] = sourceSignature;
@@ -214,6 +222,28 @@ namespace Engine {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
       return containers.active_entities.contains(id);
+    }
+
+    void set_entity_name(const Entity entity, const std::string& name)
+    {
+      auto& containers = Internal::get_containers();
+      EntityID id = entity.get_id();
+      if (containers.active_entities.contains(id)) {
+        containers.entity_names[id] = name;
+      }
+    }
+
+    static const std::string empty_name = "";
+
+    const std::string& get_entity_name(const Entity entity)
+    {
+      auto& containers = Internal::get_containers();
+      EntityID id = entity.get_id();
+      auto it = containers.entity_names.find(id);
+      if (it != containers.entity_names.end()) {
+        return it->second;
+      }
+      return empty_name;
     }
 
     void update()
@@ -351,6 +381,7 @@ namespace Engine {
 
           containers.entity_signatures.erase(entityId);
           containers.entity_layers.erase(entityId);
+          containers.entity_names.erase(entityId);
           containers.prefab_instances.erase(entityId); // Clean up prefab instance data
 
           for (auto& system : containers.systems)
