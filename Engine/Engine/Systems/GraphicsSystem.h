@@ -37,7 +37,7 @@ namespace Engine
     public:
       StaticSpriteRenderSystem() {
         require_components<Components::Transform2D, Components::Color, Components::Texture>();
-        exclude_components<Components::TextureAtlas, Components::Distortion>();
+        exclude_components<Components::TextureAtlas, Components::Distortion, Components::Parallax>();
       }
 
       void draw_entity(const Engine::ECS::Entity entity) override {
@@ -59,7 +59,8 @@ namespace Engine
             *color,
             flip_value
           );
-        } else {
+        }
+        else {
           // Render in world space
           Engine::Graphics::draw_texture(
             texture->texture_handle,
@@ -77,7 +78,7 @@ namespace Engine
     public:
       AtlasSpriteRenderSystem() {
         require_components<Components::Transform2D, Components::Color, Components::Texture, Components::TextureAtlas>();
-        exclude_components<Components::Distortion>();
+        exclude_components<Components::Distortion, Components::Parallax>();
       }
 
       void draw_entity(const Engine::ECS::Entity entity) override {
@@ -105,7 +106,8 @@ namespace Engine
               *color,
               flip_value
             );
-          } else {
+          }
+          else {
             // Render in world space
             Engine::Graphics::draw_subtexture(
               texture->texture_handle,
@@ -280,7 +282,7 @@ namespace Engine
         return a + (b - a) * t;
       }
 
-     public:
+    public:
       CameraSystem() {
         require_components<Components::Camera, Components::Transform2D>();
       }
@@ -309,7 +311,7 @@ namespace Engine
 
             // 2. Look-ahead Calculation (smooth camera leading in movement direction)
             Vec2D desired_look_ahead = { look_dir * cam->look_ahead_distance, 0.0f };
-            
+
             // Smoothly interpolate look-ahead offset
             f32 t_look_ahead = 1.0f - std::exp(-cam->look_ahead_smooth * dt);
             cam->look_ahead_offset = Lerp(cam->look_ahead_offset, desired_look_ahead, t_look_ahead);
@@ -320,18 +322,18 @@ namespace Engine
             // 4. Detect Direction Change
             Vec2D current_velocity = target_position - camera.position;
             f32 direction_consistency = 1.0f;
-            
+
             // Calculate how aligned current movement is with previous movement
             f32 prev_mag = std::sqrt(cam->prev_velocity.x * cam->prev_velocity.x + cam->prev_velocity.y * cam->prev_velocity.y);
             f32 curr_mag = std::sqrt(current_velocity.x * current_velocity.x + current_velocity.y * current_velocity.y);
-            
+
             if (prev_mag > 0.01f && curr_mag > 0.01f) {
               // Dot product normalized = cosine of angle between vectors
               f32 dot = (cam->prev_velocity.x * current_velocity.x + cam->prev_velocity.y * current_velocity.y);
               direction_consistency = dot / (prev_mag * curr_mag);
               direction_consistency = std::max(0.0f, direction_consistency); // Clamp to 0-1
             }
-            
+
             // Store current velocity for next frame
             cam->prev_velocity = current_velocity;
 
@@ -339,7 +341,7 @@ namespace Engine
             if (cam->dead_zone_radius > 0.0f) {
               Vec2D to_target = target_position - camera.position;
               f32 distance = std::sqrt(to_target.x * to_target.x + to_target.y * to_target.y);
-              
+
               if (distance < cam->dead_zone_radius) {
                 // Within dead zone - don't move camera
                 target_position = camera.position;
@@ -357,12 +359,12 @@ namespace Engine
               // Same direction (1.0) = use fast smooth_factor
               // Direction change (0.0) = use slow smooth_factor_direction_change
               f32 blended_smooth = Lerp(cam->smooth_factor_direction_change, cam->smooth_factor, direction_consistency);
-              
+
               // Exponential smoothing for natural, framerate-independent movement
               f32 t_pos = 1.0f - std::exp(-blended_smooth * dt);
               f32 t_rot = 1.0f - std::exp(-cam->rotation_smooth * dt);
               f32 t_zoom = 1.0f - std::exp(-cam->zoom_smooth * dt);
-              
+
               camera.position = Lerp(camera.position, target_position, t_pos);
               camera.rotation = Lerp(camera.rotation, trans->rotation, t_rot);
               camera.zoom = Lerp(camera.zoom, trans->scale.x, t_zoom);
@@ -474,6 +476,164 @@ namespace Engine
 
         // Update the camera in the graphics system
         Engine::Graphics::set_camera(camera);
+      }
+    };
+
+    // Parallax background render system – center-anchored.
+    // When the camera centers on the entity, it appears at its placed Transform2D position.
+    // As the camera moves away, the entity shifts at scroll_factor speed (0 = fully static, 1 = normal world).
+    // Supports optional infinite tiling.
+    class ParallaxSpriteRenderSystem : public Engine::ECS::System {
+    public:
+      ParallaxSpriteRenderSystem() {
+        require_components<Components::Transform2D, Components::Color, Components::Texture, Components::Parallax>();
+        exclude_components<Components::TextureAtlas, Components::Distortion>();
+      }
+
+      void draw_entity(const Engine::ECS::Entity entity) override {
+        auto* transform = entity.get_component<Components::Transform2D>();
+        auto* color = entity.get_component<Components::Color>();
+        auto* texture = entity.get_component<Components::Texture>();
+        auto* parallax = entity.get_component<Components::Parallax>();
+        auto* flip = entity.get_component<Components::Flip>();
+
+        Math::Vec2D flip_value = flip ? flip->value : Math::Vec2D(1.0f, 1.0f);
+
+        // Get current camera position
+        auto cam = Engine::Graphics::get_camera();
+        auto vres = Engine::Graphics::get_virtual_resolution();
+
+        // Camera center in world space
+        Math::Vec2D cam_center = cam.position + vres * 0.5f / cam.zoom;
+
+        // Compute parallax position (center-anchored):
+        // Lerp between entity position and camera center, weighted by scroll_factor.
+        // When camera centers on the entity, it appears at its placed Transform2D position
+        // regardless of scroll_factor.  scroll_factor=1 -> normal world movement,
+        // scroll_factor=0 -> entity stays at screen center (fully static background).
+        Math::Vec2D draw_pos(
+          transform->position.x + (cam_center.x - transform->position.x) * (1.0f - parallax->scroll_factor.x),
+          transform->position.y + (cam_center.y - transform->position.y) * (1.0f - parallax->scroll_factor.y)
+        );
+
+        if (parallax->tiling) {
+          // Determine tile size (fall back to entity scale if tile_size is zero)
+          Math::Vec2D ts = parallax->tile_size;
+          if (ts.x <= 0.0f) ts.x = transform->scale.x;
+          if (ts.y <= 0.0f) ts.y = transform->scale.y;
+
+          // Get visible bounds so we only tile within the camera view
+          auto bounds = Engine::Graphics::get_camera_bounds();
+          f32 view_w = bounds.max_x - bounds.min_x + ts.x * 2.0f;
+          f32 view_h = bounds.max_y - bounds.min_y + ts.y * 2.0f;
+
+          // Wrap draw_pos so it stays near the camera view
+          f32 wrapped_x = std::fmod(draw_pos.x - bounds.min_x + ts.x, ts.x);
+          if (wrapped_x < 0.0f) wrapped_x += ts.x;
+          f32 start_x = bounds.min_x - ts.x + wrapped_x;
+
+          f32 wrapped_y = std::fmod(draw_pos.y - bounds.min_y + ts.y, ts.y);
+          if (wrapped_y < 0.0f) wrapped_y += ts.y;
+          f32 start_y = bounds.min_y - ts.y + wrapped_y;
+
+          for (f32 ty = start_y; ty < bounds.max_y + ts.y; ty += ts.y) {
+            for (f32 tx = start_x; tx < bounds.max_x + ts.x; tx += ts.x) {
+              Engine::Graphics::draw_texture(
+                texture->texture_handle,
+                Math::Vec2D(tx, ty),
+                ts,
+                transform->rotation,
+                *color,
+                flip_value
+              );
+            }
+          }
+        }
+        else {
+          // Single sprite, just draw at the parallax-offset position
+          Engine::Graphics::draw_texture(
+            texture->texture_handle,
+            draw_pos,
+            Math::Vec2D(transform->scale.x, transform->scale.y),
+            transform->rotation,
+            *color,
+            flip_value
+          );
+        }
+      }
+    };
+
+    // Parallax render system for atlas sprites (animated / sub-textured backgrounds)
+    class ParallaxAtlasSpriteRenderSystem : public Engine::ECS::System {
+    public:
+      ParallaxAtlasSpriteRenderSystem() {
+        require_components<Components::Transform2D, Components::Color, Components::Texture, Components::TextureAtlas, Components::Parallax>();
+        exclude_components<Components::Distortion>();
+      }
+
+      void draw_entity(const Engine::ECS::Entity entity) override {
+        auto* transform = entity.get_component<Components::Transform2D>();
+        auto* color = entity.get_component<Components::Color>();
+        auto* texture = entity.get_component<Components::Texture>();
+        auto* atlas = entity.get_component<Components::TextureAtlas>();
+        auto* parallax = entity.get_component<Components::Parallax>();
+        auto* flip = entity.get_component<Components::Flip>();
+
+        if (atlas->drawIndex >= atlas->subTextures.size()) return;
+
+        Math::Vec2D flip_value = flip ? flip->value : Math::Vec2D(1.0f, 1.0f);
+        const auto& subTexture = atlas->subTextures[atlas->drawIndex];
+
+        // Parallax position — center-anchored (same logic as ParallaxSpriteRenderSystem)
+        auto cam = Engine::Graphics::get_camera();
+        auto vres = Engine::Graphics::get_virtual_resolution();
+        Math::Vec2D cam_center = cam.position + vres * 0.5f / cam.zoom;
+
+        Math::Vec2D draw_pos(
+          transform->position.x + (cam_center.x - transform->position.x) * (1.0f - parallax->scroll_factor.x),
+          transform->position.y + (cam_center.y - transform->position.y) * (1.0f - parallax->scroll_factor.y)
+        );
+
+        if (parallax->tiling) {
+          Math::Vec2D ts = parallax->tile_size;
+          if (ts.x <= 0.0f) ts.x = transform->scale.x;
+          if (ts.y <= 0.0f) ts.y = transform->scale.y;
+
+          auto bounds = Engine::Graphics::get_camera_bounds();
+
+          f32 wrapped_x = std::fmod(draw_pos.x - bounds.min_x + ts.x, ts.x);
+          if (wrapped_x < 0.0f) wrapped_x += ts.x;
+          f32 start_x = bounds.min_x - ts.x + wrapped_x;
+
+          f32 wrapped_y = std::fmod(draw_pos.y - bounds.min_y + ts.y, ts.y);
+          if (wrapped_y < 0.0f) wrapped_y += ts.y;
+          f32 start_y = bounds.min_y - ts.y + wrapped_y;
+
+          for (f32 ty = start_y; ty < bounds.max_y + ts.y; ty += ts.y) {
+            for (f32 tx = start_x; tx < bounds.max_x + ts.x; tx += ts.x) {
+              Engine::Graphics::draw_subtexture(
+                texture->texture_handle,
+                subTexture.tex_coords,
+                Math::Vec2D(tx, ty),
+                ts,
+                transform->rotation,
+                *color,
+                flip_value
+              );
+            }
+          }
+        }
+        else {
+          Engine::Graphics::draw_subtexture(
+            texture->texture_handle,
+            subTexture.tex_coords,
+            draw_pos,
+            Math::Vec2D(transform->scale.x, transform->scale.y),
+            transform->rotation,
+            *color,
+            flip_value
+          );
+        }
       }
     };
 

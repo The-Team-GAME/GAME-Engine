@@ -560,6 +560,24 @@ namespace Components
     UI() = default;
   };
 
+  // Parallax scrolling component - makes the entity scroll at a fraction of the camera speed
+  // scroll_factor: (0,0) = fully static background, (1,1) = moves with world, values in between give parallax
+  // tiling: if true, the texture tiles infinitely in both axes so it never runs out
+  // tile_size: size of each repeated tile in world units (only used when tiling = true)
+  struct Parallax
+  {
+    Math::Vec2D scroll_factor = { 0.9f, 0.9f }; // How much camera movement affects this layer (0 = static, 1 = normal)
+    bool tiling = false;                         // Whether the texture repeats infinitely
+    Math::Vec2D tile_size = { 0.0f, 0.0f };      // Size of each tile in world units (0 = use entity scale)
+
+    Parallax() = default;
+    Parallax(f32 factor) : scroll_factor(factor, factor) {}
+    Parallax(f32 fx, f32 fy) : scroll_factor(fx, fy) {}
+    Parallax(const Math::Vec2D& factor, bool tile = false, const Math::Vec2D& ts = { 0.0f, 0.0f })
+      : scroll_factor(factor), tiling(tile), tile_size(ts) {
+    }
+  };
+
 
 }
 
@@ -574,3 +592,4 @@ REGISTER_COMPONENT_CUSTOM(Components::Texture, path)
 REGISTER_COMPONENT_CUSTOM(Components::Font, path, font_size)
 REGISTER_COMPONENT_CUSTOM(Components::TextureAtlas, tex_coords_list, drawIndex)
 REGISTER_COMPONENT_CUSTOM(Components::Animation, durations, before_times, atlas_indices, startTime, totalDuration, is_looping)
+REGISTER_COMPONENT(Components::Parallax, scroll_factor, tiling, tile_size)
