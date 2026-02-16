@@ -405,4 +405,8 @@ namespace ViewportPanel {
     return viewport_hovered;
   }
 
+  bool is_viewport_focused() {
+    return viewport_focused;
+  }
+
 } // namespace ViewportPanel

@@ -106,18 +106,30 @@ namespace Engine
 
   bool Input::is_pressed(KeyCode key)
   {
+#ifndef GAME_BUILD
+    if (ImGuiManager::is_game_input_blocked())
+      return false;
+#endif
     int idx = key_to_index(key);
     return currentKeys[idx] && !previousKeys[idx];
   }
 
   bool Input::is_released(KeyCode key)
   {
+#ifndef GAME_BUILD
+    if (ImGuiManager::is_game_input_blocked())
+      return false;
+#endif
     int idx = key_to_index(key);
     return !currentKeys[idx] && previousKeys[idx];
   }
 
   bool Input::is_held(KeyCode key)
   {
+#ifndef GAME_BUILD
+    if (ImGuiManager::is_game_input_blocked())
+      return false;
+#endif
     int idx = key_to_index(key);
     return currentKeys[idx];
   }
@@ -168,6 +180,13 @@ namespace Engine
 
   glm::vec2 Input::get_scroll_offset()
   {
+#ifndef GAME_BUILD
+    if (ImGuiManager::is_game_input_blocked())
+    {
+      scrollOffset = { 0.0f, 0.0f };
+      return { 0.0f, 0.0f };
+    }
+#endif
     glm::vec2 result = scrollOffset;
     scrollOffset = { 0.0f, 0.0f }; // Reset after reading
     return result;

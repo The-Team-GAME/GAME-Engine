@@ -18,6 +18,7 @@
 #include "Precompiled.h"
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
+#include <imgui_internal.h>
 #include "InputManager.h"
 #include "Perf.h"
 #include "ImGuiThemes.h"
@@ -654,6 +655,29 @@ namespace ImGuiManager {
     }
 #else
     return { 0.0f, 0.0f };
+#endif
+  }
+
+  bool is_game_input_blocked()
+  {
+#ifndef GAME_BUILD
+    // If the GUI is not visible, input is never blocked
+    if (!gui_enabled || !main_gui_visible)
+      return false;
+
+    // Check if any ImGui window has focus
+    ImGuiContext* ctx = ImGui::GetCurrentContext();
+    if (!ctx || !ctx->NavWindow)
+      return false;
+
+    // If the viewport panel is focused, allow game input
+    if (ViewportPanel::is_viewport_focused())
+      return false;
+
+    // Any other ImGui window is focused — block game input
+    return true;
+#else
+    return false;
 #endif
   }
 
