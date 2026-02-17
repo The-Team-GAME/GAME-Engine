@@ -23,6 +23,8 @@
 #include <thread>
 #include <string>
 #include <chrono>
+#include <deque>
+#include <mutex>
 
 namespace Engine
 {
@@ -110,6 +112,16 @@ namespace Engine
     static std::atomic<float>  s_last_build_duration{ 0.0f };
     static std::atomic<bool>   s_last_build_success{ false };
 
+    // Build output streaming: pipe-captured stdout/stderr from msbuild
+    static std::mutex              s_build_output_mutex;
+    static std::deque<std::string> s_build_output;
+    static std::string             s_current_build_file;   // last .cpp being compiled
+    static int                     s_build_error_count = 0;
+
+    // Tracked build thread (replaces .detach() for graceful shutdown)
+    static std::thread             s_build_thread;
+    static std::atomic<bool>       s_shutdown_requested{ false };
+
     // Resolve the solution directory (two levels up from the exe)
     static std::filesystem::path get_solution_dir()
     {
@@ -178,6 +190,14 @@ namespace Engine
         s_rebuild_requested = false;
         s_build_start_time = Clock::now();
 
+        // Clear build output for this run
+        {
+          std::lock_guard<std::mutex> lock(s_build_output_mutex);
+          s_build_output.clear();
+          s_current_build_file.clear();
+          s_build_error_count = 0;
+        }
+
         auto solution_dir = get_solution_dir();
         auto config = get_active_configuration();
         auto vcxproj = solution_dir / "Engine" / "GameLogic.vcxproj";
@@ -204,17 +224,110 @@ namespace Engine
 
         Log::info("[HotReload] Rebuilding GameLogic.dll ({})...", config);
 
+        // ── Create pipe for capturing msbuild stdout/stderr ──────
+        SECURITY_ATTRIBUTES sa{};
+        sa.nLength = sizeof(sa);
+        sa.bInheritHandle = TRUE;
+        sa.lpSecurityDescriptor = nullptr;
+
+        HANDLE hReadPipe = nullptr, hWritePipe = nullptr;
+        BOOL pipe_ok = CreatePipe(&hReadPipe, &hWritePipe, &sa, 0);
+
+        // Ensure the read end is NOT inherited by the child
+        if (pipe_ok)
+          SetHandleInformation(hReadPipe, HANDLE_FLAG_INHERIT, 0);
+
         STARTUPINFOA si{};
         PROCESS_INFORMATION pi{};
         si.cb = sizeof(si);
         si.dwFlags = STARTF_USESHOWWINDOW;
         si.wShowWindow = SW_HIDE; // Hidden window
 
+        // If pipe was created, redirect stdout+stderr
+        if (pipe_ok)
+        {
+          si.dwFlags |= STARTF_USESTDHANDLES;
+          si.hStdOutput = hWritePipe;
+          si.hStdError = hWritePipe;
+          si.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+        }
+
         std::string mutable_cmd(cmd); // CreateProcess needs non-const
         if (CreateProcessA(nullptr, mutable_cmd.data(), nullptr, nullptr,
-          FALSE, CREATE_NO_WINDOW, nullptr, nullptr, &si, &pi))
+          pipe_ok ? TRUE : FALSE, CREATE_NO_WINDOW, nullptr, nullptr, &si, &pi))
         {
           s_build_process = pi.hProcess;  // expose handle for cancellation
+
+          // Close the write end of the pipe in the parent so ReadFile
+          // will return when the child exits (pipe broken).
+          if (pipe_ok)
+          {
+            CloseHandle(hWritePipe);
+            hWritePipe = nullptr;
+          }
+
+          // ── Read pipe output line by line ────────────────────────
+          if (pipe_ok)
+          {
+            std::string line_buffer;
+            char read_buf[512];
+            DWORD bytes_read;
+
+            while (ReadFile(hReadPipe, read_buf, sizeof(read_buf) - 1, &bytes_read, nullptr)
+              && bytes_read > 0)
+            {
+              read_buf[bytes_read] = '\0';
+              line_buffer += read_buf;
+
+              // Process complete lines
+              size_t pos;
+              while ((pos = line_buffer.find('\n')) != std::string::npos)
+              {
+                std::string line = line_buffer.substr(0, pos);
+                if (!line.empty() && line.back() == '\r') line.pop_back();
+
+                {
+                  std::lock_guard<std::mutex> lock(s_build_output_mutex);
+                  s_build_output.push_back(line);
+
+                  // Track current file being compiled (MSBuild minimal output: "  filename.cpp")
+                  if (line.size() > 2 && line.ends_with(".cpp"))
+                  {
+                    // Extract just the filename
+                    auto last_slash = line.find_last_of("\\/");
+                    s_current_build_file = (last_slash != std::string::npos)
+                      ? line.substr(last_slash + 1) : line;
+                    // Trim leading whitespace
+                    auto first = s_current_build_file.find_first_not_of(" \t");
+                    if (first != std::string::npos)
+                      s_current_build_file = s_current_build_file.substr(first);
+                  }
+
+                  // Count errors (MSVC pattern: ": error C")
+                  if (line.find(": error ") != std::string::npos)
+                    ++s_build_error_count;
+                }
+
+                line_buffer.erase(0, pos + 1);
+              }
+            }
+
+            // Process any remaining partial line
+            if (!line_buffer.empty())
+            {
+              if (!line_buffer.empty() && line_buffer.back() == '\r')
+                line_buffer.pop_back();
+              if (!line_buffer.empty())
+              {
+                std::lock_guard<std::mutex> lock(s_build_output_mutex);
+                s_build_output.push_back(line_buffer);
+                if (line_buffer.find(": error ") != std::string::npos)
+                  ++s_build_error_count;
+              }
+            }
+          }
+
+          // Wait for the process to fully exit (should be instant since pipe is broken)
           WaitForSingleObject(pi.hProcess, INFINITE);
           s_build_process = nullptr;
 
@@ -233,12 +346,22 @@ namespace Engine
 
           s_last_build_success = (exit_code == 0);
           if (exit_code == 0)
+          {
             Log::info("[HotReload] Build succeeded");
+            std::lock_guard<std::mutex> lock(s_build_output_mutex);
+            s_current_build_file.clear();
+          }
           else
             Log::error("[HotReload] Build FAILED (exit code {}) — see {}", exit_code, log_file.string());
         }
         else
         {
+          if (pipe_ok)
+          {
+            CloseHandle(hWritePipe);
+            hWritePipe = nullptr;
+          }
+
           if (s_rebuild_requested)
           {
             Log::info("[HotReload] Build cancelled — source changed, restarting...");
@@ -248,7 +371,12 @@ namespace Engine
           s_last_build_success = false;
           Log::error("[HotReload] Failed to launch msbuild (error {})", GetLastError());
         }
-      } while (s_rebuild_requested);
+
+        // Clean up read pipe
+        if (pipe_ok && hReadPipe)
+          CloseHandle(hReadPipe);
+
+      } while (s_rebuild_requested && !s_shutdown_requested);
 
       auto elapsed = std::chrono::duration<float>(Clock::now() - s_build_start_time);
       s_last_build_duration = elapsed.count();
@@ -601,6 +729,24 @@ namespace Engine
       return s_build_cancelled.exchange(false);
     }
 
+    std::string get_current_build_status()
+    {
+      std::lock_guard<std::mutex> lock(s_build_output_mutex);
+      return s_current_build_file;
+    }
+
+    int get_build_error_count()
+    {
+      std::lock_guard<std::mutex> lock(s_build_output_mutex);
+      return s_build_error_count;
+    }
+
+    std::deque<std::string> get_build_output()
+    {
+      std::lock_guard<std::mutex> lock(s_build_output_mutex);
+      return s_build_output;
+    }
+
     bool dll_exists()
     {
       return std::filesystem::exists(get_dll_source_path());
@@ -614,7 +760,26 @@ namespace Engine
     void build_game_logic_async()
     {
       if (s_build_in_progress) return;
-      std::thread(rebuild_game_logic_dll).detach();
+      // Join any previous build thread before starting a new one
+      if (s_build_thread.joinable())
+        s_build_thread.join();
+      s_build_thread = std::thread(rebuild_game_logic_dll);
+    }
+
+    void stop_build()
+    {
+      // Signal shutdown so the build loop exits after current iteration
+      s_shutdown_requested = true;
+
+      // Kill any running msbuild process
+      HANDLE proc = static_cast<HANDLE>(s_build_process.load());
+      if (proc) TerminateProcess(proc, 1);
+
+      // Join the build thread so it doesn't outlive the process
+      if (s_build_thread.joinable())
+        s_build_thread.join();
+
+      Log::info("[HotReload] Build thread stopped");
     }
   }
 }

@@ -12,6 +12,7 @@
 
 #include "EngineExport.h"
 #include <string>
+#include <deque>
 
 namespace Engine
 {
@@ -76,6 +77,24 @@ namespace Engine
     ENGINE_API bool consume_build_cancelled();
 
     /**
+     * @brief Returns the name of the .cpp file currently being compiled
+     *        (parsed from msbuild output). Empty if idle or linking.
+     */
+    ENGINE_API std::string get_current_build_status();
+
+    /**
+     * @brief Returns the number of errors detected in the current/last
+     *        build's output stream.
+     */
+    ENGINE_API int get_build_error_count();
+
+    /**
+     * @brief Returns a copy of all captured build output lines from the
+     *        current or most recent build.
+     */
+    ENGINE_API std::deque<std::string> get_build_output();
+
+    /**
      * @brief Returns true if GameLogic.dll exists on disk in the output directory.
      */
     ENGINE_API bool dll_exists();
@@ -86,6 +105,13 @@ namespace Engine
      */
     ENGINE_API void build_game_logic();
 
+
+    /**
+     * @brief Gracefully stops the build thread: kills any running msbuild
+     *        process and joins the build thread. Call during shutdown
+     *        before stop_source_watcher().
+     */
+    ENGINE_API void stop_build();
     /**
      * @brief Asynchronously builds GameLogic.dll in a background thread.
      *        Use is_building() to check progress and check_and_reload()

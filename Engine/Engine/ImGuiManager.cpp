@@ -407,11 +407,13 @@ namespace ImGuiManager {
       {
         float duration = Engine::HotReload::get_last_build_duration();
         bool success = Engine::HotReload::last_build_succeeded();
+        int errors = Engine::HotReload::get_build_error_count();
         char buf[128];
         if (success)
           std::snprintf(buf, sizeof(buf), "Build succeeded in %.1fs", duration);
         else
-          std::snprintf(buf, sizeof(buf), "Build FAILED after %.1fs", duration);
+          std::snprintf(buf, sizeof(buf), "Build FAILED after %.1fs (%d error%s)",
+            duration, errors, errors == 1 ? "" : "s");
 
         show_toast(buf,
           success ? ImGuiManager::ToastType::Info : ImGuiManager::ToastType::Error,
@@ -462,6 +464,13 @@ namespace ImGuiManager {
           ImGui::SameLine();
           ImGui::Text("Building GameLogic%s", dots[dot_idx]);
           ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "Elapsed: %.1fs", elapsed);
+
+          // Show current file being compiled
+          std::string current_file = Engine::HotReload::get_current_build_status();
+          if (!current_file.empty())
+          {
+            ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "%s", current_file.c_str());
+          }
         }
         ImGui::End();
 

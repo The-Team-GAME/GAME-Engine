@@ -108,6 +108,7 @@ void RunGame()
   // (game states) are classes defined in GameLogic.dll — their vtables
   // become invalid once the DLL is freed.
 #ifndef GAME_BUILD
+  Engine::HotReload::stop_build();
   Engine::HotReload::stop_source_watcher();
 #endif
   Engine::Core::exit();
