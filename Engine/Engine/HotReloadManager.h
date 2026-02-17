@@ -130,5 +130,13 @@ namespace Engine
      * @brief Stops the source file watcher thread.
      */
     ENGINE_API void stop_source_watcher();
+
+    /**
+     * @brief Requests a manual rebuild + reload cycle.
+     *        Triggers an async build if not already building, and
+     *        enables a one-shot reload so check_and_reload() will
+     *        swap the DLL even when auto-reload is disabled.
+     */
+    ENGINE_API void request_manual_reload();
   }
 }

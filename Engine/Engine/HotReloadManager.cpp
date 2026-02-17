@@ -14,6 +14,7 @@
 #include "SceneManager.h"
 #include "ECS/World.h"
 #include "Resources.h"
+#include "FileIO/Settings.h"
 
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
@@ -121,6 +122,10 @@ namespace Engine
     // Tracked build thread (replaces .detach() for graceful shutdown)
     static std::thread             s_build_thread;
     static std::atomic<bool>       s_shutdown_requested{ false };
+
+    // Manual reload: when true, check_and_reload() runs once even if
+    // auto-reload is disabled in LocalSettings.
+    static std::atomic<bool>       s_manual_reload_requested{ false };
 
     // Resolve the solution directory (two levels up from the exe)
     static std::filesystem::path get_solution_dir()
@@ -451,6 +456,10 @@ namespace Engine
 
           if (source_changed)
           {
+            // Only auto-build when the setting is enabled
+            const auto& local = Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::get();
+            if (!local.auto_reload) continue;
+
             if (s_build_in_progress)
             {
               // Cancel current build and request restart
@@ -641,6 +650,24 @@ namespace Engine
 
     // --------------------------------------------------------------------------
 
+    void request_manual_reload()
+    {
+      s_manual_reload_requested = true;
+      if (s_build_in_progress)
+      {
+        // Cancel the running build and restart, same as mid-build source change
+        Log::info("[HotReload] Manual reload requested (F5) — restarting build...");
+        s_rebuild_requested = true;
+        HANDLE proc = static_cast<HANDLE>(s_build_process.load());
+        if (proc) TerminateProcess(proc, 1);
+      }
+      else
+      {
+        Log::info("[HotReload] Manual reload requested (F5) — building...");
+        build_game_logic_async();
+      }
+    }
+
     void check_and_reload()
     {
       // Don't attempt reload while msbuild is still writing the DLL
@@ -652,6 +679,11 @@ namespace Engine
 
       auto current_write_time = std::filesystem::last_write_time(source);
       if (current_write_time <= s_last_write_time) return;
+
+      // Skip auto-reload when disabled, unless a manual reload was requested
+      const auto& local = Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::get();
+      if (!local.auto_reload && !s_manual_reload_requested.exchange(false))
+        return;
 
       Log::info("[HotReload] Change detected in GameLogic.dll — reloading...");
 

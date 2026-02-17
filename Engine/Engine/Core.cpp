@@ -279,6 +279,14 @@ namespace Engine
           Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::save();
         }
 
+#ifndef GAME_BUILD
+        // Manual hot-reload: F5 triggers build + reload even when auto-reload is off
+        if (Engine::Input::is_pressed(KeyCode::F5))
+        {
+          Engine::HotReload::request_manual_reload();
+        }
+#endif
+
         if (Engine::Input::is_pressed(KeyCode::P))
         {
           Engine::Time::toggle_paused();
