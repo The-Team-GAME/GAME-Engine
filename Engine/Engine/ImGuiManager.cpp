@@ -391,57 +391,76 @@ namespace ImGuiManager {
     // ==================================================================================
     // "Building..." overlay (top-right, persistent while build is running)
     // ==================================================================================
-    if (Engine::HotReload::is_building())
     {
-      ImGuiViewport* viewport = ImGui::GetMainViewport();
-      ImVec2 work_pos = viewport->WorkPos;
-      ImVec2 work_size = viewport->WorkSize;
+      static bool was_building = false;
+      bool currently_building = Engine::HotReload::is_building();
 
-      float padding = 16.0f;
-      float toast_width = 260.0f;
-
-      ImVec2 build_pos = ImVec2(
-        work_pos.x + work_size.x - toast_width - padding,
-        work_pos.y + padding
-      );
-
-      ImGui::SetNextWindowPos(build_pos, ImGuiCond_Always);
-      ImGui::SetNextWindowSize(ImVec2(toast_width, 0), ImGuiCond_Always);
-
-      ImVec4 accent(0.1f, 0.7f, 0.9f, 1.0f); // teal / cyan accent
-
-      ImGui::PushStyleColor(ImGuiCol_Border, accent);
-      ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.12f, 0.12f, 0.15f, 0.95f));
-      ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
-      ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 2.0f);
-      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 10.0f));
-
-      ImGuiWindowFlags build_flags =
-        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
-        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
-        ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs |
-        ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
-
-      if (ImGui::Begin("##BuildingOverlay", nullptr, build_flags))
+      // Detect build completion → show toast with total time
+      if (was_building && !currently_building)
       {
-        // Animated spinner dots
-        const char* dots[] = { "   ", ".  ", ".. ", "..." };
-        int dot_idx = static_cast<int>(ImGui::GetTime() * 3.0f) % 4;
+        float duration = Engine::HotReload::get_last_build_duration();
+        bool success = Engine::HotReload::last_build_succeeded();
+        char buf[128];
+        if (success)
+          std::snprintf(buf, sizeof(buf), "Build succeeded in %.1fs", duration);
+        else
+          std::snprintf(buf, sizeof(buf), "Build FAILED after %.1fs", duration);
 
-        ImGui::TextColored(accent, "[BUILD]");
-        ImGui::SameLine();
-        ImGui::Text("Building GameLogic%s", dots[dot_idx]);
-
-        // // Animated progress bar (indeterminate)
-        // float t = static_cast<float>(fmod(ImGui::GetTime() * 0.6, 1.0));
-        // ImGui::PushStyleColor(ImGuiCol_PlotHistogram, accent);
-        // ImGui::ProgressBar(t, ImVec2(-1.0f, 3.0f), "");
-        // ImGui::PopStyleColor();
+        show_toast(buf,
+          success ? ImGuiManager::ToastType::Info : ImGuiManager::ToastType::Error,
+          5.0f);
       }
-      ImGui::End();
+      was_building = currently_building;
 
-      ImGui::PopStyleVar(3);
-      ImGui::PopStyleColor(2);
+      if (currently_building)
+      {
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImVec2 work_pos = viewport->WorkPos;
+        ImVec2 work_size = viewport->WorkSize;
+
+        float padding = 16.0f;
+        float toast_width = 260.0f;
+
+        ImVec2 build_pos = ImVec2(
+          work_pos.x + work_size.x - toast_width - padding,
+          work_pos.y + padding
+        );
+
+        ImGui::SetNextWindowPos(build_pos, ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(toast_width, 0), ImGuiCond_Always);
+
+        ImVec4 accent(0.1f, 0.7f, 0.9f, 1.0f); // teal / cyan accent
+
+        ImGui::PushStyleColor(ImGuiCol_Border, accent);
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.12f, 0.12f, 0.15f, 0.95f));
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 2.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 10.0f));
+
+        ImGuiWindowFlags build_flags =
+          ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+          ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
+          ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs |
+          ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+
+        if (ImGui::Begin("##BuildingOverlay", nullptr, build_flags))
+        {
+          // Animated spinner dots
+          const char* dots[] = { "   ", ".  ", ".. ", "..." };
+          int dot_idx = static_cast<int>(ImGui::GetTime() * 3.0f) % 4;
+
+          float elapsed = Engine::HotReload::get_build_elapsed_seconds();
+
+          ImGui::TextColored(accent, "[BUILD]");
+          ImGui::SameLine();
+          ImGui::Text("Building GameLogic%s", dots[dot_idx]);
+          ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "Elapsed: %.1fs", elapsed);
+        }
+        ImGui::End();
+
+        ImGui::PopStyleVar(3);
+        ImGui::PopStyleColor(2);
+      }
     }
 
     // ==================================================================================

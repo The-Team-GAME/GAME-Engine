@@ -22,6 +22,7 @@
 #include <atomic>
 #include <thread>
 #include <string>
+#include <chrono>
 
 namespace Engine
 {
@@ -97,6 +98,12 @@ namespace Engine
     static std::atomic<bool>    s_watcher_running{ false };
     static std::atomic<bool>    s_build_in_progress{ false };
 
+    // Build timing
+    using Clock = std::chrono::steady_clock;
+    static Clock::time_point   s_build_start_time{};
+    static std::atomic<float>  s_last_build_duration{ 0.0f };
+    static std::atomic<bool>   s_last_build_success{ false };
+
     // Resolve the solution directory (two levels up from the exe)
     static std::filesystem::path get_solution_dir()
     {
@@ -160,6 +167,7 @@ namespace Engine
     static void rebuild_game_logic_dll()
     {
       if (s_build_in_progress.exchange(true)) return; // already building
+      s_build_start_time = Clock::now();
 
       auto solution_dir = get_solution_dir();
       auto config = get_active_configuration();
@@ -204,6 +212,7 @@ namespace Engine
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
 
+        s_last_build_success = (exit_code == 0);
         if (exit_code == 0)
           Log::info("[HotReload] Build succeeded");
         else
@@ -211,9 +220,12 @@ namespace Engine
       }
       else
       {
+        s_last_build_success = false;
         Log::error("[HotReload] Failed to launch msbuild (error {})", GetLastError());
       }
 
+      auto elapsed = std::chrono::duration<float>(Clock::now() - s_build_start_time);
+      s_last_build_duration = elapsed.count();
       s_build_in_progress = false;
     }
 
@@ -528,6 +540,23 @@ namespace Engine
     bool is_building()
     {
       return s_build_in_progress.load();
+    }
+
+    float get_build_elapsed_seconds()
+    {
+      if (!s_build_in_progress) return 0.0f;
+      auto elapsed = std::chrono::duration<float>(Clock::now() - s_build_start_time);
+      return elapsed.count();
+    }
+
+    float get_last_build_duration()
+    {
+      return s_last_build_duration.load();
+    }
+
+    bool last_build_succeeded()
+    {
+      return s_last_build_success.load();
     }
 
     bool dll_exists()

@@ -53,6 +53,23 @@ namespace Engine
     ENGINE_API bool is_building();
 
     /**
+     * @brief Returns the elapsed seconds since the current build started.
+     *        Returns 0 if no build is in progress.
+     */
+    ENGINE_API float get_build_elapsed_seconds();
+
+    /**
+     * @brief Returns the duration (in seconds) of the last completed build.
+     *        Returns 0 if no build has completed yet.
+     */
+    ENGINE_API float get_last_build_duration();
+
+    /**
+     * @brief Returns true if the last build succeeded, false if it failed.
+     */
+    ENGINE_API bool last_build_succeeded();
+
+    /**
      * @brief Returns true if GameLogic.dll exists on disk in the output directory.
      */
     ENGINE_API bool dll_exists();
