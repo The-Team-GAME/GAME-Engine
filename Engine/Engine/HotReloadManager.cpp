@@ -98,6 +98,12 @@ namespace Engine
     static std::atomic<bool>    s_watcher_running{ false };
     static std::atomic<bool>    s_build_in_progress{ false };
 
+    // Build cancellation: allows the watcher to kill a running msbuild
+    // and have the build thread automatically restart.
+    static std::atomic<void*>  s_build_process{ nullptr };   // HANDLE to msbuild
+    static std::atomic<bool>   s_rebuild_requested{ false };
+    static std::atomic<bool>   s_build_cancelled{ false };    // set when a build is killed
+
     // Build timing
     using Clock = std::chrono::steady_clock;
     static Clock::time_point   s_build_start_time{};
@@ -167,62 +173,82 @@ namespace Engine
     static void rebuild_game_logic_dll()
     {
       if (s_build_in_progress.exchange(true)) return; // already building
-      s_build_start_time = Clock::now();
 
-      auto solution_dir = get_solution_dir();
-      auto config = get_active_configuration();
-      auto vcxproj = solution_dir / "Engine" / "GameLogic.vcxproj";
-      auto msbuild = find_msbuild_path();
+      do {
+        s_rebuild_requested = false;
+        s_build_start_time = Clock::now();
 
-      // Build log goes next to the exe for easy inspection on failure
-      auto log_file = solution_dir / "x64" / config / "hotreload_build.log";
+        auto solution_dir = get_solution_dir();
+        auto config = get_active_configuration();
+        auto vcxproj = solution_dir / "Engine" / "GameLogic.vcxproj";
+        auto msbuild = find_msbuild_path();
 
-      // Use a unique PDB path each build so the linker doesn't conflict with the
-      // debugger holding a lock on previous PDBs.
-      // The vcxproj uses $(HotReloadPDB) for ProgramDatabaseFile.
-      // Use tick count for uniqueness across both builds and engine restarts.
-      auto temp_pdb = solution_dir / "x64" / config
-        / ("GameLogic_build_" + std::to_string(GetTickCount64()) + ".pdb");
+        // Build log goes next to the exe for easy inspection on failure
+        auto log_file = solution_dir / "x64" / config / "hotreload_build.log";
 
-      std::string cmd = "\"" + msbuild + "\""
-        + " \"" + vcxproj.string() + "\""
-        + " /p:Configuration=" + config
-        + " /p:Platform=x64"
-        + " /p:SolutionDir=\"" + solution_dir.string() + "\\\\\""
-        + " /p:HotReloadPDB=\"" + temp_pdb.string() + "\""
-        + " /v:minimal /nologo"
-        + " /fl /flp:logfile=\"" + log_file.string() + "\";verbosity=normal";
+        // Use a unique PDB path each build so the linker doesn't conflict with the
+        // debugger holding a lock on previous PDBs.
+        // The vcxproj uses $(HotReloadPDB) for ProgramDatabaseFile.
+        // Use tick count for uniqueness across both builds and engine restarts.
+        auto temp_pdb = solution_dir / "x64" / config
+          / ("GameLogic_build_" + std::to_string(GetTickCount64()) + ".pdb");
 
-      Log::info("[HotReload] Rebuilding GameLogic.dll ({})...", config);
+        std::string cmd = "\"" + msbuild + "\""
+          + " \"" + vcxproj.string() + "\""
+          + " /p:Configuration=" + config
+          + " /p:Platform=x64"
+          + " /p:SolutionDir=\"" + solution_dir.string() + "\\\\\""
+          + " /p:HotReloadPDB=\"" + temp_pdb.string() + "\""
+          + " /v:minimal /nologo"
+          + " /fl /flp:logfile=\"" + log_file.string() + "\";verbosity=normal";
 
-      STARTUPINFOA si{};
-      PROCESS_INFORMATION pi{};
-      si.cb = sizeof(si);
-      si.dwFlags = STARTF_USESHOWWINDOW;
-      si.wShowWindow = SW_HIDE; // Hidden window
+        Log::info("[HotReload] Rebuilding GameLogic.dll ({})...", config);
 
-      std::string mutable_cmd(cmd); // CreateProcess needs non-const
-      if (CreateProcessA(nullptr, mutable_cmd.data(), nullptr, nullptr,
-        FALSE, CREATE_NO_WINDOW, nullptr, nullptr, &si, &pi))
-      {
-        WaitForSingleObject(pi.hProcess, INFINITE);
+        STARTUPINFOA si{};
+        PROCESS_INFORMATION pi{};
+        si.cb = sizeof(si);
+        si.dwFlags = STARTF_USESHOWWINDOW;
+        si.wShowWindow = SW_HIDE; // Hidden window
 
-        DWORD exit_code = 1;
-        GetExitCodeProcess(pi.hProcess, &exit_code);
-        CloseHandle(pi.hProcess);
-        CloseHandle(pi.hThread);
+        std::string mutable_cmd(cmd); // CreateProcess needs non-const
+        if (CreateProcessA(nullptr, mutable_cmd.data(), nullptr, nullptr,
+          FALSE, CREATE_NO_WINDOW, nullptr, nullptr, &si, &pi))
+        {
+          s_build_process = pi.hProcess;  // expose handle for cancellation
+          WaitForSingleObject(pi.hProcess, INFINITE);
+          s_build_process = nullptr;
 
-        s_last_build_success = (exit_code == 0);
-        if (exit_code == 0)
-          Log::info("[HotReload] Build succeeded");
+          DWORD exit_code = 1;
+          GetExitCodeProcess(pi.hProcess, &exit_code);
+          CloseHandle(pi.hProcess);
+          CloseHandle(pi.hThread);
+
+          // If a rebuild was requested (source changed mid-build), skip
+          // result reporting and restart immediately.
+          if (s_rebuild_requested)
+          {
+            Log::info("[HotReload] Build cancelled — source changed, restarting...");            s_build_cancelled = true;            Sleep(300); // debounce: let file writes finish
+            continue;
+          }
+
+          s_last_build_success = (exit_code == 0);
+          if (exit_code == 0)
+            Log::info("[HotReload] Build succeeded");
+          else
+            Log::error("[HotReload] Build FAILED (exit code {}) — see {}", exit_code, log_file.string());
+        }
         else
-          Log::error("[HotReload] Build FAILED (exit code {}) — see {}", exit_code, log_file.string());
-      }
-      else
-      {
-        s_last_build_success = false;
-        Log::error("[HotReload] Failed to launch msbuild (error {})", GetLastError());
-      }
+        {
+          if (s_rebuild_requested)
+          {
+            Log::info("[HotReload] Build cancelled — source changed, restarting...");
+            Sleep(300);
+            continue;
+          }
+          s_last_build_success = false;
+          Log::error("[HotReload] Failed to launch msbuild (error {})", GetLastError());
+        }
+      } while (s_rebuild_requested);
 
       auto elapsed = std::chrono::duration<float>(Clock::now() - s_build_start_time);
       s_last_build_duration = elapsed.count();
@@ -295,11 +321,22 @@ namespace Engine
               reinterpret_cast<char*>(info) + info->NextEntryOffset);
           }
 
-          if (source_changed && !s_build_in_progress)
+          if (source_changed)
           {
-            // Small debounce — wait for file writes to finish
-            Sleep(300);
-            build_game_logic_async();
+            if (s_build_in_progress)
+            {
+              // Cancel current build and request restart
+              Log::info("[HotReload] Source changed during build — restarting build...");
+              s_rebuild_requested = true;
+              HANDLE proc = static_cast<HANDLE>(s_build_process.load());
+              if (proc) TerminateProcess(proc, 1);
+            }
+            else
+            {
+              // Small debounce — wait for file writes to finish
+              Sleep(300);
+              build_game_logic_async();
+            }
           }
         }
       }
@@ -557,6 +594,11 @@ namespace Engine
     bool last_build_succeeded()
     {
       return s_last_build_success.load();
+    }
+
+    bool consume_build_cancelled()
+    {
+      return s_build_cancelled.exchange(false);
     }
 
     bool dll_exists()

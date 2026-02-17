@@ -70,6 +70,12 @@ namespace Engine
     ENGINE_API bool last_build_succeeded();
 
     /**
+     * @brief Returns (and clears) whether a build was cancelled due to
+     *        source changes. Check once per frame from the render thread.
+     */
+    ENGINE_API bool consume_build_cancelled();
+
+    /**
      * @brief Returns true if GameLogic.dll exists on disk in the output directory.
      */
     ENGINE_API bool dll_exists();

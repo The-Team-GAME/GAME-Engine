@@ -395,6 +395,13 @@ namespace ImGuiManager {
       static bool was_building = false;
       bool currently_building = Engine::HotReload::is_building();
 
+      // Detect build cancellation → show warning toast
+      if (Engine::HotReload::consume_build_cancelled())
+      {
+        show_toast("Build cancelled \u2014 restarting...",
+          ImGuiManager::ToastType::Warning, 3.0f);
+      }
+
       // Detect build completion → show toast with total time
       if (was_building && !currently_building)
       {
