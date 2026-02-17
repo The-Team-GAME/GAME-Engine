@@ -74,6 +74,13 @@ void RunGame()
   // prefab deserialization tries to look them up.
   Engine::Resources::load_all_prefabs();
 
+#ifndef GAME_BUILD
+  // ── Start source file watcher ───────────────────────────────────────
+  // Watches Engine/GameLogic/ for .cpp/.h changes and auto-rebuilds
+  // GameLogic.dll. The main-loop's check_and_reload() handles the reload.
+  Engine::HotReload::start_source_watcher();
+#endif
+
   // ── Run main game loop ──────────────────────────────────────────────
   Engine::Core::run("MainMenuState");
 
@@ -81,6 +88,9 @@ void RunGame()
   // Core::exit() must run BEFORE unloading the DLL because scenes
   // (game states) are classes defined in GameLogic.dll — their vtables
   // become invalid once the DLL is freed.
+#ifndef GAME_BUILD
+  Engine::HotReload::stop_source_watcher();
+#endif
   Engine::Core::exit();
   Engine::HotReload::unload_game_logic();
 }
