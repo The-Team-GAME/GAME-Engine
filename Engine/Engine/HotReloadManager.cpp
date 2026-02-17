@@ -47,43 +47,43 @@ namespace Engine
 
     // --------------------------------------------------------------------------
 
+    // Cached exe directory — the exe path never changes at runtime
+    static const std::filesystem::path& get_exe_dir()
+    {
+      static std::filesystem::path dir = []() {
+        char exe_path[MAX_PATH];
+        GetModuleFileNameA(nullptr, exe_path, MAX_PATH);
+        return std::filesystem::path(exe_path).parent_path();
+      }();
+      return dir;
+    }
+
     static std::filesystem::path get_dll_source_path()
     {
-      // GameLogic.dll is built to the same output directory as Engine.exe
-      char exe_path[MAX_PATH];
-      GetModuleFileNameA(nullptr, exe_path, MAX_PATH);
-      return std::filesystem::path(exe_path).parent_path() / DLL_NAME;
+      return get_exe_dir() / DLL_NAME;
     }
 
     static std::filesystem::path get_dll_copy_path(int counter)
     {
-      char exe_path[MAX_PATH];
-      GetModuleFileNameA(nullptr, exe_path, MAX_PATH);
       std::string name = "GameLogic_live_" + std::to_string(counter) + ".dll";
-      return std::filesystem::path(exe_path).parent_path() / name;
+      return get_exe_dir() / name;
     }
 
     static std::filesystem::path get_pdb_source_path()
     {
-      char exe_path[MAX_PATH];
-      GetModuleFileNameA(nullptr, exe_path, MAX_PATH);
-      return std::filesystem::path(exe_path).parent_path() / PDB_NAME;
+      return get_exe_dir() / PDB_NAME;
     }
 
     static std::filesystem::path get_pdb_copy_path(int counter)
     {
-      char exe_path[MAX_PATH];
-      GetModuleFileNameA(nullptr, exe_path, MAX_PATH);
       std::string name = "GameLogic_live_" + std::to_string(counter) + ".pdb";
-      return std::filesystem::path(exe_path).parent_path() / name;
+      return get_exe_dir() / name;
     }
 
     // Best-effort cleanup of old live copies (skip files that are still locked)
     static void cleanup_old_copies(int current_counter)
     {
-      char exe_path[MAX_PATH];
-      GetModuleFileNameA(nullptr, exe_path, MAX_PATH);
-      auto dir = std::filesystem::path(exe_path).parent_path();
+      const auto& dir = get_exe_dir();
       for (int i = 0; i < current_counter; ++i)
       {
         std::error_code ec;
@@ -670,6 +670,11 @@ namespace Engine
 
     void check_and_reload()
     {
+      // Throttle filesystem checks — no need to poll every frame
+      static int frame_counter = 0;
+      if (++frame_counter < 30) return;
+      frame_counter = 0;
+
       // Don't attempt reload while msbuild is still writing the DLL
       if (s_build_in_progress) return;
 
