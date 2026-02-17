@@ -29,6 +29,7 @@
 #include "Events/WindowEvents.h"
 #include "EventManager/EventManager.h"
 #include "GUI/ViewportPanel.h"
+#include "HotReloadManager.h"
 
 namespace {
   bool gui_enabled = true; // Completely disable ImGui when false (TODO: Hook this up to a setting)
@@ -388,6 +389,62 @@ namespace ImGuiManager {
     // ==================================================================================
 
     // ==================================================================================
+    // "Building..." overlay (top-right, persistent while build is running)
+    // ==================================================================================
+    if (Engine::HotReload::is_building())
+    {
+      ImGuiViewport* viewport = ImGui::GetMainViewport();
+      ImVec2 work_pos = viewport->WorkPos;
+      ImVec2 work_size = viewport->WorkSize;
+
+      float padding = 16.0f;
+      float toast_width = 260.0f;
+
+      ImVec2 build_pos = ImVec2(
+        work_pos.x + work_size.x - toast_width - padding,
+        work_pos.y + padding
+      );
+
+      ImGui::SetNextWindowPos(build_pos, ImGuiCond_Always);
+      ImGui::SetNextWindowSize(ImVec2(toast_width, 0), ImGuiCond_Always);
+
+      ImVec4 accent(0.1f, 0.7f, 0.9f, 1.0f); // teal / cyan accent
+
+      ImGui::PushStyleColor(ImGuiCol_Border, accent);
+      ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.12f, 0.12f, 0.15f, 0.95f));
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 2.0f);
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 10.0f));
+
+      ImGuiWindowFlags build_flags =
+        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
+        ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs |
+        ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+
+      if (ImGui::Begin("##BuildingOverlay", nullptr, build_flags))
+      {
+        // Animated spinner dots
+        const char* dots[] = { "   ", ".  ", ".. ", "..." };
+        int dot_idx = static_cast<int>(ImGui::GetTime() * 3.0f) % 4;
+
+        ImGui::TextColored(accent, "[BUILD]");
+        ImGui::SameLine();
+        ImGui::Text("Building GameLogic%s", dots[dot_idx]);
+
+        // // Animated progress bar (indeterminate)
+        // float t = static_cast<float>(fmod(ImGui::GetTime() * 0.6, 1.0));
+        // ImGui::PushStyleColor(ImGuiCol_PlotHistogram, accent);
+        // ImGui::ProgressBar(t, ImVec2(-1.0f, 3.0f), "");
+        // ImGui::PopStyleColor();
+      }
+      ImGui::End();
+
+      ImGui::PopStyleVar(3);
+      ImGui::PopStyleColor(2);
+    }
+
+    // ==================================================================================
     // Render toast notifications
     // ==================================================================================
     if (!active_toasts.empty())
@@ -626,7 +683,7 @@ namespace ImGuiManager {
     if (is_viewport_mode_enabled()) {
       auto bounds = ViewportPanel::get_viewport_bounds();
       return { bounds.x, bounds.y };
-    }
+  }
     else {
       ImGuiViewport* viewport = ImGui::GetMainViewport();
       return { viewport->WorkPos.x, viewport->WorkPos.y };
@@ -684,4 +741,4 @@ namespace ImGuiManager {
 #endif
   }
 
-}
+  }

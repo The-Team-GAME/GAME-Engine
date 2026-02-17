@@ -48,6 +48,17 @@ namespace Engine
     ENGINE_API bool is_loaded();
 
     /**
+     * @brief Returns true if an msbuild rebuild is currently in progress.
+     */
+    ENGINE_API bool is_building();
+
+    /**
+     * @brief Synchronously builds GameLogic.dll using msbuild.
+     *        Blocks until the build completes.
+     */
+    ENGINE_API void build_game_logic();
+
+    /**
      * @brief Starts a background thread that watches GameLogic source files
      *        for changes and automatically triggers an msbuild rebuild.
      *        The existing check_and_reload() will then detect the new DLL.

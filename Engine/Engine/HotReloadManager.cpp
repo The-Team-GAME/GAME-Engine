@@ -524,5 +524,15 @@ namespace Engine
     {
       return s_dll_handle != nullptr;
     }
+
+    bool is_building()
+    {
+      return s_build_in_progress.load();
+    }
+
+    void build_game_logic()
+    {
+      rebuild_game_logic_dll();
+    }
   }
 }
