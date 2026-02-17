@@ -93,6 +93,8 @@ namespace Engine {
 
     Prefab::Prefab(std::shared_ptr<PrefabImpl> impl) : impl(std::move(impl)) {}
 
+    Prefab::~Prefab() = default;
+
     bool Prefab::is_valid() const {
       return impl != nullptr;
     }

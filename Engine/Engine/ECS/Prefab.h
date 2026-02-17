@@ -331,6 +331,8 @@ namespace Engine {
       ==================================================================================*/
       Prefab() = default;
 
+      ENGINE_API ~Prefab();
+
       /*=================================================================================
       Function Brief:
       Constructs a Prefab handle wrapping a PrefabImpl.
