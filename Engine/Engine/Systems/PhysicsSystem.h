@@ -25,7 +25,7 @@
 namespace Engine {
   namespace Systems
   {
-    class ENGINE_API Physics2DSystem : public Engine::ECS::System
+    class Physics2DSystem : public Engine::ECS::System
     {
     public:
       Physics2DSystem(); // Default Ctor that includes all the components needed for the entities called in the physics engine

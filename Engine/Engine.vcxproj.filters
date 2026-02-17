@@ -18,8 +18,6 @@
     <ClCompile Include="Engine\GUI\ResourcePicker.cpp" />
     <ClCompile Include="Engine\GUI\widgets\ReflectionFieldWidgets.cpp" />
     <ClCompile Include="Engine\GUI\widgets\TextureAtlasWidget.cpp" />
-    <ClCompile Include="GameLogic\GameStates\BasicState.cpp" />
-    <ClCompile Include="GameLogic\GameStates\BasicState.h" />
     <ClCompile Include="Engine\Core.cpp" />
     <ClCompile Include="Engine\ECS\ComponentManager.cpp" />
     <ClCompile Include="Engine\ECS\Entity.cpp" />
@@ -38,12 +36,10 @@
     <ClCompile Include="Engine\Perf.cpp" />
     <ClCompile Include="Engine\Precompiled.cpp" />
     <ClCompile Include="Engine\Time.cpp" />
-    <ClCompile Include="Engine\GUI\Timeline.cpp" />
     <ClCompile Include="Engine\Math\Vector2D.cpp" />
     <ClCompile Include="Engine\Math\Vector3D.cpp" />
     <ClCompile Include="Engine\Math\Vector4D.cpp" />
     <ClCompile Include="Engine\WindowManager.cpp" />
-    <ClCompile Include="GameLogic\WinMain.cpp" />
     <ClCompile Include="Engine\Systems\ParticleSystem.cpp" />
     <ClCompile Include="Engine\ECS\Types.cpp" />
     <ClCompile Include="Engine\FileIO\FileDialog.cpp" />
@@ -89,7 +85,6 @@
     <ClCompile Include="Engine\Lua\GameAPI.cpp" />
     <ClCompile Include="Engine\Systems\DebugDrawSystem.cpp" />
     <ClCompile Include="Engine\GUI\LayerManagerPanel.cpp" />
-    <ClCompile Include="GameLogic\GameStates\StressTestState.cpp" />
     <ClCompile Include="Engine\Systems\LogicSystem.cpp" />
     <ClCompile Include="Engine\GUI\ResourceExplorerPanel.cpp" />
     <ClCompile Include="Engine\ProjectSaveManager.cpp" />
@@ -99,9 +94,7 @@
     <ClCompile Include="Engine\GUI\ColliderEditorPanel.cpp" />
     <ClCompile Include="Engine\Random.cpp" />
     <ClCompile Include="Engine\GUI\widgets\ColliderEditorWidget.cpp" />
-    <ClCompile Include="GameLogic\GameStates\PauseState.cpp" />
     <ClCompile Include="Engine\GUI\SelectiveLevelSavePanel.cpp" />
-    <ClCompile Include="GameLogic\GameStates\OptionsState.cpp" />
     <ClCompile Include="Engine\FileIO\ColliderMeshFileIO.cpp" />
     <ClCompile Include="Engine\LevelTabManager.cpp" />
     <ClCompile Include="Engine\LevelManager.cpp" />
@@ -110,7 +103,10 @@
     <ClCompile Include="Engine\Audio\AudioSystemExample.cpp" />
     <ClCompile Include="Engine\GUI\FrameAnimationEditorPanel.cpp" />
     <ClCompile Include="Engine\GUI\TextureAtlasEditorPanel.cpp" />
-    <ClCompile Include="GameLogic\GameStates\VictoryState.cpp" />
+    <ClCompile Include="Engine\FunctionRegistry.cpp" />
+    <ClCompile Include="Engine\Components\StateMachineBlueprintRegistry.cpp" />
+    <ClCompile Include="Engine\EntryPoint.cpp" />
+    <ClCompile Include="Engine\HotReloadManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />
@@ -183,7 +179,6 @@
     <ClInclude Include="GameLogic\GameStates\Rubric2500ParticlesState.h" />
     <ClInclude Include="Engine\FileHandler.h" />
     <ClInclude Include="Engine\Time.h" />
-    <ClInclude Include="Engine\GUI\Timeline.h" />
     <ClInclude Include="Engine\Math\Vector2D.h" />
     <ClInclude Include="GameLogic\GUI\StateChooser.h" />
     <ClInclude Include="Engine\TypeDef.h" />
@@ -224,7 +219,6 @@
     <ClInclude Include="GameLogic\States\LazyMonkeyStateCallbacks.h" />
     <ClInclude Include="GameLogic\States\LazyMonkeyStateMachine.h" />
     <ClInclude Include="GameLogic\States\PlayerStateCallbacks.h" />
-    <ClInclude Include="GameLogic\GameStates\TimelineState.h" />
     <ClInclude Include="GameLogic\GameStates\PrefabsState.h" />
     <ClInclude Include="GameLogic\GameStates\PhysicsTestState.h" />
     <ClInclude Include="GameLogic\GameStates\LevelTestState.h" />
@@ -255,6 +249,7 @@
     <ClInclude Include="Engine\GUI\FrameAnimationEditorPanel.h" />
     <ClInclude Include="Engine\GUI\TextureAtlasEditorPanel.h" />
     <ClInclude Include="GameLogic\GameStates\VictoryState.h" />
+    <ClInclude Include="Engine\HotReloadManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Systems\CollisionSystem.h" />

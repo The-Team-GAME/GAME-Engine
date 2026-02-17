@@ -20,7 +20,6 @@
 #include "GameStates/StressTestState.h"
 #include "GameStates/BasicState.h"
 #include "GameStates/PhysicsTestState.h"
-#include "GameStates/TimelineState.h"
 #include "GameStates/DistortionEffectState.h"
 #include "GameStates/LuaState.h"
 #include "GameStates/BehaviourState.h"
@@ -297,7 +296,6 @@ static void register_scenes()
   Engine::SceneManager::register_scene<StressTestState>("StressTestState");
   Engine::SceneManager::register_scene<BasicState>("BasicState");
   Engine::SceneManager::register_scene<PhysicsTestState>("PhysicsTestState");
-  Engine::SceneManager::register_scene<TimelineState>("TimelineState");
   Engine::SceneManager::register_scene<DistortionEffectState>("DistortionEffectState");
   Engine::SceneManager::register_scene<LuaState>("LuaState");
   Engine::SceneManager::register_scene<LevelTestState>("LevelTestState");

@@ -296,7 +296,7 @@ namespace Engine
       CloseHandle(dir_handle);
     }
 
-    static void start_source_watcher()
+    void start_source_watcher()
     {
       if (s_watcher_running) return;
       s_watcher_running = true;
@@ -304,7 +304,7 @@ namespace Engine
       Log::info("[HotReload] Source file watcher started");
     }
 
-    static void stop_source_watcher()
+    void stop_source_watcher()
     {
       if (!s_watcher_running) return;
       s_watcher_running = false;

@@ -72,9 +72,9 @@ namespace Engine
   // Blueprint Registry — singleton mapping blueprint_id -> StateMachineBlueprint
   // ============================================================================
 
-  class ENGINE_API StateMachineBlueprintRegistry {
+  class StateMachineBlueprintRegistry {
   public:
-    static StateMachineBlueprintRegistry& instance();
+    ENGINE_API static StateMachineBlueprintRegistry& instance();
 
     /// Register a blueprint under a unique id
     void register_blueprint(const std::string& id, const StateMachineBlueprint& blueprint) {

@@ -241,12 +241,10 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q
     <ClCompile Include="Engine\Perf.cpp" />
     <ClCompile Include="Engine\Precompiled.cpp" />
     <ClCompile Include="Engine\Time.cpp" />
-    <ClCompile Include="Engine\GUI\Timeline.cpp" />
     <ClCompile Include="Engine\Math\Vector2D.cpp" />
     <ClCompile Include="Engine\Math\Vector3D.cpp" />
     <ClCompile Include="Engine\Math\Vector4D.cpp" />
     <ClCompile Include="Engine\WindowManager.cpp" />
-
     <ClCompile Include="Engine\Lua\LuaManager.cpp" />
     <ClCompile Include="Engine\Systems\LogicSystem.cpp" />
     <ClCompile Include="Engine\UndoManager\UndoManager.cpp" />
@@ -337,7 +335,6 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q
     <ClInclude Include="GameLogic\GameStates\PauseState.h" />
     <ClInclude Include="GameLogic\GameStates\PhysicsTestState.h" />
     <ClInclude Include="GameLogic\GameStates\PrefabsState.h" />
-    <ClInclude Include="GameLogic\GameStates\TimelineState.h" />
     <ClInclude Include="GameLogic\GameStates\VictoryState.h" />
     <ClInclude Include="GameLogic\Reflection\ImGuiHelpers.h" />
     <ClInclude Include="Engine\Reflection\JsonHelpers.h" />
@@ -377,7 +374,6 @@ xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q
     <ClInclude Include="Engine\FileHandler.h" />
     <ClInclude Include="GameLogic\GameStates\StressTestState.h" />
     <ClInclude Include="Engine\Time.h" />
-    <ClInclude Include="Engine\GUI\Timeline.h" />
     <ClInclude Include="Engine\Math\Vector2D.h" />
     <ClInclude Include="GameLogic\GUI\StateChooser.h" />
     <ClInclude Include="Engine\TypeDef.h" />

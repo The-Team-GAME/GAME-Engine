@@ -112,9 +112,9 @@ namespace Engine {
   /// Single registry for all function signatures. Uses typeid(Sig).name() to partition
   /// functions by signature, and std::any for type-erased storage. String keys are
   /// safe across DLL reload boundaries (no dangling type_info pointers).
-  class ENGINE_API FunctionRegistry {
+  class FunctionRegistry {
   public:
-    static FunctionRegistry& instance();
+    ENGINE_API static FunctionRegistry& instance();
 
     /// Register a function with a string name under a specific signature
     template<typename Sig>

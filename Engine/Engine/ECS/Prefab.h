@@ -34,7 +34,7 @@ namespace Engine {
     /* ====================================== //
     // PrefabImpl - Reusable entity template  //
     // ====================================== */
-    class ENGINE_API PrefabImpl {
+    class PrefabImpl {
     private:
       ComponentSignature signature;
       LayerSignature layers;
@@ -47,9 +47,9 @@ namespace Engine {
       PrefabImpl() = default;
       PrefabImpl(const PrefabImpl&) = delete;
       PrefabImpl& operator=(const PrefabImpl&) = delete;
-      PrefabImpl(PrefabImpl&&) noexcept;
-      PrefabImpl& operator=(PrefabImpl&&) noexcept;
-      ~PrefabImpl();
+      ENGINE_API PrefabImpl(PrefabImpl&&) noexcept;
+      ENGINE_API PrefabImpl& operator=(PrefabImpl&&) noexcept;
+      ENGINE_API ~PrefabImpl();
 
       /*=================================================================================
       Function Brief:
@@ -188,7 +188,7 @@ namespace Engine {
       Where to call it:
       Internally when comparing or copying prefab configurations.
       ==================================================================================*/
-      const ComponentSignature& get_signature() const;
+      ENGINE_API const ComponentSignature& get_signature() const;
 
       /*=================================================================================
       Function Brief:
@@ -200,7 +200,7 @@ namespace Engine {
       Where to call it:
       Internally when modifying prefab configurations.
       ==================================================================================*/
-      ComponentSignature& get_signature();
+      ENGINE_API ComponentSignature& get_signature();
 
       /*=================================================================================
       Function Brief:
@@ -212,7 +212,7 @@ namespace Engine {
       Where to call it:
       Internally when cloning components to/from entities.
       ==================================================================================*/
-      const std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>>& get_component_storage() const;
+      ENGINE_API const std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>>& get_component_storage() const;
 
       /*=================================================================================
       Function Brief:
@@ -224,7 +224,7 @@ namespace Engine {
       Where to call it:
       Internally when modifying prefab configurations.
       ==================================================================================*/
-      std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>>& get_component_storage();
+      ENGINE_API std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>>& get_component_storage();
 
       /*=================================================================================
       Function Brief:
@@ -236,7 +236,7 @@ namespace Engine {
       Where to call it:
       When accessing prefab layer configuration.
       ==================================================================================*/
-      const LayerSignature& get_layers() const;
+      ENGINE_API const LayerSignature& get_layers() const;
 
       /*=================================================================================
       Function Brief:
@@ -248,7 +248,7 @@ namespace Engine {
       Where to call it:
       When modifying prefab layer configuration.
       ==================================================================================*/
-      LayerSignature& get_layers();
+      ENGINE_API LayerSignature& get_layers();
 
       /*=================================================================================
       Function Brief:
@@ -260,7 +260,7 @@ namespace Engine {
       Where to call it:
       When processing all components in a prefab.
       ==================================================================================*/
-      void for_each_component(std::function<void(const std::string&, IComponentArray*)> callback);
+      ENGINE_API void for_each_component(std::function<void(const std::string&, IComponentArray*)> callback);
 
       /*=================================================================================
       Function Brief:
@@ -272,7 +272,7 @@ namespace Engine {
       Where to call it:
       When tracking which prefab an instance was created from.
       ==================================================================================*/
-      const std::string& get_prefab_id() const;
+      ENGINE_API const std::string& get_prefab_id() const;
 
       /*=================================================================================
       Function Brief:
@@ -284,7 +284,7 @@ namespace Engine {
       Where to call it:
       When creating a new prefab or loading from file.
       ==================================================================================*/
-      void set_prefab_id(const std::string& id);
+      ENGINE_API void set_prefab_id(const std::string& id);
 
       /*=================================================================================
       Function Brief:
@@ -296,7 +296,7 @@ namespace Engine {
       Where to call it:
       When tracking the location where the prefab is stored.
       ==================================================================================*/
-      const std::string& get_prefab_filepath() const;
+      ENGINE_API const std::string& get_prefab_filepath() const;
 
       /*=================================================================================
       Function Brief:
@@ -308,13 +308,13 @@ namespace Engine {
       Where to call it:
       When loading a prefab from file or saving to a new location.
       ==================================================================================*/
-      void set_prefab_filepath(const std::string& filepath);
+      ENGINE_API void set_prefab_filepath(const std::string& filepath);
     };
 
     /* ============================ //
     // Prefab handle for clean API  //
     // ============================ */
-    class ENGINE_API Prefab {
+    class Prefab {
     private:
       std::shared_ptr<PrefabImpl> impl;
 
@@ -341,7 +341,7 @@ namespace Engine {
       Where to call it:
       Internally when creating prefabs.
       ==================================================================================*/
-      Prefab(std::shared_ptr<PrefabImpl> impl);
+      ENGINE_API Prefab(std::shared_ptr<PrefabImpl> impl);
 
       /*=================================================================================
       Function Brief:
@@ -372,7 +372,7 @@ namespace Engine {
       Where to call it:
       When attaching a component to a prefab using a string name (e.g., from UI).
       ==================================================================================*/
-      bool add_component_by_name(const std::string& component_name);
+      ENGINE_API bool add_component_by_name(const std::string& component_name);
 
       /*=================================================================================
       Function Brief:
@@ -449,7 +449,7 @@ namespace Engine {
       Where to call it:
       Before accessing prefab data.
       ==================================================================================*/
-      bool is_valid() const;
+      ENGINE_API bool is_valid() const;
 
       /*=================================================================================
       Function Brief:
@@ -461,7 +461,7 @@ namespace Engine {
       Where to call it:
       In conditional statements.
       ==================================================================================*/
-      operator bool() const;
+      ENGINE_API operator bool() const;
 
       /*=================================================================================
       Function Brief:
@@ -473,7 +473,7 @@ namespace Engine {
       Where to call it:
       Internally when accessing implementation details.
       ==================================================================================*/
-      std::shared_ptr<PrefabImpl> get_impl() const;
+      ENGINE_API std::shared_ptr<PrefabImpl> get_impl() const;
 
       /*=================================================================================
       Function Brief:
@@ -485,7 +485,7 @@ namespace Engine {
       Where to call it:
       When processing all components in a prefab.
       ==================================================================================*/
-      void for_each_component(std::function<void(const std::string&, IComponentArray*)> callback);
+      ENGINE_API void for_each_component(std::function<void(const std::string&, IComponentArray*)> callback);
 
       /*=================================================================================
       Function Brief:
@@ -497,7 +497,7 @@ namespace Engine {
       Where to call it:
       When processing all components in a prefab without modification.
       ==================================================================================*/
-      void for_each_component(std::function<void(const std::string&, IComponentArray*)> callback) const;
+      ENGINE_API void for_each_component(std::function<void(const std::string&, IComponentArray*)> callback) const;
 
       /*=================================================================================
       Function Brief:
@@ -509,7 +509,7 @@ namespace Engine {
       Where to call it:
       When spawning entities based on this prefab template.
       ==================================================================================*/
-      Entity instantiate() const;
+      ENGINE_API Entity instantiate() const;
 
       /*=================================================================================
       Function Brief:
@@ -521,7 +521,7 @@ namespace Engine {
       Where to call it:
       When configuring which layers the prefab's instantiated entities will be on.
       ==================================================================================*/
-      Prefab& add_to_layer(const std::string& layer_name);
+      ENGINE_API Prefab& add_to_layer(const std::string& layer_name);
 
       /*=================================================================================
       Function Brief:
@@ -533,7 +533,7 @@ namespace Engine {
       Where to call it:
       When modifying prefab layer configuration.
       ==================================================================================*/
-      Prefab& remove_from_layer(const std::string& layer_name);
+      ENGINE_API Prefab& remove_from_layer(const std::string& layer_name);
 
       /*=================================================================================
       Function Brief:
@@ -545,7 +545,7 @@ namespace Engine {
       Where to call it:
       When resetting prefab layer configuration.
       ==================================================================================*/
-      Prefab& clear_layers();
+      ENGINE_API Prefab& clear_layers();
 
       /*=================================================================================
       Function Brief:
@@ -557,7 +557,7 @@ namespace Engine {
       Where to call it:
       When querying prefab layer configuration.
       ==================================================================================*/
-      LayerSignature get_layers() const;
+      ENGINE_API LayerSignature get_layers() const;
     };
 
     /* ====================================== //
