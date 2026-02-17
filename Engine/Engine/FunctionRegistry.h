@@ -9,7 +9,7 @@
 //
 // brief:   Generic function registry system for storing and retrieving callbacks
 //          by string names. Enables serialization of function pointers by using
-//          named lookups. Uses a single type_index-keyed singleton so that all
+//          named lookups. Uses a single string-keyed singleton so that all
 //          function signatures share one registry instance — safe across DLL
 //          boundaries. Used throughout the engine for state machines, event
 //          callbacks, easing functions, and more.
@@ -21,7 +21,7 @@
 #include <functional>
 #include <unordered_map>
 #include <string>
-#include <typeindex>
+#include <typeinfo>
 #include <any>
 #include "Logger.h"
 #include "EngineExport.h"
@@ -106,13 +106,12 @@ namespace Engine {
   };
 
   // ============================================================================
-  // Unified Function Registry (type_index-keyed singleton)
+  // Unified Function Registry (string-keyed singleton)
   // ============================================================================
 
-  /// Single registry for all function signatures. Uses std::type_index to partition
-  /// functions by signature, and std::any for type-erased storage. This ensures
-  /// exactly one registry instance exists across DLL/EXE boundaries (when the
-  /// singleton is exported via ENGINE_API).
+  /// Single registry for all function signatures. Uses typeid(Sig).name() to partition
+  /// functions by signature, and std::any for type-erased storage. String keys are
+  /// safe across DLL reload boundaries (no dangling type_info pointers).
   class ENGINE_API FunctionRegistry {
   public:
     static FunctionRegistry& instance();
@@ -120,7 +119,7 @@ namespace Engine {
     /// Register a function with a string name under a specific signature
     template<typename Sig>
     void register_function(const std::string& name, std::function<Sig> func) {
-      auto key = std::type_index(typeid(Sig));
+      std::string key = typeid(Sig).name();
       auto& inner = functions_[key];
       if (inner.count(name)) {
         Log::warning("FunctionRegistry: Overwriting existing function '{}'", name);
@@ -131,7 +130,7 @@ namespace Engine {
     /// Get a function by name (returns empty std::function if not found)
     template<typename Sig>
     std::function<Sig> get_function(const std::string& name) const {
-      auto key = std::type_index(typeid(Sig));
+      std::string key = typeid(Sig).name();
       auto outer_it = functions_.find(key);
       if (outer_it == functions_.end()) return {};
       auto inner_it = outer_it->second.find(name);
@@ -148,7 +147,7 @@ namespace Engine {
     /// Check if a function with this name and signature exists
     template<typename Sig>
     bool has_function(const std::string& name) const {
-      auto key = std::type_index(typeid(Sig));
+      std::string key = typeid(Sig).name();
       auto outer_it = functions_.find(key);
       if (outer_it == functions_.end()) return false;
       return outer_it->second.count(name) > 0;
@@ -157,7 +156,7 @@ namespace Engine {
     /// Unregister a function
     template<typename Sig>
     void unregister_function(const std::string& name) {
-      auto key = std::type_index(typeid(Sig));
+      std::string key = typeid(Sig).name();
       auto outer_it = functions_.find(key);
       if (outer_it != functions_.end()) {
         outer_it->second.erase(name);
@@ -167,7 +166,7 @@ namespace Engine {
     /// Get all registered function names for a given signature (for editor/debug)
     template<typename Sig>
     std::vector<std::string> get_all_names() const {
-      auto key = std::type_index(typeid(Sig));
+      std::string key = typeid(Sig).name();
       auto outer_it = functions_.find(key);
       if (outer_it == functions_.end()) return {};
       std::vector<std::string> names;
@@ -181,7 +180,7 @@ namespace Engine {
     /// Clear all functions of a given signature
     template<typename Sig>
     void clear() {
-      functions_.erase(std::type_index(typeid(Sig)));
+      functions_.erase(std::string(typeid(Sig).name()));
     }
 
     /// Clear all registered functions (all signatures)
@@ -192,14 +191,14 @@ namespace Engine {
     /// Get count of functions with a given signature
     template<typename Sig>
     size_t size() const {
-      auto key = std::type_index(typeid(Sig));
+      std::string key = typeid(Sig).name();
       auto outer_it = functions_.find(key);
       return (outer_it != functions_.end()) ? outer_it->second.size() : 0;
     }
 
   private:
-    // Two-level map: signature type_index -> { name -> any(std::function<Sig>) }
-    std::unordered_map<std::type_index, std::unordered_map<std::string, std::any>> functions_;
+    // Two-level map: signature name (typeid.name()) -> { name -> any(std::function<Sig>) }
+    std::unordered_map<std::string, std::unordered_map<std::string, std::any>> functions_;
 
     FunctionRegistry() = default;
     FunctionRegistry(const FunctionRegistry&) = delete;

@@ -16,7 +16,7 @@
 #pragma once
 #include "Types.h"
 #include "../EngineExport.h"
-#include <typeindex>
+#include <string>
 #include <unordered_map>
 
 namespace Engine {
@@ -32,9 +32,11 @@ namespace Engine {
     private:
       static ComponentTypeID next_type_id;
 
-      /// Central map from type_index -> ComponentTypeID.
+      /// Central map from type name string -> ComponentTypeID.
+      /// Uses typeid(T).name() as key instead of type_index so that
+      /// keys remain valid after a DLL is unloaded and reloaded.
       /// Defined in ComponentManager.cpp — single instance in the EXE.
-      static std::unordered_map<std::type_index, ComponentTypeID>& get_type_map();
+      static std::unordered_map<std::string, ComponentTypeID>& get_type_map();
 
     public:
       /*=================================================================================

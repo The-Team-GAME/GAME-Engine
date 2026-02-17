@@ -11,6 +11,9 @@
 
 #include "HotReloadManager.h"
 #include "Logger.h"
+#include "SceneManager.h"
+#include "ECS/World.h"
+#include "Resources.h"
 
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
@@ -93,7 +96,6 @@ namespace Engine
     static std::thread          s_watcher_thread;
     static std::atomic<bool>    s_watcher_running{ false };
     static std::atomic<bool>    s_build_in_progress{ false };
-    static std::atomic<int>     s_build_counter{ 0 }; // unique PDB name per build
 
     // Resolve the solution directory (two levels up from the exe)
     static std::filesystem::path get_solution_dir()
@@ -170,9 +172,9 @@ namespace Engine
       // Use a unique PDB path each build so the linker doesn't conflict with the
       // debugger holding a lock on previous PDBs.
       // The vcxproj uses $(HotReloadPDB) for ProgramDatabaseFile.
-      int build_id = s_build_counter++;
+      // Use tick count for uniqueness across both builds and engine restarts.
       auto temp_pdb = solution_dir / "x64" / config
-        / ("GameLogic_build_" + std::to_string(build_id) + ".pdb");
+        / ("GameLogic_build_" + std::to_string(GetTickCount64()) + ".pdb");
 
       std::string cmd = "\"" + msbuild + "\""
         + " \"" + vcxproj.string() + "\""
@@ -329,12 +331,26 @@ namespace Engine
       auto copy_path = get_dll_copy_path(counter);
       auto pdb_copy = get_pdb_copy_path(counter);
 
-      // The hot-reload build writes to GameLogic_build.pdb to avoid
-      // conflicts with the debugger holding the original .pdb.
-      // Prefer that file; fall back to the normal GameLogic.pdb.
-      auto pdb_build = source.parent_path() / "GameLogic_build.pdb";
-      auto pdb_src = std::filesystem::exists(pdb_build) ? pdb_build
-        : get_pdb_source_path();
+      // The hot-reload build writes to a uniquely-named GameLogic_build_*.pdb
+      // to avoid conflicts with the debugger. Find the newest one.
+      std::filesystem::path pdb_src = get_pdb_source_path(); // fallback
+      {
+        auto out_dir = source.parent_path();
+        std::filesystem::file_time_type newest_time{};
+        for (auto& entry : std::filesystem::directory_iterator(out_dir))
+        {
+          auto fname = entry.path().filename().string();
+          if (fname.starts_with("GameLogic_build_") && fname.ends_with(".pdb"))
+          {
+            auto wt = entry.last_write_time();
+            if (wt > newest_time)
+            {
+              newest_time = wt;
+              pdb_src = entry.path();
+            }
+          }
+        }
+      }
 
       // Clean up older copies that may now be unlocked
       cleanup_old_copies(counter);
@@ -448,12 +464,52 @@ namespace Engine
         Sleep(100);
       }
 
-      // Unload old DLL
+      // ── Save scene state ──────────────────────────────────────────
+      // Remember which scene was active so we can reload it after the
+      // DLL swap.  We must tear down the current scene while the OLD
+      // DLL is still loaded because Scene subclasses and their vtables
+      // live inside the DLL.
+      std::string saved_scene = SceneManager::get_current_scene_name();
+
+      // Unload the current scene properly (DLL vtables still valid)
+      if (SceneManager::current_scene)
+      {
+        SceneManager::current_scene->free();
+        SceneManager::current_scene->unload();
+      }
+
+      // Destroy all entities and flush immediately so component arrays
+      // run their DLL-side destructors while the DLL is still loaded.
+      ECS::destroy_all_entities();
+      ECS::process_housekeeping();
+
+      // ── Clear prefab cache ─────────────────────────────────────
+      // Prefab component_storage holds IComponentArray instances whose
+      // vtables live in the current DLL.  Must be destroyed BEFORE
+      // the DLL is unloaded.
+      Resources::prefab_cache.clear();
+      std::erase_if(Resources::persistent_resources, [](const Resources::Resource& r) {
+        return std::holds_alternative<ECS::Prefab>(r);
+        });
+
+      // ── DLL swap ──────────────────────────────────────────────────
+      // Unload old DLL (UnregisterGameLogic clears scenes, functions,
+      // component arrays, systems, collision callbacks).
       unload_game_logic();
 
-      // Load new DLL (copies and loads)
+      // Load new DLL (copies and loads; RegisterGameLogic re-registers
+      // everything).
       if (load_game_logic())
       {
+        // Reload prefabs so their component_storage uses the new DLL's vtables
+        Resources::load_all_prefabs();
+
+        // ── Restore scene ─────────────────────────────────────────
+        // Reload the scene that was active before the swap.
+        if (!saved_scene.empty() && saved_scene != "No current scene")
+        {
+          SceneManager::load_scene(saved_scene);
+        }
         Log::info("[HotReload] Hot-reload complete!");
       }
       else

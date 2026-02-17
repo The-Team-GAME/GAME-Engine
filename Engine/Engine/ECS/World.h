@@ -50,6 +50,14 @@ namespace Engine {
     template <typename T>
     void register_component();
 
+    /**
+     * @brief Removes the component array for type T from the world.
+     *        Must be called before unloading a DLL that defines T,
+     *        so the ComponentArray<T> destructor runs while the vtable is valid.
+     */
+    template <typename T>
+    void unregister_component();
+
     /*=================================================================================
     Function Brief:
     Retrieves the component array that stores all components of type T. Creates

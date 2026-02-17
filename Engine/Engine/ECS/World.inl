@@ -47,6 +47,14 @@ namespace Engine {
       containers.component_arrays[typeId] = std::make_unique<ComponentArray<T>>();
     }
 
+    template <typename T>
+    void unregister_component()
+    {
+      auto& containers = Internal::get_containers();
+      ComponentTypeID typeId = ComponentTypeManager::get_type_id<T>();
+      containers.component_arrays.erase(typeId);
+    }
+
     template <typename... T>
     void destroy_entities_with()
     {

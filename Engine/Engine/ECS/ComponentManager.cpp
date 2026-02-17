@@ -18,9 +18,9 @@ namespace Engine {
   namespace ECS {
     ComponentTypeID ComponentTypeManager::next_type_id = 0;
 
-    std::unordered_map<std::type_index, ComponentTypeID>& ComponentTypeManager::get_type_map() {
-      static std::unordered_map<std::type_index, ComponentTypeID> map;
-      return map;
+    std::unordered_map<std::string, ComponentTypeID>& ComponentTypeManager::get_type_map() {
+      static auto* map = new std::unordered_map<std::string, ComponentTypeID>();
+      return *map;
     }
   }
 }
