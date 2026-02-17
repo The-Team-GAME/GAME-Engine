@@ -128,7 +128,7 @@ namespace Engine::detail {
   template<typename Func>
   inline std::string auto_reg(const char* name, Func func) {
     using Sig = typename Engine::function_traits<std::decay_t<decltype(func)>>::signature;
-    Engine::FunctionRegistry<Sig>::register_function(name, func);
+    Engine::FunctionRegistry::instance().register_function<Sig>(name, std::function<Sig>(func));
     return name;
   }
 

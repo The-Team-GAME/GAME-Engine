@@ -257,90 +257,90 @@ void RunGame()
     });
 
 
-  Engine::FunctionRegistry<void()>::register_function("pause_menu_resume", []() {
+  Engine::FunctionRegistry::instance().register_function<void()>("pause_menu_resume", std::function<void()>([]() {
     Log::info("Resuming game from pause menu");
     Engine::SceneManager::pop_scene();
-    });
-  Engine::FunctionRegistry<void()>::register_function("pause_menu_restart", []() {
+    }));
+  Engine::FunctionRegistry::instance().register_function<void()>("pause_menu_restart", std::function<void()>([]() {
     Log::info("Restarting level from pause menu");
     Engine::SceneManager::load_scene("GameplayState");
-    });
-  Engine::FunctionRegistry<void()>::register_function("pause_menu_options", []() {
+    }));
+  Engine::FunctionRegistry::instance().register_function<void()>("pause_menu_options", std::function<void()>([]() {
     Log::info("Opening options from pause menu");
     // Engine::SceneManager::push_scene("OptionsState");
-    });
-  Engine::FunctionRegistry<void()>::register_function("pause_menu_exit", []() {
+    }));
+  Engine::FunctionRegistry::instance().register_function<void()>("pause_menu_exit", std::function<void()>([]() {
     Log::info("Exiting to main menu from pause menu");
     Engine::SceneManager::load_scene("MainMenuState");
-    });
+    }));
 
   // Pause menu hover callbacks - change menu sprite texture
   // Uses hovered_button tracker to prevent exit_hover from resetting when moving between buttons
-  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_hover_resume", [](Engine::ECS::Entity) {
+  Engine::FunctionRegistry::instance().register_function<void(Engine::ECS::Entity)>("pause_hover_resume", std::function<void(Engine::ECS::Entity)>([](Engine::ECS::Entity) {
     if (PauseState::menu_sprite_id == 0) return;
     if (!Engine::ECS::is_entity_active(Engine::ECS::Entity(PauseState::menu_sprite_id))) return;
     PauseState::hovered_button = 1;
     auto* tex = Engine::ECS::Entity(PauseState::menu_sprite_id).get_component<Components::Texture>();
     if (tex) *tex = PauseState::resume_selected_tex;
-    });
-  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_hover_restart", [](Engine::ECS::Entity) {
+    }));
+  Engine::FunctionRegistry::instance().register_function<void(Engine::ECS::Entity)>("pause_hover_restart", std::function<void(Engine::ECS::Entity)>([](Engine::ECS::Entity) {
     if (PauseState::menu_sprite_id == 0) return;
     if (!Engine::ECS::is_entity_active(Engine::ECS::Entity(PauseState::menu_sprite_id))) return;
     PauseState::hovered_button = 2;
     auto* tex = Engine::ECS::Entity(PauseState::menu_sprite_id).get_component<Components::Texture>();
     if (tex) *tex = PauseState::restart_selected_tex;
-    });
-  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_hover_options", [](Engine::ECS::Entity) {
+    }));
+  Engine::FunctionRegistry::instance().register_function<void(Engine::ECS::Entity)>("pause_hover_options", std::function<void(Engine::ECS::Entity)>([](Engine::ECS::Entity) {
     if (PauseState::menu_sprite_id == 0) return;
     if (!Engine::ECS::is_entity_active(Engine::ECS::Entity(PauseState::menu_sprite_id))) return;
     PauseState::hovered_button = 3;
     auto* tex = Engine::ECS::Entity(PauseState::menu_sprite_id).get_component<Components::Texture>();
     if (tex) *tex = PauseState::options_selected_tex;
-    });
-  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_hover_exit", [](Engine::ECS::Entity) {
+    }));
+  Engine::FunctionRegistry::instance().register_function<void(Engine::ECS::Entity)>("pause_hover_exit", std::function<void(Engine::ECS::Entity)>([](Engine::ECS::Entity) {
     if (PauseState::menu_sprite_id == 0) return;
     if (!Engine::ECS::is_entity_active(Engine::ECS::Entity(PauseState::menu_sprite_id))) return;
     PauseState::hovered_button = 4;
     auto* tex = Engine::ECS::Entity(PauseState::menu_sprite_id).get_component<Components::Texture>();
     if (tex) *tex = PauseState::exit_selected_tex;
-    });
-  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_hover_none", [](Engine::ECS::Entity) {
+    }));
+  Engine::FunctionRegistry::instance().register_function<void(Engine::ECS::Entity)>("pause_hover_none", std::function<void(Engine::ECS::Entity)>([](Engine::ECS::Entity) {
     // Do nothing here - let the on_hover callbacks handle setting the texture
     // This prevents the race condition when moving between buttons
-    });
+    }));
 
-  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_menu_button_hover", [](Engine::ECS::Entity entity) {
+  Engine::FunctionRegistry::instance().register_function<void(Engine::ECS::Entity)>("pause_menu_button_hover", std::function<void(Engine::ECS::Entity)>([](Engine::ECS::Entity entity) {
     auto* color = entity.get_component<Components::Color>();
     if (color) {
       color->a = 1.0f;
     }
-    });
+    }));
 
   // Register main menu button callbacks
-  Engine::FunctionRegistry<void()>::register_function("start_game", []() {
+  Engine::FunctionRegistry::instance().register_function<void()>("start_game", std::function<void()>([]() {
     Engine::SceneManager::load_scene("GameplayState");
-    });
-  Engine::FunctionRegistry<void()>::register_function("options_menu", []() {
+    }));
+  Engine::FunctionRegistry::instance().register_function<void()>("options_menu", std::function<void()>([]() {
     // Engine::SceneManager::push_scene("OptionsState");
-    });
-  Engine::FunctionRegistry<void()>::register_function("exit_game", []() {
+    }));
+  Engine::FunctionRegistry::instance().register_function<void()>("exit_game", std::function<void()>([]() {
     Engine::Core::stop();
-    });
+    }));
 
   // Victory interactable callback - shows victory screen when player enters the zone
-  Engine::FunctionRegistry<void(Engine::ECS::Entity, Engine::ECS::Entity)>::register_function("show_victory",
-    [](Engine::ECS::Entity, Engine::ECS::Entity) {
+  Engine::FunctionRegistry::instance().register_function<void(Engine::ECS::Entity, Engine::ECS::Entity)>("show_victory",
+    std::function<void(Engine::ECS::Entity, Engine::ECS::Entity)>([](Engine::ECS::Entity, Engine::ECS::Entity) {
       Log::info("Victory! Player reached the goal.");
       Engine::SceneManager::push_scene("VictoryState");
-    });
+      }));
 
 
-  Engine::FunctionRegistry<void(Engine::ECS::Entity)>::register_function("pause_menu_button_exit_hover", [](Engine::ECS::Entity entity) {
+  Engine::FunctionRegistry::instance().register_function<void(Engine::ECS::Entity)>("pause_menu_button_exit_hover", std::function<void(Engine::ECS::Entity)>([](Engine::ECS::Entity entity) {
     auto* color = entity.get_component<Components::Color>();
     if (color) {
       color->a = 0.0f;
     }
-    });
+    }));
 
   // Register game scenes at startup
   Engine::SceneManager::register_scene<EmptyState>("EmptyState");

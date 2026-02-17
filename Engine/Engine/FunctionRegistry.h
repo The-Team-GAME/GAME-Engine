@@ -9,8 +9,10 @@
 //
 // brief:   Generic function registry system for storing and retrieving callbacks
 //          by string names. Enables serialization of function pointers by using
-//          named lookups. Supports any function signature through template parameters.
-//          Used throughout the engine for state machines, event callbacks, and more.
+//          named lookups. Uses a single type_index-keyed singleton so that all
+//          function signatures share one registry instance — safe across DLL
+//          boundaries. Used throughout the engine for state machines, event
+//          callbacks, easing functions, and more.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
@@ -27,8 +29,7 @@
 namespace Engine {
 
   // Forward declaration
-  template<typename FuncSignature>
-  struct FunctionRegistry;
+  class FunctionRegistry;
 
   // ============================================================================
   // Serializable Function Wrapper
@@ -104,71 +105,107 @@ namespace Engine {
   };
 
   // ============================================================================
-  // Generic Function Registry
+  // Unified Function Registry (type_index-keyed singleton)
   // ============================================================================
 
-  /// Generic registry for storing functions with string names
-  /// Template parameter is the function signature (e.g., void(int, float))
-  template<typename FuncSignature>
-  struct FunctionRegistry {
-    using FunctionType = std::function<FuncSignature>;
-
-    // Static storage for registered functions
-    static std::unordered_map<std::string, FunctionType>& get_functions() {
-      static std::unordered_map<std::string, FunctionType> functions;
-      return functions;
+  /// Single registry for all function signatures. Uses std::type_index to partition
+  /// functions by signature, and std::any for type-erased storage. This ensures
+  /// exactly one registry instance exists across DLL/EXE boundaries (when the
+  /// singleton is exported via ENGINE_API).
+  class FunctionRegistry {
+  public:
+    static FunctionRegistry& instance() {
+      static FunctionRegistry registry;
+      return registry;
     }
 
-    /// Register a function with a string name
-    static void register_function(const std::string& name, FunctionType func) {
-      auto& functions = get_functions();
-      if (functions.find(name) != functions.end()) {
+    /// Register a function with a string name under a specific signature
+    template<typename Sig>
+    void register_function(const std::string& name, std::function<Sig> func) {
+      auto key = std::type_index(typeid(Sig));
+      auto& inner = functions_[key];
+      if (inner.count(name)) {
         Log::warning("FunctionRegistry: Overwriting existing function '{}'", name);
       }
-      functions[name] = func;
+      inner[name] = std::make_any<std::function<Sig>>(std::move(func));
     }
 
     /// Get a function by name (returns empty std::function if not found)
-    static FunctionType get_function(const std::string& name) {
-      auto& functions = get_functions();
-      auto it = functions.find(name);
-      return (it != functions.end()) ? it->second : FunctionType{};
+    template<typename Sig>
+    std::function<Sig> get_function(const std::string& name) const {
+      auto key = std::type_index(typeid(Sig));
+      auto outer_it = functions_.find(key);
+      if (outer_it == functions_.end()) return {};
+      auto inner_it = outer_it->second.find(name);
+      if (inner_it == outer_it->second.end()) return {};
+      try {
+        return std::any_cast<std::function<Sig>>(inner_it->second);
+      }
+      catch (const std::bad_any_cast&) {
+        Log::error("FunctionRegistry: Type mismatch for function '{}'", name);
+        return {};
+      }
     }
 
-    /// Check if a function with this name exists
-    static bool has_function(const std::string& name) {
-      auto& functions = get_functions();
-      return functions.find(name) != functions.end();
+    /// Check if a function with this name and signature exists
+    template<typename Sig>
+    bool has_function(const std::string& name) const {
+      auto key = std::type_index(typeid(Sig));
+      auto outer_it = functions_.find(key);
+      if (outer_it == functions_.end()) return false;
+      return outer_it->second.count(name) > 0;
     }
 
     /// Unregister a function
-    static void unregister_function(const std::string& name) {
-      auto& functions = get_functions();
-      functions.erase(name);
+    template<typename Sig>
+    void unregister_function(const std::string& name) {
+      auto key = std::type_index(typeid(Sig));
+      auto outer_it = functions_.find(key);
+      if (outer_it != functions_.end()) {
+        outer_it->second.erase(name);
+      }
     }
 
-    /// Clear all registered functions
-    static void clear() {
-      auto& functions = get_functions();
-      functions.clear();
-    }
-
-    /// Get all registered function names (for debugging/editor)
-    static std::vector<std::string> get_all_names() {
-      auto& functions = get_functions();
+    /// Get all registered function names for a given signature (for editor/debug)
+    template<typename Sig>
+    std::vector<std::string> get_all_names() const {
+      auto key = std::type_index(typeid(Sig));
+      auto outer_it = functions_.find(key);
+      if (outer_it == functions_.end()) return {};
       std::vector<std::string> names;
-      names.reserve(functions.size());
-      for (const auto& [name, _] : functions) {
-        names.push_back(name);
+      names.reserve(outer_it->second.size());
+      for (const auto& [n, _] : outer_it->second) {
+        names.push_back(n);
       }
       return names;
     }
 
-    /// Get the number of registered functions
-    static size_t size() {
-      auto& functions = get_functions();
-      return functions.size();
+    /// Clear all functions of a given signature
+    template<typename Sig>
+    void clear() {
+      functions_.erase(std::type_index(typeid(Sig)));
     }
+
+    /// Clear all registered functions (all signatures)
+    void clear_all() {
+      functions_.clear();
+    }
+
+    /// Get count of functions with a given signature
+    template<typename Sig>
+    size_t size() const {
+      auto key = std::type_index(typeid(Sig));
+      auto outer_it = functions_.find(key);
+      return (outer_it != functions_.end()) ? outer_it->second.size() : 0;
+    }
+
+  private:
+    // Two-level map: signature type_index -> { name -> any(std::function<Sig>) }
+    std::unordered_map<std::type_index, std::unordered_map<std::string, std::any>> functions_;
+
+    FunctionRegistry() = default;
+    FunctionRegistry(const FunctionRegistry&) = delete;
+    FunctionRegistry& operator=(const FunctionRegistry&) = delete;
   };
 
   // ============================================================================
@@ -177,86 +214,13 @@ namespace Engine {
 
   template<typename Signature>
   inline std::function<Signature> SerializableFunction::get() const {
-    return FunctionRegistry<Signature>::get_function(name);
+    return FunctionRegistry::instance().get_function<Signature>(name);
   }
 
   template<typename Signature>
   inline bool SerializableFunction::exists() const {
-    return FunctionRegistry<Signature>::has_function(name);
+    return FunctionRegistry::instance().has_function<Signature>(name);
   }
-
-  // ============================================================================
-  // Multi-Signature Function Registry (Advanced)
-  // ============================================================================
-
-  /// Registry that can store multiple function signatures under the same name
-  /// Use this when you need type-safe storage of different callback types
-  class MultiFunctionRegistry {
-  public:
-    static MultiFunctionRegistry& instance() {
-      static MultiFunctionRegistry registry;
-      return registry;
-    }
-
-    /// Register a function with a specific signature
-    template<typename FuncSignature>
-    void register_function(const std::string& name, std::function<FuncSignature> func) {
-      auto key = make_key<FuncSignature>(name);
-      if (functions_.find(key) != functions_.end()) {
-        Log::warning("MultiFunctionRegistry: Overwriting existing function '{}'", name);
-      }
-      functions_[key] = std::make_any<std::function<FuncSignature>>(func);
-    }
-
-    /// Get a function with a specific signature
-    template<typename FuncSignature>
-    std::function<FuncSignature> get_function(const std::string& name) const {
-      auto key = make_key<FuncSignature>(name);
-      auto it = functions_.find(key);
-      if (it == functions_.end()) {
-        return std::function<FuncSignature>{};
-      }
-
-      try {
-        return std::any_cast<std::function<FuncSignature>>(it->second);
-      }
-      catch (const std::bad_any_cast&) {
-        Log::error("MultiFunctionRegistry: Type mismatch for function '{}'", name);
-        return std::function<FuncSignature>{};
-      }
-    }
-
-    /// Check if a function with this name and signature exists
-    template<typename FuncSignature>
-    bool has_function(const std::string& name) const {
-      auto key = make_key<FuncSignature>(name);
-      return functions_.find(key) != functions_.end();
-    }
-
-    /// Unregister a function with a specific signature
-    template<typename FuncSignature>
-    void unregister_function(const std::string& name) {
-      auto key = make_key<FuncSignature>(name);
-      functions_.erase(key);
-    }
-
-    /// Clear all registered functions
-    void clear() {
-      functions_.clear();
-    }
-
-  private:
-    template<typename FuncSignature>
-    std::string make_key(const std::string& name) const {
-      return name + "##" + typeid(FuncSignature).name();
-    }
-
-    std::unordered_map<std::string, std::any> functions_;
-
-    MultiFunctionRegistry() = default;
-    MultiFunctionRegistry(const MultiFunctionRegistry&) = delete;
-    MultiFunctionRegistry& operator=(const MultiFunctionRegistry&) = delete;
-  };
 
   // ============================================================================
   // Function Traits — deduce signature from function pointer type
@@ -300,25 +264,13 @@ namespace Engine {
       struct _REG_FUNC_CONCAT(AutoFuncReg_, ID) { \
         _REG_FUNC_CONCAT(AutoFuncReg_, ID)() { \
           using _Sig = typename Engine::function_traits<decltype(&FUNC)>::signature; \
-          Engine::FunctionRegistry<_Sig>::register_function(#FUNC, FUNC); \
+          Engine::FunctionRegistry::instance().register_function<_Sig>(#FUNC, std::function<_Sig>(FUNC)); \
         } \
       }; \
       static _REG_FUNC_CONCAT(AutoFuncReg_, ID) _REG_FUNC_CONCAT(s_auto_func_reg_, ID); \
     }
 
 #define REGISTER_FUNCTION(FUNC) REGISTER_FUNCTION_IMPL(FUNC, __COUNTER__)
-
-  /// Register a function in the multi-signature registry
-  /// Usage: REGISTER_MULTI_FUNCTION(my_callback, void(int, float), my_function)
-#define REGISTER_MULTI_FUNCTION(NAME, SIGNATURE, FUNC) \
-    namespace { \
-      struct MultiFunctionRegistrar_##NAME { \
-        MultiFunctionRegistrar_##NAME() { \
-          Engine::MultiFunctionRegistry::instance().register_function<SIGNATURE>(#NAME, FUNC); \
-        } \
-      }; \
-      static MultiFunctionRegistrar_##NAME multi_function_registrar_##NAME##_; \
-    }
 
 } // namespace Engine
 

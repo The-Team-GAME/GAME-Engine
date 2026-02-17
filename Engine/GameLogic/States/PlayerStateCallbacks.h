@@ -107,6 +107,7 @@ namespace PlayerStateCallbacks
 
   inline void idle_on_update(Engine::ECS::Entity entity) {
     take_input(entity);
+    std::cout << "Idle State Update\n";
   }
 #pragma endregion
 

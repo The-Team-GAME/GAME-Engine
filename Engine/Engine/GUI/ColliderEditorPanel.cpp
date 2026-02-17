@@ -703,7 +703,7 @@ void ColliderEditorPanel()
       ImGui::Text("Easing Functions:");
 
       // Get all registered easing functions
-      static auto easing_names = Engine::FunctionRegistry<f32(f32)>::get_all_names();
+      static auto easing_names = Engine::FunctionRegistry::instance().get_all_names<f32(f32, f32, f32, f32)>();
 
       // Helper lambda for easing function combo
       auto easing_combo = [&](const char* label, Engine::SerializableFunction& easing_func) {
