@@ -19,8 +19,11 @@ namespace Engine {
     namespace Internal {
 
       WorldContainers& get_containers() {
-        static WorldContainers containers;
-        return containers;
+        // Leaked singleton — intentionally never destroyed so that
+        // IComponentArray vtables from the DLL remain valid during
+        // static cleanup after the DLL has been unloaded.
+        static WorldContainers* containers = new WorldContainers();
+        return *containers;
       }
 
     } // namespace Internal

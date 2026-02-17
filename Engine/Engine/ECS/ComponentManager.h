@@ -15,6 +15,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 #include "Types.h"
+#include "../EngineExport.h"
 #include <typeindex>
 #include <unordered_map>
 
@@ -27,7 +28,7 @@ namespace Engine {
     // the same type always gets the same ID  //
     // even across DLL/EXE module boundaries. //
     // ===================================== */
-    class ComponentTypeManager {
+    class ENGINE_API ComponentTypeManager {
     private:
       static ComponentTypeID next_type_id;
 

@@ -17,6 +17,7 @@
 #pragma once
 
 #include "../TypeDef.h"
+#include "../EngineExport.h"
 #include <iostream>
 #include <glm/glm.hpp>
 #include "../Reflection/ReflectionLibrary.h"
@@ -24,7 +25,7 @@
 namespace Math {
 
 
-  class Vec4D {
+  class ENGINE_API Vec4D {
   public:
 
     f32 x, y, z, w;
@@ -89,20 +90,20 @@ namespace Math {
   /* ===================== //
   // Non-member functions  //
   // ===================== */
-  Vec4D normalise_vector(Vec4D const& vect);
-  Vec4D scale_vector(Vec4D const& vect, f32 scale);
-  f32 dot_product(Vec4D const& lhs, Vec4D const& rhs);
+  ENGINE_API Vec4D normalise_vector(Vec4D const& vect);
+  ENGINE_API Vec4D scale_vector(Vec4D const& vect, f32 scale);
+  ENGINE_API f32 dot_product(Vec4D const& lhs, Vec4D const& rhs);
 
   /* ============================= //
   // Non-member operator overloads //
   // ============================= */
   // Takes in 2 vectors to compute and returns the result
-  Vec4D operator+(Vec4D const& vect1, Vec4D const& vect2);
-  Vec4D operator-(Vec4D const& vect1, Vec4D const& vect2);
-  Vec4D operator/(Vec4D const& vect, f32 divisor);
-  Vec4D operator*(Vec4D const& vect, f32 scalar);
+  ENGINE_API Vec4D operator+(Vec4D const& vect1, Vec4D const& vect2);
+  ENGINE_API Vec4D operator-(Vec4D const& vect1, Vec4D const& vect2);
+  ENGINE_API Vec4D operator/(Vec4D const& vect, f32 divisor);
+  ENGINE_API Vec4D operator*(Vec4D const& vect, f32 scalar);
   // Overload of the << operator to display the vector in the output stream
-  std::ostream& operator<<(std::ostream& os, Vec4D const& vect);
+  ENGINE_API std::ostream& operator<<(std::ostream& os, Vec4D const& vect);
 }
 
 REFLECT_FIELDS(Math::Vec4D, x, y, z, w)

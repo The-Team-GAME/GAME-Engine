@@ -41,6 +41,7 @@
 #include "UndoManager/UndoManager.h"
 #include "Easing.h"
 #include "Lua/LuaComponentBindings.h"
+#include "HotReloadManager.h"
 
 namespace Engine
 {
@@ -251,6 +252,11 @@ namespace Engine
       // END OF TIME UPDATES ================================================
 
       glfwPollEvents();
+
+      // Hot-reload check: detect GameLogic.dll changes and reload
+#ifndef GAME_BUILD
+      Engine::HotReload::check_and_reload();
+#endif
 
       // Update window title with FPS
       WindowManager::update_title();

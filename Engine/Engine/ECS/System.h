@@ -17,6 +17,7 @@
 
 #include "Types.h"
 #include "SparseSet.h"
+#include "../EngineExport.h"
 #include "../EventManager/EventManager.h"
 
 namespace Engine {
@@ -33,7 +34,7 @@ namespace Engine {
     /* ============================================================= //
     // System base class with clean required components specification //
     // ============================================================= */
-    class System {
+    class ENGINE_API System {
     protected:
       ComponentSignature required_signature;
       ComponentSignature excluded_signature;

@@ -18,25 +18,26 @@
 
 
 #include "../ECS/ECS.h"
+#include "../EngineExport.h"
 #include "../Components/Components.h"
 #include "../Time.h"
 
 namespace Engine {
   namespace Systems
   {
-    class Physics2DSystem : public Engine::ECS::System 
+    class ENGINE_API Physics2DSystem : public Engine::ECS::System
     {
     public:
       Physics2DSystem(); // Default Ctor that includes all the components needed for the entities called in the physics engine
-      
+
       void update() override;
 
       void update_entity(Engine::ECS::Entity entity) override;
 
       // void knockback(Components::RigidBody& rigid, Vec2D force);
       // Update the linear velocities if said entities here
-      static void update_kinematics( 
-        Components::RigidBody& rigid );
+      static void update_kinematics(
+        Components::RigidBody& rigid);
 
       static void update_position(
         Components::RigidBody& rigid,
@@ -45,7 +46,7 @@ namespace Engine {
       // Called when resolving collisions to zero the rigidbody's velocity that is pushing against the normal
       // of the collision surface while retaining the sliding velocity parallel to the collision surface
       static void zero_normal_velocity(
-        Components::RigidBody& rigid, 
+        Components::RigidBody& rigid,
         CollisionResult const& collision);
 
       static f32 get_slope_angle_threshold();

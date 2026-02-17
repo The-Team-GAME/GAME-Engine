@@ -16,14 +16,15 @@
 #include <string>
 #include <format>
 #include <utility>
+#include "EngineExport.h"
 
 namespace Log {
 
 	namespace detail {
-		void warning_impl(std::string text);
-		void info_impl(std::string text);
-		void error_impl(std::string text);
-		void crash_impl(std::string text);
+		ENGINE_API void warning_impl(std::string text);
+		ENGINE_API void info_impl(std::string text);
+		ENGINE_API void error_impl(std::string text);
+		ENGINE_API void crash_impl(std::string text);
 	}
 
 	/*=================================================================================

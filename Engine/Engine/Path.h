@@ -18,6 +18,7 @@
 #include <string>
 #include <filesystem>
 #include <algorithm>
+#include "EngineExport.h"
 
 namespace Engine {
 
@@ -43,7 +44,7 @@ namespace Engine {
   Path("C:\\Users\\file.txt").normalize().get_filename()
   Path("Assets").to_absolute().ensure_trailing_separator()
   ==================================================================================*/
-  class Path {
+  class ENGINE_API Path {
   private:
     std::string path_string;
 

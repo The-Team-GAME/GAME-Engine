@@ -20,6 +20,7 @@
 #include <vector>
 #include <unordered_map>
 #include "../Logger.h"
+#include "../EngineExport.h"
 #include "../FunctionRegistry.h"
 
 namespace Engine
@@ -71,12 +72,9 @@ namespace Engine
   // Blueprint Registry — singleton mapping blueprint_id -> StateMachineBlueprint
   // ============================================================================
 
-  class StateMachineBlueprintRegistry {
+  class ENGINE_API StateMachineBlueprintRegistry {
   public:
-    static StateMachineBlueprintRegistry& instance() {
-      static StateMachineBlueprintRegistry registry;
-      return registry;
-    }
+    static StateMachineBlueprintRegistry& instance();
 
     /// Register a blueprint under a unique id
     void register_blueprint(const std::string& id, const StateMachineBlueprint& blueprint) {

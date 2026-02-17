@@ -18,6 +18,7 @@
 
 #include "../Math/Vector2D.h"
 #include "../TypeDef.h"
+#include "../EngineExport.h"
 #include <memory>
 #include <string>
 
@@ -28,70 +29,70 @@ namespace Engine {
     // ------------------------------------------------------------
     // Audio system lifecycle
     // ------------------------------------------------------------
-    bool init();       // Initialize FMOD Studio
-    void update();     // Must be called every frame
-    void shutdown();   // Shutdown FMOD cleanly
+    ENGINE_API bool init();       // Initialize FMOD Studio
+    ENGINE_API void update();     // Must be called every frame
+    ENGINE_API void shutdown();   // Shutdown FMOD cleanly
 
     // ------------------------------------------------------------
     // Bank management
     // ------------------------------------------------------------
-    bool loadBank(const std::string& path);
-    bool unloadBank(const std::string& path);
-    void unloadAllBanks();
-    bool isBankLoaded(const std::string& path);
+    ENGINE_API bool loadBank(const std::string& path);
+    ENGINE_API bool unloadBank(const std::string& path);
+    ENGINE_API void unloadAllBanks();
+    ENGINE_API bool isBankLoaded(const std::string& path);
 
     // ------------------------------------------------------------
     // Event playback (one-shot)
     // ------------------------------------------------------------
-    bool playEvent(const std::string& eventPath);
-    bool playEventAtPosition(const std::string& eventPath, const Math::Vec2D& position);
+    ENGINE_API bool playEvent(const std::string& eventPath);
+    ENGINE_API bool playEventAtPosition(const std::string& eventPath, const Math::Vec2D& position);
 
     // ------------------------------------------------------------
     // Event instance management (persistent events)
     // ------------------------------------------------------------
-    bool createEventInstance(const std::string& instanceName, const std::string& eventPath);
-    bool startEventInstance(const std::string& instanceName);
-    bool stopEventInstance(const std::string& instanceName, bool immediate = false);
-    bool pauseEventInstance(const std::string& instanceName, bool pause);
-    bool releaseEventInstance(const std::string& instanceName);
-    void releaseAllEventInstances();
-    bool isEventInstancePlaying(const std::string& instanceName);
+    ENGINE_API bool createEventInstance(const std::string& instanceName, const std::string& eventPath);
+    ENGINE_API bool startEventInstance(const std::string& instanceName);
+    ENGINE_API bool stopEventInstance(const std::string& instanceName, bool immediate = false);
+    ENGINE_API bool pauseEventInstance(const std::string& instanceName, bool pause);
+    ENGINE_API bool releaseEventInstance(const std::string& instanceName);
+    ENGINE_API void releaseAllEventInstances();
+    ENGINE_API bool isEventInstancePlaying(const std::string& instanceName);
 
     // ------------------------------------------------------------
     // Event parameters
     // ------------------------------------------------------------
-    bool setEventParameter(const std::string& instanceName, const std::string& paramName, float value);
-    bool getEventParameter(const std::string& instanceName, const std::string& paramName, float& outValue);
+    ENGINE_API bool setEventParameter(const std::string& instanceName, const std::string& paramName, float value);
+    ENGINE_API bool getEventParameter(const std::string& instanceName, const std::string& paramName, float& outValue);
 
     // ------------------------------------------------------------
     // 3D audio positioning
     // ------------------------------------------------------------
-    void setListenerPosition(const Math::Vec2D& position);
-    void setListenerAttributes(const Math::Vec2D& position, const Math::Vec2D& velocity, const Math::Vec2D& forward, const Math::Vec2D& up);
-    bool setEventInstancePosition(const std::string& instanceName, const Math::Vec2D& position);
-    bool setEventInstanceAttributes(const std::string& instanceName, const Math::Vec2D& position, const Math::Vec2D& velocity);
+    ENGINE_API void setListenerPosition(const Math::Vec2D& position);
+    ENGINE_API void setListenerAttributes(const Math::Vec2D& position, const Math::Vec2D& velocity, const Math::Vec2D& forward, const Math::Vec2D& up);
+    ENGINE_API bool setEventInstancePosition(const std::string& instanceName, const Math::Vec2D& position);
+    ENGINE_API bool setEventInstanceAttributes(const std::string& instanceName, const Math::Vec2D& position, const Math::Vec2D& velocity);
 
     // ------------------------------------------------------------
     // Volume controls
     // ------------------------------------------------------------
-    bool setEventInstanceVolume(const std::string& instanceName, float volume);
-    bool setBusVolume(const std::string& busPath, float volume);
-    bool setVCAVolume(const std::string& vcaPath, float volume);
-    bool getBusVolume(const std::string& busPath, float& outVolume);
-    bool getVCAVolume(const std::string& vcaPath, float& outVolume);
+    ENGINE_API bool setEventInstanceVolume(const std::string& instanceName, float volume);
+    ENGINE_API bool setBusVolume(const std::string& busPath, float volume);
+    ENGINE_API bool setVCAVolume(const std::string& vcaPath, float volume);
+    ENGINE_API bool getBusVolume(const std::string& busPath, float& outVolume);
+    ENGINE_API bool getVCAVolume(const std::string& vcaPath, float& outVolume);
 
     // ------------------------------------------------------------
     // Global controls
     // ------------------------------------------------------------
-    void pauseAll(bool pause);
-    void setMasterVolume(float volume);
-    float getMasterVolume();
+    ENGINE_API void pauseAll(bool pause);
+    ENGINE_API void setMasterVolume(float volume);
+    ENGINE_API float getMasterVolume();
 
     // ------------------------------------------------------------
     // Utility
     // ------------------------------------------------------------
-    bool isInitialized();
-    void flushCommandQueue();
+    ENGINE_API bool isInitialized();
+    ENGINE_API void flushCommandQueue();
 
   } // namespace AudioSystem
 } // namespace Engine

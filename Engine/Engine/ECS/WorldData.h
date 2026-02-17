@@ -18,6 +18,7 @@
 #include "SparseSet.h"
 #include "ComponentArray.h"
 #include "System.h"
+#include "../EngineExport.h"
 #include <unordered_map>
 #include <memory>
 #include <vector>
@@ -99,7 +100,7 @@ namespace Engine {
       Where to call it:
       Internally by the ECS when accessing entity, component, or system data.
       ==================================================================================*/
-      WorldContainers& get_containers();
+      ENGINE_API WorldContainers& get_containers();
 
     } // namespace Internal
   } // namespace ECS

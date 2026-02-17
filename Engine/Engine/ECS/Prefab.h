@@ -17,6 +17,8 @@
 
 #include "Entity.h"
 #include "Types.h"
+#include "ComponentArray.h"
+#include "../EngineExport.h"
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -32,7 +34,7 @@ namespace Engine {
     /* ====================================== //
     // PrefabImpl - Reusable entity template  //
     // ====================================== */
-    class PrefabImpl {
+    class ENGINE_API PrefabImpl {
     private:
       ComponentSignature signature;
       LayerSignature layers;
@@ -43,6 +45,11 @@ namespace Engine {
 
     public:
       PrefabImpl() = default;
+      PrefabImpl(const PrefabImpl&) = delete;
+      PrefabImpl& operator=(const PrefabImpl&) = delete;
+      PrefabImpl(PrefabImpl&&) noexcept;
+      PrefabImpl& operator=(PrefabImpl&&) noexcept;
+      ~PrefabImpl();
 
       /*=================================================================================
       Function Brief:
@@ -307,7 +314,7 @@ namespace Engine {
     /* ============================ //
     // Prefab handle for clean API  //
     // ============================ */
-    class Prefab {
+    class ENGINE_API Prefab {
     private:
       std::shared_ptr<PrefabImpl> impl;
 
@@ -567,7 +574,7 @@ namespace Engine {
     Where to call it:
     When defining reusable entity templates.
     ==================================================================================*/
-    Prefab create_prefab();
+    ENGINE_API Prefab create_prefab();
 
     /*=================================================================================
     Function Brief:
@@ -579,7 +586,7 @@ namespace Engine {
     Where to call it:
     When spawning entities based on a prefab template.
     ==================================================================================*/
-    Entity instantiate_prefab(const Prefab& prefab);
+    ENGINE_API Entity instantiate_prefab(const Prefab& prefab);
 
     /*=================================================================================
     Function Brief:
@@ -593,7 +600,7 @@ namespace Engine {
     Where to call it:
     When restoring a deleted entity during undo operations to preserve entity ID references.
     ==================================================================================*/
-    Entity instantiate_prefab_with_id(const Prefab& prefab, EntityID entity_id);
+    ENGINE_API Entity instantiate_prefab_with_id(const Prefab& prefab, EntityID entity_id);
 
     /*=================================================================================
     Function Brief:
@@ -607,7 +614,7 @@ namespace Engine {
     Where to call it:
     When creating a reusable template from an existing entity.
     ==================================================================================*/
-    Prefab entity_to_prefab(const Entity entity);
+    ENGINE_API Prefab entity_to_prefab(const Entity entity);
 
     /*=================================================================================
     Function Brief:
@@ -619,7 +626,7 @@ namespace Engine {
     Where to call it:
     When saving prefabs to files or transmitting over network.
     ==================================================================================*/
-    ReflectionLibrary::GenericValue prefab_to_generic_value(const Prefab& prefab);
+    ENGINE_API ReflectionLibrary::GenericValue prefab_to_generic_value(const Prefab& prefab);
 
     /*=================================================================================
     Function Brief:
@@ -631,7 +638,7 @@ namespace Engine {
     Where to call it:
     When loading prefabs from files or receiving over network.
     ==================================================================================*/
-    Prefab prefab_from_generic_value(const ReflectionLibrary::GenericValue& value);
+    ENGINE_API Prefab prefab_from_generic_value(const ReflectionLibrary::GenericValue& value);
 
     /* ====================================== //
     // Prefab Instance Management             //
@@ -650,7 +657,7 @@ namespace Engine {
     Where to call it:
     After modifying a prefab, to propagate changes to all instances.
     ==================================================================================*/
-    void update_prefab_instances(const std::string& prefab_id);
+    ENGINE_API void update_prefab_instances(const std::string& prefab_id);
 
     /*=================================================================================
     Function Brief:
@@ -665,7 +672,7 @@ namespace Engine {
     Where to call it:
     When a user manually edits a field in the inspector.
     ==================================================================================*/
-    void mark_field_overridden(Entity entity, ComponentTypeID type, const std::string& field_path);
+    ENGINE_API void mark_field_overridden(Entity entity, ComponentTypeID type, const std::string& field_path);
 
     /*=================================================================================
     Function Brief:
@@ -679,7 +686,7 @@ namespace Engine {
     Where to call it:
     When user clicks "Revert to Prefab" on a field.
     ==================================================================================*/
-    void clear_field_override(Entity entity, ComponentTypeID type, const std::string& field_path);
+    ENGINE_API void clear_field_override(Entity entity, ComponentTypeID type, const std::string& field_path);
 
     /*=================================================================================
     Function Brief:
@@ -694,7 +701,7 @@ namespace Engine {
     Where to call it:
     In UI code to show prefab-specific options.
     ==================================================================================*/
-    bool is_prefab_instance(Entity entity);
+    ENGINE_API bool is_prefab_instance(Entity entity);
 
     /*=================================================================================
     Function Brief:
@@ -709,7 +716,7 @@ namespace Engine {
     Where to call it:
     When displaying which prefab an entity is based on.
     ==================================================================================*/
-    std::string get_prefab_path(Entity entity);
+    ENGINE_API std::string get_prefab_path(Entity entity);
 
   } // namespace ECS
 } // namespace Engine

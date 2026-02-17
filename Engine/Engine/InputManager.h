@@ -17,6 +17,7 @@
 #include <glm/glm.hpp>
 #include "TypeDef.h"
 #include "KeyCodes.h"
+#include "EngineExport.h"
 #include <optional>
 
 namespace Engine
@@ -28,7 +29,7 @@ namespace Engine
    * This class provides methods to check the state of keyboard keys and mouse buttons.
    * The Update() method must be called once per frame before any other methods are used.
    */
-  class Input
+  class ENGINE_API Input
   {
   public:
     /**

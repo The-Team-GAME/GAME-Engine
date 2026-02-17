@@ -19,6 +19,7 @@
 #include <unordered_map>
 #include <memory>
 #include <type_traits>
+#include "EngineExport.h"
 
 
 namespace Engine
@@ -27,7 +28,7 @@ namespace Engine
    * @brief Abstract base class for all game scenes.
    * @details Defines the required interface for scene lifecycle management.
    */
-  class Scene {
+  class ENGINE_API Scene {
   public:
     virtual ~Scene() = default;
 
@@ -64,10 +65,10 @@ namespace Engine
 
   namespace SceneManager {
     // Declare as extern - actual definition in SceneManager.cpp
-    extern Scene* current_scene;
-    extern std::unordered_map<std::string, std::shared_ptr<Scene>> scenes;
-    extern std::vector<std::string> scene_order;
-    extern std::vector<std::shared_ptr<Scene>> scene_stack;
+    ENGINE_API extern Scene* current_scene;
+    ENGINE_API extern std::unordered_map<std::string, std::shared_ptr<Scene>> scenes;
+    ENGINE_API extern std::vector<std::string> scene_order;
+    ENGINE_API extern std::vector<std::shared_ptr<Scene>> scene_stack;
 
     /**
      * @brief Registers a new scene type with the manager.
@@ -86,49 +87,49 @@ namespace Engine
      * @brief Loads the scene with the given name and sets it as current.
      * @param name Name of the scene to load.
      */
-    void load_scene(const std::string& name);
+    ENGINE_API void load_scene(const std::string& name);
 
     /**
      * @brief Pushes a scene onto the stack without unloading the current one.
      * @param name Name of the scene to push.
      */
-    void push_scene(const std::string& name);
+    ENGINE_API void push_scene(const std::string& name);
 
     /**
      * @brief Pops the top scene from the stack and resumes the previous one.
      */
-    void pop_scene();
+    ENGINE_API void pop_scene();
 
     /**
      * @brief Unloads the current scene and performs cleanup.
      */
-    void unload_current_scene();
+    ENGINE_API void unload_current_scene();
 
     /**
      * @brief Updates the current scene each frame.
      */
-    void update();
+    ENGINE_API void update();
 
     /**
      * @brief Draws the current scene (to be removed soon).
      */
-    void draw();
+    ENGINE_API void draw();
 
     /**
      * @brief Cleans up all scenes and releases resources.
      */
-    void cleanup();
+    ENGINE_API void cleanup();
 
     /**
      * @brief Gets the name of the current scene.
      * @return Name of the current scene.
      */
-    std::string get_current_scene_name();
+    ENGINE_API std::string get_current_scene_name();
 
     /**
      * @brief Gets a list of all registered scene names.
      * @return Vector of scene names.
      */
-    std::vector<std::string> get_all_scene_names();
+    ENGINE_API std::vector<std::string> get_all_scene_names();
   }
 }

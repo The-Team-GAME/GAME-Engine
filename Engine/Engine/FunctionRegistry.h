@@ -24,6 +24,7 @@
 #include <typeindex>
 #include <any>
 #include "Logger.h"
+#include "EngineExport.h"
 #include <vector>
 
 namespace Engine {
@@ -112,12 +113,9 @@ namespace Engine {
   /// functions by signature, and std::any for type-erased storage. This ensures
   /// exactly one registry instance exists across DLL/EXE boundaries (when the
   /// singleton is exported via ENGINE_API).
-  class FunctionRegistry {
+  class ENGINE_API FunctionRegistry {
   public:
-    static FunctionRegistry& instance() {
-      static FunctionRegistry registry;
-      return registry;
-    }
+    static FunctionRegistry& instance();
 
     /// Register a function with a string name under a specific signature
     template<typename Sig>

@@ -17,6 +17,7 @@
 #pragma once
 
 #include "Types.h"
+#include "../EngineExport.h"
 #include <string>
 #include <bitset>
 #include <functional>
@@ -43,7 +44,7 @@ namespace Engine {
       Where to call it:
       During initialization or when dynamically configuring collision relationships.
       ==================================================================================*/
-      void enable_layer_collision(LayerID layer_a, LayerID layer_b);
+      ENGINE_API void enable_layer_collision(LayerID layer_a, LayerID layer_b);
 
       /*=================================================================================
       Function Brief:
@@ -56,7 +57,7 @@ namespace Engine {
       Where to call it:
       During initialization or when dynamically configuring collision relationships.
       ==================================================================================*/
-      void enable_layer_collision(const std::string& layer_a_name, const std::string& layer_b_name);
+      ENGINE_API void enable_layer_collision(const std::string& layer_a_name, const std::string& layer_b_name);
 
       /*=================================================================================
       Function Brief:
@@ -70,7 +71,7 @@ namespace Engine {
       Where to call it:
       When dynamically changing collision relationships.
       ==================================================================================*/
-      void disable_layer_collision(LayerID layer_a, LayerID layer_b);
+      ENGINE_API void disable_layer_collision(LayerID layer_a, LayerID layer_b);
 
       /*=================================================================================
       Function Brief:
@@ -83,7 +84,7 @@ namespace Engine {
       Where to call it:
       When dynamically changing collision relationships.
       ==================================================================================*/
-      void disable_layer_collision(const std::string& layer_a_name, const std::string& layer_b_name);
+      ENGINE_API void disable_layer_collision(const std::string& layer_a_name, const std::string& layer_b_name);
 
       /*=================================================================================
       Function Brief:
@@ -99,7 +100,7 @@ namespace Engine {
       Where to call it:
       In collision detection to filter collisions based on layers.
       ==================================================================================*/
-      bool should_layers_collide(LayerID layer_a, LayerID layer_b);
+      ENGINE_API bool should_layers_collide(LayerID layer_a, LayerID layer_b);
 
       /*=================================================================================
       Function Brief:
@@ -115,7 +116,7 @@ namespace Engine {
       Where to call it:
       In collision detection when checking if two entities should collide.
       ==================================================================================*/
-      bool should_layers_collide(const LayerSignature& signature_a, const LayerSignature& signature_b);
+      ENGINE_API bool should_layers_collide(const LayerSignature& signature_a, const LayerSignature& signature_b);
 
       /*=================================================================================
       Function Brief:
@@ -128,7 +129,7 @@ namespace Engine {
       Where to call it:
       When bulk-configuring collision relationships for a layer.
       ==================================================================================*/
-      void set_layer_collisions(LayerID layer, const std::bitset<MAX_LAYERS>& collides_with);
+      ENGINE_API void set_layer_collisions(LayerID layer, const std::bitset<MAX_LAYERS>& collides_with);
 
       /*=================================================================================
       Function Brief:
@@ -143,7 +144,7 @@ namespace Engine {
       Where to call it:
       When querying collision configuration or for debugging.
       ==================================================================================*/
-      std::bitset<MAX_LAYERS> get_layer_collisions(LayerID layer);
+      ENGINE_API std::bitset<MAX_LAYERS> get_layer_collisions(LayerID layer);
 
       /*=================================================================================
       Function Brief:
@@ -152,7 +153,7 @@ namespace Engine {
       Where to call it:
       During initialization or when resetting collision configuration.
       ==================================================================================*/
-      void reset_to_default();
+      ENGINE_API void reset_to_default();
 
       /*=================================================================================
       Function Brief:
@@ -161,7 +162,7 @@ namespace Engine {
       Where to call it:
       When starting fresh with collision configuration.
       ==================================================================================*/
-      void clear_all();
+      ENGINE_API void clear_all();
 
       /*=================================================================================
       Function Brief:
@@ -197,7 +198,7 @@ namespace Engine {
       Where to call it:
       During initialization when setting up gameplay collision logic.
       ==================================================================================*/
-      void register_collision_callback(LayerID layer_a, LayerID layer_b, CollisionCallback callback);
+      ENGINE_API void register_collision_callback(LayerID layer_a, LayerID layer_b, CollisionCallback callback);
 
       /*=================================================================================
       Function Brief:
@@ -214,7 +215,7 @@ namespace Engine {
       Where to call it:
       During initialization when setting up gameplay collision logic.
       ==================================================================================*/
-      void register_collision_callback(const std::string& layer_a_name, const std::string& layer_b_name, CollisionCallback callback);
+      ENGINE_API void register_collision_callback(const std::string& layer_a_name, const std::string& layer_b_name, CollisionCallback callback);
 
       /*=================================================================================
       Function Brief:
@@ -227,7 +228,7 @@ namespace Engine {
       Where to call it:
       When you want to remove collision logic for a layer pair.
       ==================================================================================*/
-      void unregister_collision_callback(LayerID layer_a, LayerID layer_b);
+      ENGINE_API void unregister_collision_callback(LayerID layer_a, LayerID layer_b);
 
       /*=================================================================================
       Function Brief:
@@ -240,7 +241,7 @@ namespace Engine {
       Where to call it:
       When you want to remove collision logic for a layer pair.
       ==================================================================================*/
-      void unregister_collision_callback(const std::string& layer_a_name, const std::string& layer_b_name);
+      ENGINE_API void unregister_collision_callback(const std::string& layer_a_name, const std::string& layer_b_name);
 
       /*=================================================================================
       Function Brief:
@@ -249,7 +250,7 @@ namespace Engine {
       Where to call it:
       When resetting gameplay systems or cleaning up.
       ==================================================================================*/
-      void clear_all_collision_callbacks();
+      ENGINE_API void clear_all_collision_callbacks();
 
       /*=================================================================================
       Function Brief:
@@ -263,7 +264,7 @@ namespace Engine {
       Where to call it:
       Internally by CollisionSystem when a collision is detected.
       ==================================================================================*/
-      void invoke_collision_callbacks(Entity entity_a, Entity entity_b);
+      ENGINE_API void invoke_collision_callbacks(Entity entity_a, Entity entity_b);
 
       /*=================================================================================
       Function Brief:
@@ -279,7 +280,7 @@ namespace Engine {
       Where to call it:
       For debugging or conditional callback registration.
       ==================================================================================*/
-      bool has_collision_callback(LayerID layer_a, LayerID layer_b);
+      ENGINE_API bool has_collision_callback(LayerID layer_a, LayerID layer_b);
 
     } // namespace LayerRegistry
   } // namespace ECS

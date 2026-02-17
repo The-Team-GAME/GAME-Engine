@@ -35,6 +35,10 @@ namespace Engine {
     // PrefabImpl Implementation
     // ============================================================================
 
+    PrefabImpl::PrefabImpl(PrefabImpl&&) noexcept = default;
+    PrefabImpl& PrefabImpl::operator=(PrefabImpl&&) noexcept = default;
+    PrefabImpl::~PrefabImpl() = default;
+
     const ComponentSignature& PrefabImpl::get_signature() const {
       return signature;
     }
