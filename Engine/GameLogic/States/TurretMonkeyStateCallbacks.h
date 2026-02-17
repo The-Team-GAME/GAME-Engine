@@ -1,5 +1,21 @@
+//-----------------------------------------------------------------------------------
+// file:    TurretMonkeyStateCallbacks.h
+// project: Monkey Stole My GPA
+//
+// author:  Ryan Ang An Kiat (100%)
+//          Primary author
+//
+// email:   a.ryanankiat@digipen.edu
+//
+// brief:   Turret Monkey state machine callback implementations (serializable)
+//
+// Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
+#pragma once
+
 #include "pch.h"
-#include "States.h"
+#include "../../Engine/Engine/Systems/CollisionSystem.h"
+#include "../../Engine/Engine/Systems/PhysicsSystem.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/EnemyHealthComponent.h"
 
@@ -10,7 +26,7 @@ namespace TurretMonkeyStateCallbacks
   // Bannana Projectile
   // ========================================================================
 
-  void fire_turret_projectile(Engine::ECS::Entity& entity) {
+  inline void fire_turret_projectile(Engine::ECS::Entity& entity) {
     auto* flip = entity.get_component<Components::Flip>();
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
     auto* transform = entity.get_component<Components::Transform2D>();
@@ -95,7 +111,7 @@ namespace TurretMonkeyStateCallbacks
   // Spray Cloud Projectile
   // ========================================================================
 
-  void fire_spray_cloud(Engine::ECS::Entity& entity) {
+  inline void fire_spray_cloud(Engine::ECS::Entity& entity) {
     auto* flip = entity.get_component<Components::Flip>();
     auto* transform = entity.get_component<Components::Transform2D>();
 
@@ -246,7 +262,7 @@ namespace TurretMonkeyStateCallbacks
   // Idle State Callbacks
   // ========================================================================
 
-  void idle_on_enter(Engine::ECS::Entity entity) {
+  inline void idle_on_enter(Engine::ECS::Entity entity) {
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
     if (Turret_monkey) {
       // Store when we entered idle (for recovery delay after being hit)
@@ -255,7 +271,7 @@ namespace TurretMonkeyStateCallbacks
     Log::info("Turret Monkey: Entered Idle state");
   }
 
-  void idle_on_update(Engine::ECS::Entity entity) {
+  inline void idle_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
 
@@ -295,11 +311,11 @@ namespace TurretMonkeyStateCallbacks
   // Chasing State Callbacks
   // ========================================================================
 
-  void chasing_on_enter([[maybe_unused]] Engine::ECS::Entity entity) {
+  inline void chasing_on_enter([[maybe_unused]] Engine::ECS::Entity entity) {
     Log::info("Turret Monkey: Entered Chasing state");
   }
 
-  void chasing_on_update(Engine::ECS::Entity entity) {
+  inline void chasing_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* Turret_monkey_transform = entity.get_component<Components::Transform2D>();
@@ -351,7 +367,7 @@ namespace TurretMonkeyStateCallbacks
     }
   }
 
-  void chasing_on_exit([[maybe_unused]] Engine::ECS::Entity entity) {
+  inline void chasing_on_exit([[maybe_unused]] Engine::ECS::Entity entity) {
 
   }
 
@@ -359,7 +375,7 @@ namespace TurretMonkeyStateCallbacks
   // Windup State Callbacks
   // ========================================================================
 
-  void windup_on_enter(Engine::ECS::Entity entity) {
+  inline void windup_on_enter(Engine::ECS::Entity entity) {
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
     auto* rigid = entity.get_component<Components::RigidBody>();
 
@@ -376,7 +392,7 @@ namespace TurretMonkeyStateCallbacks
     Log::info("Turret Monkey: Winding up for attack");
   }
 
-  void windup_on_update(Engine::ECS::Entity entity) {
+  inline void windup_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
     auto* flip = entity.get_component<Components::Flip>();
@@ -411,7 +427,7 @@ namespace TurretMonkeyStateCallbacks
   // Turret (Stuck to Wall) State Callbacks
   // ========================================================================
 
-  void turret_on_enter(Engine::ECS::Entity entity) {
+  inline void turret_on_enter(Engine::ECS::Entity entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
 
@@ -428,7 +444,7 @@ namespace TurretMonkeyStateCallbacks
     Log::info("Turret Monkey: Entered Turret state (stuck to wall)");
   }
 
-  void turret_on_update(Engine::ECS::Entity entity) {
+  inline void turret_on_update(Engine::ECS::Entity entity) {
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* flip = entity.get_component<Components::Flip>();
@@ -469,7 +485,7 @@ namespace TurretMonkeyStateCallbacks
     }
   }
 
-  void turret_on_exit(Engine::ECS::Entity) {
+  inline void turret_on_exit(Engine::ECS::Entity) {
     // Leaving the turret state does not itself re-enable gravity.
     // Gravity is turned back on explicitly in states like Hit.
     Log::info("Turret Monkey: Exited Turret state");
@@ -479,7 +495,7 @@ namespace TurretMonkeyStateCallbacks
   // Turret Windup State Callbacks (while stuck to ceiling)
   // ========================================================================
 
-  void turret_windup_on_enter(Engine::ECS::Entity entity) {
+  inline void turret_windup_on_enter(Engine::ECS::Entity entity) {
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
     auto* rigid = entity.get_component<Components::RigidBody>();
 
@@ -496,7 +512,7 @@ namespace TurretMonkeyStateCallbacks
     Log::info("Turret Monkey: Entered TurretWindup state");
   }
 
-  void turret_windup_on_update(Engine::ECS::Entity entity) {
+  inline void turret_windup_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
     auto* flip = entity.get_component<Components::Flip>();
@@ -524,14 +540,14 @@ namespace TurretMonkeyStateCallbacks
     }
   }
 
-  void turret_windup_on_exit([[maybe_unused]] Engine::ECS::Entity entity) {
+  inline void turret_windup_on_exit([[maybe_unused]] Engine::ECS::Entity entity) {
   }
 
   // ========================================================================
   // Turret Attacking State Callbacks (ceiling projectile)
   // ========================================================================
 
-  void turret_attacking_on_enter(Engine::ECS::Entity entity) {
+  inline void turret_attacking_on_enter(Engine::ECS::Entity entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
 
     // Stay fixed while firing
@@ -546,7 +562,7 @@ namespace TurretMonkeyStateCallbacks
     Log::info("Turret Monkey: Entered TurretAttacking state (ceiling projectile)");
   }
 
-  void turret_attacking_on_update(Engine::ECS::Entity entity) {
+  inline void turret_attacking_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* animation = entity.get_component<Components::Animation>();
 
@@ -558,7 +574,7 @@ namespace TurretMonkeyStateCallbacks
     }
   }
 
-  void turret_attacking_on_exit(Engine::ECS::Entity entity) {
+  inline void turret_attacking_on_exit(Engine::ECS::Entity entity) {
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
     if (Turret_monkey) {
       // Start cooldown from the end of the attack
@@ -570,7 +586,7 @@ namespace TurretMonkeyStateCallbacks
   // Attacking State Callbacks
   // ========================================================================
 
-  void attacking_on_enter(Engine::ECS::Entity entity) {
+  inline void attacking_on_enter(Engine::ECS::Entity entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
 
     // Stop moving while firing
@@ -585,7 +601,7 @@ namespace TurretMonkeyStateCallbacks
   }
 
 
-  void attacking_on_update(Engine::ECS::Entity entity) {
+  inline void attacking_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* animation = entity.get_component<Components::Animation>();
 
@@ -595,7 +611,7 @@ namespace TurretMonkeyStateCallbacks
     }
   }
 
-  void attacking_on_exit(Engine::ECS::Entity entity) {
+  inline void attacking_on_exit(Engine::ECS::Entity entity) {
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
     if (Turret_monkey) {
       // Update last attack time for cooldown
@@ -610,7 +626,7 @@ namespace TurretMonkeyStateCallbacks
   }
 
 
-  void hit_on_enter(Engine::ECS::Entity entity) {
+  inline void hit_on_enter(Engine::ECS::Entity entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     if (rigid) {
       // Ensure gravity is turned back on when we get hit
@@ -619,7 +635,7 @@ namespace TurretMonkeyStateCallbacks
     Log::info("tURRET Monkey: Stunned!");
   }
 
-  void hit_on_update(Engine::ECS::Entity entity) {
+  inline void hit_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* Turret_monkey = entity.get_component<Components::TurretMonkey>();
     auto* rigid = entity.get_component<Components::RigidBody>();
@@ -648,7 +664,7 @@ namespace TurretMonkeyStateCallbacks
     }
   }
 
-  void hit_on_exit(Engine::ECS::Entity entity) {
+  inline void hit_on_exit(Engine::ECS::Entity entity) {
     // removes paretn component on exit
     if (entity.has_component<Components::Parent>()) {
       entity.remove_component<Components::Parent>();
@@ -659,11 +675,11 @@ namespace TurretMonkeyStateCallbacks
   // Death State Callbacks
   // ========================================================================
 
-  void death_on_enter([[maybe_unused]] Engine::ECS::Entity entity) {
+  inline void death_on_enter([[maybe_unused]] Engine::ECS::Entity entity) {
     Log::info("Turret Monkey: Died!");
   }
 
-  void death_on_update(Engine::ECS::Entity entity) {
+  inline void death_on_update(Engine::ECS::Entity entity) {
     auto* animation = entity.get_component<Components::Animation>();
     if (animation && animation->has_ended()) {
       Engine::ECS::destroy_entity(entity);
@@ -671,156 +687,11 @@ namespace TurretMonkeyStateCallbacks
     }
   }
 
-  void death_on_exit([[maybe_unused]] Engine::ECS::Entity entity) {
+  inline void death_on_exit([[maybe_unused]] Engine::ECS::Entity entity) {
     // Should not happen unless respawning
   }
 
 } // namespace TurretMonkeyStateCallbacks
-
-namespace TurretMonkeyStates
-{
-  Components::StateMachine create_state_machine()
-  {
-    // ========================================================================
-    // Audio Setup
-    // ========================================================================
-    Components::StateAudio footstep_audio;
-    footstep_audio.sound = Engine::Resources::load_sound("sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav");
-    footstep_audio.loop = true;
-    footstep_audio.volume = 0.5f;
-    footstep_audio.stop_on_exit = true;
-
-    Components::StateAudio attack_audio;
-    attack_audio.sound = Engine::Resources::load_sound("sounds/SFX/Monkey/Monkey VO/Monkey-2_2_Attack.wav");
-    attack_audio.loop = false;
-    attack_audio.volume = 0.6f;
-    attack_audio.stop_on_exit = false;
-
-    Components::StateAudio hurt_audio;
-    hurt_audio.sound = Engine::Resources::load_sound("sounds/SFX/Monkey/Monkey VO/Monkey-1_8_Hurt.wav");
-    hurt_audio.loop = false;
-    hurt_audio.volume = 0.6f;
-    hurt_audio.stop_on_exit = false;
-
-    // ========================================================================
-    // Turret Monkey Idle State
-    // ========================================================================
-    Components::StateAnimation Turret_monkey_idle_anim;
-    Turret_monkey_idle_anim.texture = Components::Texture(Engine::Resources::load_texture("images/TurretMonkeySpriteSheets/walk.png"));
-    Turret_monkey_idle_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 10, 10);
-    Turret_monkey_idle_anim.animation = Components::Animation(10, 0.1f);
-    Turret_monkey_idle_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
-
-    Components::State Turret_monkey_idle("Idle", Turret_monkey_idle_anim);
-
-    // ========================================================================
-    // Turret Monkey Chase State
-    // ========================================================================
-    Components::StateAnimation Turret_monkey_chasing_anim;
-    Turret_monkey_chasing_anim.texture = Components::Texture(Engine::Resources::load_texture("images/TurretMonkeySpriteSheets/walk.png"));
-    Turret_monkey_chasing_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 10, 10);
-    Turret_monkey_chasing_anim.animation = Components::Animation(10, 0.1f);
-    Turret_monkey_chasing_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
-
-    Components::State Turret_monkey_chasing("Chasing", Turret_monkey_chasing_anim, footstep_audio);
-
-    // ========================================================================
-    // Turret Monkey Turret State
-    // ========================================================================
-    Components::StateAnimation Turret_monkey_turret_anim;
-    Turret_monkey_turret_anim.texture = Components::Texture(Engine::Resources::load_texture("images/TurretMonkeySpriteSheets/ceiling_atk.png"));
-    Turret_monkey_turret_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 6, 3);
-    Turret_monkey_turret_anim.animation = Components::Animation(3, 0.5f);
-    Turret_monkey_turret_anim.scale = Math::Vec2D(TURRET_WIDTH, TURRET_HEIGHT);
-
-    // Turret state uses ceiling_atk sprite and turret callbacks
-    Components::State Turret_monkey_turret("Turret", Turret_monkey_turret_anim);
-
-    // ========================================================================
-    // Turret Monkey Turret Windup State (ceiling windup before shot)
-    // ========================================================================
-    Components::StateAnimation Turret_monkey_turret_windup_anim;
-    Turret_monkey_turret_windup_anim.texture = Components::Texture(Engine::Resources::load_texture("images/TurretMonkeySpriteSheets/ceiling_atk.png"));
-    Turret_monkey_turret_windup_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 6, 3);
-    Turret_monkey_turret_windup_anim.animation = Components::Animation({ 0.2f, 0.3f, 0.6f });
-    Turret_monkey_turret_windup_anim.scale = Math::Vec2D(TURRET_WIDTH, TURRET_HEIGHT);
-
-    Components::State Turret_monkey_turret_windup("TurretWindup", Turret_monkey_turret_windup_anim);
-
-    // ========================================================================
-    // Turret Monkey Turret Attacking State (ceiling projectile shot)
-    // ========================================================================
-    Components::StateAnimation Turret_monkey_turret_attacking_anim;
-    Turret_monkey_turret_attacking_anim.texture = Components::Texture(Engine::Resources::load_texture("images/TurretMonkeySpriteSheets/ceiling_atk.png"));
-    Turret_monkey_turret_attacking_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 6, 6);
-    Turret_monkey_turret_attacking_anim.animation = Components::Animation({ 0.0f,0.0f,0.0f,0.2f,0.2f,0.3f });
-    Turret_monkey_turret_attacking_anim.scale = Math::Vec2D(TURRET_WIDTH, TURRET_HEIGHT);
-
-    Components::State Turret_monkey_turret_attacking("TurretAttacking", Turret_monkey_turret_attacking_anim, attack_audio);
-
-    // ========================================================================
-    // Turret Monkey Windup State
-    // ========================================================================
-    Components::StateAnimation Turret_monkey_windup_anim;
-    Turret_monkey_windup_anim.texture = Components::Texture(Engine::Resources::load_texture("images/TurretMonkeySpriteSheets/atk.png"));
-    Turret_monkey_windup_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 6, 3);
-    Turret_monkey_windup_anim.animation = Components::Animation({ 0.1f,0.3f,0.5f });
-    Turret_monkey_windup_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
-
-    Components::State Turret_monkey_windup("Windup", Turret_monkey_windup_anim);
-
-    // ========================================================================
-    // Turret Monkey Attacking State
-    // ========================================================================
-    Components::StateAnimation Turret_monkey_attacking_anim;
-    Turret_monkey_attacking_anim.texture = Components::Texture(Engine::Resources::load_texture("images/TurretMonkeySpriteSheets/atk.png"));
-    Turret_monkey_attacking_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 6, 6);
-    Turret_monkey_attacking_anim.animation = Components::Animation({ 0.0f,0.0f,0.0f,0.1f,0.1f,0.1f });
-    Turret_monkey_attacking_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
-
-    Components::State Turret_monkey_attacking("Attacking", Turret_monkey_attacking_anim, attack_audio);
-
-    // ========================================================================
-    // Turret Monkey Hit State
-    // ========================================================================
-    Components::StateAnimation Turret_monkey_hit_anim;
-    Turret_monkey_hit_anim.texture = Components::Texture(Engine::Resources::load_texture("images/TurretMonkeySpriteSheets/walk.png"));
-    Turret_monkey_hit_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 10, 10);
-    Turret_monkey_hit_anim.animation = Components::Animation(10, 0.1f);
-    Turret_monkey_hit_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
-
-    Components::State Turret_monkey_hit("Hit", Turret_monkey_hit_anim, hurt_audio);
-
-    // ========================================================================
-    // Turret Monkey Death State
-    // ========================================================================
-    Components::StateAnimation Turret_monkey_death_anim;
-    Turret_monkey_death_anim.texture = Components::Texture(Engine::Resources::load_texture("images/TurretMonkeySpriteSheets/walk.png"));
-    Turret_monkey_death_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 10, 10);
-    Turret_monkey_death_anim.animation = Components::Animation(10, 0.1f);
-    Turret_monkey_death_anim.scale = Math::Vec2D(WIDTH, HEIGHT);
-
-    Components::State Turret_monkey_death("Death", Turret_monkey_death_anim);
-
-    // ========================================================================
-    // Build and return state machine
-    // ========================================================================
-    Components::StateMachine Turret_monkey_sm;
-    Turret_monkey_sm.blueprint_id = "TurretMonkey";
-    Turret_monkey_sm.add_state(Turret_monkey_idle);
-    Turret_monkey_sm.add_state(Turret_monkey_chasing);
-    Turret_monkey_sm.add_state(Turret_monkey_turret);
-    Turret_monkey_sm.add_state(Turret_monkey_turret_windup);
-    Turret_monkey_sm.add_state(Turret_monkey_turret_attacking);
-    Turret_monkey_sm.add_state(Turret_monkey_windup);
-    Turret_monkey_sm.add_state(Turret_monkey_attacking);
-    Turret_monkey_sm.add_state(Turret_monkey_hit);
-    Turret_monkey_sm.add_state(Turret_monkey_death);
-    Turret_monkey_sm.set_initial_state("Idle");
-
-    return Turret_monkey_sm;
-  }
-}
 
 // Register blueprint + all turret monkey state callbacks
 REGISTER_STATE_MACHINE_BLUEPRINT(TurretMonkey, "Idle",

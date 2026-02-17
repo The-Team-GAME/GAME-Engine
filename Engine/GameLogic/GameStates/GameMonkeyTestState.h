@@ -14,7 +14,8 @@
 #pragma once
 
 #include "pch.h"
-#include "../States/States.h"
+#include "../States/PlayerStateMachine.h"
+#include "../States/GamerMonkeyStateMachine.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/HeartrateComponent.h"
 #include "../Components/HealthComponents.h"

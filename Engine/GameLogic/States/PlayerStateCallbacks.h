@@ -1,5 +1,22 @@
+//-----------------------------------------------------------------------------------
+// file:    PlayerStateCallbacks.h
+// project: Monkey Stole My GPA
+//
+// author:  Chew Shee Yang (50%)
+//          Primary author
+//          Cheng Ming Xian (50%)
+//          Co-Author
+// 
+// email:   chew.s@digipen.edu
+//          c.mingxian@digipen.edu
+//
+// brief:   Player state machine callback implementations (serializable)
+//
+// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
+#pragma once
+
 #include "pch.h"
-#include "States.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/HeartrateComponent.h"
 
@@ -8,13 +25,12 @@ namespace {
   f32 dash_cooldown;
   f32 terminal_vel_placeholder;
 }
-
 namespace PlayerStateCallbacks
 {
   // ========================================================================
   // Taking Updates in to handle the states
   // ========================================================================
-  void take_input(Engine::ECS::Entity entity)
+  void take_input(ECS::Entity entity)
   {
     Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
     Components::RigidBody* player_rigid = entity.get_component<Components::RigidBody>();
@@ -29,7 +45,7 @@ namespace PlayerStateCallbacks
     }
 
     // Handling cooldowns
-    if (dash_cooldown > 0) { dash_cooldown -= Engine::Time::get_fixed_dt(); }
+    if (dash_cooldown > 0) { dash_cooldown -= Time::get_fixed_dt(); }
 
     // Check for attack input
     if (Engine::Input::is_pressed(Engine::KeyCode::J))
@@ -39,13 +55,13 @@ namespace PlayerStateCallbacks
     }
 
     // Check for movement input
-    if (Engine::Input::is_held(Engine::KeyCode::ShiftLeft) && dash_cooldown <= 0.f)
+    if (Input::is_held(KeyCode::ShiftLeft) && dash_cooldown <= 0.f)
     {
       state_machine->change_state("Dash");
       return;
     }
 
-    if (Engine::Input::is_held(Engine::KeyCode::Space)
+    if (Input::is_held(KeyCode::Space)
       && player_rigid->on_ground
       && !player_rigid->is_jumping)
     {
@@ -53,13 +69,13 @@ namespace PlayerStateCallbacks
       return;
     }
 
-    if (Engine::Input::is_held(Engine::KeyCode::D) || Engine::Input::is_held(Engine::KeyCode::A))
+    if (Input::is_held(KeyCode::D) || Input::is_held(KeyCode::A))
     {
-      if (Engine::Input::is_held(Engine::KeyCode::A)) //left
+      if (Input::is_held(KeyCode::A)) //left
       {
         flip->value.x = -1.f;
       }
-      else if (Engine::Input::is_held(Engine::KeyCode::D)) //right
+      else if (Input::is_held(KeyCode::D)) //right
       {
         flip->value.x = 1.f;
       }
@@ -84,14 +100,14 @@ namespace PlayerStateCallbacks
   // Idle State Callbacks
   // ========================================================================
 
-  void idle_on_enter([[maybe_unused]] Engine::ECS::Entity entity) {
+  inline void idle_on_enter([[maybe_unused]] Engine::ECS::Entity entity) {
     /* Empty By Design */
     Log::info("Player: Entered Idle state");
   }
 
-  void idle_on_update(Engine::ECS::Entity entity) {
+  inline void idle_on_update(Engine::ECS::Entity entity) {
     take_input(entity);
-    std::cout << "Idle State Update\n";
+    std::cout << "Idle State Update 2\n";
   }
 #pragma endregion
 
@@ -100,16 +116,16 @@ namespace PlayerStateCallbacks
   // Walking State Callbacks
   // ========================================================================
 
-  void walking_on_enter([[maybe_unused]] Engine::ECS::Entity entity)
+  inline void walking_on_enter([[maybe_unused]] Engine::ECS::Entity entity)
   {
     Log::info("Player: Entered Walking state");
 
   }
 
-  void walking_on_update(Engine::ECS::Entity entity)
+  inline void walking_on_update(Engine::ECS::Entity entity)
   {
     // we set an exit criteria for the walking state instead of reseting it every frame as the animation sequence needs the state to be constant for this to work
-    if (!Engine::Input::is_held(Engine::KeyCode::A) && !Engine::Input::is_held(Engine::KeyCode::D))
+    if (!Input::is_held(KeyCode::A) && !Input::is_held(KeyCode::D))
     {
       Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
       state_machine->change_state("Idle");
@@ -117,7 +133,7 @@ namespace PlayerStateCallbacks
     take_input(entity);
   }
 
-  void walking_on_exit([[maybe_unused]] Engine::ECS::Entity entity)
+  inline void walking_on_exit([[maybe_unused]] Engine::ECS::Entity entity)
   {
     // Empty by design
   }
@@ -128,7 +144,7 @@ namespace PlayerStateCallbacks
   // Jumping State Callbacks
   // ========================================================================
 
-  void jumping_on_enter(Engine::ECS::Entity entity)
+  inline void jumping_on_enter(Engine::ECS::Entity entity)
   {
     Log::info("Player: Entered Jumping state");
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
@@ -143,7 +159,7 @@ namespace PlayerStateCallbacks
     }
   }
 
-  void jumping_on_update(Engine::ECS::Entity entity)
+  inline void jumping_on_update(Engine::ECS::Entity entity)
   {
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
@@ -157,7 +173,7 @@ namespace PlayerStateCallbacks
     take_input(entity);
   }
 
-  void jumping_on_exit(Engine::ECS::Entity entity)
+  inline void jumping_on_exit(Engine::ECS::Entity entity)
   {
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
@@ -171,7 +187,7 @@ namespace PlayerStateCallbacks
   // Dash State Callbacks
   // ========================================================================
 
-  void dash_on_enter(Engine::ECS::Entity entity)
+  inline void dash_on_enter(ECS::Entity entity)
   {
     Log::info("Player: Entered Dashing state");
 
@@ -187,7 +203,7 @@ namespace PlayerStateCallbacks
     terminal_vel_placeholder = rigid->x_terminal_velocity;
   }
 
-  void dash_on_update(Engine::ECS::Entity entity)
+  inline void dash_on_update(ECS::Entity entity)
   {
 
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
@@ -205,10 +221,10 @@ namespace PlayerStateCallbacks
     }
     rigid->x_terminal_velocity = player_comp->dash_speed;
     rigid->velocity.x = flip->value.x * player_comp->dash_speed;
-    player_comp->dash_timer -= Engine::Time::get_fixed_dt();
+    player_comp->dash_timer -= Time::get_fixed_dt();
   }
 
-  void dash_on_exit(Engine::ECS::Entity entity)
+  inline void dash_on_exit(ECS::Entity entity)
   {
     Log::info("Player: Exited Dashing state");
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
@@ -226,7 +242,7 @@ namespace PlayerStateCallbacks
   // Attack 1 State Callbacks (First Punch)
   // ========================================================================
 
-  void attack1_on_enter(Engine::ECS::Entity entity) {
+  inline void attack1_on_enter(Engine::ECS::Entity entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
     auto* player_comp = entity.get_component<Components::Player>();
@@ -284,7 +300,7 @@ namespace PlayerStateCallbacks
     Log::info("Player: Attack 1 (First Punch)");
   }
 
-  void attack1_on_update(Engine::ECS::Entity entity) {
+  inline void attack1_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* animation = entity.get_component<Components::Animation>();
 
@@ -318,7 +334,7 @@ namespace PlayerStateCallbacks
   // Attack 2 State Callbacks (Second Punch)
   // ========================================================================
 
-  void attack2_on_enter(Engine::ECS::Entity entity) {
+  inline void attack2_on_enter(Engine::ECS::Entity entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
     auto* player_comp = entity.get_component<Components::Player>();
@@ -376,7 +392,7 @@ namespace PlayerStateCallbacks
     Log::info("Player: Attack 2 (Second Punch)");
   }
 
-  void attack2_on_update(Engine::ECS::Entity entity) {
+  inline void attack2_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* animation = entity.get_component<Components::Animation>();
 
@@ -410,7 +426,7 @@ namespace PlayerStateCallbacks
   // Attack 3 State Callbacks (Third Punch - Finisher)
   // ========================================================================
 
-  void attack3_on_enter(Engine::ECS::Entity entity) {
+  inline void attack3_on_enter(Engine::ECS::Entity entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
     auto* player_comp = entity.get_component<Components::Player>();
@@ -468,7 +484,7 @@ namespace PlayerStateCallbacks
     Log::info("Player: Attack 3 (Third Punch - Finisher!)");
   }
 
-  void attack3_on_update(Engine::ECS::Entity entity) {
+  inline void attack3_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* animation = entity.get_component<Components::Animation>();
 
@@ -493,12 +509,12 @@ namespace PlayerStateCallbacks
   // Death State Callbacks
   // ========================================================================
 
-  void death_on_enter([[maybe_unused]] Engine::ECS::Entity entity)
+  inline void death_on_enter([[maybe_unused]] ECS::Entity entity)
   {
     Log::info("Player: Died!");
   }
 
-  void death_on_update(Engine::ECS::Entity entity)
+  inline void death_on_update(ECS::Entity entity)
   {
     Components::Animation* animation = entity.get_component<Components::Animation>();
     if (animation && animation->has_ended()) {
@@ -510,187 +526,17 @@ namespace PlayerStateCallbacks
     }
   }
 
-  void death_on_exit([[maybe_unused]] Engine::ECS::Entity entity)
+  inline void death_on_exit([[maybe_unused]] ECS::Entity entity)
   {
     Log::info("Player: Exited Death state");
     //Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
     //assert(state_machine);
     //state_machine->change_state("Idle");
-    std::string scene = Engine::SceneManager::get_current_scene_name();
-    Engine::SceneManager::load_scene(scene);
+    std::string scene = SceneManager::get_current_scene_name();
+    SceneManager::load_scene(scene);
   }
 #pragma endregion
 } // namespace PlayerStateCallbacks
-
-namespace PlayerStates
-{
-  Components::StateMachine create_state_machine()
-  {
-    // ========================================================================
-    // Audio Setup
-    // ========================================================================
-    Components::StateAudio walk_audio;
-    walk_audio.sound = Engine::Resources::load_sound("sounds/SFX/Player/Player Footstep.wav");
-    walk_audio.loop = true;
-    walk_audio.volume = 0.5f;
-    walk_audio.stop_on_exit = true;
-
-    Components::StateAudio jump_audio;
-    jump_audio.sound = Engine::Resources::load_sound("sounds/SFX/Player/Player Jump (DJ SY Edition).wav");
-    jump_audio.loop = false;
-    jump_audio.volume = 0.5f;
-    jump_audio.stop_on_exit = false;
-
-    Components::StateAudio attack_audio;
-    attack_audio.sound = Engine::Resources::load_sound("sounds/SFX/Player/Player Swing.wav");
-    attack_audio.loop = false;
-    attack_audio.volume = 0.2f;
-    attack_audio.stop_on_exit = false;
-
-
-    // ========================================================================
-    // FMOD Audio Setup (NEW SYSTEM - preferred if FMOD banks are available)
-    // ========================================================================
-    // NOTE: Uncomment these when you have FMOD Studio events created and banks built
-
-
-    Components::FMODStateAudio fmod_hurt_audio;
-    fmod_hurt_audio.event_path = "event:/SFX/PlayerHurt";
-    fmod_hurt_audio.loop = false;
-    fmod_hurt_audio.volume = 0.6f;
-    fmod_hurt_audio.stop_on_state_exit = false;
-
-    Components::FMODStateAudio fmod_walking_audio;
-    fmod_walking_audio.event_path = "event:/SFX/PlayerWalking";
-    fmod_walking_audio.loop = false;
-    fmod_walking_audio.volume = 0.6f;
-    fmod_walking_audio.stop_on_state_exit = false;
-
-    Components::FMODStateAudio fmod_jump_audio;
-    fmod_jump_audio.event_path = "event:/SFX/PlayerJump";
-    fmod_jump_audio.loop = false;
-    fmod_jump_audio.volume = 0.6f;
-    fmod_jump_audio.stop_on_state_exit = false;
-
-    Components::FMODStateAudio fmod_dash_audio;
-    fmod_dash_audio.event_path = "event:/SFX/PlayerDash";
-    fmod_dash_audio.loop = false;
-    fmod_dash_audio.volume = 0.6f;
-    fmod_dash_audio.stop_on_state_exit = false;
-
-    Components::FMODStateAudio fmod_attack_audio;
-    fmod_attack_audio.event_path = "event:/SFX/PlayerPunch";
-    fmod_attack_audio.loop = false;
-    fmod_attack_audio.volume = 0.2f;
-    fmod_attack_audio.stop_on_state_exit = false;
-
-    // ========================================================================
-    // Player Idle State
-    // ========================================================================
-    Components::StateAnimation player_idle_anim;
-    player_idle_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_idle_spritesheet.png"));
-    player_idle_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 24, 24);
-    player_idle_anim.animation = Components::Animation(24, 0.1f);
-    player_idle_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
-
-    Components::State player_idle("Idle", player_idle_anim);
-
-    // ========================================================================
-    // Player Walking State
-    // ========================================================================
-    Components::StateAnimation player_walking_anim;
-    player_walking_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_run_spritesheet.png"));
-    player_walking_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 8, 8);
-    player_walking_anim.animation = Components::Animation(8, 0.1f);
-    player_walking_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
-
-    Components::State player_walking("Walking", player_walking_anim, walk_audio, fmod_walking_audio);
-
-    // ========================================================================
-    // Player Jumping State
-    // ========================================================================
-    Components::StateAnimation player_jumping_anim;
-    player_jumping_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_jump_spritesheet.png"));
-    player_jumping_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 13, 13);
-    player_jumping_anim.animation = Components::Animation(8, 0.1f);
-    player_jumping_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
-
-    Components::State player_jumping("Jumping", player_jumping_anim, jump_audio, fmod_jump_audio);
-
-    // ========================================================================
-    // Player Dash State
-    // ========================================================================
-    Components::StateAnimation player_dashinging_anim;
-    player_dashinging_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_dash_spritesheet.png"));
-    player_dashinging_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 9, 9);
-    player_dashinging_anim.animation = Components::Animation(8, 0.1f);
-    player_dashinging_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
-
-    Components::State player_dash("Dash", player_dashinging_anim, walk_audio, fmod_dash_audio);
-
-    // ========================================================================
-    // Player Attack 1 State (First Punch)
-    // ========================================================================
-    Components::StateAnimation player_attack1_anim;
-    player_attack1_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_onehit_spritesheet.png"));
-    player_attack1_anim.texture_atlas = Components::TextureAtlas(96, 64, 1, 9, 9);
-    player_attack1_anim.animation = Components::Animation({ 0, 1, 2, 3, 4, 5, 6, 7, 8 }, { 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f }, false);
-    player_attack1_anim.scale = Math::Vec2D(ATTACK_WIDTH * 2.0f, ATTACK_HEIGHT * 2.0f);
-
-    Components::State player_attack1("Attack1", player_attack1_anim, attack_audio, fmod_attack_audio);
-
-    // ========================================================================
-    // Player Attack 2 State (Second Punch)
-    // ========================================================================
-    Components::StateAnimation player_attack2_anim;
-    player_attack2_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_twohit_spritesheet.png"));
-    player_attack2_anim.texture_atlas = Components::TextureAtlas(96, 64, 1, 13, 13);
-    player_attack2_anim.animation = Components::Animation({ 6, 7, 8, 9, 10, 11, 12 }, { 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f }, false);
-    player_attack2_anim.scale = Math::Vec2D(ATTACK_WIDTH * 2.0f, ATTACK_HEIGHT * 2.0f);
-
-    Components::State player_attack2("Attack2", player_attack2_anim, attack_audio, fmod_attack_audio);
-
-    // ========================================================================
-    // Player Attack 3 State (Third Punch - Finisher)
-    // ========================================================================
-    Components::StateAnimation player_attack3_anim;
-    player_attack3_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_threehit_spritesheet.png"));
-    player_attack3_anim.texture_atlas = Components::TextureAtlas(96, 64, 1, 18, 18);
-    player_attack3_anim.animation = Components::Animation({ 9, 10, 11, 12, 13, 14, 15, 16, 17 }, { 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f }, false);
-    player_attack3_anim.scale = Math::Vec2D(ATTACK_WIDTH * 2.0f, ATTACK_HEIGHT * 2.0f);
-
-    Components::State player_attack3("Attack3", player_attack3_anim, attack_audio, fmod_attack_audio);
-
-    // ========================================================================
-    // Player Death State
-    // ========================================================================
-    Components::StateAnimation player_death_anim;
-    player_death_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_death_spritesheet.png"));
-    player_death_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 12, 12);
-    player_death_anim.animation = Components::Animation(8, 0.1f);
-    player_death_anim.scale = Math::Vec2D(IDLE_WIDTH * 4.0f, IDLE_HEIGHT * 2.0f);
-
-    // TODO Change Death Audio
-    Components::State player_dead("Death", player_death_anim, walk_audio);
-
-    // ========================================================================
-    // Build and return state machine
-    // ========================================================================
-    Components::StateMachine player_sm;
-    player_sm.blueprint_id = "Player";
-    player_sm.add_state(player_idle);
-    player_sm.add_state(player_walking);
-    player_sm.add_state(player_jumping);
-    player_sm.add_state(player_dash);
-    player_sm.add_state(player_attack1);
-    player_sm.add_state(player_attack2);
-    player_sm.add_state(player_attack3);
-    player_sm.add_state(player_dead);
-    player_sm.set_initial_state("Idle");
-
-    return player_sm;
-  }
-}
 
 // Register blueprint + all player state callbacks
 REGISTER_STATE_MACHINE_BLUEPRINT(Player, "Idle",
