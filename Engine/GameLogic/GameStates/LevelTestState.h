@@ -14,12 +14,11 @@
 #pragma once
 
 #include "pch.h"
-#include "../States/PlayerStateMachine.h"
-#include "../States/LazyMonkeyStateMachine.h"
+#include "../States/States.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/HeartrateComponent.h"
 #include "../Components/HealthComponents.h"
-#include "../States/SprayCanMonkeyStateMachine.h"
+#include "../Components/EnemyHealthComponent.h"
 
 class LevelTestState : public Engine::Scene
 {

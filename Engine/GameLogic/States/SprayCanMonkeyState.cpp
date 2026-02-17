@@ -1,26 +1,12 @@
-//-----------------------------------------------------------------------------------
-// file:    SprayCanMonkeyStateCallbacks.h
-// project: Monkey Stole My GPA
-//
-// author:  Ong Zi Ming (100%)
-//          Primary author
-//
-// email:   o.ziming@digipen.edu
-//
-// brief:   Spray Can Monkey state machine callback implementations (serializable)
-//
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
-//-----------------------------------------------------------------------------------
-#pragma once
-
 #include "pch.h"
+#include "States.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/EnemyHealthComponent.h"
 
 namespace SprayCanMonkey
 {
   // Helper function to update knockback direction based on player position
-  inline void update_contact_knockback_direction(Engine::ECS::Entity entity) {
+  void update_contact_knockback_direction(Engine::ECS::Entity entity) {
     auto* attack = entity.get_component<Components::Attack>();
     auto* spray_monkey = entity.get_component<Components::SprayCanMonkey>();
     auto* enemy_transform = entity.get_component<Components::Transform2D>();
@@ -42,7 +28,7 @@ namespace SprayCanMonkey
     attack->knockback.y = -std::abs(spray_monkey->knockback.y); // Negative for upward
   }
 
-  inline Engine::ECS::Entity spawn_spray_cloud(Engine::ECS::Entity monkey)
+  Engine::ECS::Entity spawn_spray_cloud(Engine::ECS::Entity monkey)
   {
     auto* spray = monkey.get_component<Components::SprayCanMonkey>();
     auto* transform = monkey.get_component<Components::Transform2D>();
@@ -106,7 +92,7 @@ namespace SprayCanMonkey
   // Idle State Callbacks
   // ========================================================================
 
-  inline void idle_on_enter(Engine::ECS::Entity entity) {
+  void idle_on_enter(Engine::ECS::Entity entity) {
     auto* spray_monkey = entity.get_component<Components::SprayCanMonkey>();
     if (spray_monkey) {
       // Store when we entered idle (for recovery delay after being hit)
@@ -115,7 +101,7 @@ namespace SprayCanMonkey
     Log::info("Spray Can Monkey: Entered Idle state");
   }
 
-  inline void idle_on_update(Engine::ECS::Entity entity) {
+  void idle_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* spray_monkey = entity.get_component<Components::SprayCanMonkey>();
 
@@ -155,11 +141,11 @@ namespace SprayCanMonkey
   // Chasing State Callbacks
   // ========================================================================
 
-  inline void chasing_on_enter([[maybe_unused]] Engine::ECS::Entity entity) {
+  void chasing_on_enter([[maybe_unused]] Engine::ECS::Entity entity) {
     Log::info("Spray Can Monkey: Entered Chasing state");
   }
 
-  inline void chasing_on_update(Engine::ECS::Entity entity) {
+  void chasing_on_update(Engine::ECS::Entity entity) {
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* spray_monkey_transform = entity.get_component<Components::Transform2D>();
@@ -210,7 +196,7 @@ namespace SprayCanMonkey
     }
   }
 
-  inline void chasing_on_exit([[maybe_unused]] Engine::ECS::Entity entity) {
+  void chasing_on_exit([[maybe_unused]] Engine::ECS::Entity entity) {
     auto* rigid = entity.get_component<Components::RigidBody>();
     if (rigid) rigid->velocity.x = 0.0f;
   }
@@ -219,7 +205,7 @@ namespace SprayCanMonkey
   // Windup State Callbacks
   // ========================================================================
 
-  inline void windup_on_enter(Engine::ECS::Entity entity) {
+  void windup_on_enter(Engine::ECS::Entity entity) {
     auto* spray_monkey = entity.get_component<Components::SprayCanMonkey>();
     auto* rigid = entity.get_component<Components::RigidBody>();
 
@@ -236,7 +222,7 @@ namespace SprayCanMonkey
     Log::info("Spray Can Monkey: Winding up for attack");
   }
 
-  inline void windup_on_update(Engine::ECS::Entity entity) {
+  void windup_on_update(Engine::ECS::Entity entity) {
 
     update_contact_knockback_direction(entity);
 
@@ -274,7 +260,7 @@ namespace SprayCanMonkey
   // Spraying State Callbacks
   // ========================================================================
 
-  inline void spraying_on_enter(Engine::ECS::Entity entity) {
+  void spraying_on_enter(Engine::ECS::Entity entity) {
     auto* spray_monkey = entity.get_component<Components::SprayCanMonkey>();
 
     if (spray_monkey) {
@@ -286,7 +272,7 @@ namespace SprayCanMonkey
     Log::info("Spray Can Monkey: Spraying!");
   }
 
-  inline void spraying_on_update(Engine::ECS::Entity entity) {
+  void spraying_on_update(Engine::ECS::Entity entity) {
 
     update_contact_knockback_direction(entity);
 
@@ -340,7 +326,7 @@ namespace SprayCanMonkey
     }
   }
 
-  inline void spraying_on_exit(Engine::ECS::Entity entity) {
+  void spraying_on_exit(Engine::ECS::Entity entity) {
     // Note: Cloud entity manages its own lifetime
     // No need to manually clean up here
     if (auto* spray_monkey = entity.get_component<Components::SprayCanMonkey>())
@@ -354,11 +340,11 @@ namespace SprayCanMonkey
   // Hit State Callbacks
   // ========================================================================
 
-  inline void hit_on_enter(Engine::ECS::Entity) {
+  void hit_on_enter(Engine::ECS::Entity) {
     Log::info("Spray Can Monkey: Hit!");
   }
 
-  inline void hit_on_update(Engine::ECS::Entity entity) {
+  void hit_on_update(Engine::ECS::Entity entity) {
 
     update_contact_knockback_direction(entity);
 
@@ -390,7 +376,7 @@ namespace SprayCanMonkey
     }
   }
 
-  inline void hit_on_exit(Engine::ECS::Entity entity) {
+  void hit_on_exit(Engine::ECS::Entity entity) {
     // Cleanup: ensure parent is removed (safety check)
     if (entity.has_component<Components::Parent>()) {
       entity.remove_component<Components::Parent>();
@@ -401,11 +387,11 @@ namespace SprayCanMonkey
   // Death State Callbacks
   // ========================================================================
 
-  inline void death_on_enter([[maybe_unused]] Engine::ECS::Entity entity) {
+  void death_on_enter([[maybe_unused]] Engine::ECS::Entity entity) {
     Log::info("Spray Can Monkey: Died!");
   }
 
-  inline void death_on_update(Engine::ECS::Entity entity) {
+  void death_on_update(Engine::ECS::Entity entity) {
     auto* animation = entity.get_component<Components::Animation>();
     auto* health = entity.get_component<Components::EnemyHealth>();
 
@@ -418,11 +404,119 @@ namespace SprayCanMonkey
     }
   }
 
-  inline void death_on_exit([[maybe_unused]] Engine::ECS::Entity entity) {
+  void death_on_exit([[maybe_unused]] Engine::ECS::Entity entity) {
     // Should not happen unless respawning
   }
 
 } // namespace SprayCanMonkey
+
+namespace SprayCanMonkeyStates
+{
+  Components::StateMachine create_state_machine()
+  {
+    // ========================================================================
+    // Audio Setup
+    // ========================================================================
+    Components::StateAudio footstep_audio;
+    footstep_audio.sound = Engine::Resources::load_sound("sounds/SFX/Monkey/Monkey SFX/Monkey FootSteps.wav");
+    footstep_audio.loop = true;
+    footstep_audio.volume = 0.5f;
+    footstep_audio.stop_on_exit = true;
+
+    Components::StateAudio spray_audio;
+    spray_audio.sound = Engine::Resources::load_sound("sounds/SFX/Monkey/Monkey VO/Monkey-2_2_Attack.wav");
+    spray_audio.loop = false;
+    spray_audio.volume = 0.6f;
+    spray_audio.stop_on_exit = false;
+
+    Components::StateAudio hurt_audio;
+    hurt_audio.sound = Engine::Resources::load_sound("sounds/SFX/Monkey/Monkey VO/Monkey-1_8_Hurt.wav");
+    hurt_audio.loop = false;
+    hurt_audio.volume = 0.6f;
+    hurt_audio.stop_on_exit = false;
+
+    // ========================================================================
+    // Spray Can Monkey Idle State
+    // ========================================================================
+    Components::StateAnimation spray_monkey_idle_anim;
+    spray_monkey_idle_anim.texture = Components::Texture(Engine::Resources::load_texture("images/SprayPaintMonkeySpriteSheets/Spraypaint_Walk_Spritesheet.png"));
+    spray_monkey_idle_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 6, 6);
+    spray_monkey_idle_anim.animation = Components::Animation(5, 0.15f);
+    spray_monkey_idle_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
+
+    Components::State spray_monkey_idle("Idle", spray_monkey_idle_anim);
+
+    // ========================================================================
+    // Spray Can Monkey Chasing State
+    // ========================================================================
+    Components::StateAnimation spray_monkey_chasing_anim;
+    spray_monkey_chasing_anim.texture = Components::Texture(Engine::Resources::load_texture("images/SprayPaintMonkeySpriteSheets/Spraypaint_Walk_Spritesheet.png"));
+    spray_monkey_chasing_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 6, 6);
+    spray_monkey_chasing_anim.animation = Components::Animation(6, 0.1f);
+    spray_monkey_chasing_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
+
+    Components::State spray_monkey_chasing("Chasing", spray_monkey_chasing_anim, footstep_audio);
+
+    // ========================================================================
+    // Spray Can Monkey Windup State
+    // ========================================================================
+    Components::StateAnimation spray_monkey_windup_anim;
+    spray_monkey_windup_anim.texture = Components::Texture(Engine::Resources::load_texture("images/SprayPaintMonkeySpriteSheets/Spraypaint_Walk_Spritesheet.png"));
+    spray_monkey_windup_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 6, 6);
+    spray_monkey_windup_anim.animation = Components::Animation(4, 0.1f);
+    spray_monkey_windup_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
+
+    Components::State spray_monkey_windup("Windup", spray_monkey_windup_anim);
+
+    // ========================================================================
+    // Spray Can Monkey Spraying State
+    // ========================================================================
+    Components::StateAnimation spray_monkey_spraying_anim;
+    spray_monkey_spraying_anim.texture = Components::Texture(Engine::Resources::load_texture("images/SprayPaintMonkeySpriteSheets/Spraypaint_Attack_Spritesheet.png"));
+    spray_monkey_spraying_anim.texture_atlas = Components::TextureAtlas(80, 64, 1, 15, 15);
+    spray_monkey_spraying_anim.animation = Components::Animation({ 0.1f, 0.1f, 0.2f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.2f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f });
+    spray_monkey_spraying_anim.scale = Math::Vec2D(WIDTH * 3.0f, HEIGHT * 2.0f);
+
+    Components::State spray_monkey_spraying("Spraying", spray_monkey_spraying_anim, spray_audio);
+
+    // ========================================================================
+    // Spray Can Monkey Hit State
+    // ========================================================================
+    Components::StateAnimation spray_monkey_hit_anim;
+    spray_monkey_hit_anim.texture = Components::Texture(Engine::Resources::load_texture("images/SprayPaintMonkeySpriteSheets/Spraypaint_Damaged_Spritesheet.png"));
+    spray_monkey_hit_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 1, 1);
+    spray_monkey_hit_anim.animation = Components::Animation(1, 0.3f);
+    spray_monkey_hit_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
+
+    Components::State spray_monkey_hit("Hit", spray_monkey_hit_anim, hurt_audio);
+
+    // ========================================================================
+    // Spray Can Monkey Death State
+    // ========================================================================
+    Components::StateAnimation spray_monkey_death_anim;
+    spray_monkey_death_anim.texture = Components::Texture(Engine::Resources::load_texture("images/SprayPaintMonkeySpriteSheets/Spraypaint_Damaged_Spritesheet.png"));
+    spray_monkey_death_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 1, 1);
+    spray_monkey_death_anim.animation = Components::Animation(1, 0.5f);
+    spray_monkey_death_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
+
+    Components::State spray_monkey_death("Death", spray_monkey_death_anim);
+
+    // ========================================================================
+    // Build and return state machine (without reloading state)
+    // ========================================================================
+    Components::StateMachine spray_monkey_sm;
+    spray_monkey_sm.blueprint_id = "SprayCanMonkey";
+    spray_monkey_sm.add_state(spray_monkey_idle);
+    spray_monkey_sm.add_state(spray_monkey_chasing);
+    spray_monkey_sm.add_state(spray_monkey_windup);
+    spray_monkey_sm.add_state(spray_monkey_spraying);
+    spray_monkey_sm.add_state(spray_monkey_hit);
+    spray_monkey_sm.add_state(spray_monkey_death);
+    spray_monkey_sm.set_initial_state("Idle");
+
+    return spray_monkey_sm;
+  }
+}
 
 // Register blueprint + all spray can monkey state callbacks
 REGISTER_STATE_MACHINE_BLUEPRINT(SprayCanMonkey, "Idle",
