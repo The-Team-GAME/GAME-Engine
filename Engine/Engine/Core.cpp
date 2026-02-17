@@ -93,17 +93,8 @@ namespace Engine
       throw std::runtime_error("Failed to initialize resource manager");
     }
 
-    // Load all assets if enabled in settings
-    if (engine_settings.load_all_assets_on_startup)
-    {
-      Engine::Resources::load_all_assets();
-    }
-    else
-    {
-      // Always load prefabs even if load_all_assets_on_startup is disabled
-      // This is required for trail effects and other prefab-dependent features
-      Engine::Resources::load_all_prefabs();
-    }
+    // NOTE: Prefab/asset loading is deferred until after GameLogic.dll is loaded
+    // (see EntryPoint.cpp) so that GameLogic components are registered first.
 
     // Initialize audio manager
     if (!Engine::Audio::init()) {

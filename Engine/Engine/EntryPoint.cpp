@@ -19,64 +19,70 @@ Common game initialization and loop logic.
 void RunGame()
 {
 #if defined(_DEBUG)
-    // Enable memory leak detection
-    s32 tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
-    tmpDbgFlag |= _CRTDBG_LEAK_CHECK_DF;
-    _CrtSetDbgFlag(tmpDbgFlag);
-    _CrtSetBreakAlloc(-1);
+  // Enable memory leak detection
+  s32 tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+  tmpDbgFlag |= _CRTDBG_LEAK_CHECK_DF;
+  _CrtSetDbgFlag(tmpDbgFlag);
+  _CrtSetBreakAlloc(-1);
 #endif
 
-    // ── Register game layers ──────────────────────────────────────────────
-    // Layers define rendering order and collision groups.
-    // These must be registered before Core::init() and stay fixed across
-    // hot-reloads (changing layers would invalidate entity signatures).
+  // ── Register game layers ──────────────────────────────────────────────
+  // Layers define rendering order and collision groups.
+  // These must be registered before Core::init() and stay fixed across
+  // hot-reloads (changing layers would invalidate entity signatures).
 
-    Engine::ECS::register_layer("background");
-    Engine::ECS::register_layer("tilemap_background_mid");
-    Engine::ECS::register_layer("tilemap_background_near");
-    Engine::ECS::register_layer("tilemap_foreground_mid");
-    Engine::ECS::register_layer("hazard");
-    Engine::ECS::register_layer("damage_enemy");
-    Engine::ECS::register_layer("damage_player");
-    Engine::ECS::register_layer("projectiles");
-    Engine::ECS::register_layer("spray");
-    Engine::ECS::register_layer("enemy");
-    Engine::ECS::register_layer("player_trail");
-    Engine::ECS::register_layer("player");
-    Engine::ECS::register_layer("effect");
-    Engine::ECS::register_layer("main_menu_0");
-    Engine::ECS::register_layer("main_menu_1");
-    Engine::ECS::register_layer("main_menu_2");
-    Engine::ECS::register_layer("main_menu_3");
-    Engine::ECS::register_layer("main_menu_4");
-    Engine::ECS::register_layer("main_menu_5");
-    Engine::ECS::register_layer("main_menu_6");
+  Engine::ECS::register_layer("background");
+  Engine::ECS::register_layer("tilemap_background_mid");
+  Engine::ECS::register_layer("tilemap_background_near");
+  Engine::ECS::register_layer("tilemap_foreground_mid");
+  Engine::ECS::register_layer("hazard");
+  Engine::ECS::register_layer("damage_enemy");
+  Engine::ECS::register_layer("damage_player");
+  Engine::ECS::register_layer("projectiles");
+  Engine::ECS::register_layer("spray");
+  Engine::ECS::register_layer("enemy");
+  Engine::ECS::register_layer("player_trail");
+  Engine::ECS::register_layer("player");
+  Engine::ECS::register_layer("effect");
+  Engine::ECS::register_layer("main_menu_0");
+  Engine::ECS::register_layer("main_menu_1");
+  Engine::ECS::register_layer("main_menu_2");
+  Engine::ECS::register_layer("main_menu_3");
+  Engine::ECS::register_layer("main_menu_4");
+  Engine::ECS::register_layer("main_menu_5");
+  Engine::ECS::register_layer("main_menu_6");
 #ifndef GAME_BUILD
-    Engine::ECS::register_layer("debug");
+  Engine::ECS::register_layer("debug");
 #endif
 
-    // ── Initialize engine ───────────────────────────────────────────────
-    Engine::Core::init();
+  // ── Initialize engine ───────────────────────────────────────────────
+  Engine::Core::init();
 
-    // ── Load GameLogic DLL ──────────────────────────────────────────────
-    // The DLL exports RegisterGameLogic() which registers all game-specific
-    // callbacks, scenes, systems, and collision handlers.
-    if (!Engine::HotReload::load_game_logic())
-    {
-        Log::error("[EntryPoint] Failed to load GameLogic.dll — aborting");
-        Engine::Core::exit();
-        return;
-    }
-
-    // ── Run main game loop ──────────────────────────────────────────────
-    Engine::Core::run("MainMenuState");
-
-    // ── Cleanup ─────────────────────────────────────────────────────────
-    // Core::exit() must run BEFORE unloading the DLL because scenes
-    // (game states) are classes defined in GameLogic.dll — their vtables
-    // become invalid once the DLL is freed.
+  // ── Load GameLogic DLL ──────────────────────────────────────────────
+  // The DLL exports RegisterGameLogic() which registers all game-specific
+  // callbacks, scenes, systems, and collision handlers.
+  if (!Engine::HotReload::load_game_logic())
+  {
+    Log::error("[EntryPoint] Failed to load GameLogic.dll — aborting");
     Engine::Core::exit();
-    Engine::HotReload::unload_game_logic();
+    return;
+  }
+
+  // ── Load prefabs / assets ────────────────────────────────────────────
+  // Must happen AFTER loading the DLL so that GameLogic components
+  // (Player, LazyMonkey, EnemyHealth, etc.) are registered before
+  // prefab deserialization tries to look them up.
+  Engine::Resources::load_all_prefabs();
+
+  // ── Run main game loop ──────────────────────────────────────────────
+  Engine::Core::run("MainMenuState");
+
+  // ── Cleanup ─────────────────────────────────────────────────────────
+  // Core::exit() must run BEFORE unloading the DLL because scenes
+  // (game states) are classes defined in GameLogic.dll — their vtables
+  // become invalid once the DLL is freed.
+  Engine::Core::exit();
+  Engine::HotReload::unload_game_logic();
 }
 
 #ifdef GAME_BUILD
@@ -87,16 +93,16 @@ void RunGame()
 
 int APIENTRY WinMain([[maybe_unused]] HINSTANCE hInst, [[maybe_unused]] HINSTANCE hInstPrev, [[maybe_unused]] PSTR cmdline, [[maybe_unused]] int cmdshow)
 {
-    RunGame();
-    return 0;
+  RunGame();
+  return 0;
 }
 
 #else
 
 int main()
 {
-    RunGame();
-    return 0;
+  RunGame();
+  return 0;
 }
 
 #endif
