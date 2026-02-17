@@ -613,19 +613,19 @@ namespace ImGuiManager {
     }
 
     // Save
-    if (Engine::Input::is_held(Engine::KeyCode::CtrlLeft) && Engine::Input::is_pressed(Engine::KeyCode::S))
+    if (Engine::Input::is_held_raw(Engine::KeyCode::CtrlLeft) && Engine::Input::is_pressed_raw(Engine::KeyCode::S))
     {
       Engine::ProjectSaveManager::save_all_dirty();
     }
 
     // Toggle ImGui with F1 key
-    if (Engine::Input::is_pressed(Engine::KeyCode::F1))
+    if (Engine::Input::is_pressed_raw(Engine::KeyCode::F1))
     {
       main_gui_visible = !main_gui_visible;
     }
 
     // Toggle Panel Viewport Mode with F2 key
-    if (Engine::Input::is_pressed(Engine::KeyCode::F2))
+    if (Engine::Input::is_pressed_raw(Engine::KeyCode::F2))
     {
       Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().panel_viewport_mode =
         !Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode;
@@ -642,7 +642,7 @@ namespace ImGuiManager {
     }
 
     // Toggle debug layer with F3 key
-    if (Engine::Input::is_pressed(Engine::KeyCode::F3))
+    if (Engine::Input::is_pressed_raw(Engine::KeyCode::F3))
     {
       Engine::ECS::is_layer_active("debug") ? Engine::ECS::disable_layer("debug") : Engine::ECS::enable_layer("debug");
     }

@@ -134,6 +134,24 @@ namespace Engine
     return currentKeys[idx];
   }
 
+  bool Input::is_pressed_raw(KeyCode key)
+  {
+    int idx = key_to_index(key);
+    return currentKeys[idx] && !previousKeys[idx];
+  }
+
+  bool Input::is_released_raw(KeyCode key)
+  {
+    int idx = key_to_index(key);
+    return !currentKeys[idx] && previousKeys[idx];
+  }
+
+  bool Input::is_held_raw(KeyCode key)
+  {
+    int idx = key_to_index(key);
+    return currentKeys[idx];
+  }
+
   glm::vec2 Input::get_mouse_position()
   {
     return mousePosition;

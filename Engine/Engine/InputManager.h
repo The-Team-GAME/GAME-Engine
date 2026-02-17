@@ -61,6 +61,16 @@ namespace Engine
     static bool is_held(KeyCode key);
 
     /**
+     * @brief Raw input methods that bypass ImGui focus-blocking.
+     * Use these for editor-wide hotkeys (Ctrl+S, F1-F5, Ctrl+Z, etc.)
+     * that should work regardless of which ImGui panel is focused.
+     * Do NOT use these for gameplay input — use the regular methods instead.
+     */
+    static bool is_pressed_raw(KeyCode key);
+    static bool is_released_raw(KeyCode key);
+    static bool is_held_raw(KeyCode key);
+
+    /**
      * @brief Gets the current position of the mouse cursor in window coordinates.
      * @return glm::vec2 A vector containing the x and y position of the mouse.
      */

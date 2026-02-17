@@ -266,12 +266,12 @@ namespace Engine
         // World::update() won't have a chance to react before the input state is cleared on the next frame. 
         Input::update();
 
-        if (Engine::Input::is_pressed(KeyCode::F10))
+        if (Engine::Input::is_pressed_raw(KeyCode::F10))
         {
           show_fps_overlay = !show_fps_overlay;
         }
 
-        if (Engine::Input::is_pressed(KeyCode::F11))
+        if (Engine::Input::is_pressed_raw(KeyCode::F11))
         {
           auto& settings = Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get_mutable();
           settings.fullscreen = !settings.fullscreen;
@@ -281,7 +281,7 @@ namespace Engine
 
 #ifndef GAME_BUILD
         // Manual hot-reload: F5 triggers build + reload even when auto-reload is off
-        if (Engine::Input::is_pressed(KeyCode::F5))
+        if (Engine::Input::is_pressed_raw(KeyCode::F5))
         {
           Engine::HotReload::request_manual_reload();
         }
@@ -307,21 +307,21 @@ namespace Engine
         }
 
         // Undo last action
-        if (Engine::Input::is_pressed(Engine::KeyCode::Z) && Engine::Input::is_held(Engine::KeyCode::CtrlLeft))
+        if (Engine::Input::is_pressed_raw(Engine::KeyCode::Z) && Engine::Input::is_held_raw(Engine::KeyCode::CtrlLeft))
         {
           Log::info("Undoing last action");
           Engine::UndoManager::undo();
         }
 
         // Redo last undone action
-        if (Engine::Input::is_pressed(Engine::KeyCode::Y) && Engine::Input::is_held(Engine::KeyCode::CtrlLeft))
+        if (Engine::Input::is_pressed_raw(Engine::KeyCode::Y) && Engine::Input::is_held_raw(Engine::KeyCode::CtrlLeft))
         {
           Log::info("Redoing last undone action");
           Engine::UndoManager::redo();
         }
 
         // Delete selected entity (Delete key or Ctrl+D)
-        if (Engine::Input::is_pressed(Engine::KeyCode::Delete))
+        if (Engine::Input::is_pressed_raw(Engine::KeyCode::Delete))
         {
           // Find the entity with a Gizmo component (indicates it's selected)
           // TODO: This is a temporary solution; ideally, we should have a proper selection manager
