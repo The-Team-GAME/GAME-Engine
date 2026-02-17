@@ -16,7 +16,6 @@
 #pragma once
 
 #include "pch.h"
-#include "../../Engine/Systems/PhysicsSystem.h"
 
 class Rubric2500ParticlesState : public Engine::Scene
 {

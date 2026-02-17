@@ -14,7 +14,6 @@
 
 #include "pch.h"
 #include "VictoryState.h"
-#include "../../Engine/Systems/GraphicsSystem.h"
 
 // Check if any key or mouse button was pressed this frame
 static bool any_key_pressed() {

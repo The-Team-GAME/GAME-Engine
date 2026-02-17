@@ -9,13 +9,12 @@
 //
 // brief:   This file defines a gamestate used to test out physics and collision logic.
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #pragma once
 
 #include "pch.h"
-#include "../Engine/Systems/PhysicsSystem.h"
-#include "../Engine/Systems/LogicSystem.h"
+
 using namespace Engine;
 using phy2D = Systems::Physics2DSystem;
 using logi = Systems::LogicSystem;
@@ -63,7 +62,7 @@ namespace {
       .add_component<Components::Color>(white)
       .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
       .add_component<Components::RigidBody>(true, false)
-      .add_component<Components::BoxCollider>(scale.x, scale.y,  rotation, true); // width, height
+      .add_component<Components::BoxCollider>(scale.x, scale.y, rotation, true); // width, height
     return ret;
   }
 }
@@ -71,7 +70,7 @@ class PhysicsTestState : public Engine::Scene {
 private:
   Engine::ECS::Entity prefab_instance;
 
-public: 
+public:
   void load() {
     // Free falling box
     player = make_player(player_pos, npc_scale);
@@ -81,8 +80,8 @@ public:
 
     // Walling the player in
     make_wall(Vec2D(800.0f, 875.0f), Vec2D(1600.0f, 50.0f));
-    make_wall(Vec2D(800.0f, 25.0f) , Vec2D(1600.0f, 50.0f));
-    make_wall(Vec2D(25.f, 450.0f)  , Vec2D(50.0f, 900.0f));
+    make_wall(Vec2D(800.0f, 25.0f), Vec2D(1600.0f, 50.0f));
+    make_wall(Vec2D(25.f, 450.0f), Vec2D(50.0f, 900.0f));
     make_wall(Vec2D(1575.f, 450.0f), Vec2D(50.0f, 900.0f));
 
     // Platforms to jump on
@@ -105,16 +104,16 @@ public:
 
   void init() {};
 
-  void update() 
+  void update()
   {
-    Components::Transform2D*  player_xform  = player.get_component<Components::Transform2D>();
-    Components::RigidBody*    player_rigid  = player.get_component<Components::RigidBody>();
-    Components::BoxCollider*  player_box    = player.get_component<Components::BoxCollider>();
+    Components::Transform2D* player_xform = player.get_component<Components::Transform2D>();
+    Components::RigidBody* player_rigid = player.get_component<Components::RigidBody>();
+    Components::BoxCollider* player_box = player.get_component<Components::BoxCollider>();
 
     if (!player_xform || !player_rigid || !player_box) return;
 
     logi::take_input(player);
-    
+
     // idt Input::is_pressed(KeyCode::A) || Input::is_held(KeyCode::A) and just is held only makes much of a difference
 
     //player_rigid->force.zero();

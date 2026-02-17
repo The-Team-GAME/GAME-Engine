@@ -11,7 +11,9 @@
 //          for the player and NPCs
 //
 // Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
-//-----------------------------------------------------------------------------------#pragma once
+//-----------------------------------------------------------------------------------
+
+#pragma once
 #include "../ECS/ECS.h"
 #include "../Components/Components.h"
 
