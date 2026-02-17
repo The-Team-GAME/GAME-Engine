@@ -599,6 +599,35 @@ namespace Engine
         s_unregister_fn();
       }
 
+      // ── Purge stale component arrays ───────────────────────────────
+      // Any ComponentArray<T> whose vtable lives inside the DLL must be
+      // erased BEFORE FreeLibrary unmaps its pages.  This catches types
+      // that were lazily registered by DLL code (via add_component /
+      // get_component_array) but never listed in UnregisterGameLogic().
+      {
+        auto dll_base = reinterpret_cast<uintptr_t>(s_dll_handle);
+        auto* dos = reinterpret_cast<const IMAGE_DOS_HEADER*>(dll_base);
+        auto* nt = reinterpret_cast<const IMAGE_NT_HEADERS*>(dll_base + dos->e_lfanew);
+        uintptr_t dll_end = dll_base + nt->OptionalHeader.SizeOfImage;
+
+        auto& arrays = ECS::Internal::get_containers().component_arrays;
+        for (auto it = arrays.begin(); it != arrays.end(); )
+        {
+          // The vtable pointer is stored at the very start of the object.
+          uintptr_t vptr = *reinterpret_cast<const uintptr_t*>(it->second.get());
+          if (vptr >= dll_base && vptr < dll_end)
+          {
+            Log::warning("[HotReload] Removing stale component array (type id {}) — "
+              "vtable was inside the unloaded DLL", it->first);
+            it = arrays.erase(it);
+          }
+          else
+          {
+            ++it;
+          }
+        }
+      }
+
       FreeLibrary(s_dll_handle);
       s_dll_handle = nullptr;
       s_register_fn = nullptr;
