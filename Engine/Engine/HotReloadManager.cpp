@@ -287,7 +287,7 @@ namespace Engine
           {
             // Small debounce — wait for file writes to finish
             Sleep(300);
-            std::thread(rebuild_game_logic_dll).detach();
+            build_game_logic_async();
           }
         }
       }
@@ -530,9 +530,20 @@ namespace Engine
       return s_build_in_progress.load();
     }
 
+    bool dll_exists()
+    {
+      return std::filesystem::exists(get_dll_source_path());
+    }
+
     void build_game_logic()
     {
       rebuild_game_logic_dll();
+    }
+
+    void build_game_logic_async()
+    {
+      if (s_build_in_progress) return;
+      std::thread(rebuild_game_logic_dll).detach();
     }
   }
 }

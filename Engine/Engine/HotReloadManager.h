@@ -53,10 +53,22 @@ namespace Engine
     ENGINE_API bool is_building();
 
     /**
+     * @brief Returns true if GameLogic.dll exists on disk in the output directory.
+     */
+    ENGINE_API bool dll_exists();
+
+    /**
      * @brief Synchronously builds GameLogic.dll using msbuild.
      *        Blocks until the build completes.
      */
     ENGINE_API void build_game_logic();
+
+    /**
+     * @brief Asynchronously builds GameLogic.dll in a background thread.
+     *        Use is_building() to check progress and check_and_reload()
+     *        to detect when the new DLL is ready.
+     */
+    ENGINE_API void build_game_logic_async();
 
     /**
      * @brief Starts a background thread that watches GameLogic source files

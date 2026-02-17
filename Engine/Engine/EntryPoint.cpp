@@ -61,6 +61,19 @@ void RunGame()
   // ── Load GameLogic DLL ──────────────────────────────────────────────
   // The DLL exports RegisterGameLogic() which registers all game-specific
   // callbacks, scenes, systems, and collision handlers.
+  //
+  // If the DLL already exists on disk, load it immediately and kick off
+  // a background rebuild in case it is outdated. The source watcher /
+  // check_and_reload() will hot-swap once the build finishes.
+  // If the DLL does not exist, build it first (synchronously) before loading.
+#ifndef GAME_BUILD
+  if (!Engine::HotReload::dll_exists())
+  {
+    Log::info("[EntryPoint] GameLogic.dll not found — building...");
+    Engine::HotReload::build_game_logic();
+  }
+#endif
+
   if (!Engine::HotReload::load_game_logic())
   {
     Log::error("[EntryPoint] Failed to load GameLogic.dll — aborting");
@@ -79,6 +92,12 @@ void RunGame()
   // Watches Engine/GameLogic/ for .cpp/.h changes and auto-rebuilds
   // GameLogic.dll. The main-loop's check_and_reload() handles the reload.
   Engine::HotReload::start_source_watcher();
+
+  // ── Background rebuild in case the DLL was outdated ─────────────────
+  // The DLL was loaded above so the engine can start immediately.
+  // This async build will produce a fresh DLL; check_and_reload()
+  // will detect the updated timestamp and hot-swap it in.
+  Engine::HotReload::build_game_logic_async();
 #endif
 
   // ── Run main game loop ──────────────────────────────────────────────
