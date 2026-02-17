@@ -54,7 +54,7 @@ namespace Engine {
       static f32 get_slope_radian_threshold();
 
       // Used to add forces to the rigid body
-      static void add_force(Components::RigidBody& rigid, Vec2D force);
+      static ENGINE_API void add_force(Components::RigidBody& rigid, Vec2D force);
 
 
     };
