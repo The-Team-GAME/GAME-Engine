@@ -13,7 +13,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "../Engine/MonkeyEngine.h"
+#include "pch.h"
 #include "../Engine/Systems/PhysicsSystem.h"
 #include "../Engine/Systems/LogicSystem.h"
 using namespace Engine;

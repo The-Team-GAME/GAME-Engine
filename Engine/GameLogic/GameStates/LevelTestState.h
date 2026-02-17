@@ -13,7 +13,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "../../Engine/MonkeyEngine.h"
+#include "pch.h"
 #include "../States/PlayerStateMachine.h"
 #include "../States/LazyMonkeyStateMachine.h"
 #include "../Components/GameplayComponent.h"
@@ -114,7 +114,7 @@ public:
       .add_to_layer("enemy");
 
 
-  // set friction to 0
+    // set friction to 0
     player_entity.get_component<Components::BoxCollider>()->kinetic_friction = 0.8f;
     //lazy_monkey_entity.get_component<Components::BoxCollider>()->kinetic_friction = 0.8f;
 

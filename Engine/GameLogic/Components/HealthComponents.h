@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "../../Engine/MonkeyEngine.h"
+#include "pch.h"
 #include <algorithm>
 
 namespace Components {

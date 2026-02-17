@@ -15,7 +15,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "../../Engine/MonkeyEngine.h"
+#include "pch.h"
 
 class BasicState : public Engine::Scene
 {
