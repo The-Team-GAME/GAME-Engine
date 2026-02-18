@@ -399,11 +399,17 @@ namespace Engine {
 
           containers.active_entities.erase(entityId);
 
-          for (ComponentTypeID typeId = 0; typeId < MAX_COMPONENTS; ++typeId)
-          {
-            auto& array = containers.component_arrays[typeId];
-            if (!array) continue;
-            array->remove_entity(entityId);
+          // Use the entity's signature to only visit component arrays it actually has,
+          // instead of brute-forcing all 64 slots.
+          if (entityId < containers.entity_signatures.size()) {
+            const auto& sig = containers.entity_signatures[entityId];
+            for (ComponentTypeID typeId = 0; typeId < MAX_COMPONENTS; ++typeId)
+            {
+              if (!sig.test(typeId)) continue;
+              auto& array = containers.component_arrays[typeId];
+              if (!array) continue;
+              array->remove_entity(entityId);
+            }
           }
 
           containers.entity_signatures[entityId].reset();
