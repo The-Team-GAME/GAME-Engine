@@ -18,6 +18,7 @@
 #include "../Perf.h"
 #include <unordered_set>
 #include <unordered_map>
+#include <limits>
 
 namespace Engine {
   namespace ECS
@@ -410,19 +411,31 @@ namespace Engine {
       // Draw layer by layer to ensure correct draw order regardless of system registration order
       // Entities are drawn once at their highest layer
 
+      // Reusable buffer to snapshot layer entity IDs (avoids copying full SparseSet)
+      static thread_local std::vector<EntityID> iteration_buffer;
+
       // First pass: find the highest layer for each entity
-      std::unordered_map<EntityID, LayerID> entity_highest_layer;
+      // Use a flat vector indexed by EntityID instead of unordered_map
+      static thread_local std::vector<LayerID> entity_highest_layer;
+      static constexpr LayerID NO_LAYER = std::numeric_limits<LayerID>::max();
+      {
+        // Determine required size
+        size_t max_id = 0;
+        for (EntityID id : containers.active_entities) {
+          if (id >= max_id) max_id = id + 1;
+        }
+        entity_highest_layer.assign(max_id, NO_LAYER);
+      }
+
       for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
         if (!containers.layer_active_state.test(layer))
           continue;
 
-        // Make a copy to avoid iterator invalidation during draw
-        auto layer_entities_copy = containers.layer_entities[layer];
-
-        for (EntityID entityId : layer_entities_copy) {
+        const auto& layer_set = containers.layer_entities[layer];
+        for (EntityID entityId : layer_set) {
           // Track the highest layer this entity is on
-          if (entity_highest_layer.find(entityId) == entity_highest_layer.end() ||
-            layer > entity_highest_layer[entityId]) {
+          if (entityId < entity_highest_layer.size() &&
+              (entity_highest_layer[entityId] == NO_LAYER || layer > entity_highest_layer[entityId])) {
             entity_highest_layer[entityId] = layer;
           }
         }
@@ -443,17 +456,18 @@ namespace Engine {
           // Get entities in this system
           const auto& system_entities = system->get_entities();
 
-          // Draw entities on this layer
-          // Make a copy to avoid iterator invalidation during draw
-          auto layer_entities_copy = containers.layer_entities[layer];
+          // Snapshot just the dense keys into a reusable buffer
+          const auto& layer_set = containers.layer_entities[layer];
+          iteration_buffer.assign(layer_set.begin(), layer_set.end());
 
-          for (EntityID entityId : layer_entities_copy) {
+          for (EntityID entityId : iteration_buffer) {
             // Skip if not in this system
             if (!system_entities.contains(entityId))
               continue;
 
             // Only draw if this is the entity's highest layer
-            if (entity_highest_layer[entityId] != layer)
+            if (entityId >= entity_highest_layer.size() ||
+                entity_highest_layer[entityId] != layer)
               continue;
 
             // Draw the entity
@@ -517,26 +531,38 @@ namespace Engine {
 
     void for_each_entity(std::function<void(Entity)> callback)
     {
-      // auto& containers = Internal::get_containers();
-      // for (EntityID id : containers.active_entities) {
-      //   Entity entity(id);
-      //   callback(entity);
-      // }
-
-      // In layer order, avoiding duplicates
       auto& containers = Internal::get_containers();
-      std::unordered_set<EntityID> processed; // Track processed entities to avoid duplicates
+
+      // Reusable buffer + visit stamp to avoid per-frame allocations
+      static thread_local std::vector<EntityID> iteration_buffer;
+      static thread_local std::vector<uint32_t> visit_stamp;
+      static thread_local uint32_t current_stamp = 0;
+      ++current_stamp;
+      // Handle wrap-around (extremely rare)
+      if (current_stamp == 0) {
+        visit_stamp.clear();
+        ++current_stamp;
+      }
 
       for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
-        // Make a copy to avoid iterator invalidation during callback
-        auto layer_entities_copy = containers.layer_entities[layer];
+        // Snapshot just the dense keys into a reusable buffer
+        const auto& layer_set = containers.layer_entities[layer];
+        iteration_buffer.assign(layer_set.begin(), layer_set.end());
 
-        for (EntityID id : layer_entities_copy) {
-          // Skip if already processed or not active
-          if (processed.count(id) || !containers.active_entities.contains(id))
+        for (EntityID id : iteration_buffer) {
+          // Skip if not active
+          if (!containers.active_entities.contains(id))
             continue;
 
-          processed.insert(id);
+          // Skip if already processed (via stamp check — no hash set needed)
+          if (id < visit_stamp.size() && visit_stamp[id] == current_stamp)
+            continue;
+
+          // Mark as visited
+          if (id >= visit_stamp.size())
+            visit_stamp.resize(id + 1, 0);
+          visit_stamp[id] = current_stamp;
+
           Entity entity(id);
           callback(entity);
         }
@@ -550,10 +576,12 @@ namespace Engine {
         return;
       }
 
-      // Make a copy to avoid iterator invalidation during callback
-      auto layer_entities_copy = containers.layer_entities[layer];
+      // Snapshot just the dense keys into a reusable buffer (no SparseSet copy)
+      static thread_local std::vector<EntityID> iteration_buffer;
+      const auto& layer_set = containers.layer_entities[layer];
+      iteration_buffer.assign(layer_set.begin(), layer_set.end());
 
-      for (EntityID id : layer_entities_copy) {
+      for (EntityID id : iteration_buffer) {
         if (containers.active_entities.contains(id)) {
           Entity entity(id);
           callback(entity);
