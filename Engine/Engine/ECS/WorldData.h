@@ -49,7 +49,7 @@ namespace Engine {
         SparseSet<EntityID> entities_to_destroy;
         std::vector<ComponentSignature> entity_signatures;  // Indexed by EntityID — O(1) direct access
         std::vector<LayerID> entity_highest_layer; // Cached highest layer per entity (indexed by EntityID)
-        std::unordered_map<EntityID, LayerSignature> entity_layers;
+        std::vector<LayerSignature> entity_layers;  // Indexed by EntityID — O(1) direct access
         std::unordered_map<EntityID, std::string> entity_names;
         std::unordered_map<EntityID, PrefabInstanceData> prefab_instances;
         std::array<std::unique_ptr<IComponentArray>, MAX_COMPONENTS> component_arrays{};

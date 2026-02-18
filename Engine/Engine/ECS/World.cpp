@@ -66,9 +66,8 @@ namespace Engine {
           return false;
 
         // Check layer requirements
-        auto layer_it = containers.entity_layers.find(entity);
-        if (layer_it != containers.entity_layers.end()) {
-          const auto& entityLayers = layer_it->second;
+        if (entity < containers.entity_layers.size()) {
+          const auto& entityLayers = containers.entity_layers[entity];
           const auto& systemLayers = system.get_layer_signature();
 
           // Entity must be on at least one of the system's layers
@@ -85,12 +84,11 @@ namespace Engine {
         if (entity >= containers.entity_highest_layer.size())
           containers.entity_highest_layer.resize(entity + 1, INVALID_LAYER);
 
-        auto it = containers.entity_layers.find(entity);
-        if (it == containers.entity_layers.end()) {
+        if (entity >= containers.entity_layers.size() || containers.entity_layers[entity].none()) {
           containers.entity_highest_layer[entity] = INVALID_LAYER;
           return;
         }
-        const LayerSignature& layers = it->second;
+        const LayerSignature& layers = containers.entity_layers[entity];
         LayerID highest = INVALID_LAYER;
         for (LayerID l = 0; l < MAX_LAYERS; ++l) {
           if (layers.test(l)) highest = l;
@@ -128,6 +126,8 @@ namespace Engine {
       if (id >= containers.entity_signatures.size())
         containers.entity_signatures.resize(id + 1);
       containers.entity_signatures[id] = ComponentSignature{};
+      if (id >= containers.entity_layers.size())
+        containers.entity_layers.resize(id + 1);
       containers.entity_layers[id] = LayerSignature{};
       containers.entity_names[id] = "Entity " + std::to_string(id);
 
@@ -151,6 +151,8 @@ namespace Engine {
       if (id >= containers.entity_signatures.size())
         containers.entity_signatures.resize(id + 1);
       containers.entity_signatures[id] = ComponentSignature{};
+      if (id >= containers.entity_layers.size())
+        containers.entity_layers.resize(id + 1);
       containers.entity_layers[id] = LayerSignature{};
       containers.entity_names[id] = "Entity " + std::to_string(id);
 
@@ -191,9 +193,8 @@ namespace Engine {
       containers.entity_signatures[newEntity.get_id()] = sourceSignature;
 
       // Clone layer signature and add to layer sets
-      auto layer_it = containers.entity_layers.find(source_id);
-      if (layer_it != containers.entity_layers.end()) {
-        const LayerSignature& source_layers = layer_it->second;
+      if (source_id < containers.entity_layers.size() && containers.entity_layers[source_id].any()) {
+        const LayerSignature& source_layers = containers.entity_layers[source_id];
 
         // Remove from default layer first (added by create_entity)
         Internal::remove_entity_from_layer_set(newEntity.get_id(), DEFAULT_LAYER);
@@ -387,9 +388,8 @@ namespace Engine {
         if (containers.active_entities.contains(entityId))
         {
           // Remove entity from all layer sets
-          auto layer_it = containers.entity_layers.find(entityId);
-          if (layer_it != containers.entity_layers.end()) {
-            const LayerSignature& layers = layer_it->second;
+          if (entityId < containers.entity_layers.size()) {
+            const LayerSignature& layers = containers.entity_layers[entityId];
             for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
               if (layers.test(layer)) {
                 Internal::remove_entity_from_layer_set(entityId, layer);
@@ -407,7 +407,8 @@ namespace Engine {
           }
 
           containers.entity_signatures[entityId].reset();
-          containers.entity_layers.erase(entityId);
+          if (entityId < containers.entity_layers.size())
+            containers.entity_layers[entityId].reset();
           containers.entity_names.erase(entityId);
           containers.prefab_instances.erase(entityId); // Clean up prefab instance data
 
@@ -473,10 +474,10 @@ namespace Engine {
                 // highest *active* layer. We can do this by checking if any higher active
                 // layer also contains this entity.
                 bool higher_active_exists = false;
-                auto layer_it = containers.entity_layers.find(entityId);
-                if (layer_it != containers.entity_layers.end()) {
+                if (entityId < containers.entity_layers.size()) {
+                  const auto& eLayers = containers.entity_layers[entityId];
                   for (LayerID l = layer + 1; l < containers.layer_entities.size(); ++l) {
-                    if (layer_it->second.test(l) && containers.layer_active_state.test(l)) {
+                    if (eLayers.test(l) && containers.layer_active_state.test(l)) {
                       higher_active_exists = true;
                       break;
                     }
@@ -727,11 +728,10 @@ namespace Engine {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
 
-      auto it = containers.entity_layers.find(id);
-      if (it == containers.entity_layers.end())
+      if (id >= containers.entity_layers.size())
         return false;
 
-      return it->second.test(layer);
+      return containers.entity_layers[id].test(layer);
     }
 
     LayerSignature get_entity_layers(const Entity entity)
@@ -739,11 +739,10 @@ namespace Engine {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
 
-      auto it = containers.entity_layers.find(id);
-      if (it == containers.entity_layers.end())
+      if (id >= containers.entity_layers.size())
         return LayerSignature{};
 
-      return it->second;
+      return containers.entity_layers[id];
     }
 
     void clear_layers(const Entity entity)

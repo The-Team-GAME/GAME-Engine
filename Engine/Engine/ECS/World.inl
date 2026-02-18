@@ -210,10 +210,9 @@ namespace Engine {
       for (EntityID entityId : containers.active_entities)
       {
         // Check if entity is on any of the requested layers
-        auto layer_it = containers.entity_layers.find(entityId);
-        if (layer_it == containers.entity_layers.end())
+        if (entityId >= containers.entity_layers.size())
           continue;
-        if ((layer_it->second & layers).none())
+        if ((containers.entity_layers[entityId] & layers).none())
           continue;
 
         if (entityId < containers.entity_signatures.size() &&
@@ -257,10 +256,9 @@ namespace Engine {
       for (EntityID entityId : containers.active_entities)
       {
         // Check if entity is on any of the requested layers
-        auto layer_it = containers.entity_layers.find(entityId);
-        if (layer_it == containers.entity_layers.end())
+        if (entityId >= containers.entity_layers.size())
           continue;
-        if ((layer_it->second & layers).none())
+        if ((containers.entity_layers[entityId] & layers).none())
           continue;
 
         if (entityId < containers.entity_signatures.size() &&
@@ -578,14 +576,13 @@ namespace Engine {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
 
-      auto it = containers.entity_layers.find(id);
-      if (it == containers.entity_layers.end())
+      if (id >= containers.entity_layers.size())
         return false;
 
       LayerSignature check_layers;
       ((check_layers.set(Layers)), ...);
 
-      return (it->second & check_layers).any();
+      return (containers.entity_layers[id] & check_layers).any();
     }
 
     template<LayerID... Layers>
@@ -594,14 +591,13 @@ namespace Engine {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
 
-      auto it = containers.entity_layers.find(id);
-      if (it == containers.entity_layers.end())
+      if (id >= containers.entity_layers.size())
         return false;
 
       LayerSignature check_layers;
       ((check_layers.set(Layers)), ...);
 
-      return (it->second & check_layers) == check_layers;
+      return (containers.entity_layers[id] & check_layers) == check_layers;
     }
 
   } // namespace ECS
