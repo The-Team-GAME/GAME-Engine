@@ -246,6 +246,26 @@ namespace ImGuiManager {
           Engine::Time::set_paused(true);
         }
 
+        ImGui::SameLine();
+        ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+        ImGui::SameLine();
+
+        // Build Button
+        if (Engine::HotReload::is_building())
+        {
+          if (ImGui::Button("Cancel", ImVec2(80, 0)))
+          {
+            Engine::HotReload::request_build_cancellation();
+          }
+        }
+        else
+        {
+          if (ImGui::Button("Build", ImVec2(80, 0)))
+          {
+            Engine::HotReload::request_manual_reload();
+          }
+        }
+
         ImGui::Unindent(8.0f); // Remove left padding
         ImGui::Dummy(ImVec2(0.0f, 4.0f)); // Bottom padding
 
@@ -398,7 +418,7 @@ namespace ImGuiManager {
       // Detect build cancellation → show warning toast
       if (Engine::HotReload::consume_build_cancelled())
       {
-        show_toast("Build cancelled \u2014 restarting...",
+        show_toast("Build cancelled",
           ImGuiManager::ToastType::Warning, 3.0f);
       }
 
