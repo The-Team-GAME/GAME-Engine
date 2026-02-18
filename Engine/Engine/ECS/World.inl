@@ -193,26 +193,19 @@ namespace Engine {
     {
       auto& containers = Internal::get_containers();
       std::vector<Entity> result;
-      std::unordered_set<EntityID> processed; // Track processed entities to avoid duplicates
 
-      // Iterate through each layer in the signature
-      for (LayerID layer = 0; layer < MAX_LAYERS; ++layer)
+      // Iterate active entities and check if they match any requested layer
+      for (EntityID entityId : containers.active_entities)
       {
-        if (!layers.test(layer))
+        // Check if entity is on any of the requested layers
+        auto layer_it = containers.entity_layers.find(entityId);
+        if (layer_it == containers.entity_layers.end())
+          continue;
+        if ((layer_it->second & layers).none())
           continue;
 
-        // Check if this layer has any entities
-        if (layer >= containers.layer_entities.size())
-          continue;
-
-        // Iterate through entities on this layer
-        for (EntityID entityId : containers.layer_entities[layer])
+        if (has_components<T...>(entityId))
         {
-          // Skip if already processed or doesn't have required components
-          if (processed.count(entityId) || !has_components<T...>(entityId))
-            continue;
-
-          processed.insert(entityId);
           result.emplace_back(entityId);
         }
       }
@@ -238,26 +231,19 @@ namespace Engine {
     void for_each_entity_with(const LayerSignature& layers, std::function<void(Entity)> callback)
     {
       auto& containers = Internal::get_containers();
-      std::unordered_set<EntityID> processed; // Track processed entities to avoid duplicates
 
-      // Iterate through each layer in the signature
-      for (LayerID layer = 0; layer < MAX_LAYERS; ++layer)
+      // Iterate active entities and check if they match any requested layer
+      for (EntityID entityId : containers.active_entities)
       {
-        if (!layers.test(layer))
+        // Check if entity is on any of the requested layers
+        auto layer_it = containers.entity_layers.find(entityId);
+        if (layer_it == containers.entity_layers.end())
+          continue;
+        if ((layer_it->second & layers).none())
           continue;
 
-        // Check if this layer has any entities
-        if (layer >= containers.layer_entities.size())
-          continue;
-
-        // Iterate through entities on this layer
-        for (EntityID entityId : containers.layer_entities[layer])
+        if (has_components<T...>(entityId))
         {
-          // Skip if already processed or doesn't have required components
-          if (processed.count(entityId) || !has_components<T...>(entityId))
-            continue;
-
-          processed.insert(entityId);
           callback(Entity(entityId));
         }
       }
@@ -423,20 +409,10 @@ namespace Engine {
     {
       auto& containers = Internal::get_containers();
 
-      // Use a set to track already processed entities to avoid duplicates
-      // since entities can be on multiple layers
-      std::unordered_set<EntityID> processed;
-
-      // Iterate through layers in order (lower layer ID = higher priority = processed first)
-      for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
-        for (EntityID id : containers.layer_entities[layer]) {
-          // Skip if already processed, not active, or doesn't have required components
-          if (processed.count(id) || !containers.active_entities.contains(id) || !has_components<T...>(id))
-            continue;
-
-          processed.insert(id);
-          Entity entity(id);
-          callback(entity);
+      // Iterate active entities directly — no duplicates, no allocation
+      for (EntityID id : containers.active_entities) {
+        if (has_components<T...>(id)) {
+          callback(Entity(id));
         }
       }
     }
@@ -462,29 +438,26 @@ namespace Engine {
     void for_each(Func&& callback)
     {
       auto& containers = Internal::get_containers();
-      std::unordered_set<EntityID> processed;
 
-      for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
-        for (EntityID id : containers.layer_entities[layer]) {
-          if (processed.count(id) || !containers.active_entities.contains(id) || !has_components<Components...>(id))
-            continue;
+      // Iterate active entities directly — no duplicates, no allocation
+      for (EntityID id : containers.active_entities) {
+        if (!has_components<Components...>(id))
+          continue;
 
-          processed.insert(id);
-          Entity entity(id);
+        Entity entity(id);
 
-          // Get all component pointers
-          if constexpr (Internal::CallbackWithEntity<Func, Entity, Components...>) {
-            // Callback signature: void(Entity, Components*...)
-            callback(entity, get_component<Components>(entity)...);
-          }
-          else if constexpr (Internal::CallbackWithoutEntity<Func, Components...>) {
-            // Callback signature: void(Components*...)
-            callback(get_component<Components>(entity)...);
-          }
-          else {
-            static_assert(sizeof(Func) == 0,
-              "for_each callback must have signature void(Entity, Components*...) or void(Components*...)");
-          }
+        // Get all component pointers
+        if constexpr (Internal::CallbackWithEntity<Func, Entity, Components...>) {
+          // Callback signature: void(Entity, Components*...)
+          callback(entity, get_component<Components>(entity)...);
+        }
+        else if constexpr (Internal::CallbackWithoutEntity<Func, Components...>) {
+          // Callback signature: void(Components*...)
+          callback(get_component<Components>(entity)...);
+        }
+        else {
+          static_assert(sizeof(Func) == 0,
+            "for_each callback must have signature void(Entity, Components*...) or void(Components*...)");
         }
       }
     }
