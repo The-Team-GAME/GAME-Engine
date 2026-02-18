@@ -75,7 +75,7 @@ namespace Engine {
       for (EntityID entityId : entities_to_check)
       {
         if (entityId < containers.entity_signatures.size() &&
-            (containers.entity_signatures[entityId] & required) == required)
+          (containers.entity_signatures[entityId] & required) == required)
         {
           destroy_entity(Entity(entityId));
         }
@@ -127,7 +127,15 @@ namespace Engine {
     template <typename... T>
     bool has_components(const Entity entity)
     {
-      return (has_component<T>(entity) && ...);
+      // equivalent to ((has_component<T>(entity)) && ...)
+      // but more efficient by computing signature once
+
+      auto& containers = Internal::get_containers();
+      EntityID id = entity.get_id();
+      ComponentSignature required;
+      ((required.set(ComponentTypeManager::get_type_id<T>())), ...);
+      return id < containers.entity_signatures.size() &&
+        (containers.entity_signatures[id] & required) == required;
     }
 
     template <typename T, typename... Args>
@@ -188,7 +196,7 @@ namespace Engine {
       for (EntityID entityId : containers.active_entities)
       {
         if (entityId < containers.entity_signatures.size() &&
-            (containers.entity_signatures[entityId] & required) == required)
+          (containers.entity_signatures[entityId] & required) == required)
         {
           result.emplace_back(entityId);
         }
@@ -216,7 +224,7 @@ namespace Engine {
           continue;
 
         if (entityId < containers.entity_signatures.size() &&
-            (containers.entity_signatures[entityId] & required) == required)
+          (containers.entity_signatures[entityId] & required) == required)
         {
           result.emplace_back(entityId);
         }
@@ -236,7 +244,7 @@ namespace Engine {
       for (EntityID entityId : containers.active_entities)
       {
         if (entityId < containers.entity_signatures.size() &&
-            (containers.entity_signatures[entityId] & required) == required)
+          (containers.entity_signatures[entityId] & required) == required)
         {
           return Entity(entityId);
         }
@@ -262,7 +270,7 @@ namespace Engine {
           continue;
 
         if (entityId < containers.entity_signatures.size() &&
-            (containers.entity_signatures[entityId] & required) == required)
+          (containers.entity_signatures[entityId] & required) == required)
         {
           callback(Entity(entityId));
         }
@@ -435,7 +443,7 @@ namespace Engine {
       // Iterate active entities directly — no duplicates, no allocation
       for (EntityID id : containers.active_entities) {
         if (id < containers.entity_signatures.size() &&
-            (containers.entity_signatures[id] & required) == required) {
+          (containers.entity_signatures[id] & required) == required) {
           callback(Entity(id));
         }
       }
@@ -472,7 +480,7 @@ namespace Engine {
       // Iterate active entities directly — no duplicates, no allocation
       for (EntityID id : containers.active_entities) {
         if (id >= containers.entity_signatures.size() ||
-            (containers.entity_signatures[id] & required) != required)
+          (containers.entity_signatures[id] & required) != required)
           continue;
 
         Entity entity(id);
