@@ -13,8 +13,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "../../Engine/MonkeyEngine.h"
-#include "../../Engine/Engine/Systems/PhysicsSystem.h"
+#include "pch.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/EnemyHealthComponent.h"
 

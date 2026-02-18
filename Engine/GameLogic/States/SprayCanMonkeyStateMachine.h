@@ -13,7 +13,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "../../Engine/MonkeyEngine.h"
+#include "pch.h"
 #include "../Components/GameplayComponent.h"
 #include "SprayCanMonkeyStateCallbacks.h"
 

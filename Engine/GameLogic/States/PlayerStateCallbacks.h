@@ -16,10 +16,10 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "../../Engine/MonkeyEngine.h"
+#include "pch.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/HeartrateComponent.h"
-#include <assert.h>
+
 namespace {
   f32 timer;
   f32 dash_cooldown;
@@ -107,6 +107,7 @@ namespace PlayerStateCallbacks
 
   inline void idle_on_update(Engine::ECS::Entity entity) {
     take_input(entity);
+    // std::cout << "Idle State Update\n";
   }
 #pragma endregion
 

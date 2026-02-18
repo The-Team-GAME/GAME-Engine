@@ -20,6 +20,7 @@
 #include <initializer_list>
 #include <string>
 #include "../TypeDef.h"
+#include "../EngineExport.h"
 
 namespace Engine {
   namespace ECS {
@@ -50,7 +51,7 @@ namespace Engine {
     /* ======================== //
     // LayerSignature class     //
     // ======================== */
-    class LayerSignature : public std::bitset<MAX_LAYERS> {
+    class ENGINE_API LayerSignature : public std::bitset<MAX_LAYERS> {
     public:
       // Default constructor
       LayerSignature() = default;

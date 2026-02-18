@@ -35,6 +35,10 @@ namespace Engine {
     // PrefabImpl Implementation
     // ============================================================================
 
+    PrefabImpl::PrefabImpl(PrefabImpl&&) noexcept = default;
+    PrefabImpl& PrefabImpl::operator=(PrefabImpl&&) noexcept = default;
+    PrefabImpl::~PrefabImpl() = default;
+
     const ComponentSignature& PrefabImpl::get_signature() const {
       return signature;
     }
@@ -89,6 +93,8 @@ namespace Engine {
 
     Prefab::Prefab(std::shared_ptr<PrefabImpl> impl) : impl(std::move(impl)) {}
 
+    Prefab::~Prefab() = default;
+
     bool Prefab::is_valid() const {
       return impl != nullptr;
     }
@@ -122,7 +128,9 @@ namespace Engine {
       auto& prefab_signature = impl->get_signature();
 
       // Find the component array with matching type name
-      for (auto& [type_id, world_array] : containers.component_arrays) {
+      for (ComponentTypeID type_id = 0; type_id < MAX_COMPONENTS; ++type_id) {
+        auto& world_array = containers.component_arrays[type_id];
+        if (!world_array) continue;
         if (world_array->get_type_name() == component_name) {
           // Check if prefab already has this component
           if (prefab_signature.test(type_id)) {
@@ -249,17 +257,16 @@ namespace Engine {
       // Clone all components from prefab to entity
       for (const auto& [type_id, prefab_array] : prefab_impl->get_component_storage()) {
         // Get or create component array in world
-        auto it = containers.component_arrays.find(type_id);
-        if (it == containers.component_arrays.end()) {
+        auto& world_ptr = containers.component_arrays[type_id];
+        if (!world_ptr) {
           // Component type not registered in world, create it
-          containers.component_arrays[type_id] = prefab_array->create_empty();
-          it = containers.component_arrays.find(type_id);
+          world_ptr = prefab_array->create_empty();
         }
 
         // Clone component from prefab's storage (entity ID 0) to world's storage (new entity_id)
         // We need to get the component data from prefab and add it to world
         ReflectionLibrary::GenericValue component_data = prefab_array->to_generic_value(0);
-        it->second->add_component_from_generic_value(entity_id, component_data);
+        world_ptr->add_component_from_generic_value(entity_id, component_data);
       }
 
       // Set Transform2D position to center of screen if entity has Transform2D
@@ -322,16 +329,15 @@ namespace Engine {
       // Clone all components from prefab to entity
       for (const auto& [type_id, prefab_array] : prefab_impl->get_component_storage()) {
         // Get or create component array in world
-        auto it = containers.component_arrays.find(type_id);
-        if (it == containers.component_arrays.end()) {
+        auto& world_ptr = containers.component_arrays[type_id];
+        if (!world_ptr) {
           // Component type not registered in world, create it
-          containers.component_arrays[type_id] = prefab_array->create_empty();
-          it = containers.component_arrays.find(type_id);
+          world_ptr = prefab_array->create_empty();
         }
 
         // Clone component from prefab's storage (entity ID 0) to world's storage (entity_id)
         ReflectionLibrary::GenericValue component_data = prefab_array->to_generic_value(0);
-        it->second->add_component_from_generic_value(entity_id, component_data);
+        world_ptr->add_component_from_generic_value(entity_id, component_data);
       }
 
       // Notify systems about the new entity
@@ -514,12 +520,10 @@ namespace Engine {
           }
 
           // Get the current instance component data
-          auto instance_array_it = containers.component_arrays.find(type_id);
-          if (instance_array_it == containers.component_arrays.end()) {
+          auto& instance_array = containers.component_arrays[type_id];
+          if (!instance_array) {
             continue;
           }
-
-          auto& instance_array = instance_array_it->second;
 
           // Get component data as GenericValues
           ReflectionLibrary::GenericValue prefab_component_data = prefab_array->to_generic_value(0);

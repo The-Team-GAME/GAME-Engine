@@ -11,9 +11,8 @@
 //
 // Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
+#include "pch.h"
 #include "OptionsState.h"
-#include "../../Engine/MonkeyEngine.h"
-#include "../../Engine/Engine/Systems/GraphicsSystem.h"
 
 namespace {
   Engine::Graphics::Texture backsky_texture;
@@ -49,7 +48,7 @@ void OptionsState::load()
     )
     .add_component<Components::Texture>(carriage_texture)
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
-    .add_to_layer("ui");  
+    .add_to_layer("ui");
 
   options_base_entity = Engine::ECS::create_entity()
     .add_component<Components::Transform2D>(

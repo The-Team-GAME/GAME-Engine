@@ -11,8 +11,8 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
+#include "pch.h"
 #include "PauseState.h"
-#include "../../Engine/MonkeyEngine.h"
 #include "../../Engine/Engine/Systems/GraphicsSystem.h"
 
 // Static member definitions

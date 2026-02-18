@@ -15,22 +15,35 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 #include "Types.h"
+#include "../EngineExport.h"
+#include <string>
+#include <unordered_map>
 
 namespace Engine {
   namespace ECS {
 
     /* ===================================== //
     // Automatic component type ID generation //
+    // Uses type_index internally so that     //
+    // the same type always gets the same ID  //
+    // even across DLL/EXE module boundaries. //
     // ===================================== */
-    class ComponentTypeManager {
+    class ENGINE_API ComponentTypeManager {
     private:
       static ComponentTypeID next_type_id;
+
+      /// Central map from type name string -> ComponentTypeID.
+      /// Uses typeid(T).name() as key instead of type_index so that
+      /// keys remain valid after a DLL is unloaded and reloaded.
+      /// Defined in ComponentManager.cpp — single instance in the EXE.
+      static std::unordered_map<std::string, ComponentTypeID>& get_type_map();
 
     public:
       /*=================================================================================
       Function Brief:
       Returns a unique type ID for component type T. Each component type gets a
-      unique ID that persists for the program's lifetime.
+      unique ID that persists for the program's lifetime. Uses typeid(T) internally
+      so IDs are consistent across module boundaries.
 
       Parameters:
       None (template parameter T determines the component type).
