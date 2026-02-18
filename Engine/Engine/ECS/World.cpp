@@ -17,8 +17,6 @@
 #include "WorldData.h"
 #include "../Perf.h"
 #include <unordered_set>
-#include <unordered_map>
-#include <limits>
 
 namespace Engine {
   namespace ECS
@@ -81,6 +79,25 @@ namespace Engine {
         return true;
       }
 
+      // Recompute cached highest layer for an entity from its layer signature
+      void recompute_highest_layer(WorldContainers& containers, EntityID entity)
+      {
+        if (entity >= containers.entity_highest_layer.size())
+          containers.entity_highest_layer.resize(entity + 1, INVALID_LAYER);
+
+        auto it = containers.entity_layers.find(entity);
+        if (it == containers.entity_layers.end()) {
+          containers.entity_highest_layer[entity] = INVALID_LAYER;
+          return;
+        }
+        const LayerSignature& layers = it->second;
+        LayerID highest = INVALID_LAYER;
+        for (LayerID l = 0; l < MAX_LAYERS; ++l) {
+          if (layers.test(l)) highest = l;
+        }
+        containers.entity_highest_layer[entity] = highest;
+      }
+
       void add_entity_to_layer_set(EntityID entity, LayerID layer)
       {
         auto& containers = get_containers();
@@ -89,6 +106,7 @@ namespace Engine {
           containers.layer_entities.resize(layer + 1);
         }
         containers.layer_entities[layer].insert(entity);
+        recompute_highest_layer(containers, entity);
       }
 
       void remove_entity_from_layer_set(EntityID entity, LayerID layer)
@@ -97,6 +115,7 @@ namespace Engine {
         if (layer < containers.layer_entities.size()) {
           containers.layer_entities[layer].erase(entity);
         }
+        recompute_highest_layer(containers, entity);
       }
     } // namespace Internal
 
@@ -409,39 +428,12 @@ namespace Engine {
       Engine::Perf::start("ECS Draw");
 
       // Draw layer by layer to ensure correct draw order regardless of system registration order
-      // Entities are drawn once at their highest layer
+      // Entities are drawn once at their highest active layer using pre-cached entity_highest_layer
 
       // Reusable buffer to snapshot layer entity IDs (avoids copying full SparseSet)
       static thread_local std::vector<EntityID> iteration_buffer;
 
-      // First pass: find the highest layer for each entity
-      // Use a flat vector indexed by EntityID instead of unordered_map
-      static thread_local std::vector<LayerID> entity_highest_layer;
-      static constexpr LayerID NO_LAYER = std::numeric_limits<LayerID>::max();
-      {
-        // Determine required size
-        size_t max_id = 0;
-        for (EntityID id : containers.active_entities) {
-          if (id >= max_id) max_id = id + 1;
-        }
-        entity_highest_layer.assign(max_id, NO_LAYER);
-      }
-
-      for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
-        if (!containers.layer_active_state.test(layer))
-          continue;
-
-        const auto& layer_set = containers.layer_entities[layer];
-        for (EntityID entityId : layer_set) {
-          // Track the highest layer this entity is on
-          if (entityId < entity_highest_layer.size() &&
-              (entity_highest_layer[entityId] == NO_LAYER || layer > entity_highest_layer[entityId])) {
-            entity_highest_layer[entityId] = layer;
-          }
-        }
-      }
-
-      // Second pass: draw entities layer by layer at their highest layer only
+      // Draw entities layer by layer — use cached highest layer to draw each entity only once
       for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
         // Skip if layer is disabled
         if (!containers.layer_active_state.test(layer))
@@ -465,10 +457,35 @@ namespace Engine {
             if (!system_entities.contains(entityId))
               continue;
 
-            // Only draw if this is the entity's highest layer
-            if (entityId >= entity_highest_layer.size() ||
-                entity_highest_layer[entityId] != layer)
-              continue;
+            // Only draw if this is the entity's highest active layer
+            // Use the cached highest layer — if the cached layer is inactive,
+            // fall back: the entity's highest *active* layer is the current one
+            // (since we iterate layers in order, last active match wins, so
+            //  we skip unless this *is* the highest layer, or the cached
+            //  highest layer is inactive and this is the highest active one)
+            if (entityId < containers.entity_highest_layer.size()) {
+              LayerID cached = containers.entity_highest_layer[entityId];
+              if (cached != INVALID_LAYER && cached != layer) {
+                // If the cached highest layer is active, skip (entity drawn later at that layer)
+                if (containers.layer_active_state.test(cached))
+                  continue;
+                // Cached highest layer is inactive — we need to check if this is the
+                // highest *active* layer. We can do this by checking if any higher active
+                // layer also contains this entity.
+                bool higher_active_exists = false;
+                auto layer_it = containers.entity_layers.find(entityId);
+                if (layer_it != containers.entity_layers.end()) {
+                  for (LayerID l = layer + 1; l < containers.layer_entities.size(); ++l) {
+                    if (layer_it->second.test(l) && containers.layer_active_state.test(l)) {
+                      higher_active_exists = true;
+                      break;
+                    }
+                  }
+                }
+                if (higher_active_exists)
+                  continue;
+              }
+            }
 
             // Draw the entity
             Entity entity(entityId);
@@ -746,6 +763,9 @@ namespace Engine {
       }
 
       containers.entity_layers[id].reset();
+      // Update cached highest layer
+      if (id < containers.entity_highest_layer.size())
+        containers.entity_highest_layer[id] = INVALID_LAYER;
       Internal::entity_component_changed(id);
     }
 
