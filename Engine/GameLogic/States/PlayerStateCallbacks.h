@@ -45,9 +45,22 @@ namespace PlayerStateCallbacks
     }
 
     // Handling cooldowns
-    if (dash_cooldown > 0) { dash_cooldown -= Time::get_fixed_dt(); }
+    if (!player_comp->dash.ready()) { player_comp->dash.cd_timer -= Time::get_fixed_dt(); }
 
     // Check for attack input
+
+    if (Engine::Input::is_pressed(Engine::KeyCode::K))
+    {
+      state_machine->change_state("Uppercut");
+      return;
+    }
+
+    if (Engine::Input::is_pressed(Engine::KeyCode::L))
+    {
+      state_machine->change_state("Smash");
+      return;
+    }
+
     if (Engine::Input::is_pressed(Engine::KeyCode::J))
     {
       state_machine->change_state("Attack1");
@@ -55,7 +68,7 @@ namespace PlayerStateCallbacks
     }
 
     // Check for movement input
-    if (Input::is_held(KeyCode::ShiftLeft) && dash_cooldown <= 0.f)
+    if (Input::is_held(KeyCode::ShiftLeft) && player_comp->dash.ready())
     {
       state_machine->change_state("Dash");
       return;
@@ -221,11 +234,11 @@ namespace PlayerStateCallbacks
 
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
-    player_comp->dash_timer = player_comp->dash_duration;
+    player_comp->dash.set_timer();
 
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
-    rigid->use_gravity = false;
+    rigid->apply_force = false;
     rigid->velocity.zero();
     rigid->force.zero();
     terminal_vel_placeholder = rigid->x_terminal_velocity;
@@ -239,16 +252,15 @@ namespace PlayerStateCallbacks
     assert(rigid);
     assert(player_comp);
     assert(flip);
-    if (player_comp->dash_timer <= 0.f)
+    if (player_comp->dash.timer_end())
     {
-      player_comp->dash_timer = 0.f;
       Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
       assert(state_machine);
       state_machine->change_state("Idle");
     }
-    rigid->x_terminal_velocity = player_comp->dash_speed;
-    rigid->velocity.x = flip->value.x * player_comp->dash_speed;
-    player_comp->dash_timer -= Time::get_fixed_dt();
+    rigid->x_terminal_velocity = player_comp->dash.speed;;
+    rigid->velocity.x = flip->value.x * player_comp->dash.speed;
+    player_comp->dash.timer -= Time::get_fixed_dt();
   }
 
   inline void dash_on_exit(ECS::Entity entity)
@@ -256,11 +268,11 @@ namespace PlayerStateCallbacks
     Log::info("Player: Exited Dashing state");
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
-    rigid->use_gravity = true;
+    rigid->apply_force = true;
     rigid->x_terminal_velocity = terminal_vel_placeholder;
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
-    dash_cooldown = player_comp->dash_cooldown;
+    player_comp->dash.reset_cooldown();
   }
 #pragma endregion
 
@@ -275,20 +287,20 @@ namespace PlayerStateCallbacks
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
     player_comp->damage_immune = true;
-    player_comp->stunned_timer = player_comp->stunned_duration;
+    player_comp->stunned.set_timer();
   }
 
   inline void Stunned_on_update(ECS::Entity entity)
   {
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
-    if (player_comp->stunned_timer <= 0.f)
+    if (player_comp->stunned.timer_end())
     {
       Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
       assert(sm);
       sm->change_state("Idle");
     }
-    player_comp->stunned_timer -= Time::get_fixed_dt();
+    player_comp->stunned.timer -= Time::get_fixed_dt();
   }
 
   inline void Stunned_on_exit([[maybe_unused]] ECS::Entity entity)
@@ -566,33 +578,52 @@ namespace PlayerStateCallbacks
   }
 #pragma endregion
 
-#pragma region Uppercut
+#pragma region uppercut
   // ========================================================================
   // Uppercut State Callbacks
   // ========================================================================
 
-  inline void Uppercut_on_enter([[maybe_unused]] ECS::Entity entity)
+  inline void uppercut_on_enter(ECS::Entity entity)
   {
+    Log::info("Player: Entered uppercuting state");
+
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(player_comp);
+    player_comp->uppercut.set_timer();
+
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
-    rigid->gravity = false;
+    rigid->use_gravity = false;
+    rigid->velocity.zero();
+    rigid->force.zero();
   }
 
-  inline void Uppercut_on_update(ECS::Entity entity)
+  inline void uppercut_on_update(ECS::Entity entity)
   {
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(rigid);
-    if (rigid->on_ground)
+    assert(player_comp);
+    assert(flip);
+    if (player_comp->uppercut.timer_end())
     {
       Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
       assert(sm);
       sm->change_state("Idle");
     }
+    rigid->velocity.y = -player_comp->uppercut.speed;
+    player_comp->uppercut.timer -= Time::get_fixed_dt();
   }
 
-  inline void Uppercut_on_exit([[maybe_unused]] ECS::Entity entity)
+  inline void uppercut_on_exit(ECS::Entity entity)
   {
-    Log::info("Player: Exited Uppercut state");
+    Log::info("Player: Exited uppercuting state");
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    assert(rigid);
+    rigid->use_gravity = true;
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(player_comp);
+    player_comp->uppercut.reset_cooldown();
   }
 #pragma endregion
 
@@ -635,9 +666,11 @@ REGISTER_STATE_MACHINE_BLUEPRINT(Player, "Idle",
   STATE("Idle", PlayerStateCallbacks::idle_on_enter, PlayerStateCallbacks::idle_on_update, NO_CALLBACK)
   STATE("Walking", PlayerStateCallbacks::walking_on_enter, PlayerStateCallbacks::walking_on_update, PlayerStateCallbacks::walking_on_exit)
   STATE("Jumping", PlayerStateCallbacks::jumping_on_enter, PlayerStateCallbacks::jumping_on_update, PlayerStateCallbacks::jumping_on_exit)
+  STATE("Falling", PlayerStateCallbacks::falling_on_enter, PlayerStateCallbacks::falling_on_update, PlayerStateCallbacks::falling_on_exit)
   STATE("Dash", PlayerStateCallbacks::dash_on_enter, PlayerStateCallbacks::dash_on_update, PlayerStateCallbacks::dash_on_exit)
   STATE("Attack1", PlayerStateCallbacks::attack1_on_enter, PlayerStateCallbacks::attack1_on_update, NO_CALLBACK)
   STATE("Attack2", PlayerStateCallbacks::attack2_on_enter, PlayerStateCallbacks::attack2_on_update, NO_CALLBACK)
-  STATE("Attack3", PlayerStateCallbacks::attack3_on_enter, PlayerStateCallbacks::attack3_on_update, NO_CALLBACK)
+  STATE("Uppercut", PlayerStateCallbacks::uppercut_on_enter, PlayerStateCallbacks::uppercut_on_update, PlayerStateCallbacks::uppercut_on_exit)
+  STATE("Smash", PlayerStateCallbacks::smash_on_enter, PlayerStateCallbacks::smash_on_update, PlayerStateCallbacks::smash_on_exit)
   STATE("Death", PlayerStateCallbacks::death_on_enter, PlayerStateCallbacks::death_on_update, PlayerStateCallbacks::death_on_exit)
 )

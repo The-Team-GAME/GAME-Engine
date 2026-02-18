@@ -32,7 +32,6 @@ namespace Components
 
     f32 mass = 1.0f; // Mass in kg
     Vec2D force;
-    Vec2D force_view; // This is for debugging purposes
     Vec2D acceleration;
     Vec2D velocity; // Velocity in units per second
     Vec2D gravity{ 0.f, 1000.f };
@@ -44,7 +43,7 @@ namespace Components
     Vec2D last_surface_dir_vector{ 1.f, 0.f };
 
     bool use_gravity = false;
-    bool use_friction = true;
+    bool apply_force = true;
     bool is_static = false;  // If true, not affected by physics forces
     bool on_ground = false;
     bool is_jumping = false;
@@ -79,4 +78,4 @@ namespace Components
   };
 }
 
-REGISTER_COMPONENT(Components::RigidBody, mass, force_view, acceleration, velocity, x_terminal_velocity, y_terminal_velocity, use_gravity, gravity, is_static, on_ground, is_jumping)
+REGISTER_COMPONENT(Components::RigidBody, mass, acceleration, velocity, x_terminal_velocity, y_terminal_velocity, use_gravity, gravity, is_static, on_ground, is_jumping)
