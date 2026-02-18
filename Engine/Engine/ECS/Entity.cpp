@@ -49,12 +49,10 @@ namespace Engine {
         return;
 
       auto& containers = Internal::get_containers();
-      auto sig_it = containers.entity_signatures.find(id);
-
-      if (sig_it == containers.entity_signatures.end())
+      if (id >= containers.entity_signatures.size())
         return;
 
-      const ComponentSignature& signature = sig_it->second;
+      const ComponentSignature& signature = containers.entity_signatures[id];
 
       // Iterate through all component arrays
       for (ComponentTypeID type_id = 0; type_id < MAX_COMPONENTS; ++type_id) {
@@ -80,8 +78,7 @@ namespace Engine {
         if (!array) continue;
         if (array->get_type_name() == component_name) {
           // Check if entity already has this component
-          auto sig_it = containers.entity_signatures.find(id);
-          if (sig_it != containers.entity_signatures.end() && sig_it->second.test(type_id)) {
+          if (id < containers.entity_signatures.size() && containers.entity_signatures[id].test(type_id)) {
             return false; // Already has this component
           }
 

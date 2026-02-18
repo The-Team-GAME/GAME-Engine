@@ -51,11 +51,10 @@ namespace Engine {
         if (!containers.active_entities.contains(entity))
           return false;
 
-        auto it = containers.entity_signatures.find(entity);
-        if (it == containers.entity_signatures.end())
+        if (entity >= containers.entity_signatures.size())
           return false;
 
-        const auto& entitySignature = it->second;
+        const auto& entitySignature = containers.entity_signatures[entity];
         const auto& requiredSignature = system.get_required_signature();
         const auto& excludedSignature = system.get_excluded_signature();
 
@@ -106,6 +105,8 @@ namespace Engine {
 
       EntityID id = containers.next_entity_id++;
       containers.active_entities.insert(id);
+      if (id >= containers.entity_signatures.size())
+        containers.entity_signatures.resize(id + 1);
       containers.entity_signatures[id] = ComponentSignature{};
       containers.entity_layers[id] = LayerSignature{};
       containers.entity_names[id] = "Entity " + std::to_string(id);
@@ -127,6 +128,8 @@ namespace Engine {
       }
 
       containers.active_entities.insert(id);
+      if (id >= containers.entity_signatures.size())
+        containers.entity_signatures.resize(id + 1);
       containers.entity_signatures[id] = ComponentSignature{};
       containers.entity_layers[id] = LayerSignature{};
       containers.entity_names[id] = "Entity " + std::to_string(id);
@@ -164,7 +167,7 @@ namespace Engine {
         containers.entity_names[newEntity.get_id()] = name_it->second;
       }
 
-      const auto& sourceSignature = containers.entity_signatures.at(source_id);
+      const auto& sourceSignature = containers.entity_signatures[source_id];
       containers.entity_signatures[newEntity.get_id()] = sourceSignature;
 
       // Clone layer signature and add to layer sets
@@ -383,7 +386,7 @@ namespace Engine {
             array->remove_entity(entityId);
           }
 
-          containers.entity_signatures.erase(entityId);
+          containers.entity_signatures[entityId].reset();
           containers.entity_layers.erase(entityId);
           containers.entity_names.erase(entityId);
           containers.prefab_instances.erase(entityId); // Clean up prefab instance data

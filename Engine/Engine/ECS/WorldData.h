@@ -47,7 +47,7 @@ namespace Engine {
         LayerID next_layer_id = 2; // Start at 2 (0 = INVALID_LAYER, 1 = DEFAULT_LAYER)
         SparseSet<EntityID> active_entities;
         SparseSet<EntityID> entities_to_destroy;
-        std::unordered_map<EntityID, ComponentSignature> entity_signatures;
+        std::vector<ComponentSignature> entity_signatures;  // Indexed by EntityID — O(1) direct access
         std::unordered_map<EntityID, LayerSignature> entity_layers;
         std::unordered_map<EntityID, std::string> entity_names;
         std::unordered_map<EntityID, PrefabInstanceData> prefab_instances;

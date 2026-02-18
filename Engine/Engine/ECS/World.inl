@@ -118,8 +118,7 @@ namespace Engine {
       auto& containers = Internal::get_containers();
       EntityID entityId = entity.get_id();
       ComponentTypeID typeId = ComponentTypeManager::get_type_id<T>();
-      auto it = containers.entity_signatures.find(entityId);
-      return it != containers.entity_signatures.end() && it->second.test(typeId);
+      return entityId < containers.entity_signatures.size() && containers.entity_signatures[entityId].test(typeId);
     }
 
     template <typename... T>
@@ -287,12 +286,11 @@ namespace Engine {
       for (size_t i = 0; i < containers.active_entities.size(); ++i)
       {
         EntityID lhs_id = containers.active_entities.key_at(i);
-        auto lhs_it = containers.entity_signatures.find(lhs_id);
-        if (lhs_it == containers.entity_signatures.end())
+        if (lhs_id >= containers.entity_signatures.size())
           continue;
 
         // Check if LHS has all required components
-        const auto& lhs_sig = lhs_it->second;
+        const auto& lhs_sig = containers.entity_signatures[lhs_id];
         if ((lhs_sig & required_signature) != required_signature)
           continue;
 
@@ -302,12 +300,11 @@ namespace Engine {
           EntityID rhs_id = containers.active_entities.key_at(j);
           if (lhs_id == rhs_id) continue; // Skip self-pairs
 
-          auto rhs_it = containers.entity_signatures.find(rhs_id);
-          if (rhs_it == containers.entity_signatures.end())
+          if (rhs_id >= containers.entity_signatures.size())
             continue;
 
           // Check if RHS has all required components
-          const auto& rhs_sig = rhs_it->second;
+          const auto& rhs_sig = containers.entity_signatures[rhs_id];
           if ((rhs_sig & required_signature) != required_signature)
             continue;
 
@@ -360,11 +357,10 @@ namespace Engine {
           // Iterate all entity pairs between these two layers
           for (EntityID lhs_id : lhs_layer_set) {
             // Check if LHS has all required components
-            auto lhs_it = containers.entity_signatures.find(lhs_id);
-            if (lhs_it == containers.entity_signatures.end())
+            if (lhs_id >= containers.entity_signatures.size())
               continue;
 
-            const auto& lhs_sig = lhs_it->second;
+            const auto& lhs_sig = containers.entity_signatures[lhs_id];
             if ((lhs_sig & required_signature) != required_signature)
               continue;
 
@@ -372,11 +368,10 @@ namespace Engine {
               if (lhs_id == rhs_id) continue; // Skip self-pairs
 
               // Check if RHS has all required components
-              auto rhs_it = containers.entity_signatures.find(rhs_id);
-              if (rhs_it == containers.entity_signatures.end())
+              if (rhs_id >= containers.entity_signatures.size())
                 continue;
 
-              const auto& rhs_sig = rhs_it->second;
+              const auto& rhs_sig = containers.entity_signatures[rhs_id];
               if ((rhs_sig & required_signature) != required_signature)
                 continue;
 
