@@ -59,6 +59,9 @@ namespace Engine {
     void destroy_entities_with()
     {
       auto& containers = Internal::get_containers();
+      // Precompute required signature once
+      ComponentSignature required;
+      ((required.set(ComponentTypeManager::get_type_id<T>())), ...);
 
       // Create a vector copy to avoid iterator invalidation
       std::vector<EntityID> entities_to_check;
@@ -71,10 +74,10 @@ namespace Engine {
       // Now iterate over the copy and destroy matching entities
       for (EntityID entityId : entities_to_check)
       {
-        Entity entity(entityId);
-        if (has_components<T...>(entity))
+        if (entityId < containers.entity_signatures.size() &&
+            (containers.entity_signatures[entityId] & required) == required)
         {
-          destroy_entity(entity);
+          destroy_entity(Entity(entityId));
         }
       }
     }
@@ -177,10 +180,15 @@ namespace Engine {
     std::vector<Entity> get_entities_with()
     {
       auto& containers = Internal::get_containers();
+      // Precompute required signature once
+      ComponentSignature required;
+      ((required.set(ComponentTypeManager::get_type_id<T>())), ...);
+
       std::vector<Entity> result;
       for (EntityID entityId : containers.active_entities)
       {
-        if (has_components<T...>(entityId))
+        if (entityId < containers.entity_signatures.size() &&
+            (containers.entity_signatures[entityId] & required) == required)
         {
           result.emplace_back(entityId);
         }
@@ -192,6 +200,10 @@ namespace Engine {
     std::vector<Entity> get_entities_with(const LayerSignature& layers)
     {
       auto& containers = Internal::get_containers();
+      // Precompute required signature once
+      ComponentSignature required;
+      ((required.set(ComponentTypeManager::get_type_id<T>())), ...);
+
       std::vector<Entity> result;
 
       // Iterate active entities and check if they match any requested layer
@@ -204,7 +216,8 @@ namespace Engine {
         if ((layer_it->second & layers).none())
           continue;
 
-        if (has_components<T...>(entityId))
+        if (entityId < containers.entity_signatures.size() &&
+            (containers.entity_signatures[entityId] & required) == required)
         {
           result.emplace_back(entityId);
         }
@@ -217,9 +230,14 @@ namespace Engine {
     Entity get_first_entity_with()
     {
       auto& containers = Internal::get_containers();
+      // Precompute required signature once
+      ComponentSignature required;
+      ((required.set(ComponentTypeManager::get_type_id<T>())), ...);
+
       for (EntityID entityId : containers.active_entities)
       {
-        if (has_components<T...>(entityId))
+        if (entityId < containers.entity_signatures.size() &&
+            (containers.entity_signatures[entityId] & required) == required)
         {
           return Entity(entityId);
         }
@@ -231,6 +249,9 @@ namespace Engine {
     void for_each_entity_with(const LayerSignature& layers, std::function<void(Entity)> callback)
     {
       auto& containers = Internal::get_containers();
+      // Precompute required signature once
+      ComponentSignature required;
+      ((required.set(ComponentTypeManager::get_type_id<T>())), ...);
 
       // Iterate active entities and check if they match any requested layer
       for (EntityID entityId : containers.active_entities)
@@ -242,7 +263,8 @@ namespace Engine {
         if ((layer_it->second & layers).none())
           continue;
 
-        if (has_components<T...>(entityId))
+        if (entityId < containers.entity_signatures.size() &&
+            (containers.entity_signatures[entityId] & required) == required)
         {
           callback(Entity(entityId));
         }
@@ -408,10 +430,14 @@ namespace Engine {
     void for_each_entity_with(std::function<void(Entity)> callback)
     {
       auto& containers = Internal::get_containers();
+      // Precompute required signature once
+      ComponentSignature required;
+      ((required.set(ComponentTypeManager::get_type_id<T>())), ...);
 
       // Iterate active entities directly — no duplicates, no allocation
       for (EntityID id : containers.active_entities) {
-        if (has_components<T...>(id)) {
+        if (id < containers.entity_signatures.size() &&
+            (containers.entity_signatures[id] & required) == required) {
           callback(Entity(id));
         }
       }
@@ -438,22 +464,27 @@ namespace Engine {
     void for_each(Func&& callback)
     {
       auto& containers = Internal::get_containers();
+      // Precompute required signature once
+      ComponentSignature required;
+      ((required.set(ComponentTypeManager::get_type_id<Components>())), ...);
+
+      // Cache component array pointers (one lookup each, outside the loop)
+      auto arrays = std::make_tuple(get_component_array<Components>()...);
 
       // Iterate active entities directly — no duplicates, no allocation
       for (EntityID id : containers.active_entities) {
-        if (!has_components<Components...>(id))
+        if (id >= containers.entity_signatures.size() ||
+            (containers.entity_signatures[id] & required) != required)
           continue;
 
         Entity entity(id);
 
-        // Get all component pointers
+        // Get all component pointers using cached arrays
         if constexpr (Internal::CallbackWithEntity<Func, Entity, Components...>) {
-          // Callback signature: void(Entity, Components*...)
-          callback(entity, get_component<Components>(entity)...);
+          callback(entity, std::get<ComponentArray<Components>*>(arrays)->get_component(id)...);
         }
         else if constexpr (Internal::CallbackWithoutEntity<Func, Components...>) {
-          // Callback signature: void(Components*...)
-          callback(get_component<Components>(entity)...);
+          callback(std::get<ComponentArray<Components>*>(arrays)->get_component(id)...);
         }
         else {
           static_assert(sizeof(Func) == 0,
