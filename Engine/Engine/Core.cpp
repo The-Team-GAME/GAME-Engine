@@ -393,6 +393,45 @@ namespace Engine
         Engine::GUI::RenderFPSOverlay();
       }
 
+      // Hot Reload Build Indicator
+#ifndef GAME_BUILD
+      if (Engine::HotReload::is_building())
+      {
+        ImGuiIO& io = ImGui::GetIO();
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+        window_flags |= ImGuiWindowFlags_NoMove;
+
+        const float PAD = 10.0f;
+        const ImGuiViewport* viewport = ImGui::GetMainViewport();
+        // Bottom-Right corner
+        ImVec2 work_pos = viewport->WorkPos; // Use work area to avoid menu-bar/task-bar, if any!
+        ImVec2 work_size = viewport->WorkSize;
+        ImVec2 window_pos, window_pos_pivot;
+        window_pos.x = work_pos.x + work_size.x - PAD;
+        window_pos.y = work_pos.y + work_size.y - PAD;
+        window_pos_pivot.x = 1.0f;
+        window_pos_pivot.y = 1.0f;
+        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+        ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
+        if (ImGui::Begin("CompilingOverlay", nullptr, window_flags))
+        {
+          // Animate the dots
+          static float time = 0.0f;
+          time += ImGui::GetIO().DeltaTime;
+          std::string dots = "";
+          int dot_count = (int)(time * 2.0f) % 4;
+          for (int i = 0; i < dot_count; ++i) dots += ".";
+
+          ImGui::Text("Compiling%s", dots.c_str());
+
+          // Show elapsed time
+          float elapsed = Engine::HotReload::get_build_elapsed_seconds();
+          ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "%.1fs", elapsed);
+        }
+        ImGui::End();
+      }
+#endif
+
       // end of draw stuff (flush remaining batches)
       Engine::Graphics::end_batch();
 

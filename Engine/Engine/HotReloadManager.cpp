@@ -12,6 +12,7 @@
 #include "HotReloadManager.h"
 #include "Logger.h"
 #include "SceneManager.h"
+#include "LevelManager.h"
 #include "ECS/World.h"
 #include "Resources.h"
 #include "FileIO/Settings.h"
@@ -730,6 +731,10 @@ namespace Engine
       // DLL is still loaded because Scene subclasses and their vtables
       // live inside the DLL.
       std::string saved_scene = SceneManager::get_current_scene_name();
+      
+      // Capture the current world state before we destroy everything
+      // We'll restore this after reloading the DLL and scene
+      EntityList saved_entities = LevelManager::capture_world_entities();
 
       // Unload the current scene properly (DLL vtables still valid)
       if (SceneManager::current_scene)
@@ -765,10 +770,19 @@ namespace Engine
         Resources::load_all_prefabs();
 
         // ── Restore scene ─────────────────────────────────────────
+        // ── Restore scene ─────────────────────────────────────────
         // Reload the scene that was active before the swap.
         if (!saved_scene.empty() && saved_scene != "No current scene")
         {
           SceneManager::load_scene(saved_scene);
+
+          // Restore the captured world state
+          // This overwrites the "clean" state loaded by load_scene with our saved "live" state
+          if (!saved_entities.empty())
+          {
+            LevelManager::instantiate_entities(saved_entities, true);
+            Log::info("[HotReload] Restored {} entities from previous state", saved_entities.size());
+          }
         }
         Log::info("[HotReload] Hot-reload complete!");
       }
