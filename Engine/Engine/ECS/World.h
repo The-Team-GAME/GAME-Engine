@@ -613,8 +613,8 @@ namespace Engine {
       transform->position += velocity->value;
     });
     ==================================================================================*/
-    template <typename... Components>
-    void for_each_entity_with(std::function<void(Entity)> callback);
+    template <typename... Components, typename Func>
+    void for_each_entity_with(Func&& callback);
 
     /*=================================================================================
     Function Brief:
@@ -696,8 +696,8 @@ namespace Engine {
       }
     );
     ==================================================================================*/
-    template <typename... T>
-    void for_each_entity_with(const LayerSignature& layers, std::function<void(Entity)> callback);
+    template <typename... T, typename Func>
+    void for_each_entity_with(const LayerSignature& layers, Func&& callback);
 
     /*=================================================================================
     Function Brief:
@@ -757,8 +757,8 @@ namespace Engine {
       // Check collision between lhs and rhs
     });
     ==================================================================================*/
-    template <typename... Components>
-    void for_each_entity_pair(std::function<void(Entity, Entity)> callback);
+    template <typename... Components, typename Func>
+    void for_each_entity_pair(Func&& callback);
 
     /*=================================================================================
     Function Brief:
@@ -795,11 +795,11 @@ namespace Engine {
       }
     );
     ==================================================================================*/
-    template <typename... Components>
+    template <typename... Components, typename Func>
     void for_each_entity_pair(
       const LayerSignature& lhs_mask,
       const LayerSignature& rhs_mask,
-      std::function<void(Entity, Entity)> callback
+      Func&& callback
     );
 
     /*=================================================================================

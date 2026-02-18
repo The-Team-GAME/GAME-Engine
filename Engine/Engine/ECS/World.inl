@@ -244,8 +244,8 @@ namespace Engine {
       return Entity(INVALID_ENTITY);
     }
 
-    template <typename... T>
-    void for_each_entity_with(const LayerSignature& layers, std::function<void(Entity)> callback)
+    template <typename... T, typename Func>
+    void for_each_entity_with(const LayerSignature& layers, Func&& callback)
     {
       auto& containers = Internal::get_containers();
       // Precompute required signature once
@@ -276,8 +276,8 @@ namespace Engine {
       return array ? array->size() : 0;
     }
 
-    template <typename... Components>
-    void for_each_entity_pair(std::function<void(Entity, Entity)> callback)
+    template <typename... Components, typename Func>
+    void for_each_entity_pair(Func&& callback)
     {
       auto& containers = Internal::get_containers();
 
@@ -333,11 +333,11 @@ namespace Engine {
       }
     }
 
-    template <typename... Components>
+    template <typename... Components, typename Func>
     void for_each_entity_pair(
       const LayerSignature& lhs_mask,
       const LayerSignature& rhs_mask,
-      std::function<void(Entity, Entity)> callback)
+      Func&& callback)
     {
       auto& containers = Internal::get_containers();
 
@@ -424,8 +424,8 @@ namespace Engine {
     //  }
     //}
 
-    template <typename... T>
-    void for_each_entity_with(std::function<void(Entity)> callback)
+    template <typename... T, typename Func>
+    void for_each_entity_with(Func&& callback)
     {
       auto& containers = Internal::get_containers();
       // Precompute required signature once
