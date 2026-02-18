@@ -39,6 +39,28 @@ namespace Components
       Math::Vec2D knockback = Math::Vec2D(300.0f, 0.f);
     };
 
+    struct Action
+    {
+      f32 duration;
+      f32 timer;
+      f32 cooldown;
+
+      f32 speed;
+      f32 impulse;
+
+      Action(f32 dur, f32 cd, f32 spd = 0.f, f32 imp = 0.f)
+        : duration(dur), cooldown(cd), speed(spd), impulse(imp) {}
+
+      void set_timer()
+      {
+        timer = duration;
+      }
+
+      bool timer_end()
+      {
+        return timer <= 0.f;
+      }
+    };
     //mass
     float mass = 50.0f;
 
@@ -47,12 +69,17 @@ namespace Components
     f32 walk_speed = 300'000.f;
     f32 jump_force = -30'000.f;
 
+    bool damage_immune = false;
+    f32 stunned_duration = 1.f;
+    f32 stunned_timer;
+
+    Action dash;
+
     f32 dash_duration = 0.2f;
     f32 dash_timer;
     f32 dash_cooldown = 5.f;
     f32 dash_speed = 1250.f;  // Scalar for the velocity value since direction is to be decided
-    f32 stun_duration = 0.3f; // Will remember to give player i frames during stun
-
+    
     // Attacks
     AttackData attack1 = {
       80.0f,                       // hitbox_offset_x
@@ -288,7 +315,7 @@ namespace Components
 
 
 REFLECT_FIELDS(Components::Player::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, dash_speed, damage, heartrate_cost, knockback)
-REGISTER_COMPONENT(Components::Player, walk_speed, jump_force, dash_duration, dash_cooldown, dash_speed, stun_duration, attack1, attack2, attack3)
+REGISTER_COMPONENT(Components::Player, walk_speed, jump_force, dash_duration, dash_cooldown, dash_speed, stunned_duration, attack1, attack2, attack3)
 REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height, attack_cooldown, last_attack_time, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, attack_range)
 REGISTER_COMPONENT(Components::TurretMonkey, chase_speed, attack_cooldown, attack_windup, last_attack_time, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, long_attack_range)
 REGISTER_COMPONENT(Components::GamerMonkey, chase_speed, dash_speed, dash_cooldown, dash_windup_duration, dash_indicator_height, leap_speed, leap_height, attack_cooldown, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, close_attack_range, dash_attack_range)

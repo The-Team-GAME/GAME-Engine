@@ -39,11 +39,12 @@ namespace Components
     // terminal velocity should be a set value instead of a vector just cuz you want to properly scale the velocity instead of capping it at set values
     f32 terminal_velocity{ 1000.f }; // set to max float
     f32 x_terminal_velocity = 500.f;
-    f32 y_terminal_velocity = 500.f;
+    f32 y_terminal_velocity = 1000.f;
 
     Vec2D last_surface_dir_vector{ 1.f, 0.f };
 
     bool use_gravity = false;
+    bool use_friction = true;
     bool is_static = false;  // If true, not affected by physics forces
     bool on_ground = false;
     bool is_jumping = false;

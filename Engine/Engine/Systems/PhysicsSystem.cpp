@@ -84,9 +84,6 @@ void phy2D::update_entity(ECS::Entity entity)
 void phy2D::update_kinematics( Components::RigidBody& rigid )
 {
   rigid.acceleration = rigid.force / rigid.mass;
-  
-  // We zero the forces here because their effects have already been accounted for
-  rigid.force.zero();
 
   // From now on we will apply friction on collision like how its supposed to be
   // There wont be any air resistance so that the player can be controlled more accurately
@@ -100,14 +97,13 @@ void phy2D::update_kinematics( Components::RigidBody& rigid )
   }*/
   if (abs(rigid.velocity.x) > rigid.x_terminal_velocity)
   {
-    if (rigid.velocity.x > 0)
-    {
-      rigid.velocity.x = rigid.x_terminal_velocity;
-    }
-    else
-    {
-      rigid.velocity.x = -rigid.x_terminal_velocity;
-    }
+    rigid.velocity.x = rigid.velocity.x > 0 ? 
+      rigid.x_terminal_velocity : -rigid.x_terminal_velocity;
+  }
+  if (abs(rigid.velocity.y) > rigid.y_terminal_velocity)
+  {
+    rigid.velocity.y = rigid.velocity.y > 0 ?
+      rigid.y_terminal_velocity : -rigid.y_terminal_velocity;
   }
 }
 

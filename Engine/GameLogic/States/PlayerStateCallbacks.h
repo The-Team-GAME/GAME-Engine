@@ -181,6 +181,35 @@ namespace PlayerStateCallbacks
   }
 #pragma endregion
 
+#pragma region Falling
+  // ========================================================================
+  // Falling State Callbacks
+  // ========================================================================
+
+  inline void Falling_on_enter([[maybe_unused]] ECS::Entity entity)
+  {
+    Log::info("Player: Entered Falling tate");
+
+  }
+
+  inline void Falling_on_update(ECS::Entity entity)
+  {
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    assert(rigid);
+    if (rigid->on_ground)
+    {
+      Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
+      assert(sm);
+      sm->change_state("Idle");
+    }
+  }
+
+  inline void Falling_on_exit([[maybe_unused]] ECS::Entity entity)
+  {
+    Log::info("Player: Exited Falling state");
+  }
+#pragma endregion
+
 #pragma region Dash
   // ========================================================================
   // Dash State Callbacks
@@ -204,7 +233,6 @@ namespace PlayerStateCallbacks
 
   inline void dash_on_update(ECS::Entity entity)
   {
-
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     Components::Player* player_comp = entity.get_component<Components::Player>();
     Components::Flip* flip = entity.get_component<Components::Flip>();
@@ -233,6 +261,41 @@ namespace PlayerStateCallbacks
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
     dash_cooldown = player_comp->dash_cooldown;
+  }
+#pragma endregion
+
+#pragma region Stunned
+  // ========================================================================
+  // Stunned State Callbacks
+  // ========================================================================
+
+  inline void Stunned_on_enter([[maybe_unused]] ECS::Entity entity)
+  {
+    Log::info("Player: Stunned!");
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(player_comp);
+    player_comp->damage_immune = true;
+    player_comp->stunned_timer = player_comp->stunned_duration;
+  }
+
+  inline void Stunned_on_update(ECS::Entity entity)
+  {
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(player_comp);
+    if (player_comp->stunned_timer <= 0.f)
+    {
+      Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
+      assert(sm);
+      sm->change_state("Idle");
+    }
+    player_comp->stunned_timer -= Time::get_fixed_dt();
+  }
+
+  inline void Stunned_on_exit([[maybe_unused]] ECS::Entity entity)
+  {
+    Log::info("Player: Exited Stunned state");
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    player_comp->damage_immune = true;
   }
 #pragma endregion
 
@@ -500,6 +563,36 @@ namespace PlayerStateCallbacks
       // Force so that we don't display the attack texture after offset is applied
       state_machine->change_state("Idle");
     }
+  }
+#pragma endregion
+
+#pragma region Uppercut
+  // ========================================================================
+  // Uppercut State Callbacks
+  // ========================================================================
+
+  inline void Uppercut_on_enter([[maybe_unused]] ECS::Entity entity)
+  {
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    assert(rigid);
+    rigid->gravity = false;
+  }
+
+  inline void Uppercut_on_update(ECS::Entity entity)
+  {
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    assert(rigid);
+    if (rigid->on_ground)
+    {
+      Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
+      assert(sm);
+      sm->change_state("Idle");
+    }
+  }
+
+  inline void Uppercut_on_exit([[maybe_unused]] ECS::Entity entity)
+  {
+    Log::info("Player: Exited Uppercut state");
   }
 #pragma endregion
 
