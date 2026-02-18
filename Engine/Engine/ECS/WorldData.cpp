@@ -18,11 +18,16 @@ namespace Engine {
   namespace ECS {
     namespace Internal {
 
-      WorldContainers& get_containers() {
+      // Zero-initialized before any dynamic initialization runs,
+      // so safe to read during static init of other translation units.
+      WorldContainers* g_containers = nullptr;
+
+      WorldContainers& init_containers() {
         // Leaked singleton — intentionally never destroyed so that
         // IComponentArray vtables from the DLL remain valid during
         // static cleanup after the DLL has been unloaded.
         static WorldContainers* containers = new WorldContainers();
+        g_containers = containers;
         return *containers;
       }
 

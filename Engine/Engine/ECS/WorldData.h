@@ -100,7 +100,12 @@ namespace Engine {
       Where to call it:
       Internally by the ECS when accessing entity, component, or system data.
       ==================================================================================*/
-      ENGINE_API WorldContainers& get_containers();
+      ENGINE_API extern WorldContainers* g_containers;
+      ENGINE_API WorldContainers& init_containers();
+      inline WorldContainers& get_containers() {
+        if (g_containers) [[likely]] return *g_containers;
+        return init_containers();
+      }
 
     } // namespace Internal
   } // namespace ECS
