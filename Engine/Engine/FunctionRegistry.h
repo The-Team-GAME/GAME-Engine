@@ -41,6 +41,13 @@ namespace Engine {
   struct SerializableFunction {
     std::string name;
 
+  private:
+    mutable std::any cached_func_;    // Cached resolved std::function<Sig>
+    mutable std::string cached_name_; // Name at time of caching (invalidation key)
+
+    void invalidate_cache() const { cached_name_.clear(); cached_func_.reset(); }
+
+  public:
     SerializableFunction() = default;
 
     SerializableFunction(const std::string& function_name)
@@ -61,11 +68,13 @@ namespace Engine {
     // Assignment operators
     SerializableFunction& operator=(const std::string& function_name) {
       name = function_name;
+      invalidate_cache();
       return *this;
     }
 
     SerializableFunction& operator=(const char* function_name) {
       name = function_name;
+      invalidate_cache();
       return *this;
     }
 
@@ -94,6 +103,7 @@ namespace Engine {
     // Clear the function name
     void clear() {
       name.clear();
+      invalidate_cache();
     }
 
     // Get function with explicit signature (implemented after FunctionRegistry)
@@ -211,7 +221,19 @@ namespace Engine {
 
   template<typename Signature>
   inline std::function<Signature> SerializableFunction::get() const {
-    return FunctionRegistry::instance().get_function<Signature>(name);
+    // Fast path: return cached function if name hasn't changed
+    if (cached_name_ == name && cached_func_.has_value()) {
+      try {
+        return std::any_cast<std::function<Signature>>(cached_func_);
+      } catch (const std::bad_any_cast&) {
+        // Signature mismatch with cached value — fall through to re-lookup
+      }
+    }
+    // Slow path: look up and cache
+    auto func = FunctionRegistry::instance().get_function<Signature>(name);
+    cached_func_ = std::make_any<std::function<Signature>>(func);
+    cached_name_ = name;
+    return func;
   }
 
   template<typename Signature>
