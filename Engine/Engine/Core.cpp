@@ -51,6 +51,7 @@ namespace Engine
   s32 Core::step_limit = 3;
   bool Core::single_step_requested = false;
   static bool show_fps_overlay = false;
+  static std::optional<Engine::ECS::Prefab> entity_clipboard;
 
   /*=================================================================================
   Function Brief:
@@ -320,6 +321,47 @@ namespace Engine
           Engine::UndoManager::redo();
         }
 
+#ifndef GAME_BUILD
+        // Copy selected entity (Ctrl+C)
+        if (Engine::Input::is_pressed_raw(Engine::KeyCode::C) && Engine::Input::is_held_raw(Engine::KeyCode::CtrlLeft))
+        {
+          Engine::ECS::Entity selected = Engine::ECS::get_first_entity_with<Components::Gizmo>();
+          if (selected.is_valid()) {
+            entity_clipboard = Engine::ECS::entity_to_prefab(selected);
+            Log::info("Copied entity {} to clipboard", selected.get_id());
+          }
+        }
+
+        // Paste copied entity (Ctrl+V)
+        if (Engine::Input::is_pressed_raw(Engine::KeyCode::V) && Engine::Input::is_held_raw(Engine::KeyCode::CtrlLeft))
+        {
+          if (entity_clipboard.has_value()) {
+            Engine::ECS::Entity pasted = Engine::ECS::instantiate_prefab(entity_clipboard.value());
+            Engine::ECS::EntityID pasted_id = pasted.get_id();
+            Engine::ECS::Prefab pasted_prefab = entity_clipboard.value();
+
+            Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(pasted_id);
+
+            Engine::UndoManager::record(
+              // Do: Recreate the pasted entity
+              [pasted_id, pasted_prefab]() {
+                Engine::ECS::instantiate_prefab_with_id(pasted_prefab, pasted_id);
+                Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(pasted_id);
+                Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+              },
+              // Undo: Delete the pasted entity
+              [pasted_id]() {
+                Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(pasted_id, false);
+                Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+              }
+            );
+
+            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+            Log::info("Pasted entity from clipboard as {}", pasted_id);
+          }
+        }
+#endif
+
         // Delete selected entity (Delete key or Ctrl+D)
         if (Engine::Input::is_pressed_raw(Engine::KeyCode::Delete))
         {
@@ -418,6 +460,12 @@ namespace Engine
   ==================================================================================*/
   void Core::exit()
   {
+    // Clear undo/redo history and entity clipboard before subsystem shutdown.
+    // Undo actions capture Prefab objects that hold ComponentArray pointers;
+    // destroying them after DLL unload crashes because the vtable is gone.
+    Engine::UndoManager::clear();
+    entity_clipboard.reset();
+
     Engine::SceneManager::cleanup();
     //Engine::ECS::remove_event_listener<WindowResizeEvent>();
 #ifndef GAME_BUILD
