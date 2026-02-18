@@ -99,6 +99,8 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q
 xcopy "$(SolutionDir)Dependencies\FMOD Studio\lib\fmodstudio.dll" "$(OutDir)" /s /r /y /q
 
 xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q
+
+msbuild "$(SolutionDir)Engine\GameLogic.vcxproj" /p:Configuration=$(Configuration) /p:Platform=$(Platform) /p:SolutionDir=$(SolutionDir) /v:minimal
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -137,6 +139,8 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q
 xcopy "$(SolutionDir)Dependencies\FMOD Studio\lib\fmodstudio.dll" "$(OutDir)" /s /r /y /q
 
 xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q
+
+msbuild "$(SolutionDir)Engine\GameLogic.vcxproj" /p:Configuration=$(Configuration) /p:Platform=$(Platform) /p:SolutionDir=$(SolutionDir) /v:minimal
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -175,6 +179,8 @@ xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q
 xcopy "$(SolutionDir)Dependencies\FMOD Studio\lib\fmodstudio.dll" "$(OutDir)" /s /r /y /q
 
 xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q
+
+msbuild "$(SolutionDir)Engine\GameLogic.vcxproj" /p:Configuration=$(Configuration) /p:Platform=$(Platform) /p:SolutionDir=$(SolutionDir) /v:minimal
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
