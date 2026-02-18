@@ -25,10 +25,10 @@ namespace Engine {
     {
       auto& containers = Internal::get_containers();
       ComponentTypeID typeId = ComponentTypeManager::get_type_id<T>();
-      auto it = containers.component_arrays.find(typeId);
-      if (it != containers.component_arrays.end())
+      auto& ptr = containers.component_arrays[typeId];
+      if (ptr)
       {
-        return static_cast<ComponentArray<T> *>(it->second.get());
+        return static_cast<ComponentArray<T> *>(ptr.get());
       }
 
       register_component<T>();
@@ -40,7 +40,7 @@ namespace Engine {
     {
       auto& containers = Internal::get_containers();
       ComponentTypeID typeId = ComponentTypeManager::get_type_id<T>();
-      if (containers.component_arrays.find(typeId) != containers.component_arrays.end())
+      if (containers.component_arrays[typeId])
       {
         return;
       }
@@ -52,7 +52,7 @@ namespace Engine {
     {
       auto& containers = Internal::get_containers();
       ComponentTypeID typeId = ComponentTypeManager::get_type_id<T>();
-      containers.component_arrays.erase(typeId);
+      containers.component_arrays[typeId].reset();
     }
 
     template <typename... T>

@@ -186,8 +186,10 @@ namespace Engine {
         }
       }
 
-      for (auto const& [typeId, componentArray] : containers.component_arrays)
+      for (ComponentTypeID typeId = 0; typeId < MAX_COMPONENTS; ++typeId)
       {
+        auto& componentArray = containers.component_arrays[typeId];
+        if (!componentArray) continue;
         if (sourceSignature.test(typeId))
         {
           componentArray->clone_component(source_id, newEntity.get_id());
@@ -345,10 +347,10 @@ namespace Engine {
       {
         if (containers.active_entities.contains(entityId))
         {
-          auto array_it = containers.component_arrays.find(typeId);
-          if (array_it != containers.component_arrays.end())
+          auto& array_ptr = containers.component_arrays[typeId];
+          if (array_ptr)
           {
-            array_it->second->remove_entity(entityId);
+            array_ptr->remove_entity(entityId);
             containers.entity_signatures[entityId].reset(typeId);
             Internal::entity_component_changed(entityId);
           }
@@ -374,8 +376,10 @@ namespace Engine {
 
           containers.active_entities.erase(entityId);
 
-          for (auto& [typeId, array] : containers.component_arrays)
+          for (ComponentTypeID typeId = 0; typeId < MAX_COMPONENTS; ++typeId)
           {
+            auto& array = containers.component_arrays[typeId];
+            if (!array) continue;
             array->remove_entity(entityId);
           }
 

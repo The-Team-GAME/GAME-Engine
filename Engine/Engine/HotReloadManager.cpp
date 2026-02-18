@@ -54,7 +54,7 @@ namespace Engine
         char exe_path[MAX_PATH];
         GetModuleFileNameA(nullptr, exe_path, MAX_PATH);
         return std::filesystem::path(exe_path).parent_path();
-      }();
+        }();
       return dir;
     }
 
@@ -620,19 +620,16 @@ namespace Engine
         uintptr_t dll_end = dll_base + nt->OptionalHeader.SizeOfImage;
 
         auto& arrays = ECS::Internal::get_containers().component_arrays;
-        for (auto it = arrays.begin(); it != arrays.end(); )
+        for (ECS::ComponentTypeID i = 0; i < ECS::MAX_COMPONENTS; ++i)
         {
+          if (!arrays[i]) continue;
           // The vtable pointer is stored at the very start of the object.
-          uintptr_t vptr = *reinterpret_cast<const uintptr_t*>(it->second.get());
+          uintptr_t vptr = *reinterpret_cast<const uintptr_t*>(arrays[i].get());
           if (vptr >= dll_base && vptr < dll_end)
           {
             Log::warning("[HotReload] Removing stale component array (type id {}) — "
-              "vtable was inside the unloaded DLL", it->first);
-            it = arrays.erase(it);
-          }
-          else
-          {
-            ++it;
+              "vtable was inside the unloaded DLL", i);
+            arrays[i].reset();
           }
         }
       }

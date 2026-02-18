@@ -57,7 +57,9 @@ namespace Engine {
       const ComponentSignature& signature = sig_it->second;
 
       // Iterate through all component arrays
-      for (auto& [type_id, array] : containers.component_arrays) {
+      for (ComponentTypeID type_id = 0; type_id < MAX_COMPONENTS; ++type_id) {
+        auto& array = containers.component_arrays[type_id];
+        if (!array) continue;
         // Check if this entity has this component type
         if (signature.test(type_id)) {
           std::string type_name = array->get_type_name();
@@ -73,7 +75,9 @@ namespace Engine {
       auto& containers = Internal::get_containers();
 
       // Find the component array with matching type name
-      for (auto& [type_id, array] : containers.component_arrays) {
+      for (ComponentTypeID type_id = 0; type_id < MAX_COMPONENTS; ++type_id) {
+        auto& array = containers.component_arrays[type_id];
+        if (!array) continue;
         if (array->get_type_name() == component_name) {
           // Check if entity already has this component
           auto sig_it = containers.entity_signatures.find(id);
@@ -181,9 +185,8 @@ namespace Engine {
 
       // Deserialize components using helper function
       const auto& components_array = value["components"].getArray();
-      auto deserialize_result = Serialization::deserialize_components_to_storage(
+      auto deserialize_result = Serialization::deserialize_components_to_world(
         components_array,
-        containers.component_arrays,
         containers.entity_signatures[entity_id],
         entity_id
       );

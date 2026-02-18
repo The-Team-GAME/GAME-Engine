@@ -670,7 +670,9 @@ void EntityEditorPanel()
       auto& containers = Engine::ECS::Internal::get_containers();
 
       int button_count = 0;
-      for (auto& [type_id, array] : containers.component_arrays) {
+      for (Engine::ECS::ComponentTypeID type_id = 0; type_id < Engine::ECS::MAX_COMPONENTS; ++type_id) {
+        auto& array = containers.component_arrays[type_id];
+        if (!array) continue;
         std::string component_name = array->get_type_name();
 
         // Skip if component type name is unknown or not reflectable

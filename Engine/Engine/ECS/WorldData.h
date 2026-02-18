@@ -51,7 +51,7 @@ namespace Engine {
         std::unordered_map<EntityID, LayerSignature> entity_layers;
         std::unordered_map<EntityID, std::string> entity_names;
         std::unordered_map<EntityID, PrefabInstanceData> prefab_instances;
-        std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> component_arrays;
+        std::array<std::unique_ptr<IComponentArray>, MAX_COMPONENTS> component_arrays{};
         std::vector<std::unique_ptr<System>> systems;
         std::vector<std::pair<EntityID, ComponentTypeID>> components_to_remove;
         std::unordered_map<std::string, LayerID> layer_name_to_id;
