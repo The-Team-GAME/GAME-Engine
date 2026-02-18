@@ -97,7 +97,9 @@ void RunGame()
   // The DLL was loaded above so the engine can start immediately.
   // This async build will produce a fresh DLL; check_and_reload()
   // will detect the updated timestamp and hot-swap it in.
-  Engine::HotReload::build_game_logic_async();
+  // Engine::HotReload::build_game_logic_async();
+
+  // ^^ now handled by post build event
 #endif
 
   // ── Run main game loop ──────────────────────────────────────────────
