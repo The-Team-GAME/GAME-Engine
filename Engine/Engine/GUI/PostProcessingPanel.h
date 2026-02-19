@@ -124,23 +124,37 @@ inline void PostProcessingPanel()
 
     if (pp.msaa_enabled)
     {
-      // Sample count selector
-      const char* msaa_items[] = { "2x", "4x", "8x", "16x", "32x" };
-      int msaa_values[] = { 2, 4, 8, 16, 32 };
-      int current_idx = 1; // default to 4x
+      // Query GPU max once
+      GLint max_samples = 0;
+      glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
+
+      // Build list filtered by GPU capability
+      const int all_values[] = { 2, 4, 8, 16, 32 };
+      const char* all_labels[] = { "2x", "4x", "8x", "16x", "32x" };
+      const char* filtered_labels[5];
+      int filtered_values[5];
+      int count = 0;
+
       for (int i = 0; i < 5; ++i) {
-        if (msaa_values[i] == pp.msaa_samples) { current_idx = i; break; }
+        if (all_values[i] <= max_samples) {
+          filtered_labels[count] = all_labels[i];
+          filtered_values[count] = all_values[i];
+          ++count;
+        }
       }
 
-      if (ImGui::Combo("##MSAASamples", &current_idx, msaa_items, 5)) {
-        pp.msaa_samples = msaa_values[current_idx];
+      // Find current selection index
+      int current_idx = 0;
+      for (int i = 0; i < count; ++i) {
+        if (filtered_values[i] == pp.msaa_samples) { current_idx = i; break; }
+      }
+
+      if (ImGui::Combo("##MSAASamples", &current_idx, filtered_labels, count)) {
+        pp.msaa_samples = filtered_values[current_idx];
       }
       if (ImGui::IsItemHovered())
         ImGui::SetTooltip("Higher = smoother edges, more GPU cost");
 
-      // Show GPU max
-      GLint max_samples = 0;
-      glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
       ImGui::TextDisabled("GPU max: %dx", max_samples);
     }
   }
