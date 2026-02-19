@@ -39,7 +39,7 @@ inline void PostProcessingPanel()
   {
     ImGui::SliderFloat("##GammaSlider", &pp.gamma, 0.5f, 5.0f, "Gamma: %.2f");
     if (ImGui::IsItemHovered())
-      ImGui::SetTooltip("Default: 2.2\nLower = brighter, Higher = darker");
+      ImGui::SetTooltip("Default: 2.2 (sRGB standard)\nHigher = brighter midtones, Lower = darker\npow(color, 1/gamma): gamma>1 lifts midtones, gamma<1 crushes them");
 
     ImGui::SameLine();
     if (ImGui::SmallButton("Reset##Gamma")) { pp.gamma = 2.2f; }
