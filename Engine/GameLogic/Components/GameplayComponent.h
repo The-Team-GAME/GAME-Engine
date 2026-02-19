@@ -75,14 +75,16 @@ namespace Components
     // Movement speeds (going to add to force instead of velocity as of 22/01/26)
     // These values are loaded from file
     f32 walk_speed = 300'000.f;
-    f32 jump_force = -30'000.f;
+    f32 jump_force = -30'000'000.f;
 
     bool damage_immune = false;
 
+    // The arguments are in the order of
+    // duration, cooldown, speed, impluse
     Action dash{ 0.2f,5.f, 1250.f };
     Action stunned{ 1.f, 0.f, 0.f, -5000.f };
-    Action uppercut{ 1.f, 5.f, 500.f, 0 };
-    Action smash{ 0.f, 7.f, 500.f, 0.f };
+    Action uppercut{ .05f, 5.f, 2500.f, 0 };
+    Action smash{ 0.f, 7.f, 2500.f, 0.f };
 
     // Attacks
     AttackData attack1 = {
@@ -309,7 +311,7 @@ REFLECT_FIELDS(Components::Player::AttackData, hitbox_offset_x, hitbox_offset_y,
 REFLECT_FIELDS(Components::Action, duration, timer, cooldown, cd_timer, speed, impulse)
 
 
-REGISTER_COMPONENT(Components::Player, walk_speed, jump_force, dash, attack1, attack2, attack3)
+REGISTER_COMPONENT(Components::Player, walk_speed, jump_force, dash, stunned, attack1, attack2, attack3, uppercut, smash)
 REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height, attack_cooldown, last_attack_time, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, attack_range)
 REGISTER_COMPONENT(Components::TurretMonkey, chase_speed, attack_cooldown, attack_windup, last_attack_time, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, long_attack_range)
 REGISTER_COMPONENT(Components::GamerMonkey, chase_speed, dash_speed, dash_cooldown, dash_windup_duration, dash_indicator_height, leap_speed, leap_height, attack_cooldown, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, close_attack_range, dash_attack_range)

@@ -21,8 +21,6 @@
 #include "../Components/HeartrateComponent.h"
 
 namespace {
-  f32 timer;
-  f32 dash_cooldown;
   f32 terminal_vel_placeholder;
 }
 namespace PlayerStateCallbacks
@@ -45,11 +43,15 @@ namespace PlayerStateCallbacks
     }
 
     // Handling cooldowns
-    if (!player_comp->dash.ready()) { player_comp->dash.cd_timer -= Time::get_fixed_dt(); }
+    if (!player_comp->dash.ready()) 
+    { 
+      player_comp->dash.cd_timer -= Time::get_fixed_dt(); 
+    }
 
     // Check for attack input
 
-    if (Engine::Input::is_pressed(Engine::KeyCode::K))
+    if (Engine::Input::is_pressed(Engine::KeyCode::K) 
+      && player_comp->uppercut.ready())
     {
       state_machine->change_state("Uppercut");
       return;
@@ -82,6 +84,7 @@ namespace PlayerStateCallbacks
       return;
     }
 
+    // When A and D are pressed
     if (Input::is_held(KeyCode::D) || Input::is_held(KeyCode::A))
     {
       if (Input::is_held(KeyCode::A)) //left
@@ -160,6 +163,8 @@ namespace PlayerStateCallbacks
   inline void jumping_on_enter(Engine::ECS::Entity entity)
   {
     Log::info("Player: Entered Jumping state");
+
+    std::cout << "wahoo condition met \n";
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(rigid);
@@ -175,13 +180,15 @@ namespace PlayerStateCallbacks
   inline void jumping_on_update(Engine::ECS::Entity entity)
   {
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
-    Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
     assert(rigid);
-    assert(state_machine);
 
+    // we check for rigid->on_ground here because on the first few frames there is still a chance that the player will be counted as on gound
     if (rigid->on_ground && rigid->velocity.y >= 0.0f)
     {
-      state_machine->change_state("Idle");
+      Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
+      assert(sm);
+      sm->change_state("Falling");
+      std::cout << "swap condition met \n";
     }
     take_input(entity);
   }
@@ -191,7 +198,7 @@ namespace PlayerStateCallbacks
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
     rigid->is_jumping = false;
-    Log::info("Player: Exiting Jumping state");
+    //Log::info("Player: Exiting Jumping state");
   }
 #pragma endregion
 
@@ -220,7 +227,7 @@ namespace PlayerStateCallbacks
 
   inline void falling_on_exit([[maybe_unused]] ECS::Entity entity)
   {
-    Log::info("Player: Exited Falling state");
+    //Log::info("Player: Exited Falling state");
   }
 #pragma endregion
 
@@ -243,6 +250,7 @@ namespace PlayerStateCallbacks
     rigid->velocity.zero();
     rigid->force.zero();
     terminal_vel_placeholder = rigid->x_terminal_velocity;
+    rigid->x_terminal_velocity = player_comp->dash.speed;
   }
 
   inline void dash_on_update(ECS::Entity entity)
@@ -259,7 +267,6 @@ namespace PlayerStateCallbacks
       assert(state_machine);
       state_machine->change_state("Idle");
     }
-    rigid->x_terminal_velocity = player_comp->dash.speed;;
     rigid->velocity.x = flip->value.x * player_comp->dash.speed;
     player_comp->dash.timer -= Time::get_fixed_dt();
   }
@@ -594,9 +601,11 @@ namespace PlayerStateCallbacks
 
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
-    rigid->use_gravity = false;
-    rigid->velocity.zero();
+    //rigid->use_gravity = false;
     rigid->force.zero();
+
+    terminal_vel_placeholder = rigid->y_terminal_velocity;
+    rigid->y_terminal_velocity = player_comp->dash.speed;
   }
 
   inline void uppercut_on_update(ECS::Entity entity)
@@ -625,12 +634,13 @@ namespace PlayerStateCallbacks
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
     player_comp->uppercut.reset_cooldown();
+    rigid->y_terminal_velocity = terminal_vel_placeholder;
   }
 #pragma endregion
 
 #pragma region smash
   // ========================================================================
-  // smash State Callbacks
+  // Smash State Callbacks
   // ========================================================================
 
   inline void smash_on_enter(ECS::Entity entity)
@@ -640,12 +650,12 @@ namespace PlayerStateCallbacks
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
     player_comp->smash.set_timer();
-
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
-    rigid->use_gravity = false;
-    rigid->velocity.zero();
     rigid->force.zero();
+
+    terminal_vel_placeholder = rigid->y_terminal_velocity;
+    rigid->y_terminal_velocity = player_comp->dash.speed;
   }
 
   inline void smash_on_update(ECS::Entity entity)
@@ -666,9 +676,13 @@ namespace PlayerStateCallbacks
   inline void smash_on_exit(ECS::Entity entity)
   {
     Log::info("Player: Exited Smash state");
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(rigid);
     assert(player_comp);
+
     player_comp->smash.reset_cooldown();
+    rigid->y_terminal_velocity = terminal_vel_placeholder;
   }
 #pragma endregion
 
