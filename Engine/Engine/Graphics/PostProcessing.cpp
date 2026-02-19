@@ -352,7 +352,8 @@ namespace Engine::Graphics::PostProcessing {
     if (current_settings.msaa_enabled && msaa_fbo) {
       glBindFramebuffer(GL_FRAMEBUFFER, msaa_fbo);
       glEnable(GL_MULTISAMPLE);
-    } else {
+    }
+    else {
       glBindFramebuffer(GL_FRAMEBUFFER, scene_fbo);
     }
 
@@ -451,7 +452,8 @@ namespace Engine::Graphics::PostProcessing {
       composite_target = sharpen_fbo;
       glBindFramebuffer(GL_FRAMEBUFFER, sharpen_fbo);
       glViewport(0, 0, fb_width, fb_height);
-    } else {
+    }
+    else {
       glBindFramebuffer(GL_FRAMEBUFFER, final_target);
       glViewport(previous_viewport[0], previous_viewport[1], previous_viewport[2], previous_viewport[3]);
     }
@@ -467,7 +469,8 @@ namespace Engine::Graphics::PostProcessing {
     glActiveTexture(GL_TEXTURE1);
     if (current_settings.bloom_enabled && bloom_mip_count > 0) {
       glBindTexture(GL_TEXTURE_2D, bloom_mips[0].texture);
-    } else {
+    }
+    else {
       glBindTexture(GL_TEXTURE_2D, 0); // No bloom
     }
     composite_shader->set_int("u_bloom", 1);
@@ -481,7 +484,8 @@ namespace Engine::Graphics::PostProcessing {
     glActiveTexture(GL_TEXTURE3);
     if (current_settings.bloom_dirt_enabled && bloom_dirt_texture) {
       glBindTexture(GL_TEXTURE_2D, bloom_dirt_texture);
-    } else {
+    }
+    else {
       glBindTexture(GL_TEXTURE_2D, 0);
     }
     composite_shader->set_int("u_bloom_dirt", 3);
@@ -544,6 +548,9 @@ namespace Engine::Graphics::PostProcessing {
     composite_shader->set_bool("u_tonemapping_enabled", current_settings.tonemapping_enabled);
     composite_shader->set_int("u_tonemapping_mode", current_settings.tonemapping_mode);
     composite_shader->set_float("u_tonemapping_exposure", current_settings.tonemapping_exposure);
+
+    // Effect variant
+    composite_shader->set_int("u_effect_variant", current_settings.effect_variant);
 
     render_quad();
 
@@ -738,6 +745,9 @@ namespace Engine::Graphics::PostProcessing {
     doc.AddMember("sharpen_enabled", s.sharpen_enabled, a);
     doc.AddMember("sharpen_intensity", s.sharpen_intensity, a);
 
+    // Effect variant
+    doc.AddMember("effect_variant", s.effect_variant, a);
+
     // MSAA
     doc.AddMember("msaa_enabled", s.msaa_enabled, a);
     doc.AddMember("msaa_samples", s.msaa_samples, a);
@@ -759,13 +769,13 @@ namespace Engine::Graphics::PostProcessing {
 
     auto get_bool = [&](const char* key, bool& out) {
       if (doc.HasMember(key) && doc[key].IsBool()) out = doc[key].GetBool();
-    };
+      };
     auto get_float = [&](const char* key, float& out) {
       if (doc.HasMember(key) && doc[key].IsNumber()) out = doc[key].GetFloat();
-    };
+      };
     auto get_int = [&](const char* key, int& out) {
       if (doc.HasMember(key) && doc[key].IsInt()) out = doc[key].GetInt();
-    };
+      };
     auto get_vec3 = [&](const char* key, glm::vec3& out) {
       if (doc.HasMember(key) && doc[key].IsArray() && doc[key].Size() >= 3) {
         auto arr = doc[key].GetArray();
@@ -773,7 +783,7 @@ namespace Engine::Graphics::PostProcessing {
         out.y = arr[1].GetFloat();
         out.z = arr[2].GetFloat();
       }
-    };
+      };
     auto get_ivec3 = [&](const char* key, glm::ivec3& out) {
       if (doc.HasMember(key) && doc[key].IsArray() && doc[key].Size() >= 3) {
         auto arr = doc[key].GetArray();
@@ -781,7 +791,7 @@ namespace Engine::Graphics::PostProcessing {
         out.y = arr[1].GetInt();
         out.z = arr[2].GetInt();
       }
-    };
+      };
 
     get_bool("enabled", s.enabled);
     get_float("gamma", s.gamma);
@@ -835,6 +845,8 @@ namespace Engine::Graphics::PostProcessing {
 
     get_bool("sharpen_enabled", s.sharpen_enabled);
     get_float("sharpen_intensity", s.sharpen_intensity);
+
+    get_int("effect_variant", s.effect_variant);
 
     get_bool("msaa_enabled", s.msaa_enabled);
     get_int("msaa_samples", s.msaa_samples);

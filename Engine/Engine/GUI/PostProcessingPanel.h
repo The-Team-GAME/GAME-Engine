@@ -35,6 +35,14 @@ inline void PostProcessingPanel()
     return;
   }
 
+  // Effect variant selector (Type 1 / Type 2)
+  {
+    const char* variant_names[] = { "Type 1", "Type 2" };
+    ImGui::Combo("Effect Variant", &pp.effect_variant, variant_names, IM_ARRAYSIZE(variant_names));
+    if (ImGui::IsItemHovered())
+      ImGui::SetTooltip("Switch between two shader implementations for\nChromatic Aberration, Vignette, Quantization,\nFilm Grain, CRT, and Tone Mapping (Uncharted2).");
+  }
+
   ImGui::Separator();
 
   // ==================== Gamma ====================
@@ -500,7 +508,8 @@ inline void PostProcessingPanel()
             }
           }
         }
-      } else {
+      }
+      else {
         ImGui::TextDisabled("No presets directory found");
       }
       ImGui::EndPopup();

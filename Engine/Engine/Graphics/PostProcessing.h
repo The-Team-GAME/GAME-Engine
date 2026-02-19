@@ -88,6 +88,9 @@ namespace Engine::Graphics::PostProcessing {
     bool sharpen_enabled = false;
     float sharpen_intensity = 0.5f;                // 0 = none, 1 = full CAS
 
+    // Effect variant (0 = Type 1, 1 = Type 2)
+    int effect_variant = 0;
+
     // MSAA Anti-Aliasing
     bool msaa_enabled = false;
     int msaa_samples = 4;           // 2, 4, or 8
@@ -96,7 +99,7 @@ namespace Engine::Graphics::PostProcessing {
   //-------------------------------------------------------------------------
   // Lifecycle
   //-------------------------------------------------------------------------
-  
+
   // Initialize post-processing resources (FBOs, shaders, identity LUT).
   // Call after OpenGL context and renderer are initialized.
   bool init();
