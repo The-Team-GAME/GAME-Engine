@@ -64,30 +64,30 @@ namespace Engine
       template<typename T>
       void bind_component() {
         sol::state& lua = LuaManager::get_state();
-        
+
         if (!lua.lua_state()) {
           std::cerr << "[LuaBindings] Error: Lua not initialized when binding component\n";
           return;
         }
-        
+
         // Get component type name from reflection
         constexpr auto type_name = ReflectionLibrary::class_name<T>;
-        
+
         // Create Lua usertype for this component
         auto component_type = lua.new_usertype<T>(type_name.data(),
           sol::no_constructor  // Prevent Lua from creating components directly
         );
-        
+
         // Use reflection to iterate over all fields and bind them
         auto field_tuple = ReflectionLibrary::ReflectionInfo<T>::fields;
         std::apply([&](auto... field_pairs) {
           // Bind each field using pointer-to-member
           ((component_type[field_pairs.first] = field_pairs.second), ...);
-        }, field_tuple);
-        
+          }, field_tuple);
+
         // Add any custom methods for this type
         add_component_methods<T>(component_type);
-        
+
         std::cout << "[LuaBindings] Auto-bound component: " << type_name << std::endl;
       }
     }
@@ -97,13 +97,13 @@ namespace Engine
      */
     inline void bind_vec2d_type() {
       sol::state& lua = LuaManager::get_state();
-      
+
       auto vec2_type = lua.new_usertype<Math::Vec2D>("Vec2D",
         sol::constructors<Math::Vec2D(), Math::Vec2D(float, float)>()
       );
       vec2_type["x"] = &Math::Vec2D::x;
       vec2_type["y"] = &Math::Vec2D::y;
-      
+
       std::cout << "[LuaBindings] Vec2D type bound to Lua\n";
     }
 
@@ -112,14 +112,14 @@ namespace Engine
      */
     inline void bind_animation_component() {
       sol::state& lua = LuaManager::get_state();
-      
+
       auto anim_type = lua.new_usertype<Components::Animation>("Animation",
         sol::no_constructor
       );
-      
+
       // Bind the has_ended method that Lua scripts need
       anim_type["has_ended"] = &Components::Animation::has_ended;
-      
+
       std::cout << "[LuaBindings] Animation component bound to Lua (manual)\n";
     }
 
@@ -138,7 +138,7 @@ namespace Engine
       // Generic get_component using string name
       entity_type["get_component"] = [](ECS::Entity e, const std::string& component_name) -> sol::object {
         sol::state& lua = LuaManager::get_state();
-        
+
         // Map component names to actual types
         if (component_name == "RigidBody") {
           auto* comp = e.get_component<Components::RigidBody>();
@@ -172,9 +172,9 @@ namespace Engine
           auto* comp = e.get_component<Components::PendingKnockback>();
           if (comp) return sol::make_object(lua, *comp);
         }
-        
+
         return sol::nil;
-      };
+        };
 
       // Has component check
       entity_type["has_component"] = [](ECS::Entity e, const std::string& component_name) -> bool {
@@ -191,8 +191,8 @@ namespace Engine
           return e.has_component<Components::StateMachine>();
         }
         return false;
-      };
-      
+        };
+
       // Remove component
       entity_type["remove_component"] = [](ECS::Entity e, const std::string& component_name) {
         if (component_name == "Parent") {
@@ -201,10 +201,10 @@ namespace Engine
         else if (component_name == "PendingKnockback") {
           e.remove_component<Components::PendingKnockback>();
         }
-      };
+        };
 
       entity_type["is_valid"] = &ECS::Entity::is_valid;
-      
+
       std::cout << "[LuaBindings] Entity type bound to Lua\n";
     }
 
@@ -213,9 +213,9 @@ namespace Engine
      */
     inline void bind_ecs_functions() {
       sol::state& lua = LuaManager::get_state();
-      
+
       auto ecs_table = lua["ECS"].get_or_create<sol::table>();
-      
+
       // Get first entity with component
       ecs_table["get_first_entity_with"] = [](const std::string& component_name) -> ECS::Entity {
         if (component_name == "Player") {
@@ -225,13 +225,13 @@ namespace Engine
           return ECS::get_first_entity_with<Components::LazyMonkey>();
         }
         return ECS::Entity{};
-      };
-      
+        };
+
       // Destroy entity
       ecs_table["destroy_entity"] = [](ECS::Entity entity) {
         ECS::destroy_entity(entity);
-      };
-      
+        };
+
       std::cout << "[LuaBindings] ECS functions bound to Lua\n";
     }
 
@@ -240,10 +240,10 @@ namespace Engine
      */
     inline void bind_time_functions() {
       sol::state& lua = LuaManager::get_state();
-      
+
       auto time_table = lua["Time"].get_or_create<sol::table>();
       time_table["get_time"] = &Engine::Time::get_time;
-      
+
       std::cout << "[LuaBindings] Time functions bound to Lua\n";
     }
 
@@ -258,10 +258,10 @@ namespace Engine
       bind_entity_type();
       bind_ecs_functions();
       bind_time_functions();
-      
+
       // Bind components that need manual binding (can't use auto-binding)
       bind_animation_component();
-      
+
       // Process all deferred component bindings registered via REGISTER_COMPONENT_LUA
       auto& pending = Internal::get_pending_bindings();
       std::cout << "[LuaBindings] Processing " << pending.size() << " deferred component bindings...\n";
@@ -269,7 +269,7 @@ namespace Engine
         binding();
       }
       pending.clear();
-      
+
       std::cout << "[LuaBindings] All bindings registered (components auto-bound via REGISTER_COMPONENT_LUA)\n";
     }
   }

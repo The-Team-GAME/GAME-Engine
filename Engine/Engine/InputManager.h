@@ -17,6 +17,7 @@
 #include <glm/glm.hpp>
 #include "TypeDef.h"
 #include "KeyCodes.h"
+#include "EngineExport.h"
 #include <optional>
 
 namespace Engine
@@ -28,7 +29,7 @@ namespace Engine
    * This class provides methods to check the state of keyboard keys and mouse buttons.
    * The Update() method must be called once per frame before any other methods are used.
    */
-  class Input
+  class ENGINE_API Input
   {
   public:
     /**
@@ -58,6 +59,16 @@ namespace Engine
      * @return true if the key is held down, false otherwise.
      */
     static bool is_held(KeyCode key);
+
+    /**
+     * @brief Raw input methods that bypass ImGui focus-blocking.
+     * Use these for editor-wide hotkeys (Ctrl+S, F1-F5, Ctrl+Z, etc.)
+     * that should work regardless of which ImGui panel is focused.
+     * Do NOT use these for gameplay input — use the regular methods instead.
+     */
+    static bool is_pressed_raw(KeyCode key);
+    static bool is_released_raw(KeyCode key);
+    static bool is_held_raw(KeyCode key);
 
     /**
      * @brief Gets the current position of the mouse cursor in window coordinates.

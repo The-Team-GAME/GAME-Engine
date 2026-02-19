@@ -34,6 +34,9 @@ namespace Engine {
       // Update entities at EVERY layer they are on - systems are applied layer by layer
       auto& containers = Internal::get_containers();
 
+      // Reusable buffer to snapshot layer entity IDs (avoids copying full SparseSet)
+      static thread_local std::vector<EntityID> iteration_buffer;
+
       for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
         // Skip if system doesn't process this layer
         if (!active_layers.test(layer))
@@ -43,10 +46,11 @@ namespace Engine {
         if (!containers.layer_active_state.test(layer))
           continue;
 
-        // Make a copy to avoid iterator invalidation when entities are added/removed from layers during update
-        auto layer_entities_copy = containers.layer_entities[layer];
+        // Snapshot just the dense keys into a reusable buffer (no SparseSet copy)
+        const auto& layer_set = containers.layer_entities[layer];
+        iteration_buffer.assign(layer_set.begin(), layer_set.end());
 
-        for (EntityID entityId : layer_entities_copy) {
+        for (EntityID entityId : iteration_buffer) {
           // Only consider entities in this system's entity set
           if (!entities.contains(entityId)) {
             continue;

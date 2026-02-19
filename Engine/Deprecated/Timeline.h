@@ -23,6 +23,7 @@
 #include <algorithm>
 #include "../Precompiled.h"
 #include "../TypeDef.h"
+#include "../EngineExport.h"
 #include "../ECS/Entity.h"
 
 
@@ -37,7 +38,7 @@ struct TimelineClip {
   s32 duration_frames = 30; // Default duration for a new clip
 };
 
-class Timeline {
+class ENGINE_API Timeline {
 
 public:
   Timeline();
@@ -66,7 +67,7 @@ public:
 
   //to select my entity
   void set_selected_entity_id(size_t entity_id) { m_selectedEntityID = entity_id; };
-  
+
 
 private:
   void draw_clip_config_modal();

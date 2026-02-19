@@ -16,14 +16,31 @@
 #include <string>
 #include <format>
 #include <utility>
+#include <deque>
+#include <mutex>
+#include "EngineExport.h"
 
 namespace Log {
 
+	enum class Level { Info, Warning, Error, Crash };
+
+	struct LogEntry {
+		std::string message;
+		Level level;
+		float timestamp; // seconds since engine start
+	};
+
+	/// Returns a snapshot of the log buffer (thread-safe).
+	ENGINE_API std::deque<LogEntry> get_log_entries();
+
+	/// Clears the log buffer (thread-safe).
+	ENGINE_API void clear_log();
+
 	namespace detail {
-		void warning_impl(std::string text);
-		void info_impl(std::string text);
-		void error_impl(std::string text);
-		void crash_impl(std::string text);
+		ENGINE_API void warning_impl(std::string text);
+		ENGINE_API void info_impl(std::string text);
+		ENGINE_API void error_impl(std::string text);
+		ENGINE_API void crash_impl(std::string text);
 	}
 
 	/*=================================================================================

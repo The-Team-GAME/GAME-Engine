@@ -14,6 +14,7 @@
 #include "FileIO/Settings.h"
 #include "WindowManager.h"
 #include "Audio/AudioPlayer.h"
+#include "../HotReloadManager.h"
 
 /*=================================================================================
 Function Brief:
@@ -187,6 +188,33 @@ inline void ConfigurationPanel()
       Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::save();
     }
   }
+
+  ImGui::Spacing();
+
+  // ==================================================================================
+  // Hot-Reload Settings
+  // ==================================================================================
+#ifndef GAME_BUILD
+  if (ImGui::CollapsingHeader("Hot-Reload", ImGuiTreeNodeFlags_DefaultOpen))
+  {
+    auto& local_settings = Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::get_mutable();
+
+    if (ImGui::Checkbox("Auto-Reload on Source Change", &local_settings.auto_reload))
+    {
+      Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::save();
+    }
+    ImGui::SameLine();
+    ImGui::TextDisabled("(?)");
+    if (ImGui::IsItemHovered())
+    {
+      ImGui::BeginTooltip();
+      ImGui::Text("Automatically rebuild and reload GameLogic.dll");
+      ImGui::Text("when .cpp/.h files are saved.");
+      ImGui::Text("When disabled, press F5 to manually reload.");
+      ImGui::EndTooltip();
+    }
+  }
+#endif
 
   ImGui::Spacing();
 

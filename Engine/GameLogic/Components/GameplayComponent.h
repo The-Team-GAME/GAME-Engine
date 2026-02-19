@@ -16,11 +16,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "../../Engine/ECS/Macros.h"
-
-#include "../../Engine/Engine/Time.h"
-
-#include "../../Engine/Components/GraphicsComponents.h"
+#include "../../Engine/MonkeyEngine.h"
 
 namespace Components
 {
@@ -337,5 +333,5 @@ REGISTER_COMPONENT(Components::SprayCanMonkey,
   detection_range, chase_range, attack_range,
   spray_duration, spray_range, spray_width,
   knockback, damage, cloud_spawn_time, cloud_initial_vx)
-REGISTER_COMPONENT(Components::Attack, damage, knockback, is_continuous, damage_interval, impact_vfx_texture)
-REGISTER_COMPONENT(Components::PendingKnockback, knockback)
+  REGISTER_COMPONENT(Components::Attack, damage, knockback, is_continuous, damage_interval, impact_vfx_texture)
+  REGISTER_COMPONENT(Components::PendingKnockback, knockback)

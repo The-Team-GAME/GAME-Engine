@@ -15,7 +15,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "../../Engine/MonkeyEngine.h"
+#include "pch.h"
 #include "../../Engine/Systems/PhysicsSystem.h"
 
 class StressTestState : public Engine::Scene

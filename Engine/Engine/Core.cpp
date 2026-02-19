@@ -41,6 +41,7 @@
 #include "UndoManager/UndoManager.h"
 #include "Easing.h"
 #include "Lua/LuaComponentBindings.h"
+#include "HotReloadManager.h"
 
 namespace Engine
 {
@@ -92,17 +93,8 @@ namespace Engine
       throw std::runtime_error("Failed to initialize resource manager");
     }
 
-    // Load all assets if enabled in settings
-    if (engine_settings.load_all_assets_on_startup)
-    {
-      Engine::Resources::load_all_assets();
-    }
-    else
-    {
-      // Always load prefabs even if load_all_assets_on_startup is disabled
-      // This is required for trail effects and other prefab-dependent features
-      Engine::Resources::load_all_prefabs();
-    }
+    // NOTE: Prefab/asset loading is deferred until after GameLogic.dll is loaded
+    // (see EntryPoint.cpp) so that GameLogic components are registered first.
 
     // Initialize audio manager
     if (!Engine::Audio::init()) {
@@ -252,6 +244,11 @@ namespace Engine
 
       glfwPollEvents();
 
+      // Hot-reload check: detect GameLogic.dll changes and reload
+#ifndef GAME_BUILD
+      Engine::HotReload::check_and_reload();
+#endif
+
       // Update window title with FPS
       WindowManager::update_title();
 
@@ -269,18 +266,26 @@ namespace Engine
         // World::update() won't have a chance to react before the input state is cleared on the next frame. 
         Input::update();
 
-        if (Engine::Input::is_pressed(KeyCode::F10))
+        if (Engine::Input::is_pressed_raw(KeyCode::F10))
         {
           show_fps_overlay = !show_fps_overlay;
         }
 
-        if (Engine::Input::is_pressed(KeyCode::F11))
+        if (Engine::Input::is_pressed_raw(KeyCode::F11))
         {
           auto& settings = Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get_mutable();
           settings.fullscreen = !settings.fullscreen;
           Engine::WindowManager::set_fullscreen(settings.fullscreen);
           Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::save();
         }
+
+#ifndef GAME_BUILD
+        // Manual hot-reload: F5 triggers build + reload even when auto-reload is off
+        if (Engine::Input::is_pressed_raw(KeyCode::F5))
+        {
+          Engine::HotReload::request_manual_reload();
+        }
+#endif
 
         if (Engine::Input::is_pressed(KeyCode::P))
         {
@@ -302,21 +307,21 @@ namespace Engine
         }
 
         // Undo last action
-        if (Engine::Input::is_pressed(Engine::KeyCode::Z) && Engine::Input::is_held(Engine::KeyCode::CtrlLeft))
+        if (Engine::Input::is_pressed_raw(Engine::KeyCode::Z) && Engine::Input::is_held_raw(Engine::KeyCode::CtrlLeft))
         {
           Log::info("Undoing last action");
           Engine::UndoManager::undo();
         }
 
         // Redo last undone action
-        if (Engine::Input::is_pressed(Engine::KeyCode::Y) && Engine::Input::is_held(Engine::KeyCode::CtrlLeft))
+        if (Engine::Input::is_pressed_raw(Engine::KeyCode::Y) && Engine::Input::is_held_raw(Engine::KeyCode::CtrlLeft))
         {
           Log::info("Redoing last undone action");
           Engine::UndoManager::redo();
         }
 
         // Delete selected entity (Delete key or Ctrl+D)
-        if (Engine::Input::is_pressed(Engine::KeyCode::Delete))
+        if (Engine::Input::is_pressed_raw(Engine::KeyCode::Delete))
         {
           // Find the entity with a Gizmo component (indicates it's selected)
           // TODO: This is a temporary solution; ideally, we should have a proper selection manager

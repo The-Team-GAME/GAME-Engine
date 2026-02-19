@@ -17,7 +17,6 @@
 #include "WorldData.h"
 #include "../Perf.h"
 #include <unordered_set>
-#include <unordered_map>
 
 namespace Engine {
   namespace ECS
@@ -51,11 +50,10 @@ namespace Engine {
         if (!containers.active_entities.contains(entity))
           return false;
 
-        auto it = containers.entity_signatures.find(entity);
-        if (it == containers.entity_signatures.end())
+        if (entity >= containers.entity_signatures.size())
           return false;
 
-        const auto& entitySignature = it->second;
+        const auto& entitySignature = containers.entity_signatures[entity];
         const auto& requiredSignature = system.get_required_signature();
         const auto& excludedSignature = system.get_excluded_signature();
 
@@ -68,9 +66,8 @@ namespace Engine {
           return false;
 
         // Check layer requirements
-        auto layer_it = containers.entity_layers.find(entity);
-        if (layer_it != containers.entity_layers.end()) {
-          const auto& entityLayers = layer_it->second;
+        if (entity < containers.entity_layers.size()) {
+          const auto& entityLayers = containers.entity_layers[entity];
           const auto& systemLayers = system.get_layer_signature();
 
           // Entity must be on at least one of the system's layers
@@ -81,6 +78,24 @@ namespace Engine {
         return true;
       }
 
+      // Recompute cached highest layer for an entity from its layer signature
+      void recompute_highest_layer(WorldContainers& containers, EntityID entity)
+      {
+        if (entity >= containers.entity_highest_layer.size())
+          containers.entity_highest_layer.resize(entity + 1, INVALID_LAYER);
+
+        if (entity >= containers.entity_layers.size() || containers.entity_layers[entity].none()) {
+          containers.entity_highest_layer[entity] = INVALID_LAYER;
+          return;
+        }
+        const LayerSignature& layers = containers.entity_layers[entity];
+        LayerID highest = INVALID_LAYER;
+        for (LayerID l = 0; l < MAX_LAYERS; ++l) {
+          if (layers.test(l)) highest = l;
+        }
+        containers.entity_highest_layer[entity] = highest;
+      }
+
       void add_entity_to_layer_set(EntityID entity, LayerID layer)
       {
         auto& containers = get_containers();
@@ -89,6 +104,7 @@ namespace Engine {
           containers.layer_entities.resize(layer + 1);
         }
         containers.layer_entities[layer].insert(entity);
+        recompute_highest_layer(containers, entity);
       }
 
       void remove_entity_from_layer_set(EntityID entity, LayerID layer)
@@ -97,6 +113,7 @@ namespace Engine {
         if (layer < containers.layer_entities.size()) {
           containers.layer_entities[layer].erase(entity);
         }
+        recompute_highest_layer(containers, entity);
       }
     } // namespace Internal
 
@@ -106,7 +123,11 @@ namespace Engine {
 
       EntityID id = containers.next_entity_id++;
       containers.active_entities.insert(id);
+      if (id >= containers.entity_signatures.size())
+        containers.entity_signatures.resize(id + 1);
       containers.entity_signatures[id] = ComponentSignature{};
+      if (id >= containers.entity_layers.size())
+        containers.entity_layers.resize(id + 1);
       containers.entity_layers[id] = LayerSignature{};
       containers.entity_names[id] = "Entity " + std::to_string(id);
 
@@ -127,7 +148,11 @@ namespace Engine {
       }
 
       containers.active_entities.insert(id);
+      if (id >= containers.entity_signatures.size())
+        containers.entity_signatures.resize(id + 1);
       containers.entity_signatures[id] = ComponentSignature{};
+      if (id >= containers.entity_layers.size())
+        containers.entity_layers.resize(id + 1);
       containers.entity_layers[id] = LayerSignature{};
       containers.entity_names[id] = "Entity " + std::to_string(id);
 
@@ -164,13 +189,12 @@ namespace Engine {
         containers.entity_names[newEntity.get_id()] = name_it->second;
       }
 
-      const auto& sourceSignature = containers.entity_signatures.at(source_id);
+      const auto& sourceSignature = containers.entity_signatures[source_id];
       containers.entity_signatures[newEntity.get_id()] = sourceSignature;
 
       // Clone layer signature and add to layer sets
-      auto layer_it = containers.entity_layers.find(source_id);
-      if (layer_it != containers.entity_layers.end()) {
-        const LayerSignature& source_layers = layer_it->second;
+      if (source_id < containers.entity_layers.size() && containers.entity_layers[source_id].any()) {
+        const LayerSignature& source_layers = containers.entity_layers[source_id];
 
         // Remove from default layer first (added by create_entity)
         Internal::remove_entity_from_layer_set(newEntity.get_id(), DEFAULT_LAYER);
@@ -186,8 +210,10 @@ namespace Engine {
         }
       }
 
-      for (auto const& [typeId, componentArray] : containers.component_arrays)
+      for (ComponentTypeID typeId = 0; typeId < MAX_COMPONENTS; ++typeId)
       {
+        auto& componentArray = containers.component_arrays[typeId];
+        if (!componentArray) continue;
         if (sourceSignature.test(typeId))
         {
           componentArray->clone_component(source_id, newEntity.get_id());
@@ -345,10 +371,10 @@ namespace Engine {
       {
         if (containers.active_entities.contains(entityId))
         {
-          auto array_it = containers.component_arrays.find(typeId);
-          if (array_it != containers.component_arrays.end())
+          auto& array_ptr = containers.component_arrays[typeId];
+          if (array_ptr)
           {
-            array_it->second->remove_entity(entityId);
+            array_ptr->remove_entity(entityId);
             containers.entity_signatures[entityId].reset(typeId);
             Internal::entity_component_changed(entityId);
           }
@@ -362,9 +388,8 @@ namespace Engine {
         if (containers.active_entities.contains(entityId))
         {
           // Remove entity from all layer sets
-          auto layer_it = containers.entity_layers.find(entityId);
-          if (layer_it != containers.entity_layers.end()) {
-            const LayerSignature& layers = layer_it->second;
+          if (entityId < containers.entity_layers.size()) {
+            const LayerSignature& layers = containers.entity_layers[entityId];
             for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
               if (layers.test(layer)) {
                 Internal::remove_entity_from_layer_set(entityId, layer);
@@ -374,13 +399,22 @@ namespace Engine {
 
           containers.active_entities.erase(entityId);
 
-          for (auto& [typeId, array] : containers.component_arrays)
-          {
-            array->remove_entity(entityId);
+          // Use the entity's signature to only visit component arrays it actually has,
+          // instead of brute-forcing all 64 slots.
+          if (entityId < containers.entity_signatures.size()) {
+            const auto& sig = containers.entity_signatures[entityId];
+            for (ComponentTypeID typeId = 0; typeId < MAX_COMPONENTS; ++typeId)
+            {
+              if (!sig.test(typeId)) continue;
+              auto& array = containers.component_arrays[typeId];
+              if (!array) continue;
+              array->remove_entity(entityId);
+            }
           }
 
-          containers.entity_signatures.erase(entityId);
-          containers.entity_layers.erase(entityId);
+          containers.entity_signatures[entityId].reset();
+          if (entityId < containers.entity_layers.size())
+            containers.entity_layers[entityId].reset();
           containers.entity_names.erase(entityId);
           containers.prefab_instances.erase(entityId); // Clean up prefab instance data
 
@@ -401,27 +435,12 @@ namespace Engine {
       Engine::Perf::start("ECS Draw");
 
       // Draw layer by layer to ensure correct draw order regardless of system registration order
-      // Entities are drawn once at their highest layer
+      // Entities are drawn once at their highest active layer using pre-cached entity_highest_layer
 
-      // First pass: find the highest layer for each entity
-      std::unordered_map<EntityID, LayerID> entity_highest_layer;
-      for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
-        if (!containers.layer_active_state.test(layer))
-          continue;
+      // Reusable buffer to snapshot layer entity IDs (avoids copying full SparseSet)
+      static thread_local std::vector<EntityID> iteration_buffer;
 
-        // Make a copy to avoid iterator invalidation during draw
-        auto layer_entities_copy = containers.layer_entities[layer];
-
-        for (EntityID entityId : layer_entities_copy) {
-          // Track the highest layer this entity is on
-          if (entity_highest_layer.find(entityId) == entity_highest_layer.end() ||
-            layer > entity_highest_layer[entityId]) {
-            entity_highest_layer[entityId] = layer;
-          }
-        }
-      }
-
-      // Second pass: draw entities layer by layer at their highest layer only
+      // Draw entities layer by layer — use cached highest layer to draw each entity only once
       for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
         // Skip if layer is disabled
         if (!containers.layer_active_state.test(layer))
@@ -436,18 +455,44 @@ namespace Engine {
           // Get entities in this system
           const auto& system_entities = system->get_entities();
 
-          // Draw entities on this layer
-          // Make a copy to avoid iterator invalidation during draw
-          auto layer_entities_copy = containers.layer_entities[layer];
+          // Snapshot just the dense keys into a reusable buffer
+          const auto& layer_set = containers.layer_entities[layer];
+          iteration_buffer.assign(layer_set.begin(), layer_set.end());
 
-          for (EntityID entityId : layer_entities_copy) {
+          for (EntityID entityId : iteration_buffer) {
             // Skip if not in this system
             if (!system_entities.contains(entityId))
               continue;
 
-            // Only draw if this is the entity's highest layer
-            if (entity_highest_layer[entityId] != layer)
-              continue;
+            // Only draw if this is the entity's highest active layer
+            // Use the cached highest layer — if the cached layer is inactive,
+            // fall back: the entity's highest *active* layer is the current one
+            // (since we iterate layers in order, last active match wins, so
+            //  we skip unless this *is* the highest layer, or the cached
+            //  highest layer is inactive and this is the highest active one)
+            if (entityId < containers.entity_highest_layer.size()) {
+              LayerID cached = containers.entity_highest_layer[entityId];
+              if (cached != INVALID_LAYER && cached != layer) {
+                // If the cached highest layer is active, skip (entity drawn later at that layer)
+                if (containers.layer_active_state.test(cached))
+                  continue;
+                // Cached highest layer is inactive — we need to check if this is the
+                // highest *active* layer. We can do this by checking if any higher active
+                // layer also contains this entity.
+                bool higher_active_exists = false;
+                if (entityId < containers.entity_layers.size()) {
+                  const auto& eLayers = containers.entity_layers[entityId];
+                  for (LayerID l = layer + 1; l < containers.layer_entities.size(); ++l) {
+                    if (eLayers.test(l) && containers.layer_active_state.test(l)) {
+                      higher_active_exists = true;
+                      break;
+                    }
+                  }
+                }
+                if (higher_active_exists)
+                  continue;
+              }
+            }
 
             // Draw the entity
             Entity entity(entityId);
@@ -510,26 +555,38 @@ namespace Engine {
 
     void for_each_entity(std::function<void(Entity)> callback)
     {
-      // auto& containers = Internal::get_containers();
-      // for (EntityID id : containers.active_entities) {
-      //   Entity entity(id);
-      //   callback(entity);
-      // }
-
-      // In layer order, avoiding duplicates
       auto& containers = Internal::get_containers();
-      std::unordered_set<EntityID> processed; // Track processed entities to avoid duplicates
+
+      // Reusable buffer + visit stamp to avoid per-frame allocations
+      static thread_local std::vector<EntityID> iteration_buffer;
+      static thread_local std::vector<uint32_t> visit_stamp;
+      static thread_local uint32_t current_stamp = 0;
+      ++current_stamp;
+      // Handle wrap-around (extremely rare)
+      if (current_stamp == 0) {
+        visit_stamp.clear();
+        ++current_stamp;
+      }
 
       for (LayerID layer = 0; layer < containers.layer_entities.size(); ++layer) {
-        // Make a copy to avoid iterator invalidation during callback
-        auto layer_entities_copy = containers.layer_entities[layer];
+        // Snapshot just the dense keys into a reusable buffer
+        const auto& layer_set = containers.layer_entities[layer];
+        iteration_buffer.assign(layer_set.begin(), layer_set.end());
 
-        for (EntityID id : layer_entities_copy) {
-          // Skip if already processed or not active
-          if (processed.count(id) || !containers.active_entities.contains(id))
+        for (EntityID id : iteration_buffer) {
+          // Skip if not active
+          if (!containers.active_entities.contains(id))
             continue;
 
-          processed.insert(id);
+          // Skip if already processed (via stamp check — no hash set needed)
+          if (id < visit_stamp.size() && visit_stamp[id] == current_stamp)
+            continue;
+
+          // Mark as visited
+          if (id >= visit_stamp.size())
+            visit_stamp.resize(id + 1, 0);
+          visit_stamp[id] = current_stamp;
+
           Entity entity(id);
           callback(entity);
         }
@@ -543,10 +600,12 @@ namespace Engine {
         return;
       }
 
-      // Make a copy to avoid iterator invalidation during callback
-      auto layer_entities_copy = containers.layer_entities[layer];
+      // Snapshot just the dense keys into a reusable buffer (no SparseSet copy)
+      static thread_local std::vector<EntityID> iteration_buffer;
+      const auto& layer_set = containers.layer_entities[layer];
+      iteration_buffer.assign(layer_set.begin(), layer_set.end());
 
-      for (EntityID id : layer_entities_copy) {
+      for (EntityID id : iteration_buffer) {
         if (containers.active_entities.contains(id)) {
           Entity entity(id);
           callback(entity);
@@ -675,11 +734,10 @@ namespace Engine {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
 
-      auto it = containers.entity_layers.find(id);
-      if (it == containers.entity_layers.end())
+      if (id >= containers.entity_layers.size())
         return false;
 
-      return it->second.test(layer);
+      return containers.entity_layers[id].test(layer);
     }
 
     LayerSignature get_entity_layers(const Entity entity)
@@ -687,11 +745,10 @@ namespace Engine {
       auto& containers = Internal::get_containers();
       EntityID id = entity.get_id();
 
-      auto it = containers.entity_layers.find(id);
-      if (it == containers.entity_layers.end())
+      if (id >= containers.entity_layers.size())
         return LayerSignature{};
 
-      return it->second;
+      return containers.entity_layers[id];
     }
 
     void clear_layers(const Entity entity)
@@ -711,6 +768,9 @@ namespace Engine {
       }
 
       containers.entity_layers[id].reset();
+      // Update cached highest layer
+      if (id < containers.entity_highest_layer.size())
+        containers.entity_highest_layer[id] = INVALID_LAYER;
       Internal::entity_component_changed(id);
     }
 

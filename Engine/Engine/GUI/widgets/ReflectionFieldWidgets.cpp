@@ -448,7 +448,7 @@ namespace ImGuiWidgets {
 
     // Get all registered functions with the correct signature
     // Note: This assumes all state callbacks have the signature void(Engine::ECS::Entity)
-    auto& functions = Engine::FunctionRegistry<void(Engine::ECS::Entity)>::get_functions();
+    auto function_names = Engine::FunctionRegistry::instance().get_all_names<void(Engine::ECS::Entity)>();
 
     if (ImGui::BeginCombo(label.c_str(), current_script.empty() ? "<None>" : current_script.c_str())) {
 
@@ -461,7 +461,7 @@ namespace ImGuiWidgets {
       if (is_selected) ImGui::SetItemDefaultFocus();
 
       // List all scripts
-      for (const auto& [name, func] : functions) {
+      for (const auto& name : function_names) {
         is_selected = (current_script == name);
         if (ImGui::Selectable(name.c_str(), is_selected)) {
           field_value = name;
@@ -571,7 +571,7 @@ namespace ImGuiWidgets {
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.6f, 0.5f, 0.3f, 1.0f));
                 std::string edit_atlas_btn_label = "Edit Atlas Configuration##" + state_name;
                 if (ImGui::Button(edit_atlas_btn_label.c_str(), ImVec2(-1, 0))) {
-                  extern void TextureAtlasEditor_OpenForState(Engine::ECS::Entity entity, const std::string& state_name);
+                  extern void TextureAtlasEditor_OpenForState(Engine::ECS::Entity entity, const std::string & state_name);
                   TextureAtlasEditor_OpenForState(entity, state_name);
                 }
                 ImGui::PopStyleColor(2);
@@ -584,7 +584,7 @@ namespace ImGuiWidgets {
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.6f, 0.9f, 1.0f));
                 std::string edit_btn_label = "Edit Animation Frames##" + state_name;
                 if (ImGui::Button(edit_btn_label.c_str(), ImVec2(-1, 0))) {
-                  extern void FrameAnimationEditor_Open(Engine::ECS::Entity entity, const std::string& state_name);
+                  extern void FrameAnimationEditor_Open(Engine::ECS::Entity entity, const std::string & state_name);
                   FrameAnimationEditor_Open(entity, state_name);
                 }
                 ImGui::PopStyleColor(2);
@@ -649,10 +649,10 @@ namespace ImGuiWidgets {
     std::string current_function = name_field.getString();
 
     // Display all functions from all registries
-    auto& easing_functions = Engine::FunctionRegistry<f32(f32, f32, f32, f32)>::get_functions();
-    auto& entity_functions = Engine::FunctionRegistry<void(Engine::ECS::Entity)>::get_functions();
-    auto& two_entity_functions = Engine::FunctionRegistry<void(Engine::ECS::Entity, Engine::ECS::Entity)>::get_functions();
-    auto& void_functions = Engine::FunctionRegistry<void()>::get_functions();
+    auto easing_names = Engine::FunctionRegistry::instance().get_all_names<f32(f32, f32, f32, f32)>();
+    auto entity_names = Engine::FunctionRegistry::instance().get_all_names<void(Engine::ECS::Entity)>();
+    auto two_entity_names = Engine::FunctionRegistry::instance().get_all_names<void(Engine::ECS::Entity, Engine::ECS::Entity)>();
+    auto void_names = Engine::FunctionRegistry::instance().get_all_names<void()>();
 
     ImGui::Text("%s", field_name.c_str());
     ImGui::SameLine();
@@ -665,9 +665,9 @@ namespace ImGuiWidgets {
       if (is_selected) ImGui::SetItemDefaultFocus();
 
       // Display easing functions
-      if (!easing_functions.empty()) {
+      if (!easing_names.empty()) {
         ImGui::TextDisabled("--- Easing Functions (f32(f32,f32,f32,f32)) ---");
-        for (const auto& [name, func] : easing_functions) {
+        for (const auto& name : easing_names) {
           is_selected = (current_function == name);
           if (ImGui::Selectable(name.c_str(), is_selected)) {
             name_field = name;
@@ -678,9 +678,9 @@ namespace ImGuiWidgets {
       }
 
       // Display entity callback functions
-      if (!entity_functions.empty()) {
+      if (!entity_names.empty()) {
         ImGui::TextDisabled("--- Entity Callbacks (void(Entity)) ---");
-        for (const auto& [name, func] : entity_functions) {
+        for (const auto& name : entity_names) {
           is_selected = (current_function == name);
           if (ImGui::Selectable(name.c_str(), is_selected)) {
             name_field = name;
@@ -691,9 +691,9 @@ namespace ImGuiWidgets {
       }
 
       // Display two-entity callback functions (e.g., Interactable callbacks)
-      if (!two_entity_functions.empty()) {
+      if (!two_entity_names.empty()) {
         ImGui::TextDisabled("--- Interactable Callbacks (void(Entity, Entity)) ---");
-        for (const auto& [name, func] : two_entity_functions) {
+        for (const auto& name : two_entity_names) {
           is_selected = (current_function == name);
           if (ImGui::Selectable(name.c_str(), is_selected)) {
             name_field = name;
@@ -704,9 +704,9 @@ namespace ImGuiWidgets {
       }
 
       // Display void functions
-      if (!void_functions.empty()) {
+      if (!void_names.empty()) {
         ImGui::TextDisabled("--- Void Functions (void()) ---");
-        for (const auto& [name, func] : void_functions) {
+        for (const auto& name : void_names) {
           is_selected = (current_function == name);
           if (ImGui::Selectable(name.c_str(), is_selected)) {
             name_field = name;

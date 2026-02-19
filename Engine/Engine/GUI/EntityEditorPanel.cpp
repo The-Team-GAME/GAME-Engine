@@ -670,7 +670,9 @@ void EntityEditorPanel()
       auto& containers = Engine::ECS::Internal::get_containers();
 
       int button_count = 0;
-      for (auto& [type_id, array] : containers.component_arrays) {
+      for (Engine::ECS::ComponentTypeID type_id = 0; type_id < Engine::ECS::MAX_COMPONENTS; ++type_id) {
+        auto& array = containers.component_arrays[type_id];
+        if (!array) continue;
         std::string component_name = array->get_type_name();
 
         // Skip if component type name is unknown or not reflectable
@@ -1117,7 +1119,27 @@ void EntityEditorPanel()
     if (confirmed) {
       Engine::ECS::Entity rename_entity = Engine::ECS::get_entity(rename_entity_id);
       if (rename_entity.is_valid()) {
-        Engine::ECS::set_entity_name(rename_entity, rename_buf);
+        std::string old_name = Engine::ECS::get_entity_name(rename_entity);
+        std::string new_name = rename_buf;
+        Engine::ECS::EntityID eid = rename_entity_id;
+
+        Engine::ECS::set_entity_name(rename_entity, new_name);
+
+        Engine::UndoManager::record(
+          // Redo: apply new name
+          [eid, new_name]() {
+            Engine::ECS::Entity e = Engine::ECS::get_entity(eid);
+            if (e.is_valid()) Engine::ECS::set_entity_name(e, new_name);
+            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+          },
+          // Undo: restore old name
+          [eid, old_name]() {
+            Engine::ECS::Entity e = Engine::ECS::get_entity(eid);
+            if (e.is_valid()) Engine::ECS::set_entity_name(e, old_name);
+            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+          }
+        );
+
         Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
       }
       rename_entity_id = Engine::ECS::INVALID_ENTITY;

@@ -20,6 +20,7 @@
 #include <vector>
 #include <unordered_map>
 #include "../Logger.h"
+#include "../EngineExport.h"
 #include "../FunctionRegistry.h"
 
 namespace Engine
@@ -73,10 +74,7 @@ namespace Engine
 
   class StateMachineBlueprintRegistry {
   public:
-    static StateMachineBlueprintRegistry& instance() {
-      static StateMachineBlueprintRegistry registry;
-      return registry;
-    }
+    ENGINE_API static StateMachineBlueprintRegistry& instance();
 
     /// Register a blueprint under a unique id
     void register_blueprint(const std::string& id, const StateMachineBlueprint& blueprint) {
@@ -128,7 +126,7 @@ namespace Engine::detail {
   template<typename Func>
   inline std::string auto_reg(const char* name, Func func) {
     using Sig = typename Engine::function_traits<std::decay_t<decltype(func)>>::signature;
-    Engine::FunctionRegistry<Sig>::register_function(name, func);
+    Engine::FunctionRegistry::instance().register_function<Sig>(name, std::function<Sig>(func));
     return name;
   }
 
