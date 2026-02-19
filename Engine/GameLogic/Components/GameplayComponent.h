@@ -82,6 +82,7 @@ namespace Components
     Action dash{ 0.2f,5.f, 1250.f };
     Action stunned{ 1.f, 0.f, 0.f, -5000.f };
     Action uppercut{ 1.f, 5.f, 500.f, 0 };
+    Action smash{ 0.f, 7.f, 500.f, 0.f };
 
     // Attacks
     AttackData attack1 = {
@@ -156,7 +157,6 @@ namespace Components
     int damage = 20;
 
   };
-
 
   struct LazyMonkey
   {
@@ -247,7 +247,6 @@ namespace Components
     float long_attack_range = 600.0f;
   };
 
-
   struct Attack
   {
     int damage = 10;
@@ -306,32 +305,14 @@ namespace Components
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 REFLECT_FIELDS(Components::Player::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, dash_speed, damage, heartrate_cost, knockback)
 REFLECT_FIELDS(Components::Action, duration, timer, cooldown, cd_timer, speed, impulse)
-
-
-
 
 
 REGISTER_COMPONENT(Components::Player, walk_speed, jump_force, dash, attack1, attack2, attack3)
 REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height, attack_cooldown, last_attack_time, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, attack_range)
 REGISTER_COMPONENT(Components::TurretMonkey, chase_speed, attack_cooldown, attack_windup, last_attack_time, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, long_attack_range)
 REGISTER_COMPONENT(Components::GamerMonkey, chase_speed, dash_speed, dash_cooldown, dash_windup_duration, dash_indicator_height, leap_speed, leap_height, attack_cooldown, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, close_attack_range, dash_attack_range)
-REGISTER_COMPONENT(Components::SprayCanMonkey,
-  chase_speed, attack_cooldown, last_attack_time, attack_windup,
-  detection_range, chase_range, attack_range,
-  spray_duration, spray_range, spray_width,
-  knockback, damage, cloud_spawn_time, cloud_initial_vx)
-  REGISTER_COMPONENT(Components::Attack, damage, knockback, is_continuous, damage_interval, impact_vfx_texture)
-  REGISTER_COMPONENT(Components::PendingKnockback, knockback)
+REGISTER_COMPONENT(Components::SprayCanMonkey, chase_speed, attack_cooldown, last_attack_time, attack_windup, detection_range, chase_range, attack_range, spray_duration, spray_range, spray_width, knockback, damage, cloud_spawn_time, cloud_initial_vx)
+REGISTER_COMPONENT(Components::Attack, damage, knockback, is_continuous, damage_interval, impact_vfx_texture)
+REGISTER_COMPONENT(Components::PendingKnockback, knockback)

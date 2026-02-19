@@ -200,13 +200,13 @@ namespace PlayerStateCallbacks
   // Falling State Callbacks
   // ========================================================================
 
-  inline void Falling_on_enter([[maybe_unused]] ECS::Entity entity)
+  inline void falling_on_enter([[maybe_unused]] ECS::Entity entity)
   {
     Log::info("Player: Entered Falling tate");
 
   }
 
-  inline void Falling_on_update(ECS::Entity entity)
+  inline void falling_on_update(ECS::Entity entity)
   {
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
@@ -218,7 +218,7 @@ namespace PlayerStateCallbacks
     }
   }
 
-  inline void Falling_on_exit([[maybe_unused]] ECS::Entity entity)
+  inline void falling_on_exit([[maybe_unused]] ECS::Entity entity)
   {
     Log::info("Player: Exited Falling state");
   }
@@ -282,7 +282,7 @@ namespace PlayerStateCallbacks
   // Stunned State Callbacks
   // ========================================================================
 
-  inline void Stunned_on_enter([[maybe_unused]] ECS::Entity entity)
+  inline void stunned_on_enter([[maybe_unused]] ECS::Entity entity)
   {
     Log::info("Player: Stunned!");
     Components::Player* player_comp = entity.get_component<Components::Player>();
@@ -291,7 +291,7 @@ namespace PlayerStateCallbacks
     player_comp->stunned.set_timer();
   }
 
-  inline void Stunned_on_update(ECS::Entity entity)
+  inline void stunned_on_update(ECS::Entity entity)
   {
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
@@ -304,7 +304,7 @@ namespace PlayerStateCallbacks
     player_comp->stunned.timer -= Time::get_fixed_dt();
   }
 
-  inline void Stunned_on_exit([[maybe_unused]] ECS::Entity entity)
+  inline void stunned_on_exit([[maybe_unused]] ECS::Entity entity)
   {
     Log::info("Player: Exited Stunned state");
     Components::Player* player_comp = entity.get_component<Components::Player>();
@@ -586,7 +586,7 @@ namespace PlayerStateCallbacks
 
   inline void uppercut_on_enter(ECS::Entity entity)
   {
-    Log::info("Player: Entered uppercuting state");
+    Log::info("Player: Entered Uppercut state");
 
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
@@ -618,13 +618,57 @@ namespace PlayerStateCallbacks
 
   inline void uppercut_on_exit(ECS::Entity entity)
   {
-    Log::info("Player: Exited uppercuting state");
+    Log::info("Player: Exited Uppercut state");
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
     rigid->use_gravity = true;
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
     player_comp->uppercut.reset_cooldown();
+  }
+#pragma endregion
+
+#pragma region smash
+  // ========================================================================
+  // smash State Callbacks
+  // ========================================================================
+
+  inline void smash_on_enter(ECS::Entity entity)
+  {
+    Log::info("Player: Entered Smash state");
+
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(player_comp);
+    player_comp->smash.set_timer();
+
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    assert(rigid);
+    rigid->use_gravity = false;
+    rigid->velocity.zero();
+    rigid->force.zero();
+  }
+
+  inline void smash_on_update(ECS::Entity entity)
+  {
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(rigid);
+    assert(player_comp);
+    if (rigid->on_ground)
+    {
+      Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
+      assert(sm);
+      sm->change_state("Idle");
+    }
+    rigid->velocity.y = player_comp->smash.speed;
+  }
+
+  inline void smash_on_exit(ECS::Entity entity)
+  {
+    Log::info("Player: Exited Smash state");
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(player_comp);
+    player_comp->smash.reset_cooldown();
   }
 #pragma endregion
 

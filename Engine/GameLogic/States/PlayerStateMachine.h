@@ -124,24 +124,35 @@ namespace PlayerStates
     // ========================================================================
     // Player Falling State
     // ========================================================================
-    Components::StateAnimation player_jumping_anim;
-    player_jumping_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_jump_spritesheet.png"));
-    player_jumping_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 13, 13);
-    player_jumping_anim.animation = Components::Animation(8, 0.1f);
-    player_jumping_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
+    Components::StateAnimation player_falling_anim;
+    player_falling_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_jump_spritesheet.png"));
+    player_falling_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 13, 13);
+    player_falling_anim.animation = Components::Animation(8, 0.1f);
+    player_falling_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
 
-    Components::State player_jumping("Falling", player_jumping_anim);
+    Components::State player_falling("Falling", player_falling_anim);
 
     // ========================================================================
     // Player Dash State
     // ========================================================================
-    Components::StateAnimation player_dashinging_anim;
-    player_dashinging_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_dash_spritesheet.png"));
-    player_dashinging_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 9, 9);
-    player_dashinging_anim.animation = Components::Animation(8, 0.1f);
-    player_dashinging_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
+    Components::StateAnimation player_dashing_anim;
+    player_dashing_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_dash_spritesheet.png"));
+    player_dashing_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 9, 9);
+    player_dashing_anim.animation = Components::Animation(8, 0.1f);
+    player_dashing_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
 
-    Components::State player_dash("Dash", player_dashinging_anim, walk_audio, fmod_dash_audio);
+    Components::State player_dash("Dash", player_dashing_anim, walk_audio, fmod_dash_audio);
+
+    // ========================================================================
+    // Player Stunned State
+    // ========================================================================
+    Components::StateAnimation player_stunned_anim;
+    player_stunned_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_dash_spritesheet.png")); //need change
+    player_stunned_anim.texture_atlas = Components::TextureAtlas(64, 64, 1, 9, 9);
+    player_stunned_anim.animation = Components::Animation(8, 0.1f);
+    player_stunned_anim.scale = Math::Vec2D(IDLE_WIDTH * 2.0f, IDLE_HEIGHT * 2.0f);
+
+    Components::State player_stunned("Stunned", player_stunned_anim);
 
     // ========================================================================
     // Player Attack 1 State (First Punch)
