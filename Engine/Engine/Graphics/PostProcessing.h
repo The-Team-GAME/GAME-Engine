@@ -38,6 +38,10 @@ namespace Engine::Graphics::PostProcessing {
     // Color Grading (3D LUT)
     bool lut_enabled = false;
     float lut_intensity = 1.0f;     // 0 = original color, 1 = full LUT
+
+    // MSAA Anti-Aliasing
+    bool msaa_enabled = false;
+    int msaa_samples = 4;           // 2, 4, or 8
   };
 
   //-------------------------------------------------------------------------

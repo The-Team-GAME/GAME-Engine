@@ -26,6 +26,12 @@ namespace Engine::Graphics::PostProcessing {
     GLuint scene_fbo = 0;
     GLuint scene_color_texture = 0;
 
+    // MSAA FBO (multisampled scene target)
+    GLuint msaa_fbo = 0;
+    GLuint msaa_color_renderbuffer = 0;
+    GLuint msaa_depth_renderbuffer = 0;
+    int active_msaa_samples = 0;
+
     // Bloom mip chain
     static constexpr int MAX_BLOOM_MIPS = 8;
     struct BloomMip {
@@ -185,6 +191,49 @@ namespace Engine::Graphics::PostProcessing {
       glBindTexture(GL_TEXTURE_3D, 0);
     }
 
+    //---------------------------------------------------------------
+    // Create MSAA FBO with multisampled renderbuffers
+    //---------------------------------------------------------------
+    void create_msaa_fbo(int samples) {
+      // Clamp samples to GPU max
+      GLint max_samples = 0;
+      glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
+      samples = std::min(samples, static_cast<int>(max_samples));
+      if (samples < 2) samples = 2;
+
+      glGenFramebuffers(1, &msaa_fbo);
+      glBindFramebuffer(GL_FRAMEBUFFER, msaa_fbo);
+
+      // Color renderbuffer (multisampled, RGB16F to match scene FBO)
+      glGenRenderbuffers(1, &msaa_color_renderbuffer);
+      glBindRenderbuffer(GL_RENDERBUFFER, msaa_color_renderbuffer);
+      glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_RGB16F, fb_width, fb_height);
+      glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, msaa_color_renderbuffer);
+
+      // Depth renderbuffer (multisampled — required for correct depth testing)
+      glGenRenderbuffers(1, &msaa_depth_renderbuffer);
+      glBindRenderbuffer(GL_RENDERBUFFER, msaa_depth_renderbuffer);
+      glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH24_STENCIL8, fb_width, fb_height);
+      glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, msaa_depth_renderbuffer);
+
+      if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        Log::error("PostProcessing: MSAA framebuffer not complete ({}x{}, {}x MSAA)", fb_width, fb_height, samples);
+      }
+
+      active_msaa_samples = samples;
+      glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    //---------------------------------------------------------------
+    // Destroy MSAA FBO
+    //---------------------------------------------------------------
+    void destroy_msaa_fbo() {
+      if (msaa_fbo) { glDeleteFramebuffers(1, &msaa_fbo); msaa_fbo = 0; }
+      if (msaa_color_renderbuffer) { glDeleteRenderbuffers(1, &msaa_color_renderbuffer); msaa_color_renderbuffer = 0; }
+      if (msaa_depth_renderbuffer) { glDeleteRenderbuffers(1, &msaa_depth_renderbuffer); msaa_depth_renderbuffer = 0; }
+      active_msaa_samples = 0;
+    }
+
   } // anonymous namespace
 
   // ===== Public API =====
@@ -218,11 +267,14 @@ namespace Engine::Graphics::PostProcessing {
     // Create bloom mip chain
     create_bloom_mips();
 
+    // Create MSAA FBO (default 4x)
+    create_msaa_fbo(current_settings.msaa_samples);
+
     // Create identity LUT as default
     CubeLUTData identity = generate_identity_lut(16);
     upload_lut(identity);
 
-    Log::info("PostProcessing: Initialized ({}x{}, {} bloom mips)", fb_width, fb_height, bloom_mip_count);
+    Log::info("PostProcessing: Initialized ({}x{}, {} bloom mips, {}x MSAA)", fb_width, fb_height, bloom_mip_count, active_msaa_samples);
     return true;
   }
 
@@ -230,6 +282,9 @@ namespace Engine::Graphics::PostProcessing {
     // Scene FBO
     if (scene_fbo) { glDeleteFramebuffers(1, &scene_fbo); scene_fbo = 0; }
     if (scene_color_texture) { glDeleteTextures(1, &scene_color_texture); scene_color_texture = 0; }
+
+    // MSAA
+    destroy_msaa_fbo();
 
     // Bloom
     destroy_bloom_mips();
@@ -256,10 +311,23 @@ namespace Engine::Graphics::PostProcessing {
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &previous_fbo);
     glGetIntegerv(GL_VIEWPORT, previous_viewport);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, scene_fbo);
+    // Recreate MSAA FBO if sample count changed
+    if (current_settings.msaa_enabled && active_msaa_samples != current_settings.msaa_samples) {
+      destroy_msaa_fbo();
+      create_msaa_fbo(current_settings.msaa_samples);
+    }
+
+    // Bind either the MSAA or regular scene FBO
+    if (current_settings.msaa_enabled && msaa_fbo) {
+      glBindFramebuffer(GL_FRAMEBUFFER, msaa_fbo);
+      glEnable(GL_MULTISAMPLE);
+    } else {
+      glBindFramebuffer(GL_FRAMEBUFFER, scene_fbo);
+    }
+
     glViewport(0, 0, fb_width, fb_height);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
 
   void end_scene_capture_and_apply(GLuint target_fbo) {
@@ -268,6 +336,19 @@ namespace Engine::Graphics::PostProcessing {
     // If target_fbo is 0, restore to whatever FBO was bound before scene capture
     // (supports ViewportPanel FBO in editor mode)
     GLuint final_target = (target_fbo == 0) ? static_cast<GLuint>(previous_fbo) : target_fbo;
+
+    // ===== MSAA RESOLVE =====
+    // Blit multisampled FBO → regular scene FBO (resolves MSAA)
+    if (current_settings.msaa_enabled && msaa_fbo) {
+      glBindFramebuffer(GL_READ_FRAMEBUFFER, msaa_fbo);
+      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, scene_fbo);
+      glBlitFramebuffer(
+        0, 0, fb_width, fb_height,
+        0, 0, fb_width, fb_height,
+        GL_COLOR_BUFFER_BIT, GL_LINEAR
+      );
+      glDisable(GL_MULTISAMPLE);
+    }
 
     // Disable blending for post-processing passes
     glDisable(GL_BLEND);
@@ -418,7 +499,13 @@ namespace Engine::Graphics::PostProcessing {
     destroy_bloom_mips();
     create_bloom_mips();
 
-    Log::info("PostProcessing: Resized to {}x{} ({} bloom mips)", fb_width, fb_height, bloom_mip_count);
+    // Recreate MSAA FBO at new size
+    if (active_msaa_samples > 0) {
+      destroy_msaa_fbo();
+      create_msaa_fbo(current_settings.msaa_samples);
+    }
+
+    Log::info("PostProcessing: Resized to {}x{} ({} bloom mips, {}x MSAA)", fb_width, fb_height, bloom_mip_count, active_msaa_samples);
   }
 
   int get_width() { return fb_width; }

@@ -115,6 +115,38 @@ inline void PostProcessingPanel()
 
   ImGui::Separator();
 
+  // ==================== Anti-Aliasing (MSAA) ====================
+  if (ImGui::CollapsingHeader("Anti-Aliasing (MSAA)", ImGuiTreeNodeFlags_DefaultOpen))
+  {
+    ImGui::Checkbox("##MSAAEnabled", &pp.msaa_enabled);
+    ImGui::SameLine();
+    ImGui::Text("Enable MSAA");
+
+    if (pp.msaa_enabled)
+    {
+      // Sample count selector
+      const char* msaa_items[] = { "2x", "4x", "8x", "16x", "32x" };
+      int msaa_values[] = { 2, 4, 8, 16, 32 };
+      int current_idx = 1; // default to 4x
+      for (int i = 0; i < 5; ++i) {
+        if (msaa_values[i] == pp.msaa_samples) { current_idx = i; break; }
+      }
+
+      if (ImGui::Combo("##MSAASamples", &current_idx, msaa_items, 5)) {
+        pp.msaa_samples = msaa_values[current_idx];
+      }
+      if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("Higher = smoother edges, more GPU cost");
+
+      // Show GPU max
+      GLint max_samples = 0;
+      glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
+      ImGui::TextDisabled("GPU max: %dx", max_samples);
+    }
+  }
+
+  ImGui::Separator();
+
   // ==================== Presets ====================
   if (ImGui::CollapsingHeader("Presets"))
   {
