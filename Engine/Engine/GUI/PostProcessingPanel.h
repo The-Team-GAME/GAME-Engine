@@ -35,7 +35,7 @@ inline void PostProcessingPanel()
   // ==================== Gamma ====================
   if (ImGui::CollapsingHeader("Gamma", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    ImGui::SliderFloat("Gamma", &pp.gamma, 0.5f, 5.0f, "%.2f");
+    ImGui::SliderFloat("##GammaSlider", &pp.gamma, 0.5f, 5.0f, "Gamma: %.2f");
     if (ImGui::IsItemHovered())
       ImGui::SetTooltip("Default: 2.2\nLower = brighter, Higher = darker");
 
@@ -48,20 +48,22 @@ inline void PostProcessingPanel()
   // ==================== Bloom ====================
   if (ImGui::CollapsingHeader("Bloom", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    ImGui::Checkbox("Enable Bloom", &pp.bloom_enabled);
+    ImGui::Checkbox("##BloomEnabled", &pp.bloom_enabled);
+    ImGui::SameLine();
+    ImGui::Text("Enable Bloom");
 
     if (pp.bloom_enabled)
     {
-      ImGui::SliderFloat("Threshold", &pp.bloom_threshold, 0.0f, 3.0f, "%.2f");
+      ImGui::SliderFloat("##BloomThreshold", &pp.bloom_threshold, 0.0f, 3.0f, "Threshold: %.2f");
       if (ImGui::IsItemHovered())
         ImGui::SetTooltip("Brightness threshold for bloom extraction.\n"
           "Lower = more glow, Higher = only bright spots");
 
-      ImGui::SliderFloat("Intensity", &pp.bloom_intensity, 0.0f, 5.0f, "%.2f");
+      ImGui::SliderFloat("##BloomIntensity", &pp.bloom_intensity, 0.0f, 5.0f, "Intensity: %.2f");
       if (ImGui::IsItemHovered())
         ImGui::SetTooltip("Strength of the bloom effect");
 
-      ImGui::SliderInt("Iterations", &pp.bloom_iterations, 1, 8);
+      ImGui::SliderInt("##BloomIterations", &pp.bloom_iterations, 1, 8, "Iterations: %d");
       if (ImGui::IsItemHovered())
         ImGui::SetTooltip("Number of downsample/upsample passes.\n"
           "More = wider bloom radius");
@@ -73,11 +75,13 @@ inline void PostProcessingPanel()
   // ==================== Color Grading (LUT) ====================
   if (ImGui::CollapsingHeader("Color Grading (LUT)", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    ImGui::Checkbox("Enable LUT", &pp.lut_enabled);
+    ImGui::Checkbox("##LUTEnabled", &pp.lut_enabled);
+    ImGui::SameLine();
+    ImGui::Text("Enable LUT");
 
     if (pp.lut_enabled)
     {
-      ImGui::SliderFloat("LUT Intensity", &pp.lut_intensity, 0.0f, 1.0f, "%.2f");
+      ImGui::SliderFloat("##LUTIntensity", &pp.lut_intensity, 0.0f, 1.0f, "LUT Intensity: %.2f");
       if (ImGui::IsItemHovered())
         ImGui::SetTooltip("0 = original colors, 1 = full LUT effect");
 
