@@ -1988,5 +1988,40 @@ namespace Engine {
       }
     }
 
+    // === Post-Processing Wrappers ===
+
+    bool init_post_processing() {
+      return PostProcessing::init();
+    }
+
+    void exit_post_processing() {
+      PostProcessing::exit();
+    }
+
+    void begin_post_processing() {
+      PostProcessing::begin_scene_capture();
+    }
+
+    void end_post_processing(unsigned int target_fbo) {
+      PostProcessing::end_scene_capture_and_apply(static_cast<GLuint>(target_fbo));
+    }
+
+    PostProcessing::Settings& get_post_process_settings() {
+      return PostProcessing::get_settings();
+    }
+
+    bool load_lut(const std::string& cube_path) {
+      return PostProcessing::load_lut_from_cube(cube_path);
+    }
+
+    void resize_post_processing(int w, int h) {
+      PostProcessing::resize(w, h);
+    }
+
+    bool is_layer_affected(const std::string& layer_name) {
+      return PostProcessing::is_layer_affected(layer_name);
+    }
+
   } // namespace Graphics
 } // namespace Engine
+
