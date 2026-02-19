@@ -12,6 +12,8 @@
 
 #include "Precompiled.h"
 #include "../Graphics/Renderer.h"
+#include "ResourcePicker.h"
+#include <filesystem>
 
 inline void PostProcessingPanel()
 {
@@ -85,16 +87,27 @@ inline void PostProcessingPanel()
       if (ImGui::IsItemHovered())
         ImGui::SetTooltip("0 = original colors, 1 = full LUT effect");
 
-      // LUT file loader
-      static char lut_path[256] = "Assets/lut/PictureFX_J.S._Style_Ethereal_Purple.cube";
-      ImGui::InputText("LUT Path", lut_path, sizeof(lut_path));
+      // Current LUT display and picker
+      static std::string current_lut_path = "(none)";
 
-      if (ImGui::Button("Load .cube LUT"))
+      ImGui::Text("Current LUT:");
+      ImGui::SameLine();
+      ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "%s",
+        current_lut_path == "(none)" ? "(none)" :
+        std::filesystem::path(current_lut_path).filename().string().c_str());
+
+      if (ImGui::Button("Browse LUT...", ImVec2(-1, 0)))
       {
-        if (load_lut(lut_path))
+        ImGui::OpenPopup("LUT Picker");
+      }
+
+      // LUT picker popup
+      std::string selected_lut;
+      if (ResourcePicker::lut_picker_popup("LUT Picker", selected_lut, current_lut_path))
+      {
+        if (load_lut(selected_lut))
         {
-          ImGui::SameLine();
-          ImGui::TextColored(ImVec4(0.2f, 0.8f, 0.2f, 1.0f), "Loaded!");
+          current_lut_path = selected_lut;
         }
       }
     }

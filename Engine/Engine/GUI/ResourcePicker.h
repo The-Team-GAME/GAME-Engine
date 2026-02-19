@@ -84,4 +84,23 @@ namespace ResourcePicker {
   ==================================================================================*/
   std::vector<Engine::Graphics::Font> get_all_loaded_fonts();
 
+  /*=================================================================================
+  Function Brief:
+  Displays a LUT picker popup that scans a directory for .cube files.
+  Shows a color ramp preview (diagonal r=g=b sampling) for each LUT.
+  Returns true and sets selected_path if user makes a selection.
+
+  Parameters:
+  popup_id       - Unique ID for the popup window
+  selected_path  - [out] Path of selected LUT file (if function returns true)
+  current_path   - Currently selected LUT path (for highlighting)
+  lut_directory  - Directory to scan for .cube files
+
+  Where to call it:
+  After calling ImGui::OpenPopup() with matching popup_id.
+  ==================================================================================*/
+  bool lut_picker_popup(const char* popup_id, std::string& selected_path,
+    const std::string& current_path = "",
+    const std::string& lut_directory = "Assets/lut");
+
 } // namespace ResourcePicker
