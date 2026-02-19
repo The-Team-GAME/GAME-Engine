@@ -37,12 +37,12 @@ inline void PostProcessingPanel()
   // ==================== Gamma ====================
   if (ImGui::CollapsingHeader("Gamma", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    ImGui::SliderFloat("##GammaSlider", &pp.gamma, 0.5f, 5.0f, "Gamma: %.2f");
+    ImGui::SliderFloat("##GammaSlider", &pp.gamma, 0.2f, 10.0f, "Gamma: %.2f");
     if (ImGui::IsItemHovered())
-      ImGui::SetTooltip("Default: 2.2 (sRGB standard)\nHigher = brighter midtones, Lower = darker\npow(color, 1/gamma): gamma>1 lifts midtones, gamma<1 crushes them");
+      ImGui::SetTooltip("Default: 1.0 (no correction)\nHigher = brighter midtones, Lower = darker\npow(color, 1/gamma): gamma>1 lifts midtones, gamma<1 crushes them");
 
     ImGui::SameLine();
-    if (ImGui::SmallButton("Reset##Gamma")) { pp.gamma = 2.2f; }
+    if (ImGui::SmallButton("Reset##Gamma")) { pp.gamma = 1.0f; }
   }
 
   ImGui::Separator();
@@ -120,7 +120,7 @@ inline void PostProcessingPanel()
   {
     if (ImGui::Button("Default", ImVec2(100, 0)))
     {
-      pp.gamma = 2.2f;
+      pp.gamma = 1.0f;
       pp.bloom_enabled = false;
       pp.bloom_threshold = 0.8f;
       pp.bloom_intensity = 1.0f;

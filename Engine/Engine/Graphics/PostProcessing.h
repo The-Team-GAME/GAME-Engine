@@ -27,7 +27,7 @@ namespace Engine::Graphics::PostProcessing {
     std::vector<std::string> affected_layers;
 
     // Gamma correction
-    float gamma = 2.2f;
+    float gamma = 1.0f;
 
     // Kawase Bloom
     bool bloom_enabled = false;
