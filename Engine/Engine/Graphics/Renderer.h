@@ -271,6 +271,9 @@ namespace Engine {
     // Load a .cube LUT file for color grading.
     ENGINE_API bool load_lut(const std::string& cube_path);
 
+    // Load a dirt/lens texture for bloom overlay.
+    ENGINE_API void load_bloom_dirt(const std::string& filepath);
+
     // Resize post-processing FBOs.
     ENGINE_API void resize_post_processing(int w, int h);
 

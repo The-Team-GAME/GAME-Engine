@@ -13,8 +13,14 @@
 #include "Shader.h"
 #include "CubeLUT.h"
 #include "../Logger.h"
+#include "../Time.h"
+#include "../FileIO/Helpers.h"
 
 #include <algorithm>
+#include <rapidjson/document.h>
+#include <rapidjson/writer.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/prettywriter.h>
 
 namespace Engine::Graphics::PostProcessing {
 
@@ -55,6 +61,14 @@ namespace Engine::Graphics::PostProcessing {
     std::shared_ptr<Shader> downsample_shader;
     std::shared_ptr<Shader> upsample_shader;
     std::shared_ptr<Shader> composite_shader;
+    std::shared_ptr<Shader> sharpen_shader;
+
+    // Sharpen pass FBO (ping-pong)
+    GLuint sharpen_fbo = 0;
+    GLuint sharpen_texture = 0;
+
+    // Bloom dirt texture
+    GLuint bloom_dirt_texture = 0;
 
     // Dimensions
     int fb_width = 1600;
@@ -261,8 +275,17 @@ namespace Engine::Graphics::PostProcessing {
       return false;
     }
 
+    sharpen_shader = Shader::load_from_file("Assets/shaders/postprocess.vert", "Assets/shaders/sharpen.frag");
+    if (!sharpen_shader || !sharpen_shader->is_valid()) {
+      Log::error("PostProcessing: Failed to load sharpen shader");
+      return false;
+    }
+
     // Create scene FBO
     create_fbo(scene_fbo, scene_color_texture, fb_width, fb_height);
+
+    // Create sharpen FBO (same size as scene)
+    create_fbo(sharpen_fbo, sharpen_texture, fb_width, fb_height);
 
     // Create bloom mip chain
     create_bloom_mips();
@@ -296,10 +319,18 @@ namespace Engine::Graphics::PostProcessing {
     if (quad_vao) { glDeleteVertexArrays(1, &quad_vao); quad_vao = 0; }
     if (quad_vbo) { glDeleteBuffers(1, &quad_vbo); quad_vbo = 0; }
 
+    // Sharpen FBO
+    if (sharpen_fbo) { glDeleteFramebuffers(1, &sharpen_fbo); sharpen_fbo = 0; }
+    if (sharpen_texture) { glDeleteTextures(1, &sharpen_texture); sharpen_texture = 0; }
+
+    // Bloom dirt texture
+    if (bloom_dirt_texture) { glDeleteTextures(1, &bloom_dirt_texture); bloom_dirt_texture = 0; }
+
     // Shaders
     downsample_shader.reset();
     upsample_shader.reset();
     composite_shader.reset();
+    sharpen_shader.reset();
 
     Log::info("PostProcessing: Cleaned up");
   }
@@ -414,8 +445,16 @@ namespace Engine::Graphics::PostProcessing {
     }
 
     // ===== FINAL COMPOSITE PASS =====
-    glBindFramebuffer(GL_FRAMEBUFFER, final_target);
-    glViewport(previous_viewport[0], previous_viewport[1], previous_viewport[2], previous_viewport[3]);
+    // If sharpen is enabled, render composite to sharpen FBO first, then sharpen to final target
+    GLuint composite_target = final_target;
+    if (current_settings.sharpen_enabled && sharpen_fbo) {
+      composite_target = sharpen_fbo;
+      glBindFramebuffer(GL_FRAMEBUFFER, sharpen_fbo);
+      glViewport(0, 0, fb_width, fb_height);
+    } else {
+      glBindFramebuffer(GL_FRAMEBUFFER, final_target);
+      glViewport(previous_viewport[0], previous_viewport[1], previous_viewport[2], previous_viewport[3]);
+    }
 
     composite_shader->use();
 
@@ -438,6 +477,15 @@ namespace Engine::Graphics::PostProcessing {
     glBindTexture(GL_TEXTURE_3D, lut_texture);
     composite_shader->set_int("u_lut", 2);
 
+    // Bloom dirt texture (unit 3)
+    glActiveTexture(GL_TEXTURE3);
+    if (current_settings.bloom_dirt_enabled && bloom_dirt_texture) {
+      glBindTexture(GL_TEXTURE_2D, bloom_dirt_texture);
+    } else {
+      glBindTexture(GL_TEXTURE_2D, 0);
+    }
+    composite_shader->set_int("u_bloom_dirt", 3);
+
     // Uniforms
     composite_shader->set_float("u_gamma", current_settings.gamma);
     composite_shader->set_bool("u_bloom_enabled", current_settings.bloom_enabled);
@@ -446,18 +494,31 @@ namespace Engine::Graphics::PostProcessing {
     composite_shader->set_float("u_lut_intensity", current_settings.lut_intensity);
     composite_shader->set_float("u_lut_size", lut_size);
 
+    // Bloom enhancements
+    composite_shader->set_vec3("u_bloom_tint", current_settings.bloom_tint);
+    composite_shader->set_bool("u_bloom_dirt_enabled", current_settings.bloom_dirt_enabled && bloom_dirt_texture != 0);
+    composite_shader->set_float("u_bloom_anamorphic", current_settings.bloom_anamorphic);
+
     // Chromatic Aberration
     composite_shader->set_bool("u_chromatic_aberration_enabled", current_settings.chromatic_aberration_enabled);
     composite_shader->set_float("u_chromatic_aberration_intensity", current_settings.chromatic_aberration_intensity);
+    composite_shader->set_int("u_chromatic_aberration_samples", current_settings.chromatic_aberration_samples);
+    composite_shader->set_bool("u_chromatic_aberration_edge_only", current_settings.chromatic_aberration_edge_only);
 
     // Vignette
     composite_shader->set_bool("u_vignette_enabled", current_settings.vignette_enabled);
     composite_shader->set_float("u_vignette_intensity", current_settings.vignette_intensity);
     composite_shader->set_float("u_vignette_radius", current_settings.vignette_radius);
+    composite_shader->set_vec3("u_vignette_color", current_settings.vignette_color);
+    composite_shader->set_float("u_vignette_roundness", current_settings.vignette_roundness);
+    composite_shader->set_float("u_vignette_smoothness", current_settings.vignette_smoothness);
 
     // Color Quantization
     composite_shader->set_bool("u_quantize_enabled", current_settings.quantize_enabled);
     composite_shader->set_float("u_quantize_levels", static_cast<float>(current_settings.quantize_levels));
+    composite_shader->set_bool("u_quantize_dither_enabled", current_settings.quantize_dither_enabled);
+    composite_shader->set_vec3("u_quantize_levels_rgb", glm::vec3(current_settings.quantize_levels_rgb));
+    composite_shader->set_int("u_quantize_palette", current_settings.quantize_palette);
 
     // CRT Emulation
     composite_shader->set_bool("u_crt_enabled", current_settings.crt_enabled);
@@ -465,8 +526,41 @@ namespace Engine::Graphics::PostProcessing {
     composite_shader->set_float("u_crt_curvature", current_settings.crt_curvature);
     composite_shader->set_float("u_crt_scanline_count", current_settings.crt_scanline_count);
     composite_shader->set_vec2("u_resolution", glm::vec2(static_cast<float>(fb_width), static_cast<float>(fb_height)));
+    composite_shader->set_bool("u_crt_subpixel_enabled", current_settings.crt_subpixel_enabled);
+    composite_shader->set_bool("u_crt_glow_enabled", current_settings.crt_glow_enabled);
+    composite_shader->set_float("u_crt_glow_intensity", current_settings.crt_glow_intensity);
+    composite_shader->set_float("u_crt_corner_radius", current_settings.crt_corner_radius);
+    composite_shader->set_float("u_crt_flicker_intensity", current_settings.crt_flicker_intensity);
+
+    // Time (for animated effects)
+    composite_shader->set_float("u_time", Engine::Time::get_time());
+
+    // Film Grain
+    composite_shader->set_bool("u_film_grain_enabled", current_settings.film_grain_enabled);
+    composite_shader->set_float("u_film_grain_intensity", current_settings.film_grain_intensity);
+    composite_shader->set_float("u_film_grain_size", current_settings.film_grain_size);
+
+    // Tone Mapping
+    composite_shader->set_bool("u_tonemapping_enabled", current_settings.tonemapping_enabled);
+    composite_shader->set_int("u_tonemapping_mode", current_settings.tonemapping_mode);
+    composite_shader->set_float("u_tonemapping_exposure", current_settings.tonemapping_exposure);
 
     render_quad();
+
+    // ===== SHARPEN PASS =====
+    if (current_settings.sharpen_enabled && sharpen_fbo) {
+      glBindFramebuffer(GL_FRAMEBUFFER, final_target);
+      glViewport(previous_viewport[0], previous_viewport[1], previous_viewport[2], previous_viewport[3]);
+
+      sharpen_shader->use();
+
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, sharpen_texture);
+      sharpen_shader->set_int("u_scene", 0);
+      sharpen_shader->set_float("u_sharpen_intensity", current_settings.sharpen_intensity);
+
+      render_quad();
+    }
 
     // Reset to texture unit 0
     glActiveTexture(GL_TEXTURE0);
@@ -494,6 +588,32 @@ namespace Engine::Graphics::PostProcessing {
     return true;
   }
 
+  void load_bloom_dirt_texture(const std::string& filepath) {
+    if (bloom_dirt_texture) {
+      glDeleteTextures(1, &bloom_dirt_texture);
+      bloom_dirt_texture = 0;
+    }
+
+    int w, h, channels;
+    unsigned char* data = stbi_load(filepath.c_str(), &w, &h, &channels, 3);
+    if (!data) {
+      Log::error("PostProcessing: Failed to load bloom dirt texture: {}", filepath);
+      return;
+    }
+
+    glGenTextures(1, &bloom_dirt_texture);
+    glBindTexture(GL_TEXTURE_2D, bloom_dirt_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    stbi_image_free(data);
+    Log::info("PostProcessing: Loaded bloom dirt texture from {} ({}x{})", filepath, w, h);
+  }
+
   bool is_layer_affected(const std::string& layer_name) {
     // Empty list = all layers affected
     if (current_settings.affected_layers.empty()) return true;
@@ -515,6 +635,12 @@ namespace Engine::Graphics::PostProcessing {
     glBindTexture(GL_TEXTURE_2D, scene_color_texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, fb_width, fb_height, 0, GL_RGB, GL_FLOAT, nullptr);
 
+    // Resize sharpen FBO
+    if (sharpen_texture) {
+      glBindTexture(GL_TEXTURE_2D, sharpen_texture);
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, fb_width, fb_height, 0, GL_RGB, GL_FLOAT, nullptr);
+    }
+
     // Recreate bloom mips
     destroy_bloom_mips();
     create_bloom_mips();
@@ -530,5 +656,190 @@ namespace Engine::Graphics::PostProcessing {
 
   int get_width() { return fb_width; }
   int get_height() { return fb_height; }
+
+  // ===== Serialization =====
+
+  std::string serialize_settings_to_json(const Settings& s) {
+    rapidjson::Document doc;
+    doc.SetObject();
+    auto& a = doc.GetAllocator();
+
+    doc.AddMember("enabled", s.enabled, a);
+    doc.AddMember("gamma", s.gamma, a);
+
+    // Bloom
+    doc.AddMember("bloom_enabled", s.bloom_enabled, a);
+    doc.AddMember("bloom_threshold", s.bloom_threshold, a);
+    doc.AddMember("bloom_intensity", s.bloom_intensity, a);
+    doc.AddMember("bloom_iterations", s.bloom_iterations, a);
+    {
+      rapidjson::Value arr(rapidjson::kArrayType);
+      arr.PushBack(s.bloom_tint.x, a).PushBack(s.bloom_tint.y, a).PushBack(s.bloom_tint.z, a);
+      doc.AddMember("bloom_tint", arr, a);
+    }
+    doc.AddMember("bloom_dirt_enabled", s.bloom_dirt_enabled, a);
+    doc.AddMember("bloom_anamorphic", s.bloom_anamorphic, a);
+
+    // LUT
+    doc.AddMember("lut_enabled", s.lut_enabled, a);
+    doc.AddMember("lut_intensity", s.lut_intensity, a);
+
+    // Vignette
+    doc.AddMember("vignette_enabled", s.vignette_enabled, a);
+    doc.AddMember("vignette_intensity", s.vignette_intensity, a);
+    doc.AddMember("vignette_radius", s.vignette_radius, a);
+    {
+      rapidjson::Value arr(rapidjson::kArrayType);
+      arr.PushBack(s.vignette_color.x, a).PushBack(s.vignette_color.y, a).PushBack(s.vignette_color.z, a);
+      doc.AddMember("vignette_color", arr, a);
+    }
+    doc.AddMember("vignette_roundness", s.vignette_roundness, a);
+    doc.AddMember("vignette_smoothness", s.vignette_smoothness, a);
+
+    // Chromatic Aberration
+    doc.AddMember("chromatic_aberration_enabled", s.chromatic_aberration_enabled, a);
+    doc.AddMember("chromatic_aberration_intensity", s.chromatic_aberration_intensity, a);
+    doc.AddMember("chromatic_aberration_samples", s.chromatic_aberration_samples, a);
+    doc.AddMember("chromatic_aberration_edge_only", s.chromatic_aberration_edge_only, a);
+
+    // CRT
+    doc.AddMember("crt_enabled", s.crt_enabled, a);
+    doc.AddMember("crt_scanline_intensity", s.crt_scanline_intensity, a);
+    doc.AddMember("crt_curvature", s.crt_curvature, a);
+    doc.AddMember("crt_scanline_count", s.crt_scanline_count, a);
+    doc.AddMember("crt_subpixel_enabled", s.crt_subpixel_enabled, a);
+    doc.AddMember("crt_glow_enabled", s.crt_glow_enabled, a);
+    doc.AddMember("crt_glow_intensity", s.crt_glow_intensity, a);
+    doc.AddMember("crt_corner_radius", s.crt_corner_radius, a);
+    doc.AddMember("crt_flicker_intensity", s.crt_flicker_intensity, a);
+
+    // Quantization
+    doc.AddMember("quantize_enabled", s.quantize_enabled, a);
+    doc.AddMember("quantize_levels", s.quantize_levels, a);
+    doc.AddMember("quantize_dither_enabled", s.quantize_dither_enabled, a);
+    {
+      rapidjson::Value arr(rapidjson::kArrayType);
+      arr.PushBack(s.quantize_levels_rgb.x, a).PushBack(s.quantize_levels_rgb.y, a).PushBack(s.quantize_levels_rgb.z, a);
+      doc.AddMember("quantize_levels_rgb", arr, a);
+    }
+    doc.AddMember("quantize_palette", s.quantize_palette, a);
+
+    // Film Grain
+    doc.AddMember("film_grain_enabled", s.film_grain_enabled, a);
+    doc.AddMember("film_grain_intensity", s.film_grain_intensity, a);
+    doc.AddMember("film_grain_size", s.film_grain_size, a);
+
+    // Tone Mapping
+    doc.AddMember("tonemapping_enabled", s.tonemapping_enabled, a);
+    doc.AddMember("tonemapping_mode", s.tonemapping_mode, a);
+    doc.AddMember("tonemapping_exposure", s.tonemapping_exposure, a);
+
+    // Sharpen
+    doc.AddMember("sharpen_enabled", s.sharpen_enabled, a);
+    doc.AddMember("sharpen_intensity", s.sharpen_intensity, a);
+
+    // MSAA
+    doc.AddMember("msaa_enabled", s.msaa_enabled, a);
+    doc.AddMember("msaa_samples", s.msaa_samples, a);
+
+    rapidjson::StringBuffer buffer;
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+    doc.Accept(writer);
+    return buffer.GetString();
+  }
+
+  Settings deserialize_settings_from_json(const std::string& json_str) {
+    Settings s;
+    rapidjson::Document doc;
+    doc.Parse(json_str.c_str());
+    if (doc.HasParseError() || !doc.IsObject()) {
+      Log::error("PostProcessing: Failed to parse settings JSON");
+      return s;
+    }
+
+    auto get_bool = [&](const char* key, bool& out) {
+      if (doc.HasMember(key) && doc[key].IsBool()) out = doc[key].GetBool();
+    };
+    auto get_float = [&](const char* key, float& out) {
+      if (doc.HasMember(key) && doc[key].IsNumber()) out = doc[key].GetFloat();
+    };
+    auto get_int = [&](const char* key, int& out) {
+      if (doc.HasMember(key) && doc[key].IsInt()) out = doc[key].GetInt();
+    };
+    auto get_vec3 = [&](const char* key, glm::vec3& out) {
+      if (doc.HasMember(key) && doc[key].IsArray() && doc[key].Size() >= 3) {
+        auto arr = doc[key].GetArray();
+        out.x = arr[0].GetFloat();
+        out.y = arr[1].GetFloat();
+        out.z = arr[2].GetFloat();
+      }
+    };
+    auto get_ivec3 = [&](const char* key, glm::ivec3& out) {
+      if (doc.HasMember(key) && doc[key].IsArray() && doc[key].Size() >= 3) {
+        auto arr = doc[key].GetArray();
+        out.x = arr[0].GetInt();
+        out.y = arr[1].GetInt();
+        out.z = arr[2].GetInt();
+      }
+    };
+
+    get_bool("enabled", s.enabled);
+    get_float("gamma", s.gamma);
+
+    get_bool("bloom_enabled", s.bloom_enabled);
+    get_float("bloom_threshold", s.bloom_threshold);
+    get_float("bloom_intensity", s.bloom_intensity);
+    get_int("bloom_iterations", s.bloom_iterations);
+    get_vec3("bloom_tint", s.bloom_tint);
+    get_bool("bloom_dirt_enabled", s.bloom_dirt_enabled);
+    get_float("bloom_anamorphic", s.bloom_anamorphic);
+
+    get_bool("lut_enabled", s.lut_enabled);
+    get_float("lut_intensity", s.lut_intensity);
+
+    get_bool("vignette_enabled", s.vignette_enabled);
+    get_float("vignette_intensity", s.vignette_intensity);
+    get_float("vignette_radius", s.vignette_radius);
+    get_vec3("vignette_color", s.vignette_color);
+    get_float("vignette_roundness", s.vignette_roundness);
+    get_float("vignette_smoothness", s.vignette_smoothness);
+
+    get_bool("chromatic_aberration_enabled", s.chromatic_aberration_enabled);
+    get_float("chromatic_aberration_intensity", s.chromatic_aberration_intensity);
+    get_int("chromatic_aberration_samples", s.chromatic_aberration_samples);
+    get_bool("chromatic_aberration_edge_only", s.chromatic_aberration_edge_only);
+
+    get_bool("crt_enabled", s.crt_enabled);
+    get_float("crt_scanline_intensity", s.crt_scanline_intensity);
+    get_float("crt_curvature", s.crt_curvature);
+    get_float("crt_scanline_count", s.crt_scanline_count);
+    get_bool("crt_subpixel_enabled", s.crt_subpixel_enabled);
+    get_bool("crt_glow_enabled", s.crt_glow_enabled);
+    get_float("crt_glow_intensity", s.crt_glow_intensity);
+    get_float("crt_corner_radius", s.crt_corner_radius);
+    get_float("crt_flicker_intensity", s.crt_flicker_intensity);
+
+    get_bool("quantize_enabled", s.quantize_enabled);
+    get_int("quantize_levels", s.quantize_levels);
+    get_bool("quantize_dither_enabled", s.quantize_dither_enabled);
+    get_ivec3("quantize_levels_rgb", s.quantize_levels_rgb);
+    get_int("quantize_palette", s.quantize_palette);
+
+    get_bool("film_grain_enabled", s.film_grain_enabled);
+    get_float("film_grain_intensity", s.film_grain_intensity);
+    get_float("film_grain_size", s.film_grain_size);
+
+    get_bool("tonemapping_enabled", s.tonemapping_enabled);
+    get_int("tonemapping_mode", s.tonemapping_mode);
+    get_float("tonemapping_exposure", s.tonemapping_exposure);
+
+    get_bool("sharpen_enabled", s.sharpen_enabled);
+    get_float("sharpen_intensity", s.sharpen_intensity);
+
+    get_bool("msaa_enabled", s.msaa_enabled);
+    get_int("msaa_samples", s.msaa_samples);
+
+    return s;
+  }
 
 } // namespace Engine::Graphics::PostProcessing

@@ -2014,6 +2014,10 @@ namespace Engine {
       return PostProcessing::load_lut_from_cube(cube_path);
     }
 
+    void load_bloom_dirt(const std::string& filepath) {
+      PostProcessing::load_bloom_dirt_texture(filepath);
+    }
+
     void resize_post_processing(int w, int h) {
       PostProcessing::resize(w, h);
     }

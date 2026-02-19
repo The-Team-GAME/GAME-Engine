@@ -126,5 +126,9 @@ namespace Engine {
 
 
     ENGINE_API ResourceStats get_resource_stats();
+
+    // Post-processing preset save/load
+    ENGINE_API Engine::Graphics::PostProcessing::Settings load_postprocessing_settings(const std::string& filepath, bool append_resource_path = true);
+    ENGINE_API bool save_postprocessing_settings(const std::string& filepath, const Engine::Graphics::PostProcessing::Settings& settings, bool append_resource_path = true);
   }
 }
