@@ -44,14 +44,14 @@ namespace Engine {
     void send_event(Args&&... args)
     {
       T event(std::forward<Args>(args)...);
-      Internal::event_queue.emplace_back(std::move(event));
+      Internal::get_event_queue().emplace_back(std::move(event));
     }
 
     template <typename T>
     void add_event_listener(std::function<void(const T&)> handler)
     {
       EventTypeID eventType = EventTypeManager::get_type_id<T>();
-      Internal::event_handlers[eventType].emplace_back([handler](const Event& event) {
+      Internal::get_event_handlers()[eventType].emplace_back([handler](const Event& event) {
         if (const T* eventData = event.get<T>()) {
           handler(*eventData);
         }
@@ -62,7 +62,7 @@ namespace Engine {
     void add_event_listener(std::function<void(const Event&)> handler)
     {
       EventTypeID eventType = EventTypeManager::get_type_id<T>();
-      Internal::event_handlers[eventType].emplace_back(handler);
+      Internal::get_event_handlers()[eventType].emplace_back(handler);
     }
 
     template <typename T>

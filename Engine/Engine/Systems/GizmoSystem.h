@@ -44,6 +44,32 @@ namespace Engine
       }
 
       void update() override {
+        // Ctrl+Shift+A: deselect all entities
+        if (Engine::Input::is_pressed(KeyCode::A) &&
+          (Engine::Input::is_held(KeyCode::CtrlLeft) || Engine::Input::is_held(KeyCode::CtrlRight)) &&
+          (Engine::Input::is_held(KeyCode::ShiftLeft) || Engine::Input::is_held(KeyCode::ShiftRight))) {
+          Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
+          return;
+        }
+
+        // If a currently selected entity (with Gizmo) is under the mouse, don't change selection
+        {
+          bool selected_under_mouse = false;
+          Engine::ECS::for_each_entity_with<Components::Gizmo>([&](Engine::ECS::Entity gizmo_entity) {
+            auto* tr = gizmo_entity.get_component<Components::Transform2D>();
+            if (!tr) return;
+            const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+            if (!mouse_opt.has_value()) return;
+            const auto mouse = mouse_opt.value();
+            const float hw = tr->scale.x * 0.5f, hh = tr->scale.y * 0.5f;
+            if (mouse.x >= tr->position.x - hw && mouse.x <= tr->position.x + hw &&
+              mouse.y >= tr->position.y - hh && mouse.y <= tr->position.y + hh) {
+              selected_under_mouse = true;
+            }
+            });
+          if (selected_under_mouse) return;
+        }
+
         Engine::ECS::EntityID best_entity = Engine::ECS::INVALID_ENTITY;
 
         auto& containers = Engine::ECS::Internal::get_containers();
@@ -64,12 +90,17 @@ namespace Engine
           }
         }
 
-        if (best_entity != Engine::ECS::INVALID_ENTITY && Engine::Input::is_pressed(KeyCode::MouseLeft) && !TilemapPanel::is_tilemap_mode_enabled()) {
-          Engine::ECS::Entity entity(best_entity);
-          // Only select if not already selected (has Gizmo)
-          // If it has Gizmo, it means we clicked on the selected entity, so we do nothing (and don't select entities behind it)
-          if (!entity.has_component<Components::Gizmo>()) {
-            Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(best_entity, true);
+        if (Engine::Input::is_pressed(KeyCode::MouseLeft) && !TilemapPanel::is_tilemap_mode_enabled()) {
+          if (best_entity != Engine::ECS::INVALID_ENTITY) {
+            Engine::ECS::Entity entity(best_entity);
+            // Only select if not already selected (has Gizmo)
+            if (!entity.has_component<Components::Gizmo>()) {
+              Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(best_entity, true);
+            }
+          }
+          else if (!ImGui::GetIO().WantCaptureMouse) {
+            // Clicked on empty space - deselect all
+            Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
           }
         }
       }
@@ -106,6 +137,24 @@ namespace Engine
       }
 
       void update() override {
+        // If a currently selected entity (with Gizmo) is under the mouse, don't change selection
+        {
+          bool selected_under_mouse = false;
+          Engine::ECS::for_each_entity_with<Components::Gizmo>([&](Engine::ECS::Entity gizmo_entity) {
+            auto* tr = gizmo_entity.get_component<Components::Transform2D>();
+            if (!tr) return;
+            const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+            if (!mouse_opt.has_value()) return;
+            const auto mouse = mouse_opt.value();
+            const float hw = tr->scale.x * 0.5f, hh = tr->scale.y * 0.5f;
+            if (mouse.x >= tr->position.x - hw && mouse.x <= tr->position.x + hw &&
+              mouse.y >= tr->position.y - hh && mouse.y <= tr->position.y + hh) {
+              selected_under_mouse = true;
+            }
+            });
+          if (selected_under_mouse) return;
+        }
+
         Engine::ECS::EntityID best_entity = Engine::ECS::INVALID_ENTITY;
 
         auto& containers = Engine::ECS::Internal::get_containers();
@@ -126,10 +175,16 @@ namespace Engine
           }
         }
 
-        if (best_entity != Engine::ECS::INVALID_ENTITY && Engine::Input::is_pressed(KeyCode::MouseLeft) && !TilemapPanel::is_tilemap_mode_enabled()) {
-          Engine::ECS::Entity entity(best_entity);
-          if (!entity.has_component<Components::Gizmo>()) {
-            Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(best_entity, true);
+        if (Engine::Input::is_pressed(KeyCode::MouseLeft) && !TilemapPanel::is_tilemap_mode_enabled()) {
+          if (best_entity != Engine::ECS::INVALID_ENTITY) {
+            Engine::ECS::Entity entity(best_entity);
+            if (!entity.has_component<Components::Gizmo>()) {
+              Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(best_entity, true);
+            }
+          }
+          else if (!ImGui::GetIO().WantCaptureMouse) {
+            // Clicked on empty space - deselect all
+            Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
           }
         }
       }

@@ -18,6 +18,7 @@
 #include <string>
 #include <filesystem>
 #include <algorithm>
+#include "EngineExport.h"
 
 namespace Engine {
 
@@ -66,7 +67,7 @@ namespace Engine {
     Example:
     Path("C:\\Users\\file.txt").normalize() -> Path with "C:/Users/file.txt"
     ==================================================================================*/
-    Path normalize() const;
+    ENGINE_API Path normalize() const;
 
     /*=================================================================================
     Function Brief:
@@ -76,7 +77,7 @@ namespace Engine {
     Example:
     Path("Assets/image.png").to_absolute() -> Path with absolute path
     ==================================================================================*/
-    Path to_absolute() const;
+    ENGINE_API Path to_absolute() const;
 
     /*=================================================================================
     Function Brief:
@@ -90,8 +91,8 @@ namespace Engine {
     Path("C:/Projects/Game/Assets/image.png").to_relative("C:/Projects/Game/Assets/")
     -> Path with "image.png"
     ==================================================================================*/
-    Path to_relative(const std::string& base_path) const;
-    Path to_relative(const Path& base_path) const;
+    ENGINE_API Path to_relative(const std::string& base_path) const;
+    ENGINE_API Path to_relative(const Path& base_path) const;
 
     /*=================================================================================
     Function Brief:
@@ -101,7 +102,7 @@ namespace Engine {
     Example:
     Path("Assets").ensure_trailing_separator() -> Path with "Assets/"
     ==================================================================================*/
-    Path ensure_trailing_separator() const;
+    ENGINE_API Path ensure_trailing_separator() const;
 
     /*=================================================================================
     Function Brief:
@@ -111,7 +112,7 @@ namespace Engine {
     Example:
     Path("Assets/").remove_trailing_separator() -> Path with "Assets"
     ==================================================================================*/
-    Path remove_trailing_separator() const;
+    ENGINE_API Path remove_trailing_separator() const;
 
     /*=================================================================================
     Function Brief:
@@ -131,7 +132,7 @@ namespace Engine {
     Example:
     Path("Assets/images/player.png").get_filename() -> "player.png"
     ==================================================================================*/
-    std::string get_filename() const;
+    ENGINE_API std::string get_filename() const;
 
     /*=================================================================================
     Function Brief:
@@ -140,7 +141,7 @@ namespace Engine {
     Example:
     Path("Assets/images/player.png").get_directory() -> Path with "Assets/images"
     ==================================================================================*/
-    Path get_directory() const;
+    ENGINE_API Path get_directory() const;
 
     /*=================================================================================
     Function Brief:
@@ -149,7 +150,7 @@ namespace Engine {
     Example:
     Path("player.png").get_extension() -> ".png"
     ==================================================================================*/
-    std::string get_extension() const;
+    ENGINE_API std::string get_extension() const;
 
     /*=================================================================================
     Function Brief:
@@ -163,7 +164,7 @@ namespace Engine {
     Path("player.png").replace_extension(".jpg") -> Path with "player.jpg"
     Path("shader.vert").replace_extension("frag") -> Path with "shader.frag"
     ==================================================================================*/
-    Path replace_extension(const std::string& new_extension) const;
+    ENGINE_API Path replace_extension(const std::string& new_extension) const;
 
     /*=================================================================================
     Function Brief:
@@ -173,41 +174,41 @@ namespace Engine {
     Path("C:/Users/file.txt").is_absolute() -> true (Windows)
     Path("Assets/file.txt").is_absolute() -> false
     ==================================================================================*/
-    bool is_absolute() const;
+    ENGINE_API bool is_absolute() const;
 
     /*=================================================================================
     Function Brief:
     Checks if a file or directory exists at this path.
     ==================================================================================*/
-    bool exists() const;
+    ENGINE_API bool exists() const;
 
     /*=================================================================================
     Function Brief:
     Returns the underlying string representation of the path.
     ==================================================================================*/
-    std::string to_string() const;
-    const std::string& string() const;
+    ENGINE_API std::string to_string() const;
+    ENGINE_API const std::string& string() const;
 
     /*=================================================================================
     Function Brief:
     Implicit conversion to std::string for convenience.
     ==================================================================================*/
-    operator std::string() const;
+    ENGINE_API operator std::string() const;
 
     /*=================================================================================
     Function Brief:
     Comparison operators
     ==================================================================================*/
-    bool operator==(const Path& other) const;
-    bool operator!=(const Path& other) const;
-    bool operator==(const std::string& other) const;
-    bool operator!=(const std::string& other) const;
+    ENGINE_API bool operator==(const Path& other) const;
+    ENGINE_API bool operator!=(const Path& other) const;
+    ENGINE_API bool operator==(const std::string& other) const;
+    ENGINE_API bool operator!=(const std::string& other) const;
 
   private:
     // Helper function for recursive join
     template<typename... Args>
     std::string join_impl(const std::string& result, const std::string& next, Args... rest) const;
-    std::string join_impl(const std::string& result) const;
+    ENGINE_API std::string join_impl(const std::string& result) const;
   };
 
   // Template implementations

@@ -15,6 +15,7 @@
 #pragma once
 
 #include "../TypeDef.h"
+#include "../EngineExport.h"
 #include <iostream>
 #include <glm/glm.hpp>
 #include "../Reflection/ReflectionLibrary.h"
@@ -22,7 +23,7 @@
 namespace Math {
 
 
-  class Vec2D {
+  class ENGINE_API Vec2D {
   public:
 
     f32 x, y;
@@ -72,18 +73,18 @@ namespace Math {
   /* ===================== //
   // Non-member functions  //
   // ===================== */
-  Vec2D normalise_vector(Vec2D const& vect);
-  Vec2D scale_vector(Vec2D const& vect, f32 scale);
-  Vec2D rotate(Vec2D const& vect, f32 degree);
-  f32 dot_product(Vec2D const& lhs, Vec2D const& rhs);
+  ENGINE_API Vec2D normalise_vector(Vec2D const& vect);
+  ENGINE_API Vec2D scale_vector(Vec2D const& vect, f32 scale);
+  ENGINE_API Vec2D rotate(Vec2D const& vect, f32 degree);
+  ENGINE_API f32 dot_product(Vec2D const& lhs, Vec2D const& rhs);
   // This one not really cross product, more like finding area of //gram formed
-  f32 cross_product(Vec2D const& lhs, Vec2D const& rhs);
-  Vec2D outward_normal(Vec2D const& vect);
+  ENGINE_API f32 cross_product(Vec2D const& lhs, Vec2D const& rhs);
+  ENGINE_API Vec2D outward_normal(Vec2D const& vect);
 
   //This function always returns an angle between 0° and 90°, regardless of which quadrant 
   //the original vector points to.It essentially calculates the acute angle the slope 
   // makes with the horizontal axis.
-  f32 angle_of_slope(Vec2D const& line);
+  ENGINE_API f32 angle_of_slope(Vec2D const& line);
 
 
 
@@ -91,12 +92,12 @@ namespace Math {
   // Non-member operator overloads //
   // ============================= */
   // Takes in 2 vectors to compute and returns the result
-  Vec2D operator+(Vec2D const& vect1, Vec2D const& vect2);
-  Vec2D operator-(Vec2D const& vect1, Vec2D const& vect2);
-  Vec2D operator/(Vec2D const& vect, f32 divisor);
-  Vec2D operator*(Vec2D const& vect, f32 scalar);
+  ENGINE_API Vec2D operator+(Vec2D const& vect1, Vec2D const& vect2);
+  ENGINE_API Vec2D operator-(Vec2D const& vect1, Vec2D const& vect2);
+  ENGINE_API Vec2D operator/(Vec2D const& vect, f32 divisor);
+  ENGINE_API Vec2D operator*(Vec2D const& vect, f32 scalar);
   // Overload of the << operator to display the vector in the output stream
-  std::ostream& operator<<(std::ostream& os, Vec2D const& vect);
+  ENGINE_API std::ostream& operator<<(std::ostream& os, Vec2D const& vect);
 }
 
 REFLECT_FIELDS(Math::Vec2D, x, y)

@@ -183,52 +183,53 @@ namespace Engine {
     inline void register_all_easing_functions() {
       // Full signature versions (t, b, c, d) -> result
       using EasingFunc = f32(f32, f32, f32, f32);
+      auto& reg = FunctionRegistry::instance();
 
       // Linear
-      FunctionRegistry<EasingFunc>::register_function("EaseLinearNone", EaseLinearNone);
-      FunctionRegistry<EasingFunc>::register_function("EaseLinearIn", EaseLinearIn);
-      FunctionRegistry<EasingFunc>::register_function("EaseLinearOut", EaseLinearOut);
-      FunctionRegistry<EasingFunc>::register_function("EaseLinearInOut", EaseLinearInOut);
+      reg.register_function<EasingFunc>("EaseLinearNone", EaseLinearNone);
+      reg.register_function<EasingFunc>("EaseLinearIn", EaseLinearIn);
+      reg.register_function<EasingFunc>("EaseLinearOut", EaseLinearOut);
+      reg.register_function<EasingFunc>("EaseLinearInOut", EaseLinearInOut);
 
       // Sine
-      FunctionRegistry<EasingFunc>::register_function("EaseSineIn", EaseSineIn);
-      FunctionRegistry<EasingFunc>::register_function("EaseSineOut", EaseSineOut);
-      FunctionRegistry<EasingFunc>::register_function("EaseSineInOut", EaseSineInOut);
+      reg.register_function<EasingFunc>("EaseSineIn", EaseSineIn);
+      reg.register_function<EasingFunc>("EaseSineOut", EaseSineOut);
+      reg.register_function<EasingFunc>("EaseSineInOut", EaseSineInOut);
 
       // Circular
-      FunctionRegistry<EasingFunc>::register_function("EaseCircIn", EaseCircIn);
-      FunctionRegistry<EasingFunc>::register_function("EaseCircOut", EaseCircOut);
-      FunctionRegistry<EasingFunc>::register_function("EaseCircInOut", EaseCircInOut);
+      reg.register_function<EasingFunc>("EaseCircIn", EaseCircIn);
+      reg.register_function<EasingFunc>("EaseCircOut", EaseCircOut);
+      reg.register_function<EasingFunc>("EaseCircInOut", EaseCircInOut);
 
       // Cubic
-      FunctionRegistry<EasingFunc>::register_function("EaseCubicIn", EaseCubicIn);
-      FunctionRegistry<EasingFunc>::register_function("EaseCubicOut", EaseCubicOut);
-      FunctionRegistry<EasingFunc>::register_function("EaseCubicInOut", EaseCubicInOut);
+      reg.register_function<EasingFunc>("EaseCubicIn", EaseCubicIn);
+      reg.register_function<EasingFunc>("EaseCubicOut", EaseCubicOut);
+      reg.register_function<EasingFunc>("EaseCubicInOut", EaseCubicInOut);
 
       // Quadratic
-      FunctionRegistry<EasingFunc>::register_function("EaseQuadIn", EaseQuadIn);
-      FunctionRegistry<EasingFunc>::register_function("EaseQuadOut", EaseQuadOut);
-      FunctionRegistry<EasingFunc>::register_function("EaseQuadInOut", EaseQuadInOut);
+      reg.register_function<EasingFunc>("EaseQuadIn", EaseQuadIn);
+      reg.register_function<EasingFunc>("EaseQuadOut", EaseQuadOut);
+      reg.register_function<EasingFunc>("EaseQuadInOut", EaseQuadInOut);
 
       // Exponential
-      FunctionRegistry<EasingFunc>::register_function("EaseExpoIn", EaseExpoIn);
-      FunctionRegistry<EasingFunc>::register_function("EaseExpoOut", EaseExpoOut);
-      FunctionRegistry<EasingFunc>::register_function("EaseExpoInOut", EaseExpoInOut);
+      reg.register_function<EasingFunc>("EaseExpoIn", EaseExpoIn);
+      reg.register_function<EasingFunc>("EaseExpoOut", EaseExpoOut);
+      reg.register_function<EasingFunc>("EaseExpoInOut", EaseExpoInOut);
 
       // Back
-      FunctionRegistry<EasingFunc>::register_function("EaseBackIn", EaseBackIn);
-      FunctionRegistry<EasingFunc>::register_function("EaseBackOut", EaseBackOut);
-      FunctionRegistry<EasingFunc>::register_function("EaseBackInOut", EaseBackInOut);
+      reg.register_function<EasingFunc>("EaseBackIn", EaseBackIn);
+      reg.register_function<EasingFunc>("EaseBackOut", EaseBackOut);
+      reg.register_function<EasingFunc>("EaseBackInOut", EaseBackInOut);
 
       // Bounce
-      FunctionRegistry<EasingFunc>::register_function("EaseBounceIn", EaseBounceIn);
-      FunctionRegistry<EasingFunc>::register_function("EaseBounceOut", EaseBounceOut);
-      FunctionRegistry<EasingFunc>::register_function("EaseBounceInOut", EaseBounceInOut);
+      reg.register_function<EasingFunc>("EaseBounceIn", EaseBounceIn);
+      reg.register_function<EasingFunc>("EaseBounceOut", EaseBounceOut);
+      reg.register_function<EasingFunc>("EaseBounceInOut", EaseBounceInOut);
 
       // Elastic
-      FunctionRegistry<EasingFunc>::register_function("EaseElasticIn", EaseElasticIn);
-      FunctionRegistry<EasingFunc>::register_function("EaseElasticOut", EaseElasticOut);
-      FunctionRegistry<EasingFunc>::register_function("EaseElasticInOut", EaseElasticInOut);
+      reg.register_function<EasingFunc>("EaseElasticIn", EaseElasticIn);
+      reg.register_function<EasingFunc>("EaseElasticOut", EaseElasticOut);
+      reg.register_function<EasingFunc>("EaseElasticInOut", EaseElasticInOut);
     }
 
   } // namespace Easing

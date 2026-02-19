@@ -16,7 +16,7 @@
 //-----------------------------------------------------------------------------------
 
 #include "RectPainterState.h"
-#include "../../Engine/MonkeyEngine.h"
+#include "pch.h"
 #include "Precompiled.h"
 #include <algorithm>
 #include <cstdio>

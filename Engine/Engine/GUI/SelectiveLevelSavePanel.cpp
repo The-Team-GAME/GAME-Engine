@@ -116,7 +116,9 @@ void SelectiveLevelSavePanel() {
 
     // Collect all reflectable component types
     std::vector<std::string> component_types;
-    for (auto& [type_id, array] : containers.component_arrays) {
+    for (Engine::ECS::ComponentTypeID type_id = 0; type_id < Engine::ECS::MAX_COMPONENTS; ++type_id) {
+      auto& array = containers.component_arrays[type_id];
+      if (!array) continue;
       std::string component_name = array->get_type_name();
 
       // Skip unknown or non-reflectable components

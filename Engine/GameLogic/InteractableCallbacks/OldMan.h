@@ -1,5 +1,5 @@
 
-#include "../../Engine/MonkeyEngine.h"
+#include "pch.h"
 #include "../../Engine/Systems/GraphicsSystem.h"
 
 namespace OldManCallbacks
@@ -103,6 +103,6 @@ namespace OldManCallbacks
 } // namespace OldManCallbacks
 
 
-REGISTER_FUNCTION(old_man_on_enter, void(Engine::ECS::Entity, Engine::ECS::Entity), OldManCallbacks::old_man_on_enter);
-REGISTER_FUNCTION(old_man_on_update, void(Engine::ECS::Entity, Engine::ECS::Entity), OldManCallbacks::old_man_on_update);
-REGISTER_FUNCTION(old_man_on_exit, void(Engine::ECS::Entity, Engine::ECS::Entity), OldManCallbacks::old_man_on_exit);
+REGISTER_FUNCTION(OldManCallbacks::old_man_on_enter)
+REGISTER_FUNCTION(OldManCallbacks::old_man_on_update)
+REGISTER_FUNCTION(OldManCallbacks::old_man_on_exit)

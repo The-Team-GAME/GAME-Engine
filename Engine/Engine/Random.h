@@ -16,6 +16,7 @@
 
 #include <string>
 #include "TypeDef.h"
+#include "EngineExport.h"
 
 namespace Engine {
   namespace Random {
@@ -31,7 +32,7 @@ namespace Engine {
     Where to call it:
     During engine initialization in Core.cpp.
     ==================================================================================*/
-    void initialize();
+    ENGINE_API void initialize();
 
     /*=================================================================================
     Function Brief:
@@ -48,7 +49,7 @@ namespace Engine {
     Where to call it:
     When creating unique identifiers for prefabs, entities, or other resources.
     ==================================================================================*/
-    std::string generate_uuid();
+    ENGINE_API std::string generate_uuid();
 
     /*=================================================================================
     Function Brief:
@@ -63,7 +64,7 @@ namespace Engine {
     Where to call it:
     When needing random integer values for game logic.
     ==================================================================================*/
-    u32 random_u32();
+    ENGINE_API u32 random_u32();
 
     /*=================================================================================
     Function Brief:
@@ -78,7 +79,7 @@ namespace Engine {
     Where to call it:
     When needing large random integer values or unique IDs.
     ==================================================================================*/
-    u64 random_u64();
+    ENGINE_API u64 random_u64();
 
     /*=================================================================================
     Function Brief:
@@ -93,7 +94,7 @@ namespace Engine {
     Where to call it:
     When needing random floating-point values for game logic.
     ==================================================================================*/
-    float random_float();
+    ENGINE_API float random_float();
 
     /*=================================================================================
     Function Brief:
@@ -109,7 +110,7 @@ namespace Engine {
     Where to call it:
     When needing random floating-point values within a specific range.
     ==================================================================================*/
-    float random_range(float min, float max);
+    ENGINE_API float random_range(float min, float max);
 
   } // namespace Random
 } // namespace Engine

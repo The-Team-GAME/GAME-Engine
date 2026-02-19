@@ -13,10 +13,9 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "../../Engine/MonkeyEngine.h"
+#include "pch.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/EnemyHealthComponent.h"
-#include <unordered_map>
 
 namespace SprayCanMonkey
 {
@@ -425,20 +424,12 @@ namespace SprayCanMonkey
 
 } // namespace SprayCanMonkey
 
-// Register all spray can monkey state callbacks (without reloading)
-REGISTER_FUNCTION(spraycan_monkey_idle_enter, void(Engine::ECS::Entity), SprayCanMonkey::idle_on_enter)
-REGISTER_FUNCTION(spraycan_monkey_idle_update, void(Engine::ECS::Entity), SprayCanMonkey::idle_on_update)
-REGISTER_FUNCTION(spraycan_monkey_chasing_enter, void(Engine::ECS::Entity), SprayCanMonkey::chasing_on_enter)
-REGISTER_FUNCTION(spraycan_monkey_chasing_update, void(Engine::ECS::Entity), SprayCanMonkey::chasing_on_update)
-REGISTER_FUNCTION(spraycan_monkey_chasing_exit, void(Engine::ECS::Entity), SprayCanMonkey::chasing_on_exit)
-REGISTER_FUNCTION(spraycan_monkey_windup_enter, void(Engine::ECS::Entity), SprayCanMonkey::windup_on_enter)
-REGISTER_FUNCTION(spraycan_monkey_windup_update, void(Engine::ECS::Entity), SprayCanMonkey::windup_on_update)
-REGISTER_FUNCTION(spraycan_monkey_spraying_enter, void(Engine::ECS::Entity), SprayCanMonkey::spraying_on_enter)
-REGISTER_FUNCTION(spraycan_monkey_spraying_update, void(Engine::ECS::Entity), SprayCanMonkey::spraying_on_update)
-REGISTER_FUNCTION(spraycan_monkey_spraying_exit, void(Engine::ECS::Entity), SprayCanMonkey::spraying_on_exit)
-REGISTER_FUNCTION(spraycan_monkey_hit_enter, void(Engine::ECS::Entity), SprayCanMonkey::hit_on_enter)
-REGISTER_FUNCTION(spraycan_monkey_hit_update, void(Engine::ECS::Entity), SprayCanMonkey::hit_on_update)
-REGISTER_FUNCTION(spraycan_monkey_hit_exit, void(Engine::ECS::Entity), SprayCanMonkey::hit_on_exit)
-REGISTER_FUNCTION(spraycan_monkey_death_enter, void(Engine::ECS::Entity), SprayCanMonkey::death_on_enter)
-REGISTER_FUNCTION(spraycan_monkey_death_update, void(Engine::ECS::Entity), SprayCanMonkey::death_on_update)
-REGISTER_FUNCTION(spraycan_monkey_death_exit, void(Engine::ECS::Entity), SprayCanMonkey::death_on_exit)
+// Register blueprint + all spray can monkey state callbacks
+REGISTER_STATE_MACHINE_BLUEPRINT(SprayCanMonkey, "Idle",
+  STATE("Idle", SprayCanMonkey::idle_on_enter, SprayCanMonkey::idle_on_update, NO_CALLBACK)
+  STATE("Chasing", SprayCanMonkey::chasing_on_enter, SprayCanMonkey::chasing_on_update, SprayCanMonkey::chasing_on_exit)
+  STATE("Windup", SprayCanMonkey::windup_on_enter, SprayCanMonkey::windup_on_update, NO_CALLBACK)
+  STATE("Spraying", SprayCanMonkey::spraying_on_enter, SprayCanMonkey::spraying_on_update, SprayCanMonkey::spraying_on_exit)
+  STATE("Hit", SprayCanMonkey::hit_on_enter, SprayCanMonkey::hit_on_update, SprayCanMonkey::hit_on_exit)
+  STATE("Death", SprayCanMonkey::death_on_enter, SprayCanMonkey::death_on_update, SprayCanMonkey::death_on_exit)
+)

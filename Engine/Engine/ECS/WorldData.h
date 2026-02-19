@@ -18,6 +18,7 @@
 #include "SparseSet.h"
 #include "ComponentArray.h"
 #include "System.h"
+#include "../EngineExport.h"
 #include <unordered_map>
 #include <memory>
 #include <vector>
@@ -46,10 +47,12 @@ namespace Engine {
         LayerID next_layer_id = 2; // Start at 2 (0 = INVALID_LAYER, 1 = DEFAULT_LAYER)
         SparseSet<EntityID> active_entities;
         SparseSet<EntityID> entities_to_destroy;
-        std::unordered_map<EntityID, ComponentSignature> entity_signatures;
-        std::unordered_map<EntityID, LayerSignature> entity_layers;
+        std::vector<ComponentSignature> entity_signatures;  // Indexed by EntityID — O(1) direct access
+        std::vector<LayerID> entity_highest_layer; // Cached highest layer per entity (indexed by EntityID)
+        std::vector<LayerSignature> entity_layers;  // Indexed by EntityID — O(1) direct access
+        std::unordered_map<EntityID, std::string> entity_names;
         std::unordered_map<EntityID, PrefabInstanceData> prefab_instances;
-        std::unordered_map<ComponentTypeID, std::unique_ptr<IComponentArray>> component_arrays;
+        std::array<std::unique_ptr<IComponentArray>, MAX_COMPONENTS> component_arrays{};
         std::vector<std::unique_ptr<System>> systems;
         std::vector<std::pair<EntityID, ComponentTypeID>> components_to_remove;
         std::unordered_map<std::string, LayerID> layer_name_to_id;
@@ -98,7 +101,12 @@ namespace Engine {
       Where to call it:
       Internally by the ECS when accessing entity, component, or system data.
       ==================================================================================*/
-      WorldContainers& get_containers();
+      ENGINE_API extern WorldContainers* g_containers;
+      ENGINE_API WorldContainers& init_containers();
+      inline WorldContainers& get_containers() {
+        if (g_containers) [[likely]] return *g_containers;
+        return init_containers();
+      }
 
     } // namespace Internal
   } // namespace ECS

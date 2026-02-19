@@ -1070,6 +1070,32 @@ namespace TilemapPanel {
 
       ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "New tiles will be placed on this layer");
 
+      // --- Per-layer parallax controls ---
+      // Find the tilemap entity on the currently selected layer
+      Engine::ECS::Entity selected_tilemap_entity;
+      for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
+        if (entity.is_on_layer(selected_layer)) {
+          selected_tilemap_entity = entity;
+          break;
+        }
+      }
+
+      if (selected_tilemap_entity.is_valid()) {
+        // Ensure the entity has a Parallax component (older tilemaps may not)
+        if (!selected_tilemap_entity.has_component<Components::Parallax>()) {
+          selected_tilemap_entity.add_component<Components::Parallax>(1.0f);
+        }
+
+        auto* parallax = selected_tilemap_entity.get_component<Components::Parallax>();
+        if (parallax) {
+          ImGui::Separator();
+          ImGui::Text("Layer Parallax:");
+          ImGui::SetNextItemWidth(-1);
+          ImGui::DragFloat2("##layer_parallax", &parallax->scroll_factor.x, 0.01f, 0.0f, 1.0f, "%.2f");
+          ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "0 = static, 1 = normal world movement");
+        }
+      }
+
       ImGui::Unindent();
     }
 

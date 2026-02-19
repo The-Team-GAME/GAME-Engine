@@ -13,8 +13,8 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
+#include "pch.h"
 #include "BasicState.h"
-#include "../../Engine/MonkeyEngine.h"
 #include "Time.h"
 
 void BasicState::load()

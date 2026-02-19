@@ -24,6 +24,7 @@
 #include "Audio/AudioPlayer.h"
 #include "ECS/Prefab.h"
 #include "LevelManager.h"
+#include "EngineExport.h"
 
 namespace Engine {
   namespace Resources {
@@ -37,14 +38,14 @@ namespace Engine {
       Engine::EntityList
     >;
     // Declare as extern - actual definition in Resources.cpp
-    extern std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> texture_cache;
-    extern std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::FontData>> font_cache;
-    extern std::unordered_map<std::string, std::weak_ptr<Engine::Audio::SoundData>> sound_cache;
-    extern std::unordered_map<std::string, std::weak_ptr<Engine::ECS::PrefabImpl>> prefab_cache;
-    extern std::unordered_map<std::string, Engine::EntityList> level_cache;
+    ENGINE_API extern std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::TextureData>> texture_cache;
+    ENGINE_API extern std::unordered_map<std::string, std::weak_ptr<Engine::Graphics::FontData>> font_cache;
+    ENGINE_API extern std::unordered_map<std::string, std::weak_ptr<Engine::Audio::SoundData>> sound_cache;
+    ENGINE_API extern std::unordered_map<std::string, std::weak_ptr<Engine::ECS::PrefabImpl>> prefab_cache;
+    ENGINE_API extern std::unordered_map<std::string, Engine::EntityList> level_cache;
 
     // Vector to hold shared_ptr references for persistent resources
-    extern std::vector<Resource> persistent_resources;
+    ENGINE_API extern std::vector<Resource> persistent_resources;
 
     struct ResourceStats {
       size_t texture_count;
@@ -58,72 +59,72 @@ namespace Engine {
     };
 
     // Base path for resource loading
-    extern std::string resource_path;
+    ENGINE_API extern std::string resource_path;
 
     // Initialization code here (e.g., setting up resource maps, loading default resources)
-    bool init(const std::string& initial_resource_path = "");
+    ENGINE_API bool init(const std::string& initial_resource_path = "");
 
     // Cleanup code here (e.g., unloading all resources, clearing maps)
-    bool exit();
+    ENGINE_API bool exit();
 
     // Set the base path for resource loading
-    void set_resource_path(const std::string& path);
+    ENGINE_API void set_resource_path(const std::string& path);
 
     // Load all assets from the resource path and its subfolders
-    void load_all_assets();
+    ENGINE_API void load_all_assets();
 
     // Load all prefabs from the prefabs subfolder (always loaded regardless of load_all_assets_on_startup)
-    void load_all_prefabs();
+    ENGINE_API void load_all_prefabs();
 
     // Copy a file to the resource folder root (or subfolder) if it's not already there
-    std::string copy_to_resources(const std::string& filepath, const std::string& subfolder = "");
+    ENGINE_API std::string copy_to_resources(const std::string& filepath, const std::string& subfolder = "");
 
-    std::string get_relative_path(const std::string& full_path);
+    ENGINE_API std::string get_relative_path(const std::string& full_path);
 
-    Engine::Graphics::Texture load_texture(const std::string& filepath, bool append_resource_path = true, bool persist = false);
-    Engine::Graphics::Font load_font(const std::string& filepath, u32 size, bool append_resource_path = true, bool persist = false);
+    ENGINE_API Engine::Graphics::Texture load_texture(const std::string& filepath, bool append_resource_path = true, bool persist = false);
+    ENGINE_API Engine::Graphics::Font load_font(const std::string& filepath, u32 size, bool append_resource_path = true, bool persist = false);
 
     // Load sound effect (stored in memory)
-    Engine::Audio::Sound load_sound(const std::string& filepath, bool append_resource_path = true, bool persist = false);
+    ENGINE_API Engine::Audio::Sound load_sound(const std::string& filepath, bool append_resource_path = true, bool persist = false);
 
     // Load music (streamed from disk)
-    Engine::Audio::Sound load_music(const std::string& filepath, bool append_resource_path = true, bool persist = false);
+    ENGINE_API Engine::Audio::Sound load_music(const std::string& filepath, bool append_resource_path = true, bool persist = false);
 
-    Engine::Graphics::Texture get_rect_texture();
+    ENGINE_API Engine::Graphics::Texture get_rect_texture();
 
     // Generic load function - automatically detects resource type from file extension
-    Resource load(const std::string& filepath, bool append_resource_path = true, bool persist = false);
+    ENGINE_API Resource load(const std::string& filepath, bool append_resource_path = true, bool persist = false);
 
     // Prefab loading and saving
-    Engine::ECS::Prefab load_prefab(const std::string& filepath, bool append_resource_path = true, bool persist = false);
-    bool save_prefab(const std::string& filepath, const Engine::ECS::Prefab& prefab, bool append_resource_path = true);
+    ENGINE_API Engine::ECS::Prefab load_prefab(const std::string& filepath, bool append_resource_path = true, bool persist = false);
+    ENGINE_API bool save_prefab(const std::string& filepath, const Engine::ECS::Prefab& prefab, bool append_resource_path = true);
 
     // Add prefab to cache without saving to disk
-    void cache_prefab(const std::string& filepath, const Engine::ECS::Prefab& prefab, bool append_resource_path = true, bool persist = false);
+    ENGINE_API void cache_prefab(const std::string& filepath, const Engine::ECS::Prefab& prefab, bool append_resource_path = true, bool persist = false);
 
     // Level loading and saving
-    Engine::EntityList load_level(const std::string& filepath, bool append_resource_path = true, bool persist = false);
-    bool save_level(const std::string& filepath, const Engine::EntityList& entities, bool append_resource_path = true);
+    ENGINE_API Engine::EntityList load_level(const std::string& filepath, bool append_resource_path = true, bool persist = false);
+    ENGINE_API bool save_level(const std::string& filepath, const Engine::EntityList& entities, bool append_resource_path = true);
 
     // Add level to cache without saving to disk
-    void cache_level(const std::string& filepath, const Engine::EntityList& entities, bool append_resource_path = true, bool persist = false);
+    ENGINE_API void cache_level(const std::string& filepath, const Engine::EntityList& entities, bool append_resource_path = true, bool persist = false);
 
     // Open (instantiate) a level into the world
-    bool open_level(const std::string& filepath, bool append_resource_path = true);
+    ENGINE_API bool open_level(const std::string& filepath, bool append_resource_path = true);
 
     // Generic open function - automatically detects resource type and opens it
     // Currently supports: levels
-    bool open(const std::string& filepath, bool append_resource_path = true);
+    ENGINE_API bool open(const std::string& filepath, bool append_resource_path = true);
 
     // Remove a specific resource from all caches (e.g., when file is deleted)
-    void remove_from_cache(const std::string& filepath, bool append_resource_path = true);
+    ENGINE_API void remove_from_cache(const std::string& filepath, bool append_resource_path = true);
 
     //optimization: clear unused resources from cache
-    void clear_unused_resources();
+    ENGINE_API void clear_unused_resources();
 
 
 
 
-    ResourceStats get_resource_stats();
+    ENGINE_API ResourceStats get_resource_stats();
   }
 }

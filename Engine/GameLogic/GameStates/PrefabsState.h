@@ -16,7 +16,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "../Engine/MonkeyEngine.h"
+#include "pch.h"
 
 class PrefabsState : public Engine::Scene {
 private:

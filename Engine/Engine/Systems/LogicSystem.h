@@ -10,8 +10,10 @@
 // brief:   This file defines a system that handles the prototype state machine testing
 //          for the player and NPCs
 //
-// Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
-//-----------------------------------------------------------------------------------#pragma once
+// Copyright ï¿½ 2025 DigiPen Institute of Technology Singapore. All rights reserved.
+//-----------------------------------------------------------------------------------
+
+#pragma once
 #include "../ECS/ECS.h"
 #include "../Components/Components.h"
 
@@ -32,10 +34,10 @@ enum entity_state {
 
 namespace Components
 {
-   struct Player_
-   {
-     // Exists just to identify the player
-   };
+  struct Player_
+  {
+    // Exists just to identify the player
+  };
   struct Logic
   {
     entity_state state;
@@ -78,7 +80,7 @@ namespace Engine {
 
       void update_entity(Engine::ECS::Entity entity) override;
 
-      static void take_input(ECS::Entity player);
+      ENGINE_API static void take_input(ECS::Entity player);
 
       void run_state(ECS::Entity entity);
 

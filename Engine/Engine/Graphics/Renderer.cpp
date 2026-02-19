@@ -31,14 +31,20 @@
 namespace Engine {
   namespace Graphics {
 
-    // Shader programs
+    // Shader programs (instanced rendering)
     std::unique_ptr<Shader> shader;
     std::unique_ptr<Shader> distortion_shader;
 
-    // Vertex Array Object and Vertex Buffer Object
+    // Instanced rendering GPU resources
     GLuint vao = 0;
-    GLuint vbo = 0;
+    GLuint quad_vbo = 0;
     GLuint ebo = 0;
+    GLuint instance_vbo = 0;
+
+    // Polygon rendering (direct GL_TRIANGLES — cannot use instanced quads for arbitrary triangles)
+    std::unique_ptr<Shader> polygon_shader;
+    GLuint polygon_vao = 0;
+    GLuint polygon_vbo = 0;
 
     // Virtual resolution
     float virtual_width = 1600.0f;
@@ -48,22 +54,20 @@ namespace Engine {
     Camera current_camera;
 
     // Batch rendering constants
-    constexpr size_t MAX_QUAD_COUNT = 10000;
-    constexpr size_t MAX_VERTEX_COUNT = MAX_QUAD_COUNT * 4;
-    constexpr size_t MAX_INDEX_COUNT = MAX_QUAD_COUNT * 6;
+    constexpr size_t MAX_INSTANCE_COUNT = 10000;
 
-    // Vertex structure for a textured quad
-    struct Vertex {
-      glm::vec2 position;
-      glm::vec2 texCoord;
-      glm::vec4 color;
+    // Per-instance data for instanced rendering (96 bytes per instance)
+    struct InstanceData {
+      glm::mat4 model;    // Model/transform matrix (64 bytes)
+      glm::vec4 color;    // Instance color + alpha (16 bytes)
+      glm::vec2 uv_min;   // UV min corner for subtexture (8 bytes)
+      glm::vec2 uv_max;   // UV max corner for subtexture (8 bytes)
     };
 
-    // Batch state
+    // Batch state for instanced rendering
     struct BatchState {
-      std::vector<Vertex> vertices;
+      std::vector<InstanceData> instances;
       GLuint current_texture_id = 0;
-      size_t quad_count = 0;
       Shader* current_shader = nullptr;
       f32 distortion_intensity = 0.0f;
       f32 distortion_speed = 1.0f;
@@ -71,9 +75,8 @@ namespace Engine {
       bool is_ui_batch = false;
 
       void reset() {
-        vertices.clear();
+        instances.clear();
         current_texture_id = 0;
-        quad_count = 0;
         current_shader = nullptr;
         distortion_intensity = 0.0f;
         distortion_speed = 1.0f;
@@ -88,6 +91,10 @@ namespace Engine {
 
     // Unit rectangle texture (1x1 white pixel)
     Texture unit_rect;
+
+    // Cached camera bounds for frustum culling (updated each frame in begin_batch)
+    CameraBounds cached_camera_bounds;
+    bool frustum_culling_enabled = true;
 
     // Helper function to get the current projection matrix
     glm::mat4 get_projection_matrix() {
@@ -122,9 +129,9 @@ namespace Engine {
       return view;
     }
 
-    // Flush the current batch to GPU
+    // Flush the current batch to GPU using instanced rendering
     void flush_batch() {
-      if (batch_state.quad_count == 0) {
+      if (batch_state.instances.empty()) {
         return;
       }
 
@@ -155,13 +162,13 @@ namespace Engine {
         active_shader->set_float("u_mesh_intensity", batch_state.distortion_mesh_intensity);
       }
 
-      // Upload vertices to GPU
+      // Upload instance data to GPU
       glBindVertexArray(vao);
-      glBindBuffer(GL_ARRAY_BUFFER, vbo);
-      glBufferSubData(GL_ARRAY_BUFFER, 0, batch_state.vertices.size() * sizeof(Vertex), batch_state.vertices.data());
+      glBindBuffer(GL_ARRAY_BUFFER, instance_vbo);
+      glBufferSubData(GL_ARRAY_BUFFER, 0, batch_state.instances.size() * sizeof(InstanceData), batch_state.instances.data());
 
-      // Draw all quads in one call
-      glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(batch_state.quad_count * 6), GL_UNSIGNED_INT, 0);
+      // Draw all quads in one instanced call
+      glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, static_cast<GLsizei>(batch_state.instances.size()));
 
       glBindVertexArray(0);
 
@@ -172,6 +179,8 @@ namespace Engine {
     // Begin a new batch (call at start of frame)
     void begin_batch() {
       batch_state.reset();
+      // Cache camera bounds for frustum culling this frame
+      cached_camera_bounds = get_camera_bounds();
     }
 
     // End batch (call at end of frame)
@@ -181,10 +190,10 @@ namespace Engine {
       Engine::Perf::stop("Graphics flush");
     }
 
-    // Add a quad to the batch
-    void batch_quad(GLuint texture_id, const Vertex vertices[4], Shader* use_shader = nullptr, f32 intensity = 0.0f, f32 speed = 1.0f, f32 mesh_intensity = 0.0f) {
-      // Flush if switching from UI to world rendering
-      if (batch_state.is_ui_batch && batch_state.quad_count > 0) {
+    // Add an instance to the instanced batch
+    void batch_instance(GLuint texture_id, const InstanceData& instance, bool is_ui = false, Shader* use_shader = nullptr, f32 intensity = 0.0f, f32 speed = 1.0f, f32 mesh_intensity = 0.0f) {
+      // Flush if switching between UI and world rendering
+      if (is_ui != batch_state.is_ui_batch && !batch_state.instances.empty()) {
         flush_batch();
       }
 
@@ -195,29 +204,23 @@ namespace Engine {
       }
 
       // Check if we need to flush due to batch being full
-      if (batch_state.quad_count >= MAX_QUAD_COUNT) {
+      if (batch_state.instances.size() >= MAX_INSTANCE_COUNT) {
         flush_batch();
       }
 
-      // Mark this batch as world rendering (not UI)
-      batch_state.is_ui_batch = false;
-
-      // Set current texture and shader
+      // Set batch properties
+      batch_state.is_ui_batch = is_ui;
       batch_state.current_texture_id = texture_id;
       batch_state.current_shader = use_shader;
       batch_state.distortion_intensity = intensity;
       batch_state.distortion_speed = speed;
       batch_state.distortion_mesh_intensity = mesh_intensity;
 
-      // Add vertices to batch
-      for (int i = 0; i < 4; i++) {
-        batch_state.vertices.push_back(vertices[i]);
-      }
-
-      batch_state.quad_count++;
+      // Add instance to batch
+      batch_state.instances.push_back(instance);
     }
 
-    // Helper function to draw a quad with custom texture coordinates
+    // Helper function to draw a quad with custom texture coordinates (instanced)
     void draw_quad(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size,
       f32 rotation, const Math::Vec4D& color, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& flip = Math::Vec2D(1.0f, 1.0f)) {
       if (!texture || texture->id == 0) {
@@ -226,46 +229,43 @@ namespace Engine {
       }
 
       if (!shader || !shader->is_valid()) {
-        Log::error("Shader is not valid");
+        Log::error("Instanced shader is not valid");
         return;
       }
-      // Create transformation matrix
-      glm::mat4 model = glm::mat4(1.0f);
-      model = glm::translate(model, glm::vec3(position.x, position.y, 0.0f));
+
+      // Frustum culling - skip if not visible
+      if (frustum_culling_enabled) {
+        f32 half_w = std::abs(size.x) * 0.5f;
+        f32 half_h = std::abs(size.y) * 0.5f;
+        if (!cached_camera_bounds.intersects(position.x, position.y, half_w, half_h)) {
+          return;
+        }
+      }
+
+      // Build instance data - GPU does the vertex transformation
+      InstanceData inst;
+
+      // Create model matrix (translate, rotate, scale)
+      inst.model = glm::mat4(1.0f);
+      inst.model = glm::translate(inst.model, glm::vec3(position.x, position.y, 0.0f));
 
       if (rotation != 0.0f) {
-        model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+        inst.model = glm::rotate(inst.model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
       }
 
-      model = glm::scale(model, glm::vec3(size.x * flip.x, size.y * flip.y, 1.0f));
+      inst.model = glm::scale(inst.model, glm::vec3(size.x * flip.x, size.y * flip.y, 1.0f));
 
-      // Create quad vertices
-      Vertex vertices[4];
+      inst.color = glm::vec4(color.x, color.y, color.z, color.w);
 
-      // Convert color from 0-1 range
-      glm::vec4 normalized_color(color.x, color.y, color.z, color.w);
+      // Extract UV bounds: tex_coords[3] = top-left (min), tex_coords[1] = bottom-right (max)
+      inst.uv_min = glm::vec2(tex_coords[3].x, tex_coords[3].y);
+      inst.uv_max = glm::vec2(tex_coords[1].x, tex_coords[1].y);
 
-      // Vertices are centered around the origin
-      glm::vec2 base_positions[4] = {
-        glm::vec2(-0.5f, 0.5f),  // Bottom-left
-        glm::vec2(0.5f, 0.5f),   // Bottom-right
-        glm::vec2(0.5f, -0.5f),  // Top-right
-        glm::vec2(-0.5f, -0.5f)  // Top-left
-      };
-
-      // Transform vertices by model matrix
-      for (int i = 0; i < 4; i++) {
-        glm::vec4 transformed = model * glm::vec4(base_positions[i], 0.0f, 1.0f);
-        vertices[i].position = glm::vec2(transformed.x, transformed.y);
-        vertices[i].texCoord = glm::vec2(tex_coords[i].x, tex_coords[i].y);
-        vertices[i].color = normalized_color;
-      }
-
-      // Add to batch instead of drawing immediately
-      batch_quad(texture->id, vertices);
+      // Add to instanced batch
+      batch_instance(texture->id, inst);
     }
 
-    // Helper function to draw a glyph (character) at a specific position without rotation
+    // Helper function to draw a glyph (character) at a specific position (instanced)
     void draw_glyph(const TextureData& atlas_texture, const std::array<Math::Vec2D, 4>& tex_coords,
       const Math::Vec2D& position, const Math::Vec2D& size, const Math::Vec4D& color) {
       if (atlas_texture.id == 0) {
@@ -276,39 +276,27 @@ namespace Engine {
         return;
       }
 
-      // Create quad vertices (no rotation for text glyphs)
-      Vertex vertices[4];
+      // Build instance data: glyph at (position.x, position.y) with given size
+      // The glyph's top-left is at (position), size is (w, h)
+      // Unit quad is centered, so translate to center of glyph
+      InstanceData inst;
+      inst.model = glm::mat4(1.0f);
+      inst.model = glm::translate(inst.model, glm::vec3(position.x + size.x * 0.5f, position.y + size.y * 0.5f, 0.0f));
+      inst.model = glm::scale(inst.model, glm::vec3(size.x, size.y, 1.0f));
 
-      // Convert color from 0-1 range
-      glm::vec4 normalized_color(color.x, color.y, color.z, color.w);
+      inst.color = glm::vec4(color.x, color.y, color.z, color.w);
 
-      // Bottom-left
-      vertices[0].position = glm::vec2(position.x, position.y + size.y);
-      vertices[0].texCoord = glm::vec2(tex_coords[0].x, tex_coords[0].y);
-      vertices[0].color = normalized_color;
+      // Extract UV bounds from tex_coords
+      inst.uv_min = glm::vec2(tex_coords[3].x, tex_coords[3].y);
+      inst.uv_max = glm::vec2(tex_coords[1].x, tex_coords[1].y);
 
-      // Bottom-right
-      vertices[1].position = glm::vec2(position.x + size.x, position.y + size.y);
-      vertices[1].texCoord = glm::vec2(tex_coords[1].x, tex_coords[1].y);
-      vertices[1].color = normalized_color;
-
-      // Top-right
-      vertices[2].position = glm::vec2(position.x + size.x, position.y);
-      vertices[2].texCoord = glm::vec2(tex_coords[2].x, tex_coords[2].y);
-      vertices[2].color = normalized_color;
-
-      // Top-left
-      vertices[3].position = glm::vec2(position.x, position.y);
-      vertices[3].texCoord = glm::vec2(tex_coords[3].x, tex_coords[3].y);
-      vertices[3].color = normalized_color;
-
-      // Add to batch instead of drawing immediately
-      batch_quad(atlas_texture.id, vertices);
+      // Add to instanced batch
+      batch_instance(atlas_texture.id, inst);
     }
 
     // UI-specific helper functions (no camera transformation)
 
-    // Helper function to draw a quad in UI space (no view matrix applied)
+    // Helper function to draw a quad in UI space (instanced, no view matrix applied)
     void draw_ui_quad(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size,
       f32 rotation, const Math::Vec4D& color, const std::array<Math::Vec2D, 4>& tex_coords, const Math::Vec2D& flip = Math::Vec2D(1.0f, 1.0f)) {
       if (!texture || texture->id == 0) {
@@ -317,76 +305,30 @@ namespace Engine {
       }
 
       if (!shader || !shader->is_valid()) {
-        Log::error("Shader is not valid");
+        Log::error("Instanced shader is not valid");
         return;
       }
 
-      // Flush current batch if switching between UI and world rendering
-      if (!batch_state.is_ui_batch && batch_state.quad_count > 0) {
-        flush_batch();
-      }
-
-      // Flush current batch if texture changed
-      if (batch_state.current_texture_id != 0 && batch_state.current_texture_id != texture->id) {
-        flush_batch();
-      }
-
-      // Mark this batch as UI
-      batch_state.is_ui_batch = true;
-
-      // Check if we need to flush due to batch size
-      if (batch_state.quad_count >= MAX_QUAD_COUNT) {
-        flush_batch();
-      }
-
-      // Set current texture
-      batch_state.current_texture_id = texture->id;
-
-      // Create transformation matrix
-      glm::mat4 model = glm::mat4(1.0f);
-      model = glm::translate(model, glm::vec3(position.x, position.y, 0.0f));
+      // Build instance data - GPU does the vertex transformation
+      InstanceData inst;
+      inst.model = glm::mat4(1.0f);
+      inst.model = glm::translate(inst.model, glm::vec3(position.x, position.y, 0.0f));
 
       if (rotation != 0.0f) {
-        model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+        inst.model = glm::rotate(inst.model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
       }
 
-      model = glm::scale(model, glm::vec3(size.x * flip.x, size.y * flip.y, 1.0f));
+      inst.model = glm::scale(inst.model, glm::vec3(size.x * flip.x, size.y * flip.y, 1.0f));
 
-      // Create quad vertices
-      Vertex vertices[4];
+      inst.color = glm::vec4(color.x, color.y, color.z, color.w);
+      inst.uv_min = glm::vec2(tex_coords[3].x, tex_coords[3].y);
+      inst.uv_max = glm::vec2(tex_coords[1].x, tex_coords[1].y);
 
-      // Convert color from 0-1 range
-      glm::vec4 normalized_color(color.x, color.y, color.z, color.w);
-
-      // Vertices are centered around the origin
-      glm::vec2 base_positions[4] = {
-        glm::vec2(-0.5f, 0.5f),  // Bottom-left
-        glm::vec2(0.5f, 0.5f),   // Bottom-right
-        glm::vec2(0.5f, -0.5f),  // Top-right
-        glm::vec2(-0.5f, -0.5f)  // Top-left
-      };
-
-      // Transform vertices by model matrix only (no view matrix)
-      for (int i = 0; i < 4; i++) {
-        glm::vec4 transformed = model * glm::vec4(base_positions[i], 0.0f, 1.0f);
-        vertices[i].position = glm::vec2(transformed.x, transformed.y);
-        vertices[i].texCoord = glm::vec2(tex_coords[i].x, tex_coords[i].y);
-        vertices[i].color = normalized_color;
-      }
-
-      // Manually add vertices to batch (avoiding camera transformation)
-      // Reserve space for new vertices
-      size_t vertex_offset = batch_state.vertices.size();
-      batch_state.vertices.resize(vertex_offset + 4);
-
-      for (int i = 0; i < 4; i++) {
-        batch_state.vertices[vertex_offset + i] = vertices[i];
-      }
-
-      batch_state.quad_count++;
+      // Add to instanced batch with UI flag (identity view matrix)
+      batch_instance(texture->id, inst, true);
     }
 
-    // Helper function to draw a UI glyph (character) at a specific position without camera transformation
+    // Helper function to draw a UI glyph (instanced, no camera transformation)
     void draw_ui_glyph(const TextureData& atlas_texture, const std::array<Math::Vec2D, 4>& tex_coords,
       const Math::Vec2D& position, const Math::Vec2D& size, const Math::Vec4D& color) {
       if (atlas_texture.id == 0) {
@@ -397,120 +339,129 @@ namespace Engine {
         return;
       }
 
-      // Flush current batch if switching between UI and world rendering
-      if (!batch_state.is_ui_batch && batch_state.quad_count > 0) {
-        flush_batch();
-      }
+      // Build instance data: glyph at (position.x, position.y) with given size
+      InstanceData inst;
+      inst.model = glm::mat4(1.0f);
+      inst.model = glm::translate(inst.model, glm::vec3(position.x + size.x * 0.5f, position.y + size.y * 0.5f, 0.0f));
+      inst.model = glm::scale(inst.model, glm::vec3(size.x, size.y, 1.0f));
 
-      // Flush current batch if texture changed
-      if (batch_state.current_texture_id != 0 && batch_state.current_texture_id != atlas_texture.id) {
-        flush_batch();
-      }
+      inst.color = glm::vec4(color.x, color.y, color.z, color.w);
+      inst.uv_min = glm::vec2(tex_coords[3].x, tex_coords[3].y);
+      inst.uv_max = glm::vec2(tex_coords[1].x, tex_coords[1].y);
 
-      // Mark this batch as UI
-      batch_state.is_ui_batch = true;
-
-      // Check if we need to flush due to batch size
-      if (batch_state.quad_count >= MAX_QUAD_COUNT) {
-        flush_batch();
-      }
-
-      // Set current texture
-      batch_state.current_texture_id = atlas_texture.id;
-
-      // Create quad vertices (no rotation for text glyphs)
-      Vertex vertices[4];
-
-      // Convert color from 0-1 range
-      glm::vec4 normalized_color(color.x, color.y, color.z, color.w);
-
-      // Bottom-left
-      vertices[0].position = glm::vec2(position.x, position.y + size.y);
-      vertices[0].texCoord = glm::vec2(tex_coords[0].x, tex_coords[0].y);
-      vertices[0].color = normalized_color;
-
-      // Bottom-right
-      vertices[1].position = glm::vec2(position.x + size.x, position.y + size.y);
-      vertices[1].texCoord = glm::vec2(tex_coords[1].x, tex_coords[1].y);
-      vertices[1].color = normalized_color;
-
-      // Top-right
-      vertices[2].position = glm::vec2(position.x + size.x, position.y);
-      vertices[2].texCoord = glm::vec2(tex_coords[2].x, tex_coords[2].y);
-      vertices[2].color = normalized_color;
-
-      // Top-left
-      vertices[3].position = glm::vec2(position.x, position.y);
-      vertices[3].texCoord = glm::vec2(tex_coords[3].x, tex_coords[3].y);
-      vertices[3].color = normalized_color;
-
-      // Manually add vertices to batch (avoiding camera transformation)
-      size_t vertex_offset = batch_state.vertices.size();
-      batch_state.vertices.resize(vertex_offset + 4);
-
-      for (int i = 0; i < 4; i++) {
-        batch_state.vertices[vertex_offset + i] = vertices[i];
-      }
-
-      batch_state.quad_count++;
+      // Add to instanced batch with UI flag
+      batch_instance(atlas_texture.id, inst, true);
     }
 
 
     bool init() {
-      // Load default shader from files
-      shader = Shader::load_from_file("Assets/shaders/default.vert", "Assets/shaders/default.frag");
+      // Load instanced shader (pairs instanced vertex shader with default fragment shader)
+      shader = Shader::load_from_file("Assets/shaders/instanced.vert", "Assets/shaders/default.frag");
 
       if (!shader->is_valid()) {
-        Log::error("Failed to create default shader");
+        Log::error("Failed to create instanced shader");
         return false;
       }
 
-      // Load distortion shader from files
-      distortion_shader = Shader::load_from_file("Assets/shaders/distortion.vert", "Assets/shaders/distortion.frag");
+      // Load instanced distortion shader
+      distortion_shader = Shader::load_from_file("Assets/shaders/instanced_distortion.vert", "Assets/shaders/distortion.frag");
 
       if (!distortion_shader->is_valid()) {
-        Log::error("Failed to create distortion shader");
+        Log::error("Failed to create instanced distortion shader");
         return false;
       }
 
-      // Create VAO and VBO for batched quads
+      // === Instanced Rendering VAO Setup ===
       glGenVertexArrays(1, &vao);
-      glGenBuffers(1, &vbo);
+      glGenBuffers(1, &quad_vbo);
       glGenBuffers(1, &ebo);
+      glGenBuffers(1, &instance_vbo);
 
       glBindVertexArray(vao);
 
-      // Allocate buffer for maximum number of vertices
-      glBindBuffer(GL_ARRAY_BUFFER, vbo);
-      glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * MAX_VERTEX_COUNT, nullptr, GL_DYNAMIC_DRAW);
+      // Static unit quad geometry (shared by ALL instances - only 4 vertices)
+      float quad_vertices[] = {
+        // position      // texCoord
+        -0.5f,  0.5f,    0.0f, 1.0f,   // Bottom-left
+         0.5f,  0.5f,    1.0f, 1.0f,   // Bottom-right
+         0.5f, -0.5f,    1.0f, 0.0f,   // Top-right
+        -0.5f, -0.5f,    0.0f, 0.0f,   // Top-left
+      };
 
-      // Create index buffer for maximum number of quads
-      std::vector<GLuint> indices;
-      indices.reserve(MAX_INDEX_COUNT);
-      for (size_t i = 0; i < MAX_QUAD_COUNT; i++) {
-        GLuint offset = static_cast<GLuint>(i * 4);
-        indices.push_back(offset + 0);
-        indices.push_back(offset + 1);
-        indices.push_back(offset + 2);
-        indices.push_back(offset + 2);
-        indices.push_back(offset + 3);
-        indices.push_back(offset + 0);
+      GLuint quad_indices[] = { 0, 1, 2, 2, 3, 0 };
+
+      // Quad VBO (static - never changes)
+      glBindBuffer(GL_ARRAY_BUFFER, quad_vbo);
+      glBufferData(GL_ARRAY_BUFFER, sizeof(quad_vertices), quad_vertices, GL_STATIC_DRAW);
+
+      // Per-vertex: position (location 0)
+      glEnableVertexAttribArray(0);
+      glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+
+      // Per-vertex: texCoord (location 1)
+      glEnableVertexAttribArray(1);
+      glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+      // Quad index buffer (static)
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quad_indices), quad_indices, GL_STATIC_DRAW);
+
+      // Instance VBO (dynamic - updated every frame)
+      glBindBuffer(GL_ARRAY_BUFFER, instance_vbo);
+      glBufferData(GL_ARRAY_BUFFER, sizeof(InstanceData) * MAX_INSTANCE_COUNT, nullptr, GL_DYNAMIC_DRAW);
+
+      // Per-instance: model matrix (mat4 = 4 x vec4, locations 2-5)
+      for (int i = 0; i < 4; i++) {
+        glEnableVertexAttribArray(2 + i);
+        glVertexAttribPointer(2 + i, 4, GL_FLOAT, GL_FALSE, sizeof(InstanceData),
+          (void*)(offsetof(InstanceData, model) + sizeof(glm::vec4) * i));
+        glVertexAttribDivisor(2 + i, 1); // Advance once per INSTANCE, not per vertex
       }
 
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
+      // Per-instance: color (location 6)
+      glEnableVertexAttribArray(6);
+      glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(InstanceData),
+        (void*)offsetof(InstanceData, color));
+      glVertexAttribDivisor(6, 1);
 
-      // Position attribute
+      // Per-instance: UV min (location 7)
+      glEnableVertexAttribArray(7);
+      glVertexAttribPointer(7, 2, GL_FLOAT, GL_FALSE, sizeof(InstanceData),
+        (void*)offsetof(InstanceData, uv_min));
+      glVertexAttribDivisor(7, 1);
+
+      // Per-instance: UV max (location 8)
+      glEnableVertexAttribArray(8);
+      glVertexAttribPointer(8, 2, GL_FLOAT, GL_FALSE, sizeof(InstanceData),
+        (void*)offsetof(InstanceData, uv_max));
+      glVertexAttribDivisor(8, 1);
+
+      glBindVertexArray(0);
+
+      // === Polygon Rendering Setup (for arbitrary triangle geometry) ===
+      polygon_shader = Shader::load_from_file("Assets/shaders/default.vert", "Assets/shaders/default.frag");
+      if (!polygon_shader->is_valid()) {
+        Log::error("Failed to create polygon shader");
+        return false;
+      }
+
+      glGenVertexArrays(1, &polygon_vao);
+      glGenBuffers(1, &polygon_vbo);
+
+      glBindVertexArray(polygon_vao);
+      glBindBuffer(GL_ARRAY_BUFFER, polygon_vbo);
+      // Dynamic buffer for polygon triangle vertices (position 2f + texcoord 2f + color 4f = 32 bytes/vert)
+      glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 8 * 1024, nullptr, GL_DYNAMIC_DRAW);
+
+      // Position (location 0)
       glEnableVertexAttribArray(0);
-      glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
-
-      // TexCoord attribute
+      glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+      // TexCoord (location 1)
       glEnableVertexAttribArray(1);
-      glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
-
-      // Color attribute
+      glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(2 * sizeof(float)));
+      // Color (location 2)
       glEnableVertexAttribArray(2);
-      glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, color));
+      glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(4 * sizeof(float)));
 
       glBindVertexArray(0);
 
@@ -521,8 +472,8 @@ namespace Engine {
       // Initialize camera to default
       reset_camera();
 
-      // Reserve space for batch vertices
-      batch_state.vertices.reserve(MAX_VERTEX_COUNT);
+      // Reserve space for instanced batch
+      batch_state.instances.reserve(MAX_INSTANCE_COUNT);
 
       // Create a 1x1 white pixel texture for unit_rect
       unsigned char white_pixel[4] = { 255, 255, 255, 255 };
@@ -544,30 +495,44 @@ namespace Engine {
 
       unit_rect = texture_data;
 
-      Log::info("Renderer initialized with batching (max {} quads per batch)", MAX_QUAD_COUNT);
+      Log::info("Renderer initialized with instanced rendering (max {} instances per batch)", MAX_INSTANCE_COUNT);
       Log::info("Virtual resolution: {}x{}", (int)virtual_width, (int)virtual_height);
       return true;
     }
 
     bool exit() {
-      // Delete OpenGL resources
+      // Delete GPU resources
       if (vao != 0) {
         glDeleteVertexArrays(1, &vao);
         vao = 0;
       }
-
-      if (vbo != 0) {
-        glDeleteBuffers(1, &vbo);
-        vbo = 0;
+      if (quad_vbo != 0) {
+        glDeleteBuffers(1, &quad_vbo);
+        quad_vbo = 0;
       }
-
       if (ebo != 0) {
         glDeleteBuffers(1, &ebo);
         ebo = 0;
       }
+      if (instance_vbo != 0) {
+        glDeleteBuffers(1, &instance_vbo);
+        instance_vbo = 0;
+      }
 
-      // Delete shader
+      // Delete shaders
       shader.reset();
+      distortion_shader.reset();
+      polygon_shader.reset();
+
+      // Delete polygon rendering resources
+      if (polygon_vao != 0) {
+        glDeleteVertexArrays(1, &polygon_vao);
+        polygon_vao = 0;
+      }
+      if (polygon_vbo != 0) {
+        glDeleteBuffers(1, &polygon_vbo);
+        polygon_vbo = 0;
+      }
 
       // Clean up unit_rect texture
       unit_rect.reset();
@@ -610,6 +575,65 @@ namespace Engine {
       current_camera.position = Math::Vec2D(0.0f, 0.0f);
       current_camera.rotation = 0.0f;
       current_camera.zoom = 1.0f;
+    }
+
+    CameraBounds get_camera_bounds() {
+      CameraBounds bounds;
+
+      // The visible area dimensions in world space (accounting for zoom)
+      f32 visible_width = virtual_width / current_camera.zoom;
+      f32 visible_height = virtual_height / current_camera.zoom;
+
+      // Camera position is at the TOP-LEFT of the visible area (at zoom=1).
+      // Zoom scales around the screen center, so the world-space center of
+      // the view is always at camera.position + virtual_size/2, NOT
+      // camera.position + visible_size/2.
+      f32 center_x = current_camera.position.x + virtual_width * 0.5f;
+      f32 center_y = current_camera.position.y + virtual_height * 0.5f;
+
+      f32 half_width = visible_width * 0.5f;
+      f32 half_height = visible_height * 0.5f;
+
+      // If camera has rotation, we need to expand the AABB to encompass the rotated view
+      if (current_camera.rotation != 0.0f) {
+        f32 angle_rad = glm::radians(current_camera.rotation);
+        f32 cos_a = std::abs(std::cos(angle_rad));
+        f32 sin_a = std::abs(std::sin(angle_rad));
+
+        // Rotated AABB dimensions (bounding box of rotated rectangle)
+        f32 new_half_width = half_width * cos_a + half_height * sin_a;
+        f32 new_half_height = half_width * sin_a + half_height * cos_a;
+
+        half_width = new_half_width;
+        half_height = new_half_height;
+      }
+
+      // Calculate world-space bounds centered on the visible area center
+      bounds.min_x = center_x - half_width;
+      bounds.max_x = center_x + half_width;
+      bounds.min_y = center_y - half_height;
+      bounds.max_y = center_y + half_height;
+
+      return bounds;
+    }
+
+    bool is_visible(const Math::Vec2D& position, const Math::Vec2D& size) {
+      CameraBounds bounds = get_camera_bounds();
+      return is_visible(bounds, position, size);
+    }
+
+    bool is_visible(const CameraBounds& bounds, const Math::Vec2D& position, const Math::Vec2D& size) {
+      f32 half_w = size.x * 0.5f;
+      f32 half_h = size.y * 0.5f;
+      return bounds.intersects(position.x, position.y, half_w, half_h);
+    }
+
+    void set_frustum_culling(bool enabled) {
+      frustum_culling_enabled = enabled;
+    }
+
+    bool is_frustum_culling_enabled() {
+      return frustum_culling_enabled;
     }
 
     void set_viewport(const Viewport& viewport) {
@@ -790,41 +814,32 @@ namespace Engine {
     }
 
     void draw_line(const Math::Vec2D& start, const Math::Vec2D& end, f32 thickness, const Math::Vec4D& color) {
-      // Flush current batch before drawing lines
-      flush_batch();
+      // Draw line as a thin rotated quad using instanced rendering
+      f32 dx = end.x - start.x;
+      f32 dy = end.y - start.y;
+      f32 length = std::sqrt(dx * dx + dy * dy);
+      if (length < 0.0001f) return;
 
-      // Enable line rendering
-      glLineWidth(thickness);
+      // Midpoint of the line segment
+      f32 mid_x = (start.x + end.x) * 0.5f;
+      f32 mid_y = (start.y + end.y) * 0.5f;
 
-      // Set up shader
-      shader->use();
-      shader->set_mat4("u_projection", get_projection_matrix());
-      shader->set_mat4("u_view", get_view_matrix());
-      shader->set_int("u_texture", 0);
+      // Angle from start to end
+      f32 angle = std::atan2(dy, dx);
 
-      // Bind white texture for solid color
-      glBindTexture(GL_TEXTURE_2D, unit_rect->id);
+      // Build instance: a unit quad scaled to (length x thickness), rotated, centered at midpoint
+      InstanceData inst;
+      inst.model = glm::mat4(1.0f);
+      inst.model = glm::translate(inst.model, glm::vec3(mid_x, mid_y, 0.0f));
+      inst.model = glm::rotate(inst.model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
+      inst.model = glm::scale(inst.model, glm::vec3(length, thickness, 1.0f));
 
-      // Create line vertices
-      Vertex line_vertices[2];
-      line_vertices[0].position = glm::vec2(start.x, start.y);
-      line_vertices[0].texCoord = glm::vec2(0.5f, 0.5f);
-      line_vertices[0].color = glm::vec4(color.x, color.y, color.z, color.w);
+      inst.color = glm::vec4(color.x, color.y, color.z, color.w);
+      inst.uv_min = glm::vec2(0.0f, 0.0f);
+      inst.uv_max = glm::vec2(1.0f, 1.0f);
 
-      line_vertices[1].position = glm::vec2(end.x, end.y);
-      line_vertices[1].texCoord = glm::vec2(0.5f, 0.5f);
-      line_vertices[1].color = glm::vec4(color.x, color.y, color.z, color.w);
-
-      // Upload vertices
-      glBindVertexArray(vao);
-      glBindBuffer(GL_ARRAY_BUFFER, vbo);
-      glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(line_vertices), line_vertices);
-
-      // Draw line
-      glDrawArrays(GL_LINES, 0, 2);
-
-      // Reset line width to default
-      glLineWidth(1.0f);
+      // Use unit_rect (1x1 white pixel) for solid color
+      batch_instance(unit_rect->id, inst, false);
     }
 
     void draw_polygon(const std::vector<Math::Vec2D>& vertices, const Math::Vec2D& position, f32 rotation, const Math::Vec4D& color) {
@@ -832,6 +847,9 @@ namespace Engine {
         Log::warning("Attempted to draw polygon with less than 3 vertices");
         return;
       }
+
+      // Flush instanced batch to maintain draw order
+      flush_batch();
 
       // Convert rotation to radians
       f32 angle_rad = rotation * 3.14159265359f / 180.0f;
@@ -843,63 +861,53 @@ namespace Engine {
       transformed_vertices.reserve(vertices.size());
 
       for (const auto& vertex : vertices) {
-        // Apply rotation around origin
         f32 rotated_x = vertex.x * cos_angle - vertex.y * sin_angle;
         f32 rotated_y = vertex.x * sin_angle + vertex.y * cos_angle;
-
-        // Translate to position
         transformed_vertices.push_back(Math::Vec2D(rotated_x + position.x, rotated_y + position.y));
       }
 
-      // Get the unit rect texture for drawing filled triangles
+      // Get the unit rect texture for solid color fill
       auto texture = Engine::Resources::get_rect_texture();
-      if (!texture || texture->id == 0) {
-        return;
-      }
+      if (!texture || texture->id == 0) return;
 
-      // Calculate centroid of the polygon
+      // Calculate centroid for fan triangulation
       Math::Vec2D centroid(0.0f, 0.0f);
-      for (const auto& vertex : transformed_vertices) {
-        centroid = centroid + vertex;
+      for (const auto& v : transformed_vertices) {
+        centroid = centroid + v;
       }
       centroid = centroid * (1.0f / transformed_vertices.size());
 
-      // Triangulate from centroid to each edge
-      // This works for both convex and concave polygons (like stars)
+      // Build triangle fan vertex data: position(2f) + texcoord(2f) + color(4f) = 8 floats per vertex
+      glm::vec4 col(color.x, color.y, color.z, color.w);
+      std::vector<float> tri_data;
+      tri_data.reserve(transformed_vertices.size() * 3 * 8);
+
       for (size_t i = 0; i < transformed_vertices.size(); ++i) {
         size_t next_i = (i + 1) % transformed_vertices.size();
-
         Math::Vec2D v0 = centroid;
         Math::Vec2D v1 = transformed_vertices[i];
         Math::Vec2D v2 = transformed_vertices[next_i];
 
-        // Create vertices for a filled triangle using the quad batching system
-        Vertex tri_vertices[4];
-
-        // Convert color from 0-1 range
-        glm::vec4 normalized_color(color.x, color.y, color.z, color.w);
-
-        // Use the three triangle vertices and repeat the last one to make a quad
-        // This creates a degenerate quad that approximates the triangle
-        tri_vertices[0].position = glm::vec2(v0.x, v0.y);
-        tri_vertices[0].texCoord = glm::vec2(0.5f, 0.5f);  // Center texture
-        tri_vertices[0].color = normalized_color;
-
-        tri_vertices[1].position = glm::vec2(v1.x, v1.y);
-        tri_vertices[1].texCoord = glm::vec2(0.5f, 0.5f);
-        tri_vertices[1].color = normalized_color;
-
-        tri_vertices[2].position = glm::vec2(v2.x, v2.y);
-        tri_vertices[2].texCoord = glm::vec2(0.5f, 0.5f);
-        tri_vertices[2].color = normalized_color;
-
-        tri_vertices[3].position = glm::vec2(v2.x, v2.y);  // Repeat last vertex
-        tri_vertices[3].texCoord = glm::vec2(0.5f, 0.5f);
-        tri_vertices[3].color = normalized_color;
-
-        // Add to batch
-        batch_quad(texture->id, tri_vertices);
+        // Triangle vertex 0 (centroid)
+        tri_data.insert(tri_data.end(), { v0.x, v0.y, 0.5f, 0.5f, col.r, col.g, col.b, col.a });
+        // Triangle vertex 1
+        tri_data.insert(tri_data.end(), { v1.x, v1.y, 0.5f, 0.5f, col.r, col.g, col.b, col.a });
+        // Triangle vertex 2
+        tri_data.insert(tri_data.end(), { v2.x, v2.y, 0.5f, 0.5f, col.r, col.g, col.b, col.a });
       }
+
+      // Draw using polygon shader + direct GL_TRIANGLES
+      polygon_shader->use();
+      polygon_shader->set_mat4("u_projection", get_projection_matrix());
+      polygon_shader->set_mat4("u_view", get_view_matrix());
+      polygon_shader->set_int("u_texture", 0);
+
+      glBindTexture(GL_TEXTURE_2D, texture->id);
+      glBindVertexArray(polygon_vao);
+      glBindBuffer(GL_ARRAY_BUFFER, polygon_vbo);
+      glBufferSubData(GL_ARRAY_BUFFER, 0, tri_data.size() * sizeof(float), tri_data.data());
+      glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(tri_data.size() / 8));
+      glBindVertexArray(0);
     }
 
     void draw_triangle(const Math::Vec2D& position, f32 radius, f32 rotation, const Math::Vec4D& color) {
@@ -1351,6 +1359,7 @@ namespace Engine {
     }
 
     // Helper function to draw a quad with distortion effect
+    // Helper function to draw a quad with distortion effect (instanced)
     void draw_quad_distortion(Texture texture, const Math::Vec2D& position, const Math::Vec2D& size,
       f32 rotation, const Math::Vec4D& color, const std::array<Math::Vec2D, 4>& tex_coords,
       f32 intensity, f32 speed, f32 mesh_intensity, const Math::Vec2D& flip = Math::Vec2D(1.0f, 1.0f)) {
@@ -1360,44 +1369,36 @@ namespace Engine {
       }
 
       if (!distortion_shader || !distortion_shader->is_valid()) {
-        Log::error("Distortion shader is not valid");
+        Log::error("Instanced distortion shader is not valid");
         return;
       }
 
-      // Create transformation matrix
-      glm::mat4 model = glm::mat4(1.0f);
-      model = glm::translate(model, glm::vec3(position.x, position.y, 0.0f));
+      // Frustum culling - skip if not visible
+      if (frustum_culling_enabled) {
+        f32 half_w = std::abs(size.x) * 0.5f;
+        f32 half_h = std::abs(size.y) * 0.5f;
+        if (!cached_camera_bounds.intersects(position.x, position.y, half_w, half_h)) {
+          return;
+        }
+      }
+
+      // Build instance data - GPU does vertex transformation + distortion
+      InstanceData inst;
+      inst.model = glm::mat4(1.0f);
+      inst.model = glm::translate(inst.model, glm::vec3(position.x, position.y, 0.0f));
 
       if (rotation != 0.0f) {
-        model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+        inst.model = glm::rotate(inst.model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
       }
 
-      model = glm::scale(model, glm::vec3(size.x * flip.x, size.y * flip.y, 1.0f));
+      inst.model = glm::scale(inst.model, glm::vec3(size.x * flip.x, size.y * flip.y, 1.0f));
 
-      // Create quad vertices
-      Vertex vertices[4];
+      inst.color = glm::vec4(color.x, color.y, color.z, color.w);
+      inst.uv_min = glm::vec2(tex_coords[3].x, tex_coords[3].y);
+      inst.uv_max = glm::vec2(tex_coords[1].x, tex_coords[1].y);
 
-      // Convert color from 0-1 range
-      glm::vec4 normalized_color(color.x, color.y, color.z, color.w);
-
-      // Vertices are centered around the origin
-      glm::vec2 base_positions[4] = {
-        glm::vec2(-0.5f, 0.5f),  // Bottom-left
-        glm::vec2(0.5f, 0.5f),   // Bottom-right
-        glm::vec2(0.5f, -0.5f),  // Top-right
-        glm::vec2(-0.5f, -0.5f)  // Top-left
-      };
-
-      // Transform vertices by model matrix
-      for (int i = 0; i < 4; i++) {
-        glm::vec4 transformed = model * glm::vec4(base_positions[i], 0.0f, 1.0f);
-        vertices[i].position = glm::vec2(transformed.x, transformed.y);
-        vertices[i].texCoord = glm::vec2(tex_coords[i].x, tex_coords[i].y);
-        vertices[i].color = normalized_color;
-      }
-
-      // Add to batch with distortion shader
-      batch_quad(texture->id, vertices, distortion_shader.get(), intensity, speed, mesh_intensity);
+      // Add to instanced batch with distortion shader
+      batch_instance(texture->id, inst, false, distortion_shader.get(), intensity, speed, mesh_intensity);
     }
 
     void draw_texture_distortion(Engine::Graphics::Texture texture, const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, const Math::Vec4D& color, f32 intensity, f32 speed, f32 mesh_intensity, const Math::Vec2D& flip) {
@@ -1474,41 +1475,32 @@ namespace Engine {
     }
 
     void draw_line_ui(const Math::Vec2D& start, const Math::Vec2D& end, f32 thickness, const Math::Vec4D& color) {
-      // Flush current batch before drawing lines
-      flush_batch();
+      // Draw UI line as a thin rotated quad using instanced rendering (no camera)
+      f32 dx = end.x - start.x;
+      f32 dy = end.y - start.y;
+      f32 length = std::sqrt(dx * dx + dy * dy);
+      if (length < 0.0001f) return;
 
-      // Enable line rendering
-      glLineWidth(thickness);
+      // Midpoint of the line segment
+      f32 mid_x = (start.x + end.x) * 0.5f;
+      f32 mid_y = (start.y + end.y) * 0.5f;
 
-      // Set up shader (no view matrix for UI)
-      shader->use();
-      shader->set_mat4("u_projection", get_projection_matrix());
-      shader->set_mat4("u_view", glm::mat4(1.0f)); // Identity matrix - no camera transformation
-      shader->set_int("u_texture", 0);
+      // Angle from start to end
+      f32 angle = std::atan2(dy, dx);
 
-      // Bind white texture for solid color
-      glBindTexture(GL_TEXTURE_2D, unit_rect->id);
+      // Build instance: a unit quad scaled to (length x thickness), rotated, centered at midpoint
+      InstanceData inst;
+      inst.model = glm::mat4(1.0f);
+      inst.model = glm::translate(inst.model, glm::vec3(mid_x, mid_y, 0.0f));
+      inst.model = glm::rotate(inst.model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
+      inst.model = glm::scale(inst.model, glm::vec3(length, thickness, 1.0f));
 
-      // Create line vertices
-      Vertex line_vertices[2];
-      line_vertices[0].position = glm::vec2(start.x, start.y);
-      line_vertices[0].texCoord = glm::vec2(0.5f, 0.5f);
-      line_vertices[0].color = glm::vec4(color.x, color.y, color.z, color.w);
+      inst.color = glm::vec4(color.x, color.y, color.z, color.w);
+      inst.uv_min = glm::vec2(0.0f, 0.0f);
+      inst.uv_max = glm::vec2(1.0f, 1.0f);
 
-      line_vertices[1].position = glm::vec2(end.x, end.y);
-      line_vertices[1].texCoord = glm::vec2(0.5f, 0.5f);
-      line_vertices[1].color = glm::vec4(color.x, color.y, color.z, color.w);
-
-      // Upload vertices
-      glBindVertexArray(vao);
-      glBindBuffer(GL_ARRAY_BUFFER, vbo);
-      glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(line_vertices), line_vertices);
-
-      // Draw line
-      glDrawArrays(GL_LINES, 0, 2);
-
-      // Reset line width to default
-      glLineWidth(1.0f);
+      // Use unit_rect (1x1 white pixel) for solid color, UI flag = true
+      batch_instance(unit_rect->id, inst, true);
     }
 
     void draw_polygon_ui(const std::vector<Math::Vec2D>& vertices, const Math::Vec2D& position, f32 rotation, const Math::Vec4D& color) {
@@ -1516,6 +1508,9 @@ namespace Engine {
         Log::warning("Attempted to draw UI polygon with less than 3 vertices");
         return;
       }
+
+      // Flush instanced batch to maintain draw order
+      flush_batch();
 
       // Convert rotation to radians
       f32 angle_rad = rotation * 3.14159265359f / 180.0f;
@@ -1527,81 +1522,50 @@ namespace Engine {
       transformed_vertices.reserve(vertices.size());
 
       for (const auto& vertex : vertices) {
-        // Apply rotation around origin
         f32 rotated_x = vertex.x * cos_angle - vertex.y * sin_angle;
         f32 rotated_y = vertex.x * sin_angle + vertex.y * cos_angle;
-
-        // Translate to position
         transformed_vertices.push_back(Math::Vec2D(rotated_x + position.x, rotated_y + position.y));
       }
 
-      // Get the unit rect texture for drawing filled triangles
+      // Get the unit rect texture for solid color fill
       auto texture = Engine::Resources::get_rect_texture();
-      if (!texture || texture->id == 0) {
-        return;
-      }
+      if (!texture || texture->id == 0) return;
 
-      // Calculate centroid of the polygon
+      // Calculate centroid for fan triangulation
       Math::Vec2D centroid(0.0f, 0.0f);
-      for (const auto& vertex : transformed_vertices) {
-        centroid = centroid + vertex;
+      for (const auto& v : transformed_vertices) {
+        centroid = centroid + v;
       }
       centroid = centroid * (1.0f / transformed_vertices.size());
 
-      // Triangulate from centroid to each edge
+      // Build triangle fan vertex data: position(2f) + texcoord(2f) + color(4f) = 8 floats per vertex
+      glm::vec4 col(color.x, color.y, color.z, color.w);
+      std::vector<float> tri_data;
+      tri_data.reserve(transformed_vertices.size() * 3 * 8);
+
       for (size_t i = 0; i < transformed_vertices.size(); ++i) {
         size_t next_i = (i + 1) % transformed_vertices.size();
-
         Math::Vec2D v0 = centroid;
         Math::Vec2D v1 = transformed_vertices[i];
         Math::Vec2D v2 = transformed_vertices[next_i];
 
-        // Create vertices for a filled triangle using the quad batching system
-        Vertex tri_vertices[4];
-
-        // Convert color from 0-1 range
-        glm::vec4 normalized_color(color.x, color.y, color.z, color.w);
-
-        // Use the three triangle vertices and repeat the last one to make a quad
-        tri_vertices[0].position = glm::vec2(v0.x, v0.y);
-        tri_vertices[0].texCoord = glm::vec2(0.5f, 0.5f);
-        tri_vertices[0].color = normalized_color;
-
-        tri_vertices[1].position = glm::vec2(v1.x, v1.y);
-        tri_vertices[1].texCoord = glm::vec2(0.5f, 0.5f);
-        tri_vertices[1].color = normalized_color;
-
-        tri_vertices[2].position = glm::vec2(v2.x, v2.y);
-        tri_vertices[2].texCoord = glm::vec2(0.5f, 0.5f);
-        tri_vertices[2].color = normalized_color;
-
-        tri_vertices[3].position = glm::vec2(v2.x, v2.y);
-        tri_vertices[3].texCoord = glm::vec2(0.5f, 0.5f);
-        tri_vertices[3].color = normalized_color;
-
-        // Flush current batch if texture changed
-        if (batch_state.current_texture_id != 0 && batch_state.current_texture_id != texture->id) {
-          flush_batch();
-        }
-
-        // Check if we need to flush due to batch size
-        if (batch_state.quad_count >= MAX_QUAD_COUNT) {
-          flush_batch();
-        }
-
-        // Set current texture
-        batch_state.current_texture_id = texture->id;
-
-        // Manually add vertices to batch (avoiding camera transformation)
-        size_t vertex_offset = batch_state.vertices.size();
-        batch_state.vertices.resize(vertex_offset + 4);
-
-        for (int j = 0; j < 4; j++) {
-          batch_state.vertices[vertex_offset + j] = tri_vertices[j];
-        }
-
-        batch_state.quad_count++;
+        tri_data.insert(tri_data.end(), { v0.x, v0.y, 0.5f, 0.5f, col.r, col.g, col.b, col.a });
+        tri_data.insert(tri_data.end(), { v1.x, v1.y, 0.5f, 0.5f, col.r, col.g, col.b, col.a });
+        tri_data.insert(tri_data.end(), { v2.x, v2.y, 0.5f, 0.5f, col.r, col.g, col.b, col.a });
       }
+
+      // Draw using polygon shader + direct GL_TRIANGLES (UI: identity view matrix)
+      polygon_shader->use();
+      polygon_shader->set_mat4("u_projection", get_projection_matrix());
+      polygon_shader->set_mat4("u_view", glm::mat4(1.0f));
+      polygon_shader->set_int("u_texture", 0);
+
+      glBindTexture(GL_TEXTURE_2D, texture->id);
+      glBindVertexArray(polygon_vao);
+      glBindBuffer(GL_ARRAY_BUFFER, polygon_vbo);
+      glBufferSubData(GL_ARRAY_BUFFER, 0, tri_data.size() * sizeof(float), tri_data.data());
+      glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(tri_data.size() / 8));
+      glBindVertexArray(0);
     }
 
     void draw_triangle_ui(const Math::Vec2D& position, f32 radius, f32 rotation, const Math::Vec4D& color) {

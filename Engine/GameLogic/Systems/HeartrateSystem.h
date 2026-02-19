@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include "../../Engine/MonkeyEngine.h"
+#include "pch.h"
 #include "../Components/HeartrateComponent.h"
 
 namespace Engine {

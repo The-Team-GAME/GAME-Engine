@@ -107,12 +107,12 @@ namespace Engine {
 
           // Get the component array for this component type
           auto& containers = Engine::ECS::Internal::get_containers();
-          auto it = containers.component_arrays.find(event.component_type_id);
-          if (it == containers.component_arrays.end()) {
+          auto& comp_ptr = containers.component_arrays[event.component_type_id];
+          if (!comp_ptr) {
             return;
           }
 
-          Engine::ECS::IComponentArray* array = it->second.get();
+          Engine::ECS::IComponentArray* array = comp_ptr.get();
 
           // Apply the new component data using reflection
           array->set_component_from_generic_value(event.entity_id, event.new_data);
@@ -157,12 +157,12 @@ namespace Engine {
 
           // Get the component array for this component type
           auto& containers = Engine::ECS::Internal::get_containers();
-          auto it = containers.component_arrays.find(event.component_type_id);
-          if (it == containers.component_arrays.end()) {
+          auto& comp_ptr = containers.component_arrays[event.component_type_id];
+          if (!comp_ptr) {
             return;
           }
 
-          Engine::ECS::IComponentArray* array = it->second.get();
+          Engine::ECS::IComponentArray* array = comp_ptr.get();
 
           // Add the component using reflection
           if (array->add_component_from_generic_value(event.entity_id, event.component_data)) {
@@ -215,12 +215,12 @@ namespace Engine {
 
           // Get the component array for this component type
           auto& containers = Engine::ECS::Internal::get_containers();
-          auto it = containers.component_arrays.find(event.component_type_id);
-          if (it == containers.component_arrays.end()) {
+          auto& comp_ptr = containers.component_arrays[event.component_type_id];
+          if (!comp_ptr) {
             return;
           }
 
-          Engine::ECS::IComponentArray* array = it->second.get();
+          Engine::ECS::IComponentArray* array = comp_ptr.get();
 
           // Capture component data before removal for undo
           ReflectionLibrary::GenericValue component_data;

@@ -18,6 +18,7 @@
 #include "Precompiled.h"
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
+#include <imgui_internal.h>
 #include "InputManager.h"
 #include "Perf.h"
 #include "ImGuiThemes.h"
@@ -28,6 +29,7 @@
 #include "Events/WindowEvents.h"
 #include "EventManager/EventManager.h"
 #include "GUI/ViewportPanel.h"
+#include "HotReloadManager.h"
 
 namespace {
   bool gui_enabled = true; // Completely disable ImGui when false (TODO: Hook this up to a setting)
@@ -244,6 +246,26 @@ namespace ImGuiManager {
           Engine::Time::set_paused(true);
         }
 
+        ImGui::SameLine();
+        ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+        ImGui::SameLine();
+
+        // Build Button
+        if (Engine::HotReload::is_building())
+        {
+          if (ImGui::Button("Cancel", ImVec2(80, 0)))
+          {
+            Engine::HotReload::request_build_cancellation();
+          }
+        }
+        else
+        {
+          if (ImGui::Button("Build", ImVec2(80, 0)))
+          {
+            Engine::HotReload::request_manual_reload();
+          }
+        }
+
         ImGui::Unindent(8.0f); // Remove left padding
         ImGui::Dummy(ImVec2(0.0f, 4.0f)); // Bottom padding
 
@@ -387,6 +409,97 @@ namespace ImGuiManager {
     // ==================================================================================
 
     // ==================================================================================
+    // "Building..." overlay (top-right, persistent while build is running)
+    // ==================================================================================
+    {
+      static bool was_building = false;
+      bool currently_building = Engine::HotReload::is_building();
+
+      // Detect build cancellation → show warning toast
+      if (Engine::HotReload::consume_build_cancelled())
+      {
+        show_toast("Build cancelled",
+          ImGuiManager::ToastType::Warning, 3.0f);
+      }
+
+      // Detect build completion → show toast with total time
+      if (was_building && !currently_building)
+      {
+        float duration = Engine::HotReload::get_last_build_duration();
+        bool success = Engine::HotReload::last_build_succeeded();
+        int errors = Engine::HotReload::get_build_error_count();
+        char buf[128];
+        if (success)
+          std::snprintf(buf, sizeof(buf), "Build succeeded in %.1fs", duration);
+        else
+          std::snprintf(buf, sizeof(buf), "Build FAILED after %.1fs (%d error%s)",
+            duration, errors, errors == 1 ? "" : "s");
+
+        show_toast(buf,
+          success ? ImGuiManager::ToastType::Info : ImGuiManager::ToastType::Error,
+          5.0f);
+      }
+      was_building = currently_building;
+
+      if (currently_building)
+      {
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImVec2 work_pos = viewport->WorkPos;
+        ImVec2 work_size = viewport->WorkSize;
+
+        float padding = 16.0f;
+        float toast_width = 260.0f;
+
+        ImVec2 build_pos = ImVec2(
+          work_pos.x + work_size.x - toast_width - padding,
+          work_pos.y + padding
+        );
+
+        ImGui::SetNextWindowPos(build_pos, ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(toast_width, 0), ImGuiCond_Always);
+
+        ImVec4 accent(0.1f, 0.7f, 0.9f, 1.0f); // teal / cyan accent
+
+        ImGui::PushStyleColor(ImGuiCol_Border, accent);
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.12f, 0.12f, 0.15f, 0.95f));
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 2.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 10.0f));
+
+        ImGuiWindowFlags build_flags =
+          ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+          ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
+          ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs |
+          ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+
+        if (ImGui::Begin("##BuildingOverlay", nullptr, build_flags))
+        {
+          // Animated spinner dots
+          const char* dots[] = { "   ", ".  ", ".. ", "..." };
+          int dot_idx = static_cast<int>(ImGui::GetTime() * 3.0f) % 4;
+
+          float elapsed = Engine::HotReload::get_build_elapsed_seconds();
+
+          ImGui::TextColored(accent, "[BUILD]");
+          ImGui::SameLine();
+          ImGui::Text("Building GameLogic%s", dots[dot_idx]);
+          ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "Elapsed: %.1fs", elapsed);
+
+          // Show current file being compiled
+          std::string current_file = Engine::HotReload::get_current_build_status();
+          if (!current_file.empty())
+          {
+            ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "%s", current_file.c_str());
+          }
+        }
+        ImGui::End();
+
+        ImGui::PopStyleVar(3);
+        ImGui::PopStyleColor(2);
+      }
+    }
+
+    // ==================================================================================
     // Render toast notifications
     // ==================================================================================
     if (!active_toasts.empty())
@@ -467,7 +580,7 @@ namespace ImGuiManager {
         y_offset -= toast_spacing;
       }
     }
-    
+
     // ==================================================================================
     // End of toast notifications
     // ==================================================================================
@@ -496,7 +609,7 @@ namespace ImGuiManager {
       ImGui::RenderPlatformWindowsDefault();
       glfwMakeContextCurrent(backup_current_context);
     }
-    
+
     Engine::Perf::stop("ImGui Render");
 #endif
   }
@@ -520,19 +633,19 @@ namespace ImGuiManager {
     }
 
     // Save
-    if (Engine::Input::is_held(Engine::KeyCode::CtrlLeft) && Engine::Input::is_pressed(Engine::KeyCode::S))
+    if (Engine::Input::is_held_raw(Engine::KeyCode::CtrlLeft) && Engine::Input::is_pressed_raw(Engine::KeyCode::S))
     {
       Engine::ProjectSaveManager::save_all_dirty();
     }
 
     // Toggle ImGui with F1 key
-    if (Engine::Input::is_pressed(Engine::KeyCode::F1))
+    if (Engine::Input::is_pressed_raw(Engine::KeyCode::F1))
     {
       main_gui_visible = !main_gui_visible;
     }
 
     // Toggle Panel Viewport Mode with F2 key
-    if (Engine::Input::is_pressed(Engine::KeyCode::F2))
+    if (Engine::Input::is_pressed_raw(Engine::KeyCode::F2))
     {
       Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().panel_viewport_mode =
         !Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode;
@@ -549,7 +662,7 @@ namespace ImGuiManager {
     }
 
     // Toggle debug layer with F3 key
-    if (Engine::Input::is_pressed(Engine::KeyCode::F3))
+    if (Engine::Input::is_pressed_raw(Engine::KeyCode::F3))
     {
       Engine::ECS::is_layer_active("debug") ? Engine::ECS::disable_layer("debug") : Engine::ECS::enable_layer("debug");
     }
@@ -625,7 +738,7 @@ namespace ImGuiManager {
     if (is_viewport_mode_enabled()) {
       auto bounds = ViewportPanel::get_viewport_bounds();
       return { bounds.x, bounds.y };
-    }
+  }
     else {
       ImGuiViewport* viewport = ImGui::GetMainViewport();
       return { viewport->WorkPos.x, viewport->WorkPos.y };
@@ -657,4 +770,30 @@ namespace ImGuiManager {
 #endif
   }
 
-}
+  bool is_game_input_blocked()
+  {
+#ifndef GAME_BUILD
+    // If the GUI is not visible, input is never blocked
+    if (!gui_enabled || !main_gui_visible)
+      return false;
+
+    // Check if any ImGui window has focus
+    ImGuiContext* ctx = ImGui::GetCurrentContext();
+    if (!ctx || !ctx->NavWindow)
+      return false;
+
+    // If the viewport panel is focused or hovered, allow game input.
+    // Hover check is needed because focus transfers happen during ImGui render,
+    // which runs AFTER ECS systems — so on the frame the user clicks the viewport
+    // from another panel, focused is still false but hovered is true.
+    if (ViewportPanel::is_viewport_focused() || ViewportPanel::is_viewport_hovered())
+      return false;
+
+    // Any other ImGui window is focused — block game input
+    return true;
+#else
+    return false;
+#endif
+  }
+
+  }
