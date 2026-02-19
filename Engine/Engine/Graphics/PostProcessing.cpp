@@ -508,6 +508,7 @@ namespace Engine::Graphics::PostProcessing {
     composite_shader->set_float("u_chromatic_aberration_intensity", current_settings.chromatic_aberration_intensity);
     composite_shader->set_int("u_chromatic_aberration_samples", current_settings.chromatic_aberration_samples);
     composite_shader->set_bool("u_chromatic_aberration_edge_only", current_settings.chromatic_aberration_edge_only);
+    composite_shader->set_int("u_chromatic_aberration_mode", current_settings.chromatic_aberration_mode);
 
     // Vignette
     composite_shader->set_bool("u_vignette_enabled", current_settings.vignette_enabled);
@@ -543,14 +544,12 @@ namespace Engine::Graphics::PostProcessing {
     composite_shader->set_bool("u_film_grain_enabled", current_settings.film_grain_enabled);
     composite_shader->set_float("u_film_grain_intensity", current_settings.film_grain_intensity);
     composite_shader->set_float("u_film_grain_size", current_settings.film_grain_size);
+    composite_shader->set_int("u_film_grain_mode", current_settings.film_grain_mode);
 
     // Tone Mapping
     composite_shader->set_bool("u_tonemapping_enabled", current_settings.tonemapping_enabled);
     composite_shader->set_int("u_tonemapping_mode", current_settings.tonemapping_mode);
     composite_shader->set_float("u_tonemapping_exposure", current_settings.tonemapping_exposure);
-
-    // Effect variant
-    composite_shader->set_int("u_effect_variant", current_settings.effect_variant);
 
     render_quad();
 
@@ -708,6 +707,7 @@ namespace Engine::Graphics::PostProcessing {
     doc.AddMember("chromatic_aberration_intensity", s.chromatic_aberration_intensity, a);
     doc.AddMember("chromatic_aberration_samples", s.chromatic_aberration_samples, a);
     doc.AddMember("chromatic_aberration_edge_only", s.chromatic_aberration_edge_only, a);
+    doc.AddMember("chromatic_aberration_mode", s.chromatic_aberration_mode, a);
 
     // CRT
     doc.AddMember("crt_enabled", s.crt_enabled, a);
@@ -735,6 +735,7 @@ namespace Engine::Graphics::PostProcessing {
     doc.AddMember("film_grain_enabled", s.film_grain_enabled, a);
     doc.AddMember("film_grain_intensity", s.film_grain_intensity, a);
     doc.AddMember("film_grain_size", s.film_grain_size, a);
+    doc.AddMember("film_grain_mode", s.film_grain_mode, a);
 
     // Tone Mapping
     doc.AddMember("tonemapping_enabled", s.tonemapping_enabled, a);
@@ -744,9 +745,6 @@ namespace Engine::Graphics::PostProcessing {
     // Sharpen
     doc.AddMember("sharpen_enabled", s.sharpen_enabled, a);
     doc.AddMember("sharpen_intensity", s.sharpen_intensity, a);
-
-    // Effect variant
-    doc.AddMember("effect_variant", s.effect_variant, a);
 
     // MSAA
     doc.AddMember("msaa_enabled", s.msaa_enabled, a);
@@ -818,6 +816,7 @@ namespace Engine::Graphics::PostProcessing {
     get_float("chromatic_aberration_intensity", s.chromatic_aberration_intensity);
     get_int("chromatic_aberration_samples", s.chromatic_aberration_samples);
     get_bool("chromatic_aberration_edge_only", s.chromatic_aberration_edge_only);
+    get_int("chromatic_aberration_mode", s.chromatic_aberration_mode);
 
     get_bool("crt_enabled", s.crt_enabled);
     get_float("crt_scanline_intensity", s.crt_scanline_intensity);
@@ -838,6 +837,7 @@ namespace Engine::Graphics::PostProcessing {
     get_bool("film_grain_enabled", s.film_grain_enabled);
     get_float("film_grain_intensity", s.film_grain_intensity);
     get_float("film_grain_size", s.film_grain_size);
+    get_int("film_grain_mode", s.film_grain_mode);
 
     get_bool("tonemapping_enabled", s.tonemapping_enabled);
     get_int("tonemapping_mode", s.tonemapping_mode);
@@ -845,8 +845,6 @@ namespace Engine::Graphics::PostProcessing {
 
     get_bool("sharpen_enabled", s.sharpen_enabled);
     get_float("sharpen_intensity", s.sharpen_intensity);
-
-    get_int("effect_variant", s.effect_variant);
 
     get_bool("msaa_enabled", s.msaa_enabled);
     get_int("msaa_samples", s.msaa_samples);

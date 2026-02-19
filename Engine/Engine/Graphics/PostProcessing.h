@@ -53,8 +53,9 @@ namespace Engine::Graphics::PostProcessing {
     // Chromatic Aberration
     bool chromatic_aberration_enabled = false;
     float chromatic_aberration_intensity = 0.005f; // UV offset per channel
-    int chromatic_aberration_samples = 3;          // 3 or 6
+    int chromatic_aberration_samples = 3;          // 3-12 (spectral mode)
     bool chromatic_aberration_edge_only = false;
+    int chromatic_aberration_mode = 0;              // 0 = Simple, 1 = Spectral
 
     // CRT Emulation
     bool crt_enabled = false;
@@ -78,6 +79,7 @@ namespace Engine::Graphics::PostProcessing {
     bool film_grain_enabled = false;
     float film_grain_intensity = 0.1f;
     float film_grain_size = 1.0f;
+    int film_grain_mode = 0;                        // 0 = Fine, 1 = Coarse
 
     // Tone Mapping (NEW effect)
     bool tonemapping_enabled = false;
@@ -87,9 +89,6 @@ namespace Engine::Graphics::PostProcessing {
     // Sharpen (NEW effect)
     bool sharpen_enabled = false;
     float sharpen_intensity = 0.5f;                // 0 = none, 1 = full CAS
-
-    // Effect variant (0 = Type 1, 1 = Type 2)
-    int effect_variant = 0;
 
     // MSAA Anti-Aliasing
     bool msaa_enabled = false;

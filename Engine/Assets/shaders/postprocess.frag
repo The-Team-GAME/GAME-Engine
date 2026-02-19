@@ -59,14 +59,15 @@ uniform float u_time;
 uniform bool  u_film_grain_enabled;
 uniform float u_film_grain_intensity;
 uniform float u_film_grain_size;
+uniform int   u_film_grain_mode; // 0 = Fine (resolution-scaled), 1 = Coarse
 
 // Tone Mapping
 uniform bool  u_tonemapping_enabled;
 uniform int   u_tonemapping_mode;
 uniform float u_tonemapping_exposure;
 
-// Effect variant: 0 = Type 1, 1 = Type 2
-uniform int u_effect_variant;
+// Chromatic Aberration mode: 0 = Simple (3-tap), 1 = Spectral
+uniform int u_chromatic_aberration_mode;
 
 // ============================================================
 // Helper functions
@@ -196,37 +197,16 @@ void main() {
   if (u_chromatic_aberration_enabled) {
     vec2 dir = uv - 0.5;
 
-    if (u_effect_variant == 0) {
-      // ---- Type 1 ----
+    if (u_chromatic_aberration_mode == 0) {
+      // ---- Simple (3-tap R/G/B split) ----
       float mask = u_chromatic_aberration_edge_only ? length(dir) * 2.0 : 1.0;
       float ca_off = u_chromatic_aberration_intensity * mask;
-
-      if (u_chromatic_aberration_samples >= 6) {
-        vec3 accum = vec3(0.0);
-        const vec3 weights[6] = vec3[](
-          vec3(1.0, 0.0, 0.0),
-          vec3(0.5, 0.5, 0.0),
-          vec3(0.0, 1.0, 0.0),
-          vec3(0.0, 1.0, 0.0),
-          vec3(0.0, 0.5, 0.5),
-          vec3(0.0, 0.0, 1.0)
-        );
-        vec3 total_w = vec3(0.0);
-        for (int i = 0; i < 6; i++) {
-          float t = float(i) / 5.0 - 0.5;
-          vec3 tap = texture(u_scene, uv + dir * ca_off * t).rgb;
-          accum += tap * weights[i];
-          total_w += weights[i];
-        }
-        color = accum / total_w;
-      } else {
-        float r = texture(u_scene, uv + dir * ca_off).r;
-        float g = texture(u_scene, uv).g;
-        float b = texture(u_scene, uv - dir * ca_off).b;
-        color = vec3(r, g, b);
-      }
+      float r = texture(u_scene, uv + dir * ca_off).r;
+      float g = texture(u_scene, uv).g;
+      float b = texture(u_scene, uv - dir * ca_off).b;
+      color = vec3(r, g, b);
     } else {
-      // ---- Type 2 ----
+      // ---- Spectral (N-tap continuous weights) ----
       float len = length(dir);
       float mask = u_chromatic_aberration_edge_only
                      ? smoothstep(0.0, 0.8, len * 2.0) : 1.0;
@@ -239,7 +219,6 @@ void main() {
         float t = float(i) / float(samples - 1); // 0..1
         vec2 sample_uv = uv + dir * ca_off * (t - 0.5);
         vec3 tap = texture(u_scene, sample_uv).rgb;
-        // Continuous spectral weights: R peaks at t=0, G at 0.5, B at 1.0
         vec3 w = vec3(
           max(0.0, 1.0 - abs(t * 2.0 - 0.0) * 2.0),
           max(0.0, 1.0 - abs(t * 2.0 - 1.0) * 2.0),
@@ -271,8 +250,6 @@ void main() {
 
   // ============================================================
   // 4. Tone Mapping (ACES / Reinhard / Uncharted2)
-  //    Type 1: Standard Uncharted2
-  //    Type 2: Uncharted2 pre-multiplies input by 2.0
   // ============================================================
   if (u_tonemapping_enabled) {
     color *= u_tonemapping_exposure;
@@ -281,11 +258,7 @@ void main() {
     } else if (u_tonemapping_mode == 1) {
       color = reinhard_tonemap(color);
     } else {
-      if (u_effect_variant == 0) {
-        color = uncharted2_tonemap(color);        // Type 1
-      } else {
-        color = uncharted2_tonemap(color * 2.0);  // Type 2
-      }
+      color = uncharted2_tonemap(color * 2.0);
     }
   }
 
@@ -301,42 +274,31 @@ void main() {
   }
 
   // ============================================================
-  // 6. Vignette
-  //    Type 1: Divides centered.x by roundness
-  //    Type 2: Divides centered by vec2(roundness, 1.0),
-  //            guards smoothness with max(0.001)
+  // 6. Vignette (elliptical + color + smoothness)
   // ============================================================
   if (u_vignette_enabled) {
     vec2 centered = uv - 0.5;
-
-    if (u_effect_variant == 0) {
-      // ---- Type 1 ----
-      centered.x /= u_vignette_roundness;
-      float dist = length(centered);
-      float vignette = smoothstep(u_vignette_radius,
-                                  u_vignette_radius - u_vignette_smoothness, dist);
-      color = mix(u_vignette_color, color, mix(1.0, vignette, u_vignette_intensity));
-    } else {
-      // ---- Type 2 ----
-      centered /= vec2(u_vignette_roundness, 1.0);
-      float dist = length(centered);
-      float sm = max(u_vignette_smoothness, 0.001);
-      float vignette = smoothstep(u_vignette_radius,
-                                  u_vignette_radius - sm, dist);
-      color = mix(u_vignette_color, color, mix(1.0, vignette, u_vignette_intensity));
-    }
+    centered /= vec2(u_vignette_roundness, 1.0);
+    float dist = length(centered);
+    float sm = max(u_vignette_smoothness, 0.001);
+    float vignette = smoothstep(u_vignette_radius,
+                                u_vignette_radius - sm, dist);
+    color = mix(u_vignette_color, color, mix(1.0, vignette, u_vignette_intensity));
   }
 
   // ============================================================
-  // 7. Color Quantization
-  //    Type 1: Hardcoded palette-level approximations,
-  //            dither applied per-channel (/levels vec3)
-  //    Type 2: Actual PICO-8 palette matching (palette 3),
-  //            dither applied as scalar (/u_quantize_levels)
+  // 7. Color Quantization (PICO-8 palette matching + scalar dither)
   // ============================================================
   if (u_quantize_enabled) {
-    if (u_effect_variant == 0) {
-      // ---- Type 1 ----
+    if (u_quantize_palette == 3) {
+      // PICO-8: closest-color palette matching
+      if (u_quantize_dither_enabled) {
+        ivec2 pos = ivec2(gl_FragCoord.xy);
+        float threshold = bayer8x8(pos);
+        color += threshold / u_quantize_levels;
+      }
+      color = match_palette(color);
+    } else {
       vec3 levels;
       if (u_quantize_palette == 1) {
         levels = vec3(4.0, 4.0, 3.0);
@@ -344,138 +306,63 @@ void main() {
         levels = vec3(4.0);
         float luma = dot(color, vec3(0.2126, 0.7152, 0.0722));
         color = vec3(luma * 0.7, luma, luma * 0.3);
-      } else if (u_quantize_palette == 3) {
-        levels = vec3(4.0, 4.0, 3.0);
       } else {
         levels = u_quantize_levels_rgb;
       }
       if (u_quantize_dither_enabled) {
         ivec2 pos = ivec2(gl_FragCoord.xy);
         float threshold = bayer8x8(pos);
-        color += threshold / levels;
+        color += threshold / u_quantize_levels;
       }
       color = floor(color * levels) / levels;
-    } else {
-      // ---- Type 2 ----
-      if (u_quantize_palette == 3) {
-        // Actual PICO-8: closest-color palette matching
-        if (u_quantize_dither_enabled) {
-          ivec2 pos = ivec2(gl_FragCoord.xy);
-          float threshold = bayer8x8(pos);
-          color += threshold / u_quantize_levels;
-        }
-        color = match_palette(color);
-      } else {
-        // Other palettes: same level logic, scalar dither
-        vec3 levels;
-        if (u_quantize_palette == 1) {
-          levels = vec3(4.0, 4.0, 3.0);
-        } else if (u_quantize_palette == 2) {
-          levels = vec3(4.0);
-          float luma = dot(color, vec3(0.2126, 0.7152, 0.0722));
-          color = vec3(luma * 0.7, luma, luma * 0.3);
-        } else {
-          levels = u_quantize_levels_rgb;
-        }
-        if (u_quantize_dither_enabled) {
-          ivec2 pos = ivec2(gl_FragCoord.xy);
-          float threshold = bayer8x8(pos);
-          color += threshold / u_quantize_levels;
-        }
-        color = floor(color * levels) / levels;
-      }
     }
   }
 
   // ============================================================
   // 8. Film Grain
-  //    Type 1: UV * size * resolution noise, strong dark-area weighting
-  //    Type 2: Simpler UV * size + time noise, softer luminance weighting
+  //    Fine:   resolution-scaled noise, stronger in dark areas
+  //    Coarse: simpler noise, softer luminance weighting
   // ============================================================
   if (u_film_grain_enabled) {
     float luminance = dot(color, vec3(0.2126, 0.7152, 0.0722));
-
-    if (u_effect_variant == 0) {
-      // ---- Type 1 ----
-      float grain = hash_noise(uv * u_film_grain_size * u_resolution
+    if (u_film_grain_mode == 0) {
+      // Fine
+      float noise = hash_noise(uv * u_film_grain_size * u_resolution
                                + vec2(u_time * 1000.0));
-      color += (grain - 0.5) * u_film_grain_intensity * (1.0 - luminance);
+      color += (noise - 0.5) * u_film_grain_intensity * (1.0 - luminance);
     } else {
-      // ---- Type 2 ----
-      float grain = rand(uv * u_film_grain_size + u_time);
-      color += (grain - 0.5) * u_film_grain_intensity * (1.0 - luminance * 0.5);
+      // Coarse
+      float noise = rand(uv * u_film_grain_size + u_time);
+      float grain = (noise - 0.5) * u_film_grain_intensity;
+      color += grain * (1.0 - luminance * 0.5);
     }
   }
 
   // ============================================================
-  // 9. CRT Scanlines + sub-pixels + glow + corners + flicker
-  //    Type 1: pi scanlines, 0.7-base subpixels, box-blur glow,
-  //            SDF rounded corners, sin(60t) flicker
-  //    Type 2: 2*pi scanlines, 0.5-base subpixels, brightness glow,
-  //            no rounded corners, sin(20t)+rand flicker
+  // 9. CRT Scanlines + sub-pixels + glow + flicker
   // ============================================================
   if (u_crt_enabled) {
-    if (u_effect_variant == 0) {
-      // ---- Type 1 ----
-      float scanline = sin(uv.y * u_crt_scanline_count * 3.14159) * 0.5 + 0.5;
-      color *= 1.0 - u_crt_scanline_intensity * (1.0 - scanline);
+    float scanline = sin(uv.y * u_crt_scanline_count * 2.0 * 3.14159) * 0.5 + 0.5;
+    color *= 1.0 - u_crt_scanline_intensity * (1.0 - scanline);
 
-      if (u_crt_subpixel_enabled) {
-        int px = int(gl_FragCoord.x) % 3;
-        vec3 smask = vec3(0.7);
-        if (px == 0)      smask.r = 1.0;
-        else if (px == 1) smask.g = 1.0;
-        else              smask.b = 1.0;
-        color *= smask;
-      }
+    if (u_crt_subpixel_enabled) {
+      int px = int(gl_FragCoord.x * 2.0) % 3;
+      vec3 smask = vec3(0.5);
+      if (px == 0)      smask.r = 1.0;
+      else if (px == 1) smask.g = 1.0;
+      else              smask.b = 1.0;
+      color *= smask;
+    }
 
-      if (u_crt_glow_enabled) {
-        vec2 texel = 1.0 / u_resolution;
-        vec3 glow = vec3(0.0);
-        glow += texture(u_scene, uv + vec2(-texel.x, 0.0)).rgb;
-        glow += texture(u_scene, uv + vec2( texel.x, 0.0)).rgb;
-        glow += texture(u_scene, uv + vec2(0.0, -texel.y)).rgb;
-        glow += texture(u_scene, uv + vec2(0.0,  texel.y)).rgb;
-        glow *= 0.25;
-        color = mix(color, glow, u_crt_glow_intensity);
-      }
+    if (u_crt_glow_enabled) {
+      color *= (1.0 + u_crt_glow_intensity);
+    }
 
-      if (u_crt_corner_radius > 0.0) {
-        float corner = crt_corner_mask(uv, u_crt_corner_radius);
-        color *= corner;
-      }
-
-      if (u_crt_flicker_intensity > 0.0) {
-        float flicker = 1.0 - u_crt_flicker_intensity * 0.5
-                        * (sin(u_time * 60.0) * 0.5 + 0.5);
-        color *= flicker;
-      }
-    } else {
-      // ---- Type 2 ----
-      float scanline = sin(uv.y * u_crt_scanline_count * 2.0 * 3.14159) * 0.5 + 0.5;
-      color *= 1.0 - u_crt_scanline_intensity * (1.0 - scanline);
-
-      if (u_crt_subpixel_enabled) {
-        int px = int(gl_FragCoord.x * 2.0) % 3;
-        vec3 smask = vec3(0.5);
-        if (px == 0)      smask.r = 1.0;
-        else if (px == 1) smask.g = 1.0;
-        else              smask.b = 1.0;
-        color *= smask;
-      }
-
-      if (u_crt_glow_enabled) {
-        color *= (1.0 + u_crt_glow_intensity);
-      }
-
-      // Type 2: no rounded corners
-
-      if (u_crt_flicker_intensity > 0.0) {
-        float flicker = 1.0 - u_crt_flicker_intensity * 0.5
-                        * (sin(u_time * 20.0) * 0.5 + 0.5
-                           + rand(vec2(u_time)) * 0.1);
-        color *= flicker;
-      }
+    if (u_crt_flicker_intensity > 0.0) {
+      float flicker = 1.0 - u_crt_flicker_intensity * 0.5
+                      * (sin(u_time * 20.0) * 0.5 + 0.5
+                         + rand(vec2(u_time)) * 0.1);
+      color *= flicker;
     }
   }
 

@@ -35,14 +35,6 @@ inline void PostProcessingPanel()
     return;
   }
 
-  // Effect variant selector (Type 1 / Type 2)
-  {
-    const char* variant_names[] = { "Type 1", "Type 2" };
-    ImGui::Combo("Effect Variant", &pp.effect_variant, variant_names, IM_ARRAYSIZE(variant_names));
-    if (ImGui::IsItemHovered())
-      ImGui::SetTooltip("Switch between two shader implementations for\nChromatic Aberration, Vignette, Quantization,\nFilm Grain, CRT, and Tone Mapping (Uncharted2).");
-  }
-
   ImGui::Separator();
 
   // ==================== Gamma ====================
@@ -219,13 +211,16 @@ inline void PostProcessingPanel()
       if (ImGui::IsItemHovered())
         ImGui::SetTooltip("UV offset between R/G/B channels\nHigher = more rainbow fringing at edges");
 
-      const char* ca_modes[] = { "3-tap", "6-tap" };
-      int ca_idx = (pp.chromatic_aberration_samples >= 6) ? 1 : 0;
-      if (ImGui::Combo("##CASamples", &ca_idx, ca_modes, IM_ARRAYSIZE(ca_modes))) {
-        pp.chromatic_aberration_samples = (ca_idx == 1) ? 6 : 3;
-      }
+      const char* ca_modes[] = { "Simple (3-tap)", "Spectral" };
+      ImGui::Combo("##CAMode", &pp.chromatic_aberration_mode, ca_modes, IM_ARRAYSIZE(ca_modes));
       if (ImGui::IsItemHovered())
-        ImGui::SetTooltip("6-tap = smoother spectral gradient\n3-tap = simpler R/G/B split");
+        ImGui::SetTooltip("Simple = fast 3-tap R/G/B split\nSpectral = N-tap with continuous spectral weights");
+
+      if (pp.chromatic_aberration_mode == 1) {
+        ImGui::SliderInt("##CASamples", &pp.chromatic_aberration_samples, 3, 12, "Samples: %d");
+        if (ImGui::IsItemHovered())
+          ImGui::SetTooltip("Number of spectral taps (3-12)\nMore = smoother color fringing");
+      }
 
       ImGui::Checkbox("##CAEdgeOnly", &pp.chromatic_aberration_edge_only);
       ImGui::SameLine();
@@ -246,6 +241,11 @@ inline void PostProcessingPanel()
 
     if (pp.film_grain_enabled)
     {
+      const char* grain_modes[] = { "Fine", "Coarse" };
+      ImGui::Combo("##GrainMode", &pp.film_grain_mode, grain_modes, IM_ARRAYSIZE(grain_modes));
+      if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("Fine = resolution-scaled noise, stronger in shadows\nCoarse = simpler noise, softer luminance weighting");
+
       ImGui::SliderFloat("##FilmGrainIntensity", &pp.film_grain_intensity, 0.0f, 0.5f, "Intensity: %.3f");
       if (ImGui::IsItemHovered())
         ImGui::SetTooltip("Strength of the noise overlay\nApplied more in dark areas");
@@ -301,7 +301,7 @@ inline void PostProcessingPanel()
       ImGui::Text("RGB Sub-pixel Mask");
       if (ImGui::IsItemHovered())
         ImGui::SetTooltip("Simulate RGB sub-pixel layout of CRT phosphors");
-
+      ImGui::SameLine();
       ImGui::Checkbox("##CRTGlow", &pp.crt_glow_enabled);
       ImGui::SameLine();
       ImGui::Text("Phosphor Glow");
@@ -343,15 +343,17 @@ inline void PostProcessingPanel()
       if (ImGui::IsItemHovered())
         ImGui::SetTooltip("Apply ordered dithering to smooth color banding");
 
-      ImGui::Text("Per-Channel Levels:");
-      ImGui::SliderInt("##QuantizeR", &pp.quantize_levels_rgb.x, 2, 64, "R: %d");
-      ImGui::SliderInt("##QuantizeG", &pp.quantize_levels_rgb.y, 2, 64, "G: %d");
-      ImGui::SliderInt("##QuantizeB", &pp.quantize_levels_rgb.z, 2, 64, "B: %d");
-
       const char* palette_names[] = { "Custom", "NES", "Game Boy", "PICO-8" };
       ImGui::Combo("##QuantizePalette", &pp.quantize_palette, palette_names, IM_ARRAYSIZE(palette_names));
       if (ImGui::IsItemHovered())
-        ImGui::SetTooltip("Preset palette: overrides per-channel levels\nCustom = use sliders above");
+        ImGui::SetTooltip("Preset palette: overrides per-channel levels\nCustom = use sliders below");
+
+      if (pp.quantize_palette == 0) {
+        ImGui::Text("Per-Channel Levels:");
+        ImGui::SliderInt("##QuantizeR", &pp.quantize_levels_rgb.x, 2, 64, "R: %d");
+        ImGui::SliderInt("##QuantizeG", &pp.quantize_levels_rgb.y, 2, 64, "G: %d");
+        ImGui::SliderInt("##QuantizeB", &pp.quantize_levels_rgb.z, 2, 64, "B: %d");
+      }
     }
   }
 
