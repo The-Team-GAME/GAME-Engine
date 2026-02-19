@@ -115,6 +115,86 @@ inline void PostProcessingPanel()
 
   ImGui::Separator();
 
+  // ==================== Vignette ====================
+  if (ImGui::CollapsingHeader("Vignette"))
+  {
+    ImGui::Checkbox("##VignetteEnabled", &pp.vignette_enabled);
+    ImGui::SameLine();
+    ImGui::Text("Enable Vignette");
+
+    if (pp.vignette_enabled)
+    {
+      ImGui::SliderFloat("##VignetteIntensity", &pp.vignette_intensity, 0.0f, 1.0f, "Intensity: %.2f");
+      if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("0 = no darkening, 1 = full black corners");
+
+      ImGui::SliderFloat("##VignetteRadius", &pp.vignette_radius, 0.1f, 1.5f, "Radius: %.2f");
+      if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("How far from center the darkening starts\nSmaller = more visible vignette");
+    }
+  }
+
+  ImGui::Separator();
+
+  // ==================== Chromatic Aberration ====================
+  if (ImGui::CollapsingHeader("Chromatic Aberration"))
+  {
+    ImGui::Checkbox("##ChromaticEnabled", &pp.chromatic_aberration_enabled);
+    ImGui::SameLine();
+    ImGui::Text("Enable Chromatic Aberration");
+
+    if (pp.chromatic_aberration_enabled)
+    {
+      ImGui::SliderFloat("##ChromaticIntensity", &pp.chromatic_aberration_intensity, 0.0f, 0.05f, "Intensity: %.4f");
+      if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("UV offset between R/G/B channels\nHigher = more rainbow fringing at edges");
+    }
+  }
+
+  ImGui::Separator();
+
+  // ==================== CRT Emulation ====================
+  if (ImGui::CollapsingHeader("CRT Emulation"))
+  {
+    ImGui::Checkbox("##CRTEnabled", &pp.crt_enabled);
+    ImGui::SameLine();
+    ImGui::Text("Enable CRT");
+
+    if (pp.crt_enabled)
+    {
+      ImGui::SliderFloat("##CRTScanlineIntensity", &pp.crt_scanline_intensity, 0.0f, 1.0f, "Scanline: %.2f");
+      if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("Strength of horizontal scanlines\n0 = invisible, 1 = very dark lines");
+
+      ImGui::SliderFloat("##CRTCurvature", &pp.crt_curvature, 0.0f, 0.15f, "Curvature: %.3f");
+      if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("Barrel distortion to simulate a curved CRT screen\n0 = flat");
+
+      ImGui::SliderFloat("##CRTScanlineCount", &pp.crt_scanline_count, 100.0f, 800.0f, "Lines: %.0f");
+      if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("Number of scanlines across the screen\nHigher = finer lines");
+    }
+  }
+
+  ImGui::Separator();
+
+  // ==================== Color Quantization ====================
+  if (ImGui::CollapsingHeader("Color Quantization"))
+  {
+    ImGui::Checkbox("##QuantizeEnabled", &pp.quantize_enabled);
+    ImGui::SameLine();
+    ImGui::Text("Enable Posterization");
+
+    if (pp.quantize_enabled)
+    {
+      ImGui::SliderInt("##QuantizeLevels", &pp.quantize_levels, 2, 64, "Levels: %d");
+      if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("Color levels per channel\n2 = extreme posterization, 64 = subtle");
+    }
+  }
+
+  ImGui::Separator();
+
   // ==================== Anti-Aliasing (MSAA) ====================
   if (ImGui::CollapsingHeader("Anti-Aliasing (MSAA)", ImGuiTreeNodeFlags_DefaultOpen))
   {

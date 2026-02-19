@@ -39,6 +39,25 @@ namespace Engine::Graphics::PostProcessing {
     bool lut_enabled = false;
     float lut_intensity = 1.0f;     // 0 = original color, 1 = full LUT
 
+    // Vignette
+    bool vignette_enabled = false;
+    float vignette_intensity = 0.5f;  // 0 = none, 1 = full black corners
+    float vignette_radius = 0.75f;    // how far from center darkening starts
+
+    // Chromatic Aberration
+    bool chromatic_aberration_enabled = false;
+    float chromatic_aberration_intensity = 0.005f; // UV offset per channel
+
+    // CRT Emulation
+    bool crt_enabled = false;
+    float crt_scanline_intensity = 0.3f; // strength of scanlines
+    float crt_curvature = 0.02f;         // barrel distortion amount
+    float crt_scanline_count = 300.0f;   // number of scanlines
+
+    // Color Quantization (posterization)
+    bool quantize_enabled = false;
+    int quantize_levels = 8;             // color levels per channel (2-256)
+
     // MSAA Anti-Aliasing
     bool msaa_enabled = false;
     int msaa_samples = 4;           // 2, 4, or 8

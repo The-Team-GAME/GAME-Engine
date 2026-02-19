@@ -446,6 +446,26 @@ namespace Engine::Graphics::PostProcessing {
     composite_shader->set_float("u_lut_intensity", current_settings.lut_intensity);
     composite_shader->set_float("u_lut_size", lut_size);
 
+    // Chromatic Aberration
+    composite_shader->set_bool("u_chromatic_aberration_enabled", current_settings.chromatic_aberration_enabled);
+    composite_shader->set_float("u_chromatic_aberration_intensity", current_settings.chromatic_aberration_intensity);
+
+    // Vignette
+    composite_shader->set_bool("u_vignette_enabled", current_settings.vignette_enabled);
+    composite_shader->set_float("u_vignette_intensity", current_settings.vignette_intensity);
+    composite_shader->set_float("u_vignette_radius", current_settings.vignette_radius);
+
+    // Color Quantization
+    composite_shader->set_bool("u_quantize_enabled", current_settings.quantize_enabled);
+    composite_shader->set_float("u_quantize_levels", static_cast<float>(current_settings.quantize_levels));
+
+    // CRT Emulation
+    composite_shader->set_bool("u_crt_enabled", current_settings.crt_enabled);
+    composite_shader->set_float("u_crt_scanline_intensity", current_settings.crt_scanline_intensity);
+    composite_shader->set_float("u_crt_curvature", current_settings.crt_curvature);
+    composite_shader->set_float("u_crt_scanline_count", current_settings.crt_scanline_count);
+    composite_shader->set_vec2("u_resolution", glm::vec2(static_cast<float>(fb_width), static_cast<float>(fb_height)));
+
     render_quad();
 
     // Reset to texture unit 0
