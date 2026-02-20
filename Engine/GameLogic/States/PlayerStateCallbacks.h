@@ -22,8 +22,6 @@
 
 namespace {
   f32 terminal_vel_placeholder;
-  void take_input(ECS::Entity entity);
-  void handle_cd(ECS::Entity entity);
 }
 namespace PlayerStateCallbacks
 {
@@ -45,7 +43,18 @@ namespace PlayerStateCallbacks
     }
 
     // Handling cooldowns
-    handle_cd(entity);
+    if (!player_comp->dash.ready())
+    {
+      player_comp->dash.cd_timer -= Time::get_fixed_dt();
+    }
+    if (!player_comp->uppercut.ready())
+    {
+      player_comp->uppercut.cd_timer -= Time::get_fixed_dt();
+    }
+    if (!player_comp->smash.ready())
+    {
+      player_comp->smash.cd_timer -= Time::get_fixed_dt();
+    }
 
     // Check for attack input
     // not entering this loop for some reason
@@ -60,6 +69,7 @@ namespace PlayerStateCallbacks
     if (Engine::Input::is_pressed(Engine::KeyCode::L)
       && player_comp->smash.ready())
     {
+      std::cout << "updated\n";
       state_machine->change_state("Smash");
       return;
     }
@@ -109,25 +119,6 @@ namespace PlayerStateCallbacks
     if (state_machine->get_current_state() != "Jumping")
     {
       state_machine->change_state("Idle");
-    }
-  }
-
-  void handle_cd(ECS::Entity entity)
-  {
-    // Ik its ugly but i dont really have another way to do this XD
-    Components::Player* player_comp = entity.get_component<Components::Player>();
-    assert(player_comp);
-    if (!player_comp->dash.ready())
-    {
-      player_comp->dash.cd_timer -= Time::get_fixed_dt();
-    }
-    if (!player_comp->uppercut.ready())
-    {
-      player_comp->uppercut.cd_timer -= Time::get_fixed_dt();
-    }
-    if (!player_comp->smash.ready())
-    {
-      player_comp->smash.cd_timer -= Time::get_fixed_dt();
     }
   }
 
@@ -183,8 +174,6 @@ namespace PlayerStateCallbacks
   inline void jumping_on_enter(Engine::ECS::Entity entity)
   {
     Log::info("Player: Entered Jumping state");
-
-    std::cout << "wahoo condition met \n";
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(rigid);
@@ -208,7 +197,6 @@ namespace PlayerStateCallbacks
       Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
       assert(sm);
       sm->change_state("Falling");
-      std::cout << "swap condition met \n";
     }
     take_input(entity);
   }
@@ -230,7 +218,6 @@ namespace PlayerStateCallbacks
   inline void falling_on_enter([[maybe_unused]] ECS::Entity entity)
   {
     Log::info("Player: Entered Falling tate");
-
   }
 
   inline void falling_on_update(ECS::Entity entity)
@@ -634,7 +621,6 @@ namespace PlayerStateCallbacks
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(rigid);
     assert(player_comp);
-    assert(flip);
     if (player_comp->uppercut.timer_end())
     {
       Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
