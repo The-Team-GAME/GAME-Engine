@@ -22,6 +22,8 @@
 
 namespace {
   f32 terminal_vel_placeholder;
+  void take_input(ECS::Entity entity);
+  void handle_cd(ECS::Entity entity);
 }
 namespace PlayerStateCallbacks
 {
@@ -43,21 +45,20 @@ namespace PlayerStateCallbacks
     }
 
     // Handling cooldowns
-    if (!player_comp->dash.ready()) 
-    { 
-      player_comp->dash.cd_timer -= Time::get_fixed_dt(); 
-    }
+    handle_cd(entity);
 
     // Check for attack input
-
+    // not entering this loop for some reason
     if (Engine::Input::is_pressed(Engine::KeyCode::K) 
       && player_comp->uppercut.ready())
     {
+      std::cout << "K PRESED \n";
       state_machine->change_state("Uppercut");
       return;
     }
 
-    if (Engine::Input::is_pressed(Engine::KeyCode::L))
+    if (Engine::Input::is_pressed(Engine::KeyCode::L)
+      && player_comp->smash.ready())
     {
       state_machine->change_state("Smash");
       return;
@@ -70,7 +71,8 @@ namespace PlayerStateCallbacks
     }
 
     // Check for movement input
-    if (Input::is_held(KeyCode::ShiftLeft) && player_comp->dash.ready())
+    if (Input::is_held(KeyCode::ShiftLeft) 
+      && player_comp->dash.ready())
     {
       state_machine->change_state("Dash");
       return;
@@ -108,7 +110,25 @@ namespace PlayerStateCallbacks
     {
       state_machine->change_state("Idle");
     }
+  }
 
+  void handle_cd(ECS::Entity entity)
+  {
+    // Ik its ugly but i dont really have another way to do this XD
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(player_comp);
+    if (!player_comp->dash.ready())
+    {
+      player_comp->dash.cd_timer -= Time::get_fixed_dt();
+    }
+    if (!player_comp->uppercut.ready())
+    {
+      player_comp->uppercut.cd_timer -= Time::get_fixed_dt();
+    }
+    if (!player_comp->smash.ready())
+    {
+      player_comp->smash.cd_timer -= Time::get_fixed_dt();
+    }
   }
 
 #pragma region idle state;
@@ -601,7 +621,7 @@ namespace PlayerStateCallbacks
 
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
-    //rigid->use_gravity = false;
+    rigid->use_gravity = false;
     rigid->force.zero();
 
     terminal_vel_placeholder = rigid->y_terminal_velocity;

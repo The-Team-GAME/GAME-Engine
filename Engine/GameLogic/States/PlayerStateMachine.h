@@ -192,8 +192,8 @@ namespace PlayerStates
     // ========================================================================
     Components::StateAnimation player_uppercut_anim;
     player_uppercut_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_Uppercut_spritesheet.png"));
-    player_uppercut_anim.texture_atlas = Components::TextureAtlas(96, 64, 1, 18, 18);
-    player_uppercut_anim.animation = Components::Animation({ 9, 10, 11, 12, 13, 14, 15, 16, 17 }, { 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f }, false);
+    player_uppercut_anim.texture_atlas = Components::TextureAtlas(96, 64, 1, 8, 18);
+    player_uppercut_anim.animation = Components::Animation(8, 0.1f);
     player_uppercut_anim.scale = Math::Vec2D(ATTACK_WIDTH * 2.0f, ATTACK_HEIGHT * 2.0f);
 
     Components::State player_uppercut("Uppercut", player_uppercut_anim);
@@ -203,8 +203,8 @@ namespace PlayerStates
     // ========================================================================
     Components::StateAnimation player_smash_anim;
     player_smash_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_Downsmash_spritesheet.png"));
-    player_smash_anim.texture_atlas = Components::TextureAtlas(96, 64, 1, 18, 18);
-    player_smash_anim.animation = Components::Animation({ 9, 10, 11, 12, 13, 14, 15, 16, 17 }, { 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f }, false);
+    player_smash_anim.texture_atlas = Components::TextureAtlas(96, 64, 1, 12, 18);
+    player_smash_anim.animation = Components::Animation(12, 0.1f);
     player_smash_anim.scale = Math::Vec2D(ATTACK_WIDTH * 2.0f, ATTACK_HEIGHT * 2.0f);
 
     Components::State player_smash("Smash", player_smash_anim);
