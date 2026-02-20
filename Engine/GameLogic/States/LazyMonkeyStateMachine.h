@@ -135,7 +135,7 @@ namespace LazyMonkeyStates
     lazy_monkey_hit_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
     // FMOD only (no fallback) - old audio commented out above
-    Components::State lazy_monkey_hit("Hit", lazy_monkey_hit_anim, std::nullopt, fmod_hurt_audio);
+    Components::State lazy_monkey_hit("Hit", lazy_monkey_hit_anim);
 
     // ========================================================================
     // Lazy Monkey Death State
@@ -147,7 +147,7 @@ namespace LazyMonkeyStates
     lazy_monkey_death_anim.animation = Components::Animation({ 0.2f, 0.1f, 1.5f });
     lazy_monkey_death_anim.scale = Math::Vec2D(WIDTH * 2.0f, HEIGHT * 2.0f);
 
-    Components::State lazy_monkey_death("Death", lazy_monkey_death_anim);
+    Components::State lazy_monkey_death("Death", lazy_monkey_death_anim, std::nullopt, fmod_hurt_audio);
 
     // ========================================================================
     // Build and return state machine
