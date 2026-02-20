@@ -478,7 +478,7 @@ inline void PostProcessingPanel()
 
     ImGui::Spacing();
 
-    // --- Save/Load to JSON ---
+    // --- Save preset ---
     static char preset_name[128] = "my_preset";
     ImGui::InputText("##PresetName", preset_name, IM_ARRAYSIZE(preset_name));
     ImGui::SameLine();
@@ -488,33 +488,21 @@ inline void PostProcessingPanel()
       Engine::Resources::save_postprocessing_settings(filename, pp);
     }
 
-    // Load preset: scan directory for .json files
+    // --- Load preset via ResourcePicker ---
     if (ImGui::Button("Load Preset...", ImVec2(-1, 0)))
     {
-      ImGui::OpenPopup("PresetLoader");
+      ImGui::OpenPopup("PresetPicker");
     }
 
-    if (ImGui::BeginPopup("PresetLoader"))
+    static std::string selected_preset_path;
+    static std::string current_preset_path; // tracks last-loaded preset for highlight
+    if (ResourcePicker::preset_picker_popup("PresetPicker", selected_preset_path, current_preset_path))
     {
-      std::string dir = Engine::Resources::resource_path + "postprocessing/";
-      if (std::filesystem::exists(dir)) {
-        for (const auto& entry : std::filesystem::directory_iterator(dir)) {
-          if (entry.path().extension() == ".json") {
-            std::string name = entry.path().stem().string();
-            if (ImGui::Selectable(name.c_str())) {
-              std::string filepath = "postprocessing/" + name + ".json";
-              auto loaded = Engine::Resources::load_postprocessing_settings(filepath);
-              loaded.enabled = pp.enabled; // keep master toggle
-              loaded.affected_layers = pp.affected_layers;
-              pp = loaded;
-            }
-          }
-        }
-      }
-      else {
-        ImGui::TextDisabled("No presets directory found");
-      }
-      ImGui::EndPopup();
+      auto loaded = Engine::Resources::load_postprocessing_settings(selected_preset_path);
+      loaded.enabled = pp.enabled; // keep master toggle
+      loaded.affected_layers = pp.affected_layers;
+      pp = loaded;
+      current_preset_path = selected_preset_path;
     }
   }
 
