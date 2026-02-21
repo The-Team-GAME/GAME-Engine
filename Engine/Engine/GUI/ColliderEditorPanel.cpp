@@ -147,6 +147,11 @@ void ColliderEditorPanel()
       return;
     }
 
+    // Show entity name/ID at the top
+    const std::string& entity_name = Engine::ECS::get_entity_name(entity);
+    ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "Entity: %s (ID: %d)", entity_name.c_str(), selected_entity_id);
+    ImGui::Separator();
+
     collider = entity.get_component<Components::BoxCollider>();
     texture = entity.get_component<Components::Texture>();
     state_machine = entity.get_component<Components::StateMachine>();
@@ -460,6 +465,30 @@ void ColliderEditorPanel()
           data.vertices = col_vertices;
           state.animation->collider_data = data;
         }
+
+        // Copy From State dropdown (even when no override exists yet)
+        ImGui::SameLine();
+        if (ImGui::BeginCombo("##CopyFromNoOverride", "Copy From...")) {
+          // Option: Live/Default collider
+          if (collider && ImGui::Selectable("Live/Default")) {
+            Components::ColliderData data;
+            data.type = collider->type;
+            data.width = collider->width;
+            data.height = collider->height;
+            data.offset = collider->offset;
+            data.vertices = collider->polygon.vertices;
+            state.animation->collider_data = data;
+          }
+          // Option: Other states
+          for (auto& [other_name, other_state] : state_machine->states) {
+            if (other_name == current_editing_state) continue;
+            if (!other_state.animation.has_value() || !other_state.animation->collider_data.has_value()) continue;
+            if (ImGui::Selectable(other_name.c_str())) {
+              state.animation->collider_data = other_state.animation->collider_data.value();
+            }
+          }
+          ImGui::EndCombo();
+        }
       }
     }
   }
@@ -588,6 +617,42 @@ void ColliderEditorPanel()
 
     if (changed) {
       col_vertices = poly_data.vertices;
+    }
+
+    // Numeric vertex table for precise editing
+    if (!col_vertices.empty()) {
+      ImGui::Separator();
+      ImGui::Text("Vertices (%d):", static_cast<int>(col_vertices.size()));
+      for (int i = 0; i < static_cast<int>(col_vertices.size()); ++i) {
+        ImGui::PushID(i);
+        float v[2] = { col_vertices[i].x, col_vertices[i].y };
+        std::string label = "V" + std::to_string(i);
+        if (ImGui::DragFloat2(label.c_str(), v, 0.5f, 0.0f, 0.0f, "%.1f")) {
+          col_vertices[i].x = v[0];
+          col_vertices[i].y = v[1];
+          changed = true;
+        }
+        ImGui::SameLine();
+        if (ImGui::SmallButton("X")) {
+          col_vertices.erase(col_vertices.begin() + i);
+          changed = true;
+          ImGui::PopID();
+          break;
+        }
+        ImGui::PopID();
+      }
+      if (ImGui::SmallButton("+ Add Vertex")) {
+        // Add a vertex at average of last and first vertices (or origin if <2)
+        if (col_vertices.size() >= 2) {
+          Math::Vec2D last = col_vertices.back();
+          Math::Vec2D first = col_vertices.front();
+          col_vertices.push_back({ (last.x + first.x) * 0.5f, (last.y + first.y) * 0.5f });
+        }
+        else {
+          col_vertices.push_back({ 0.0f, 0.0f });
+        }
+        changed = true;
+      }
     }
   }
 
@@ -929,6 +994,53 @@ void ColliderEditorPanel()
       ImGui::SameLine();
       if (ImGui::Button("Remove Override")) {
         state.animation->collider_data.reset();
+      }
+
+      // Copy From State dropdown
+      if (ImGui::BeginCombo("Copy From State", "Copy From...")) {
+        // Option: Live/Default collider
+        if (collider && ImGui::Selectable("Live/Default")) {
+          Components::ColliderData data;
+          data.type = collider->type;
+          data.width = collider->width;
+          data.height = collider->height;
+          data.offset = collider->offset;
+          data.vertices = collider->polygon.vertices;
+          state.animation->collider_data = data;
+        }
+        // Option: Other states
+        for (auto& [other_name, other_state] : state_machine->states) {
+          if (other_name == current_editing_state) continue;
+          if (!other_state.animation.has_value() || !other_state.animation->collider_data.has_value()) continue;
+          if (ImGui::Selectable(other_name.c_str())) {
+            state.animation->collider_data = other_state.animation->collider_data.value();
+          }
+        }
+        ImGui::EndCombo();
+      }
+
+      // Apply to All States button
+      if (ImGui::Button("Apply to All States")) {
+        ImGui::OpenPopup("ConfirmApplyAll");
+      }
+      if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Copy this state's collider to all other states that have animation data");
+      }
+      if (ImGui::BeginPopup("ConfirmApplyAll")) {
+        ImGui::Text("Apply this collider to all other states?");
+        if (ImGui::Button("Yes", ImVec2(80, 0))) {
+          for (auto& [other_name, other_state] : state_machine->states) {
+            if (other_name == current_editing_state) continue;
+            if (!other_state.animation.has_value()) continue;
+            other_state.animation->collider_data = state.animation->collider_data.value();
+          }
+          ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(80, 0))) {
+          ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
       }
     }
   }
