@@ -1743,7 +1743,7 @@ namespace TilemapPanel {
 
     // Draw vertical lines (loop from left until right)
     for (float x = start_x; x <= right; x += grid_snap) {
-      Engine::Graphics::draw_line(
+      Engine::Graphics::draw_line_screen(
         Math::Vec2D{ x, top },
         Math::Vec2D{ x, bottom },
         1.0f,
@@ -1753,7 +1753,7 @@ namespace TilemapPanel {
 
     // Draw horizontal lines (loop from top until bottom)
     for (float y = start_y; y <= bottom; y += grid_snap) {
-      Engine::Graphics::draw_line(
+      Engine::Graphics::draw_line_screen(
         Math::Vec2D{ left, y },
         Math::Vec2D{ right, y },
         1.0f,
@@ -1801,10 +1801,10 @@ namespace TilemapPanel {
       Math::Vec2D bottom_right = { box_center.x + half_width, box_center.y + half_height };
 
       Math::Vec4D border_color = Math::Vec4D{ 0.0f, 1.0f, 0.0f, 0.8f };
-      Engine::Graphics::draw_line(top_left, top_right, 2.0f, border_color);
-      Engine::Graphics::draw_line(top_right, bottom_right, 2.0f, border_color);
-      Engine::Graphics::draw_line(bottom_right, bottom_left, 2.0f, border_color);
-      Engine::Graphics::draw_line(bottom_left, top_left, 2.0f, border_color);
+      Engine::Graphics::draw_line_screen(top_left, top_right, 2.0f, border_color);
+      Engine::Graphics::draw_line_screen(top_right, bottom_right, 2.0f, border_color);
+      Engine::Graphics::draw_line_screen(bottom_right, bottom_left, 2.0f, border_color);
+      Engine::Graphics::draw_line_screen(bottom_left, top_left, 2.0f, border_color);
     }
     // Highlight hovered cell based on current tool (only when not box filling)
     else {
