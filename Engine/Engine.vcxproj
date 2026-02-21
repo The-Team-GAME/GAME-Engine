@@ -255,7 +255,6 @@ msbuild "$(SolutionDir)Engine\GameLogic.vcxproj" /p:Configuration=$(Configuratio
     <ClCompile Include="Engine\WindowManager.cpp" />
     <ClCompile Include="Engine\Lua\LuaManager.cpp" />
     <ClCompile Include="Engine\Systems\LogicSystem.cpp" />
-    <ClCompile Include="Engine\UndoManager\UndoManager.cpp" />
     <ClCompile Include="Engine\Systems\PostPhysicsSystem.cpp" />
   </ItemGroup>
   <ItemGroup>

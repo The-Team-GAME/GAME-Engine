@@ -15,6 +15,7 @@
 //-----------------------------------------------------------------------------------
 #include "../Precompiled.h"
 #include "EntityEditorPanel.h"
+#include "ResourcePicker.h"
 #include "widgets/ReflectionFieldWidgets.h"
 #include "../FileIO/PrefabsFileIO.h"
 #include "../FileIO/LevelFileIO.h"
@@ -878,37 +879,22 @@ void EntityEditorPanel()
 
     ImGui::SameLine();
 
-    // Create Prefab from Entity
-    if (ImGui::Button("Create Prefab from Entity"))
+    // Save as Prefab (create new or update existing)
+    if (ImGui::Button("Save as Prefab"))
     {
-      ImGui::OpenPopup("CreatePrefabFromEntity");
+      ImGui::OpenPopup("SaveAsPrefabPicker");
     }
 
-    // Create Prefab popup
-    static char prefab_filename[128] = "";
-    if (ImGui::BeginPopupModal("CreatePrefabFromEntity", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    // Prefab picker popup
     {
-      ImGui::Text("Enter prefab filename:");
-      ImGui::InputText("##prefabfilename", prefab_filename, sizeof(prefab_filename));
-      ImGui::Text(".json");
-
-      ImGui::Separator();
-
-      if (ImGui::Button("Create", ImVec2(120, 0)))
-      {
-        if (strlen(prefab_filename) > 0)
-        {
-          std::string filename = std::string(prefab_filename);
-          if (filename.find(".json") == std::string::npos) {
-            filename += ".json";
-          }
-
-          // Create prefab from entity
+      static std::string picked_prefab_path;
+      static bool picked_is_new;
+      if (ResourcePicker::prefab_picker_popup("SaveAsPrefabPicker", picked_prefab_path, picked_is_new)) {
+        if (picked_is_new) {
+          // --- Create new prefab from entity ---
           auto prefab = Engine::ECS::entity_to_prefab(entity);
 
-          // Save to file
-          std::string relative_path = "prefabs/" + filename;
-          std::string full_path = Engine::Path(Engine::Resources::resource_path).join(relative_path).to_string();
+          std::string full_path = Engine::Path(Engine::Resources::resource_path).join(picked_prefab_path).to_string();
 
           // Ensure prefabs directory exists
           std::string prefabs_dir = Engine::Path(Engine::Resources::resource_path).join("prefabs").to_string();
@@ -916,160 +902,34 @@ void EntityEditorPanel()
             std::filesystem::create_directories(prefabs_dir);
           }
 
-          if (Engine::FileIO::serialize_prefab_to_json_file(full_path, prefab))
-          {
-            // Add prefab to resource cache so it can be tracked and appears in PrefabEditorPanel
-            Engine::Resources::cache_prefab(relative_path, prefab, true, true);
-
-            // Prefab already saved to disk above via serialize_prefab_to_json_file
-
-            // Clear the input and close popup
-            prefab_filename[0] = '\0';
-            ImGui::CloseCurrentPopup();
-            ImGui::OpenPopup("CreatePrefabSuccess");
+          if (Engine::FileIO::serialize_prefab_to_json_file(full_path, prefab)) {
+            Engine::Resources::cache_prefab(picked_prefab_path, prefab, true, true);
+            Log::info("Created prefab from entity: {}", picked_prefab_path);
           }
         }
-      }
+        else {
+          // --- Update existing prefab from entity ---
+          std::string full_path = Engine::Path(Engine::Resources::resource_path).join(picked_prefab_path).to_string();
 
-      ImGui::SameLine();
-
-      if (ImGui::Button("Cancel", ImVec2(120, 0)))
-      {
-        prefab_filename[0] = '\0';
-        ImGui::CloseCurrentPopup();
-      }
-
-      ImGui::EndPopup();
-    }
-
-    // Create Prefab success popup
-    if (ImGui::BeginPopup("CreatePrefabSuccess"))
-    {
-      ImGui::Text("Prefab created successfully!");
-      ImGui::EndPopup();
-    }
-
-    ImGui::SameLine();
-
-    // Update Prefab from Entity
-    if (ImGui::Button("Update Prefab"))
-    {
-      ImGui::OpenPopup("UpdatePrefabFromEntity");
-    }
-
-    // Update Prefab popup
-    static char update_prefab_search[128] = "";
-    static std::string selected_prefab_for_update = "";
-    if (ImGui::BeginPopupModal("UpdatePrefabFromEntity", NULL, ImGuiWindowFlags_AlwaysAutoResize))
-    {
-      ImGui::Text("Select prefab to update:");
-      ImGui::Separator();
-
-      // Search filter
-      ImGui::InputText("Search##UpdatePrefab", update_prefab_search, sizeof(update_prefab_search));
-
-      ImGui::Separator();
-
-      // List available prefabs
-      ImGui::BeginChild("UpdatePrefabList", ImVec2(400, 300), true);
-
-      // Get prefabs from resource cache
-      std::vector<std::pair<std::string, Engine::ECS::Prefab>> prefab_list;
-
-      for (const auto& [path, weak_prefab] : Engine::Resources::prefab_cache) {
-        if (auto prefab_ptr = weak_prefab.lock()) {
-          // Get relative path for display
-          std::string relative_path = Engine::Resources::get_relative_path(path);
-
-          // Apply search filter
-          if (strlen(update_prefab_search) > 0 && relative_path.find(update_prefab_search) == std::string::npos) {
-            continue;
-          }
-
-          prefab_list.push_back({ relative_path, Engine::ECS::Prefab(prefab_ptr) });
-        }
-      }
-
-      // Sort by path for consistent ordering
-      std::sort(prefab_list.begin(), prefab_list.end(),
-        [](const auto& a, const auto& b) { return a.first < b.first; });
-
-      for (const auto& [relative_path, prefab] : prefab_list) {
-        bool is_selected = (selected_prefab_for_update == relative_path);
-
-        if (ImGui::Selectable(relative_path.c_str(), is_selected)) {
-          selected_prefab_for_update = relative_path;
-        }
-      }
-
-      ImGui::EndChild();
-
-      ImGui::Separator();
-
-      if (ImGui::Button("Update", ImVec2(120, 0)))
-      {
-        if (!selected_prefab_for_update.empty())
-        {
-          // Construct full path from relative path
-          std::string full_path = Engine::Path(Engine::Resources::resource_path).join(selected_prefab_for_update).to_string();
-
-          // Load existing prefab to get its UUID
           Engine::ECS::Prefab existing_prefab = Engine::FileIO::deserialize_prefab_from_json_file(full_path);
-
           if (existing_prefab.is_valid()) {
             std::string preserved_uuid = existing_prefab.get_impl()->get_prefab_id();
 
-            // Create new prefab from current entity
             auto updated_prefab = Engine::ECS::entity_to_prefab(entity);
-
-            // Preserve the original UUID and filepath
             updated_prefab.get_impl()->set_prefab_id(preserved_uuid);
-            updated_prefab.get_impl()->set_prefab_filepath(selected_prefab_for_update);
+            updated_prefab.get_impl()->set_prefab_filepath(picked_prefab_path);
 
-            // Save to file
-            if (Engine::FileIO::serialize_prefab_to_json_file(full_path, updated_prefab))
-            {
-              // Update prefab in resource cache
-              Engine::Resources::cache_prefab(selected_prefab_for_update, updated_prefab, true, true);
-
-              // Prefab already saved to disk above via serialize_prefab_to_json_file
-
-              // Update all instances of this prefab
+            if (Engine::FileIO::serialize_prefab_to_json_file(full_path, updated_prefab)) {
+              Engine::Resources::cache_prefab(picked_prefab_path, updated_prefab, true, true);
               Engine::ECS::update_prefab_instances(preserved_uuid);
-
-              Log::info("Updated prefab: {} (UUID: {})", selected_prefab_for_update, preserved_uuid);
-
-              // Clear selection and close popup
-              selected_prefab_for_update = "";
-              update_prefab_search[0] = '\0';
-              ImGui::CloseCurrentPopup();
-              ImGui::OpenPopup("UpdatePrefabSuccess");
+              Log::info("Updated prefab: {} (UUID: {})", picked_prefab_path, preserved_uuid);
             }
           }
           else {
-            Log::error("Failed to load existing prefab: {}", selected_prefab_for_update);
+            Log::error("Failed to load existing prefab: {}", picked_prefab_path);
           }
         }
       }
-
-      ImGui::SameLine();
-
-      if (ImGui::Button("Cancel", ImVec2(120, 0)))
-      {
-        selected_prefab_for_update = "";
-        update_prefab_search[0] = '\0';
-        ImGui::CloseCurrentPopup();
-      }
-
-      ImGui::EndPopup();
-    }
-
-    // Update Prefab success popup
-    if (ImGui::BeginPopup("UpdatePrefabSuccess"))
-    {
-      ImGui::Text("Prefab updated successfully!");
-      ImGui::Text("UUID preserved and instances updated.");
-      ImGui::EndPopup();
     }
 
     ImGui::SameLine();

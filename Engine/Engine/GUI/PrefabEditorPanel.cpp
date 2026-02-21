@@ -669,7 +669,8 @@ void PrefabEditorPanel()
           }
 
           Log::info("Renamed prefab: {} -> {}", rename_prefab_path, new_relative_path);
-        } else {
+        }
+        else {
           Log::error("Failed to rename prefab file: {}", ec.message());
         }
       }

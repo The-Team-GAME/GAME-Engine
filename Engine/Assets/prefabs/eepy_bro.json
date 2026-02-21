@@ -18,7 +18,7 @@
             },
             {
                 "data": {
-                    "drawIndex": 0,
+                    "drawIndex": 5,
                     "tex_coords_list": [
                         [
                             {
@@ -201,7 +201,7 @@
                         0.15000000596046448
                     ],
                     "is_looping": true,
-                    "startTime": 422.64306640625,
+                    "startTime": 15.3482084274292,
                     "totalDuration": 1.1999999284744263
                 },
                 "type": "Components::Animation"
@@ -209,8 +209,8 @@
             {
                 "data": {
                     "position": {
-                        "x": 0.0,
-                        "y": 0.0
+                        "x": 800.0,
+                        "y": 450.0
                     },
                     "rotation": 0.0,
                     "scale": {
@@ -221,7 +221,7 @@
                 "type": "Components::Transform2D"
             }
         ],
-        "filepath": "",
+        "filepath": "prefabs/eepy_bro.json",
         "layers": [
             "default"
         ],

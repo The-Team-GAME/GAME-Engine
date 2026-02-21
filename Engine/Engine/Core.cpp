@@ -444,6 +444,7 @@ namespace Engine
   ==================================================================================*/
   void Core::exit()
   {
+    Engine::UndoManager::shutdown();
     Engine::SceneManager::cleanup();
     //Engine::ECS::remove_event_listener<WindowResizeEvent>();
 #ifndef GAME_BUILD
