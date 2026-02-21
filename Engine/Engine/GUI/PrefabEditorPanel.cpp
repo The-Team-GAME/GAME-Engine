@@ -26,6 +26,7 @@
 #include "../Events/EngineEvents.h"
 #include "../LevelManager.h"
 #include <map>
+#include <filesystem>
 
 void PrefabEditorPanelHelpers::render_component_tree(const std::string& component_name, Engine::ECS::Prefab& prefab, Engine::ECS::IComponentArray* array, const std::string& prefab_path)
 {
@@ -161,6 +162,14 @@ Engine::ECS::Prefab PrefabEditorPanelHelpers::get_prefab_from_resources(const st
   return selected_prefab;
 }
 
+namespace {
+  // Rename state
+  std::string rename_prefab_path;
+  char rename_buf[256] = "";
+  bool rename_focus_set = false;
+  bool open_rename_popup = false;
+}
+
 void PrefabEditorPanel()
 {
   static std::string selected_prefab_path = "";
@@ -205,6 +214,20 @@ void PrefabEditorPanel()
 
       if (ImGui::Selectable(relative_path.c_str(), isSelected)) {
         selected_prefab_path = relative_path;
+      }
+
+      // Right-click context menu for rename
+      if (ImGui::BeginPopupContextItem()) {
+        if (ImGui::MenuItem("Rename")) {
+          rename_prefab_path = relative_path;
+          // Extract just the filename without extension for editing
+          std::filesystem::path p(relative_path);
+          std::string stem = p.stem().string();
+          strncpy_s(rename_buf, stem.c_str(), sizeof(rename_buf) - 1);
+          rename_focus_set = false;
+          open_rename_popup = true;
+        }
+        ImGui::EndPopup();
       }
     }
 
@@ -272,13 +295,18 @@ void PrefabEditorPanel()
       if (prefab.is_valid()) {
         auto newEntity = Engine::ECS::instantiate_prefab(prefab);
 
+        // Name the entity after the prefab file (without extension)
+        std::string prefab_name = std::filesystem::path(selected_prefab_path).stem().string();
+        Engine::ECS::set_entity_name(newEntity, prefab_name);
+
         // Record undo for prefab instantiation
         Engine::ECS::EntityID entity_id = newEntity.get_id();
         Engine::ECS::Prefab captured_prefab = prefab;
         Engine::UndoManager::record(
           // Do: Recreate the entity from prefab
-          [entity_id, captured_prefab]() {
-            Engine::ECS::instantiate_prefab_with_id(captured_prefab, entity_id);
+          [entity_id, captured_prefab, prefab_name]() {
+            auto entity = Engine::ECS::instantiate_prefab_with_id(captured_prefab, entity_id);
+            Engine::ECS::set_entity_name(entity, prefab_name);
             Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(entity_id);
             Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
           },
@@ -590,6 +618,66 @@ void PrefabEditorPanel()
   else
   {
     ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "No prefab selected");
+  }
+
+  // Rename popup (rendered at window level so it works from any context menu)
+  if (open_rename_popup) {
+    ImGui::OpenPopup("RenamePrefabPopup");
+    open_rename_popup = false;
+  }
+  if (ImGui::BeginPopup("RenamePrefabPopup")) {
+    ImGui::Text("Rename Prefab");
+    ImGui::Separator();
+    if (!rename_focus_set) {
+      ImGui::SetKeyboardFocusHere();
+      rename_focus_set = true;
+    }
+    bool confirmed = ImGui::InputText("##RenamePrefabInput", rename_buf, sizeof(rename_buf), ImGuiInputTextFlags_EnterReturnsTrue);
+    if (confirmed && strlen(rename_buf) > 0) {
+      std::string new_name = rename_buf;
+
+      // Build the new relative path preserving the directory and extension
+      std::filesystem::path old_rel(rename_prefab_path);
+      std::filesystem::path new_rel = old_rel.parent_path() / (new_name + old_rel.extension().string());
+      std::string new_relative_path = new_rel.generic_string();
+
+      // Build full paths
+      std::string old_full = Engine::Path(Engine::Resources::resource_path).join(rename_prefab_path);
+      std::string new_full = Engine::Path(Engine::Resources::resource_path).join(new_relative_path);
+
+      // Only rename if the name actually changed
+      if (rename_prefab_path != new_relative_path) {
+        std::error_code ec;
+        std::filesystem::rename(old_full, new_full, ec);
+        if (!ec) {
+          // Update prefab cache: move entry from old key to new key
+          auto it = Engine::Resources::prefab_cache.find(old_full);
+          if (it != Engine::Resources::prefab_cache.end()) {
+            auto prefab_weak = it->second;
+            Engine::Resources::prefab_cache.erase(it);
+            Engine::Resources::prefab_cache[new_full] = prefab_weak;
+
+            // Update the prefab's internal filepath
+            if (auto prefab_ptr = prefab_weak.lock()) {
+              prefab_ptr->set_prefab_filepath(new_full);
+            }
+          }
+
+          // Update selected path if it was the renamed prefab
+          if (selected_prefab_path == rename_prefab_path) {
+            selected_prefab_path = new_relative_path;
+          }
+
+          Log::info("Renamed prefab: {} -> {}", rename_prefab_path, new_relative_path);
+        } else {
+          Log::error("Failed to rename prefab file: {}", ec.message());
+        }
+      }
+
+      rename_prefab_path.clear();
+      ImGui::CloseCurrentPopup();
+    }
+    ImGui::EndPopup();
   }
 
   ImGui::End();
