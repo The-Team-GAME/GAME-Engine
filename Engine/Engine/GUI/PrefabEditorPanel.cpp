@@ -90,11 +90,9 @@ void PrefabEditorPanelHelpers::render_component_tree(const std::string& componen
           }
         );
 
-        // Mark prefab as dirty
+        // Save prefab immediately
         if (!prefab_path.empty()) {
-          Engine::ProjectSaveManager::set_dirty(
-            Engine::ProjectSaveManager::DirtyStates::Prefab(prefab_path)
-          );
+          Engine::Resources::save_prefab(prefab_path, prefab, true);
 
           // Propagate changes to all prefab instances
           if (prefab.is_valid()) {
@@ -124,11 +122,9 @@ void PrefabEditorPanelHelpers::render_component_tree(const std::string& componen
           storage.erase(it);
           signature.reset(array->get_type_id());
 
-          // Mark prefab as dirty
+          // Save prefab immediately
           if (!prefab_path.empty()) {
-            Engine::ProjectSaveManager::set_dirty(
-              Engine::ProjectSaveManager::DirtyStates::Prefab(prefab_path)
-            );
+            Engine::Resources::save_prefab(prefab_path, prefab, true);
 
             // Propagate changes to all prefab instances
             Engine::ECS::update_prefab_instances(prefab_impl->get_prefab_id());
@@ -248,10 +244,8 @@ void PrefabEditorPanel()
           // Add to cache without saving to disk
           Engine::Resources::cache_prefab(relative_path, new_prefab, true, true);
 
-          // Mark as dirty in ProjectSaveManager
-          Engine::ProjectSaveManager::set_dirty(
-            Engine::ProjectSaveManager::DirtyStates::Prefab(relative_path)
-          );
+          // Save prefab immediately
+          Engine::Resources::save_prefab(relative_path, new_prefab, true);
 
           // Select the newly created prefab
           selected_prefab_path = relative_path;
@@ -362,10 +356,8 @@ void PrefabEditorPanel()
           if (ImGui::Button(button_label.c_str())) {
             // Add default-constructed component to prefab by name
             if (selected_prefab.add_component_by_name(component_name)) {
-              // Mark prefab as dirty
-              Engine::ProjectSaveManager::set_dirty(
-                Engine::ProjectSaveManager::DirtyStates::Prefab(selected_prefab_path)
-              );
+              // Save prefab immediately
+              Engine::Resources::save_prefab(selected_prefab_path, selected_prefab, true);
 
               // Propagate changes to all prefab instances
               Engine::ECS::update_prefab_instances(selected_prefab.get_impl()->get_prefab_id());
@@ -479,11 +471,9 @@ void PrefabEditorPanel()
             selected_prefab.remove_from_layer(layer_name);
           }
 
-          // Mark prefab as dirty
+          // Save prefab immediately
           if (!selected_prefab_path.empty()) {
-            Engine::ProjectSaveManager::set_dirty(
-              Engine::ProjectSaveManager::DirtyStates::Prefab(selected_prefab_path)
-            );
+            Engine::Resources::save_prefab(selected_prefab_path, selected_prefab, true);
 
             // Propagate changes to all prefab instances
             Engine::ECS::update_prefab_instances(selected_prefab.get_impl()->get_prefab_id());
@@ -519,11 +509,9 @@ void PrefabEditorPanel()
       if (ImGui::Button("Clear All Layers")) {
         selected_prefab.clear_layers();
 
-        // Mark prefab as dirty
+        // Save prefab immediately
         if (!selected_prefab_path.empty()) {
-          Engine::ProjectSaveManager::set_dirty(
-            Engine::ProjectSaveManager::DirtyStates::Prefab(selected_prefab_path)
-          );
+          Engine::Resources::save_prefab(selected_prefab_path, selected_prefab, true);
 
           // Propagate changes to all prefab instances
           Engine::ECS::update_prefab_instances(selected_prefab.get_impl()->get_prefab_id());

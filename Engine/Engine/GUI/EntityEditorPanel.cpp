@@ -921,10 +921,7 @@ void EntityEditorPanel()
             // Add prefab to resource cache so it can be tracked and appears in PrefabEditorPanel
             Engine::Resources::cache_prefab(relative_path, prefab, true, true);
 
-            // Mark as dirty so it gets saved
-            Engine::ProjectSaveManager::set_dirty(
-              Engine::ProjectSaveManager::DirtyStates::Prefab(relative_path)
-            );
+            // Prefab already saved to disk above via serialize_prefab_to_json_file
 
             // Clear the input and close popup
             prefab_filename[0] = '\0';
@@ -1035,10 +1032,7 @@ void EntityEditorPanel()
               // Update prefab in resource cache
               Engine::Resources::cache_prefab(selected_prefab_for_update, updated_prefab, true, true);
 
-              // Mark as dirty so it gets saved
-              Engine::ProjectSaveManager::set_dirty(
-                Engine::ProjectSaveManager::DirtyStates::Prefab(selected_prefab_for_update)
-              );
+              // Prefab already saved to disk above via serialize_prefab_to_json_file
 
               // Update all instances of this prefab
               Engine::ECS::update_prefab_instances(preserved_uuid);
