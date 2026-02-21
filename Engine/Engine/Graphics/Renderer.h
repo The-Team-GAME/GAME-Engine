@@ -20,6 +20,7 @@
 #include "../Math/Vector4D.h"
 #include "../EngineExport.h"
 #include "RendererInternal.h"
+#include "PostProcessing.h"
 #include <array>
 #include <string>
 #include <vector>
@@ -250,5 +251,35 @@ namespace Engine {
     // alignment: 0 = left, 1 = center, 2 = right
     ENGINE_API void draw_text_wrapped_ui(Engine::Graphics::Font font, const std::string& text, const Math::Vec2D& position, f32 scale, const Math::Vec4D& color, f32 max_width, f32 line_spacing = 1.2f, int alignment = 0);
 
+    // === Post-Processing ===
+
+    // Initialize post-processing resources. Call after init().
+    ENGINE_API bool init_post_processing();
+
+    // Clean up post-processing resources. Called by exit().
+    ENGINE_API void exit_post_processing();
+
+    // Begin capturing the scene into the post-processing FBO.
+    ENGINE_API void begin_post_processing();
+
+    // Apply post-processing effects and blit to target FBO (0 = default framebuffer).
+    ENGINE_API void end_post_processing(unsigned int target_fbo = 0);
+
+    // Get mutable reference to post-processing settings.
+    ENGINE_API PostProcessing::Settings& get_post_process_settings();
+
+    // Load a .cube LUT file for color grading.
+    ENGINE_API bool load_lut(const std::string& cube_path);
+
+    // Load a dirt/lens texture for bloom overlay.
+    ENGINE_API void load_bloom_dirt(const std::string& filepath);
+
+    // Resize post-processing FBOs.
+    ENGINE_API void resize_post_processing(int w, int h);
+
+    // Check if a named layer should render into the post-processing FBO.
+    ENGINE_API bool is_layer_affected(const std::string& layer_name);
+
   } // namespace Graphics
 } // namespace Engine
+
