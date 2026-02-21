@@ -14,6 +14,7 @@
 #include "../Precompiled.h"
 #include "widgets/ColliderEditorWidget.h"
 #include "../ECS/ECS.h"
+#include <algorithm>
 #include "../Components/CollisionComponents.h"
 #include "../Components/StateMachineComponents.h"
 #include "../Components/GraphicsComponents.h"
@@ -43,6 +44,9 @@ namespace {
 
   bool is_open = false;
   std::string selected_state_name = ""; // Moved from local static to namespace for OpenForState access
+
+  float zoom_level = 1.0f;
+  ImVec2 pan_offset = { 0.0f, 0.0f };
 
   void init_selection_listener() {
     if (selection_initialized) return;
@@ -472,14 +476,69 @@ void ColliderEditorPanel()
   sprite_config.sprite_world_width = sprite_world_width;
   sprite_config.sprite_world_height = sprite_world_height;
 
-  // Calculate visual editor layout
-  ImGuiWidgets::VisualEditorLayout layout = ImGuiWidgets::CalculateVisualEditorLayout(sprite_config);
+  // --- Contained Visual Editor Area ---
+  ImVec2 avail = ImGui::GetContentRegionAvail();
+  // Reserve space for controls below the visual area
+  float child_height = avail.y - 180.0f;
+  if (child_height < 200.0f) child_height = 200.0f;
+  ImVec2 child_size = { avail.x, child_height };
+
+  ImGui::BeginChild("##ColliderEditorCanvas", child_size, ImGuiChildFlags_Borders, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+
+  // Handle zoom and pan inside the child region
+  bool canvas_hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_None);
+  if (canvas_hovered) {
+    float scroll = ImGui::GetIO().MouseWheel;
+    if (scroll != 0.0f) {
+      float old_zoom = zoom_level;
+      zoom_level *= (scroll > 0.0f) ? 1.1f : (1.0f / 1.1f);
+      zoom_level = std::max(0.1f, std::min(zoom_level, 20.0f));
+
+      // Zoom toward mouse position
+      ImVec2 mouse_pos = ImGui::GetMousePos();
+      ImVec2 canvas_min = ImGui::GetWindowPos();
+      ImVec2 canvas_center = { canvas_min.x + child_size.x * 0.5f + pan_offset.x,
+                               canvas_min.y + child_size.y * 0.5f + pan_offset.y };
+      float zoom_ratio = zoom_level / old_zoom;
+      pan_offset.x = mouse_pos.x - (mouse_pos.x - canvas_center.x) * zoom_ratio - (canvas_min.x + child_size.x * 0.5f);
+      pan_offset.y = mouse_pos.y - (mouse_pos.y - canvas_center.y) * zoom_ratio - (canvas_min.y + child_size.y * 0.5f);
+    }
+
+    // Middle-mouse drag to pan
+    if (ImGui::IsMouseDragging(ImGuiMouseButton_Middle)) {
+      ImVec2 delta = ImGui::GetIO().MouseDelta;
+      pan_offset.x += delta.x;
+      pan_offset.y += delta.y;
+    }
+  }
+
+  // Calculate visual editor layout using the child region size
+  ImGuiWidgets::VisualEditorLayout layout = ImGuiWidgets::CalculateVisualEditorLayout(sprite_config, child_size);
+
+  // Apply zoom and pan to layout
+  layout.scale *= zoom_level;
+  layout.draw_width = sprite_config.sprite_world_width * layout.scale;
+  layout.draw_height = sprite_config.sprite_world_height * layout.scale;
+
+  // Recalculate positions with zoom and pan
+  ImVec2 canvas_pos = ImGui::GetWindowPos();
+  float offset_x = (child_size.x - layout.draw_width) * 0.5f + pan_offset.x;
+  float offset_y = (child_size.y - layout.draw_height) * 0.5f + pan_offset.y;
+  layout.image_min = { canvas_pos.x + offset_x, canvas_pos.y + offset_y };
+  layout.image_max = { layout.image_min.x + layout.draw_width, layout.image_min.y + layout.draw_height };
+  layout.center = { layout.image_min.x + layout.draw_width * 0.5f, layout.image_min.y + layout.draw_height * 0.5f };
+
+  // Push clip rect to contain everything within the child window
+  ImDrawList* draw_list = ImGui::GetWindowDrawList();
+  ImVec2 clip_min = canvas_pos;
+  ImVec2 clip_max = { canvas_pos.x + child_size.x, canvas_pos.y + child_size.y };
+  draw_list->PushClipRect(clip_min, clip_max, true);
+
+  // Draw background grid for visual reference
+  draw_list->AddRectFilled(clip_min, clip_max, IM_COL32(30, 30, 30, 255));
 
   // Draw the sprite
   ImGuiWidgets::DrawSprite(sprite_config, layout);
-
-  // Draw Collider and Handle Interaction
-  ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
   // Apply flip to offset ONLY in live mode
   Math::Vec2D display_offset = col_offset;
@@ -635,8 +694,21 @@ void ColliderEditorPanel()
     }
   }
 
+  // Pop clip rect and end the contained canvas area
+  draw_list->PopClipRect();
+  ImGui::EndChild();
+
+  // Zoom controls below the canvas
+  ImGui::Text("Zoom: %.0f%%", zoom_level * 100.0f);
+  ImGui::SameLine();
+  if (ImGui::Button("Reset View")) {
+    zoom_level = 1.0f;
+    pan_offset = { 0.0f, 0.0f };
+  }
+  ImGui::SameLine();
+  ImGui::TextDisabled("(Scroll to zoom, Middle-drag to pan)");
+
   // Display values
-  ImGui::SetCursorScreenPos({ layout.image_min.x, layout.image_max.y + 10 });
   ImGui::Text("Collider Size: %.2f x %.2f", col_width, col_height);
   ImGui::Text("Collider Offset: %.2f, %.2f", col_offset.x, col_offset.y);
 
