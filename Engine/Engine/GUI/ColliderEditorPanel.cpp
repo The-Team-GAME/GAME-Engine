@@ -14,7 +14,6 @@
 #include "../Precompiled.h"
 #include "widgets/ColliderEditorWidget.h"
 #include "../ECS/ECS.h"
-#include "../ECS/Prefab.h"
 #include "../Components/CollisionComponents.h"
 #include "../Components/StateMachineComponents.h"
 #include "../Components/GraphicsComponents.h"
@@ -24,24 +23,19 @@
 #include "../Events/EngineEvents.h"
 #include "../Graphics/Renderer.h" // For Texture
 #include "../InputManager.h"
-#include "../ProjectSaveManager.h" // For marking prefabs dirty
 #include "../Resources.h"
 #include "../Logger.h"
 #include "../FileIO/ColliderMeshFileIO.h"
 #include "../FileIO/FileDialog.h"
 
 namespace {
-  enum class EditorMode { None, Entity, Prefab };
+  enum class EditorMode { None, Entity };
   enum class ButtonColliderMode { Normal, Hovered, Clicked }; // For DynamicButton editing
 
   EditorMode current_mode = EditorMode::None;
   ButtonColliderMode button_mode = ButtonColliderMode::Normal; // Default to normal state
 
   s32 selected_entity_id = -1;
-  Engine::ECS::Prefab selected_prefab;
-  std::string selected_prefab_path = "";
-  bool is_entity_prefab_instance = false;
-  std::string entity_source_prefab_path = "";
 
   bool selection_initialized = false;
   std::string preview_state_name = "";
@@ -59,16 +53,6 @@ namespace {
         selected_entity_id = static_cast<s32>(event.entity_id);
         if (selected_entity_id != -1) {
           current_mode = EditorMode::Entity;
-
-          // Check if this entity is a prefab instance
-          Engine::ECS::Entity entity = Engine::ECS::get_entity(event.entity_id);
-          is_entity_prefab_instance = Engine::ECS::is_prefab_instance(entity);
-          if (is_entity_prefab_instance) {
-            entity_source_prefab_path = Engine::ECS::get_prefab_path(entity);
-          }
-          else {
-            entity_source_prefab_path = "";
-          }
         }
       }
     );
@@ -82,14 +66,6 @@ namespace ColliderEditor {
   void Open(Engine::ECS::Entity entity) {
     current_mode = EditorMode::Entity;
     selected_entity_id = static_cast<s32>(entity.get_id());
-    selected_state_name = "";
-    is_open = true;
-  }
-
-  void Open(Engine::ECS::Prefab prefab, const std::string& prefab_path) {
-    current_mode = EditorMode::Prefab;
-    selected_prefab = prefab;
-    selected_prefab_path = prefab_path;
     selected_state_name = "";
     is_open = true;
   }
@@ -115,7 +91,7 @@ void ColliderEditorPanel()
   }
 
   if (current_mode == EditorMode::None) {
-    ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "No entity or prefab selected");
+    ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "No entity selected");
     ImGui::End();
     return;
   }
@@ -179,56 +155,12 @@ void ColliderEditorPanel()
       ImGui::Separator();
     }
 
-    // Display prefab instance info if applicable
-    if (is_entity_prefab_instance && !entity_source_prefab_path.empty()) {
-      ImGui::TextColored(ImVec4(0.5f, 0.8f, 1.0f, 1.0f), "Prefab Instance: %s", entity_source_prefab_path.c_str());
-      ImGui::SameLine();
-      if (ImGui::Button("Edit Prefab Directly")) {
-        // Load the source prefab and switch to prefab editing mode
-        Engine::ECS::Prefab source_prefab = Engine::Resources::load_prefab(entity_source_prefab_path);
-        if (source_prefab.is_valid()) {
-          ColliderEditor::Open(source_prefab, entity_source_prefab_path);
-        }
-      }
-      ImGui::Separator();
-    }
-  }
-  else if (current_mode == EditorMode::Prefab) {
-    if (!selected_prefab.is_valid()) {
-      current_mode = EditorMode::None;
-      ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Selected prefab is invalid");
-      ImGui::End();
-      return;
-    }
-
-    collider = selected_prefab.get_component<Components::BoxCollider>();
-    texture = selected_prefab.get_component<Components::Texture>();
-    state_machine = selected_prefab.get_component<Components::StateMachine>();
-    texture_atlas = selected_prefab.get_component<Components::TextureAtlas>();
-    animation = selected_prefab.get_component<Components::Animation>();
-    transform = selected_prefab.get_component<Components::Transform2D>();
-    flip = selected_prefab.get_component<Components::Flip>();
-
-    ImGui::Text("Editing Prefab: %s", selected_prefab.get_impl()->get_prefab_id().c_str());
   }
 
   if (!collider) {
     ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.0f, 1.0f), "Selected object has no BoxCollider");
     if (ImGui::Button("Add BoxCollider")) {
-      if (current_mode == EditorMode::Entity) {
-        entity.add_component<Components::BoxCollider>(50.0f, 50.0f, false);
-      }
-      else {
-        selected_prefab.add_component<Components::BoxCollider>(50.0f, 50.0f, false);
-        // Mark dirty
-        if (!selected_prefab_path.empty()) {
-          Engine::ProjectSaveManager::set_dirty(
-            Engine::ProjectSaveManager::DirtyStates::Prefab(selected_prefab_path)
-          );
-        }
-        // We don't have the path here easily, but update_prefab_instances will be called
-        Engine::ECS::update_prefab_instances(selected_prefab.get_impl()->get_prefab_id());
-      }
+      entity.add_component<Components::BoxCollider>(50.0f, 50.0f, false);
     }
     ImGui::End();
     return;
@@ -365,10 +297,7 @@ void ColliderEditorPanel()
       col_vertices = collider->polygon.vertices;
     }
 
-    // Apply flip only if in Entity mode
-    if (current_mode == EditorMode::Entity) {
-      should_apply_flip = true;
-    }
+    should_apply_flip = true;
   }
 
   if (!texture_handle) {
@@ -492,7 +421,7 @@ void ColliderEditorPanel()
   if (active_atlas && !active_atlas->subTextures.empty()) {
     int atlas_index = 0;
     if (active_animation && !active_animation->frames.empty()) {
-      if (editing_specific_state || current_mode == EditorMode::Prefab) {
+      if (editing_specific_state) {
         // Calculate animated frame using preview start time
         // Always loop in preview mode for better visualization
         float elapsed = Engine::Time::get_time() - preview_animation_start_time;
@@ -703,15 +632,6 @@ void ColliderEditorPanel()
         }
       }
 
-      // If in Prefab mode, mark dirty
-      if (current_mode == EditorMode::Prefab) {
-        if (!selected_prefab_path.empty()) {
-          Engine::ProjectSaveManager::set_dirty(
-            Engine::ProjectSaveManager::DirtyStates::Prefab(selected_prefab_path)
-          );
-        }
-        Engine::ECS::update_prefab_instances(selected_prefab.get_impl()->get_prefab_id());
-      }
     }
   }
 
@@ -812,14 +732,6 @@ void ColliderEditorPanel()
       collider->aabb.half_width = col_width / 2.0f;
       collider->aabb.half_height = col_height / 2.0f;
 
-      if (current_mode == EditorMode::Prefab) {
-        if (!selected_prefab_path.empty()) {
-          Engine::ProjectSaveManager::set_dirty(
-            Engine::ProjectSaveManager::DirtyStates::Prefab(selected_prefab_path)
-          );
-        }
-        Engine::ECS::update_prefab_instances(selected_prefab.get_impl()->get_prefab_id());
-      }
     }
   }
 
@@ -897,15 +809,6 @@ void ColliderEditorPanel()
           collider->aabb.half_width = col_width / 2.0f;
           collider->aabb.half_height = col_height / 2.0f;
           collider->polygon.vertices = col_vertices;
-
-          if (current_mode == EditorMode::Prefab) {
-            if (!selected_prefab_path.empty()) {
-              Engine::ProjectSaveManager::set_dirty(
-                Engine::ProjectSaveManager::DirtyStates::Prefab(selected_prefab_path)
-              );
-            }
-            Engine::ECS::update_prefab_instances(selected_prefab.get_impl()->get_prefab_id());
-          }
         }
 
         Log::info("Imported collider mesh from: {}", open_path.value());

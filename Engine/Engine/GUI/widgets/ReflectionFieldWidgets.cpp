@@ -1007,12 +1007,9 @@ namespace ImGuiWidgets {
   }
 
   bool render_box_collider_field(ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity, Engine::ECS::Prefab* prefab, const std::string& prefab_path) {
-    if (ImGui::Button("Open Collider Editor")) {
-      if (entity.is_valid()) {
+    if (entity.is_valid()) {
+      if (ImGui::Button("Open Collider Editor")) {
         ColliderEditor::Open(entity);
-      }
-      else if (prefab && prefab->is_valid()) {
-        ColliderEditor::Open(*prefab, prefab_path);
       }
     }
 

@@ -15,12 +15,10 @@
 
 namespace Engine::ECS {
   class Entity;
-  class Prefab;
 }
 
 namespace ColliderEditor {
   void Open(Engine::ECS::Entity entity);
-  void Open(Engine::ECS::Prefab prefab, const std::string& prefab_path);
   void OpenForState(Engine::ECS::Entity entity, const std::string& state_name);
   bool IsOpen();
   void Close();
