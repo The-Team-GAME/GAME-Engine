@@ -17,11 +17,16 @@
 
 namespace Engine {
 
+    namespace { StateMachineBlueprintRegistry* g_bp_registry = nullptr; }
+
     StateMachineBlueprintRegistry& StateMachineBlueprintRegistry::instance() {
-        // Leaked singleton — intentionally never destroyed so that
-        // callbacks from hot-reloaded DLLs don't crash during static cleanup.
-        static StateMachineBlueprintRegistry* registry = new StateMachineBlueprintRegistry();
-        return *registry;
+        if (!g_bp_registry) g_bp_registry = new StateMachineBlueprintRegistry();
+        return *g_bp_registry;
+    }
+
+    void StateMachineBlueprintRegistry::destroy_instance() {
+        delete g_bp_registry;
+        g_bp_registry = nullptr;
     }
 
 } // namespace Engine

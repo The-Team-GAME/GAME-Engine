@@ -155,6 +155,26 @@ namespace Engine {
 
     /*=================================================================================
     Function Brief:
+    Frees all heap memory held inside the ECS world containers (component arrays,
+    entity name strings, layer maps, system objects, etc.).
+
+    Call this AFTER destroy_all_entities() + process_housekeeping() during
+    engine shutdown. The leaked WorldContainers* singleton itself is not
+    destroyed (by design), but all its internal data is released so the CRT
+    leak checker sees clean heap.
+    ==================================================================================*/
+    ENGINE_API void clear_world();
+
+    /*=================================================================================
+    Function Brief:
+    Deletes the WorldContainers singleton, freeing all remaining STL structural
+    overhead (sentinel nodes, iterator-debug proxies). Call AFTER clear_world()
+    and AFTER DLL unload.
+    ==================================================================================*/
+    ENGINE_API void destroy_world();
+
+    /*=================================================================================
+    Function Brief:
     Destroys all entities that have the specified component types.
 
     Parameters:

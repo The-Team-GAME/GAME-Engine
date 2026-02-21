@@ -359,6 +359,12 @@ extern "C" __declspec(dllexport) void UnregisterGameLogic()
   Engine::SceneManager::scene_stack.clear();
   Engine::SceneManager::current_scene = nullptr;
 
+  // Clear StateMachineBlueprintRegistry — its StateBlueprint entries hold
+  // std::string members (on_enter / on_update / on_exit) whose heap data
+  // must be freed while the DLL is still loaded.  Static constructors in
+  // the next DLL load will re-register all blueprints automatically.
+  Engine::StateMachineBlueprintRegistry::instance().clear_all_blueprints();
+
   // Clear FunctionRegistry — its std::any values hold std::function
   // objects whose destructors reference code in this DLL.
   // Must be destroyed while the DLL is still loaded.

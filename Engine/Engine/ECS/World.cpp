@@ -243,6 +243,46 @@ namespace Engine {
       }
     }
 
+    void clear_world()
+    {
+      // Guard in case the containers were never initialised.
+      if (!Internal::g_containers) return;
+      auto& containers = *Internal::g_containers;
+
+      // Free every ComponentArray (and its SparseSet storage).
+      // These are the largest allocations that survive destroy_all_entities().
+      for (auto& arr : containers.component_arrays)
+        arr.reset();
+
+      // Clear all remaining containers. Content is freed here;
+      // capacity/structural overhead is freed later by destroy_world().
+      containers.systems.clear();
+      containers.entity_names.clear();
+      containers.prefab_instances.clear();
+      containers.entity_signatures.clear();
+      containers.entity_layers.clear();
+      containers.entity_highest_layer.clear();
+      containers.active_entities.clear();
+      containers.entities_to_destroy.clear();
+      containers.components_to_remove.clear();
+      containers.layer_name_to_id.clear();
+      containers.layer_id_to_name.clear();
+      containers.layer_entities.clear();
+      containers.collision_callbacks.clear();
+      containers.systems_to_update_once.clear();
+      containers.entities_to_update_once.clear();
+    }
+
+    void destroy_world()
+    {
+      // Delete the WorldContainers singleton entirely, freeing the struct and
+      // all remaining STL structural overhead (sentinels, proxies).
+      // Safe to call only when the DLL is still loaded or already unloaded
+      // AND all DLL-dependent contents have been cleared first via clear_world().
+      delete Internal::g_containers;
+      Internal::g_containers = nullptr;
+    }
+
     bool is_entity_active(const Entity entity)
     {
       auto& containers = Internal::get_containers();
