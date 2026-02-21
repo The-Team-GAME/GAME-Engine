@@ -14,7 +14,6 @@
 //-----------------------------------------------------------------------------------
 #include "EventManager.h"
 #include "../ECS/System.h"
-#include <type_traits>
 
 namespace Engine {
   namespace EventManager

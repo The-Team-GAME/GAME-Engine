@@ -35,11 +35,11 @@ namespace Engine
     {
       try {
         lua_state.open_libraries(sol::lib::base,
-          sol::lib::math,
-          sol::lib::package,
-          sol::lib::string,
-          sol::lib::table,
-          sol::lib::io);
+                                sol::lib::math,
+                                sol::lib::package,
+                                sol::lib::string,
+                                sol::lib::table,
+                                sol::lib::io);
 
         // register high-level Game API
         Engine::GameAPI::register_api(lua_state);
@@ -63,14 +63,7 @@ namespace Engine
         std::lock_guard<std::mutex> lk(bindings_mutex);
         binding_callbacks.clear();
       }
-      // Move the live Lua state into a local — this calls lua_close() on the old VM
-      // immediately, freeing all Lua allocations NOW (before the CRT leak check fires).
-      // Previously we used `lua_state = sol::state{}`, which created a fresh Lua VM
-      // whose ~50 internal allocations were then reported as leaks by the CRT checker
-      // (the static destructor that would have freed them runs after _CrtDumpMemoryLeaks).
-      // After the move, lua_state holds a null lua_State*, so all guard checks below
-      // (`if (!lua_state.lua_state())`) will correctly block further Lua calls.
-      { sol::state closing = std::move(lua_state); }
+      lua_state = sol::state{};
       Log::info("[LuaManager] Lua closed.");
     }
 
@@ -111,8 +104,7 @@ namespace Engine
               Log::error("[Lua Error] {}", err.what());
             }
           }
-        }
-        else {
+        } else {
           // function not present; silent or log once
           // std::cerr << "[LuaManager] Function '" << name << "' not found.\n";
         }
@@ -148,8 +140,7 @@ namespace Engine
       for (auto& cb : copy) {
         try {
           cb(lua_state);
-        }
-        catch (const std::exception& e) {
+        } catch (const std::exception& e) {
           Log::error("[LuaManager] binding callback error: {}", e.what());
         }
       }
