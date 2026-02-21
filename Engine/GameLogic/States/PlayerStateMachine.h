@@ -169,7 +169,7 @@ namespace PlayerStates
     // Player Attack 2 State (Second Punch)
     // ========================================================================
     Components::StateAnimation player_attack2_anim;
-    player_attack2_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_twohit_spritesheet.png"));
+    player_attack2_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_Twohit_spritesheet.png"));
     player_attack2_anim.texture_atlas = Components::TextureAtlas(96, 64, 1, 13, 13);
     player_attack2_anim.animation = Components::Animation({ 6, 7, 8, 9, 10, 11, 12 }, { 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f, 0.08f }, false);
     player_attack2_anim.scale = Math::Vec2D(ATTACK_WIDTH * 2.0f, ATTACK_HEIGHT * 2.0f);
@@ -180,12 +180,34 @@ namespace PlayerStates
     // Player Attack 3 State (Third Punch - Finisher)
     // ========================================================================
     Components::StateAnimation player_attack3_anim;
-    player_attack3_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_threehit_spritesheet.png"));
+    player_attack3_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_Threehit_spritesheet.png"));
     player_attack3_anim.texture_atlas = Components::TextureAtlas(96, 64, 1, 18, 18);
     player_attack3_anim.animation = Components::Animation({ 9, 10, 11, 12, 13, 14, 15, 16, 17 }, { 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f, 0.06f }, false);
     player_attack3_anim.scale = Math::Vec2D(ATTACK_WIDTH * 2.0f, ATTACK_HEIGHT * 2.0f);
 
     Components::State player_attack3("Attack3", player_attack3_anim, attack_audio, fmod_attack_audio);
+
+    // ========================================================================
+    // Player Uppercut State
+    // ========================================================================
+    Components::StateAnimation player_uppercut_anim;
+    player_uppercut_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_Uppercut_spritesheet.png"));
+    player_uppercut_anim.texture_atlas = Components::TextureAtlas(96, 64, 1, 8, 18);
+    player_uppercut_anim.animation = Components::Animation(8, 0.1f);
+    player_uppercut_anim.scale = Math::Vec2D(ATTACK_WIDTH * 2.0f, ATTACK_HEIGHT * 2.0f);
+
+    Components::State player_uppercut("Uppercut", player_uppercut_anim);
+
+    // ========================================================================
+    // Player Smash State
+    // ========================================================================
+    Components::StateAnimation player_smash_anim;
+    player_smash_anim.texture = Components::Texture(Engine::Resources::load_texture("images/BroSpriteSheets/Bro_Downsmash_spritesheet.png"));
+    player_smash_anim.texture_atlas = Components::TextureAtlas(96, 64, 1, 12, 18);
+    player_smash_anim.animation = Components::Animation(12, 0.1f);
+    player_smash_anim.scale = Math::Vec2D(ATTACK_WIDTH * 2.0f, ATTACK_HEIGHT * 2.0f);
+
+    Components::State player_smash("Smash", player_smash_anim);
 
     // ========================================================================
     // Player Death State
@@ -207,10 +229,14 @@ namespace PlayerStates
     player_sm.add_state(player_idle);
     player_sm.add_state(player_walking);
     player_sm.add_state(player_jumping);
+    player_sm.add_state(player_falling);
     player_sm.add_state(player_dash);
+    player_sm.add_state(player_stunned);
     player_sm.add_state(player_attack1);
     player_sm.add_state(player_attack2);
     player_sm.add_state(player_attack3);
+    player_sm.add_state(player_uppercut);
+    player_sm.add_state(player_smash);
     player_sm.add_state(player_dead);
     player_sm.set_initial_state("Idle");
 
