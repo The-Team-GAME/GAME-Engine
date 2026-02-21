@@ -47,6 +47,9 @@ namespace {
   std::string preview_state_name = "";
   float preview_animation_start_time = 0.0f;
 
+  bool is_open = false;
+  std::string selected_state_name = ""; // Moved from local static to namespace for OpenForState access
+
   void init_selection_listener() {
     if (selection_initialized) return;
     selection_initialized = true;
@@ -73,17 +76,29 @@ namespace {
 }
 
 namespace ColliderEditor {
+  bool IsOpen() { return is_open; }
+  void Close() { is_open = false; }
+
   void Open(Engine::ECS::Entity entity) {
     current_mode = EditorMode::Entity;
     selected_entity_id = static_cast<s32>(entity.get_id());
-    ImGui::SetWindowFocus("Collider Editor");
+    selected_state_name = "";
+    is_open = true;
   }
 
   void Open(Engine::ECS::Prefab prefab, const std::string& prefab_path) {
     current_mode = EditorMode::Prefab;
     selected_prefab = prefab;
     selected_prefab_path = prefab_path;
-    ImGui::SetWindowFocus("Collider Editor");
+    selected_state_name = "";
+    is_open = true;
+  }
+
+  void OpenForState(Engine::ECS::Entity entity, const std::string& state_name) {
+    current_mode = EditorMode::Entity;
+    selected_entity_id = static_cast<s32>(entity.get_id());
+    selected_state_name = state_name;
+    is_open = true;
   }
 }
 
@@ -91,7 +106,13 @@ void ColliderEditorPanel()
 {
   init_selection_listener();
 
-  ImGui::Begin("Collider Editor");
+  if (!is_open) return;
+
+  ImGui::SetNextWindowSize(ImVec2(600, 700), ImGuiCond_FirstUseEver);
+  if (!ImGui::Begin("Collider Editor", &is_open)) {
+    ImGui::End();
+    return;
+  }
 
   if (current_mode == EditorMode::None) {
     ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "No entity or prefab selected");
@@ -215,7 +236,6 @@ void ColliderEditorPanel()
 
   // --- State Selection Logic ---
   std::string current_editing_state = "";
-  static std::string selected_state_name = ""; // Persist selection
   bool editing_specific_state = false;
 
   if (state_machine) {
@@ -417,7 +437,7 @@ void ColliderEditorPanel()
   // 2. State Override (only when editing specific state)
   if (editing_specific_state) {
     auto& state = state_machine->states[current_editing_state];
-    if (state.animation.has_value()) {
+    if (state.animation.has_value() && state.animation->scale.has_value()) {
       sprite_world_width = state.animation->scale->x;
       sprite_world_height = state.animation->scale->y;
     }

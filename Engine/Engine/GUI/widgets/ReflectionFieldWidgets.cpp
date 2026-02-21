@@ -697,6 +697,21 @@ namespace ImGuiWidgets {
                 }
               }
 
+              // Edit Collider button
+              if (entity.is_valid()) {
+                ImGui::Separator();
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.3f, 0.6f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.7f, 0.4f, 0.7f, 1.0f));
+                std::string edit_col_label = "Edit Collider##" + state_name;
+                if (ImGui::Button(edit_col_label.c_str(), ImVec2(-1, 0))) {
+                  ColliderEditor::OpenForState(entity, state_name);
+                }
+                ImGui::PopStyleColor(2);
+                if (ImGui::IsItemHovered()) {
+                  ImGui::SetTooltip("Open the Collider Editor for this state");
+                }
+              }
+
               // Render Texture field
               auto tex_it = state_anim_obj.find("texture");
               if (tex_it != state_anim_obj.end()) {
