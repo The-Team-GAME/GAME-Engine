@@ -59,7 +59,9 @@ namespace Engine {
     }
 
     bool exit() {
-      // FMOD system cleanup is handled by UniqueFMODSystem destructor
+      // Release the FMOD core system explicitly now so its internal heap
+      // allocations are freed before the CRT leak detector runs at exit.
+      release_fmod_system();
       bgm_group = nullptr;
       sfx_group = nullptr;
       Log::info("Audio system cleaned up");
@@ -232,7 +234,7 @@ namespace Engine {
 
     void set_master_volume(f32 volume) {
       master_volume = glm::clamp(volume, 0.0f, 1.0f);
-      
+
       FMOD::System* system = get_fmod_system();
       FMOD::ChannelGroup* master_group = nullptr;
       if (system->getMasterChannelGroup(&master_group) == FMOD_OK && master_group) {

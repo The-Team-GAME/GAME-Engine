@@ -109,6 +109,13 @@ namespace ImGuiManager {
   void exit()
   {
 #ifndef GAME_BUILD
+    // Clear file-scope statics before ImGui destruction so their memory is
+    // freed before the CRT leak check fires (static destructors run after).
+    { decltype(registered_panels)().swap(registered_panels); }
+    { decltype(active_toasts)().swap(active_toasts); }
+    { decltype(styles_map)().swap(styles_map); }
+    { decltype(exit_save_selections)().swap(exit_save_selections); }
+
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();

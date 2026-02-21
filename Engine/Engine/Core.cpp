@@ -446,6 +446,20 @@ namespace Engine
   {
     Engine::UndoManager::shutdown();
     Engine::SceneManager::cleanup();
+
+    // Force-destroy any entities that survived scene teardown so that
+    // component destructors (including StateMachine callback name strings
+    // and cached std::function objects) are freed before the CRT leak check.
+    Engine::ECS::destroy_all_entities();
+    Engine::ECS::process_housekeeping();
+
+    // Clear WorldContainers contents (component arrays, entity data, systems, etc.).
+    // The singleton itself is deleted later by destroy_world() after DLL unload.
+    Engine::ECS::clear_world();
+
+    // Release event handlers and queued events — their lambda closures may hold
+    // resources and must be freed before the CRT leak check fires.
+    Engine::EventManager::clear_all_listeners();
     //Engine::ECS::remove_event_listener<WindowResizeEvent>();
 #ifndef GAME_BUILD
     ViewportPanel::exit();

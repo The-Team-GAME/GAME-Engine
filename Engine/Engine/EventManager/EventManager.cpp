@@ -14,6 +14,7 @@
 //-----------------------------------------------------------------------------------
 #include "EventManager.h"
 #include "../ECS/System.h"
+#include <type_traits>
 
 namespace Engine {
   namespace EventManager
@@ -22,24 +23,41 @@ namespace Engine {
 
     namespace Internal
     {
-      // Leaked singletons — intentionally never destroyed so that
-      // destructors running during static cleanup can still use them.
+      namespace {
+        std::vector<Event>* g_event_queue = nullptr;
+        std::unordered_map<EventTypeID, std::vector<std::function<void(const Event&)>>>* g_event_handlers = nullptr;
+      }
+
       std::vector<Event>& get_event_queue()
       {
-        static auto* queue = new std::vector<Event>();
-        return *queue;
+        if (!g_event_queue) g_event_queue = new std::vector<Event>();
+        return *g_event_queue;
       }
 
       std::unordered_map<EventTypeID, std::vector<std::function<void(const Event&)>>>& get_event_handlers()
       {
-        static auto* handlers = new std::unordered_map<EventTypeID, std::vector<std::function<void(const Event&)>>>();
-        return *handlers;
+        if (!g_event_handlers) g_event_handlers = new std::unordered_map<EventTypeID, std::vector<std::function<void(const Event&)>>>();
+        return *g_event_handlers;
       }
     }
 
     void remove_event_listener(EventTypeID eventType)
     {
       Internal::get_event_handlers().erase(eventType);
+    }
+
+    void clear_all_listeners()
+    {
+      Internal::get_event_handlers().clear();
+      Internal::get_event_queue().clear();
+    }
+
+    void destroy_all()
+    {
+      delete Internal::g_event_handlers;
+      Internal::g_event_handlers = nullptr;
+      delete Internal::g_event_queue;
+      Internal::g_event_queue = nullptr;
     }
 
     void update_events(const std::vector<std::unique_ptr<ECS::System>>& systems)
