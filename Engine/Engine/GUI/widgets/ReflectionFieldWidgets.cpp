@@ -627,27 +627,21 @@ namespace ImGuiWidgets {
               // Edit buttons at the top
               if (entity.is_valid()) {
                 // Edit Atlas Button
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.5f, 0.4f, 0.2f, 1.0f));
-                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.6f, 0.5f, 0.3f, 1.0f));
                 std::string edit_atlas_btn_label = "Edit Atlas Configuration##" + state_name;
                 if (ImGui::Button(edit_atlas_btn_label.c_str(), ImVec2(-1, 0))) {
                   extern void TextureAtlasEditor_OpenForState(Engine::ECS::Entity entity, const std::string & state_name);
                   TextureAtlasEditor_OpenForState(entity, state_name);
                 }
-                ImGui::PopStyleColor(2);
                 if (ImGui::IsItemHovered()) {
                   ImGui::SetTooltip("Open the Texture Atlas Editor to configure the grid layout");
                 }
 
                 // Edit Animation Frames Button
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.5f, 0.8f, 1.0f));
-                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.6f, 0.9f, 1.0f));
                 std::string edit_btn_label = "Edit Animation Frames##" + state_name;
                 if (ImGui::Button(edit_btn_label.c_str(), ImVec2(-1, 0))) {
                   extern void FrameAnimationEditor_Open(Engine::ECS::Entity entity, const std::string & state_name);
                   FrameAnimationEditor_Open(entity, state_name);
                 }
-                ImGui::PopStyleColor(2);
                 if (ImGui::IsItemHovered()) {
                   ImGui::SetTooltip("Open the Frame Animation Editor to select specific frames from the texture atlas");
                 }
@@ -700,13 +694,10 @@ namespace ImGuiWidgets {
               // Edit Collider button
               if (entity.is_valid()) {
                 ImGui::Separator();
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.3f, 0.6f, 1.0f));
-                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.7f, 0.4f, 0.7f, 1.0f));
                 std::string edit_col_label = "Edit Collider##" + state_name;
                 if (ImGui::Button(edit_col_label.c_str(), ImVec2(-1, 0))) {
                   ColliderEditor::OpenForState(entity, state_name);
                 }
-                ImGui::PopStyleColor(2);
                 if (ImGui::IsItemHovered()) {
                   ImGui::SetTooltip("Open the Collider Editor for this state");
                 }
@@ -747,8 +738,6 @@ namespace ImGuiWidgets {
             else {
               ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No animation defined for this state");
               ImGui::Spacing();
-              ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1.0f));
-              ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.7f, 0.3f, 1.0f));
               std::string add_anim_label = "Add Animation##" + state_name;
               if (ImGui::Button(add_anim_label.c_str(), ImVec2(-1, 0))) {
                 // Create a default StateAnimation with unit_rect texture and entity's scale
@@ -761,7 +750,6 @@ namespace ImGuiWidgets {
                 state_obj["animation"] = std::move(anim_gv);
                 local_modified = true;
               }
-              ImGui::PopStyleColor(2);
             }
 
             // ================================================================
@@ -819,26 +807,20 @@ namespace ImGuiWidgets {
               ImGui::Unindent();
 
               // Remove FMOD Audio button
-              ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.2f, 0.2f, 1.0f));
-              ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.8f, 0.3f, 0.3f, 1.0f));
               std::string remove_fmod_label = "Remove FMOD Audio##" + state_name;
               if (ImGui::Button(remove_fmod_label.c_str(), ImVec2(-1, 0))) {
                 fmod_it->second = ReflectionLibrary::GenericValue();
                 local_modified = true;
               }
-              ImGui::PopStyleColor(2);
             }
             else {
               ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No FMOD audio for this state");
               ImGui::Spacing();
-              ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1.0f));
-              ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.7f, 0.3f, 1.0f));
               std::string add_fmod_label = "Add FMOD Audio##" + state_name;
               if (ImGui::Button(add_fmod_label.c_str(), ImVec2(-1, 0))) {
                 state_obj["fmod_audio"] = ReflectionLibrary::to_generic_value(Components::FMODStateAudio{});
                 local_modified = true;
               }
-              ImGui::PopStyleColor(2);
             }
           }
 

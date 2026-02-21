@@ -147,11 +147,6 @@ void ColliderEditorPanel()
       return;
     }
 
-    // Show entity name/ID at the top
-    const std::string& entity_name = Engine::ECS::get_entity_name(entity);
-    ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "Entity: %s (ID: %d)", entity_name.c_str(), selected_entity_id);
-    ImGui::Separator();
-
     collider = entity.get_component<Components::BoxCollider>();
     texture = entity.get_component<Components::Texture>();
     state_machine = entity.get_component<Components::StateMachine>();
@@ -618,42 +613,6 @@ void ColliderEditorPanel()
     if (changed) {
       col_vertices = poly_data.vertices;
     }
-
-    // Numeric vertex table for precise editing
-    if (!col_vertices.empty()) {
-      ImGui::Separator();
-      ImGui::Text("Vertices (%d):", static_cast<int>(col_vertices.size()));
-      for (int i = 0; i < static_cast<int>(col_vertices.size()); ++i) {
-        ImGui::PushID(i);
-        float v[2] = { col_vertices[i].x, col_vertices[i].y };
-        std::string label = "V" + std::to_string(i);
-        if (ImGui::DragFloat2(label.c_str(), v, 0.5f, 0.0f, 0.0f, "%.1f")) {
-          col_vertices[i].x = v[0];
-          col_vertices[i].y = v[1];
-          changed = true;
-        }
-        ImGui::SameLine();
-        if (ImGui::SmallButton("X")) {
-          col_vertices.erase(col_vertices.begin() + i);
-          changed = true;
-          ImGui::PopID();
-          break;
-        }
-        ImGui::PopID();
-      }
-      if (ImGui::SmallButton("+ Add Vertex")) {
-        // Add a vertex at average of last and first vertices (or origin if <2)
-        if (col_vertices.size() >= 2) {
-          Math::Vec2D last = col_vertices.back();
-          Math::Vec2D first = col_vertices.front();
-          col_vertices.push_back({ (last.x + first.x) * 0.5f, (last.y + first.y) * 0.5f });
-        }
-        else {
-          col_vertices.push_back({ 0.0f, 0.0f });
-        }
-        changed = true;
-      }
-    }
   }
 
   // Apply changes
@@ -824,38 +783,7 @@ void ColliderEditorPanel()
     }
   }
 
-  // Show save to prefab button for prefab instances
-  if (current_mode == EditorMode::Entity && is_entity_prefab_instance && !entity_source_prefab_path.empty() && !editing_specific_state) {
-    if (ImGui::Button("Save Collider to Prefab")) {
-      // Load the source prefab
-      Engine::ECS::Prefab source_prefab = Engine::Resources::load_prefab(entity_source_prefab_path);
-      if (source_prefab.is_valid()) {
-        // Update the prefab's collider
-        auto* prefab_collider = source_prefab.get_component<Components::BoxCollider>();
-        if (prefab_collider) {
-          prefab_collider->type = collider->type;
-          prefab_collider->width = collider->width;
-          prefab_collider->height = collider->height;
-          prefab_collider->offset = collider->offset;
-          prefab_collider->aabb.half_width = collider->width / 2.0f;
-          prefab_collider->aabb.half_height = collider->height / 2.0f;
-          prefab_collider->polygon.vertices = collider->polygon.vertices;
 
-          // Mark the prefab as dirty to trigger save
-          Engine::ProjectSaveManager::set_dirty(
-            Engine::ProjectSaveManager::DirtyStates::Prefab(entity_source_prefab_path)
-          );
-
-          // Update all instances of this prefab
-          Engine::ECS::update_prefab_instances(source_prefab.get_impl()->get_prefab_id());
-
-          Log::info("Saved collider changes to prefab: {}", entity_source_prefab_path);
-        }
-      }
-    }
-    ImGui::SameLine();
-    ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.0f, 1.0f), "(Changes only affect this instance)");
-  }
 
   ImGui::SameLine();
   if (ImGui::Button("Reset to Sprite Size")) {
