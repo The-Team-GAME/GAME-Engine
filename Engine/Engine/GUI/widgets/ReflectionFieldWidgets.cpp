@@ -633,8 +633,11 @@ namespace ImGuiWidgets {
               ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.7f, 0.3f, 1.0f));
               std::string add_anim_label = "Add Animation##" + state_name;
               if (ImGui::Button(add_anim_label.c_str(), ImVec2(-1, 0))) {
-                // Create a default StateAnimation GenericValue from the reflected struct
-                state_obj["animation"] = ReflectionLibrary::to_generic_value(Components::StateAnimation{});
+                // Create a default StateAnimation with unit_rect texture
+                Components::StateAnimation default_anim{};
+                default_anim.texture = Engine::Resources::get_rect_texture();
+                auto anim_gv = ReflectionLibrary::to_generic_value(default_anim);
+                state_obj["animation"] = std::move(anim_gv);
                 local_modified = true;
               }
               ImGui::PopStyleColor(2);
