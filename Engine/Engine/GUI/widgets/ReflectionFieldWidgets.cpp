@@ -613,10 +613,34 @@ namespace ImGuiWidgets {
                 ImGui::Unindent();
               }
 
+              // Remove Animation button
+              ImGui::Spacing();
+              ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.2f, 0.2f, 1.0f));
+              ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.8f, 0.3f, 0.3f, 1.0f));
+              std::string remove_anim_label = "Remove Animation##" + state_name;
+              if (ImGui::Button(remove_anim_label.c_str(), ImVec2(-1, 0))) {
+                anim_it->second = ReflectionLibrary::GenericValue(); // Set to null (std::nullopt)
+                local_modified = true;
+              }
+              ImGui::PopStyleColor(2);
+
               ImGui::Unindent();
             }
             else {
               ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No animation defined for this state");
+              ImGui::Spacing();
+              ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1.0f));
+              ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.7f, 0.3f, 1.0f));
+              std::string add_anim_label = "Add Animation##" + state_name;
+              if (ImGui::Button(add_anim_label.c_str(), ImVec2(-1, 0))) {
+                // Create a default StateAnimation with unit_rect texture
+                Components::StateAnimation default_anim{};
+                default_anim.texture = Engine::Resources::get_rect_texture();
+                auto anim_gv = ReflectionLibrary::to_generic_value(default_anim);
+                state_obj["animation"] = std::move(anim_gv);
+                local_modified = true;
+              }
+              ImGui::PopStyleColor(2);
             }
           }
 
