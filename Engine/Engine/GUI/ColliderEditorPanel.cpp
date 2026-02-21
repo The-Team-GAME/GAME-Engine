@@ -417,7 +417,7 @@ void ColliderEditorPanel()
   // 2. State Override (only when editing specific state)
   if (editing_specific_state) {
     auto& state = state_machine->states[current_editing_state];
-    if (state.animation.has_value() && state.animation->scale.has_value()) {
+    if (state.animation.has_value()) {
       sprite_world_width = state.animation->scale->x;
       sprite_world_height = state.animation->scale->y;
     }

@@ -24,6 +24,7 @@
 #include "../../Components/Components.h"
 #include "../../Path.h"
 #include <unordered_map>
+#include <algorithm>
 #include "../../FunctionRegistry.h"
 
 namespace ImGuiWidgets {
@@ -492,6 +493,44 @@ namespace ImGuiWidgets {
     };
 
     ReflectionLibrary::Object& field_obj = field_value.getObject();
+    bool local_modified = false;
+
+    // ========================================================================
+    // Blueprint ID selector dropdown
+    // ========================================================================
+    {
+      auto bp_it = field_obj.find("blueprint_id");
+      std::string current_bp_id;
+      if (bp_it != field_obj.end() && bp_it->second.isString()) {
+        current_bp_id = bp_it->second.getString();
+      }
+
+      auto all_ids = Engine::StateMachineBlueprintRegistry::instance().get_all_ids();
+      std::sort(all_ids.begin(), all_ids.end());
+
+      ImGui::Text("Blueprint:");
+      ImGui::SameLine();
+      const char* preview = current_bp_id.empty() ? "(none)" : current_bp_id.c_str();
+      if (ImGui::BeginCombo("##blueprint_id", preview)) {
+        if (ImGui::Selectable("(none)", current_bp_id.empty())) {
+          field_obj["blueprint_id"] = ReflectionLibrary::GenericValue(std::string(""));
+          local_modified = true;
+        }
+        for (const auto& id : all_ids) {
+          bool is_selected = (id == current_bp_id);
+          if (ImGui::Selectable(id.c_str(), is_selected)) {
+            field_obj["blueprint_id"] = ReflectionLibrary::GenericValue(id);
+            local_modified = true;
+          }
+          if (is_selected) ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+      }
+    }
+
+    // ========================================================================
+    // Initial / current state display & selector
+    // ========================================================================
     auto states_it = field_obj.find("states");
 
     // Check for valid states container (Object or Array)
@@ -501,12 +540,33 @@ namespace ImGuiWidgets {
     }
 
     ReflectionLibrary::GenericValue states_map_val;
-
     states_map_val = ReflectionLibrary::convert_array_of_pairs_to_map(states_it->second);
-
     ReflectionLibrary::Object& states_map = states_map_val.getObject();
-    bool local_modified = false;
 
+    {
+      auto csn_it = field_obj.find("current_state_name");
+      std::string current_state;
+      if (csn_it != field_obj.end() && csn_it->second.isString()) {
+        current_state = csn_it->second.getString();
+      }
+
+      ImGui::Text("Initial State:");
+      ImGui::SameLine();
+      const char* state_preview = current_state.empty() ? "(not set)" : current_state.c_str();
+      if (ImGui::BeginCombo("##initial_state", state_preview)) {
+        for (const auto& [sname, _] : states_map) {
+          bool is_selected = (sname == current_state);
+          if (ImGui::Selectable(sname.c_str(), is_selected)) {
+            field_obj["current_state_name"] = ReflectionLibrary::GenericValue(sname);
+            local_modified = true;
+          }
+          if (is_selected) ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+      }
+    }
+
+    ImGui::Separator();
     ImGui::Text("States (%zu):", states_map.size());
     ImGui::Separator();
 
@@ -594,6 +654,49 @@ namespace ImGuiWidgets {
                 ImGui::Spacing();
               }
 
+              // ---- Per-state scale ----
+              ImGui::Separator();
+              auto scale_it = state_anim_obj.find("scale");
+              // Auto-populate scale from entity's Transform2D if null/missing
+              if (scale_it == state_anim_obj.end() || !scale_it->second.isObject()) {
+                Math::Vec2D default_scale(1.0f, 1.0f);
+                if (entity.is_valid() && entity.has_component<Components::Transform2D>()) {
+                  default_scale = entity.get_component<Components::Transform2D>()->scale;
+                }
+                state_anim_obj["scale"] = ReflectionLibrary::to_generic_value(default_scale);
+                scale_it = state_anim_obj.find("scale");
+                local_modified = true;
+              }
+              {
+                ReflectionLibrary::Object& scale_obj = scale_it->second.getObject();
+                float scale_vals[2] = {
+                  scale_obj.count("x") && scale_obj["x"].isDouble() ? static_cast<float>(scale_obj["x"].getDouble()) : 1.0f,
+                  scale_obj.count("y") && scale_obj["y"].isDouble() ? static_cast<float>(scale_obj["y"].getDouble()) : 1.0f
+                };
+                ImGui::Text("Scale:");
+                std::string scale_label = "##scale_" + state_name;
+                if (ImGui::DragFloat2(scale_label.c_str(), scale_vals, 1.0f, 0.0f, 0.0f, "%.1f")) {
+                  scale_obj["x"] = ReflectionLibrary::GenericValue(static_cast<double>(scale_vals[0]));
+                  scale_obj["y"] = ReflectionLibrary::GenericValue(static_cast<double>(scale_vals[1]));
+                  local_modified = true;
+                }
+                // Reset to entity's current Transform2D scale
+                ImGui::SameLine();
+                std::string reset_scale_label = "Reset##scale_" + state_name;
+                if (ImGui::Button(reset_scale_label.c_str())) {
+                  Math::Vec2D default_scale(1.0f, 1.0f);
+                  if (entity.is_valid() && entity.has_component<Components::Transform2D>()) {
+                    default_scale = entity.get_component<Components::Transform2D>()->scale;
+                  }
+                  scale_obj["x"] = ReflectionLibrary::GenericValue(static_cast<double>(default_scale.x));
+                  scale_obj["y"] = ReflectionLibrary::GenericValue(static_cast<double>(default_scale.y));
+                  local_modified = true;
+                }
+                if (ImGui::IsItemHovered()) {
+                  ImGui::SetTooltip("Reset to entity's Transform2D scale");
+                }
+              }
+
               // Render Texture field
               auto tex_it = state_anim_obj.find("texture");
               if (tex_it != state_anim_obj.end()) {
@@ -604,14 +707,14 @@ namespace ImGuiWidgets {
                 ImGui::Separator();
               }
 
-              // Render Animation field
-              auto anim_field_it = state_anim_obj.find("animation");
-              if (anim_field_it != state_anim_obj.end()) {
-                ImGui::Text("Animation:");
-                ImGui::Indent();
-                render_animation_field(anim_field_it->second, local_modified, entity);
-                ImGui::Unindent();
-              }
+              // // Render Animation field
+              // auto anim_field_it = state_anim_obj.find("animation");
+              // if (anim_field_it != state_anim_obj.end()) {
+              //   ImGui::Text("Animation:");
+              //   ImGui::Indent();
+              //   render_animation_field(anim_field_it->second, local_modified, entity);
+              //   ImGui::Unindent();
+              // }
 
               // Remove Animation button
               ImGui::Spacing();
@@ -633,11 +736,91 @@ namespace ImGuiWidgets {
               ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.7f, 0.3f, 1.0f));
               std::string add_anim_label = "Add Animation##" + state_name;
               if (ImGui::Button(add_anim_label.c_str(), ImVec2(-1, 0))) {
-                // Create a default StateAnimation with unit_rect texture
+                // Create a default StateAnimation with unit_rect texture and entity's scale
                 Components::StateAnimation default_anim{};
-                default_anim.texture = Engine::Resources::get_rect_texture();
+                default_anim.texture = Components::Texture(Engine::Resources::get_rect_texture());
+                if (entity.is_valid() && entity.has_component<Components::Transform2D>()) {
+                  default_anim.scale = entity.get_component<Components::Transform2D>()->scale;
+                }
                 auto anim_gv = ReflectionLibrary::to_generic_value(default_anim);
                 state_obj["animation"] = std::move(anim_gv);
+                local_modified = true;
+              }
+              ImGui::PopStyleColor(2);
+            }
+
+            // ================================================================
+            // FMOD Audio per state
+            // ================================================================
+            ImGui::Separator();
+            auto fmod_it = state_obj.find("fmod_audio");
+            if (fmod_it != state_obj.end() && fmod_it->second.isObject()) {
+              ReflectionLibrary::Object& fmod_obj = fmod_it->second.getObject();
+
+              ImGui::Text("FMOD Audio:");
+              ImGui::Indent();
+
+              // Event path
+              std::string event_path;
+              auto ep_it = fmod_obj.find("event_path");
+              if (ep_it != fmod_obj.end() && ep_it->second.isString()) {
+                event_path = ep_it->second.getString();
+              }
+              char event_buf[256];
+              strncpy_s(event_buf, event_path.c_str(), sizeof(event_buf) - 1);
+              std::string ep_label = "Event Path##fmod_" + state_name;
+              if (ImGui::InputText(ep_label.c_str(), event_buf, sizeof(event_buf))) {
+                fmod_obj["event_path"] = ReflectionLibrary::GenericValue(std::string(event_buf));
+                local_modified = true;
+              }
+
+              // Volume
+              auto vol_it = fmod_obj.find("volume");
+              float fmod_vol = (vol_it != fmod_obj.end() && vol_it->second.isDouble()) ? static_cast<float>(vol_it->second.getDouble()) : 1.0f;
+              std::string vol_label = "Volume##fmod_" + state_name;
+              if (ImGui::SliderFloat(vol_label.c_str(), &fmod_vol, 0.0f, 1.0f, "%.2f")) {
+                fmod_obj["volume"] = ReflectionLibrary::GenericValue(static_cast<double>(fmod_vol));
+                local_modified = true;
+              }
+
+              // Loop checkbox
+              auto loop_it = fmod_obj.find("loop");
+              bool fmod_loop = (loop_it != fmod_obj.end() && loop_it->second.isBool()) ? loop_it->second.getBool() : false;
+              std::string loop_label = "Loop##fmod_" + state_name;
+              if (ImGui::Checkbox(loop_label.c_str(), &fmod_loop)) {
+                fmod_obj["loop"] = ReflectionLibrary::GenericValue(fmod_loop);
+                local_modified = true;
+              }
+
+              // Stop on state exit checkbox
+              auto stop_it = fmod_obj.find("stop_on_state_exit");
+              bool fmod_stop = (stop_it != fmod_obj.end() && stop_it->second.isBool()) ? stop_it->second.getBool() : true;
+              std::string stop_label = "Stop On Exit##fmod_" + state_name;
+              if (ImGui::Checkbox(stop_label.c_str(), &fmod_stop)) {
+                fmod_obj["stop_on_state_exit"] = ReflectionLibrary::GenericValue(fmod_stop);
+                local_modified = true;
+              }
+
+              ImGui::Unindent();
+
+              // Remove FMOD Audio button
+              ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.2f, 0.2f, 1.0f));
+              ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.8f, 0.3f, 0.3f, 1.0f));
+              std::string remove_fmod_label = "Remove FMOD Audio##" + state_name;
+              if (ImGui::Button(remove_fmod_label.c_str(), ImVec2(-1, 0))) {
+                fmod_it->second = ReflectionLibrary::GenericValue();
+                local_modified = true;
+              }
+              ImGui::PopStyleColor(2);
+            }
+            else {
+              ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No FMOD audio for this state");
+              ImGui::Spacing();
+              ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1.0f));
+              ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.7f, 0.3f, 1.0f));
+              std::string add_fmod_label = "Add FMOD Audio##" + state_name;
+              if (ImGui::Button(add_fmod_label.c_str(), ImVec2(-1, 0))) {
+                state_obj["fmod_audio"] = ReflectionLibrary::to_generic_value(Components::FMODStateAudio{});
                 local_modified = true;
               }
               ImGui::PopStyleColor(2);
