@@ -26,6 +26,7 @@ namespace Components
     f32 timer;
     f32 cooldown;
     f32 cd_timer;
+    bool no_cooldown = false;
 
     f32 speed;
     f32 impulse;
@@ -50,7 +51,7 @@ namespace Components
     
     bool ready() const
     {
-      return cd_timer <= 0;
+      return no_cooldown || cd_timer <= 0;
     }
   };
 
@@ -308,10 +309,10 @@ namespace Components
 
 
 REFLECT_FIELDS(Components::Player::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, dash_speed, damage, heartrate_cost, knockback)
-REFLECT_FIELDS(Components::Action, duration, timer, cooldown, cd_timer, speed, impulse)
+REFLECT_FIELDS(Components::Action, no_cooldown, duration, timer, cooldown, cd_timer, speed, impulse)
 
 
-REGISTER_COMPONENT(Components::Player, walk_speed, jump_force, dash, stunned, attack1, attack2, attack3, uppercut, smash)
+REGISTER_COMPONENT(Components::Player, damage_immune, walk_speed, jump_force, dash, stunned, attack1, attack2, attack3, uppercut, smash)
 REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height, attack_cooldown, last_attack_time, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, attack_range)
 REGISTER_COMPONENT(Components::TurretMonkey, chase_speed, attack_cooldown, attack_windup, last_attack_time, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, long_attack_range)
 REGISTER_COMPONENT(Components::GamerMonkey, chase_speed, dash_speed, dash_cooldown, dash_windup_duration, dash_indicator_height, leap_speed, leap_height, attack_cooldown, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, close_attack_range, dash_attack_range)

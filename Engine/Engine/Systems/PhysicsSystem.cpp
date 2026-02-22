@@ -83,12 +83,11 @@ void phy2D::update_entity(ECS::Entity entity)
 
 void phy2D::update_kinematics( Components::RigidBody& rigid )
 {
-  rigid.acceleration = rigid.force / rigid.mass;
-
-  // From now on we will apply friction on collision like how its supposed to be
-  // There wont be any air resistance so that the player can be controlled more accurately
-  rigid.velocity += rigid.acceleration * Time::get_fixed_dt();
-
+  if (rigid.apply_force) 
+  {
+    rigid.acceleration = rigid.force / rigid.mass;
+    rigid.velocity += rigid.acceleration * Time::get_fixed_dt();
+  }
   // Checking terminal velocity here
   // using the magnitude squared to check cuz its cheaper than sqrt-ing the value
   /*if (rigid.velocity.get_magnitude_sq() > pow(rigid.terminal_velocity, 2))

@@ -603,16 +603,15 @@ namespace PlayerStateCallbacks
     Log::info("Player: Entered Uppercut state");
 
     Components::Player* player_comp = entity.get_component<Components::Player>();
-    assert(player_comp);
-    player_comp->uppercut.set_timer();
-
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    assert(player_comp);
     assert(rigid);
-    rigid->use_gravity = false;
-    rigid->force.zero();
 
-    terminal_vel_placeholder = rigid->y_terminal_velocity;
-    rigid->y_terminal_velocity = player_comp->dash.speed;
+    player_comp->uppercut.set_timer();
+    terminal_vel_placeholder = rigid->y_terminal_velocity;   
+
+    rigid->apply_force = false;
+    rigid->velocity = Vec2D{ 0, player_comp->smash.speed };
   }
 
   inline void uppercut_on_update(ECS::Entity entity)
@@ -621,6 +620,7 @@ namespace PlayerStateCallbacks
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(rigid);
     assert(player_comp);
+
     if (player_comp->uppercut.timer_end())
     {
       Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
@@ -635,12 +635,14 @@ namespace PlayerStateCallbacks
   {
     Log::info("Player: Exited Uppercut state");
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
-    assert(rigid);
-    rigid->use_gravity = true;
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
+    assert(rigid);
+
     player_comp->uppercut.reset_cooldown();
+
     rigid->y_terminal_velocity = terminal_vel_placeholder;
+    rigid->apply_force = true;
   }
 #pragma endregion
 
@@ -658,10 +660,10 @@ namespace PlayerStateCallbacks
     player_comp->smash.set_timer();
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
-    rigid->force.zero();
-
     terminal_vel_placeholder = rigid->y_terminal_velocity;
-    rigid->y_terminal_velocity = player_comp->dash.speed;
+
+    rigid->apply_force = false;
+    rigid->velocity = Vec2D{ 0, player_comp->smash.speed };
   }
 
   inline void smash_on_update(ECS::Entity entity)
@@ -676,7 +678,6 @@ namespace PlayerStateCallbacks
       assert(sm);
       sm->change_state("Idle");
     }
-    rigid->velocity.y = player_comp->smash.speed;
   }
 
   inline void smash_on_exit(ECS::Entity entity)
@@ -689,6 +690,7 @@ namespace PlayerStateCallbacks
 
     player_comp->smash.reset_cooldown();
     rigid->y_terminal_velocity = terminal_vel_placeholder;
+    rigid->apply_force = true;
   }
 #pragma endregion
 
