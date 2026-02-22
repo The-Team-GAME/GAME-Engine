@@ -98,5 +98,10 @@ namespace Engine {
           undo_stack.pop_front();
       }
     }
+
+    inline void shutdown() {
+      undo_stack.clear();
+      redo_stack.clear();
+    }
   }
 }

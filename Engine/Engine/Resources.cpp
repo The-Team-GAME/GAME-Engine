@@ -1049,3 +1049,34 @@ Engine::Resources::ResourceStats Engine::Resources::get_resource_stats()
 
   return stats;
 }
+
+Engine::Graphics::PostProcessing::Settings Engine::Resources::load_postprocessing_settings(const std::string& filepath, bool append_resource_path)
+{
+  std::string full_path = append_resource_path ? (resource_path + filepath) : filepath;
+  auto opt = Engine::FileIO::read_string_from_file(full_path);
+  if (!opt.has_value()) {
+    Log::error("Resources: Failed to read post-processing preset: {}", full_path);
+    return Engine::Graphics::PostProcessing::Settings{};
+  }
+  return Engine::Graphics::PostProcessing::deserialize_settings_from_json(opt.value());
+}
+
+bool Engine::Resources::save_postprocessing_settings(const std::string& filepath, const Engine::Graphics::PostProcessing::Settings& settings, bool append_resource_path)
+{
+  std::string full_path = append_resource_path ? (resource_path + filepath) : filepath;
+
+  // Ensure directory exists
+  std::filesystem::path p(full_path);
+  if (p.has_parent_path()) {
+    std::filesystem::create_directories(p.parent_path());
+  }
+
+  std::string json = Engine::Graphics::PostProcessing::serialize_settings_to_json(settings);
+  bool result = Engine::FileIO::write_string_to_file(full_path, json);
+  if (result) {
+    Log::info("Resources: Saved post-processing preset to {}", full_path);
+  } else {
+    Log::error("Resources: Failed to save post-processing preset to {}", full_path);
+  }
+  return result;
+}

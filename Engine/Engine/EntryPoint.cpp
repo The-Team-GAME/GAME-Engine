@@ -11,6 +11,10 @@
 
 #include "MonkeyEngine.h"
 #include "HotReloadManager.h"
+#include "ECS/ECS.h"
+#include "EventManager/EventManager.h"
+#include "FunctionRegistry.h"
+#include "Components/StateMachineBlueprintRegistry.h"
 
 /*=================================================================================
 Function Brief:
@@ -18,7 +22,7 @@ Common game initialization and loop logic.
 ==================================================================================*/
 void RunGame()
 {
-#if defined(_DEBUG)
+#ifndef GAME_BUILD
   // Enable memory leak detection
   s32 tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
   tmpDbgFlag |= _CRTDBG_LEAK_CHECK_DF;
@@ -115,6 +119,15 @@ void RunGame()
 #endif
   Engine::Core::exit();
   Engine::HotReload::unload_game_logic();
+
+  // Delete all intentionally-leaked singletons now that the DLL is unloaded
+  // and no code will access them. This frees the struct shells AND their
+  // remaining STL structural overhead (sentinel nodes, iterator-debug proxies).
+  Engine::ECS::destroy_world();
+  Engine::ECS::ComponentTypeManager::destroy_type_map();
+  Engine::EventManager::destroy_all();
+  Engine::FunctionRegistry::destroy_instance();
+  Engine::StateMachineBlueprintRegistry::destroy_instance();
 }
 
 #ifdef GAME_BUILD

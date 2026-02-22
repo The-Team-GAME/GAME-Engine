@@ -35,6 +35,7 @@ namespace {
   bool gui_enabled = true; // Completely disable ImGui when false (TODO: Hook this up to a setting)
   bool main_gui_visible = true; // Still render ImGui but hide all windows when false
   bool show_exit_confirmation = false;
+  std::vector<char> exit_save_selections; // Tracks which dirty items user wants to save on exit (char instead of bool to avoid vector<bool> proxy)
 
   struct PanelInfo {
     std::string name;
@@ -332,16 +333,47 @@ namespace ImGuiManager {
     // Always place the popup at the center of the viewport
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSizeConstraints(ImVec2(350, 0), ImVec2(500, 600));
 
     if (ImGui::BeginPopupModal("Exit Confirmation", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
-      bool has_unsaved_changes = Engine::ProjectSaveManager::is_any_dirty();
+      const auto& dirty_states = Engine::ProjectSaveManager::get_dirty_states();
+      bool has_unsaved_changes = !dirty_states.empty();
 
       if (has_unsaved_changes)
       {
         ImGui::Text("You have unsaved changes!");
         ImGui::Spacing();
-        ImGui::Text("Do you want to save before exiting?");
+        ImGui::Text("Select which items to save before exiting:");
+        ImGui::Spacing();
+
+        // Track which items the user wants to save (persistent across frames)
+        if (exit_save_selections.size() != dirty_states.size()) {
+          exit_save_selections.assign(dirty_states.size(), true); // Default: save all
+        }
+
+        // Show each dirty item with a checkbox
+        ImGui::BeginChild("DirtyItems", ImVec2(0, std::min(200.0f, dirty_states.size() * 28.0f + 8.0f)), true);
+        for (size_t i = 0; i < dirty_states.size(); ++i) {
+          std::string display_name = Engine::ProjectSaveManager::get_dirty_display_name(dirty_states[i]);
+          std::string label = display_name + "##dirty_" + std::to_string(i);
+          bool selected = exit_save_selections[i] != 0;
+          if (ImGui::Checkbox(label.c_str(), &selected)) {
+            exit_save_selections[i] = selected ? 1 : 0;
+          }
+        }
+        ImGui::EndChild();
+
+        ImGui::Spacing();
+
+        // Select All / Deselect All
+        if (ImGui::SmallButton("Select All")) {
+          std::fill(exit_save_selections.begin(), exit_save_selections.end(), true);
+        }
+        ImGui::SameLine();
+        if (ImGui::SmallButton("Deselect All")) {
+          std::fill(exit_save_selections.begin(), exit_save_selections.end(), false);
+        }
       }
       else
       {
@@ -364,19 +396,26 @@ namespace ImGuiManager {
 
       if (has_unsaved_changes)
       {
-        // Save and Exit button
-        if (ImGui::Button("Save and Exit", ImVec2(button_width, 0)))
+        // Save Selected button — saves checked items and exits
+        if (ImGui::Button("Save Selected", ImVec2(button_width, 0)))
         {
-          Engine::ProjectSaveManager::save_all_dirty();
+          // Save selected items in reverse order so indices stay valid
+          for (int i = static_cast<int>(exit_save_selections.size()) - 1; i >= 0; --i) {
+            if (exit_save_selections[static_cast<size_t>(i)]) {
+              Engine::ProjectSaveManager::save_single_dirty(static_cast<size_t>(i));
+            }
+          }
+          exit_save_selections.clear();
           Engine::Core::stop();
           ImGui::CloseCurrentPopup();
         }
 
         ImGui::SameLine();
 
-        // Don't Save button
+        // Don't Save button — exits without saving
         if (ImGui::Button("Don't Save", ImVec2(button_width, 0)))
         {
+          exit_save_selections.clear();
           Engine::Core::stop();
           ImGui::CloseCurrentPopup();
         }
@@ -398,6 +437,7 @@ namespace ImGuiManager {
       // Cancel button
       if (ImGui::Button("Cancel", ImVec2(button_width, 0)))
       {
+        exit_save_selections.clear();
         ImGui::CloseCurrentPopup();
       }
 
@@ -738,7 +778,7 @@ namespace ImGuiManager {
     if (is_viewport_mode_enabled()) {
       auto bounds = ViewportPanel::get_viewport_bounds();
       return { bounds.x, bounds.y };
-  }
+    }
     else {
       ImGuiViewport* viewport = ImGui::GetMainViewport();
       return { viewport->WorkPos.x, viewport->WorkPos.y };
@@ -796,4 +836,4 @@ namespace ImGuiManager {
 #endif
   }
 
-  }
+}

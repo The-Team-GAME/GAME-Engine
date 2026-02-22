@@ -33,6 +33,7 @@
 #include "TextureAtlasEditorPanel.h"
 #include "ConfigurationPanel.h"
 #include "LogConsolePanel.h"
+#include "PostProcessingPanel.h"
 
 void register_all_panels()
 {
@@ -47,10 +48,11 @@ void register_all_panels()
   ImGuiManager::register_panel("Tile Collider Editor", TileColliderEditorPanel);
   ImGuiManager::register_panel("Scene Chooser", SceneChooserPanel);
   ImGuiManager::register_panel("Layer Manager", LayerManagerPanel);
-  ImGuiManager::register_panel("Collider Editor", ColliderEditorPanel);
+  //ImGuiManager::register_panel("Collider Editor", ColliderEditorPanel);
   ImGuiManager::register_panel("Selective Level Save", SelectiveLevelSavePanel);
   ImGuiManager::register_panel("Frame Animation Editor", FrameAnimationEditorPanel);
   ImGuiManager::register_panel("Texture Atlas Editor", TextureAtlasEditorPanel);
   ImGuiManager::register_panel("Configuration", ConfigurationPanel);
   ImGuiManager::register_panel("Log Console", LogConsolePanel);
+  ImGuiManager::register_panel("Post Processing", PostProcessingPanel);
 }

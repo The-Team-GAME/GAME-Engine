@@ -89,7 +89,6 @@
     <ClCompile Include="Engine\GUI\ResourceExplorerPanel.cpp" />
     <ClCompile Include="Engine\ProjectSaveManager.cpp" />
     <ClCompile Include="Engine\TIlemapManager.cpp" />
-    <ClCompile Include="Engine\UndoManager\UndoManager.cpp" />
     <ClCompile Include="Engine\ECS\PrefabMergeUtils.cpp" />
     <ClCompile Include="Engine\GUI\ColliderEditorPanel.cpp" />
     <ClCompile Include="Engine\Random.cpp" />

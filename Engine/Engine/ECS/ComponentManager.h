@@ -53,6 +53,11 @@ namespace Engine {
       ==================================================================================*/
       template<typename T>
       static ComponentTypeID get_type_id();
+
+      /// Delete the leaked singleton map itself, freeing all remaining
+      /// structural overhead (sentinels, proxies). Call at final shutdown
+      /// AFTER DLL unload.
+      static void destroy_type_map();
     };
 
   } // namespace ECS

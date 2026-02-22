@@ -126,6 +126,9 @@ namespace Engine {
   public:
     ENGINE_API static FunctionRegistry& instance();
 
+    /// Delete the leaked singleton. Call at final shutdown AFTER DLL unload.
+    ENGINE_API static void destroy_instance();
+
     /// Register a function with a string name under a specific signature
     template<typename Sig>
     void register_function(const std::string& name, std::function<Sig> func) {
@@ -193,7 +196,7 @@ namespace Engine {
       functions_.erase(std::string(typeid(Sig).name()));
     }
 
-    /// Clear all registered functions (all signatures)
+    /// Clear all registered functions (all signatures).
     void clear_all() {
       functions_.clear();
     }
@@ -225,7 +228,8 @@ namespace Engine {
     if (cached_name_ == name && cached_func_.has_value()) {
       try {
         return std::any_cast<std::function<Signature>>(cached_func_);
-      } catch (const std::bad_any_cast&) {
+      }
+      catch (const std::bad_any_cast&) {
         // Signature mismatch with cached value — fall through to re-lookup
       }
     }

@@ -842,6 +842,33 @@ namespace Engine {
       batch_instance(unit_rect->id, inst, false);
     }
 
+    void draw_line_screen(const Math::Vec2D& start, const Math::Vec2D& end, f32 screen_thickness, const Math::Vec4D& color) {
+      // Convert screen-pixel thickness to world-space.
+      // We need to account for:
+      // 1. Camera zoom (world units → virtual units)
+      // 2. Virtual-to-framebuffer ratio (virtual units → actual framebuffer pixels)
+      //    When the viewport panel is small, 1600 virtual units may map to e.g. 400 pixels,
+      //    so 1 virtual unit = 0.25 pixels. We must scale thickness up to compensate.
+      GLint viewport[4];
+      glGetIntegerv(GL_VIEWPORT, viewport);
+      f32 fb_width_px = static_cast<f32>(viewport[2]);
+      f32 virtual_to_pixel = (fb_width_px > 0.0f) ? fb_width_px / virtual_width : 1.0f;
+      f32 zoom = (current_camera.zoom > 0.0f) ? current_camera.zoom : 1.0f;
+      f32 world_thickness = screen_thickness / (zoom * virtual_to_pixel);
+      draw_line(start, end, world_thickness, color);
+    }
+
+    void draw_rect_outline_screen(const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, f32 screen_thickness, const Math::Vec4D& color) {
+      // Same virtual-to-framebuffer compensation as draw_line_screen
+      GLint viewport[4];
+      glGetIntegerv(GL_VIEWPORT, viewport);
+      f32 fb_width_px = static_cast<f32>(viewport[2]);
+      f32 virtual_to_pixel = (fb_width_px > 0.0f) ? fb_width_px / virtual_width : 1.0f;
+      f32 zoom = (current_camera.zoom > 0.0f) ? current_camera.zoom : 1.0f;
+      f32 world_thickness = screen_thickness / (zoom * virtual_to_pixel);
+      draw_rect_outline(position, size, rotation, world_thickness, color);
+    }
+
     void draw_polygon(const std::vector<Math::Vec2D>& vertices, const Math::Vec2D& position, f32 rotation, const Math::Vec4D& color) {
       if (vertices.size() < 3) {
         Log::warning("Attempted to draw polygon with less than 3 vertices");
@@ -1988,5 +2015,44 @@ namespace Engine {
       }
     }
 
+    // === Post-Processing Wrappers ===
+
+    bool init_post_processing() {
+      return PostProcessing::init();
+    }
+
+    void exit_post_processing() {
+      PostProcessing::exit();
+    }
+
+    void begin_post_processing() {
+      PostProcessing::begin_scene_capture();
+    }
+
+    void end_post_processing(unsigned int target_fbo) {
+      PostProcessing::end_scene_capture_and_apply(static_cast<GLuint>(target_fbo));
+    }
+
+    PostProcessing::Settings& get_post_process_settings() {
+      return PostProcessing::get_settings();
+    }
+
+    bool load_lut(const std::string& cube_path) {
+      return PostProcessing::load_lut_from_cube(cube_path);
+    }
+
+    void load_bloom_dirt(const std::string& filepath) {
+      PostProcessing::load_bloom_dirt_texture(filepath);
+    }
+
+    void resize_post_processing(int w, int h) {
+      PostProcessing::resize(w, h);
+    }
+
+    bool is_layer_affected(const std::string& layer_name) {
+      return PostProcessing::is_layer_affected(layer_name);
+    }
+
   } // namespace Graphics
 } // namespace Engine
+

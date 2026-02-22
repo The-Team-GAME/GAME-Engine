@@ -105,6 +105,16 @@ namespace Engine
       return ids;
     }
 
+    /// Clear all registered blueprints.
+    /// Called before unloading a DLL; static constructors in the new DLL
+    /// will re-register everything on reload.
+    void clear_all_blueprints() {
+      blueprints_.clear();
+    }
+
+    /// Delete the leaked singleton. Call at final shutdown AFTER DLL unload.
+    ENGINE_API static void destroy_instance();
+
   private:
     std::unordered_map<std::string, StateMachineBlueprint> blueprints_;
 
