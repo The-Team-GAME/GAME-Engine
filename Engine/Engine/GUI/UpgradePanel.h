@@ -14,7 +14,9 @@
 #include <imgui.h>
 #include <string>
 #include <vector>
+#include <unordered_set>
 #include "../FileIO/Settings.h"
+#include "../FileIO/SettingsManager.h"
 #include "../UpgradeManager.h"
 
 /*=================================================================================
@@ -36,6 +38,28 @@ inline void UpgradePanel()
 
   auto& settings = SettingsManager<UpgradeSettings>::get_mutable();
   auto& mgr = Engine::UpgradeManager::instance();
+
+  // ---- Rarity color helper ----
+  auto get_rarity_color = [&](const std::string& rarity) -> ImVec4 {
+    // Check rarity tiers in order; assign colors by position
+    for (int ri = 0; ri < static_cast<int>(settings.rarities.size()); ++ri)
+    {
+      if (settings.rarities[ri].name == rarity)
+      {
+        constexpr ImVec4 tier_colors[] = {
+          {0.7f, 0.7f, 0.7f, 1.0f},   // 0: Common — grey
+          {0.3f, 0.5f, 1.0f, 1.0f},   // 1: Rare — blue
+          {0.7f, 0.3f, 1.0f, 1.0f},   // 2: Epic — purple
+          {1.0f, 0.75f, 0.0f, 1.0f},  // 3: Legendary — gold
+          {1.0f, 0.3f, 0.3f, 1.0f},   // 4: Mythic — red
+          {0.0f, 1.0f, 0.8f, 1.0f},   // 5+: teal
+        };
+        int idx = (ri < 6) ? ri : 5;
+        return tier_colors[idx];
+      }
+    }
+    return ImVec4(0.5f, 0.5f, 0.5f, 1.0f); // unknown rarity — dim grey
+    };
 
   // ==================================================================================
   // Save / Reload
@@ -109,7 +133,7 @@ inline void UpgradePanel()
   // ==================================================================================
   // Section 2: Rarity Tiers (inline table)
   // ==================================================================================
-  if (ImGui::CollapsingHeader("Rarity Tiers", ImGuiTreeNodeFlags_DefaultOpen))
+  if (ImGui::CollapsingHeader("Rarity Tiers"))
   {
     float total_weight = 0.0f;
     for (auto& r : settings.rarities)
@@ -120,9 +144,9 @@ inline void UpgradePanel()
     static int rarity_pending_delete = -1;
 
     // Spreadsheet-style: transparent widget backgrounds, subtle hover/active
-    ImGui::PushStyleColor(ImGuiCol_FrameBg,        ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-    ImGui::PushStyleColor(ImGuiCol_FrameBgHovered,  ImVec4(1.0f, 1.0f, 1.0f, 0.08f));
-    ImGui::PushStyleColor(ImGuiCol_FrameBgActive,   ImVec4(1.0f, 1.0f, 1.0f, 0.15f));
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+    ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(1.0f, 1.0f, 1.0f, 0.08f));
+    ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(1.0f, 1.0f, 1.0f, 0.15f));
     ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(4.0f, 3.0f));
 
     if (ImGui::BeginTable("##rarity_table", 4,
@@ -224,35 +248,91 @@ inline void UpgradePanel()
     bool upgrades_changed = false;
     int remove_idx = -1;
     static int upgrade_pending_delete = -1;
+    int duplicate_idx = -1;
+    int move_up_idx = -1;
+    int move_down_idx = -1;
 
-    const int col_count = 9; // ID, Name, Stat, Applicator, Rarity, Type, Value, MaxLvl, Delete
+    // ---- Build validation data ----
+    std::unordered_set<std::string> seen_ids;
+    auto registered_stats = mgr.get_registered_stats();
+    std::unordered_set<std::string> registered_set(registered_stats.begin(), registered_stats.end());
+    std::unordered_set<std::string> rarity_names;
+    for (auto& r : settings.rarities)
+      rarity_names.insert(r.name);
+
+    // Pre-scan for duplicate IDs
+    std::unordered_set<std::string> duplicate_ids;
+    {
+      std::unordered_set<std::string> id_check;
+      for (auto& upg : settings.upgrades)
+      {
+        if (!id_check.insert(upg.id).second)
+          duplicate_ids.insert(upg.id);
+      }
+    }
+
+    const int col_count = 10; // ID, Name, Stat, Link, Rarity, Type, Value, MaxLvl, Actions, Warnings
 
     // Spreadsheet-style: transparent widget backgrounds, subtle hover/active
-    ImGui::PushStyleColor(ImGuiCol_FrameBg,        ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-    ImGui::PushStyleColor(ImGuiCol_FrameBgHovered,  ImVec4(1.0f, 1.0f, 1.0f, 0.08f));
-    ImGui::PushStyleColor(ImGuiCol_FrameBgActive,   ImVec4(1.0f, 1.0f, 1.0f, 0.15f));
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+    ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(1.0f, 1.0f, 1.0f, 0.08f));
+    ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(1.0f, 1.0f, 1.0f, 0.15f));
     ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(4.0f, 3.0f));
 
     if (ImGui::BeginTable("##upgrades_table", col_count,
       ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable
       | ImGuiTableFlags_ScrollX | ImGuiTableFlags_SizingStretchProp))
     {
-      ImGui::TableSetupColumn("ID",         ImGuiTableColumnFlags_WidthFixed, 110.0f);
-      ImGui::TableSetupColumn("Name",       ImGuiTableColumnFlags_WidthFixed, 120.0f);
-      ImGui::TableSetupColumn("Stat",       ImGuiTableColumnFlags_WidthFixed, 80.0f);
-      ImGui::TableSetupColumn("Link",       ImGuiTableColumnFlags_WidthFixed, 20.0f);
-      ImGui::TableSetupColumn("Rarity",     ImGuiTableColumnFlags_WidthFixed, 90.0f);
-      ImGui::TableSetupColumn("Type",       ImGuiTableColumnFlags_WidthFixed, 95.0f);
-      ImGui::TableSetupColumn("Value",      ImGuiTableColumnFlags_WidthFixed, 90.0f);
-      ImGui::TableSetupColumn("Max Lvl",    ImGuiTableColumnFlags_WidthFixed, 60.0f);
-      ImGui::TableSetupColumn("##del",      ImGuiTableColumnFlags_WidthFixed, 25.0f);
+      ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed, 110.0f);
+      ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed, 120.0f);
+      ImGui::TableSetupColumn("Stat", ImGuiTableColumnFlags_WidthFixed, 80.0f);
+      ImGui::TableSetupColumn("Link", ImGuiTableColumnFlags_WidthFixed, 20.0f);
+      ImGui::TableSetupColumn("Rarity", ImGuiTableColumnFlags_WidthFixed, 100.0f);
+      ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed, 95.0f);
+      ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthFixed, 90.0f);
+      ImGui::TableSetupColumn("Max Lvl", ImGuiTableColumnFlags_WidthFixed, 60.0f);
+      ImGui::TableSetupColumn("##actions", ImGuiTableColumnFlags_WidthFixed, 75.0f);
+      ImGui::TableSetupColumn("##warn", ImGuiTableColumnFlags_WidthFixed, 20.0f);
       ImGui::TableHeadersRow();
 
       for (int i = 0; i < static_cast<int>(settings.upgrades.size()); ++i)
       {
         ImGui::PushID(i + 2000);
         auto& upg = settings.upgrades[i];
+
+        // ---- Validation for this row ----
+        bool has_warning = false;
+        std::string warning_text;
+        if (upg.id.empty())
+        {
+          has_warning = true; warning_text += "Empty ID\n";
+        }
+        if (duplicate_ids.count(upg.id))
+        {
+          has_warning = true; warning_text += "Duplicate ID\n";
+        }
+        if (upg.display_name.empty())
+        {
+          has_warning = true; warning_text += "Empty display name\n";
+        }
+        if (!registered_set.count(upg.stat_name))
+        {
+          has_warning = true; warning_text += "No applicator for stat '" + upg.stat_name + "'\n";
+        }
+        if (!rarity_names.count(upg.rarity))
+        {
+          has_warning = true; warning_text += "Unknown rarity '" + upg.rarity + "'\n";
+        }
+        if (upg.type == UpgradeType::Multiplier && upg.value <= 0.0f)
+        {
+          has_warning = true; warning_text += "Multiplier value <= 0\n";
+        }
+
         ImGui::TableNextRow();
+
+        // Tint entire row if warning
+        if (has_warning)
+          ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg1, IM_COL32(180, 80, 30, 40));
 
         // ID
         ImGui::TableNextColumn();
@@ -307,23 +387,39 @@ inline void UpgradePanel()
         else
           ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.2f, 1.0f), "!");
 
-        // Rarity combo
+        // Rarity combo — color-coded
         ImGui::TableNextColumn();
-        ImGui::SetNextItemWidth(-1);
-        if (ImGui::BeginCombo("##rar", upg.rarity.c_str()))
         {
-          for (auto& r : settings.rarities)
+          ImVec4 rc = get_rarity_color(upg.rarity);
+          ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, IM_COL32(
+            static_cast<int>(rc.x * 255 * 0.25f),
+            static_cast<int>(rc.y * 255 * 0.25f),
+            static_cast<int>(rc.z * 255 * 0.25f), 60));
+          ImGui::SetNextItemWidth(-1);
+          ImGui::PushStyleColor(ImGuiCol_Text, rc);
+          if (ImGui::BeginCombo("##rar", upg.rarity.c_str()))
           {
-            bool selected = (upg.rarity == r.name);
-            if (ImGui::Selectable(r.name.c_str(), selected))
+            ImGui::PopStyleColor(); // pop text color so list items are normal
+            for (auto& r : settings.rarities)
             {
-              upg.rarity = r.name;
-              upgrades_changed = true;
+              ImVec4 item_col = get_rarity_color(r.name);
+              ImGui::PushStyleColor(ImGuiCol_Text, item_col);
+              bool selected = (upg.rarity == r.name);
+              if (ImGui::Selectable(r.name.c_str(), selected))
+              {
+                upg.rarity = r.name;
+                upgrades_changed = true;
+              }
+              if (selected)
+                ImGui::SetItemDefaultFocus();
+              ImGui::PopStyleColor();
             }
-            if (selected)
-              ImGui::SetItemDefaultFocus();
+            ImGui::EndCombo();
           }
-          ImGui::EndCombo();
+          else
+          {
+            ImGui::PopStyleColor(); // pop text color if combo not opened
+          }
         }
 
         // Type combo
@@ -359,10 +455,48 @@ inline void UpgradePanel()
         if (ImGui::DragInt("##ml", &upg.max_level, 0.1f, 1, 99))
           upgrades_changed = true;
 
-        // Delete button
+        // Action buttons: move-up, move-down, duplicate, delete
         ImGui::TableNextColumn();
-        if (ImGui::SmallButton("X"))
-          upgrade_pending_delete = i;
+        {
+          bool is_first = (i == 0);
+          bool is_last = (i == static_cast<int>(settings.upgrades.size()) - 1);
+
+          if (is_first) ImGui::BeginDisabled();
+          if (ImGui::SmallButton("^"))
+            move_up_idx = i;
+          if (is_first) ImGui::EndDisabled();
+
+          ImGui::SameLine(0, 2);
+          if (is_last) ImGui::BeginDisabled();
+          if (ImGui::SmallButton("v"))
+            move_down_idx = i;
+          if (is_last) ImGui::EndDisabled();
+
+          ImGui::SameLine(0, 2);
+          if (ImGui::SmallButton("D"))
+            duplicate_idx = i;
+          if (ImGui::IsItemHovered())
+          {
+            ImGui::BeginTooltip(); ImGui::Text("Duplicate"); ImGui::EndTooltip();
+          }
+
+          ImGui::SameLine(0, 2);
+          if (ImGui::SmallButton("X"))
+            upgrade_pending_delete = i;
+        }
+
+        // Warning indicator
+        ImGui::TableNextColumn();
+        if (has_warning)
+        {
+          ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.0f, 1.0f), "!");
+          if (ImGui::IsItemHovered())
+          {
+            ImGui::BeginTooltip();
+            ImGui::TextUnformatted(warning_text.c_str());
+            ImGui::EndTooltip();
+          }
+        }
 
         ImGui::PopID();
       }
@@ -403,6 +537,30 @@ inline void UpgradePanel()
     if (remove_idx >= 0)
     {
       settings.upgrades.erase(settings.upgrades.begin() + remove_idx);
+      upgrades_changed = true;
+    }
+
+    // Handle duplicate
+    if (duplicate_idx >= 0 && duplicate_idx < static_cast<int>(settings.upgrades.size()))
+    {
+      UpgradeDefinition dupe = settings.upgrades[duplicate_idx];
+      dupe.id += "_copy";
+      dupe.display_name += " (Copy)";
+      settings.upgrades.insert(settings.upgrades.begin() + duplicate_idx + 1, dupe);
+      upgrades_changed = true;
+    }
+
+    // Handle move up
+    if (move_up_idx > 0 && move_up_idx < static_cast<int>(settings.upgrades.size()))
+    {
+      std::swap(settings.upgrades[move_up_idx], settings.upgrades[move_up_idx - 1]);
+      upgrades_changed = true;
+    }
+
+    // Handle move down
+    if (move_down_idx >= 0 && move_down_idx < static_cast<int>(settings.upgrades.size()) - 1)
+    {
+      std::swap(settings.upgrades[move_down_idx], settings.upgrades[move_down_idx + 1]);
       upgrades_changed = true;
     }
 
@@ -510,13 +668,6 @@ inline void UpgradePanel()
       ImGui::Spacing();
       ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.3f, 1.0f), "Choose an upgrade card:");
       ImGui::Spacing();
-
-      auto get_rarity_color = [](const std::string& rarity) -> ImVec4 {
-        if (rarity == "Common")  return ImVec4(0.8f, 0.8f, 0.8f, 1.0f);
-        if (rarity == "Rare")    return ImVec4(0.3f, 0.5f, 1.0f, 1.0f);
-        if (rarity == "Epic")    return ImVec4(0.7f, 0.3f, 1.0f, 1.0f);
-        return ImVec4(1.0f, 0.85f, 0.0f, 1.0f);
-        };
 
       float panel_width = ImGui::GetContentRegionAvail().x;
       float card_width = (panel_width - ImGui::GetStyle().ItemSpacing.x) * 0.5f;
