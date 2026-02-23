@@ -280,17 +280,24 @@ inline void UpgradePanel()
           }
         }
 
-        // Stat Name
+        // Stat Name (dropdown of registered stats)
         ImGui::TableNextColumn();
+        ImGui::SetNextItemWidth(-1);
+        if (ImGui::BeginCombo("##sn", upg.stat_name.c_str()))
         {
-          char buf[64]{};
-          strncpy_s(buf, upg.stat_name.c_str(), sizeof(buf) - 1);
-          ImGui::SetNextItemWidth(-1);
-          if (ImGui::InputText("##sn", buf, sizeof(buf)))
+          auto registered = mgr.get_registered_stats();
+          for (auto& s : registered)
           {
-            upg.stat_name = buf;
-            upgrades_changed = true;
+            bool selected = (upg.stat_name == s);
+            if (ImGui::Selectable(s.c_str(), selected))
+            {
+              upg.stat_name = s;
+              upgrades_changed = true;
+            }
+            if (selected)
+              ImGui::SetItemDefaultFocus();
           }
+          ImGui::EndCombo();
         }
 
         // Applicator indicator (green dot / red dot)
