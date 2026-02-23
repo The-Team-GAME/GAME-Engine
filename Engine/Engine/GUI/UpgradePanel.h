@@ -117,6 +117,7 @@ inline void UpgradePanel()
 
     bool rarities_changed = false;
     int rarity_remove_idx = -1;
+    static int rarity_pending_delete = -1;
 
     // Spreadsheet-style: transparent widget backgrounds, subtle hover/active
     ImGui::PushStyleColor(ImGuiCol_FrameBg,        ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
@@ -164,7 +165,7 @@ inline void UpgradePanel()
         // Delete
         ImGui::TableNextColumn();
         if (ImGui::SmallButton("X"))
-          rarity_remove_idx = i;
+          rarity_pending_delete = i;
 
         ImGui::PopID();
       }
@@ -174,6 +175,30 @@ inline void UpgradePanel()
 
     ImGui::PopStyleVar();
     ImGui::PopStyleColor(3);
+
+    // Confirmation popup for rarity deletion
+    if (rarity_pending_delete >= 0)
+      ImGui::OpenPopup("Delete Rarity?");
+
+    if (ImGui::BeginPopupModal("Delete Rarity?", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+      if (rarity_pending_delete >= 0 && rarity_pending_delete < static_cast<int>(settings.rarities.size()))
+        ImGui::Text("Delete rarity \"%s\"?", settings.rarities[rarity_pending_delete].name.c_str());
+      ImGui::Separator();
+      if (ImGui::Button("Delete", ImVec2(120, 0)))
+      {
+        rarity_remove_idx = rarity_pending_delete;
+        rarity_pending_delete = -1;
+        ImGui::CloseCurrentPopup();
+      }
+      ImGui::SameLine();
+      if (ImGui::Button("Cancel", ImVec2(120, 0)))
+      {
+        rarity_pending_delete = -1;
+        ImGui::CloseCurrentPopup();
+      }
+      ImGui::EndPopup();
+    }
 
     if (rarity_remove_idx >= 0)
     {
@@ -198,6 +223,7 @@ inline void UpgradePanel()
   {
     bool upgrades_changed = false;
     int remove_idx = -1;
+    static int upgrade_pending_delete = -1;
 
     const int col_count = 9; // ID, Name, Stat, Applicator, Rarity, Type, Value, MaxLvl, Delete
 
@@ -329,7 +355,7 @@ inline void UpgradePanel()
         // Delete button
         ImGui::TableNextColumn();
         if (ImGui::SmallButton("X"))
-          remove_idx = i;
+          upgrade_pending_delete = i;
 
         ImGui::PopID();
       }
@@ -339,6 +365,33 @@ inline void UpgradePanel()
 
     ImGui::PopStyleVar();
     ImGui::PopStyleColor(3);
+
+    // Confirmation popup for upgrade deletion
+    if (upgrade_pending_delete >= 0)
+      ImGui::OpenPopup("Delete Upgrade?");
+
+    if (ImGui::BeginPopupModal("Delete Upgrade?", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+      if (upgrade_pending_delete >= 0 && upgrade_pending_delete < static_cast<int>(settings.upgrades.size()))
+      {
+        auto& del_upg = settings.upgrades[upgrade_pending_delete];
+        ImGui::Text("Delete upgrade \"%s\" (%s)?", del_upg.display_name.c_str(), del_upg.id.c_str());
+      }
+      ImGui::Separator();
+      if (ImGui::Button("Delete", ImVec2(120, 0)))
+      {
+        remove_idx = upgrade_pending_delete;
+        upgrade_pending_delete = -1;
+        ImGui::CloseCurrentPopup();
+      }
+      ImGui::SameLine();
+      if (ImGui::Button("Cancel", ImVec2(120, 0)))
+      {
+        upgrade_pending_delete = -1;
+        ImGui::CloseCurrentPopup();
+      }
+      ImGui::EndPopup();
+    }
 
     if (remove_idx >= 0)
     {
