@@ -152,6 +152,11 @@ namespace Engine
       Log::warning("Failed to load project settings, using defaults");
     }
 
+    // Load upgrade settings (roguelike upgrade system definitions)
+    if (!Engine::FileIO::SettingsManager<Engine::FileIO::UpgradeSettings>::load("Assets/settings/upgrade_settings.json")) {
+      Log::warning("Failed to load upgrade settings, using defaults");
+    }
+
     // TODO: handle using custom reflector
     auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get_mutable();
     for (auto& atlas_entry : project_settings.loaded_tilemaps) {

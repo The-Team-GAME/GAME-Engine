@@ -271,6 +271,7 @@ msbuild "$(SolutionDir)Engine\GameLogic.vcxproj" /p:Configuration=$(Configuratio
     <ClInclude Include="Engine\GUI\TileColliderEditorPanel.h" />
     <ClInclude Include="Engine\GUI\LayerManagerPanel.h" />
     <ClInclude Include="Engine\GUI\PostProcessingPanel.h" />
+    <ClInclude Include="Engine\GUI\UpgradePanel.h" />
     <ClInclude Include="Engine\GUI\RegisterAllPanels.h" />
     <ClInclude Include="Engine\GUI\ResourceExplorerPanel.h" />
     <ClInclude Include="Engine\GUI\widgets\ColliderEditorWidget.h" />
