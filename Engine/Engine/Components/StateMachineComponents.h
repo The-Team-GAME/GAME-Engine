@@ -184,7 +184,10 @@ namespace Components
 
       current_state_name = state_name;
       is_first_frame_ = true;
-      has_started_ = true;
+      // Keep startup deferred so first update can sync callbacks from blueprint.
+      // This is required because code-defined states usually only carry visual/audio
+      // data while gameplay callbacks are injected by sync_with_blueprint().
+      has_started_ = false;
     }
 
     /// Request a state change (deferred until end of current update)
