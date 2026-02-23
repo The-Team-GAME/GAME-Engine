@@ -118,6 +118,12 @@ inline void UpgradePanel()
     bool rarities_changed = false;
     int rarity_remove_idx = -1;
 
+    // Spreadsheet-style: transparent widget backgrounds, subtle hover/active
+    ImGui::PushStyleColor(ImGuiCol_FrameBg,        ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+    ImGui::PushStyleColor(ImGuiCol_FrameBgHovered,  ImVec4(1.0f, 1.0f, 1.0f, 0.08f));
+    ImGui::PushStyleColor(ImGuiCol_FrameBgActive,   ImVec4(1.0f, 1.0f, 1.0f, 0.15f));
+    ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(4.0f, 3.0f));
+
     if (ImGui::BeginTable("##rarity_table", 4,
       ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp))
     {
@@ -166,6 +172,9 @@ inline void UpgradePanel()
       ImGui::EndTable();
     }
 
+    ImGui::PopStyleVar();
+    ImGui::PopStyleColor(3);
+
     if (rarity_remove_idx >= 0)
     {
       settings.rarities.erase(settings.rarities.begin() + rarity_remove_idx);
@@ -191,6 +200,12 @@ inline void UpgradePanel()
     int remove_idx = -1;
 
     const int col_count = 9; // ID, Name, Stat, Applicator, Rarity, Type, Value, MaxLvl, Delete
+
+    // Spreadsheet-style: transparent widget backgrounds, subtle hover/active
+    ImGui::PushStyleColor(ImGuiCol_FrameBg,        ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+    ImGui::PushStyleColor(ImGuiCol_FrameBgHovered,  ImVec4(1.0f, 1.0f, 1.0f, 0.08f));
+    ImGui::PushStyleColor(ImGuiCol_FrameBgActive,   ImVec4(1.0f, 1.0f, 1.0f, 0.15f));
+    ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(4.0f, 3.0f));
 
     if (ImGui::BeginTable("##upgrades_table", col_count,
       ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable
@@ -321,6 +336,9 @@ inline void UpgradePanel()
 
       ImGui::EndTable();
     }
+
+    ImGui::PopStyleVar();
+    ImGui::PopStyleColor(3);
 
     if (remove_idx >= 0)
     {
