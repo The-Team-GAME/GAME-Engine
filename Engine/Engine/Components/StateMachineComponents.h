@@ -74,7 +74,7 @@ namespace Components
     Texture texture;
     TextureAtlas texture_atlas;
     Animation animation;
-    std::optional<Math::Vec2D> scale; // Optional scale override for this state
+    std::optional<Math::Vec2D> scale; // Scale override for this state
     std::optional<ColliderData> collider_data; // Optional collider size override
   };
 
@@ -471,7 +471,7 @@ namespace Components
         owner_entity_->add_component<Animation>(new_anim);
       }
 
-      // Apply optional scale override if specified
+      // Apply scale override if specified
       if (anim.scale.has_value()) {
         if (auto* transform = owner_entity_->get_component<Transform2D>()) {
           transform->scale = anim.scale.value();
