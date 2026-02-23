@@ -107,7 +107,7 @@ inline void UpgradePanel()
   }
 
   // ==================================================================================
-  // Section 2: Rarity Tiers
+  // Section 2: Rarity Tiers (inline table)
   // ==================================================================================
   if (ImGui::CollapsingHeader("Rarity Tiers", ImGuiTreeNodeFlags_DefaultOpen))
   {
@@ -116,41 +116,59 @@ inline void UpgradePanel()
       total_weight += r.drop_rate;
 
     bool rarities_changed = false;
-    int remove_idx = -1;
+    int rarity_remove_idx = -1;
 
-    for (int i = 0; i < static_cast<int>(settings.rarities.size()); ++i)
+    if (ImGui::BeginTable("##rarity_table", 4,
+      ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp))
     {
-      ImGui::PushID(i);
-      auto& rarity = settings.rarities[i];
+      ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
+      ImGui::TableSetupColumn("Weight", ImGuiTableColumnFlags_WidthFixed, 90.0f);
+      ImGui::TableSetupColumn("%", ImGuiTableColumnFlags_WidthFixed, 55.0f);
+      ImGui::TableSetupColumn("##del", ImGuiTableColumnFlags_WidthFixed, 25.0f);
+      ImGui::TableHeadersRow();
 
-      char name_buf[64]{};
-      strncpy_s(name_buf, rarity.name.c_str(), sizeof(name_buf) - 1);
-      ImGui::SetNextItemWidth(120.0f);
-      if (ImGui::InputText("##name", name_buf, sizeof(name_buf)))
+      for (int i = 0; i < static_cast<int>(settings.rarities.size()); ++i)
       {
-        rarity.name = name_buf;
-        rarities_changed = true;
+        ImGui::PushID(i);
+        auto& rarity = settings.rarities[i];
+        ImGui::TableNextRow();
+
+        // Name
+        ImGui::TableNextColumn();
+        char name_buf[64]{};
+        strncpy_s(name_buf, rarity.name.c_str(), sizeof(name_buf) - 1);
+        ImGui::SetNextItemWidth(-1);
+        if (ImGui::InputText("##rn", name_buf, sizeof(name_buf)))
+        {
+          rarity.name = name_buf;
+          rarities_changed = true;
+        }
+
+        // Weight
+        ImGui::TableNextColumn();
+        ImGui::SetNextItemWidth(-1);
+        if (ImGui::DragFloat("##rw", &rarity.drop_rate, 0.01f, 0.001f, 100.0f, "%.3f"))
+          rarities_changed = true;
+
+        // Percentage
+        ImGui::TableNextColumn();
+        float pct = (total_weight > 0.0f) ? (rarity.drop_rate / total_weight * 100.0f) : 0.0f;
+        ImGui::TextDisabled("%.1f%%", pct);
+
+        // Delete
+        ImGui::TableNextColumn();
+        if (ImGui::SmallButton("X"))
+          rarity_remove_idx = i;
+
+        ImGui::PopID();
       }
-      ImGui::SameLine();
 
-      ImGui::SetNextItemWidth(120.0f);
-      if (ImGui::DragFloat("##weight", &rarity.drop_rate, 0.01f, 0.001f, 100.0f, "%.3f"))
-        rarities_changed = true;
-      ImGui::SameLine();
-
-      float pct = (total_weight > 0.0f) ? (rarity.drop_rate / total_weight * 100.0f) : 0.0f;
-      ImGui::TextDisabled("(%.1f%%)", pct);
-      ImGui::SameLine();
-
-      if (ImGui::SmallButton("X##remove"))
-        remove_idx = i;
-
-      ImGui::PopID();
+      ImGui::EndTable();
     }
 
-    if (remove_idx >= 0)
+    if (rarity_remove_idx >= 0)
     {
-      settings.rarities.erase(settings.rarities.begin() + remove_idx);
+      settings.rarities.erase(settings.rarities.begin() + rarity_remove_idx);
       rarities_changed = true;
     }
 
@@ -165,52 +183,86 @@ inline void UpgradePanel()
   }
 
   // ==================================================================================
-  // Section 3: Upgrade Definitions
+  // Section 3: Upgrade Definitions (spreadsheet table)
   // ==================================================================================
   if (ImGui::CollapsingHeader("Upgrade Definitions", ImGuiTreeNodeFlags_DefaultOpen))
   {
     bool upgrades_changed = false;
     int remove_idx = -1;
 
-    for (int i = 0; i < static_cast<int>(settings.upgrades.size()); ++i)
+    const int col_count = 9; // ID, Name, Stat, Applicator, Rarity, Type, Value, MaxLvl, Delete
+
+    if (ImGui::BeginTable("##upgrades_table", col_count,
+      ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable
+      | ImGuiTableFlags_ScrollX | ImGuiTableFlags_SizingStretchProp))
     {
-      ImGui::PushID(i + 1000);
-      auto& upg = settings.upgrades[i];
+      ImGui::TableSetupColumn("ID",         ImGuiTableColumnFlags_WidthFixed, 110.0f);
+      ImGui::TableSetupColumn("Name",       ImGuiTableColumnFlags_WidthFixed, 120.0f);
+      ImGui::TableSetupColumn("Stat",       ImGuiTableColumnFlags_WidthFixed, 80.0f);
+      ImGui::TableSetupColumn("Link",       ImGuiTableColumnFlags_WidthFixed, 20.0f);
+      ImGui::TableSetupColumn("Rarity",     ImGuiTableColumnFlags_WidthFixed, 90.0f);
+      ImGui::TableSetupColumn("Type",       ImGuiTableColumnFlags_WidthFixed, 95.0f);
+      ImGui::TableSetupColumn("Value",      ImGuiTableColumnFlags_WidthFixed, 90.0f);
+      ImGui::TableSetupColumn("Max Lvl",    ImGuiTableColumnFlags_WidthFixed, 60.0f);
+      ImGui::TableSetupColumn("##del",      ImGuiTableColumnFlags_WidthFixed, 25.0f);
+      ImGui::TableHeadersRow();
 
-      std::string label = upg.display_name + " (" + upg.rarity + ")###upgrade" + std::to_string(i);
-      if (ImGui::TreeNode(label.c_str()))
+      for (int i = 0; i < static_cast<int>(settings.upgrades.size()); ++i)
       {
-        char id_buf[64]{};
-        strncpy_s(id_buf, upg.id.c_str(), sizeof(id_buf) - 1);
-        if (ImGui::InputText("ID", id_buf, sizeof(id_buf)))
+        ImGui::PushID(i + 2000);
+        auto& upg = settings.upgrades[i];
+        ImGui::TableNextRow();
+
+        // ID
+        ImGui::TableNextColumn();
         {
-          upg.id = id_buf;
-          upgrades_changed = true;
+          char buf[64]{};
+          strncpy_s(buf, upg.id.c_str(), sizeof(buf) - 1);
+          ImGui::SetNextItemWidth(-1);
+          if (ImGui::InputText("##id", buf, sizeof(buf)))
+          {
+            upg.id = buf;
+            upgrades_changed = true;
+          }
         }
 
-        char name_buf[128]{};
-        strncpy_s(name_buf, upg.display_name.c_str(), sizeof(name_buf) - 1);
-        if (ImGui::InputText("Display Name", name_buf, sizeof(name_buf)))
+        // Display Name
+        ImGui::TableNextColumn();
         {
-          upg.display_name = name_buf;
-          upgrades_changed = true;
+          char buf[128]{};
+          strncpy_s(buf, upg.display_name.c_str(), sizeof(buf) - 1);
+          ImGui::SetNextItemWidth(-1);
+          if (ImGui::InputText("##dn", buf, sizeof(buf)))
+          {
+            upg.display_name = buf;
+            upgrades_changed = true;
+          }
         }
 
-        char stat_buf[64]{};
-        strncpy_s(stat_buf, upg.stat_name.c_str(), sizeof(stat_buf) - 1);
-        if (ImGui::InputText("Stat Name", stat_buf, sizeof(stat_buf)))
+        // Stat Name
+        ImGui::TableNextColumn();
         {
-          upg.stat_name = stat_buf;
-          upgrades_changed = true;
+          char buf[64]{};
+          strncpy_s(buf, upg.stat_name.c_str(), sizeof(buf) - 1);
+          ImGui::SetNextItemWidth(-1);
+          if (ImGui::InputText("##sn", buf, sizeof(buf)))
+          {
+            upg.stat_name = buf;
+            upgrades_changed = true;
+          }
         }
 
-        // Show whether a stat applicator is registered for this stat
+        // Applicator indicator (green dot / red dot)
+        ImGui::TableNextColumn();
         if (mgr.has_stat_applicator(upg.stat_name))
-          ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.3f, 1.0f), "  Applicator: registered");
+          ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.4f, 1.0f), "*");
         else
-          ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.0f, 1.0f), "  Applicator: NOT registered");
+          ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.2f, 1.0f), "!");
 
-        if (ImGui::BeginCombo("Rarity", upg.rarity.c_str()))
+        // Rarity combo
+        ImGui::TableNextColumn();
+        ImGui::SetNextItemWidth(-1);
+        if (ImGui::BeginCombo("##rar", upg.rarity.c_str()))
         {
           for (auto& r : settings.rarities)
           {
@@ -226,40 +278,48 @@ inline void UpgradePanel()
           ImGui::EndCombo();
         }
 
-        const char* type_names[] = { "Flat", "Multiplier" };
-        int current_type = static_cast<int>(upg.type);
-        if (ImGui::Combo("Type", &current_type, type_names, 2))
+        // Type combo
+        ImGui::TableNextColumn();
         {
-          upg.type = static_cast<UpgradeType>(current_type);
-          upgrades_changed = true;
+          const char* type_names[] = { "Flat", "Multiplier" };
+          int current_type = static_cast<int>(upg.type);
+          ImGui::SetNextItemWidth(-1);
+          if (ImGui::Combo("##tp", &current_type, type_names, 2))
+          {
+            upg.type = static_cast<UpgradeType>(current_type);
+            upgrades_changed = true;
+          }
         }
 
+        // Value
+        ImGui::TableNextColumn();
+        ImGui::SetNextItemWidth(-1);
         if (upg.type == UpgradeType::Flat)
         {
-          if (ImGui::DragFloat("Value (+)", &upg.value, 0.5f, 0.0f, 10000.0f, "%.1f"))
+          if (ImGui::DragFloat("##val", &upg.value, 0.5f, 0.0f, 10000.0f, "+%.1f"))
             upgrades_changed = true;
-          ImGui::SameLine();
-          ImGui::TextDisabled("Added to stat each pick");
         }
         else
         {
-          if (ImGui::DragFloat("Value (x)", &upg.value, 0.01f, 0.01f, 100.0f, "%.2f"))
+          if (ImGui::DragFloat("##val", &upg.value, 0.01f, 0.01f, 100.0f, "x%.2f"))
             upgrades_changed = true;
-          ImGui::SameLine();
-          ImGui::TextDisabled("Stat multiplied by this each pick");
         }
 
-        if (ImGui::DragInt("Max Level", &upg.max_level, 0.1f, 1, 99))
+        // Max Level
+        ImGui::TableNextColumn();
+        ImGui::SetNextItemWidth(-1);
+        if (ImGui::DragInt("##ml", &upg.max_level, 0.1f, 1, 99))
           upgrades_changed = true;
 
-        ImGui::Spacing();
-        if (ImGui::SmallButton("Remove Upgrade"))
+        // Delete button
+        ImGui::TableNextColumn();
+        if (ImGui::SmallButton("X"))
           remove_idx = i;
 
-        ImGui::TreePop();
+        ImGui::PopID();
       }
 
-      ImGui::PopID();
+      ImGui::EndTable();
     }
 
     if (remove_idx >= 0)
@@ -281,6 +341,18 @@ inline void UpgradePanel()
       settings.upgrades.push_back(new_upg);
       upgrades_changed = true;
     }
+
+    // Legend for the Link column
+    ImGui::SameLine();
+    ImGui::TextDisabled("Link: ");
+    ImGui::SameLine();
+    ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.4f, 1.0f), "*");
+    ImGui::SameLine();
+    ImGui::TextDisabled("= applicator registered  ");
+    ImGui::SameLine();
+    ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.2f, 1.0f), "!");
+    ImGui::SameLine();
+    ImGui::TextDisabled("= no applicator");
 
     if (upgrades_changed)
       SettingsManager<UpgradeSettings>::save();
