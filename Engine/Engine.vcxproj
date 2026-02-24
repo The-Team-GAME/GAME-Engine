@@ -256,11 +256,6 @@ msbuild "$(SolutionDir)Engine\GameLogic.vcxproj" /p:Configuration=$(Configuratio
     <ClCompile Include="Engine\Lua\LuaManager.cpp" />
     <ClCompile Include="Engine\Systems\LogicSystem.cpp" />
     <ClCompile Include="Engine\Systems\PostPhysicsSystem.cpp" />
-    <ClCompile Include="GameLogic\States\GamerMonkeyStateCallbacks.cpp" />
-    <ClCompile Include="GameLogic\States\LazyMonkeyStateCallbacks.cpp" />
-    <ClCompile Include="GameLogic\States\PlayerStateCallbacks.cpp" />
-    <ClCompile Include="GameLogic\States\SprayCanMonkeyStateCallbacks.cpp" />
-    <ClCompile Include="GameLogic\States\TurretMonkeyStateCallback.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Audio\AudioSystem.h" />
@@ -394,11 +389,6 @@ msbuild "$(SolutionDir)Engine\GameLogic.vcxproj" /p:Configuration=$(Configuratio
     <ClInclude Include="Engine\Math\Vector3D.h" />
     <ClInclude Include="Engine\Math\Vector4D.h" />
     <ClInclude Include="Engine\WindowManager.h" />
-    <ClInclude Include="GameLogic\States\GamerMonkeyStateCallbacks.h" />
-    <ClInclude Include="GameLogic\States\LazyMonkeyStateCallbacks.h" />
-    <ClInclude Include="GameLogic\States\PlayerStateCallbacks.h" />
-    <ClInclude Include="GameLogic\States\SprayCanMonkeyStateCallbacks.h" />
-    <ClInclude Include="GameLogic\States\TurretMonkeyStateCallback.h" />
     <ClInclude Include="GameLogic\Systems\DebugHitboxRenderSystem.h" />
     <ClInclude Include="GameLogic\Systems\EnemyHealthSystem.h" />
     <ClInclude Include="GameLogic\Systems\HealthSystem.h" />
