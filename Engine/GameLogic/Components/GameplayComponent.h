@@ -130,8 +130,8 @@ namespace Components
     float chase_speed = 100.0f;
 
     // Attack parameters
-    float leap_speed = 100.0f;
-    float leap_height = 300.0f;
+    float leap_speed = 200.0f;
+    float leap_height = 300.0f; //unused monkey no longer leaps
     float attack_cooldown = 3.0f;
     float last_attack_time = 0.0f;
     float attack_windup = 0.5f;  // Time to wait in windup state before attacking
