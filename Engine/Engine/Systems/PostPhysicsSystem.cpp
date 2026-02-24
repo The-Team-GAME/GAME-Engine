@@ -29,9 +29,11 @@ void pphy2D::update_entity(ECS::Entity entity)
 {
 	Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
 	Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
-	phy2D::update_kinematics(*rigid);
+	if (rigid->apply_force)
+	{
+		phy2D::update_kinematics(*rigid);
+	}
 	phy2D::update_position(*rigid, *xform);
-	rigid->force_view = rigid->force;
 	rigid->force.zero();
 	//std::cout << "resultant velocity: " << rigid->velocity << std::endl;
 }
