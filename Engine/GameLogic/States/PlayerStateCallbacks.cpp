@@ -14,12 +14,12 @@
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-#pragma once
 
 #include "pch.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/HeartrateComponent.h"
 
+using namespace Engine;
 namespace {
   f32 terminal_vel_placeholder;
 }

@@ -11,7 +11,6 @@
 //
 // Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-#pragma once
 
 #include "pch.h"
 #include "../../Engine/Engine/Systems/CollisionSystem.h"
