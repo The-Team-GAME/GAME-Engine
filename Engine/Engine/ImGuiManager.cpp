@@ -16,6 +16,7 @@
 #include "ImGuiManager.h"
 #include "WindowManager.h"
 #include "Precompiled.h"
+#include <filesystem>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <imgui_internal.h>
@@ -35,6 +36,7 @@ namespace {
   bool gui_enabled = true; // Completely disable ImGui when false (TODO: Hook this up to a setting)
   bool main_gui_visible = true; // Still render ImGui but hide all windows when false
   bool show_exit_confirmation = false;
+  std::vector<char> exit_save_selections; // Tracks which dirty items user wants to save on exit (char instead of bool to avoid vector<bool> proxy)
 
   struct PanelInfo {
     std::string name;
@@ -52,6 +54,13 @@ namespace {
   std::vector<PanelInfo> registered_panels;
   std::vector<Toast> active_toasts;
   ImGuiID main_dockspace_id = 0;
+
+  // ---- Layout state ----
+  constexpr const char* LAYOUTS_DIR = "Assets/layouts/";
+  std::string current_layout_name = "default";
+  bool show_save_layout_popup = false;
+  char save_layout_name_buf[128] = {};
+  // ---- End Layout state ----
 
   std::unordered_map<std::string, std::function<void()>> styles_map = {
     {"Eggplant", SetupImGuiStyle_Eggplant},
@@ -72,6 +81,7 @@ namespace ImGuiManager {
 #ifndef GAME_BUILD
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
+    io.IniFilename = nullptr; // Disable automatic imgui.ini save/load; we manage layouts manually
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     //io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
@@ -102,6 +112,18 @@ namespace ImGuiManager {
         show_toast(event.message, event.type, event.duration);
       }
     );
+
+    // Auto-load last used layout (or seed a default if none exists yet)
+    {
+      const std::string& saved_layout = Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::get().imgui_layout;
+      current_layout_name = saved_layout.empty() ? "default" : saved_layout;
+      std::string layout_path = std::string(LAYOUTS_DIR) + current_layout_name + ".ini";
+      if (std::filesystem::exists(layout_path))
+      {
+        ImGui::LoadIniSettingsFromDisk(layout_path.c_str());
+      }
+      // (If no file exists yet the first explicit save will create it)
+    }
 #endif
   }
 
@@ -203,6 +225,37 @@ namespace ImGuiManager {
             }
             ImGui::EndMenu();
           }
+          if (ImGui::BeginMenu("Layouts"))
+          {
+            if (ImGui::MenuItem("Save Current Layout"))
+            {
+              save_layout(current_layout_name);
+              show_toast("Layout '" + current_layout_name + "' saved", ImGuiManager::ToastType::Info, 2.0f);
+            }
+            if (ImGui::MenuItem("Save Layout As..."))
+            {
+              // Pre-fill with current name
+              strncpy_s(save_layout_name_buf, sizeof(save_layout_name_buf), current_layout_name.c_str(), sizeof(save_layout_name_buf) - 1);
+              show_save_layout_popup = true;
+            }
+            ImGui::Separator();
+            auto layouts = get_available_layouts();
+            if (layouts.empty())
+            {
+              ImGui::TextDisabled("(no saved layouts)");
+            }
+            for (const auto& layout_name : layouts)
+            {
+              bool is_active = (layout_name == current_layout_name);
+              if (ImGui::MenuItem(layout_name.c_str(), nullptr, is_active))
+              {
+                load_layout(layout_name);
+                Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::get_mutable().imgui_layout = layout_name;
+                Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::save();
+              }
+            }
+            ImGui::EndMenu();
+          }
           ImGui::EndMenuBar();
         }
 
@@ -244,6 +297,26 @@ namespace ImGuiManager {
           Engine::SceneManager::unload_current_scene();
           Engine::SceneManager::load_scene(current);
           Engine::Time::set_paused(true);
+        }
+
+        ImGui::SameLine();
+        ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+        ImGui::SameLine();
+
+        // Build Button
+        if (Engine::HotReload::is_building())
+        {
+          if (ImGui::Button("Cancel", ImVec2(80, 0)))
+          {
+            Engine::HotReload::request_build_cancellation();
+          }
+        }
+        else
+        {
+          if (ImGui::Button("Build", ImVec2(80, 0)))
+          {
+            Engine::HotReload::request_manual_reload();
+          }
         }
 
         ImGui::Unindent(8.0f); // Remove left padding
@@ -309,19 +382,99 @@ namespace ImGuiManager {
       show_exit_confirmation = false; // Reset flag after opening
     }
 
+    // Show "Save Layout As..." popup
+    if (show_save_layout_popup)
+    {
+      ImGui::OpenPopup("Save Layout As");
+      show_save_layout_popup = false;
+    }
+    {
+      ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+      ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+      ImGui::SetNextWindowSize(ImVec2(340, 0), ImGuiCond_Appearing);
+      if (ImGui::BeginPopupModal("Save Layout As", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+      {
+        ImGui::Text("Layout name:");
+        ImGui::SetNextItemWidth(-1.0f);
+        bool confirm = ImGui::InputText("##layout_name_input", save_layout_name_buf, sizeof(save_layout_name_buf),
+          ImGuiInputTextFlags_EnterReturnsTrue);
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        f32 btn_w = 120.0f;
+        f32 spacing = ImGui::GetStyle().ItemSpacing.x;
+        f32 total = btn_w * 2 + spacing;
+        ImGui::SetCursorPosX((ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x - total) * 0.5f + ImGui::GetWindowContentRegionMin().x);
+
+        if (ImGui::Button("Save", ImVec2(btn_w, 0)) || confirm)
+        {
+          std::string name = save_layout_name_buf;
+          // Trim whitespace
+          name.erase(0, name.find_first_not_of(" \t"));
+          name.erase(name.find_last_not_of(" \t") + 1);
+          if (!name.empty())
+          {
+            save_layout(name);
+            Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::get_mutable().imgui_layout = name;
+            Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::save();
+            show_toast("Layout '" + name + "' saved", ImGuiManager::ToastType::Info, 2.0f);
+          }
+          ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(btn_w, 0)))
+        {
+          ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+      }
+    }
+
     // Always place the popup at the center of the viewport
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSizeConstraints(ImVec2(350, 0), ImVec2(500, 600));
 
     if (ImGui::BeginPopupModal("Exit Confirmation", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
-      bool has_unsaved_changes = Engine::ProjectSaveManager::is_any_dirty();
+      const auto& dirty_states = Engine::ProjectSaveManager::get_dirty_states();
+      bool has_unsaved_changes = !dirty_states.empty();
 
       if (has_unsaved_changes)
       {
         ImGui::Text("You have unsaved changes!");
         ImGui::Spacing();
-        ImGui::Text("Do you want to save before exiting?");
+        ImGui::Text("Select which items to save before exiting:");
+        ImGui::Spacing();
+
+        // Track which items the user wants to save (persistent across frames)
+        if (exit_save_selections.size() != dirty_states.size()) {
+          exit_save_selections.assign(dirty_states.size(), true); // Default: save all
+        }
+
+        // Show each dirty item with a checkbox
+        ImGui::BeginChild("DirtyItems", ImVec2(0, std::min(200.0f, dirty_states.size() * 28.0f + 8.0f)), true);
+        for (size_t i = 0; i < dirty_states.size(); ++i) {
+          std::string display_name = Engine::ProjectSaveManager::get_dirty_display_name(dirty_states[i]);
+          std::string label = display_name + "##dirty_" + std::to_string(i);
+          bool selected = exit_save_selections[i] != 0;
+          if (ImGui::Checkbox(label.c_str(), &selected)) {
+            exit_save_selections[i] = selected ? 1 : 0;
+          }
+        }
+        ImGui::EndChild();
+
+        ImGui::Spacing();
+
+        // Select All / Deselect All
+        if (ImGui::SmallButton("Select All")) {
+          std::fill(exit_save_selections.begin(), exit_save_selections.end(), true);
+        }
+        ImGui::SameLine();
+        if (ImGui::SmallButton("Deselect All")) {
+          std::fill(exit_save_selections.begin(), exit_save_selections.end(), false);
+        }
       }
       else
       {
@@ -344,19 +497,26 @@ namespace ImGuiManager {
 
       if (has_unsaved_changes)
       {
-        // Save and Exit button
-        if (ImGui::Button("Save and Exit", ImVec2(button_width, 0)))
+        // Save Selected button — saves checked items and exits
+        if (ImGui::Button("Save Selected", ImVec2(button_width, 0)))
         {
-          Engine::ProjectSaveManager::save_all_dirty();
+          // Save selected items in reverse order so indices stay valid
+          for (int i = static_cast<int>(exit_save_selections.size()) - 1; i >= 0; --i) {
+            if (exit_save_selections[static_cast<size_t>(i)]) {
+              Engine::ProjectSaveManager::save_single_dirty(static_cast<size_t>(i));
+            }
+          }
+          exit_save_selections.clear();
           Engine::Core::stop();
           ImGui::CloseCurrentPopup();
         }
 
         ImGui::SameLine();
 
-        // Don't Save button
+        // Don't Save button — exits without saving
         if (ImGui::Button("Don't Save", ImVec2(button_width, 0)))
         {
+          exit_save_selections.clear();
           Engine::Core::stop();
           ImGui::CloseCurrentPopup();
         }
@@ -378,6 +538,7 @@ namespace ImGuiManager {
       // Cancel button
       if (ImGui::Button("Cancel", ImVec2(button_width, 0)))
       {
+        exit_save_selections.clear();
         ImGui::CloseCurrentPopup();
       }
 
@@ -398,7 +559,7 @@ namespace ImGuiManager {
       // Detect build cancellation → show warning toast
       if (Engine::HotReload::consume_build_cancelled())
       {
-        show_toast("Build cancelled \u2014 restarting...",
+        show_toast("Build cancelled",
           ImGuiManager::ToastType::Warning, 3.0f);
       }
 
@@ -718,7 +879,7 @@ namespace ImGuiManager {
     if (is_viewport_mode_enabled()) {
       auto bounds = ViewportPanel::get_viewport_bounds();
       return { bounds.x, bounds.y };
-  }
+    }
     else {
       ImGuiViewport* viewport = ImGui::GetMainViewport();
       return { viewport->WorkPos.x, viewport->WorkPos.y };
@@ -776,4 +937,48 @@ namespace ImGuiManager {
 #endif
   }
 
+  void save_layout([[maybe_unused]] const std::string& name)
+  {
+#ifndef GAME_BUILD
+    std::filesystem::create_directories(LAYOUTS_DIR);
+    std::string path = std::string(LAYOUTS_DIR) + name + ".ini";
+    ImGui::SaveIniSettingsToDisk(path.c_str());
+    current_layout_name = name;
+#endif
   }
+
+  void load_layout([[maybe_unused]] const std::string& name)
+  {
+#ifndef GAME_BUILD
+    std::string path = std::string(LAYOUTS_DIR) + name + ".ini";
+    if (!std::filesystem::exists(path))
+    {
+      show_toast("Layout '" + name + "' not found", ImGuiManager::ToastType::Warning, 3.0f);
+      return;
+    }
+    ImGui::LoadIniSettingsFromDisk(path.c_str());
+    current_layout_name = name;
+#endif
+  }
+
+  std::vector<std::string> get_available_layouts()
+  {
+#ifndef GAME_BUILD
+    std::vector<std::string> result;
+    if (!std::filesystem::exists(LAYOUTS_DIR))
+      return result;
+    for (const auto& entry : std::filesystem::directory_iterator(LAYOUTS_DIR))
+    {
+      if (entry.is_regular_file() && entry.path().extension() == ".ini")
+      {
+        result.push_back(entry.path().stem().string());
+      }
+    }
+    std::sort(result.begin(), result.end());
+    return result;
+#else
+    return {};
+#endif
+  }
+
+}

@@ -84,4 +84,58 @@ namespace ResourcePicker {
   ==================================================================================*/
   std::vector<Engine::Graphics::Font> get_all_loaded_fonts();
 
+  /*=================================================================================
+  Function Brief:
+  Displays a LUT picker popup that scans a directory for .cube files.
+  Shows a color ramp preview (diagonal r=g=b sampling) for each LUT.
+  Returns true and sets selected_path if user makes a selection.
+
+  Parameters:
+  popup_id       - Unique ID for the popup window
+  selected_path  - [out] Path of selected LUT file (if function returns true)
+  current_path   - Currently selected LUT path (for highlighting)
+  lut_directory  - Directory to scan for .cube files
+
+  Where to call it:
+  After calling ImGui::OpenPopup() with matching popup_id.
+  ==================================================================================*/
+  bool lut_picker_popup(const char* popup_id, std::string& selected_path,
+    const std::string& current_path = "",
+    const std::string& lut_directory = "Assets/lut");
+
+  /*=================================================================================
+  Function Brief:
+  Displays a post-processing preset picker popup that scans a directory for .json
+  preset files. Shows a preview of which effects are enabled and their key parameters.
+  Returns true and sets selected_path if user makes a selection.
+
+  Parameters:
+  popup_id          - Unique ID for the popup window
+  selected_path     - [out] Path of selected preset file (if function returns true)
+  current_path      - Currently active preset path (for highlighting)
+  preset_directory  - Directory to scan for .json files (relative to resource_path)
+
+  Where to call it:
+  After calling ImGui::OpenPopup() with matching popup_id.
+  ==================================================================================*/
+  bool preset_picker_popup(const char* popup_id, std::string& selected_path,
+    const std::string& current_path = "",
+    const std::string& preset_directory = "postprocessing");
+
+  /*=================================================================================
+  Function Brief:
+  Displays a prefab picker popup listing all cached prefabs. The user can select
+  an existing prefab to overwrite (update) or create a new prefab file.
+  Returns true and sets selected_path when user confirms a selection.
+
+  Parameters:
+  popup_id       - Unique ID for the popup window
+  selected_path  - [out] Relative path of selected/created prefab (if returns true)
+  is_new_file    - [out] True if the user chose to create a new file, false if updating
+
+  Where to call it:
+  After calling ImGui::OpenPopup() with matching popup_id.
+  ==================================================================================*/
+  bool prefab_picker_popup(const char* popup_id, std::string& selected_path, bool& is_new_file);
+
 } // namespace ResourcePicker

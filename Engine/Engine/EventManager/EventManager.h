@@ -114,6 +114,15 @@ namespace Engine {
     template <typename T>
     void remove_event_listener();
 
+    /// Clears all registered event handlers and releases their memory.
+    /// Call once at engine shutdown (before the CRT leak check) so that
+    /// lambda closures from DLL/engine code are freed.
+    ENGINE_API void clear_all_listeners();
+
+    /// Delete the leaked singleton containers. Call at final shutdown
+    /// AFTER clear_all_listeners() and AFTER DLL unload.
+    ENGINE_API void destroy_all();
+
     ENGINE_API void update_events(const std::vector<std::unique_ptr<ECS::System>>& systems);
 
     /* =============== //

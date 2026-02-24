@@ -100,7 +100,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD Studio\lib\fmodstudio.dll" "$(OutDir)" /s
 
 xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q
 
-msbuild "$(SolutionDir)Engine\GameLogic.vcxproj" /p:Configuration=$(Configuration) /p:Platform=$(Platform) /p:SolutionDir=$(SolutionDir) /v:minimal
+msbuild "$(SolutionDir)Engine\GameLogic.vcxproj" /p:Configuration=$(Configuration) /p:Platform=$(Platform) /p:SolutionDir="$(SolutionDir)\" /v:minimal
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -140,7 +140,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD Studio\lib\fmodstudio.dll" "$(OutDir)" /s
 
 xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q
 
-msbuild "$(SolutionDir)Engine\GameLogic.vcxproj" /p:Configuration=$(Configuration) /p:Platform=$(Platform) /p:SolutionDir=$(SolutionDir) /v:minimal
+msbuild "$(SolutionDir)Engine\GameLogic.vcxproj" /p:Configuration=$(Configuration) /p:Platform=$(Platform) /p:SolutionDir="$(SolutionDir)\" /v:minimal
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -180,7 +180,7 @@ xcopy "$(SolutionDir)Dependencies\FMOD Studio\lib\fmodstudio.dll" "$(OutDir)" /s
 
 xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q
 
-msbuild "$(SolutionDir)Engine\GameLogic.vcxproj" /p:Configuration=$(Configuration) /p:Platform=$(Platform) /p:SolutionDir=$(SolutionDir) /v:minimal
+msbuild "$(SolutionDir)Engine\GameLogic.vcxproj" /p:Configuration=$(Configuration) /p:Platform=$(Platform) /p:SolutionDir="$(SolutionDir)\" /v:minimal
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -240,6 +240,8 @@ msbuild "$(SolutionDir)Engine\GameLogic.vcxproj" /p:Configuration=$(Configuratio
     <ClCompile Include="Engine\Path.cpp" />
     <ClCompile Include="Engine\Resources.cpp" />
     <ClCompile Include="Engine\Graphics\Shader.cpp" />
+    <ClCompile Include="Engine\Graphics\PostProcessing.cpp" />
+    <ClCompile Include="Engine\Graphics\CubeLUT.cpp" />
     <ClCompile Include="Engine\ImGuiManager.cpp" />
     <ClCompile Include="Engine\InputManager.cpp" />
     <ClCompile Include="Engine\Logger.cpp" />
@@ -253,7 +255,6 @@ msbuild "$(SolutionDir)Engine\GameLogic.vcxproj" /p:Configuration=$(Configuratio
     <ClCompile Include="Engine\WindowManager.cpp" />
     <ClCompile Include="Engine\Lua\LuaManager.cpp" />
     <ClCompile Include="Engine\Systems\LogicSystem.cpp" />
-    <ClCompile Include="Engine\UndoManager\UndoManager.cpp" />
     <ClCompile Include="Engine\Systems\PostPhysicsSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -269,6 +270,7 @@ msbuild "$(SolutionDir)Engine\GameLogic.vcxproj" /p:Configuration=$(Configuratio
     <ClInclude Include="Engine\GUI\SelectiveLevelSavePanel.h" />
     <ClInclude Include="Engine\GUI\TileColliderEditorPanel.h" />
     <ClInclude Include="Engine\GUI\LayerManagerPanel.h" />
+    <ClInclude Include="Engine\GUI\PostProcessingPanel.h" />
     <ClInclude Include="Engine\GUI\RegisterAllPanels.h" />
     <ClInclude Include="Engine\GUI\ResourceExplorerPanel.h" />
     <ClInclude Include="Engine\GUI\widgets\ColliderEditorWidget.h" />
@@ -334,7 +336,6 @@ msbuild "$(SolutionDir)Engine\GameLogic.vcxproj" /p:Configuration=$(Configuratio
     <ClInclude Include="GameLogic\GameStates\Documentation\PrefabsState.h" />
     <ClInclude Include="GameLogic\GameStates\EmptyState.h" />
     <ClInclude Include="GameLogic\GameStates\GameplayState.h" />
-    <ClInclude Include="GameLogic\GameStates\LevelTestState.h" />
     <ClInclude Include="GameLogic\GameStates\LuaState.h" />
     <ClInclude Include="GameLogic\GameStates\MainMenuState.h" />
     <ClInclude Include="GameLogic\GameStates\OptionsState.h" />
@@ -355,6 +356,8 @@ msbuild "$(SolutionDir)Engine\GameLogic.vcxproj" /p:Configuration=$(Configuratio
     <ClInclude Include="Engine\Path.h" />
     <ClInclude Include="Engine\Resources.h" />
     <ClInclude Include="Engine\Graphics\Shader.h" />
+    <ClInclude Include="Engine\Graphics\PostProcessing.h" />
+    <ClInclude Include="Engine\Graphics\CubeLUT.h" />
     <ClInclude Include="Engine\Graphics\RendererInternal.h" />
     <ClInclude Include="Engine\ECS\ComponentArray.h" />
     <ClInclude Include="Engine\ECS\ComponentManager.h" />
@@ -386,10 +389,11 @@ msbuild "$(SolutionDir)Engine\GameLogic.vcxproj" /p:Configuration=$(Configuratio
     <ClInclude Include="Engine\Math\Vector3D.h" />
     <ClInclude Include="Engine\Math\Vector4D.h" />
     <ClInclude Include="Engine\WindowManager.h" />
+    <ClInclude Include="GameLogic\States\GamerMonkeyStateCallbacks.h" />
     <ClInclude Include="GameLogic\States\LazyMonkeyStateCallbacks.h" />
-    <ClInclude Include="GameLogic\States\LazyMonkeyStateMachine.h" />
     <ClInclude Include="GameLogic\States\PlayerStateCallbacks.h" />
-    <ClInclude Include="GameLogic\States\PlayerStateMachine.h" />
+    <ClInclude Include="GameLogic\States\SprayCanMonkeyStateCallbacks.h" />
+    <ClInclude Include="GameLogic\States\TurretMonkeyStateCallback.h" />
     <ClInclude Include="GameLogic\Systems\DebugHitboxRenderSystem.h" />
     <ClInclude Include="GameLogic\Systems\EnemyHealthSystem.h" />
     <ClInclude Include="GameLogic\Systems\HealthSystem.h" />

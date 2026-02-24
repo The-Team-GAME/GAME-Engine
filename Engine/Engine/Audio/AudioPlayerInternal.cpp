@@ -79,6 +79,13 @@ namespace Engine {
       return global_fmod_system->system;
     }
 
+    void release_fmod_system() {
+      // Reset the shared_ptr so FMODSystemWrapper::~FMODSystemWrapper() runs now,
+      // calling system->release() and freeing all FMOD internal allocations
+      // before the CRT leak check fires at process exit.
+      global_fmod_system.reset();
+    }
+
     // SoundData default constructor
     SoundData::SoundData() : sound(nullptr), is_stream(false) {}
 

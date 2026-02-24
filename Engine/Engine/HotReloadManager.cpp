@@ -464,9 +464,7 @@ namespace Engine
             {
               // Cancel current build and request restart
               Log::info("[HotReload] Source changed during build — restarting build...");
-              s_rebuild_requested = true;
-              HANDLE proc = static_cast<HANDLE>(s_build_process.load());
-              if (proc) TerminateProcess(proc, 1);
+              request_build_restart();
             }
             else
             {
@@ -654,15 +652,37 @@ namespace Engine
       {
         // Cancel the running build and restart, same as mid-build source change
         Log::info("[HotReload] Manual reload requested (F5) — restarting build...");
-        s_rebuild_requested = true;
-        HANDLE proc = static_cast<HANDLE>(s_build_process.load());
-        if (proc) TerminateProcess(proc, 1);
+        request_build_restart();
       }
       else
       {
         Log::info("[HotReload] Manual reload requested (F5) — building...");
         build_game_logic_async();
       }
+    }
+
+    void request_build_cancellation()
+    {
+      if (!s_build_in_progress) return;
+
+      Log::info("[HotReload] Build cancellation requested...");
+      s_rebuild_requested = false;
+      s_build_cancelled = true;
+
+      HANDLE proc = static_cast<HANDLE>(s_build_process.load());
+      if (proc) TerminateProcess(proc, 1);
+    }
+
+    void request_build_restart()
+    {
+      if (!s_build_in_progress) return;
+
+      Log::info("[HotReload] Build restart requested...");
+      s_rebuild_requested = true;
+      s_build_cancelled = true;
+
+      HANDLE proc = static_cast<HANDLE>(s_build_process.load());
+      if (proc) TerminateProcess(proc, 1);
     }
 
     void check_and_reload()
@@ -834,9 +854,7 @@ namespace Engine
       // Signal shutdown so the build loop exits after current iteration
       s_shutdown_requested = true;
 
-      // Kill any running msbuild process
-      HANDLE proc = static_cast<HANDLE>(s_build_process.load());
-      if (proc) TerminateProcess(proc, 1);
+      request_build_cancellation();
 
       // Join the build thread so it doesn't outlive the process
       if (s_build_thread.joinable())

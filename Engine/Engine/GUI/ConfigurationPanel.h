@@ -213,17 +213,6 @@ inline void ConfigurationPanel()
       ImGui::Text("When disabled, press F5 to manually reload.");
       ImGui::EndTooltip();
     }
-
-    if (ImGui::Button("Rebuild & Reload (F5)"))
-    {
-      Engine::HotReload::request_manual_reload();
-    }
-
-    if (Engine::HotReload::is_building())
-    {
-      ImGui::SameLine();
-      ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Building...");
-    }
   }
 #endif
 

@@ -18,12 +18,16 @@
 
 namespace Engine {
 
+    namespace { FunctionRegistry* g_func_registry = nullptr; }
+
     FunctionRegistry& FunctionRegistry::instance() {
-        // Leaked singleton — intentionally never destroyed so that
-        // std::any objects holding DLL callbacks don't crash during
-        // static cleanup after the DLL has been unloaded.
-        static FunctionRegistry* registry = new FunctionRegistry();
-        return *registry;
+        if (!g_func_registry) g_func_registry = new FunctionRegistry();
+        return *g_func_registry;
+    }
+
+    void FunctionRegistry::destroy_instance() {
+        delete g_func_registry;
+        g_func_registry = nullptr;
     }
 
 } // namespace Engine

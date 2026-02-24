@@ -138,5 +138,18 @@ namespace Engine
      *        swap the DLL even when auto-reload is disabled.
      */
     ENGINE_API void request_manual_reload();
+
+    /**
+     * @brief Requests cancellation of the current build.
+     *        Kills the msbuild process.
+     */
+    ENGINE_API void request_build_cancellation();
+
+    /**
+     * @brief Requests a restart of the current build.
+     *        Kills the msbuild process and signals the build
+     *        loop to restart immediately.
+     */
+    ENGINE_API void request_build_restart();
   }
 }

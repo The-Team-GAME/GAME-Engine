@@ -89,6 +89,11 @@ namespace Engine
       throw std::runtime_error("Failed to initialize graphics renderer");
     }
 
+    // Initialize post-processing pipeline
+    if (!Engine::Graphics::init_post_processing()) {
+      Log::warning("Failed to initialize post-processing, effects will be disabled");
+    }
+
     // Initialize resource manager
     if (!Engine::Resources::init("Assets")) { // TODO: move initial resource path to ProjectSettings
       throw std::runtime_error("Failed to initialize resource manager");
@@ -280,6 +285,14 @@ namespace Engine
           Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::save();
         }
 
+        // Toggle post-processing on/off (F9)
+        if (Engine::Input::is_pressed_raw(KeyCode::F9))
+        {
+          auto& pp = Engine::Graphics::get_post_process_settings();
+          pp.enabled = !pp.enabled;
+          Log::info("Post-Processing: {}", pp.enabled ? "ON" : "OFF");
+        }
+
 #ifndef GAME_BUILD
         // Manual hot-reload: F5 triggers build + reload even when auto-reload is off
         if (Engine::Input::is_pressed_raw(KeyCode::F5))
@@ -421,11 +434,24 @@ namespace Engine
 
       // start of draw stuff
 
+      // Begin post-processing scene capture (redirects to PP FBO if enabled)
+      Engine::Graphics::begin_post_processing();
+
       // Clear screen (automatically begins batch)
       Engine::Graphics::clear_screen({ 0.0f, 0.0f, 0.0f, 1.0f });
 
       Engine::SceneManager::draw();
       Engine::ECS::draw();
+
+      // Flush batches before applying post-processing
+      Engine::Graphics::end_batch();
+
+      // Apply post-processing effects (bloom, LUT, gamma) and blit to current target
+      Engine::Graphics::end_post_processing();
+
+      // Begin new batch for unaffected overlays (these bypass post-processing)
+      Engine::Graphics::begin_batch();
+
 #ifndef GAME_BUILD
       TilemapPanel::draw_overlay();
 #endif
@@ -467,6 +493,20 @@ namespace Engine
     entity_clipboard.reset();
 
     Engine::SceneManager::cleanup();
+
+    // Force-destroy any entities that survived scene teardown so that
+    // component destructors (including StateMachine callback name strings
+    // and cached std::function objects) are freed before the CRT leak check.
+    Engine::ECS::destroy_all_entities();
+    Engine::ECS::process_housekeeping();
+
+    // Clear WorldContainers contents (component arrays, entity data, systems, etc.).
+    // The singleton itself is deleted later by destroy_world() after DLL unload.
+    Engine::ECS::clear_world();
+
+    // Release event handlers and queued events — their lambda closures may hold
+    // resources and must be freed before the CRT leak check fires.
+    Engine::EventManager::clear_all_listeners();
     //Engine::ECS::remove_event_listener<WindowResizeEvent>();
 #ifndef GAME_BUILD
     ViewportPanel::exit();
@@ -474,6 +514,7 @@ namespace Engine
     Engine::Audio::exit();
     Engine::AudioSystem::shutdown();  // Shutdown FMOD Studio system
     Engine::Resources::exit();
+    Engine::Graphics::exit_post_processing();
     Engine::Graphics::exit();
 
     Engine::LuaManager::cleanup();
