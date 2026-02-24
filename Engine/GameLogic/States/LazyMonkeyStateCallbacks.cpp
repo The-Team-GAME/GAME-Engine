@@ -15,7 +15,6 @@
 #include "pch.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/EnemyHealthComponent.h"
-#include "../../Engine/Engine/Systems/CollisionSystem.h"
 
 namespace LazyMonkeyStateCallbacks
 {
@@ -231,7 +230,7 @@ namespace LazyMonkeyStateCallbacks
     if (rigid && flip && lazy_monkey && rigid->on_ground) {
       // Throw monkey forward based on facing direction
       rigid->velocity.x = (flip->value.x > 0 ? lazy_monkey->leap_speed : -lazy_monkey->leap_speed);
-      
+
       // Add upward velocity for a leap effect
       //rigid->velocity.y = -lazy_monkey->leap_height; // Negative is up
     }
@@ -272,7 +271,8 @@ namespace LazyMonkeyStateCallbacks
       if (player_entity.is_valid()) {
         auto* player_collider = player_entity.get_component<Components::BoxCollider>();
         if (player_collider) {
-          if (Engine::Systems::Collision2DSystem::rect_rect_coll(*monkey_collider, *player_collider)) {
+          // Use simple AABB overlap to detect contact with the player
+          if (monkey_collider->aabb.intersects(player_collider->aabb)) {
             // Compute how far to move the monkey horizontally so its collider
             // just touches the player's collider instead of overlapping.
             float dx = player_collider->aabb.pos.x - monkey_collider->aabb.pos.x;
@@ -283,6 +283,7 @@ namespace LazyMonkeyStateCallbacks
               float delta_x = target_center_x - monkey_collider->aabb.pos.x;
 
               monkey_transform->position.x += delta_x;
+              monkey_collider->aabb.pos.x += delta_x;
               // Stop horizontal motion once we've collided with the player
               rigid->velocity.x = 0.0f;
             }
