@@ -32,6 +32,7 @@
 #include "GameStates/PauseState.h"
 #include "GameStates/VictoryState.h"
 #include "GameStates/OptionsState.h"
+#include "GameStates/AnimatorTestState.h"
 #include "Systems/HealthSystem.h"
 #include "Systems/EnemyHealthSystem.h"
 #include "Systems/HeartrateSystem.h"
@@ -358,6 +359,7 @@ void RunGame()
   Engine::SceneManager::register_scene<PauseState>("PauseState");
   Engine::SceneManager::register_scene<VictoryState>("VictoryState");
   Engine::SceneManager::register_scene<OptionsState>("OptionsState");
+  Engine::SceneManager::register_scene<AnimatorTestState>("AnimatorTestState");
 
   // Register game systems at startup
   Engine::ECS::add_system<Engine::Systems::HealthSystem>();

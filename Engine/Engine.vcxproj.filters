@@ -100,6 +100,7 @@
     <ClCompile Include="Engine\Systems\PostPhysicsSystem.cpp" />
     <ClCompile Include="Engine\Audio\AudioSystem.cpp" />
     <ClCompile Include="Engine\Audio\AudioSystemExample.cpp" />
+    <ClCompile Include="Engine\GUI\AnimatorEditorPanel.cpp" />
     <ClCompile Include="Engine\GUI\FrameAnimationEditorPanel.cpp" />
     <ClCompile Include="Engine\GUI\TextureAtlasEditorPanel.cpp" />
     <ClCompile Include="Engine\FunctionRegistry.cpp" />
@@ -244,6 +245,7 @@
     <ClInclude Include="Engine\Systems\PostPhysicsSystem.h" />
     <ClInclude Include="Engine\Audio\AudioSystem.h" />
     <ClInclude Include="Engine\Audio\GameAudio.h" />
+    <ClInclude Include="Engine\GUI\AnimatorEditorPanel.h" />
     <ClInclude Include="Engine\GUI\FPSOverlay.h" />
     <ClInclude Include="Engine\GUI\FrameAnimationEditorPanel.h" />
     <ClInclude Include="Engine\GUI\TextureAtlasEditorPanel.h" />
