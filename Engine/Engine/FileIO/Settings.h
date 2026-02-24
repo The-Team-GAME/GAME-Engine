@@ -83,6 +83,7 @@ namespace Engine
     struct LocalSettings
     {
       std::string imgui_theme = "ayu-dark";
+      std::string imgui_layout = "default"; // Last active ImGui layout (saved in Assets/layouts/)
       bool auto_reload = true; // Automatically rebuild & reload when source files change
     };
 
@@ -99,5 +100,5 @@ namespace Engine
 
 REFLECT_FIELDS(Engine::FileIO::EngineSettings, window_title, window_width, window_height, panel_viewport_mode, load_all_assets_on_startup)
 REFLECT_FIELDS(Engine::FileIO::ProjectSettings, loaded_tilemaps, layer_collision_pairs)
-REFLECT_FIELDS(Engine::FileIO::LocalSettings, imgui_theme, auto_reload)
+REFLECT_FIELDS(Engine::FileIO::LocalSettings, imgui_theme, imgui_layout, auto_reload)
 REFLECT_FIELDS(Engine::FileIO::GameSettings, fullscreen, vsync, bgm_volume, sfx_volume)
