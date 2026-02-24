@@ -148,6 +148,13 @@ namespace Engine {
 
     ENGINE_API void draw_line(const Math::Vec2D& start, const Math::Vec2D& end, f32 thickness, const Math::Vec4D& color);
 
+    // Draw a line with constant screen-space thickness (auto-compensates for camera zoom)
+    // thickness is in screen pixels regardless of zoom level
+    ENGINE_API void draw_line_screen(const Math::Vec2D& start, const Math::Vec2D& end, f32 screen_thickness, const Math::Vec4D& color);
+
+    // Draw a rectangle outline with constant screen-space thickness (auto-compensates for camera zoom)
+    ENGINE_API void draw_rect_outline_screen(const Math::Vec2D& position, const Math::Vec2D& size, f32 rotation, f32 screen_thickness, const Math::Vec4D& color);
+
     // Draw a polygon with specified vertices (filled)
     ENGINE_API void draw_polygon(const std::vector<Math::Vec2D>& vertices, const Math::Vec2D& position, f32 rotation, const Math::Vec4D& color);
 

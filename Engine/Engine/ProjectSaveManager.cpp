@@ -7,7 +7,7 @@
 //
 // email:   chew.s@digipen.edu
 //
-// brief:   This file implements the ProjectSaveManager, which handles the tracking and saving of dirty states for project settings, levels, and prefabs.
+// brief:   This file implements the ProjectSaveManager, which handles the tracking and saving of dirty states for project settings and levels.
 //
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
@@ -56,9 +56,6 @@ bool Engine::ProjectSaveManager::check_dirty(const DirtyState& state)
           }
           else if constexpr (std::is_same_v<T, DirtyStates::Level>) {
             return existing_ptr->level_path == s.level_path;
-          }
-          else if constexpr (std::is_same_v<T, DirtyStates::Prefab>) {
-            return existing_ptr->prefab_path == s.prefab_path;
           }
         }
         return false;
@@ -159,26 +156,6 @@ void Engine::ProjectSaveManager::save_all_dirty()
           Log::error("Failed to save level: {}", relative_path);
         }
       }
-      else if constexpr (std::is_same_v<T, DirtyStates::Prefab>) {
-        // Save specific prefab
-        Log::info("Saving prefab: {}", s.prefab_path);
-
-        // Construct full path from relative path
-        std::string full_path = Engine::Path(Engine::Resources::resource_path).join(s.prefab_path);
-
-        auto it = Engine::Resources::prefab_cache.find(full_path);
-        if (it != Engine::Resources::prefab_cache.end()) {
-          if (auto prefab = it->second.lock()) {
-            Engine::Resources::save_prefab(s.prefab_path, Engine::ECS::Prefab(prefab), true);
-          }
-          else {
-            Log::error("Failed to save prefab - expired in cache: {}", s.prefab_path);
-          }
-        }
-        else {
-          Log::error("Failed to save prefab - not found in cache: {}", s.prefab_path);
-        }
-      }
       }, state);
   }
 
@@ -188,4 +165,101 @@ void Engine::ProjectSaveManager::save_all_dirty()
 bool Engine::ProjectSaveManager::is_any_dirty()
 {
   return !dirty_states.empty();
+}
+
+const std::vector<Engine::ProjectSaveManager::DirtyState>& Engine::ProjectSaveManager::get_dirty_states()
+{
+  return dirty_states;
+}
+
+std::string Engine::ProjectSaveManager::get_dirty_display_name(const DirtyState& state)
+{
+  return std::visit([](const auto& s) -> std::string {
+    using T = std::decay_t<decltype(s)>;
+    if constexpr (std::is_same_v<T, DirtyStates::ProjectSettings>) {
+      return "Project Settings";
+    }
+    else if constexpr (std::is_same_v<T, DirtyStates::Level>) {
+      if (s.level_path.empty()) {
+        return "Level (unsaved)";
+      }
+      // Extract filename from path for display
+      std::string path = s.level_path;
+      auto pos = path.find_last_of("/\\");
+      if (pos != std::string::npos) {
+        return "Level: " + path.substr(pos + 1);
+      }
+      return "Level: " + path;
+    }
+    return "Unknown";
+    }, state);
+}
+
+void Engine::ProjectSaveManager::save_single_dirty(size_t index)
+{
+  if (index >= dirty_states.size()) return;
+
+  // Save this one state by visiting it (reuse the same logic as save_all_dirty)
+  const auto& state = dirty_states[index];
+  std::visit([](const auto& s) {
+    using T = std::decay_t<decltype(s)>;
+
+    if constexpr (std::is_same_v<T, DirtyStates::ProjectSettings>) {
+      auto& project_settings = Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::get_mutable();
+      auto& containers = Engine::ECS::Internal::get_containers();
+
+      project_settings.layer_collision_pairs.clear();
+      for (size_t layer_a = 0; layer_a < Engine::ECS::MAX_LAYERS; ++layer_a) {
+        for (size_t layer_b = layer_a; layer_b < Engine::ECS::MAX_LAYERS; ++layer_b) {
+          if (layer_a < containers.layer_id_to_name.size() &&
+            layer_b < containers.layer_id_to_name.size() &&
+            !containers.layer_id_to_name[layer_a].empty() &&
+            !containers.layer_id_to_name[layer_b].empty() &&
+            containers.collision_matrix[layer_a].test(layer_b)) {
+            project_settings.layer_collision_pairs.push_back({
+              containers.layer_id_to_name[layer_a],
+              containers.layer_id_to_name[layer_b]
+              });
+          }
+        }
+      }
+
+      if (Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::save("Assets/settings/project_settings.json")) {
+        Log::info("Project settings saved.");
+      }
+      else {
+        Log::error("Failed to save project settings.");
+      }
+    }
+    else if constexpr (std::is_same_v<T, DirtyStates::Level>) {
+      std::string level_path = s.level_path;
+
+      if (level_path.empty()) {
+        auto selected_path = Engine::FileIO::show_save_file_dialog(
+          "Save Level As", "untitled.json",
+          "Level Files (*.json)\0*.json\0All Files\0*.*\0",
+          "json", Engine::Resources::resource_path
+        );
+        if (!selected_path.has_value()) {
+          Log::info("User cancelled save operation");
+          return;
+        }
+        level_path = selected_path.value();
+        Engine::LevelManager::set_current_level_path(level_path);
+      }
+
+      Engine::EntityList entities = Engine::LevelManager::capture_world_entities();
+      std::string relative_path = Engine::Resources::get_relative_path(level_path);
+
+      if (Engine::Resources::save_level(relative_path, entities, true)) {
+        Log::info("Level saved successfully: {}", relative_path);
+      }
+      else {
+        Log::error("Failed to save level: {}", relative_path);
+      }
+    }
+    }, state);
+
+  // Remove the saved state from the list
+  dirty_states.erase(dirty_states.begin() + static_cast<std::ptrdiff_t>(index));
 }

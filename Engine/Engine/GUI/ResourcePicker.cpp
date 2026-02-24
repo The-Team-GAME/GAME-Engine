@@ -15,6 +15,7 @@
 #include "../Precompiled.h"
 #include "ResourcePicker.h"
 #include "../Resources.h"
+#include "../Path.h"
 #include "../Graphics/CubeLUT.h"
 #include "../Graphics/PostProcessing.h"
 #include <algorithm>
@@ -1229,6 +1230,116 @@ namespace ResourcePicker {
       ImGui::SameLine(ImGui::GetWindowWidth() - 130);
       if (ImGui::Button("Close", ImVec2(120, 0))) {
         needs_scan = true;
+        ImGui::CloseCurrentPopup();
+      }
+
+      ImGui::EndPopup();
+    }
+
+    return selection_made;
+  }
+
+  bool prefab_picker_popup(const char* popup_id, std::string& selected_path, bool& is_new_file) {
+    bool selection_made = false;
+
+    ImGui::SetNextWindowSize(ImVec2(500, 450), ImGuiCond_FirstUseEver);
+
+    if (ImGui::BeginPopupModal(popup_id, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+      ImGui::Text("Save as Prefab");
+      ImGui::Separator();
+
+      // --- Create New Prefab section ---
+      static char new_prefab_name[256] = "";
+      ImGui::Text("Create New:");
+      ImGui::PushItemWidth(-120);
+      ImGui::InputTextWithHint("##NewPrefabName", "Enter prefab name...", new_prefab_name, sizeof(new_prefab_name));
+      ImGui::PopItemWidth();
+      ImGui::SameLine();
+      if (ImGui::Button("Create", ImVec2(110, 0))) {
+        if (strlen(new_prefab_name) > 0) {
+          std::string filename = std::string(new_prefab_name);
+          if (filename.find(".json") == std::string::npos) {
+            filename += ".json";
+          }
+          selected_path = "prefabs/" + filename;
+          is_new_file = true;
+          selection_made = true;
+          new_prefab_name[0] = '\0';
+          ImGui::CloseCurrentPopup();
+        }
+      }
+
+      ImGui::Separator();
+
+      // --- Update Existing Prefab section ---
+      ImGui::Text("Or update existing prefab:");
+
+      static char search_buffer[256] = "";
+      ImGui::InputTextWithHint("##PrefabSearch", "Search...", search_buffer, sizeof(search_buffer));
+
+      ImGui::BeginChild("PrefabPickerList", ImVec2(0, 250), true);
+
+      // Gather prefabs from cache
+      std::vector<std::pair<std::string, Engine::ECS::Prefab>> prefab_list;
+      for (const auto& [path, weak_prefab] : Engine::Resources::prefab_cache) {
+        if (auto prefab_ptr = weak_prefab.lock()) {
+          std::string relative_path = Engine::Resources::get_relative_path(path);
+          if (strlen(search_buffer) > 0 && relative_path.find(search_buffer) == std::string::npos) {
+            continue;
+          }
+          prefab_list.push_back({ relative_path, Engine::ECS::Prefab(prefab_ptr) });
+        }
+      }
+
+      std::sort(prefab_list.begin(), prefab_list.end(),
+        [](const auto& a, const auto& b) { return a.first < b.first; });
+
+      static std::string highlighted_prefab;
+      for (const auto& [relative_path, prefab] : prefab_list) {
+        bool is_highlighted = (highlighted_prefab == relative_path);
+        if (ImGui::Selectable(relative_path.c_str(), is_highlighted)) {
+          highlighted_prefab = relative_path;
+        }
+        // Double-click to confirm
+        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
+          selected_path = relative_path;
+          is_new_file = false;
+          selection_made = true;
+          highlighted_prefab.clear();
+          search_buffer[0] = '\0';
+          ImGui::CloseCurrentPopup();
+        }
+      }
+
+      ImGui::EndChild();
+
+      // Bottom bar
+      ImGui::Separator();
+
+      // Update button for single-click selection
+      bool has_selection = !highlighted_prefab.empty();
+      if (!has_selection) {
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f);
+      }
+      if (ImGui::Button("Update Selected", ImVec2(140, 0)) && has_selection) {
+        selected_path = highlighted_prefab;
+        is_new_file = false;
+        selection_made = true;
+        highlighted_prefab.clear();
+        search_buffer[0] = '\0';
+        ImGui::CloseCurrentPopup();
+      }
+      if (!has_selection) {
+        ImGui::PopStyleVar();
+      }
+
+      ImGui::SameLine();
+      ImGui::TextDisabled("Double-click to update");
+
+      ImGui::SameLine(ImGui::GetWindowWidth() - 80);
+      if (ImGui::Button("Cancel", ImVec2(70, 0))) {
+        highlighted_prefab.clear();
+        search_buffer[0] = '\0';
         ImGui::CloseCurrentPopup();
       }
 

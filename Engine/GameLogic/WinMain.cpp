@@ -53,7 +53,7 @@ Common game initialization and loop logic.
 ==================================================================================*/
 void RunGame()
 {
-#if defined(_DEBUG)
+#ifndef GAME_BUILD
   // Enable memory leak detection
   s32 tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
   tmpDbgFlag |= _CRTDBG_LEAK_CHECK_DF;

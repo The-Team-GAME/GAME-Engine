@@ -122,4 +122,20 @@ namespace ResourcePicker {
     const std::string& current_path = "",
     const std::string& preset_directory = "postprocessing");
 
+  /*=================================================================================
+  Function Brief:
+  Displays a prefab picker popup listing all cached prefabs. The user can select
+  an existing prefab to overwrite (update) or create a new prefab file.
+  Returns true and sets selected_path when user confirms a selection.
+
+  Parameters:
+  popup_id       - Unique ID for the popup window
+  selected_path  - [out] Relative path of selected/created prefab (if returns true)
+  is_new_file    - [out] True if the user chose to create a new file, false if updating
+
+  Where to call it:
+  After calling ImGui::OpenPopup() with matching popup_id.
+  ==================================================================================*/
+  bool prefab_picker_popup(const char* popup_id, std::string& selected_path, bool& is_new_file);
+
 } // namespace ResourcePicker

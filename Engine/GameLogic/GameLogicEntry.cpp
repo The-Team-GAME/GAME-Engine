@@ -23,10 +23,7 @@
 #include "GameStates/DistortionEffectState.h"
 #include "GameStates/LuaState.h"
 #include "GameStates/BehaviourState.h"
-#include "GameStates/LevelTestState.h"
 #include "GameStates/GameplayState.h"
-#include "GameStates/GameMonkeyTestState.h"
-#include "GameStates/TurretMonkeyTestState.h"
 #include "GameStates/PauseState.h"
 #include "GameStates/VictoryState.h"
 #include "GameStates/OptionsState.h"
@@ -298,10 +295,7 @@ static void register_scenes()
   Engine::SceneManager::register_scene<PhysicsTestState>("PhysicsTestState");
   Engine::SceneManager::register_scene<DistortionEffectState>("DistortionEffectState");
   Engine::SceneManager::register_scene<LuaState>("LuaState");
-  Engine::SceneManager::register_scene<LevelTestState>("LevelTestState");
   Engine::SceneManager::register_scene<BehaviourState>("BehaviourState");
-  Engine::SceneManager::register_scene<GameMonkeyTestState>("GameMonkeyTestState");
-  Engine::SceneManager::register_scene<TurretMonkeyTestState>("TurretMonkeyTestState");
   Engine::SceneManager::register_scene<PauseState>("PauseState");
   Engine::SceneManager::register_scene<VictoryState>("VictoryState");
   Engine::SceneManager::register_scene<OptionsState>("OptionsState");
@@ -358,6 +352,12 @@ extern "C" __declspec(dllexport) void UnregisterGameLogic()
   Engine::SceneManager::scene_order.clear();
   Engine::SceneManager::scene_stack.clear();
   Engine::SceneManager::current_scene = nullptr;
+
+  // Clear StateMachineBlueprintRegistry — its StateBlueprint entries hold
+  // std::string members (on_enter / on_update / on_exit) whose heap data
+  // must be freed while the DLL is still loaded.  Static constructors in
+  // the next DLL load will re-register all blueprints automatically.
+  Engine::StateMachineBlueprintRegistry::instance().clear_all_blueprints();
 
   // Clear FunctionRegistry — its std::any values hold std::function
   // objects whose destructors reference code in this DLL.

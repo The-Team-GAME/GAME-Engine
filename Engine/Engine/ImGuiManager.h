@@ -17,6 +17,7 @@
 
 #include <functional>
 #include <string>
+#include <vector>
 #include "Math/Vector2D.h"
 
 #include "Events/EngineEvents.h"
@@ -55,5 +56,10 @@ namespace ImGuiManager {
 
 	// Check if game input should be blocked (an ImGui panel other than Viewport has focus)
 	bool is_game_input_blocked();
+
+	// Layout save/load (files stored in Assets/layouts/<name>.ini)
+	void save_layout(const std::string& name);
+	void load_layout(const std::string& name);
+	std::vector<std::string> get_available_layouts();
 }
 
