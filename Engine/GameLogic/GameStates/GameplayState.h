@@ -24,8 +24,8 @@
 
 class GameplayState : public Engine::Scene
 {
-  Engine::Audio::Sound bgm;
-
+  Engine::Audio::Sound bgm_sound;
+  Engine::Audio::ChannelHandle bgm_channel = Engine::Audio::INVALID_CHANNEL;
   // UI entity IDs
   Engine::ECS::EntityID pause_button_id = 0;
   Engine::ECS::EntityID tips_button_id = 0;
@@ -37,8 +37,8 @@ public:
   void load() {
     Engine::Resources::open_level("levels/LevelOneTestingExtra.json");
 
-    bgm = Engine::Resources::load_sound("sounds/BGM/MonomythBGM.wav");
-    Engine::Audio::play_sound(bgm, 0.3f, true); // TODO: get from settings
+    bgm_sound = Engine::Resources::load_sound("sounds/BGM/Level 1/MonomythBGM.wav");
+    
 
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
 
@@ -86,9 +86,12 @@ public:
       .add_to_layer("main_menu_4");
     tips_button_id = tips_btn.get_id();
 
+
   };
 
-  void init() {};
+  void init() {
+    bgm_channel = Engine::Audio::play_sound(bgm_sound, 0.3f, true); // TODO: get from settings
+  };
 
   void update() {
     // UI elements use screen-space coordinates (no camera tracking needed)
