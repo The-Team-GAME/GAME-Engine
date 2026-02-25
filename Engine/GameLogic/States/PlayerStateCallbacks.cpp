@@ -604,14 +604,19 @@ namespace PlayerStateCallbacks
 
     Components::Player* player_comp = entity.get_component<Components::Player>();
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
     assert(player_comp);
     assert(rigid);
+    assert(xform);
 
     player_comp->uppercut.set_timer();
     terminal_vel_placeholder = rigid->y_terminal_velocity;   
 
     rigid->apply_force = false;
     rigid->velocity = Vec2D{ 0, player_comp->smash.speed };
+
+    // push Bro up 32 pixles to account for the animation offset
+    xform->position.y -= 64.f;
   }
 
   inline void uppercut_on_update(ECS::Entity entity)
