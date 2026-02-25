@@ -34,7 +34,7 @@ namespace Components
     Action(f32 dur, f32 cd, f32 spd = 0.f, f32 imp = 0.f)
       : duration(dur), cooldown(cd), speed(spd), impulse(imp) {}
 
-    void set_timer()
+    void set_timer() // starts the countdown for the states that run on a timer
     {
       timer = duration;
     }
