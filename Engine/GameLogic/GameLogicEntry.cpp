@@ -38,6 +38,9 @@
 // Interactable callbacks
 #include "InteractableCallbacks/OldMan.h"
 
+// Upgrade system
+#include "../Engine/UpgradeManager.h"
+
 // Components (needed for collision callbacks)
 #include "Components/GameplayComponent.h"
 #include "Components/EnemyHealthComponent.h"
@@ -88,6 +91,8 @@ static void register_collision_callbacks()
         if (enemy_health->current_hp <= 0) {
           if (state_machine->get_current_state() != "Death") {
             state_machine->change_state("Death");
+            Engine::UpgradeManager::instance().add_points(50);
+            Log::info("Enemy killed! +50 upgrade points (total: {})", Engine::UpgradeManager::instance().get_points());
           }
         }
         else if (state_machine->get_current_state() != "Hit") {
@@ -197,6 +202,85 @@ static void unregister_collision_callbacks()
   Engine::ECS::LayerRegistry::unregister_collision_callback("damage_player", "player");
   Engine::ECS::LayerRegistry::unregister_collision_callback("projectiles", "tilemap_foreground_mid");
   Engine::ECS::LayerRegistry::unregister_collision_callback("projectiles", "player");
+}
+
+// =============================================================================
+// Upgrade stat applicator registrations
+// =============================================================================
+static void register_upgrade_applicators()
+{
+  auto& mgr = Engine::UpgradeManager::instance();
+
+  // "damage" — modifies all 3 attack damages on the Player component
+  mgr.register_stat_applicator("damage",
+    [](Engine::FileIO::UpgradeType type, float value) {
+      auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+      if (!player_entity.is_valid()) {
+        Log::warning("[UpgradeApplicator] No player entity found for 'damage'");
+        return;
+      }
+      auto* player = player_entity.get_component<Components::Player>();
+      if (!player) return;
+
+      if (type == Engine::FileIO::UpgradeType::Flat) {
+        int flat = static_cast<int>(value);
+        player->attack1.damage += flat;
+        player->attack2.damage += flat;
+        player->attack3.damage += flat;
+      }
+      else {
+        player->attack1.damage = static_cast<s32>(static_cast<float>(player->attack1.damage) * value);
+        player->attack2.damage = static_cast<s32>(static_cast<float>(player->attack2.damage) * value);
+        player->attack3.damage = static_cast<s32>(static_cast<float>(player->attack3.damage) * value);
+      }
+      Log::info("[UpgradeApplicator] damage applied — atk1:{} atk2:{} atk3:{}",
+        player->attack1.damage, player->attack2.damage, player->attack3.damage);
+    });
+
+  // "speed" — modifies walk_speed on the Player component
+  mgr.register_stat_applicator("speed",
+    [](Engine::FileIO::UpgradeType type, float value) {
+      auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+      if (!player_entity.is_valid()) {
+        Log::warning("[UpgradeApplicator] No player entity found for 'speed'");
+        return;
+      }
+      auto* player = player_entity.get_component<Components::Player>();
+      if (!player) return;
+
+      if (type == Engine::FileIO::UpgradeType::Flat) {
+        player->walk_speed += value;
+      }
+      else {
+        player->walk_speed *= value;
+      }
+      Log::info("[UpgradeApplicator] speed applied — walk_speed:{}", player->walk_speed);
+    });
+
+  // "health" — modifies max HP on the Health component (and heals the added amount for flat)
+  mgr.register_stat_applicator("health",
+    [](Engine::FileIO::UpgradeType type, float value) {
+      auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+      if (!player_entity.is_valid()) {
+        Log::warning("[UpgradeApplicator] No player entity found for 'health'");
+        return;
+      }
+      auto* health = player_entity.get_component<Components::Health>();
+      if (!health) return;
+
+      if (type == Engine::FileIO::UpgradeType::Flat) {
+        int flat = static_cast<int>(value);
+        health->max += flat;
+        health->heal(flat); // also heal the added amount
+      }
+      else {
+        int old_max = health->max;
+        health->max = static_cast<int>(static_cast<float>(health->max) * value);
+        int gained = health->max - old_max;
+        if (gained > 0) health->heal(gained);
+      }
+      Log::info("[UpgradeApplicator] health applied — HP:{}/{}", health->value, health->max);
+    });
 }
 
 // =============================================================================
@@ -338,6 +422,7 @@ extern "C" __declspec(dllexport) void RegisterGameLogic()
 
   register_collision_callbacks();
   register_function_callbacks();
+  register_upgrade_applicators();
   register_scenes();
   register_systems();
 
@@ -364,6 +449,10 @@ extern "C" __declspec(dllexport) void UnregisterGameLogic()
   // must be freed while the DLL is still loaded.  Static constructors in
   // the next DLL load will re-register all blueprints automatically.
   Engine::StateMachineBlueprintRegistry::instance().clear_all_blueprints();
+
+  // Clear UpgradeManager stat applicators — their lambdas capture code
+  // in this DLL, so must be destroyed before unload.
+  Engine::UpgradeManager::instance().unregister_all_stat_applicators();
 
   // Clear FunctionRegistry — its std::any values hold std::function
   // objects whose destructors reference code in this DLL.

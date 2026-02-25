@@ -1,0 +1,65 @@
+{
+    "base_point_threshold": 100,
+    "rarities": [
+        {
+            "drop_rate": 0.699999988079071,
+            "name": "Common"
+        },
+        {
+            "drop_rate": 0.25,
+            "name": "Rare"
+        },
+        {
+            "drop_rate": 0.05000000074505806,
+            "name": "Epic"
+        }
+    ],
+    "threshold_scaling": 1.5,
+    "upgrades": [
+        {
+            "display_name": "Damage Up",
+            "id": "flat_damage",
+            "max_level": 5,
+            "rarity": "Common",
+            "stat_name": "damage",
+            "type": "Flat",
+            "value": 5.0
+        },
+        {
+            "display_name": "Speed Up",
+            "id": "flat_speed",
+            "max_level": 5,
+            "rarity": "Common",
+            "stat_name": "speed",
+            "type": "Flat",
+            "value": 15.0
+        },
+        {
+            "display_name": "Health Up",
+            "id": "flat_health",
+            "max_level": 3,
+            "rarity": "Rare",
+            "stat_name": "health",
+            "type": "Flat",
+            "value": 20.0
+        },
+        {
+            "display_name": "Damage x1.3",
+            "id": "mult_damage",
+            "max_level": 3,
+            "rarity": "Epic",
+            "stat_name": "damage",
+            "type": "Multiplier",
+            "value": 1.2999999523162842
+        },
+        {
+            "display_name": "Speed x1.2",
+            "id": "mult_speed",
+            "max_level": 3,
+            "rarity": "Rare",
+            "stat_name": "speed",
+            "type": "Multiplier",
+            "value": 1.2000000476837158
+        }
+    ]
+}
