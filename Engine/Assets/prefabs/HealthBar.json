@@ -36,7 +36,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 208.5348358154297,
+                                        "startTime": 0.0,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": null,
@@ -838,7 +838,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 208.5348358154297,
+                                        "startTime": 0.0,
                                         "totalDuration": 0.7000000476837158
                                     },
                                     "collider_data": null,
@@ -1640,7 +1640,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 208.5348358154297,
+                                        "startTime": 0.0,
                                         "totalDuration": 0.7000000476837158
                                     },
                                     "collider_data": null,
@@ -2442,7 +2442,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 208.5348358154297,
+                                        "startTime": 0.0,
                                         "totalDuration": 0.7000000476837158
                                     },
                                     "collider_data": null,
@@ -3244,7 +3244,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 208.5348358154297,
+                                        "startTime": 0.0,
                                         "totalDuration": 0.7000000476837158
                                     },
                                     "collider_data": null,
@@ -4028,7 +4028,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 208.5348358154297,
+                                        "startTime": 0.0,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": null,
@@ -4812,7 +4812,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 208.5348358154297,
+                                        "startTime": 0.0,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": null,
@@ -5596,7 +5596,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 208.5348358154297,
+                                        "startTime": 0.0,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": null,
@@ -6380,7 +6380,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 208.5348358154297,
+                                        "startTime": 0.0,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": null,
@@ -7182,7 +7182,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 208.5348358154297,
+                                        "startTime": 0.0,
                                         "totalDuration": 0.7000000476837158
                                     },
                                     "collider_data": null,
@@ -7966,7 +7966,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 208.5348358154297,
+                                        "startTime": 0.0,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": null,
@@ -9497,7 +9497,7 @@
                         0.10000000149011612
                     ],
                     "is_looping": true,
-                    "startTime": 208.5348358154297,
+                    "startTime": 0.0,
                     "totalDuration": 0.10000000149011612
                 },
                 "type": "Components::Animation"
@@ -9515,11 +9515,15 @@
                     }
                 },
                 "type": "Components::Transform2D"
+            },
+            {
+                "data": {},
+                "type": "Components::UI"
             }
         ],
         "filepath": "prefabs/HealthBar.json",
         "layers": [
-            "default"
+            "main_menu_6"
         ],
         "uuid": "d42be486-9cba-40c4f-a363-62ecdbd1e076"
     },
