@@ -167,11 +167,6 @@
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="GameLogic\GameLogicEntry.cpp" />
-    <ClCompile Include="GameLogic\States\GamerMonkeyStateCallbacks.cpp" />
-    <ClCompile Include="GameLogic\States\LazyMonkeyStateCallbacks.cpp" />
-    <ClCompile Include="GameLogic\States\PlayerStateCallbacks.cpp" />
-    <ClCompile Include="GameLogic\States\SprayCanMonkeyStateCallbacks.cpp" />
-    <ClCompile Include="GameLogic\States\TurretMonkeyStateCallback.cpp" />
     <ClCompile Include="GameLogic\GameStates\BasicState.cpp" />
     <ClCompile Include="GameLogic\GameStates\OptionsState.cpp" />
     <ClCompile Include="GameLogic\GameStates\PauseState.cpp" />
@@ -181,7 +176,7 @@
     <ClCompile Include="GameLogic\States\LazyMonkeyStateCallbacks.cpp" />
     <ClCompile Include="GameLogic\States\PlayerStateCallbacks.cpp" />
     <ClCompile Include="GameLogic\States\SprayCanMonkeyStateCallbacks.cpp" />
-    <ClCompile Include="GameLogic\States\TurretMonkeyStateCallback.cpp" />
+    <ClCompile Include="GameLogic\States\TurretMonkeyStateCallbacks.cpp" />
   </ItemGroup>
   <!-- ============================================================ -->
   <!-- Header Files                                                  -->
@@ -211,12 +206,6 @@
     <ClInclude Include="GameLogic\GameStates\TurretMonkeyTestState.h" />
     <ClInclude Include="GameLogic\GameStates\VictoryState.h" />
     <ClInclude Include="GameLogic\InteractableCallbacks\OldMan.h" />
-    <ClInclude Include="GameLogic\States\GamerMonkeyStateMachine.h" />
-    <ClInclude Include="GameLogic\States\LazyMonkeyStateMachine.h" />
-    <ClInclude Include="GameLogic\States\PlayerStateMachine.h" />
-    <ClInclude Include="GameLogic\States\SprayCanMonkeyStateMachine.h" />
-    <ClInclude Include="GameLogic\States\TurretMonkeyStateCallbacks.h" />
-    <ClInclude Include="GameLogic\States\TurretMonkeyStateMachine.h" />
     <ClInclude Include="GameLogic\Systems\DebugHitboxRenderSystem.h" />
     <ClInclude Include="GameLogic\Systems\EnemyHealthSystem.h" />
     <ClInclude Include="GameLogic\Systems\HealthSystem.h" />
