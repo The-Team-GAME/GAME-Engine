@@ -124,7 +124,7 @@ namespace TilemapPanel {
 
     // Helper: collect tiles in a grid rectangle from ALL layers
     void collect_tiles_in_rect(int min_gx, int min_gy, int max_gx, int max_gy,
-                               std::vector<WorldTileEntry>& out_tiles) {
+      std::vector<WorldTileEntry>& out_tiles) {
       out_tiles.clear();
       for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
         // Determine the layer name of this tilemap entity
@@ -206,7 +206,8 @@ namespace TilemapPanel {
             if (tm) {
               if (entry.tile.is_valid()) {
                 tm->set_tile(entry.grid_x, entry.grid_y, entry.tile);
-              } else {
+              }
+              else {
                 tm->set_tile(entry.grid_x, entry.grid_y, Engine::Graphics::Tile());
               }
             }
@@ -569,19 +570,19 @@ namespace TilemapPanel {
     // === KEYBOARD SHORTCUTS FOR TOOLS ===
     if (enable_tilemap_mode) {
       // Tool selection shortcuts
-      if (Engine::Input::is_pressed(Engine::KeyCode::B)) {
+      if (Engine::Input::is_pressed_raw(Engine::KeyCode::B)) {
         current_tool = ToolMode::Paintbrush;
       }
-      else if (Engine::Input::is_pressed(Engine::KeyCode::U)) {
+      else if (Engine::Input::is_pressed_raw(Engine::KeyCode::U)) {
         current_tool = ToolMode::BoxFill;
       }
-      else if (Engine::Input::is_pressed(Engine::KeyCode::I)) {
+      else if (Engine::Input::is_pressed_raw(Engine::KeyCode::I)) {
         current_tool = ToolMode::Picker;
       }
-      else if (Engine::Input::is_pressed(Engine::KeyCode::D)) {
+      else if (Engine::Input::is_pressed_raw(Engine::KeyCode::D)) {
         current_tool = ToolMode::Eraser;
       }
-      else if (Engine::Input::is_pressed(Engine::KeyCode::M)) {
+      else if (Engine::Input::is_pressed_raw(Engine::KeyCode::M)) {
         current_tool = ToolMode::Select;
         // Clear world selection when switching to select tool
         selected_world_tiles.clear();
@@ -590,12 +591,12 @@ namespace TilemapPanel {
       }
 
       // Toggle dim non-selected layers with L key
-      if (Engine::Input::is_pressed(Engine::KeyCode::L)) {
+      if (Engine::Input::is_pressed_raw(Engine::KeyCode::L)) {
         dim_non_selected_layers = !dim_non_selected_layers;
       }
 
       // Escape clears world tile selection
-      if (current_tool == ToolMode::Select && Engine::Input::is_pressed(Engine::KeyCode::Escape)) {
+      if (current_tool == ToolMode::Select && Engine::Input::is_pressed_raw(Engine::KeyCode::Escape)) {
         selected_world_tiles.clear();
         move_dragging = false;
         select_dragging = false;
@@ -670,8 +671,8 @@ namespace TilemapPanel {
             TilemapManager::world_to_grid(world_pos, click_gx, click_gy);
 
             if (!selected_world_tiles.empty() &&
-                click_gx >= select_min_gx && click_gx <= select_max_gx &&
-                click_gy >= select_min_gy && click_gy <= select_max_gy) {
+              click_gx >= select_min_gx && click_gx <= select_max_gx &&
+              click_gy >= select_min_gy && click_gy <= select_max_gy) {
               // Start move drag
               move_dragging = true;
               move_drag_start_world = world_pos;
