@@ -31,6 +31,7 @@
 #include "EventManager/EventManager.h"
 #include "GUI/ViewportPanel.h"
 #include "HotReloadManager.h"
+#include "Graphics/Renderer.h"
 
 namespace {
   bool gui_enabled = true; // Completely disable ImGui when false (TODO: Hook this up to a setting)
@@ -800,6 +801,23 @@ namespace ImGuiManager {
       // use the theme color as the clear color
       ImVec4 bg_color = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
       Engine::Graphics::clear_screen({ bg_color.x * 0.6f, bg_color.y * 0.6f, bg_color.z * 0.6f, bg_color.w });
+    }
+
+    // When panel viewport mode changes, update virtual resolution for the new render target
+    {
+      static bool prev_panel_mode = Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode;
+      bool cur_panel_mode = Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode;
+      if (cur_panel_mode != prev_panel_mode) {
+        if (!cur_panel_mode) {
+          // Switched to direct window rendering — adapt virtual resolution to window aspect ratio
+          int w = Engine::WindowManager::get_width();
+          int h = Engine::WindowManager::get_height();
+          float aspect = static_cast<float>(w) / static_cast<float>(h > 0 ? h : 1);
+          Engine::Graphics::set_virtual_resolution(900.0f * aspect, 900.0f);
+          Engine::Graphics::resize_post_processing(w, h);
+        }
+        prev_panel_mode = cur_panel_mode;
+      }
     }
 
     // Toggle debug layer with F3 key
