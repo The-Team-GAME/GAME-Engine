@@ -29,11 +29,11 @@ class GameplayState : public Engine::Scene
   Engine::Audio::Sound bgm;
 
   // UI entity IDs
-  Engine::ECS::EntityID pause_button_id  = 0;
-  Engine::ECS::EntityID tips_button_id   = 0;
-  Engine::ECS::EntityID tips_overlay_id  = 0;
-  Engine::ECS::EntityID tips_bg_id       = 0;
-  Engine::ECS::EntityID upgrade_btn_id   = 0;
+  Engine::ECS::EntityID pause_button_id = 0;
+  Engine::ECS::EntityID tips_button_id = 0;
+  Engine::ECS::EntityID tips_overlay_id = 0;
+  Engine::ECS::EntityID tips_bg_id = 0;
+  Engine::ECS::EntityID upgrade_btn_id = 0;
   bool tips_shown = false;
 
 public:
@@ -91,7 +91,7 @@ public:
 
     // Upgrade button — bottom-right corner, 64x64, alpha-hidden until upgrade is available
     auto upg_btn = Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(1552.0f, 852.0f, 0.0f, 64.0f, 64.0f)
+      .add_component<Components::Transform2D>(1552.0f, 852.0f, 0.0f, 64.0f * 2.0f, 64.0f * 2.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/Upgrade.png"))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.0f)  // start invisible
       .add_component<Components::UI>()
@@ -185,9 +185,9 @@ public:
         float uhw = upg_t->scale.x / 2.0f;
         float uhh = upg_t->scale.y / 2.0f;
         if (mouse_pos.x >= upg_t->position.x - uhw &&
-            mouse_pos.x <= upg_t->position.x + uhw &&
-            mouse_pos.y >= upg_t->position.y - uhh &&
-            mouse_pos.y <= upg_t->position.y + uhh) {
+          mouse_pos.x <= upg_t->position.x + uhw &&
+          mouse_pos.y >= upg_t->position.y - uhh &&
+          mouse_pos.y <= upg_t->position.y + uhh) {
           if (Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
             if (!upg_mgr.has_rolled_cards())
               upg_mgr.roll_cards();
