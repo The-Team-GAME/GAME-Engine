@@ -1,14 +1,14 @@
 //-----------------------------------------------------------------------------------
-// file:    PlayerStateCallbacks.cpp
+// file:    PlayerStateCallbacks.h
 // project: Monkey Stole My GPA
 //
-// author:  Chew Shee Yang (50%)
+// author:  Cheng Ming Xian (80%)
 //          Primary author
-//          Cheng Ming Xian (50%)
+//          Chew Shee Yang (20%)
 //          Co-Author
 // 
-// email:   chew.s@digipen.edu
-//          c.mingxian@digipen.edu
+// email:   c.mingxian@digipen.edu
+//          chew.s@digipen.edu
 //
 // brief:   Player state machine callback implementations (serializable)
 //
@@ -22,6 +22,8 @@
 using namespace Engine;
 namespace {
   f32 terminal_vel_placeholder;
+  // This bool default_states is for when we want the player still be able to give inputs (and possibly exit the state) but still keep the animation of the state
+  bool default_state = false;
 }
 namespace PlayerStateCallbacks
 {
@@ -36,10 +38,17 @@ namespace PlayerStateCallbacks
     Components::Flip* flip = entity.get_component<Components::Flip>();
     Components::Heartrate* heartrate = entity.get_component<Components::Heartrate>();
 
+    // Death Condition
     if (heartrate->heartrate >= heartrate->dead)
     {
       state_machine->change_state("Death");
       return;
+    }
+
+    // Checking for falling
+    if (!default_state && !player_rigid->on_ground)
+    {
+      state_machine->change_state("Falling");
     }
 
     // Handling cooldowns
@@ -56,21 +65,24 @@ namespace PlayerStateCallbacks
       player_comp->smash.cd_timer -= Time::get_fixed_dt();
     }
 
-    // Check for attack input
-    // not entering this loop for some reason
-    if (Engine::Input::is_pressed(Engine::KeyCode::K)
+#pragma region Atk Input
+    if (Engine::Input::is_pressed(Engine::KeyCode::K) 
       && player_comp->uppercut.ready())
     {
-      std::cout << "K PRESED \n";
-      state_machine->change_state("Uppercut");
+      // putting this here because it spazes otherwise, i think its smth to do with drawing sequence or smth
+      Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
+      assert(xform);
+      xform->position.y -= 32.f;
+
+      state_machine->change_state("PreUppercut");
       return;
     }
 
     if (Engine::Input::is_pressed(Engine::KeyCode::L)
+      && !player_rigid->on_ground
       && player_comp->smash.ready())
     {
-      std::cout << "updated\n";
-      state_machine->change_state("Smash");
+      state_machine->change_state("PreSmash");
       return;
     }
 
@@ -79,9 +91,10 @@ namespace PlayerStateCallbacks
       state_machine->change_state("Attack1");
       return;
     }
+#pragma endregion
 
-    // Check for movement input
-    if (Input::is_held(KeyCode::ShiftLeft)
+#pragma region Movement Input
+    if (Input::is_held(KeyCode::ShiftLeft) 
       && player_comp->dash.ready())
     {
       state_machine->change_state("Dash");
@@ -108,16 +121,17 @@ namespace PlayerStateCallbacks
         flip->value.x = 1.f;
       }
       player_rigid->force.x += player_comp->walk_speed * flip->value.x;
-      if (state_machine->get_current_state() != "Jumping")
+      if (!default_state)
       {
         state_machine->change_state("Walking");
       }
       return;
     }
-
+#pragma endregion
     // If no valid inputs
-    if (state_machine->get_current_state() != "Jumping")
+    if (!default_state && state_machine->current_state_name != "Idle")
     {
+      std::cout << "current state is: " << state_machine->current_state_name << std::endl;
       state_machine->change_state("Idle");
     }
   }
@@ -128,13 +142,11 @@ namespace PlayerStateCallbacks
   // ========================================================================
 
   inline void idle_on_enter([[maybe_unused]] Engine::ECS::Entity entity) {
-    /* Empty By Design */
     Log::info("Player: Entered Idle state");
   }
 
   inline void idle_on_update(Engine::ECS::Entity entity) {
     take_input(entity);
-    // Log::info("Idle State Update\n");
   }
 #pragma endregion
 
@@ -178,12 +190,11 @@ namespace PlayerStateCallbacks
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(rigid);
     assert(player_comp);
-    if (player_comp)
-    {
-      rigid->is_jumping = true;
-      rigid->on_ground = false;
-      rigid->force.y += player_comp->jump_force;
-    }
+    rigid->is_jumping = true;
+    rigid->on_ground = false;
+    rigid->force.y += player_comp->jump_force;
+
+    default_state = true;
   }
 
   inline void jumping_on_update(Engine::ECS::Entity entity)
@@ -206,7 +217,7 @@ namespace PlayerStateCallbacks
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
     rigid->is_jumping = false;
-    //Log::info("Player: Exiting Jumping state");
+    default_state = false;
   }
 #pragma endregion
 
@@ -217,7 +228,8 @@ namespace PlayerStateCallbacks
 
   inline void falling_on_enter([[maybe_unused]] ECS::Entity entity)
   {
-    Log::info("Player: Entered Falling tate");
+    Log::info("Player: Entered Falling state");
+    default_state = true;
   }
 
   inline void falling_on_update(ECS::Entity entity)
@@ -230,11 +242,12 @@ namespace PlayerStateCallbacks
       assert(sm);
       sm->change_state("Idle");
     }
+    take_input(entity);
   }
 
   inline void falling_on_exit([[maybe_unused]] ECS::Entity entity)
   {
-    //Log::info("Player: Exited Falling state");
+    default_state = false;
   }
 #pragma endregion
 
@@ -595,6 +608,41 @@ namespace PlayerStateCallbacks
 
 #pragma region uppercut
   // ========================================================================
+  // Pre Uppercut State Callbacks
+  // ========================================================================
+
+  inline void pre_uppercut_on_enter(ECS::Entity entity)
+  {
+    Log::info("Player: Entered Pre Uppercut state");
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(player_comp);
+    player_comp->uppercut.reset_cooldown();
+    player_comp->damage_immune = true;
+
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    assert(rigid);
+    rigid->apply_force = false;
+    rigid->velocity.zero();
+  }
+
+  inline void pre_uppercut_on_update(ECS::Entity entity)
+  {
+    Components::Animation* animation = entity.get_component<Components::Animation>();
+    assert(animation);
+    if (animation->has_ended())
+    {
+      Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
+      assert(state_machine);
+      state_machine->change_state("Uppercut");
+    }
+  }
+
+  inline void pre_uppercut_on_exit([[maybe_unused]] ECS::Entity entity)
+  {
+    // Empty as designed
+  }
+
+  // ========================================================================
   // Uppercut State Callbacks
   // ========================================================================
 
@@ -603,55 +651,142 @@ namespace PlayerStateCallbacks
     Log::info("Player: Entered Uppercut state");
 
     Components::Player* player_comp = entity.get_component<Components::Player>();
-    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
-    Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
     assert(player_comp);
-    assert(rigid);
-    assert(xform);
-
     player_comp->uppercut.set_timer();
+
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    assert(rigid);
     terminal_vel_placeholder = rigid->y_terminal_velocity;
-
-    rigid->apply_force = false;
-    rigid->velocity = Vec2D{ 0, player_comp->smash.speed };
-
-    // push Bro up 32 pixles to account for the animation offset
-    xform->position.y -= 64.f;
+    rigid->y_terminal_velocity = player_comp->uppercut.speed;
+    rigid->velocity = Vec2D{ 0, -player_comp->uppercut.speed };
   }
 
   inline void uppercut_on_update(ECS::Entity entity)
   {
-    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     Components::Player* player_comp = entity.get_component<Components::Player>();
-    assert(rigid);
     assert(player_comp);
 
     if (player_comp->uppercut.timer_end())
     {
       Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
       assert(sm);
-      sm->change_state("Idle");
+      sm->change_state("PostUppercut");
     }
-    rigid->velocity.y = -player_comp->uppercut.speed;
     player_comp->uppercut.timer -= Time::get_fixed_dt();
   }
 
   inline void uppercut_on_exit(ECS::Entity entity)
   {
-    Log::info("Player: Exited Uppercut state");
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    assert(rigid);
+    rigid->y_terminal_velocity = terminal_vel_placeholder;
+  }
+
+  // ========================================================================
+  // Post Uppercut State Callbacks (Used to complete the uppercut animation)
+  // ========================================================================
+  // possibly the hangtime part of the state as well
+  inline void post_uppercut_on_enter([[maybe_unused]] ECS::Entity entity)
+  {
+    Log::info("Player: Entered Post Uppercut state");
+
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    assert(rigid);
+    rigid->apply_force = false;
+    rigid->velocity = rigid->velocity * 0.05f;
+  }
+
+  inline void post_uppercut_on_update(ECS::Entity entity)
+  {
+    Components::Animation* animation = entity.get_component<Components::Animation>();
+    assert(animation);
+    if (animation->has_ended())
+    {
+      Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
+      assert(state_machine);
+      state_machine->change_state("UppercutFalling");
+    }
+  }
+
+  inline void post_uppercut_on_exit([[maybe_unused]] ECS::Entity entity)
+  {
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    assert(rigid);
+    rigid->apply_force = true; // renabling gravity
+
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
+    player_comp->damage_immune = false;
+  }
+
+  // ========================================================================
+  // Uppercut Falling State Callbacks
+  // ========================================================================
+  // The falling part of the uppercut
+  inline void uppercut_falling_on_enter([[maybe_unused]] ECS::Entity entity)
+  {
+    Log::info("Player: Entered Post Uppercut state");
+    default_state = true;
+  }
+
+  inline void uppercut_falling_on_update(ECS::Entity entity)
+  {
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
+    if (rigid->on_ground)
+    {
+      Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
+      assert(sm);
+      sm->change_state("Idle");
+    }
+    take_input(entity);
+  }
 
-    player_comp->uppercut.reset_cooldown();
-
-    rigid->y_terminal_velocity = terminal_vel_placeholder;
-    rigid->apply_force = true;
+  inline void uppercut_falling_on_exit([[maybe_unused]] ECS::Entity entity)
+  {
+    default_state = false;
+    Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
+    assert(xform);
+    xform->position.y += 32.f;
   }
 #pragma endregion
 
 #pragma region smash
+  // ========================================================================
+  // Pre Smash State Callbacks
+  // ========================================================================
+
+  inline void pre_smash_on_enter(ECS::Entity entity)
+  {
+    Log::info("Player: Entered Pre Smash state");
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(player_comp);
+    player_comp->smash.reset_cooldown();
+    player_comp->damage_immune = true;
+
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    assert(rigid);
+    rigid->apply_force = false;
+    rigid->velocity = rigid->velocity * 0.05f;
+  }
+
+  inline void pre_smash_on_update(ECS::Entity entity)
+  {
+    Components::Animation* animation = entity.get_component<Components::Animation>();
+    assert(animation);
+    if (animation->has_ended())
+    {
+      Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
+      assert(state_machine);
+      state_machine->change_state("Smash");
+    }
+  }
+
+  inline void pre_smash_on_exit([[maybe_unused]]ECS::Entity entity)
+  {
+    // Empty as designed
+  }
+
   // ========================================================================
   // Smash State Callbacks
   // ========================================================================
@@ -659,41 +794,59 @@ namespace PlayerStateCallbacks
   inline void smash_on_enter(ECS::Entity entity)
   {
     Log::info("Player: Entered Smash state");
-
     Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(player_comp);
-    player_comp->smash.set_timer();
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
     terminal_vel_placeholder = rigid->y_terminal_velocity;
-
-    rigid->apply_force = false;
     rigid->velocity = Vec2D{ 0, player_comp->smash.speed };
   }
 
   inline void smash_on_update(ECS::Entity entity)
   {
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
-    Components::Player* player_comp = entity.get_component<Components::Player>();
     assert(rigid);
-    assert(player_comp);
     if (rigid->on_ground)
     {
       Components::StateMachine* sm = entity.get_component<Components::StateMachine>();
       assert(sm);
-      sm->change_state("Idle");
+      sm->change_state("PostSmash");
     }
   }
 
-  inline void smash_on_exit(ECS::Entity entity)
+  inline void smash_on_exit([[maybe_unused]] ECS::Entity entity)
   {
-    Log::info("Player: Exited Smash state");
-    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
-    Components::Player* player_comp = entity.get_component<Components::Player>();
-    assert(rigid);
-    assert(player_comp);
+    // Empty as designed
+  }  
+  
+  // ========================================================================
+  // Post Smash State Callbacks
+  // ========================================================================
 
-    player_comp->smash.reset_cooldown();
+  inline void post_smash_on_enter([[maybe_unused]] ECS::Entity entity)
+  {
+    Log::info("Player: Entered Post Smash state");
+  }
+
+  inline void post_smash_on_update(ECS::Entity entity)
+  {
+    Components::Animation* animation = entity.get_component<Components::Animation>();
+    if (animation && animation->has_ended()) 
+    {
+      Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
+      assert(state_machine);
+      state_machine->change_state("Idle");
+    }
+  }
+
+  inline void post_smash_on_exit(ECS::Entity entity)
+  {
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(player_comp);
+    player_comp->damage_immune = false;
+
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    assert(rigid);
     rigid->y_terminal_velocity = terminal_vel_placeholder;
     rigid->apply_force = true;
   }
@@ -740,9 +893,19 @@ REGISTER_STATE_MACHINE_BLUEPRINT(Player, "Idle",
   STATE("Jumping", PlayerStateCallbacks::jumping_on_enter, PlayerStateCallbacks::jumping_on_update, PlayerStateCallbacks::jumping_on_exit)
   STATE("Falling", PlayerStateCallbacks::falling_on_enter, PlayerStateCallbacks::falling_on_update, PlayerStateCallbacks::falling_on_exit)
   STATE("Dash", PlayerStateCallbacks::dash_on_enter, PlayerStateCallbacks::dash_on_update, PlayerStateCallbacks::dash_on_exit)
+
   STATE("Attack1", PlayerStateCallbacks::attack1_on_enter, PlayerStateCallbacks::attack1_on_update, NO_CALLBACK)
-  STATE("Attack2", PlayerStateCallbacks::attack2_on_enter, PlayerStateCallbacks::attack2_on_update, NO_CALLBACK)
+  STATE("Attack2", PlayerStateCallbacks::attack2_on_enter, PlayerStateCallbacks::attack2_on_update, NO_CALLBACK)  
+  STATE("Attack3", PlayerStateCallbacks::attack3_on_enter, PlayerStateCallbacks::attack3_on_update, NO_CALLBACK)
+
+  STATE("PreUppercut", PlayerStateCallbacks::pre_uppercut_on_enter, PlayerStateCallbacks::pre_uppercut_on_update, PlayerStateCallbacks::pre_uppercut_on_exit)
   STATE("Uppercut", PlayerStateCallbacks::uppercut_on_enter, PlayerStateCallbacks::uppercut_on_update, PlayerStateCallbacks::uppercut_on_exit)
-  STATE("Smash", PlayerStateCallbacks::smash_on_enter, PlayerStateCallbacks::smash_on_update, PlayerStateCallbacks::smash_on_exit)
+  STATE("PostUppercut", PlayerStateCallbacks::post_uppercut_on_enter, PlayerStateCallbacks::post_uppercut_on_update, PlayerStateCallbacks::post_uppercut_on_exit)
+  STATE("UppercutFalling", PlayerStateCallbacks::uppercut_falling_on_enter, PlayerStateCallbacks::uppercut_falling_on_update, PlayerStateCallbacks::uppercut_falling_on_exit)
+
+  STATE("PreSmash", PlayerStateCallbacks::pre_smash_on_enter, PlayerStateCallbacks::pre_smash_on_update, PlayerStateCallbacks::pre_smash_on_exit)
+  STATE("Smash", PlayerStateCallbacks::smash_on_enter, PlayerStateCallbacks::smash_on_update, PlayerStateCallbacks::smash_on_exit)  
+  STATE("PostSmash", PlayerStateCallbacks::post_smash_on_enter, PlayerStateCallbacks::post_smash_on_update, PlayerStateCallbacks::post_smash_on_exit)
+
   STATE("Death", PlayerStateCallbacks::death_on_enter, PlayerStateCallbacks::death_on_update, PlayerStateCallbacks::death_on_exit)
 )

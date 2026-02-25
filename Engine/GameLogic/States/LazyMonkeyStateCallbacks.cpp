@@ -230,11 +230,25 @@ namespace LazyMonkeyStateCallbacks
     if (rigid && flip && lazy_monkey && rigid->on_ground) {
       // Throw monkey forward based on facing direction
       rigid->velocity.x = (flip->value.x > 0 ? lazy_monkey->leap_speed : -lazy_monkey->leap_speed);
+
       // Add upward velocity for a leap effect
-      rigid->velocity.y = -lazy_monkey->leap_height; // Negative is up
+      //rigid->velocity.y = -lazy_monkey->leap_height; // Negative is up
     }
 
-    // Knockback direction is now handled by update_contact_knockback_direction in update
+    // Ensure the monkey is treated as an active damaging hitbox while attacking
+    if (lazy_monkey) {
+      if (!entity.has_component<Components::Attack>()) {
+        entity.add_component<Components::Attack>(lazy_monkey->damage);
+      }
+
+      // Make sure knockback vector points correctly; update_contact_knockback_direction
+      // will keep this in sync each frame.
+      update_contact_knockback_direction(entity);
+
+      // Add to damage_player layer so collisions with the player trigger damage callbacks.
+      // We keep the existing enemy layer so ground collisions still work.
+      entity.add_to_layer("damage_player");
+    }
 
     Log::info("Lazy Monkey: Entered Attacking state");
   }
@@ -246,6 +260,37 @@ namespace LazyMonkeyStateCallbacks
 
     auto* state_machine = entity.get_component<Components::StateMachine>();
     auto* animation = entity.get_component<Components::Animation>();
+
+    // Prevent the lazy monkey from passing through the player while leaping
+    auto* rigid = entity.get_component<Components::RigidBody>();
+    auto* monkey_collider = entity.get_component<Components::BoxCollider>();
+    auto* monkey_transform = entity.get_component<Components::Transform2D>();
+
+    if (rigid && monkey_collider && monkey_transform) {
+      auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
+      if (player_entity.is_valid()) {
+        auto* player_collider = player_entity.get_component<Components::BoxCollider>();
+        if (player_collider) {
+          // Use simple AABB overlap to detect contact with the player
+          if (monkey_collider->aabb.intersects(player_collider->aabb)) {
+            // Compute how far to move the monkey horizontally so its collider
+            // just touches the player's collider instead of overlapping.
+            float dx = player_collider->aabb.pos.x - monkey_collider->aabb.pos.x;
+            if (dx != 0.0f) {
+              float sign = (dx > 0.0f ? 1.0f : -1.0f);
+              float target_center_x = player_collider->aabb.pos.x -
+                sign * (player_collider->aabb.half_width + monkey_collider->aabb.half_width);
+              float delta_x = target_center_x - monkey_collider->aabb.pos.x;
+
+              monkey_transform->position.x += delta_x;
+              monkey_collider->aabb.pos.x += delta_x;
+              // Stop horizontal motion once we've collided with the player
+              rigid->velocity.x = 0.0f;
+            }
+          }
+        }
+      }
+    }
 
     // Transition back to chasing when attack animation completes
     if (animation && animation->has_ended()) {
@@ -259,6 +304,9 @@ namespace LazyMonkeyStateCallbacks
       // Update last attack time for cooldown
       lazy_monkey->last_attack_time = Engine::Time::get_time();
     }
+
+    // Stop treating the monkey as an active damage hitbox
+    entity.remove_from_layer("damage_player");
   }
 
   //// ========================================================================
