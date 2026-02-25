@@ -24,6 +24,12 @@
 
 namespace Engine
 {
+  namespace Systems {
+    void add_camera_shake(f32 amplitude, f32 duration) {
+      CameraSystem::add_shake(amplitude, duration);
+    }
+  }
+
   namespace SceneManager
   {
     // Variable definitions - REQUIRED for extern variables

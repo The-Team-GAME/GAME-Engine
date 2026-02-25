@@ -28,11 +28,16 @@
 #include "../Easing.h"
 #include "../FunctionRegistry.h"
 #include "../Time.h"
+#include "../Random.h"
 
 namespace Engine
 {
   namespace Systems
   {
+    // Engine-exported bridge to ensure shake requests from external modules
+    // (e.g., GameLogic DLL) hit the active CameraSystem instance.
+    ENGINE_API void add_camera_shake(f32 amplitude, f32 duration);
+
     // Helper: compute parallax draw position (center-anchored).
     // When the camera centers on the entity, it appears at its Transform2D position.
     // As the camera moves away the entity shifts at scroll_factor speed.
@@ -357,6 +362,25 @@ namespace Engine
     class CameraSystem : public Engine::ECS::System {
     private:
       inline static Engine::Graphics::Camera camera{}; // this is the camera that will be sent to the renderer
+      inline static f32 shake_time_remaining = 0.0f;
+      inline static f32 shake_duration = 0.0f;
+      inline static f32 shake_amplitude = 0.0f;
+      inline static f32 shake_trauma = 0.0f;                // 0..1 intensity accumulator
+      inline static f32 shake_sample_timer = 0.0f;          // timer for high-frequency sample changes
+      inline static Math::Vec2D shake_sample = { 0.0f, 0.0f }; // current sampled direction
+
+      inline static bool has_active_camera_entity() {
+        bool has_active_camera = false;
+        Engine::ECS::for_each_entity_with<Components::Camera>(
+          [&has_active_camera](Engine::ECS::Entity entity) {
+            auto* cam = entity.get_component<Components::Camera>();
+            if (cam && cam->is_active) {
+              has_active_camera = true;
+            }
+          }
+        );
+        return has_active_camera;
+      }
 
       inline f32 Lerp(f32 a, f32 b, f32 t)
       {
@@ -374,12 +398,16 @@ namespace Engine
       }
 
       void update() override {
+        const f32 dt = Time::get_fixed_dt();
+        bool has_active_camera = false;
+
         Engine::ECS::for_each_entity_with<Components::Camera, Components::Transform2D>(
-          [this](Engine::ECS::Entity entity) {
+          [this, dt, &has_active_camera](Engine::ECS::Entity entity) {
             auto* cam = entity.get_component<Components::Camera>();
             auto* trans = entity.get_component<Components::Transform2D>();
 
             if (!cam || !cam->is_active) return;
+            has_active_camera = true;
 
             // 1. Safe Parent & Flip Retrieval
             f32 look_dir = 0.0f;
@@ -392,8 +420,6 @@ namespace Engine
                 }
               }
             }
-
-            const f32 dt = Time::get_fixed_dt();
 
             // 2. Look-ahead Calculation (smooth camera leading in movement direction)
             Vec2D desired_look_ahead = { look_dir * cam->look_ahead_distance, 0.0f };
@@ -463,7 +489,61 @@ namespace Engine
             }
           });
 
-        Engine::Graphics::set_camera(camera);
+        Engine::Graphics::Camera render_camera = camera;
+
+        if (shake_time_remaining > 0.0f) {
+          shake_time_remaining = std::max(0.0f, shake_time_remaining - dt);
+
+          // Celeste-like "trauma" decay: fast and punchy at start, quickly calming down.
+          const f32 trauma_decay_rate = (shake_duration > 0.0f) ? (1.8f / shake_duration) : 8.0f;
+          shake_trauma = std::max(0.0f, shake_trauma - trauma_decay_rate * dt);
+
+          // High-frequency sample updates for a crunchy quake feel.
+          shake_sample_timer -= dt;
+          if (shake_sample_timer <= 0.0f) {
+            shake_sample_timer = 1.0f / 95.0f; // ~95Hz sample changes
+
+            f32 sx = Engine::Random::random_range(-1.0f, 1.0f);
+            f32 sy = Engine::Random::random_range(-1.0f, 1.0f);
+            f32 mag = std::sqrt(sx * sx + sy * sy);
+            if (mag > 0.001f) {
+              sx /= mag;
+              sy /= mag;
+            }
+            else {
+              sx = 1.0f;
+              sy = 0.0f;
+            }
+            shake_sample = Math::Vec2D(sx, sy);
+          }
+
+          const f32 quake = shake_trauma * shake_trauma; // Non-linear falloff (classic trauma shape)
+          const f32 max_offset = shake_amplitude * quake;
+
+          // Slightly stronger horizontal motion reads better in platformers.
+          render_camera.position.x += shake_sample.x * max_offset;
+          render_camera.position.y += shake_sample.y * (max_offset * 0.80f);
+        }
+
+        Engine::Graphics::set_camera(render_camera);
+      }
+
+      static void add_shake(f32 amplitude, f32 duration) {
+        if (amplitude <= 0.0f || duration <= 0.0f) {
+          Log::warning("camera shake rejected: invalid params amplitude={} duration={}", amplitude, duration);
+          return;
+        }
+
+        Log::info("camera shake accepted: amplitude={} duration={}", amplitude, duration);
+
+        // Convert hit into trauma amount, then accumulate for repeated hits.
+        f32 trauma_from_hit = std::max(amplitude / 55.0f, duration * 0.6f);
+        trauma_from_hit = std::min(1.0f, trauma_from_hit);
+        shake_trauma = std::min(1.0f, shake_trauma + trauma_from_hit);
+
+        shake_amplitude = std::max(shake_amplitude, amplitude);
+        shake_duration = std::max(shake_duration, duration);
+        shake_time_remaining = std::max(shake_time_remaining, duration);
       }
 
       static void unactivate_all_cameras() {
@@ -482,6 +562,12 @@ namespace Engine
         camera.position = Math::Vec2D(0.0f, 0.0f);
         camera.rotation = 0.0f;
         camera.zoom = 1.0f;
+        shake_time_remaining = 0.0f;
+        shake_duration = 0.0f;
+        shake_amplitude = 0.0f;
+        shake_trauma = 0.0f;
+        shake_sample_timer = 0.0f;
+        shake_sample = { 0.0f, 0.0f };
         Engine::Graphics::set_camera(camera);
       }
 
@@ -505,6 +591,7 @@ namespace Engine
       void update() override {
         // Get current mouse position if in viewport
         auto mouse_pos_opt = Engine::Input::get_mouse_position_if_in_viewport();
+        bool camera_modified = false;
 
         // Get scroll offset first (to consume it)
         glm::vec2 scroll = Engine::Input::get_scroll_offset();
@@ -543,6 +630,7 @@ namespace Engine
           camera.zoom += zoom_delta;
           // Clamp zoom to reasonable values
           camera.zoom = glm::clamp(camera.zoom, 0.1f, 10.0f);
+          camera_modified = true;
         }
 
         // Perform camera drag with middle mouse button
@@ -558,10 +646,14 @@ namespace Engine
           // Also account for camera zoom
           camera.position.x -= delta.x / camera.zoom;
           camera.position.y -= delta.y / camera.zoom;
+          camera_modified = true;
         }
 
-        // Update the camera in the graphics system
-        Engine::Graphics::set_camera(camera);
+        // Only push free-camera changes when the user actually modified camera controls.
+        // Otherwise CameraSystem owns the rendered camera (including shake).
+        if (camera_modified) {
+          Engine::Graphics::set_camera(camera);
+        }
       }
     };
 
