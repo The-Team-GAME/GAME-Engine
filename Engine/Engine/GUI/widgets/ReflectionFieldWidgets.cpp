@@ -621,11 +621,11 @@ namespace ImGuiWidgets {
             field_obj["current_state_name"] = ReflectionLibrary::GenericValue(sname);
             local_modified = true;
 
-            // Also apply the state change to the live component at runtime
+            // Also apply the state change to the live component immediately
             if (entity.is_valid() && entity.has_component<Components::StateMachine>()) {
               auto* sm = entity.get_component<Components::StateMachine>();
               if (sm && sm->has_state(sname)) {
-                sm->change_state(sname);
+                sm->set_state_immediate(sname, entity);
               }
             }
           }
