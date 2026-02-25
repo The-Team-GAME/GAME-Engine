@@ -69,8 +69,7 @@ namespace PlayerStateCallbacks
     if (Engine::Input::is_pressed(Engine::KeyCode::K) 
       && player_comp->uppercut.ready())
     {
-      std::cout << "K PRESED \n";
-      state_machine->change_state("Uppercut");
+      state_machine->change_state("PreUppercut");
       return;
     }
 
@@ -78,7 +77,6 @@ namespace PlayerStateCallbacks
       && !player_rigid->on_ground
       && player_comp->smash.ready())
     {
-      std::cout << "updated\n";
       state_machine->change_state("PreSmash");
       return;
     }
@@ -605,6 +603,45 @@ namespace PlayerStateCallbacks
 
 #pragma region uppercut
   // ========================================================================
+  // Pre Uppercut State Callbacks
+  // ========================================================================
+
+  inline void pre_uppercut_on_enter(ECS::Entity entity)
+  {
+    Log::info("Player: Entered Pre Uppercut state");
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(player_comp);
+    player_comp->uppercut.reset_cooldown();
+    player_comp->damage_immune = true;
+
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    assert(rigid);
+    rigid->apply_force = false;
+    rigid->velocity.zero();
+
+    Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
+    assert(xform);
+    xform->position.y -= 128.f;
+  }
+
+  inline void pre_uppercut_on_update(ECS::Entity entity)
+  {
+    Components::Animation* animation = entity.get_component<Components::Animation>();
+    assert(animation);
+    if (animation->has_ended())
+    {
+      Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
+      assert(state_machine);
+      state_machine->change_state("Uppercut");
+    }
+  }
+
+  inline void pre_uppercut_on_exit([[maybe_unused]] ECS::Entity entity)
+  {
+    // Empty as designed
+  }
+
+  // ========================================================================
   // Uppercut State Callbacks
   // ========================================================================
 
@@ -613,27 +650,19 @@ namespace PlayerStateCallbacks
     Log::info("Player: Entered Uppercut state");
 
     Components::Player* player_comp = entity.get_component<Components::Player>();
-    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
-    Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
     assert(player_comp);
-    assert(rigid);
-    assert(xform);
-
     player_comp->uppercut.set_timer();
+
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    assert(rigid);
     terminal_vel_placeholder = rigid->y_terminal_velocity;
-
-    rigid->apply_force = false;
-    rigid->velocity = Vec2D{ 0, player_comp->smash.speed };
-
-    // push Bro up 32 pixles to account for the animation offset
-    xform->position.y -= 128.f;
+    rigid->y_terminal_velocity = player_comp->uppercut.speed;
+    rigid->velocity = Vec2D{ 0, -player_comp->uppercut.speed };
   }
 
   inline void uppercut_on_update(ECS::Entity entity)
   {
-    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     Components::Player* player_comp = entity.get_component<Components::Player>();
-    assert(rigid);
     assert(player_comp);
 
     if (player_comp->uppercut.timer_end())
@@ -642,21 +671,14 @@ namespace PlayerStateCallbacks
       assert(sm);
       sm->change_state("PostUppercut");
     }
-    rigid->velocity.y = -player_comp->uppercut.speed;
     player_comp->uppercut.timer -= Time::get_fixed_dt();
   }
 
   inline void uppercut_on_exit(ECS::Entity entity)
   {
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
-    Components::Player* player_comp = entity.get_component<Components::Player>();
-    assert(player_comp);
     assert(rigid);
-
-    player_comp->uppercut.reset_cooldown();
-
     rigid->y_terminal_velocity = terminal_vel_placeholder;
-    rigid->apply_force = true;
   }
 
   // ========================================================================
@@ -666,10 +688,47 @@ namespace PlayerStateCallbacks
   inline void post_uppercut_on_enter([[maybe_unused]] ECS::Entity entity)
   {
     Log::info("Player: Entered Post Uppercut state");
-    default_state = true;
+
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    assert(rigid);
+    rigid->apply_force = false;
+    rigid->velocity = rigid->velocity * 0.05f;
   }
 
   inline void post_uppercut_on_update(ECS::Entity entity)
+  {
+    Components::Animation* animation = entity.get_component<Components::Animation>();
+    assert(animation);
+    if (animation->has_ended())
+    {
+      Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
+      assert(state_machine);
+      state_machine->change_state("UppercutFalling");
+    }
+  }
+
+  inline void post_uppercut_on_exit([[maybe_unused]] ECS::Entity entity)
+  {
+    Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
+    assert(rigid);
+    rigid->apply_force = true; // renabling gravity
+
+    Components::Player* player_comp = entity.get_component<Components::Player>();
+    assert(player_comp);
+    player_comp->damage_immune = false;
+  }
+
+  // ========================================================================
+  // Uppercut Falling State Callbacks
+  // ========================================================================
+  // The falling part of the uppercut
+  inline void uppercut_falling_on_enter([[maybe_unused]] ECS::Entity entity)
+  {
+    Log::info("Player: Entered Post Uppercut state");
+    default_state = true;
+  }
+
+  inline void uppercut_falling_on_update(ECS::Entity entity)
   {
     Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
     assert(rigid);
@@ -682,7 +741,7 @@ namespace PlayerStateCallbacks
     take_input(entity);
   }
 
-  inline void post_uppercut_on_exit([[maybe_unused]] ECS::Entity entity)
+  inline void uppercut_falling_on_exit([[maybe_unused]] ECS::Entity entity)
   {
     default_state = false;
   }
@@ -830,13 +889,19 @@ REGISTER_STATE_MACHINE_BLUEPRINT(Player, "Idle",
   STATE("Jumping", PlayerStateCallbacks::jumping_on_enter, PlayerStateCallbacks::jumping_on_update, PlayerStateCallbacks::jumping_on_exit)
   STATE("Falling", PlayerStateCallbacks::falling_on_enter, PlayerStateCallbacks::falling_on_update, PlayerStateCallbacks::falling_on_exit)
   STATE("Dash", PlayerStateCallbacks::dash_on_enter, PlayerStateCallbacks::dash_on_update, PlayerStateCallbacks::dash_on_exit)
+
   STATE("Attack1", PlayerStateCallbacks::attack1_on_enter, PlayerStateCallbacks::attack1_on_update, NO_CALLBACK)
   STATE("Attack2", PlayerStateCallbacks::attack2_on_enter, PlayerStateCallbacks::attack2_on_update, NO_CALLBACK)  
   STATE("Attack3", PlayerStateCallbacks::attack3_on_enter, PlayerStateCallbacks::attack3_on_update, NO_CALLBACK)
+
+  STATE("PreUppercut", PlayerStateCallbacks::pre_uppercut_on_enter, PlayerStateCallbacks::pre_uppercut_on_update, PlayerStateCallbacks::pre_uppercut_on_exit)
   STATE("Uppercut", PlayerStateCallbacks::uppercut_on_enter, PlayerStateCallbacks::uppercut_on_update, PlayerStateCallbacks::uppercut_on_exit)
   STATE("PostUppercut", PlayerStateCallbacks::post_uppercut_on_enter, PlayerStateCallbacks::post_uppercut_on_update, PlayerStateCallbacks::post_uppercut_on_exit)
+  STATE("UppercutFalling", PlayerStateCallbacks::uppercut_falling_on_enter, PlayerStateCallbacks::uppercut_falling_on_update, PlayerStateCallbacks::uppercut_falling_on_exit)
+
   STATE("PreSmash", PlayerStateCallbacks::pre_smash_on_enter, PlayerStateCallbacks::pre_smash_on_update, PlayerStateCallbacks::pre_smash_on_exit)
   STATE("Smash", PlayerStateCallbacks::smash_on_enter, PlayerStateCallbacks::smash_on_update, PlayerStateCallbacks::smash_on_exit)  
   STATE("PostSmash", PlayerStateCallbacks::post_smash_on_enter, PlayerStateCallbacks::post_smash_on_update, PlayerStateCallbacks::post_smash_on_exit)
+
   STATE("Death", PlayerStateCallbacks::death_on_enter, PlayerStateCallbacks::death_on_update, PlayerStateCallbacks::death_on_exit)
 )
