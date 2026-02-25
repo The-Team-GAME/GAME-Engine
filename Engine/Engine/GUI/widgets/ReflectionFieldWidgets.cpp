@@ -611,7 +611,7 @@ namespace ImGuiWidgets {
         current_state = csn_it->second.getString();
       }
 
-      ImGui::Text("Initial State:");
+      ImGui::Text("Current State:");
       ImGui::SameLine();
       const char* state_preview = current_state.empty() ? "(not set)" : current_state.c_str();
       if (ImGui::BeginCombo("##initial_state", state_preview)) {
@@ -620,6 +620,14 @@ namespace ImGuiWidgets {
           if (ImGui::Selectable(sname.c_str(), is_selected)) {
             field_obj["current_state_name"] = ReflectionLibrary::GenericValue(sname);
             local_modified = true;
+
+            // Also apply the state change to the live component at runtime
+            if (entity.is_valid() && entity.has_component<Components::StateMachine>()) {
+              auto* sm = entity.get_component<Components::StateMachine>();
+              if (sm && sm->has_state(sname)) {
+                sm->change_state(sname);
+              }
+            }
           }
           if (is_selected) ImGui::SetItemDefaultFocus();
         }
