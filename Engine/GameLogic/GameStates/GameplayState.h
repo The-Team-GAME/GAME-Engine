@@ -37,7 +37,7 @@ public:
   void load() {
     Engine::Resources::open_level("levels/LevelOneTestingExtra.json");
 
-    bgm = Engine::Resources::load_sound("sounds/BGM/Level 1 BGM.wav");
+    bgm = Engine::Resources::load_sound("sounds/BGM/MonomythBGM.wav");
     Engine::Audio::play_sound(bgm, 0.3f, true); // TODO: get from settings
 
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
