@@ -25,6 +25,7 @@
 #include "../UndoManager/UndoManager.h"
 #include "../ProjectSaveManager.h"
 #include "../LevelManager.h"
+#include "../FileIO/Settings.h"
 
 
 namespace Engine {
@@ -34,6 +35,15 @@ namespace Engine {
       Engine::EventManager::add_event_listener<Engine::Events::WindowResizeEvent>([](const Engine::Events::WindowResizeEvent& event)
         {
           Engine::Graphics::set_viewport({ 0, 0, event.width, event.height });
+
+          // When rendering directly to the window (panel viewport disabled),
+          // update virtual resolution to match the window's aspect ratio so
+          // the game doesn't stretch on non-16:9 screens / fullscreen.
+          if (!Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode) {
+            float aspect = static_cast<float>(event.width) / static_cast<float>(event.height > 0 ? event.height : 1);
+            Engine::Graphics::set_virtual_resolution(900.0f * aspect, 900.0f);
+            Engine::Graphics::resize_post_processing(event.width, event.height);
+          }
         }
       );
 
