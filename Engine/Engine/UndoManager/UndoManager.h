@@ -99,7 +99,9 @@ namespace Engine {
       }
     }
 
-    inline void shutdown() {
+    // Clears all undo/redo history. Call during shutdown to prevent
+    // crashes from captured Prefab objects outliving component vtables.
+    inline void clear() {
       undo_stack.clear();
       redo_stack.clear();
     }

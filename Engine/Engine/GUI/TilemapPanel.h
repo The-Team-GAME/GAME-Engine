@@ -172,4 +172,29 @@ namespace TilemapPanel {
   True if dimming is enabled, false otherwise.
   ==================================================================================*/
   bool is_dim_non_selected_layers_enabled();
+
+  /*=================================================================================
+  Function Brief:
+  Returns whether the tile selection tool is currently active with selected tiles.
+  Used by Core.cpp to route Ctrl+C / Ctrl+V to tilemap copy/paste instead of
+  entity copy/paste.
+
+  Returns:
+  True if tilemap mode is enabled and tiles are currently selected in the world.
+  ==================================================================================*/
+  bool has_world_tile_selection();
+
+  /*=================================================================================
+  Function Brief:
+  Copies the currently selected world tiles to an internal clipboard.
+  Preserves layer information so tiles paste back to their original layers.
+  ==================================================================================*/
+  void copy_selected_tiles();
+
+  /*=================================================================================
+  Function Brief:
+  Pastes tiles from the internal clipboard at the current mouse world position.
+  Tiles are placed back on their original layers. Supports undo/redo.
+  ==================================================================================*/
+  void paste_tiles();
 }

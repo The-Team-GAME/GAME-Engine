@@ -49,7 +49,7 @@ void register_all_panels()
   ImGuiManager::register_panel("Tile Collider Editor", TileColliderEditorPanel);
   ImGuiManager::register_panel("Scene Chooser", SceneChooserPanel);
   ImGuiManager::register_panel("Layer Manager", LayerManagerPanel);
-  //ImGuiManager::register_panel("Collider Editor", ColliderEditorPanel);
+  ImGuiManager::register_panel("Collider Editor", ColliderEditorPanel);
   ImGuiManager::register_panel("Selective Level Save", SelectiveLevelSavePanel);
   ImGuiManager::register_panel("Frame Animation Editor", FrameAnimationEditorPanel);
   ImGuiManager::register_panel("Texture Atlas Editor", TextureAtlasEditorPanel);

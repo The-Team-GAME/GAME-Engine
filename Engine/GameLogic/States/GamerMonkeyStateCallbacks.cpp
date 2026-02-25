@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------------
-// file:    GamerMonkeyStateCallbacks.h
+// file:    GamerMonkeyStateCallbacks.cpp
 // project: Monkey Stole My GPA
 //
 // author:  Ryan Ang An Kiat (100%)
@@ -11,7 +11,6 @@
 //
 // Copyright � 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
-#pragma once
 
 #include "pch.h"
 #include "../Components/GameplayComponent.h"

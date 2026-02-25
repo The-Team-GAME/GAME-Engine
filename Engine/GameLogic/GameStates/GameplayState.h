@@ -19,6 +19,7 @@
 
 #include "../Components/GameplayComponent.h"
 #include "../Components/InteractableComponents.h"
+#include "../Components/HealthComponents.h"
 
 
 class GameplayState : public Engine::Scene

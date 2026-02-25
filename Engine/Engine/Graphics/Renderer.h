@@ -53,13 +53,13 @@ namespace Engine {
       // Check if a point is inside the bounds
       bool contains(const Math::Vec2D& point) const {
         return point.x >= min_x && point.x <= max_x &&
-               point.y >= min_y && point.y <= max_y;
+          point.y >= min_y && point.y <= max_y;
       }
 
       // Check if an AABB intersects with these bounds
       bool intersects(f32 x, f32 y, f32 half_w, f32 half_h) const {
         return (x + half_w >= min_x) && (x - half_w <= max_x) &&
-               (y + half_h >= min_y) && (y - half_h <= max_y);
+          (y + half_h >= min_y) && (y - half_h <= max_y);
       }
     };
 

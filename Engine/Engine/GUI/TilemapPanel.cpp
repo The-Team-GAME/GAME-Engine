@@ -26,6 +26,7 @@
 #include "../Path.h"
 #include "widgets/TextureAtlasWidget.h"
 #include <vector>
+#include <unordered_set>
 #include "../FileIO/PrefabsFileIO.h"
 #include "../FileIO/Helpers.h"
 #include "../FileIO/SettingsManager.h"
@@ -78,7 +79,8 @@ namespace TilemapPanel {
       Paintbrush,
       BoxFill,
       Picker,
-      Eraser
+      Eraser,
+      Select
     };
     ToolMode current_tool = ToolMode::Paintbrush;
 
@@ -90,6 +92,143 @@ namespace TilemapPanel {
     bool box_fill_dragging = false;
     Math::Vec2D box_fill_start;
     Math::Vec2D box_fill_end;
+
+    // === World Tile Selection state (Select tool) ===
+    // A single selected tile entry: grid position + tile data + layer
+    struct WorldTileEntry {
+      int grid_x, grid_y;
+      Engine::Graphics::Tile tile;
+      std::string layer_name;
+    };
+
+    // Current selection
+    bool select_dragging = false;            // True while drag-selecting a rectangle
+    Math::Vec2D select_drag_start;           // World position where drag started
+    Math::Vec2D select_drag_end;             // Current drag end position
+    std::vector<WorldTileEntry> selected_world_tiles; // Tiles currently selected (across all layers)
+    int select_min_gx = 0, select_min_gy = 0;  // Bounding box of selection in grid coords
+    int select_max_gx = 0, select_max_gy = 0;
+
+    // Move-drag state (dragging selected tiles)
+    bool move_dragging = false;
+    Math::Vec2D move_drag_start_world;       // World position where move drag started
+    int move_offset_gx = 0, move_offset_gy = 0; // Current grid offset while dragging
+
+    // Clipboard (for copy/paste)
+    struct TileClipboardEntry {
+      int rel_grid_x, rel_grid_y; // Position relative to selection origin (min corner)
+      Engine::Graphics::Tile tile;
+      std::string layer_name;
+    };
+    std::vector<TileClipboardEntry> tile_clipboard;
+
+    // Helper: collect tiles in a grid rectangle from ALL layers
+    void collect_tiles_in_rect(int min_gx, int min_gy, int max_gx, int max_gy,
+      std::vector<WorldTileEntry>& out_tiles) {
+      out_tiles.clear();
+      for (auto& entity : Engine::ECS::get_entities_with<Components::TileMap>()) {
+        // Determine the layer name of this tilemap entity
+        std::string layer_name;
+        auto layers = entity.get_layers();
+        for (Engine::ECS::LayerID lid = 0; lid < Engine::ECS::MAX_LAYERS; ++lid) {
+          if (layers.test(lid)) {
+            layer_name = Engine::ECS::get_layer_name(lid);
+            break;
+          }
+        }
+        if (layer_name.empty()) continue;
+
+        auto* tilemap = entity.get_component<Components::TileMap>();
+        if (!tilemap) continue;
+
+        for (int gy = min_gy; gy <= max_gy; ++gy) {
+          for (int gx = min_gx; gx <= max_gx; ++gx) {
+            Engine::Graphics::Tile t = tilemap->get_tile(gx, gy);
+            if (t.is_valid()) {
+              out_tiles.push_back({ gx, gy, t, layer_name });
+            }
+          }
+        }
+      }
+    }
+
+    // Helper: apply a set of tile changes with undo support
+    void apply_tile_changes_with_undo(
+      const std::vector<WorldTileEntry>& tiles_to_place,
+      const std::vector<WorldTileEntry>& tiles_to_delete,
+      const std::vector<WorldTileEntry>& old_state_at_place_positions)
+    {
+      // Capture for lambda
+      auto cap_place = tiles_to_place;
+      auto cap_delete = tiles_to_delete;
+      auto cap_old = old_state_at_place_positions;
+
+      Engine::UndoManager::execute(
+        [cap_place, cap_delete]() {
+          // Delete tiles first
+          std::unordered_set<std::string> dirty_layers;
+          for (const auto& entry : cap_delete) {
+            Math::Vec2D pos = TilemapManager::grid_to_world(entry.grid_x, entry.grid_y);
+            // Direct TileMap manipulation (avoid per-tile rebuild)
+            for (auto& ent : Engine::ECS::get_entities_with<Components::TileMap>()) {
+              if (ent.is_on_layer(entry.layer_name)) {
+                auto* tm = ent.get_component<Components::TileMap>();
+                if (tm) tm->set_tile(entry.grid_x, entry.grid_y, Engine::Graphics::Tile());
+                dirty_layers.insert(entry.layer_name);
+                break;
+              }
+            }
+          }
+          // Place tiles
+          for (const auto& entry : cap_place) {
+            auto tilemap_entity = TilemapManager::get_or_create_tilemap_entity(entry.layer_name);
+            auto* tm = tilemap_entity.get_component<Components::TileMap>();
+            if (tm) {
+              tm->set_tile(entry.grid_x, entry.grid_y, entry.tile);
+              tm->tile_size = { TilemapManager::get_grid_size(), TilemapManager::get_grid_size() };
+              tm->grid_offset = TilemapManager::get_grid_offset();
+            }
+            dirty_layers.insert(entry.layer_name);
+          }
+          // Rebuild all affected layers
+          for (const auto& layer : dirty_layers) {
+            TilemapManager::rebuild_tilemap_for_layer(layer);
+          }
+          Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+        },
+        [cap_delete, cap_old]() {
+          // Undo: restore deleted tiles and remove placed tiles (via old_state)
+          std::unordered_set<std::string> dirty_layers;
+          // Restore tiles that were at paste positions
+          for (const auto& entry : cap_old) {
+            auto tilemap_entity = TilemapManager::get_or_create_tilemap_entity(entry.layer_name);
+            auto* tm = tilemap_entity.get_component<Components::TileMap>();
+            if (tm) {
+              if (entry.tile.is_valid()) {
+                tm->set_tile(entry.grid_x, entry.grid_y, entry.tile);
+              }
+              else {
+                tm->set_tile(entry.grid_x, entry.grid_y, Engine::Graphics::Tile());
+              }
+            }
+            dirty_layers.insert(entry.layer_name);
+          }
+          // Restore deleted tiles (from source positions)
+          for (const auto& entry : cap_delete) {
+            auto tilemap_entity = TilemapManager::get_or_create_tilemap_entity(entry.layer_name);
+            auto* tm = tilemap_entity.get_component<Components::TileMap>();
+            if (tm) {
+              tm->set_tile(entry.grid_x, entry.grid_y, entry.tile);
+            }
+            dirty_layers.insert(entry.layer_name);
+          }
+          for (const auto& layer : dirty_layers) {
+            TilemapManager::rebuild_tilemap_for_layer(layer);
+          }
+          Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+        }
+      );
+    }
   }
 
   // Helper functions
@@ -431,22 +570,47 @@ namespace TilemapPanel {
     // === KEYBOARD SHORTCUTS FOR TOOLS ===
     if (enable_tilemap_mode) {
       // Tool selection shortcuts
-      if (Engine::Input::is_pressed(Engine::KeyCode::B)) {
+      if (Engine::Input::is_pressed_raw(Engine::KeyCode::B)) {
         current_tool = ToolMode::Paintbrush;
       }
-      else if (Engine::Input::is_pressed(Engine::KeyCode::U)) {
+      else if (Engine::Input::is_pressed_raw(Engine::KeyCode::U)) {
         current_tool = ToolMode::BoxFill;
       }
-      else if (Engine::Input::is_pressed(Engine::KeyCode::I)) {
+      else if (Engine::Input::is_pressed_raw(Engine::KeyCode::I)) {
         current_tool = ToolMode::Picker;
       }
-      else if (Engine::Input::is_pressed(Engine::KeyCode::D)) {
+      else if (Engine::Input::is_pressed_raw(Engine::KeyCode::D)) {
         current_tool = ToolMode::Eraser;
+      }
+      else if (Engine::Input::is_pressed_raw(Engine::KeyCode::M)) {
+        current_tool = ToolMode::Select;
+        // Clear world selection when switching to select tool
+        selected_world_tiles.clear();
+        move_dragging = false;
+        select_dragging = false;
       }
 
       // Toggle dim non-selected layers with L key
-      if (Engine::Input::is_pressed(Engine::KeyCode::L)) {
+      if (Engine::Input::is_pressed_raw(Engine::KeyCode::L)) {
         dim_non_selected_layers = !dim_non_selected_layers;
+      }
+
+      // Escape clears world tile selection
+      if (current_tool == ToolMode::Select && Engine::Input::is_pressed_raw(Engine::KeyCode::Escape)) {
+        selected_world_tiles.clear();
+        move_dragging = false;
+        select_dragging = false;
+      }
+
+      // === Tile clipboard: Ctrl+C / Ctrl+V ===
+      bool ctrl_held = Engine::Input::is_held_raw(Engine::KeyCode::CtrlLeft) || Engine::Input::is_held_raw(Engine::KeyCode::CtrlRight);
+
+      if (ctrl_held && Engine::Input::is_pressed_raw(Engine::KeyCode::C)) {
+        copy_selected_tiles();
+      }
+
+      if (ctrl_held && Engine::Input::is_pressed_raw(Engine::KeyCode::V)) {
+        paste_tiles();
       }
     }
 
@@ -464,7 +628,7 @@ namespace TilemapPanel {
         // Check for temporary tool modifiers
         ToolMode active_tool = current_tool;
 
-        // Ctrl temporarily switches to Picker (unless already in Eraser mode)
+        // Ctrl temporarily switches to Picker (unless already in Eraser or Select mode)
         if (Engine::Input::is_held(Engine::KeyCode::CtrlLeft) || Engine::Input::is_held(Engine::KeyCode::CtrlRight)) {
           if (current_tool == ToolMode::Paintbrush || current_tool == ToolMode::BoxFill) {
             active_tool = ToolMode::Picker;
@@ -500,11 +664,100 @@ namespace TilemapPanel {
         else if (active_tool == ToolMode::Eraser) {
           delete_tile_at_position(world_pos);
         }
+        else if (active_tool == ToolMode::Select) {
+          if (!select_dragging && !move_dragging) {
+            // Check if click is inside an existing selection -> start move drag
+            int click_gx, click_gy;
+            TilemapManager::world_to_grid(world_pos, click_gx, click_gy);
+
+            if (!selected_world_tiles.empty() &&
+              click_gx >= select_min_gx && click_gx <= select_max_gx &&
+              click_gy >= select_min_gy && click_gy <= select_max_gy) {
+              // Start move drag
+              move_dragging = true;
+              move_drag_start_world = world_pos;
+              move_offset_gx = 0;
+              move_offset_gy = 0;
+            }
+            else {
+              // Start new rectangle selection
+              select_dragging = true;
+              select_drag_start = world_pos;
+              select_drag_end = world_pos;
+              selected_world_tiles.clear();
+            }
+          }
+          else if (select_dragging) {
+            select_drag_end = world_pos;
+          }
+          else if (move_dragging) {
+            // Update offset based on mouse delta in grid units
+            int start_gx, start_gy;
+            TilemapManager::world_to_grid(move_drag_start_world, start_gx, start_gy);
+            int cur_gx, cur_gy;
+            TilemapManager::world_to_grid(world_pos, cur_gx, cur_gy);
+            move_offset_gx = cur_gx - start_gx;
+            move_offset_gy = cur_gy - start_gy;
+          }
+        }
       }
       else if (box_fill_dragging) {
         // Mouse released - execute the box fill
         fill_box_with_tiles(box_fill_start, box_fill_end);
         box_fill_dragging = false;
+      }
+      else if (select_dragging) {
+        // Mouse released - finalize selection rectangle
+        select_dragging = false;
+
+        int s_gx, s_gy, e_gx, e_gy;
+        TilemapManager::world_to_grid(select_drag_start, s_gx, s_gy);
+        TilemapManager::world_to_grid(select_drag_end, e_gx, e_gy);
+        if (s_gx > e_gx) std::swap(s_gx, e_gx);
+        if (s_gy > e_gy) std::swap(s_gy, e_gy);
+
+        collect_tiles_in_rect(s_gx, s_gy, e_gx, e_gy, selected_world_tiles);
+        select_min_gx = s_gx;
+        select_min_gy = s_gy;
+        select_max_gx = e_gx;
+        select_max_gy = e_gy;
+      }
+      else if (move_dragging) {
+        // Mouse released - commit the move
+        move_dragging = false;
+
+        if ((move_offset_gx != 0 || move_offset_gy != 0) && !selected_world_tiles.empty()) {
+          // Build delete list (old positions) and place list (new positions)
+          std::vector<WorldTileEntry> tiles_to_delete = selected_world_tiles; // old positions
+          std::vector<WorldTileEntry> tiles_to_place;
+          std::vector<WorldTileEntry> old_state_at_dest;
+
+          for (const auto& entry : selected_world_tiles) {
+            int new_gx = entry.grid_x + move_offset_gx;
+            int new_gy = entry.grid_y + move_offset_gy;
+
+            // Check what's currently at the destination (for undo)
+            Engine::Graphics::Tile existing = TilemapManager::get_tile_at(entry.layer_name, new_gx, new_gy);
+            old_state_at_dest.push_back({ new_gx, new_gy, existing, entry.layer_name });
+
+            tiles_to_place.push_back({ new_gx, new_gy, entry.tile, entry.layer_name });
+          }
+
+          apply_tile_changes_with_undo(tiles_to_place, tiles_to_delete, old_state_at_dest);
+
+          // Update selection to new positions
+          for (auto& entry : selected_world_tiles) {
+            entry.grid_x += move_offset_gx;
+            entry.grid_y += move_offset_gy;
+          }
+          select_min_gx += move_offset_gx;
+          select_min_gy += move_offset_gy;
+          select_max_gx += move_offset_gx;
+          select_max_gy += move_offset_gy;
+        }
+
+        move_offset_gx = 0;
+        move_offset_gy = 0;
       }
       else {
         // Mouse not held and not dragging - reset box fill state
@@ -922,8 +1175,25 @@ namespace TilemapPanel {
         current_tool = ToolMode::Eraser;
       }
 
+      if (ImGui::RadioButton("Select (M)", &tool_index, static_cast<int>(ToolMode::Select))) {
+        current_tool = ToolMode::Select;
+        selected_world_tiles.clear();
+        move_dragging = false;
+        select_dragging = false;
+      }
+
       ImGui::Spacing();
       ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Tip: Hold Ctrl for Picker, Shift for Eraser");
+      if (current_tool == ToolMode::Select) {
+        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Drag to select tiles, then drag to move");
+        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Ctrl+C to copy, Ctrl+V to paste, Esc to deselect");
+        if (!selected_world_tiles.empty()) {
+          ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.5f, 1.0f), "Selected %zu tiles across layers", selected_world_tiles.size());
+        }
+        if (!tile_clipboard.empty()) {
+          ImGui::TextColored(ImVec4(0.5f, 0.8f, 1.0f, 1.0f), "Clipboard: %zu tiles", tile_clipboard.size());
+        }
+      }
 
       ImGui::Separator();
 
@@ -1681,6 +1951,7 @@ namespace TilemapPanel {
       ImGui::BulletText("Box Fill (U) - Drag to fill a rectangular area");
       ImGui::BulletText("Picker (I) - Click a placed tile to select it");
       ImGui::BulletText("Eraser (D) - Click to delete placed tiles");
+      ImGui::BulletText("Select (M) - Box-select world tiles, drag to move");
 
       ImGui::Spacing();
       ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.4f, 1.0f), "Keyboard Shortcuts:");
@@ -1688,9 +1959,13 @@ namespace TilemapPanel {
       ImGui::BulletText("U - Box Fill tool");
       ImGui::BulletText("I - Picker tool");
       ImGui::BulletText("D - Eraser tool");
+      ImGui::BulletText("M - Select tool");
       ImGui::BulletText("L - Toggle dim non-selected layers");
       ImGui::BulletText("Ctrl - Temporary Picker (while painting)");
       ImGui::BulletText("Shift - Temporary Eraser (while painting)");
+      ImGui::BulletText("Ctrl+C - Copy selected tiles");
+      ImGui::BulletText("Ctrl+V - Paste tiles at mouse position");
+      ImGui::BulletText("Esc - Deselect tiles");
       ImGui::BulletText("Ctrl+Z / Ctrl+Y - Undo/Redo");
 
       ImGui::Spacing();
@@ -1825,9 +2100,91 @@ namespace TilemapPanel {
         else if (current_tool == ToolMode::Picker) {
           highlight_color = Math::Vec4D{ 0.0f, 0.5f, 1.0f, 0.4f }; // Blue for picker
         }
+        else if (current_tool == ToolMode::Select) {
+          highlight_color = Math::Vec4D{ 1.0f, 1.0f, 0.0f, 0.3f }; // Yellow for select
+        }
 
+        // === Select tool overlays ===
+        if (current_tool == ToolMode::Select) {
+          // Draw selection drag rectangle while dragging
+          if (select_dragging) {
+            int s_gx, s_gy, e_gx, e_gy;
+            TilemapManager::world_to_grid(select_drag_start, s_gx, s_gy);
+            TilemapManager::world_to_grid(select_drag_end, e_gx, e_gy);
+            if (s_gx > e_gx) std::swap(s_gx, e_gx);
+            if (s_gy > e_gy) std::swap(s_gy, e_gy);
+
+            Math::Vec2D box_start_world = TilemapManager::grid_to_world(s_gx, s_gy);
+            Math::Vec2D box_end_world = TilemapManager::grid_to_world(e_gx, e_gy);
+
+            Math::Vec2D box_center = {
+              (box_start_world.x + box_end_world.x) * 0.5f,
+              (box_start_world.y + box_end_world.y) * 0.5f
+            };
+            Math::Vec2D box_size = {
+              (e_gx - s_gx + 1) * grid_snap,
+              (e_gy - s_gy + 1) * grid_snap
+            };
+
+            Engine::Graphics::draw_rect(box_center, box_size, 0.0f,
+              Math::Vec4D{ 1.0f, 1.0f, 0.0f, 0.15f });
+
+            // Border
+            float hw = box_size.x * 0.5f;
+            float hh = box_size.y * 0.5f;
+            Math::Vec2D tl = { box_center.x - hw, box_center.y - hh };
+            Math::Vec2D tr = { box_center.x + hw, box_center.y - hh };
+            Math::Vec2D bl = { box_center.x - hw, box_center.y + hh };
+            Math::Vec2D br = { box_center.x + hw, box_center.y + hh };
+            Math::Vec4D sel_border = { 1.0f, 1.0f, 0.0f, 0.8f };
+            Engine::Graphics::draw_line_screen(tl, tr, 2.0f, sel_border);
+            Engine::Graphics::draw_line_screen(tr, br, 2.0f, sel_border);
+            Engine::Graphics::draw_line_screen(br, bl, 2.0f, sel_border);
+            Engine::Graphics::draw_line_screen(bl, tl, 2.0f, sel_border);
+          }
+
+          // Draw highlight on selected tiles (with move offset if dragging)
+          if (!selected_world_tiles.empty()) {
+            Math::Vec4D sel_tile_color = { 0.0f, 1.0f, 1.0f, 0.35f }; // Cyan highlight
+            for (const auto& entry : selected_world_tiles) {
+              int draw_gx = entry.grid_x + move_offset_gx;
+              int draw_gy = entry.grid_y + move_offset_gy;
+              Math::Vec2D tile_center = TilemapManager::grid_to_world(draw_gx, draw_gy);
+              Engine::Graphics::draw_rect(tile_center,
+                Math::Vec2D{ grid_snap, grid_snap }, 0.0f, sel_tile_color);
+            }
+
+            // Draw selection bounding box border
+            int draw_min_gx = select_min_gx + move_offset_gx;
+            int draw_min_gy = select_min_gy + move_offset_gy;
+            int draw_max_gx = select_max_gx + move_offset_gx;
+            int draw_max_gy = select_max_gy + move_offset_gy;
+
+            Math::Vec2D sel_start = TilemapManager::grid_to_world(draw_min_gx, draw_min_gy);
+            Math::Vec2D sel_end = TilemapManager::grid_to_world(draw_max_gx, draw_max_gy);
+            Math::Vec2D sel_center = {
+              (sel_start.x + sel_end.x) * 0.5f,
+              (sel_start.y + sel_end.y) * 0.5f
+            };
+            Math::Vec2D sel_size = {
+              (draw_max_gx - draw_min_gx + 1) * grid_snap,
+              (draw_max_gy - draw_min_gy + 1) * grid_snap
+            };
+            float hw = sel_size.x * 0.5f;
+            float hh = sel_size.y * 0.5f;
+            Math::Vec2D tl = { sel_center.x - hw, sel_center.y - hh };
+            Math::Vec2D tr = { sel_center.x + hw, sel_center.y - hh };
+            Math::Vec2D bl = { sel_center.x - hw, sel_center.y + hh };
+            Math::Vec2D br = { sel_center.x + hw, sel_center.y + hh };
+            Math::Vec4D sel_border = { 0.0f, 1.0f, 1.0f, 0.8f };
+            Engine::Graphics::draw_line_screen(tl, tr, 2.0f, sel_border);
+            Engine::Graphics::draw_line_screen(tr, br, 2.0f, sel_border);
+            Engine::Graphics::draw_line_screen(br, bl, 2.0f, sel_border);
+            Engine::Graphics::draw_line_screen(bl, tl, 2.0f, sel_border);
+          }
+        }
         // If multi-tile selection is active and we're painting, show preview of all tiles
-        if (!multi_tile_selection.is_empty() &&
+        else if (!multi_tile_selection.is_empty() &&
           (current_tool == ToolMode::Paintbrush || current_tool == ToolMode::BoxFill)) {
 
           // Draw preview for each tile in the selection
@@ -1875,5 +2232,74 @@ namespace TilemapPanel {
   bool is_dim_non_selected_layers_enabled()
   {
     return dim_non_selected_layers;
+  }
+
+  bool has_world_tile_selection()
+  {
+    return enable_tilemap_mode && current_tool == ToolMode::Select && !selected_world_tiles.empty();
+  }
+
+  void copy_selected_tiles()
+  {
+    if (selected_world_tiles.empty()) return;
+
+    tile_clipboard.clear();
+
+    for (const auto& entry : selected_world_tiles) {
+      TileClipboardEntry clip;
+      clip.rel_grid_x = entry.grid_x - select_min_gx;
+      clip.rel_grid_y = entry.grid_y - select_min_gy;
+      clip.tile = entry.tile;
+      clip.layer_name = entry.layer_name;
+      tile_clipboard.push_back(clip);
+    }
+  }
+
+  void paste_tiles()
+  {
+    if (tile_clipboard.empty()) return;
+
+    // Paste at the current mouse world position
+    auto world_pos_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+    if (!world_pos_opt.has_value()) return;
+
+    int anchor_gx, anchor_gy;
+    TilemapManager::world_to_grid(world_pos_opt.value(), anchor_gx, anchor_gy);
+
+    // Build list of tiles to place and capture old state at those positions
+    std::vector<WorldTileEntry> tiles_to_place;
+    std::vector<WorldTileEntry> old_state_at_dest;
+
+    for (const auto& clip : tile_clipboard) {
+      int dest_gx = anchor_gx + clip.rel_grid_x;
+      int dest_gy = anchor_gy + clip.rel_grid_y;
+
+      // Check what's currently at destination for undo
+      Engine::Graphics::Tile existing = TilemapManager::get_tile_at(clip.layer_name, dest_gx, dest_gy);
+      old_state_at_dest.push_back({ dest_gx, dest_gy, existing, clip.layer_name });
+
+      tiles_to_place.push_back({ dest_gx, dest_gy, clip.tile, clip.layer_name });
+    }
+
+    // Empty delete list since paste doesn't delete anything
+    std::vector<WorldTileEntry> no_deletes;
+    apply_tile_changes_with_undo(tiles_to_place, no_deletes, old_state_at_dest);
+
+    // Update selection to show pasted tiles
+    selected_world_tiles.clear();
+    select_min_gx = anchor_gx;
+    select_min_gy = anchor_gy;
+    select_max_gx = anchor_gx;
+    select_max_gy = anchor_gy;
+
+    for (const auto& clip : tile_clipboard) {
+      int dest_gx = anchor_gx + clip.rel_grid_x;
+      int dest_gy = anchor_gy + clip.rel_grid_y;
+      selected_world_tiles.push_back({ dest_gx, dest_gy, clip.tile, clip.layer_name });
+      if (dest_gx < select_min_gx) select_min_gx = dest_gx;
+      if (dest_gy < select_min_gy) select_min_gy = dest_gy;
+      if (dest_gx > select_max_gx) select_max_gx = dest_gx;
+      if (dest_gy > select_max_gy) select_max_gy = dest_gy;
+    }
   }
 } // namespace TilemapPanel

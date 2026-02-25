@@ -23,10 +23,7 @@
 #include "GameStates/DistortionEffectState.h"
 #include "GameStates/LuaState.h"
 #include "GameStates/BehaviourState.h"
-#include "GameStates/LevelTestState.h"
 #include "GameStates/GameplayState.h"
-#include "GameStates/GameMonkeyTestState.h"
-#include "GameStates/TurretMonkeyTestState.h"
 #include "GameStates/PauseState.h"
 #include "GameStates/VictoryState.h"
 #include "GameStates/OptionsState.h"
@@ -380,10 +377,7 @@ static void register_scenes()
   Engine::SceneManager::register_scene<PhysicsTestState>("PhysicsTestState");
   Engine::SceneManager::register_scene<DistortionEffectState>("DistortionEffectState");
   Engine::SceneManager::register_scene<LuaState>("LuaState");
-  Engine::SceneManager::register_scene<LevelTestState>("LevelTestState");
   Engine::SceneManager::register_scene<BehaviourState>("BehaviourState");
-  Engine::SceneManager::register_scene<GameMonkeyTestState>("GameMonkeyTestState");
-  Engine::SceneManager::register_scene<TurretMonkeyTestState>("TurretMonkeyTestState");
   Engine::SceneManager::register_scene<PauseState>("PauseState");
   Engine::SceneManager::register_scene<VictoryState>("VictoryState");
   Engine::SceneManager::register_scene<OptionsState>("OptionsState");

@@ -77,7 +77,6 @@ struct AABB {
     // (lhs_max.x > rhs_min.x) &&
     // (lhs_min.y < rhs_max.y) &&
     // (lhs_max.y > rhs_min.y);
-
     return  (pos.x - half_width < rhs.pos.x + rhs.half_width) &&
       (rhs.pos.x - rhs.half_width < pos.x + half_width) &&
       (pos.y - half_height < rhs.pos.y + rhs.half_height) &&
