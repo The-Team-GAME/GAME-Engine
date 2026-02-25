@@ -18,6 +18,7 @@
 #include "pch.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/HeartrateComponent.h"
+#include "../Components/HealthComponents.h"
 
 using namespace Engine;
 namespace {
@@ -36,10 +37,10 @@ namespace PlayerStateCallbacks
     Components::RigidBody* player_rigid = entity.get_component<Components::RigidBody>();
     Components::Player* player_comp = entity.get_component<Components::Player>();
     Components::Flip* flip = entity.get_component<Components::Flip>();
-    Components::Heartrate* heartrate = entity.get_component<Components::Heartrate>();
+    Components::Health* health = entity.get_component<Components::Health>();
 
     // Death Condition
-    if (heartrate->heartrate >= heartrate->dead)
+    if (health && health->is_dead())
     {
       state_machine->change_state("Death");
       return;
@@ -348,12 +349,6 @@ namespace PlayerStateCallbacks
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
     auto* player_comp = entity.get_component<Components::Player>();
-    auto* heartrate = entity.get_component<Components::Heartrate>();
-
-    // Increase heartrate
-    if (heartrate) {
-      heartrate->increase(player_comp->attack1.heartrate_cost);
-    }
 
     // Apply forward movement during attack
     if (rigid && flip && player_comp) {
@@ -440,12 +435,6 @@ namespace PlayerStateCallbacks
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
     auto* player_comp = entity.get_component<Components::Player>();
-    auto* heartrate = entity.get_component<Components::Heartrate>();
-
-    // Increase heartrate
-    if (heartrate) {
-      heartrate->increase(player_comp->attack2.heartrate_cost);
-    }
 
     // Apply forward movement during attack
     if (rigid && flip && player_comp) {
@@ -532,12 +521,6 @@ namespace PlayerStateCallbacks
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
     auto* player_comp = entity.get_component<Components::Player>();
-    auto* heartrate = entity.get_component<Components::Heartrate>();
-
-    // Increase heartrate
-    if (heartrate) {
-      heartrate->increase(player_comp->attack3.heartrate_cost);
-    }
 
     // Apply forward movement during attack
     if (rigid && flip && player_comp) {

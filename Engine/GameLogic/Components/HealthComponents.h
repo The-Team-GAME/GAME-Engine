@@ -32,8 +32,8 @@ namespace Components {
 	};
 
 	struct Health {
-		int value = 100;
-		int max = 100;
+		int value = 5;
+		int max = 5;
 
 		void damage(int amt) { 
 			value = std::max(0, value - amt); 

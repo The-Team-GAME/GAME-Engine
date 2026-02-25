@@ -21,7 +21,6 @@
 #include "pch.h"
 
 #include "../Components/HealthComponents.h"
-#include "../Components/HeartrateComponent.h"
 
 #include "../Components/EnemyHealthComponent.h"
 
@@ -451,14 +450,14 @@ namespace Engine {
     class HeartHUDSpriteSystem final : public Engine::ECS::System {
     public:
       HeartHUDSpriteSystem() {
-        require_components<Components::Heartrate, Components::HeartHUDSprite>();
+        require_components<Components::Health, Components::HeartHUDSprite>();
       }
 
       void update_entity(Engine::ECS::Entity e) override {
         using namespace Components;
-        auto* hr = e.get_component<Heartrate>();
+        auto* hp = e.get_component<Health>();
         auto* hud = e.get_component<HeartHUDSprite>();
-        if (!hr || !hud) return;
+        if (!hp || !hud) return;
 
         if (!hud->screen_space) {
           ensure_created(*hud);
@@ -501,10 +500,8 @@ namespace Engine {
             t->scale.y = 120.f;
           }
 
-          // BPM to color tint for world-space columns
-          const float bpm = std::max(1.f, hr->heartrate);
-          const float span = std::max(1e-3f, hud->bpm_max - hud->bpm_min);
-          const float ratio = std::clamp((bpm - hud->bpm_min) / span, 0.f, 1.f);
+          // HP to ratio for world-space columns
+          const float ratio = (hp->max > 0) ? std::clamp(static_cast<float>(hp->value) / static_cast<float>(hp->max), 0.f, 1.f) : 0.f;
 
           if (hud->use_bpm_tint) {
             Math::Vec4D c;
@@ -532,9 +529,9 @@ namespace Engine {
       void draw_entity(const Engine::ECS::Entity e) override {
         using namespace Components;
 
-        auto* hr = e.get_component<Heartrate>();
+        auto* hp = e.get_component<Health>();
         auto* hud = e.get_component<HeartHUDSprite>();
-        if (!hr || !hud) return;
+        if (!hp || !hud) return;
 
         if (!hud->screen_space) {
           // World-space HUD is handled by update_entity + normal render system
@@ -556,10 +553,8 @@ namespace Engine {
           Math::Vec4D(1.f, 1.f, 1.f, 1.f)
         );
 
-        // BPM ratio 0..1
-        const float bpm = std::max(1.f, hr->heartrate);
-        const float span = std::max(1e-3f, hud->bpm_max - hud->bpm_min);
-        const float ratio = std::clamp((bpm - hud->bpm_min) / span, 0.f, 1.f);
+        // HP ratio 0..1
+        const float ratio = (hp->max > 0) ? std::clamp(static_cast<float>(hp->value) / static_cast<float>(hp->max), 0.f, 1.f) : 0.f;
 
         // BPM-driven tint
         Math::Vec4D fill_color = hud->fill_color_low;

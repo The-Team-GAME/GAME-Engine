@@ -204,38 +204,38 @@ void RunGame()
 
       // When enemy attack hitbox collides with player
       auto* attack = attack_entity.get_component<Components::Attack>();
-      auto* heartrate = player_entity.get_component<Components::Heartrate>();
+      auto* health = player_entity.get_component<Components::Health>();
       auto* rigid = player_entity.get_component<Components::RigidBody>();
-      // auto* player_transform = player_entity.get_component<Components::Transform2D>();
-      // auto* attack_transform = attack_entity.get_component<Components::Transform2D>();
 
       if (!attack) {
         Log::error("Error: Attack component missing from enemy attack hitbox, on entity {}", attack_entity.get_id());
         return;
       }
 
-      if (heartrate && rigid) {
+      if (health && rigid) {
         // Check if we should apply damage
         if (!attack->should_apply_damage(player_entity)) {
           return;
         }
 
-        // Increase heartrate instead of decreasing HP
-        int damage = attack->damage;
-        heartrate->increase(static_cast<float>(damage));
-        Log::info("Player took {} damage! Heartrate: {}", damage, heartrate->heartrate);
+        // Decrease HP by 1 per hit
+        health->damage(1);
+        Log::info("Player took damage! HP: {}/{}", health->value, health->max);
 
         Engine::Systems::Physics2DSystem::add_force(*rigid, attack->knockback);
-
 
         Engine::AudioSystem::playEvent("event:/SFX/PlayerHurt");
         Log::info("Playing FMOD event: event:/SFX/PlayerHurt");
 
-
         Log::info("Player knocked back! Force applied: ({}, {})", attack->knockback.x, attack->knockback.y);
+
+        // Check if player is dead
+        if (health->is_dead()) {
+          Log::info("Player is dead!");
+        }
       }
       else {
-        Log::error("Error: Heartrate or RigidBody component missing from player!");
+        Log::error("Error: Health or RigidBody component missing from player!");
       }
     });
 
