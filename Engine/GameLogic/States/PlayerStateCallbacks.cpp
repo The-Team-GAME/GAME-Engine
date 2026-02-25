@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------------
-// file:    PlayerStateCallbacks.h
+// file:    PlayerStateCallbacks.cpp
 // project: Monkey Stole My GPA
 //
 // author:  Chew Shee Yang (50%)
@@ -58,7 +58,7 @@ namespace PlayerStateCallbacks
 
     // Check for attack input
     // not entering this loop for some reason
-    if (Engine::Input::is_pressed(Engine::KeyCode::K) 
+    if (Engine::Input::is_pressed(Engine::KeyCode::K)
       && player_comp->uppercut.ready())
     {
       std::cout << "K PRESED \n";
@@ -81,7 +81,7 @@ namespace PlayerStateCallbacks
     }
 
     // Check for movement input
-    if (Input::is_held(KeyCode::ShiftLeft) 
+    if (Input::is_held(KeyCode::ShiftLeft)
       && player_comp->dash.ready())
     {
       state_machine->change_state("Dash");
@@ -610,7 +610,7 @@ namespace PlayerStateCallbacks
     assert(xform);
 
     player_comp->uppercut.set_timer();
-    terminal_vel_placeholder = rigid->y_terminal_velocity;   
+    terminal_vel_placeholder = rigid->y_terminal_velocity;
 
     rigid->apply_force = false;
     rigid->velocity = Vec2D{ 0, player_comp->smash.speed };
