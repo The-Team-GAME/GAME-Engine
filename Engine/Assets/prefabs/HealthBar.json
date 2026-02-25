@@ -1,0 +1,67 @@
+{
+    "data": {
+        "components": [
+            {
+                "data": {
+                    "a": 1.0,
+                    "b": 1.0,
+                    "g": 1.0,
+                    "r": 1.0
+                },
+                "type": "Components::Color"
+            },
+            {
+                "data": {
+                    "path": "images/health_states.png"
+                },
+                "type": "Components::Texture"
+            },
+            {
+                "data": {
+                    "blueprint_id": "HealthBar",
+                    "current_state_name": "",
+                    "states": []
+                },
+                "type": "Components::StateMachine"
+            },
+            {
+                "data": {
+                    "drawIndex": -1,
+                    "tex_coords_list": []
+                },
+                "type": "Components::TextureAtlas"
+            },
+            {
+                "data": {
+                    "atlas_indices": [],
+                    "before_times": [],
+                    "durations": [],
+                    "is_looping": true,
+                    "startTime": 282.471435546875,
+                    "totalDuration": 0.0
+                },
+                "type": "Components::Animation"
+            },
+            {
+                "data": {
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 128.0,
+                        "y": 96.0
+                    }
+                },
+                "type": "Components::Transform2D"
+            }
+        ],
+        "filepath": "prefabs/HealthBar.json",
+        "layers": [
+            "default"
+        ],
+        "uuid": "d42be486-9cba-40c4f-a363-62ecdbd1e076"
+    },
+    "dataType": "Prefab"
+}
