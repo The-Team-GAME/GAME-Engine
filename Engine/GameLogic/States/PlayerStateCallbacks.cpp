@@ -69,6 +69,11 @@ namespace PlayerStateCallbacks
     if (Engine::Input::is_pressed(Engine::KeyCode::K) 
       && player_comp->uppercut.ready())
     {
+      // putting this here because it spazes otherwise, i think its smth to do with drawing sequence or smth
+      Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
+      assert(xform);
+      xform->position.y -= 32.f;
+
       state_machine->change_state("PreUppercut");
       return;
     }
@@ -618,10 +623,6 @@ namespace PlayerStateCallbacks
     assert(rigid);
     rigid->apply_force = false;
     rigid->velocity.zero();
-
-    Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
-    assert(xform);
-    xform->position.y -= 128.f;
   }
 
   inline void pre_uppercut_on_update(ECS::Entity entity)
@@ -744,6 +745,9 @@ namespace PlayerStateCallbacks
   inline void uppercut_falling_on_exit([[maybe_unused]] ECS::Entity entity)
   {
     default_state = false;
+    Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
+    assert(xform);
+    xform->position.y += 32.f;
   }
 #pragma endregion
 
