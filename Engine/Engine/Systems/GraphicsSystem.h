@@ -5,6 +5,10 @@
 // author:  Chew Shee Yang (100%)
 //          Primary author
 //
+//          Ryan Ang An Kiat (20%)
+//          Secondary author
+//
+//
 // email:   chew.s@digipen.edu
 //
 // brief:   Implementation of ECS graphics systems for rendering different types
@@ -494,7 +498,7 @@ namespace Engine
         if (shake_time_remaining > 0.0f) {
           shake_time_remaining = std::max(0.0f, shake_time_remaining - dt);
 
-          // Celeste-like "trauma" decay: fast and punchy at start, quickly calming down.
+          
           const f32 trauma_decay_rate = (shake_duration > 0.0f) ? (1.8f / shake_duration) : 8.0f;
           shake_trauma = std::max(0.0f, shake_trauma - trauma_decay_rate * dt);
 
@@ -649,8 +653,6 @@ namespace Engine
           camera_modified = true;
         }
 
-        // Only push free-camera changes when the user actually modified camera controls.
-        // Otherwise CameraSystem owns the rendered camera (including shake).
         if (camera_modified) {
           Engine::Graphics::set_camera(camera);
         }
