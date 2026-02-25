@@ -46,63 +46,6 @@ inline void UpgradePickerUI()
     };
 
   // =========================================================================
-  // Floating upgrade button (bottom-right), visible only when upgrades ready
-  // =========================================================================
-  static Engine::Graphics::Texture s_upgrade_tex = nullptr;
-  if (!s_upgrade_tex)
-    s_upgrade_tex = Engine::Resources::load_texture("images/Upgrade.png");
-
-  if (mgr.can_upgrade())
-  {
-    ImGuiIO& io = ImGui::GetIO();
-    const float btn_size = 64.0f;
-    const float margin = 18.0f;
-
-    // Anchor to bottom-right of the display
-    ImVec2 win_pos(io.DisplaySize.x - btn_size - margin,
-      io.DisplaySize.y - btn_size - margin);
-    ImGui::SetNextWindowPos(win_pos, ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(btn_size + 4.0f, btn_size + 4.0f), ImGuiCond_Always);
-    ImGui::SetNextWindowBgAlpha(0.0f);
-
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(2.0f, 2.0f));
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1, 1, 1, 0.18f));
-    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1, 1, 1, 0.30f));
-
-    ImGui::Begin("##upg_float_btn", nullptr,
-      ImGuiWindowFlags_NoDecoration |
-      ImGuiWindowFlags_NoNav |
-      ImGuiWindowFlags_NoMove |
-      ImGuiWindowFlags_NoSavedSettings |
-      ImGuiWindowFlags_NoBringToFrontOnFocus |
-      ImGuiWindowFlags_NoScrollbar);
-
-    ImTextureID tex_id = s_upgrade_tex->id;
-
-    if (ImGui::ImageButton("##upg_imgbtn", tex_id,
-      ImVec2(btn_size, btn_size), ImVec2(0, 0), ImVec2(1, 1),
-      ImVec4(0, 0, 0, 0)))
-    {
-      if (!mgr.has_rolled_cards())
-        mgr.roll_cards();
-      mgr.request_upgrade_picker();
-    }
-    if (ImGui::IsItemHovered())
-    {
-      ImGui::BeginTooltip();
-      ImGui::TextColored(ImVec4(1.0f, 0.9f, 0.25f, 1.0f), "Upgrade available!");
-      ImGui::Text("Click to choose an upgrade card.");
-      ImGui::EndTooltip();
-    }
-
-    ImGui::End();
-    ImGui::PopStyleColor(3);
-    ImGui::PopStyleVar(2);
-  }
-
-  // =========================================================================
   // Open modal when signaled
   // =========================================================================
   if (mgr.consume_upgrade_picker_request())
