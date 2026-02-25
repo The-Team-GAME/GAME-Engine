@@ -36,7 +36,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 143.06228637695313,
+                                        "startTime": 208.5348358154297,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": null,
@@ -838,7 +838,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 143.06228637695313,
+                                        "startTime": 208.5348358154297,
                                         "totalDuration": 0.7000000476837158
                                     },
                                     "collider_data": null,
@@ -1640,7 +1640,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 143.06228637695313,
+                                        "startTime": 208.5348358154297,
                                         "totalDuration": 0.7000000476837158
                                     },
                                     "collider_data": null,
@@ -2442,7 +2442,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 143.06228637695313,
+                                        "startTime": 208.5348358154297,
                                         "totalDuration": 0.7000000476837158
                                     },
                                     "collider_data": null,
@@ -3244,7 +3244,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 143.06228637695313,
+                                        "startTime": 208.5348358154297,
                                         "totalDuration": 0.7000000476837158
                                     },
                                     "collider_data": null,
@@ -4028,7 +4028,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 143.06228637695313,
+                                        "startTime": 208.5348358154297,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": null,
@@ -4812,7 +4812,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 143.06228637695313,
+                                        "startTime": 208.5348358154297,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": null,
@@ -5596,7 +5596,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 143.06228637695313,
+                                        "startTime": 208.5348358154297,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": null,
@@ -6380,7 +6380,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 143.06228637695313,
+                                        "startTime": 208.5348358154297,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": null,
@@ -7182,7 +7182,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 143.06228637695313,
+                                        "startTime": 208.5348358154297,
                                         "totalDuration": 0.7000000476837158
                                     },
                                     "collider_data": null,
@@ -7966,7 +7966,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 143.06228637695313,
+                                        "startTime": 208.5348358154297,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": null,
@@ -9497,7 +9497,7 @@
                         0.10000000149011612
                     ],
                     "is_looping": true,
-                    "startTime": 143.06228637695313,
+                    "startTime": 208.5348358154297,
                     "totalDuration": 0.10000000149011612
                 },
                 "type": "Components::Animation"
@@ -9505,8 +9505,8 @@
             {
                 "data": {
                     "position": {
-                        "x": 426.0127868652344,
-                        "y": 450.0
+                        "x": 161.57171630859375,
+                        "y": 111.06631469726563
                     },
                     "rotation": 0.0,
                     "scale": {
