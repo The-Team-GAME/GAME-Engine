@@ -188,15 +188,21 @@ public:
         auto* upg_t = Engine::ECS::Entity(upgrade_btn_id).get_component<Components::Transform2D>();
         float uhw = upg_t->scale.x / 2.0f;
         float uhh = upg_t->scale.y / 2.0f;
+
+        bool open_picker = Engine::Input::is_pressed(Engine::KeyCode::I);
+
         if (mouse_pos.x >= upg_t->position.x - uhw &&
           mouse_pos.x <= upg_t->position.x + uhw &&
           mouse_pos.y >= upg_t->position.y - uhh &&
           mouse_pos.y <= upg_t->position.y + uhh) {
-          if (Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
-            if (!upg_mgr.has_rolled_cards())
-              upg_mgr.roll_cards();
-            upg_mgr.request_upgrade_picker();
-          }
+          if (Engine::Input::is_pressed(Engine::KeyCode::MouseLeft))
+            open_picker = true;
+        }
+
+        if (open_picker) {
+          if (!upg_mgr.has_rolled_cards())
+            upg_mgr.roll_cards();
+          upg_mgr.request_upgrade_picker();
         }
       }
     }
