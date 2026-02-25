@@ -42,6 +42,7 @@
 #include "Easing.h"
 #include "Lua/LuaComponentBindings.h"
 #include "HotReloadManager.h"
+#include "GUI/TilemapPanel.h"
 
 namespace Engine
 {
@@ -335,20 +336,22 @@ namespace Engine
         }
 
 #ifndef GAME_BUILD
-        // Copy selected entity (Ctrl+C)
+        // Copy selected entity (Ctrl+C) - skip if tilemap tile selection is active
         if (Engine::Input::is_pressed_raw(Engine::KeyCode::C) && Engine::Input::is_held_raw(Engine::KeyCode::CtrlLeft))
         {
-          Engine::ECS::Entity selected = Engine::ECS::get_first_entity_with<Components::Gizmo>();
-          if (selected.is_valid()) {
-            entity_clipboard = Engine::ECS::entity_to_prefab(selected);
-            Log::info("Copied entity {} to clipboard", selected.get_id());
+          if (!TilemapPanel::has_world_tile_selection()) {
+            Engine::ECS::Entity selected = Engine::ECS::get_first_entity_with<Components::Gizmo>();
+            if (selected.is_valid()) {
+              entity_clipboard = Engine::ECS::entity_to_prefab(selected);
+              Log::info("Copied entity {} to clipboard", selected.get_id());
+            }
           }
         }
 
-        // Paste copied entity (Ctrl+V)
+        // Paste copied entity (Ctrl+V) - skip if tilemap mode is handling paste
         if (Engine::Input::is_pressed_raw(Engine::KeyCode::V) && Engine::Input::is_held_raw(Engine::KeyCode::CtrlLeft))
         {
-          if (entity_clipboard.has_value()) {
+          if (entity_clipboard.has_value() && !TilemapPanel::is_tilemap_mode_enabled()) {
             Engine::ECS::Entity pasted = Engine::ECS::instantiate_prefab(entity_clipboard.value());
             Engine::ECS::EntityID pasted_id = pasted.get_id();
             Engine::ECS::Prefab pasted_prefab = entity_clipboard.value();
