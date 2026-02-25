@@ -19680,7 +19680,7 @@
                     },
                     {
                         "data": {
-                            "path": "images/Upgrade.png"
+                            "path": "images/skill_upgrades.png"
                         },
                         "type": "Components::Texture"
                     },
@@ -19908,7 +19908,7 @@
                     },
                     {
                         "data": {
-                            "path": "images/Upgrade.png"
+                            "path": "images/skill_upgrades.png"
                         },
                         "type": "Components::Texture"
                     },

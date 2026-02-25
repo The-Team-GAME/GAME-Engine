@@ -93,8 +93,8 @@ public:
 
     // Upgrade button — bottom-right corner, 64x64, alpha-hidden until upgrade is available
     auto upg_btn = Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(1552.0f, 852.0f, 0.0f, 64.0f * 2.0f, 64.0f * 2.0f)
-      .add_component<Components::Texture>(Engine::Resources::load_texture("images/Upgrade.png"))
+      .add_component<Components::Transform2D>(1500.0f, 800.0f, 0.0f, 64.0f * 4.0f, 64.0f * 4.0f)
+      .add_component<Components::Texture>(Engine::Resources::load_texture("images/skill_upgrades.png"))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.0f)  // start invisible
       .add_component<Components::UI>()
       .add_to_layer("main_menu_4");
