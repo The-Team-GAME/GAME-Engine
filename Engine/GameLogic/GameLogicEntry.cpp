@@ -169,8 +169,13 @@ static void register_collision_callbacks()
 
         Log::info("Player knocked back! Force applied: ({}, {})", attack->knockback.x, attack->knockback.y);
 
+        // Trigger death state immediately when HP reaches 0
         if (health->is_dead()) {
           Log::info("Player is dead!");
+          auto* state_machine = player_entity.get_component<Components::StateMachine>();
+          if (state_machine && state_machine->get_current_state() != "Death") {
+            state_machine->change_state("Death");
+          }
         }
       }
       else {
