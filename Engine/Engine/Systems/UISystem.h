@@ -46,7 +46,10 @@ namespace Engine
         if (!clickable || !tr || !box_collider) return;
         if (Engine::Time::get_paused()) return;
 
-        const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+        // UI entities use screen-space coordinates (not affected by camera)
+        const auto mouse_opt = entity.has_component<Components::UI>()
+          ? Engine::Input::get_mouse_position_if_in_viewport()
+          : Engine::Input::get_mouse_world_position_if_in_viewport();
 
         if (!mouse_opt.has_value()) {
           return;
@@ -194,7 +197,10 @@ namespace Engine
           dynamic_button->normal.transform = *transform;
           dynamic_button->hovered.transform = *transform;
           dynamic_button->clicked.transform = *transform;
-        }        const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+        }        // UI entities use screen-space coordinates (not affected by camera)
+        const auto mouse_opt = entity.has_component<Components::UI>()
+          ? Engine::Input::get_mouse_position_if_in_viewport()
+          : Engine::Input::get_mouse_world_position_if_in_viewport();
 
         if (!mouse_opt.has_value()) {
           // Mouse not in viewport - ensure button is in normal state

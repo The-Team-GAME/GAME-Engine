@@ -58,7 +58,10 @@ namespace Engine
           Engine::ECS::for_each_entity_with<Components::Gizmo>([&](Engine::ECS::Entity gizmo_entity) {
             auto* tr = gizmo_entity.get_component<Components::Transform2D>();
             if (!tr) return;
-            const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+            // UI entities use screen-space coordinates (not affected by camera)
+            const auto mouse_opt = gizmo_entity.has_component<Components::UI>()
+              ? Engine::Input::get_mouse_position_if_in_viewport()
+              : Engine::Input::get_mouse_world_position_if_in_viewport();
             if (!mouse_opt.has_value()) return;
             const auto mouse = mouse_opt.value();
             const float hw = tr->scale.x * 0.5f, hh = tr->scale.y * 0.5f;
@@ -109,7 +112,10 @@ namespace Engine
         auto* tr = entity.get_component<Components::Transform2D>();
         if (!tr) return false;
 
-        const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+        // UI entities use screen-space coordinates (not affected by camera)
+        const auto mouse_opt = entity.has_component<Components::UI>()
+          ? Engine::Input::get_mouse_position_if_in_viewport()
+          : Engine::Input::get_mouse_world_position_if_in_viewport();
         if (!mouse_opt.has_value()) return false;
         const auto mouse = mouse_opt.value();
 
@@ -143,7 +149,10 @@ namespace Engine
           Engine::ECS::for_each_entity_with<Components::Gizmo>([&](Engine::ECS::Entity gizmo_entity) {
             auto* tr = gizmo_entity.get_component<Components::Transform2D>();
             if (!tr) return;
-            const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+            // UI entities use screen-space coordinates (not affected by camera)
+            const auto mouse_opt = gizmo_entity.has_component<Components::UI>()
+              ? Engine::Input::get_mouse_position_if_in_viewport()
+              : Engine::Input::get_mouse_world_position_if_in_viewport();
             if (!mouse_opt.has_value()) return;
             const auto mouse = mouse_opt.value();
             const float hw = tr->scale.x * 0.5f, hh = tr->scale.y * 0.5f;
@@ -196,7 +205,10 @@ namespace Engine
 
         if (!tr || !text || !font) return false;
 
-        const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+        // UI entities use screen-space coordinates (not affected by camera)
+        const auto mouse_opt = entity.has_component<Components::UI>()
+          ? Engine::Input::get_mouse_position_if_in_viewport()
+          : Engine::Input::get_mouse_world_position_if_in_viewport();
         if (!mouse_opt.has_value()) return false;
         const auto mouse = mouse_opt.value();
 
@@ -275,7 +287,10 @@ namespace Engine
           return;
         }
 
-        const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+        // UI entities use screen-space coordinates (not affected by camera)
+        const auto mouse_opt = entity.has_component<Components::UI>()
+          ? Engine::Input::get_mouse_position_if_in_viewport()
+          : Engine::Input::get_mouse_world_position_if_in_viewport();
 
         if (!mouse_opt.has_value()) return;
 
@@ -524,11 +539,28 @@ namespace Engine
 
         if (!tr || !gizmo) return;
 
+        // UI entities draw gizmos in screen space (not affected by camera)
+        const bool is_ui = entity.has_component<Components::UI>();
+
+        // Use UI or world-space draw functions depending on entity type
+        auto gizmo_draw_rect_outline = [is_ui](const Math::Vec2D& pos, const Math::Vec2D& size, f32 rot, f32 thick, const Math::Vec4D& col) {
+          if (is_ui) Graphics::draw_rect_outline_ui(pos, size, rot, thick, col);
+          else Graphics::draw_rect_outline(pos, size, rot, thick, col);
+        };
+        auto gizmo_draw_circle_outline = [is_ui](const Math::Vec2D& pos, f32 radius, f32 thick, const Math::Vec4D& col, int segments) {
+          if (is_ui) Graphics::draw_circle_outline_ui(pos, radius, thick, col, segments);
+          else Graphics::draw_circle_outline(pos, radius, thick, col, segments);
+        };
+        auto gizmo_draw_line = [is_ui](const Math::Vec2D& start, const Math::Vec2D& end, f32 thick, const Math::Vec4D& col) {
+          if (is_ui) Graphics::draw_line_ui(start, end, thick, col);
+          else Graphics::draw_line(start, end, thick, col);
+        };
+
         // All entities (including text) use Transform2D position as center and scale as bounds
         Math::Vec2D rect_center = tr->position;
         Math::Vec2D rect_size = tr->scale;
 
-        Engine::Graphics::draw_rect_outline(
+        gizmo_draw_rect_outline(
           rect_center,
           rect_size,
           tr->rotation,
@@ -552,7 +584,7 @@ namespace Engine
         if (gizmo->mode == Components::GizmoMode::Scale) {
           auto draw_handle = [&](const Math::Vec2D& c, bool hovered) {
             const Math::Vec4D col = hovered ? gizmo->handle_hover_color : gizmo->handle_color;
-            Graphics::draw_rect_outline(c, { gizmo->handle_size, gizmo->handle_size }, tr->rotation, 2.0f, col);
+            gizmo_draw_rect_outline(c, { gizmo->handle_size, gizmo->handle_size }, tr->rotation, 2.0f, col);
             };
           draw_handle(tl_r, gizmo->hover_handle == Components::GizmoHandleType::ScaleTL);
           draw_handle(tr_r, gizmo->hover_handle == Components::GizmoHandleType::ScaleTR);
@@ -570,20 +602,20 @@ namespace Engine
           const Math::Vec4D ring_col = (gizmo->hover_handle == Components::GizmoHandleType::RotateHandle)
             ? gizmo->handle_hover_color : gizmo->handle_color;
 
-          Graphics::draw_circle_outline(center, ring_radius, gizmo->rotate_ring_thickness, ring_col, 64);
+          gizmo_draw_circle_outline(center, ring_radius, gizmo->rotate_ring_thickness, ring_col, 64);
 
           // crosshair aligned to local axes
           const Math::Vec4D colX{ 0.2f, 1.0f, 0.2f, 1.0f };
           const Math::Vec4D colY{ 1.0f, 0.2f, 0.2f, 1.0f };
-          Graphics::draw_line({ center.x - xdir.x * ring_radius, center.y - xdir.y * ring_radius },
+          gizmo_draw_line({ center.x - xdir.x * ring_radius, center.y - xdir.y * ring_radius },
             { center.x + xdir.x * ring_radius, center.y + xdir.y * ring_radius },
             1.5f, colX);
-          Graphics::draw_line({ center.x - ydir.x * ring_radius, center.y - ydir.y * ring_radius },
+          gizmo_draw_line({ center.x - ydir.x * ring_radius, center.y - ydir.y * ring_radius },
             { center.x + ydir.x * ring_radius, center.y + ydir.y * ring_radius },
             1.5f, colY);
 
           // knob outline
-          Graphics::draw_circle_outline(knob, gizmo->rotate_handle_radius, gizmo->outline_thickness, ring_col, 24);
+          gizmo_draw_circle_outline(knob, gizmo->rotate_handle_radius, gizmo->outline_thickness, ring_col, 24);
         }
 
         // Axis arrows along local axes
@@ -596,11 +628,11 @@ namespace Engine
             Math::Vec2D from = mid_right_w;
             Math::Vec2D shaft_center{ from.x + xdir.x * (len_x * 0.5f), from.y + xdir.y * (len_x * 0.5f) };
             Math::Vec4D col = (gizmo->hover_handle == Components::GizmoHandleType::AxisX) ? gizmo->handle_hover_color : gizmo->handle_color;
-            Graphics::draw_rect_outline(shaft_center, { len_x, gizmo->arrow_thickness }, tr->rotation, gizmo->arrow_thickness, col);
+            gizmo_draw_rect_outline(shaft_center, { len_x, gizmo->arrow_thickness }, tr->rotation, gizmo->arrow_thickness, col);
             const float hs = gizmo->arrow_head_size;
             const Math::Vec2D tip{ from.x + xdir.x * len_x, from.y + xdir.y * len_x };
-            Graphics::draw_rect_outline(tip, { hs, gizmo->arrow_thickness }, tr->rotation + 45.0f, gizmo->arrow_thickness, col);
-            Graphics::draw_rect_outline(tip, { hs, gizmo->arrow_thickness }, tr->rotation - 45.0f, gizmo->arrow_thickness, col);
+            gizmo_draw_rect_outline(tip, { hs, gizmo->arrow_thickness }, tr->rotation + 45.0f, gizmo->arrow_thickness, col);
+            gizmo_draw_rect_outline(tip, { hs, gizmo->arrow_thickness }, tr->rotation - 45.0f, gizmo->arrow_thickness, col);
           }
 
           // Y axis
@@ -608,11 +640,11 @@ namespace Engine
             Math::Vec2D from = mid_top_w;
             Math::Vec2D shaft_center{ from.x - ydir.x * (len_y * 0.5f), from.y - ydir.y * (len_y * 0.5f) };
             Math::Vec4D col = (gizmo->hover_handle == Components::GizmoHandleType::AxisY) ? gizmo->handle_hover_color : gizmo->handle_color;
-            Graphics::draw_rect_outline(shaft_center, { len_y, gizmo->arrow_thickness }, tr->rotation + 90.0f, gizmo->arrow_thickness, col);
+            gizmo_draw_rect_outline(shaft_center, { len_y, gizmo->arrow_thickness }, tr->rotation + 90.0f, gizmo->arrow_thickness, col);
             const float hs = gizmo->arrow_head_size;
             const Math::Vec2D tip{ from.x - ydir.x * len_y, from.y - ydir.y * len_y };
-            Graphics::draw_rect_outline(tip, { hs, gizmo->arrow_thickness }, tr->rotation + 90.0f + 45.0f, gizmo->arrow_thickness, col);
-            Graphics::draw_rect_outline(tip, { hs, gizmo->arrow_thickness }, tr->rotation + 90.0f - 45.0f, gizmo->arrow_thickness, col);
+            gizmo_draw_rect_outline(tip, { hs, gizmo->arrow_thickness }, tr->rotation + 90.0f + 45.0f, gizmo->arrow_thickness, col);
+            gizmo_draw_rect_outline(tip, { hs, gizmo->arrow_thickness }, tr->rotation + 90.0f - 45.0f, gizmo->arrow_thickness, col);
           }
         }
 
