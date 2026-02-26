@@ -12,6 +12,8 @@ namespace Engine
 {
   void TempUpgradeUIManager::draw()
   {
+#ifndef GAME_BUILD
     UpgradePickerUI();
+#endif
   }
 }
