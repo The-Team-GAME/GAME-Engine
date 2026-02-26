@@ -368,6 +368,24 @@ namespace Components
       }
     }
 
+    /// Force an immediate state switch and apply its animation/audio to the entity.
+    /// Intended for use in the editor where the normal update loop may not be running.
+    void set_state_immediate(const std::string& state_name, Engine::ECS::Entity entity) {
+      if (states.find(state_name) == states.end()) {
+        Log::error("Cannot set state '{}' - state does not exist", state_name);
+        return;
+      }
+      owner_entity_ = &entity;
+      current_state_name = state_name;
+      is_first_frame_ = true;
+
+      // Apply visual/audio data immediately
+      auto& state = states[state_name];
+      if (state.animation.has_value()) {
+        apply_state_animation(state.animation.value());
+      }
+    }
+
   private:
     // ========================================================================
     // Internal State Transition Logic

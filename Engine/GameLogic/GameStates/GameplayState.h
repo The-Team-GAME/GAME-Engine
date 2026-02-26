@@ -41,7 +41,7 @@ public:
     Engine::Resources::open_level("levels/LevelOneTestingExtra.json");
 
     bgm_sound = Engine::Resources::load_sound("sounds/BGM/Level 1/MonomythBGM.wav");
-    
+
 
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();
 
@@ -51,7 +51,9 @@ public:
     // camera.add_component<Components::Camera>("player camera", true);
     // camera.add_component<Components::Parent>(player_entity.get_id());
 
-    player_entity.add_component<Components::HeartHUDSprite>();
+    // TODO: REMOVE
+    player_entity.add_component<Components::Health>(5, 5);
+    // player_entity.add_component<Components::HeartHUDSprite>();
 
     // Victory zone - triggers victory screen when player enters
     // TODO: Position this at the end of the level
@@ -91,8 +93,8 @@ public:
 
     // Upgrade button — bottom-right corner, 64x64, alpha-hidden until upgrade is available
     auto upg_btn = Engine::ECS::create_entity()
-      .add_component<Components::Transform2D>(1552.0f, 852.0f, 0.0f, 64.0f * 2.0f, 64.0f * 2.0f)
-      .add_component<Components::Texture>(Engine::Resources::load_texture("images/Upgrade.png"))
+      .add_component<Components::Transform2D>(1500.0f, 800.0f, 0.0f, 64.0f * 4.0f, 64.0f * 4.0f)
+      .add_component<Components::Texture>(Engine::Resources::load_texture("images/skill_upgrades.png"))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 0.0f)  // start invisible
       .add_component<Components::UI>()
       .add_to_layer("main_menu_4");
@@ -186,15 +188,21 @@ public:
         auto* upg_t = Engine::ECS::Entity(upgrade_btn_id).get_component<Components::Transform2D>();
         float uhw = upg_t->scale.x / 2.0f;
         float uhh = upg_t->scale.y / 2.0f;
+
+        bool open_picker = Engine::Input::is_pressed(Engine::KeyCode::I);
+
         if (mouse_pos.x >= upg_t->position.x - uhw &&
           mouse_pos.x <= upg_t->position.x + uhw &&
           mouse_pos.y >= upg_t->position.y - uhh &&
           mouse_pos.y <= upg_t->position.y + uhh) {
-          if (Engine::Input::is_pressed(Engine::KeyCode::MouseLeft)) {
-            if (!upg_mgr.has_rolled_cards())
-              upg_mgr.roll_cards();
-            upg_mgr.request_upgrade_picker();
-          }
+          if (Engine::Input::is_pressed(Engine::KeyCode::MouseLeft))
+            open_picker = true;
+        }
+
+        if (open_picker) {
+          if (!upg_mgr.has_rolled_cards())
+            upg_mgr.roll_cards();
+          upg_mgr.request_upgrade_picker();
         }
       }
     }

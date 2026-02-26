@@ -18,6 +18,7 @@
 #include "pch.h"
 #include "../Components/GameplayComponent.h"
 #include "../Components/HeartrateComponent.h"
+#include "../Components/HealthComponents.h"
 
 using namespace Engine;
 namespace {
@@ -36,14 +37,14 @@ namespace PlayerStateCallbacks
     Components::RigidBody* player_rigid = entity.get_component<Components::RigidBody>();
     Components::Player* player_comp = entity.get_component<Components::Player>();
     Components::Flip* flip = entity.get_component<Components::Flip>();
-    Components::Heartrate* heartrate = entity.get_component<Components::Heartrate>();
+    Components::Health* health = entity.get_component<Components::Health>();
 
     // Death Condition
-    if (heartrate->heartrate >= heartrate->dead)
-    {
-      state_machine->change_state("Death");
-      return;
-    }
+    // if (health && health->is_dead())
+    // {
+    //   state_machine->change_state("Death");
+    //   return;
+    // }
 
     // Checking for falling
     if (!default_state && !player_rigid->on_ground)
@@ -66,7 +67,7 @@ namespace PlayerStateCallbacks
     }
 
 #pragma region Atk Input
-    if (Engine::Input::is_pressed(Engine::KeyCode::K) 
+    if (Engine::Input::is_pressed(Engine::KeyCode::K)
       && player_comp->uppercut.ready())
     {
       // putting this here because it spazes otherwise, i think its smth to do with drawing sequence or smth
@@ -94,7 +95,7 @@ namespace PlayerStateCallbacks
 #pragma endregion
 
 #pragma region Movement Input
-    if (Input::is_held(KeyCode::ShiftLeft) 
+    if (Input::is_held(KeyCode::ShiftLeft)
       && player_comp->dash.ready())
     {
       state_machine->change_state("Dash");
@@ -348,12 +349,6 @@ namespace PlayerStateCallbacks
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
     auto* player_comp = entity.get_component<Components::Player>();
-    auto* heartrate = entity.get_component<Components::Heartrate>();
-
-    // Increase heartrate
-    if (heartrate) {
-      heartrate->increase(player_comp->attack1.heartrate_cost);
-    }
 
     // Apply forward movement during attack
     if (rigid && flip && player_comp) {
@@ -440,12 +435,6 @@ namespace PlayerStateCallbacks
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
     auto* player_comp = entity.get_component<Components::Player>();
-    auto* heartrate = entity.get_component<Components::Heartrate>();
-
-    // Increase heartrate
-    if (heartrate) {
-      heartrate->increase(player_comp->attack2.heartrate_cost);
-    }
 
     // Apply forward movement during attack
     if (rigid && flip && player_comp) {
@@ -532,12 +521,6 @@ namespace PlayerStateCallbacks
     auto* rigid = entity.get_component<Components::RigidBody>();
     auto* flip = entity.get_component<Components::Flip>();
     auto* player_comp = entity.get_component<Components::Player>();
-    auto* heartrate = entity.get_component<Components::Heartrate>();
-
-    // Increase heartrate
-    if (heartrate) {
-      heartrate->increase(player_comp->attack3.heartrate_cost);
-    }
 
     // Apply forward movement during attack
     if (rigid && flip && player_comp) {
@@ -782,7 +765,7 @@ namespace PlayerStateCallbacks
     }
   }
 
-  inline void pre_smash_on_exit([[maybe_unused]]ECS::Entity entity)
+  inline void pre_smash_on_exit([[maybe_unused]] ECS::Entity entity)
   {
     // Empty as designed
   }
@@ -817,8 +800,8 @@ namespace PlayerStateCallbacks
   inline void smash_on_exit([[maybe_unused]] ECS::Entity entity)
   {
     // Empty as designed
-  }  
-  
+  }
+
   // ========================================================================
   // Post Smash State Callbacks
   // ========================================================================
@@ -831,7 +814,7 @@ namespace PlayerStateCallbacks
   inline void post_smash_on_update(ECS::Entity entity)
   {
     Components::Animation* animation = entity.get_component<Components::Animation>();
-    if (animation && animation->has_ended()) 
+    if (animation && animation->has_ended())
     {
       Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
       assert(state_machine);
@@ -866,7 +849,7 @@ namespace PlayerStateCallbacks
   {
     Components::Animation* animation = entity.get_component<Components::Animation>();
     if (animation && animation->has_ended()) {
-      Engine::ECS::destroy_entity(entity);
+      // Engine::ECS::destroy_entity(entity);
       Log::info("Player: Destroyed after death animation.");
       Components::StateMachine* state_machine = entity.get_component<Components::StateMachine>();
       assert(state_machine);
@@ -895,7 +878,7 @@ REGISTER_STATE_MACHINE_BLUEPRINT(Player, "Idle",
   STATE("Dash", PlayerStateCallbacks::dash_on_enter, PlayerStateCallbacks::dash_on_update, PlayerStateCallbacks::dash_on_exit)
 
   STATE("Attack1", PlayerStateCallbacks::attack1_on_enter, PlayerStateCallbacks::attack1_on_update, NO_CALLBACK)
-  STATE("Attack2", PlayerStateCallbacks::attack2_on_enter, PlayerStateCallbacks::attack2_on_update, NO_CALLBACK)  
+  STATE("Attack2", PlayerStateCallbacks::attack2_on_enter, PlayerStateCallbacks::attack2_on_update, NO_CALLBACK)
   STATE("Attack3", PlayerStateCallbacks::attack3_on_enter, PlayerStateCallbacks::attack3_on_update, NO_CALLBACK)
 
   STATE("PreUppercut", PlayerStateCallbacks::pre_uppercut_on_enter, PlayerStateCallbacks::pre_uppercut_on_update, PlayerStateCallbacks::pre_uppercut_on_exit)
@@ -904,7 +887,7 @@ REGISTER_STATE_MACHINE_BLUEPRINT(Player, "Idle",
   STATE("UppercutFalling", PlayerStateCallbacks::uppercut_falling_on_enter, PlayerStateCallbacks::uppercut_falling_on_update, PlayerStateCallbacks::uppercut_falling_on_exit)
 
   STATE("PreSmash", PlayerStateCallbacks::pre_smash_on_enter, PlayerStateCallbacks::pre_smash_on_update, PlayerStateCallbacks::pre_smash_on_exit)
-  STATE("Smash", PlayerStateCallbacks::smash_on_enter, PlayerStateCallbacks::smash_on_update, PlayerStateCallbacks::smash_on_exit)  
+  STATE("Smash", PlayerStateCallbacks::smash_on_enter, PlayerStateCallbacks::smash_on_update, PlayerStateCallbacks::smash_on_exit)
   STATE("PostSmash", PlayerStateCallbacks::post_smash_on_enter, PlayerStateCallbacks::post_smash_on_update, PlayerStateCallbacks::post_smash_on_exit)
 
   STATE("Death", PlayerStateCallbacks::death_on_enter, PlayerStateCallbacks::death_on_update, PlayerStateCallbacks::death_on_exit)
