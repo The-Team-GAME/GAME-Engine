@@ -170,12 +170,6 @@ function player_attack1_enter(entity)
     local rigid = entity:get_component("RigidBody")
     local flip = entity:get_component("Flip")
     local player = entity:get_component("Player")
-    local heartrate = entity:get_component("Heartrate")
-    
-    -- Increase heartrate
-    if heartrate then
-        heartrate:increase(player.attack1.heartrate_cost)
-    end
     
     -- Apply forward movement during attack
     if rigid and flip and player then
@@ -269,12 +263,6 @@ function player_attack2_enter(entity)
     local rigid = entity:get_component("RigidBody")
     local flip = entity:get_component("Flip")
     local player = entity:get_component("Player")
-    local heartrate = entity:get_component("Heartrate")
-    
-    -- Increase heartrate
-    if heartrate then
-        heartrate:increase(player.attack2.heartrate_cost)
-    end
     
     -- Apply forward movement during attack
     if rigid and flip and player then
@@ -368,12 +356,6 @@ function player_attack3_enter(entity)
     local rigid = entity:get_component("RigidBody")
     local flip = entity:get_component("Flip")
     local player = entity:get_component("Player")
-    local heartrate = entity:get_component("Heartrate")
-    
-    -- Increase heartrate
-    if heartrate then
-        heartrate:increase(player.attack3.heartrate_cost)
-    end
     
     -- Apply forward movement during attack
     if rigid and flip and player then

@@ -34,7 +34,7 @@ namespace Components
     Action(f32 dur, f32 cd, f32 spd = 0.f, f32 imp = 0.f)
       : duration(dur), cooldown(cd), speed(spd), impulse(imp) {}
 
-    void set_timer()
+    void set_timer() // starts the countdown for the states that run on a timer
     {
       timer = duration;
     }
@@ -167,8 +167,8 @@ namespace Components
     float chase_speed = 100.0f;
 
     // Attack parameters
-    float leap_speed = 2000.0f;
-    float leap_height = 300.0f;
+    float leap_speed = 200.0f;
+    float leap_height = 300.0f; //unused monkey no longer leaps
     float attack_cooldown = 3.0f;
     float last_attack_time = 0.0f;
     float attack_windup = 0.5f;  // Time to wait in windup state before attacking
@@ -221,7 +221,7 @@ namespace Components
 
     // Runtime state (NOT serialized - exceed 20 field limit)
     float last_dash_time = -3.0f;        // Initialize to allow immediate first dash
-    float last_attack_time = 0.0f;       // Last attack timestamp
+    float last_attack_time = -3.0f;      // Last attack timestamp (negative allows first attack immediately)
     float dash_windup_start_time = 0.0f; // When dash windup started
     float dash_target_x = 0.0f;          // The player's X position when dash windup completes
     Engine::ECS::Entity dash_indicator_entity; // Runtime reference to the warning indicator entity
@@ -235,7 +235,7 @@ namespace Components
     // Attack parameters (serialized/configurable)
     float attack_cooldown = 3.0f;
     float attack_windup = 0.5f;  // Time to wait in windup state before attacking
-    float last_attack_time = 0.0f;
+    float last_attack_time = -3.0f; // negative allows first attack immediately
 
     // Attack hitbox parameters
     float hitbox_offset_x = 80.0f;
@@ -314,7 +314,7 @@ REFLECT_FIELDS(Components::Action, no_cooldown, duration, timer, cooldown, cd_ti
 
 REGISTER_COMPONENT(Components::Player, damage_immune, walk_speed, jump_force, dash, stunned, attack1, attack2, attack3, uppercut, smash)
 REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height, attack_cooldown, last_attack_time, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, attack_range)
-REGISTER_COMPONENT(Components::TurretMonkey, chase_speed, attack_cooldown, attack_windup, last_attack_time, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, long_attack_range)
+REGISTER_COMPONENT(Components::TurretMonkey, chase_speed, attack_cooldown, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, long_attack_range)
 REGISTER_COMPONENT(Components::GamerMonkey, chase_speed, dash_speed, dash_cooldown, dash_windup_duration, dash_indicator_height, leap_speed, leap_height, attack_cooldown, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, close_attack_range, dash_attack_range)
 REGISTER_COMPONENT(Components::SprayCanMonkey, chase_speed, attack_cooldown, last_attack_time, attack_windup, detection_range, chase_range, attack_range, spray_duration, spray_range, spray_width, knockback, damage, cloud_spawn_time, cloud_initial_vx)
 REGISTER_COMPONENT(Components::Attack, damage, knockback, is_continuous, damage_interval, impact_vfx_texture)

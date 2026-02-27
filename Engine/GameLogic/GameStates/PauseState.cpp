@@ -47,7 +47,7 @@ void PauseState::load()
   exit_selected_tex = Engine::Resources::load_texture("images/UI/In-Game Pause/States/ExitButton.png");
 
   // Get current camera position to center the UI
-  auto& camera = Engine::Systems::CameraSystem::get_camera();
+  Components::Transform2D camera = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f }; // Engine::Systems::CameraSystem::get_camera().position; --- IGNORE ---
   float cam_x = camera.position.x + 800.0f;
   float cam_y = camera.position.y + 450.0f;
 
@@ -56,6 +56,7 @@ void PauseState::load()
     .add_component<Components::Transform2D>(cam_x, cam_y, 0.0f, 1600.0f, 900.0f)
     .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
     .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 0.5f)
+    .add_component<Components::UI>()
     .add_to_layer("main_menu_4");
   background_id = background.get_id();
 
@@ -64,6 +65,7 @@ void PauseState::load()
     .add_component<Components::Transform2D>(cam_x, cam_y, 0.0f, 1600.0f, 900.0f)
     .add_component<Components::Texture>(nothing_selected_tex)
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+    .add_component<Components::UI>()
     .add_to_layer("main_menu_5");
   menu_sprite_id = menu_sprite.get_id();
 
@@ -85,6 +87,7 @@ void PauseState::load()
       Math::Vec2D(-55.50151824951172f, -250.0f)
   }))
     .add_component<Components::Clickable>("pause_menu_resume", "pause_hover_resume", "pause_hover_none")
+    .add_component<Components::UI>()
     .add_to_layer("main_menu_5");
   resume_collider_id = resume_collider.get_id();
 
@@ -99,6 +102,7 @@ void PauseState::load()
       Math::Vec2D(-58.14589309692383f, -158.23712158203125f)
   }))
     .add_component<Components::Clickable>("pause_menu_restart", "pause_hover_restart", "pause_hover_none")
+    .add_component<Components::UI>()
     .add_to_layer("main_menu_5");
   restart_collider_id = restart_collider.get_id();
 
@@ -113,6 +117,7 @@ void PauseState::load()
       Math::Vec2D(-57.750755310058594f, 52.06686782836914f)
   }))
     .add_component<Components::Clickable>("pause_menu_options", "pause_hover_options", "pause_hover_none")
+    .add_component<Components::UI>()
     .add_to_layer("main_menu_5");
   options_collider_id = options_collider.get_id();
 
@@ -127,6 +132,7 @@ void PauseState::load()
       Math::Vec2D(-54.31610107421875f, 152.9483184814453f)
   }))
     .add_component<Components::Clickable>("pause_menu_exit", "pause_hover_exit", "pause_hover_none")
+    .add_component<Components::UI>()
     .add_to_layer("main_menu_5");
   exit_collider_id = exit_collider.get_id();
 

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------------
-// file:    GamerMonkeyStateCallbacks.h
+// file:    GamerMonkeyStateCallbacks.cpp
 // project: Monkey Stole My GPA
 //
 // author:  Ryan Ang An Kiat (100%)
@@ -23,13 +23,7 @@ namespace GamerMonkeyStateCallbacks
   // ========================================================================
 
   inline void idle_on_enter(Engine::ECS::Entity entity) {
-    auto* Gamer_monkey = entity.get_component<Components::GamerMonkey>();
     auto* rigid = entity.get_component<Components::RigidBody>();
-
-    if (Gamer_monkey) {
-      // Store when we entered idle (for recovery delay after being hit)
-      Gamer_monkey->last_attack_time = Engine::Time::get_time();
-    }
 
     // Stop movement when entering idle
     if (rigid) {
@@ -46,12 +40,6 @@ namespace GamerMonkeyStateCallbacks
     if (!Gamer_monkey || !state_machine) return;
 
     float current_time = Engine::Time::get_time();
-    float time_in_idle = current_time - Gamer_monkey->last_attack_time;
-
-    // Don't chase immediately after entering idle (recovery from hit)
-    if (time_in_idle < 0.3f) {
-      return;
-    }
 
     // Get player entity
     auto player_entity = Engine::ECS::get_first_entity_with<Components::Player>();

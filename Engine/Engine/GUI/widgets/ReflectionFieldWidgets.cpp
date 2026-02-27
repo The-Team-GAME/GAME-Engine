@@ -514,6 +514,8 @@ namespace ImGuiWidgets {
       if (ImGui::BeginCombo("##blueprint_id", preview)) {
         if (ImGui::Selectable("(none)", current_bp_id.empty())) {
           field_obj["blueprint_id"] = ReflectionLibrary::GenericValue(std::string(""));
+          field_obj["states"] = ReflectionLibrary::GenericValue(ReflectionLibrary::Array{});
+          field_obj["current_state_name"] = ReflectionLibrary::GenericValue(std::string(""));
           local_modified = true;
         }
         for (const auto& id : all_ids) {
@@ -521,6 +523,65 @@ namespace ImGuiWidgets {
           if (ImGui::Selectable(id.c_str(), is_selected)) {
             field_obj["blueprint_id"] = ReflectionLibrary::GenericValue(id);
             local_modified = true;
+
+            // ---- Sync states from the newly selected blueprint ----
+            const auto* bp = Engine::StateMachineBlueprintRegistry::instance().get_blueprint(id);
+            if (bp) {
+              // Build a lookup of existing serialized states so we preserve animation/audio data
+              std::map<std::string, ReflectionLibrary::GenericValue> existing_states;
+              auto st_it = field_obj.find("states");
+              if (st_it != field_obj.end()) {
+                auto existing_map = ReflectionLibrary::convert_array_of_pairs_to_map(st_it->second);
+                if (existing_map.isObject()) {
+                  existing_states = existing_map.getObject();
+                }
+              }
+
+              // Build new states array-of-pairs from the blueprint
+              ReflectionLibrary::Array new_states_array;
+              for (const auto& sb : bp->states) {
+                ReflectionLibrary::Object pair_obj;
+                pair_obj["first"] = ReflectionLibrary::GenericValue(sb.state_name);
+
+                // Reuse existing state data if it exists (preserves animation/audio/collider)
+                auto ex_it = existing_states.find(sb.state_name);
+                if (ex_it != existing_states.end()) {
+                  pair_obj["second"] = ex_it->second;
+                }
+                else {
+                  // Create a minimal state object with empty fields
+                  ReflectionLibrary::Object state_obj;
+                  state_obj["name"] = ReflectionLibrary::GenericValue(sb.state_name);
+                  state_obj["animation"] = ReflectionLibrary::GenericValue();  // null
+                  state_obj["audio"] = ReflectionLibrary::GenericValue();      // null
+                  state_obj["fmod_audio"] = ReflectionLibrary::GenericValue(); // null
+
+                  ReflectionLibrary::Object enter_cb;
+                  enter_cb["name"] = ReflectionLibrary::GenericValue(sb.on_enter);
+                  state_obj["on_enter_callback"] = ReflectionLibrary::GenericValue(std::move(enter_cb));
+
+                  ReflectionLibrary::Object update_cb;
+                  update_cb["name"] = ReflectionLibrary::GenericValue(sb.on_update);
+                  state_obj["on_update_callback"] = ReflectionLibrary::GenericValue(std::move(update_cb));
+
+                  ReflectionLibrary::Object exit_cb;
+                  exit_cb["name"] = ReflectionLibrary::GenericValue(sb.on_exit);
+                  state_obj["on_exit_callback"] = ReflectionLibrary::GenericValue(std::move(exit_cb));
+
+                  pair_obj["second"] = ReflectionLibrary::GenericValue(std::move(state_obj));
+                }
+                new_states_array.push_back(ReflectionLibrary::GenericValue(std::move(pair_obj)));
+              }
+
+              field_obj["states"] = ReflectionLibrary::GenericValue(std::move(new_states_array));
+
+              // Set initial state from blueprint if not already set
+              auto csn_it = field_obj.find("current_state_name");
+              bool needs_initial = !csn_it->second.isString() || csn_it->second.getString().empty();
+              if (needs_initial && !bp->initial_state.empty()) {
+                field_obj["current_state_name"] = ReflectionLibrary::GenericValue(bp->initial_state);
+              }
+            }
           }
           if (is_selected) ImGui::SetItemDefaultFocus();
         }
@@ -550,7 +611,7 @@ namespace ImGuiWidgets {
         current_state = csn_it->second.getString();
       }
 
-      ImGui::Text("Initial State:");
+      ImGui::Text("Current State:");
       ImGui::SameLine();
       const char* state_preview = current_state.empty() ? "(not set)" : current_state.c_str();
       if (ImGui::BeginCombo("##initial_state", state_preview)) {
@@ -559,6 +620,14 @@ namespace ImGuiWidgets {
           if (ImGui::Selectable(sname.c_str(), is_selected)) {
             field_obj["current_state_name"] = ReflectionLibrary::GenericValue(sname);
             local_modified = true;
+
+            // Also apply the state change to the live component immediately
+            if (entity.is_valid() && entity.has_component<Components::StateMachine>()) {
+              auto* sm = entity.get_component<Components::StateMachine>();
+              if (sm && sm->has_state(sname)) {
+                sm->set_state_immediate(sname, entity);
+              }
+            }
           }
           if (is_selected) ImGui::SetItemDefaultFocus();
         }

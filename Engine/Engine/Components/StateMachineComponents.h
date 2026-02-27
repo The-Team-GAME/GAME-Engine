@@ -184,7 +184,10 @@ namespace Components
 
       current_state_name = state_name;
       is_first_frame_ = true;
-      has_started_ = true;
+      // Keep startup deferred so first update can sync callbacks from blueprint.
+      // This is required because code-defined states usually only carry visual/audio
+      // data while gameplay callbacks are injected by sync_with_blueprint().
+      has_started_ = false;
     }
 
     /// Request a state change (deferred until end of current update)
@@ -362,6 +365,24 @@ namespace Components
           current_state_name = states.begin()->first;
         }
         Log::warning("StateMachine: current state was removed, reset to '{}'", current_state_name);
+      }
+    }
+
+    /// Force an immediate state switch and apply its animation/audio to the entity.
+    /// Intended for use in the editor where the normal update loop may not be running.
+    void set_state_immediate(const std::string& state_name, Engine::ECS::Entity entity) {
+      if (states.find(state_name) == states.end()) {
+        Log::error("Cannot set state '{}' - state does not exist", state_name);
+        return;
+      }
+      owner_entity_ = &entity;
+      current_state_name = state_name;
+      is_first_frame_ = true;
+
+      // Apply visual/audio data immediately
+      auto& state = states[state_name];
+      if (state.animation.has_value()) {
+        apply_state_animation(state.animation.value());
       }
     }
 
