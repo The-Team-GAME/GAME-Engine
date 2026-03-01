@@ -205,7 +205,7 @@ namespace Engine
 
         auto solution_dir = get_solution_dir();
         auto config = get_active_configuration();
-        auto vcxproj = solution_dir / "Engine" / "GameLogic.vcxproj";
+        auto vcxproj = solution_dir / "Engine" / "GameLogic" / "GameLogic.vcxproj";
         auto msbuild = find_msbuild_path();
 
         // Build log goes next to the exe for easy inspection on failure
