@@ -83,7 +83,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)GameLogic;$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\RapidJSON;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\Lua\include;$(SolutionDir)Dependencies\Sol2\include;$(SolutionDir)Dependencies\FMOD Studio\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\RapidJSON;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\Lua\include;$(SolutionDir)Dependencies\Sol2\include;$(SolutionDir)Dependencies\FMOD Studio\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/bigobj /Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
@@ -112,7 +112,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)GameLogic;$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\RapidJSON;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\Lua\include;$(SolutionDir)Dependencies\Sol2\include;$(SolutionDir)Dependencies\FMOD Studio\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\RapidJSON;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\Lua\include;$(SolutionDir)Dependencies\Sol2\include;$(SolutionDir)Dependencies\FMOD Studio\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
@@ -141,7 +141,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC;NDEBUG;_CONSOLE;GAME_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)GameLogic;$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\RapidJSON;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\Lua\include;$(SolutionDir)Dependencies\Sol2\include;$(SolutionDir)Dependencies\FMOD Studio\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)Dependencies\FMOD\inc;$(SolutionDir)Dependencies\FreeType\include;$(SolutionDir)Dependencies\RapidJSON;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\Lua\include;$(SolutionDir)Dependencies\Sol2\include;$(SolutionDir)Dependencies\FMOD Studio\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
@@ -163,56 +163,56 @@
   <!-- Source Files                                                  -->
   <!-- ============================================================ -->
   <ItemGroup>
-    <ClCompile Include="GameLogic\pch.cpp">
+    <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="GameLogic\GameLogicEntry.cpp" />
-    <ClCompile Include="GameLogic\GameStates\BasicState.cpp" />
-    <ClCompile Include="GameLogic\GameStates\OptionsState.cpp" />
-    <ClCompile Include="GameLogic\GameStates\PauseState.cpp" />
-    <ClCompile Include="GameLogic\GameStates\StressTestState.cpp" />
-    <ClCompile Include="GameLogic\GameStates\VictoryState.cpp" />
-    <ClCompile Include="GameLogic\States\GamerMonkeyStateCallbacks.cpp" />
-    <ClCompile Include="GameLogic\States\HealthBarStateCallbacks.cpp" />
-    <ClCompile Include="GameLogic\States\LazyMonkeyStateCallbacks.cpp" />
-    <ClCompile Include="GameLogic\States\PlayerProfileStateCallbacks.cpp" />
-    <ClCompile Include="GameLogic\States\PlayerStateCallbacks.cpp" />
-    <ClCompile Include="GameLogic\States\SprayCanMonkeyStateCallbacks.cpp" />
-    <ClCompile Include="GameLogic\States\TurretMonkeyStateCallbacks.cpp" />
+    <ClCompile Include="GameLogicEntry.cpp" />
+    <ClCompile Include="GameStates\BasicState.cpp" />
+    <ClCompile Include="GameStates\OptionsState.cpp" />
+    <ClCompile Include="GameStates\PauseState.cpp" />
+    <ClCompile Include="GameStates\StressTestState.cpp" />
+    <ClCompile Include="GameStates\VictoryState.cpp" />
+    <ClCompile Include="States\GamerMonkeyStateCallbacks.cpp" />
+    <ClCompile Include="States\HealthBarStateCallbacks.cpp" />
+    <ClCompile Include="States\LazyMonkeyStateCallbacks.cpp" />
+    <ClCompile Include="States\PlayerProfileStateCallbacks.cpp" />
+    <ClCompile Include="States\PlayerStateCallbacks.cpp" />
+    <ClCompile Include="States\SprayCanMonkeyStateCallbacks.cpp" />
+    <ClCompile Include="States\TurretMonkeyStateCallbacks.cpp" />
   </ItemGroup>
   <!-- ============================================================ -->
   <!-- Header Files                                                  -->
   <!-- ============================================================ -->
   <ItemGroup>
-    <ClInclude Include="GameLogic\pch.h" />
-    <ClInclude Include="GameLogic\Components\EnemyHealthComponent.h" />
-    <ClInclude Include="GameLogic\Components\GameplayComponent.h" />
-    <ClInclude Include="GameLogic\Components\HealthComponents.h" />
-    <ClInclude Include="GameLogic\Components\HeartrateComponent.h" />
-    <ClInclude Include="GameLogic\Components\InteractableComponents.h" />
-    <ClInclude Include="GameLogic\GameStates\BehaviourState.h" />
-    <ClInclude Include="GameLogic\GameStates\BasicState.h" />
-    <ClInclude Include="GameLogic\GameStates\DistortionEffectState.h" />
-    <ClInclude Include="GameLogic\GameStates\EmptyState.h" />
-    <ClInclude Include="GameLogic\GameStates\GameMonkeyTestState.h" />
-    <ClInclude Include="GameLogic\GameStates\GameplayState.h" />
-    <ClInclude Include="GameLogic\GameStates\LevelTestState.h" />
-    <ClInclude Include="GameLogic\GameStates\LuaState.h" />
-    <ClInclude Include="GameLogic\GameStates\MainMenuState.h" />
-    <ClInclude Include="GameLogic\GameStates\OptionsState.h" />
-    <ClInclude Include="GameLogic\GameStates\PauseState.h" />
-    <ClInclude Include="GameLogic\GameStates\PhysicsTestState.h" />
-    <ClInclude Include="GameLogic\GameStates\Rubric2500ParticlesState.h" />
-    <ClInclude Include="GameLogic\GameStates\StressTestState.h" />
-    <ClInclude Include="GameLogic\GameStates\TimelineState.h" />
-    <ClInclude Include="GameLogic\GameStates\TurretMonkeyTestState.h" />
-    <ClInclude Include="GameLogic\GameStates\VictoryState.h" />
-    <ClInclude Include="GameLogic\InteractableCallbacks\OldMan.h" />
-    <ClInclude Include="GameLogic\Systems\DebugHitboxRenderSystem.h" />
-    <ClInclude Include="GameLogic\Systems\EnemyHealthSystem.h" />
-    <ClInclude Include="GameLogic\Systems\HealthSystem.h" />
-    <ClInclude Include="GameLogic\Systems\HeartrateSystem.h" />
-    <ClInclude Include="GameLogic\Systems\InteractableSystem.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="Components\EnemyHealthComponent.h" />
+    <ClInclude Include="Components\GameplayComponent.h" />
+    <ClInclude Include="Components\HealthComponents.h" />
+    <ClInclude Include="Components\HeartrateComponent.h" />
+    <ClInclude Include="Components\InteractableComponents.h" />
+    <ClInclude Include="GameStates\BehaviourState.h" />
+    <ClInclude Include="GameStates\BasicState.h" />
+    <ClInclude Include="GameStates\DistortionEffectState.h" />
+    <ClInclude Include="GameStates\EmptyState.h" />
+    <ClInclude Include="GameStates\GameMonkeyTestState.h" />
+    <ClInclude Include="GameStates\GameplayState.h" />
+    <ClInclude Include="GameStates\LevelTestState.h" />
+    <ClInclude Include="GameStates\LuaState.h" />
+    <ClInclude Include="GameStates\MainMenuState.h" />
+    <ClInclude Include="GameStates\OptionsState.h" />
+    <ClInclude Include="GameStates\PauseState.h" />
+    <ClInclude Include="GameStates\PhysicsTestState.h" />
+    <ClInclude Include="GameStates\Rubric2500ParticlesState.h" />
+    <ClInclude Include="GameStates\StressTestState.h" />
+    <ClInclude Include="GameStates\TimelineState.h" />
+    <ClInclude Include="GameStates\TurretMonkeyTestState.h" />
+    <ClInclude Include="GameStates\VictoryState.h" />
+    <ClInclude Include="InteractableCallbacks\OldMan.h" />
+    <ClInclude Include="Systems\DebugHitboxRenderSystem.h" />
+    <ClInclude Include="Systems\EnemyHealthSystem.h" />
+    <ClInclude Include="Systems\HealthSystem.h" />
+    <ClInclude Include="Systems\HeartrateSystem.h" />
+    <ClInclude Include="Systems\InteractableSystem.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

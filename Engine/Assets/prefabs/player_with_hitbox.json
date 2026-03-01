@@ -7,7 +7,7 @@
                         "half_height": 51.89607238769531,
                         "half_width": 19.197696685791016,
                         "pos": {
-                            "x": -2586.063232421875,
+                            "x": -2147.323486328125,
                             "y": 1036.981201171875
                         }
                     },
@@ -35,7 +35,7 @@
             {
                 "data": {
                     "position": {
-                        "x": -2585.705322265625,
+                        "x": -2146.965576171875,
                         "y": 1024.8773193359375
                     },
                     "rotation": 0.0,
@@ -72,7 +72,7 @@
             },
             {
                 "data": {
-                    "drawIndex": 6,
+                    "drawIndex": 3,
                     "tex_coords_list": [
                         [
                             {
@@ -591,7 +591,7 @@
                         0.10000000149011612
                     ],
                     "is_looping": true,
-                    "startTime": 34.174720764160156,
+                    "startTime": 122.54501342773438,
                     "totalDuration": 2.3999998569488525
                 },
                 "type": "Components::Animation"
@@ -646,7 +646,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 34.174720764160156,
+                                        "startTime": 122.54501342773438,
                                         "totalDuration": 0.7199999094009399
                                     },
                                     "collider_data": {
@@ -902,7 +902,7 @@
                                             0.5
                                         ],
                                         "is_looping": true,
-                                        "startTime": 34.174720764160156,
+                                        "startTime": 122.54501342773438,
                                         "totalDuration": 2.1499998569488525
                                     },
                                     "collider_data": {
@@ -915,7 +915,7 @@
                                         "width": 35.85566329956055
                                     },
                                     "scale": {
-                                        "x": 256.0,
+                                        "x": 192.0,
                                         "y": 128.0
                                     },
                                     "texture": {
@@ -1200,7 +1200,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 34.174720764160156,
+                                        "startTime": 122.54501342773438,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": {
@@ -1441,7 +1441,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 34.174720764160156,
+                                        "startTime": 122.54501342773438,
                                         "totalDuration": 0.559999942779541
                                     },
                                     "collider_data": {
@@ -1742,7 +1742,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": false,
-                                        "startTime": 34.174720764160156,
+                                        "startTime": 122.54501342773438,
                                         "totalDuration": 0.30000001192092896
                                     },
                                     "collider_data": null,
@@ -1953,7 +1953,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": false,
-                                        "startTime": 34.174720764160156,
+                                        "startTime": 122.54501342773438,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": null,
@@ -2317,7 +2317,7 @@
                                         "before_times": [],
                                         "durations": [],
                                         "is_looping": true,
-                                        "startTime": 34.174720764160156,
+                                        "startTime": 122.54501342773438,
                                         "totalDuration": 0.0
                                     },
                                     "collider_data": null,
@@ -2362,7 +2362,7 @@
                                             1.0
                                         ],
                                         "is_looping": true,
-                                        "startTime": 34.174720764160156,
+                                        "startTime": 122.54501342773438,
                                         "totalDuration": 1.0
                                     },
                                     "collider_data": null,
@@ -2651,7 +2651,7 @@
                                             0.05000000074505806
                                         ],
                                         "is_looping": false,
-                                        "startTime": 34.174720764160156,
+                                        "startTime": 122.54501342773438,
                                         "totalDuration": 0.20000000298023224
                                     },
                                     "collider_data": {
@@ -3020,7 +3020,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 34.174720764160156,
+                                        "startTime": 122.54501342773438,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": {
@@ -3515,7 +3515,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": false,
-                                        "startTime": 34.174720764160156,
+                                        "startTime": 122.54501342773438,
                                         "totalDuration": 0.4000000059604645
                                     },
                                     "collider_data": null,
@@ -3639,7 +3639,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": false,
-                                        "startTime": 34.174720764160156,
+                                        "startTime": 122.54501342773438,
                                         "totalDuration": 0.30000001192092896
                                     },
                                     "collider_data": null,
@@ -3838,7 +3838,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": false,
-                                        "startTime": 34.174720764160156,
+                                        "startTime": 122.54501342773438,
                                         "totalDuration": 0.4000000059604645
                                     },
                                     "collider_data": null,
@@ -4091,7 +4091,7 @@
                                             0.05000000074505806
                                         ],
                                         "is_looping": false,
-                                        "startTime": 34.174720764160156,
+                                        "startTime": 122.54501342773438,
                                         "totalDuration": 0.20000000298023224
                                     },
                                     "collider_data": null,
@@ -4374,7 +4374,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 34.174720764160156,
+                                        "startTime": 122.54501342773438,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": {
@@ -4600,11 +4600,11 @@
             {
                 "data": {
                     "local_offset": {
-                        "x": -2585.705322265625,
+                        "x": -2146.965576171875,
                         "y": 1024.8773193359375
                     },
                     "offset_initialized": true,
-                    "parent_id": 18,
+                    "parent_id": 631,
                     "prev_parent_pos": {
                         "x": 0.0,
                         "y": 0.0
@@ -4655,21 +4655,21 @@
                     },
                     "damage_immune": false,
                     "dash": {
-                        "cd_timer": 5.0,
+                        "cd_timer": -0.000009987503290176392,
                         "cooldown": 5.0,
                         "duration": 0.20000000298023224,
                         "impulse": 0.0,
-                        "no_cooldown": true,
+                        "no_cooldown": false,
                         "speed": 1250.0,
                         "timer": -0.033333323895931244
                     },
                     "jump_force": -600000.0,
                     "smash": {
-                        "cd_timer": 7.0,
+                        "cd_timer": -0.00003669038414955139,
                         "cooldown": 7.0,
                         "duration": 0.0,
                         "impulse": 0.0,
-                        "no_cooldown": true,
+                        "no_cooldown": false,
                         "speed": 1250.0,
                         "timer": 0.0
                     },
@@ -4683,11 +4683,11 @@
                         "timer": 9.080414048824815e-43
                     },
                     "uppercut": {
-                        "cd_timer": 5.0,
+                        "cd_timer": -0.000009987503290176392,
                         "cooldown": 5.0,
                         "duration": 0.4000000059604645,
                         "impulse": 0.0,
-                        "no_cooldown": true,
+                        "no_cooldown": false,
                         "speed": 800.0,
                         "timer": -0.004500167444348335
                     },
