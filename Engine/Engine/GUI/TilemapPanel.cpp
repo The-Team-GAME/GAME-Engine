@@ -74,14 +74,6 @@ namespace TilemapPanel {
     // Painting state
     bool enable_tilemap_mode = false;
 
-    // Tool modes
-    enum class ToolMode {
-      Paintbrush,
-      BoxFill,
-      Picker,
-      Eraser,
-      Select
-    };
     ToolMode current_tool = ToolMode::Paintbrush;
 
     // Layer selection
@@ -364,7 +356,7 @@ namespace TilemapPanel {
     }
 
     // Switch back to Paintbrush tool after picking
-    current_tool = ToolMode::Paintbrush;
+    set_tool_mode(ToolMode::Paintbrush);
   }
 
   void fill_box_with_tiles(const Math::Vec2D& start_pos, const Math::Vec2D& end_pos) {
@@ -571,23 +563,19 @@ namespace TilemapPanel {
     if (enable_tilemap_mode) {
       // Tool selection shortcuts
       if (Engine::Input::is_pressed_raw(Engine::KeyCode::B)) {
-        current_tool = ToolMode::Paintbrush;
+        set_tool_mode(ToolMode::Paintbrush);
       }
       else if (Engine::Input::is_pressed_raw(Engine::KeyCode::U)) {
-        current_tool = ToolMode::BoxFill;
+        set_tool_mode(ToolMode::BoxFill);
       }
       else if (Engine::Input::is_pressed_raw(Engine::KeyCode::I)) {
-        current_tool = ToolMode::Picker;
+        set_tool_mode(ToolMode::Picker);
       }
       else if (Engine::Input::is_pressed_raw(Engine::KeyCode::D)) {
-        current_tool = ToolMode::Eraser;
+        set_tool_mode(ToolMode::Eraser);
       }
       else if (Engine::Input::is_pressed_raw(Engine::KeyCode::M)) {
-        current_tool = ToolMode::Select;
-        // Clear world selection when switching to select tool
-        selected_world_tiles.clear();
-        move_dragging = false;
-        select_dragging = false;
+        set_tool_mode(ToolMode::Select);
       }
 
       // Toggle dim non-selected layers with L key
@@ -1160,26 +1148,23 @@ namespace TilemapPanel {
 
       int tool_index = static_cast<int>(current_tool);
       if (ImGui::RadioButton("Paintbrush (B)", &tool_index, static_cast<int>(ToolMode::Paintbrush))) {
-        current_tool = ToolMode::Paintbrush;
+        set_tool_mode(ToolMode::Paintbrush);
       }
       ImGui::SameLine();
       if (ImGui::RadioButton("Box Fill (U)", &tool_index, static_cast<int>(ToolMode::BoxFill))) {
-        current_tool = ToolMode::BoxFill;
+        set_tool_mode(ToolMode::BoxFill);
       }
 
       if (ImGui::RadioButton("Picker (I)", &tool_index, static_cast<int>(ToolMode::Picker))) {
-        current_tool = ToolMode::Picker;
+        set_tool_mode(ToolMode::Picker);
       }
       ImGui::SameLine();
       if (ImGui::RadioButton("Eraser (D)", &tool_index, static_cast<int>(ToolMode::Eraser))) {
-        current_tool = ToolMode::Eraser;
+        set_tool_mode(ToolMode::Eraser);
       }
 
       if (ImGui::RadioButton("Select (M)", &tool_index, static_cast<int>(ToolMode::Select))) {
-        current_tool = ToolMode::Select;
-        selected_world_tiles.clear();
-        move_dragging = false;
-        select_dragging = false;
+        set_tool_mode(ToolMode::Select);
       }
 
       ImGui::Spacing();
@@ -2222,6 +2207,22 @@ namespace TilemapPanel {
   bool is_tilemap_mode_enabled()
   {
     return enable_tilemap_mode;
+  }
+
+  ToolMode get_tool_mode()
+  {
+    return current_tool;
+  }
+
+  void set_tool_mode(ToolMode mode)
+  {
+    if (mode == ToolMode::Select && current_tool != ToolMode::Select) {
+      // Clear world selection when switching to select tool
+      selected_world_tiles.clear();
+      move_dragging = false;
+      select_dragging = false;
+    }
+    current_tool = mode;
   }
 
   std::string get_selected_layer()

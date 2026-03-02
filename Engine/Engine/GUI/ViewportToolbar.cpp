@@ -18,6 +18,7 @@
 #include "ViewportToolbar.h"
 #include "LucideIcons.h"
 #include "ViewportPanel.h"
+#include "TilemapPanel.h"
 #include "../ImGuiManager.h"
 #include "../Logger.h"
 
@@ -148,18 +149,39 @@ namespace ViewportToolbar {
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(BUTTON_SPACING, BUTTON_SPACING));
 
     if (ImGui::Begin("##ViewportToolbar", nullptr, flags)) {
-      // ---- Gizmo tool buttons (vertical layout) ----
-      if (icon_button(LucideIcons::Move, "Grab / Move (W)", current_gizmo_mode == Components::GizmoMode::GrabMove))
-        current_gizmo_mode = Components::GizmoMode::GrabMove;
+      if (TilemapPanel::is_tilemap_mode_enabled()) {
+        // ---- Tilemap tool buttons ----
+        auto tool = TilemapPanel::get_tool_mode();
 
-      if (icon_button(LucideIcons::Crosshair, "Arrows X/Y (E)", current_gizmo_mode == Components::GizmoMode::ArrowMove))
-        current_gizmo_mode = Components::GizmoMode::ArrowMove;
+        if (icon_button(LucideIcons::Paintbrush, "Paintbrush (B)", tool == TilemapPanel::ToolMode::Paintbrush))
+          TilemapPanel::set_tool_mode(TilemapPanel::ToolMode::Paintbrush);
 
-      if (icon_button(LucideIcons::RotateCw, "Rotate (R)", current_gizmo_mode == Components::GizmoMode::Rotate))
-        current_gizmo_mode = Components::GizmoMode::Rotate;
+        if (icon_button(LucideIcons::PaintBucket, "Box Fill (U)", tool == TilemapPanel::ToolMode::BoxFill))
+          TilemapPanel::set_tool_mode(TilemapPanel::ToolMode::BoxFill);
 
-      if (icon_button(LucideIcons::Scaling, "Scale (T)", current_gizmo_mode == Components::GizmoMode::Scale))
-        current_gizmo_mode = Components::GizmoMode::Scale;
+        if (icon_button(LucideIcons::Pipette, "Picker (I)", tool == TilemapPanel::ToolMode::Picker))
+          TilemapPanel::set_tool_mode(TilemapPanel::ToolMode::Picker);
+
+        if (icon_button(LucideIcons::Eraser, "Eraser (D)", tool == TilemapPanel::ToolMode::Eraser))
+          TilemapPanel::set_tool_mode(TilemapPanel::ToolMode::Eraser);
+
+        if (icon_button(LucideIcons::BoxSelect, "Select (M)", tool == TilemapPanel::ToolMode::Select))
+          TilemapPanel::set_tool_mode(TilemapPanel::ToolMode::Select);
+      }
+      else {
+        // ---- Gizmo tool buttons (vertical layout) ----
+        if (icon_button(LucideIcons::Move, "Grab / Move (W)", current_gizmo_mode == Components::GizmoMode::GrabMove))
+          current_gizmo_mode = Components::GizmoMode::GrabMove;
+
+        if (icon_button(LucideIcons::Crosshair, "Arrows X/Y (E)", current_gizmo_mode == Components::GizmoMode::ArrowMove))
+          current_gizmo_mode = Components::GizmoMode::ArrowMove;
+
+        if (icon_button(LucideIcons::RotateCw, "Rotate (R)", current_gizmo_mode == Components::GizmoMode::Rotate))
+          current_gizmo_mode = Components::GizmoMode::Rotate;
+
+        if (icon_button(LucideIcons::Scaling, "Scale (T)", current_gizmo_mode == Components::GizmoMode::Scale))
+          current_gizmo_mode = Components::GizmoMode::Scale;
+      }
 
       // ---- Registered tool sections ----
       if (!registered_sections.empty()) {
