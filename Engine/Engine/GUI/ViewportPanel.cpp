@@ -14,6 +14,7 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "ViewportPanel.h"
+#include "ViewportToolbar.h"
 #include "../Precompiled.h"
 #include "../Logger.h"
 #include "../Graphics/Renderer.h"
@@ -379,6 +380,9 @@ namespace ViewportPanel {
 
     ImGui::End();
     ImGui::PopStyleVar();
+
+    // Draw the viewport toolbar overlay (positioned over the viewport image)
+    ViewportToolbar::draw();
   }
 
 

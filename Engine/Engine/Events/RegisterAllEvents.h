@@ -81,8 +81,10 @@ namespace Engine {
 
               if (gizmo && transform) {
                 if (event.start_dragging) {
-                  // Calculate drag offset from current mouse position
-                  const auto mouse = Engine::Input::get_mouse_world_position();
+                  // UI entities use screen-space coordinates (not affected by camera)
+                  const auto mouse = entity.has_component<Components::UI>()
+                    ? Engine::Input::get_mouse_position()
+                    : Engine::Input::get_mouse_world_position();
                   gizmo->drag_offset = Math::Vec2D(mouse.x - transform->position.x, mouse.y - transform->position.y);
                   gizmo->is_dragging = true;
 
