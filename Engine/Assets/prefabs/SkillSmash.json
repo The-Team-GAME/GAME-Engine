@@ -715,7 +715,7 @@
                                     "name": ""
                                 },
                                 "on_update_callback": {
-                                    "name": "smash_cd_update"
+                                    "name": "smash_update"
                                 }
                             }
                         },
@@ -1409,7 +1409,7 @@
                                     "name": ""
                                 },
                                 "on_update_callback": {
-                                    "name": "smash_cd_update"
+                                    "name": "smash_update"
                                 }
                             }
                         },
@@ -2103,7 +2103,7 @@
                                     "name": ""
                                 },
                                 "on_update_callback": {
-                                    "name": "smash_cd_update"
+                                    "name": "smash_update"
                                 }
                             }
                         },
@@ -2797,7 +2797,7 @@
                                     "name": ""
                                 },
                                 "on_update_callback": {
-                                    "name": "smash_cd_update"
+                                    "name": "smash_update"
                                 }
                             }
                         },
@@ -3491,7 +3491,7 @@
                                     "name": ""
                                 },
                                 "on_update_callback": {
-                                    "name": "smash_cd_update"
+                                    "name": "smash_update"
                                 }
                             }
                         },
@@ -4185,7 +4185,7 @@
                                     "name": ""
                                 },
                                 "on_update_callback": {
-                                    "name": "smash_cd_update"
+                                    "name": "smash_update"
                                 }
                             }
                         },
@@ -4879,7 +4879,7 @@
                                     "name": ""
                                 },
                                 "on_update_callback": {
-                                    "name": "smash_cd_update"
+                                    "name": "smash_update"
                                 }
                             }
                         },
@@ -5573,7 +5573,7 @@
                                     "name": ""
                                 },
                                 "on_update_callback": {
-                                    "name": "smash_cd_update"
+                                    "name": "smash_update"
                                 }
                             }
                         },
@@ -6267,7 +6267,7 @@
                                     "name": ""
                                 },
                                 "on_update_callback": {
-                                    "name": "smash_cd_update"
+                                    "name": "smash_update"
                                 }
                             }
                         },
@@ -6360,7 +6360,7 @@
                                             0.08,
                                             0.08
                                         ],
-                                        "is_looping": false,
+                                        "is_looping": true,
                                         "startTime": 0.0,
                                         "totalDuration": 2.08
                                     },
@@ -7036,7 +7036,7 @@
                                     "name": ""
                                 },
                                 "on_update_callback": {
-                                    "name": "smash_transition_update"
+                                    "name": "smash_update"
                                 }
                             }
                         },
@@ -7730,7 +7730,7 @@
                                     "name": ""
                                 },
                                 "on_update_callback": {
-                                    "name": "smash_ready_update"
+                                    "name": "smash_update"
                                 }
                             }
                         }

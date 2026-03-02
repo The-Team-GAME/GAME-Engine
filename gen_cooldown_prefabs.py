@@ -75,40 +75,38 @@ def make_state(state_name, atlas_indices, looping,
 def make_states(skill, texture_path):
     states = []
 
-    cd_update         = f"{skill}_cd_update"
-    ready_update      = f"{skill}_ready_update"
-    transition_update = f"{skill}_transition_update"
+    update = f"{skill}_update"   # single callback drives everything
 
-    for sec in range(9, 0, -1):          # 9, 8, 7, ..., 1
+    for sec in range(9, 0, -1):          # CD_9 .. CD_1
         frame_idx = 9 - sec              # sec=9 -> frame 0, sec=1 -> frame 8
         states.append(make_state(
             f"CD_{sec}",
             [frame_idx],
             False,
             "",
-            cd_update,
+            update,
             "",
             texture_path,
         ))
 
-    # CD_TRANSITION  frames 9..34
+    # CD_TRANSITION  frames 9..34 (looping so it plays while 0 < cd < 1)
     states.append(make_state(
         "CD_TRANSITION",
         list(range(9, 35)),
-        False,
+        True,
         "",
-        transition_update,
+        update,
         "",
         texture_path,
     ))
 
-    # READY  frame 35, looping — uses _ready_update (stays silent when cd==0)
+    # READY  frame 35, looping
     states.append(make_state(
         "READY",
         [35],
         True,
         "",
-        ready_update,
+        update,
         "",
         texture_path,
     ))
