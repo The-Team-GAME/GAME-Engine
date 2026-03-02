@@ -20,6 +20,7 @@
 #pragma once
 
 #include "../Math/Vector2D.h"
+#include "../Math/Vector4D.h"
 
 namespace Components
 {
@@ -83,9 +84,6 @@ namespace Components
     float rotate_ring_padding = 10.0f;  // extra radius beyond half extents
     float rotate_ring_thickness = 2.0f; // ring line thickness
     float rotate_knob_offset = 8.0f;    // how far the knob sits above the ring
-
-    // Tool palette
-    GizmoMode mode = GizmoMode::GrabMove;
 
     Gizmo() = default;
     Gizmo(const Math::Vec4D& color, float thickness = 2.0f)

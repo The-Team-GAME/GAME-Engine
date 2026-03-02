@@ -28,6 +28,7 @@
 #include "../Events/EngineEvents.h"
 #include "../GUI/ViewportPanel.h"
 #include "../ImGuiManager.h"
+#include "../GUI/ViewportToolbar.h"
 #include "Precompiled.h"
 
 namespace Engine
@@ -325,10 +326,11 @@ namespace Engine
                                           ring_center.y - ydir.y * (ring_radius + gizmo->rotate_knob_offset) };
 
         // Decide which handles are enabled for the current tool mode
-        const bool allow_scale = (gizmo->mode == Components::GizmoMode::Scale);
-        const bool allow_axes = (gizmo->mode == Components::GizmoMode::ArrowMove);
-        const bool allow_body = (gizmo->mode == Components::GizmoMode::GrabMove);
-        const bool allow_rot = (gizmo->mode == Components::GizmoMode::Rotate);
+        const auto toolbar_mode = ViewportToolbar::get_gizmo_mode();
+        const bool allow_scale = (toolbar_mode == Components::GizmoMode::Scale);
+        const bool allow_axes = (toolbar_mode == Components::GizmoMode::ArrowMove);
+        const bool allow_body = (toolbar_mode == Components::GizmoMode::GrabMove);
+        const bool allow_rot = (toolbar_mode == Components::GizmoMode::Rotate);
 
         //if (Input::is_pressed(KeyCode::MouseLeft)) {
         //  // inside check via local-space AABB
@@ -546,15 +548,15 @@ namespace Engine
         auto gizmo_draw_rect_outline = [is_ui](const Math::Vec2D& pos, const Math::Vec2D& size, f32 rot, f32 thick, const Math::Vec4D& col) {
           if (is_ui) Graphics::draw_rect_outline_ui(pos, size, rot, thick, col);
           else Graphics::draw_rect_outline(pos, size, rot, thick, col);
-        };
+          };
         auto gizmo_draw_circle_outline = [is_ui](const Math::Vec2D& pos, f32 radius, f32 thick, const Math::Vec4D& col, int segments) {
           if (is_ui) Graphics::draw_circle_outline_ui(pos, radius, thick, col, segments);
           else Graphics::draw_circle_outline(pos, radius, thick, col, segments);
-        };
+          };
         auto gizmo_draw_line = [is_ui](const Math::Vec2D& start, const Math::Vec2D& end, f32 thick, const Math::Vec4D& col) {
           if (is_ui) Graphics::draw_line_ui(start, end, thick, col);
           else Graphics::draw_line(start, end, thick, col);
-        };
+          };
 
         // All entities (including text) use Transform2D position as center and scale as bounds
         Math::Vec2D rect_center = tr->position;
@@ -580,8 +582,11 @@ namespace Engine
         const Math::Vec2D mid_top_w{ (tl_r.x + tr_r.x) * 0.5f, (tl_r.y + tr_r.y) * 0.5f };
         const Math::Vec2D mid_right_w{ (tr_r.x + br_r.x) * 0.5f, (tr_r.y + br_r.y) * 0.5f };
 
+        // Read gizmo mode from the viewport toolbar (global state)
+        const auto gizmo_mode = ViewportToolbar::get_gizmo_mode();
+
         // Scale handles
-        if (gizmo->mode == Components::GizmoMode::Scale) {
+        if (gizmo_mode == Components::GizmoMode::Scale) {
           auto draw_handle = [&](const Math::Vec2D& c, bool hovered) {
             const Math::Vec4D col = hovered ? gizmo->handle_hover_color : gizmo->handle_color;
             gizmo_draw_rect_outline(c, { gizmo->handle_size, gizmo->handle_size }, tr->rotation, 2.0f, col);
@@ -593,7 +598,7 @@ namespace Engine
         }
 
         // Rotation ring + crosshair + knob
-        if (gizmo->mode == Components::GizmoMode::Rotate) {
+        if (gizmo_mode == Components::GizmoMode::Rotate) {
           const float ring_radius = 0.5f * std::max(rect_size.x, rect_size.y) + gizmo->rotate_ring_padding;
           const Math::Vec2D center = rect_center;
           const Math::Vec2D knob = { center.x - ydir.x * (ring_radius + gizmo->rotate_knob_offset),
@@ -619,7 +624,7 @@ namespace Engine
         }
 
         // Axis arrows along local axes
-        if (gizmo->mode == Components::GizmoMode::ArrowMove) {
+        if (gizmo_mode == Components::GizmoMode::ArrowMove) {
           const float len_x = std::max(12.0f, rect_size.x * gizmo->arrow_length_factor) + gizmo->arrow_outside_extra;
           const float len_y = std::max(12.0f, rect_size.y * gizmo->arrow_length_factor) + gizmo->arrow_outside_extra;
 
@@ -648,41 +653,7 @@ namespace Engine
           }
         }
 
-        // ---------- ImGui Toolbar ----------
-        {
-          Components::Gizmo* gizmo_nc = const_cast<Components::Gizmo*>(gizmo);
-
-          Math::Vec2D min_pos = ImGuiManager::get_game_render_area_min();
-          ImGui::SetNextWindowPos(ImVec2(min_pos.x + 10.0f, min_pos.y + 10.0f));
-
-          ImGui::SetNextWindowBgAlpha(0.9f);
-
-          if (ImGui::Begin("Gizmo Tools", nullptr,
-            ImGuiWindowFlags_NoSavedSettings |
-            ImGuiWindowFlags_AlwaysAutoResize |
-            ImGuiWindowFlags_NoDocking |
-            ImGuiWindowFlags_NoTitleBar |
-            ImGuiWindowFlags_NoResize |
-            ImGuiWindowFlags_NoMove |
-            ImGuiWindowFlags_NoCollapse))
-          {
-            int mode = static_cast<int>(gizmo_nc->mode);
-
-            ImGui::TextUnformatted("Select Tool");
-            ImGui::Separator();
-
-            if (ImGui::RadioButton("Grab / Move", mode == 0)) mode = 0;
-            if (ImGui::RadioButton("Arrows (X/Y)", mode == 1)) mode = 1;
-            if (ImGui::RadioButton("Rotate", mode == 2)) mode = 2;
-            if (ImGui::RadioButton("Scale", mode == 3)) mode = 3;
-
-            ImGui::Separator();
-
-            gizmo_nc->mode = static_cast<Components::GizmoMode>(mode);
-          }
-          ImGui::End();
-
-        }
+        // Toolbar is now drawn by ViewportToolbar::draw() inside ViewportPanel
 
       }
     };

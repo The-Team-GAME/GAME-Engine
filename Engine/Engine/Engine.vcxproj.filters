@@ -38,6 +38,7 @@
     <ClCompile Include="GUI\PrefabEditorPanel.cpp" />
     <ClCompile Include="GUI\TilemapPanel.cpp" />
     <ClCompile Include="GUI\ViewportPanel.cpp" />
+    <ClCompile Include="GUI\ViewportToolbar.cpp" />
     <ClCompile Include="GUI\ResourcePicker.cpp" />
     <ClCompile Include="GUI\widgets\ReflectionFieldWidgets.cpp" />
     <ClCompile Include="GUI\widgets\TextureAtlasWidget.cpp" />
@@ -137,6 +138,8 @@
     <ClInclude Include="GUI\CameraPanel.h" />
     <ClInclude Include="GUI\TilemapPanel.h" />
     <ClInclude Include="GUI\ViewportPanel.h" />
+    <ClInclude Include="GUI\ViewportToolbar.h" />
+    <ClInclude Include="GUI\LucideIcons.h" />
     <ClInclude Include="GUI\EntityEditorPanel.h" />
     <ClInclude Include="GUI\PrefabEditorPanel.h" />
     <ClInclude Include="GUI\ResourcePicker.h" />
