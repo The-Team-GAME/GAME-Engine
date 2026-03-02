@@ -118,6 +118,9 @@ namespace Engine {
     ENGINE_API void set_viewport(const Viewport& viewport);
     ENGINE_API Viewport get_viewport();
 
+    // Clear the full window to black outside the current viewport (letterbox bars)
+    ENGINE_API void clear_letterbox_bars(int window_width, int window_height);
+
     // Coordinate conversion functions
     // Convert screen coordinates (actual window pixels) to virtual coordinates
     ENGINE_API Math::Vec2D screen_to_virtual(const Math::Vec2D& screen_pos);
