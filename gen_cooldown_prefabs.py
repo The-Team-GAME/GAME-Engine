@@ -54,7 +54,7 @@ def make_state(state_name, atlas_indices, looping,
             "animation": {
                 "animation": anim(atlas_indices, looping),
                 "collider_data": None,
-                "scale": {"x": 64.0, "y": 64.0},
+                "scale": {"x": 128.0, "y": 128.0},
                 "texture": {"path": texture_path},
                 "texture_atlas": {
                     "drawIndex": -1,
@@ -157,7 +157,7 @@ def make_prefab(blueprint_id, texture_path):
             "data": {
                 "position": {"x": 0.0, "y": 0.0},
                 "rotation": 0.0,
-                "scale":    {"x": 64.0, "y": 64.0},
+                "scale":    {"x": 128.0, "y": 128.0},
             },
             "type": "Components::Transform2D",
         },

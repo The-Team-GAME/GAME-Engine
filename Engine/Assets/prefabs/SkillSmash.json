@@ -45,8 +45,8 @@
                                     },
                                     "collider_data": null,
                                     "scale": {
-                                        "x": 64.0,
-                                        "y": 64.0
+                                        "x": 128.0,
+                                        "y": 128.0
                                     },
                                     "texture": {
                                         "path": "images/skill_smash.png"
@@ -739,8 +739,8 @@
                                     },
                                     "collider_data": null,
                                     "scale": {
-                                        "x": 64.0,
-                                        "y": 64.0
+                                        "x": 128.0,
+                                        "y": 128.0
                                     },
                                     "texture": {
                                         "path": "images/skill_smash.png"
@@ -1433,8 +1433,8 @@
                                     },
                                     "collider_data": null,
                                     "scale": {
-                                        "x": 64.0,
-                                        "y": 64.0
+                                        "x": 128.0,
+                                        "y": 128.0
                                     },
                                     "texture": {
                                         "path": "images/skill_smash.png"
@@ -2127,8 +2127,8 @@
                                     },
                                     "collider_data": null,
                                     "scale": {
-                                        "x": 64.0,
-                                        "y": 64.0
+                                        "x": 128.0,
+                                        "y": 128.0
                                     },
                                     "texture": {
                                         "path": "images/skill_smash.png"
@@ -2821,8 +2821,8 @@
                                     },
                                     "collider_data": null,
                                     "scale": {
-                                        "x": 64.0,
-                                        "y": 64.0
+                                        "x": 128.0,
+                                        "y": 128.0
                                     },
                                     "texture": {
                                         "path": "images/skill_smash.png"
@@ -3515,8 +3515,8 @@
                                     },
                                     "collider_data": null,
                                     "scale": {
-                                        "x": 64.0,
-                                        "y": 64.0
+                                        "x": 128.0,
+                                        "y": 128.0
                                     },
                                     "texture": {
                                         "path": "images/skill_smash.png"
@@ -4209,8 +4209,8 @@
                                     },
                                     "collider_data": null,
                                     "scale": {
-                                        "x": 64.0,
-                                        "y": 64.0
+                                        "x": 128.0,
+                                        "y": 128.0
                                     },
                                     "texture": {
                                         "path": "images/skill_smash.png"
@@ -4903,8 +4903,8 @@
                                     },
                                     "collider_data": null,
                                     "scale": {
-                                        "x": 64.0,
-                                        "y": 64.0
+                                        "x": 128.0,
+                                        "y": 128.0
                                     },
                                     "texture": {
                                         "path": "images/skill_smash.png"
@@ -5597,8 +5597,8 @@
                                     },
                                     "collider_data": null,
                                     "scale": {
-                                        "x": 64.0,
-                                        "y": 64.0
+                                        "x": 128.0,
+                                        "y": 128.0
                                     },
                                     "texture": {
                                         "path": "images/skill_smash.png"
@@ -6366,8 +6366,8 @@
                                     },
                                     "collider_data": null,
                                     "scale": {
-                                        "x": 64.0,
-                                        "y": 64.0
+                                        "x": 128.0,
+                                        "y": 128.0
                                     },
                                     "texture": {
                                         "path": "images/skill_smash.png"
@@ -7060,8 +7060,8 @@
                                     },
                                     "collider_data": null,
                                     "scale": {
-                                        "x": 64.0,
-                                        "y": 64.0
+                                        "x": 128.0,
+                                        "y": 128.0
                                     },
                                     "texture": {
                                         "path": "images/skill_smash.png"
@@ -8421,8 +8421,8 @@
                     },
                     "rotation": 0.0,
                     "scale": {
-                        "x": 64.0,
-                        "y": 64.0
+                        "x": 128.0,
+                        "y": 128.0
                     }
                 },
                 "type": "Components::Transform2D"
