@@ -153,10 +153,10 @@ namespace ViewportToolbar {
         // ---- Tilemap tool buttons ----
         auto tool = TilemapPanel::get_tool_mode();
 
-        if (icon_button(LucideIcons::Paintbrush, "Paintbrush (B)", tool == TilemapPanel::ToolMode::Paintbrush))
+        if (icon_button(LucideIcons::Brush, "Paintbrush (B)", tool == TilemapPanel::ToolMode::Paintbrush))
           TilemapPanel::set_tool_mode(TilemapPanel::ToolMode::Paintbrush);
 
-        if (icon_button(LucideIcons::PaintBucket, "Box Fill (U)", tool == TilemapPanel::ToolMode::BoxFill))
+        if (icon_button(LucideIcons::PaintRoller, "Box Fill (U)", tool == TilemapPanel::ToolMode::BoxFill))
           TilemapPanel::set_tool_mode(TilemapPanel::ToolMode::BoxFill);
 
         if (icon_button(LucideIcons::Pipette, "Picker (I)", tool == TilemapPanel::ToolMode::Picker))
