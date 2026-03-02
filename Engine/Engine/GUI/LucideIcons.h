@@ -24,14 +24,19 @@
 #define LUCIDE_ICON_MIN 0xE000
 #define LUCIDE_ICON_MAX 0xE6B1
 
-// Helper macro: converts a codepoint to a UTF-8 string literal
-// Lucide codepoints fall in U+E000..U+EFFF (3-byte UTF-8: 0xEE 0x80..0xBF 0x80..0xBF)
-#define LUCIDE_ICON_STR(cp) _LUCIDE_UTF8_3(cp)
-#define _LUCIDE_UTF8_3(cp) _LUCIDE_MAKE_3( \
-    (char)(0xE0 | (((cp) >> 12) & 0x0F)), \
-    (char)(0x80 | (((cp) >> 6)  & 0x3F)), \
-    (char)(0x80 | ((cp)         & 0x3F)))
-#define _LUCIDE_MAKE_3(a, b, c) { a, b, c, 0 }
+// Helper: compute UTF-8 bytes for a 3-byte codepoint (U+0800..U+FFFF) at compile time.
+// Uses unsigned char to avoid MSVC C4310 truncation warnings on signed char.
+#define _LUCIDE_B0(cp) static_cast<unsigned char>(0xE0 | (((cp) >> 12) & 0x0F))
+#define _LUCIDE_B1(cp) static_cast<unsigned char>(0x80 | (((cp) >> 6)  & 0x3F))
+#define _LUCIDE_B2(cp) static_cast<unsigned char>(0x80 | ((cp)         & 0x3F))
+
+// Produce a constexpr const char[4] from a codepoint
+#define LUCIDE_ICON(name, cp) \
+  inline const char name[] = { \
+    static_cast<char>(_LUCIDE_B0(cp)), \
+    static_cast<char>(_LUCIDE_B1(cp)), \
+    static_cast<char>(_LUCIDE_B2(cp)), \
+    '\0' }
 
 // ============================================================================
 // Gizmo tool icons
@@ -41,30 +46,32 @@
 #define LUCIDE_CP_ROTATE_CW       0xE149  // rotate-cw
 #define LUCIDE_CP_SCALING         0xE2EC  // scaling (resize/scale)
 
-// String literals for ImGui::Text / ImGui::Button
-// (must be constexpr arrays, not macros expanding to initializer lists)
+// Icon string constants for ImGui::Text / ImGui::Button
+#pragma warning(push)
+#pragma warning(disable: 4310) // cast truncates constant value (unsigned -> signed char is intentional for UTF-8)
 namespace LucideIcons {
   // Gizmo tools
-  inline constexpr char Move[]      = { (char)(0xE0 | ((0xE121 >> 12) & 0x0F)), (char)(0x80 | ((0xE121 >> 6) & 0x3F)), (char)(0x80 | (0xE121 & 0x3F)), 0 };
-  inline constexpr char Crosshair[] = { (char)(0xE0 | ((0xE0AC >> 12) & 0x0F)), (char)(0x80 | ((0xE0AC >> 6) & 0x3F)), (char)(0x80 | (0xE0AC & 0x3F)), 0 };
-  inline constexpr char RotateCw[]  = { (char)(0xE0 | ((0xE149 >> 12) & 0x0F)), (char)(0x80 | ((0xE149 >> 6) & 0x3F)), (char)(0x80 | (0xE149 & 0x3F)), 0 };
-  inline constexpr char Scaling[]   = { (char)(0xE0 | ((0xE2EC >> 12) & 0x0F)), (char)(0x80 | ((0xE2EC >> 6) & 0x3F)), (char)(0x80 | (0xE2EC & 0x3F)), 0 };
+  LUCIDE_ICON(Move,         0xE121);
+  LUCIDE_ICON(Crosshair,    0xE0AC);
+  LUCIDE_ICON(RotateCw,     0xE149);
+  LUCIDE_ICON(Scaling,      0xE2EC);
 
   // General purpose icons (add more as needed)
-  inline constexpr char Grab[]         = { (char)(0xE0 | ((0xE1E6 >> 12) & 0x0F)), (char)(0x80 | ((0xE1E6 >> 6) & 0x3F)), (char)(0x80 | (0xE1E6 & 0x3F)), 0 };
-  inline constexpr char Hand[]         = { (char)(0xE0 | ((0xE1D7 >> 12) & 0x0F)), (char)(0x80 | ((0xE1D7 >> 6) & 0x3F)), (char)(0x80 | (0xE1D7 & 0x3F)), 0 };
-  inline constexpr char Maximize[]     = { (char)(0xE0 | ((0xE113 >> 12) & 0x0F)), (char)(0x80 | ((0xE113 >> 6) & 0x3F)), (char)(0x80 | (0xE113 & 0x3F)), 0 };
-  inline constexpr char Scale[]        = { (char)(0xE0 | ((0xE212 >> 12) & 0x0F)), (char)(0x80 | ((0xE212 >> 6) & 0x3F)), (char)(0x80 | (0xE212 & 0x3F)), 0 };
-  inline constexpr char RotateCcw[]    = { (char)(0xE0 | ((0xE148 >> 12) & 0x0F)), (char)(0x80 | ((0xE148 >> 6) & 0x3F)), (char)(0x80 | (0xE148 & 0x3F)), 0 };
-  inline constexpr char ArrowUp[]      = { (char)(0xE0 | ((0xE04A >> 12) & 0x0F)), (char)(0x80 | ((0xE04A >> 6) & 0x3F)), (char)(0x80 | (0xE04A & 0x3F)), 0 };
-  inline constexpr char ArrowDown[]    = { (char)(0xE0 | ((0xE042 >> 12) & 0x0F)), (char)(0x80 | ((0xE042 >> 6) & 0x3F)), (char)(0x80 | (0xE042 & 0x3F)), 0 };
-  inline constexpr char ArrowLeft[]    = { (char)(0xE0 | ((0xE048 >> 12) & 0x0F)), (char)(0x80 | ((0xE048 >> 6) & 0x3F)), (char)(0x80 | (0xE048 & 0x3F)), 0 };
-  inline constexpr char ArrowRight[]   = { (char)(0xE0 | ((0xE049 >> 12) & 0x0F)), (char)(0x80 | ((0xE049 >> 6) & 0x3F)), (char)(0x80 | (0xE049 & 0x3F)), 0 };
-  inline constexpr char MousePointer[] = { (char)(0xE0 | ((0xE11F >> 12) & 0x0F)), (char)(0x80 | ((0xE11F >> 6) & 0x3F)), (char)(0x80 | (0xE11F & 0x3F)), 0 };
-  inline constexpr char Pointer[]      = { (char)(0xE0 | ((0xE1E8 >> 12) & 0x0F)), (char)(0x80 | ((0xE1E8 >> 6) & 0x3F)), (char)(0x80 | (0xE1E8 & 0x3F)), 0 };
-  inline constexpr char Expand[]       = { (char)(0xE0 | ((0xE21A >> 12) & 0x0F)), (char)(0x80 | ((0xE21A >> 6) & 0x3F)), (char)(0x80 | (0xE21A & 0x3F)), 0 };
-  inline constexpr char Cross[]        = { (char)(0xE0 | ((0xE1E5 >> 12) & 0x0F)), (char)(0x80 | ((0xE1E5 >> 6) & 0x3F)), (char)(0x80 | (0xE1E5 & 0x3F)), 0 };
-  inline constexpr char Move3D[]       = { (char)(0xE0 | ((0xE2E5 >> 12) & 0x0F)), (char)(0x80 | ((0xE2E5 >> 6) & 0x3F)), (char)(0x80 | (0xE2E5 & 0x3F)), 0 };
-  inline constexpr char Rotate3D[]     = { (char)(0xE0 | ((0xE2EA >> 12) & 0x0F)), (char)(0x80 | ((0xE2EA >> 6) & 0x3F)), (char)(0x80 | (0xE2EA & 0x3F)), 0 };
-  inline constexpr char Scale3D[]      = { (char)(0xE0 | ((0xE2EB >> 12) & 0x0F)), (char)(0x80 | ((0xE2EB >> 6) & 0x3F)), (char)(0x80 | (0xE2EB & 0x3F)), 0 };
+  LUCIDE_ICON(Grab,         0xE1E6);
+  LUCIDE_ICON(Hand,         0xE1D7);
+  LUCIDE_ICON(Maximize,     0xE113);
+  LUCIDE_ICON(Scale,        0xE212);
+  LUCIDE_ICON(RotateCcw,    0xE148);
+  LUCIDE_ICON(ArrowUp,      0xE04A);
+  LUCIDE_ICON(ArrowDown,    0xE042);
+  LUCIDE_ICON(ArrowLeft,    0xE048);
+  LUCIDE_ICON(ArrowRight,   0xE049);
+  LUCIDE_ICON(MousePointer, 0xE11F);
+  LUCIDE_ICON(Pointer,      0xE1E8);
+  LUCIDE_ICON(Expand,       0xE21A);
+  LUCIDE_ICON(Cross,        0xE1E5);
+  LUCIDE_ICON(Move3D,       0xE2E5);
+  LUCIDE_ICON(Rotate3D,     0xE2EA);
+  LUCIDE_ICON(Scale3D,      0xE2EB);
 }
+#pragma warning(pop)
