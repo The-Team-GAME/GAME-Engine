@@ -24,14 +24,66 @@
 
 #include "../Components/EnemyHealthComponent.h"
 
+#include "../../Engine/Graphics/PostProcessing.h"
+
 namespace Engine {
   namespace Systems
   {
+    // ---------------------------------------------------------------------------
+    // DamageVignette: triggers a brief red vignette flash when the player is hit.
+    // Call DamageVignette::trigger() from any damage callback. The HealthSystem
+    // update() will automatically fade it out each frame.
+    // ---------------------------------------------------------------------------
+    namespace DamageVignette {
+      inline float s_timer = 0.0f;  // seconds remaining
+      inline float s_duration = 0.8f;  // total flash duration
+      inline bool  s_was_enabled = false; // whether post-processing was on before we touched it
+
+      inline void trigger(float duration = 0.8f) {
+        // Save original post-processing enabled state on the first hit
+        if (s_timer <= 0.0f) {
+          s_was_enabled = Engine::Graphics::PostProcessing::get_settings().enabled;
+        }
+        s_duration = duration;
+        s_timer = duration;  // restart timer on each hit
+      }
+
+      inline void update(float dt) {
+        if (s_timer <= 0.0f) return;
+
+        s_timer -= dt;
+
+        auto& s = Engine::Graphics::PostProcessing::get_settings();
+        if (s_timer > 0.0f) {
+          // t goes from 1.0 (just hit) down to 0.0 (effect over)
+          const float t = s_timer / s_duration;
+          s.enabled = true;   // ensure pipeline runs
+          s.vignette_enabled = true;
+          s.vignette_color = glm::vec3(1.0f, 0.0f, 0.0f);
+          s.vignette_intensity = t * 0.50f;   // max 0.50
+          s.vignette_radius = 0.71f;
+          s.vignette_smoothness = 0.50f;
+          s.vignette_roundness = 1.0f;
+        }
+        else {
+          // Effect finished – restore previous state
+          s.vignette_enabled = false;
+          s.vignette_intensity = 0.0f;
+          s.enabled = s_was_enabled; // restore original enabled state
+        }
+      }
+    } // namespace DamageVignette
+
     // Drives regen/drain and HUD for any entity with Components::Health
     class HealthSystem final : public Engine::ECS::System {
     public:
       HealthSystem() {
         require_components<Components::Health>();
+      }
+
+      // Tick damage vignette fade-out once per frame before processing entities.
+      void update() override {
+        DamageVignette::update(Engine::Time::get_fixed_dt());
       }
 
       void update_entity(Engine::ECS::Entity e) override {
