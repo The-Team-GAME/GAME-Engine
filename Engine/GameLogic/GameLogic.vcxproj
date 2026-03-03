@@ -172,9 +172,11 @@
     <ClCompile Include="GameStates\PauseState.cpp" />
     <ClCompile Include="GameStates\StressTestState.cpp" />
     <ClCompile Include="GameStates\VictoryState.cpp" />
+    <ClCompile Include="States\EmptyStateCallbacks.cpp" />
     <ClCompile Include="States\GamerMonkeyStateCallbacks.cpp" />
     <ClCompile Include="States\HealthBarStateCallbacks.cpp" />
     <ClCompile Include="States\LazyMonkeyStateCallbacks.cpp" />
+    <ClCompile Include="States\MainMenuCallbacks.cpp" />
     <ClCompile Include="States\PlayerProfileStateCallbacks.cpp" />
     <ClCompile Include="States\PlayerStateCallbacks.cpp" />
     <ClCompile Include="States\SkillCooldownStateCallbacks.cpp" />

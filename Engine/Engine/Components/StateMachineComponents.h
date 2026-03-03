@@ -34,6 +34,7 @@
 #include "../Audio/AudioPlayer.h"
 #include "../Audio/AudioPlayerInternal.h"
 #include "AudioComponents.h"
+#include "AnimatorComponents.h"
 #include "StateMachineBlueprintRegistry.h"
 
 namespace Components
@@ -96,6 +97,8 @@ namespace Components
     std::optional<StateAudio> audio;
     // Optional FMOD audio data for this state (NEW SYSTEM - preferred)
     std::optional<FMODStateAudio> fmod_audio;
+    // Optional property animation clip for this state (animates component fields over time)
+    std::optional<PropertyAnimationClip> property_animation;
 
     State() = default;
 
@@ -150,6 +153,7 @@ namespace Components
     std::unordered_map<std::string, State> states;
     std::string current_state_name; // Made public for serialization
     std::string blueprint_id;       // Links to a StateMachineBlueprintRegistry entry
+    bool property_anim_playing = false; // Whether the property animation is playing (serialized)
   private:
     std::queue<std::string> transition_queue_;  // Queue for deferred transitions
     bool is_first_frame_ = false;     // Track if we just entered current state
@@ -157,6 +161,9 @@ namespace Components
     std::vector<std::string> state_history_; // Track previous states
     Engine::Audio::ChannelHandle current_audio_channel_ = Engine::Audio::INVALID_CHANNEL; // Track currently playing audio (OLD SYSTEM)
     std::string current_fmod_instance_; // Track current FMOD instance name (NEW SYSTEM)
+
+    // Property animation playback state (non-serialized)
+    float property_anim_elapsed_ = 0.0f;
 
     Engine::ECS::Entity* owner_entity_ = nullptr;  // Reference to owning entity
 
@@ -260,6 +267,9 @@ namespace Components
       auto& current_state = states[current_state_name];
       current_state.invoke_on_update(entity);
 
+      // Evaluate property animation for current state
+      evaluate_property_animation(entity, Engine::Time::get_fixed_dt());
+
       // Process pending transitions at the END of the frame as well
       // This handles transitions requested during the update (e.g. animation end)
       // ensuring the state changes within the same frame.
@@ -298,6 +308,28 @@ namespace Components
     const std::vector<std::string>& get_state_history() const {
       return state_history_;
     }
+
+    // ========================================================================
+    // Property Animation Playback Control
+    // ========================================================================
+
+    /// Check if the property animation is currently playing
+    bool is_property_anim_playing() const { return property_anim_playing; }
+
+    /// Get the current elapsed time of the property animation
+    float get_property_anim_elapsed() const { return property_anim_elapsed_; }
+
+    /// Set the elapsed time of the property animation (for scrubbing / external control)
+    void set_property_anim_elapsed(float t) { property_anim_elapsed_ = t; }
+
+    /// Start or resume property animation playback
+    void play_property_anim() { property_anim_playing = true; }
+
+    /// Pause property animation playback (keeps elapsed time)
+    void pause_property_anim() { property_anim_playing = false; }
+
+    /// Stop property animation playback and reset elapsed time to 0
+    void stop_property_anim() { property_anim_playing = false; property_anim_elapsed_ = 0.0f; }
 
     // ========================================================================
     // Blueprint Synchronization
@@ -443,6 +475,11 @@ namespace Components
       current_state_name = new_state;
       is_first_frame_ = true; // Mark that we need to call on_enter next update
 
+      // Reset property animation playback for new state
+      property_anim_elapsed_ = 0.0f;
+      auto& new_state_check = states[new_state];
+      property_anim_playing = new_state_check.property_animation.has_value();
+
       // Apply state animation if it exists
       auto& new_state_obj = states[new_state];
       if (new_state_obj.animation.has_value()) {
@@ -529,6 +566,114 @@ namespace Components
       return sound_comp->play(audio.volume, audio.loop);
     }
 
+  public:
+    // ========================================================================
+    // Property Animation Evaluation
+    // ========================================================================
+
+    /// Navigate a GenericValue object by a dot-separated field path and set a double value
+    static bool set_generic_value_at_path(ReflectionLibrary::GenericValue& root, const std::string& path, double value) {
+      // Split path by '.'
+      std::vector<std::string> segments;
+      std::string segment;
+      for (char c : path) {
+        if (c == '.') {
+          if (!segment.empty()) { segments.push_back(segment); segment.clear(); }
+        }
+        else {
+          segment += c;
+        }
+      }
+      if (!segment.empty()) segments.push_back(segment);
+      if (segments.empty()) return false;
+
+      // Navigate to parent of the final field
+      ReflectionLibrary::GenericValue* current = &root;
+      for (size_t i = 0; i < segments.size() - 1; ++i) {
+        if (!current->isObject()) return false;
+        auto& obj = current->getObject();
+        auto it = obj.find(segments[i]);
+        if (it == obj.end()) return false;
+        current = &it->second;
+      }
+
+      // Set the final field
+      const std::string& final_key = segments.back();
+      if (current->isObject()) {
+        auto& obj = current->getObject();
+        auto it = obj.find(final_key);
+        if (it != obj.end()) {
+          if (it->second.isDouble()) {
+            it->second = ReflectionLibrary::GenericValue(value);
+            return true;
+          }
+          else if (it->second.isInt()) {
+            it->second = ReflectionLibrary::GenericValue(static_cast<int64_t>(std::round(value)));
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+  private:
+    /// Evaluate property animation for the current state and apply values
+    void evaluate_property_animation(Engine::ECS::Entity entity, float dt) {
+      if (!property_anim_playing) return;
+
+      auto it = states.find(current_state_name);
+      if (it == states.end() || !it->second.property_animation.has_value()) {
+        property_anim_playing = false;
+        return;
+      }
+
+      const auto& clip = it->second.property_animation.value();
+      if (clip.tracks.empty() || clip.duration <= 0.0f) return;
+
+      // Advance elapsed time
+      property_anim_elapsed_ += dt;
+
+      if (property_anim_elapsed_ >= clip.duration) {
+        if (clip.is_looping) {
+          property_anim_elapsed_ = std::fmod(property_anim_elapsed_, clip.duration);
+        }
+        else {
+          property_anim_elapsed_ = clip.duration;
+          property_anim_playing = false; // Animation finished
+        }
+      }
+
+      // Group tracks by target component to batch reads/writes
+      std::unordered_map<std::string, std::vector<const AnimationTrack*>> grouped_tracks;
+      for (const auto& track : clip.tracks) {
+        grouped_tracks[track.target_component].push_back(&track);
+      }
+
+      // Apply each component group
+      entity.for_each_component([&](const std::string& type_name, Engine::ECS::IComponentArray* array) {
+        auto group_it = grouped_tracks.find(type_name);
+        if (group_it == grouped_tracks.end()) return;
+        if (!array->is_reflectable()) return;
+
+        // Read component as GenericValue
+        auto component_data = array->to_generic_value(entity.get_id());
+        bool any_modified = false;
+
+        // Apply each track in this group
+        for (const auto* track : group_it->second) {
+          double interpolated = track->evaluate(property_anim_elapsed_);
+          if (set_generic_value_at_path(component_data, track->target_field_path, interpolated)) {
+            any_modified = true;
+          }
+        }
+
+        // Write back if any tracks modified the component
+        if (any_modified) {
+          array->set_component_from_generic_value(entity.get_id(), component_data);
+        }
+        });
+    }
+
     // Apply FMOD state audio (NEW SYSTEM)
     std::string apply_fmod_state_audio(const FMODStateAudio& fmod_audio) {
       if (!owner_entity_) return "";
@@ -558,7 +703,7 @@ namespace Components
 } // namespace Components
 
 REFLECT_FIELDS(Components::ColliderData, width, height, offset, vertices)
-REFLECT_FIELDS(Components::State, name, on_enter_callback, on_update_callback, on_exit_callback, animation, audio, fmod_audio)
+REFLECT_FIELDS(Components::State, name, on_enter_callback, on_update_callback, on_exit_callback, animation, audio, fmod_audio, property_animation)
 REFLECT_FIELDS(Components::StateAnimation, texture, texture_atlas, animation, scale, collider_data)
 REFLECT_FIELDS(Components::StateAudio, sound, volume, loop, stop_on_exit)
-REGISTER_COMPONENT(Components::StateMachine, states, current_state_name, blueprint_id)
+REGISTER_COMPONENT(Components::StateMachine, states, current_state_name, blueprint_id, property_anim_playing)
