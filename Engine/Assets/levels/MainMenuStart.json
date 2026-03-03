@@ -20,7 +20,7 @@
                     },
                     {
                         "data": {
-                            "drawIndex": 0,
+                            "drawIndex": 5,
                             "tex_coords_list": [
                                 [
                                     {
@@ -203,7 +203,7 @@
                                 0.10000000149011612
                             ],
                             "is_looping": true,
-                            "startTime": 83.41738891601563,
+                            "startTime": 13.608229637145996,
                             "totalDuration": 0.8000000715255737
                         },
                         "type": "Components::Animation"
@@ -212,7 +212,7 @@
                         "data": {
                             "position": {
                                 "x": 1472.1939697265625,
-                                "y": 845.0083618164063
+                                "y": 845.0077514648438
                             },
                             "rotation": 0.0,
                             "scale": {
@@ -243,7 +243,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.89307403564453,
+                                                "startTime": 13.608229637145996,
                                                 "totalDuration": 0.10000000149011612
                                             },
                                             "collider_data": null,
@@ -329,7 +329,7 @@
                                                     0.10000000149011612
                                                 ],
                                                 "is_looping": true,
-                                                "startTime": 89.89307403564453,
+                                                "startTime": 13.608229637145996,
                                                 "totalDuration": 0.8000000715255737
                                             },
                                             "collider_data": null,
@@ -513,7 +513,7 @@
                         "data": {
                             "local_offset": {
                                 "x": 1472.1939697265625,
-                                "y": 845.0083618164063
+                                "y": 845.0077514648438
                             },
                             "offset_initialized": true,
                             "parent_id": 5,
@@ -532,7 +532,7 @@
                 ],
                 "name": "player_sleeping",
                 "prefab_reference": {
-                    "id": "954bc366-ce76-40500-9311-0d7e46aef1d0",
+                    "id": "5881da3f-91d0-404bd-9f17-7e844f159503",
                     "overrides": {
                         "13": [
                             "*"
@@ -1034,7 +1034,7 @@
                     {
                         "data": {
                             "position": {
-                                "x": 1956.0682373046875,
+                                "x": 377.6784362792969,
                                 "y": 446.85302734375
                             },
                             "rotation": 0.0,

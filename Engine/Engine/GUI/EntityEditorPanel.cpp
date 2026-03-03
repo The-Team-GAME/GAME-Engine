@@ -662,6 +662,59 @@ void EntityEditorPanel()
       const std::string& ename = Engine::ECS::get_entity_name(entity);
       ImGui::Text("Editing: %s (ID: %d)", ename.empty() ? "Entity" : ename.c_str(), selected_entity_id);
     }
+
+    // Prefab instance info
+    if (Engine::ECS::is_prefab_instance(entity)) {
+      std::string prefab_path = Engine::ECS::get_prefab_path(entity);
+      ImGui::TextColored(ImVec4(0.5f, 0.8f, 1.0f, 1.0f), "Prefab: %s", prefab_path.empty() ? "(unknown)" : prefab_path.c_str());
+
+      // Quick save back to source prefab
+      if (!prefab_path.empty()) {
+        ImGui::SameLine();
+        if (ImGui::SmallButton("Save to Source")) {
+          std::string full_path = Engine::Path(Engine::Resources::resource_path).join(prefab_path).to_string();
+          Engine::ECS::Prefab existing_prefab = Engine::FileIO::deserialize_prefab_from_json_file(full_path);
+          if (existing_prefab.is_valid()) {
+            std::string preserved_uuid = existing_prefab.get_impl()->get_prefab_id();
+            auto updated_prefab = Engine::ECS::entity_to_prefab(entity);
+            updated_prefab.get_impl()->set_prefab_id(preserved_uuid);
+            updated_prefab.get_impl()->set_prefab_filepath(prefab_path);
+
+            // Fix: entity_to_prefab registered the entity with a NEW uuid, re-point it to the preserved one
+            auto& containers = Engine::ECS::Internal::get_containers();
+            auto inst_it = containers.prefab_instances.find(entity.get_id());
+            if (inst_it != containers.prefab_instances.end()) {
+              inst_it->second.prefab_id = preserved_uuid;
+            }
+
+            if (Engine::FileIO::serialize_prefab_to_json_file(full_path, updated_prefab)) {
+              Engine::Resources::cache_prefab(prefab_path, updated_prefab, true, true);
+              Engine::ECS::update_prefab_instances(preserved_uuid);
+              Log::info("Saved entity to source prefab: {} (UUID: {})", prefab_path, preserved_uuid);
+            }
+          }
+          else {
+            Log::error("Failed to load source prefab: {}", prefab_path);
+          }
+        }
+        if (ImGui::IsItemHovered()) {
+          ImGui::SetTooltip("Overwrite the source prefab with this entity's current state");
+        }
+      }
+
+      // Unbind from prefab
+      {
+        ImGui::SameLine();
+        if (ImGui::SmallButton("Unbind")) {
+          Engine::ECS::unbind_prefab_instance(entity);
+          Log::info("Unbound entity {} from prefab", selected_entity_id);
+        }
+        if (ImGui::IsItemHovered()) {
+          ImGui::SetTooltip("Detach this entity from its source prefab.\nThe entity keeps its data but will no longer receive prefab updates.");
+        }
+      }
+    }
+
     ImGui::Separator();
 
     // Add Component Section
@@ -893,6 +946,7 @@ void EntityEditorPanel()
         if (picked_is_new) {
           // --- Create new prefab from entity ---
           auto prefab = Engine::ECS::entity_to_prefab(entity);
+          prefab.get_impl()->set_prefab_filepath(picked_prefab_path);
 
           std::string full_path = Engine::Path(Engine::Resources::resource_path).join(picked_prefab_path).to_string();
 
@@ -918,6 +972,13 @@ void EntityEditorPanel()
             auto updated_prefab = Engine::ECS::entity_to_prefab(entity);
             updated_prefab.get_impl()->set_prefab_id(preserved_uuid);
             updated_prefab.get_impl()->set_prefab_filepath(picked_prefab_path);
+
+            // Fix: entity_to_prefab registered the entity with a NEW uuid, re-point it to the preserved one
+            auto& containers = Engine::ECS::Internal::get_containers();
+            auto inst_it = containers.prefab_instances.find(entity.get_id());
+            if (inst_it != containers.prefab_instances.end()) {
+              inst_it->second.prefab_id = preserved_uuid;
+            }
 
             if (Engine::FileIO::serialize_prefab_to_json_file(full_path, updated_prefab)) {
               Engine::Resources::cache_prefab(picked_prefab_path, updated_prefab, true, true);

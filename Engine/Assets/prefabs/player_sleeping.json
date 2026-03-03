@@ -37,7 +37,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 63.48902130126953,
+                                        "startTime": 13.608229637145996,
                                         "totalDuration": 0.10000000149011612
                                     },
                                     "collider_data": null,
@@ -123,7 +123,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 63.48902130126953,
+                                        "startTime": 13.608229637145996,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": null,
@@ -305,7 +305,7 @@
             },
             {
                 "data": {
-                    "drawIndex": 6,
+                    "drawIndex": 0,
                     "tex_coords_list": [
                         [
                             {
@@ -488,7 +488,7 @@
                         0.10000000149011612
                     ],
                     "is_looping": true,
-                    "startTime": 63.48902130126953,
+                    "startTime": 13.608229637145996,
                     "totalDuration": 0.8000000715255737
                 },
                 "type": "Components::Animation"
@@ -497,7 +497,7 @@
                 "data": {
                     "position": {
                         "x": 1472.1939697265625,
-                        "y": 865.0090942382813
+                        "y": 845.0081787109375
                     },
                     "rotation": 0.0,
                     "scale": {
@@ -511,13 +511,13 @@
                 "data": {
                     "local_offset": {
                         "x": 1472.1939697265625,
-                        "y": 845.0090942382813
+                        "y": 845.0081787109375
                     },
                     "offset_initialized": true,
                     "parent_id": 5,
                     "prev_parent_pos": {
                         "x": 0.0,
-                        "y": 20.0
+                        "y": 0.0
                     }
                 },
                 "type": "Components::Parent"

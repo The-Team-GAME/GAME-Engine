@@ -734,6 +734,11 @@ void Engine::Resources::cache_prefab(const std::string& filepath, const Engine::
   // Construct full path using Path class
   std::string full_path = append_resource_path ? Path(resource_path).join(filepath) : Path(filepath).normalize();
 
+  // Ensure the prefab impl has its filepath set
+  if (prefab.get_impl() && prefab.get_impl()->get_prefab_filepath().empty()) {
+    prefab.get_impl()->set_prefab_filepath(filepath);
+  }
+
   // Add to cache without saving to disk
   prefab_cache[full_path] = prefab.get_impl();
 
@@ -1075,7 +1080,8 @@ bool Engine::Resources::save_postprocessing_settings(const std::string& filepath
   bool result = Engine::FileIO::write_string_to_file(full_path, json);
   if (result) {
     Log::info("Resources: Saved post-processing preset to {}", full_path);
-  } else {
+  }
+  else {
     Log::error("Resources: Failed to save post-processing preset to {}", full_path);
   }
   return result;
