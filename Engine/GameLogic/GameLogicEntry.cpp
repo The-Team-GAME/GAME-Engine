@@ -181,6 +181,9 @@ static void register_collision_callbacks()
         health->damage(1);
         Log::info("Player took damage! HP: {}/{}", health->value, health->max);
 
+        // Trigger red vignette flash
+        Engine::Systems::DamageVignette::trigger(0.8f);
+
         Engine::Systems::Physics2DSystem::add_force(*rigid, attack->knockback);
 
         Engine::AudioSystem::playEvent("event:/SFX/PlayerHurt");

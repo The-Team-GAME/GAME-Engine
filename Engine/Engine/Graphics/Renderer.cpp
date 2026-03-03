@@ -645,6 +645,19 @@ namespace Engine {
       return current_viewport;
     }
 
+    void clear_letterbox_bars(int window_width, int window_height) {
+      // If the viewport doesn't fill the entire window, clear the full window to black
+      // so the letterbox/pillarbox bars are properly drawn
+      if (current_viewport.x != 0 || current_viewport.y != 0 ||
+        current_viewport.width != window_width || current_viewport.height != window_height) {
+        glViewport(0, 0, window_width, window_height);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        // Restore the letterboxed viewport
+        glViewport(current_viewport.x, current_viewport.y, current_viewport.width, current_viewport.height);
+      }
+    }
+
     Math::Vec2D screen_to_virtual(const Math::Vec2D& screen_pos) {
       // Account for viewport offset
       float adjusted_x = screen_pos.x - current_viewport.x;

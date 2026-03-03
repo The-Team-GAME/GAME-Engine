@@ -92,13 +92,17 @@
 
 
 
+
 xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q
+
 
 
 
 xcopy "$(SolutionDir)Dependencies\FMOD Studio\lib\fmodstudio.dll" "$(OutDir)" /s /r /y /q
 
+
 xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q
+
 
 msbuild "$(SolutionDir)Engine\GameLogic\GameLogic.vcxproj" /p:Configuration=$(Configuration) /p:Platform=$(Platform) /p:SolutionDir="$(SolutionDir)\" /v:minimal
 </Command>
@@ -132,13 +136,17 @@ msbuild "$(SolutionDir)Engine\GameLogic\GameLogic.vcxproj" /p:Configuration=$(Co
 
 
 
+
 xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q
+
 
 
 
 xcopy "$(SolutionDir)Dependencies\FMOD Studio\lib\fmodstudio.dll" "$(OutDir)" /s /r /y /q
 
+
 xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q
+
 
 msbuild "$(SolutionDir)Engine\GameLogic\GameLogic.vcxproj" /p:Configuration=$(Configuration) /p:Platform=$(Platform) /p:SolutionDir="$(SolutionDir)\" /v:minimal
 </Command>
@@ -172,13 +180,17 @@ msbuild "$(SolutionDir)Engine\GameLogic\GameLogic.vcxproj" /p:Configuration=$(Co
 
 
 
+
 xcopy "$(SolutionDir)Dependencies\FMOD\lib\fmod.dll" "$(OutDir)" /s /r /y /q
+
 
 
 
 xcopy "$(SolutionDir)Dependencies\FMOD Studio\lib\fmodstudio.dll" "$(OutDir)" /s /r /y /q
 
+
 xcopy "$(SolutionDir)Dependencies\Lua\lua54.dll" "$(OutDir)" /s /r /y /q
+
 
 msbuild "$(SolutionDir)Engine\GameLogic\GameLogic.vcxproj" /p:Configuration=$(Configuration) /p:Platform=$(Platform) /p:SolutionDir="$(SolutionDir)\" /v:minimal
 </Command>
@@ -224,6 +236,7 @@ msbuild "$(SolutionDir)Engine\GameLogic\GameLogic.vcxproj" /p:Configuration=$(Co
     <ClCompile Include="GUI\PrefabEditorPanel.cpp" />
     <ClCompile Include="GUI\TilemapPanel.cpp" />
     <ClCompile Include="GUI\ViewportPanel.cpp" />
+    <ClCompile Include="GUI\ViewportToolbar.cpp" />
     <ClCompile Include="GUI\ResourcePicker.cpp" />
     <ClCompile Include="GUI\widgets\ReflectionFieldWidgets.cpp" />
     <ClCompile Include="GUI\widgets\TextureAtlasWidget.cpp" />
@@ -335,6 +348,8 @@ msbuild "$(SolutionDir)Engine\GameLogic\GameLogic.vcxproj" /p:Configuration=$(Co
     <ClInclude Include="GUI\CameraPanel.h" />
     <ClInclude Include="GUI\TilemapPanel.h" />
     <ClInclude Include="GUI\ViewportPanel.h" />
+    <ClInclude Include="GUI\ViewportToolbar.h" />
+    <ClInclude Include="GUI\LucideIcons.h" />
     <ClInclude Include="Systems\GraphicsSystem.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="Components\Components.h" />
