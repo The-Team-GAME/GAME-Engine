@@ -18,9 +18,11 @@ namespace Engine {
   namespace ECS {
     namespace Internal {
 
-      WorldContainers& get_containers() {
-        static WorldContainers containers;
-        return containers;
+      WorldContainers* g_containers = nullptr;
+
+      WorldContainers& init_containers() {
+        g_containers = new WorldContainers();
+        return *g_containers;
       }
 
     } // namespace Internal

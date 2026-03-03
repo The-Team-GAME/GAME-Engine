@@ -15,7 +15,7 @@
 
 /* EVERY CODE HERE IS TEMPORARY */
 
-#include "../../Engine/MonkeyEngine.h"
+#include "pch.h"
 
 
 class MainMenuState : public Engine::Scene
@@ -280,7 +280,7 @@ public:
     create_start_screen();
 
     // Load and play background music
-    bgm = Engine::Resources::load_sound("sounds/BGM/Main Menu/Ricoche_LO-fi_Cut-Scene_Loop_120bpm.wav");
+    bgm = Engine::Resources::load_sound("sounds/BGM/Main Menu/Monomyth_8Bit.wav");
     Engine::Audio::play_sound(bgm, 0.3f, true); // TODO: get from settings
   };
 

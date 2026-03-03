@@ -77,8 +77,8 @@ namespace Engine {
 
       Log::info("OpenGL Version: {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 
-      // Set aspect ratio constraint (16:9)
-      glfwSetWindowAspectRatio(window, 16, 9);
+      // Allow free aspect ratio (virtual resolution adapts dynamically)
+      glfwSetWindowAspectRatio(window, GLFW_DONT_CARE, GLFW_DONT_CARE);
 
       // Set up the resize callback - this handles both window and framebuffer resize
       glfwSetFramebufferSizeCallback(window, framebuffer_resize_callback);
@@ -180,6 +180,13 @@ namespace Engine {
 
         glfwSetWindowMonitor(window, nullptr, x, y, w, h, 0);
       }
+    }
+
+    void set_vsync(bool enable)
+    {
+      if (!window) return;
+      glfwSwapInterval(enable ? 1 : 0);
+      Log::info("VSync {}", enable ? "enabled" : "disabled");
     }
 
     /* ===================== //

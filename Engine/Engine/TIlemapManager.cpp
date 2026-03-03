@@ -76,9 +76,10 @@ namespace TilemapManager {
       }
     }
 
-    // Create new tilemap entity
+    // Create new tilemap entity with default Parallax (scroll_factor = 1.0 = normal world movement)
     auto entity = Engine::ECS::create_entity()
-      .add_component<Components::TileMap>();
+      .add_component<Components::TileMap>()
+      .add_component<Components::Parallax>(1.0f);
 
     entity.clear_layers();
     entity.add_to_layer(layer_name);

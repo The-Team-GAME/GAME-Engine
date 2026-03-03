@@ -18,21 +18,72 @@
 #pragma once
 
 
-#include "../../Engine/MonkeyEngine.h"
+#include "pch.h"
 
 #include "../Components/HealthComponents.h"
-#include "../Components/HeartrateComponent.h"
 
 #include "../Components/EnemyHealthComponent.h"
+
+#include "../../Engine/Graphics/PostProcessing.h"
 
 namespace Engine {
   namespace Systems
   {
+    // ---------------------------------------------------------------------------
+    // DamageVignette: triggers a brief red vignette flash when the player is hit.
+    // Call DamageVignette::trigger() from any damage callback. The HealthSystem
+    // update() will automatically fade it out each frame.
+    // ---------------------------------------------------------------------------
+    namespace DamageVignette {
+      inline float s_timer = 0.0f;  // seconds remaining
+      inline float s_duration = 0.8f;  // total flash duration
+      inline bool  s_was_enabled = false; // whether post-processing was on before we touched it
+
+      inline void trigger(float duration = 0.8f) {
+        // Save original post-processing enabled state on the first hit
+        if (s_timer <= 0.0f) {
+          s_was_enabled = Engine::Graphics::PostProcessing::get_settings().enabled;
+        }
+        s_duration = duration;
+        s_timer = duration;  // restart timer on each hit
+      }
+
+      inline void update(float dt) {
+        if (s_timer <= 0.0f) return;
+
+        s_timer -= dt;
+
+        auto& s = Engine::Graphics::PostProcessing::get_settings();
+        if (s_timer > 0.0f) {
+          // t goes from 1.0 (just hit) down to 0.0 (effect over)
+          const float t = s_timer / s_duration;
+          s.enabled = true;   // ensure pipeline runs
+          s.vignette_enabled = true;
+          s.vignette_color = glm::vec3(1.0f, 0.0f, 0.0f);
+          s.vignette_intensity = t * 0.50f;   // max 0.50
+          s.vignette_radius = 0.71f;
+          s.vignette_smoothness = 0.50f;
+          s.vignette_roundness = 1.0f;
+        }
+        else {
+          // Effect finished – restore previous state
+          s.vignette_enabled = false;
+          s.vignette_intensity = 0.0f;
+          s.enabled = s_was_enabled; // restore original enabled state
+        }
+      }
+    } // namespace DamageVignette
+
     // Drives regen/drain and HUD for any entity with Components::Health
     class HealthSystem final : public Engine::ECS::System {
     public:
       HealthSystem() {
         require_components<Components::Health>();
+      }
+
+      // Tick damage vignette fade-out once per frame before processing entities.
+      void update() override {
+        DamageVignette::update(Engine::Time::get_fixed_dt());
       }
 
       void update_entity(Engine::ECS::Entity e) override {
@@ -96,8 +147,9 @@ namespace Engine {
             }
           }
         }
-        bool is_player = e.has_component<Tag<"Player">>();
-        if (hp->value <= 0 || (is_player && hp->value >= hp->max)) {
+        bool is_player = e.has_component<Player>();
+        // Don't destroy the player here — let the Death state machine handle it
+        if (!is_player && hp->value <= 0) {
           e.destroy();
         }
       }
@@ -451,14 +503,14 @@ namespace Engine {
     class HeartHUDSpriteSystem final : public Engine::ECS::System {
     public:
       HeartHUDSpriteSystem() {
-        require_components<Components::Heartrate, Components::HeartHUDSprite>();
+        require_components<Components::Health, Components::HeartHUDSprite>();
       }
 
       void update_entity(Engine::ECS::Entity e) override {
         using namespace Components;
-        auto* hr = e.get_component<Heartrate>();
+        auto* hp = e.get_component<Health>();
         auto* hud = e.get_component<HeartHUDSprite>();
-        if (!hr || !hud) return;
+        if (!hp || !hud) return;
 
         if (!hud->screen_space) {
           ensure_created(*hud);
@@ -501,10 +553,8 @@ namespace Engine {
             t->scale.y = 120.f;
           }
 
-          // BPM to color tint for world-space columns
-          const float bpm = std::max(1.f, hr->heartrate);
-          const float span = std::max(1e-3f, hud->bpm_max - hud->bpm_min);
-          const float ratio = std::clamp((bpm - hud->bpm_min) / span, 0.f, 1.f);
+          // HP to ratio for world-space columns
+          const float ratio = (hp->max > 0) ? std::clamp(static_cast<float>(hp->value) / static_cast<float>(hp->max), 0.f, 1.f) : 0.f;
 
           if (hud->use_bpm_tint) {
             Math::Vec4D c;
@@ -532,9 +582,9 @@ namespace Engine {
       void draw_entity(const Engine::ECS::Entity e) override {
         using namespace Components;
 
-        auto* hr = e.get_component<Heartrate>();
+        auto* hp = e.get_component<Health>();
         auto* hud = e.get_component<HeartHUDSprite>();
-        if (!hr || !hud) return;
+        if (!hp || !hud) return;
 
         if (!hud->screen_space) {
           // World-space HUD is handled by update_entity + normal render system
@@ -556,10 +606,8 @@ namespace Engine {
           Math::Vec4D(1.f, 1.f, 1.f, 1.f)
         );
 
-        // BPM ratio 0..1
-        const float bpm = std::max(1.f, hr->heartrate);
-        const float span = std::max(1e-3f, hud->bpm_max - hud->bpm_min);
-        const float ratio = std::clamp((bpm - hud->bpm_min) / span, 0.f, 1.f);
+        // HP ratio 0..1
+        const float ratio = (hp->max > 0) ? std::clamp(static_cast<float>(hp->value) / static_cast<float>(hp->max), 0.f, 1.f) : 0.f;
 
         // BPM-driven tint
         Math::Vec4D fill_color = hud->fill_color_low;

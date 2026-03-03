@@ -17,6 +17,7 @@
 
 #include "Types.h"
 #include "SparseSet.h"
+#include "../EngineExport.h"
 #include "../EventManager/EventManager.h"
 
 namespace Engine {
@@ -43,8 +44,8 @@ namespace Engine {
       SystemType system_type = SystemType::Game; // Default to game system
 
     public:
-      System();
-      virtual ~System();
+      ENGINE_API System();
+      ENGINE_API virtual ~System();
 
       /*=================================================================================
       Function Brief:
@@ -100,7 +101,7 @@ namespace Engine {
       Where to call it:
       Called automatically by the ECS during the main update loop.
       ==================================================================================*/
-      virtual void update();
+      ENGINE_API virtual void update();
 
       /*=================================================================================
       Function Brief:
@@ -114,7 +115,7 @@ namespace Engine {
       Where to call it:
       Called automatically during the draw phase. Override to add custom drawing.
       ==================================================================================*/
-      virtual void draw();
+      ENGINE_API virtual void draw();
 
       /*=================================================================================
       Function Brief:
@@ -129,7 +130,7 @@ namespace Engine {
       Called automatically by the ECS when an event this system listens to is
       dispatched.
       ==================================================================================*/
-      virtual void on_event(const Engine::EventManager::Event& event, EntityID entity);
+      ENGINE_API virtual void on_event(const Engine::EventManager::Event& event, EntityID entity);
 
       /*=================================================================================
       Function Brief:
@@ -141,7 +142,7 @@ namespace Engine {
       Where to call it:
       Called automatically by the system's update() method for each entity.
       ==================================================================================*/
-      virtual void update_entity(Entity entity);
+      ENGINE_API virtual void update_entity(Entity entity);
 
       /*=================================================================================
       Function Brief:
@@ -153,7 +154,7 @@ namespace Engine {
       Where to call it:
       Called automatically by the system's draw() method for each entity.
       ==================================================================================*/
-      virtual void draw_entity(const Entity entity);
+      ENGINE_API virtual void draw_entity(const Entity entity);
 
       /*=================================================================================
       Function Brief:
@@ -167,7 +168,7 @@ namespace Engine {
       Called automatically by the ECS when an entity starts matching the system's
       requirements.
       ==================================================================================*/
-      virtual void on_entity_added(const Entity entity);
+      ENGINE_API virtual void on_entity_added(const Entity entity);
 
       /*=================================================================================
       Function Brief:
@@ -181,7 +182,7 @@ namespace Engine {
       Called automatically by the ECS when an entity stops matching the system's
       requirements.
       ==================================================================================*/
-      virtual void on_entity_removed(const Entity entity);
+      ENGINE_API virtual void on_entity_removed(const Entity entity);
 
       /*=================================================================================
       Function Brief:
@@ -193,7 +194,7 @@ namespace Engine {
       Where to call it:
       Called internally by the ECS when an entity matches this system's requirements.
       ==================================================================================*/
-      void add_entity(EntityID entity);
+      ENGINE_API void add_entity(EntityID entity);
 
       /*=================================================================================
       Function Brief:
@@ -206,7 +207,7 @@ namespace Engine {
       Called internally by the ECS when an entity no longer matches this system's
       requirements.
       ==================================================================================*/
-      void remove_entity(EntityID entity);
+      ENGINE_API void remove_entity(EntityID entity);
 
       /*=================================================================================
       Function Brief:
@@ -218,7 +219,7 @@ namespace Engine {
       Where to call it:
       When you need to access the list of entities this system is processing.
       ==================================================================================*/
-      const SparseSet<EntityID>& get_entities() const;
+      ENGINE_API const SparseSet<EntityID>& get_entities() const;
 
       /*=================================================================================
       Function Brief:
@@ -231,7 +232,7 @@ namespace Engine {
       Where to call it:
       Internally by the ECS to determine if entities match this system.
       ==================================================================================*/
-      const ComponentSignature& get_required_signature() const;
+      ENGINE_API const ComponentSignature& get_required_signature() const;
 
       /*=================================================================================
       Function Brief:
@@ -244,7 +245,7 @@ namespace Engine {
       Where to call it:
       Internally by the ECS to determine if entities match this system.
       ==================================================================================*/
-      const ComponentSignature& get_excluded_signature() const;
+      ENGINE_API const ComponentSignature& get_excluded_signature() const;
 
       /*=================================================================================
       Function Brief:
@@ -256,7 +257,7 @@ namespace Engine {
       Where to call it:
       Internally by the ECS to route events to the appropriate systems.
       ==================================================================================*/
-      const Engine::EventManager::EventSignature& get_event_signature() const;
+      ENGINE_API const Engine::EventManager::EventSignature& get_event_signature() const;
 
       /*=================================================================================
       Function Brief:
@@ -282,7 +283,7 @@ namespace Engine {
       Where to call it:
       Internally by the ECS to determine if entities match this system.
       ==================================================================================*/
-      const LayerSignature& get_layer_signature() const;
+      ENGINE_API const LayerSignature& get_layer_signature() const;
 
       /*=================================================================================
       Function Brief:

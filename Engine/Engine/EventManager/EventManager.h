@@ -22,6 +22,7 @@
 #include <memory>
 #include <bitset>
 #include "../TypeDef.h"
+#include "../EngineExport.h"
 
 namespace Engine {
   namespace ECS {
@@ -38,7 +39,7 @@ namespace Engine {
     /* =================================== //
     // Automatic event type ID generation  //
     // =================================== */
-    class EventTypeManager
+    class ENGINE_API EventTypeManager
     {
     private:
       static EventTypeID next_type_id;
@@ -108,20 +109,30 @@ namespace Engine {
     template <typename T>
     void add_event_listener(std::function<void(const Event&)> handler);
 
-    void remove_event_listener(EventTypeID eventType);
+    ENGINE_API void remove_event_listener(EventTypeID eventType);
 
     template <typename T>
     void remove_event_listener();
 
-    void update_events(const std::vector<std::unique_ptr<ECS::System>>& systems);
+    /// Clears all registered event handlers and releases their memory.
+    /// Call once at engine shutdown (before the CRT leak check) so that
+    /// lambda closures from DLL/engine code are freed.
+    ENGINE_API void clear_all_listeners();
+
+    /// Delete the leaked singleton containers. Call at final shutdown
+    /// AFTER clear_all_listeners() and AFTER DLL unload.
+    ENGINE_API void destroy_all();
+
+    ENGINE_API void update_events(const std::vector<std::unique_ptr<ECS::System>>& systems);
 
     /* =============== //
     // Internal state  //
     // =============== */
     namespace Internal
     {
-      extern std::vector<Event> event_queue;
-      extern std::unordered_map<EventTypeID, std::vector<std::function<void(const Event&)>>> event_handlers;
+      // Construct On First Use — prevents static destruction order crashes
+      ENGINE_API std::vector<Event>& get_event_queue();
+      ENGINE_API std::unordered_map<EventTypeID, std::vector<std::function<void(const Event&)>>>& get_event_handlers();
     }
 
   } // namespace EventManager

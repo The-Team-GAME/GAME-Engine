@@ -17,6 +17,7 @@
 #include <functional>
 #include <string>
 #include "Types.h"
+#include "../EngineExport.h"
 #include "../Reflection/ReflectionLibrary.h"
 
 namespace Engine {
@@ -28,7 +29,7 @@ namespace Engine {
     /* ============================ //
     // Entity handle for clean API  //
     // ============================ */
-    class Entity {
+    class ENGINE_API Entity {
     private:
       EntityID id;
 
@@ -217,6 +218,30 @@ namespace Engine {
 
       /*=================================================================================
       Function Brief:
+      Sets the display name for this entity.
+
+      Parameters:
+      name - The display name string.
+
+      Where to call it:
+      When naming or renaming an entity.
+      ==================================================================================*/
+      Entity set_name(const std::string& name);
+
+      /*=================================================================================
+      Function Brief:
+      Gets the display name for this entity.
+
+      Parameters:
+      None.
+
+      Where to call it:
+      When displaying or querying an entity's name.
+      ==================================================================================*/
+      const std::string& get_name() const;
+
+      /*=================================================================================
+      Function Brief:
       Adds this entity to one or more layers.
 
       Parameters:
@@ -354,8 +379,8 @@ namespace Engine {
 
     };
 
-    ReflectionLibrary::GenericValue entity_to_generic_value(Entity entity);
-    Entity create_entity_from_generic_value(const ReflectionLibrary::GenericValue& value);
+    ENGINE_API ReflectionLibrary::GenericValue entity_to_generic_value(Entity entity);
+    ENGINE_API Entity create_entity_from_generic_value(const ReflectionLibrary::GenericValue& value);
 
 
   } // namespace ECS

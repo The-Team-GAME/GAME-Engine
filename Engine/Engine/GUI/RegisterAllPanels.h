@@ -29,9 +29,12 @@
 #include "LayerManagerPanel.h"
 #include "ColliderEditorPanel.h"
 #include "SelectiveLevelSavePanel.h"
-#include "AnimatorEditorPanel.h"
 #include "FrameAnimationEditorPanel.h"
 #include "TextureAtlasEditorPanel.h"
+#include "ConfigurationPanel.h"
+#include "LogConsolePanel.h"
+#include "PostProcessingPanel.h"
+#include "UpgradePanel.h"
 
 void register_all_panels()
 {
@@ -48,7 +51,10 @@ void register_all_panels()
   ImGuiManager::register_panel("Layer Manager", LayerManagerPanel);
   ImGuiManager::register_panel("Collider Editor", ColliderEditorPanel);
   ImGuiManager::register_panel("Selective Level Save", SelectiveLevelSavePanel);
-  ImGuiManager::register_panel("Animator", AnimatorEditorPanel);
   ImGuiManager::register_panel("Frame Animation Editor", FrameAnimationEditorPanel);
   ImGuiManager::register_panel("Texture Atlas Editor", TextureAtlasEditorPanel);
+  ImGuiManager::register_panel("Configuration", ConfigurationPanel);
+  ImGuiManager::register_panel("Log Console", LogConsolePanel);
+  ImGuiManager::register_panel("Post Processing", PostProcessingPanel);
+  ImGuiManager::register_panel("Upgrades", UpgradePanel);
 }

@@ -2,8 +2,12 @@
 // file:    SceneManager.cpp
 // project: Monkey Stole My GPA
 //
-// author:  How Hong Chin Ryan (100%)
+// author:  How Hong Chin Ryan (95%)
 //          Primary author
+//
+//          Ryan Ang An Kiat (5%)
+//          Secondary author
+//          Added camera shake on enemy hit
 //
 // email:   hongchinryan.how@digipen.edu
 //
@@ -24,6 +28,12 @@
 
 namespace Engine
 {
+  namespace Systems {
+    void add_camera_shake(f32 amplitude, f32 duration) {
+      CameraSystem::add_shake(amplitude, duration);
+    }
+  }
+
   namespace SceneManager
   {
     // Variable definitions - REQUIRED for extern variables

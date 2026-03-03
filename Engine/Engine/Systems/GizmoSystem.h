@@ -28,6 +28,7 @@
 #include "../Events/EngineEvents.h"
 #include "../GUI/ViewportPanel.h"
 #include "../ImGuiManager.h"
+#include "../GUI/ViewportToolbar.h"
 #include "Precompiled.h"
 
 namespace Engine
@@ -44,6 +45,35 @@ namespace Engine
       }
 
       void update() override {
+        // Ctrl+Shift+A: deselect all entities
+        if (Engine::Input::is_pressed(KeyCode::A) &&
+          (Engine::Input::is_held(KeyCode::CtrlLeft) || Engine::Input::is_held(KeyCode::CtrlRight)) &&
+          (Engine::Input::is_held(KeyCode::ShiftLeft) || Engine::Input::is_held(KeyCode::ShiftRight))) {
+          Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
+          return;
+        }
+
+        // If a currently selected entity (with Gizmo) is under the mouse, don't change selection
+        {
+          bool selected_under_mouse = false;
+          Engine::ECS::for_each_entity_with<Components::Gizmo>([&](Engine::ECS::Entity gizmo_entity) {
+            auto* tr = gizmo_entity.get_component<Components::Transform2D>();
+            if (!tr) return;
+            // UI entities use screen-space coordinates (not affected by camera)
+            const auto mouse_opt = gizmo_entity.has_component<Components::UI>()
+              ? Engine::Input::get_mouse_position_if_in_viewport()
+              : Engine::Input::get_mouse_world_position_if_in_viewport();
+            if (!mouse_opt.has_value()) return;
+            const auto mouse = mouse_opt.value();
+            const float hw = tr->scale.x * 0.5f, hh = tr->scale.y * 0.5f;
+            if (mouse.x >= tr->position.x - hw && mouse.x <= tr->position.x + hw &&
+              mouse.y >= tr->position.y - hh && mouse.y <= tr->position.y + hh) {
+              selected_under_mouse = true;
+            }
+            });
+          if (selected_under_mouse) return;
+        }
+
         Engine::ECS::EntityID best_entity = Engine::ECS::INVALID_ENTITY;
 
         auto& containers = Engine::ECS::Internal::get_containers();
@@ -64,12 +94,17 @@ namespace Engine
           }
         }
 
-        if (best_entity != Engine::ECS::INVALID_ENTITY && Engine::Input::is_pressed(KeyCode::MouseLeft) && !TilemapPanel::is_tilemap_mode_enabled()) {
-          Engine::ECS::Entity entity(best_entity);
-          // Only select if not already selected (has Gizmo)
-          // If it has Gizmo, it means we clicked on the selected entity, so we do nothing (and don't select entities behind it)
-          if (!entity.has_component<Components::Gizmo>()) {
-            Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(best_entity, true);
+        if (Engine::Input::is_pressed(KeyCode::MouseLeft) && !TilemapPanel::is_tilemap_mode_enabled()) {
+          if (best_entity != Engine::ECS::INVALID_ENTITY) {
+            Engine::ECS::Entity entity(best_entity);
+            // Only select if not already selected (has Gizmo)
+            if (!entity.has_component<Components::Gizmo>()) {
+              Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(best_entity, true);
+            }
+          }
+          else if (!ImGui::GetIO().WantCaptureMouse) {
+            // Clicked on empty space - deselect all
+            Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
           }
         }
       }
@@ -78,7 +113,10 @@ namespace Engine
         auto* tr = entity.get_component<Components::Transform2D>();
         if (!tr) return false;
 
-        const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+        // UI entities use screen-space coordinates (not affected by camera)
+        const auto mouse_opt = entity.has_component<Components::UI>()
+          ? Engine::Input::get_mouse_position_if_in_viewport()
+          : Engine::Input::get_mouse_world_position_if_in_viewport();
         if (!mouse_opt.has_value()) return false;
         const auto mouse = mouse_opt.value();
 
@@ -106,6 +144,27 @@ namespace Engine
       }
 
       void update() override {
+        // If a currently selected entity (with Gizmo) is under the mouse, don't change selection
+        {
+          bool selected_under_mouse = false;
+          Engine::ECS::for_each_entity_with<Components::Gizmo>([&](Engine::ECS::Entity gizmo_entity) {
+            auto* tr = gizmo_entity.get_component<Components::Transform2D>();
+            if (!tr) return;
+            // UI entities use screen-space coordinates (not affected by camera)
+            const auto mouse_opt = gizmo_entity.has_component<Components::UI>()
+              ? Engine::Input::get_mouse_position_if_in_viewport()
+              : Engine::Input::get_mouse_world_position_if_in_viewport();
+            if (!mouse_opt.has_value()) return;
+            const auto mouse = mouse_opt.value();
+            const float hw = tr->scale.x * 0.5f, hh = tr->scale.y * 0.5f;
+            if (mouse.x >= tr->position.x - hw && mouse.x <= tr->position.x + hw &&
+              mouse.y >= tr->position.y - hh && mouse.y <= tr->position.y + hh) {
+              selected_under_mouse = true;
+            }
+            });
+          if (selected_under_mouse) return;
+        }
+
         Engine::ECS::EntityID best_entity = Engine::ECS::INVALID_ENTITY;
 
         auto& containers = Engine::ECS::Internal::get_containers();
@@ -126,10 +185,16 @@ namespace Engine
           }
         }
 
-        if (best_entity != Engine::ECS::INVALID_ENTITY && Engine::Input::is_pressed(KeyCode::MouseLeft) && !TilemapPanel::is_tilemap_mode_enabled()) {
-          Engine::ECS::Entity entity(best_entity);
-          if (!entity.has_component<Components::Gizmo>()) {
-            Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(best_entity, true);
+        if (Engine::Input::is_pressed(KeyCode::MouseLeft) && !TilemapPanel::is_tilemap_mode_enabled()) {
+          if (best_entity != Engine::ECS::INVALID_ENTITY) {
+            Engine::ECS::Entity entity(best_entity);
+            if (!entity.has_component<Components::Gizmo>()) {
+              Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(best_entity, true);
+            }
+          }
+          else if (!ImGui::GetIO().WantCaptureMouse) {
+            // Clicked on empty space - deselect all
+            Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(Engine::ECS::INVALID_ENTITY);
           }
         }
       }
@@ -141,7 +206,10 @@ namespace Engine
 
         if (!tr || !text || !font) return false;
 
-        const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+        // UI entities use screen-space coordinates (not affected by camera)
+        const auto mouse_opt = entity.has_component<Components::UI>()
+          ? Engine::Input::get_mouse_position_if_in_viewport()
+          : Engine::Input::get_mouse_world_position_if_in_viewport();
         if (!mouse_opt.has_value()) return false;
         const auto mouse = mouse_opt.value();
 
@@ -220,7 +288,10 @@ namespace Engine
           return;
         }
 
-        const auto mouse_opt = Engine::Input::get_mouse_world_position_if_in_viewport();
+        // UI entities use screen-space coordinates (not affected by camera)
+        const auto mouse_opt = entity.has_component<Components::UI>()
+          ? Engine::Input::get_mouse_position_if_in_viewport()
+          : Engine::Input::get_mouse_world_position_if_in_viewport();
 
         if (!mouse_opt.has_value()) return;
 
@@ -255,10 +326,11 @@ namespace Engine
                                           ring_center.y - ydir.y * (ring_radius + gizmo->rotate_knob_offset) };
 
         // Decide which handles are enabled for the current tool mode
-        const bool allow_scale = (gizmo->mode == Components::GizmoMode::Scale);
-        const bool allow_axes = (gizmo->mode == Components::GizmoMode::ArrowMove);
-        const bool allow_body = (gizmo->mode == Components::GizmoMode::GrabMove);
-        const bool allow_rot = (gizmo->mode == Components::GizmoMode::Rotate);
+        const auto toolbar_mode = ViewportToolbar::get_gizmo_mode();
+        const bool allow_scale = (toolbar_mode == Components::GizmoMode::Scale);
+        const bool allow_axes = (toolbar_mode == Components::GizmoMode::ArrowMove);
+        const bool allow_body = (toolbar_mode == Components::GizmoMode::GrabMove);
+        const bool allow_rot = (toolbar_mode == Components::GizmoMode::Rotate);
 
         //if (Input::is_pressed(KeyCode::MouseLeft)) {
         //  // inside check via local-space AABB
@@ -469,11 +541,28 @@ namespace Engine
 
         if (!tr || !gizmo) return;
 
+        // UI entities draw gizmos in screen space (not affected by camera)
+        const bool is_ui = entity.has_component<Components::UI>();
+
+        // Use UI or world-space draw functions depending on entity type
+        auto gizmo_draw_rect_outline = [is_ui](const Math::Vec2D& pos, const Math::Vec2D& size, f32 rot, f32 thick, const Math::Vec4D& col) {
+          if (is_ui) Graphics::draw_rect_outline_ui(pos, size, rot, thick, col);
+          else Graphics::draw_rect_outline(pos, size, rot, thick, col);
+          };
+        auto gizmo_draw_circle_outline = [is_ui](const Math::Vec2D& pos, f32 radius, f32 thick, const Math::Vec4D& col, int segments) {
+          if (is_ui) Graphics::draw_circle_outline_ui(pos, radius, thick, col, segments);
+          else Graphics::draw_circle_outline(pos, radius, thick, col, segments);
+          };
+        auto gizmo_draw_line = [is_ui](const Math::Vec2D& start, const Math::Vec2D& end, f32 thick, const Math::Vec4D& col) {
+          if (is_ui) Graphics::draw_line_ui(start, end, thick, col);
+          else Graphics::draw_line(start, end, thick, col);
+          };
+
         // All entities (including text) use Transform2D position as center and scale as bounds
         Math::Vec2D rect_center = tr->position;
         Math::Vec2D rect_size = tr->scale;
 
-        Engine::Graphics::draw_rect_outline(
+        gizmo_draw_rect_outline(
           rect_center,
           rect_size,
           tr->rotation,
@@ -493,11 +582,14 @@ namespace Engine
         const Math::Vec2D mid_top_w{ (tl_r.x + tr_r.x) * 0.5f, (tl_r.y + tr_r.y) * 0.5f };
         const Math::Vec2D mid_right_w{ (tr_r.x + br_r.x) * 0.5f, (tr_r.y + br_r.y) * 0.5f };
 
+        // Read gizmo mode from the viewport toolbar (global state)
+        const auto gizmo_mode = ViewportToolbar::get_gizmo_mode();
+
         // Scale handles
-        if (gizmo->mode == Components::GizmoMode::Scale) {
+        if (gizmo_mode == Components::GizmoMode::Scale) {
           auto draw_handle = [&](const Math::Vec2D& c, bool hovered) {
             const Math::Vec4D col = hovered ? gizmo->handle_hover_color : gizmo->handle_color;
-            Graphics::draw_rect_outline(c, { gizmo->handle_size, gizmo->handle_size }, tr->rotation, 2.0f, col);
+            gizmo_draw_rect_outline(c, { gizmo->handle_size, gizmo->handle_size }, tr->rotation, 2.0f, col);
             };
           draw_handle(tl_r, gizmo->hover_handle == Components::GizmoHandleType::ScaleTL);
           draw_handle(tr_r, gizmo->hover_handle == Components::GizmoHandleType::ScaleTR);
@@ -506,7 +598,7 @@ namespace Engine
         }
 
         // Rotation ring + crosshair + knob
-        if (gizmo->mode == Components::GizmoMode::Rotate) {
+        if (gizmo_mode == Components::GizmoMode::Rotate) {
           const float ring_radius = 0.5f * std::max(rect_size.x, rect_size.y) + gizmo->rotate_ring_padding;
           const Math::Vec2D center = rect_center;
           const Math::Vec2D knob = { center.x - ydir.x * (ring_radius + gizmo->rotate_knob_offset),
@@ -515,24 +607,24 @@ namespace Engine
           const Math::Vec4D ring_col = (gizmo->hover_handle == Components::GizmoHandleType::RotateHandle)
             ? gizmo->handle_hover_color : gizmo->handle_color;
 
-          Graphics::draw_circle_outline(center, ring_radius, gizmo->rotate_ring_thickness, ring_col, 64);
+          gizmo_draw_circle_outline(center, ring_radius, gizmo->rotate_ring_thickness, ring_col, 64);
 
           // crosshair aligned to local axes
           const Math::Vec4D colX{ 0.2f, 1.0f, 0.2f, 1.0f };
           const Math::Vec4D colY{ 1.0f, 0.2f, 0.2f, 1.0f };
-          Graphics::draw_line({ center.x - xdir.x * ring_radius, center.y - xdir.y * ring_radius },
+          gizmo_draw_line({ center.x - xdir.x * ring_radius, center.y - xdir.y * ring_radius },
             { center.x + xdir.x * ring_radius, center.y + xdir.y * ring_radius },
             1.5f, colX);
-          Graphics::draw_line({ center.x - ydir.x * ring_radius, center.y - ydir.y * ring_radius },
+          gizmo_draw_line({ center.x - ydir.x * ring_radius, center.y - ydir.y * ring_radius },
             { center.x + ydir.x * ring_radius, center.y + ydir.y * ring_radius },
             1.5f, colY);
 
           // knob outline
-          Graphics::draw_circle_outline(knob, gizmo->rotate_handle_radius, gizmo->outline_thickness, ring_col, 24);
+          gizmo_draw_circle_outline(knob, gizmo->rotate_handle_radius, gizmo->outline_thickness, ring_col, 24);
         }
 
         // Axis arrows along local axes
-        if (gizmo->mode == Components::GizmoMode::ArrowMove) {
+        if (gizmo_mode == Components::GizmoMode::ArrowMove) {
           const float len_x = std::max(12.0f, rect_size.x * gizmo->arrow_length_factor) + gizmo->arrow_outside_extra;
           const float len_y = std::max(12.0f, rect_size.y * gizmo->arrow_length_factor) + gizmo->arrow_outside_extra;
 
@@ -541,11 +633,11 @@ namespace Engine
             Math::Vec2D from = mid_right_w;
             Math::Vec2D shaft_center{ from.x + xdir.x * (len_x * 0.5f), from.y + xdir.y * (len_x * 0.5f) };
             Math::Vec4D col = (gizmo->hover_handle == Components::GizmoHandleType::AxisX) ? gizmo->handle_hover_color : gizmo->handle_color;
-            Graphics::draw_rect_outline(shaft_center, { len_x, gizmo->arrow_thickness }, tr->rotation, gizmo->arrow_thickness, col);
+            gizmo_draw_rect_outline(shaft_center, { len_x, gizmo->arrow_thickness }, tr->rotation, gizmo->arrow_thickness, col);
             const float hs = gizmo->arrow_head_size;
             const Math::Vec2D tip{ from.x + xdir.x * len_x, from.y + xdir.y * len_x };
-            Graphics::draw_rect_outline(tip, { hs, gizmo->arrow_thickness }, tr->rotation + 45.0f, gizmo->arrow_thickness, col);
-            Graphics::draw_rect_outline(tip, { hs, gizmo->arrow_thickness }, tr->rotation - 45.0f, gizmo->arrow_thickness, col);
+            gizmo_draw_rect_outline(tip, { hs, gizmo->arrow_thickness }, tr->rotation + 45.0f, gizmo->arrow_thickness, col);
+            gizmo_draw_rect_outline(tip, { hs, gizmo->arrow_thickness }, tr->rotation - 45.0f, gizmo->arrow_thickness, col);
           }
 
           // Y axis
@@ -553,49 +645,15 @@ namespace Engine
             Math::Vec2D from = mid_top_w;
             Math::Vec2D shaft_center{ from.x - ydir.x * (len_y * 0.5f), from.y - ydir.y * (len_y * 0.5f) };
             Math::Vec4D col = (gizmo->hover_handle == Components::GizmoHandleType::AxisY) ? gizmo->handle_hover_color : gizmo->handle_color;
-            Graphics::draw_rect_outline(shaft_center, { len_y, gizmo->arrow_thickness }, tr->rotation + 90.0f, gizmo->arrow_thickness, col);
+            gizmo_draw_rect_outline(shaft_center, { len_y, gizmo->arrow_thickness }, tr->rotation + 90.0f, gizmo->arrow_thickness, col);
             const float hs = gizmo->arrow_head_size;
             const Math::Vec2D tip{ from.x - ydir.x * len_y, from.y - ydir.y * len_y };
-            Graphics::draw_rect_outline(tip, { hs, gizmo->arrow_thickness }, tr->rotation + 90.0f + 45.0f, gizmo->arrow_thickness, col);
-            Graphics::draw_rect_outline(tip, { hs, gizmo->arrow_thickness }, tr->rotation + 90.0f - 45.0f, gizmo->arrow_thickness, col);
+            gizmo_draw_rect_outline(tip, { hs, gizmo->arrow_thickness }, tr->rotation + 90.0f + 45.0f, gizmo->arrow_thickness, col);
+            gizmo_draw_rect_outline(tip, { hs, gizmo->arrow_thickness }, tr->rotation + 90.0f - 45.0f, gizmo->arrow_thickness, col);
           }
         }
 
-        // ---------- ImGui Toolbar ----------
-        {
-          Components::Gizmo* gizmo_nc = const_cast<Components::Gizmo*>(gizmo);
-
-          Math::Vec2D min_pos = ImGuiManager::get_game_render_area_min();
-          ImGui::SetNextWindowPos(ImVec2(min_pos.x + 10.0f, min_pos.y + 10.0f));
-
-          ImGui::SetNextWindowBgAlpha(0.9f);
-
-          if (ImGui::Begin("Gizmo Tools", nullptr,
-            ImGuiWindowFlags_NoSavedSettings |
-            ImGuiWindowFlags_AlwaysAutoResize |
-            ImGuiWindowFlags_NoDocking |
-            ImGuiWindowFlags_NoTitleBar |
-            ImGuiWindowFlags_NoResize |
-            ImGuiWindowFlags_NoMove |
-            ImGuiWindowFlags_NoCollapse))
-          {
-            int mode = static_cast<int>(gizmo_nc->mode);
-
-            ImGui::TextUnformatted("Select Tool");
-            ImGui::Separator();
-
-            if (ImGui::RadioButton("Grab / Move", mode == 0)) mode = 0;
-            if (ImGui::RadioButton("Arrows (X/Y)", mode == 1)) mode = 1;
-            if (ImGui::RadioButton("Rotate", mode == 2)) mode = 2;
-            if (ImGui::RadioButton("Scale", mode == 3)) mode = 3;
-
-            ImGui::Separator();
-
-            gizmo_nc->mode = static_cast<Components::GizmoMode>(mode);
-          }
-          ImGui::End();
-
-        }
+        // Toolbar is now drawn by ViewportToolbar::draw() inside ViewportPanel
 
       }
     };

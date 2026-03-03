@@ -20,11 +20,14 @@
 #include "../Components/GraphicsComponents.h"
 #include "../Components/SpatialComponents.h"
 #include "../Graphics/Renderer.h"
+#include "../Systems/GraphicsSystem.h"
 #include <vector>
 
 inline void CameraPanel()
 {
   static s32 selected_camera_id = -1;
+  static float test_shake_amplitude = 42.0f;
+  static float test_shake_duration = 0.16f;
 
   ImGui::Begin("Camera Control");
 
@@ -127,7 +130,7 @@ inline void CameraPanel()
     else
     {
       auto* camera = entity.get_component<Components::Camera>();
-      
+
       // Ensure Transform2D exists
       if (!entity.has_component<Components::Transform2D>()) {
         entity.add_component<Components::Transform2D>();
@@ -190,17 +193,69 @@ inline void CameraPanel()
 
       ImGui::Separator();
 
+      // --- Follow Offset ---
+      ImGui::Text("Target Offset:");
+      ImGui::SameLine();
+      ImGui::TextDisabled("(?)");
+      if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Static pixel offset from the follow target.\n"
+          "X > 0 shifts camera right, Y > 0 shifts down.\n"
+          "Use this to frame the player off-center.");
+      }
+      float offset[2] = { camera->target_offset.x, camera->target_offset.y };
+      if (ImGui::DragFloat2("##TargetOffset", offset, 1.0f, -2000.0f, 2000.0f, "%.1f")) {
+        camera->target_offset = { offset[0], offset[1] };
+      }
+
+      ImGui::Separator();
+
+      // --- Smoothing ---
+      if (ImGui::CollapsingHeader("Smoothing", ImGuiTreeNodeFlags_DefaultOpen)) {
+        ImGui::Checkbox("Smooth Movement", &camera->is_smooth);
+        if (camera->is_smooth) {
+          ImGui::DragFloat("Smooth Factor", &camera->smooth_factor, 0.1f, 0.1f, 50.0f, "%.1f");
+          ImGui::DragFloat("Dir-Change Smooth", &camera->smooth_factor_direction_change, 0.1f, 0.1f, 50.0f, "%.1f");
+          ImGui::DragFloat("Rotation Smooth", &camera->rotation_smooth, 0.1f, 0.1f, 50.0f, "%.1f");
+          ImGui::DragFloat("Zoom Smooth", &camera->zoom_smooth, 0.1f, 0.1f, 50.0f, "%.1f");
+        }
+      }
+
+      // --- Look-ahead ---
+      if (ImGui::CollapsingHeader("Look-Ahead")) {
+        ImGui::DragFloat("Look-Ahead Distance", &camera->look_ahead_distance, 1.0f, 0.0f, 1000.0f, "%.0f px");
+        ImGui::DragFloat("Look-Ahead Smooth", &camera->look_ahead_smooth, 0.1f, 0.1f, 20.0f, "%.1f");
+      }
+
+      // --- Dead Zone ---
+      if (ImGui::CollapsingHeader("Dead Zone")) {
+        ImGui::DragFloat("Dead Zone Radius", &camera->dead_zone_radius, 0.5f, 0.0f, 200.0f, "%.1f px");
+      }
+
+      ImGui::Separator();
+
       // Quick actions
       if (ImGui::Button("Reset Camera")) {
         transform->position = { 0.0f, 0.0f };
         transform->rotation = 0.0f;
         transform->scale = { 1.0f, 1.0f };
+        camera->target_offset = { 0.0f, 0.0f };
       }
 
       ImGui::SameLine();
 
       if (ImGui::Button("Focus at Origin")) {
         transform->position = { 0.0f, 0.0f };
+      }
+
+      ImGui::Separator();
+
+      // Screen shake test controls
+      ImGui::Text("Shake Test:");
+      ImGui::DragFloat("Shake Amplitude", &test_shake_amplitude, 1.0f, 0.0f, 300.0f, "%.1f");
+      ImGui::DragFloat("Shake Duration", &test_shake_duration, 0.01f, 0.01f, 2.0f, "%.2f s");
+
+      if (ImGui::Button("Test Screen Shake")) {
+        Engine::Systems::add_camera_shake(test_shake_amplitude, test_shake_duration);
       }
     }
   }

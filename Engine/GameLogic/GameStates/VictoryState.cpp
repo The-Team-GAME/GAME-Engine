@@ -12,8 +12,8 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 
+#include "pch.h"
 #include "VictoryState.h"
-#include "../../Engine/Systems/GraphicsSystem.h"
 
 // Check if any key or mouse button was pressed this frame
 static bool any_key_pressed() {
@@ -29,7 +29,7 @@ static bool any_key_pressed() {
 void VictoryState::load()
 {
   // Get current camera position to center the UI
-  auto& camera = Engine::Systems::CameraSystem::get_camera();
+  Components::Transform2D camera = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
   float cam_x = camera.position.x + 800.0f;
   float cam_y = camera.position.y + 450.0f;
 
@@ -38,6 +38,7 @@ void VictoryState::load()
     .add_component<Components::Transform2D>(cam_x, cam_y, 0.0f, 1600.0f, 900.0f)
     .add_component<Components::Texture>(Engine::Resources::get_rect_texture())
     .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 0.5f)
+    .add_component<Components::UI>()
     .add_to_layer("main_menu_4");
   background_id = background.get_id();
 
@@ -46,6 +47,7 @@ void VictoryState::load()
     .add_component<Components::Transform2D>(cam_x, cam_y, 0.0f, 1600.0f, 900.0f)
     .add_component<Components::Texture>(Engine::Resources::load_texture("images/UI/In-Game Pause/PrimitiveWin/VictoryScreen.png"))
     .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+    .add_component<Components::UI>()
     .add_to_layer("main_menu_5");
   victory_screen_id = victory_screen.get_id();
 

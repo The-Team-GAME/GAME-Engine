@@ -165,7 +165,9 @@ namespace Engine {
 
           // Find matching component array type in world
           bool found = false;
-          for (auto& [type_id, world_array] : containers.component_arrays) {
+          for (ComponentTypeID type_id = 0; type_id < MAX_COMPONENTS; ++type_id) {
+            auto& world_array = containers.component_arrays[type_id];
+            if (!world_array) continue;
             if (world_array->get_type_name() == component_type) {
               found = true;
               // Create storage if it doesn't exist
@@ -175,6 +177,61 @@ namespace Engine {
 
               // Add component to storage and check for errors
               if (!storage[type_id]->add_component_from_generic_value(entity_id, component_data)) {
+                std::string error = "Failed to deserialize component '" + component_type + "': data may be corrupted or component structure has changed";
+                Log::warning("{}", error);
+                result.errors.push_back(error);
+              }
+              else {
+                // Update signature only on success
+                signature.set(type_id);
+              }
+
+              break;
+            }
+          }
+
+          if (!found) {
+            std::string error = "No registered component type found for '" + component_type + "' during deserialization";
+            Log::warning("{}", error);
+            result.errors.push_back(error);
+          }
+
+        }
+        return result;
+      }
+
+      /// Overload that deserializes directly into the world's component arrays
+      inline DeserializeResult deserialize_components_to_world(
+        const ReflectionLibrary::Array& components_array,
+        ComponentSignature& signature,
+        EntityID entity_id
+      ) {
+        DeserializeResult result;
+        auto& containers = Internal::get_containers();
+
+        for (const auto& component_entry : components_array) {
+          if (!component_entry.isObject() || !component_entry.has("type") || !component_entry.has("data")) {
+            result.errors.push_back("Invalid component entry: missing 'type' or 'data' field");
+            continue;
+          }
+
+          const std::string& component_type = component_entry["type"].getString();
+          const auto& component_data = component_entry["data"];
+
+          if (component_data.isNull()) {
+            Log::warning("Deserializing component '{}' with null data.", component_type);
+          }
+
+          // Find matching component array type in world
+          bool found = false;
+          for (ComponentTypeID type_id = 0; type_id < MAX_COMPONENTS; ++type_id) {
+            auto& world_array = containers.component_arrays[type_id];
+            if (!world_array) continue;
+            if (world_array->get_type_name() == component_type) {
+              found = true;
+
+              // Add component directly to world storage and check for errors
+              if (!world_array->add_component_from_generic_value(entity_id, component_data)) {
                 std::string error = "Failed to deserialize component '" + component_type + "': data may be corrupted or component structure has changed";
                 Log::warning("{}", error);
                 result.errors.push_back(error);

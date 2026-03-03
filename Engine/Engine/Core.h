@@ -19,13 +19,14 @@
 // This will initialize most of the engine subsystems
 #include "Precompiled.h"
 #include "TypeDef.h"
+#include "EngineExport.h"
 
 namespace Engine
 {
   /* ========================= //
   // Main engine core class    //
   // ========================= */
-  class Core
+  class ENGINE_API Core
   {
   private:
     static bool is_running;

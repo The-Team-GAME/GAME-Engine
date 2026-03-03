@@ -430,6 +430,10 @@ namespace Components
     // Dead zone - camera won't move if within this distance from target
     f32 dead_zone_radius = 0.0f;  // Set to 0 to disable (10-50 for platformers)
 
+    // Static offset from the follow target (in world pixels)
+    // Use this to frame the player off-center (e.g. look ahead vertically in a platformer)
+    Math::Vec2D target_offset = { 0.0f, 0.0f };
+
     Camera() : name("Camera"), is_active(false) {}
     Camera(const std::string& cam_name, bool active = false, bool smooth = true)
       : name(cam_name), is_active(active), is_smooth(smooth) {
@@ -560,12 +564,30 @@ namespace Components
     UI() = default;
   };
 
+  // Parallax scrolling component - makes the entity scroll at a fraction of the camera speed
+  // scroll_factor: (0,0) = fully static background, (1,1) = moves with world, values in between give parallax
+  // tiling: if true, the texture tiles infinitely in both axes so it never runs out
+  // tile_size: size of each repeated tile in world units (only used when tiling = true)
+  struct Parallax
+  {
+    Math::Vec2D scroll_factor = { 0.9f, 0.9f }; // How much camera movement affects this layer (0 = static, 1 = normal)
+    bool tiling = false;                         // Whether the texture repeats infinitely
+    Math::Vec2D tile_size = { 0.0f, 0.0f };      // Size of each tile in world units (0 = use entity scale)
+
+    Parallax() = default;
+    Parallax(f32 factor) : scroll_factor(factor, factor) {}
+    Parallax(f32 fx, f32 fy) : scroll_factor(fx, fy) {}
+    Parallax(const Math::Vec2D& factor, bool tile = false, const Math::Vec2D& ts = { 0.0f, 0.0f })
+      : scroll_factor(factor), tiling(tile), tile_size(ts) {
+    }
+  };
+
 
 }
 
 REFLECT_ENUM(Components::TextAlignment, Left, Center, Right);
 REGISTER_COMPONENT(Components::Text, content, font_scale, line_spacing, alignment)
-REGISTER_COMPONENT(Components::Camera, name, is_active)
+REGISTER_COMPONENT(Components::Camera, name, is_active, is_smooth, smooth_factor, smooth_factor_direction_change, rotation_smooth, zoom_smooth, look_ahead_distance, look_ahead_smooth, dead_zone_radius, target_offset)
 REGISTER_COMPONENT(Components::Distortion, intensity, speed, mesh_intensity)
 REGISTER_COMPONENT(Components::Flip, value)
 REGISTER_COMPONENT(Components::UI)
@@ -574,3 +596,4 @@ REGISTER_COMPONENT_CUSTOM(Components::Texture, path)
 REGISTER_COMPONENT_CUSTOM(Components::Font, path, font_size)
 REGISTER_COMPONENT_CUSTOM(Components::TextureAtlas, tex_coords_list, drawIndex)
 REGISTER_COMPONENT_CUSTOM(Components::Animation, durations, before_times, atlas_indices, startTime, totalDuration, is_looping)
+REGISTER_COMPONENT(Components::Parallax, scroll_factor, tiling, tile_size)

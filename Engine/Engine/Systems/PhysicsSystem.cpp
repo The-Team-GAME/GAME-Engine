@@ -83,15 +83,11 @@ void phy2D::update_entity(ECS::Entity entity)
 
 void phy2D::update_kinematics( Components::RigidBody& rigid )
 {
-  rigid.acceleration = rigid.force / rigid.mass;
-  
-  // We zero the forces here because their effects have already been accounted for
-  rigid.force.zero();
-
-  // From now on we will apply friction on collision like how its supposed to be
-  // There wont be any air resistance so that the player can be controlled more accurately
-  rigid.velocity += rigid.acceleration * Time::get_fixed_dt();
-
+  if (rigid.apply_force) 
+  {
+    rigid.acceleration = rigid.force / rigid.mass;
+    rigid.velocity += rigid.acceleration * Time::get_fixed_dt();
+  }
   // Checking terminal velocity here
   // using the magnitude squared to check cuz its cheaper than sqrt-ing the value
   /*if (rigid.velocity.get_magnitude_sq() > pow(rigid.terminal_velocity, 2))
@@ -100,14 +96,13 @@ void phy2D::update_kinematics( Components::RigidBody& rigid )
   }*/
   if (abs(rigid.velocity.x) > rigid.x_terminal_velocity)
   {
-    if (rigid.velocity.x > 0)
-    {
-      rigid.velocity.x = rigid.x_terminal_velocity;
-    }
-    else
-    {
-      rigid.velocity.x = -rigid.x_terminal_velocity;
-    }
+    rigid.velocity.x = rigid.velocity.x > 0 ? 
+      rigid.x_terminal_velocity : -rigid.x_terminal_velocity;
+  }
+  if (abs(rigid.velocity.y) > rigid.y_terminal_velocity)
+  {
+    rigid.velocity.y = rigid.velocity.y > 0 ?
+      rigid.y_terminal_velocity : -rigid.y_terminal_velocity;
   }
 }
 
@@ -136,36 +131,3 @@ void phy2D::add_force(Components::RigidBody& rigid, Vec2D force)
 {
   rigid.force += force;
 }
-
-void phy2D::scale_force(Components::RigidBody& rigid, f32 scale)
-{
-  rigid.force *= scale;
-}
-
-void phy2D::zero_force(Components::RigidBody& rigid)
-{
-  rigid.force.zero();
-}
-
-void phy2D::walk_left(Components::RigidBody& rigid) // not used
-{
-  rigid.velocity.x = -200.f;
-}
-
-void phy2D::walk_right(Components::RigidBody& rigid) // not used
-{
-  rigid.velocity.x = 200.f;
-}
-
-void phy2D::jump(Components::RigidBody& rigid) // not used
-{
-  rigid.on_ground = false;
-  phy2D::add_force(rigid, Vec2D(0.f, -3500000.f));
-}
-
-//void phy2D::knockback(ECS::Entity victim, Vec2D force)
-//{
-//  Components::RigidBody* rigid = entity.get_component<Components::RigidBody>();
-//  Components::Transform2D* xform = entity.get_component<Components::Transform2D>();
-//  if (rigid.direction == LEFT)
-//}

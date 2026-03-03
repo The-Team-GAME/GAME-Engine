@@ -22,7 +22,7 @@ void ShowcaseState::load() {
   walk_sound = Engine::Resources::load_sound("sounds/SFX/Player/Player Footstep.wav");
   jump_sound = Engine::Resources::load_sound("sounds/SFX/Player/Player Jump (DJ SY Edition).wav");
   punch_sound = Engine::Resources::load_sound("sounds/SFX/Player/Player Swing.wav");
-  bgm_sound = Engine::Resources::load_sound("sounds/Level 1 BGM.wav");
+  bgm_sound = Engine::Resources::load_sound("sounds/BGM/Level 1/MonomythBGM.wav");
 
   // Load fonts
   title_font = Engine::Resources::load_font("fonts/PlayfairDisplay-VariableFont_wght.ttf", 82);

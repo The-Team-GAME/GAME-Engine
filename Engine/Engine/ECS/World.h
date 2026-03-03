@@ -18,6 +18,7 @@
 
 #include "Types.h"
 #include "ComponentArray.h"
+#include "../EngineExport.h"
 #include "Entity.h"
 #include "System.h"
 #include "WorldData.h"
@@ -49,6 +50,14 @@ namespace Engine {
     template <typename T>
     void register_component();
 
+    /**
+     * @brief Removes the component array for type T from the world.
+     *        Must be called before unloading a DLL that defines T,
+     *        so the ComponentArray<T> destructor runs while the vtable is valid.
+     */
+    template <typename T>
+    void unregister_component();
+
     /*=================================================================================
     Function Brief:
     Retrieves the component array that stores all components of type T. Creates
@@ -77,7 +86,7 @@ namespace Engine {
     Where to call it:
     When spawning a new game object or entity in the world.
     ==================================================================================*/
-    Entity create_entity();
+    ENGINE_API Entity create_entity();
 
     /*=================================================================================
     Function Brief:
@@ -90,7 +99,7 @@ namespace Engine {
     Where to call it:
     When restoring a deleted entity during undo operations.
     ==================================================================================*/
-    Entity create_entity_with_id(EntityID id);
+    ENGINE_API Entity create_entity_with_id(EntityID id);
 
     /*=================================================================================
     Function Brief:
@@ -103,7 +112,7 @@ namespace Engine {
     Where to call it:
     When you have an entity ID and need an Entity handle to work with.
     ==================================================================================*/
-    Entity get_entity(EntityID id);
+    ENGINE_API Entity get_entity(EntityID id);
 
     /*=================================================================================
     Function Brief:
@@ -115,7 +124,7 @@ namespace Engine {
     Where to call it:
     When spawning copies of existing entities or implementing duplication features.
     ==================================================================================*/
-    Entity clone_entity(const Entity source);
+    ENGINE_API Entity clone_entity(const Entity source);
 
     /*=================================================================================
     Function Brief:
@@ -128,7 +137,7 @@ namespace Engine {
     Where to call it:
     When removing game objects or entities from the world.
     ==================================================================================*/
-    void destroy_entity(const Entity entity);
+    ENGINE_API void destroy_entity(const Entity entity);
 
     /*=================================================================================
     Function Brief:
@@ -142,7 +151,27 @@ namespace Engine {
     When clearing the entire world, transitioning between game states, or resetting
     the game.
     ==================================================================================*/
-    void destroy_all_entities();
+    ENGINE_API void destroy_all_entities();
+
+    /*=================================================================================
+    Function Brief:
+    Frees all heap memory held inside the ECS world containers (component arrays,
+    entity name strings, layer maps, system objects, etc.).
+
+    Call this AFTER destroy_all_entities() + process_housekeeping() during
+    engine shutdown. The leaked WorldContainers* singleton itself is not
+    destroyed (by design), but all its internal data is released so the CRT
+    leak checker sees clean heap.
+    ==================================================================================*/
+    ENGINE_API void clear_world();
+
+    /*=================================================================================
+    Function Brief:
+    Deletes the WorldContainers singleton, freeing all remaining STL structural
+    overhead (sentinel nodes, iterator-debug proxies). Call AFTER clear_world()
+    and AFTER DLL unload.
+    ==================================================================================*/
+    ENGINE_API void destroy_world();
 
     /*=================================================================================
     Function Brief:
@@ -167,7 +196,36 @@ namespace Engine {
     Where to call it:
     Before performing operations on an entity to ensure it hasn't been destroyed.
     ==================================================================================*/
-    bool is_entity_active(const Entity entity);
+    ENGINE_API bool is_entity_active(const Entity entity);
+
+    /* =================== //
+    // Entity naming        //
+    // =================== */
+
+    /*=================================================================================
+    Function Brief:
+    Sets the display name for an entity.
+
+    Parameters:
+    entity - The entity to name.
+    name   - The display name string.
+
+    Where to call it:
+    When creating entities or renaming them in the editor.
+    ==================================================================================*/
+    ENGINE_API void set_entity_name(const Entity entity, const std::string& name);
+
+    /*=================================================================================
+    Function Brief:
+    Gets the display name for an entity. Returns "Entity {id}" if no name is set.
+
+    Parameters:
+    entity - The entity to query.
+
+    Where to call it:
+    When displaying entity names in the editor or debug output.
+    ==================================================================================*/
+    ENGINE_API const std::string& get_entity_name(const Entity entity);
 
     /* ====================== //
     // Component management   //
@@ -328,7 +386,7 @@ namespace Engine {
     Where to call it:
     When cleaning up event listeners.
     ==================================================================================*/
-    void remove_event_listener(Engine::EventManager::EventTypeID eventType);
+    ENGINE_API void remove_event_listener(Engine::EventManager::EventTypeID eventType);
 
     /*=================================================================================
     Function Brief:
@@ -358,7 +416,7 @@ namespace Engine {
     Where to call it:
     In the main game loop, once per frame.
     ==================================================================================*/
-    void update();
+    ENGINE_API void update();
 
     /*=================================================================================
     Function Brief:
@@ -371,7 +429,7 @@ namespace Engine {
     Where to call it:
     In the main game loop, only when the game is not paused.
     ==================================================================================*/
-    void update_game();
+    ENGINE_API void update_game();
 
     /*=================================================================================
     Function Brief:
@@ -384,7 +442,7 @@ namespace Engine {
     Where to call it:
     In the main game loop, every frame regardless of pause state.
     ==================================================================================*/
-    void update_editor();
+    ENGINE_API void update_editor();
 
     /*=================================================================================
     Function Brief:
@@ -413,7 +471,7 @@ namespace Engine {
     Where to call it:
     In editor code when you need to trigger an entity update while paused.
     ==================================================================================*/
-    void request_entity_update(EntityID entity);
+    ENGINE_API void request_entity_update(EntityID entity);
 
     /*=================================================================================
     Function Brief:
@@ -426,7 +484,7 @@ namespace Engine {
     Where to call it:
     In the main game loop, called every frame regardless of pause state.
     ==================================================================================*/
-    void process_housekeeping();
+    ENGINE_API void process_housekeeping();
 
     /* ================ //
     // Main draw loop   //
@@ -443,7 +501,7 @@ namespace Engine {
     Where to call it:
     In the main game loop, during the rendering phase.
     ==================================================================================*/
-    void draw();
+    ENGINE_API void draw();
 
     /* ============================================== //
     // Query methods - return Entity instead of EntityID //
@@ -499,7 +557,7 @@ namespace Engine {
     Where to call it:
     When you need to iterate over or inspect all entities.
     ==================================================================================*/
-    std::vector<Entity> get_all_entities();
+    ENGINE_API std::vector<Entity> get_all_entities();
 
     /*=================================================================================
     Function Brief:
@@ -511,7 +569,7 @@ namespace Engine {
     Where to call it:
     When you need to know how many entities exist.
     ==================================================================================*/
-    size_t get_entity_count();
+    ENGINE_API size_t get_entity_count();
 
     /*=================================================================================
     Function Brief:
@@ -526,7 +584,7 @@ namespace Engine {
     Where to call it:
     When you need to iterate over entities on a specific layer.
     ==================================================================================*/
-    std::vector<Entity> get_entities_on_layer(LayerID layer);
+    ENGINE_API std::vector<Entity> get_entities_on_layer(LayerID layer);
 
     /*=================================================================================
     Function Brief:
@@ -541,7 +599,7 @@ namespace Engine {
     Where to call it:
     When you need to iterate over entities on a specific layer by name.
     ==================================================================================*/
-    std::vector<Entity> get_entities_on_layer(const std::string& layer_name);
+    ENGINE_API std::vector<Entity> get_entities_on_layer(const std::string& layer_name);
 
     /*=================================================================================
     Function Brief:
@@ -554,7 +612,7 @@ namespace Engine {
     When you need to perform an operation on all entities without creating a vector.
     More efficient than get_all_entities() when you just need to iterate.
     ==================================================================================*/
-    void for_each_entity(std::function<void(Entity)> callback);
+    ENGINE_API void for_each_entity(std::function<void(Entity)> callback);
 
     /*=================================================================================
     Function Brief:
@@ -575,8 +633,8 @@ namespace Engine {
       transform->position += velocity->value;
     });
     ==================================================================================*/
-    template <typename... Components>
-    void for_each_entity_with(std::function<void(Entity)> callback);
+    template <typename... Components, typename Func>
+    void for_each_entity_with(Func&& callback);
 
     /*=================================================================================
     Function Brief:
@@ -620,7 +678,7 @@ namespace Engine {
     Where to call it:
     When you need to perform operations on entities in a specific layer.
     ==================================================================================*/
-    void for_each_entity_on_layer(LayerID layer, std::function<void(Entity)> callback);
+    ENGINE_API void for_each_entity_on_layer(LayerID layer, std::function<void(Entity)> callback);
 
     /*=================================================================================
     Function Brief:
@@ -633,7 +691,7 @@ namespace Engine {
     Where to call it:
     When you need to perform operations on entities in a specific layer by name.
     ==================================================================================*/
-    void for_each_entity_on_layer(const std::string& layer_name, std::function<void(Entity)> callback);
+    ENGINE_API void for_each_entity_on_layer(const std::string& layer_name, std::function<void(Entity)> callback);
 
     /*=================================================================================
     Function Brief:
@@ -658,8 +716,8 @@ namespace Engine {
       }
     );
     ==================================================================================*/
-    template <typename... T>
-    void for_each_entity_with(const LayerSignature& layers, std::function<void(Entity)> callback);
+    template <typename... T, typename Func>
+    void for_each_entity_with(const LayerSignature& layers, Func&& callback);
 
     /*=================================================================================
     Function Brief:
@@ -719,8 +777,8 @@ namespace Engine {
       // Check collision between lhs and rhs
     });
     ==================================================================================*/
-    template <typename... Components>
-    void for_each_entity_pair(std::function<void(Entity, Entity)> callback);
+    template <typename... Components, typename Func>
+    void for_each_entity_pair(Func&& callback);
 
     /*=================================================================================
     Function Brief:
@@ -757,11 +815,11 @@ namespace Engine {
       }
     );
     ==================================================================================*/
-    template <typename... Components>
+    template <typename... Components, typename Func>
     void for_each_entity_pair(
       const LayerSignature& lhs_mask,
       const LayerSignature& rhs_mask,
-      std::function<void(Entity, Entity)> callback
+      Func&& callback
     );
 
     /*=================================================================================
@@ -796,7 +854,7 @@ namespace Engine {
     Where to call it:
     During initialization to define custom layers for your game.
     ==================================================================================*/
-    LayerID register_layer(const std::string& name);
+    ENGINE_API LayerID register_layer(const std::string& name);
 
     /*=================================================================================
     Function Brief:
@@ -811,7 +869,7 @@ namespace Engine {
     Where to call it:
     When you need to get a layer ID from a layer name.
     ==================================================================================*/
-    LayerID get_layer_id(const std::string& name);
+    ENGINE_API LayerID get_layer_id(const std::string& name);
 
     /*=================================================================================
     Function Brief:
@@ -826,7 +884,7 @@ namespace Engine {
     Where to call it:
     When you need to get a layer name from a layer ID.
     ==================================================================================*/
-    std::string get_layer_name(LayerID id);
+    ENGINE_API std::string get_layer_name(LayerID id);
 
     /*=================================================================================
     Function Brief:
@@ -842,7 +900,7 @@ namespace Engine {
     Where to call it:
     When you need to reference the default layer or check if an entity is on it.
     ==================================================================================*/
-    LayerID get_default_layer();
+    ENGINE_API LayerID get_default_layer();
 
     /*=================================================================================
     Function Brief:
@@ -854,7 +912,7 @@ namespace Engine {
     Where to call it:
     When you want to activate a layer that was previously disabled.
     ==================================================================================*/
-    void enable_layer(LayerID layer);
+    ENGINE_API void enable_layer(LayerID layer);
 
     /*=================================================================================
     Function Brief:
@@ -866,7 +924,7 @@ namespace Engine {
     Where to call it:
     When you want to temporarily pause/hide entities on a specific layer.
     ==================================================================================*/
-    void disable_layer(LayerID layer);
+    ENGINE_API void disable_layer(LayerID layer);
 
     /*=================================================================================
     Function Brief:
@@ -878,7 +936,7 @@ namespace Engine {
     Where to call it:
     When you want to activate a layer using its string name.
     ==================================================================================*/
-    void enable_layer(const std::string& layer_name);
+    ENGINE_API void enable_layer(const std::string& layer_name);
 
     /*=================================================================================
     Function Brief:
@@ -890,7 +948,7 @@ namespace Engine {
     Where to call it:
     When you want to temporarily pause/hide entities on a specific layer by name.
     ==================================================================================*/
-    void disable_layer(const std::string& layer_name);
+    ENGINE_API void disable_layer(const std::string& layer_name);
 
     /*=================================================================================
     Function Brief:
@@ -905,7 +963,7 @@ namespace Engine {
     Where to call it:
     When you need to know if a layer is currently being processed.
     ==================================================================================*/
-    bool is_layer_active(LayerID layer);
+    ENGINE_API bool is_layer_active(LayerID layer);
 
     /*=================================================================================
     Function Brief:
@@ -920,7 +978,7 @@ namespace Engine {
     Where to call it:
     When you need to know if a layer is currently being processed.
     ==================================================================================*/
-    bool is_layer_active(const std::string& layer_name);
+    ENGINE_API bool is_layer_active(const std::string& layer_name);
 
     /*=================================================================================
     Function Brief:
@@ -972,7 +1030,7 @@ namespace Engine {
     Where to call it:
     When you need to know if an entity is on a specific layer.
     ==================================================================================*/
-    bool is_on_layer(const Entity entity, LayerID layer);
+    ENGINE_API bool is_on_layer(const Entity entity, LayerID layer);
 
     /*=================================================================================
     Function Brief:
@@ -1010,7 +1068,7 @@ namespace Engine {
     Where to call it:
     When you need the full layer signature of an entity.
     ==================================================================================*/
-    LayerSignature get_entity_layers(const Entity entity);
+    ENGINE_API LayerSignature get_entity_layers(const Entity entity);
 
     /*=================================================================================
     Function Brief:
@@ -1022,7 +1080,7 @@ namespace Engine {
     Where to call it:
     When you want to remove an entity from all layers.
     ==================================================================================*/
-    void clear_layers(const Entity entity);
+    ENGINE_API void clear_layers(const Entity entity);
 
     /* =============== //
     // Internal state  //
@@ -1040,7 +1098,7 @@ namespace Engine {
       Where to call it:
       Called internally by the ECS after adding or removing components.
       ==================================================================================*/
-      void entity_component_changed(EntityID entity);
+      ENGINE_API void entity_component_changed(EntityID entity);
 
       /*=================================================================================
       Function Brief:
@@ -1054,7 +1112,7 @@ namespace Engine {
       Where to call it:
       Called internally by the ECS when determining system membership.
       ==================================================================================*/
-      bool system_matches_entity(const System& system, EntityID entity);
+      ENGINE_API bool system_matches_entity(const System& system, EntityID entity);
 
       /*=================================================================================
       Function Brief:
@@ -1067,7 +1125,7 @@ namespace Engine {
       Where to call it:
       Called internally when an entity is added to a layer.
       ==================================================================================*/
-      void add_entity_to_layer_set(EntityID entity, LayerID layer);
+      ENGINE_API void add_entity_to_layer_set(EntityID entity, LayerID layer);
 
       /*=================================================================================
       Function Brief:
@@ -1080,7 +1138,7 @@ namespace Engine {
       Where to call it:
       Called internally when an entity is removed from a layer.
       ==================================================================================*/
-      void remove_entity_from_layer_set(EntityID entity, LayerID layer);
+      ENGINE_API void remove_entity_from_layer_set(EntityID entity, LayerID layer);
     }
   } // namespace ECS
 } // namespace Engine

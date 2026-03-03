@@ -57,7 +57,7 @@ namespace Engine
      * @param name Name of the Lua function to call.
      * @param dt Optional delta time parameter (default: 0.0f).
      */
-    void call_function(const std::string& name, f32 dt = 0.0f);
+    ENGINE_API void call_function(const std::string& name, f32 dt = 0.0f);
 
     /**
      * @brief Gets a reference to the underlying sol::state Lua interpreter.
@@ -189,7 +189,8 @@ namespace Engine
       if (!obj.valid()) return default_value;
       try {
         return obj.as<T>();
-      } catch (...) {
+      }
+      catch (...) {
         return default_value;
       }
     }

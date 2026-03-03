@@ -1,0 +1,316 @@
+{
+    "data": {
+        "components": [
+            {
+                "data": {
+                    "aabb": {
+                        "half_height": 0.0,
+                        "half_width": 0.0,
+                        "pos": {
+                            "x": -651.8567504882813,
+                            "y": 896.5847778320313
+                        }
+                    },
+                    "height": 250.0,
+                    "kinetic_friction": 1.0,
+                    "offset": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "polygon": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "rotation": 0.0,
+                        "vertices": []
+                    },
+                    "radius": 0.0,
+                    "resolve_collisions": false,
+                    "type": "AABB",
+                    "width": 250.0
+                },
+                "type": "Components::BoxCollider"
+            },
+            {
+                "data": {
+                    "position": {
+                        "x": -651.8567504882813,
+                        "y": 896.3070068359375
+                    },
+                    "rotation": 0.0,
+                    "scale": {
+                        "x": 250.0,
+                        "y": 250.0
+                    }
+                },
+                "type": "Components::Transform2D"
+            },
+            {
+                "data": {
+                    "value": {
+                        "x": 1.0,
+                        "y": 1.0
+                    }
+                },
+                "type": "Components::Flip"
+            },
+            {
+                "data": {
+                    "a": 1.0,
+                    "b": 1.0,
+                    "g": 1.0,
+                    "r": 1.0
+                },
+                "type": "Components::Color"
+            },
+            {
+                "data": {
+                    "path": "images/GameMonkeySpriteSheets/walk.png"
+                },
+                "type": "Components::Texture"
+            },
+            {
+                "data": {
+                    "drawIndex": 5,
+                    "tex_coords_list": [
+                        [
+                            {
+                                "x": 0.0,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.1666666716337204,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.1666666716337204,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.0,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.1666666716337204,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.3333333432674408,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.3333333432674408,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.1666666716337204,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.3333333432674408,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.5,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.5,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.3333333432674408,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.5,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.6666666865348816,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.6666666865348816,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.5,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.6666666865348816,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.8333333134651184,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 0.8333333134651184,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.6666666865348816,
+                                "y": 0.0
+                            }
+                        ],
+                        [
+                            {
+                                "x": 0.8333333134651184,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 1.0,
+                                "y": 1.0
+                            },
+                            {
+                                "x": 1.0,
+                                "y": 0.0
+                            },
+                            {
+                                "x": 0.8333333134651184,
+                                "y": 0.0
+                            }
+                        ]
+                    ]
+                },
+                "type": "Components::TextureAtlas"
+            },
+            {
+                "data": {
+                    "atlas_indices": [
+                        0,
+                        1,
+                        2,
+                        3,
+                        4,
+                        5
+                    ],
+                    "before_times": [
+                        0.0,
+                        0.25,
+                        0.5,
+                        0.75,
+                        1.0,
+                        1.25
+                    ],
+                    "durations": [
+                        0.25,
+                        0.25,
+                        0.25,
+                        0.25,
+                        0.25,
+                        0.25
+                    ],
+                    "is_looping": true,
+                    "startTime": 2672.716064453125,
+                    "totalDuration": 1.5
+                },
+                "type": "Components::Animation"
+            },
+            {
+                "data": {
+                    "path": ""
+                },
+                "type": "Components::Sound"
+            },
+            {
+                "data": {
+                    "blueprint_id": "GamerMonkey",
+                    "current_state_name": "",
+                    "states": []
+                },
+                "type": "Components::StateMachine"
+            },
+            {
+                "data": {
+                    "acceleration": {
+                        "x": 0.0,
+                        "y": 1000.0
+                    },
+                    "gravity": {
+                        "x": 0.0,
+                        "y": 1000.0
+                    },
+                    "is_jumping": false,
+                    "is_static": false,
+                    "mass": 100.0,
+                    "on_ground": true,
+                    "use_gravity": true,
+                    "velocity": {
+                        "x": 0.0,
+                        "y": 16.666667938232422
+                    },
+                    "x_terminal_velocity": 500.0,
+                    "y_terminal_velocity": 1000.0
+                },
+                "type": "Components::RigidBody"
+            },
+            {
+                "data": {
+                    "attack_cooldown": 3.0,
+                    "attack_windup": 0.5,
+                    "chase_range": 700.0,
+                    "chase_speed": 100.0,
+                    "close_attack_range": 180.0,
+                    "damage": 15,
+                    "dash_attack_range": 400.0,
+                    "dash_cooldown": 3.0,
+                    "dash_indicator_height": 100.0,
+                    "dash_speed": 1000.0,
+                    "dash_windup_duration": 1.0,
+                    "detection_range": 600.0,
+                    "hitbox_height": 128.0,
+                    "hitbox_offset_x": 80.0,
+                    "hitbox_offset_y": 0.0,
+                    "hitbox_width": 120.0,
+                    "knockback": {
+                        "x": 500.0,
+                        "y": -100.0
+                    },
+                    "leap_height": 50.0,
+                    "leap_speed": 200.0
+                },
+                "type": "Components::GamerMonkey"
+            },
+            {
+                "data": {
+                    "damage": 10,
+                    "damage_interval": 0.10000000149011612,
+                    "impact_vfx_texture": {
+                        "path": ""
+                    },
+                    "is_continuous": false,
+                    "knockback": {
+                        "x": 0.0,
+                        "y": 0.0
+                    }
+                },
+                "type": "Components::Attack"
+            },
+            {
+                "data": {
+                    "current_hp": 100,
+                    "max_hp": 100
+                },
+                "type": "Components::EnemyHealth"
+            }
+        ],
+        "filepath": "prefabs/big_gamer_monkey.json",
+        "layers": [
+            "enemy"
+        ],
+        "uuid": "7c70c223-d783-406d7-b67d-9b9a2f784971"
+    },
+    "dataType": "Prefab"
+}

@@ -1,5 +1,5 @@
 
-#include "../../Engine/MonkeyEngine.h"
+#include "pch.h"
 #include "../../Engine/Systems/GraphicsSystem.h"
 
 namespace OldManCallbacks
@@ -16,7 +16,7 @@ namespace OldManCallbacks
     dialogue_shown = true;
 
     // Get camera position to center dialogue on screen
-    auto& camera = Engine::Systems::CameraSystem::get_camera();
+    Components::Transform2D camera = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
     float cam_x = camera.position.x + 800.0f;  // Screen center X
     float cam_y = camera.position.y + 450.0f;  // Screen center Y
 
@@ -25,6 +25,7 @@ namespace OldManCallbacks
       .add_component<Components::Transform2D>(cam_x, cam_y, 0.0f, 1600.0f, 900.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/NotBroDialogue.png"))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+      .add_component<Components::UI>()
       .add_to_layer("main_menu_4");
     dialogue_bg_id = dialogue_bg.get_id();
 
@@ -33,6 +34,7 @@ namespace OldManCallbacks
       .add_component<Components::Transform2D>(cam_x + 509.0f, cam_y + 173.0f, 0.0f, 320.0f, 320.0f)
       .add_component<Components::Texture>(Engine::Resources::load_texture("images/NPCOldman.png"))
       .add_component<Components::Color>(1.0f, 1.0f, 1.0f, 1.0f)
+      .add_component<Components::UI>()
       .add_to_layer("main_menu_5");
     npc_portrait_id = npc_portrait.get_id();
 
@@ -42,6 +44,7 @@ namespace OldManCallbacks
       .add_component<Components::Font>(Engine::Resources::load_font("fonts/FiveFontsatFreddy's-Regular.ttf", 48))
       .add_component<Components::Text>("Its time to retrieve your homework boy! Reach the end of the station and take down the big monkey FOR YOUR GPA!", 0.5f)
       .add_component<Components::Color>(0.0f, 0.0f, 0.0f, 1.0f)
+      .add_component<Components::UI>()
       .add_to_layer("main_menu_5");
     dialogue_text_id = dialogue_text.get_id();
 
@@ -103,6 +106,6 @@ namespace OldManCallbacks
 } // namespace OldManCallbacks
 
 
-REGISTER_FUNCTION(old_man_on_enter, void(Engine::ECS::Entity, Engine::ECS::Entity), OldManCallbacks::old_man_on_enter);
-REGISTER_FUNCTION(old_man_on_update, void(Engine::ECS::Entity, Engine::ECS::Entity), OldManCallbacks::old_man_on_update);
-REGISTER_FUNCTION(old_man_on_exit, void(Engine::ECS::Entity, Engine::ECS::Entity), OldManCallbacks::old_man_on_exit);
+REGISTER_FUNCTION(OldManCallbacks::old_man_on_enter)
+REGISTER_FUNCTION(OldManCallbacks::old_man_on_update)
+REGISTER_FUNCTION(OldManCallbacks::old_man_on_exit)

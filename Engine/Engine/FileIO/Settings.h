@@ -83,19 +83,66 @@ namespace Engine
     struct LocalSettings
     {
       std::string imgui_theme = "ayu-dark";
+      std::string imgui_layout = "default"; // Last active ImGui layout (saved in Assets/layouts/)
+      bool auto_reload = true; // Automatically rebuild & reload when source files change
     };
 
     // Game settings (Window mode, Audio volumes)
     struct GameSettings
     {
       bool fullscreen = false;
+      bool vsync = true;  // Enable VSync to cap FPS to monitor refresh rate
       float bgm_volume = 1.0f;
       float sfx_volume = 1.0f;
+    };
+
+    // ==================================================================================
+    // Roguelike Upgrade System Settings
+    // ==================================================================================
+
+    // Upgrade type: Flat adds a fixed amount, Multiplier multiplies current stat
+    enum class UpgradeType
+    {
+      Flat,        // Adds value to the stat each time picked
+      Multiplier   // Multiplies current stat by value each time picked
+    };
+
+    // A rarity tier with its associated drop rate (weight for weighted random)
+    struct RarityTier
+    {
+      std::string name = "Common";  // Rarity display name
+      float drop_rate = 1.0f;       // Weight for weighted random selection (not required to sum to 1)
+    };
+
+    // Definition of a single upgrade card
+    struct UpgradeDefinition
+    {
+      std::string id = "";            // Unique identifier (e.g. "flat_damage")
+      std::string display_name = "";  // Display label (e.g. "Damage Boost")
+      std::string rarity = "Common";  // Must match a RarityTier::name
+      std::string stat_name = "";     // Which stat this targets (e.g. "damage", "speed")
+      UpgradeType type = UpgradeType::Flat;  // Flat or Multiplier
+      float value = 0.0f;            // Flat: amount added; Multiplier: factor (e.g. 1.3 = x1.3)
+      int max_level = 5;             // Max times this upgrade can be picked per run
+    };
+
+    // Top-level upgrade settings loaded from JSON
+    struct UpgradeSettings
+    {
+      int base_point_threshold = 100;    // Points needed for first card pick
+      float threshold_scaling = 1.5f;    // Multiplier on threshold after each pick
+      std::vector<RarityTier> rarities{};         // Rarity tiers with drop weights
+      std::vector<UpgradeDefinition> upgrades{};  // All available upgrades
     };
   }
 }
 
 REFLECT_FIELDS(Engine::FileIO::EngineSettings, window_title, window_width, window_height, panel_viewport_mode, load_all_assets_on_startup)
 REFLECT_FIELDS(Engine::FileIO::ProjectSettings, loaded_tilemaps, layer_collision_pairs)
-REFLECT_FIELDS(Engine::FileIO::LocalSettings, imgui_theme)
-REFLECT_FIELDS(Engine::FileIO::GameSettings, fullscreen, bgm_volume, sfx_volume)
+REFLECT_FIELDS(Engine::FileIO::LocalSettings, imgui_theme, imgui_layout, auto_reload)
+REFLECT_FIELDS(Engine::FileIO::GameSettings, fullscreen, vsync, bgm_volume, sfx_volume)
+
+REFLECT_ENUM(Engine::FileIO::UpgradeType, Flat, Multiplier)
+REFLECT_FIELDS(Engine::FileIO::RarityTier, name, drop_rate)
+REFLECT_FIELDS(Engine::FileIO::UpgradeDefinition, id, display_name, rarity, stat_name, type, value, max_level)
+REFLECT_FIELDS(Engine::FileIO::UpgradeSettings, base_point_threshold, threshold_scaling, rarities, upgrades)

@@ -14,6 +14,7 @@
 // Copyright © 2025 DigiPen Institute of Technology Singapore. All rights reserved.
 //-----------------------------------------------------------------------------------
 #include "ViewportPanel.h"
+#include "ViewportToolbar.h"
 #include "../Precompiled.h"
 #include "../Logger.h"
 #include "../Graphics/Renderer.h"
@@ -325,30 +326,9 @@ namespace ViewportPanel {
     // Draw level tabs at the top
     draw_level_tabs();
 
-    // Get the remaining size for the viewport
+    // Get the remaining size for the viewport — fill the entire panel
     ImVec2 viewport_panel_size = ImGui::GetContentRegionAvail();
-
-    // Calculate aspect ratio (16:9)
-    float target_aspect = 16.0f / 9.0f;
-    float panel_aspect = viewport_panel_size.x / viewport_panel_size.y;
-
     ImVec2 image_size = viewport_panel_size;
-
-    // Adjust size to maintain aspect ratio
-    if (panel_aspect > target_aspect) {
-      // Panel is wider than target, fit to height
-      image_size.x = viewport_panel_size.y * target_aspect;
-    }
-    else {
-      // Panel is taller than target, fit to width
-      image_size.y = viewport_panel_size.x / target_aspect;
-    }
-
-    // Center the image
-    ImVec2 cursor_pos = ImGui::GetCursorPos();
-    cursor_pos.x += (viewport_panel_size.x - image_size.x) * 0.5f;
-    cursor_pos.y += (viewport_panel_size.y - image_size.y) * 0.5f;
-    ImGui::SetCursorPos(cursor_pos);
 
     // Resize framebuffer if needed (limit resizing frequency for performance)
     static float resize_timer = 0.0f;
@@ -370,6 +350,13 @@ namespace ViewportPanel {
         // Resize renderbuffer
         glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer);
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, fb_width, fb_height);
+
+        // Update virtual resolution to match the new aspect ratio (keep height fixed at 900)
+        float new_aspect = static_cast<float>(fb_width) / static_cast<float>(fb_height);
+        Engine::Graphics::set_virtual_resolution(900.0f * new_aspect, 900.0f);
+
+        // Keep PostProcessing FBOs in sync with viewport framebuffer size
+        Engine::Graphics::resize_post_processing(fb_width, fb_height);
 
         resize_timer = 0.0f;
       }
@@ -393,6 +380,9 @@ namespace ViewportPanel {
 
     ImGui::End();
     ImGui::PopStyleVar();
+
+    // Draw the viewport toolbar overlay (positioned over the viewport image)
+    ViewportToolbar::draw();
   }
 
 
@@ -403,6 +393,10 @@ namespace ViewportPanel {
 
   bool is_viewport_hovered() {
     return viewport_hovered;
+  }
+
+  bool is_viewport_focused() {
+    return viewport_focused;
   }
 
 } // namespace ViewportPanel

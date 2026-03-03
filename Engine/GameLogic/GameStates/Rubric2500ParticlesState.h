@@ -15,8 +15,7 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "../../Engine/MonkeyEngine.h"
-#include "../../Engine/Systems/PhysicsSystem.h"
+#include "pch.h"
 
 class Rubric2500ParticlesState : public Engine::Scene
 {

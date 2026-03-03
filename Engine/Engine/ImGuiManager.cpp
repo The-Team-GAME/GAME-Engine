@@ -16,8 +16,10 @@
 #include "ImGuiManager.h"
 #include "WindowManager.h"
 #include "Precompiled.h"
+#include <filesystem>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
+#include <imgui_internal.h>
 #include "InputManager.h"
 #include "Perf.h"
 #include "ImGuiThemes.h"
@@ -28,11 +30,15 @@
 #include "Events/WindowEvents.h"
 #include "EventManager/EventManager.h"
 #include "GUI/ViewportPanel.h"
+#include "GUI/ViewportToolbar.h"
+#include "HotReloadManager.h"
+#include "Graphics/Renderer.h"
 
 namespace {
   bool gui_enabled = true; // Completely disable ImGui when false (TODO: Hook this up to a setting)
   bool main_gui_visible = true; // Still render ImGui but hide all windows when false
   bool show_exit_confirmation = false;
+  std::vector<char> exit_save_selections; // Tracks which dirty items user wants to save on exit (char instead of bool to avoid vector<bool> proxy)
 
   struct PanelInfo {
     std::string name;
@@ -50,6 +56,13 @@ namespace {
   std::vector<PanelInfo> registered_panels;
   std::vector<Toast> active_toasts;
   ImGuiID main_dockspace_id = 0;
+
+  // ---- Layout state ----
+  constexpr const char* LAYOUTS_DIR = "Assets/layouts/";
+  std::string current_layout_name = "default";
+  bool show_save_layout_popup = false;
+  char save_layout_name_buf[128] = {};
+  // ---- End Layout state ----
 
   std::unordered_map<std::string, std::function<void()>> styles_map = {
     {"Eggplant", SetupImGuiStyle_Eggplant},
@@ -70,6 +83,7 @@ namespace ImGuiManager {
 #ifndef GAME_BUILD
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
+    io.IniFilename = nullptr; // Disable automatic imgui.ini save/load; we manage layouts manually
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     //io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
@@ -83,6 +97,9 @@ namespace ImGuiManager {
     }
 
     ImGui::StyleColorsDark();
+
+    // Load icon fonts before backend init (atlas must be built before first frame)
+    ViewportToolbar::init();
 
     ImGui_ImplGlfw_InitForOpenGL(Engine::WindowManager::get_window(), true);
     ImGui_ImplOpenGL3_Init();
@@ -100,6 +117,18 @@ namespace ImGuiManager {
         show_toast(event.message, event.type, event.duration);
       }
     );
+
+    // Auto-load last used layout (or seed a default if none exists yet)
+    {
+      const std::string& saved_layout = Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::get().imgui_layout;
+      current_layout_name = saved_layout.empty() ? "default" : saved_layout;
+      std::string layout_path = std::string(LAYOUTS_DIR) + current_layout_name + ".ini";
+      if (std::filesystem::exists(layout_path))
+      {
+        ImGui::LoadIniSettingsFromDisk(layout_path.c_str());
+      }
+      // (If no file exists yet the first explicit save will create it)
+    }
 #endif
   }
 
@@ -175,6 +204,10 @@ namespace ImGuiManager {
               Engine::WindowManager::set_fullscreen(Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get().fullscreen);
               Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::save();
             }
+            if (ImGui::MenuItem("Toggle VSync", nullptr, &Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get_mutable().vsync)) {
+              Engine::WindowManager::set_vsync(Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get().vsync);
+              Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::save();
+            }
 
             ImGui::EndMenu();
           }
@@ -193,6 +226,37 @@ namespace ImGuiManager {
               if (ImGui::MenuItem(style_name.c_str()))
               {
                 set_style(style_name);
+              }
+            }
+            ImGui::EndMenu();
+          }
+          if (ImGui::BeginMenu("Layouts"))
+          {
+            if (ImGui::MenuItem("Save Current Layout"))
+            {
+              save_layout(current_layout_name);
+              show_toast("Layout '" + current_layout_name + "' saved", ImGuiManager::ToastType::Info, 2.0f);
+            }
+            if (ImGui::MenuItem("Save Layout As..."))
+            {
+              // Pre-fill with current name
+              strncpy_s(save_layout_name_buf, sizeof(save_layout_name_buf), current_layout_name.c_str(), sizeof(save_layout_name_buf) - 1);
+              show_save_layout_popup = true;
+            }
+            ImGui::Separator();
+            auto layouts = get_available_layouts();
+            if (layouts.empty())
+            {
+              ImGui::TextDisabled("(no saved layouts)");
+            }
+            for (const auto& layout_name : layouts)
+            {
+              bool is_active = (layout_name == current_layout_name);
+              if (ImGui::MenuItem(layout_name.c_str(), nullptr, is_active))
+              {
+                load_layout(layout_name);
+                Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::get_mutable().imgui_layout = layout_name;
+                Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::save();
               }
             }
             ImGui::EndMenu();
@@ -238,6 +302,26 @@ namespace ImGuiManager {
           Engine::SceneManager::unload_current_scene();
           Engine::SceneManager::load_scene(current);
           Engine::Time::set_paused(true);
+        }
+
+        ImGui::SameLine();
+        ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+        ImGui::SameLine();
+
+        // Build Button
+        if (Engine::HotReload::is_building())
+        {
+          if (ImGui::Button("Cancel", ImVec2(80, 0)))
+          {
+            Engine::HotReload::request_build_cancellation();
+          }
+        }
+        else
+        {
+          if (ImGui::Button("Build", ImVec2(80, 0)))
+          {
+            Engine::HotReload::request_manual_reload();
+          }
         }
 
         ImGui::Unindent(8.0f); // Remove left padding
@@ -303,19 +387,99 @@ namespace ImGuiManager {
       show_exit_confirmation = false; // Reset flag after opening
     }
 
+    // Show "Save Layout As..." popup
+    if (show_save_layout_popup)
+    {
+      ImGui::OpenPopup("Save Layout As");
+      show_save_layout_popup = false;
+    }
+    {
+      ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+      ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+      ImGui::SetNextWindowSize(ImVec2(340, 0), ImGuiCond_Appearing);
+      if (ImGui::BeginPopupModal("Save Layout As", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+      {
+        ImGui::Text("Layout name:");
+        ImGui::SetNextItemWidth(-1.0f);
+        bool confirm = ImGui::InputText("##layout_name_input", save_layout_name_buf, sizeof(save_layout_name_buf),
+          ImGuiInputTextFlags_EnterReturnsTrue);
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        f32 btn_w = 120.0f;
+        f32 spacing = ImGui::GetStyle().ItemSpacing.x;
+        f32 total = btn_w * 2 + spacing;
+        ImGui::SetCursorPosX((ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x - total) * 0.5f + ImGui::GetWindowContentRegionMin().x);
+
+        if (ImGui::Button("Save", ImVec2(btn_w, 0)) || confirm)
+        {
+          std::string name = save_layout_name_buf;
+          // Trim whitespace
+          name.erase(0, name.find_first_not_of(" \t"));
+          name.erase(name.find_last_not_of(" \t") + 1);
+          if (!name.empty())
+          {
+            save_layout(name);
+            Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::get_mutable().imgui_layout = name;
+            Engine::FileIO::SettingsManager<Engine::FileIO::LocalSettings>::save();
+            show_toast("Layout '" + name + "' saved", ImGuiManager::ToastType::Info, 2.0f);
+          }
+          ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(btn_w, 0)))
+        {
+          ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+      }
+    }
+
     // Always place the popup at the center of the viewport
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSizeConstraints(ImVec2(350, 0), ImVec2(500, 600));
 
     if (ImGui::BeginPopupModal("Exit Confirmation", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
-      bool has_unsaved_changes = Engine::ProjectSaveManager::is_any_dirty();
+      const auto& dirty_states = Engine::ProjectSaveManager::get_dirty_states();
+      bool has_unsaved_changes = !dirty_states.empty();
 
       if (has_unsaved_changes)
       {
         ImGui::Text("You have unsaved changes!");
         ImGui::Spacing();
-        ImGui::Text("Do you want to save before exiting?");
+        ImGui::Text("Select which items to save before exiting:");
+        ImGui::Spacing();
+
+        // Track which items the user wants to save (persistent across frames)
+        if (exit_save_selections.size() != dirty_states.size()) {
+          exit_save_selections.assign(dirty_states.size(), true); // Default: save all
+        }
+
+        // Show each dirty item with a checkbox
+        ImGui::BeginChild("DirtyItems", ImVec2(0, std::min(200.0f, dirty_states.size() * 28.0f + 8.0f)), true);
+        for (size_t i = 0; i < dirty_states.size(); ++i) {
+          std::string display_name = Engine::ProjectSaveManager::get_dirty_display_name(dirty_states[i]);
+          std::string label = display_name + "##dirty_" + std::to_string(i);
+          bool selected = exit_save_selections[i] != 0;
+          if (ImGui::Checkbox(label.c_str(), &selected)) {
+            exit_save_selections[i] = selected ? 1 : 0;
+          }
+        }
+        ImGui::EndChild();
+
+        ImGui::Spacing();
+
+        // Select All / Deselect All
+        if (ImGui::SmallButton("Select All")) {
+          std::fill(exit_save_selections.begin(), exit_save_selections.end(), true);
+        }
+        ImGui::SameLine();
+        if (ImGui::SmallButton("Deselect All")) {
+          std::fill(exit_save_selections.begin(), exit_save_selections.end(), false);
+        }
       }
       else
       {
@@ -338,19 +502,26 @@ namespace ImGuiManager {
 
       if (has_unsaved_changes)
       {
-        // Save and Exit button
-        if (ImGui::Button("Save and Exit", ImVec2(button_width, 0)))
+        // Save Selected button — saves checked items and exits
+        if (ImGui::Button("Save Selected", ImVec2(button_width, 0)))
         {
-          Engine::ProjectSaveManager::save_all_dirty();
+          // Save selected items in reverse order so indices stay valid
+          for (int i = static_cast<int>(exit_save_selections.size()) - 1; i >= 0; --i) {
+            if (exit_save_selections[static_cast<size_t>(i)]) {
+              Engine::ProjectSaveManager::save_single_dirty(static_cast<size_t>(i));
+            }
+          }
+          exit_save_selections.clear();
           Engine::Core::stop();
           ImGui::CloseCurrentPopup();
         }
 
         ImGui::SameLine();
 
-        // Don't Save button
+        // Don't Save button — exits without saving
         if (ImGui::Button("Don't Save", ImVec2(button_width, 0)))
         {
+          exit_save_selections.clear();
           Engine::Core::stop();
           ImGui::CloseCurrentPopup();
         }
@@ -372,6 +543,7 @@ namespace ImGuiManager {
       // Cancel button
       if (ImGui::Button("Cancel", ImVec2(button_width, 0)))
       {
+        exit_save_selections.clear();
         ImGui::CloseCurrentPopup();
       }
 
@@ -381,6 +553,97 @@ namespace ImGuiManager {
     // ==================================================================================
     // End of run even when ImGui is disabled
     // ==================================================================================
+
+    // ==================================================================================
+    // "Building..." overlay (top-right, persistent while build is running)
+    // ==================================================================================
+    {
+      static bool was_building = false;
+      bool currently_building = Engine::HotReload::is_building();
+
+      // Detect build cancellation → show warning toast
+      if (Engine::HotReload::consume_build_cancelled())
+      {
+        show_toast("Build cancelled",
+          ImGuiManager::ToastType::Warning, 3.0f);
+      }
+
+      // Detect build completion → show toast with total time
+      if (was_building && !currently_building)
+      {
+        float duration = Engine::HotReload::get_last_build_duration();
+        bool success = Engine::HotReload::last_build_succeeded();
+        int errors = Engine::HotReload::get_build_error_count();
+        char buf[128];
+        if (success)
+          std::snprintf(buf, sizeof(buf), "Build succeeded in %.1fs", duration);
+        else
+          std::snprintf(buf, sizeof(buf), "Build FAILED after %.1fs (%d error%s)",
+            duration, errors, errors == 1 ? "" : "s");
+
+        show_toast(buf,
+          success ? ImGuiManager::ToastType::Info : ImGuiManager::ToastType::Error,
+          5.0f);
+      }
+      was_building = currently_building;
+
+      if (currently_building)
+      {
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImVec2 work_pos = viewport->WorkPos;
+        ImVec2 work_size = viewport->WorkSize;
+
+        float padding = 16.0f;
+        float toast_width = 260.0f;
+
+        ImVec2 build_pos = ImVec2(
+          work_pos.x + work_size.x - toast_width - padding,
+          work_pos.y + padding
+        );
+
+        ImGui::SetNextWindowPos(build_pos, ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(toast_width, 0), ImGuiCond_Always);
+
+        ImVec4 accent(0.1f, 0.7f, 0.9f, 1.0f); // teal / cyan accent
+
+        ImGui::PushStyleColor(ImGuiCol_Border, accent);
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.12f, 0.12f, 0.15f, 0.95f));
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 2.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 10.0f));
+
+        ImGuiWindowFlags build_flags =
+          ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+          ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
+          ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs |
+          ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+
+        if (ImGui::Begin("##BuildingOverlay", nullptr, build_flags))
+        {
+          // Animated spinner dots
+          const char* dots[] = { "   ", ".  ", ".. ", "..." };
+          int dot_idx = static_cast<int>(ImGui::GetTime() * 3.0f) % 4;
+
+          float elapsed = Engine::HotReload::get_build_elapsed_seconds();
+
+          ImGui::TextColored(accent, "[BUILD]");
+          ImGui::SameLine();
+          ImGui::Text("Building GameLogic%s", dots[dot_idx]);
+          ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "Elapsed: %.1fs", elapsed);
+
+          // Show current file being compiled
+          std::string current_file = Engine::HotReload::get_current_build_status();
+          if (!current_file.empty())
+          {
+            ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "%s", current_file.c_str());
+          }
+        }
+        ImGui::End();
+
+        ImGui::PopStyleVar(3);
+        ImGui::PopStyleColor(2);
+      }
+    }
 
     // ==================================================================================
     // Render toast notifications
@@ -463,7 +726,7 @@ namespace ImGuiManager {
         y_offset -= toast_spacing;
       }
     }
-    
+
     // ==================================================================================
     // End of toast notifications
     // ==================================================================================
@@ -492,7 +755,7 @@ namespace ImGuiManager {
       ImGui::RenderPlatformWindowsDefault();
       glfwMakeContextCurrent(backup_current_context);
     }
-    
+
     Engine::Perf::stop("ImGui Render");
 #endif
   }
@@ -516,19 +779,19 @@ namespace ImGuiManager {
     }
 
     // Save
-    if (Engine::Input::is_held(Engine::KeyCode::CtrlLeft) && Engine::Input::is_pressed(Engine::KeyCode::S))
+    if (Engine::Input::is_held_raw(Engine::KeyCode::CtrlLeft) && Engine::Input::is_pressed_raw(Engine::KeyCode::S))
     {
       Engine::ProjectSaveManager::save_all_dirty();
     }
 
     // Toggle ImGui with F1 key
-    if (Engine::Input::is_pressed(Engine::KeyCode::F1))
+    if (Engine::Input::is_pressed_raw(Engine::KeyCode::F1))
     {
       main_gui_visible = !main_gui_visible;
     }
 
     // Toggle Panel Viewport Mode with F2 key
-    if (Engine::Input::is_pressed(Engine::KeyCode::F2))
+    if (Engine::Input::is_pressed_raw(Engine::KeyCode::F2))
     {
       Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get_mutable().panel_viewport_mode =
         !Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode;
@@ -544,8 +807,25 @@ namespace ImGuiManager {
       Engine::Graphics::clear_screen({ bg_color.x * 0.6f, bg_color.y * 0.6f, bg_color.z * 0.6f, bg_color.w });
     }
 
+    // When panel viewport mode changes, update virtual resolution for the new render target
+    {
+      static bool prev_panel_mode = Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode;
+      bool cur_panel_mode = Engine::FileIO::SettingsManager<Engine::FileIO::EngineSettings>::get().panel_viewport_mode;
+      if (cur_panel_mode != prev_panel_mode) {
+        if (!cur_panel_mode) {
+          // Switched to direct window rendering — adapt virtual resolution to window aspect ratio
+          int w = Engine::WindowManager::get_width();
+          int h = Engine::WindowManager::get_height();
+          float aspect = static_cast<float>(w) / static_cast<float>(h > 0 ? h : 1);
+          Engine::Graphics::set_virtual_resolution(900.0f * aspect, 900.0f);
+          Engine::Graphics::resize_post_processing(w, h);
+        }
+        prev_panel_mode = cur_panel_mode;
+      }
+    }
+
     // Toggle debug layer with F3 key
-    if (Engine::Input::is_pressed(Engine::KeyCode::F3))
+    if (Engine::Input::is_pressed_raw(Engine::KeyCode::F3))
     {
       Engine::ECS::is_layer_active("debug") ? Engine::ECS::disable_layer("debug") : Engine::ECS::enable_layer("debug");
     }
@@ -650,6 +930,76 @@ namespace ImGuiManager {
     }
 #else
     return { 0.0f, 0.0f };
+#endif
+  }
+
+  bool is_game_input_blocked()
+  {
+#ifndef GAME_BUILD
+    // If the GUI is not visible, input is never blocked
+    if (!gui_enabled || !main_gui_visible)
+      return false;
+
+    // Check if any ImGui window has focus
+    ImGuiContext* ctx = ImGui::GetCurrentContext();
+    if (!ctx || !ctx->NavWindow)
+      return false;
+
+    // If the viewport panel is focused or hovered, allow game input.
+    // Hover check is needed because focus transfers happen during ImGui render,
+    // which runs AFTER ECS systems — so on the frame the user clicks the viewport
+    // from another panel, focused is still false but hovered is true.
+    if (ViewportPanel::is_viewport_focused() || ViewportPanel::is_viewport_hovered())
+      return false;
+
+    // Any other ImGui window is focused — block game input
+    return true;
+#else
+    return false;
+#endif
+  }
+
+  void save_layout([[maybe_unused]] const std::string& name)
+  {
+#ifndef GAME_BUILD
+    std::filesystem::create_directories(LAYOUTS_DIR);
+    std::string path = std::string(LAYOUTS_DIR) + name + ".ini";
+    ImGui::SaveIniSettingsToDisk(path.c_str());
+    current_layout_name = name;
+#endif
+  }
+
+  void load_layout([[maybe_unused]] const std::string& name)
+  {
+#ifndef GAME_BUILD
+    std::string path = std::string(LAYOUTS_DIR) + name + ".ini";
+    if (!std::filesystem::exists(path))
+    {
+      show_toast("Layout '" + name + "' not found", ImGuiManager::ToastType::Warning, 3.0f);
+      return;
+    }
+    ImGui::LoadIniSettingsFromDisk(path.c_str());
+    current_layout_name = name;
+#endif
+  }
+
+  std::vector<std::string> get_available_layouts()
+  {
+#ifndef GAME_BUILD
+    std::vector<std::string> result;
+    if (!std::filesystem::exists(LAYOUTS_DIR))
+      return result;
+    for (const auto& entry : std::filesystem::directory_iterator(LAYOUTS_DIR))
+    {
+      if (entry.is_regular_file() && entry.path().extension() == ".ini")
+      {
+        result.push_back(entry.path().stem().string());
+      }
+    }
+    std::sort(result.begin(), result.end());
+    return result;
+#else
+    return {};
 #endif
   }
 

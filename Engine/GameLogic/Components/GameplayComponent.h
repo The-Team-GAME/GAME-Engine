@@ -16,14 +16,44 @@
 //-----------------------------------------------------------------------------------
 #pragma once
 
-#include "../../Engine/ECS/Macros.h"
-
-#include "../../Engine/Engine/Time.h"
-
-#include "../../Engine/Components/GraphicsComponents.h"
+#include "../../Engine/MonkeyEngine.h"
 
 namespace Components
 {
+  struct Action
+  {
+    f32 duration;
+    f32 timer;
+    f32 cooldown;
+    f32 cd_timer;
+    bool no_cooldown = false;
+
+    f32 speed;
+    f32 impulse;
+
+    Action(f32 dur, f32 cd, f32 spd = 0.f, f32 imp = 0.f)
+      : duration(dur), cooldown(cd), speed(spd), impulse(imp) {}
+
+    void set_timer() // starts the countdown for the states that run on a timer
+    {
+      timer = duration;
+    }
+
+    void reset_cooldown()
+    {
+      cd_timer = cooldown;
+    }
+
+    bool timer_end() const
+    {
+      return timer <= 0.f;
+    }
+    
+    bool ready() const
+    {
+      return no_cooldown || cd_timer <= 0;
+    }
+  };
 
   struct Player
   {
@@ -39,19 +69,23 @@ namespace Components
       Math::Vec2D knockback = Math::Vec2D(300.0f, 0.f);
     };
 
+
     //mass
     float mass = 50.0f;
 
     // Movement speeds (going to add to force instead of velocity as of 22/01/26)
     // These values are loaded from file
     f32 walk_speed = 300'000.f;
-    f32 jump_force = -30'000.f;
+    f32 jump_force = -30'000'000.f;
 
-    f32 dash_duration = 0.2f;
-    f32 dash_timer;
-    f32 dash_cooldown = 5.f;
-    f32 dash_speed = 1250.f;  // Scalar for the velocity value since direction is to be decided
-    f32 stun_duration = 0.3f; // Will remember to give player i frames during stun
+    bool damage_immune = false;
+
+    // The arguments are in the order of
+    // duration, cooldown, speed, impluse
+    Action dash{ 0.2f,5.f, 1250.f };
+    Action stunned{ 1.f, 0.f, 0.f, -5000.f };
+    Action uppercut{ .05f, 5.f, 2500.f, 0 };
+    Action smash{ 0.f, 7.f, 2500.f, 0.f };
 
     // Attacks
     AttackData attack1 = {
@@ -127,15 +161,14 @@ namespace Components
 
   };
 
-
   struct LazyMonkey
   {
     // Movement speeds
     float chase_speed = 100.0f;
 
     // Attack parameters
-    float leap_speed = 2000.0f;
-    float leap_height = 300.0f;
+    float leap_speed = 200.0f;
+    float leap_height = 300.0f; //unused monkey no longer leaps
     float attack_cooldown = 3.0f;
     float last_attack_time = 0.0f;
     float attack_windup = 0.5f;  // Time to wait in windup state before attacking
@@ -188,7 +221,7 @@ namespace Components
 
     // Runtime state (NOT serialized - exceed 20 field limit)
     float last_dash_time = -3.0f;        // Initialize to allow immediate first dash
-    float last_attack_time = 0.0f;       // Last attack timestamp
+    float last_attack_time = -3.0f;      // Last attack timestamp (negative allows first attack immediately)
     float dash_windup_start_time = 0.0f; // When dash windup started
     float dash_target_x = 0.0f;          // The player's X position when dash windup completes
     Engine::ECS::Entity dash_indicator_entity; // Runtime reference to the warning indicator entity
@@ -202,7 +235,7 @@ namespace Components
     // Attack parameters (serialized/configurable)
     float attack_cooldown = 3.0f;
     float attack_windup = 0.5f;  // Time to wait in windup state before attacking
-    float last_attack_time = 0.0f;
+    float last_attack_time = -3.0f; // negative allows first attack immediately
 
     // Attack hitbox parameters
     float hitbox_offset_x = 80.0f;
@@ -216,7 +249,6 @@ namespace Components
     float detection_range = 1200.0f;
     float long_attack_range = 600.0f;
   };
-
 
   struct Attack
   {
@@ -276,26 +308,14 @@ namespace Components
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 REFLECT_FIELDS(Components::Player::AttackData, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, dash_speed, damage, heartrate_cost, knockback)
-REGISTER_COMPONENT(Components::Player, walk_speed, jump_force, dash_duration, dash_cooldown, dash_speed, stun_duration, attack1, attack2, attack3)
+REFLECT_FIELDS(Components::Action, no_cooldown, duration, timer, cooldown, cd_timer, speed, impulse)
+
+
+REGISTER_COMPONENT(Components::Player, damage_immune, walk_speed, jump_force, dash, stunned, attack1, attack2, attack3, uppercut, smash)
 REGISTER_COMPONENT(Components::LazyMonkey, chase_speed, leap_speed, leap_height, attack_cooldown, last_attack_time, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, attack_range)
-REGISTER_COMPONENT(Components::TurretMonkey, chase_speed, attack_cooldown, attack_windup, last_attack_time, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, long_attack_range)
+REGISTER_COMPONENT(Components::TurretMonkey, chase_speed, attack_cooldown, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, long_attack_range)
 REGISTER_COMPONENT(Components::GamerMonkey, chase_speed, dash_speed, dash_cooldown, dash_windup_duration, dash_indicator_height, leap_speed, leap_height, attack_cooldown, attack_windup, hitbox_offset_x, hitbox_offset_y, hitbox_width, hitbox_height, damage, knockback, detection_range, chase_range, close_attack_range, dash_attack_range)
-REGISTER_COMPONENT(Components::SprayCanMonkey,
-  chase_speed, attack_cooldown, last_attack_time, attack_windup,
-  detection_range, chase_range, attack_range,
-  spray_duration, spray_range, spray_width,
-  knockback, damage, cloud_spawn_time, cloud_initial_vx)
+REGISTER_COMPONENT(Components::SprayCanMonkey, chase_speed, attack_cooldown, last_attack_time, attack_windup, detection_range, chase_range, attack_range, spray_duration, spray_range, spray_width, knockback, damage, cloud_spawn_time, cloud_initial_vx)
 REGISTER_COMPONENT(Components::Attack, damage, knockback, is_continuous, damage_interval, impact_vfx_texture)
 REGISTER_COMPONENT(Components::PendingKnockback, knockback)

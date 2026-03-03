@@ -14,7 +14,7 @@
 #include "../Precompiled.h"
 #include "widgets/ColliderEditorWidget.h"
 #include "../ECS/ECS.h"
-#include "../ECS/Prefab.h"
+#include <algorithm>
 #include "../Components/CollisionComponents.h"
 #include "../Components/StateMachineComponents.h"
 #include "../Components/GraphicsComponents.h"
@@ -24,28 +24,29 @@
 #include "../Events/EngineEvents.h"
 #include "../Graphics/Renderer.h" // For Texture
 #include "../InputManager.h"
-#include "../ProjectSaveManager.h" // For marking prefabs dirty
 #include "../Resources.h"
 #include "../Logger.h"
 #include "../FileIO/ColliderMeshFileIO.h"
 #include "../FileIO/FileDialog.h"
 
 namespace {
-  enum class EditorMode { None, Entity, Prefab };
+  enum class EditorMode { None, Entity };
   enum class ButtonColliderMode { Normal, Hovered, Clicked }; // For DynamicButton editing
 
   EditorMode current_mode = EditorMode::None;
   ButtonColliderMode button_mode = ButtonColliderMode::Normal; // Default to normal state
 
   s32 selected_entity_id = -1;
-  Engine::ECS::Prefab selected_prefab;
-  std::string selected_prefab_path = "";
-  bool is_entity_prefab_instance = false;
-  std::string entity_source_prefab_path = "";
 
   bool selection_initialized = false;
   std::string preview_state_name = "";
   float preview_animation_start_time = 0.0f;
+
+  bool is_open = false;
+  std::string selected_state_name = ""; // Moved from local static to namespace for OpenForState access
+
+  float zoom_level = 1.0f;
+  ImVec2 pan_offset = { 0.0f, 0.0f };
 
   void init_selection_listener() {
     if (selection_initialized) return;
@@ -56,16 +57,6 @@ namespace {
         selected_entity_id = static_cast<s32>(event.entity_id);
         if (selected_entity_id != -1) {
           current_mode = EditorMode::Entity;
-
-          // Check if this entity is a prefab instance
-          Engine::ECS::Entity entity = Engine::ECS::get_entity(event.entity_id);
-          is_entity_prefab_instance = Engine::ECS::is_prefab_instance(entity);
-          if (is_entity_prefab_instance) {
-            entity_source_prefab_path = Engine::ECS::get_prefab_path(entity);
-          }
-          else {
-            entity_source_prefab_path = "";
-          }
         }
       }
     );
@@ -73,17 +64,21 @@ namespace {
 }
 
 namespace ColliderEditor {
+  bool IsOpen() { return is_open; }
+  void Close() { is_open = false; }
+
   void Open(Engine::ECS::Entity entity) {
     current_mode = EditorMode::Entity;
     selected_entity_id = static_cast<s32>(entity.get_id());
-    ImGui::SetWindowFocus("Collider Editor");
+    selected_state_name = "";
+    is_open = true;
   }
 
-  void Open(Engine::ECS::Prefab prefab, const std::string& prefab_path) {
-    current_mode = EditorMode::Prefab;
-    selected_prefab = prefab;
-    selected_prefab_path = prefab_path;
-    ImGui::SetWindowFocus("Collider Editor");
+  void OpenForState(Engine::ECS::Entity entity, const std::string& state_name) {
+    current_mode = EditorMode::Entity;
+    selected_entity_id = static_cast<s32>(entity.get_id());
+    selected_state_name = state_name;
+    is_open = true;
   }
 }
 
@@ -91,10 +86,16 @@ void ColliderEditorPanel()
 {
   init_selection_listener();
 
-  ImGui::Begin("Collider Editor");
+  if (!is_open) return;
+
+  ImGui::SetNextWindowSize(ImVec2(600, 700), ImGuiCond_FirstUseEver);
+  if (!ImGui::Begin("Collider Editor", &is_open)) {
+    ImGui::End();
+    return;
+  }
 
   if (current_mode == EditorMode::None) {
-    ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "No entity or prefab selected");
+    ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "No entity selected");
     ImGui::End();
     return;
   }
@@ -158,56 +159,12 @@ void ColliderEditorPanel()
       ImGui::Separator();
     }
 
-    // Display prefab instance info if applicable
-    if (is_entity_prefab_instance && !entity_source_prefab_path.empty()) {
-      ImGui::TextColored(ImVec4(0.5f, 0.8f, 1.0f, 1.0f), "Prefab Instance: %s", entity_source_prefab_path.c_str());
-      ImGui::SameLine();
-      if (ImGui::Button("Edit Prefab Directly")) {
-        // Load the source prefab and switch to prefab editing mode
-        Engine::ECS::Prefab source_prefab = Engine::Resources::load_prefab(entity_source_prefab_path);
-        if (source_prefab.is_valid()) {
-          ColliderEditor::Open(source_prefab, entity_source_prefab_path);
-        }
-      }
-      ImGui::Separator();
-    }
-  }
-  else if (current_mode == EditorMode::Prefab) {
-    if (!selected_prefab.is_valid()) {
-      current_mode = EditorMode::None;
-      ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Selected prefab is invalid");
-      ImGui::End();
-      return;
-    }
-
-    collider = selected_prefab.get_component<Components::BoxCollider>();
-    texture = selected_prefab.get_component<Components::Texture>();
-    state_machine = selected_prefab.get_component<Components::StateMachine>();
-    texture_atlas = selected_prefab.get_component<Components::TextureAtlas>();
-    animation = selected_prefab.get_component<Components::Animation>();
-    transform = selected_prefab.get_component<Components::Transform2D>();
-    flip = selected_prefab.get_component<Components::Flip>();
-
-    ImGui::Text("Editing Prefab: %s", selected_prefab.get_impl()->get_prefab_id().c_str());
   }
 
   if (!collider) {
     ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.0f, 1.0f), "Selected object has no BoxCollider");
     if (ImGui::Button("Add BoxCollider")) {
-      if (current_mode == EditorMode::Entity) {
-        entity.add_component<Components::BoxCollider>(50.0f, 50.0f, false);
-      }
-      else {
-        selected_prefab.add_component<Components::BoxCollider>(50.0f, 50.0f, false);
-        // Mark dirty
-        if (!selected_prefab_path.empty()) {
-          Engine::ProjectSaveManager::set_dirty(
-            Engine::ProjectSaveManager::DirtyStates::Prefab(selected_prefab_path)
-          );
-        }
-        // We don't have the path here easily, but update_prefab_instances will be called
-        Engine::ECS::update_prefab_instances(selected_prefab.get_impl()->get_prefab_id());
-      }
+      entity.add_component<Components::BoxCollider>(50.0f, 50.0f, false);
     }
     ImGui::End();
     return;
@@ -215,7 +172,6 @@ void ColliderEditorPanel()
 
   // --- State Selection Logic ---
   std::string current_editing_state = "";
-  static std::string selected_state_name = ""; // Persist selection
   bool editing_specific_state = false;
 
   if (state_machine) {
@@ -345,10 +301,7 @@ void ColliderEditorPanel()
       col_vertices = collider->polygon.vertices;
     }
 
-    // Apply flip only if in Entity mode
-    if (current_mode == EditorMode::Entity) {
-      should_apply_flip = true;
-    }
+    should_apply_flip = true;
   }
 
   if (!texture_handle) {
@@ -440,6 +393,30 @@ void ColliderEditorPanel()
           data.vertices = col_vertices;
           state.animation->collider_data = data;
         }
+
+        // Copy From State dropdown (even when no override exists yet)
+        ImGui::SameLine();
+        if (ImGui::BeginCombo("##CopyFromNoOverride", "Copy From...")) {
+          // Option: Live/Default collider
+          if (collider && ImGui::Selectable("Live/Default")) {
+            Components::ColliderData data;
+            data.type = collider->type;
+            data.width = collider->width;
+            data.height = collider->height;
+            data.offset = collider->offset;
+            data.vertices = collider->polygon.vertices;
+            state.animation->collider_data = data;
+          }
+          // Option: Other states
+          for (auto& [other_name, other_state] : state_machine->states) {
+            if (other_name == current_editing_state) continue;
+            if (!other_state.animation.has_value() || !other_state.animation->collider_data.has_value()) continue;
+            if (ImGui::Selectable(other_name.c_str())) {
+              state.animation->collider_data = other_state.animation->collider_data.value();
+            }
+          }
+          ImGui::EndCombo();
+        }
       }
     }
   }
@@ -448,7 +425,7 @@ void ColliderEditorPanel()
   if (active_atlas && !active_atlas->subTextures.empty()) {
     int atlas_index = 0;
     if (active_animation && !active_animation->frames.empty()) {
-      if (editing_specific_state || current_mode == EditorMode::Prefab) {
+      if (editing_specific_state) {
         // Calculate animated frame using preview start time
         // Always loop in preview mode for better visualization
         float elapsed = Engine::Time::get_time() - preview_animation_start_time;
@@ -499,14 +476,69 @@ void ColliderEditorPanel()
   sprite_config.sprite_world_width = sprite_world_width;
   sprite_config.sprite_world_height = sprite_world_height;
 
-  // Calculate visual editor layout
-  ImGuiWidgets::VisualEditorLayout layout = ImGuiWidgets::CalculateVisualEditorLayout(sprite_config);
+  // --- Contained Visual Editor Area ---
+  ImVec2 avail = ImGui::GetContentRegionAvail();
+  // Reserve space for controls below the visual area
+  float child_height = avail.y - 180.0f;
+  if (child_height < 200.0f) child_height = 200.0f;
+  ImVec2 child_size = { avail.x, child_height };
+
+  ImGui::BeginChild("##ColliderEditorCanvas", child_size, ImGuiChildFlags_Borders, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+
+  // Handle zoom and pan inside the child region
+  bool canvas_hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_None);
+  if (canvas_hovered) {
+    float scroll = ImGui::GetIO().MouseWheel;
+    if (scroll != 0.0f) {
+      float old_zoom = zoom_level;
+      zoom_level *= (scroll > 0.0f) ? 1.1f : (1.0f / 1.1f);
+      zoom_level = std::max(0.1f, std::min(zoom_level, 20.0f));
+
+      // Zoom toward mouse position
+      ImVec2 mouse_pos = ImGui::GetMousePos();
+      ImVec2 canvas_min = ImGui::GetWindowPos();
+      ImVec2 canvas_center = { canvas_min.x + child_size.x * 0.5f + pan_offset.x,
+                               canvas_min.y + child_size.y * 0.5f + pan_offset.y };
+      float zoom_ratio = zoom_level / old_zoom;
+      pan_offset.x = mouse_pos.x - (mouse_pos.x - canvas_center.x) * zoom_ratio - (canvas_min.x + child_size.x * 0.5f);
+      pan_offset.y = mouse_pos.y - (mouse_pos.y - canvas_center.y) * zoom_ratio - (canvas_min.y + child_size.y * 0.5f);
+    }
+
+    // Middle-mouse drag to pan
+    if (ImGui::IsMouseDragging(ImGuiMouseButton_Middle)) {
+      ImVec2 delta = ImGui::GetIO().MouseDelta;
+      pan_offset.x += delta.x;
+      pan_offset.y += delta.y;
+    }
+  }
+
+  // Calculate visual editor layout using the child region size
+  ImGuiWidgets::VisualEditorLayout layout = ImGuiWidgets::CalculateVisualEditorLayout(sprite_config, child_size);
+
+  // Apply zoom and pan to layout
+  layout.scale *= zoom_level;
+  layout.draw_width = sprite_config.sprite_world_width * layout.scale;
+  layout.draw_height = sprite_config.sprite_world_height * layout.scale;
+
+  // Recalculate positions with zoom and pan
+  ImVec2 canvas_pos = ImGui::GetWindowPos();
+  float offset_x = (child_size.x - layout.draw_width) * 0.5f + pan_offset.x;
+  float offset_y = (child_size.y - layout.draw_height) * 0.5f + pan_offset.y;
+  layout.image_min = { canvas_pos.x + offset_x, canvas_pos.y + offset_y };
+  layout.image_max = { layout.image_min.x + layout.draw_width, layout.image_min.y + layout.draw_height };
+  layout.center = { layout.image_min.x + layout.draw_width * 0.5f, layout.image_min.y + layout.draw_height * 0.5f };
+
+  // Push clip rect to contain everything within the child window
+  ImDrawList* draw_list = ImGui::GetWindowDrawList();
+  ImVec2 clip_min = canvas_pos;
+  ImVec2 clip_max = { canvas_pos.x + child_size.x, canvas_pos.y + child_size.y };
+  draw_list->PushClipRect(clip_min, clip_max, true);
+
+  // Draw background grid for visual reference
+  draw_list->AddRectFilled(clip_min, clip_max, IM_COL32(30, 30, 30, 255));
 
   // Draw the sprite
   ImGuiWidgets::DrawSprite(sprite_config, layout);
-
-  // Draw Collider and Handle Interaction
-  ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
   // Apply flip to offset ONLY in live mode
   Math::Vec2D display_offset = col_offset;
@@ -659,20 +691,24 @@ void ColliderEditorPanel()
         }
       }
 
-      // If in Prefab mode, mark dirty
-      if (current_mode == EditorMode::Prefab) {
-        if (!selected_prefab_path.empty()) {
-          Engine::ProjectSaveManager::set_dirty(
-            Engine::ProjectSaveManager::DirtyStates::Prefab(selected_prefab_path)
-          );
-        }
-        Engine::ECS::update_prefab_instances(selected_prefab.get_impl()->get_prefab_id());
-      }
     }
   }
 
+  // Pop clip rect and end the contained canvas area
+  draw_list->PopClipRect();
+  ImGui::EndChild();
+
+  // Zoom controls below the canvas
+  ImGui::Text("Zoom: %.0f%%", zoom_level * 100.0f);
+  ImGui::SameLine();
+  if (ImGui::Button("Reset View")) {
+    zoom_level = 1.0f;
+    pan_offset = { 0.0f, 0.0f };
+  }
+  ImGui::SameLine();
+  ImGui::TextDisabled("(Scroll to zoom, Middle-drag to pan)");
+
   // Display values
-  ImGui::SetCursorScreenPos({ layout.image_min.x, layout.image_max.y + 10 });
   ImGui::Text("Collider Size: %.2f x %.2f", col_width, col_height);
   ImGui::Text("Collider Offset: %.2f, %.2f", col_offset.x, col_offset.y);
 
@@ -703,7 +739,7 @@ void ColliderEditorPanel()
       ImGui::Text("Easing Functions:");
 
       // Get all registered easing functions
-      static auto easing_names = Engine::FunctionRegistry<f32(f32)>::get_all_names();
+      static auto easing_names = Engine::FunctionRegistry::instance().get_all_names<f32(f32, f32, f32, f32)>();
 
       // Helper lambda for easing function combo
       auto easing_combo = [&](const char* label, Engine::SerializableFunction& easing_func) {
@@ -739,38 +775,7 @@ void ColliderEditorPanel()
     }
   }
 
-  // Show save to prefab button for prefab instances
-  if (current_mode == EditorMode::Entity && is_entity_prefab_instance && !entity_source_prefab_path.empty() && !editing_specific_state) {
-    if (ImGui::Button("Save Collider to Prefab")) {
-      // Load the source prefab
-      Engine::ECS::Prefab source_prefab = Engine::Resources::load_prefab(entity_source_prefab_path);
-      if (source_prefab.is_valid()) {
-        // Update the prefab's collider
-        auto* prefab_collider = source_prefab.get_component<Components::BoxCollider>();
-        if (prefab_collider) {
-          prefab_collider->type = collider->type;
-          prefab_collider->width = collider->width;
-          prefab_collider->height = collider->height;
-          prefab_collider->offset = collider->offset;
-          prefab_collider->aabb.half_width = collider->width / 2.0f;
-          prefab_collider->aabb.half_height = collider->height / 2.0f;
-          prefab_collider->polygon.vertices = collider->polygon.vertices;
 
-          // Mark the prefab as dirty to trigger save
-          Engine::ProjectSaveManager::set_dirty(
-            Engine::ProjectSaveManager::DirtyStates::Prefab(entity_source_prefab_path)
-          );
-
-          // Update all instances of this prefab
-          Engine::ECS::update_prefab_instances(source_prefab.get_impl()->get_prefab_id());
-
-          Log::info("Saved collider changes to prefab: {}", entity_source_prefab_path);
-        }
-      }
-    }
-    ImGui::SameLine();
-    ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.0f, 1.0f), "(Changes only affect this instance)");
-  }
 
   ImGui::SameLine();
   if (ImGui::Button("Reset to Sprite Size")) {
@@ -799,14 +804,6 @@ void ColliderEditorPanel()
       collider->aabb.half_width = col_width / 2.0f;
       collider->aabb.half_height = col_height / 2.0f;
 
-      if (current_mode == EditorMode::Prefab) {
-        if (!selected_prefab_path.empty()) {
-          Engine::ProjectSaveManager::set_dirty(
-            Engine::ProjectSaveManager::DirtyStates::Prefab(selected_prefab_path)
-          );
-        }
-        Engine::ECS::update_prefab_instances(selected_prefab.get_impl()->get_prefab_id());
-      }
     }
   }
 
@@ -884,15 +881,6 @@ void ColliderEditorPanel()
           collider->aabb.half_width = col_width / 2.0f;
           collider->aabb.half_height = col_height / 2.0f;
           collider->polygon.vertices = col_vertices;
-
-          if (current_mode == EditorMode::Prefab) {
-            if (!selected_prefab_path.empty()) {
-              Engine::ProjectSaveManager::set_dirty(
-                Engine::ProjectSaveManager::DirtyStates::Prefab(selected_prefab_path)
-              );
-            }
-            Engine::ECS::update_prefab_instances(selected_prefab.get_impl()->get_prefab_id());
-          }
         }
 
         Log::info("Imported collider mesh from: {}", open_path.value());
@@ -909,6 +897,53 @@ void ColliderEditorPanel()
       ImGui::SameLine();
       if (ImGui::Button("Remove Override")) {
         state.animation->collider_data.reset();
+      }
+
+      // Copy From State dropdown
+      if (ImGui::BeginCombo("Copy From State", "Copy From...")) {
+        // Option: Live/Default collider
+        if (collider && ImGui::Selectable("Live/Default")) {
+          Components::ColliderData data;
+          data.type = collider->type;
+          data.width = collider->width;
+          data.height = collider->height;
+          data.offset = collider->offset;
+          data.vertices = collider->polygon.vertices;
+          state.animation->collider_data = data;
+        }
+        // Option: Other states
+        for (auto& [other_name, other_state] : state_machine->states) {
+          if (other_name == current_editing_state) continue;
+          if (!other_state.animation.has_value() || !other_state.animation->collider_data.has_value()) continue;
+          if (ImGui::Selectable(other_name.c_str())) {
+            state.animation->collider_data = other_state.animation->collider_data.value();
+          }
+        }
+        ImGui::EndCombo();
+      }
+
+      // Apply to All States button
+      if (ImGui::Button("Apply to All States")) {
+        ImGui::OpenPopup("ConfirmApplyAll");
+      }
+      if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Copy this state's collider to all other states that have animation data");
+      }
+      if (ImGui::BeginPopup("ConfirmApplyAll")) {
+        ImGui::Text("Apply this collider to all other states?");
+        if (ImGui::Button("Yes", ImVec2(80, 0))) {
+          for (auto& [other_name, other_state] : state_machine->states) {
+            if (other_name == current_editing_state) continue;
+            if (!other_state.animation.has_value()) continue;
+            other_state.animation->collider_data = state.animation->collider_data.value();
+          }
+          ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(80, 0))) {
+          ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
       }
     }
   }

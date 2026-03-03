@@ -41,6 +41,8 @@
 #include "UndoManager/UndoManager.h"
 #include "Easing.h"
 #include "Lua/LuaComponentBindings.h"
+#include "HotReloadManager.h"
+#include "GUI/TilemapPanel.h"
 
 namespace Engine
 {
@@ -50,6 +52,7 @@ namespace Engine
   s32 Core::step_limit = 3;
   bool Core::single_step_requested = false;
   static bool show_fps_overlay = false;
+  static std::optional<Engine::ECS::Prefab> entity_clipboard;
 
   /*=================================================================================
   Function Brief:
@@ -87,22 +90,18 @@ namespace Engine
       throw std::runtime_error("Failed to initialize graphics renderer");
     }
 
+    // Initialize post-processing pipeline
+    if (!Engine::Graphics::init_post_processing()) {
+      Log::warning("Failed to initialize post-processing, effects will be disabled");
+    }
+
     // Initialize resource manager
     if (!Engine::Resources::init("Assets")) { // TODO: move initial resource path to ProjectSettings
       throw std::runtime_error("Failed to initialize resource manager");
     }
 
-    // Load all assets if enabled in settings
-    if (engine_settings.load_all_assets_on_startup)
-    {
-      Engine::Resources::load_all_assets();
-    }
-    else
-    {
-      // Always load prefabs even if load_all_assets_on_startup is disabled
-      // This is required for trail effects and other prefab-dependent features
-      Engine::Resources::load_all_prefabs();
-    }
+    // NOTE: Prefab/asset loading is deferred until after GameLogic.dll is loaded
+    // (see EntryPoint.cpp) so that GameLogic components are registered first.
 
     // Initialize audio manager
     if (!Engine::Audio::init()) {
@@ -131,6 +130,9 @@ namespace Engine
     // Apply window mode
     WindowManager::set_fullscreen(game_settings.fullscreen);
 
+    // Apply VSync setting
+    WindowManager::set_vsync(game_settings.vsync);
+
     // Apply audio volumes
     Engine::Audio::set_bgm_volume(game_settings.bgm_volume);
     Engine::Audio::set_sfx_volume(game_settings.sfx_volume);
@@ -150,6 +152,11 @@ namespace Engine
     // Load project settings
     if (!Engine::FileIO::SettingsManager<Engine::FileIO::ProjectSettings>::load("Assets/settings/project_settings.json")) {
       Log::warning("Failed to load project settings, using defaults");
+    }
+
+    // Load upgrade settings (roguelike upgrade system definitions)
+    if (!Engine::FileIO::SettingsManager<Engine::FileIO::UpgradeSettings>::load("Assets/settings/upgrade_settings.json")) {
+      Log::warning("Failed to load upgrade settings, using defaults");
     }
 
     // TODO: handle using custom reflector
@@ -249,6 +256,11 @@ namespace Engine
 
       glfwPollEvents();
 
+      // Hot-reload check: detect GameLogic.dll changes and reload
+#ifndef GAME_BUILD
+      Engine::HotReload::check_and_reload();
+#endif
+
       // Update window title with FPS
       WindowManager::update_title();
 
@@ -266,18 +278,34 @@ namespace Engine
         // World::update() won't have a chance to react before the input state is cleared on the next frame. 
         Input::update();
 
-        if (Engine::Input::is_pressed(KeyCode::F10))
+        if (Engine::Input::is_pressed_raw(KeyCode::F10))
         {
           show_fps_overlay = !show_fps_overlay;
         }
 
-        if (Engine::Input::is_pressed(KeyCode::F11))
+        if (Engine::Input::is_pressed_raw(KeyCode::F11))
         {
           auto& settings = Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::get_mutable();
           settings.fullscreen = !settings.fullscreen;
           Engine::WindowManager::set_fullscreen(settings.fullscreen);
           Engine::FileIO::SettingsManager<Engine::FileIO::GameSettings>::save();
         }
+
+        // Toggle post-processing on/off (F9)
+        if (Engine::Input::is_pressed_raw(KeyCode::F9))
+        {
+          auto& pp = Engine::Graphics::get_post_process_settings();
+          pp.enabled = !pp.enabled;
+          Log::info("Post-Processing: {}", pp.enabled ? "ON" : "OFF");
+        }
+
+#ifndef GAME_BUILD
+        // Manual hot-reload: F5 triggers build + reload even when auto-reload is off
+        if (Engine::Input::is_pressed_raw(KeyCode::F5))
+        {
+          Engine::HotReload::request_manual_reload();
+        }
+#endif
 
         if (Engine::Input::is_pressed(KeyCode::P))
         {
@@ -299,21 +327,64 @@ namespace Engine
         }
 
         // Undo last action
-        if (Engine::Input::is_pressed(Engine::KeyCode::Z) && Engine::Input::is_held(Engine::KeyCode::CtrlLeft))
+        if (Engine::Input::is_pressed_raw(Engine::KeyCode::Z) && Engine::Input::is_held_raw(Engine::KeyCode::CtrlLeft))
         {
           Log::info("Undoing last action");
           Engine::UndoManager::undo();
         }
 
         // Redo last undone action
-        if (Engine::Input::is_pressed(Engine::KeyCode::Y) && Engine::Input::is_held(Engine::KeyCode::CtrlLeft))
+        if (Engine::Input::is_pressed_raw(Engine::KeyCode::Y) && Engine::Input::is_held_raw(Engine::KeyCode::CtrlLeft))
         {
           Log::info("Redoing last undone action");
           Engine::UndoManager::redo();
         }
 
+#ifndef GAME_BUILD
+        // Copy selected entity (Ctrl+C) - skip if tilemap tile selection is active
+        if (Engine::Input::is_pressed_raw(Engine::KeyCode::C) && Engine::Input::is_held_raw(Engine::KeyCode::CtrlLeft))
+        {
+          if (!TilemapPanel::has_world_tile_selection()) {
+            Engine::ECS::Entity selected = Engine::ECS::get_first_entity_with<Components::Gizmo>();
+            if (selected.is_valid()) {
+              entity_clipboard = Engine::ECS::entity_to_prefab(selected);
+              Log::info("Copied entity {} to clipboard", selected.get_id());
+            }
+          }
+        }
+
+        // Paste copied entity (Ctrl+V) - skip if tilemap mode is handling paste
+        if (Engine::Input::is_pressed_raw(Engine::KeyCode::V) && Engine::Input::is_held_raw(Engine::KeyCode::CtrlLeft))
+        {
+          if (entity_clipboard.has_value() && !TilemapPanel::is_tilemap_mode_enabled()) {
+            Engine::ECS::Entity pasted = Engine::ECS::instantiate_prefab(entity_clipboard.value());
+            Engine::ECS::EntityID pasted_id = pasted.get_id();
+            Engine::ECS::Prefab pasted_prefab = entity_clipboard.value();
+
+            Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(pasted_id);
+
+            Engine::UndoManager::record(
+              // Do: Recreate the pasted entity
+              [pasted_id, pasted_prefab]() {
+                Engine::ECS::instantiate_prefab_with_id(pasted_prefab, pasted_id);
+                Engine::EventManager::send_event<Engine::Events::SelectEntityEvent>(pasted_id);
+                Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+              },
+              // Undo: Delete the pasted entity
+              [pasted_id]() {
+                Engine::EventManager::send_event<Engine::Events::DeleteEntityEvent>(pasted_id, false);
+                Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+              }
+            );
+
+            Engine::ProjectSaveManager::set_dirty(Engine::ProjectSaveManager::DirtyStates::Level(Engine::LevelManager::get_current_level_path()));
+            Log::info("Pasted entity from clipboard as {}", pasted_id);
+          }
+        }
+#endif
+
         // Delete selected entity (Delete key or Ctrl+D)
-        if (Engine::Input::is_pressed(Engine::KeyCode::Delete))
+        if (Engine::Input::is_pressed_raw(Engine::KeyCode::Delete))
         {
           // Find the entity with a Gizmo component (indicates it's selected)
           // TODO: This is a temporary solution; ideally, we should have a proper selection manager
@@ -371,11 +442,30 @@ namespace Engine
 
       // start of draw stuff
 
+      // Clear the full window to black so letterbox/pillarbox bars are visible
+      Engine::Graphics::clear_letterbox_bars(
+        Engine::WindowManager::get_width(),
+        Engine::WindowManager::get_height()
+      );
+
+      // Begin post-processing scene capture (redirects to PP FBO if enabled)
+      Engine::Graphics::begin_post_processing();
+
       // Clear screen (automatically begins batch)
       Engine::Graphics::clear_screen({ 0.0f, 0.0f, 0.0f, 1.0f });
 
       Engine::SceneManager::draw();
       Engine::ECS::draw();
+
+      // Flush batches before applying post-processing
+      Engine::Graphics::end_batch();
+
+      // Apply post-processing effects (bloom, LUT, gamma) and blit to current target
+      Engine::Graphics::end_post_processing();
+
+      // Begin new batch for unaffected overlays (these bypass post-processing)
+      Engine::Graphics::begin_batch();
+
 #ifndef GAME_BUILD
       TilemapPanel::draw_overlay();
 #endif
@@ -410,7 +500,27 @@ namespace Engine
   ==================================================================================*/
   void Core::exit()
   {
+    // Clear undo/redo history and entity clipboard before subsystem shutdown.
+    // Undo actions capture Prefab objects that hold ComponentArray pointers;
+    // destroying them after DLL unload crashes because the vtable is gone.
+    Engine::UndoManager::clear();
+    entity_clipboard.reset();
+
     Engine::SceneManager::cleanup();
+
+    // Force-destroy any entities that survived scene teardown so that
+    // component destructors (including StateMachine callback name strings
+    // and cached std::function objects) are freed before the CRT leak check.
+    Engine::ECS::destroy_all_entities();
+    Engine::ECS::process_housekeeping();
+
+    // Clear WorldContainers contents (component arrays, entity data, systems, etc.).
+    // The singleton itself is deleted later by destroy_world() after DLL unload.
+    Engine::ECS::clear_world();
+
+    // Release event handlers and queued events — their lambda closures may hold
+    // resources and must be freed before the CRT leak check fires.
+    Engine::EventManager::clear_all_listeners();
     //Engine::ECS::remove_event_listener<WindowResizeEvent>();
 #ifndef GAME_BUILD
     ViewportPanel::exit();
@@ -418,6 +528,7 @@ namespace Engine
     Engine::Audio::exit();
     Engine::AudioSystem::shutdown();  // Shutdown FMOD Studio system
     Engine::Resources::exit();
+    Engine::Graphics::exit_post_processing();
     Engine::Graphics::exit();
 
     Engine::LuaManager::cleanup();

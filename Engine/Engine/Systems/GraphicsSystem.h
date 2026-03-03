@@ -5,6 +5,10 @@
 // author:  Chew Shee Yang (100%)
 //          Primary author
 //
+//          Ryan Ang An Kiat (20%)
+//          Secondary author
+//
+//
 // email:   chew.s@digipen.edu
 //
 // brief:   Implementation of ECS graphics systems for rendering different types
@@ -28,11 +32,55 @@
 #include "../Easing.h"
 #include "../FunctionRegistry.h"
 #include "../Time.h"
+#include "../Random.h"
 
 namespace Engine
 {
   namespace Systems
   {
+    // Engine-exported bridge to ensure shake requests from external modules
+    // (e.g., GameLogic DLL) hit the active CameraSystem instance.
+    ENGINE_API void add_camera_shake(f32 amplitude, f32 duration);
+
+    // Helper: compute parallax draw position (center-anchored).
+    // When the camera centers on the entity, it appears at its Transform2D position.
+    // As the camera moves away the entity shifts at scroll_factor speed.
+    inline Math::Vec2D compute_parallax_position(const Math::Vec2D& entity_pos, const Math::Vec2D& scroll_factor) {
+      auto cam = Engine::Graphics::get_camera();
+      auto vres = Engine::Graphics::get_virtual_resolution();
+      Math::Vec2D cam_center = cam.position + vres * 0.5f / cam.zoom;
+      return Math::Vec2D(
+        entity_pos.x + (cam_center.x - entity_pos.x) * (1.0f - scroll_factor.x),
+        entity_pos.y + (cam_center.y - entity_pos.y) * (1.0f - scroll_factor.y)
+      );
+    }
+
+    // Helper: draw a texture tiled across the visible area at a given parallax draw position.
+    template<typename DrawFn>
+    inline void draw_parallax_tiled(const Math::Vec2D& draw_pos, const Math::Vec2D& entity_scale,
+      const Components::Parallax& parallax, DrawFn draw_fn)
+    {
+      Math::Vec2D ts = parallax.tile_size;
+      if (ts.x <= 0.0f) ts.x = entity_scale.x;
+      if (ts.y <= 0.0f) ts.y = entity_scale.y;
+
+      auto bounds = Engine::Graphics::get_camera_bounds();
+
+      f32 wrapped_x = std::fmod(draw_pos.x - bounds.min_x + ts.x, ts.x);
+      if (wrapped_x < 0.0f) wrapped_x += ts.x;
+      f32 start_x = bounds.min_x - ts.x + wrapped_x;
+
+      f32 wrapped_y = std::fmod(draw_pos.y - bounds.min_y + ts.y, ts.y);
+      if (wrapped_y < 0.0f) wrapped_y += ts.y;
+      f32 start_y = bounds.min_y - ts.y + wrapped_y;
+
+      for (f32 ty = start_y; ty < bounds.max_y + ts.y; ty += ts.y) {
+        for (f32 tx = start_x; tx < bounds.max_x + ts.x; tx += ts.x) {
+          draw_fn(Math::Vec2D(tx, ty), ts);
+        }
+      }
+    }
+
     class StaticSpriteRenderSystem : public Engine::ECS::System {
     public:
       StaticSpriteRenderSystem() {
@@ -46,6 +94,7 @@ namespace Engine
         auto* texture = entity.get_component<Components::Texture>();
         auto* flip = entity.get_component<Components::Flip>();
         auto* ui = entity.get_component<Components::UI>();
+        auto* parallax = entity.get_component<Components::Parallax>();
 
         Math::Vec2D flip_value = flip ? flip->value : Math::Vec2D(1.0f, 1.0f);
 
@@ -59,7 +108,26 @@ namespace Engine
             *color,
             flip_value
           );
-        } else {
+        }
+        else if (parallax) {
+          // Parallax background rendering
+          Math::Vec2D draw_pos = compute_parallax_position(transform->position, parallax->scroll_factor);
+
+          if (parallax->tiling) {
+            draw_parallax_tiled(draw_pos, transform->scale, *parallax,
+              [&](const Math::Vec2D& pos, const Math::Vec2D& size) {
+                Engine::Graphics::draw_texture(texture->texture_handle, pos, size, transform->rotation, *color, flip_value);
+              });
+          }
+          else {
+            Engine::Graphics::draw_texture(
+              texture->texture_handle, draw_pos,
+              Math::Vec2D(transform->scale.x, transform->scale.y),
+              transform->rotation, *color, flip_value
+            );
+          }
+        }
+        else {
           // Render in world space
           Engine::Graphics::draw_texture(
             texture->texture_handle,
@@ -87,6 +155,7 @@ namespace Engine
         auto* atlas = entity.get_component<Components::TextureAtlas>();
         auto* flip = entity.get_component<Components::Flip>();
         auto* ui = entity.get_component<Components::UI>();
+        auto* parallax = entity.get_component<Components::Parallax>();
 
         Math::Vec2D flip_value = flip ? flip->value : Math::Vec2D(1.0f, 1.0f);
 
@@ -105,7 +174,26 @@ namespace Engine
               *color,
               flip_value
             );
-          } else {
+          }
+          else if (parallax) {
+            // Parallax background rendering with atlas subtexture
+            Math::Vec2D draw_pos = compute_parallax_position(transform->position, parallax->scroll_factor);
+
+            if (parallax->tiling) {
+              draw_parallax_tiled(draw_pos, transform->scale, *parallax,
+                [&](const Math::Vec2D& pos, const Math::Vec2D& size) {
+                  Engine::Graphics::draw_subtexture(texture->texture_handle, subTexture.tex_coords, pos, size, transform->rotation, *color, flip_value);
+                });
+            }
+            else {
+              Engine::Graphics::draw_subtexture(
+                texture->texture_handle, subTexture.tex_coords, draw_pos,
+                Math::Vec2D(transform->scale.x, transform->scale.y),
+                transform->rotation, *color, flip_value
+              );
+            }
+          }
+          else {
             // Render in world space
             Engine::Graphics::draw_subtexture(
               texture->texture_handle,
@@ -168,12 +256,21 @@ namespace Engine
           }
         }
 
+        // Apply parallax offset to grid_offset if the entity has a Parallax component
+        Math::Vec2D draw_offset = int_map->grid_offset;
+        auto* parallax = entity.get_component<Components::Parallax>();
+        if (parallax) {
+          // compute_parallax_position shifts the anchor based on camera distance
+          // We treat grid_offset as the anchor position for the tilemap
+          draw_offset = compute_parallax_position(int_map->grid_offset, parallax->scroll_factor);
+        }
+
         // Draw the tilemap using the optimized renderer function with multiple atlases
         Engine::Graphics::draw_tilemap(
           int_map->tiles,
           project_settings.loaded_tilemaps,
           int_map->tile_size,
-          int_map->grid_offset,
+          draw_offset,
           color
         );
       }
@@ -269,6 +366,25 @@ namespace Engine
     class CameraSystem : public Engine::ECS::System {
     private:
       inline static Engine::Graphics::Camera camera{}; // this is the camera that will be sent to the renderer
+      inline static f32 shake_time_remaining = 0.0f;
+      inline static f32 shake_duration = 0.0f;
+      inline static f32 shake_amplitude = 0.0f;
+      inline static f32 shake_trauma = 0.0f;                // 0..1 intensity accumulator
+      inline static f32 shake_sample_timer = 0.0f;          // timer for high-frequency sample changes
+      inline static Math::Vec2D shake_sample = { 0.0f, 0.0f }; // current sampled direction
+
+      inline static bool has_active_camera_entity() {
+        bool has_active_camera = false;
+        Engine::ECS::for_each_entity_with<Components::Camera>(
+          [&has_active_camera](Engine::ECS::Entity entity) {
+            auto* cam = entity.get_component<Components::Camera>();
+            if (cam && cam->is_active) {
+              has_active_camera = true;
+            }
+          }
+        );
+        return has_active_camera;
+      }
 
       inline f32 Lerp(f32 a, f32 b, f32 t)
       {
@@ -280,18 +396,22 @@ namespace Engine
         return a + (b - a) * t;
       }
 
-     public:
+    public:
       CameraSystem() {
         require_components<Components::Camera, Components::Transform2D>();
       }
 
       void update() override {
+        const f32 dt = Time::get_fixed_dt();
+        bool has_active_camera = false;
+
         Engine::ECS::for_each_entity_with<Components::Camera, Components::Transform2D>(
-          [this](Engine::ECS::Entity entity) {
+          [this, dt, &has_active_camera](Engine::ECS::Entity entity) {
             auto* cam = entity.get_component<Components::Camera>();
             auto* trans = entity.get_component<Components::Transform2D>();
 
             if (!cam || !cam->is_active) return;
+            has_active_camera = true;
 
             // 1. Safe Parent & Flip Retrieval
             f32 look_dir = 0.0f;
@@ -305,33 +425,31 @@ namespace Engine
               }
             }
 
-            const f32 dt = Time::get_fixed_dt();
-
             // 2. Look-ahead Calculation (smooth camera leading in movement direction)
             Vec2D desired_look_ahead = { look_dir * cam->look_ahead_distance, 0.0f };
-            
+
             // Smoothly interpolate look-ahead offset
             f32 t_look_ahead = 1.0f - std::exp(-cam->look_ahead_smooth * dt);
             cam->look_ahead_offset = Lerp(cam->look_ahead_offset, desired_look_ahead, t_look_ahead);
 
-            // 3. Calculate Target Position
-            Vec2D target_position = trans->position + cam->look_ahead_offset;
+            // 3. Calculate Target Position (apply static offset + look-ahead)
+            Vec2D target_position = trans->position + cam->target_offset + cam->look_ahead_offset;
 
             // 4. Detect Direction Change
             Vec2D current_velocity = target_position - camera.position;
             f32 direction_consistency = 1.0f;
-            
+
             // Calculate how aligned current movement is with previous movement
             f32 prev_mag = std::sqrt(cam->prev_velocity.x * cam->prev_velocity.x + cam->prev_velocity.y * cam->prev_velocity.y);
             f32 curr_mag = std::sqrt(current_velocity.x * current_velocity.x + current_velocity.y * current_velocity.y);
-            
+
             if (prev_mag > 0.01f && curr_mag > 0.01f) {
               // Dot product normalized = cosine of angle between vectors
               f32 dot = (cam->prev_velocity.x * current_velocity.x + cam->prev_velocity.y * current_velocity.y);
               direction_consistency = dot / (prev_mag * curr_mag);
               direction_consistency = std::max(0.0f, direction_consistency); // Clamp to 0-1
             }
-            
+
             // Store current velocity for next frame
             cam->prev_velocity = current_velocity;
 
@@ -339,7 +457,7 @@ namespace Engine
             if (cam->dead_zone_radius > 0.0f) {
               Vec2D to_target = target_position - camera.position;
               f32 distance = std::sqrt(to_target.x * to_target.x + to_target.y * to_target.y);
-              
+
               if (distance < cam->dead_zone_radius) {
                 // Within dead zone - don't move camera
                 target_position = camera.position;
@@ -357,12 +475,12 @@ namespace Engine
               // Same direction (1.0) = use fast smooth_factor
               // Direction change (0.0) = use slow smooth_factor_direction_change
               f32 blended_smooth = Lerp(cam->smooth_factor_direction_change, cam->smooth_factor, direction_consistency);
-              
+
               // Exponential smoothing for natural, framerate-independent movement
               f32 t_pos = 1.0f - std::exp(-blended_smooth * dt);
               f32 t_rot = 1.0f - std::exp(-cam->rotation_smooth * dt);
               f32 t_zoom = 1.0f - std::exp(-cam->zoom_smooth * dt);
-              
+
               camera.position = Lerp(camera.position, target_position, t_pos);
               camera.rotation = Lerp(camera.rotation, trans->rotation, t_rot);
               camera.zoom = Lerp(camera.zoom, trans->scale.x, t_zoom);
@@ -375,7 +493,61 @@ namespace Engine
             }
           });
 
-        Engine::Graphics::set_camera(camera);
+        Engine::Graphics::Camera render_camera = camera;
+
+        if (shake_time_remaining > 0.0f) {
+          shake_time_remaining = std::max(0.0f, shake_time_remaining - dt);
+
+          
+          const f32 trauma_decay_rate = (shake_duration > 0.0f) ? (1.8f / shake_duration) : 8.0f;
+          shake_trauma = std::max(0.0f, shake_trauma - trauma_decay_rate * dt);
+
+          // High-frequency sample updates for a crunchy quake feel.
+          shake_sample_timer -= dt;
+          if (shake_sample_timer <= 0.0f) {
+            shake_sample_timer = 1.0f / 95.0f; // ~95Hz sample changes
+
+            f32 sx = Engine::Random::random_range(-1.0f, 1.0f);
+            f32 sy = Engine::Random::random_range(-1.0f, 1.0f);
+            f32 mag = std::sqrt(sx * sx + sy * sy);
+            if (mag > 0.001f) {
+              sx /= mag;
+              sy /= mag;
+            }
+            else {
+              sx = 1.0f;
+              sy = 0.0f;
+            }
+            shake_sample = Math::Vec2D(sx, sy);
+          }
+
+          const f32 quake = shake_trauma * shake_trauma; // Non-linear falloff (classic trauma shape)
+          const f32 max_offset = shake_amplitude * quake;
+
+          // Slightly stronger horizontal motion reads better in platformers.
+          render_camera.position.x += shake_sample.x * max_offset;
+          render_camera.position.y += shake_sample.y * (max_offset * 0.80f);
+        }
+
+        Engine::Graphics::set_camera(render_camera);
+      }
+
+      static void add_shake(f32 amplitude, f32 duration) {
+        if (amplitude <= 0.0f || duration <= 0.0f) {
+          Log::warning("camera shake rejected: invalid params amplitude={} duration={}", amplitude, duration);
+          return;
+        }
+
+        Log::info("camera shake accepted: amplitude={} duration={}", amplitude, duration);
+
+        // Convert hit into trauma amount, then accumulate for repeated hits.
+        f32 trauma_from_hit = std::max(amplitude / 55.0f, duration * 0.6f);
+        trauma_from_hit = std::min(1.0f, trauma_from_hit);
+        shake_trauma = std::min(1.0f, shake_trauma + trauma_from_hit);
+
+        shake_amplitude = std::max(shake_amplitude, amplitude);
+        shake_duration = std::max(shake_duration, duration);
+        shake_time_remaining = std::max(shake_time_remaining, duration);
       }
 
       static void unactivate_all_cameras() {
@@ -394,6 +566,12 @@ namespace Engine
         camera.position = Math::Vec2D(0.0f, 0.0f);
         camera.rotation = 0.0f;
         camera.zoom = 1.0f;
+        shake_time_remaining = 0.0f;
+        shake_duration = 0.0f;
+        shake_amplitude = 0.0f;
+        shake_trauma = 0.0f;
+        shake_sample_timer = 0.0f;
+        shake_sample = { 0.0f, 0.0f };
         Engine::Graphics::set_camera(camera);
       }
 
@@ -417,6 +595,7 @@ namespace Engine
       void update() override {
         // Get current mouse position if in viewport
         auto mouse_pos_opt = Engine::Input::get_mouse_position_if_in_viewport();
+        bool camera_modified = false;
 
         // Get scroll offset first (to consume it)
         glm::vec2 scroll = Engine::Input::get_scroll_offset();
@@ -455,6 +634,7 @@ namespace Engine
           camera.zoom += zoom_delta;
           // Clamp zoom to reasonable values
           camera.zoom = glm::clamp(camera.zoom, 0.1f, 10.0f);
+          camera_modified = true;
         }
 
         // Perform camera drag with middle mouse button
@@ -470,12 +650,16 @@ namespace Engine
           // Also account for camera zoom
           camera.position.x -= delta.x / camera.zoom;
           camera.position.y -= delta.y / camera.zoom;
+          camera_modified = true;
         }
 
-        // Update the camera in the graphics system
-        Engine::Graphics::set_camera(camera);
+        if (camera_modified) {
+          Engine::Graphics::set_camera(camera);
+        }
       }
     };
+
+
 
     class DistortionSpriteRenderSystem : public Engine::ECS::System {
     public:

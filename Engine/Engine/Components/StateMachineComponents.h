@@ -34,6 +34,7 @@
 #include "../Audio/AudioPlayer.h"
 #include "../Audio/AudioPlayerInternal.h"
 #include "AudioComponents.h"
+#include "StateMachineBlueprintRegistry.h"
 
 namespace Components
 {
@@ -73,7 +74,7 @@ namespace Components
     Texture texture;
     TextureAtlas texture_atlas;
     Animation animation;
-    std::optional<Math::Vec2D> scale; // Optional scale override for this state
+    std::optional<Math::Vec2D> scale; // Scale override for this state
     std::optional<ColliderData> collider_data; // Optional collider size override
   };
 
@@ -98,17 +99,13 @@ namespace Components
 
     State() = default;
 
+    // Construct with just a name + optional animation/audio.
+    // Callbacks are left empty — sync_with_blueprint() fills them in from the blueprint.
     State(const std::string& state_name,
-      const std::string& enter_callback = "",
-      const std::string& update_callback = "",
-      const std::string& exit_callback = "",
       std::optional<StateAnimation> state_animation = std::nullopt,
       std::optional<StateAudio> state_audio = std::nullopt,
       std::optional<FMODStateAudio> fmod_state_audio = std::nullopt)
       : name(state_name)
-      , on_enter_callback(enter_callback)
-      , on_update_callback(update_callback)
-      , on_exit_callback(exit_callback)
       , animation(state_animation)
       , audio(state_audio)
       , fmod_audio(fmod_state_audio)
@@ -152,6 +149,7 @@ namespace Components
   public:
     std::unordered_map<std::string, State> states;
     std::string current_state_name; // Made public for serialization
+    std::string blueprint_id;       // Links to a StateMachineBlueprintRegistry entry
   private:
     std::queue<std::string> transition_queue_;  // Queue for deferred transitions
     bool is_first_frame_ = false;     // Track if we just entered current state
@@ -186,7 +184,10 @@ namespace Components
 
       current_state_name = state_name;
       is_first_frame_ = true;
-      has_started_ = true;
+      // Keep startup deferred so first update can sync callbacks from blueprint.
+      // This is required because code-defined states usually only carry visual/audio
+      // data while gameplay callbacks are injected by sync_with_blueprint().
+      has_started_ = false;
     }
 
     /// Request a state change (deferred until end of current update)
@@ -243,6 +244,7 @@ namespace Components
 
       // Auto-initialize after deserialization
       if (!has_started_) {
+        sync_with_blueprint(); // Merge code-defined callbacks onto serialized data
         is_first_frame_ = true;
         has_started_ = true;
       }
@@ -295,6 +297,93 @@ namespace Components
     /// Get the state history (for debugging)
     const std::vector<std::string>& get_state_history() const {
       return state_history_;
+    }
+
+    // ========================================================================
+    // Blueprint Synchronization
+    // ========================================================================
+
+    /// Merge callbacks from the code-defined blueprint onto the serialized
+    /// state data.  Animation / audio / collider data in the prefab is
+    /// preserved.  States that exist in the blueprint but not in the prefab
+    /// are added (with no animation).  States that exist in the prefab but
+    /// not in the blueprint are removed.
+    void sync_with_blueprint() {
+      if (blueprint_id.empty()) return;
+
+      const auto* bp = Engine::StateMachineBlueprintRegistry::instance()
+        .get_blueprint(blueprint_id);
+      if (!bp) {
+        Log::warning("StateMachine: blueprint '{}' not found in registry", blueprint_id);
+        return;
+      }
+
+      // Build a set of blueprint state names for quick lookup
+      std::unordered_map<std::string, const Engine::StateBlueprint*> bp_map;
+      for (const auto& sb : bp->states) {
+        bp_map[sb.state_name] = &sb;
+      }
+
+      // 1. Update existing states & add new ones
+      for (const auto& sb : bp->states) {
+        auto it = states.find(sb.state_name);
+        if (it != states.end()) {
+          // State already exists — overwrite callbacks only
+          it->second.on_enter_callback = sb.on_enter;
+          it->second.on_update_callback = sb.on_update;
+          it->second.on_exit_callback = sb.on_exit;
+        }
+        else {
+          // New state from blueprint — add with callbacks but no animation/audio
+          State new_state;
+          new_state.name = sb.state_name;
+          new_state.on_enter_callback = sb.on_enter;
+          new_state.on_update_callback = sb.on_update;
+          new_state.on_exit_callback = sb.on_exit;
+          states[sb.state_name] = new_state;
+          Log::info("StateMachine: added new state '{}' from blueprint '{}'", sb.state_name, blueprint_id);
+        }
+      }
+
+      // 2. Remove states that are no longer in the blueprint
+      for (auto it = states.begin(); it != states.end(); ) {
+        if (bp_map.find(it->first) == bp_map.end()) {
+          Log::info("StateMachine: removed stale state '{}' (not in blueprint '{}')", it->first, blueprint_id);
+          it = states.erase(it);
+        }
+        else {
+          ++it;
+        }
+      }
+
+      // 3. Fix current_state_name if it was removed
+      if (!current_state_name.empty() && states.find(current_state_name) == states.end()) {
+        if (!bp->initial_state.empty() && states.find(bp->initial_state) != states.end()) {
+          current_state_name = bp->initial_state;
+        }
+        else if (!states.empty()) {
+          current_state_name = states.begin()->first;
+        }
+        Log::warning("StateMachine: current state was removed, reset to '{}'", current_state_name);
+      }
+    }
+
+    /// Force an immediate state switch and apply its animation/audio to the entity.
+    /// Intended for use in the editor where the normal update loop may not be running.
+    void set_state_immediate(const std::string& state_name, Engine::ECS::Entity entity) {
+      if (states.find(state_name) == states.end()) {
+        Log::error("Cannot set state '{}' - state does not exist", state_name);
+        return;
+      }
+      owner_entity_ = &entity;
+      current_state_name = state_name;
+      is_first_frame_ = true;
+
+      // Apply visual/audio data immediately
+      auto& state = states[state_name];
+      if (state.animation.has_value()) {
+        apply_state_animation(state.animation.value());
+      }
     }
 
   private:
@@ -400,7 +489,7 @@ namespace Components
         owner_entity_->add_component<Animation>(new_anim);
       }
 
-      // Apply optional scale override if specified
+      // Apply scale override if specified
       if (anim.scale.has_value()) {
         if (auto* transform = owner_entity_->get_component<Transform2D>()) {
           transform->scale = anim.scale.value();
@@ -472,4 +561,4 @@ REFLECT_FIELDS(Components::ColliderData, width, height, offset, vertices)
 REFLECT_FIELDS(Components::State, name, on_enter_callback, on_update_callback, on_exit_callback, animation, audio, fmod_audio)
 REFLECT_FIELDS(Components::StateAnimation, texture, texture_atlas, animation, scale, collider_data)
 REFLECT_FIELDS(Components::StateAudio, sound, volume, loop, stop_on_exit)
-REGISTER_COMPONENT(Components::StateMachine, states, current_state_name)
+REGISTER_COMPONENT(Components::StateMachine, states, current_state_name, blueprint_id)

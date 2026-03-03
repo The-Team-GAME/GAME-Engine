@@ -17,14 +17,14 @@
 
 #pragma once
 
-#include "../../Engine/MonkeyEngine.h"
+#include "pch.h"
 #include <algorithm>
 
 namespace Components {
 
-	
+
 	// Timed HP regen/drain settings
-		
+
 	struct HealthConfig {
 		f32 drain_per_sec = 0.0f;
 		f32 heal_while_moving_per_sec = 0.0f;
@@ -32,22 +32,22 @@ namespace Components {
 	};
 
 	struct Health {
-		int value = 100;
-		int max = 100;
+		int value = 5;
+		int max = 5;
 
-		void damage(int amt) { 
-			value = std::max(0, value - amt); 
+		void damage(int amt) {
+			value = std::max(0, value - amt);
 		}
-		void heal(int amt) { 
-			value = std::min(max, value + amt); 
+		void heal(int amt) {
+			value = std::min(max, value + amt);
 		}
 		bool is_dead() const {
 			return value <= 0;
 		}
 	};
-		
+
 	// HUD hookups + layout
-		
+
 	struct HealthBar {
 		Engine::ECS::Entity bar_bg{};
 		Engine::ECS::Entity bar_fill{};
@@ -75,10 +75,10 @@ namespace Components {
 		bool overlay_relative_to_back = true;
 
 		// Textures
-		Engine::Graphics::Texture	tex_back{Engine::Resources::load_texture("images/Heartratebar/BarBack.png")};
-		Engine::Graphics::Texture tex_solid{Engine::Resources::load_texture("images/Heartratebar/WhiteSolidForFill.png")};
-		Engine::Graphics::Texture tex_white{Engine::Resources::load_texture("images/Heartratebar/WhiteBar.png")};
-		Engine::Graphics::Texture tex_head{Engine::Resources::load_texture("images/Heartratebar/HeadBar.png")};
+		Engine::Graphics::Texture	tex_back{ Engine::Resources::load_texture("images/Heartratebar/BarBack.png") };
+		Engine::Graphics::Texture tex_solid{ Engine::Resources::load_texture("images/Heartratebar/WhiteSolidForFill.png") };
+		Engine::Graphics::Texture tex_white{ Engine::Resources::load_texture("images/Heartratebar/WhiteBar.png") };
+		Engine::Graphics::Texture tex_head{ Engine::Resources::load_texture("images/Heartratebar/HeadBar.png") };
 
 		// BPM mapping
 		float bpm_min = 40.f, bpm_max = 200.f;
@@ -210,3 +210,6 @@ namespace Components {
 	};
 
 }
+
+
+REGISTER_COMPONENT(Components::Health, value, max);

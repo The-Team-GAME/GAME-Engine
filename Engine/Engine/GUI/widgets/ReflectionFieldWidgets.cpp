@@ -24,6 +24,7 @@
 #include "../../Components/Components.h"
 #include "../../Path.h"
 #include <unordered_map>
+#include <algorithm>
 #include "../../FunctionRegistry.h"
 
 namespace ImGuiWidgets {
@@ -448,7 +449,7 @@ namespace ImGuiWidgets {
 
     // Get all registered functions with the correct signature
     // Note: This assumes all state callbacks have the signature void(Engine::ECS::Entity)
-    auto& functions = Engine::FunctionRegistry<void(Engine::ECS::Entity)>::get_functions();
+    auto function_names = Engine::FunctionRegistry::instance().get_all_names<void(Engine::ECS::Entity)>();
 
     if (ImGui::BeginCombo(label.c_str(), current_script.empty() ? "<None>" : current_script.c_str())) {
 
@@ -461,7 +462,7 @@ namespace ImGuiWidgets {
       if (is_selected) ImGui::SetItemDefaultFocus();
 
       // List all scripts
-      for (const auto& [name, func] : functions) {
+      for (const auto& name : function_names) {
         is_selected = (current_script == name);
         if (ImGui::Selectable(name.c_str(), is_selected)) {
           field_value = name;
@@ -492,6 +493,105 @@ namespace ImGuiWidgets {
     };
 
     ReflectionLibrary::Object& field_obj = field_value.getObject();
+    bool local_modified = false;
+
+    // ========================================================================
+    // Blueprint ID selector dropdown
+    // ========================================================================
+    {
+      auto bp_it = field_obj.find("blueprint_id");
+      std::string current_bp_id;
+      if (bp_it != field_obj.end() && bp_it->second.isString()) {
+        current_bp_id = bp_it->second.getString();
+      }
+
+      auto all_ids = Engine::StateMachineBlueprintRegistry::instance().get_all_ids();
+      std::sort(all_ids.begin(), all_ids.end());
+
+      ImGui::Text("Blueprint:");
+      ImGui::SameLine();
+      const char* preview = current_bp_id.empty() ? "(none)" : current_bp_id.c_str();
+      if (ImGui::BeginCombo("##blueprint_id", preview)) {
+        if (ImGui::Selectable("(none)", current_bp_id.empty())) {
+          field_obj["blueprint_id"] = ReflectionLibrary::GenericValue(std::string(""));
+          field_obj["states"] = ReflectionLibrary::GenericValue(ReflectionLibrary::Array{});
+          field_obj["current_state_name"] = ReflectionLibrary::GenericValue(std::string(""));
+          local_modified = true;
+        }
+        for (const auto& id : all_ids) {
+          bool is_selected = (id == current_bp_id);
+          if (ImGui::Selectable(id.c_str(), is_selected)) {
+            field_obj["blueprint_id"] = ReflectionLibrary::GenericValue(id);
+            local_modified = true;
+
+            // ---- Sync states from the newly selected blueprint ----
+            const auto* bp = Engine::StateMachineBlueprintRegistry::instance().get_blueprint(id);
+            if (bp) {
+              // Build a lookup of existing serialized states so we preserve animation/audio data
+              std::map<std::string, ReflectionLibrary::GenericValue> existing_states;
+              auto st_it = field_obj.find("states");
+              if (st_it != field_obj.end()) {
+                auto existing_map = ReflectionLibrary::convert_array_of_pairs_to_map(st_it->second);
+                if (existing_map.isObject()) {
+                  existing_states = existing_map.getObject();
+                }
+              }
+
+              // Build new states array-of-pairs from the blueprint
+              ReflectionLibrary::Array new_states_array;
+              for (const auto& sb : bp->states) {
+                ReflectionLibrary::Object pair_obj;
+                pair_obj["first"] = ReflectionLibrary::GenericValue(sb.state_name);
+
+                // Reuse existing state data if it exists (preserves animation/audio/collider)
+                auto ex_it = existing_states.find(sb.state_name);
+                if (ex_it != existing_states.end()) {
+                  pair_obj["second"] = ex_it->second;
+                }
+                else {
+                  // Create a minimal state object with empty fields
+                  ReflectionLibrary::Object state_obj;
+                  state_obj["name"] = ReflectionLibrary::GenericValue(sb.state_name);
+                  state_obj["animation"] = ReflectionLibrary::GenericValue();  // null
+                  state_obj["audio"] = ReflectionLibrary::GenericValue();      // null
+                  state_obj["fmod_audio"] = ReflectionLibrary::GenericValue(); // null
+
+                  ReflectionLibrary::Object enter_cb;
+                  enter_cb["name"] = ReflectionLibrary::GenericValue(sb.on_enter);
+                  state_obj["on_enter_callback"] = ReflectionLibrary::GenericValue(std::move(enter_cb));
+
+                  ReflectionLibrary::Object update_cb;
+                  update_cb["name"] = ReflectionLibrary::GenericValue(sb.on_update);
+                  state_obj["on_update_callback"] = ReflectionLibrary::GenericValue(std::move(update_cb));
+
+                  ReflectionLibrary::Object exit_cb;
+                  exit_cb["name"] = ReflectionLibrary::GenericValue(sb.on_exit);
+                  state_obj["on_exit_callback"] = ReflectionLibrary::GenericValue(std::move(exit_cb));
+
+                  pair_obj["second"] = ReflectionLibrary::GenericValue(std::move(state_obj));
+                }
+                new_states_array.push_back(ReflectionLibrary::GenericValue(std::move(pair_obj)));
+              }
+
+              field_obj["states"] = ReflectionLibrary::GenericValue(std::move(new_states_array));
+
+              // Set initial state from blueprint if not already set
+              auto csn_it = field_obj.find("current_state_name");
+              bool needs_initial = !csn_it->second.isString() || csn_it->second.getString().empty();
+              if (needs_initial && !bp->initial_state.empty()) {
+                field_obj["current_state_name"] = ReflectionLibrary::GenericValue(bp->initial_state);
+              }
+            }
+          }
+          if (is_selected) ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+      }
+    }
+
+    // ========================================================================
+    // Initial / current state display & selector
+    // ========================================================================
     auto states_it = field_obj.find("states");
 
     // Check for valid states container (Object or Array)
@@ -501,12 +601,41 @@ namespace ImGuiWidgets {
     }
 
     ReflectionLibrary::GenericValue states_map_val;
-
     states_map_val = ReflectionLibrary::convert_array_of_pairs_to_map(states_it->second);
-
     ReflectionLibrary::Object& states_map = states_map_val.getObject();
-    bool local_modified = false;
 
+    {
+      auto csn_it = field_obj.find("current_state_name");
+      std::string current_state;
+      if (csn_it != field_obj.end() && csn_it->second.isString()) {
+        current_state = csn_it->second.getString();
+      }
+
+      ImGui::Text("Current State:");
+      ImGui::SameLine();
+      const char* state_preview = current_state.empty() ? "(not set)" : current_state.c_str();
+      if (ImGui::BeginCombo("##initial_state", state_preview)) {
+        for (const auto& [sname, _] : states_map) {
+          bool is_selected = (sname == current_state);
+          if (ImGui::Selectable(sname.c_str(), is_selected)) {
+            field_obj["current_state_name"] = ReflectionLibrary::GenericValue(sname);
+            local_modified = true;
+
+            // Also apply the state change to the live component immediately
+            if (entity.is_valid() && entity.has_component<Components::StateMachine>()) {
+              auto* sm = entity.get_component<Components::StateMachine>();
+              if (sm && sm->has_state(sname)) {
+                sm->set_state_immediate(sname, entity);
+              }
+            }
+          }
+          if (is_selected) ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+      }
+    }
+
+    ImGui::Separator();
     ImGui::Text("States (%zu):", states_map.size());
     ImGui::Separator();
 
@@ -567,31 +696,80 @@ namespace ImGuiWidgets {
               // Edit buttons at the top
               if (entity.is_valid()) {
                 // Edit Atlas Button
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.5f, 0.4f, 0.2f, 1.0f));
-                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.6f, 0.5f, 0.3f, 1.0f));
                 std::string edit_atlas_btn_label = "Edit Atlas Configuration##" + state_name;
                 if (ImGui::Button(edit_atlas_btn_label.c_str(), ImVec2(-1, 0))) {
-                  extern void TextureAtlasEditor_OpenForState(Engine::ECS::Entity entity, const std::string& state_name);
+                  extern void TextureAtlasEditor_OpenForState(Engine::ECS::Entity entity, const std::string & state_name);
                   TextureAtlasEditor_OpenForState(entity, state_name);
                 }
-                ImGui::PopStyleColor(2);
                 if (ImGui::IsItemHovered()) {
                   ImGui::SetTooltip("Open the Texture Atlas Editor to configure the grid layout");
                 }
 
                 // Edit Animation Frames Button
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.5f, 0.8f, 1.0f));
-                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.6f, 0.9f, 1.0f));
                 std::string edit_btn_label = "Edit Animation Frames##" + state_name;
                 if (ImGui::Button(edit_btn_label.c_str(), ImVec2(-1, 0))) {
-                  extern void FrameAnimationEditor_Open(Engine::ECS::Entity entity, const std::string& state_name);
+                  extern void FrameAnimationEditor_Open(Engine::ECS::Entity entity, const std::string & state_name);
                   FrameAnimationEditor_Open(entity, state_name);
                 }
-                ImGui::PopStyleColor(2);
                 if (ImGui::IsItemHovered()) {
                   ImGui::SetTooltip("Open the Frame Animation Editor to select specific frames from the texture atlas");
                 }
                 ImGui::Spacing();
+              }
+
+              // ---- Per-state scale ----
+              ImGui::Separator();
+              auto scale_it = state_anim_obj.find("scale");
+              // Auto-populate scale from entity's Transform2D if null/missing
+              if (scale_it == state_anim_obj.end() || !scale_it->second.isObject()) {
+                Math::Vec2D default_scale(1.0f, 1.0f);
+                if (entity.is_valid() && entity.has_component<Components::Transform2D>()) {
+                  default_scale = entity.get_component<Components::Transform2D>()->scale;
+                }
+                state_anim_obj["scale"] = ReflectionLibrary::to_generic_value(default_scale);
+                scale_it = state_anim_obj.find("scale");
+                local_modified = true;
+              }
+              {
+                ReflectionLibrary::Object& scale_obj = scale_it->second.getObject();
+                float scale_vals[2] = {
+                  scale_obj.count("x") && scale_obj["x"].isDouble() ? static_cast<float>(scale_obj["x"].getDouble()) : 1.0f,
+                  scale_obj.count("y") && scale_obj["y"].isDouble() ? static_cast<float>(scale_obj["y"].getDouble()) : 1.0f
+                };
+                ImGui::Text("Scale:");
+                std::string scale_label = "##scale_" + state_name;
+                if (ImGui::DragFloat2(scale_label.c_str(), scale_vals, 1.0f, 0.0f, 0.0f, "%.1f")) {
+                  scale_obj["x"] = ReflectionLibrary::GenericValue(static_cast<double>(scale_vals[0]));
+                  scale_obj["y"] = ReflectionLibrary::GenericValue(static_cast<double>(scale_vals[1]));
+                  local_modified = true;
+                }
+                // Reset to entity's current Transform2D scale
+                ImGui::SameLine();
+                std::string reset_scale_label = "Reset##scale_" + state_name;
+                if (ImGui::Button(reset_scale_label.c_str())) {
+                  Math::Vec2D default_scale(1.0f, 1.0f);
+                  if (entity.is_valid() && entity.has_component<Components::Transform2D>()) {
+                    default_scale = entity.get_component<Components::Transform2D>()->scale;
+                  }
+                  scale_obj["x"] = ReflectionLibrary::GenericValue(static_cast<double>(default_scale.x));
+                  scale_obj["y"] = ReflectionLibrary::GenericValue(static_cast<double>(default_scale.y));
+                  local_modified = true;
+                }
+                if (ImGui::IsItemHovered()) {
+                  ImGui::SetTooltip("Reset to entity's Transform2D scale");
+                }
+              }
+
+              // Edit Collider button
+              if (entity.is_valid()) {
+                ImGui::Separator();
+                std::string edit_col_label = "Edit Collider##" + state_name;
+                if (ImGui::Button(edit_col_label.c_str(), ImVec2(-1, 0))) {
+                  ColliderEditor::OpenForState(entity, state_name);
+                }
+                if (ImGui::IsItemHovered()) {
+                  ImGui::SetTooltip("Open the Collider Editor for this state");
+                }
               }
 
               // Render Texture field
@@ -604,19 +782,114 @@ namespace ImGuiWidgets {
                 ImGui::Separator();
               }
 
-              // Render Animation field
-              auto anim_field_it = state_anim_obj.find("animation");
-              if (anim_field_it != state_anim_obj.end()) {
-                ImGui::Text("Animation:");
-                ImGui::Indent();
-                render_animation_field(anim_field_it->second, local_modified, entity);
-                ImGui::Unindent();
+              // // Render Animation field
+              // auto anim_field_it = state_anim_obj.find("animation");
+              // if (anim_field_it != state_anim_obj.end()) {
+              //   ImGui::Text("Animation:");
+              //   ImGui::Indent();
+              //   render_animation_field(anim_field_it->second, local_modified, entity);
+              //   ImGui::Unindent();
+              // }
+
+              // Remove Animation button
+              ImGui::Spacing();
+              ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.2f, 0.2f, 1.0f));
+              ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.8f, 0.3f, 0.3f, 1.0f));
+              std::string remove_anim_label = "Remove Animation##" + state_name;
+              if (ImGui::Button(remove_anim_label.c_str(), ImVec2(-1, 0))) {
+                anim_it->second = ReflectionLibrary::GenericValue(); // Set to null (std::nullopt)
+                local_modified = true;
               }
+              ImGui::PopStyleColor(2);
 
               ImGui::Unindent();
             }
             else {
               ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No animation defined for this state");
+              ImGui::Spacing();
+              std::string add_anim_label = "Add Animation##" + state_name;
+              if (ImGui::Button(add_anim_label.c_str(), ImVec2(-1, 0))) {
+                // Create a default StateAnimation with unit_rect texture and entity's scale
+                Components::StateAnimation default_anim{};
+                default_anim.texture = Components::Texture(Engine::Resources::get_rect_texture());
+                if (entity.is_valid() && entity.has_component<Components::Transform2D>()) {
+                  default_anim.scale = entity.get_component<Components::Transform2D>()->scale;
+                }
+                auto anim_gv = ReflectionLibrary::to_generic_value(default_anim);
+                state_obj["animation"] = std::move(anim_gv);
+                local_modified = true;
+              }
+            }
+
+            // ================================================================
+            // FMOD Audio per state
+            // ================================================================
+            ImGui::Separator();
+            auto fmod_it = state_obj.find("fmod_audio");
+            if (fmod_it != state_obj.end() && fmod_it->second.isObject()) {
+              ReflectionLibrary::Object& fmod_obj = fmod_it->second.getObject();
+
+              ImGui::Text("FMOD Audio:");
+              ImGui::Indent();
+
+              // Event path
+              std::string event_path;
+              auto ep_it = fmod_obj.find("event_path");
+              if (ep_it != fmod_obj.end() && ep_it->second.isString()) {
+                event_path = ep_it->second.getString();
+              }
+              char event_buf[256];
+              strncpy_s(event_buf, event_path.c_str(), sizeof(event_buf) - 1);
+              std::string ep_label = "Event Path##fmod_" + state_name;
+              if (ImGui::InputText(ep_label.c_str(), event_buf, sizeof(event_buf))) {
+                fmod_obj["event_path"] = ReflectionLibrary::GenericValue(std::string(event_buf));
+                local_modified = true;
+              }
+
+              // Volume
+              auto vol_it = fmod_obj.find("volume");
+              float fmod_vol = (vol_it != fmod_obj.end() && vol_it->second.isDouble()) ? static_cast<float>(vol_it->second.getDouble()) : 1.0f;
+              std::string vol_label = "Volume##fmod_" + state_name;
+              if (ImGui::SliderFloat(vol_label.c_str(), &fmod_vol, 0.0f, 1.0f, "%.2f")) {
+                fmod_obj["volume"] = ReflectionLibrary::GenericValue(static_cast<double>(fmod_vol));
+                local_modified = true;
+              }
+
+              // Loop checkbox
+              auto loop_it = fmod_obj.find("loop");
+              bool fmod_loop = (loop_it != fmod_obj.end() && loop_it->second.isBool()) ? loop_it->second.getBool() : false;
+              std::string loop_label = "Loop##fmod_" + state_name;
+              if (ImGui::Checkbox(loop_label.c_str(), &fmod_loop)) {
+                fmod_obj["loop"] = ReflectionLibrary::GenericValue(fmod_loop);
+                local_modified = true;
+              }
+
+              // Stop on state exit checkbox
+              auto stop_it = fmod_obj.find("stop_on_state_exit");
+              bool fmod_stop = (stop_it != fmod_obj.end() && stop_it->second.isBool()) ? stop_it->second.getBool() : true;
+              std::string stop_label = "Stop On Exit##fmod_" + state_name;
+              if (ImGui::Checkbox(stop_label.c_str(), &fmod_stop)) {
+                fmod_obj["stop_on_state_exit"] = ReflectionLibrary::GenericValue(fmod_stop);
+                local_modified = true;
+              }
+
+              ImGui::Unindent();
+
+              // Remove FMOD Audio button
+              std::string remove_fmod_label = "Remove FMOD Audio##" + state_name;
+              if (ImGui::Button(remove_fmod_label.c_str(), ImVec2(-1, 0))) {
+                fmod_it->second = ReflectionLibrary::GenericValue();
+                local_modified = true;
+              }
+            }
+            else {
+              ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No FMOD audio for this state");
+              ImGui::Spacing();
+              std::string add_fmod_label = "Add FMOD Audio##" + state_name;
+              if (ImGui::Button(add_fmod_label.c_str(), ImVec2(-1, 0))) {
+                state_obj["fmod_audio"] = ReflectionLibrary::to_generic_value(Components::FMODStateAudio{});
+                local_modified = true;
+              }
             }
           }
 
@@ -649,10 +922,10 @@ namespace ImGuiWidgets {
     std::string current_function = name_field.getString();
 
     // Display all functions from all registries
-    auto& easing_functions = Engine::FunctionRegistry<f32(f32, f32, f32, f32)>::get_functions();
-    auto& entity_functions = Engine::FunctionRegistry<void(Engine::ECS::Entity)>::get_functions();
-    auto& two_entity_functions = Engine::FunctionRegistry<void(Engine::ECS::Entity, Engine::ECS::Entity)>::get_functions();
-    auto& void_functions = Engine::FunctionRegistry<void()>::get_functions();
+    auto easing_names = Engine::FunctionRegistry::instance().get_all_names<f32(f32, f32, f32, f32)>();
+    auto entity_names = Engine::FunctionRegistry::instance().get_all_names<void(Engine::ECS::Entity)>();
+    auto two_entity_names = Engine::FunctionRegistry::instance().get_all_names<void(Engine::ECS::Entity, Engine::ECS::Entity)>();
+    auto void_names = Engine::FunctionRegistry::instance().get_all_names<void()>();
 
     ImGui::Text("%s", field_name.c_str());
     ImGui::SameLine();
@@ -665,9 +938,9 @@ namespace ImGuiWidgets {
       if (is_selected) ImGui::SetItemDefaultFocus();
 
       // Display easing functions
-      if (!easing_functions.empty()) {
+      if (!easing_names.empty()) {
         ImGui::TextDisabled("--- Easing Functions (f32(f32,f32,f32,f32)) ---");
-        for (const auto& [name, func] : easing_functions) {
+        for (const auto& name : easing_names) {
           is_selected = (current_function == name);
           if (ImGui::Selectable(name.c_str(), is_selected)) {
             name_field = name;
@@ -678,9 +951,9 @@ namespace ImGuiWidgets {
       }
 
       // Display entity callback functions
-      if (!entity_functions.empty()) {
+      if (!entity_names.empty()) {
         ImGui::TextDisabled("--- Entity Callbacks (void(Entity)) ---");
-        for (const auto& [name, func] : entity_functions) {
+        for (const auto& name : entity_names) {
           is_selected = (current_function == name);
           if (ImGui::Selectable(name.c_str(), is_selected)) {
             name_field = name;
@@ -691,9 +964,9 @@ namespace ImGuiWidgets {
       }
 
       // Display two-entity callback functions (e.g., Interactable callbacks)
-      if (!two_entity_functions.empty()) {
+      if (!two_entity_names.empty()) {
         ImGui::TextDisabled("--- Interactable Callbacks (void(Entity, Entity)) ---");
-        for (const auto& [name, func] : two_entity_functions) {
+        for (const auto& name : two_entity_names) {
           is_selected = (current_function == name);
           if (ImGui::Selectable(name.c_str(), is_selected)) {
             name_field = name;
@@ -704,9 +977,9 @@ namespace ImGuiWidgets {
       }
 
       // Display void functions
-      if (!void_functions.empty()) {
+      if (!void_names.empty()) {
         ImGui::TextDisabled("--- Void Functions (void()) ---");
-        for (const auto& [name, func] : void_functions) {
+        for (const auto& name : void_names) {
           is_selected = (current_function == name);
           if (ImGui::Selectable(name.c_str(), is_selected)) {
             name_field = name;
@@ -803,12 +1076,9 @@ namespace ImGuiWidgets {
   }
 
   bool render_box_collider_field(ReflectionLibrary::GenericValue& field_value, bool& modified, Engine::ECS::Entity entity, Engine::ECS::Prefab* prefab, const std::string& prefab_path) {
-    if (ImGui::Button("Open Collider Editor")) {
-      if (entity.is_valid()) {
+    if (entity.is_valid()) {
+      if (ImGui::Button("Open Collider Editor")) {
         ColliderEditor::Open(entity);
-      }
-      else if (prefab && prefab->is_valid()) {
-        ColliderEditor::Open(*prefab, prefab_path);
       }
     }
 
