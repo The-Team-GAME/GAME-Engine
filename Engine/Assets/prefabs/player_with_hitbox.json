@@ -7,8 +7,8 @@
                         "half_height": 51.89607238769531,
                         "half_width": 19.197696685791016,
                         "pos": {
-                            "x": -2147.323486328125,
-                            "y": 1036.981201171875
+                            "x": -605.8239135742188,
+                            "y": 780.9810791015625
                         }
                     },
                     "height": 103.79214477539063,
@@ -35,8 +35,8 @@
             {
                 "data": {
                     "position": {
-                        "x": -2146.965576171875,
-                        "y": 1024.8773193359375
+                        "x": -606.1818237304688,
+                        "y": 768.8771362304688
                     },
                     "rotation": 0.0,
                     "scale": {
@@ -49,7 +49,7 @@
             {
                 "data": {
                     "value": {
-                        "x": 1.0,
+                        "x": -1.0,
                         "y": 1.0
                     }
                 },
@@ -72,7 +72,7 @@
             },
             {
                 "data": {
-                    "drawIndex": 3,
+                    "drawIndex": 0,
                     "tex_coords_list": [
                         [
                             {
@@ -591,14 +591,14 @@
                         0.10000000149011612
                     ],
                     "is_looping": true,
-                    "startTime": 122.54501342773438,
+                    "startTime": 1196.3658447265625,
                     "totalDuration": 2.3999998569488525
                 },
                 "type": "Components::Animation"
             },
             {
                 "data": {
-                    "path": "sounds/SFX/Player/Player Footstep.wav"
+                    "path": "sounds/SFX/Player/Player Swing.wav"
                 },
                 "type": "Components::Sound"
             },
@@ -646,7 +646,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 122.54501342773438,
+                                        "startTime": 1196.3658447265625,
                                         "totalDuration": 0.7199999094009399
                                     },
                                     "collider_data": {
@@ -902,7 +902,7 @@
                                             0.5
                                         ],
                                         "is_looping": true,
-                                        "startTime": 122.54501342773438,
+                                        "startTime": 1196.3658447265625,
                                         "totalDuration": 2.1499998569488525
                                     },
                                     "collider_data": {
@@ -1200,7 +1200,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 122.54501342773438,
+                                        "startTime": 1196.3658447265625,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": {
@@ -1441,7 +1441,7 @@
                                             0.07999999821186066
                                         ],
                                         "is_looping": false,
-                                        "startTime": 122.54501342773438,
+                                        "startTime": 1196.3658447265625,
                                         "totalDuration": 0.559999942779541
                                     },
                                     "collider_data": {
@@ -1742,7 +1742,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": false,
-                                        "startTime": 122.54501342773438,
+                                        "startTime": 1196.3658447265625,
                                         "totalDuration": 0.30000001192092896
                                     },
                                     "collider_data": null,
@@ -1953,7 +1953,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": false,
-                                        "startTime": 122.54501342773438,
+                                        "startTime": 1196.3658447265625,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": null,
@@ -2313,12 +2313,18 @@
                             "second": {
                                 "animation": {
                                     "animation": {
-                                        "atlas_indices": [],
-                                        "before_times": [],
-                                        "durations": [],
+                                        "atlas_indices": [
+                                            2
+                                        ],
+                                        "before_times": [
+                                            0.0
+                                        ],
+                                        "durations": [
+                                            0.15000000596046448
+                                        ],
                                         "is_looping": true,
-                                        "startTime": 122.54501342773438,
-                                        "totalDuration": 0.0
+                                        "startTime": 1196.3658447265625,
+                                        "totalDuration": 0.15000000596046448
                                     },
                                     "collider_data": null,
                                     "scale": {
@@ -2330,7 +2336,152 @@
                                     },
                                     "texture_atlas": {
                                         "drawIndex": -1,
-                                        "tex_coords_list": []
+                                        "tex_coords_list": [
+                                            [
+                                                {
+                                                    "x": 0.0,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.125,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.125,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.0,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.125,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.25,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.25,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.125,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.25,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.375,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.375,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.25,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.375,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.5,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.5,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.375,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.5,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.625,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.625,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.5,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.625,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.75,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.75,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.625,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.75,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.875,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 0.875,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.75,
+                                                    "y": 0.0
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "x": 0.875,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 1.0,
+                                                    "y": 1.0
+                                                },
+                                                {
+                                                    "x": 1.0,
+                                                    "y": 0.0
+                                                },
+                                                {
+                                                    "x": 0.875,
+                                                    "y": 0.0
+                                                }
+                                            ]
+                                        ]
                                     }
                                 },
                                 "audio": null,
@@ -2362,7 +2513,7 @@
                                             1.0
                                         ],
                                         "is_looping": true,
-                                        "startTime": 122.54501342773438,
+                                        "startTime": 1196.3658447265625,
                                         "totalDuration": 1.0
                                     },
                                     "collider_data": null,
@@ -2651,7 +2802,7 @@
                                             0.05000000074505806
                                         ],
                                         "is_looping": false,
-                                        "startTime": 122.54501342773438,
+                                        "startTime": 1196.3658447265625,
                                         "totalDuration": 0.20000000298023224
                                     },
                                     "collider_data": {
@@ -3020,7 +3171,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 122.54501342773438,
+                                        "startTime": 1196.3658447265625,
                                         "totalDuration": 2.3999998569488525
                                     },
                                     "collider_data": {
@@ -3515,7 +3666,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": false,
-                                        "startTime": 122.54501342773438,
+                                        "startTime": 1196.3658447265625,
                                         "totalDuration": 0.4000000059604645
                                     },
                                     "collider_data": null,
@@ -3639,7 +3790,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": false,
-                                        "startTime": 122.54501342773438,
+                                        "startTime": 1196.3658447265625,
                                         "totalDuration": 0.30000001192092896
                                     },
                                     "collider_data": null,
@@ -3838,7 +3989,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": false,
-                                        "startTime": 122.54501342773438,
+                                        "startTime": 1196.3658447265625,
                                         "totalDuration": 0.4000000059604645
                                     },
                                     "collider_data": null,
@@ -4091,7 +4242,7 @@
                                             0.05000000074505806
                                         ],
                                         "is_looping": false,
-                                        "startTime": 122.54501342773438,
+                                        "startTime": 1196.3658447265625,
                                         "totalDuration": 0.20000000298023224
                                     },
                                     "collider_data": null,
@@ -4374,7 +4525,7 @@
                                             0.10000000149011612
                                         ],
                                         "is_looping": true,
-                                        "startTime": 122.54501342773438,
+                                        "startTime": 1196.3658447265625,
                                         "totalDuration": 0.8000000715255737
                                     },
                                     "collider_data": {
@@ -4600,11 +4751,11 @@
             {
                 "data": {
                     "local_offset": {
-                        "x": -2146.965576171875,
-                        "y": 1024.8773193359375
+                        "x": -606.1818237304688,
+                        "y": 768.8771362304688
                     },
                     "offset_initialized": true,
-                    "parent_id": 631,
+                    "parent_id": 18,
                     "prev_parent_pos": {
                         "x": 0.0,
                         "y": 0.0
@@ -4683,13 +4834,13 @@
                         "timer": 9.080414048824815e-43
                     },
                     "uppercut": {
-                        "cd_timer": -0.000009987503290176392,
+                        "cd_timer": 5.0,
                         "cooldown": 5.0,
                         "duration": 0.4000000059604645,
                         "impulse": 0.0,
-                        "no_cooldown": false,
+                        "no_cooldown": true,
                         "speed": 800.0,
-                        "timer": -0.004500167444348335
+                        "timer": -0.01666676066815853
                     },
                     "walk_speed": 300000.0
                 },
